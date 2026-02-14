@@ -4,8 +4,8 @@ using Test
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 n = import_snirf(joinpath(testfiles_path, "fnirs-test-snirf.snirf"))
-e10 = epoch(eeg, ep_len=10)
-keep_epoch!(e10, ep=1:10)
+e10 = epoch(eeg; ep_len=10)
+keep_epoch!(e10; ep=1:10)
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
 v2 = [6, 5, 4, 3, 2]
@@ -94,28 +94,28 @@ x[10] *= 1000
 @test e2t(e10, 1:10) == (0.0, 99.9961)
 
 @info "Test: freqs()"
-f, nf = NeuroAnalyzer.freqs(0:1/10:10)
+f, nf = NeuroAnalyzer.freqs(0:(1 / 10):10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(0:1/10:10, nf=true)
+f, nf = NeuroAnalyzer.freqs(0:(1 / 10):10; nf=true)
 @test length(f) == 101
 @test nf == 5
 f, nf = NeuroAnalyzer.freqs(rand(100), 10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(rand(100), 10, nf=true)
+f, nf = NeuroAnalyzer.freqs(rand(100), 10; nf=true)
 @test length(f) == 100
 @test nf == 5
 f, nf = NeuroAnalyzer.freqs(100, 10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(100, 10, nf=true)
+f, nf = NeuroAnalyzer.freqs(100, 10; nf=true)
 @test length(f) == 100
 @test nf == 5
 f, nf = NeuroAnalyzer.freqs(e10)
 @test length(f) == 1281
 @test nf == 128
-f, nf = NeuroAnalyzer.freqs(e10, nf=true)
+f, nf = NeuroAnalyzer.freqs(e10; nf=true)
 @test length(f) == 2560
 @test nf == 128
 
@@ -223,7 +223,8 @@ s = rand(100)
 @test linspace(1, 10, 10) == 1:10
 
 @info "Test: logspace()"
-@test logspace(1, 10, 5) == [1.0, 1.7782794100389228, 3.1622776601683795, 5.623413251903491, 10.0]
+@test logspace(1, 10, 5) ==
+    [1.0, 1.7782794100389228, 3.1622776601683795, 5.623413251903491, 10.0]
 
 @info "Test: cmax()"
 @test cmax([1 + 2im, 10 + 10im]) == 10 + 10im
@@ -245,7 +246,7 @@ m = [(1.0, 2.0) (3.0, 4.0); (5.0, 6.0) (7.0, 8.0)]
 @test view_note(e10) == ""
 
 @info "Test: add_note()"
-add_note!(e10, note="test")
+add_note!(e10; note="test")
 @test view_note(e10) == "test"
 
 @info "Test: delete_note()"
@@ -367,7 +368,8 @@ x2, f2 = areduce(x, f)
 @test mni2tal([10, 12, 14]) == [9.9, 12.2696, 12.2826]
 
 @info "Test: aff_tal2mni()"
-@test aff_tal2mni([9.9, 12.2692, 12.2826]) == [12.15909090909091, 16.071340206185567, 13.544355670103092]
+@test aff_tal2mni([9.9, 12.2692, 12.2826]) ==
+    [12.15909090909091, 16.071340206185567, 13.544355670103092]
 
 @info "Test: tal2mni()"
 @test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643125, 13.999435493742183]

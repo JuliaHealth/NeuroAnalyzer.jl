@@ -15,8 +15,7 @@ Calculate indices of full-width half-maximum points of a Gaussian-like distribut
 - `p_idx::Int64`: peak
 - `p2_idx::Int64`: post-peak half-maximum point
 """
-function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
-
+function fwhm(s::AbstractVector)::Tuple{Int64,Int64,Int64}
     s = normalize_n(s)
 
     # peak
@@ -27,5 +26,4 @@ function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
     p2_idx = p_idx + vsearch(0.5, s[p_idx:end]) - 1
 
     return p1_idx, p_idx, p2_idx
-
 end

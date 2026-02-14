@@ -29,8 +29,16 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
-
+function spectrogram(
+    s::AbstractVector;
+    fs::Int64,
+    db::Bool=true,
+    method::Symbol=:stft,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
     _check_var(method, [:stft, :mt], "method")
     @assert fs >= 1 "fs must be ≥ 1."
     @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
@@ -44,10 +52,10 @@ function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol
             wlen = div(wlen, 2)
             woverlap = div(woverlap, 2)
         end
-        p = DSP.spectrogram(s, wlen, woverlap, fs=fs, window=w)
+        p = DSP.spectrogram(s, wlen, woverlap; fs=fs, window=w)
     elseif method === :mt
         w = w ? hanning(length(s)) : ones(length(s))
-        p = DSP.mt_spectrogram(s .* w, fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
+        p = DSP.mt_spectrogram(s .* w; fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
     end
 
     p = p.power
@@ -55,12 +63,11 @@ function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol
     p[p .== +Inf] .= maximum(p[p .!== +Inf])
     db && (p = pow2db.(p))
 
-    t = 0:1/fs:(length(s) / fs)
+    t = 0:(1 / fs):(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
     f = linspace(0, fs/2, size(p, 1))
 
     return (p=p, f=f, t=t)
-
 end
 
 """
@@ -88,17 +95,35 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function spectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
-
-    _, f, t = NeuroAnalyzer.spectrogram(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+function spectrogram(
+    s::AbstractMatrix;
+    fs::Int64,
+    db::Bool=true,
+    method::Symbol=:stft,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+)::@NamedTuple{p::Array{Float64,3}, f::Vector{Float64}, t::Vector{Float64}}
+    _, f, t = NeuroAnalyzer.spectrogram(
+        s[1, :]; fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w
+    )
 
     p = zeros(length(f), length(t), size(s, 1))
     Threads.@threads for ch_idx in axes(s, 1)
-        p[:, :, ch_idx], _, _ = @views NeuroAnalyzer.spectrogram(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        p[:, :, ch_idx], _, _ = @views NeuroAnalyzer.spectrogram(
+            s[ch_idx, :],
+            fs=fs,
+            db=db,
+            method=method,
+            nt=nt,
+            wlen=wlen,
+            woverlap=woverlap,
+            w=w,
+        )
     end
 
     return (p=p, f=f, t=t)
-
 end
 
 """
@@ -134,22 +159,53 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=10, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{p::Array{Float64, 4}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
-
+function spectrogram(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    pad::Int64=0,
+    method::Symbol=:stft,
+    db::Bool=true,
+    nt::Int64=7,
+    gw::Real=10,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    wt::T=wavelet(Morlet(2π), β=2),
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+)::@NamedTuple{p::Array{Float64,4}, f::Vector{Float64}, t::Vector{Float64}} where {T<:CWT}
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
 
     if method === :stft
-        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(
+            obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w
+        )
     elseif method === :mt
-        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(
+            obj.data[1, :, 1],
+            fs=fs,
+            db=db,
+            method=:mt,
+            nt=nt,
+            wlen=wlen,
+            woverlap=woverlap,
+            w=w,
+        )
     elseif method === :mw
-    _, p_tmp, _, f, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+        _, p_tmp, _, f, _ = @views NeuroAnalyzer.mwspectrogram(
+            obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w
+        )
     elseif method === :gh
-        p_tmp, _, f, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
+        p_tmp, _, f, _ = @views NeuroAnalyzer.ghtspectrogram(
+            obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w
+        )
     elseif method === :cwt
         _log_off()
         p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt)
@@ -163,25 +219,50 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     p = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(ep_n * ch_n; dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if method === :stft
-                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx],
+                    fs=fs,
+                    db=db,
+                    method=:stft,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=w,
+                )
             elseif method === :mt
-                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx],
+                    fs=fs,
+                    db=db,
+                    method=:mt,
+                    nt=nt,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=w,
+                )
             elseif method === :mw
-                _, p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+                _, p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.mwspectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w
+                )
             elseif method === :gh
-                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghtspectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w
+                )
             elseif method === :cwt
                 _log_off()
-                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt)
+                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt
+                )
                 _log_on()
             elseif method === :hht
                 imf = emd(obj.data[ch[ch_idx], :, ep_idx], obj.epoch_time)[1:(end - 1), :]
-                p[:, :, ch_idx, ep_idx], _, _, _ = @views NeuroAnalyzer.hhtspectrogram(imf, fs=fs, db=db)
+                p[:, :, ch_idx, ep_idx], _, _, _ = @views NeuroAnalyzer.hhtspectrogram(
+                    imf, fs=fs, db=db
+                )
             end
 
             # update progress bar
@@ -189,12 +270,11 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
         end
     end
 
-    f = round.(f, digits=2)
-    t = round.(t, digits=3)
+    f = round.(f; digits=2)
+    t = round.(t; digits=3)
     t .+= obj.epoch_time[1]
 
     return (p=p, f=f, t=t)
-
 end
 
 """
@@ -220,8 +300,20 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{cs::Matrix{ComplexF64}, p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
-
+function mwspectrogram(
+    s::AbstractVector;
+    pad::Int64=0,
+    db::Bool=true,
+    fs::Int64,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    w::Bool=true,
+)::@NamedTuple{
+    cs::Matrix{ComplexF64},
+    p::Matrix{Float64},
+    ph::Matrix{Float64},
+    f::Vector{Float64},
+    t::Vector{Float64},
+}
     @assert fs >= 1 "fs must be > 1."
 
     pad > 0 && (s = pad0(s, pad))
@@ -263,11 +355,10 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
     p[p .== +Inf] .= maximum(p[p .!== +Inf])
     db && (p = pow2db.(p))
 
-    t = 0:1/fs:(length(s) / fs)
+    t = 0:(1 / fs):(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
 
     return (cs=cs, p=p, ph=ph, f=f, t=t)
-
 end
 
 """
@@ -293,19 +384,32 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function mwspectrogram(s::AbstractMatrix; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{cs::Array{ComplexF64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
-
-    _, _, _, f_tmp, t_tmp = mwspectrogram(s[1, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+function mwspectrogram(
+    s::AbstractMatrix;
+    pad::Int64=0,
+    db::Bool=true,
+    fs::Int64,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    w::Bool=true,
+)::@NamedTuple{
+    cs::Array{ComplexF64,3},
+    p::Array{Float64,3},
+    ph::Array{Float64,3},
+    f::Vector{Float64},
+    t::Vector{Float64},
+}
+    _, _, _, f_tmp, t_tmp = mwspectrogram(s[1, :]; pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
 
     cs = zeros(ComplexF64, length(f_tmp), length(t_tmp), size(s, 1))
     p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     Threads.@threads for ch_idx in axes(s, 1)
-        cs[:, :, ch_idx], p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views mwspectrogram(s[ch_idx, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+        cs[:, :, ch_idx], p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views mwspectrogram(
+            s[ch_idx, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w
+        )
     end
 
     return (cs=cs, p=p, ph=ph, f=f_tmp, t=t_tmp)
-
 end
 
 """
@@ -329,8 +433,11 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function ghtspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=10, w::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
-
+function ghtspectrogram(
+    s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=10, w::Bool=true
+)::@NamedTuple{
+    p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}
+}
     @assert fs >= 1 "fs must be ≥ 1."
 
     flim = (0, fs / 2)
@@ -353,11 +460,10 @@ function ghtspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=10
     p[p .== +Inf] .= maximum(p[p .!== +Inf]) + eps()
     db && (p = pow2db.(p))
 
-    t = 0:1/fs:(length(s) / fs)
+    t = 0:(1 / fs):(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
 
     return (p=p, ph=ph, f=f, t=t)
-
 end
 
 """
@@ -381,18 +487,22 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function ghtspectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true, gw::Real=10, w::Bool=true)::@NamedTuple{p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
-
-    _, _, f_tmp, t_tmp = ghtspectrogram(s[1, :], fs=fs, db=db, gw=gw, w=w)
+function ghtspectrogram(
+    s::AbstractMatrix; fs::Int64, db::Bool=true, gw::Real=10, w::Bool=true
+)::@NamedTuple{
+    p::Array{Float64,3}, ph::Array{Float64,3}, f::Vector{Float64}, t::Vector{Float64}
+}
+    _, _, f_tmp, t_tmp = ghtspectrogram(s[1, :]; fs=fs, db=db, gw=gw, w=w)
 
     p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     Threads.@threads for ch_idx in axes(s, 1)
-        p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views ghtspectrogram(s[ch_idx, :], fs=fs, db=db, gw=gw, w=w)
+        p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views ghtspectrogram(
+            s[ch_idx, :], fs=fs, db=db, gw=gw, w=w
+        )
     end
 
     return (p=p, ph=ph, f=f_tmp, t=t_tmp)
-
 end
 
 """
@@ -413,24 +523,24 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=2))::@NamedTuple{m::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
-
+function cwtspectrogram(
+    s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=2)
+)::@NamedTuple{m::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T<:CWT}
     @assert fs >= 1 "fs must be ≥ 1."
 
     m = abs.(ContinuousWavelets.cwt(s, wt)')
     # m = amp2db.(m)
-    f = cwtfrq(s, fs=fs, wt=wt)
+    f = cwtfrq(s; fs=fs, wt=wt)
 
     # reverse order
     f_idx = sortperm(f)
     f = f[f_idx]
     m = m[f_idx, :]
 
-    t = 0:1/fs:(length(s) / fs)
+    t = 0:(1 / fs):(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(m, 2))
 
     return (m=m, f=f, t=t)
-
 end
 
 """
@@ -451,9 +561,10 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function cwtspectrogram(s::AbstractMatrix; fs::Int64, wt::T=wavelet(Morlet(2π), β=2))::@NamedTuple{m::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
-
-    _, f_tmp, t_tmp = cwtspectrogram(s[1, :], fs=fs, wt=wt)
+function cwtspectrogram(
+    s::AbstractMatrix; fs::Int64, wt::T=wavelet(Morlet(2π), β=2)
+)::@NamedTuple{m::Array{Float64,3}, f::Vector{Float64}, t::Vector{Float64}} where {T<:CWT}
+    _, f_tmp, t_tmp = cwtspectrogram(s[1, :]; fs=fs, wt=wt)
 
     m = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     Threads.@threads for ch_idx in axes(s, 1)
@@ -461,7 +572,6 @@ function cwtspectrogram(s::AbstractMatrix; fs::Int64, wt::T=wavelet(Morlet(2π),
     end
 
     return (m=m, f=f_tmp, t=t_tmp)
-
 end
 
 """
@@ -483,11 +593,14 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function hhtspectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
-
+function hhtspectrogram(
+    s::AbstractMatrix; fs::Int64, db::Bool=true
+)::@NamedTuple{
+    p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}
+}
     @assert fs >= 1 "fs must be ≥ 1."
 
-    f = round.(linspace(0, fs/2, fs ÷ 2), digits=2)
+    f = round.(linspace(0, fs/2, fs ÷ 2); digits=2)
 
     p = zeros(size(s))
     ph = zeros(size(s))
@@ -508,9 +621,8 @@ function hhtspectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true)::@NamedTupl
 
     db && (sp = pow2db.(sp))
 
-    t = 0:1/fs:(size(s, 2) / fs)
+    t = 0:(1 / fs):(size(s, 2) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
 
     return (p=sp, ph=ph, f=f, t=t)
-
 end

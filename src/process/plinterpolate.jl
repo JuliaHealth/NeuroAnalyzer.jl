@@ -25,31 +25,36 @@ Interpolate channel using planar interpolation.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:sh, ifactor::Int64=100)::NeuroAnalyzer.NEURO
-
-    channels = get_channel(obj, type=datatype(obj))
+function plinterpolate_channel(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Union{Int64,Vector{Int64},AbstractRange},
+    imethod::Symbol=:sh,
+    ifactor::Int64=100,
+)::NeuroAnalyzer.NEURO
+    channels = get_channel(obj; type=datatype(obj))
     @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj)
 
-    ch = get_channel(obj, ch=ch)[1]
+    ch = get_channel(obj; ch=ch)[1]
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)
-    delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
-    delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
+    delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="ref"))
+    delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="eog"))
 
     locs_x1 = obj_tmp.locs[!, :loc_x]
     locs_y1 = obj_tmp.locs[!, :loc_y]
 
-    delete_channel!(obj_tmp, ch=labels(obj_tmp)[ch])
+    delete_channel!(obj_tmp; ch=labels(obj_tmp)[ch])
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
-    chs = get_channel(obj_tmp, ch=get_channel(obj_tmp, type=datatype(obj_tmp)))
+    chs = get_channel(obj_tmp; ch=get_channel(obj_tmp; type=datatype(obj_tmp)))
 
     ep_n = length(ep)
     ep_len = epoch_len(obj_tmp)
@@ -57,11 +62,18 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{I
     s_interpolated = zeros(Float64, length(ch), ep_len, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ep_len, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(ep_n * ep_len; dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in eachindex(ep)
         Threads.@threads for length_idx in 1:ep_len
-            s_tmp, x, y = @views _interpolate2d(obj_tmp.data[chs, length_idx, ep[ep_idx]], locs_x2, locs_y2, ifactor, imethod, :none)
+            s_tmp, x, y = @views _interpolate2d(
+                obj_tmp.data[chs, length_idx, ep[ep_idx]],
+                locs_x2,
+                locs_y2,
+                ifactor,
+                imethod,
+                :none,
+            )
             for ch_idx in eachindex(ch)
                 x_idx = vsearch(locs_x1[ch[ch_idx]], x)
                 y_idx = vsearch(locs_y1[ch[ch_idx]], y)
@@ -75,10 +87,12 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{I
 
     obj_new.data[ch, :, ep] = s_interpolated
 
-    push!(obj_new.history, "plinterpolate_channel(OBJ, ch=$ch, ep=$ep, imethod=$imethod, ifactor=$ifactor)")
+    push!(
+        obj_new.history,
+        "plinterpolate_channel(OBJ, ch=$ch, ep=$ep, imethod=$imethod, ifactor=$ifactor)",
+    )
 
     return obj_new
-
 end
 
 """
@@ -98,14 +112,18 @@ Interpolate channel using planar interpolation.
 
 - `Nothing`
 """
-function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:shepard, ifactor::Int64=100)::Nothing
-
-    obj_new = plinterpolate_channel(obj, ch=ch, ep=ep, imethod=imethod, ifactor=ifactor)
+function plinterpolate_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Union{Int64,Vector{Int64},AbstractRange},
+    imethod::Symbol=:shepard,
+    ifactor::Int64=100,
+)::Nothing
+    obj_new = plinterpolate_channel(obj; ch=ch, ep=ep, imethod=imethod, ifactor=ifactor)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end
 
 """
@@ -136,8 +154,15 @@ Named tuple containing:
 - `int_x::Vector{Float64}`: X-axis coordinates
 - `int_y::Vector{Float64}`: Y-axis coordinates
 """
-function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, ifactor::Int64=100)::@NamedTuple{int_s::Matrix{Float64}, int_x::Vector{Float64}, int_y::Vector{Float64}}
-
+function plinterpolate(
+    s::Matrix{Float64};
+    locs::DataFrame,
+    ch::Int64,
+    imethod::Symbol=:sh,
+    nmethod::Symbol=:minmax,
+    cart::Bool=false,
+    ifactor::Int64=100,
+)::@NamedTuple{int_s::Matrix{Float64}, int_x::Vector{Float64}, int_y::Vector{Float64}}
     @assert ch in axes(s, 1) "ch must be in [1, $(size(s, 1))"
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
@@ -147,7 +172,9 @@ function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::
         loc_x = zeros(length(ch))
         loc_y = zeros(length(ch))
         for idx in eachindex(ch)
-            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+            loc_x[idx], loc_y[idx] = pol2cart(
+                locs[!, :loc_radius][idx], locs[!, :loc_theta][idx]
+            )
         end
     else
         loc_x = locs[ch, :loc_x]
@@ -157,8 +184,9 @@ function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::
     loc_x = _n2v(loc_x)
     loc_y = _n2v(loc_y)
 
-    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, ifactor, imethod, nmethod)
+    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(
+        s, loc_x, loc_y, ifactor, imethod, nmethod
+    )
 
     return (int_s=s_interpolated, int_x=interpolated_x, int_y=interpolated_y)
-
 end

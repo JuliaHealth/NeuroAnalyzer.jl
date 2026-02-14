@@ -1,6 +1,7 @@
 ![NeuroAnalyzer.jl](images/neuroanalyzer.png)
 
-[![DOI: 10.5281/zenodo.7372648](images/doi.png)](https://doi.org/10.5281/zenodo.7372648) [![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) [![docs-badge](https://img.shields.io/badge/documentation-blue.svg)](https://neuroanalyzer.org/docs/) [![tuts-badge](https://img.shields.io/badge/tutorials-blue.svg)](https://neuroanalyzer.org#tutorials) [![license-badge](https://img.shields.io/badge/licence-BSD_2C-blue.svg)](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/main/LICENSE) [![JOSS-status](https://joss.theoj.org/papers/cefb2c86708619ddd786b49ce47c98df/status.svg)](https://joss.theoj.org/papers/cefb2c86708619ddd786b49ce47c98df)
+[![DOI: 10.5281/zenodo.7372648](images/doi.png)](https://doi.org/10.5281/zenodo.7372648) [![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) [![codecov](https://codecov.io/gh/JuliaHealth/NeuroAnalyzer.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaHealth/NeuroAnalyzer.jl) [![docs-badge](https://img.shields.io/badge/documentation-blue.svg)](https://neuroanalyzer.org/docs/) [![tuts-badge](https://img.shields.io/badge/tutorials-blue.svg)](https://neuroanalyzer.org#tutorials) [![license-badge](https://img.shields.io/badge/licence-BSD_2C-blue.svg)](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/main/LICENSE) [![JOSS-status](https://joss.theoj.org/papers/cefb2c86708619ddd786b49ce47c98df/status.svg)](https://joss.theoj.org/papers/cefb2c86708619ddd786b49ce47c98df)
+
 
 NeuroAnalyzer is a [Julia](https://julialang.org) toolbox for analyzing neurophysiological data. Currently it covers importing, editing, processing, visualizing, and analyzing EEG, MEP and EDA data. Preliminary functionality is also available for MEG, NIRS, ECoG, SEEG and iEEG recordings.
 
@@ -17,6 +18,21 @@ NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroana
 You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags/neuroanalyzer).
 
 Note: this toolbox is under active development and is subject to change without prior notice.
+
+## Installation / Getting Started
+
+NeuroAnalyzer can be installed using the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+
+```julia
+pkg> add NeuroAnalyzer
+```
+
+Or, equivalently, via the `Pkg` API:
+
+```julia
+using Pkg
+Pkg.add("NeuroAnalyzer")
+```
 
 ## Quickstart
 
@@ -83,6 +99,8 @@ If you want to suggest a new feature, for example functionality that other plott
 When opening a pull request, please add a short but meaningful description of the changes/features you implemented. Moreover, please add tests (where appropriate) to ensure that your code is working as expected.
 
 For each feature you want to contribute, please file a separate PR to keep the complexity down and time to merge short. Add PRs in draft mode if you want to discuss your approach first.
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for other guidelines on how to contribute to this project.
 
 ## Contributors
 

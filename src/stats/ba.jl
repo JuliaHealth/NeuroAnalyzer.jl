@@ -22,18 +22,18 @@ Named tuple containing:
 
 To plot the Bland-Altman plot: `p = hline([0, m]); hline!([0, s_u]); hline!([0, s-d])`
 """
-function ba(x::AbstractVector, y::AbstractVector; la::Float64=0.95)::@NamedTuple{m::Float64, s_u::Float64, s_d::Float64}
-
+function ba(
+    x::AbstractVector, y::AbstractVector; la::Float64=0.95
+)::@NamedTuple{m::Float64, s_u::Float64, s_d::Float64}
     @assert la > 0 "la must be > 0.0."
     @assert la < 1 "la must be < 1.0."
 
-    z = p2z(1 - la, twotailed=true)
+    z = p2z(1 - la; twotailed=true)
     d = x .- y
 
     m = mean(d)
     s_u = z * std(d)
     s_d = -z * std(d)
 
-    return (m=m, s_u=s_u, s_d = s_d)
-
+    return (m=m, s_u=s_u, s_d=s_d)
 end

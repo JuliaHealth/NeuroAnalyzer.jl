@@ -31,19 +31,51 @@ Named tuple containing:
 - `ba::Float64`: band asymmetry
 - `ba_norm::Float64`: normalized band asymmetry
 """
-function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{ba::Float64, ba_norm::Float64}
-
-    ch1 = get_channel(obj, ch=ch1)
-    ch2 = get_channel(obj, ch=ch2)
+function band_asymmetry(
+    obj::NeuroAnalyzer.NEURO;
+    ch1::Union{String,Vector{String}},
+    ch2::Union{String,Vector{String}},
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)::@NamedTuple{ba::Float64, ba_norm::Float64}
+    ch1 = get_channel(obj; ch=ch1)
+    ch2 = get_channel(obj; ch=ch2)
 
     _log_off()
-    bp1 = @views band_power(obj.data[ch1, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
-    bp2 = @views band_power(obj.data[ch2, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    bp1 = @views band_power(
+        obj.data[ch1, :, :],
+        fs=sr(obj),
+        flim=flim,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
+    bp2 = @views band_power(
+        obj.data[ch2, :, :],
+        fs=sr(obj),
+        flim=flim,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
     _log_on()
 
     ba = log(mean(bp1)) - log(mean(bp2))
     ba_norm = (mean(bp1) - mean(bp2)) / (mean(bp1) + mean(bp2))
 
     return (ba=ba, ba_norm=ba_norm)
-
 end

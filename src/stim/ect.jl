@@ -17,8 +17,6 @@ Calculate charge administered during ECT.
 - `charge::Float64`: charge [mC]
 """
 function ect_charge(; pw::Real, pint::Real, pf::Real, duration::Real)::Float64
-
     return pw * pint * pf * duration
-
 end
 

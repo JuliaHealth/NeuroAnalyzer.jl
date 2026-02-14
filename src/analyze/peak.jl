@@ -28,12 +28,31 @@ Calculate peak frequency in a band.
 
 - `pf::Float64`: peak frequency
 """
-function peak_frq(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
-
+function peak_frq(
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Float64
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, "flim", (0, fs / 2))
 
-    pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    pw, pf = psd(
+        s;
+        fs=fs,
+        db=false,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+    )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -43,7 +62,6 @@ function peak_frq(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method:
     pf = pf[vsearch(pp, pw)]
 
     return pf
-
 end
 
 """
@@ -72,12 +90,31 @@ Calculate amplitude at peak frequency in a band.
 
 - `pa::Float64`: amplitude at peak frequency
 """
-function peak_amp(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
-
+function peak_amp(
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Float64
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, "flim", (0, fs / 2))
 
-    pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    pw, pf = psd(
+        s;
+        fs=fs,
+        db=false,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+    )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -86,7 +123,6 @@ function peak_amp(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method:
     pa = sqrt(maximum(pw[f1_idx:f2_idx]))
 
     return pa
-
 end
 
 """
@@ -115,12 +151,31 @@ Calculate power at peak frequency in a band.
 
 - `pp::Float64`: power at peak frequency
 """
-function peak_pow(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
-
+function peak_pow(
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Float64
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, "flim", (0, fs / 2))
 
-    pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    pw, pf = psd(
+        s;
+        fs=fs,
+        db=false,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+    )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -129,7 +184,6 @@ function peak_pow(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method:
     pp = maximum(pw[f1_idx:f2_idx])
 
     return pp
-
 end
 
 """
@@ -158,8 +212,17 @@ Calculate peak frequency in a band.
 
 - `pf::Matrix{Float64}`: peak frequency
 """
-function peak_frq(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
-
+function peak_frq(
+    s::AbstractArray;
+    fs::Int64,
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Matrix{Float64}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -167,12 +230,21 @@ function peak_frq(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pf[ch_idx, ep_idx] = @views peak_frq(s[ch_idx, :, ep_idx], fs=fs, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+            pf[ch_idx, ep_idx] = @views peak_frq(
+                s[ch_idx, :, ep_idx],
+                fs=fs,
+                flim=flim,
+                method=method,
+                nt=nt,
+                wlen=wlen,
+                woverlap=woverlap,
+                w=w,
+                ncyc=ncyc,
+            )
         end
     end
 
     return pf
-
 end
 
 """
@@ -200,8 +272,17 @@ Calculate amplitude at peak frequency in a band.
 
 - `pa::Matrix{Float64}`: amplitude at peak frequency
 """
-function peak_amp(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
-
+function peak_amp(
+    s::AbstractArray;
+    fs::Int64,
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Matrix{Float64}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -209,12 +290,21 @@ function peak_amp(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pa[ch_idx, ep_idx] = @views peak_amp(s[ch_idx, :, ep_idx], fs=fs, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+            pa[ch_idx, ep_idx] = @views peak_amp(
+                s[ch_idx, :, ep_idx],
+                fs=fs,
+                flim=flim,
+                method=method,
+                nt=nt,
+                wlen=wlen,
+                woverlap=woverlap,
+                w=w,
+                ncyc=ncyc,
+            )
         end
     end
 
     return pa
-
 end
 
 """
@@ -242,8 +332,17 @@ Calculate power at peak frequency in a band.
 
 - `pp::Matrix{Float64}`: power at peak frequency
 """
-function peak_pow(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
-
+function peak_pow(
+    s::AbstractArray;
+    fs::Int64,
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Matrix{Float64}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -251,12 +350,21 @@ function peak_pow(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pp[ch_idx, ep_idx] = @views peak_pow(s[ch_idx, :, ep_idx], fs=fs, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+            pp[ch_idx, ep_idx] = @views peak_pow(
+                s[ch_idx, :, ep_idx],
+                fs=fs,
+                flim=flim,
+                method=method,
+                nt=nt,
+                wlen=wlen,
+                woverlap=woverlap,
+                w=w,
+                ncyc=ncyc,
+            )
         end
     end
 
     return pp
-
 end
 
 """
@@ -284,13 +392,35 @@ Calculate peak frequency in a band.
 
 - `pf::Matrix{Float64}`: peak frequency
 """
-function peak_frq(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    pf = @views peak_frq(obj.data[ch, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+function peak_frq(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Matrix{Float64}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
+    pf = @views peak_frq(
+        obj.data[ch, :, :],
+        fs=sr(obj),
+        flim=flim,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+    )
 
     return pf
-
 end
 
 """
@@ -318,13 +448,35 @@ Calculate amplitude at peak frequency in a band.
 
 - `pa::Matrix{Float64}`: amplitude at peak frequency
 """
-function peak_amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    pa = @views peak_amp(obj.data[ch, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+function peak_amp(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Matrix{Float64}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
+    pa = @views peak_amp(
+        obj.data[ch, :, :],
+        fs=sr(obj),
+        flim=flim,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+    )
 
     return pa
-
 end
 
 """
@@ -352,11 +504,33 @@ Calculate power at peak frequency in a band.
 
 - `pw::Matrix{Float64}`: power at peak frequency
 """
-function peak_pow(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    pw = @views peak_amp(obj.data[ch, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+function peak_pow(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    flim::Tuple{Real,Real},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::Matrix{Float64}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
+    pw = @views peak_amp(
+        obj.data[ch, :, :],
+        fs=sr(obj),
+        flim=flim,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+    )
 
     return pw
-
 end

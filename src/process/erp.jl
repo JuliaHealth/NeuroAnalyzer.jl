@@ -18,16 +18,18 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::NeuroAnalyzer.NEURO
-
+function average_epochs(
+    obj::NeuroAnalyzer.NEURO; bl::Tuple{Real,Real}=(0, 0), blfirst::Bool=false
+)::NeuroAnalyzer.NEURO
     _check_datatype(obj, ["eeg", "meg"])
 
-    nchannels(obj) > length(get_channel(obj, type=datatype(obj))) && _warn("Non-signal channels will be removed.")
+    nchannels(obj) > length(get_channel(obj; type=datatype(obj))) &&
+        _warn("Non-signal channels will be removed.")
 
     if datatype(obj) == "eeg"
-        obj_new = keep_channel(obj, ch=get_channel(obj, type=datatype(obj)))
+        obj_new = keep_channel(obj; ch=get_channel(obj; type=datatype(obj)))
     else
-        obj_new = keep_channel(obj, ch=["meg", "mag", "grad"])
+        obj_new = keep_channel(obj; ch=["meg", "mag", "grad"])
     end
 
     # remove baseline prior to averaging
@@ -39,7 +41,7 @@ function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), 
         end
     end
 
-    obj_new.data = cat(mean(obj_new.data, dims=3)[:, :, :], obj_new.data, dims=3)
+    obj_new.data = cat(mean(obj_new.data; dims=3)[:, :, :], obj_new.data; dims=3)
     if datatype(obj) == "eeg"
         obj_new.header.recording[:data_type] = "erp"
     else
@@ -58,14 +60,14 @@ function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), 
 
     # remove markers of deleted epochs
     for marker_idx in DataFrames.nrow(obj_new.markers):-1:1
-        obj_new.markers[marker_idx, :start] > size(obj_new.data, 2) && deleteat!(obj_new.markers, marker_idx)
+        obj_new.markers[marker_idx, :start] > size(obj_new.data, 2) &&
+            deleteat!(obj_new.markers, marker_idx)
     end
     obj_new.markers[!, :start] .+= (obj_new.epoch_time[1] * sr(obj_new))
 
     push!(obj_new.history, "average(OBJ, bl=$bl, blfirst=$blfirst)")
 
     return obj_new
-
 end
 
 """
@@ -83,9 +85,10 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 - `Nothing`
 """
-function average_epochs!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::Nothing
-
-    obj_new = average_epochs(obj, bl=bl, blfirst=blfirst)
+function average_epochs!(
+    obj::NeuroAnalyzer.NEURO; bl::Tuple{Real,Real}=(0, 0), blfirst::Bool=false
+)::Nothing
+    obj_new = average_epochs(obj; bl=bl, blfirst=blfirst)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.header = obj_new.header
@@ -94,7 +97,6 @@ function average_epochs!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0),
     obj.markers = obj_new.markers
 
     return nothing
-
 end
 
 """
@@ -112,7 +114,6 @@ Sort epochs.
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.NEURO
-
     _check_datatype(obj, ["erp", "erf"])
     @assert length(s) == nepochs(obj) - 1 "Length of the sorting vector must be equal to $(nepochs(obj) - 1)."
 
@@ -125,7 +126,6 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
     push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
 
     return obj_new
-
 end
 
 """
@@ -143,12 +143,10 @@ Sort epochs.
 - `Nothing`
 """
 function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
-
-    obj_new = sort_epochs(obj, s=s)
+    obj_new = sort_epochs(obj; s=s)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
     return nothing
-
 end

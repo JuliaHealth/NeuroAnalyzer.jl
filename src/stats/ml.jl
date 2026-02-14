@@ -28,9 +28,7 @@ MCC’s value ranges from -1 to 1, depending on:
 https://finnstats.com/index.php/2022/09/06/assess-performance-of-the-classification-model/
 """
 function mcc(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::Float64
-
     return (tp * tn - fp * fn) / sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
-
 end
 
 export f1
@@ -58,14 +56,14 @@ Named tuple containing:
 
 https://www.statology.org/what-is-a-good-f1-score/
 """
-function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
-
+function f1(;
+    tp::Int64, tn::Int64, fp::Int64, fn::Int64
+)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
     p = tp / (tp + fp)
     r = tp / (tp + fn)
     f1 = 2 * (p * r) / (p + r)
 
     return (f1=f1, p=p, r=r)
-
 end
 
 """
@@ -90,12 +88,12 @@ Named tuple containing:
 
 https://www.statology.org/misclassification-rate/
 """
-function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Float64, acc::Float64}
-
+function mscr(;
+    tp::Int64, tn::Int64, fp::Int64, fn::Int64
+)::@NamedTuple{mr::Float64, acc::Float64}
     @assert (tp + tn + fp + fn) != 0 "tp + tn + fp + fn must not be 0."
     mr = (fp + fn) / (tp + tn + fp + fn)
     acc = 1 - mr
 
     return (mr=mr, acc=acc)
-
 end

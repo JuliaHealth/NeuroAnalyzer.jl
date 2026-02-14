@@ -27,11 +27,9 @@ Generates a sequence of evenly spaced numbers between `start` and `stop`.
 - `range::Vector{Float64}`
 """
 function linspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
-
     @assert n >= 2 "n must be ≥ 2."
 
     return collect(range(start, stop, n))
-
 end
 
 """
@@ -50,7 +48,6 @@ Generates a sequence of `n` logarithmically spaced numbers between `start` and `
 - `range::Vector{Float64}`
 """
 function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
-
     @assert n >= 2 "n must be ≥ 2."
 
     return Float64.(logrange(start, stop, n))
@@ -72,9 +69,7 @@ Return maximum value of the complex vector.
 - `cmax::ComplexF64`
 """
 function cmax(x::Vector{<:Complex})::ComplexF64
-
     return argmax(abs2, x)
-
 end
 
 """
@@ -91,9 +86,7 @@ Return minimum value of the complex vector.
 - `cmin::ComplexF64`
 """
 function cmin(x::Vector{<:Complex})::ComplexF64
-
     return argmin(abs2, x)
-
 end
 
 """
@@ -111,10 +104,8 @@ Tuple containing:
 - `cmax::ComplexF64`
 - `cmin::ComplexF64`
 """
-function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64, ComplexF64}
-
+function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64,ComplexF64}
     return (cmax(x), cmin(x))
-
 end
 
 """
@@ -131,13 +122,11 @@ Order tuple elements in ascending or descending (`rev=true`) order.
 
 - `t::Tuple{Real, Real}`
 """
-function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)::Tuple{Real, Real}
-
+function tuple_order(t::Tuple{Real,Real}, rev::Bool=false)::Tuple{Real,Real}
     (!rev && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev && t[1] < t[2]) && (t = (t[2], t[1]))
 
     return t
-
 end
 
 """
@@ -153,8 +142,7 @@ Calculate cumulative sum of a 3-dimensional array.
 
 - `signal_cs::Array{Float64, 3}`
 """
-function cums(signal::Array{<:Real, 3})::Array{Float64, 3}
-
+function cums(signal::Array{<:Real,3})::Array{Float64,3}
     ch_n, _, ep_n = size(signal)
     signal_cs = similar(signal)
 
@@ -165,7 +153,6 @@ function cums(signal::Array{<:Real, 3})::Array{Float64, 3}
     end
 
     return signal_cs
-
 end
 
 """
@@ -182,8 +169,9 @@ Find nearest position tuple in a matrix of positions.
 
 - `pos::Tuple{Int64, Int64}`: row and column in m
 """
-function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})::Tuple{Int64, Int64}
-
+function f_nearest(
+    m::Matrix{Tuple{Float64,Float64}}, p::Tuple{Float64,Float64}
+)::Tuple{Int64,Int64}
     d = zeros(size(m))
 
     @inbounds for idx1 in axes(m, 1)
@@ -193,7 +181,6 @@ function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64
     end
 
     return (findmin(d)[2][1], findmin(d)[2][2])
-
 end
 
 """
@@ -211,14 +198,12 @@ Return recommended number of Slepian tapers for multi-taper power spectrum analy
 - `nt::Int64`
 """
 function ntapers(obj::NeuroAnalyzer.NEURO; df::Real)::Int64
-
     _bin(df, (0, sr(obj) / 2))
 
     n = epoch_len(obj) / sr(obj)
     nt = round(Int64, df * n) - 1
 
     return nt
-
 end
 
 """
@@ -236,10 +221,13 @@ Return signal channel in the form trials × time.
 
 - `s::Matrix{Float64}`
 """
-function trtm(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj)))::Matrix{Float64}
-
+function trtm(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj)),
+)::Matrix{Float64}
     _check_epochs(obj, ep)
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
 
     s = zeros(length(ep), epoch_len(obj))
     @inbounds for ep_idx in eachindex(ep)
@@ -247,7 +235,6 @@ function trtm(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int6
     end
 
     return s
-
 end
 
 """
@@ -266,11 +253,9 @@ Calculate order of FIR filter using Harris formula.
 - `n::Int64`
 """
 function fir_order_bw(; bw::Real, a::Real=60, fs::Int64)::Int64
-
     n = round(Int64, (a * fs)/(22 * bw))
 
     return n
-
 end
 
 """
@@ -289,11 +274,9 @@ Calculate order of FIR filter using Harris formula.
 - `n::Int64`
 """
 function fir_order_bw(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real=60)::Int64
-
-    n = fir_order_bw(bw=bw, a=a, fs=sr(obj))
+    n = fir_order_bw(; bw=bw, a=a, fs=sr(obj))
 
     return n
-
 end
 
 """
@@ -310,12 +293,10 @@ Calculate order of FIR filter using lower frequency bound.
 
 - `n::Tuple{Int64, Int64}`: recommended order range
 """
-function fir_order_f(obj::NeuroAnalyzer.NEURO; f::Real)::Tuple{Int64, Int64}
-
-    n = fir_order_f(f=f, fs=sr(obj))
+function fir_order_f(obj::NeuroAnalyzer.NEURO; f::Real)::Tuple{Int64,Int64}
+    n = fir_order_f(; f=f, fs=sr(obj))
 
     return n
-
 end
 
 """
@@ -332,16 +313,15 @@ Calculate order of FIR filter using lower frequency bound.
 
 - `n::Tuple{Int64, Int64}`: recommended order range
 """
-function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
+function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64,Int64}
 
     # single cycle length in s
     sc = (1 / f)
-    
+
     # convert to samples
     n = (4 * t2s(sc, fs), 5 * t2s(sc, fs))
 
     return n
-
 end
 
 """
@@ -371,9 +351,18 @@ Calculate order of IIR filter.
 
 - `n::Int64`
 """
-function iir_order(; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple{Real, Real}}, bw::Real, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, fs::Int64)::Int64
-
-    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype")
+function iir_order(;
+    fprototype::Symbol,
+    ftype::Symbol,
+    cutoff::Union{Real,Tuple{Real,Real}},
+    bw::Real,
+    rp::Union{Nothing,Real}=nothing,
+    rs::Union{Nothing,Real}=nothing,
+    fs::Int64,
+)::Int64
+    _check_var(
+        fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype"
+    )
     _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
 
     if rp isa Nothing
@@ -394,20 +383,20 @@ function iir_order(; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tupl
 
     if ftype === :lp
         @assert length(cutoff) == 1 "cutoff must specify only one frequency."
-        wp = (cutoff[1] - (bw /2)) / (fs / 2)
-        ws = (cutoff[1] + (bw /2)) / (fs / 2)
+        wp = (cutoff[1] - (bw / 2)) / (fs / 2)
+        ws = (cutoff[1] + (bw / 2)) / (fs / 2)
     elseif ftype === :hp
         @assert length(cutoff) == 1 "cutoff must specify only one frequency."
-        ws = (cutoff[1] - (bw /2)) / (fs / 2)
-        wp = (cutoff[1] + (bw /2)) / (fs / 2)
+        ws = (cutoff[1] - (bw / 2)) / (fs / 2)
+        wp = (cutoff[1] + (bw / 2)) / (fs / 2)
     elseif ftype === :bp
         @assert length(cutoff) == 2 "cutoff must specify two frequencies."
-        wp = ((cutoff[1] + (bw /2)) / (fs / 2), (cutoff[2] - (bw /2)) / (fs / 2))
-        ws = ((cutoff[1] - (bw /2)) / (fs / 2), (cutoff[2] + (bw /2)) / (fs / 2))
+        wp = ((cutoff[1] + (bw / 2)) / (fs / 2), (cutoff[2] - (bw / 2)) / (fs / 2))
+        ws = ((cutoff[1] - (bw / 2)) / (fs / 2), (cutoff[2] + (bw / 2)) / (fs / 2))
     elseif ftype === :bs
         @assert length(cutoff) == 2 "cutoff must specify two frequencies."
-        ws = ((cutoff[1] + (bw /2)) / (fs / 2), (cutoff[2] - (bw /2)) / (fs / 2))
-        wp = ((cutoff[1] - (bw /2)) / (fs / 2), (cutoff[2] + (bw /2)) / (fs / 2))
+        ws = ((cutoff[1] + (bw / 2)) / (fs / 2), (cutoff[2] - (bw / 2)) / (fs / 2))
+        wp = ((cutoff[1] - (bw / 2)) / (fs / 2), (cutoff[2] + (bw / 2)) / (fs / 2))
     end
 
     if fprototype === :butterworth
@@ -421,7 +410,6 @@ function iir_order(; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tupl
     end
 
     return n
-
 end
 
 """
@@ -451,10 +439,18 @@ Calculate order of FIR filter using harris' formula.
 
 - `n::Int64`
 """
-function iir_order(obj::NeuroAnalyzer.NEURO; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple{Real, Real}}, bw::Real, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing)::Int64
-
-    n = iir_order(fprototype=fprototype, ftype=ftype, cutoff=cutoff, bw=bw, rp=rp, rs=rs, fs=sr(obj))
+function iir_order(
+    obj::NeuroAnalyzer.NEURO;
+    fprototype::Symbol,
+    ftype::Symbol,
+    cutoff::Union{Real,Tuple{Real,Real}},
+    bw::Real,
+    rp::Union{Nothing,Real}=nothing,
+    rs::Union{Nothing,Real}=nothing,
+)::Int64
+    n = iir_order(;
+        fprototype=fprototype, ftype=ftype, cutoff=cutoff, bw=bw, rp=rp, rs=rs, fs=sr(obj)
+    )
 
     return n
-
 end

@@ -25,7 +25,7 @@ a2 = zeros(2, 3, 2)
 @test round(k_categories(10)[1]) == 3.0
 
 @info "Test: efs()"
-@test efs([1, 2, 3], [2, 3, 4]) == (d = -1.0, g = -1.224744871391589, Δ = -1.0)
+@test efs([1, 2, 3], [2, 3, 4]) == (d=-1.0, g=-1.224744871391589, Δ=-1.0)
 
 @info "Test: infcrit()"
 x = 1:10
@@ -43,9 +43,9 @@ R2, R2adj, aic, bic = infcrit(m)
 @test outlier_detect(ones(10)) == zeros(10)
 
 @info "Test: cmp_test()"
-_, _, _, df, _ = cmp_test(ones(5), zeros(5), paired=true, type=:p)
+_, _, _, df, _ = cmp_test(ones(5), zeros(5); paired=true, type=:p)
 @test df == 4
-_, p1, p2 = cmp_test(ones(1000), zeros(1000), paired=false, type=:perm)
+_, p1, p2 = cmp_test(ones(1000), zeros(1000); paired=false, type=:perm)
 @test p1 == 0.0
 @test p2 == 0.0
 
@@ -103,7 +103,7 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 @test sem_diff(1:5, 2:6) == 1.0
 
 @info "Test: prank()"
-@test round.(NeuroAnalyzer.prank([1,2,3]), digits=1) == [0.0, 0.1, 0.2]
+@test round.(NeuroAnalyzer.prank([1, 2, 3]), digits=1) == [0.0, 0.1, 0.2]
 
 @info "Test: linreg()"
 _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
@@ -127,12 +127,26 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 
 @info "Test: meancirc()"
 @test NeuroAnalyzer.meancirc([10, 350]) == 0.0
-@test round(NeuroAnalyzer.meancirc([0.17453292519943295, 6.1086523819801535], rad=true)) == 0.0
+@test round(NeuroAnalyzer.meancirc([0.17453292519943295, 6.1086523819801535], rad=true)) ==
+    0.0
 
 @info "Test: summary()"
-@test NeuroAnalyzer.summary([1, 2.5, 3, NaN, 4, missing, 5.1]) == (n = 7, ms = 2, m = 3.12, v = 2.397, s = 1.5482247898803325, min = 1.0, q1 = 2.5, me = 3.0, q3 = 4.0, max = 5.1, mo = 1.0)
+@test NeuroAnalyzer.summary([1, 2.5, 3, NaN, 4, missing, 5.1]) == (
+    n=7,
+    ms=2,
+    m=3.12,
+    v=2.397,
+    s=1.5482247898803325,
+    min=1.0,
+    q1=2.5,
+    me=3.0,
+    q3=4.0,
+    max=5.1,
+    mo=1.0,
+)
 @test NeuroAnalyzer.summary(rand(10, 3), g=["g1", "g2", "g3"], d=2) isa DataFrame
-@test NeuroAnalyzer.summary(rand(10), rand(11), rand(12), g=["g1", "g2", "g3"], d=2) isa DataFrame
+@test NeuroAnalyzer.summary(rand(10), rand(11), rand(12), g=["g1", "g2", "g3"], d=2) isa
+    DataFrame
 
 @info "Test: cimd()"
 @test cimd(collect(1:100)) == (41.0, 60.0)
@@ -154,15 +168,15 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 
 @info "Test: friedman()"
 m = [1 4 7; 2 5 8; 3 6 9]
-@test friedman(m) == (q = 6.0, w = 1.0, p = 0.04978706836786394)
+@test friedman(m) == (q=6.0, w=1.0, p=0.04978706836786394)
 
 @info "Test: count_thresh()"
 m = [1 4 7; 2 5 8; 3 6 9]
-@test count_thresh(m, t=4, t_type=:eq) == (x_t = [0 1 0; 0 0 0; 0 0 0], n = 1)
-@test count_thresh(m, t=4, t_type=:g) == (x_t = [0 0 1; 0 1 1; 0 1 1], n = 5)
-@test count_thresh(m, t=4, t_type=:geq) == (x_t = [0 1 1; 0 1 1; 0 1 1], n = 6)
-@test count_thresh(m, t=4, t_type=:l) == (x_t = [1 0 0; 1 0 0; 1 0 0], n = 3)
-@test count_thresh(m, t=4, t_type=:leq) == (x_t = [1 1 0; 1 0 0; 1 0 0], n = 4)
+@test count_thresh(m, t=4, t_type=:eq) == (x_t=[0 1 0; 0 0 0; 0 0 0], n=1)
+@test count_thresh(m, t=4, t_type=:g) == (x_t=[0 0 1; 0 1 1; 0 1 1], n=5)
+@test count_thresh(m, t=4, t_type=:geq) == (x_t=[0 1 1; 0 1 1; 0 1 1], n=6)
+@test count_thresh(m, t=4, t_type=:l) == (x_t=[1 0 0; 1 0 0; 1 0 0], n=3)
+@test count_thresh(m, t=4, t_type=:leq) == (x_t=[1 1 0; 1 0 0; 1 0 0], n=4)
 
 @info "Test: crit_z()"
 @test crit_z(0.05, twotailed=false) == 1.6448536269514717
@@ -173,8 +187,8 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test crit_t(20, 0.05, twotailed=true) == 2.0859634472658644
 
 @info "Test: size_c2g()"
-@test size_c2g(m1=100, s1=10, m2=120) == (n1 = 6, n2 = 6)
-@test size_c2g(m1=100, s1=10, m2=120, r=2) == (n1 = 4, n2 = 8)
+@test size_c2g(m1=100, s1=10, m2=120) == (n1=6, n2=6)
+@test size_c2g(m1=100, s1=10, m2=120, r=2) == (n1=4, n2=8)
 
 @info "Test: size_c1g()"
 @test size_c1g(m=100, s=10, xbar=120) == 3
@@ -183,7 +197,7 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test size_p1g(p1=0.40, p2=0.50) == 257
 
 @info "Test: size_p2g()"
-@test size_p2g(p1=0.40, p2=0.50) == (n1 = 519, n2 = 519)
+@test size_p2g(p1=0.40, p2=0.50) == (n1=519, n2=519)
 
 @info "Test: power_c1g()"
 @test power_c1g(m=0, s=2, xbar=1, n=42) == 0.8854398137187739
@@ -215,14 +229,14 @@ s1, s2, s3 = bootstrap_ci(x)
 
 @info "Test: bootstrap_stat()"
 x = rand(10, 100)
-s = bootstrap_stat(x, f="abs(maximum(obj))")
+s = bootstrap_stat(x; f="abs(maximum(obj))")
 @test length(s) == 3000
 
 @info "Test: f1()"
-@test f1(tp=90, tn=90, fp=10, fn=10) == (f1 = 0.9, p = 0.9, r = 0.9)
+@test f1(tp=90, tn=90, fp=10, fn=10) == (f1=0.9, p=0.9, r=0.9)
 
 @info "Test: mscr()"
-@test mscr(tp=90, tn=90, fp=10, fn=10) == (mr = 0.1, acc = 0.9)
+@test mscr(tp=90, tn=90, fp=10, fn=10) == (mr=0.1, acc=0.9)
 
 @info "Test: cip()"
 @test cip(0.5, 10) == (0.19010248384771866, 0.8098975161522813)
@@ -253,7 +267,7 @@ s = NeuroAnalyzer.permute(rand(2, 4, 8), 10)
 @info "Test: ba()"
 x = ones(10)
 y = ones(10) .+ 0.5
-@test ba(x, y) == (m = -0.5, s_u = 0.0, s_d = -0.0)
+@test ba(x, y) == (m=-0.5, s_u=0.0, s_d=-0.0)
 
 @info "Test: logit()"
 @test NeuroAnalyzer.logit(0.8) == 1.3862943611198908
@@ -295,21 +309,47 @@ y = ones(10) .+ 0.5
 @test mde(n=20, s=1.0) == 0.392404582723816
 
 @info "Test: binom_test()"
-@test binom_test(5, 10) == (x0 = 5, x1 = 5, p0 = 0.5, p1 = 0.5, ci0 = (0.19010248384771866, 0.8098975161522813), ci1 = (0.19010248384771866, 0.8098975161522813), p = 1.0)
-@test binom_test(0.5, 10) == (x0 = 5, x1 = 5, p0 = 0.5, p1 = 0.5, ci0 = (0.19010248384771866, 0.8098975161522813), ci1 = (0.19010248384771866, 0.8098975161522813), p = 1.0)
-@test binom_test([true, true, false, false]) == (x0 = 2, x1 = 2, p0 = 0.5, p1 = 0.5, ci0 = (0.0100090038649856, 0.9899909961350144), ci1 = (0.0100090038649856, 0.9899909961350144), p = 1.0)
+@test binom_test(5, 10) == (
+    x0=5,
+    x1=5,
+    p0=0.5,
+    p1=0.5,
+    ci0=(0.19010248384771866, 0.8098975161522813),
+    ci1=(0.19010248384771866, 0.8098975161522813),
+    p=1.0,
+)
+@test binom_test(0.5, 10) == (
+    x0=5,
+    x1=5,
+    p0=0.5,
+    p1=0.5,
+    ci0=(0.19010248384771866, 0.8098975161522813),
+    ci1=(0.19010248384771866, 0.8098975161522813),
+    p=1.0,
+)
+@test binom_test([true, true, false, false]) == (
+    x0=2,
+    x1=2,
+    p0=0.5,
+    p1=0.5,
+    ci0=(0.0100090038649856, 0.9899909961350144),
+    ci1=(0.0100090038649856, 0.9899909961350144),
+    p=1.0,
+)
 
 @info "Test: op()"
 @test op([1, 2, 3], [0.5, 2, 1]) == [0.5 2.0 1.0; 1.0 4.0 2.0; 1.5 6.0 3.0]
 
 @info "Test: angle()"
-@test NeuroAnalyzer.angle([1.0+1.0im, 2.0+2.0im]) == [0.7853981633974483, 0.7853981633974483]
+@test NeuroAnalyzer.angle([1.0+1.0im, 2.0+2.0im]) ==
+    [0.7853981633974483, 0.7853981633974483]
 
 @info "Test: rmna()"
 @test NeuroAnalyzer.rmna([1, NaN, 2.0, missing]) == [1.0, 2.0]
 
 @info "Test: dap()"
-@test dap(collect(1:20)) == (zs = 0.0, zk = -1.215271012491787, d = 1.4768836338028128, p = 0.4778579258619382)
+@test dap(collect(1:20)) ==
+    (zs=0.0, zk=-1.215271012491787, d=1.4768836338028128, p=0.4778579258619382)
 
 @info "Test: cim()"
 @test cim([1, 2, 3, 4], d=:t) == (0.4457397432394794, 4.554260256760521)

@@ -14,9 +14,7 @@ Average all channels.
 - `average::AbstractArray`
 """
 function average(s::AbstractArray)::AbstractArray
-
-    return mean(s, dims=1)
-
+    return mean(s; dims=1)
 end
 
 """
@@ -34,9 +32,7 @@ Averages two signals.
 - `average::AbstractArray`
 """
 function average(s1::AbstractArray, s2::AbstractArray)::AbstractArray
-
-    return mean(hcat(s1, s2), dims=2)
-
+    return mean(hcat(s1, s2); dims=2)
 end
 
 """
@@ -53,17 +49,17 @@ Return the average signal of channels.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function average(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
-    keep_channel!(obj_new, ch=labels(obj)[1])
+    keep_channel!(obj_new; ch=labels(obj)[1])
     obj_new.data = @views average(obj.data[ch, :, :])
     obj_new.header.recording[:label]=["averaged ch"]
     push!(obj_new.history, "average(OBJ, ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -80,15 +76,13 @@ Return the average signal of channels.
 
 - `Nothing`
 """
-function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
-    obj_new = average(obj, ch=ch)
+function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex})::Nothing
+    obj_new = average(obj; ch=ch)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end
 
 """
@@ -106,7 +100,6 @@ Return the average signal of two objects.
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
-
     @assert size(obj1.data) == size(obj2.data) "Both signals must have the same size."
 
     ch_n = nchannels(obj1)
@@ -115,12 +108,13 @@ function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAna
     obj_new = deepcopy(obj1)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            obj_new.data[ch_idx, :, ep_idx] = @views average(obj1.data[ch_idx, :, ep_idx], obj2.data[ch_idx, :, ep_idx])
+            obj_new.data[ch_idx, :, ep_idx] = @views average(
+                obj1.data[ch_idx, :, ep_idx], obj2.data[ch_idx, :, ep_idx]
+            )
         end
     end
 
     push!(obj_new.history, "average(OBJ1, OBJ2)")
 
     return obj_new
-
 end

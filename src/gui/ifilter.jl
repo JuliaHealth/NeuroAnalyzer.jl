@@ -17,9 +17,17 @@ Interactive filter design.
 
 The returned filter is based on sampling rate and epoch length of the OBJ used for designing the filter. Therefore, it should not be applied for objects of different sampling rate or epoch length.
 """
-function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
-
-    fprototypes = [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
+function ifilter(
+    obj::NeuroAnalyzer.NEURO
+)::Union{
+    Nothing,
+    Vector{Float64},
+    ZeroPoleGain{:z,ComplexF64,ComplexF64,Float64},
+    Biquad{:z,Float64},
+}
+    fprototypes = [
+        :fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch
+    ]
     fprototype = fprototypes[1]
     ftypes = [:lp, :hp, :bs, :bp]
     ftype = ftypes[1]
@@ -33,10 +41,8 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     fs = sr(obj)
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ifilter()")
         Gtk4.default_size(win, 1202, 802)
-
 
         can = GtkCanvas()
         can.content_width = 1200
@@ -182,7 +188,18 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
             if fprototype === :fir && ftype in [:hp, :bp, :bs] && mod(order, 2) == 0
                 _warn("order must be odd. Filter was not generated.")
             else
-                p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
+                p = plot_filter_response(
+                    fs=fs,
+                    fprototype=fprototype,
+                    ftype=ftype,
+                    cutoff=cutoff,
+                    order=order,
+                    rp=rp,
+                    rs=rs,
+                    bw=bw,
+                    w=w,
+                    mono=mono,
+                )
                 withenv("GKSwstype" => "100") do
                     png(p, io)
                 end
@@ -240,7 +257,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
             @idle_add Gtk4.adjustment(entry_bw, bw_adj)
 
             cutoff2_adj = GtkAdjustment(entry_cutoff2)
-            cutoff2_adj.lower = round(entry_cutoff1.value + 0.1, digits=1)
+            cutoff2_adj.lower = round(entry_cutoff1.value + 0.1; digits=1)
             cutoff2_adj.upper = fs / 2
             @idle_add Gtk4.adjustment(entry_cutoff2, cutoff2_adj)
 
@@ -283,11 +300,20 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('r'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('r')
+            )
                 draw(can)
             end
         end
@@ -302,7 +328,15 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         _warn("order must be odd. Filter was not generated.")
         return nothing
     else
-        return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, fs=fs, order=order, rp=rp, rs=rs, bw=bw)
+        return filter_create(;
+            fprototype=fprototype,
+            ftype=ftype,
+            cutoff=cutoff,
+            fs=fs,
+            order=order,
+            rp=rp,
+            rs=rs,
+            bw=bw,
+        )
     end
-
 end

@@ -14,7 +14,6 @@ Load DuoMAG TMS MEP recording file (.ascii or .m) and return `NeuroAnalyzer.NEUR
 - `obj::NeuroAnalyzer.NEURO`
 """
 function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
-
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert (splitext(file_name)[2] == ".ascii" || splitext(file_name)[2] == ".m") "This is not DuoMAG file."
 
@@ -65,7 +64,9 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         # data matrix: signals × samples
         mep_signal = zeros((samples_count[1], signal_count))
         for idx in axes(mep_signal)[1]
-            mep_signal[idx, :] = parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.'))
+            mep_signal[idx, :] = parse.(
+                Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')
+            )
         end
 
         close(f)
@@ -172,7 +173,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     for idx in axes(data, 1)
         data[idx, :, 1] = @views -mep_signal[:, idx]
         # reduce stimulation amplitude
-        data[idx, stim_sample[1]-10:stim_sample[1]+10, 1] .*= 0.05
+        data[idx, (stim_sample[1] - 10):(stim_sample[1] + 10), 1] .*= 0.05
         # remove DC offset
         data[idx, :] = remove_dc(data[idx, :], stim_sample[idx]-10)
     end
@@ -192,8 +193,10 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     sampling_interval_unit == "ms" && (sampling_interval *= 10^-3)
     sampling_rate = round(Int64, 1 / sampling_interval)
 
-    time_pts = collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1]
-    time_pts = round.(time_pts .- time_pts[stim_sample[1]], digits=4)
+    time_pts = collect(
+        0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
+    )[1:(end - 1)]
+    time_pts = round.(time_pts .- time_pts[stim_sample[1]]; digits=4)
     ep_time = time_pts
 
     if splitext(file_name)[2] == ".ascii"
@@ -207,54 +210,60 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         markers_neg = Int64.(markers_neg)
     end
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits=2)
 
-    s = _create_subject(id=string(subject_id),
-                        first_name="",
-                        middle_name="",
-                        last_name=string(subject),
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_mep(data_type="mep",
-                              file_name=file_name,
-                              file_size_mb=0,
-                              file_type="DuoMAG",
-                              recording="",
-                              recording_date=string(split(record_created, ' ')[1]),
-                              recording_time=replace(string(split(record_created, ' ')[2]), '.'=>':'),
-                              recording_notes="",
-                              channel_type=repeat(["mep"], ch_n),
-                              channel_order=_sort_channels(repeat(["mep"], ch_n)),
-                              clabels=clabels,
-                              units=repeat(["μV"], ch_n),
-                              sampling_rate=sampling_rate,
-                              stimulation_intensity=stim_intens,
-                              coil_type=string.(coil_type),
-                              stimulation_sample=stim_sample,
-                              markers_pos=markers_pos,
-                              markers_neg=markers_neg,
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id=string(subject_id),
+        first_name="",
+        middle_name="",
+        last_name=string(subject),
+        head_circumference=-1,
+        handedness="",
+        weight=-1,
+        height=-1,
+    )
+    r = _create_recording_mep(;
+        data_type="mep",
+        file_name=file_name,
+        file_size_mb=0,
+        file_type="DuoMAG",
+        recording="",
+        recording_date=string(split(record_created, ' ')[1]),
+        recording_time=replace(string(split(record_created, ' ')[2]), '.'=>':'),
+        recording_notes="",
+        channel_type=repeat(["mep"], ch_n),
+        channel_order=_sort_channels(repeat(["mep"], ch_n)),
+        clabels=clabels,
+        units=repeat(["μV"], ch_n),
+        sampling_rate=sampling_rate,
+        stimulation_intensity=stim_intens,
+        coil_type=string.(coil_type),
+        stimulation_sample=stim_sample,
+        markers_pos=markers_pos,
+        markers_neg=markers_neg,
+        bad_channels=zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name="", notes="", design="")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
-
+    hdr = _create_header(s, r, e)
 
     history = String[]
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
-
 end

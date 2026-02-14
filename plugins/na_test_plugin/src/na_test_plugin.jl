@@ -20,5 +20,4 @@ function na_test_plugin()::Nothing
     @info "Test completed"
 
     return nothing
-
 end

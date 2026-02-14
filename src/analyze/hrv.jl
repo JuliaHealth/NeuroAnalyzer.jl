@@ -16,14 +16,15 @@ Named tuple containing:
 - `nn_seg::Vector{Float64}`: list of NN segments [msec]
 - `r_idx::Vector{Float64}`: index of R peaks
 """
-function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Float64}}
-
+function hrv_detect(
+    obj::NeuroAnalyzer.NEURO
+)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Float64}}
     @assert "ecg" in obj.header.recording[:channel_type] "OBJ does not contain ECG channel."
-    ch = get_channel(obj, type="ecg")
+    ch = get_channel(obj; type="ecg")
     _info("ECG channel found: $(ch[1])")
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     ecg = obj.data[ch, :, :][:]
-    r_idx, _ = findpeaks1d(ecg, height=mean(ecg) + 2*std(ecg))
+    r_idx, _ = findpeaks1d(ecg; height=mean(ecg) + 2*std(ecg))
 
     # convert to ms
     nn_seg = diff(r_idx) ./ sr(obj) * 1000
@@ -31,7 +32,6 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float6
     _info("Detected NN segments: $(length(nn_seg))")
 
     return (nn_seg=nn_seg, r_idx=r_idx)
-
 end
 
 """
@@ -57,21 +57,43 @@ Named tuple containing:
 - `nn20::Float64`, the number of pairs of successive NNs that differ by more than 20 ms
 - `pnn20::Float64`, the proportion of NN20 divided by total number of NNs
 """
-function hrv_analyze(nn_seg::Vector{Float64})::@NamedTuple{menn::Float64, mdnn::Float64, vnn::Float64, sdnn::Float64, rmssd::Float64, sdsd::Float64, nn50::Float64, pnn50::Float64, nn20::Float64, pnn20::Float64}
-
+function hrv_analyze(
+    nn_seg::Vector{Float64}
+)::@NamedTuple{
+    menn::Float64,
+    mdnn::Float64,
+    vnn::Float64,
+    sdnn::Float64,
+    rmssd::Float64,
+    sdsd::Float64,
+    nn50::Float64,
+    pnn50::Float64,
+    nn20::Float64,
+    pnn20::Float64,
+}
     nn_diff = diff(nn_seg)
 
-    menn = round(mean(nn_seg), digits=3)
-    mdnn =  round(median(nn_seg), digits=3)
-    vnn =  round(var(nn_seg), digits=3)
-    sdnn =  round(std(nn_seg), digits=3)
-    rmssd = round(sqrt(mean(nn_diff .^ 2)), digits=3)
-    sdsd = round(std(nn_diff), digits=3)
+    menn = round(mean(nn_seg); digits=3)
+    mdnn = round(median(nn_seg); digits=3)
+    vnn = round(var(nn_seg); digits=3)
+    sdnn = round(std(nn_seg); digits=3)
+    rmssd = round(sqrt(mean(nn_diff .^ 2)); digits=3)
+    sdsd = round(std(nn_diff); digits=3)
     nn50 = length(findall(abs.(nn_diff) .> 50))
-    pnn50 = round(nn50 / length(nn_seg), digits=3)
+    pnn50 = round(nn50 / length(nn_seg); digits=3)
     nn20 = length(findall(abs.(nn_diff) .> 20))
-    pnn20 = round(nn20 / length(nn_seg), digits=3)
+    pnn20 = round(nn20 / length(nn_seg); digits=3)
 
-    return(menn=menn, mdnn=mdnn, vnn=vnn, sdnn=sdnn, rmssd=rmssd, sdsd=sdsd, nn50=nn50, pnn50=pnn50, nn20=nn20, pnn20=pnn20)
-
+    return (
+        menn=menn,
+        mdnn=mdnn,
+        vnn=vnn,
+        sdnn=sdnn,
+        rmssd=rmssd,
+        sdsd=sdsd,
+        nn50=nn50,
+        pnn50=pnn50,
+        nn20=nn20,
+        pnn20=pnn20,
+    )
 end

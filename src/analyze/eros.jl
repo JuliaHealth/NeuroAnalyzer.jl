@@ -32,22 +32,46 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function eros(obj::NeuroAnalyzer.NEURO; ch::String, pad::Int64=0, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, db::Bool=true, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2))::@NamedTuple{s::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
-
+function eros(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    pad::Int64=0,
+    method::Symbol=:stft,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    db::Bool=true,
+    gw::Real=5,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    wt::T=wavelet(Morlet(2π), β=2),
+)::@NamedTuple{s::Array{Float64,3}, f::Vector{Float64}, t::Vector{Float64}} where {T<:CWT}
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
     _log_off()
-    s, f, t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, nt=nt, pad=pad, db=db, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    s, f, t = NeuroAnalyzer.spectrogram(
+        obj;
+        ch=ch,
+        method=method,
+        nt=nt,
+        pad=pad,
+        db=db,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+        wt=wt,
+    )
     _log_on()
 
     s = s[:, :, 1, :]
 
     if datatype(obj) in ["erp", "erf"]
-        s = cat(s[:, :, 1], mean(s, dims=3), dims=3)
+        s = cat(s[:, :, 1], mean(s; dims=3); dims=3)
     else
-        s = mean(s, dims=3)
+        s = mean(s; dims=3)
     end
 
     return (s=s, f=f, t=t)
-
 end

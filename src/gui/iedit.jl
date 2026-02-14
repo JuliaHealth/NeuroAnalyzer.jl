@@ -15,9 +15,8 @@ Interactive edit signal channels properties and locations.
 - `Nothing`
 """
 function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
-
     @assert datatype(obj) in ["eeg", "meg"] "Currently this function only works for EEG or MEG objects."
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     @assert length(ch) == 1 "ch must be a single channel."
     current_channel = ch[1]
 
@@ -39,7 +38,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:unit]
     ch_labels = labels(obj_new)
-    ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
+    ch_signal = get_channel(
+        obj_new; ch=get_channel(obj_new; type=["mag", "grad", "eeg", "eog", "ref"])
+    )
 
     if DataFrames.nrow(obj_new.locs) > 0
         chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
@@ -57,7 +58,6 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     refresh = true
 
     function _activate(app)
-
         function _refresh_locs()::Nothing
             if current_channel in ch_signal
                 entry_loc_theta.sensitive = true
@@ -69,14 +69,30 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 entry_loc_radius_sph.sensitive = true
                 entry_loc_phi_sph.sensitive = true
                 if isa(_find_bylabel(locs, ch_labels[current_channel]), Int64)
-                    entry_loc_theta.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta]
-                    entry_loc_radius.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius]
-                    entry_loc_x.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x]
-                    entry_loc_y.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y]
-                    entry_loc_z.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z]
-                    entry_loc_theta_sph.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph]
-                    entry_loc_radius_sph.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph]
-                    entry_loc_phi_sph.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph]
+                    entry_loc_theta.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_theta
+                    ]
+                    entry_loc_radius.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_radius
+                    ]
+                    entry_loc_x.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_x
+                    ]
+                    entry_loc_y.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_y
+                    ]
+                    entry_loc_z.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_z
+                    ]
+                    entry_loc_theta_sph.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph
+                    ]
+                    entry_loc_radius_sph.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph
+                    ]
+                    entry_loc_phi_sph.value = locs[
+                        _find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph
+                    ]
                 end
             else
                 entry_loc_theta.sensitive = false
@@ -149,12 +165,16 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         # lab_chtype.halign = 2
         combo_chtype = GtkComboBoxText()
         [push!(combo_chtype, idx) for idx in NeuroAnalyzer.channel_types[2:end]]
-        combo_chtype.active = findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2
+        combo_chtype.active =
+            findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2
 
         lab_chunits = GtkLabel("Units")
         combo_chunits = GtkComboBoxText()
         [push!(combo_chunits, idx) for idx in NeuroAnalyzer.channel_units]
-        combo_chunits.active = findfirst(isequal(_ch_units(ch_types[current_channel])), NeuroAnalyzer.channel_units) - 1
+        combo_chunits.active =
+            findfirst(
+                isequal(_ch_units(ch_types[current_channel])), NeuroAnalyzer.channel_units
+            ) - 1
 
         lab_chlabel = GtkLabel("Label")
         entry_label = GtkEntry()
@@ -233,7 +253,14 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         bt_transform = GtkButton("Transform")
         bt_transform.tooltip_text = "Transform coordinates from one set to another"
         combo_transform = GtkComboBoxText()
-        transformations = ["Cartesian → polar", "Cartesian → spherical", "polar → Cartesian", "polar → spherical", "spherical → Cartesian", "spherical → polar"]
+        transformations = [
+            "Cartesian → polar",
+            "Cartesian → spherical",
+            "polar → Cartesian",
+            "polar → spherical",
+            "spherical → Cartesian",
+            "spherical → polar",
+        ]
         [push!(combo_transform, idx) for idx in transformations]
         combo_transform.active = 0
 
@@ -350,9 +377,18 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 cart = cb_plot_cart.active
                 hdlab = cb_hdlab.active
                 sch = 0
-                current_channel in ch_signal && (sch = _find_bylabel(locs, ch_labels[current_channel]))
+                current_channel in ch_signal &&
+                    (sch = _find_bylabel(locs, ch_labels[current_channel]))
                 sch == Int64[] && (sch = 0)
-                p = plot_locs(locs, sch=sch, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xy, grid=true)
+                p = plot_locs(
+                    locs,
+                    sch=sch,
+                    ch_labels=false,
+                    head_labels=hdlab,
+                    cart=cart,
+                    plane=:xy,
+                    grid=true,
+                )
                 ctx = getgc(can1)
                 if !already_scaled1
                     Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -375,10 +411,19 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 cart = cb_plot_cart.active
                 hdlab = cb_hdlab.active
                 sch = 0
-                current_channel in ch_signal && (sch = _find_bylabel(locs, ch_labels[current_channel]))
+                current_channel in ch_signal &&
+                    (sch = _find_bylabel(locs, ch_labels[current_channel]))
                 sch == Int64[] && (sch = 0)
                 obj_new.locs = locs
-                p = plot_locs(locs, sch=sch, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xz, grid=true)
+                p = plot_locs(
+                    locs,
+                    sch=sch,
+                    ch_labels=false,
+                    head_labels=hdlab,
+                    cart=cart,
+                    plane=:xz,
+                    grid=true,
+                )
                 ctx = getgc(can2)
                 if !already_scaled2
                     Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -401,9 +446,18 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 cart = cb_plot_cart.active
                 hdlab = cb_hdlab.active
                 sch = 0
-                current_channel in ch_signal && (sch = _find_bylabel(locs, ch_labels[current_channel]))
+                current_channel in ch_signal &&
+                    (sch = _find_bylabel(locs, ch_labels[current_channel]))
                 sch == Int64[] && (sch = 0)
-                p = plot_locs(locs, sch=sch, ch_labels=false, head_labels=hdlab, cart=cart, plane=:yz, grid=true)
+                p = plot_locs(
+                    locs,
+                    sch=sch,
+                    ch_labels=false,
+                    head_labels=hdlab,
+                    cart=cart,
+                    plane=:yz,
+                    grid=true,
+                )
                 ctx = getgc(can3)
                 if !already_scaled3
                     Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -426,9 +480,12 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 cart = cb_plot_cart.active
                 hdlab = cb_hdlab.active
                 sch = 0
-                current_channel in ch_signal && (sch = _find_bylabel(locs, ch_labels[current_channel]))
+                current_channel in ch_signal &&
+                    (sch = _find_bylabel(locs, ch_labels[current_channel]))
                 sch == Int64[] && (sch = 0)
-                p = plot_locs3d(locs, sch=sch, ch_labels=false, head_labels=hdlab, cart=cart);
+                p = plot_locs3d(
+                    locs, sch=sch, ch_labels=false, head_labels=hdlab, cart=cart
+                );
                 ctx = getgc(can4)
                 if !already_scaled4
                     Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -459,8 +516,12 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         signal_connect(entry_ch, "value-changed") do widget
             current_channel = Int64(entry_ch.value)
             entry_label.text = ch_labels[current_channel]
-            combo_chtype.active = findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2
-            combo_chunits.active = findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1
+            combo_chtype.active =
+                findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) -
+                2
+            combo_chunits.active =
+                findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) -
+                1
             refresh = false
             _refresh_locs()
             refresh = true
@@ -471,18 +532,28 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
             ch = ch_labels[current_channel]
             ask_dialog("Delete channel $ch ?") do ans
                 if ans
-                    delete_channel!(obj_new, ch=ch)
-                    current_channel > nchannels(obj_new) && (current_channel = nchannels(obj_new))
+                    delete_channel!(obj_new; ch=ch)
+                    current_channel > nchannels(obj_new) &&
+                        (current_channel = nchannels(obj_new))
                     ch_types = obj_new.header.recording[:channel_type]
                     ch_units = obj_new.header.recording[:unit]
                     ch_labels = labels(obj_new)
-                    ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
+                    ch_signal = get_channel(
+                        obj_new;
+                        ch=get_channel(obj_new; type=["mag", "grad", "eeg", "eog", "ref"]),
+                    )
                     chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
                     locs = Base.filter(:label => in(chs), obj_new.locs)
                     entry_ch.value = current_channel
                     entry_label.text = ch_labels[current_channel]
-                    combo_chtype.active = findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2
-                    combo_chunits.active = findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1
+                    combo_chtype.active =
+                        findfirst(
+                            isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types
+                        ) - 2
+                    combo_chunits.active =
+                        findfirst(
+                            isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units
+                        ) - 1
                     refresh = false
                     _refresh_locs()
                     refresh = true
@@ -493,14 +564,21 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
 
         signal_connect(entry_label, "changed") do widget
             new_label = entry_label.text
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :label] = new_label)
+            current_channel in ch_signal &&
+                (locs[_find_bylabel(locs, ch_labels[current_channel]), :label] = new_label)
             ch_labels[current_channel] = new_label
         end
 
         signal_connect(combo_chtype, "changed") do widget
-            ch_types[current_channel] = string(NeuroAnalyzer.channel_types[combo_chtype.active + 2])
-            ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
-            combo_chunits.active = findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1
+            ch_types[current_channel] = string(
+                NeuroAnalyzer.channel_types[combo_chtype.active + 2]
+            )
+            ch_signal = get_channel(
+                obj_new; ch=get_channel(obj_new; type=["mag", "grad", "eeg", "eog", "ref"])
+            )
+            combo_chunits.active =
+                findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) -
+                1
             refresh = false
             _refresh_locs()
             refresh = true
@@ -520,54 +598,93 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         end
 
         signal_connect(entry_loc_radius, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius] = entry_loc_radius.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius] =
+                    entry_loc_radius.value
+            )
             _refresh_plots()
         end
 
         signal_connect(entry_loc_theta, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta] = entry_loc_theta.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta] =
+                    entry_loc_theta.value
+            )
             _refresh_plots()
         end
 
         signal_connect(entry_loc_x, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x] = entry_loc_x.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x] =
+                    entry_loc_x.value
+            )
             _refresh_plots()
         end
 
         signal_connect(entry_loc_y, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y] = entry_loc_y.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y] =
+                    entry_loc_y.value
+            )
             _refresh_plots()
         end
 
         signal_connect(entry_loc_z, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z] = entry_loc_z.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z] =
+                    entry_loc_z.value
+            )
             _refresh_plots()
         end
 
         signal_connect(entry_loc_radius_sph, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph] = entry_loc_radius_sph.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph] =
+                    entry_loc_radius_sph.value
+            )
             _refresh_plots()
         end
 
         signal_connect(entry_loc_theta_sph, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph] = entry_loc_theta_sph.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph] =
+                    entry_loc_theta_sph.value
+            )
             _refresh_plots()
         end
 
         signal_connect(entry_loc_phi_sph, "value-changed") do widget
-            current_channel in ch_signal && (locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph] = entry_loc_phi_sph.value)
+            current_channel in ch_signal && (
+                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph] =
+                    entry_loc_phi_sph.value
+            )
             _refresh_plots()
         end
 
         signal_connect(bt_flip, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="eog"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="ref"))
             locs_tmp = obj_tmp.locs
-            combo_flip.active == 0 && locs_flipx!(locs_tmp, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
-            combo_flip.active == 1 && locs_flipy!(locs_tmp, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
-            combo_flip.active == 2 && locs_flipz!(locs_tmp, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
+            combo_flip.active == 0 && locs_flipx!(
+                locs_tmp;
+                polar=cb_polar.active,
+                cart=cb_cartesian.active,
+                spherical=cb_spherical.active,
+            )
+            combo_flip.active == 1 && locs_flipy!(
+                locs_tmp;
+                polar=cb_polar.active,
+                cart=cb_cartesian.active,
+                spherical=cb_spherical.active,
+            )
+            combo_flip.active == 2 && locs_flipz!(
+                locs_tmp;
+                polar=cb_polar.active,
+                cart=cb_cartesian.active,
+                spherical=cb_spherical.active,
+            )
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false
             _refresh_locs()
@@ -578,16 +695,34 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         signal_connect(bt_ax_rot, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="ref"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="eog"))
             locs_tmp = obj_tmp.locs
             ax = Int64(combo_ax_rot.active)
             if ax == 0
-                locs_rotx!(locs_tmp, a=entry_ax_rot_degree.value, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
+                locs_rotx!(
+                    locs_tmp;
+                    a=entry_ax_rot_degree.value,
+                    polar=cb_polar.active,
+                    cart=cb_cartesian.active,
+                    spherical=cb_spherical.active,
+                )
             elseif ax == 1
-                locs_roty!(locs_tmp, a=entry_ax_rot_degree.value, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
+                locs_roty!(
+                    locs_tmp;
+                    a=entry_ax_rot_degree.value,
+                    polar=cb_polar.active,
+                    cart=cb_cartesian.active,
+                    spherical=cb_spherical.active,
+                )
             elseif ax == 2
-                locs_rotz!(locs_tmp, a=entry_ax_rot_degree.value, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
+                locs_rotz!(
+                    locs_tmp;
+                    a=entry_ax_rot_degree.value,
+                    polar=cb_polar.active,
+                    cart=cb_cartesian.active,
+                    spherical=cb_spherical.active,
+                )
             end
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false
@@ -599,10 +734,16 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         signal_connect(bt_scale, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="ref"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="eog"))
             locs_tmp = obj_tmp.locs
-            locs_scale!(locs_tmp, r=entry_scale.value, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
+            locs_scale!(
+                locs_tmp;
+                r=entry_scale.value,
+                polar=cb_polar.active,
+                cart=cb_cartesian.active,
+                spherical=cb_spherical.active,
+            )
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false
             _refresh_locs()
@@ -613,10 +754,15 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         signal_connect(bt_normalize, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="ref"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="eog"))
             locs_tmp = obj_tmp.locs
-            locs_normalize!(locs_tmp, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
+            locs_normalize!(
+                locs_tmp;
+                polar=cb_polar.active,
+                cart=cb_cartesian.active,
+                spherical=cb_spherical.active,
+            )
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false
             _refresh_locs()
@@ -626,9 +772,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
 
         signal_connect(bt_origin_transform, "clicked") do widget
             origin_axis = combo_origin_transform.active
-            origin_axis == 0 && locs_origin!(locs, x=origin_transform.value)
-            origin_axis == 1 && locs_origin!(locs, y=origin_transform.value)
-            origin_axis == 2 && locs_origin!(locs, z=origin_transform.value)
+            origin_axis == 0 && locs_origin!(locs; x=origin_transform.value)
+            origin_axis == 1 && locs_origin!(locs; y=origin_transform.value)
+            origin_axis == 2 && locs_origin!(locs; z=origin_transform.value)
             refresh = false
             _refresh_locs()
             refresh = true
@@ -652,10 +798,15 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         signal_connect(bt_swapxy, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
-            delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="ref"))
+            delete_channel!(obj_tmp; ch=get_channel(obj_tmp; type="eog"))
             locs_tmp = obj_tmp.locs
-            locs_swapxy!(locs_tmp, polar=cb_polar.active, cart=cb_cartesian.active, spherical=cb_spherical.active)
+            locs_swapxy!(
+                locs_tmp;
+                polar=cb_polar.active,
+                cart=cb_cartesian.active,
+                spherical=cb_spherical.active,
+            )
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false
             _refresh_locs()
@@ -672,12 +823,16 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         end
 
         signal_connect(bt_load, "clicked") do widget
-            open_dialog("Pick a locations file", win, ["*.ced", "*.elc", "*.locs", "*.tsv", "*.sfp", "*.csd", "*.geo", "*.mat"]) do file_name
+            open_dialog(
+                "Pick a locations file",
+                win,
+                ["*.ced", "*.elc", "*.locs", "*.tsv", "*.sfp", "*.csd", "*.geo", "*.mat"],
+            ) do file_name
                 if file_name != ""
                     ask_dialog("Replace channel locations ?", win) do ans
                         if ans
                             try
-                                load_locs!(obj_new, file_name=file_name)
+                                load_locs!(obj_new; file_name=file_name)
                             catch
                                 warn_dialog(_nill, "File could not be opened!", win)
                             end
@@ -695,11 +850,13 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         end
 
         signal_connect(bt_save, "clicked") do widget
-            file_name = save_dialog("Pick a locations file", win, [".ced", ".locs", ".tsv"]) do file_name
+            file_name = save_dialog(
+                "Pick a locations file", win, [".ced", ".locs", ".tsv"]
+            ) do file_name
                 if file_name != ""
                     if splitext(file_name)[2] in [".ced", ".locs", ".tsv"]
                         try
-                            export_locs(obj_new, file_name=file_name, overwrite=true)
+                            export_locs(obj_new; file_name=file_name, overwrite=true)
                         catch
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
@@ -711,12 +868,15 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         end
 
         signal_connect(bt_apply, "clicked") do widget
-            ask_dialog("This operation will apply all changes made to channels and locs.\n\nPlease confirm.", win) do ans
+            ask_dialog(
+                "This operation will apply all changes made to channels and locs.\n\nPlease confirm.",
+                win,
+            ) do ans
                 if ans
                     obj.header = obj_new.header
                     obj.data = obj_new.data
                     obj.locs = locs
-                                    obj.history = obj_new.history
+                    obj.history = obj_new.history
                     obj.markers = obj_new.markers
                     close(win)
                     return nothing
@@ -733,7 +893,10 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -745,5 +908,4 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end

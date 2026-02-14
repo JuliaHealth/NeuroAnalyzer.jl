@@ -16,7 +16,6 @@ Join two NeuroAnalyzer objects. Each `obj2` epoch are horizontally concatenated 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
-
     @assert datatype(obj1) == obj1.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert nchannels(obj1) == nchannels(obj2) "OBJ1 and OBJ2 must have the same number of channels."
@@ -31,14 +30,17 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyz
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     # merge markers
-    DataFrames.nrow(obj2.markers) > 0 && (obj_new.markers = vcat(obj1.markers, obj2.markers))
-    DataFrames.nrow(obj1.markers) > 0 && (obj_new.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (signal_len(obj1) / sr(obj1)))
-
+    DataFrames.nrow(obj2.markers) > 0 &&
+        (obj_new.markers = vcat(obj1.markers, obj2.markers))
+    DataFrames.nrow(obj1.markers) > 0 && (
+        obj_new.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (
+            signal_len(obj1) / sr(obj1)
+        )
+    )
 
     push!(obj_new.history, "join(OBJ1, OBJ2)")
 
     return obj_new
-
 end
 
 """
@@ -56,7 +58,6 @@ Join two NeuroAnalyzer objects into the first object. Each `obj2` epoch are hori
 - `Nothing`
 """
 function join!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
-
     obj_new = NeuroAnalyzer.join(obj1, obj2)
     obj1.data = obj_new.data
     obj1.history = obj_new.history
@@ -65,5 +66,4 @@ function join!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
     obj1.markers = obj_new.markers
 
     return nothing
-
 end

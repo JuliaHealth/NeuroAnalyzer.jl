@@ -14,7 +14,6 @@ Zero channels at the beginning and at the end.
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function ch_zero(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
-
     obj_new = deepcopy(obj)
     obj_new.data[:, 1, :] .= 0
     obj_new.data[:, end, :] .= 0
@@ -22,7 +21,6 @@ function ch_zero(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     push!(obj_new.history, "zero(OBJ)")
 
     return obj_new
-
 end
 
 """
@@ -39,11 +37,9 @@ Zero channels at the beginning and at the end.
 - `Nothing`
 """
 function ch_zero!(obj::NeuroAnalyzer.NEURO)::Nothing
-
     obj_new = ch_zero(obj)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

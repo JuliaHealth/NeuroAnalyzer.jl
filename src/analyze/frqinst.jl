@@ -14,13 +14,11 @@ Calculate instantaneous frequencies.
 - `f::Vector{Float64}`: instantaneous frequencies (in rad/s)
 """
 function frqinst(s::AbstractVector)::Vector{Float64}
-
     _, _, _, ph = htransform(s)
 
     f = NeuroAnalyzer.derivative(DSP.unwrap(ph)) / (2 * pi)
 
     return f
-
 end
 
 """
@@ -36,9 +34,10 @@ Calculate instantaneous frequencies.
 
 - `f::Array{Float64, 3}`: instantaneous frequencies (in rad/s)
 """
-function frqinst(s::AbstractArray)::Array{Float64, 3}
-
-    _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
+function frqinst(s::AbstractArray)::Array{Float64,3}
+    _warn(
+        "frqinst() uses Hilbert transform, the signal should be narrowband for best results.",
+    )
 
     _chk3d(s)
 
@@ -50,7 +49,6 @@ function frqinst(s::AbstractArray)::Array{Float64, 3}
     end
 
     return f
-
 end
 
 """
@@ -67,11 +65,15 @@ Calculate instantaneous frequencies.
 
 - `f::Array{Float64, 3}`: instantaneous frequencies (in Hz)
 """
-function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function frqinst(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Array{Float64,3}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     f = @views frqinst(obj.data[ch, :, :]) .* sr(obj)
 
     return f
-
 end

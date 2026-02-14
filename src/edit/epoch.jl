@@ -22,8 +22,13 @@ Split into epochs. Return signal that is split either by markers (if specified),
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)::NeuroAnalyzer.NEURO
-
+function epoch(
+    obj::NeuroAnalyzer.NEURO;
+    marker::String="",
+    offset::Real=0,
+    ep_n::Union{Int64,Nothing}=nothing,
+    ep_len::Union{Real,Nothing}=nothing,
+)::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
 
     # create ID for epochs
@@ -59,7 +64,15 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
         @assert offset + ep_len >= maximum(mrk_len) "offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."
 
         # split into epochs
-        epochs, obj_new.markers = _make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
+        epochs, obj_new.markers = _make_epochs_bymarkers(
+            obj_new.data;
+            marker=marker,
+            markers=deepcopy(obj_new.markers),
+            marker_start=round.(Int64, mrk_start * sr(obj)),
+            offset=round(Int64, offset * sr(obj)),
+            ep_len=round(Int64, ep_len * sr(obj)),
+            fs=sr(obj),
+        )
 
     else
         if ep_len !== nothing
@@ -67,11 +80,12 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
             ep_len = round(Int64, ep_len * sr(obj))
         end
         # split by ep_len or ep_n
-        epochs = _make_epochs(obj.data, ep_n=ep_n, ep_len=ep_len)
+        epochs = _make_epochs(obj.data; ep_n=ep_n, ep_len=ep_len)
 
         # delete markers outside epochs
         for marker_idx in DataFrames.nrow(obj_new.markers):-1:1
-            round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:size(epochs, 2) * size(epochs, 3) || deleteat!(obj_new.markers, marker_idx)
+            round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in
+            0:(size(epochs, 2) * size(epochs, 3)) || deleteat!(obj_new.markers, marker_idx)
         end
     end
 
@@ -88,10 +102,12 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     obj_new.epoch_time .-= offset
 
-    push!(obj_new.history, "epoch(OBJ, marker=$marker, offset=$offset, ep_n=$ep_n, ep_len=$ep_len)")
+    push!(
+        obj_new.history,
+        "epoch(OBJ, marker=$marker, offset=$offset, ep_n=$ep_n, ep_len=$ep_len)",
+    )
 
     return obj_new
-
 end
 
 """
@@ -111,9 +127,14 @@ Split into epochs. Return signal that is split either by markers (if specified),
 
 - `Nothing`
 """
-function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)::Nothing
-
-    obj_new = epoch(obj, marker=marker, offset=offset, ep_n=ep_n, ep_len=ep_len)
+function epoch!(
+    obj::NeuroAnalyzer.NEURO;
+    marker::String="",
+    offset::Real=0,
+    ep_n::Union{Int64,Nothing}=nothing,
+    ep_len::Union{Real,Nothing}=nothing,
+)::Nothing
+    obj_new = epoch(obj; marker=marker, offset=offset, ep_n=ep_n, ep_len=ep_len)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -121,7 +142,6 @@ function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
-
 end
 
 """
@@ -139,14 +159,12 @@ Edit epochs time start.
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)::NeuroAnalyzer.NEURO
-
     obj_new = deepcopy(obj)
     obj_new.epoch_time .+= ts
 
     push!(obj_new.history, "epoch_ts(OBJ, ts=$ts)")
 
     return obj_new
-
 end
 
 """
@@ -164,13 +182,11 @@ Edit OBJ epochs time start.
 - `Nothing`
 """
 function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)::Nothing
-
-    obj_new = epoch_ts(obj, ts=ts)
+    obj_new = epoch_ts(obj; ts=ts)
     obj.history = obj_new.history
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
-
 end
 
 """
@@ -188,8 +204,9 @@ Extract sub-epochs with a reduced time range.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::NeuroAnalyzer.NEURO
-
+function subepoch(
+    obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real
+)::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     ep_time = obj.epoch_time
 
@@ -213,7 +230,8 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Neuro
     mrk_start = obj.markers[!, :start]
     mrk_epoch = _markers_epochs(obj)
     for mrk_idx in length(mrk_start):-1:1
-        if mrk_start[mrk_idx] < ep_tps[1, mrk_epoch[mrk_idx]] || mrk_start[mrk_idx] > ep_tps[2, mrk_epoch[mrk_idx]]
+        if mrk_start[mrk_idx] < ep_tps[1, mrk_epoch[mrk_idx]] ||
+            mrk_start[mrk_idx] > ep_tps[2, mrk_epoch[mrk_idx]]
             deleteat!(obj_new.markers, mrk_idx)
             deleteat!(mrk_epoch, mrk_idx)
         end
@@ -222,16 +240,20 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Neuro
     # shift markers time points
     mrk_start = deepcopy(obj_new.markers[!, :start])
     for mrk_idx in eachindex(mrk_start)
-        mrk_start[mrk_idx] -= (ep_start + ((mrk_epoch[mrk_idx] - 1) * (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end))))
+        mrk_start[mrk_idx] -= (
+            ep_start + (
+                (mrk_epoch[mrk_idx] - 1) *
+                (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end))
+            )
+        )
     end
-    mrk_start = round.(mrk_start, digits=3)
+    mrk_start = round.(mrk_start; digits=3)
 
     obj_new.markers[!, :start] = mrk_start
 
     push!(obj_new.history, "subepoch(OBJ, ep_start=$ep_start, ep_start=$ep_end)")
 
     return obj_new
-
 end
 
 """
@@ -250,8 +272,7 @@ Extract sub-epochs with a reduced time range.
 - `Nothing`
 """
 function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Nothing
-
-    obj_new = subepoch(obj, ep_start=ep_start, ep_end=ep_end)
+    obj_new = subepoch(obj; ep_start=ep_start, ep_end=ep_end)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -259,5 +280,4 @@ function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Noth
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
-
 end

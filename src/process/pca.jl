@@ -20,8 +20,14 @@ Named tuple containing:
 - `pcm::Vector{Float64}`: PC means
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(s::AbstractArray; n::Int64)::@NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
-
+function pca_decompose(
+    s::AbstractArray; n::Int64
+)::@NamedTuple{
+    pc::Array{Float64,3},
+    pcv::Matrix{Float64},
+    pcm::Vector{Float64},
+    pc_model::MultivariateStats.PCA{Float64},
+}
     _chk3d(s)
     @assert n >= 1 "n must be ≥ 1."
     @assert n <= size(s, 1) "n must be ≤ $(size(s, 1))."
@@ -51,12 +57,16 @@ function pca_decompose(s::AbstractArray; n::Int64)::@NamedTuple{pc::Array{Float6
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
         pc_model = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim=n, pratio=1)
-        v = MultivariateStats.principalvars(pc_model) ./ MultivariateStats.var(pc_model) * 100
+        v =
+            MultivariateStats.principalvars(pc_model) ./ MultivariateStats.var(pc_model) *
+            100
 
         for idx in 1:n
             pcv[idx, ep_idx] = v[idx]
             # pc[idx, :, ep_idx] = (eig_vec[:, idx] .* s)[idx, :]
-            pc[idx, :, ep_idx] = @views MultivariateStats.predict(pc_model, s[:, :, ep_idx])[idx, :]
+            pc[idx, :, ep_idx] = @views MultivariateStats.predict(pc_model, s[:, :, ep_idx])[
+                idx, :,
+            ]
         end
     end
 
@@ -82,13 +92,18 @@ Named tuple containing:
 - `pcm::Vector{Float64}`: PC means
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64)::@NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
-
-    ch = get_channel(obj, ch=ch)
+function pca_decompose(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, n::Int64
+)::@NamedTuple{
+    pc::Array{Float64,3},
+    pcv::Matrix{Float64},
+    pcm::Vector{Float64},
+    pc_model::MultivariateStats.PCA{Float64},
+}
+    ch = get_channel(obj; ch=ch)
     pc, pcv, pcm, pc_model = @views pca_decompose(obj.data[ch, :, :], n=n)
 
     return (pc=pc, pcv=pcv, pcm=pcm, pc_model=pc_model)
-
 end
 
 """
@@ -106,18 +121,20 @@ Reconstructs signal using PCA components.
 
 - `s_new::Array{Float64, 3}`
 """
-function pca_reconstruct(s::AbstractArray; pc::AbstractArray, pc_model::MultivariateStats.PCA{Float64})::Array{Float64, 3}
-
+function pca_reconstruct(
+    s::AbstractArray; pc::AbstractArray, pc_model::MultivariateStats.PCA{Float64}
+)::Array{Float64,3}
     _chk3d(s)
     s_new = similar(s)
     ep_n = size(s, 3)
 
     @inbounds for ep_idx in 1:ep_n
-        s_new[:, :, ep_idx] = @views MultivariateStats.reconstruct(pc_model, pc[:, :, ep_idx])
+        s_new[:, :, ep_idx] = @views MultivariateStats.reconstruct(
+            pc_model, pc[:, :, ep_idx]
+        )
     end
 
     return s_new
-
 end
 
 """
@@ -136,17 +153,22 @@ Reconstruct signal using PCA components (`pc` and `pca`).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64})::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function pca_reconstruct(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    pc::Array{Float64,3},
+    pc_model::MultivariateStats.PCA{Float64},
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=pc, pc_model=pc_model)
+    obj_new.data[ch, :, :] = @views pca_reconstruct(
+        obj_new.data[ch, :, :], pc=pc, pc_model=pc_model
+    )
 
     push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -165,12 +187,15 @@ Reconstruct signals using PCA components (`pc` and `pc_model`).
 
 - `Nothing`
 """
-function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64})::Nothing
-
-    obj_new = pca_reconstruct(obj, ch=ch, pc=pc, pc_model=pc_model)
+function pca_reconstruct!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    pc::Array{Float64,3},
+    pc_model::MultivariateStats.PCA{Float64},
+)::Nothing
+    obj_new = pca_reconstruct(obj; ch=ch, pc=pc, pc_model=pc_model)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

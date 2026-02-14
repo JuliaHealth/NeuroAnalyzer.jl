@@ -1,6 +1,7 @@
-_xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} = floor(t[1], digits=2), ceil(t[end], digits=2)
+_xlims(t::Union{AbstractVector,AbstractRange})::Tuple{Real,Real} = floor(t[1], digits=2),
+ceil(t[end], digits=2)
 
-function _ylims(s::Union{AbstractVector,AbstractMatrix})::Tuple{Real, Real}
+function _ylims(s::Union{AbstractVector,AbstractMatrix})::Tuple{Real,Real}
     if maximum(abs.(s)) > 100
         n = 2
     elseif maximum(abs.(s)) >= 10
@@ -8,9 +9,9 @@ function _ylims(s::Union{AbstractVector,AbstractMatrix})::Tuple{Real, Real}
     elseif maximum(abs.(s)) < 10
         n = 0
     end
-    max = ceil(Int64, round(maximum(s), digits=n))
-    min = floor(Int64, round(minimum(s), digits=n))
-    if abs(min) == 0 && abs(max) == 0 
+    max = ceil(Int64, round(maximum(s); digits=n))
+    min = floor(Int64, round(minimum(s); digits=n))
+    if abs(min) == 0 && abs(max) == 0
         max = 1.0
         min = -1.0
     end
@@ -28,7 +29,7 @@ function _ylims(s::Union{AbstractVector,AbstractMatrix})::Tuple{Real, Real}
     end
 end
 
-function _ticks(t::Union{AbstractVector, AbstractRange, Tuple{Real, Real}})::AbstractVector
+function _ticks(t::Union{AbstractVector,AbstractRange,Tuple{Real,Real}})::AbstractVector
     tc = collect(t[1]:1:t[end])
     if t[end] - t[1] > 10
         tc = collect(t[1]:2:t[end])
@@ -40,18 +41,28 @@ function _ticks(t::Union{AbstractVector, AbstractRange, Tuple{Real, Real}})::Abs
     return tc
 end
 
-_erpticks(t::Union{AbstractVector, AbstractRange})::AbstractVector = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[end], digits=2), 9))[2:end])
+_erpticks(t::Union{AbstractVector,AbstractRange})::AbstractVector = vcat(
+    collect(range(floor(t[1], digits=2), 0, 3)),
+    collect(range(0, ceil(t[end], digits=2), 9))[2:end],
+)
 
-_erpticks(t::Tuple{Real, Real})::AbstractVector = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[2], digits=2), 9))[2:end])
+_erpticks(t::Tuple{Real,Real})::AbstractVector = vcat(
+    collect(range(floor(t[1], digits=2), 0, 3)),
+    collect(range(0, ceil(t[2], digits=2), 9))[2:end],
+)
 
-function _set_defaults(xl::String, yl::String, tt::String, x::String, y::String, t::String)::Tuple{String, String, String}
+function _set_defaults(
+    xl::String, yl::String, tt::String, x::String, y::String, t::String
+)::Tuple{String,String,String}
     yl == "default" && (yl = y)
     xl == "default" && (xl = x)
     tt == "default" && (tt = t)
     return xl, yl, tt
 end
 
-_bernstein(i, n; steps=50) = [binomial(n, i) * t^i * (1 - t)^(n - i) for t in LinRange(0, 1, steps)]
+function _bernstein(i, n; steps=50)
+    [binomial(n, i) * t^i * (1 - t)^(n - i) for t in LinRange(0, 1, steps)]
+end
 
 function _bernstein_poly(px, py; steps=50)
     # the code is based on https://opensourc.es/blog/bezier-curve/

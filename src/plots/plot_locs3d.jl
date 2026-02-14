@@ -23,8 +23,19 @@ export plot_locs3d
 
 - `f::GLMakie.Figure`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), sch::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
-
+function plot_locs3d(
+    locs::DataFrame;
+    ch::Union{Int64,Vector{Int64},AbstractRange}=1:DataFrames.nrow(locs),
+    sch::Union{Int64,Vector{Int64},AbstractRange}=0,
+    ch_labels::Bool=true,
+    head_labels::Bool=true,
+    mono::Bool=false,
+    cart::Bool=false,
+    cam::Tuple{Real,Real}=(20, 45),
+    mesh_type::Symbol=:disabled,
+    mesh_alpha::Float64=0.95,
+    gui::Bool=true,
+)::GLMakie.Figure
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
 
@@ -54,7 +65,11 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
         loc_y = zeros(DataFrames.nrow(locs))
         loc_z = zeros(DataFrames.nrow(locs))
         for idx in 1:DataFrames.nrow(locs)
-            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
+            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(
+                locs[idx, :loc_radius_sph],
+                locs[idx, :loc_theta_sph],
+                locs[idx, :loc_phi_sph],
+            )
         end
     else
         loc_x = locs[!, :loc_x]
@@ -62,7 +77,9 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
         loc_z = locs[!, :loc_z]
     end
 
-    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
+    if maximum(locs[:, :loc_x]) <= 1.2 &&
+        maximum(locs[:, :loc_y]) <= 1.2 &&
+        maximum(locs[:, :loc_z]) <= 1.5
         x_lim = (-1.5, 1.5)
         y_lim = (-1.5, 1.5)
         z_lim = (-1.5, 1.5)
@@ -76,25 +93,25 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
     marker_size = length(ch) > 64 ? 8 : 16
     font_size = 14
 
-    p = Figure(size=(plot_size, plot_size))
+    p = Figure(; size=(plot_size, plot_size))
 
-    ax = Axis3(p[1, 1],
-               xlabel="X",
-               ylabel="Y",
-               zlabel="Z",
-               limits=(x_lim, y_lim, z_lim),
-               title="",
-               aspect=(1, 1, 1),
-               xticks=[-1, 0, 1],
-               yticks=[-1, 0, 1],
-               zticks=[-1, 0, 1],
-               elevation=deg2rad(cam[1]),
-               azimuth=deg2rad(cam[2]))
+    ax = Axis3(
+        p[1, 1];
+        xlabel="X",
+        ylabel="Y",
+        zlabel="Z",
+        limits=(x_lim, y_lim, z_lim),
+        title="",
+        aspect=(1, 1, 1),
+        xticks=[-1, 0, 1],
+        yticks=[-1, 0, 1],
+        zticks=[-1, 0, 1],
+        elevation=deg2rad(cam[1]),
+        azimuth=deg2rad(cam[2]),
+    )
 
     if mesh_type !== :disabled
-        GLMakie.mesh!(msh,
-                      alpha=mesh_alpha,
-                      color=:gray)
+        GLMakie.mesh!(msh; alpha=mesh_alpha, color=:gray)
     end
 
     ch_n = length(ch)
@@ -104,62 +121,74 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
     for idx in 1:ch_n
         if idx in sch
             if mono
-                GLMakie.scatter!(loc_x[idx],
-                                 loc_y[idx],
-                                 loc_z[idx],
-                                 markersize=marker_size,
-                                 color=:gray,
-                                 strokewidth=1,
-                                 strokecolor=:black)
+                GLMakie.scatter!(
+                    loc_x[idx],
+                    loc_y[idx],
+                    loc_z[idx];
+                    markersize=marker_size,
+                    color=:gray,
+                    strokewidth=1,
+                    strokecolor=:black,
+                )
 
             else
-                GLMakie.scatter!(loc_x[idx],
-                                 loc_y[idx],
-                                 loc_z[idx],
-                                 markersize=marker_size,
-                                 color=cmap[idx],
-                                 colormap=pal,
-                                 colorrange=1:ch_n,
-                                 strokewidth=1,
-                                 strokecolor=:black)
+                GLMakie.scatter!(
+                    loc_x[idx],
+                    loc_y[idx],
+                    loc_z[idx];
+                    markersize=marker_size,
+                    color=cmap[idx],
+                    colormap=pal,
+                    colorrange=1:ch_n,
+                    strokewidth=1,
+                    strokecolor=:black,
+                )
             end
         else
-            GLMakie.scatter!(loc_x[idx],
-                             loc_y[idx],
-                             loc_z[idx],
-                             markersize=marker_size,
-                             color=:gray,
-                             strokewidth=1,
-                             strokecolor=:black)
+            GLMakie.scatter!(
+                loc_x[idx],
+                loc_y[idx],
+                loc_z[idx];
+                markersize=marker_size,
+                color=:gray,
+                strokewidth=1,
+                strokecolor=:black,
+            )
         end
     end
 
     if ch_labels
-        GLMakie.text!(loc_x[ch] * 1.15,
-                      loc_y[ch] * 1.15,
-                      loc_z[ch] * 1.15,
-                      text=locs[ch, :label],
-                      fontsize=font_size,
-                      align=(:center, :center))
+        GLMakie.text!(
+            loc_x[ch] * 1.15,
+            loc_y[ch] * 1.15,
+            loc_z[ch] * 1.15;
+            text=locs[ch, :label],
+            fontsize=font_size,
+            align=(:center, :center),
+        )
         if sch != 0
-            GLMakie.text!(loc_x[sch] * 1.15,
-                          loc_y[sch] * 1.15,
-                          loc_z[sch] * 1.15,
-                          text=locs[sch, :label],
-                          fontsize=font_size,
-                          align=(:center, :center))
+            GLMakie.text!(
+                loc_x[sch] * 1.15,
+                loc_y[sch] * 1.15,
+                loc_z[sch] * 1.15;
+                text=locs[sch, :label],
+                fontsize=font_size,
+                align=(:center, :center),
+            )
         end
     end
 
     if head_labels
         fid_names = ["NAS", "IN", "LPA", "RPA"]
         for idx in 1:length(NeuroAnalyzer.fiducial_points)
-            GLMakie.text!(NeuroAnalyzer.fiducial_points[idx][1],
-                          NeuroAnalyzer.fiducial_points[idx][2],
-                          NeuroAnalyzer.fiducial_points[idx][3],
-                          text=fid_names[idx],
-                          fontsize=font_size,
-                          align=(:center, :center))
+            GLMakie.text!(
+                NeuroAnalyzer.fiducial_points[idx][1],
+                NeuroAnalyzer.fiducial_points[idx][2],
+                NeuroAnalyzer.fiducial_points[idx][3];
+                text=fid_names[idx],
+                fontsize=font_size,
+                align=(:center, :center),
+            )
         end
     end
 
@@ -190,7 +219,6 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
     gui && wait(display(p))
 
     return p
-
 end
 
 """
@@ -215,11 +243,22 @@ Preview of channel locations.
 
 - `GLMakie.Figure`
 """
-function plot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, sch::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, head_labels::Bool=false, cart::Bool=false, mono::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
-
+function plot_locs3d(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    sch::Union{String,Vector{String},Regex}="",
+    ch_labels::Bool=true,
+    head_labels::Bool=false,
+    cart::Bool=false,
+    mono::Bool=false,
+    cam::Tuple{Real,Real}=(20, 45),
+    mesh_type::Symbol=:disabled,
+    mesh_alpha::Float64=0.95,
+    gui::Bool=true,
+)::GLMakie.Figure
     @assert datatype(obj) in ["eeg"] "Currently plot_locs3d() works for EEG objects only."
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
@@ -227,23 +266,24 @@ function plot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     if sch == ""
         sch = 0
     else
-        sch = get_channel(obj, ch=sch)
+        sch = get_channel(obj; ch=sch)
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
     end
 
-    p = plot_locs3d(locs,
-                    ch=ch,
-                    sch=sch,
-                    ch_labels=ch_labels,
-                    head_labels=head_labels,
-                    mono=mono,
-                    cart=cart,
-                    cam=cam,
-                    mesh_type=mesh_type,
-                    mesh_alpha=mesh_alpha,
-                    gui=gui)
+    p = plot_locs3d(
+        locs;
+        ch=ch,
+        sch=sch,
+        ch_labels=ch_labels,
+        head_labels=head_labels,
+        mono=mono,
+        cart=cart,
+        cam=cam,
+        mesh_type=mesh_type,
+        mesh_alpha=mesh_alpha,
+        gui=gui,
+    )
 
     return p
-
 end

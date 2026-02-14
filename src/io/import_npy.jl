@@ -15,7 +15,6 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 - `obj::NeuroAnalyzer.NEURO`
 """
 function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEURO
-
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".npy" "This is not NPY file."
 
@@ -31,53 +30,61 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         push!(clabels, "ch_$idx")
     end
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-    epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits=4,
+    )
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits=4,
+    )
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits=2)
 
     data_type = "eeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name="",
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording="",
-                              recording_date="",
-                              recording_time="",
-                              recording_notes="",
-                              channel_type=repeat(["eeg"], ch_n),
-                              channel_order=_sort_channels(repeat(["eeg"], ch_n)),
-                              reference="",
-                              clabels=clabels,
-                              transducers=repeat([""], ch_n),
-                              units=repeat(["μV"], ch_n),
-                              prefiltering=repeat([""], ch_n),
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=repeat([1.0], ch_n),
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="",
-                           notes="",
-                           design="")
+    s = _create_subject(;
+        id="",
+        first_name="",
+        middle_name="",
+        last_name="",
+        head_circumference=-1,
+        handedness="",
+        weight=-1,
+        height=-1,
+    )
+    r = _create_recording_eeg(;
+        data_type=data_type,
+        file_name=file_name,
+        file_size_mb=file_size_mb,
+        file_type=file_type,
+        recording="",
+        recording_date="",
+        recording_time="",
+        recording_notes="",
+        channel_type=repeat(["eeg"], ch_n),
+        channel_order=_sort_channels(repeat(["eeg"], ch_n)),
+        reference="",
+        clabels=clabels,
+        transducers=repeat([""], ch_n),
+        units=repeat(["μV"], ch_n),
+        prefiltering=repeat([""], ch_n),
+        line_frequency=50,
+        sampling_rate=sampling_rate,
+        gain=repeat([1.0], ch_n),
+        bad_channels=zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name="", notes="", design="")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
     history = String[]
 
@@ -85,8 +92,11 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
-
 end

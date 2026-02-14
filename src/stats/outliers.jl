@@ -19,7 +19,6 @@ Detect outliers.
 - `o::Vector{Bool}`: index of outliers
 """
 function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
-
     @assert length(x) > 0 "Length of x must be > 0."
     _check_var(method, [:iqr, :z, :g], "method")
     o = zeros(Bool, length(x))
@@ -38,7 +37,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
         x_tmp = deepcopy(x)
         for _ in length(x_tmp):-1:6
             _, m_idx = findmax(x_tmp)
-            if grubbs(x_tmp, t=1)
+            if grubbs(x_tmp; t=1)
                 o[m_idx] = true
                 deleteat!(x_tmp, m_idx)
             end
@@ -46,7 +45,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
         x_tmp = deepcopy(x)
         for _ in length(x_tmp):-1:6
             _, m_idx = findmin(x_tmp)
-            if grubbs(x_tmp, t=-1)
+            if grubbs(x_tmp; t=-1)
                 o[m_idx] = true
                 deleteat!(x_tmp, m_idx)
             end
@@ -54,7 +53,6 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
     end
 
     return o
-
 end
 
 """
@@ -76,7 +74,6 @@ Perform Grubbs test for outlier.
 - `g::Bool`: true: outlier exists, false: there is no outlier
 """
 function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)::Bool
-
     @assert length(x) > 0 "Length of x must be > 0."
     n = length(x)
     df = n - 2
@@ -99,5 +96,4 @@ function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)::Bool
     h = (n - 1) * t_critical / sqrt(n * (df + t_critical^2))
 
     return g < h ? false : true
-
 end

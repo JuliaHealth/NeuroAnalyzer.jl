@@ -44,8 +44,26 @@ Plot topographical view.
 
 - `p::GLMakie.Figure`
 """
-function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), sch::Union{Nothing, Int64, Vector{Int64}}=nothing, cb::Bool=true, cb_title::String="[A.U.]", title::String="", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
-
+function plot_topo(
+    s::AbstractVector;
+    locs::DataFrame,
+    ch::Union{Int64,Vector{Int64}}=1:DataFrames.nrow(locs),
+    sch::Union{Nothing,Int64,Vector{Int64}}=nothing,
+    cb::Bool=true,
+    cb_title::String="[A.U.]",
+    title::String="",
+    mono::Bool=false,
+    imethod::Symbol=:sh,
+    nmethod::Symbol=:minmax,
+    contours::Int64=0,
+    electrodes::Bool=true,
+    ps::Symbol=:l,
+    head::Bool=true,
+    cart::Bool=false,
+    threshold::Union{Nothing,Real,Tuple{Real,Real}}=nothing,
+    threshold_type::Symbol=:neq,
+    threshold_method::Symbol=:reg,
+)::GLMakie.Figure
     pal = mono ? :grays : :bluesreds
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
@@ -64,7 +82,9 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         loc_x = zeros(length(ch))
         loc_y = zeros(length(ch))
         for idx in eachindex(ch)
-            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+            loc_x[idx], loc_y[idx] = pol2cart(
+                locs[!, :loc_radius][idx], locs[!, :loc_theta][idx]
+            )
         end
     else
         loc_x = locs[ch, :loc_x]
@@ -96,7 +116,9 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         font_size = 5
     end
 
-    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, iter, imethod, nmethod)
+    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(
+        s, loc_x, loc_y, iter, imethod, nmethod
+    )
     s_interpolated = s_interpolated'[:, end:-1:1]
     s_interpolated_threshold = deepcopy(s_interpolated)
 
@@ -110,7 +132,7 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
                 @assert length(threshold) == 2 "threshold must contain two values."
                 _check_tuple(threshold, "threshold")
             end
-            s_norm = normalize(s, method=nmethod)
+            s_norm = normalize(s; method=nmethod)
             if threshold_type === :eq
                 threshold_idx = findall(x->x == threshold, s_norm)
             elseif threshold_type === :neq
@@ -129,13 +151,18 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
                 threshold_idx = findall(x->(x > threshold[1] && x < threshold[2]), s_norm)
             end
         else
-            _, bm = seg_extract(s_interpolated, threshold=threshold, threshold_type=threshold_type)
+            _, bm = seg_extract(
+                s_interpolated; threshold=threshold, threshold_type=threshold_type
+            )
             s_interpolated_threshold[.!bm] .= NaN
         end
     end
 
     head12 = false
-    maximum(abs.(locs[:, :loc_x])) <= 1.2 && maximum(abs.(locs[:, :loc_y])) <= 1.2 && maximum(abs.(locs[:, :loc_z])) <= 1.5 && (head12 = true)
+    maximum(abs.(locs[:, :loc_x])) <= 1.2 &&
+        maximum(abs.(locs[:, :loc_y])) <= 1.2 &&
+        maximum(abs.(locs[:, :loc_z])) <= 1.5 &&
+        (head12 = true)
 
     if head12
         xl = (-1.2, 1.2)
@@ -148,11 +175,13 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
     end
 
     if head12
-    # get distances from (0, 0)
+        # get distances from (0, 0)
         d = zeros(length(interpolated_x), length(interpolated_y))
         for idx1 in eachindex(interpolated_x)
             for idx2 in eachindex(interpolated_y)
-                d[idx1, idx2] = distance((0, 0), (interpolated_x[idx1], interpolated_y[idx2]))
+                d[idx1, idx2] = distance(
+                    (0, 0), (interpolated_x[idx1], interpolated_y[idx2])
+                )
             end
         end
         # remove everything outside the radius
@@ -161,52 +190,60 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
     end
 
     # prepare plot
-    p = GLMakie.Figure(size=plot_size,
-                       figure_padding=ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0)) # L R B T
-    ax = GLMakie.Axis(p[1, 1],
-                      aspect=1,
-                      xlabel="",
-                      ylabel="",
-                      title=title,
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0),
-                      backgroundcolor=:transparent,
-                      titlesize=font_size,
-                      xzoomlock=true,
-                      yzoomlock=true,
-                      xpanlock=true,
-                      ypanlock=true,
-                      xrectzoom=false,
-                      yrectzoom=false)
+    p = GLMakie.Figure(;
+        size=plot_size, figure_padding=ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0)
+    ) # L R B T
+    ax = GLMakie.Axis(
+        p[1, 1];
+        aspect=1,
+        xlabel="",
+        ylabel="",
+        title=title,
+        xautolimitmargin=(0, 0),
+        yautolimitmargin=(0, 0),
+        backgroundcolor=:transparent,
+        titlesize=font_size,
+        xzoomlock=true,
+        yzoomlock=true,
+        xpanlock=true,
+        ypanlock=true,
+        xrectzoom=false,
+        yrectzoom=false,
+    )
     hidedecorations!(ax)
     hidespines!(ax)
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
     if !isnothing(threshold) && threshold_method === :reg
-        hm = GLMakie.heatmap!(ax,
-                              interpolated_x,
-                              interpolated_y,
-                              s_interpolated_threshold,
-                              colorrange=extrema(s_interpolated[.!isnan.(s_interpolated)]),
-                              colormap=pal)
+        hm = GLMakie.heatmap!(
+            ax,
+            interpolated_x,
+            interpolated_y,
+            s_interpolated_threshold;
+            colorrange=extrema(s_interpolated[.!isnan.(s_interpolated)]),
+            colormap=pal,
+        )
     else
-        hm = GLMakie.heatmap!(ax,
-                              interpolated_x,
-                              interpolated_y,
-                              s_interpolated,
-                              colormap=pal)
+        hm = GLMakie.heatmap!(
+            ax, interpolated_x, interpolated_y, s_interpolated; colormap=pal
+        )
     end
 
     # draw contours
-    if contours > 0 && ((isnothing(threshold) && threshold_method === :reg) || (!isnothing(threshold) && threshold_method === :loc))
-        GLMakie.contour!(ax,
-                         interpolated_x,
-                         interpolated_y,
-                         s_interpolated,
-                         linestyle=:dash,
-                         levels=contours,
-                         linewidth=0.5,
-                         color=:black)
+    if contours > 0 && (
+        (isnothing(threshold) && threshold_method === :reg) ||
+        (!isnothing(threshold) && threshold_method === :loc)
+    )
+        GLMakie.contour!(
+            ax,
+            interpolated_x,
+            interpolated_y,
+            s_interpolated;
+            linestyle=:dash,
+            levels=contours,
+            linewidth=0.5,
+            color=:black,
+        )
     end
 
     # draw head
@@ -215,35 +252,35 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         ps === :m && (lw = 2)
         ps === :s && (lw = 1)
         # nose
-        GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995]; linewidth=lw, color=:black)
 
         # ears
         # left
-        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22]; linewidth=lw, color=:black)
         # right
-        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=lw, color=:black)
-        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth=lw, color=:black)
+        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22]; linewidth=lw, color=:black)
 
         # head
-        GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=lw, color=:black)
+        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth=lw, color=:black)
     end
 
     # draw electrodes
@@ -252,48 +289,47 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         ps === :l && (sw = 4)
         ps === :m && (sw = 2)
         ps === :s && (sw = 1)
-        if (isnothing(threshold) && isnothing(sch)) || (!isnothing(threshold) && threshold_method === :reg)
+        if (isnothing(threshold) && isnothing(sch)) ||
+            (!isnothing(threshold) && threshold_method === :reg)
             for idx in 1:ch_n
-                GLMakie.scatter!(ax,
-                                 loc_x[idx],
-                                 loc_y[idx],
-                                 markersize=marker_size,
-                                 color=:black)
+                GLMakie.scatter!(
+                    ax, loc_x[idx], loc_y[idx]; markersize=marker_size, color=:black
+                )
             end
         elseif threshold_method === :loc
             for idx in 1:ch_n
                 if idx in threshold_idx
-                    GLMakie.scatter!(ax,
-                                     loc_x[idx],
-                                     loc_y[idx],
-                                     markersize=marker_size * 2,
-                                     color=:gray,
-                                     strokewidth=sw,
-                                     strokecolor=:black)
+                    GLMakie.scatter!(
+                        ax,
+                        loc_x[idx],
+                        loc_y[idx];
+                        markersize=marker_size * 2,
+                        color=:gray,
+                        strokewidth=sw,
+                        strokecolor=:black,
+                    )
                 else
-                    GLMakie.scatter!(ax,
-                                     loc_x[idx],
-                                     loc_y[idx],
-                                     markersize=marker_size,
-                                     color=:black)
+                    GLMakie.scatter!(
+                        ax, loc_x[idx], loc_y[idx]; markersize=marker_size, color=:black
+                    )
                 end
             end
         elseif !isnothing(sch)
             for idx in 1:ch_n
                 if idx in sch
-                    GLMakie.scatter!(ax,
-                                     loc_x[idx],
-                                     loc_y[idx],
-                                     markersize=marker_size * 2,
-                                     color=:gray,
-                                     strokewidth=sw,
-                                     strokecolor=:black)
+                    GLMakie.scatter!(
+                        ax,
+                        loc_x[idx],
+                        loc_y[idx];
+                        markersize=marker_size * 2,
+                        color=:gray,
+                        strokewidth=sw,
+                        strokecolor=:black,
+                    )
                 else
-                    GLMakie.scatter!(ax,
-                                     loc_x[idx],
-                                     loc_y[idx],
-                                     markersize=marker_size,
-                                     color=:black)
+                    GLMakie.scatter!(
+                        ax, loc_x[idx], loc_y[idx]; markersize=marker_size, color=:black
+                    )
                 end
             end
         end
@@ -301,24 +337,21 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
 
     # draw mask
     if head12
-        GLMakie.arc!(ax,
-                     Point2f(0),
-                     r,
-                     -pi, pi,
-                     linewidth=5,
-                     color=:white)
+        GLMakie.arc!(ax, Point2f(0), r, -pi, pi; linewidth=5, color=:white)
     end
 
     # draw colorbar
     if cb
-        GLMakie.Colorbar(p[1, 2],
-                         hm,
-                         label=cb_title,
-                         labelsize=font_size - 4,
-                         ticklabelsize=font_size - 4,
-                         height=div(plot_size[2], 2),
-                         width=ps === :l ? 25 : 10,
-                         tellheight=false)
+        GLMakie.Colorbar(
+            p[1, 2],
+            hm;
+            label=cb_title,
+            labelsize=font_size - 4,
+            ticklabelsize=font_size - 4,
+            height=div(plot_size[2], 2),
+            width=ps === :l ? 25 : 10,
+            tellheight=false,
+        )
         rowsize!(p.layout, 1, ax.scene.viewport[].widths[2])
         colgap!(p.layout, 10)
     end
@@ -326,7 +359,6 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
     resize_to_layout!(p)
 
     return p
-
 end
 
 """
@@ -379,7 +411,30 @@ Topographical plot.
 
 - `p::GLMakie.Figure`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}=nothing, ch::Union{String, Vector{String}, Regex}, sch::Union{Nothing, String, Vector{String}, Regex}=nothing, tpos::Union{Nothing, Real, AbstractVector}=nothing, title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg, nr::Int64=1, nc::Int64=0)::GLMakie.Figure
+function plot_topo(
+    obj::NeuroAnalyzer.NEURO;
+    data::Union{Nothing,AbstractArray}=nothing,
+    ch::Union{String,Vector{String},Regex},
+    sch::Union{Nothing,String,Vector{String},Regex}=nothing,
+    tpos::Union{Nothing,Real,AbstractVector}=nothing,
+    title::String="default",
+    mono::Bool=false,
+    cb::Bool=true,
+    cb_title::String="default",
+    amethod::Symbol=:mean,
+    imethod::Symbol=:sh,
+    nmethod::Symbol=:minmax,
+    contours::Int64=0,
+    electrodes::Bool=true,
+    ps::Symbol=:l,
+    head::Bool=true,
+    cart::Bool=false,
+    threshold::Union{Nothing,Real,Tuple{Real,Real}}=nothing,
+    threshold_type::Symbol=:neq,
+    threshold_method::Symbol=:reg,
+    nr::Int64=1,
+    nc::Int64=0,
+)::GLMakie.Figure
 
     # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one shared colorbar
     if length(tpos) > 1
@@ -397,10 +452,32 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}
     @assert contours >= 0 "contours must be ≥ 0."
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
-    _check_var(nmethod, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :mad, :rank, :none], "nmethod")
+    _check_var(
+        nmethod,
+        [
+            :zscore,
+            :minmax,
+            :log,
+            :log10,
+            :neglog,
+            :neglog10,
+            :neg,
+            :pos,
+            :perc,
+            :gauss,
+            :invroot,
+            :n,
+            :softmax,
+            :sigmoid,
+            :mad,
+            :rank,
+            :none,
+        ],
+        "nmethod",
+    )
 
     # get channels and selected channels
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     if !isnothing(sch)
         if isa(sch, String)
             @assert length(intersect(ch, get_channel(obj, ch=sch))) == 1 "sch channel was not found in ch."
@@ -423,13 +500,13 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}
         if nepochs(obj) == 1
             data = obj.data[ch, tpos, 1]
         else
-            data = epoch(obj, ep_n=1).data[ch, tpos, 1]
+            data = epoch(obj; ep_n=1).data[ch, tpos, 1]
         end
         title == "default" && (title = "$(obj.time_pts[tpos]) s")
     else
         !isnothing(tpos) && _info("If data is provided, tpos is ignored")
         if ndims(data) == 2
-            data = amethod === :mean ? mean(data, dims=2)[:] : median(data, dims=2)[:]
+            data = amethod === :mean ? mean(data; dims=2)[:] : median(data; dims=2)[:]
         end
         @assert length(data) == length(ch) "Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."
         title == "default" && (title = "")
@@ -437,25 +514,26 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}
 
     cb_title == "default" && (cb_title = "[A.U.]")
 
-    p = plot_topo(data,
-                  locs=locs,
-                  ch=collect(1:DataFrames.nrow(locs)),
-                  sch=sch,
-                  cb=cb,
-                  cb_title=cb_title,
-                  title=title,
-                  mono=mono,
-                  imethod=imethod,
-                  nmethod=nmethod,
-                  contours=contours,
-                  electrodes=electrodes,
-                  ps=ps,
-                  head=head,
-                  cart=cart,
-                  threshold=threshold,
-                  threshold_type=threshold_type,
-                  threshold_method=threshold_method)
+    p = plot_topo(
+        data;
+        locs=locs,
+        ch=collect(1:DataFrames.nrow(locs)),
+        sch=sch,
+        cb=cb,
+        cb_title=cb_title,
+        title=title,
+        mono=mono,
+        imethod=imethod,
+        nmethod=nmethod,
+        contours=contours,
+        electrodes=electrodes,
+        ps=ps,
+        head=head,
+        cart=cart,
+        threshold=threshold,
+        threshold_type=threshold_type,
+        threshold_method=threshold_method,
+    )
 
     return p
-
 end

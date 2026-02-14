@@ -23,8 +23,18 @@ Named tuple containing:
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})::@NamedTuple{segp::Matrix{Float64}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}}
-
+function spec_seg(
+    sp::Matrix{Float64},
+    sf::Vector{Float64},
+    st::Vector{Float64};
+    t::Tuple{Real,Real},
+    f::Tuple{Real,Real},
+)::@NamedTuple{
+    segp::Matrix{Float64},
+    segs::Vector{Tuple{Float64,Float64}},
+    tidx::Tuple{Real,Real},
+    fidx::Tuple{Real,Real},
+}
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
 
@@ -34,10 +44,14 @@ function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64};
     tidx2 = vsearch(t[2], st)
 
     segp = sp[fidx1:fidx2, tidx1:tidx2]
-    segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
+    segs = ([
+        (st[tidx1], sf[fidx1]),
+        (st[tidx2], sf[fidx1]),
+        (st[tidx2], sf[fidx2]),
+        (st[tidx1], sf[fidx2]),
+    ])
 
     return (segp=segp, segs=segs, tidx=(tidx1, tidx2), fidx=(fidx1, fidx2))
-
 end
 
 """
@@ -62,8 +76,19 @@ Named tuple containing:
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})::@NamedTuple{segp::Array{Float64, 3}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}}
-
+function spec_seg(
+    sp::AbstractArray,
+    sf::AbstractVector,
+    st::AbstractVector;
+    ch::Int64,
+    t::Tuple{Real,Real},
+    f::Tuple{Real,Real},
+)::@NamedTuple{
+    segp::Array{Float64,3},
+    segs::Vector{Tuple{Float64,Float64}},
+    tidx::Tuple{Real,Real},
+    fidx::Tuple{Real,Real},
+}
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
     @assert ch in axes(sp, 3) "ch must be in [1, $(size(sp, 3))]."
@@ -73,10 +98,14 @@ function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch:
     tidx1 = vsearch(t[1], st)
     tidx2 = vsearch(t[2], st)
     segp = sp[fidx1:fidx2, tidx1:tidx2, ch, :]
-    segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
+    segs = ([
+        (st[tidx1], sf[fidx1]),
+        (st[tidx2], sf[fidx1]),
+        (st[tidx2], sf[fidx2]),
+        (st[tidx1], sf[fidx2]),
+    ])
 
     return (segp=segp, segs=segs, tidx=(tidx1, tidx2), fidx=(fidx1, fidx2))
-
 end
 
 """
@@ -96,8 +125,9 @@ Named tuple containing:
 - `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function flim(p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real})::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
-
+function flim(
+    p::AbstractArray, f::AbstractVector; flim::Tuple{Real,Real}
+)::@NamedTuple{p::Union{Array{Float64,3},Array{Float64,4}}, f::Vector{Float64}}
     @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
 
     _check_tuple(flim, "flim", (f[1], f[end]))
@@ -115,7 +145,6 @@ function flim(p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real})::@Na
     end
 
     return (p=p_new, f=f_new)
-
 end
 
 """
@@ -135,8 +164,9 @@ Named tuple containing:
 - `p::Array{Float64, 4}`: powers
 - `t::Vector{Float64}`: time points
 """
-function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
-
+function tlim(
+    p::AbstractArray, t::AbstractVector; seg::Tuple{Real,Real}
+)::@NamedTuple{p::Array{Float64,4}, t::Vector{Float64}}
     _chk4d(p)
     _check_tuple(seg, "seg", (t[1], t[end]))
 
@@ -146,5 +176,4 @@ function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})::@Nam
     p_new = p[:, t1_idx:t2_idx, :, :]
 
     return (p=p_new, t=t_new)
-
 end

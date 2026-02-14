@@ -20,8 +20,16 @@ Named tuple containing:
 - `s1_phase::Vector{Float64}`: signal 1 phase
 - `s2_phase::Vector{Float64}`: signal 2 phase
 """
-function ispc(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{ispc_val::Float64, ispc_ang::Float64, s_diff::Vector{Float64}, ph_diff::Vector{Float64}, s1_phase::Vector{Float64}, s2_phase::Vector{Float64}}
-
+function ispc(
+    s1::AbstractVector, s2::AbstractVector
+)::@NamedTuple{
+    ispc_val::Float64,
+    ispc_ang::Float64,
+    s_diff::Vector{Float64},
+    ph_diff::Vector{Float64},
+    s1_phase::Vector{Float64},
+    s2_phase::Vector{Float64},
+}
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     _, _, _, s1_phase = htransform(s1)
@@ -33,8 +41,14 @@ function ispc(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{ispc_val::Flo
     ispc_val = abs(mean(exp.(1im .* ph_diff)))
     ispc_ang = DSP.angle(mean(exp.(1im .* ph_diff)))
 
-    return (ispc_val=ispc_val, ispc_ang=ispc_ang, s_diff=s_diff, ph_diff=ph_diff, s1_phase=s1_phase, s2_phase=s2_phase)
-
+    return (
+        ispc_val=ispc_val,
+        ispc_ang=ispc_ang,
+        s_diff=s_diff,
+        ph_diff=ph_diff,
+        s1_phase=s1_phase,
+        s2_phase=s2_phase,
+    )
 end
 
 """
@@ -53,9 +67,14 @@ Named tuple containing:
 - `ispc_val::Array{Float64, 3}`: ISPC value matrices over epochs
 - `ispc_ang::Array{Float64, 3}`: ISPC angle matrices over epochs
 """
-function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ispc_val::Array{Float64, 3}, ispc_ang::Array{Float64, 3}}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function ispc(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::@NamedTuple{ispc_val::Array{Float64,3}, ispc_ang::Array{Float64,3}}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -65,7 +84,9 @@ function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                ispc_val[ch_idx1, ch_idx2, ep_idx], ispc_ang[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views ispc(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
+                ispc_val[ch_idx1, ch_idx2, ep_idx], ispc_ang[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views ispc(
+                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
+                )
             end
         end
     end
@@ -75,7 +96,6 @@ function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     ispc_ang = _copy_lt2ut(ispc_ang)
 
     return (ispc_val=ispc_val, ispc_ang=ispc_ang)
-
 end
 
 """
@@ -102,10 +122,31 @@ Named tuple containing:
 - `s1_phase::Array{Float64, 3}`: signal 1 phase
 - `s2_phase::Array{Float64, 3}`: signal 2 phase
 """
-function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{ispc_val::Matrix{Float64}, ispc_ang::Matrix{Float64}, s_diff::Array{Float64, 3}, ph_diff::Array{Float64, 3}, s1_phase::Array{Float64, 3}, s2_phase::Array{Float64, 3}}
-
-    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
-    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
+function ispc(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String,Vector{String}},
+    ch2::Union{String,Vector{String}},
+    ep1::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj1)),
+    ep2::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj2)),
+)::@NamedTuple{
+    ispc_val::Matrix{Float64},
+    ispc_ang::Matrix{Float64},
+    s_diff::Array{Float64,3},
+    ph_diff::Array{Float64,3},
+    s1_phase::Array{Float64,3},
+    s2_phase::Array{Float64,3},
+}
+    ch1 = if exclude_bads
+        get_channel(obj1; ch=ch1, exclude="bad")
+    else
+        get_channel(obj1; ch=ch1, exclude="")
+    end
+    ch2 = if exclude_bads
+        get_channel(obj2; ch=ch2, exclude="bad")
+    else
+        get_channel(obj2; ch=ch2, exclude="")
+    end
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     _check_epochs(obj1, ep1)
@@ -128,10 +169,19 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ispc_val[ch_idx, ep_idx], ispc_ang[ch_idx, ep_idx], s_diff[ch_idx, :, ep_idx], ph_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views ispc(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            ispc_val[ch_idx, ep_idx], ispc_ang[ch_idx, ep_idx], s_diff[ch_idx, :, ep_idx], ph_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views ispc(
+                obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
+                obj2.data[ch2[ch_idx], :, ep2[ep_idx]],
+            )
         end
     end
 
-    return (ispc_val=ispc_val, ispc_ang=ispc_ang, s_diff=s_diff, ph_diff=ph_diff, s1_phase=s1_phase, s2_phase=s2_phase)
-
+    return (
+        ispc_val=ispc_val,
+        ispc_ang=ispc_ang,
+        s_diff=s_diff,
+        ph_diff=ph_diff,
+        s1_phase=s1_phase,
+        s2_phase=s2_phase,
+    )
 end

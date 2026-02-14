@@ -21,19 +21,28 @@ Named tuple containing:
 - `es::Float64`: total signal energy
 - `rmsq::Float64`: root mean square
 """
-function amp(s::AbstractVector)::@NamedTuple{p::Float64, r::Float64, p2p::Float64, semi_p2p::Float64, msa::Float64, rmsa::Float64, es::Float64, rmsq::Float64}
-
+function amp(
+    s::AbstractVector
+)::@NamedTuple{
+    p::Float64,
+    r::Float64,
+    p2p::Float64,
+    semi_p2p::Float64,
+    msa::Float64,
+    rmsa::Float64,
+    es::Float64,
+    rmsq::Float64,
+}
     p = maximum(abs.(s))
     r = p / sqrt(2)
     p2p = abs(maximum(s)) + abs(minimum(s))
     semi_p2p = p2p / 2
-    msa = 1/length(s) * sum(s.^2)
+    msa = 1/length(s) * sum(s .^ 2)
     rmsa = p2p / sqrt(2)
-    es = sum(s.^2)
+    es = sum(s .^ 2)
     rmsq = rms(s)
 
     return (p=p, r=r, p2p=p2p, semi_p2p=semi_p2p, msa=msa, rmsa=rmsa, es=es, rmsq=rmsq)
-
 end
 
 """
@@ -57,8 +66,18 @@ Named tuple containing:
 - `energy::Matrix{Float64}`: total signal energy
 - `rmsq::Matrix{Float64}`: root mean square
 """
-function amp(s::AbstractArray)::@NamedTuple{p::Matrix{Float64}, r::Matrix{Float64}, p2p::Matrix{Float64}, semi_p2p::Matrix{Float64}, msa::Matrix{Float64}, rmsa::Matrix{Float64}, energy::Matrix{Float64}, rmsq::Matrix{Float64}}
-
+function amp(
+    s::AbstractArray
+)::@NamedTuple{
+    p::Matrix{Float64},
+    r::Matrix{Float64},
+    p2p::Matrix{Float64},
+    semi_p2p::Matrix{Float64},
+    msa::Matrix{Float64},
+    rmsa::Matrix{Float64},
+    energy::Matrix{Float64},
+    rmsq::Matrix{Float64},
+}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -74,12 +93,13 @@ function amp(s::AbstractArray)::@NamedTuple{p::Matrix{Float64}, r::Matrix{Float6
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, ep_idx], r[ch_idx, ep_idx], p2p[ch_idx, ep_idx], semi_p2p[ch_idx, ep_idx], msa[ch_idx, ep_idx], rmsa[ch_idx, ep_idx], nrg[ch_idx, ep_idx], rmsq[ch_idx, ep_idx] = @views amp(s[ch_idx, :, ep_idx])
+            p[ch_idx, ep_idx], r[ch_idx, ep_idx], p2p[ch_idx, ep_idx], semi_p2p[ch_idx, ep_idx], msa[ch_idx, ep_idx], rmsa[ch_idx, ep_idx], nrg[ch_idx, ep_idx], rmsq[ch_idx, ep_idx] = @views amp(
+                s[ch_idx, :, ep_idx]
+            )
         end
     end
 
     return (p=p, r=r, p2p=p2p, semi_p2p=semi_p2p, msa=msa, rmsa=rmsa, energy=nrg, rmsq=rmsq)
-
 end
 
 """
@@ -104,12 +124,25 @@ Named tuple containing:
 - `energy::Matrix{Float64}`: total signal energy
 - `rmsq::Matrix{Float64}`: root mean square
 """
-function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{p::Matrix{Float64}, r::Matrix{Float64}, p2p::Matrix{Float64}, semi_p2p::Matrix{Float64}, msa::Matrix{Float64}, rmsa::Matrix{Float64}, energy::Matrix{Float64}, rmsq::Matrix{Float64}}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function amp(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::@NamedTuple{
+    p::Matrix{Float64},
+    r::Matrix{Float64},
+    p2p::Matrix{Float64},
+    semi_p2p::Matrix{Float64},
+    msa::Matrix{Float64},
+    rmsa::Matrix{Float64},
+    energy::Matrix{Float64},
+    rmsq::Matrix{Float64},
+}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
 
     p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = @views amp(obj.data[ch, :, :])
 
     return (p=p, r=r, p2p=p2p, semi_p2p=semi_p2p, msa=msa, rmsa=rmsa, energy=nrg, rmsq=rmsq)
-
 end

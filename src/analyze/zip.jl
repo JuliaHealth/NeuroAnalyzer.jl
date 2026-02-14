@@ -20,11 +20,20 @@ Zip ratio is an intermediate marker of signal complexity (with lower values indi
 `zipratio()` requires `zip` (Linux/Mac) or `zip.exe` (Windows) command in the `PATH`.
 """
 function zipratio(obj::NeuroAnalyzer.NEURO)
-
     tmp_name, _ = mktemp()
     zip_name = tmp_name * ".zip"
     tmp_name *= ".csv"
-    export_csv(obj, file_name=tmp_name, names=false, header=false, epoch_time=false, markers=false, locs=false, history=false, overwrite=true)
+    export_csv(
+        obj;
+        file_name=tmp_name,
+        names=false,
+        header=false,
+        epoch_time=false,
+        markers=false,
+        locs=false,
+        history=false,
+        overwrite=true,
+    )
 
     zip_cmd = ""
     if Sys.iswindows()
@@ -47,5 +56,4 @@ function zipratio(obj::NeuroAnalyzer.NEURO)
     zip_ratio = zip_size_9 / zip_size_0
 
     return zip_ratio
-
 end

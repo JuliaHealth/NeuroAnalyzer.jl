@@ -19,14 +19,12 @@ Calculate mean of the proportion.
 - `m::Float64`
 """
 function meanp(p::Float64, n::Int64)::Float64
-
     @assert n > 0 "n must be > 0."
     _in(p, (0.0, 1.0), "p")
 
     m = n * p
 
     return m
-
 end
 
 """
@@ -44,7 +42,6 @@ Calculate mean of categorical data.
 - `m::Float64`
 """
 function meanc(g::Vector{Int64}, x::Vector{Int64})::Float64
-
     @assert length(g) == length(x) "Length of g and length of x must be equal."
     @assert length(g) > 0 "Length of g must be > 0."
     @assert length(x) > 0 "Length of x must be > 0."
@@ -52,7 +49,6 @@ function meanc(g::Vector{Int64}, x::Vector{Int64})::Float64
     m = sum(g .* x) / sum(x)
 
     return m
-
 end
 
 """
@@ -77,7 +73,6 @@ function meang(x::AbstractVector)::Float64
     m = prod(x)^(1/length(x))
 
     return m
-
 end
 
 """
@@ -94,13 +89,11 @@ Calculate harmonic mean.
 - `m::Float64`
 """
 function meanh(x::AbstractVector)::Float64
-
     @assert !(0 in x) "x must not contain value(s) of 0."
 
     m = length(x) / sum(1 ./ x)
 
     return m
-
 end
 
 """
@@ -118,14 +111,12 @@ Calculate weighted mean.
 - `m::Float64`
 """
 function meanw(x::AbstractVector, w::AbstractVector)::Float64
-
     @assert !(0 in x) "x must not contain value(s) of 0."
     @assert length(x) == length(w) "Weights and values vectors must have the same length."
-    
+
     m = sum(x .* w) / sum(x)
 
     return m
-
 end
 
 """
@@ -143,7 +134,6 @@ Calculate circular mean.
 - `m::Float64`
 """
 function meancirc(x::AbstractVector; rad::Bool=false)::Float64
-
     if rad
         m = atan(sum(sin.(x)), sum(cos.(x)))
     else
@@ -151,7 +141,6 @@ function meancirc(x::AbstractVector; rad::Bool=false)::Float64
     end
 
     return m
-
 end
 
 """
@@ -169,7 +158,6 @@ Calculate trimmed mean.
 - `m::Float64`
 """
 function meant(x::AbstractVector; n::Float64=0.1)::Float64
-
     @assert n > 0 "n must be > 0."
     _in(n, (0.0, 1.0), "n")
 
@@ -177,8 +165,7 @@ function meant(x::AbstractVector; n::Float64=0.1)::Float64
     xn = round(Int64, length(xs) * n)
     @assert xn + 1 < length(x) "n does not match x length."
     @assert length(x) - xn > 0 "n does not match x length."
-    m = mean(x[xn + 1:end - xn])
+    m = mean(x[(xn + 1):(end - xn)])
 
     return m
-
 end

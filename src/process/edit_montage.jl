@@ -14,7 +14,6 @@ Edit montage file in the OS editor.
 - `Nothing`
 """
 function edit_montage(file_name::String)::Nothing
-
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
     if Sys.iswindows()
@@ -30,5 +29,4 @@ function edit_montage(file_name::String)::Nothing
     end
 
     return nothing
-
 end

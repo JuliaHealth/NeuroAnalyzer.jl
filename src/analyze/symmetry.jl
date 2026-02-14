@@ -14,11 +14,9 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 - `sym::Float64`: signal symmetry
 """
 function symmetry(s::AbstractVector)::Float64
-
     sym = sum(s .< 0) == 0 ? sum(s .>= 0) : sum(s .>= 0) / sum(s .< 0)
 
-    return sym 
-
+    return sym
 end
 
 """
@@ -35,7 +33,6 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 - `sym::Matrix{Float64}`: signal symmetry
 """
 function symmetry(s::AbstractArray)::Matrix{Float64}
-
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -49,7 +46,6 @@ function symmetry(s::AbstractArray)::Matrix{Float64}
     end
 
     return sym
-
 end
 
 """
@@ -66,11 +62,15 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 
 - `sym::Matrix{Float64}`: signal symmetry
 """
-function symmetry(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function symmetry(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Matrix{Float64}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     sym = @views symmetry(obj.data[ch, :, :])
 
     return sym
-
 end

@@ -23,15 +23,16 @@ Perform piecewise detrending.
 # Returns
 - `s_new::Vector{Float64}`
 """
-function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::Vector{Float64}
-
+function detrend(
+    s::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0
+)::Vector{Float64}
     _check_var(type, [:ls, :linear, :mean, :constant, :poly, :loess, :hp], "type")
     @assert f > 0 "f must be > 0."
     @assert order >= 1 "order must be ≥ 1."
 
     if type === :loess
         t = collect(1.0:1:length(s))
-        model = Loess.loess(t, Vector(s), span=f)
+        model = Loess.loess(t, Vector(s); span=f)
         trend = Loess.predict(model, t)
         s_new = s .- trend
     elseif type === :poly
@@ -51,12 +52,12 @@ function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order:
         N = size(s, 1)
         # create linear trend matrix
         A = similar(s, T, N, 2)
-        A[:,2] .= T(1)
-        A[:,1] .= range(T(0),T(1),length=N)
+        A[:, 2] .= T(1)
+        A[:, 1] .= range(T(0), T(1); length=N)
         # create linear trend matrix
         R = transpose(A) * A
         # do the matrix inverse for 2×2 matrix
-        Rinv = inv(Array(R)) |> typeof(R)
+        Rinv = typeof(R)(inv(Array(R)))
         factor = Rinv * transpose(A)
         s_new = s .- A * (factor * s)
     elseif type === :linear
@@ -73,7 +74,6 @@ function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order:
     end
 
     return s_new
-
 end
 
 """
@@ -99,8 +99,9 @@ Perform piecewise detrending.
 
 - `s_new::Array{Float64, 3}`
 """
-function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::Array{Float64, 3}
-
+function detrend(
+    s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0
+)::Array{Float64,3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -108,12 +109,13 @@ function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::
     s_new = similar(s)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views detrend(s[ch_idx, :, ep_idx], type=type, offset=offset, order=order, f=f)
+            s_new[ch_idx, :, ep_idx] = @views detrend(
+                s[ch_idx, :, ep_idx], type=type, offset=offset, order=order, f=f
+            )
         end
     end
 
     return s_new
-
 end
 
 """
@@ -140,16 +142,26 @@ Perform piecewise detrending.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function detrend(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    type::Symbol=:linear,
+    offset::Real=0,
+    order::Int64=1,
+    f::Float64=1.0,
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
 
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = detrend(obj.data[ch, :, :], type=type, offset=offset, order=order, f=f)
-    push!(obj_new.history, "detrend(OBJ, ch=$ch, type=$type, offset=$offset, order=$order, f=$f)")
+    obj_new.data[ch, :, :] = detrend(
+        obj.data[ch, :, :]; type=type, offset=offset, order=order, f=f
+    )
+    push!(
+        obj_new.history,
+        "detrend(OBJ, ch=$ch, type=$type, offset=$offset, order=$order, f=$f)",
+    )
 
     return obj_new
-
 end
 
 """
@@ -176,12 +188,17 @@ Perform piecewise detrending.
 
 - `Nothing`
 """
-function detrend!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::Nothing
-
-    obj_new = detrend(obj, ch=ch, type=type, offset=offset, order=order, f=f)
+function detrend!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    type::Symbol=:linear,
+    offset::Real=0,
+    order::Int64=1,
+    f::Float64=1.0,
+)::Nothing
+    obj_new = detrend(obj; ch=ch, type=type, offset=offset, order=order, f=f)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

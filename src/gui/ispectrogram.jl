@@ -17,7 +17,6 @@ Interactive spectrogram of continuous signal.
 - `Nothing`
 """
 function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
-
     @assert nepochs(obj) == 1 "For epoched object ispectrogram_ep() must be used."
 
     obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
@@ -26,16 +25,15 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 
     ch_init = ch
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch])
+    p = NeuroAnalyzer.plot_spectrogram(obj; ch=clabels[ch])
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ispectrogram()")
         Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
 
@@ -122,7 +120,13 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
         cb_smooth.active = true
 
         combo_method = GtkComboBoxText()
-        spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"]
+        spectrogram_methods = [
+            "short-time Fourier transform",
+            "multi-taper",
+            "Morlet wavelet",
+            "Gaussian and Hilbert transform",
+            "CWT",
+        ]
         for idx in spectrogram_methods
             push!(combo_method, idx)
         end
@@ -209,7 +213,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
         lab_n = GtkLabel("Kernel size:")
         lab_n.halign = 2
 
-        signal_slider = GtkScale(:h, obj.time_pts[1]:obj.time_pts[end] - zoom)
+        signal_slider = GtkScale(:h, obj.time_pts[1]:(obj.time_pts[end] - zoom))
         signal_slider.draw_value = false
         signal_slider.tooltip_text = "Time position"
 
@@ -290,7 +294,9 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
             method == 4 && (method = :cwt)
             wt = nothing
             try
-                wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
+                wt = eval(
+                    Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")")
+                )
             catch
             end
             frq1 = entry_frq1.value
@@ -314,8 +320,14 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1
-                warn_dialog(_nill, "For multi-channel spectrogram plot, all channels must be of the same type.", win)
+            elseif length(
+                unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])
+            ) > 1
+                warn_dialog(
+                    _nill,
+                    "For multi-channel spectrogram plot, all channels must be of the same type.",
+                    win,
+                )
                 no_error = false
             end
 
@@ -323,26 +335,28 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
                 time1 = entry_time.value
                 time2 = time1 + zoom
                 time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-                p = NeuroAnalyzer.plot_spectrogram(obj,
-                                                   ch=ch,
-                                                   seg=(time1, time2),
-                                                   mono=mono,
-                                                   title=title,
-                                                   xlabel=xlab,
-                                                   ylabel=ylab,
-                                                   db=db,
-                                                   method=method,
-                                                   flim=(frq1, frq2),
-                                                   ncyc=ncyc,
-                                                   nt=nt,
-                                                   wlen=wlen,
-                                                   woverlap=woverlap,
-                                                   w=hw,
-                                                   wt=wt,
-                                                   gw=gw,
-                                                   frq=frq,
-                                                   smooth=smooth,
-                                                   n=n)
+                p = NeuroAnalyzer.plot_spectrogram(
+                    obj,
+                    ch=ch,
+                    seg=(time1, time2),
+                    mono=mono,
+                    title=title,
+                    xlabel=xlab,
+                    ylabel=ylab,
+                    db=db,
+                    method=method,
+                    flim=(frq1, frq2),
+                    ncyc=ncyc,
+                    nt=nt,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=hw,
+                    wt=wt,
+                    gw=gw,
+                    frq=frq,
+                    smooth=smooth,
+                    n=n,
+                )
                 img = read_from_png(io)
                 can.content_width = p.attr[:size][1]
                 can.content_height = p.attr[:size][2]
@@ -551,13 +565,19 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
             end
 
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt(','))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -566,34 +586,53 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
                     time_current = obj.time_pts[end] - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
 
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + 1
                     time_current = time_current - 1
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - 1
                     time_current += 1
@@ -602,13 +641,19 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
                     time_current = obj.time_pts[end] - 1
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('z'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('z')
+            )
                 if ch_first > 1
                     ch_first -= 1
                     ch_last -= 1
                     @idle_add Gtk4.value(ch_slider, ch_first)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('x'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('x')
+            )
                 if mch
                     if ch_last < length(ch)
                         ch_first += 1
@@ -631,7 +676,6 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
     Gtk4.run(app)
 
     return nothing
-
 end
 
 """
@@ -649,20 +693,18 @@ Interactive spectrogram of epoched signal.
 - `Nothing`
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
-
     @assert nepochs(obj) > 1 "For continuous object ispectrogram() must be used."
 
     ch_init = ch
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch], ep=1)
+    p = NeuroAnalyzer.plot_spectrogram(obj; ch=clabels[ch], ep=1)
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ispectrogram_ep()")
         Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
 
@@ -743,7 +785,13 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         cb_smooth.active = true
 
         combo_method = GtkComboBoxText()
-        spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"]
+        spectrogram_methods = [
+            "short-time Fourier transform",
+            "multi-taper",
+            "Morlet wavelet",
+            "Gaussian and Hilbert transform",
+            "CWT",
+        ]
         for idx in spectrogram_methods
             push!(combo_method, idx)
         end
@@ -909,7 +957,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             method == 4 && (method = :cwt)
             wt = nothing
             try
-                wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
+                wt = eval(
+                    Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")")
+                )
             catch
             end
             frq1 = entry_frq1.value
@@ -933,33 +983,41 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1
-                warn_dialog(_nill, "For multi-channel spectrogram plot, all channels must be of the same type.", win)
+            elseif length(
+                unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])
+            ) > 1
+                warn_dialog(
+                    _nill,
+                    "For multi-channel spectrogram plot, all channels must be of the same type.",
+                    win,
+                )
                 no_error = false
             end
 
             if no_error
                 ep = Int64(entry_epoch.value)
-                p = NeuroAnalyzer.plot_spectrogram(obj,
-                                                   ch=ch,
-                                                   ep=ep,
-                                                   mono=mono,
-                                                   title=title,
-                                                   xlabel=xlab,
-                                                   ylabel=ylab,
-                                                   db=db,
-                                                   method=method,
-                                                   flim=(frq1, frq2),
-                                                   ncyc=ncyc,
-                                                   nt=nt,
-                                                   wlen=wlen,
-                                                   woverlap=woverlap,
-                                                   w=hw,
-                                                   wt=wt,
-                                                   gw=gw,
-                                                   frq=frq,
-                                                   smooth=smooth,
-                                                   n=n)
+                p = NeuroAnalyzer.plot_spectrogram(
+                    obj,
+                    ch=ch,
+                    ep=ep,
+                    mono=mono,
+                    title=title,
+                    xlabel=xlab,
+                    ylabel=ylab,
+                    db=db,
+                    method=method,
+                    flim=(frq1, frq2),
+                    ncyc=ncyc,
+                    nt=nt,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=hw,
+                    wt=wt,
+                    gw=gw,
+                    frq=frq,
+                    smooth=smooth,
+                    n=n,
+                )
                 img = read_from_png(io)
                 can.content_width = p.attr[:size][1]
                 can.content_height = p.attr[:size][2]
@@ -1083,34 +1141,53 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
                     @idle_add entry_epoch.value = ep
                 end
                 draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
@@ -1126,5 +1203,4 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end

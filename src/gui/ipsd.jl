@@ -17,7 +17,6 @@ Interactive PSD of continuous signal.
 - `Nothing`
 """
 function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
-
     @assert nepochs(obj) == 1 "For epoched object ipsd_ep() must be used."
 
     obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
@@ -26,16 +25,15 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 
     ch_init = ch
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_psd(obj, ch=clabels[ch])
+    p = NeuroAnalyzer.plot_psd(obj; ch=clabels[ch])
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ipsd()")
         Gtk4.default_size(win, 1200, 650)
 
@@ -118,7 +116,14 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         cb_hw.active = true
 
         combo_method = GtkComboBoxText()
-        psd_methods = ["Welch's periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian-Hilbert transform"]
+        psd_methods = [
+            "Welch's periodogram",
+            "fast Fourier transform",
+            "short-time Fourier transform",
+            "multi-taper",
+            "Morlet wavelet",
+            "Gaussian-Hilbert transform",
+        ]
         for idx in psd_methods
             push!(combo_method, idx)
         end
@@ -139,7 +144,23 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         end
 
         combo_ref = GtkComboBoxText()
-        ref_types = ["absolute", "total power", "delta", "theta", "alpha", "alpha lower", "alpha higher", "beta", "beta lower", "beta higher", "gamma", "gamma 1", "gamma 2", "gamma lower", "gamma higher"]
+        ref_types = [
+            "absolute",
+            "total power",
+            "delta",
+            "theta",
+            "alpha",
+            "alpha lower",
+            "alpha higher",
+            "beta",
+            "beta lower",
+            "beta higher",
+            "gamma",
+            "gamma 1",
+            "gamma 2",
+            "gamma lower",
+            "gamma higher",
+        ]
         for idx in ref_types
             push!(combo_ref, idx)
         end
@@ -218,7 +239,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         lab_gw = GtkLabel("Gaussian width:")
         lab_gw.halign = 2
 
-        signal_slider = GtkScale(:h, obj.time_pts[1]:obj.time_pts[end] - zoom)
+        signal_slider = GtkScale(:h, obj.time_pts[1]:(obj.time_pts[end] - zoom))
         signal_slider.draw_value = false
         signal_slider.tooltip_text = "Time position"
 
@@ -336,22 +357,36 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :butterfly
-                warn_dialog(_nill, "For butterfly plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For butterfly plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :mean
-                warn_dialog(_nill, "For mean plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For mean plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :w3d
-                warn_dialog(_nill, "For w3d plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For w3d plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :s3d
-                warn_dialog(_nill, "For s3d plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For s3d plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif DataFrames.nrow(obj.locs) == 0 && type === :topo
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
-                warn_dialog(_nill, "For multi-channel $(string(type)) plot all channels must be of the same type.", win)
+            elseif length(
+                unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])
+            ) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
+                warn_dialog(
+                    _nill,
+                    "For multi-channel $(string(type)) plot all channels must be of the same type.",
+                    win,
+                )
                 no_error = false
             end
 
@@ -359,25 +394,27 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 time1 = entry_time.value
                 time2 = time1 + zoom
                 time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-                p = NeuroAnalyzer.plot_psd(obj,
-                                           ch=ch,
-                                           seg=(time1, time2),
-                                           mono=mono,
-                                           title=title,
-                                           xlabel=xlab,
-                                           ylabel=ylab,
-                                           db=db,
-                                           method=method,
-                                           type=type,
-                                           frq=frq,
-                                           ref=ref,
-                                           flim=(frq1, frq2),
-                                           ncyc=ncyc,
-                                           nt=nt,
-                                           wlen=wlen,
-                                           woverlap=woverlap,
-                                           w=hw,
-                                           gw=gw)
+                p = NeuroAnalyzer.plot_psd(
+                    obj,
+                    ch=ch,
+                    seg=(time1, time2),
+                    mono=mono,
+                    title=title,
+                    xlabel=xlab,
+                    ylabel=ylab,
+                    db=db,
+                    method=method,
+                    type=type,
+                    frq=frq,
+                    ref=ref,
+                    flim=(frq1, frq2),
+                    ncyc=ncyc,
+                    nt=nt,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=hw,
+                    gw=gw,
+                )
                 img = read_from_png(io)
                 can.content_width = p.attr[:size][1]
                 can.content_height = p.attr[:size][2]
@@ -435,7 +472,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
             ch = Int64(combo_ch.active) + 1
             if ch in 1:length(ctypes)
                 ch = lowercase(ctypes[ch])
-                if length(get_channel(obj, type=ch)) > 1
+                if length(get_channel(obj; type=ch)) > 1
                     combo_type.sensitive = true
                 else
                     combo_type.active = 0
@@ -600,13 +637,19 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
             end
 
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt(','))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -615,34 +658,53 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                     time_current = obj.time_pts[end] - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
 
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + 1
                     time_current = time_current - 1
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - 1
                     time_current += 1
@@ -661,7 +723,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end
 
 """
@@ -679,19 +740,17 @@ Interactive PSD of epoched signal.
 - `Nothing`
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
-
     @assert nepochs(obj) > 1 "For continuous object ipsd() must be used."
 
     ch_init = ch
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     clabels = labels(obj)
 
     k = nothing
 
-    p = NeuroAnalyzer.plot_psd(obj, ch=clabels[ch], ep=1)
+    p = NeuroAnalyzer.plot_psd(obj; ch=clabels[ch], ep=1)
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ipsd_ep()")
         Gtk4.default_size(win, 1200, 650)
 
@@ -768,7 +827,14 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         cb_hw.active = true
 
         combo_method = GtkComboBoxText()
-        psd_methods = ["Welch's periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian-Hilbert transform"]
+        psd_methods = [
+            "Welch's periodogram",
+            "fast Fourier transform",
+            "short-time Fourier transform",
+            "multi-taper",
+            "Morlet wavelet",
+            "Gaussian-Hilbert transform",
+        ]
         for idx in psd_methods
             push!(combo_method, idx)
         end
@@ -789,7 +855,23 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         end
 
         combo_ref = GtkComboBoxText()
-        ref_types = ["absolute", "total power", "delta", "theta", "alpha", "alpha lower", "alpha higher", "beta", "beta lower", "beta higher", "gamma", "gamma 1", "gamma 2", "gamma lower", "gamma higher"]
+        ref_types = [
+            "absolute",
+            "total power",
+            "delta",
+            "theta",
+            "alpha",
+            "alpha lower",
+            "alpha higher",
+            "beta",
+            "beta lower",
+            "beta higher",
+            "gamma",
+            "gamma 1",
+            "gamma 2",
+            "gamma lower",
+            "gamma higher",
+        ]
         for idx in ref_types
             push!(combo_ref, idx)
         end
@@ -984,46 +1066,62 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :butterfly
-                warn_dialog(_nill, "For butterfly plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For butterfly plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :mean
-                warn_dialog(_nill, "For mean plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For mean plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :w3d
-                warn_dialog(_nill, "For w3d plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For w3d plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif length(get_channel(obj, ch=ch)) < 2 && type === :s3d
-                warn_dialog(_nill, "For s3d plot, the signal must contain ≥ 2 channels.", win)
+                warn_dialog(
+                    _nill, "For s3d plot, the signal must contain ≥ 2 channels.", win
+                )
                 no_error = false
             elseif DataFrames.nrow(obj.locs) == 0 && type === :topo
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
-                warn_dialog(_nill, "For multi-channel $(string(type)) plot all channels must be of the same type.", win)
+            elseif length(
+                unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])
+            ) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
+                warn_dialog(
+                    _nill,
+                    "For multi-channel $(string(type)) plot all channels must be of the same type.",
+                    win,
+                )
                 no_error = false
             end
 
             if no_error
                 ep = Int64(entry_epoch.value)
-                p = NeuroAnalyzer.plot_psd(obj,
-                                           ch=ch,
-                                           ep=ep,
-                                           mono=mono,
-                                           title=title,
-                                           xlabel=xlab,
-                                           ylabel=ylab,
-                                           db=db,
-                                           method=method,
-                                           type=type,
-                                           frq=frq,
-                                           ref=ref,
-                                           flim=(frq1, frq2),
-                                           ncyc=ncyc,
-                                           nt=nt,
-                                           wlen=wlen,
-                                           woverlap=woverlap,
-                                           w=hw,
-                                           gw=gw)
+                p = NeuroAnalyzer.plot_psd(
+                    obj,
+                    ch=ch,
+                    ep=ep,
+                    mono=mono,
+                    title=title,
+                    xlabel=xlab,
+                    ylabel=ylab,
+                    db=db,
+                    method=method,
+                    type=type,
+                    frq=frq,
+                    ref=ref,
+                    flim=(frq1, frq2),
+                    ncyc=ncyc,
+                    nt=nt,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=hw,
+                    gw=gw,
+                )
                 img = read_from_png(io)
                 can.content_width = p.attr[:size][1]
                 can.content_height = p.attr[:size][2]
@@ -1065,7 +1163,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             ch = Int64(combo_ch.active) + 1
             if ch in 1:length(ctypes)
                 ch = lowercase(ctypes[ch])
-                if length(get_channel(obj, type=ch)) > 1
+                if length(get_channel(obj; type=ch)) > 1
                     combo_type.sensitive = true
                 else
                     combo_type.active = 0
@@ -1159,34 +1257,53 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
                     @idle_add entry_epoch.value = ep
                 end
                 draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
@@ -1202,5 +1319,4 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end

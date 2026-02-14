@@ -24,15 +24,29 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
-
+function iftt(;
+    duration::Int64=20,
+    trials::Int64=2,
+    interval::Int64=2,
+    gpio::Int64=-1,
+    port_name::String="",
+)::@NamedTuple{
+    taps::Vector{Int64},
+    tap_t::Vector{Vector{Float64}},
+    tap_d::Vector{Vector{Float64}},
+    taps_int::Vector{Int64},
+    tap_t_int::Vector{Vector{Float64}},
+    tap_d_int::Vector{Vector{Float64}},
+}
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
     sp = nothing
     if port_name != ""
         sp = _serial_open(port_name)
         if sp === nothing
-            _info("Serial port $port_name is not available, keyboard SPACEBAR key will be used")
+            _info(
+                "Serial port $port_name is not available, keyboard SPACEBAR key will be used",
+            )
             port_name = ""
         else
             _serial_close(sp)
@@ -60,7 +74,6 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     int_idx = Vector{Float64}()
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iftt()")
         Gtk4.default_size(win, Int64(img1.width), Int64(img1.height) + 100)
 
@@ -316,10 +329,10 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
                 int_d_kp[idx] = int_d_kp[idx][1:l]
                 int_result[idx] = length(int_t_kp[idx])
             end
-            d_kp[idx] = round.((d_kp[idx] .- t_kp[idx]) .* 1000, digits=1)
-            t_kp[idx] = round.((t_kp[idx] .- t_idx[idx]) .* 1000, digits=1)
-            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000, digits=1)
-            int_t_kp[idx] = round.((int_t_kp[idx] .- int_idx[idx]) .* 1000, digits=1)
+            d_kp[idx] = round.((d_kp[idx] .- t_kp[idx]) .* 1000; digits=1)
+            t_kp[idx] = round.((t_kp[idx] .- t_idx[idx]) .* 1000; digits=1)
+            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000; digits=1)
+            int_t_kp[idx] = round.((int_t_kp[idx] .- int_idx[idx]) .* 1000; digits=1)
         end
 
         # remove out of time boundary taps
@@ -342,14 +355,21 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
             end
         end
 
-        return (taps=result, tap_t=t_kp, tap_d=d_kp, taps_int=int_result, tap_t_int=int_t_kp, tap_d_int=int_d_kp)
+        return (
+            taps=result,
+            tap_t=t_kp,
+            tap_d=d_kp,
+            taps_int=int_result,
+            tap_t_int=int_t_kp,
+            tap_d_int=int_d_kp,
+        )
 
     elseif !isnothing(sp)
         # format time points
-        d_kp = round.((d_kp .- t_kp) .* 1000, digits=1)
-        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000, digits=1)
-        t_kp = round.(t_kp .* 1000, digits=1)
-        int_t_kp = round.(int_t_kp .* 1000, digits=1)
+        d_kp = round.((d_kp .- t_kp) .* 1000; digits=1)
+        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits=1)
+        t_kp = round.(t_kp .* 1000; digits=1)
+        int_t_kp = round.(int_t_kp .* 1000; digits=1)
 
         # format time points
         t_keypressed = Vector{Vector{Float64}}()
@@ -363,8 +383,8 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
             end
             reverse!(tk)
             reverse!(td)
-            push!(t_keypressed, round.(tk, digits=1))
-            push!(d_keypressed, round.(td, digits=1))
+            push!(t_keypressed, round.(tk; digits=1))
+            push!(d_keypressed, round.(td; digits=1))
         end
         reverse!(t_keypressed)
         reverse!(d_keypressed)
@@ -381,8 +401,8 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
             end
             reverse!(tk)
             reverse!(td)
-            push!(int_t_keypressed, round.(tk, digits=1))
-            push!(int_d_keypressed, round.(td, digits=1))
+            push!(int_t_keypressed, round.(tk; digits=1))
+            push!(int_d_keypressed, round.(td; digits=1))
         end
         reverse!(int_t_keypressed)
         reverse!(int_d_keypressed)
@@ -411,7 +431,9 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
         d_idx = Vector{Vector{Int64}}()
         for idx in eachindex(t_keypressed)
             if length(unique(t_keypressed[idx])) != length(t_keypressed[idx])
-                push!(d_idx, unique(i -> t_keypressed[idx][i], eachindex(t_keypressed[idx])))
+                push!(
+                    d_idx, unique(i -> t_keypressed[idx][i], eachindex(t_keypressed[idx]))
+                )
             else
                 push!(d_idx, eachindex(t_keypressed[idx]))
             end
@@ -422,7 +444,10 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
         d_idx = Vector{Vector{Int64}}()
         for idx in eachindex(int_t_keypressed)
             if length(unique(int_t_keypressed[idx])) != length(int_t_keypressed[idx])
-                push!(d_idx, unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])))
+                push!(
+                    d_idx,
+                    unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])),
+                )
             else
                 push!(d_idx, eachindex(int_t_keypressed[idx]))
             end
@@ -431,8 +456,14 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
             int_d_keypressed[idx] = int_d_keypressed[idx][d_idx[idx]]
         end
 
-        return (taps=result, tap_t=t_keypressed, tap_d=d_keypressed, taps_int=int_result, tap_t_int=int_t_keypressed, tap_d_int=int_d_keypressed)
-
+        return (
+            taps=result,
+            tap_t=t_keypressed,
+            tap_d=d_keypressed,
+            taps_int=int_result,
+            tap_t_int=int_t_keypressed,
+            tap_d_int=int_d_keypressed,
+        )
     end
 end
 
@@ -459,8 +490,20 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
-
+function ftt(;
+    duration::Int64=20,
+    trials::Int64=2,
+    interval::Int64=2,
+    gpio::Int64=-1,
+    port_name::String="",
+)::@NamedTuple{
+    taps::Vector{Int64},
+    tap_t::Vector{Vector{Float64}},
+    tap_d::Vector{Vector{Float64}},
+    taps_int::Vector{Int64},
+    tap_t_int::Vector{Vector{Float64}},
+    tap_d_int::Vector{Vector{Float64}},
+}
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
     sp = nothing
@@ -476,7 +519,9 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
     elseif port_name != ""
         sp = _serial_open(port_name)
         if sp === nothing
-            _info("Serial port $port_name is not available, keyboard SPACEBAR key will be used")
+            _info(
+                "Serial port $port_name is not available, keyboard SPACEBAR key will be used",
+            )
             port_name = ""
         else
             _serial_close(sp)
@@ -509,10 +554,10 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
 
     if !(rpi isa PiGPIO.Pi) && isnothing(sp)
         while true
-            ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, true)
+            ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, true)
             ret == 0 || error("Unable to switch to raw mode.")
             kbd_key = read(stdin, Char)
-            ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, false)
+            ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, false)
             if kbd_key == ' '
                 break
             else
@@ -594,7 +639,9 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
                     idx2 += 1
                 else
                     println()
-                    print("   Trial $idx1: press the SPACEBAR button as quickly as possible")
+                    print(
+                        "   Trial $idx1: press the SPACEBAR button as quickly as possible"
+                    )
                     idx1 += 1
                 end
                 idx += 1
@@ -602,7 +649,7 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
         end
 
         # format time points
-        t = round.(t .* 1000, digits=3)
+        t = round.(t .* 1000; digits=3)
         if r > 0
             for idx1 in 1:r
                 for idx2 in 1:(2 * trials)
@@ -769,10 +816,10 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
 
     # format time points
     if rpi isa PiGPIO.Pi || !isnothing(sp)
-        d_kp = round.((d_kp .- t_kp) .* 1000, digits=1)
-        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000, digits=1)
-        t_kp = round.(t_kp .* 1000, digits=1)
-        int_t_kp = round.(int_t_kp .* 1000, digits=1)
+        d_kp = round.((d_kp .- t_kp) .* 1000; digits=1)
+        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits=1)
+        t_kp = round.(t_kp .* 1000; digits=1)
+        int_t_kp = round.(int_t_kp .* 1000; digits=1)
     end
 
     # format time points
@@ -787,8 +834,8 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
         end
         reverse!(tk)
         reverse!(td)
-        push!(t_keypressed, round.(tk, digits=1))
-        push!(d_keypressed, round.(td, digits=1))
+        push!(t_keypressed, round.(tk; digits=1))
+        push!(d_keypressed, round.(td; digits=1))
     end
     reverse!(t_keypressed)
     reverse!(d_keypressed)
@@ -805,18 +852,23 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
         end
         reverse!(tk)
         reverse!(td)
-        push!(int_t_keypressed, round.(tk, digits=1))
-        push!(int_d_keypressed, round.(td, digits=1))
+        push!(int_t_keypressed, round.(tk; digits=1))
+        push!(int_d_keypressed, round.(td; digits=1))
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)
 
     if isnothing(sp) && !(rpi isa PiGPIO.Pi)
         for idx in eachindex(t_keypressed)
-            t_keypressed[idx] = round.(t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000, digits=3)
+            t_keypressed[idx] = round.(
+                t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000; digits=3
+            )
         end
         for idx in eachindex(int_t_keypressed)
-            int_t_keypressed[idx] = round.(int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000), digits=1)
+            int_t_keypressed[idx] = round.(
+                int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000);
+                digits=1,
+            )
         end
     end
 
@@ -855,7 +907,10 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
     d_idx = Vector{Vector{Int64}}()
     for idx in eachindex(int_t_keypressed)
         if length(unique(int_t_keypressed[idx])) != length(int_t_keypressed[idx])
-            push!(d_idx, unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])))
+            push!(
+                d_idx,
+                unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])),
+            )
         else
             push!(d_idx, eachindex(int_t_keypressed[idx]))
         end
@@ -864,6 +919,12 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
         int_d_keypressed[idx] = int_d_keypressed[idx][d_idx[idx]]
     end
 
-    return (taps=result, tap_t=t_keypressed, tap_d=d_keypressed, taps_int=int_result, tap_t_int=int_t_keypressed, tap_d_int=int_d_keypressed)
-
+    return (
+        taps=result,
+        tap_t=t_keypressed,
+        tap_d=d_keypressed,
+        taps_int=int_result,
+        tap_t_int=int_t_keypressed,
+        tap_d_int=int_d_keypressed,
+    )
 end

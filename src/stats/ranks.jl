@@ -15,7 +15,6 @@ Calculate percentile ranks.
 - `p::Vector{Float64}`: percentile ranks
 """
 function prank(x::AbstractVector)::Vector{Float64}
-
     xorder = sortperm(x)
     x = sort(x)
     p = zeros(length(x))
@@ -26,7 +25,6 @@ function prank(x::AbstractVector)::Vector{Float64}
     end
 
     return p[xorder]
-
 end
 
 """
@@ -43,14 +41,15 @@ Calculate ranks scaled in 0..nbins.
 
 - `sr::Array{Int64}`
 """
-function dranks(x::AbstractArray, nbins::Int64=round(Int64, 1 + log2(length(x))))::Array{Int64}
+function dranks(
+    x::AbstractArray, nbins::Int64=round(Int64, 1 + log2(length(x)))
+)::Array{Int64}
 
     # scale ranks in 0..1
     r = tiedrank(x) ./ length(x)
-    
+
     # scale ranks in 0..nbins
     sr = ceil.(Int64, r .* nbins)
 
     return sr
-
 end

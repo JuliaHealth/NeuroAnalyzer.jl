@@ -20,7 +20,6 @@ Pad matrix with zeros to make it square.
 - `m::AbstractMatrix`
 """
 function m_pad0(m::AbstractMatrix)::AbstractMatrix
-
     mr, mc = size(m)
 
     if mr > mc
@@ -32,7 +31,6 @@ function m_pad0(m::AbstractMatrix)::AbstractMatrix
     else
         return m
     end
-
 end
 
 """
@@ -51,7 +49,6 @@ Pad matrix with zeros to make its size r × c.
 - `m::AbstractMatrix`
 """
 function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
-
     @assert (r, c) > size(m) "New matrix dimensions ($r × $c) must be larger than the source matrix dimensions ($(size(m, 1)) × $(size(m, 2)))."
 
     mr, mc = size(m)
@@ -67,9 +64,7 @@ function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
     end
 
     return m
-
 end
-
 
 """
     m_sortperm(m; <keyword arguments>)
@@ -87,24 +82,22 @@ Generates matrix sorting index.
 - `idx::Matrix{Int64}`
 """
 function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)::AbstractMatrix
-
     @assert dims in [1, 2] "dims must be 1 or 2."
 
     idx = zeros(Int, size(m))
     if dims == 1
-        @inbounds for m_idx = axes(m, 2)
+        @inbounds for m_idx in axes(m, 2)
             # sort by columns
             idx[:, m_idx] = sortperm(m[:, m_idx], rev=rev)
         end
     else
-        @inbounds for m_idx = axes(m, 1)
+        @inbounds for m_idx in axes(m, 1)
             # sort by rows
             idx[m_idx, :] = sortperm(m[m_idx, :], rev=rev)'
         end
     end
 
     return idx
-
 end
 
 """
@@ -123,27 +116,27 @@ Sorts matrix using sorting index.
 
 - `m_sorted::AbstractMatrix`
 """
-function m_sort(m::AbstractMatrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)::AbstractMatrix
-
+function m_sort(
+    m::AbstractMatrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1
+)::AbstractMatrix
     @assert dims in [1, 2] "dims must be 1 or 2."
 
     rev && reverse!(m_idx)
 
     m_sorted = zeros(eltype(m), size(m))
     if dims == 1
-        @inbounds for idx = axes(m, 2)
+        @inbounds for idx in axes(m, 2)
             # sort by columns
             m_sorted[:, idx] = @views m[:, idx][m_idx]
         end
     else
-        @inbounds for idx = axes(m, 1)
+        @inbounds for idx in axes(m, 1)
             # sort by rows
             m_sorted[idx, :] = @views m[idx, :][m_idx]
         end
     end
 
     return m_sorted
-
 end
 
 """
@@ -160,9 +153,7 @@ Normalize matrix.
 - `m_norm::AbstractArray`
 """
 function m_norm(m::AbstractArray)::AbstractArray
-
     return m ./ (size(m, 2) - 1)
-
 end
 
 """
@@ -181,7 +172,6 @@ Reshape vector into matrix using fixed segment length and overlapping.
 - `m::AbstractMatrix`
 """
 function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatrix
-
     @assert woverlap < length(x) "woverlap must be < $(length(x))."
     @assert wlen >= 1 "wlen must be ≥ 1."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
@@ -196,7 +186,6 @@ function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatri
     end
 
     return m
-
 end
 
 """
@@ -213,7 +202,6 @@ Reshape array into matrix.
 - `m::AbstractMatrix`
 """
 function arr2mat(x::AbstractArray)::AbstractMatrix
-
     @assert size(x, 1) == 1 "First dimension of x must be 1."
 
     m = zeros(size(x, 3), size(x, 2))
@@ -222,7 +210,6 @@ function arr2mat(x::AbstractArray)::AbstractMatrix
     end
 
     return m
-
 end
 
 """
@@ -239,8 +226,9 @@ Create mesh grid (pair of x and y coordinates) from two vectors.
 
 - `m::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}`
 """
-function meshgrid(x::Vector{Float64}, y::Vector{Float64})::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}
-
+function meshgrid(
+    x::Vector{Float64}, y::Vector{Float64}
+)::Tuple{Vector{Vector{Float64}},Vector{Vector{Float64}}}
     xn = length(x)
     yn = length(y)
 
@@ -254,5 +242,4 @@ function meshgrid(x::Vector{Float64}, y::Vector{Float64})::Tuple{Vector{Vector{F
     end
 
     return (mx, my)
-
 end

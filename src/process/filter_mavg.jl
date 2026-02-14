@@ -17,7 +17,9 @@ Filter using moving average filter (with threshold).
 
 - `s_filtered::Vector{Float64}`
 """
-function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1))::Vector{Float64}
+function filter_mavg(
+    s::AbstractVector; k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1)
+)::Vector{Float64}
 
     # check k
     _in(k, (1, length(s)), "k")
@@ -60,7 +62,6 @@ function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, ww::AbstractVecto
     end
 
     return s_filtered
-
 end
 
 """
@@ -79,8 +80,9 @@ Filter using moving average filter (with threshold).
 
 - `s_filtered::Array{Float64, 3}`
 """
-function filter_mavg(s::AbstractArray; k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1))::Array{Float64, 3}
-
+function filter_mavg(
+    s::AbstractArray; k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1)
+)::Array{Float64,3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -89,12 +91,13 @@ function filter_mavg(s::AbstractArray; k::Int64=8, t::Real=0, ww::AbstractVector
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_filtered[ch_idx, :, ep_idx] = @views filter_mavg(s[ch_idx, :, ep_idx], k=k, t=t, ww=ww)
+            s_filtered[ch_idx, :, ep_idx] = @views filter_mavg(
+                s[ch_idx, :, ep_idx], k=k, t=t, ww=ww
+            )
         end
     end
 
     return s_filtered
-
 end
 
 """
@@ -118,11 +121,18 @@ Filter using moving average filter (with threshold).
 
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
 """
-function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1))::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function filter_mavg(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    k::Int64=8,
+    t::Real=0,
+    ww::AbstractVector=ones(2 * k + 1),
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     _info("Window length: $(2 * k + 1) samples")
-    _info("Approximate cutoff frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
+    _info(
+        "Approximate cutoff frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz",
+    )
     _info("1st zero at: $(round(sr(obj) / k, digits=2)) Hz")
     _info("2nd zero at: $(round(2 * sr(obj) / k, digits=2)) Hz")
     _info("3rd zero at: $(round(3 * sr(obj) / k, digits=2)) Hz")
@@ -132,7 +142,6 @@ function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     push!(obj_new.history, "filter_mavg(OBJ, ch=$ch, k=$k, t=$t, ww=$ww")
 
     return obj_new
-
 end
 
 """
@@ -152,12 +161,16 @@ Filter using moving average filter (with threshold).
 
 - `Nothing`
 """
-function filter_mavg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1))::Nothing
-
-    obj_new = filter_mavg(obj, ch=ch, k=k, t=t, ww=ww)
+function filter_mavg!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    k::Int64=8,
+    t::Real=0,
+    ww::AbstractVector=ones(2 * k + 1),
+)::Nothing
+    obj_new = filter_mavg(obj; ch=ch, k=k, t=t, ww=ww)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

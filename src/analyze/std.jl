@@ -14,7 +14,6 @@ Calculate standard deviation of the signal data (along epochs).
 - `s::Matrix{Float64}`
 """
 function Statistics.std(obj::NeuroAnalyzer.NEURO)::Matrix{Float64}
-
     @assert nepochs(obj) > 1 "OBJ must have > 1 epoch."
 
     if datatype(obj) == "erp"
@@ -25,5 +24,4 @@ function Statistics.std(obj::NeuroAnalyzer.NEURO)::Matrix{Float64}
     s = reshape(s, size(s, 1), size(s, 2))
 
     return s
-
 end

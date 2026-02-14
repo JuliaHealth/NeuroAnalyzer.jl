@@ -17,10 +17,14 @@ Interpolate channel using linear regression.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)[1]
-    channels = get_channel(obj, ch=get_channel(obj, type=datatype(obj)))
+function lrinterpolate_channel(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64,Vector{Int64},AbstractRange}=setdiff(_c(nepochs(obj)), ep),
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)[1]
+    channels = get_channel(obj; ch=get_channel(obj; type=datatype(obj)))
     @assert length(channels) > 1 "signal must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
     @assert nepochs(obj) > 1 "Training the model requires the signal to have > 1 epoch."
@@ -38,9 +42,9 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, 
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = GLM.lm(fm, train)
     prediction = GLM.predict(linear_regressor, test)
-    accuracy_testdf = DataFrame(signal_actual = test[!, :x1], signal_predicted = prediction)
+    accuracy_testdf = DataFrame(; signal_actual=test[!, :x1], signal_predicted=prediction)
     accuracy_testdf.error = accuracy_testdf[!, :signal_actual]
-    acc_rmse = sqrt(sum((accuracy_testdf.error).^2)) / length(accuracy_testdf.error)
+    acc_rmse = sqrt(sum((accuracy_testdf.error) .^ 2)) / length(accuracy_testdf.error)
     acc_mae = mean(abs.(accuracy_testdf.error))
     R2, R2adj, aic, bic = infcrit(linear_regressor)
 
@@ -60,7 +64,6 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, 
     push!(obj_new.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep, ep_ref=$ep_ref)")
 
     return obj_new
-
 end
 
 """
@@ -79,12 +82,15 @@ Interpolate channel using linear regression.
 
 - `Nothing`
 """
-function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))::Nothing
-
-    obj_new = lrinterpolate_channel(obj, ch=ch, ep=ep, ep_ref=ep_ref)
+function lrinterpolate_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64,Vector{Int64},AbstractRange}=setdiff(_c(nepochs(obj)), ep),
+)::Nothing
+    obj_new = lrinterpolate_channel(obj; ch=ch, ep=ep, ep_ref=ep_ref)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

@@ -1,4 +1,6 @@
-function _dict2labeled_matrix(d::Dict; rev::Bool=true)::Tuple{Vector{String}, Vector{Vector{Float64}}}
+function _dict2labeled_matrix(
+    d::Dict; rev::Bool=true
+)::Tuple{Vector{String},Vector{Vector{Float64}}}
     l = Vector{String}()
     v = Vector{Vector{Float64}}()
     for (kk, vv) in d

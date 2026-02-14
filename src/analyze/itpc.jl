@@ -24,8 +24,11 @@ Named tuple containing:
 
 1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
-function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
-
+function itpc(
+    s::AbstractArray; t::Int64, w::Union{AbstractVector,Nothing}=nothing
+)::@NamedTuple{
+    itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}
+}
     _chk3d(s)
     @assert t >= 1 "t must be ≥ 1."
     @assert t <= size(s, 2) "t must be ≤ $(size(s, 2))."
@@ -49,7 +52,6 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
     itpcz_val = ep_n * itpc_val^2
 
     return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
-
 end
 
 """
@@ -72,9 +74,22 @@ Named tuple containing:
 - `itpc_ang::Vector{Float64}`: ITPC angle
 - `itpc_ph::Matrix{Float64}`: phase difference (channel2 - channel1)
 """
-function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function itpc(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    t::Int64,
+    w::Union{Vector{<:Real},Nothing}=nothing,
+)::@NamedTuple{
+    itpc_val::Vector{Float64},
+    itpcz_val::Vector{Float64},
+    itpc_ang::Vector{Float64},
+    itpc_ph::Matrix{Float64},
+}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
     @assert t >= 1 "t must be ≥ 1."
@@ -87,11 +102,12 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     itpc_ph = zeros(ch_n, ep_n)
 
     Threads.@threads for ch_idx in 1:ch_n
-        @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = @views itpc(reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
+        @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = @views itpc(
+            reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t, w=w
+        )
     end
 
     return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
-
 end
 
 """
@@ -112,8 +128,14 @@ Named tuple containing:
 - `itpc_ang::Vector{Float64}`: ITPC angles
 - `itpc_ph::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)::@NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
-
+function itpc_spec(
+    s::AbstractArray; w::Union{AbstractVector,Nothing}=nothing
+)::@NamedTuple{
+    itpc_val::Vector{Float64},
+    itpcz_val::Vector{Float64},
+    itpc_ang::Vector{Float64},
+    itpc_ph::Matrix{Float64},
+}
     _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
 
@@ -140,7 +162,6 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing):
     end
 
     return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
-
 end
 
 """
@@ -164,20 +185,30 @@ Named tuple containing:
 - `itpcz_s::Matrix{Float64}`: spectrogram of ITPCZ values
 - `itpc_f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(flim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, itpc_f::Vector{Float64}}
-
+function itpc_spec(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    flim::Tuple{Real,Real}=(0, sr(obj) / 2),
+    frq_n::Int64=_tlength(flim),
+    frq::Symbol=:log,
+    w::Union{Vector{<:Real},Nothing}=nothing,
+)::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, itpc_f::Vector{Float64}}
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(flim, "flim", (0, sr(obj) / 2))
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     if frq === :log
         flim = flim[1] == 0 ? (0.01, flim[2]) : (flim[1], flim[2])
         flim = (flim[1], flim[2])
-        frq_list = round.(logspace(flim[1], flim[2], frq_n), digits=3)
+        frq_list = round.(logspace(flim[1], flim[2], frq_n); digits=3)
     else
         frq_list = linspace(flim[1], flim[2], frq_n)
     end
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")[1]
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")[1]
+    end
     ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
@@ -186,7 +217,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}
     itpcz_s = zeros(frq_n, ep_len)
 
     # initialize progress bar
-    progbar = Progress(frq_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(frq_n; dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     Threads.@threads for frq_idx in 1:frq_n
         # create Morlet wavelet
@@ -205,5 +236,4 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}
     end
 
     return (itpc_s=itpc_s, itpcz_s=itpcz_s, itpc_f=frq_list)
-
 end

@@ -16,12 +16,10 @@ Calculate mean of a segment (e.g. spectrogram).
 - `sm::Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)::Vector{Float64}
-
     _chk3d(seg)
-    sm = reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
+    sm = reshape(mean(mean(seg; dims=1); dims=2), size(seg, 3))
 
     return sm
-
 end
 
 """
@@ -40,13 +38,13 @@ Named tuple containing:
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
 """
-function seg_mean(seg1::AbstractArray, seg2::AbstractArray)::@NamedTuple{seg1::Vector{Float64}, seg2::Vector{Float64}}
-
+function seg_mean(
+    seg1::AbstractArray, seg2::AbstractArray
+)::@NamedTuple{seg1::Vector{Float64}, seg2::Vector{Float64}}
     seg1 = seg_mean(seg1)
     seg2 = seg_mean(seg2)
 
     return (seg1=seg1, seg2=seg2)
-
 end
 
 """
@@ -65,8 +63,9 @@ Extract segment from a matrix.
 
 - `seg::Union{AbstractMatrix, AbstractVector}`
 """
-function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::Bool=false)::Union{AbstractMatrix, AbstractVector}
-
+function seg_extract(
+    m::AbstractMatrix, rc::NTuple{4,Int64}; v::Bool=false, c::Bool=false
+)::Union{AbstractMatrix,AbstractVector}
     r1 = rc[1]
     c1 = rc[2]
     r2 = rc[3]
@@ -96,7 +95,6 @@ function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::
     end
 
     return seg
-
 end
 
 """
@@ -124,8 +122,11 @@ Named tuple containing:
 - `idx::Vector{CartesianIndex{2}}`: Cartesian coordinates of matrix elements
 - `bm::Matrix{Bool}`: map of the segment
 """
-function seg_extract(m::AbstractMatrix; threshold::Union{Real, Tuple{Real, Real}}=0, threshold_type::Symbol=:neq)::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
-
+function seg_extract(
+    m::AbstractMatrix;
+    threshold::Union{Real,Tuple{Real,Real}}=0,
+    threshold_type::Symbol=:neq,
+)::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
 
     if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
@@ -157,7 +158,6 @@ function seg_extract(m::AbstractMatrix; threshold::Union{Real, Tuple{Real, Real}
     bm[idx] .= true
 
     return (idx=idx, bm=bm)
-
 end
 
 export seg_select
@@ -181,32 +181,40 @@ Interactive selection of a matrix area.
 
 - `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
-function seg_select(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}
-
+function seg_select(
+    m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false
+)::Union{
+    Nothing,
+    <:Real,
+    Tuple{Int64,Int64},
+    Tuple{Int64,Int64,Int64,Int64},
+    Union{AbstractMatrix,AbstractVector,Tuple{AbstractVector,AbstractVector}},
+}
     _check_var(shape, [:r, :p, :c], "shape")
 
     size_x = size(m, 2)
     size_y = size(m, 1)
 
-    p = GLMakie.Figure(size=(size_x, size_y))
-    ax = GLMakie.Axis(p[1, 1],
-                      xlabel="",
-                      ylabel="",
-                      title="",
-                      aspect=DataAspect(),
-                      xticksvisible=false,
-                      yticksvisible=false,
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0),
-                      xzoomlock=true,
-                      yzoomlock=true,
-                      xpanlock=true,
-                      ypanlock=true,
-                      xrectzoom=false,
-                      yrectzoom=false)
+    p = GLMakie.Figure(; size=(size_x, size_y))
+    ax = GLMakie.Axis(
+        p[1, 1];
+        xlabel="",
+        ylabel="",
+        title="",
+        aspect=DataAspect(),
+        xticksvisible=false,
+        yticksvisible=false,
+        xautolimitmargin=(0, 0),
+        yautolimitmargin=(0, 0),
+        xzoomlock=true,
+        yzoomlock=true,
+        xpanlock=true,
+        ypanlock=true,
+        xrectzoom=false,
+        yrectzoom=false,
+    )
     hidedecorations!(ax)
-    hm = GLMakie.heatmap!(m[end:-1:1, :]',
-                          colormap=:darktest)
+    hm = GLMakie.heatmap!(m[end:-1:1, :]'; colormap=:darktest)
 
     poins = nothing
     if shape in [:p, :r]
@@ -217,12 +225,7 @@ function seg_select(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v:
     radius = Observable(1)
 
     if shape === :p
-
-        GLMakie.scatter!(ax,
-                         points,
-                         marker=:rect,
-                         markersize=10,
-                         color=:red)
+        GLMakie.scatter!(ax, points; marker=:rect, markersize=10, color=:red)
 
         on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
@@ -245,16 +248,9 @@ function seg_select(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v:
         end
 
     elseif shape === :c
+        GLMakie.arc!(ax, points, radius, -pi, pi; linewidth=5, color=:red)
 
-        GLMakie.arc!(ax,
-                     points,
-                     radius,
-                     -pi,
-                     pi,
-                     linewidth=5,
-                     color=:red)
-
-        on(events(p).scroll, priority=1) do (dx, dy)
+        on(events(p).scroll; priority=1) do (dx, dy)
             if dy == 1.0
                 radius[] <= size_x && (radius[] += dy)
             elseif dy == -1.0
@@ -277,11 +273,7 @@ function seg_select(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v:
         end
 
     elseif shape === :r
-
-        GLMakie.lines!(ax,
-                       points,
-                       linewidth=5,
-                       color=:red)
+        GLMakie.lines!(ax, points; linewidth=5, color=:red)
         on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
                 pos = round.(Int64, mouseposition(ax))
@@ -338,7 +330,7 @@ function seg_select(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v:
     wait(display(p))
 
     if length(points[]) == 0
-       return nothing
+        return nothing
     elseif length(points[]) == 1
         c = points[][1][1]
         r = size_y - points[][1][2]
@@ -384,9 +376,8 @@ function seg_select(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v:
         r1 > r2 && ((r1, r2) = _swap(r1, r2))
         c1 > c2 && ((c1, c2) = _swap(c1, c2))
         c = shape == :c
-        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
+        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2); v=v, c=c)
     else
         return !extract ? (r, c) : m[r, c]
     end
-
 end

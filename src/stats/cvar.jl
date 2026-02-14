@@ -16,11 +16,9 @@ Calculate coefficient of variation for a mean.
 - `cvm::Float64`
 """
 function cvm(x::AbstractVector)::Float64
-
     @assert mean(x) != 0 "mean(x) must not be equal 0."
 
     return std(x) / mean(x)
-
 end
 
 """
@@ -37,11 +35,9 @@ Calculate coefficient of variation for a median.
 - `cvmd::Float64`
 """
 function cvmd(x::AbstractVector)::Float64
-
     @assert median(x) != 0 "median(x) must not be equal 0."
 
     return ((quantile(x, 0.75) - quantile(x, 0.25)) / 2) / median(x)
-
 end
 
 """
@@ -58,9 +54,7 @@ Calculate Fano factor.
 - `fano::Float64`
 """
 function fano(x::AbstractVector)::Float64
-
     @assert mean(x) != 0 "mean(x) must not be equal 0."
 
     return var(x) / mean(x)
-
 end

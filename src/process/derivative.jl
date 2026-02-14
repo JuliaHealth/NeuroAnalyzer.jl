@@ -15,15 +15,13 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 - `s_new::AbstractVector`
 """
 function derivative(s::AbstractVector)::AbstractVector
-
     @assert length(s) > 2 "Signal length must be > 2."
 
-    dv  = diff(s) / 2       # half the derivative
+    dv = diff(s) / 2       # half the derivative
     s_new = [dv[1]; dv]     # copies first element
     s_new .+= [dv; dv[end]] # copies last element, add both results to compute average
 
     return s_new
-
 end
 
 """
@@ -39,8 +37,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 - `s_new::Array{Float64, 3}`
 """
-function derivative(s::AbstractArray)::Array{Float64, 3}
-
+function derivative(s::AbstractArray)::Array{Float64,3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -53,7 +50,6 @@ function derivative(s::AbstractArray)::Array{Float64, 3}
     end
 
     return s_new
-
 end
 
 """
@@ -70,15 +66,15 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function derivative(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = derivative(obj.data[ch, :, :])
     push!(obj_new.history, "derivative(OBJ, ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -95,12 +91,12 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 - `Nothing`
 """
-function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
-    obj_new = derivative(obj, ch=ch)
+function derivative!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Nothing
+    obj_new = derivative(obj; ch=ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

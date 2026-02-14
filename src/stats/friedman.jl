@@ -23,7 +23,6 @@ Named tuple containing:
 - Kendall's coefficient of concordance ranges from 0 to 1, with 0 meaning no agreement across raters (judges)
 """
 function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Float64}
-
     rs = zeros(eltype(m), size(m, 1))
     k = size(m, 2)
     n = size(m, 1)
@@ -32,7 +31,7 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
         r = ordinalrank(m[:, idx])
         rs .+= r
     end
-    rs2 = rs.^2
+    rs2 = rs .^ 2
 
     s = sum(rs2) - (((k^2) * n * (n + 1)^2) / 4)
     q = (12 * s) / (k * n * (n + 1))
@@ -41,5 +40,4 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
     p = pdf(Distributions.Chisq(n - 1), p) * 2
 
     return (q=q, w=w, p=p)
-
 end

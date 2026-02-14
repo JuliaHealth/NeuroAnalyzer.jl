@@ -18,44 +18,67 @@ Nothing
 - `Nothing`
 """
 function iavh()::Nothing
-
     d_l = 1
     d_r = 1
     vol = 1.0
     snd_whisper = wavread(joinpath(res_path, "avh/wav/whisper_2s01fifo.wav"))
     snd_noise = wavread(joinpath(res_path, "avh/wav/noise_2s01fifo.wav"))
     snd_sine = wavread(joinpath(res_path, "avh/wav/sine_8k2s01fifo.wav"))
-    voices_en_m = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_en_m = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_en_m, wavread(joinpath(res_path, "avh/wav/en_m_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_en_m,
+            wavread(joinpath(res_path, "avh/wav/en_m_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
-    voices_en_w = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_en_w = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_en_w, wavread(joinpath(res_path, "avh/wav/en_w_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_en_w,
+            wavread(joinpath(res_path, "avh/wav/en_w_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
-    voices_de_m = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_de_m = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_de_m, wavread(joinpath(res_path, "avh/wav/de_m_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_de_m,
+            wavread(joinpath(res_path, "avh/wav/de_m_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
-    voices_de_w = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_de_w = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_de_w, wavread(joinpath(res_path, "avh/wav/de_w_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_de_w,
+            wavread(joinpath(res_path, "avh/wav/de_w_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
-    voices_sp_m = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_sp_m = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_sp_m, wavread(joinpath(res_path, "avh/wav/sp_m_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_sp_m,
+            wavread(joinpath(res_path, "avh/wav/sp_m_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
-    voices_sp_w = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_sp_w = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_sp_w, wavread(joinpath(res_path, "avh/wav/sp_w_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_sp_w,
+            wavread(joinpath(res_path, "avh/wav/sp_w_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
-    voices_pl_m = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_pl_m = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_pl_m, wavread(joinpath(res_path, "avh/wav/pl_m_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_pl_m,
+            wavread(joinpath(res_path, "avh/wav/pl_m_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
-    voices_pl_w = Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}}()
+    voices_pl_w = Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}()
     for idx in 1:15
-        push!(voices_pl_w, wavread(joinpath(res_path, "avh/wav/pl_w_$(lpad(string(idx), 2, "0")).wav")))
+        push!(
+            voices_pl_w,
+            wavread(joinpath(res_path, "avh/wav/pl_w_$(lpad(string(idx), 2, "0")).wav")),
+        )
     end
 
     snd = deepcopy(snd_whisper)
@@ -64,7 +87,6 @@ function iavh()::Nothing
     img = read_from_png(joinpath(res_path, "avh/head.png"))
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroTester: iavh()")
         Gtk4.default_size(win, 1100, 820)
 
@@ -480,7 +502,7 @@ function iavh()::Nothing
             vol < 1.0 && (vol += 0.1)
             vol > 0.1 && (bt_vol_down.sensitive = 1)
             vol == 1.0 && (bt_vol_up.sensitive = 0)
-            vol = round(vol, digits=1)
+            vol = round(vol; digits=1)
 
             type = types[Int64(combo_type.active) + 1]
             lang = langs[Int64(combo_lang.active) + 1]
@@ -586,7 +608,7 @@ function iavh()::Nothing
             vol > 0.1 && (vol -= 0.1)
             vol == 0.1 && (bt_vol_down.sensitive = 0)
             vol < 1.0 && (bt_vol_up.sensitive = 1)
-            vol = round(vol, digits=1)
+            vol = round(vol; digits=1)
 
             type = types[Int64(combo_type.active) + 1]
             lang = langs[Int64(combo_lang.active) + 1]
@@ -940,11 +962,22 @@ function iavh()::Nothing
                 if file_name != ""
                     try
                         f = open(file_name, "w")
-                        println(f, "\"AH type\",$(types[get_gtk_property(combo_type, :active, Int64) + 1])")
+                        println(
+                            f,
+                            "\"AH type\",$(types[get_gtk_property(combo_type, :active, Int64) + 1])",
+                        )
                         if combo_type.active == 0
-                            println(f, "\"AVH language\",$(langs[Int64(combo_lang.active) + 1])")
-                            println(f, "\"AVH gender\",$(genders[Int64(combo_character.active) + 1])")
-                            println(f, "\"AVH emotional aspect\",$(characters[Int64(combo_gender.active) + 1])")
+                            println(
+                                f, "\"AVH language\",$(langs[Int64(combo_lang.active) + 1])"
+                            )
+                            println(
+                                f,
+                                "\"AVH gender\",$(genders[Int64(combo_character.active) + 1])",
+                            )
+                            println(
+                                f,
+                                "\"AVH emotional aspect\",$(characters[Int64(combo_gender.active) + 1])",
+                            )
                         else
                             println(f, "\"AVH language\",NA")
                             println(f, "\"AVH gender\",NA")
@@ -972,5 +1005,4 @@ function iavh()::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end

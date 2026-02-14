@@ -17,8 +17,9 @@ Swap channel locations x and y axes.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
-
+function locs_swapxy(
+    locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true
+)::DataFrame
     locs_new = deepcopy(locs)
     # locs_new = locs_rotz(locs, a=90)
 
@@ -38,13 +39,12 @@ function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    polar && locs_rotz!(locs_new, a=90, polar=true, cart=false, spherical=false)
+    polar && locs_rotz!(locs_new; a=90, polar=true, cart=false, spherical=false)
 
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
-
 end
 
 """
@@ -63,10 +63,10 @@ Swap channel locations x and y axes.
 
 - `Nothing`
 """
-function locs_swapxy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
-
-    locs[!, :] = locs_swapxy(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
+function locs_swapxy!(
+    locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true
+)::Nothing
+    locs[!, :] = locs_swapxy(locs; polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
-
 end

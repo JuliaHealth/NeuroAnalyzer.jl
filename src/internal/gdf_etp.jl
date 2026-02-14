@@ -10,7 +10,7 @@ function _gdf_etp(etp::Vector{UInt8})::String
     etp[1] == 0x01 && etp[2] == 0x08 && (event = "artifact:breathing")
     etp[1] == 0x01 && etp[2] == 0x09 && (event = "artifact:pulse")
     etp[1] == 0x01 && etp[2] == 0x0a && (event = "artifact:EOG (slow)")
-    etp[1] == 0x01 && etp[2] == 0x0f && (event = "calibration" )
+    etp[1] == 0x01 && etp[2] == 0x0f && (event = "calibration")
     etp[1] == 0x01 && etp[2] == 0x11 && (event = "EEG:Sleep spindles")
     etp[1] == 0x01 && etp[2] == 0x12 && (event = "EEG:K-complexes")
     etp[1] == 0x01 && etp[2] == 0x13 && (event = "EEG:Saw-tooth waves")
@@ -63,8 +63,12 @@ function _gdf_etp(etp::Vector{UInt8})::String
     etp[1] == 0x03 && etp[2] == 0x12 && (event = "Cross on screen")
     etp[1] == 0x03 && etp[2] == 0x13 && (event = "Flashing light")
     #0x031b - 0x037f reserved for ASCII characters #27-#127
-    etp[1] == 0x03 && etp[2] == 0x81 && (event = "target hit, task successful, correct classification")
-    etp[1] == 0x03 && etp[2] == 0x82 && (event = "target missed, task not reached, incorrect classification")
+    etp[1] == 0x03 &&
+        etp[2] == 0x81 &&
+        (event = "target hit, task successful, correct classification")
+    etp[1] == 0x03 &&
+        etp[2] == 0x82 &&
+        (event = "target missed, task not reached, incorrect classification")
     etp[1] == 0x03 && etp[2] == 0xff && (event = "Rejection of whole trial")
     etp[1] == 0x04 && etp[2] == 0x01 && (event = "OAHE")
     etp[1] == 0x04 && etp[2] == 0x02 && (event = "RERA")

@@ -16,14 +16,17 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_od"), ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])))::NeuroAnalyzer.NEURO
-
+function od2conc(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex}=get_channel(obj, type="nirs_od"),
+    ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])),
+)::NeuroAnalyzer.NEURO
     @assert length(get_channel(obj, type="nirs_od")) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
     @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
 
     _check_datatype(obj, "nirs")
-    _check_channels(get_channel(obj, type="nirs_od"), ch)
-    ch = get_channel(obj, ch=ch)
+    _check_channels(get_channel(obj; type="nirs_od"), ch)
+    ch = get_channel(obj; ch=ch)
 
     obj_new = deepcopy(obj)
 
@@ -47,24 +50,29 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     @inbounds for ep_idx in 1:ep_n
         dod = @views obj_new.data[ch, :, ep_idx]
 
-        for idx=eachindex(lst)
-
+        for idx in eachindex(lst)
             idx1 = lst[idx]
-            idx2 = findall(wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2])
+            idx2 = findall(
+                wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2]
+            )
 
             x = obj.locs[:, :loc_x]
             y = obj.locs[:, :loc_y]
 
             src_pos = hcat(x, y)'[:, eachindex(unique(chp[:, 1]))]
-            det_pos = hcat(x, y)'[:, 1 + (end - length(unique(chp[:, 2]))):end]
+            det_pos = hcat(x, y)'[:, (1 + (end - length(unique(chp[:, 2])))):end]
             rho = norm(src_pos[:, chp[idx1, 1]] - det_pos[:, chp[idx1, 2]])
 
             if ppf[1] ≈ 1
-                dc[1:2, :, idx, ep_idx] = einv * (dod[vcat(idx1, idx2), :] ./ (ones(ep_len, length(ppf)) .* rho .* ppf')')
+                dc[1:2, :, idx, ep_idx] =
+                    einv * (
+                        dod[vcat(idx1, idx2), :] ./
+                        (ones(ep_len, length(ppf)) .* rho .* ppf')'
+                    )
             else
-                dc[1:2, :, idx, ep_idx] = einv * (dod[vcat(idx1, idx2), :] ./ (ones(ep_len, length(ppf)))')
+                dc[1:2, :, idx, ep_idx] =
+                    einv * (dod[vcat(idx1, idx2), :] ./ (ones(ep_len, length(ppf)))')
             end
-
         end
 
         dc[3, :, :, ep_idx] = dc[1, :, :, ep_idx] + dc[2, :, :, ep_idx]
@@ -78,14 +86,32 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     end
 
     # update header
-    obj_new.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)))
-    obj_new.header.recording[:unit] = vcat(obj.header.recording[:unit], repeat(["μM/mm"], 3 * size(dc, 3)))
+    obj_new.header.recording[:channel_type] = vcat(
+        obj.header.recording[:channel_type],
+        repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)),
+    )
+    obj_new.header.recording[:unit] = vcat(
+        obj.header.recording[:unit], repeat(["μM/mm"], 3 * size(dc, 3))
+    )
     for idx in axes(dc, 3)
-        obj_new.header.recording[:label] = vcat(obj_new.header.recording[:label], ["$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbT"])
+        obj_new.header.recording[:label] = vcat(
+            obj_new.header.recording[:label],
+            [
+                "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO",
+                "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR",
+                "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbT",
+            ],
+        )
     end
-    obj_new.header.recording[:channel_order] = vcat(obj_new.header.recording[:channel_order], collect(obj_new.header.recording[:channel_order][end]+1:size(obj_new.data, 1)))
+    obj_new.header.recording[:channel_order] = vcat(
+        obj_new.header.recording[:channel_order],
+        collect((obj_new.header.recording[:channel_order][end] + 1):size(obj_new.data, 1)),
+    )
     obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0"=>"")
-    obj_new.header.recording[:bad_channel] = [obj_new.header.recording[:bad_channel]; zeros(Bool, size(obj_new.data, 1))]
+    obj_new.header.recording[:bad_channel] = [
+        obj_new.header.recording[:bad_channel];
+        zeros(Bool, size(obj_new.data, 1))
+    ]
 
     #=
     for idx in axes(dc, 3)
@@ -97,7 +123,6 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     push!(obj_new.history, "od2conc(OBJ, ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -115,13 +140,15 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
 - `Nothing`
 """
-function od2conc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_od"), ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])))::Nothing
-
-    obj_new = od2conc(obj, ch=ch, ppf=ppf)
+function od2conc!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex}=get_channel(obj, type="nirs_od"),
+    ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])),
+)::Nothing
+    obj_new = od2conc(obj; ch=ch, ppf=ppf)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
 
     return nothing
-
 end

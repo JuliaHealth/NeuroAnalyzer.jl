@@ -20,11 +20,9 @@ Compare two arrays (e.g. two spectrograms), using L1 (Manhattan) distance.
 - `l1::Float64`
 """
 function l1(a1::AbstractArray, a2::AbstractArray)::Float64
-
     @assert size(a1) == size(a2) "a1 and a2 mast have the same size."
 
     return sum(abs.(a1 .- a2))
-
 end
 
 """
@@ -42,12 +40,10 @@ Compare two arrays (e.g. two spectrograms), using L2 (Euclidean) distance.
 - `l2::Float64`
 """
 function l2(a1::AbstractArray, a2::AbstractArray)::Float64
-
     @assert size(a1) == size(a2) "a1 and a2 mast have the same size."
 
     # return sqrt(sum((a1 .- a2).^2))
     return euclidean(a1, a2)
-
 end
 
 """
@@ -68,25 +64,30 @@ Named tuple containing:
 - `zmap::Matrix{Float64}`: array of Z-values
 - `bm::BitMatrix`: binarized mask of statistically significant positions
 """
-function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)::@NamedTuple{zmap::Matrix{Float64}, bm::BitMatrix}
-
+function perm_cmp(
+    a1::Array{<:Real,3}, a2::Array{<:Real,3}; p::Float64=0.05, perm_n::Int64=1000
+)::@NamedTuple{zmap::Matrix{Float64}, bm::BitMatrix}
     @assert size(a1) == size(a2) "Both arrays must have the same size"
     @assert perm_n > 0 "perm_n must be > 0."
     @assert p >= 0 "p must be ≥ 0."
     @assert p <= 1 "p must be ≤ 1."
 
-    spec_diff = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
+    spec_diff = dropdims(mean(a2; dims=3) .- mean(a1; dims=3); dims=3)
     zval = abs(norminvcdf(p))
-    spec_all = cat(a1, a2, dims=3)
+    spec_all = cat(a1, a2; dims=3)
     perm_maps = zeros(size(a1, 1), size(a1, 2), perm_n)
     ep_n = size(spec_all, 3)
     @inbounds for perm_idx in 1:perm_n
         rand_idx = sample(1:ep_n, ep_n, replace=false)
         rand_spec = @view spec_all[:, :, rand_idx]
-        perm_maps[:, :, perm_idx] = @views dropdims(mean(rand_spec[:, :, (ep_n ÷ 2 + 1):end], dims=3) .- mean(rand_spec[:, :, 1:(ep_n ÷ 2)], dims=3), dims=3)
+        perm_maps[:, :, perm_idx] = @views dropdims(
+            mean(rand_spec[:, :, (ep_n ÷ 2 + 1):end], dims=3) .-
+            mean(rand_spec[:, :, 1:(ep_n ÷ 2)], dims=3),
+            dims=3,
+        )
     end
-    mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
-    std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
+    mean_h0 = dropdims(mean(perm_maps; dims=3); dims=3)
+    std_h0 = dropdims(std(perm_maps; dims=3); dims=3)
 
     # threshold real data
     zmap = @. (spec_diff - mean_h0) / std_h0
@@ -99,7 +100,6 @@ function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, p
     bm = map(x -> !x, bm)
 
     return (zmap=zmap, bm=bm)
-
 end
 
 """
@@ -116,11 +116,9 @@ Average signal across trials.
 - `s_new::AbstractArray`
 """
 function tavg(s::AbstractArray)::AbstractArray
-
     _chk3d(s)
 
-    return mean(s, dims=3)
-
+    return mean(s; dims=3)
 end
 
 """
@@ -136,18 +134,16 @@ Demean signal.
 
 - `s_new::AbstractArray`
 """
-function delmean(s::AbstractArray; dims::Union{Int64, Nothing}=nothing)::AbstractArray
-
+function delmean(s::AbstractArray; dims::Union{Int64,Nothing}=nothing)::AbstractArray
     ms = 0
     if isnothing(dims)
         ms = mean(s)
     else
         @assert dims <= ndims(s) "dims must be ≤ $(ndims(s))"
-        ms = mean(s, dims=dims)
+        ms = mean(s; dims=dims)
     end
 
     return s .- ms
-
 end
 
 """
@@ -166,8 +162,9 @@ Reduce an array at indices of a vector being multiplications of a constant. Usef
 - `a_new::Array{eltype(a), ndims(a)}`
 - `f_new::Vector{eltype(f)}`
 """
-function areduce(a::AbstractArray, f::AbstractVector; n::Float64=0.5)::Tuple{AbstractArray, AbstractVector}
-
+function areduce(
+    a::AbstractArray, f::AbstractVector; n::Float64=0.5
+)::Tuple{AbstractArray,AbstractVector}
     @assert ndims(a) <= 3 "areduce() only works for 2- and 3-dimensional arrays."
     @assert size(a, 2) == length(f) "Length of both vectors must be equal."
 
@@ -198,5 +195,4 @@ function areduce(a::AbstractArray, f::AbstractVector; n::Float64=0.5)::Tuple{Abs
     end
 
     return a_new, f_new
-
 end

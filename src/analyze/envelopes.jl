@@ -32,13 +32,12 @@ Calculate upper envelope.
 - `e::Vector{Float64}`: envelope
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
-
     @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
 
     e = zeros(length(s))
 
     # find peaks
-    p_idx = findpeaks(s, d=d)
+    p_idx = findpeaks(s; d=d)
 
     if length(p_idx) < 2
         _info("Envelope cannot be not interpolated, less than 2 peaks detected")
@@ -50,12 +49,11 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
         # interpolate peaks using cubic spline
-        model = Spline1D(x[p_idx], s[p_idx], bc="extrapolate")
+        model = Spline1D(x[p_idx], s[p_idx]; bc="extrapolate")
         e = model(x)
     end
 
     return e
-
 end
 
 """
@@ -74,7 +72,6 @@ Calculate lower envelope.
 - `e::Vector{Float64}`: envelope
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
-
     @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
 
     e = zeros(length(s))
@@ -83,7 +80,7 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
     s_tmp = _flipx(s)
 
     # find peaks
-    p_idx = findpeaks(s_tmp, d=d)
+    p_idx = findpeaks(s_tmp; d=d)
 
     if length(p_idx) < 2
         _info("Envelope cannot be not interpolated, less than 2 peaks detected")
@@ -95,12 +92,11 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
         # interpolate peaks using cubic spline
-        model = Spline1D(x[p_idx], s[p_idx], bc="extrapolate")
+        model = Spline1D(x[p_idx], s[p_idx]; bc="extrapolate")
         e = model(x)
     end
 
     return e
-
 end
 
 """
@@ -121,11 +117,9 @@ Calculate upper envelope using Hilbert transform.
 Hilbert transform works best for narrowband signals (i.e., signals with all energy centered about a single frequency).
 """
 function henv_up(s::AbstractVector)::Vector{Float64}
-
     _, e, _, _ = htransform(s)
 
     return e
-
 end
 
 """
@@ -146,11 +140,9 @@ Calculate lower envelope using Hilbert transform.
 Hilbert transform works best for narrowband signals (i.e., signals with all energy centered about a single frequency).
 """
 function henv_lo(s::AbstractVector)::Vector{Float64}
-
     _, e, _, _ = htransform(-s)
 
     return -e
-
 end
 
 """
@@ -170,9 +162,14 @@ Named tuple containing:
 - `t_env::Array{Float64, 3}`: temporal envelope
 - `s_t::Vector{Float64}`: signal time
 """
-function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=32)::@NamedTuple{t_env::Array{Float64, 3}, s_t::Vector{Float64}}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function tenv(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, d::Int64=32
+)::@NamedTuple{t_env::Array{Float64,3}, s_t::Vector{Float64}}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
     s_t = obj.epoch_time
@@ -181,12 +178,13 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            t_env[ch_idx, :, ep_idx] = @views env_up(obj.data[ch[ch_idx], :, ep_idx], s_t, d=d)
+            t_env[ch_idx, :, ep_idx] = @views env_up(
+                obj.data[ch[ch_idx], :, ep_idx], s_t, d=d
+            )
         end
     end
 
     return (t_env=t_env, s_t=s_t)
-
 end
 
 """
@@ -209,8 +207,17 @@ Named tuple containing:
 - `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=32)::@NamedTuple{t_env_m::Union{Vector{Float64}, Matrix{Float64}}, t_env_u::Union{Vector{Float64}, Matrix{Float64}}, t_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_t::Vector{Float64}}
-
+function tenv_mean(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=32,
+)::@NamedTuple{
+    t_env_m::Union{Vector{Float64},Matrix{Float64}},
+    t_env_u::Union{Vector{Float64},Matrix{Float64}},
+    t_env_l::Union{Vector{Float64},Matrix{Float64}},
+    s_t::Vector{Float64},
+}
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -220,7 +227,7 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_a, s_t = tenv(obj, ch=ch, d=d)
+    s_a, s_t = tenv(obj; ch=ch, d=d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -254,11 +261,11 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     else
         # mean over channels and epochs
 
-        t_env_m, t_env_u, t_env_l, _ = tenv_mean(obj, ch=ch, dims=1, d=d)
+        t_env_m, t_env_u, t_env_l, _ = tenv_mean(obj; ch=ch, dims=1, d=d)
 
-        t_env_m = mean(t_env_m, dims=2)
-        t_env_u = mean(t_env_u, dims=2)
-        t_env_l = mean(t_env_l, dims=2)
+        t_env_m = mean(t_env_m; dims=2)
+        t_env_u = mean(t_env_u; dims=2)
+        t_env_l = mean(t_env_l; dims=2)
 
         t_env_m = reshape(t_env_m, size(t_env_m, 1))
         t_env_u = reshape(t_env_u, size(t_env_u, 1))
@@ -266,7 +273,6 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     end
 
     return (t_env_m=t_env_m, t_env_u=t_env_u, t_env_l=t_env_l, s_t=s_t)
-
 end
 
 """
@@ -289,8 +295,17 @@ Named tuple containing:
 - `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=32)::@NamedTuple{t_env_m::Union{Vector{Float64}, Matrix{Float64}}, t_env_u::Union{Vector{Float64}, Matrix{Float64}}, t_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_t::Vector{Float64}}
-
+function tenv_median(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=32,
+)::@NamedTuple{
+    t_env_m::Union{Vector{Float64},Matrix{Float64}},
+    t_env_u::Union{Vector{Float64},Matrix{Float64}},
+    t_env_l::Union{Vector{Float64},Matrix{Float64}},
+    s_t::Vector{Float64},
+}
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -300,7 +315,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_a, s_t = tenv(obj, ch=ch, d=d)
+    s_a, s_t = tenv(obj; ch=ch, d=d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -334,17 +349,16 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     else
         # median over channels and epochs
 
-        t_env_m, t_env_u, t_env_l, _ = tenv_median(obj, ch=ch, dims=1, d=d)
-        t_env_m = median(t_env_m, dims=2)
-        t_env_u = median(t_env_u, dims=2)
-        t_env_l = median(t_env_l, dims=2)
+        t_env_m, t_env_u, t_env_l, _ = tenv_median(obj; ch=ch, dims=1, d=d)
+        t_env_m = median(t_env_m; dims=2)
+        t_env_u = median(t_env_u; dims=2)
+        t_env_l = median(t_env_l; dims=2)
         t_env_m = reshape(t_env_m, size(t_env_m, 1))
         t_env_u = reshape(t_env_u, size(t_env_u, 1))
         t_env_l = reshape(t_env_l, size(t_env_l, 1))
     end
 
     return (t_env_m=t_env_m, t_env_u=t_env_u, t_env_l=t_env_l, s_t=s_t)
-
 end
 
 """
@@ -375,26 +389,57 @@ Named tuple containing:
 - `p_env::Array{Float64, 3}`: power spectrum envelope
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
-function penv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=8, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::@NamedTuple{p_env::Array{Float64, 3}, p_env_frq::Vector{Float64}}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function penv(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    d::Int64=8,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::@NamedTuple{p_env::Array{Float64,3}, p_env_frq::Vector{Float64}}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
 
     _log_off()
-    pw, pf = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    pw, pf = psd(
+        obj.data[1, :, 1];
+        fs=fs,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+    )
     p_env = zeros(ch_n, length(pw), ep_n)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+            pw, _ = psd(
+                obj.data[ch[ch_idx], :, ep_idx],
+                fs=fs,
+                db=true,
+                method=method,
+                nt=nt,
+                wlen=wlen,
+                woverlap=woverlap,
+                w=w,
+                ncyc=ncyc,
+            )
             p_env[ch_idx, :, ep_idx] = env_up(pw, pf, d=d)
         end
     end
     _log_on()
 
     return (p_env=p_env, p_env_frq=pf)
-
 end
 
 """
@@ -428,8 +473,23 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=8, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::@NamedTuple{p_env_m::Union{Vector{Float64}, Matrix{Float64}}, p_env_u::Union{Vector{Float64}, Matrix{Float64}}, p_env_l::Union{Vector{Float64}, Matrix{Float64}}, p_env_frq::Vector{Float64}}
-
+function penv_mean(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=8,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::@NamedTuple{
+    p_env_m::Union{Vector{Float64},Matrix{Float64}},
+    p_env_u::Union{Vector{Float64},Matrix{Float64}},
+    p_env_l::Union{Vector{Float64},Matrix{Float64}},
+    p_env_frq::Vector{Float64},
+}
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -439,7 +499,9 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, pf = penv(obj, ch=ch, d=d, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    pw, pf = penv(
+        obj; ch=ch, d=d, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc
+    )
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -473,17 +535,16 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     else
         # mean over channels and epochs
 
-        p_env_m, p_env_u, p_env_l, _ = penv_mean(obj, ch=ch, dims=1, d=d)
-        p_env_m = mean(p_env_m, dims=2)
-        p_env_u = mean(p_env_u, dims=2)
-        p_env_l = mean(p_env_l, dims=2)
+        p_env_m, p_env_u, p_env_l, _ = penv_mean(obj; ch=ch, dims=1, d=d)
+        p_env_m = mean(p_env_m; dims=2)
+        p_env_u = mean(p_env_u; dims=2)
+        p_env_l = mean(p_env_l; dims=2)
         p_env_m = reshape(p_env_m, size(p_env_m, 1))
         p_env_u = reshape(p_env_u, size(p_env_u, 1))
         p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
 
     return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=pf)
-
 end
 
 """
@@ -517,8 +578,23 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=8, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::@NamedTuple{p_env_m::Union{Vector{Float64}, Matrix{Float64}}, p_env_u::Union{Vector{Float64}, Matrix{Float64}}, p_env_l::Union{Vector{Float64}, Matrix{Float64}}, p_env_frq::Vector{Float64}}
-
+function penv_median(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=8,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+)::@NamedTuple{
+    p_env_m::Union{Vector{Float64},Matrix{Float64}},
+    p_env_u::Union{Vector{Float64},Matrix{Float64}},
+    p_env_l::Union{Vector{Float64},Matrix{Float64}},
+    p_env_frq::Vector{Float64},
+}
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -528,7 +604,9 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, pf = penv(obj, ch=ch, d=d, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    pw, pf = penv(
+        obj; ch=ch, d=d, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc
+    )
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -562,17 +640,16 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     else
         # median over channels and epochs
 
-        p_env_m, p_env_u, p_env_l, _ = penv_median(obj, ch=ch, dims=1, d=d)
-        p_env_m = median(p_env_m, dims=2)
-        p_env_u = median(p_env_u, dims=2)
-        p_env_l = median(p_env_l, dims=2)
+        p_env_m, p_env_u, p_env_l, _ = penv_median(obj; ch=ch, dims=1, d=d)
+        p_env_m = median(p_env_m; dims=2)
+        p_env_u = median(p_env_u; dims=2)
+        p_env_l = median(p_env_l; dims=2)
         p_env_m = reshape(p_env_m, size(p_env_m, 1))
         p_env_u = reshape(p_env_u, size(p_env_u, 1))
         p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
 
     return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=pf)
-
 end
 
 """
@@ -608,21 +685,54 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=2, t::Union{Real, Nothing}=nothing, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{s_env::Array{Float64, 3}, s_env_t::Vector{Float64}} where {T <: CWT}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function senv(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    d::Int64=2,
+    t::Union{Real,Nothing}=nothing,
+    pad::Int64=0,
+    method::Symbol=:stft,
+    db::Bool=true,
+    nt::Int64=7,
+    gw::Real=5,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    wt::T=wavelet(Morlet(2π), β=2),
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+)::@NamedTuple{s_env::Array{Float64,3}, s_env_t::Vector{Float64}} where {T<:CWT}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
 
     if method === :stft
-        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(
+            obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w
+        )
     elseif method === :mt
-        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(
+            obj.data[1, :, 1],
+            fs=fs,
+            db=db,
+            method=:mt,
+            nt=nt,
+            wlen=wlen,
+            woverlap=woverlap,
+            w=w,
+        )
     elseif method === :mw
-    _, sp, _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+        _, sp, _, _ = @views NeuroAnalyzer.mwspectrogram(
+            obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w
+        )
     elseif method === :gh
-        sp, _, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
+        sp, _, _ = @views NeuroAnalyzer.ghtspectrogram(
+            obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w
+        )
     elseif method === :cwt
         _log_off()
         sp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs)
@@ -637,16 +747,39 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
             if method === :stft
-                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx],
+                    fs=fs,
+                    db=db,
+                    method=:stft,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=w,
+                )
             elseif method === :mt
-                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx],
+                    fs=fs,
+                    db=db,
+                    method=:mt,
+                    nt=nt,
+                    wlen=wlen,
+                    woverlap=woverlap,
+                    w=w,
+                )
             elseif method === :mw
-                _, sp, _, sf = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+                _, sp, _, sf = @views NeuroAnalyzer.mwspectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w
+                )
             elseif method === :gh
-                sp, _, sf = @views NeuroAnalyzer.ghtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
+                sp, _, sf = @views NeuroAnalyzer.ghtspectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w
+                )
             elseif method === :cwt
                 _log_off()
-                sp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs)
+                sp, sf = @views NeuroAnalyzer.cwtspectrogram(
+                    obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs
+                )
                 _log_on()
             end
 
@@ -667,7 +800,6 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     end
 
     return (s_env=s_env, s_env_t=st)
-
 end
 
 """
@@ -706,8 +838,28 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, method::Symbol=:stft, pad::Int64=0, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{s_env_m::Union{Vector{Float64}, Matrix{Float64}}, s_env_u::Union{Vector{Float64}, Matrix{Float64}}, s_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_env_t::Vector{Float64}} where {T <: CWT}
-
+function senv_mean(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=2,
+    t::Union{Real,Nothing}=nothing,
+    method::Symbol=:stft,
+    pad::Int64=0,
+    db::Bool=true,
+    nt::Int64=7,
+    gw::Real=5,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    wt::T=wavelet(Morlet(2π), β=2),
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+)::@NamedTuple{
+    s_env_m::Union{Vector{Float64},Matrix{Float64}},
+    s_env_u::Union{Vector{Float64},Matrix{Float64}},
+    s_env_l::Union{Vector{Float64},Matrix{Float64}},
+    s_env_t::Vector{Float64},
+} where {T<:CWT}
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -717,7 +869,22 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    sp, st = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, db=db, nt=nt, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+    sp, st = senv(
+        obj;
+        ch=ch,
+        d=d,
+        t=t,
+        pad=pad,
+        method=method,
+        db=db,
+        nt=nt,
+        gw=gw,
+        ncyc=ncyc,
+        wt=wt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+    )
 
     ch_n = size(sp, 1)
     ep_n = size(sp, 3)
@@ -751,17 +918,31 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     else
         # mean over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_mean(obj, ch=ch, dims=1, d=d, pad=pad, method=method, db=db, nt=nt, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
-        s_env_m = mean(s_env_m, dims=2)
-        s_env_u = mean(s_env_u, dims=2)
-        s_env_l = mean(s_env_l, dims=2)
+        s_env_m, s_env_u, s_env_l, _ = senv_mean(
+            obj;
+            ch=ch,
+            dims=1,
+            d=d,
+            pad=pad,
+            method=method,
+            db=db,
+            nt=nt,
+            gw=gw,
+            ncyc=ncyc,
+            wt=wt,
+            wlen=wlen,
+            woverlap=woverlap,
+            w=w,
+        )
+        s_env_m = mean(s_env_m; dims=2)
+        s_env_u = mean(s_env_u; dims=2)
+        s_env_l = mean(s_env_l; dims=2)
         s_env_m = reshape(s_env_m, size(s_env_m, 1))
         s_env_u = reshape(s_env_u, size(s_env_u, 1))
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
 
     return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
-
 end
 
 """
@@ -800,8 +981,31 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, flim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(flim), method::Symbol=:stft, pad::Int64=0, db::Bool=true, nt::Int64=7, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{s_env_m::Union{Vector{Float64}, Matrix{Float64}}, s_env_u::Union{Vector{Float64}, Matrix{Float64}}, s_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_env_t::Vector{Float64}} where {T <: CWT}
-
+function senv_median(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=2,
+    t::Union{Real,Nothing}=nothing,
+    flim::Tuple{Real,Real}=(0, sr(obj) / 2),
+    frq_n::Int64=_tlength(flim),
+    method::Symbol=:stft,
+    pad::Int64=0,
+    db::Bool=true,
+    nt::Int64=7,
+    frq::Symbol=:log,
+    gw::Real=5,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    wt::T=wavelet(Morlet(2π), β=2),
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+)::@NamedTuple{
+    s_env_m::Union{Vector{Float64},Matrix{Float64}},
+    s_env_u::Union{Vector{Float64},Matrix{Float64}},
+    s_env_l::Union{Vector{Float64},Matrix{Float64}},
+    s_env_t::Vector{Float64},
+} where {T<:CWT}
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -811,7 +1015,22 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    sp, st = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, nt=nt, db=db, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+    sp, st = senv(
+        obj;
+        ch=ch,
+        d=d,
+        t=t,
+        pad=pad,
+        method=method,
+        nt=nt,
+        db=db,
+        gw=gw,
+        ncyc=ncyc,
+        wt=wt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+    )
 
     ch_n = size(sp, 1)
     ep_n = size(sp, 3)
@@ -845,17 +1064,31 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     else
         # median over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_median(obj, ch=ch, dims=1, d=d, pad=pad, method=method, db=db, nt=nt, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
-        s_env_m = median(s_env_m, dims=2)
-        s_env_u = median(s_env_u, dims=2)
-        s_env_l = median(s_env_l, dims=2)
+        s_env_m, s_env_u, s_env_l, _ = senv_median(
+            obj;
+            ch=ch,
+            dims=1,
+            d=d,
+            pad=pad,
+            method=method,
+            db=db,
+            nt=nt,
+            gw=gw,
+            ncyc=ncyc,
+            wt=wt,
+            wlen=wlen,
+            woverlap=woverlap,
+            w=w,
+        )
+        s_env_m = median(s_env_m; dims=2)
+        s_env_u = median(s_env_u; dims=2)
+        s_env_l = median(s_env_l; dims=2)
         s_env_m = reshape(s_env_m, size(s_env_m, 1))
         s_env_u = reshape(s_env_u, size(s_env_u, 1))
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
 
     return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
-
 end
 
 """
@@ -875,10 +1108,17 @@ Named tuple containing:
 - `h_env::Array{Float64, 3}`: Hilbert spectrum amplitude envelope
 - `s_t::Vector{Float64}`: signal time
 """
-function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=32)::@NamedTuple{h_env::Array{Float64, 3}, s_t::Vector{Float64}}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
+function henv(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, d::Int64=32
+)::@NamedTuple{h_env::Array{Float64,3}, s_t::Vector{Float64}}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
+    _warn(
+        "henv() uses Hilbert transform, the signal should be narrowband for best results."
+    )
 
     _, hamp, _, _ = @views htransform(obj.data[ch, :, :])
 
@@ -918,8 +1158,17 @@ Named tuple containing:
 - `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=32)::@NamedTuple{h_env_m::Union{Vector{Float64}, Matrix{Float64}}, h_env_u::Union{Vector{Float64}, Matrix{Float64}}, h_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_t::Vector{Float64}}
-
+function henv_mean(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=32,
+)::@NamedTuple{
+    h_env_m::Union{Vector{Float64},Matrix{Float64}},
+    h_env_u::Union{Vector{Float64},Matrix{Float64}},
+    h_env_l::Union{Vector{Float64},Matrix{Float64}},
+    s_t::Vector{Float64},
+}
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -929,7 +1178,7 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_a, s_t = henv(obj, ch=ch, d=d)
+    s_a, s_t = henv(obj; ch=ch, d=d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -963,17 +1212,16 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     else
         # mean over channels and epochs
 
-        h_env_m, h_env_u, h_env_l, _ = henv_mean(obj, ch=ch, dims=1, d=d)
-        h_env_m = mean(h_env_m, dims=2)
-        h_env_u = mean(h_env_u, dims=2)
-        h_env_l = mean(h_env_l, dims=2)
+        h_env_m, h_env_u, h_env_l, _ = henv_mean(obj; ch=ch, dims=1, d=d)
+        h_env_m = mean(h_env_m; dims=2)
+        h_env_u = mean(h_env_u; dims=2)
+        h_env_l = mean(h_env_l; dims=2)
         h_env_m = reshape(h_env_m, size(h_env_m, 1))
         h_env_u = reshape(h_env_u, size(h_env_u, 1))
         h_env_l = reshape(h_env_l, size(h_env_l, 1))
     end
 
     return (h_env_m=h_env_m, h_env_u=h_env_u, h_env_l=h_env_l, s_t=s_t)
-
 end
 
 """
@@ -996,8 +1244,17 @@ Named tuple containing:
 - `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=32)::@NamedTuple{h_env_m::Union{Vector{Float64}, Matrix{Float64}}, h_env_u::Union{Vector{Float64}, Matrix{Float64}}, h_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_t::Vector{Float64}}
-
+function henv_median(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    dims::Int64,
+    d::Int64=32,
+)::@NamedTuple{
+    h_env_m::Union{Vector{Float64},Matrix{Float64}},
+    h_env_u::Union{Vector{Float64},Matrix{Float64}},
+    h_env_l::Union{Vector{Float64},Matrix{Float64}},
+    s_t::Vector{Float64},
+}
     if dims == 1
         @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -1007,7 +1264,7 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
         @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
     end
 
-    s_a, s_t = henv(obj, ch=ch, d=d)
+    s_a, s_t = henv(obj; ch=ch, d=d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -1041,10 +1298,10 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     else
         # median over channels and epochs
 
-        h_env_m, h_env_u, h_env_l, _ = henv_median(obj, ch=ch, dims=1, d=d)
-        h_env_m = median(h_env_m, dims=2)
-        h_env_u = median(h_env_u, dims=2)
-        h_env_l = median(h_env_l, dims=2)
+        h_env_m, h_env_u, h_env_l, _ = henv_median(obj; ch=ch, dims=1, d=d)
+        h_env_m = median(h_env_m; dims=2)
+        h_env_u = median(h_env_u; dims=2)
+        h_env_l = median(h_env_l; dims=2)
         h_env_m = reshape(h_env_m, size(h_env_m, 1))
         h_env_u = reshape(h_env_u, size(h_env_u, 1))
         h_env_l = reshape(h_env_l, size(h_env_l, 1))
@@ -1069,8 +1326,9 @@ Named tuple containing:
 - `ec::Vector{Float64}`: envelope correlation coefficient
 - `p::Vector{Float64}`: p-value
 """
-function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
-
+function env_cor(
+    env1::Array{Float64,3}, env2::Array{Float64,3}
+)::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
     @assert size(env1) == size(env2) "Both envelopes must have the same size."
 
     ep_n = size(env1, 3)
@@ -1085,5 +1343,4 @@ function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{
     end
 
     return (ec=ec, p=p)
-
 end

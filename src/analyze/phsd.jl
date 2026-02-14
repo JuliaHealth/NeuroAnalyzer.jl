@@ -15,15 +15,15 @@ Named tuple containing:
 - `ph::Vector{Float64}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractVector; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
-
+function phsd(
+    s::AbstractVector; fs::Int64
+)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
     @assert fs >= 1 "fs must be ≥ 1."
 
     _, _, _, ph = NeuroAnalyzer.ftransform(s)
     f, _ = freqs(s, fs)
 
     return (ph=ph, f=f)
-
 end
 
 """
@@ -42,10 +42,11 @@ Named tuple containing:
 - `ph::Matrix{Float64}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractMatrix; fs::Int64)::@NamedTuple{ph::Matrix{Float64}, f::Vector{Float64}}
-
+function phsd(
+    s::AbstractMatrix; fs::Int64
+)::@NamedTuple{ph::Matrix{Float64}, f::Vector{Float64}}
     ch_n = size(s, 1)
-    _, f = phsd(s[1, :], fs=fs)
+    _, f = phsd(s[1, :]; fs=fs)
 
     ph = zeros(ch_n, length(f))
 
@@ -54,7 +55,6 @@ function phsd(s::AbstractMatrix; fs::Int64)::@NamedTuple{ph::Matrix{Float64}, f:
     end
 
     return (ph=ph, f=f)
-
 end
 
 """
@@ -72,13 +72,14 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
-
+function phsd(
+    s::AbstractArray; fs::Int64
+)::@NamedTuple{ph::Array{Float64,3}, f::Vector{Float64}}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, f = phsd(s[1, :, 1], fs=fs)
+    _, f = phsd(s[1, :, 1]; fs=fs)
 
     ph = zeros(ch_n, length(f), ep_n)
 
@@ -89,7 +90,6 @@ function phsd(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f
     end
 
     return (ph=ph, f=f)
-
 end
 
 """
@@ -108,11 +108,15 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    ph, f = phsd(obj.data[ch, :, :], fs=sr(obj))
+function phsd(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::@NamedTuple{ph::Array{Float64,3}, f::Vector{Float64}}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
+    ph, f = phsd(obj.data[ch, :, :]; fs=sr(obj))
 
     return (ph=ph, f=f)
-
 end

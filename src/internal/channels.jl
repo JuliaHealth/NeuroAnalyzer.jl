@@ -1,4 +1,4 @@
-function _v2r(v::Vector{Int64})::Union{AbstractRange, Vector{Int64}}
+function _v2r(v::Vector{Int64})::Union{AbstractRange,Vector{Int64}}
     if sort(v) == sort(v)[1]:sort(v)[end]
         return sort(v)[1]:sort(v)[end]
     else
@@ -70,9 +70,13 @@ function _ch_units(ch_type::String)::String
     return u
 end
 
-_ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
+_ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String = _ch_units(
+    obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]]
+)
 
-function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}, Regex})::Vector{Int64}
+function _ch_idx(
+    cl::Union{String,Vector{String}}, l::Union{String,Vector{String},Regex}
+)::Vector{Int64}
     if isa(l, Regex)
         m = match.(l, cl)
         m = m[.!isnothing.(m)]
@@ -95,7 +99,9 @@ function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{Stri
     return unique(ch)
 end
 
-function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Regex})::Vector{Int64}
+function _ch_idx(
+    obj::NeuroAnalyzer.NEURO, l::Union{String,Vector{String},Regex}
+)::Vector{Int64}
     cl = labels(obj)
     if isa(l, Regex)
         m = match.(l, cl)
@@ -114,7 +120,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
         idx = findfirst(isequal("meg"), l)
         l[idx] = "mag"
         if idx < length(l)
-            l = [l[1:idx]; "grad"; l[idx+1:end]]
+            l = [l[1:idx]; "grad"; l[(idx + 1):end]]
         else
             l = append!(l, ["grad"])
         end
@@ -123,16 +129,65 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
         idx = findfirst(isequal("nirs"), l)
         l[idx] = "nirs_int"
         if idx < length(l)
-            l = [l[1:idx]; "nirs_od"; "nirs_dmean"; "nirs_dvar"; "nirs_dskew"; "nirs_mua"; "nirs_musp"; "nirs_hbo"; "nirs_hbr"; "nirs_hbt"; "nirs_h2o"; "nirs_lipid"; "nirs_bfi"; "nirs_hrf_dod"; "nirs_hrf_dmean"; "nirs_hrf_dvar"; "nirs_hrf_dskew"; "nirs_hrf_hbo"; "nirs_hrf_hbr"; "nirs_hrf_hbt"; "nirs_hrf_bfi"; "nirs_aux"; l[idx+1:end]]
+            l = [
+                l[1:idx];
+                "nirs_od";
+                "nirs_dmean";
+                "nirs_dvar";
+                "nirs_dskew";
+                "nirs_mua";
+                "nirs_musp";
+                "nirs_hbo";
+                "nirs_hbr";
+                "nirs_hbt";
+                "nirs_h2o";
+                "nirs_lipid";
+                "nirs_bfi";
+                "nirs_hrf_dod";
+                "nirs_hrf_dmean";
+                "nirs_hrf_dvar";
+                "nirs_hrf_dskew";
+                "nirs_hrf_hbo";
+                "nirs_hrf_hbr";
+                "nirs_hrf_hbt";
+                "nirs_hrf_bfi";
+                "nirs_aux";
+                l[(idx + 1):end]
+            ]
         else
-            append!(l, ["nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux"])
+            append!(
+                l,
+                [
+                    "nirs_od",
+                    "nirs_dmean",
+                    "nirs_dvar",
+                    "nirs_dskew",
+                    "nirs_mua",
+                    "nirs_musp",
+                    "nirs_hbo",
+                    "nirs_hbr",
+                    "nirs_hbt",
+                    "nirs_h2o",
+                    "nirs_lipid",
+                    "nirs_bfi",
+                    "nirs_hrf_dod",
+                    "nirs_hrf_dmean",
+                    "nirs_hrf_dvar",
+                    "nirs_hrf_dskew",
+                    "nirs_hrf_hbo",
+                    "nirs_hrf_hbr",
+                    "nirs_hrf_hbt",
+                    "nirs_hrf_bfi",
+                    "nirs_aux",
+                ],
+            )
         end
     end
     if any(occursin.("sensors", l))
         idx = findfirst(isequal("sensors"), l)
         l[idx] = "accel"
         if idx < length(l)
-            l = [l[1:idx]; "magfld"; "orient"; "angvel"; l[idx+1:end]]
+            l = [l[1:idx]; "magfld"; "orient"; "angvel"; l[(idx + 1):end]]
         else
             append!(l, ["magfld", "orient", "angvel"])
         end
@@ -140,11 +195,11 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
     if any(occursin.("bad", l))
         idx = findfirst(isequal("bad"), l)
         bads = sum(obj.header.recording[:bad_channel])
-        bad_ch = labels(obj)[bads.>0]
+        bad_ch = labels(obj)[bads .> 0]
         deleteat!(l, idx)
         if length(bad_ch) > 0
             if idx < length(l)
-                l = [l[1:idx]; bad_ch l[idx+1:end]]
+                l = [l[1:idx]; bad_ch l[(idx + 1):end]]
             else
                 append!(l, bad_ch)
             end
@@ -155,7 +210,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
     for idx1 in eachindex(l)
         if l[idx1] in NeuroAnalyzer.channel_types
             for idx2 in NeuroAnalyzer.channel_types
-                l[idx1] == idx2 && append!(l_tmp, get_channel(obj, type=idx2))
+                l[idx1] == idx2 && append!(l_tmp, get_channel(obj; type=idx2))
             end
         else
             push!(l_tmp, l[idx1])
@@ -171,8 +226,87 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
     return unique(ch)
 end
 
-function _set_channel_types(clabels::Vector{String}, default::String="other")::Vector{String}
-    channel_names = ["af3", "af4", "af7", "af8", "afz", "c1", "c2", "c3", "c4", "c5", "c6", "cp1", "cp2", "cp3", "cp4", "cp5", "cp6", "cpz", "cz", "f1", "f10", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fc1", "fc2", "fc3", "fc4", "fc5", "fc6", "fcz", "fp1", "fp2", "fpz", "ft10", "ft7", "ft8", "ft9", "fz", "nz", "o1", "o2", "oz", "p1", "p10", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "po3", "po4", "po7", "po8", "poz", "pz", "t10", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "tp10", "tp7", "tp8", "tp9"]
+function _set_channel_types(
+    clabels::Vector{String}, default::String="other"
+)::Vector{String}
+    channel_names = [
+        "af3",
+        "af4",
+        "af7",
+        "af8",
+        "afz",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "cp1",
+        "cp2",
+        "cp3",
+        "cp4",
+        "cp5",
+        "cp6",
+        "cpz",
+        "cz",
+        "f1",
+        "f10",
+        "f2",
+        "f3",
+        "f4",
+        "f5",
+        "f6",
+        "f7",
+        "f8",
+        "f9",
+        "fc1",
+        "fc2",
+        "fc3",
+        "fc4",
+        "fc5",
+        "fc6",
+        "fcz",
+        "fp1",
+        "fp2",
+        "fpz",
+        "ft10",
+        "ft7",
+        "ft8",
+        "ft9",
+        "fz",
+        "nz",
+        "o1",
+        "o2",
+        "oz",
+        "p1",
+        "p10",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "po3",
+        "po4",
+        "po7",
+        "po8",
+        "poz",
+        "pz",
+        "t10",
+        "t3",
+        "t4",
+        "t5",
+        "t6",
+        "t7",
+        "t8",
+        "t9",
+        "tp10",
+        "tp7",
+        "tp8",
+        "tp9",
+    ]
     ref_channels = ["a1", "a2", "m1", "m2", "pg1", "pg2"]
     eog_channel = ["e", "e1", "e2"]
     channel_type = repeat([default], length(clabels))
@@ -182,7 +316,8 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")::V
 
         occursin("eog", lowercase(clabels[idx])) && (channel_type[idx] = "eog")
         for idx2 in eachindex(eog_channel)
-            occursin(channel_names[idx2], lowercase(clabels[idx])) && (channel_type[idx] = "eog")
+            occursin(channel_names[idx2], lowercase(clabels[idx])) &&
+                (channel_type[idx] = "eog")
         end
 
         occursin("emg", lowercase(clabels[idx])) && (channel_type[idx] = "emg")
@@ -196,7 +331,8 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")::V
         # eeg channels should have priority, e.g. C3A1 (C3 referenced to A1 should be of eeg type, not ref)
         in(lowercase(clabels[idx]), channel_names) && (channel_type[idx] = "eeg")
         for idx2 in eachindex(channel_names)
-            occursin(channel_names[idx2], lowercase(clabels[idx])) && (channel_type[idx] = "eeg")
+            occursin(channel_names[idx2], lowercase(clabels[idx])) &&
+                (channel_type[idx] = "eeg")
         end
         lowercase(clabels[idx])[1] == 'c' && (channel_type[idx] = "eeg")
         lowercase(clabels[idx])[1] == 'f' && (channel_type[idx] = "eeg")
@@ -205,8 +341,10 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")::V
         lowercase(clabels[idx])[1] == 'p' && (channel_type[idx] = "eeg")
         lowercase(clabels[idx])[1] == 't' && (channel_type[idx] = "eeg")
         lowercase(clabels[idx])[1] == 'i' && (channel_type[idx] = "eeg")
-        (length(clabels[idx]) > 1 && lowercase(clabels[idx])[1:2] == "af") && (channel_type[idx] = "eeg")
-        (length(clabels[idx]) > 2 && lowercase(clabels[idx])[1] == "a") && (channel_type[idx] = "eeg")
+        (length(clabels[idx]) > 1 && lowercase(clabels[idx])[1:2] == "af") &&
+            (channel_type[idx] = "eeg")
+        (length(clabels[idx]) > 2 && lowercase(clabels[idx])[1] == "a") &&
+            (channel_type[idx] = "eeg")
 
         occursin("rr", lowercase(clabels[idx])) && (channel_type[idx] = "other")
         occursin("mic", lowercase(clabels[idx])) && (channel_type[idx] = "other")

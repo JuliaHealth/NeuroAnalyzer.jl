@@ -18,9 +18,7 @@ Return the object recording note.
 - `note::String`
 """
 function view_note(obj::NeuroAnalyzer.NEURO)::String
-
     return obj.header.recording[:recording_notes]
-
 end
 
 """
@@ -38,12 +36,10 @@ Add recording note to the object header.
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function add_note(obj::NeuroAnalyzer.NEURO; note::String)::NeuroAnalyzer.NEURO
-
     obj_new = deepcopy(obj)
     obj_new.header.recording[:recording_notes] = note
 
     return obj_new
-
 end
 
 """
@@ -61,11 +57,9 @@ Add recording note to the object header.
 - `Nothing`
 """
 function add_note!(obj::NeuroAnalyzer.NEURO; note::String)::Nothing
-
     obj.header.recording[:recording_notes] = note
 
     return nothing
-
 end
 
 """
@@ -82,12 +76,10 @@ Delete recording note from the object header.
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_note(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
-
     obj_new = deepcopy(obj)
     obj_new.header.recording[:recording_notes] = ""
 
     return obj_new
-
 end
 
 """
@@ -104,9 +96,7 @@ Delete recording note from the object header.
 - `Nothing`
 """
 function delete_note!(obj::NeuroAnalyzer.NEURO)::Nothing
-
     obj.header.recording[:recording_notes] = ""
 
     return nothing
-
 end

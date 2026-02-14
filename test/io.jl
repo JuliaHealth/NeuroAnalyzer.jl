@@ -99,12 +99,12 @@ l = import_locs_mat(joinpath(testfiles_path, "locs.mat"));
 
 @info "Test: load_locs()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"));
-eeg = load_locs(eeg, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"));
+eeg = load_locs(eeg; file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"));
 @test eeg.locs isa DataFrame
 
 @info "Test: save()"
 isfile("test.hdf") && rm("test.hdf")
-NeuroAnalyzer.save(eeg, file_name="test.hdf")
+NeuroAnalyzer.save(eeg; file_name="test.hdf")
 @test isfile("test.hdf")
 
 @info "Test: load()"
@@ -114,17 +114,17 @@ isfile("test.hdf") && rm("test.hdf")
 
 @info "Test: export_csv()"
 isfile("eeg.csv") && rm("eeg.csv")
-export_csv(eeg, file_name="eeg.csv", header=false)
+export_csv(eeg; file_name="eeg.csv", header=false)
 @test isfile("eeg.csv")
 isfile("eeg.csv") && rm("eeg.csv")
 
 @info "Test: export_locs()"
 isfile("test_out.ced") && rm("test_out.ced")
-export_locs(eeg, file_name="test_out.ced")
+export_locs(eeg; file_name="test_out.ced")
 @test isfile("test_out.ced")
 isfile("test_out.ced") && rm("test_out.ced")
 isfile("test_out.locs") && rm("test_out.locs")
-export_locs(eeg, file_name="test_out.locs")
+export_locs(eeg; file_name="test_out.locs")
 @test isfile("test_out.locs")
 isfile("test_out.locs") && rm("test_out.locs")
 
@@ -149,7 +149,7 @@ n = import_nirx(joinpath(testfiles_path, "nirx", "NIRS-2020-08-18_001.hdr"));
 @info "Test: export_markers()"
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdfplus.bdf"));
 isfile("markers.csv") && rm("markers.csv")
-export_markers(eeg, file_name="markers.csv")
+export_markers(eeg; file_name="markers.csv")
 @test isfile("markers.csv")
 isfile("markers.csv") && rm("markers.csv")
 
@@ -164,12 +164,33 @@ eeg = import_gdf(joinpath(testfiles_path, "eeg-test-gdf_2.20.gdf"));
 @test nchannels(eeg) == 65
 
 @info "Test: import_montage()"
-ref_list, ref_name = import_montage(joinpath(NeuroAnalyzer.PATH, "montages", "bip_long.mnt"));
-@test ref_list == ["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]
+ref_list, ref_name = import_montage(
+    joinpath(NeuroAnalyzer.PATH, "montages", "bip_long.mnt")
+);
+@test ref_list == [
+    "Fz-Cz",
+    "Cz-Pz",
+    "Fp1-F7",
+    "Fp1-F3",
+    "F7-T3",
+    "T3-T5",
+    "T5-O1",
+    "F3-C3",
+    "C3-P3",
+    "P3-O1",
+    "Fp2-F8",
+    "Fp2-F4",
+    "F8-T4",
+    "T4-T6",
+    "T6-O2",
+    "F4-C4",
+    "C4-P4",
+    "P4-O2",
+]
 @test ref_name == "longitudinal-BIP"
 
 @info "Test: import_npy()"
-n = import_npy(joinpath(testfiles_path, "eeg-test-npy.npy"), sampling_rate=256)
+n = import_npy(joinpath(testfiles_path, "eeg-test-npy.npy"); sampling_rate=256)
 @test n isa NeuroAnalyzer.NEURO
 
 @info "Test: import_locs_txt()"
@@ -225,27 +246,27 @@ meg = import_fiff(joinpath(testfiles_path, "meg-test-fiff.fif"));
 @test meg.header.recording[:file_type] == "FIFF"
 
 @info "Test: import_ft() - EEG"
-eeg = import_ft(joinpath(testfiles_path, "eeg-test-fieldtrip.mat"), type=:eeg);
+eeg = import_ft(joinpath(testfiles_path, "eeg-test-fieldtrip.mat"); type=:eeg);
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:data_type] == "eeg"
 @test eeg.header.recording[:file_type] == "FT"
 
 @info "Test: import_ft() - MEG"
-meg = import_ft(joinpath(testfiles_path, "meg-test-fieldtrip.mat"), type=:meg);
+meg = import_ft(joinpath(testfiles_path, "meg-test-fieldtrip.mat"); type=:meg);
 @test meg isa NeuroAnalyzer.NEURO
 @test meg.header.recording[:data_type] == "meg"
 @test meg.header.recording[:file_type] == "FT"
 
 @info "Test: import_ft() - fNIRS"
-nirs = import_ft(joinpath(testfiles_path, "fnirs-test-fieldtrip.mat"), type=:nirs);
+nirs = import_ft(joinpath(testfiles_path, "fnirs-test-fieldtrip.mat"); type=:nirs);
 @test nirs isa NeuroAnalyzer.NEURO
 @test nirs.header.recording[:data_type] == "nirs"
 @test meg.header.recording[:file_type] == "FT"
 
 @info "Test: import_ft() - events"
-m = import_ft(joinpath(testfiles_path, "events-test-fieldtrip.mat"), type=:events);
+m = import_ft(joinpath(testfiles_path, "events-test-fieldtrip.mat"); type=:events);
 @test m isa DataFrame
-m_new = markers_s2t(m, fs=256)
+m_new = markers_s2t(m; fs=256)
 @test m_new isa DataFrame
 eeg.markers = m
 markers_s2t!(eeg)

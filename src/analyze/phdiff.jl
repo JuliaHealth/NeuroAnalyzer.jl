@@ -17,20 +17,20 @@ Calculate phase difference between signals.
 Named tuple containing:
 - `phd::Vector{Float64}`: phase differences in radians
 """
-function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=false)::Vector{Float64}
-
+function phdiff(
+    s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=false
+)::Vector{Float64}
     if h
-        _, _, _, ph1 = NeuroAnalyzer.htransform(s1, pad=pad)
-        _, _, _, ph2 = NeuroAnalyzer.htransform(s2, pad=pad)
+        _, _, _, ph1 = NeuroAnalyzer.htransform(s1; pad=pad)
+        _, _, _, ph2 = NeuroAnalyzer.htransform(s2; pad=pad)
     else
-        _, _, _, ph1 = NeuroAnalyzer.ftransform(s1, pad=pad)
-        _, _, _, ph2 = NeuroAnalyzer.ftransform(s2, pad=pad)
+        _, _, _, ph1 = NeuroAnalyzer.ftransform(s1; pad=pad)
+        _, _, _, ph2 = NeuroAnalyzer.ftransform(s2; pad=pad)
     end
 
     phd = ph1 - ph2
 
     return phd
-
 end
 
 """
@@ -52,8 +52,13 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 - `phd::Array{Float64, 3}`
 """
-function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)::Array{Float64, 3}
-
+function phdiff(
+    s::AbstractArray;
+    ch::Union{Int64,Vector{Int64}}=_c(size(s, 1)),
+    avg::Symbol=:phase,
+    pad::Int64=0,
+    h::Bool=false,
+)::Array{Float64,3}
     _chk3d(s)
     _check_var(avg, [:phase, :signal], "avg")
     _check_channels(s, ch)
@@ -80,9 +85,13 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
 
                 for ref_idx in eachindex(ref_channels)
                     if h
-                        _, _, _, ph = @views NeuroAnalyzer.htransform(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
+                        _, _, _, ph = @views NeuroAnalyzer.htransform(
+                            s[ref_channels[ref_idx], :, ep_idx], pad=pad
+                        )
                     else
-                        _, _, _, ph = @views NeuroAnalyzer.ftransform(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
+                        _, _, _, ph = @views NeuroAnalyzer.ftransform(
+                            s[ref_channels[ref_idx], :, ep_idx], pad=pad
+                        )
                     end
                     ph_ref[ref_idx, :] = ph
                 end
@@ -90,9 +99,13 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
                 ph_ref = vec(mean(ph_ref, dims=1))
 
                 if h
-                    _, _, _, ph = @views NeuroAnalyzer.htransform(s[ch[ch_idx], :, ep_idx], pad=pad)
+                    _, _, _, ph = @views NeuroAnalyzer.htransform(
+                        s[ch[ch_idx], :, ep_idx], pad=pad
+                    )
                 else
-                    _, _, _, ph = @views NeuroAnalyzer.ftransform(s[ch[ch_idx], :, ep_idx], pad=pad)
+                    _, _, _, ph = @views NeuroAnalyzer.ftransform(
+                        s[ch[ch_idx], :, ep_idx], pad=pad
+                    )
                 end
 
                 phd[ch_idx, :, ep_idx] = ph - ph_ref
@@ -108,7 +121,6 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
     end
 
     return phd
-
 end
 
 """
@@ -130,11 +142,19 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 - `phd::Array{Float64, 3}`
 """
-function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)::Array{Float64, 3}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function phdiff(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    avg::Symbol=:phase,
+    pad::Int64=0,
+    h::Bool=false,
+)::Array{Float64,3}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     phd = @views phdiff(obj.data[ch, :, :], avg=avg, pad=pad, h=h)
 
     return phd
-
 end

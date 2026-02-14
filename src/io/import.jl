@@ -40,28 +40,42 @@ This is a meta-function that triggers appropriate `import_*()` function. File fo
 - `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
 - `markers::DataFrame` - for events
 """
-function import_recording(file_name::String; detect_type::Bool=true, type::Union{Nothing, Symbol}=nothing, sampling_rate::Union{Nothing, Int64}=nothing, n::Int64=0)::NeuroAnalyzer.NEURO
-
+function import_recording(
+    file_name::String;
+    detect_type::Bool=true,
+    type::Union{Nothing,Symbol}=nothing,
+    sampling_rate::Union{Nothing,Int64}=nothing,
+    n::Int64=0,
+)::NeuroAnalyzer.NEURO
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
-    splitext(file_name)[2] == ".edf" && return import_edf(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".bdf" && return import_bdf(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".gdf" && return import_gdf(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".vhdr" && return import_bv(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".ahdr" && return import_bv(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".csv" && return import_csv(file_name, detect_type=detect_type)
-    (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") && return import_csv(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".npy" && return import_npy(file_name, sampling_rate=sampling_rate)
+    splitext(file_name)[2] == ".edf" &&
+        return import_edf(file_name; detect_type=detect_type)
+    splitext(file_name)[2] == ".bdf" &&
+        return import_bdf(file_name; detect_type=detect_type)
+    splitext(file_name)[2] == ".gdf" &&
+        return import_gdf(file_name; detect_type=detect_type)
+    splitext(file_name)[2] == ".vhdr" &&
+        return import_bv(file_name; detect_type=detect_type)
+    splitext(file_name)[2] == ".ahdr" &&
+        return import_bv(file_name; detect_type=detect_type)
+    splitext(file_name)[2] == ".csv" &&
+        return import_csv(file_name; detect_type=detect_type)
+    (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") &&
+        return import_csv(file_name; detect_type=detect_type)
+    splitext(file_name)[2] == ".set" &&
+        return import_set(file_name; detect_type=detect_type)
+    splitext(file_name)[2] == ".npy" &&
+        return import_npy(file_name; sampling_rate=sampling_rate)
     splitext(file_name)[2] == ".xdf" && return import_xdf(file_name)
-    splitext(file_name)[2] == ".nwb" && return import_nwb(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".nwb" &&
+        return import_nwb(file_name; detect_type=detect_type)
     splitext(file_name)[2] == ".ncs" && return import_ncs(file_name)
     splitext(file_name)[2] == ".fif" && return import_fiff(file_name)
     splitext(file_name)[2] == ".fiff" && return import_fiff(file_name)
-    splitext(file_name)[2] == ".mat" && return import_ft(file_name, type=type)
-    splitext(file_name)[2] == ".snirf" && return import_snirf(file_name, n=n)
+    splitext(file_name)[2] == ".mat" && return import_ft(file_name; type=type)
+    splitext(file_name)[2] == ".snirf" && return import_snirf(file_name; n=n)
     splitext(file_name)[2] == ".nirs" && return import_nirs(file_name)
     splitext(file_name)[2] == ".ascii" && return import_duomag(file_name)
     splitext(file_name)[2] == ".m" && return import_duomag(file_name)
-
 end

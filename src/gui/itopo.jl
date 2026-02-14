@@ -15,16 +15,14 @@ Interactive topographical map of continuous signal.
 
 - `Nothing`
 """
-function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
+function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex})::Nothing
     @assert nepochs(obj) == 1 "For epoched object itopo_ep() must be used."
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    p = NeuroAnalyzer.plot_topo(obj, ch=ch)
+    p = NeuroAnalyzer.plot_topo(obj; ch=ch)
 
     function _activate(app)
-
         if p.attr[:size][1] > 900
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo()")
             win.content_width = p.attr[:size][1] + 100
@@ -86,7 +84,14 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         cb_contour.active = true
 
         combo_imethod = GtkComboBoxText()
-        imethod_types = ["shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"]
+        imethod_types = [
+            "shepard",
+            "multiquadratic",
+            "inv multiquadratic",
+            "thin plate",
+            "nearest neighbour",
+            "gaussian",
+        ]
         for idx in imethod_types
             push!(combo_imethod, idx)
         end
@@ -103,7 +108,20 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         combo_amethod.sensitive = false
 
         combo_nmethod = GtkComboBoxText()
-        nmethod_types = ["zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"]
+        nmethod_types = [
+            "zscore",
+            "gauss",
+            "invroot",
+            "log",
+            "minmax",
+            "neg",
+            "neglog",
+            "neglog10",
+            "perc",
+            "pos",
+            "softmax",
+            "none",
+        ]
         for idx in nmethod_types
             push!(combo_nmethod, idx)
         end
@@ -210,19 +228,21 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
             plot_electrodes = cb_elec.active
             cart = cb_cart.active
             large = cb_large.active
-            p = NeuroAnalyzer.plot_topo(obj,
-                                        ch=ch,
-                                        seg=seg,
-                                        title=title,
-                                        cb=cb,
-                                        cb_label=cblab,
-                                        amethod=amethod,
-                                        imethod=imethod,
-                                        nmethod=nmethod,
-                                        large=large,
-                                        plot_contours=plot_contours,
-                                        plot_electrodes=plot_electrodes,
-                                        cart=cart)
+            p = NeuroAnalyzer.plot_topo(
+                obj,
+                ch=ch,
+                seg=seg,
+                title=title,
+                cb=cb,
+                cb_label=cblab,
+                amethod=amethod,
+                imethod=imethod,
+                nmethod=nmethod,
+                large=large,
+                plot_contours=plot_contours,
+                plot_electrodes=plot_electrodes,
+                cart=cart,
+            )
             ctx = getgc(can)
             if p.attr[:size][1] > 900
                 Gtk4.rectangle(ctx, 0, 0, 999, 999)
@@ -232,7 +252,12 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
                     png(p, io)
                 end
                 img = read_from_png(io)
-                set_source_surface(ctx, img, 500 - (p.attr[:size][1] ÷ 2) - 1, 500 - (p.attr[:size][1] ÷ 2) - 1)
+                set_source_surface(
+                    ctx,
+                    img,
+                    500 - (p.attr[:size][1] ÷ 2) - 1,
+                    500 - (p.attr[:size][1] ÷ 2) - 1,
+                )
             else
                 Gtk4.rectangle(ctx, 0, 0, 799, 799)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
@@ -241,15 +266,22 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
                     png(p, io)
                 end
                 img = read_from_png(io)
-                set_source_surface(ctx, img, 400 - (p.attr[:size][1] ÷ 2) - 1, 400 - (p.attr[:size][1] ÷ 2) - 1)
+                set_source_surface(
+                    ctx,
+                    img,
+                    400 - (p.attr[:size][1] ÷ 2) - 1,
+                    400 - (p.attr[:size][1] ÷ 2) - 1,
+                )
             end
             paint(ctx)
         end
 
         signal_connect(entry_ts1, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits=3)
             if seg[1] > seg[2]
-                warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
+                warn_dialog(
+                    _nill, "Cannot plot!\nSegment start is larger than segment end.", win
+                )
             else
                 draw(can)
             end
@@ -258,9 +290,11 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         end
 
         signal_connect(entry_ts2, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits=3)
             if seg[1] > seg[2]
-                warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
+                warn_dialog(
+                    _nill, "Cannot plot!\nSegment start is larger than segment end.", win
+                )
             else
                 draw(can)
             end
@@ -308,20 +342,30 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         win_key = Gtk4.GtkEventControllerKey(win)
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File $file_name cannot be written!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -333,7 +377,6 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     Gtk4.run(app)
 
     return nothing
-
 end
 
 """
@@ -350,16 +393,14 @@ Interactive topographical map of epoched signal.
 
 - `Nothing`
 """
-function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
+function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex})::Nothing
     @assert nepochs(obj) > 1 "For continuous object itopo() must be used."
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    p = NeuroAnalyzer.plot_topo(obj, ch=ch)
+    p = NeuroAnalyzer.plot_topo(obj; ch=ch)
 
     function _activate(app)
-
         if p.attr[:size][1] > 900
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo_ep()")
             Gtk4.default_size(win, p.attr[:size][1] + 100, 1000)
@@ -368,7 +409,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             can.content_height = 1000
         else
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo_ep()")
-        Gtk4.default_size(win, p.attr[:size][1] + 100, 800)
+            Gtk4.default_size(win, p.attr[:size][1] + 100, 800)
             can = GtkCanvas()
             can.content_width = 800
             can.content_height = 800
@@ -426,7 +467,14 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         cb_contour.active = true
 
         combo_imethod = GtkComboBoxText()
-        imethod_types = ["shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"]
+        imethod_types = [
+            "shepard",
+            "multiquadratic",
+            "inv multiquadratic",
+            "thin plate",
+            "nearest neighbour",
+            "gaussian",
+        ]
         for idx in imethod_types
             push!(combo_imethod, idx)
         end
@@ -443,7 +491,20 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         combo_amethod.sensitive = false
 
         combo_nmethod = GtkComboBoxText()
-        nmethod_types = ["zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"]
+        nmethod_types = [
+            "zscore",
+            "gauss",
+            "invroot",
+            "log",
+            "minmax",
+            "neg",
+            "neglog",
+            "neglog10",
+            "perc",
+            "pos",
+            "softmax",
+            "none",
+        ]
         for idx in nmethod_types
             push!(combo_nmethod, idx)
         end
@@ -559,19 +620,21 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             plot_electrodes = cb_elec.active
             cart = cb_cart.active
             large = cb_large.active
-            p = NeuroAnalyzer.plot_topo(obj,
-                                        ch=ch,
-                                        seg=seg,
-                                        title=title,
-                                        cb=cb,
-                                        cb_label=cblab,
-                                        amethod=amethod,
-                                        imethod=imethod,
-                                        nmethod=nmethod,
-                                        large=large,
-                                        plot_contours=plot_contours,
-                                        plot_electrodes=plot_electrodes,
-                                        cart=cart)
+            p = NeuroAnalyzer.plot_topo(
+                obj,
+                ch=ch,
+                seg=seg,
+                title=title,
+                cb=cb,
+                cb_label=cblab,
+                amethod=amethod,
+                imethod=imethod,
+                nmethod=nmethod,
+                large=large,
+                plot_contours=plot_contours,
+                plot_electrodes=plot_electrodes,
+                cart=cart,
+            )
             ctx = getgc(can)
             if p.attr[:size][1] > 900
                 Gtk4.rectangle(ctx, 0, 0, 999, 999)
@@ -581,7 +644,12 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                     png(p, io)
                 end
                 img = read_from_png(io)
-                set_source_surface(ctx, img, 500 - (p.attr[:size][1] ÷ 2) - 1, 500 - (p.attr[:size][1] ÷ 2) - 1)
+                set_source_surface(
+                    ctx,
+                    img,
+                    500 - (p.attr[:size][1] ÷ 2) - 1,
+                    500 - (p.attr[:size][1] ÷ 2) - 1,
+                )
             else
                 Gtk4.rectangle(ctx, 0, 0, 799, 799)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
@@ -590,15 +658,22 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                     png(p, io)
                 end
                 img = read_from_png(io)
-                set_source_surface(ctx, img, 400 - (p.attr[:size][1] ÷ 2) - 1, 400 - (p.attr[:size][1] ÷ 2) - 1)
+                set_source_surface(
+                    ctx,
+                    img,
+                    400 - (p.attr[:size][1] ÷ 2) - 1,
+                    400 - (p.attr[:size][1] ÷ 2) - 1,
+                )
             end
             paint(ctx)
         end
 
         signal_connect(entry_ts1, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits=3)
             if seg[1] > seg[2]
-                warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
+                warn_dialog(
+                    _nill, "Cannot plot!\nSegment start is larger than segment end.", win
+                )
             else
                 draw(can)
             end
@@ -607,9 +682,11 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         end
 
         signal_connect(entry_ts2, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits=3)
             if seg[1] > seg[2]
-                warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
+                warn_dialog(
+                    _nill, "Cannot plot!\nSegment start is larger than segment end.", win
+                )
             else
                 draw(can)
             end
@@ -660,20 +737,30 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         win_key = Gtk4.GtkEventControllerKey(win)
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File $file_name cannot be written!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -685,5 +772,4 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     Gtk4.run(app)
 
     return nothing
-
 end

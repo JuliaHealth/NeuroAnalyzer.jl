@@ -20,7 +20,6 @@ Calculate Amplitude Envelope Correlation (AEC).
 1. Bruns, A., Eckhorn, R., Jokeit, H., & Ebner, A. (2000). Amplitude envelope correlation detects coupling among incoherent brain signals. Neuroreport, 11(7), 1509-1514.
 """
 function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
-
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     # envelopes made of instantaneous amplitudes
@@ -30,7 +29,6 @@ function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
     aec = cor(e1, e2)
 
     return aec
-
 end
 
 """
@@ -51,10 +49,24 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 - `aec::Matrix{Float64}`: AEC value
 """
-function aecor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
-
-    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
-    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
+function aecor(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String,Vector{String}},
+    ch2::Union{String,Vector{String}},
+    ep1::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj1)),
+    ep2::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj2)),
+)::Matrix{Float64}
+    ch1 = if exclude_bads
+        get_channel(obj1; ch=ch1, exclude="bad")
+    else
+        get_channel(obj1; ch=ch1, exclude="")
+    end
+    ch2 = if exclude_bads
+        get_channel(obj2; ch=ch2, exclude="bad")
+    else
+        get_channel(obj2; ch=ch2, exclude="")
+    end
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     _check_epochs(obj1, ep1)
@@ -72,12 +84,14 @@ function aecor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            aec[ch_idx, ep_idx] = @views aecor(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            aec[ch_idx, ep_idx] = @views aecor(
+                obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
+                obj2.data[ch2[ch_idx], :, ep2[ep_idx]],
+            )
         end
     end
 
     return aec
-
 end
 
 """
@@ -95,9 +109,14 @@ Calculate Amplitude Envelope Correlation (AEC).
 Named tuple containing:
 - `aec::Array{Float64, 3}`: AEC value
 """
-function aecor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function aecor(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Array{Float64,3}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
     isa(ch, Int64) && (ch = [ch])
@@ -107,7 +126,9 @@ function aecor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                aec[ch_idx1, ch_idx2, ep_idx] = @views aecor(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
+                aec[ch_idx1, ch_idx2, ep_idx] = @views aecor(
+                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
+                )
             end
         end
     end
@@ -115,7 +136,6 @@ function aecor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     aec = _copy_lt2ut(aec)
 
     return aec
-
 end
 
 """
@@ -137,7 +157,6 @@ Calculate Envelope-to-Signal Correlation (ESC).
 1. Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequency signals among visual cortical areas in human subdural recordings. International Journal of Psychophysiology, 51(2), 97-116.
 """
 function escor(s1::AbstractVector, s2::AbstractVector)::Float64
-
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     # envelopes made of instantaneous amplitudes
@@ -146,7 +165,6 @@ function escor(s1::AbstractVector, s2::AbstractVector)::Float64
     esc = cor(s1, e2)
 
     return esc
-
 end
 
 """
@@ -167,10 +185,24 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 - `esc::Matrix{Float64}`: ESC value
 """
-function escor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
-
-    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
-    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
+function escor(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String,Vector{String}},
+    ch2::Union{String,Vector{String}},
+    ep1::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj1)),
+    ep2::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj2)),
+)::Matrix{Float64}
+    ch1 = if exclude_bads
+        get_channel(obj1; ch=ch1, exclude="bad")
+    else
+        get_channel(obj1; ch=ch1, exclude="")
+    end
+    ch2 = if exclude_bads
+        get_channel(obj2; ch=ch2, exclude="bad")
+    else
+        get_channel(obj2; ch=ch2, exclude="")
+    end
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     _check_epochs(obj1, ep1)
@@ -188,12 +220,14 @@ function escor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            esc[ch_idx, ep_idx] = @views escor(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            esc[ch_idx, ep_idx] = @views escor(
+                obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
+                obj2.data[ch2[ch_idx], :, ep2[ep_idx]],
+            )
         end
     end
 
     return esc
-
 end
 
 """
@@ -211,9 +245,14 @@ Calculate Envelope-to-Signal Correlation (ESC).
 Named tuple containing:
 - `esc::Array{Float64, 3}`: ESC value
 """
-function escor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function escor(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Array{Float64,3}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     ch_n = length(ch)
     ep_n = nepochs(obj)
     isa(ch, Int64) && (ch = [ch])
@@ -223,7 +262,9 @@ function escor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                esc[ch_idx1, ch_idx2, ep_idx] = @views escor(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
+                esc[ch_idx1, ch_idx2, ep_idx] = @views escor(
+                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
+                )
             end
         end
     end
@@ -231,5 +272,4 @@ function escor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     esc = _copy_lt2ut(esc)
 
     return esc
-
 end

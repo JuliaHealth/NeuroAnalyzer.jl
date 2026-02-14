@@ -16,8 +16,12 @@ Interactive view of ICA components.
 
 - `Nothing`
 """
-function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}, Regex})::Nothing
-
+function iview_ica(
+    obj::NeuroAnalyzer.NEURO,
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64};
+    ch::Union{String,Vector{String},Regex},
+)::Nothing
     plot_sig_type = 0
     plot_psd_type = 0
 
@@ -27,7 +31,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     zoom = 10
     obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
     seg = (obj.time_pts[1], obj.time_pts[1] + zoom)
-    chn = get_channel(obj, ch=ch)
+    chn = get_channel(obj; ch=ch)
     cl = labels(obj)
     ch_idx = 1
 
@@ -46,14 +50,25 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     obj_reconstructed = Vector{NeuroAnalyzer.NEURO}()
     obj_removed = Vector{NeuroAnalyzer.NEURO}()
     @inbounds for idx in ic_idx
-        push!(obj_reconstructed, ica_reconstruct(obj, ic, ic_mw, ch=ch, ic_idx=idx, keep=true))
+        push!(
+            obj_reconstructed, ica_reconstruct(obj, ic, ic_mw, ch=ch, ic_idx=idx, keep=true)
+        )
         push!(obj_removed, ica_reconstruct(obj, ic, ic_mw, ch=ch, ic_idx=idx))
     end
 
     # ICA topos
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
-        p_tmp = plot_topo(obj_reconstructed[idx], ch=datatype(obj_reconstructed[1]), seg=seg, amethod=:mean, imethod=:sh, nmethod=:minmax, cb=false, large=false)
+        p_tmp = plot_topo(
+            obj_reconstructed[idx];
+            ch=datatype(obj_reconstructed[1]),
+            seg=seg,
+            amethod=:mean,
+            imethod=:sh,
+            nmethod=:minmax,
+            cb=false,
+            large=false,
+        )
         cx_tmp = plot2canvas(p_tmp)
         push!(ica_set, cx_tmp)
     end
@@ -73,17 +88,26 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         end
     end
 
-    p_sig = NeuroAnalyzer.plot(obj, ch=cl[chn[ch_idx]], title="Channel: $(cl[chn[ch_idx]]) (original)")
-    p_psd = NeuroAnalyzer.plot_psd(obj, ch=cl[chn[ch_idx]], title="Channel: $(cl[chn[ch_idx]]) (original)")
+    p_sig = NeuroAnalyzer.plot(
+        obj; ch=cl[chn[ch_idx]], title="Channel: $(cl[chn[ch_idx]]) (original)"
+    )
+    p_psd = NeuroAnalyzer.plot_psd(
+        obj; ch=cl[chn[ch_idx]], title="Channel: $(cl[chn[ch_idx]]) (original)"
+    )
 
     k = nothing
     scaled_sig = false
     scaled_psd = false
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ica()")
-        Gtk4.default_size(win, Int64(ica_set[1].width) + round(Int64, p_sig.attr[:size][1] * 0.75) + 20, round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20)
+        Gtk4.default_size(
+            win,
+            Int64(ica_set[1].width) + round(Int64, p_sig.attr[:size][1] * 0.75) + 20,
+            round(Int64, p_sig.attr[:size][2] * 0.75) +
+            round(Int64, p_psd.attr[:size][2] * 0.75) +
+            20,
+        )
 
         ica_view = GtkScrolledWindow()
         g_cans = GtkGrid()
@@ -107,7 +131,10 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         psd_view.content_width = round(Int64, p_psd.attr[:size][1] * 0.75)
         psd_view.content_height = round(Int64, p_psd.attr[:size][2] * 0.75)
         ica_view.min_content_width = Int64(ica_set[1].width) + 10
-        ica_view.max_content_height = round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20
+        ica_view.max_content_height =
+            round(Int64, p_sig.attr[:size][2] * 0.75) +
+            round(Int64, p_psd.attr[:size][2] * 0.75) +
+            20
 
         g_opts = GtkGrid()
         g_opts.column_homogeneous = false
@@ -158,19 +185,29 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         oc = GtkOrientable(ch_slider)
         oc.orientation = 1
 
-        signal_slider = GtkScale(:h, obj.time_pts[1]:obj.time_pts[end] - zoom)
+        signal_slider = GtkScale(:h, obj.time_pts[1]:(obj.time_pts[end] - zoom))
         signal_slider.draw_value = false
         signal_slider.tooltip_text = "Time position"
 
         combo_sig = GtkComboBoxText()
-        for idx in ["signal (original)", "signal (reconstructed from IC)", "signal (IC removed)", "IC"]
+        for idx in [
+            "signal (original)",
+            "signal (reconstructed from IC)",
+            "signal (IC removed)",
+            "IC",
+        ]
             push!(combo_sig, idx)
         end
         combo_sig.active = 0
         combo_sig.tooltip_text = "Viewed signal"
 
         combo_psd = GtkComboBoxText()
-        for idx in ["signal (original)", "signal (reconstructed from IC)", "signal (IC removed)", "IC"]
+        for idx in [
+            "signal (original)",
+            "signal (reconstructed from IC)",
+            "signal (IC removed)",
+            "IC",
+        ]
             push!(combo_psd, idx)
         end
         combo_psd.active = 0
@@ -222,31 +259,39 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
             time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
             current_ic = Int64(entry_ic.value)
             if plot_sig_type == 0
-                p_sig = NeuroAnalyzer.plot(obj_new,
-                                           ch=cl[chn[ch_idx]],
-                                           seg=(time1, time2),
-                                           mono=true,
-                                           title="Channel: $(cl[chn[ch_idx]]) (original)")
+                p_sig = NeuroAnalyzer.plot(
+                    obj_new,
+                    ch=cl[chn[ch_idx]],
+                    seg=(time1, time2),
+                    mono=true,
+                    title="Channel: $(cl[chn[ch_idx]]) (original)",
+                )
             elseif plot_sig_type == 1
-                p_sig = NeuroAnalyzer.plot(obj_new,
-                                           obj_reconstructed[current_ic],
-                                           ch=cl[chn[ch_idx]],
-                                           seg=(time1, time2),
-                                           title="Channel: $(cl[chn[ch_idx]]) (reconstructed from IC: $current_ic)")
+                p_sig = NeuroAnalyzer.plot(
+                    obj_new,
+                    obj_reconstructed[current_ic],
+                    ch=cl[chn[ch_idx]],
+                    seg=(time1, time2),
+                    title="Channel: $(cl[chn[ch_idx]]) (reconstructed from IC: $current_ic)",
+                )
             elseif plot_sig_type == 2
-                p_sig = NeuroAnalyzer.plot(obj_new,
-                                           obj_removed[current_ic],
-                                           ch=cl[chn[ch_idx]],
-                                           seg=(time1, time2),
-                                           title="Channel: $(cl[chn[ch_idx]]) (removed IC: $current_ic)")
+                p_sig = NeuroAnalyzer.plot(
+                    obj_new,
+                    obj_removed[current_ic],
+                    ch=cl[chn[ch_idx]],
+                    seg=(time1, time2),
+                    title="Channel: $(cl[chn[ch_idx]]) (removed IC: $current_ic)",
+                )
             elseif plot_sig_type == 3
-                p_sig = NeuroAnalyzer.plot(obj_new,
-                                           ic,
-                                           ch=ch,
-                                           c_idx=current_ic,
-                                           seg=(time1, time2),
-                                           mono=true,
-                                           title="IC: $(current_ic)")
+                p_sig = NeuroAnalyzer.plot(
+                    obj_new,
+                    ic,
+                    ch=ch,
+                    c_idx=current_ic,
+                    seg=(time1, time2),
+                    mono=true,
+                    title="IC: $(current_ic)",
+                )
             end
             withenv("GKSwstype" => "100") do
                 png(p_sig, io)
@@ -268,31 +313,39 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
             time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
             current_ic = Int64(entry_ic.value)
             if plot_psd_type == 0
-                p_psd = NeuroAnalyzer.plot_psd(obj_new,
-                                               ch=cl[chn[ch_idx]],
-                                               seg=(time1, time2),
-                                               mono=true,
-                                               title="Channel: $(cl[chn[ch_idx]]) (original)")
+                p_psd = NeuroAnalyzer.plot_psd(
+                    obj_new,
+                    ch=cl[chn[ch_idx]],
+                    seg=(time1, time2),
+                    mono=true,
+                    title="Channel: $(cl[chn[ch_idx]]) (original)",
+                )
             elseif plot_psd_type == 1
-                p_psd = NeuroAnalyzer.plot_psd(obj_reconstructed[current_ic],
-                                               ch=cl[chn[ch_idx]],
-                                               seg=(time1, time2),
-                                               mono=true,
-                                               title="Channel: $(cl[chn[ch_idx]]) (reconstructed from IC: $current_ic)")
+                p_psd = NeuroAnalyzer.plot_psd(
+                    obj_reconstructed[current_ic],
+                    ch=cl[chn[ch_idx]],
+                    seg=(time1, time2),
+                    mono=true,
+                    title="Channel: $(cl[chn[ch_idx]]) (reconstructed from IC: $current_ic)",
+                )
             elseif plot_psd_type == 2
-                p_psd = NeuroAnalyzer.plot_psd(obj_removed[current_ic],
-                                               ch=cl[chn[ch_idx]],
-                                               seg=(time1, time2),
-                                               mono=true,
-                                               title="Channel: $(cl[chn[ch_idx]]) (removed IC: $current_ic)")
+                p_psd = NeuroAnalyzer.plot_psd(
+                    obj_removed[current_ic],
+                    ch=cl[chn[ch_idx]],
+                    seg=(time1, time2),
+                    mono=true,
+                    title="Channel: $(cl[chn[ch_idx]]) (removed IC: $current_ic)",
+                )
             elseif plot_psd_type == 3
-                p_psd = NeuroAnalyzer.plot_psd(obj_new,
-                                               ic,
-                                               ch=ch,
-                                               c_idx=current_ic,
-                                               seg=(time1, time2),
-                                               mono=true,
-                                               title="IC: $(current_ic)")
+                p_psd = NeuroAnalyzer.plot_psd(
+                    obj_new,
+                    ic,
+                    ch=ch,
+                    c_idx=current_ic,
+                    seg=(time1, time2),
+                    mono=true,
+                    title="IC: $(current_ic)",
+                )
             end
             withenv("GKSwstype" => "100") do
                 png(p_psd, io)
@@ -413,11 +466,23 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
 
         signal_connect(bt_reconstruct, "clicked") do widget
             if length(ic_idx[ic_remove_idx]) > 0
-                ask_dialog("Reconstruct the signal from marked ICA component$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx])) ?", win) do ans
+                ask_dialog(
+                    "Reconstruct the signal from marked ICA component$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx])) ?",
+                    win,
+                ) do ans
                     if ans
                         current_ic = Int64(entry_ic.value)
-                        _info("Reconstructing the signal using the IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
-                        ica_reconstruct!(obj_new, ic, ic_mw, ch=ch, ic_idx=ic_idx[ic_remove_idx], keep=true)
+                        _info(
+                            "Reconstructing the signal using the IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))",
+                        )
+                        ica_reconstruct!(
+                            obj_new,
+                            ic,
+                            ic_mw;
+                            ch=ch,
+                            ic_idx=ic_idx[ic_remove_idx],
+                            keep=true,
+                        )
                         ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                         ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                         cb_mark.sensitive = ic_available_for_removal_idx[current_ic]
@@ -439,11 +504,18 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
 
         signal_connect(bt_remove, "clicked") do widget
             if length(ic_idx[ic_remove_idx]) > 0
-                ask_dialog("Remove marked ICA component$(_pl(ic_idx[ic_remove_idx])) from the signal: $(_v2s(ic_idx[ic_remove_idx])) ?", win) do ans
+                ask_dialog(
+                    "Remove marked ICA component$(_pl(ic_idx[ic_remove_idx])) from the signal: $(_v2s(ic_idx[ic_remove_idx])) ?",
+                    win,
+                ) do ans
                     if ans
                         current_ic = Int64(entry_ic.value)
-                        _info("Removing IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
-                        ica_reconstruct!(obj_new, ic, ic_mw, ch=ch, ic_idx=ic_idx[ic_remove_idx])
+                        _info(
+                            "Removing IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))",
+                        )
+                        ica_reconstruct!(
+                            obj_new, ic, ic_mw; ch=ch, ic_idx=ic_idx[ic_remove_idx]
+                        )
                         ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                         ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                         cb_mark.sensitive = ic_available_for_removal_idx[current_ic]
@@ -465,12 +537,14 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
 
         signal_connect(bt_apply, "clicked") do widget
             if obj_edited
-                ask_dialog("This operation will apply all changes.\nPlease confirm.", win) do ans
+                ask_dialog(
+                    "This operation will apply all changes.\nPlease confirm.", win
+                ) do ans
                     if ans
                         obj.header = obj_new.header
                         obj.data = obj_new.data
                         obj.locs = obj_new.locs
-                                            obj.history = obj_new.history
+                        obj.history = obj_new.history
                         obj.markers = obj_new.markers
                         close(win)
                         return nothing
@@ -517,7 +591,10 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -529,5 +606,4 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     Gtk4.run(app)
 
     return nothing
-
 end

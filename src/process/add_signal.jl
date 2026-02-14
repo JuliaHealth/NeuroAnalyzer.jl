@@ -16,11 +16,9 @@ Add signal.
 - `s_noisy::AbstractVector`
 """
 function add_signal(s1::AbstractVector, s2::AbstractVector)::AbstractVector
-
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     return s1 .+ s2
-
 end
 
 """
@@ -38,23 +36,25 @@ Add signal.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function add_signal(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, s::AbstractVector
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
     obj_new = deepcopy(obj)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            @views obj_new.data[ch[ch_idx], :, ep_idx] = add_signal(obj_new.data[ch[ch_idx], :, ep_idx], s)
+            @views obj_new.data[ch[ch_idx], :, ep_idx] = add_signal(
+                obj_new.data[ch[ch_idx], :, ep_idx], s
+            )
         end
     end
 
     push!(obj_new.history, "add_signal(OBJ, ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -72,12 +72,12 @@ Add signal.
 
 - `Nothing`
 """
-function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
-
-    obj_new = add_signal(obj, ch=ch, s=s)
+function add_signal!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, s::AbstractVector
+)::Nothing
+    obj_new = add_signal(obj; ch=ch, s=s)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

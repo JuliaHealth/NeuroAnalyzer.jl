@@ -27,8 +27,18 @@ Named tuple containing:
 - `bic::Float64`:: Bayesian Information Criterion (BIC)
 - `lf::Vector{Float64}`: linear fit (plot(x, lf))
 """
-function linreg(x::AbstractVector, y::AbstractVector)::@NamedTuple{lr::StatsModels.TableRegressionModel, c::Vector{Float64}, se::Vector{Float64}, R2::Float64, R2adj::Float64, aic::Float64, bic::Float64, lf::Vector{Float64}}
-
+function linreg(
+    x::AbstractVector, y::AbstractVector
+)::@NamedTuple{
+    lr::StatsModels.TableRegressionModel,
+    c::Vector{Float64},
+    se::Vector{Float64},
+    R2::Float64,
+    R2adj::Float64,
+    aic::Float64,
+    bic::Float64,
+    lf::Vector{Float64},
+}
     @assert length(x) == length(y) "Lengths of x and y must be equal."
 
     df = DataFrame(:x=>x, :y=>y)
@@ -39,7 +49,6 @@ function linreg(x::AbstractVector, y::AbstractVector)::@NamedTuple{lr::StatsMode
     lf = GLM.predict(lr)
 
     return (lr=lr, c=c, se=se, R2=R2, R2adj=R2adj, aic=aic, bic=bic, lf=lf)
-
 end
 
 """
@@ -59,8 +68,11 @@ Named tuple containing:
 - `bic::Float64`
 - `bic::Float64`
 """
-function infcrit(m::T)::@NamedTuple{R2::Float64, R2adj::Float64, aic::Float64, bic::Float64} where {T<:StatsModels.TableRegressionModel}
-
+function infcrit(
+    m::T
+)::@NamedTuple{
+    R2::Float64, R2adj::Float64, aic::Float64, bic::Float64
+} where {T<:StatsModels.TableRegressionModel}
     k = length(GLM.coef(m)) - 1
     n = length(GLM.predict(m))
     R2 = GLM.r2(m)
@@ -73,5 +85,4 @@ function infcrit(m::T)::@NamedTuple{R2::Float64, R2adj::Float64, aic::Float64, b
     bic = k * log(n) - 2 * L
 
     return (R2=R2, R2adj=R2adj, aic=aic, bic=bic)
-
 end

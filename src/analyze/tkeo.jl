@@ -18,8 +18,9 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 - `tk::Vector{Float64}`
 """
-function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Vector{Float64}
-
+function tkeo(
+    s::AbstractVector, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow
+)::Vector{Float64}
     _check_var(method, [:pow, :der, :amp], "method")
 
     tk = nothing
@@ -36,11 +37,10 @@ function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method:
         d2 = derivative(d1)
         tk = @. d1 - s * d2
     else
-        tk = env_up(s, t, d=8).^2
+        tk = env_up(s, t; d=8) .^ 2
     end
 
     return tk
-
 end
 
 """
@@ -61,8 +61,9 @@ Calculate Teager-Kaiser energy-tracking operator
 
 - `tk::Array{Float64, 3}`
 """
-function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Array{Float64, 3}
-
+function tkeo(
+    s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow
+)::Array{Float64,3}
     _chk3d(s)
 
     tk = similar(s)
@@ -73,7 +74,6 @@ function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::
     end
 
     return tk
-
 end
 
 """
@@ -94,11 +94,15 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 - `tk::Array{Float64, 3}`
 """
-function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol=:pow)::Array{Float64, 3}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function tkeo(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, method::Symbol=:pow
+)::Array{Float64,3}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method=method)
 
     return tk
-
 end

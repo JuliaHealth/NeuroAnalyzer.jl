@@ -24,15 +24,22 @@ Remove power line noise and its peaks above power line frequency.
 - `obj_new::NeuroAnalyzer.NEURO`
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Real=5.0, q::Real=0.1)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
-
+function remove_powerline(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    pl_frq::Real=obj.header.recording[:line_frequency],
+    method::Symbol=:iir,
+    pr::Real=2.0,
+    d::Real=5.0,
+    q::Real=0.1,
+)::Tuple{NeuroAnalyzer.NEURO,DataFrame}
     @assert nepochs(obj) == 1 "remove_powerline() must be applied to a continuous signal."
     @assert pl_frq >= 0 "pl_freq must be ≥ 0."
     @assert pl_frq <= sr(obj) / 2 "pl_freq must be ≤ $(sr(obj) / 2)."
     @assert q >= 0.01 "q must be ≥ 0.01."
     @assert q < 5 "q must be < 5."
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     clabels = labels(obj)
 
     _check_var(method, [:iir], "method")
@@ -53,7 +60,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
         bw_values = collect(0:q:20.0)[2:end]
 
         # initialize progress bar
-        progbar = Progress(length(ch), dt=1, barlen=20, color=:white, enabled=progress_bar)
+        progbar = Progress(length(ch); dt=1, barlen=20, color=:white, enabled=progress_bar)
 
         @inbounds for ch_idx in ch
             # detect power line peak
@@ -71,7 +78,13 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
 
             v = zeros(length(bw_values))
             for bw_idx in eachindex(bw_values)
-                obj_tmp = NeuroAnalyzer.filter(obj_new, ch=clabels[ch_idx], fprototype=:iirnotch, cutoff=pl_frq, bw=bw_values[bw_idx])
+                obj_tmp = NeuroAnalyzer.filter(
+                    obj_new,
+                    ch=clabels[ch_idx],
+                    fprototype=:iirnotch,
+                    cutoff=pl_frq,
+                    bw=bw_values[bw_idx],
+                )
                 p, f = psd(obj_tmp, ch=clabels[ch_idx], db=true)
                 f1 = vsearch(pl_frq - d, f)
                 f2 = vsearch(pl_frq + d, f)
@@ -80,7 +93,13 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
             end
 
             push!(pl_best_bw, bw_values[vsearch(minimum(v), v)])
-            NeuroAnalyzer.filter!(obj_new, ch=clabels[ch_idx], fprototype=:iirnotch, cutoff=pl_frq, bw=pl_best_bw[ch_idx])
+            NeuroAnalyzer.filter!(
+                obj_new,
+                ch=clabels[ch_idx],
+                fprototype=:iirnotch,
+                cutoff=pl_frq,
+                bw=pl_best_bw[ch_idx],
+            )
 
             # detect peaks
             p, f = psd(obj_new, ch=clabels[ch_idx], db=true)
@@ -96,7 +115,9 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
                 peaks, _ = findpeaks1d(p_tmp, prominence=pr, distance=vsearch(d, f))
                 # if no peaks detected, try changing prominence and distance values
                 while length(peaks) == 0
-                    peaks, _ = findpeaks1d(p_tmp, prominence=pr_tmp, distance=vsearch(d_tmp, f))
+                    peaks, _ = findpeaks1d(
+                        p_tmp, prominence=pr_tmp, distance=vsearch(d_tmp, f)
+                    )
                     pr_tmp -= 0.1
                     d_tmp -= 0.1
                 end
@@ -111,7 +132,13 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
                 @inbounds for peak_idx in eachindex(pks_frq)
                     v = zeros(length(bw_values))
                     for bw_idx in eachindex(bw_values)
-                        obj_tmp = NeuroAnalyzer.filter(obj_new, ch=clabels[ch_idx], fprototype=:iirnotch, cutoff=pks_frq[peak_idx], bw=bw_values[bw_idx])
+                        obj_tmp = NeuroAnalyzer.filter(
+                            obj_new,
+                            ch=clabels[ch_idx],
+                            fprototype=:iirnotch,
+                            cutoff=pks_frq[peak_idx],
+                            bw=bw_values[bw_idx],
+                        )
                         p, f = psd(obj_tmp, ch=clabels[ch_idx], db=true)
                         f1 = vsearch(pks_frq[peak_idx] - d / 2, f)
                         f2 = vsearch(pks_frq[peak_idx] + d / 2, f)
@@ -122,7 +149,13 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
                     best_bw[peak_idx] = bw_values[vsearch(minimum(v), v)]
                 end
                 @inbounds for peak_idx in eachindex(pks_frq)
-                    NeuroAnalyzer.filter!(obj_new, ch=clabels[ch_idx], fprototype=:iirnotch, cutoff=pks_frq[peak_idx], bw=best_bw[peak_idx])
+                    NeuroAnalyzer.filter!(
+                        obj_new,
+                        ch=clabels[ch_idx],
+                        fprototype=:iirnotch,
+                        cutoff=pks_frq[peak_idx],
+                        bw=best_bw[peak_idx],
+                    )
                 end
                 push!(pks_best_bw, best_bw)
             end
@@ -153,12 +186,13 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
 
         NeuroAnalyzer.verbose = verbose_tmp
 
-            push!(obj_new.history, "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)")
+        push!(
+            obj_new.history,
+            "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)",
+        )
 
         return obj_new, df
-
     end
-
 end
 
 """
@@ -180,14 +214,22 @@ Remove power line noise and harmonics.
 
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Real=5.0, q::Real=0.1)::DataFrame
-
-    obj_new, df = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
+function remove_powerline!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    pl_frq::Real=obj.header.recording[:line_frequency],
+    method::Symbol=:iir,
+    pr::Real=2.0,
+    d::Real=5.0,
+    q::Real=0.1,
+)::DataFrame
+    obj_new, df = remove_powerline(
+        obj; ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q
+    )
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return df
-
 end
 
 """
@@ -205,13 +247,17 @@ Detect power line noise frequency.
 - `noise_frq::Float64`: peak noise frequency in Hz
 """
 function detect_powerline(s::AbstractVector; fs::Int64)::Float64
-
     n = length(s)
     t = linspace(0, n * 1/fs, n)
     noise_power = zeros(fs ÷ 2)
 
     for noise_idx in 1:(fs ÷ 2)
-        df = DataFrame(:signal=>s, :b0=>ones(n), :b1=>sin.(2 * pi * noise_idx .* t), :b2=>cos.(2 * pi * noise_idx .* t))
+        df = DataFrame(
+            :signal=>s,
+            :b0=>ones(n),
+            :b1=>sin.(2 * pi * noise_idx .* t),
+            :b2=>cos.(2 * pi * noise_idx .* t),
+        )
         lr = GLM.lm(@formula(signal ~ b0 + b1 + b2), df)
         b = StatsKit.coef(lr)
         noise_power[noise_idx] = b[3]^2 + b[4]^2
@@ -221,7 +267,6 @@ function detect_powerline(s::AbstractVector; fs::Int64)::Float64
     noise_frq = vsearch(maximum(noise_power), noise_power)
 
     return noise_frq
-
 end
 
 """
@@ -237,19 +282,20 @@ Detect power line noise frequency.
 
 - `noise_frq::Array{Float64, 2}`: peak noise frequency in Hz for channels × epochs
 """
-function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
-
+function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64,2}
     ch_n = size(obj, 1)
     ep_n = size(obj, 3)
 
     noise_frq = zeros(ch_n, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(ch_n * ep_n; dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
-        @Threads.threads :greedy for ch_idx in 1:ch_n
-            noise_frq[ch_idx, ep_idx] = @views detect_powerline(obj.data[ch_n, :, ep_n], fs=sr(obj))
+        Threads.@threads :greedy for ch_idx in 1:ch_n
+            noise_frq[ch_idx, ep_idx] = @views detect_powerline(
+                obj.data[ch_n, :, ep_n], fs=sr(obj)
+            )
         end
 
         # update progress bar
@@ -257,7 +303,6 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
     end
 
     return noise_frq
-
 end
 
 """
@@ -274,18 +319,19 @@ Detect power line noise frequency.
 - `Nothing`
 """
 function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
-
     ch_n = size(obj, 1)
     ep_n = size(obj, 3)
 
     noise_frq = zeros(ch_n, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(ch_n * ep_n; dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
-        @Threads.threads :greedy for ch_idx in 1:ch_n
-            noise_frq[ch_idx, ep_idx] = @views detect_powerline(obj.data[ch_n, :, ep_n], fs=sr(obj))
+        Threads.@threads :greedy for ch_idx in 1:ch_n
+            noise_frq[ch_idx, ep_idx] = @views detect_powerline(
+                obj.data[ch_n, :, ep_n], fs=sr(obj)
+            )
         end
 
         # update progress bar
@@ -296,5 +342,4 @@ function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
     obj.header.recording[:line_frequency] = median(noise_frq)
 
     return nothing
-
 end

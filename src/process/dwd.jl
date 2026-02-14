@@ -19,8 +19,9 @@ Perform discrete wavelet decomposition (DWD).
 
 - `dc::Matrix{Float64}`: DWD coefficients (by rows)
 """
-function dwd(s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s))::Matrix{Float64} where {T <: DiscreteWavelet}
-
+function dwd(
+    s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s)
+)::Matrix{Float64} where {T<:DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
@@ -32,7 +33,6 @@ function dwd(s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=m
     end
 
     return Matrix(dc')
-
 end
 
 """
@@ -53,8 +53,12 @@ Perform discrete wavelet decomposition (DWD).
 
 - `dc::Array{Float64, 4}`: DWD coefficients
 """
-function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s[1, :, 1]))::Array{Float64, 4} where {T <: DiscreteWavelet}
-
+function dwd(
+    s::AbstractArray;
+    wt::T=wavelet(WT.haar),
+    type::Symbol,
+    l::Int64=maxtransformlevels(s[1, :, 1]),
+)::Array{Float64,4} where {T<:DiscreteWavelet}
     _chk3d(s)
 
     ch_n, ep_len, ep_n = size(s)
@@ -65,13 +69,14 @@ function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=ma
     _log_off()
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            dc[ch_idx, :, :, ep_idx] = @views dwd(s[ch_idx, :, ep_idx], wt=wt, type=type, l=l)
+            dc[ch_idx, :, :, ep_idx] = @views dwd(
+                s[ch_idx, :, ep_idx], wt=wt, type=type, l=l
+            )
         end
     end
     _log_on()
 
     return dc
-
 end
 
 """
@@ -93,18 +98,22 @@ Perform discrete wavelet decomposition (DWD).
 
 - `dc::Array{Float64, 4}`: DWD coefficients
 """
-function dwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0)::Array{Float64, 4} where {T <: DiscreteWavelet}
-
+function dwd(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    wt::T=wavelet(WT.haar),
+    type::Symbol,
+    l::Int64=0,
+)::Array{Float64,4} where {T<:DiscreteWavelet}
     if l == 0
         l = maxtransformlevels(obj.data[1, :, 1])
         _info("Calculating DWD using maximum level: $l")
     end
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
     dc = @views dwd(obj.data[ch, :, :], wt=wt, type=type, l=l)
 
     return dc
-
 end
 
 """
@@ -125,8 +134,12 @@ Perform inverse discrete wavelet decomposition (iDWD).
 
 - `s::AbstractArray`: reconstructed signal
 """
-function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1))::AbstractArray where {T <: DiscreteWavelet}
-
+function idwd(
+    dc::Matrix{Float64};
+    wt::T=wavelet(WT.haar),
+    type::Symbol,
+    c::Union{Int64,Vector{Int64},AbstractRange}=axes(dc, 1),
+)::AbstractArray where {T<:DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     if length(c) > 1
@@ -145,5 +158,4 @@ function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Unio
     end
 
     return s
-
 end

@@ -16,11 +16,9 @@ Taper the signal.
 - `s_new::Vector{Float64}`
 """
 function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
-
     @assert length(t) == length(s) "Taper and signal lengths must be equal."
 
     return s .* t
-
 end
 
 """
@@ -37,8 +35,7 @@ Taper the signal.
 
 - `s_new::Array{Float64, 3}`
 """
-function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
-
+function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64,3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -52,7 +49,6 @@ function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
     end
 
     return s_new
-
 end
 
 """
@@ -70,15 +66,15 @@ Taper the signal.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function taper(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function taper(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, t::Vector{<:Real}
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = taper(obj.data[ch, :, :], t=t)
+    obj_new.data[ch, :, :] = taper(obj.data[ch, :, :]; t=t)
     push!(obj_new.history, "taper(OBJ, ch=$ch), t=$t")
 
     return obj_new
-
 end
 
 """
@@ -96,12 +92,12 @@ Taper the signal.
 
 - `Nothing`
 """
-function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::Nothing
-
-    obj_new = taper(obj, ch=ch, t=t)
+function taper!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}, t::Vector{<:Real}
+)::Nothing
+    obj_new = taper(obj; ch=ch, t=t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

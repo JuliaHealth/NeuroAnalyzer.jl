@@ -17,12 +17,13 @@ Remove epochs.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::NeuroAnalyzer.NEURO
-
+function delete_epoch(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64,Vector{Int64},AbstractRange}
+)::NeuroAnalyzer.NEURO
     @assert nepochs(obj) > 1 "You cannot delete the last epoch."
     typeof(ep) <: AbstractRange && (ep = collect(ep))
     @assert length(ep) < nepochs(obj) "Number of epochs to delete ($(length(ep))) must be smaller than number of all epochs."
-    length(ep) > 1 && (ep = sort!(ep, rev=true))
+    length(ep) > 1 && (ep = sort!(ep; rev=true))
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)
@@ -43,7 +44,6 @@ function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, 
     push!(obj_new.history, "delete_epoch(OBJ, $ep)")
 
     return obj_new
-
 end
 
 """
@@ -60,9 +60,10 @@ Remove epochs.
 
 - `Nothing`
 """
-function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
-
-    obj_new = delete_epoch(obj, ep=ep)
+function delete_epoch!(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64,Vector{Int64},AbstractRange}
+)::Nothing
+    obj_new = delete_epoch(obj; ep=ep)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -70,7 +71,6 @@ function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64},
     obj.markers = obj_new.markers
 
     return nothing
-
 end
 
 """
@@ -87,23 +87,23 @@ Keep epochs.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function keep_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::NeuroAnalyzer.NEURO
-
+function keep_epoch(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64,Vector{Int64},AbstractRange}
+)::NeuroAnalyzer.NEURO
     @assert nepochs(obj) > 1 "OBJ contains only one epoch."
     typeof(ep) <: AbstractRange && (ep = collect(ep))
-    length(ep) > 1 && (ep = sort!(ep, rev=true))
+    length(ep) > 1 && (ep = sort!(ep; rev=true))
     _check_epochs(obj, ep)
 
     ep_list = collect(1:nepochs(obj))
     ep_to_remove = setdiff(ep_list, ep)
 
-    length(ep_to_remove) > 1 && (ep_to_remove = sort!(ep_to_remove, rev=true))
+    length(ep_to_remove) > 1 && (ep_to_remove = sort!(ep_to_remove; rev=true))
 
-    obj_new = delete_epoch(obj, ep=ep_to_remove)
+    obj_new = delete_epoch(obj; ep=ep_to_remove)
     push!(obj_new.history, "keep_epoch(OBJ, $ep)")
 
     return obj_new
-
 end
 
 """
@@ -120,9 +120,10 @@ Keep epochs.
 
 - `Nothing`
 """
-function keep_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
-
-    obj_new = keep_epoch(obj, ep=ep)
+function keep_epoch!(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64,Vector{Int64},AbstractRange}
+)::Nothing
+    obj_new = keep_epoch(obj; ep=ep)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -130,5 +131,4 @@ function keep_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, A
     obj.markers = obj_new.markers
 
     return nothing
-
 end

@@ -15,7 +15,6 @@ Perform Wiener deconvolution denoising.
 - `s_new::AbstractArray`
 """
 function denoise_wien(s::AbstractArray)::AbstractArray
-
     _chk3d(s)
     ch_n, _, ep_n = size(s)
     s_new = similar(s)
@@ -30,7 +29,6 @@ function denoise_wien(s::AbstractArray)::AbstractArray
     end
 
     return s_new
-
 end
 
 """
@@ -46,9 +44,10 @@ Perform Wiener deconvolution denoising.
 # Returns
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function denoise_wien(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_wien(obj_new.data[ch, :, :])
     push!(obj_new.history, "denoise_wien(OBJ, ch=$ch)")
@@ -70,12 +69,12 @@ Perform Wiener deconvolution denoising.
 
 - `Nothing`
 """
-function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
-    obj_new = denoise_wien(obj, ch=ch)
+function denoise_wien!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Nothing
+    obj_new = denoise_wien(obj; ch=ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

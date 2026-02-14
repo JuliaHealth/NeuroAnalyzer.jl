@@ -1,13 +1,13 @@
-_in(x::Real, r::Tuple{Real, Real})::Bool = x >= r[1] && x <= r[2]
-_bin(x::Real, r::Tuple{Real, Real})::Bool = x > r[1] && x < r[2]
+_in(x::Real, r::Tuple{Real,Real})::Bool = x >= r[1] && x <= r[2]
+_bin(x::Real, r::Tuple{Real,Real})::Bool = x > r[1] && x < r[2]
 
-function _in(x::Real, r::Tuple{Real, Real}, v::String)::Nothing
+function _in(x::Real, r::Tuple{Real,Real}, v::String)::Nothing
     @assert x >= r[1] "$v must be ≥ $(r[1])."
     @assert x <= r[2] "$v must be ≤ $(r[2])."
     return nothing
 end
 
-function _bin(x::Real, r::Tuple{Real, Real}, v::String)::Nothing
+function _bin(x::Real, r::Tuple{Real,Real}, v::String)::Nothing
     @assert x > r[1] "$v must be > $(r[1])."
     @assert x < r[2] "$v must be < $(r[2])."
     return nothing
@@ -28,7 +28,9 @@ function _chk4d(a::AbstractArray)::Nothing
     return nothing
 end
 
-function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}}=nothing)::Nothing
+function _check_tuple(
+    t::Tuple{Real,Real}, name::String, range::Union{Nothing,Tuple{Real,Real}}=nothing
+)::Nothing
     @assert t == tuple_order(t) "$name must contain two values in ascending order."
     @assert t[1] < t[2] "$name must contain two different values in ascending order."
     if range !== nothing
@@ -37,23 +39,34 @@ function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, 
     return nothing
 end
 
-function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
+function _check_channels(
+    s::AbstractArray, ch::Union{Int64,Vector{Int64},AbstractRange}
+)::Nothing
     isa(ch, Int64) && (ch = [ch])
-    [@assert !(ch_idx < 1 || ch_idx > size(s, 1)) "ch must be in [1, $(size(s, 1))]." for ch_idx in ch]
+    [
+        @assert !(ch_idx < 1 || ch_idx > size(s, 1)) "ch must be in [1, $(size(s, 1))]." for
+        ch_idx in ch
+    ]
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Nothing
-    _check_channels(get_channel(obj, type="all"), ch)
+function _check_channels(
+    obj::NeuroAnalyzer.NEURO, ch::Union{String,Vector{String},Regex}
+)::Nothing
+    _check_channels(get_channel(obj; type="all"), ch)
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex}, type::String)::Nothing
-    _check_channels(get_channel(obj, type=type), ch)
+function _check_channels(
+    obj::NeuroAnalyzer.NEURO, ch::Union{String,Vector{String},Regex}, type::String
+)::Nothing
+    _check_channels(get_channel(obj; type=type), ch)
     return nothing
 end
 
-function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String, Vector{String}, Regex})::Nothing
+function _check_channels(
+    ch_ref::Union{String,Vector{String}}, ch::Union{String,Vector{String},Regex}
+)::Nothing
     isa(ch_ref, String) && (ch_ref = [ch_ref])
     isa(ch, String) && (ch = [ch])
     @assert length(ch) > 0 "ch is empty."
@@ -62,14 +75,16 @@ function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String
     return nothing
 end
 
-function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
+function _check_epochs(
+    obj::NeuroAnalyzer.NEURO, epoch::Union{Int64,Vector{Int64},AbstractRange}
+)::Nothing
     for idx in epoch
         @assert !(idx < 1 || idx > nepochs(obj)) "epoch must be in [1, $(nepochs(obj))]."
     end
     return nothing
 end
 
-function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::Nothing
+function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real,Real})::Nothing
     _check_segment(obj, seg[1], seg[2])
     return nothing
 end
@@ -132,7 +147,9 @@ function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)::Nothing
     return nothing
 end
 
-function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{String, Vector{String}})::Nothing
+function _check_datatype(
+    obj::NeuroAnalyzer.NEURO, type::Union{String,Vector{String}}
+)::Nothing
     if type isa String
         @assert datatype(obj) == type "This function works only for $(uppercase(string(type))) objects."
     else
@@ -143,8 +160,8 @@ end
 
 function _check_svec(s::String)::Bool
     s = replace(s, " "=>"")
-    s = replace(s, "["=>"", count=1)
-    s = replace(s, "]"=>"", count=1)
+    s = replace(s, "["=>""; count=1)
+    s = replace(s, "]"=>""; count=1)
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [","]) || return false
     end
@@ -160,7 +177,12 @@ function _check_srange(s::String)::Bool
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [":"]) || return false
     end
-    if occursin(":", s) && length(split(s, ":")) == 2 && length(s) > 0 && length(split(s, ":")[1]) > 0 && length(split(s, ":")[end]) > 0 && parse(Int64, split(s, ":")[1]) < parse(Int64, split(s, ":")[end])
+    if occursin(":", s) &&
+        length(split(s, ":")) == 2 &&
+        length(s) > 0 &&
+        length(split(s, ":")[1]) > 0 &&
+        length(split(s, ":")[end]) > 0 &&
+        parse(Int64, split(s, ":")[1]) < parse(Int64, split(s, ":")[end])
         return true
     else
         return false

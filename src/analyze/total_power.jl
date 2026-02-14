@@ -27,16 +27,35 @@ Calculate total power.
 
 - `tp::Float64`: total power
 """
-function total_power(s::AbstractVector; fs::Int64, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)
-
-    pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+function total_power(
+    s::AbstractVector;
+    fs::Int64,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)
+    pw, pf = psd(
+        s;
+        fs=fs,
+        db=false,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
 
     # dx: frequency resolution
     dx = pf[2] - pf[1]
-    tp = simpson(pw, dx=dx)
+    tp = simpson(pw; dx=dx)
 
     return tp
-
 end
 
 """
@@ -66,8 +85,17 @@ Calculate total power.
 
 - `tp::Matrix{Float64}`: total power
 """
-function total_power(s::AbstractArray; fs::Int64, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)
-
+function total_power(
+    s::AbstractArray;
+    fs::Int64,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -76,7 +104,17 @@ function total_power(s::AbstractArray; fs::Int64, method::Symbol=:welch, nt::Int
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            tp[ch_idx, ep_idx] = @views total_power(s[ch_idx, :, ep_idx], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+            tp[ch_idx, ep_idx] = @views total_power(
+                s[ch_idx, :, ep_idx],
+                fs=fs,
+                method=method,
+                nt=nt,
+                wlen=wlen,
+                woverlap=woverlap,
+                w=w,
+                ncyc=ncyc,
+                gw=gw,
+            )
         end
     end
 
@@ -110,13 +148,35 @@ Calculate total power.
 
 - `tp::Matrix{Float64}`: total power
 """
-function total_power(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function total_power(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     _log_off()
-    tp = @views total_power(obj.data[ch, :, :], fs=sr(obj), method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    tp = @views total_power(
+        obj.data[ch, :, :],
+        fs=sr(obj),
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
     _log_on()
 
     return tp
-
 end

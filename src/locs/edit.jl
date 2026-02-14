@@ -25,16 +25,28 @@ Edit electrode.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function edit_locs(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")::NeuroAnalyzer.NEURO
-
+function edit_locs(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    x::Union{Real,Nothing}=nothing,
+    y::Union{Real,Nothing}=nothing,
+    z::Union{Real,Nothing}=nothing,
+    theta::Union{Real,Nothing}=nothing,
+    radius::Union{Real,Nothing}=nothing,
+    theta_sph::Union{Real,Nothing}=nothing,
+    radius_sph::Union{Real,Nothing}=nothing,
+    phi_sph::Union{Real,Nothing}=nothing,
+    name::String="",
+    type::String="",
+)::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    ch = get_channel(obj_new, ch=ch)
+    ch = get_channel(obj_new; ch=ch)
     loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])[1]
 
     @assert length(loc_idx) > 0 "$(labels(obj)[ch]) not found in obj.locs labels."
 
-    name != "" && rename_channel!(obj_new, ch=labels(obj)[ch], name=name)
-    type != "" && channel_type!(obj_new, ch=labels(obj)[ch], type=type)
+    name != "" && rename_channel!(obj_new; ch=labels(obj)[ch], name=name)
+    type != "" && channel_type!(obj_new; ch=labels(obj)[ch], type=type)
 
     x !== nothing && (obj_new.locs[loc_idx, :loc_x] = x)
     y !== nothing && (obj_new.locs[loc_idx, :loc_y] = y)
@@ -45,10 +57,12 @@ function edit_locs(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}
     radius_sph !== nothing && (obj_new.locs[loc_idx, :loc_radius_sph] = radius_sph)
     phi_sph !== nothing && (obj_new.locs[loc_idx, :loc_phi_sph] = phi_sph)
 
-    push!(obj_new.history, "edit_locs(OBJ; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
+    push!(
+        obj_new.history,
+        "edit_locs(OBJ; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)",
+    )
 
     return obj_new
-
 end
 
 """
@@ -75,12 +89,36 @@ Edit electrode.
 
 - `Nothing`
 """
-function edit_locs!(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")::Nothing
-
-    obj_new = edit_locs(obj, ch=ch, x=x, y=y, z=z, theta=theta, radius=radius, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph, name=name, type=type)
+function edit_locs!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    x::Union{Real,Nothing}=nothing,
+    y::Union{Real,Nothing}=nothing,
+    z::Union{Real,Nothing}=nothing,
+    theta::Union{Real,Nothing}=nothing,
+    radius::Union{Real,Nothing}=nothing,
+    theta_sph::Union{Real,Nothing}=nothing,
+    radius_sph::Union{Real,Nothing}=nothing,
+    phi_sph::Union{Real,Nothing}=nothing,
+    name::String="",
+    type::String="",
+)::Nothing
+    obj_new = edit_locs(
+        obj;
+        ch=ch,
+        x=x,
+        y=y,
+        z=z,
+        theta=theta,
+        radius=radius,
+        theta_sph=theta_sph,
+        radius_sph=radius_sph,
+        phi_sph=phi_sph,
+        name=name,
+        type=type,
+    )
     obj.locs = obj_new.locs
     obj.history = obj_new.history
 
     return nothing
-
 end

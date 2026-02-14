@@ -18,7 +18,6 @@ Load NIRS file and return `NeuroAnalyzer.NEURO` object.
 1. https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """
 function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
-
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".nirs" "This is not NIRS file."
 
@@ -88,7 +87,13 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # channel labels
     clabels = repeat([""], ch_n)
     for idx in 1:ch_n
-        clabels[idx] = "S" * string(Int.(probes["MeasList"])[idx, 1]) * "_D" * string(Int.(probes["MeasList"])[idx, 2]) * " " * string(wavelengths[wavelength_index[idx]])
+        clabels[idx] =
+            "S" *
+            string(Int.(probes["MeasList"])[idx, 1]) *
+            "_D" *
+            string(Int.(probes["MeasList"])[idx, 2]) *
+            " " *
+            string(wavelengths[wavelength_index[idx]])
     end
     clabels = replace.(clabels, ".0"=>"")
 
@@ -102,18 +107,22 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # stimuli
     s = nirs["s"][:]
     if s == zeros(length(time_pts))
-        markers = DataFrame(:id=>String[],
-                            :start=>Float64[],
-                            :length=>Float64[],
-                            :value=>String[],
-                            :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     else
         s_n = size(s, 2)
-        markers = DataFrame(:id=>String[],
-                            :start=>Float64[],
-                            :length=>Float64[],
-                            :value=>String[],
-                            :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
         for idx1 in 1:s_n
             s_start = findall(s[:, idx1] .!= 0.0)
             for idx2 in eachindex(s_start)
@@ -159,53 +168,67 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:label=>opt_labels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(
+        :label=>opt_labels,
+        :loc_radius=>radius,
+        :loc_theta=>theta,
+        :loc_x=>x,
+        :loc_y=>y,
+        :loc_z=>z,
+        :loc_radius_sph=>radius_sph,
+        :loc_theta_sph=>theta_sph,
+        :loc_phi_sph=>phi_sph,
+    )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits=2)
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name="",
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_nirs(data_type="nirs",
-                               file_name=file_name,
-                               file_size_mb=file_size_mb,
-                               file_type=file_type,
-                               recording="",
-                               recording_date="",
-                               recording_time="",
-                               recording_notes="",
-                               wavelengths=wavelengths,
-                               wavelength_index=wavelength_index,
-                               optode_pairs=opt_pairs,
-                               channel_type=ch_type,
-                               channel_order=_sort_channels(ch_type),
-                               clabels=clabels,
-                               units=data_unit,
-                               src_labels=src_labels,
-                               det_labels=det_labels,
-                               opt_labels=opt_labels,
-                               sampling_rate=sampling_rate,
-                               bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id="",
+        first_name="",
+        middle_name="",
+        last_name="",
+        head_circumference=-1,
+        handedness="",
+        weight=-1,
+        height=-1,
+    )
+    r = _create_recording_nirs(;
+        data_type="nirs",
+        file_name=file_name,
+        file_size_mb=file_size_mb,
+        file_type=file_type,
+        recording="",
+        recording_date="",
+        recording_time="",
+        recording_notes="",
+        wavelengths=wavelengths,
+        wavelength_index=wavelength_index,
+        optode_pairs=opt_pairs,
+        channel_type=ch_type,
+        channel_order=_sort_channels(ch_type),
+        clabels=clabels,
+        units=data_unit,
+        src_labels=src_labels,
+        det_labels=det_labels,
+        opt_labels=opt_labels,
+        sampling_rate=sampling_rate,
+        bad_channels=zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name="", notes="", design="")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
-
+    hdr = _create_header(s, r, e)
 
     history = String[]
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
-
 end

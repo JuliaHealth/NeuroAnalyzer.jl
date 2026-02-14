@@ -20,8 +20,9 @@ Named tuple containing:
 - `ref_list::Vector{String}`: list of channel pairs
 - `ref_name::String`: name of the montage
 """
-function import_montage(file_name::String)::@NamedTuple{ref_list::Vector{String}, ref_name::String}
-
+function import_montage(
+    file_name::String
+)::@NamedTuple{ref_list::Vector{String}, ref_name::String}
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
     f = open(file_name, "r")
@@ -33,5 +34,4 @@ function import_montage(file_name::String)::@NamedTuple{ref_list::Vector{String}
     ref_list = montage_file[2:end]
 
     return (ref_list=ref_list, ref_name=ref_name)
-
 end

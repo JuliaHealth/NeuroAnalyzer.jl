@@ -30,20 +30,40 @@ Named tuple containing:
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function erop(obj::NeuroAnalyzer.NEURO; ch::String, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, method::Symbol=:welch, db::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
-
+function erop(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    method::Symbol=:welch,
+    db::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
     _log_off()
-    p, f = psd(obj, ch=ch, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    p, f = psd(
+        obj;
+        ch=ch,
+        db=db,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
     _log_on()
 
     p = p[1, :, :]
 
     if datatype(obj) == "erp"
-        p = cat(p[:, 1], mean(p, dims=2), dims=2)[:, :]
+        p = cat(p[:, 1], mean(p; dims=2); dims=2)[:, :]
     else
-        p = mean(p, dims=2)[:, :]
+        p = mean(p; dims=2)[:, :]
     end
 
     return (p=p, f=f)
-
 end

@@ -15,7 +15,6 @@ Detect pinches in TPT recording.
 - `p_idx::Vector{Int64}`: index of pinches locations
 """
 function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
-
     _check_datatype(obj, "tpt")
 
     p_idx1 = _tpt_peaks(obj.data[4, :, 1])
@@ -25,7 +24,6 @@ function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     _info("Detected pinches: $(length(p_idx))")
 
     return p_idx
-
 end
 
 """
@@ -50,8 +48,14 @@ Named tuple containing:
 
 Return nothing if no pinches are detected.
 """
-function tpt_analyze(obj::NeuroAnalyzer.NEURO)::Union{@NamedTuple{n::Int64, t_mean::Float64, t_median::Float64, t_rmssd::Float64, t_sdsd::Float64}, Nothing}
-
+function tpt_analyze(
+    obj::NeuroAnalyzer.NEURO
+)::Union{
+    @NamedTuple{
+        n::Int64,t_mean::Float64,t_median::Float64,t_rmssd::Float64,t_sdsd::Float64
+    },
+    Nothing,
+}
     p_idx = tpt_detect(obj)
     t = obj.time_pts[p_idx] .* 1000
 
@@ -60,15 +64,13 @@ function tpt_analyze(obj::NeuroAnalyzer.NEURO)::Union{@NamedTuple{n::Int64, t_me
         _warn("Only 1 pinch was detected, intervals cannot be calculated.")
         return nothing
     elseif n > 0
-        t_diff = round.(diff(t), digits=1)
-        t_mean = round(mean(t_diff), digits=1)
-        t_median = round(median(t_diff), digits=1)
-        t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits=1)
-        t_sdsd = round(std(t_diff), digits=1)
+        t_diff = round.(diff(t); digits=1)
+        t_mean = round(mean(t_diff); digits=1)
+        t_median = round(median(t_diff); digits=1)
+        t_rmssd = round(sqrt(mean(t_diff .^ 2)); digits=1)
+        t_sdsd = round(std(t_diff); digits=1)
         return (n=n, t_mean=t_mean, t_median=t_median, t_rmssd=t_rmssd, t_sdsd=t_sdsd)
     else
         return nothing
     end
-
-
 end

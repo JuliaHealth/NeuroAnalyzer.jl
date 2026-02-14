@@ -15,7 +15,6 @@ Display data as a table.
 - `Nothing`
 """
 function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
-
     @assert size(header, 2) == size(data, 2) "Number of columns must be equal in the header and in the data."
 
     for idx in eachindex(data)
@@ -23,13 +22,12 @@ function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
     end
 
     pretty_table(
-                 cat(header, data, dims=1);
-                 body_hlines        = [1],
-                 cell_alignment     = Dict((1, 1) => :l),
-                 formatters         = ft_printf("%1.3f", 2:3),
-                 show_header        = false
-                 )
+        cat(header, data; dims=1);
+        body_hlines=[1],
+        cell_alignment=Dict((1, 1) => :l),
+        formatters=ft_printf("%1.3f", 2:3),
+        show_header=false,
+    )
 
     return nothing
-
 end

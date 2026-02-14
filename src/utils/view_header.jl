@@ -14,7 +14,6 @@ Show keys and values of the object header.
 - `Nothing`
 """
 function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
-
     f = string(fieldnames(typeof(obj.header)))
     f = replace(f, "("=>"", ")"=>"", ":"=>"")
     println("Header fields: $f")
@@ -29,5 +28,4 @@ function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
     end
 
     return nothing
-
 end

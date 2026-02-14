@@ -17,7 +17,6 @@ Convert Plots.Plot to CairoSurfaceBase.
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UInt32}
-
     p_size = p.attr[:size]
     c = CairoRGBSurface(p_size[1], p_size[2])
     cr = CairoContext(c)
@@ -29,7 +28,6 @@ function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UIn
     Cairo.paint(cr)
 
     return c
-
 end
 
 """
@@ -46,7 +44,6 @@ Convert Plots.Plot to CairoSurfaceBase.
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function plot2canvas(p::GLMakie.Figure)::Cairo.CairoSurfaceBase{UInt32}
-
     p_size = size(p.scene)
     c = CairoRGBSurface(p_size[1], p_size[2])
     cr = CairoContext(c)
@@ -58,7 +55,6 @@ function plot2canvas(p::GLMakie.Figure)::Cairo.CairoSurfaceBase{UInt32}
     Cairo.paint(cr)
 
     return c
-
 end
 
 """
@@ -75,8 +71,9 @@ Resize CairoSurfaceBase by a factor.
 
 - `c_new::Cairo.CairoSurfaceBase{UInt32}`
 """
-function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)::Cairo.CairoSurfaceBase{UInt32}
-
+function resize_canvas(
+    c::Cairo.CairoSurfaceBase{UInt32}; r::Real
+)::Cairo.CairoSurfaceBase{UInt32}
     c_new = CairoRGBSurface(ceil(Int64, c.width * r) - 1, round(Int64, c.height * r) - 1)
     cr = CairoContext(c_new)
     Cairo.scale(cr, r, r)
@@ -87,7 +84,6 @@ function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)::Cairo.CairoS
     Cairo.paint(cr)
 
     return c_new
-
 end
 
 """
@@ -104,8 +100,9 @@ Resize CairoSurfaceBase to make space for another canvas
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_topmargin_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32})::Cairo.CairoSurfaceBase{UInt32}
-
+function add_topmargin_canvas(
+    c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}
+)::Cairo.CairoSurfaceBase{UInt32}
     c = CairoRGBSurface(c1.width, c1.height + c2.height)
     cr = CairoContext(c)
     Cairo.set_source_rgb(cr, 256, 256, 256)
@@ -115,7 +112,6 @@ function add_topmargin_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.Cair
     Cairo.paint(cr)
 
     return c
-
 end
 
 """
@@ -137,8 +133,15 @@ Place CairoSurfaceBase at another canvas at `x, y`. If `file_name` is provided, 
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}; x::Int64, y::Int64, title::String="", view::Bool=true, file_name::String="")::Cairo.CairoSurfaceBase{UInt32}
-
+function add_to_canvas(
+    c1::Cairo.CairoSurfaceBase{UInt32},
+    c2::Cairo.CairoSurfaceBase{UInt32};
+    x::Int64,
+    y::Int64,
+    title::String="",
+    view::Bool=true,
+    file_name::String="",
+)::Cairo.CairoSurfaceBase{UInt32}
     c = CairoRGBSurface(c1.width, c1.height)
     cr = CairoContext(c)
     Cairo.set_source_surface(cr, c1, 0, 0)
@@ -167,5 +170,4 @@ function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfac
     view && iview_plot(c)
 
     return c
-
 end

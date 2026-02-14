@@ -21,7 +21,6 @@ Convert MNI coordinates to Talairach coordinates: redo the affine transform of T
 https://www.brainmap.org/training/BrettTransform.html
 """
 function aff_mni2tal(pts::Vector{<:Number})::Vector{Float64}
-
     @assert length(pts) == 3 "pts must contain 3 coordinates (x, y, z)."
 
     x_prime = 0.88 * pts[1] - 0.8
@@ -31,7 +30,6 @@ function aff_mni2tal(pts::Vector{<:Number})::Vector{Float64}
     t = ([x_prime, y_prime, z_prime])
 
     return t
-
 end
 
 """
@@ -52,7 +50,6 @@ Convert Talairach coordinates to MNI coordinates: do the affine transform of MNI
 https://www.brainmap.org/training/BrettTransform.html
 """
 function aff_tal2mni(pts::Vector{<:Number})::Vector{Float64}
-
     @assert length(pts) == 3 "pts must contain 3 coordinates (x, y, z)."
 
     x_prime = (pts[1] + 0.8) / 0.88
@@ -62,7 +59,6 @@ function aff_tal2mni(pts::Vector{<:Number})::Vector{Float64}
     m = ([x_prime, y_prime, z_prime])
 
     return m
-
 end
 
 """
@@ -83,7 +79,6 @@ Convert MNI coordinates to Talairach coordinates: a non-linear transform of MNI 
 https://www.brainmap.org/training/BrettTransform.html
 """
 function mni2tal(pts::Vector{<:Number})::Vector{Float64}
-
     @assert length(pts) == 3 "pts must contain 3 coordinates (x, y, z)."
 
     if pts[3] >= 0
@@ -99,7 +94,6 @@ function mni2tal(pts::Vector{<:Number})::Vector{Float64}
     t = ([x_prime, y_prime, z_prime])
 
     return t
-
 end
 
 """
@@ -118,21 +112,19 @@ Convert Talairach coordinates to MNI coordinates: a non-linear transform of MNI 
 https://www.brainmap.org/training/BrettTransform.html
 """
 function tal2mni(pts::Vector{<:Number})::Vector{Float64}
-
     @assert length(pts) == 3 "pts must contain 3 coordinates (x, y, z)."
 
     if pts[3] >= 0
         x_prime = pts[1] / 0.9900
-        y_prime = 4.4819869616310097*10^-8 * (22972500 * pts[2] - 1150000 * pts[3])
-        z_prime = 4.4819869616310097*10^-8 * (24220000 * pts[3] + 1212500 * pts[2])
+        y_prime = 4.4819869616310097 * 10^-8 * (22972500 * pts[2] - 1150000 * pts[3])
+        z_prime = 4.4819869616310097 * 10^-8 * (24220000 * pts[3] + 1212500 * pts[2])
     else
         x_prime = 0.9900 * pts[1]
-        y_prime = 2.454408743978415*10^-7 * (4195000 * pts[2] - 210000 * pts[2])
-        z_prime = 2.454408743978415*10^-7 * (4844000 * pts[2] + 242500 * pts[2])
+        y_prime = 2.454408743978415 * 10^-7 * (4195000 * pts[2] - 210000 * pts[2])
+        z_prime = 2.454408743978415 * 10^-7 * (4844000 * pts[2] + 242500 * pts[2])
     end
 
     m = ([x_prime, y_prime, z_prime])
 
     return m
-
 end

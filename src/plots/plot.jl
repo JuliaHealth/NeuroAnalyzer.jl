@@ -44,12 +44,13 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function plot(obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}="all",
+function plot(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex}="all",
     ep::Int64=1,
-    seg::Tuple{Real, Real}=(0, 10),
-    tm::Union{Nothing, Int64, Vector{Int64}}=nothing,
-    rt::Union{Nothing, Real, AbstractVector}=nothing,
+    seg::Tuple{Real,Real}=(0, 10),
+    tm::Union{Nothing,Int64,Vector{Int64}}=nothing,
+    rt::Union{Nothing,Real,AbstractVector}=nothing,
     xlabel::String="default",
     ylabel::String="default",
     title::String="default",
@@ -71,20 +72,94 @@ function plot(obj::NeuroAnalyzer.NEURO;
     zl::Bool=true,
     mono::Bool=false,
     res::Int64=1,
-    gui::Bool=true)::GLMakie.Figure
-
+    gui::Bool=true,
+)::GLMakie.Figure
     if datatype(obj) in ["erp", "erf"]
-        p = plot_erp(obj, ch=ch, tm=tm, rt=rt, xlabel=xlabel, ylabel=ylabel, title=title, type=type, avg=avg, ci95=ci95, cb=cb, cb_title=cb_title, peaks=peaks, leg=leg, yrev=yrev, smooth=smooth, ks=ks, zl=zl, mono=mono, gui=gui)
+        p = plot_erp(
+            obj;
+            ch=ch,
+            tm=tm,
+            rt=rt,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            title=title,
+            type=type,
+            avg=avg,
+            ci95=ci95,
+            cb=cb,
+            cb_title=cb_title,
+            peaks=peaks,
+            leg=leg,
+            yrev=yrev,
+            smooth=smooth,
+            ks=ks,
+            zl=zl,
+            mono=mono,
+            gui=gui,
+        )
     elseif datatype(obj) == "mep"
-        p = plot_mep(obj, ch=ch, xlabel=xlabel, ylabel=ylabel, title=title, type=type, avg=avg, ci95=ci95, cb=cb, cb_title=cb_title, peaks=peaks, leg=leg, yrev=yrev, smooth=smooth, ks=ks, zl=zl, mono=mono, gui=gui)
+        p = plot_mep(
+            obj;
+            ch=ch,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            title=title,
+            type=type,
+            avg=avg,
+            ci95=ci95,
+            cb=cb,
+            cb_title=cb_title,
+            peaks=peaks,
+            leg=leg,
+            yrev=yrev,
+            smooth=smooth,
+            ks=ks,
+            zl=zl,
+            mono=mono,
+            gui=gui,
+        )
     else
         if nepochs(obj) == 1
-            p = plot_cont(obj, ch=ch, seg=seg, xlabel=xlabel, ylabel=ylabel, title=title, markers=markers, scale=scale, group_ch=group_ch, type=type, avg=avg, ci95=ci95, n_channels=n_channels, mono=mono, res=res, gui=gui)
+            p = plot_cont(
+                obj;
+                ch=ch,
+                seg=seg,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                title=title,
+                markers=markers,
+                scale=scale,
+                group_ch=group_ch,
+                type=type,
+                avg=avg,
+                ci95=ci95,
+                n_channels=n_channels,
+                mono=mono,
+                res=res,
+                gui=gui,
+            )
         else
-            p = plot_ep(obj, ch=ch, ep=ep, xlabel=xlabel, ylabel=ylabel, title=title, markers=markers, scale=scale, group_ch=group_ch, type=type, avg=avg, ci95=ci95, n_channels=n_channels, n_epochs=n_epochs, mono=mono, res=res, gui=gui)
+            p = plot_ep(
+                obj;
+                ch=ch,
+                ep=ep,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                title=title,
+                markers=markers,
+                scale=scale,
+                group_ch=group_ch,
+                type=type,
+                avg=avg,
+                ci95=ci95,
+                n_channels=n_channels,
+                n_epochs=n_epochs,
+                mono=mono,
+                res=res,
+                gui=gui,
+            )
         end
     end
 
     return p
-
 end

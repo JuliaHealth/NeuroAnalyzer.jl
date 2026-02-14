@@ -30,7 +30,23 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 - `p::GLMakie.Figure`
 """
-function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, ch_info::Vector{String}=string.(1:DataFrames.nrow(locs)))::GLMakie.Figure
+function plot_locs_nirs(
+    locs::DataFrame,
+    opt_pairs::Matrix{Int64},
+    src_n::Int64,
+    det_n::Int64;
+    src_labels::Bool=false,
+    det_labels::Bool=false,
+    opt_labels::Bool=false,
+    head::Bool=true,
+    head_labels::Bool=true,
+    mono::Bool=false,
+    grid::Bool=false,
+    ps::Symbol=:l,
+    cart::Bool=false,
+    plane::Symbol=:xy,
+    ch_info::Vector{String}=string.(1:DataFrames.nrow(locs)),
+)::GLMakie.Figure
 
     # TO DO: plot channel numbers
 
@@ -45,7 +61,9 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
             for idx in 1:length(ch)
-                loc_x[idx], loc_y[idx] = pol2cart(locs[ch, :loc_radius][idx], locs[ch, :loc_theta][idx])
+                loc_x[idx], loc_y[idx] = pol2cart(
+                    locs[ch, :loc_radius][idx], locs[ch, :loc_theta][idx]
+                )
             end
         else
             loc_x = locs[ch, :loc_x]
@@ -56,7 +74,11 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
             for idx in 1:length(ch)
-                loc_x[idx], _, loc_y[idx] = sph2cart(locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx], locs[ch, :loc_phi_sph][idx])
+                loc_x[idx], _, loc_y[idx] = sph2cart(
+                    locs[ch, :loc_radius_sph][idx],
+                    locs[ch, :loc_theta_sph][idx],
+                    locs[ch, :loc_phi_sph][idx],
+                )
             end
         else
             loc_x = locs[ch, :loc_x]
@@ -67,7 +89,11 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
             for idx in 1:length(ch)
-                _, loc_x[idx], loc_y[idx] = sph2cart(locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx], locs[ch, :loc_phi_sph][idx])
+                _, loc_x[idx], loc_y[idx] = sph2cart(
+                    locs[ch, :loc_radius_sph][idx],
+                    locs[ch, :loc_theta_sph][idx],
+                    locs[ch, :loc_phi_sph][idx],
+                )
             end
         else
             loc_x = locs[ch, :loc_y]
@@ -101,45 +127,48 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
     end
 
     # prepare plot
-    p = GLMakie.Figure(size=plot_size,
-                       figure_padding=0)
+    p = GLMakie.Figure(; size=plot_size, figure_padding=0)
     if grid
-        ax = GLMakie.Axis(p[1, 1],
-                          aspect=1,
-                          xlabel="",
-                          ylabel="",
-                          title="",
-                          xticks=xt,
-                          xminorticksvisible=true,
-                          xminorticks=IntervalsBetween(2),
-                          yticks=yt,
-                          yminorticksvisible=true,
-                          yminorticks=IntervalsBetween(2),
-                          xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0),
-                          backgroundcolor=:transparent,
-                          xzoomlock=true,
-                          yzoomlock=true,
-                          xpanlock=true,
-                          ypanlock=true,
-                          xrectzoom=false,
-                          yrectzoom=false)
+        ax = GLMakie.Axis(
+            p[1, 1];
+            aspect=1,
+            xlabel="",
+            ylabel="",
+            title="",
+            xticks=xt,
+            xminorticksvisible=true,
+            xminorticks=IntervalsBetween(2),
+            yticks=yt,
+            yminorticksvisible=true,
+            yminorticks=IntervalsBetween(2),
+            xautolimitmargin=(0, 0),
+            yautolimitmargin=(0, 0),
+            backgroundcolor=:transparent,
+            xzoomlock=true,
+            yzoomlock=true,
+            xpanlock=true,
+            ypanlock=true,
+            xrectzoom=false,
+            yrectzoom=false,
+        )
     else
-        ax = GLMakie.Axis(p[1, 1],
-                          aspect=1,
-                          xlabel="",
-                          ylabel="",
-                          title="",
-                          xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0),
-                          backgroundcolor=:transparent,
-                          xzoomlock=true,
-                          yzoomlock=true,
-                          xpanlock=true,
-                          ypanlock=true,
-                          xrectzoom=false,
-                          yrectzoom=false)
-        hidedecorations!(ax, grid=true)
+        ax = GLMakie.Axis(
+            p[1, 1];
+            aspect=1,
+            xlabel="",
+            ylabel="",
+            title="",
+            xautolimitmargin=(0, 0),
+            yautolimitmargin=(0, 0),
+            backgroundcolor=:transparent,
+            xzoomlock=true,
+            yzoomlock=true,
+            xpanlock=true,
+            ypanlock=true,
+            xrectzoom=false,
+            yrectzoom=false,
+        )
+        hidedecorations!(ax; grid=true)
         hidespines!(ax)
     end
     GLMakie.xlims!(ax, xl)
@@ -152,41 +181,41 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         ps === :s && (lw = 1)
         if plane === :xy
             # nose
-            GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995]; linewidth=lw, color=:black)
 
             # ears
             # left
-            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22]; linewidth=lw, color=:black)
             # right
-            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=lw, color=:black)
-            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22]; linewidth=lw, color=:black)
 
             # head
-            GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=lw, color=:black)
+            GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth=lw, color=:black)
         elseif plane === :yz
             # head
-            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=lw, color=:black)
+            GLMakie.arc!(ax, (0, 0), 1, 0, pi; linewidth=lw, color=:black)
         elseif plane === :xz
             # head
-            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=lw, color=:black)
+            GLMakie.arc!(ax, (0, 0), 1, 0, pi; linewidth=lw, color=:black)
         end
     end
 
@@ -202,10 +231,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         xd = loc_x[src_n + opt_pairs[idx, 2]]
         ys = loc_y[opt_pairs[idx, 1]]
         yd = loc_y[src_n + opt_pairs[idx, 2]]
-        GLMakie.lines!([xs, xd],
-                       [ys, yd],
-                       color= mono ? :gray : :blue,
-                       alpha=0.5)
+        GLMakie.lines!([xs, xd], [ys, yd]; color=mono ? :gray : :blue, alpha=0.5)
     end
 
     label_offset_x = 0.0
@@ -213,52 +239,64 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
 
     if src_labels
         for idx in 1:src_n
-            GLMakie.text!(loc_x[idx] + label_offset_x,
-                          loc_y[idx] + label_offset_y,
-                          text=locs[!, :label][idx],
-                          align=(:center, :bottom),
-                          fontsize=font_size)
+            GLMakie.text!(
+                loc_x[idx] + label_offset_x,
+                loc_y[idx] + label_offset_y;
+                text=locs[!, :label][idx],
+                align=(:center, :bottom),
+                fontsize=font_size,
+            )
         end
     elseif !opt_labels
-        GLMakie.scatter!(loc_x[1:src_n],
-                         loc_y[1:src_n],
-                         markersize=marker_size,
-                         color=mono ? :black : :red,
-                         strokewidth=sw,
-                         strokecolor=:black)
+        GLMakie.scatter!(
+            loc_x[1:src_n],
+            loc_y[1:src_n];
+            markersize=marker_size,
+            color=mono ? :black : :red,
+            strokewidth=sw,
+            strokecolor=:black,
+        )
     end
 
     if det_labels
         for idx in (src_n + 1):(src_n + det_n)
-            GLMakie.text!(loc_x[idx] + label_offset_x,
-                          loc_y[idx] + label_offset_y,
-                          text=locs[!, :label][idx],
-                          align=(:center, :bottom),
-                          fontsize=font_size)
+            GLMakie.text!(
+                loc_x[idx] + label_offset_x,
+                loc_y[idx] + label_offset_y;
+                text=locs[!, :label][idx],
+                align=(:center, :bottom),
+                fontsize=font_size,
+            )
         end
     elseif !opt_labels
-        GLMakie.scatter!(loc_x[(src_n + 1):end],
-                         loc_y[(src_n + 1):end],
-                         markersize=marker_size,
-                         color=mono ? :white : :green,
-                         strokewidth=sw,
-                         strokecolor=:black)
+        GLMakie.scatter!(
+            loc_x[(src_n + 1):end],
+            loc_y[(src_n + 1):end];
+            markersize=marker_size,
+            color=mono ? :white : :green,
+            strokewidth=sw,
+            strokecolor=:black,
+        )
     end
 
     if opt_labels
         for idx in 1:src_n
-            GLMakie.text!(loc_x[idx] + label_offset_x,
-                          loc_y[idx] + label_offset_y,
-                          text="S" * string(idx),
-                          align=(:center, :bottom),
-                          fontsize=font_size)
+            GLMakie.text!(
+                loc_x[idx] + label_offset_x,
+                loc_y[idx] + label_offset_y;
+                text="S" * string(idx),
+                align=(:center, :bottom),
+                fontsize=font_size,
+            )
         end
         for idx in 1:det_n
-            GLMakie.text!(loc_x[idx] + label_offset_x,
-                          loc_y[idx] + label_offset_y,
-                          text="D" * string(idx),
-                          align=(:center, :bottom),
-                          fontsize=font_size)
+            GLMakie.text!(
+                loc_x[idx] + label_offset_x,
+                loc_y[idx] + label_offset_y;
+                text="D" * string(idx),
+                align=(:center, :bottom),
+                fontsize=font_size,
+            )
         end
     end
 
@@ -275,14 +313,15 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
                 fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
                 fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
             end
-            GLMakie.text!(fid_loc_x,
-                          fid_loc_y,
-                          text=fid_names[idx],
-                          fontsize=font_size,
-                          align = (:center, :center))
+            GLMakie.text!(
+                fid_loc_x,
+                fid_loc_y;
+                text=fid_names[idx],
+                fontsize=font_size,
+                align=(:center, :center),
+            )
         end
     end
 
     return p
-
 end

@@ -16,9 +16,10 @@ Named tuple containing:
 - `g::Vector{Vector{Float64}}`: vector field of gradients
 - `g_len::Vector{Float64}`: scalar field of gradient lengths
 """
-function gradient(x::AbstractVector; rev::Bool=false)::@NamedTuple{g::Vector{Vector{Float64}}, g_len::Vector{Float64}}
-
-    g_tmp, g_len = _gradient(x, rev=rev)
+function gradient(
+    x::AbstractVector; rev::Bool=false
+)::@NamedTuple{g::Vector{Vector{Float64}}, g_len::Vector{Float64}}
+    g_tmp, g_len = _gradient(x; rev=rev)
 
     g = Vector{Vector{Float64}}(undef, length(g_tmp))
     for idx in CartesianIndices(g_tmp)
@@ -26,7 +27,6 @@ function gradient(x::AbstractVector; rev::Bool=false)::@NamedTuple{g::Vector{Vec
     end
 
     return (g=g, g_len=g_len)
-
 end
 
 """
@@ -45,9 +45,10 @@ Named tuple containing:
 - `g::Matrix{Vector{Float64}}`: vector field of gradients
 - `g_len::Matrix{Float64}`: scalar field of gradient lengths
 """
-function gradient(x::AbstractMatrix; rev::Bool=false)::@NamedTuple{g::Matrix{Vector{Float64}}, g_len::Matrix{Float64}}
-
-    g_tmp, g_len = _gradient(x, rev=rev)
+function gradient(
+    x::AbstractMatrix; rev::Bool=false
+)::@NamedTuple{g::Matrix{Vector{Float64}}, g_len::Matrix{Float64}}
+    g_tmp, g_len = _gradient(x; rev=rev)
 
     g = Matrix{Vector{Float64}}(undef, size(g_tmp))
     for idx in CartesianIndices(g_tmp)
@@ -55,7 +56,6 @@ function gradient(x::AbstractMatrix; rev::Bool=false)::@NamedTuple{g::Matrix{Vec
     end
 
     return (g=g, g_len=g_len)
-
 end
 
 """
@@ -74,9 +74,10 @@ Named tuple containing:
 - `g::Array{Vector{Float64}, 3}`: vector field of gradients
 - `g_len::Array{Float64, 3}`: scalar field of gradient lengths
 """
-function gradient(x::AbstractArray; rev::Bool=false)::@NamedTuple{g::Array{Vector{Float64}, 3}, g_len::Array{Float64, 3}}
-
-    g_tmp, g_len = _gradient(x, rev=rev)
+function gradient(
+    x::AbstractArray; rev::Bool=false
+)::@NamedTuple{g::Array{Vector{Float64},3}, g_len::Array{Float64,3}}
+    g_tmp, g_len = _gradient(x; rev=rev)
 
     g = Array{Vector{Float64}}(undef, size(g_tmp))
     for idx in CartesianIndices(g_tmp)
@@ -84,5 +85,4 @@ function gradient(x::AbstractArray; rev::Bool=false)::@NamedTuple{g::Array{Vecto
     end
 
     return (g=g, g_len=g_len)
-
 end

@@ -26,12 +26,10 @@ Named tuple containing:
 - `k2::Float64`: 1 + 3.222 * log10(n)
 """
 function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
-
     k1 = sqrt(n)
     k2 = 1 + 3.222 * log10(n)
 
     return (k1=k1, k2=k2)
-
 end
 
 """
@@ -48,14 +46,12 @@ Calculate slope of the line crossing two points.
 
 - `s::Float64`: slope
 """
-function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
-
+function slope(p1::Tuple{Real,Real}, p2::Tuple{Real,Real})::Float64
     @assert p2[1] - p1[1] != 0 "p2[1] - p1[1] must not be 0."
 
     s = (p2[2] - p1[2]) / (p2[1] - p1[1])
 
     return s
-
 end
 
 """
@@ -72,12 +68,10 @@ Calculate distance between two points.
 
 - `d::Float64`: distance
 """
-function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
-
+function distance(p1::Tuple{Real,Real}, p2::Tuple{Real,Real})::Float64
     d = sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
 
     return d
-
 end
 
 """
@@ -102,8 +96,9 @@ Named tuple containing:
 - `x_t::Matrix{Bool}`: thresholded matrix
 - `n::Int64`: number of elements
 """
-function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
-
+function count_thresh(
+    x::AbstractMatrix; t::Real, t_type::Symbol=:g
+)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
 
     x_t = zeros(Bool, size(x))
@@ -123,7 +118,6 @@ function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::@NamedTupl
     n = count(==(true), x_t)
 
     return (x_t=x_t, n=n)
-
 end
 
 """
@@ -142,13 +136,11 @@ Calculate proportion of elements below or above a given statistic value.
 - `p::Float64`
 """
 function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol=:g)::Float64
-
     _check_var(type, [:g, :l], "type")
     @assert length(stat_dist) > 0 "Length of stat_dist is 0, cannot compute."
 
     type === :g && return count(stat_dist .> v) / length(stat_dist)
     type === :l && return count(stat_dist .< v) / length(stat_dist)
-
 end
 
 """
@@ -166,7 +158,6 @@ Permute signal data.
 - `s_new::Matrix{Float64}`
 """
 function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
-
     @assert n > 0 "n must be > 0."
 
     s_new = zeros(n, length(s))
@@ -178,7 +169,6 @@ function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
     end
 
     return s_new
-
 end
 
 """
@@ -195,13 +185,12 @@ Permute signal data.
 
 - `s_new::Union{Array{Float64, 3}, Array{Float64, 4}}`
 """
-function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
-
+function permute(s::AbstractArray, n::Int64)::Union{Array{Float64,3},Array{Float64,4}}
     @assert n > 0 "n must be > 0."
     @assert ndims(s) <= 3 "permute() only works for arrays of ≤ 3 dimensions."
 
     if ndims(s) == 2
-        s_new = zeros(n, size(s,1 ), size(s,2 ))
+        s_new = zeros(n, size(s, 1), size(s, 2))
         @inbounds for idx1 in 1:n
             Threads.@threads for idx2 in axes(s, 1)
                 x = rand(2:size(s, 2))
@@ -225,7 +214,6 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
     end
 
     return s_new
-
 end
 
 """
@@ -242,13 +230,11 @@ Convert proportion to logit.
 - `l::Float64`
 """
 function logit(p::Float64)::Float64
-
     _in(p, (0.0, 1.0), "p")
 
     l = log(p / (1 - p))
 
     return l
-
 end
 
 """
@@ -265,12 +251,10 @@ Calculate sum of squares.
 - `s::Float64`
 """
 function sumsq(x::AbstractVector)::Float64
-
     m = mean(x)
-    s = sum((x .- m).^2)
+    s = sum((x .- m) .^ 2)
 
     return s
-
 end
 
 """
@@ -287,14 +271,11 @@ Return values of x ignoring NaNs and Missing values.
 - `x::Vector{Float64}`
 """
 function rmna(x::AbstractVector)::Vector{Float64}
-
     x = x[.!ismissing.(x)]
     x = x[.!isnan.(x)]
 
     return Float64.(x)
-
 end
-
 
 """
     df(x)
@@ -310,9 +291,7 @@ Calculate degrees of freedom.
 - `df::Int64`
 """
 function df(x::AbstractVector)::Int64
-
     return length(x) - 1
-
 end
 
 """
@@ -329,9 +308,7 @@ Center values by subtracting mean.
 - `x::Vector{Float64}`
 """
 function center(x::AbstractVector)::Vector{Float64}
-
     m = mean(x)
 
     return x .- m
-
 end

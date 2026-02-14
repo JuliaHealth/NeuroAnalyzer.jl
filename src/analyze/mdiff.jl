@@ -21,14 +21,15 @@ Named tuple containing:
 - `sts::Float64`
 - `p::Float64`
 """
-function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbol=:absdiff)::@NamedTuple{st::Vector{Float64}, sts::Float64, p::Float64}
-
+function mdiff(
+    s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbol=:absdiff
+)::@NamedTuple{st::Vector{Float64}, sts::Float64, p::Float64}
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _check_var(method, [:absdiff, :diff2int], "method")
     @assert n >= 1 "n must be ≥ 1."
 
-    s1_mean = vec(mean(s1, dims=1))
-    s2_mean = vec(mean(s2, dims=1))
+    s1_mean = vec(mean(s1; dims=1))
+    s2_mean = vec(mean(s2; dims=1))
 
     if method === :absdiff
         # statistic: maximum difference
@@ -36,7 +37,7 @@ function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbo
         sts = maximum(abs.(s_diff))
     else
         # statistic: integrated area of the squared difference
-        s_diff_squared = (s1_mean - s2_mean).^2
+        s_diff_squared = (s1_mean - s2_mean) .^ 2
         sts = simpson(s_diff_squared)
     end
 
@@ -62,7 +63,7 @@ function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbo
             @inbounds st[idx1] = maximum(abs.(s_diff))
         else
             # statistic: integrated area of the squared difference
-            s_diff_squared = (s1_mean - s2_mean).^2
+            s_diff_squared = (s1_mean - s2_mean) .^ 2
             @inbounds st[idx1] = simpson(s_diff_squared)
         end
     end
@@ -71,7 +72,6 @@ function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbo
     p > 1 && (p = 1.0)
 
     return (st=st, sts=sts, p=p)
-
 end
 
 """
@@ -95,8 +95,9 @@ Named tuple containing:
 - `sts::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
-
+function mdiff(
+    s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=:absdiff
+)::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     @assert n >= 1 "n must be ≥ 1."
     _chk3d(s1)
@@ -110,7 +111,9 @@ function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=
     p = zeros(ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        st[ep_idx, :], sts[ep_idx], p[ep_idx] = mdiff(s1[:, :, ep_idx], s2[:, :, ep_idx], n=n, method=method)
+        st[ep_idx, :], sts[ep_idx], p[ep_idx] = mdiff(
+            s1[:, :, ep_idx], s2[:, :, ep_idx], n=n, method=method
+        )
     end
 
     return (st=st, sts=sts, p=p)
@@ -141,10 +144,26 @@ Named tuple containing:
 - `sts::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), n::Int64=3, method::Symbol=:absdiff)::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
-
-    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
-    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
+function mdiff(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String,Vector{String}},
+    ch2::Union{String,Vector{String}},
+    ep1::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj1)),
+    ep2::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj2)),
+    n::Int64=3,
+    method::Symbol=:absdiff,
+)::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
+    ch1 = if exclude_bads
+        get_channel(obj1; ch=ch1, exclude="bad")
+    else
+        get_channel(obj1; ch=ch1, exclude="")
+    end
+    ch2 = if exclude_bads
+        get_channel(obj2; ch=ch2, exclude="bad")
+    else
+        get_channel(obj2; ch=ch2, exclude="")
+    end
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     _check_epochs(obj1, ep1)
@@ -155,7 +174,9 @@ function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    st, sts, p = @views NeuroAnalyzer.mdiff(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], n=n, method=method)
+    st, sts, p = @views NeuroAnalyzer.mdiff(
+        obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], n=n, method=method
+    )
 
     return (st=st, sts=sts, p=p)
 end

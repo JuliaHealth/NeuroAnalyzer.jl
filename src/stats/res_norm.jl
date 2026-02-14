@@ -20,8 +20,9 @@ Named tuple containing:
 
 p values are reported for each group and for the whole sample. If there is only one group, p values are returned only for the whole sample p values are reported.
 """
-function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))::@NamedTuple{adt_p::Vector{Float64}, ks_p::Vector{Float64}}
-
+function res_norm(
+    x::AbstractVector, g::Vector{Int64}=repeat([1], length(x))
+)::@NamedTuple{adt_p::Vector{Float64}, ks_p::Vector{Float64}}
     groups = sort(unique(g))
 
     if length(groups) > 1
@@ -37,7 +38,9 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))::@
         for group_idx in eachindex(groups)
             m = mean(x[g .== groups[group_idx]])
             res = x[g .== groups[group_idx]] .- m
-            adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
+            adt_p[group_idx] = pvalue(
+                KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res)))
+            )
             ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
         end
     end
@@ -49,5 +52,4 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))::@
     ks_p[end] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
 
     return (adt_p=adt_p, ks_p=ks_p)
-
 end

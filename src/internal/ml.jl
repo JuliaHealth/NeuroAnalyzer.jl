@@ -1,4 +1,4 @@
-function _split(df::DataFrame, ratio::Float64=0.8)::Tuple{DataFrame, DataFrame}
+function _split(df::DataFrame, ratio::Float64=0.8)::Tuple{DataFrame,DataFrame}
     n = DataFrames.nrow(df)
     idx = shuffle(1:n)
     train_idx = view(idx, 1:floor(Int, ratio * n))

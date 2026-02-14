@@ -22,14 +22,12 @@ Calculate variance of the proportion.
 - `σ2::Float64`
 """
 function varp(p::Float64, n::Int64)::Float64
-
     @assert n > 0 "n must be > 0."
     _in(p, (0.0, 1.0), "p")
 
     σ2 = (p * (1 - p)) / n
 
     return σ2
-
 end
 
 """
@@ -47,11 +45,9 @@ Calculate standard deviation of the proportion.
 - `σ::Float64`
 """
 function stdp(p::Float64, n::Int64)::Float64
-
     σ = sqrt(varp(p, n))
 
     return σ
-
 end
 
 """
@@ -69,15 +65,13 @@ Calculate variance of categorical data.
 - `σ2::Float64`
 """
 function varc(g::Vector{Int64}, x::Vector{Int64})::Float64
-
     @assert length(g) == length(x) "Length of g and length of x must be equal."
     @assert length(g) > 0 "Length of g must be > 0."
     @assert length(x) > 0 "Length of x must be > 0."
 
-    σ2 = ((sum(g.^2 .* x) - sum(g .* x))^2 / sum(x)) / (sum(x) - 1)
+    σ2 = ((sum(g .^ 2 .* x) - sum(g .* x))^2 / sum(x)) / (sum(x) - 1)
 
     return σ2
-
 end
 
 """
@@ -95,11 +89,9 @@ Calculate standard deviation of categorical data.
 - `σ::Float64`
 """
 function stdc(g::Vector{Int64}, x::Vector{Int64})::Float64
-
     σ = sqrt(varc(g, x))
 
     return σ
-
 end
 
 """
@@ -116,11 +108,9 @@ Calculate range.
 - `r::Float64`
 """
 function rng(x::AbstractArray)::Float64
-
     r = maximum(x) - minimum(x)
 
     return r
-
 end
 
 """
@@ -137,11 +127,9 @@ Calculate midrange.
 - `mr::Float64`
 """
 function mrng(x::AbstractArray)::Float64
-
     mr = (maximum(x) - minimum(x)) / 2
 
     return mr
-
 end
 
 """
@@ -158,13 +146,11 @@ Calculate margin of error for given sample size `n`.
 - `m::Float64`
 """
 function moe(n::Int64)::Float64
-
     @assert n > 0 "n must be > 0."
 
     m = 1 / sqrt(n)
 
     return m
-
 end
 
 """
@@ -181,14 +167,12 @@ Calculate margin of error.
 - `m::Float64`
 """
 function moe(x::AbstractArray)::Float64
-
     @assert length(x) > 0 "Length of x must be > 0."
 
     n = length(x)
     m = 1 / sqrt(n)
 
     return m
-
 end
 
 """
@@ -205,8 +189,7 @@ Calculate absolute and relative frequencies.
 
 - `m::Matrix{Float64}`: first row: absolute frequencies, second row: relative frequencies (proportion), third row: second row: relative frequencies (percentage); last column: totals
 """
-function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
-
+function arf(df::DataFrame, var::Union{Symbol,String})::Matrix{Float64}
     _check_var(string(var), names(df), "var")
     x = df[!, var]
     @assert length(unique(x)) >= 2 "var must contain at least 2 different values."
@@ -214,13 +197,12 @@ function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
     m = zeros(3, length(unique(x)) + 1)
     for idx in 1:length(unique(x))
         m[1, idx] = count(z -> z==unique(x)[idx], x)
-        m[2, idx] = round(m[1, idx] / n, digits=3)
-        m[3, idx] = round(m[2, idx] * 100, digits=2)
+        m[2, idx] = round(m[1, idx] / n; digits=3)
+        m[3, idx] = round(m[2, idx] * 100; digits=2)
     end
     m[1, end] = n
     m[2, end] = 1.0
     m[3, end] = 100.0
 
     return m
-
 end

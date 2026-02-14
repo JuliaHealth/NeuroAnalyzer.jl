@@ -15,9 +15,7 @@ Calculate mutual information.
 - `mutual_information::Float64`
 """
 function mutual_information(s1::AbstractVector, s2::AbstractVector)::Float64
-
     return get_mutual_information(s1, s2)
-
 end
 
 """
@@ -35,7 +33,6 @@ Calculate mutual information (channels of `s1` vs channels of `s2`).
 - `m::Matrix{Float64}`
 """
 function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
-
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
     _chk3d(s2)
@@ -47,12 +44,13 @@ function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float6
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            m[ch_idx, ep_idx] = @views mutual_information(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
+            m[ch_idx, ep_idx] = @views mutual_information(
+                s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx]
+            )
         end
     end
 
     return m
-
 end
 
 """
@@ -68,25 +66,26 @@ Calculate mutual information (channels vs channels).
 
 - `m::Array{Float64, 3}`
 """
-function mutual_information(s::AbstractArray)::Array{Float64, 3}
-
+function mutual_information(s::AbstractArray)::Array{Float64,3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(ep_n * ch_n; dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     m = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
-           for ch_idx2 in 1:ch_idx1
-                m[ch_idx1, ch_idx2, ep_idx] = @views mutual_information(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx])
+            for ch_idx2 in 1:ch_idx1
+                m[ch_idx1, ch_idx2, ep_idx] = @views mutual_information(
+                    s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx]
+                )
             end
 
-        # update progress bar
-        progress_bar && next!(progbar)
+            # update progress bar
+            progress_bar && next!(progbar)
         end
     end
 
@@ -94,7 +93,6 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     m = _copy_lt2ut(m)
 
     return m
-
 end
 
 """
@@ -111,13 +109,17 @@ Calculate mutual information between channels. Currently only one estimator (max
 
 - `m::Array{Float64, 3}`
 """
-function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
-
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+function mutual_information(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Array{Float64,3}
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     m = @views mutual_information(obj.data[ch, :, :])
 
     return m
-
 end
 
 """
@@ -138,11 +140,26 @@ Calculate mutual information between two channels. Currently only one estimator 
 
 - `m::Matrix{Float64}`
 """
-function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
+function mutual_information(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String,Vector{String}},
+    ch2::Union{String,Vector{String}},
+    ep1::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj1)),
+    ep2::Union{Int64,Vector{Int64},AbstractRange}=_c(nepochs(obj2)),
+)::Matrix{Float64}
 
     # check channels
-    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
-    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
+    ch1 = if exclude_bads
+        get_channel(obj1; ch=ch1, exclude="bad")
+    else
+        get_channel(obj1; ch=ch1, exclude="")
+    end
+    ch2 = if exclude_bads
+        get_channel(obj2; ch=ch2, exclude="bad")
+    else
+        get_channel(obj2; ch=ch2, exclude="")
+    end
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     # check epochs
@@ -157,5 +174,4 @@ function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO
     m = @views mutual_information(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 
     return m
-
 end

@@ -20,8 +20,9 @@ Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and
 
 1. Elekta Neuromag: Functional Image File Format Description. FIFF version 1.3. March 2011
 """
-function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vector{Any}, Matrix{Int64}}
-
+function load_fiff(
+    file_name::String
+)::Tuple{Dict{Symbol,Dict{Any,Any}},Vector{Any},Matrix{Int64}}
     fid = nothing
     try
         fid = open(file_name, "r")
@@ -82,7 +83,10 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             ident = @views _i32i64(buf_tmp[5:8])
             np = @views _i32f64(buf_tmp[9:12])
             rr = Float64[]
-            [push!(rr, @views _f32f64(buf_tmp[idx:(idx + 3)])) for idx in 13:4:length(buf_tmp)]
+            [
+                push!(rr, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
+                idx in 13:4:length(buf_tmp)
+            ]
             d = (kind, ident, np, rr)
         elseif tag_type in [255]
             # ch_pos
@@ -99,7 +103,21 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             ez_1 = @views _f32f64(buf_tmp[41:44])
             ez_2 = @views _f32f64(buf_tmp[45:48])
             ez_3 = @views _f32f64(buf_tmp[59:52])
-            d = (coil_type, r0_1, r0_2, r0_3, ex_1, ex_2, ex_3, ey_1, ey_2, ey_3, ez_1, ez_2, ez_3)
+            d = (
+                coil_type,
+                r0_1,
+                r0_2,
+                r0_3,
+                ex_1,
+                ex_2,
+                ex_3,
+                ey_1,
+                ey_2,
+                ey_3,
+                ez_1,
+                ez_2,
+                ez_3,
+            )
         elseif tag_type in [404, 405, 406]
             # dob, sex, handedness
             d = @views _i32i64(buf_tmp)
@@ -114,32 +132,55 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             rot = zeros(3, 3)
             for idx1 in 1:3
                 d = Float64[]
-                [push!(d, @views _i16f64(buf_tmp[(8 + idx2):(8 + idx2 + 3)])) for idx2 in 1:4:9]
+                [
+                    push!(d, @views _i16f64(buf_tmp[(8 + idx2):(8 + idx2 + 3)])) for
+                    idx2 in 1:4:9
+                ]
                 rot[idx1, :] = d
             end
             move = Float64[]
-            [push!(move, @views _i16f64(buf_tmp[(44 + idx):(44 + idx + 3)])) for idx in 1:4:9]
+            [
+                push!(move, @views _i16f64(buf_tmp[(44 + idx):(44 + idx + 3)])) for
+                idx in 1:4:9
+            ]
             invrot = zeros(3, 3)
             for idx1 in 1:3
                 d = Float64[]
-                [push!(d, @views _i16f64(buf_tmp[(56 + idx2):(56 + idx2 + 3)])) for idx2 in 1:4:9]
+                [
+                    push!(d, @views _i16f64(buf_tmp[(56 + idx2):(56 + idx2 + 3)])) for
+                    idx2 in 1:4:9
+                ]
                 invrot[idx1, :] = d
             end
             invmove = Float64[]
-            [push!(invmove, @views _i16f64(buf_tmp[(92 + idx):(92 + idx + 3)])) for idx in 1:4:9]
+            [
+                push!(invmove, @views _i16f64(buf_tmp[(92 + idx):(92 + idx + 3)])) for
+                idx in 1:4:9
+            ]
             d = (from, to, rot, move, invrot, invmove)
         elseif tag_type in [300]
             # data_buffer
             df = @views _find_fiff_dt(tag_dt)
             d = Float64[]
             if df == "dau_pack16" || df == "int16"
-                [push!(d, @views _i16f64(buf_tmp[idx:(idx + 1)])) for idx in 1:2:length(buf_tmp)]
+                [
+                    push!(d, @views _i16f64(buf_tmp[idx:(idx + 1)])) for
+                    idx in 1:2:length(buf_tmp)
+                ]
             elseif df == "int32"
-                [push!(d, @views _i32f64(buf_tmp[idx:(idx + 3)])) for idx in 1:4:length(buf_tmp)]
+                [
+                    push!(d, @views _i32f64(buf_tmp[idx:(idx + 3)])) for
+                    idx in 1:4:length(buf_tmp)
+                ]
             elseif df == "float"
-                [push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for idx in 1:4:length(buf_tmp)]
+                [
+                    push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
+                    idx in 1:4:length(buf_tmp)
+                ]
             else
-                _warn("Data type $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+                _warn(
+                    "Data type $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+                )
             end
         elseif tag_type in [213]
             # dig_point
@@ -151,7 +192,7 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             d = (kind, ident, r_1, r_2, r_3)
         elseif tag_type in [252]
             # ch_type
-            d =  @views _find_fiff_chtype(_i32i64(buf_tmp))
+            d = @views _find_fiff_chtype(_i32i64(buf_tmp))
         elseif tag_type in [256]
             # ch_unit
             d = _find_fiff_unit(_i32i64(buf_tmp))
@@ -186,17 +227,117 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             ez_3 = @views _f32f64(buf_tmp[69:72])
             unit = @views _find_fiff_unit(_i32i64(buf_tmp[73:76]))
             unit_mul = @views _find_fiff_mul(_i32i64(buf_tmp[77:80]))
-            d = (scan_no, log_no, kind, range, cal, coil_type, r0_1, r0_2, r0_3, ex_1, ex_2, ex_3, ey_1, ey_2, ey_3, ez_1, ez_2, ez_3, unit, unit_mul)
+            d = (
+                scan_no,
+                log_no,
+                kind,
+                range,
+                cal,
+                coil_type,
+                r0_1,
+                r0_2,
+                r0_3,
+                ex_1,
+                ex_2,
+                ex_3,
+                ey_1,
+                ey_2,
+                ey_3,
+                ez_1,
+                ez_2,
+                ez_3,
+                unit,
+                unit_mul,
+            )
         elseif tag_type in [214]
             # ch_pos_vec
             # obsolete
-        elseif tag_type in [111, 112, 113, 114, 118, 150, 151, 205, 206, 212, 227, 233, 237, 258, 281, 401, 402, 403, 409, 410, 501, 502, 503, 504, 602, 2020, 3102, 3300, 3406, 3407, 3417, 3501]
+        elseif tag_type in [
+            111,
+            112,
+            113,
+            114,
+            118,
+            150,
+            151,
+            205,
+            206,
+            212,
+            227,
+            233,
+            237,
+            258,
+            281,
+            401,
+            402,
+            403,
+            409,
+            410,
+            501,
+            502,
+            503,
+            504,
+            602,
+            2020,
+            3102,
+            3300,
+            3406,
+            3407,
+            3417,
+            3501,
+        ]
             # string
             d = @views _v2s(string.(Char.(buf_tmp)))
         elseif tag_type in [282]
             # int8
             d = _i8i8(buf_tmp[1:4])
-        elseif tag_type in [101, 102, 104, 105, 106, 117, 200, 202, 204, 207, 208, 209, 211, 216, 217, 221, 228, 230, 231, 245, 250, 251, 257, 263, 266, 267, 268, 277, 278, 301, 303, 400, 500, 701, 702, 703, 2004, 2010, 2012, 2014, 2023, 2032, 3013, 3104, 3414]
+        elseif tag_type in [
+            101,
+            102,
+            104,
+            105,
+            106,
+            117,
+            200,
+            202,
+            204,
+            207,
+            208,
+            209,
+            211,
+            216,
+            217,
+            221,
+            228,
+            230,
+            231,
+            245,
+            250,
+            251,
+            257,
+            263,
+            266,
+            267,
+            268,
+            277,
+            278,
+            301,
+            303,
+            400,
+            500,
+            701,
+            702,
+            703,
+            2004,
+            2010,
+            2012,
+            2014,
+            2023,
+            2032,
+            3013,
+            3104,
+            3414,
+        ]
             # int32
             d = @views _i32i64(buf_tmp[1:4])
             if tag_type == 204
@@ -205,17 +346,55 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
         elseif tag_type in [220, 232, 225, 246, 247, 269, 304, 305, 600, 601, 603, 3413]
             # int32*
             d = Int64[]
-            [push!(d, @views _i32i64(buf_tmp[idx:(idx + 3)])) for idx in 1:4:length(buf_tmp)]
+            [
+                push!(d, @views _i32i64(buf_tmp[idx:(idx + 3)])) for
+                idx in 1:4:length(buf_tmp)
+            ]
         elseif tag_type in [276]
             # double
             d = @views _f32f64(buf_tmp[1:4])
-        elseif tag_type in [201, 218, 219, 223, 229, 235, 236, 240, 241, 243, 244, 253, 254, 272, 279, 407, 408, 2005, 2009, 2011, 2013, 2015, 2016, 2018, 2019, 2024, 2040, 3109, 3113, 3405, 3412]
+        elseif tag_type in [
+            201,
+            218,
+            219,
+            223,
+            229,
+            235,
+            236,
+            240,
+            241,
+            243,
+            244,
+            253,
+            254,
+            272,
+            279,
+            407,
+            408,
+            2005,
+            2009,
+            2011,
+            2013,
+            2015,
+            2016,
+            2018,
+            2019,
+            2024,
+            2040,
+            3109,
+            3113,
+            3405,
+            3412,
+        ]
             # float
             d = @views _f32f64(buf_tmp[1:4])
         elseif tag_type in [215, 224, 226, 265]
             # float*
             d = Float64[]
-            [push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for idx in 1:4:length(buf_tmp)]
+            [
+                push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
+                idx in 1:4:length(buf_tmp)
+            ]
         elseif tag_type in [100, 103, 109, 110, 116, 120]
             # id_t
             fiff_v_major = @views _i16i64(buf_tmp[1:2])
@@ -225,11 +404,23 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             time_sec = @views _i32i64(buf_tmp[13:16])
             id_creation_date = unix2datetime(time_sec)
             time_usec = @views _i32i64(buf_tmp[17:20])
-            d = (fiff_v_major, fiff_v_minor, mach_id1, mach_id2, id_creation_date, time_usec)
+            d = (
+                fiff_v_major, fiff_v_minor, mach_id1, mach_id2, id_creation_date, time_usec
+            )
         else
-            _warn("$tag_type is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+            _warn(
+                "$tag_type is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+            )
         end
-        push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
+        push!(
+            fiff_object,
+            (
+                block_idx,
+                _find_fiff_tag(fiff_blocks[block_idx, 2]),
+                _find_fiff_block(fiff_blocks[block_idx, end]),
+                d,
+            ),
+        )
     end
 
     # process blocks
@@ -255,10 +446,14 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             push!(ref, Symbol(f)=>nothing)
         end
     end
-    !isnothing(ref[:ref_role]) && _warn("Data split into multiple files is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    !isnothing(ref[:ref_role]) && _warn(
+        "Data split into multiple files is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
 
     meas_info = Dict()
-    fields = ["sfreq", "lowpass", "highpass", "data_pack", "line_freq", "gantry_angle", "bad_chs"]
+    fields = [
+        "sfreq", "lowpass", "highpass", "data_pack", "line_freq", "gantry_angle", "bad_chs"
+    ]
     @inbounds for f in fields
         tmp = fiff_object[[fiff_object[idx][2] for idx in eachindex(fiff_object)] .== f]
         if length(tmp) != 0
@@ -281,10 +476,32 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
     push!(meas_info, :ch_info=>ch_info)
 
     subject_info = Dict()
-    fields = ["subj_id", "subj_his_id", "subj_last_name", "subj_first_name", "subj_middle_name", "subj_birth_day", "subj_sex", "subj_hand", "subj_weight", "subj_height", "comment"]
+    fields = [
+        "subj_id",
+        "subj_his_id",
+        "subj_last_name",
+        "subj_first_name",
+        "subj_middle_name",
+        "subj_birth_day",
+        "subj_sex",
+        "subj_hand",
+        "subj_weight",
+        "subj_height",
+        "comment",
+    ]
     subject_info = _pack_fiff_blocks(fiff_object, "subject", fields)
 
-    fields = ["dig_point", "hpi_digitization_order", "hpi_coils_used", "hpi_coil_moments", "hpi_fit_goodness", "hpi_fit_good_limit", "hpi_fit_dist_limit", "hpi_fit_accept", "coord_trans"]
+    fields = [
+        "dig_point",
+        "hpi_digitization_order",
+        "hpi_coils_used",
+        "hpi_coil_moments",
+        "hpi_fit_goodness",
+        "hpi_fit_good_limit",
+        "hpi_fit_dist_limit",
+        "hpi_fit_accept",
+        "coord_trans",
+    ]
     hpi_result = _pack_fiff_blocks(fiff_object, "hpi_result", fields)
     fields = ["hpi_coil_no", "epoch", "hpi_slopes", "hpi_corr_coeff", "hpi_coil_freq"]
     hpi_coil = _pack_fiff_blocks(fiff_object, "hpi_coil", fields)
@@ -292,10 +509,20 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
     hpi = Dict(:hpi_result=>hpi_result, :hpi_coil=>hpi_coil, :isotrak=>isotrak)
 
     hpi_coil = _pack_fiff_blocks(fiff_object, "hpi_coil", ["event_bits"])
-    hpi_subsystem = _pack_fiff_blocks(fiff_object, "hpi_subsystem", ["hpi_ncoil", "event_channel"])
+    hpi_subsystem = _pack_fiff_blocks(
+        fiff_object, "hpi_subsystem", ["hpi_ncoil", "event_channel"]
+    )
     hpi_subsystem = Dict(:hpi_subsystem=>hpi_subsystem, :hpi_coil=>hpi_coil)
 
-    fields = ["description", "proj_item_kind", "nchan", "proj_item_ch_name_list", "proj_item_time", "proj_item_nvec", "proj_item_vectors"]
+    fields = [
+        "description",
+        "proj_item_kind",
+        "nchan",
+        "proj_item_ch_name_list",
+        "proj_item_time",
+        "proj_item_nvec",
+        "proj_item_vectors",
+    ]
     xfit_proj_item = _pack_fiff_blocks(fiff_object, "xfit_proj_item", fields)
     nchan = _pack_fiff_blocks(fiff_object, "xfit_proj_item", ["nchan"])
     xfit_proj = Dict(:nchan=>nchan, :xfit_proj_item=>xfit_proj_item)
@@ -306,7 +533,8 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
     fields = ["dacq_pars", "dacq_stim"]
     dacq_pars = _pack_fiff_blocks(fiff_object, "dacq_pars", fields)
     dacq_pars[:dacq_pars] = split(dacq_pars[:dacq_pars], "\n")
-    dacq_pars[:dacq_pars][end] == "" && deleteat!(dacq_pars[:dacq_pars], length(dacq_pars[:dacq_pars]))
+    dacq_pars[:dacq_pars][end] == "" &&
+        deleteat!(dacq_pars[:dacq_pars], length(dacq_pars[:dacq_pars]))
     dacq_pars[:dacq_pars] = split.(rstrip.(dacq_pars[:dacq_pars]), ' ')
 
     fields = ["experimenter", "description", "meas_date"]
@@ -341,16 +569,19 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
     end
     if raw_data[:data_skip] > 0
         #raw_data[:raw_data] = vcat(raw_data[:raw_data], zeros(buffer_length * raw_data[:data_skip]))
-        _warn("data_skip is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+        _warn(
+            "data_skip is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+        )
     elseif raw_data[:data_skip_samp] > 0
         #raw_data[:raw_data] = vcat(raw_data[:raw_data], zeros(raw_data[:data_skip_samp]))
-        _warn("data_skip_samp is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+        _warn(
+            "data_skip_samp is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+        )
     end
 
     fiff = Dict(:meas_info=>meas_info, :raw_data=>raw_data)
 
     return fiff, fiff_object, fiff_blocks
-
 end
 
 """
@@ -367,7 +598,6 @@ Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and
 - `obj::NeuroAnalyzer.NEURO`
 """
 function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
-
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
     fiff, _, _ = load_fiff(file_name)
@@ -419,7 +649,8 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     gradiometers = Int64[]
     eeg = Int64[]
     @inbounds for ch_idx in 1:ch_n
-        if coil_type[ch_idx] in ["vv_planar_w", "vv_planar_t1", "vv_planar_t2", "vv_planar_t3"]
+        if coil_type[ch_idx] in
+            ["vv_planar_w", "vv_planar_t1", "vv_planar_t2", "vv_planar_t3"]
             coil_type[ch_idx] = "pgrad"
             ch_type[ch_idx] = "grad"
             push!(gradiometers, ch_idx)
@@ -431,7 +662,14 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
             coil_type[ch_idx] = "agrad"
             ch_type[ch_idx] = "grad"
             push!(gradiometers, ch_idx)
-        elseif coil_type[ch_idx] in ["point_magnetometer", "vv_mag_w", "vv_mag_t1", "vv_mag_t2", "vv_mag_t3", "magnes_mag"]
+        elseif coil_type[ch_idx] in [
+            "point_magnetometer",
+            "vv_mag_w",
+            "vv_mag_t1",
+            "vv_mag_t2",
+            "vv_mag_t3",
+            "magnes_mag",
+        ]
             coil_type[ch_idx] = "mag"
             push!(magnetometers, ch_idx)
             ch_type[ch_idx] = "mag"
@@ -441,7 +679,9 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     bad_channels = zeros(Bool, ch_n)
-    !isnothing(fiff[:meas_info][:bad_chs]) && _warn("bad_channels tag is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    !isnothing(fiff[:meas_info][:bad_chs]) && _warn(
+        "bad_channels tag is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
 
     # HPI
     # fiff[:meas_info][:hpi]
@@ -466,11 +706,13 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     # number of sample, before, after
     events = reshape(fiff[:meas_info][:events][:event_list], 3, :)'
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
     # MaxShield
 
@@ -511,10 +753,16 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     # create signal details
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-    epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits=4,
+    )
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits=4,
+    )
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits=2)
 
     data_type = ""
     if occursin("meg", lowercase(fiff[:meas_info][:experimenter]))
@@ -539,7 +787,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     isnothing(weight) && (weight = -1)
     height = fiff[:meas_info][:subject_info][:subj_height]
     isnothing(height) && (height = -1)
-    recording = fiff[:meas_info][:description] 
+    recording = fiff[:meas_info][:description]
     isnothing(recording) && (recording = "")
     project_info = fiff[:meas_info][:project_info][:proj_name]
     isnothing(project_info) && (project_info = "")
@@ -549,65 +797,76 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         rec_d = ""
         rec_t = ""
     else
-        rec_d = string(Dates.day(date)) * "-" * string(Dates.month(date)) * "-" * string(Dates.year(date))
-        rec_t = string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date))
+        rec_d =
+            string(Dates.day(date)) *
+            "-" *
+            string(Dates.month(date)) *
+            "-" *
+            string(Dates.year(date))
+        rec_t =
+            string(Dates.hour(date)) *
+            ":" *
+            string(Dates.minute(date)) *
+            ":" *
+            string(Dates.second(date))
     end
 
     lp = fiff[:meas_info][:lowpass]
     if isnothing(lp)
         lp = 0
     else
-        lp = round(lp, digits=1)
+        lp = round(lp; digits=1)
     end
     hp = fiff[:meas_info][:highpass]
     if isnothing(hp)
         hp = 0
     else
-        hp = round(hp, digits=1)
+        hp = round(hp; digits=1)
     end
     lf = fiff[:meas_info][:line_freq]
     if isnothing(lf)
         lf = 0
     else
-        lf = round(lf, digits=1)
+        lf = round(lf; digits=1)
     end
 
-    s = _create_subject(id=id,
-                        first_name=first_name,
-                        middle_name=middle_name,
-                        last_name=last_name,
-                        head_circumference=-1,
-                        handedness=handedness,
-                        weight=weight,
-                        height=height)
-    r = _create_recording_meg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type="FIFF",
-                              recording=recording,
-                              recording_date=rec_d,
-                              recording_time=rec_t,
-                              recording_notes="",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference="",
-                              clabels=clabels,
-                              units=units,
-                              prefiltering=repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
-                              line_frequency=lf,
-                              sampling_rate=sampling_rate,
-                              magnetometers=magnetometers,
-                              gradiometers=gradiometers,
-                              coil_type=coil_type,
-                              bad_channels=bad_channels,
-                              ssp_labels=ssp_labels,
-                              ssp_channels=ssp_channels,
-                              ssp_data=ssp_data)
-    e = _create_experiment(name=project_info, notes="", design="")
-    hdr = _create_header(s,
-                         r,
-                         e)
-
+    s = _create_subject(;
+        id=id,
+        first_name=first_name,
+        middle_name=middle_name,
+        last_name=last_name,
+        head_circumference=-1,
+        handedness=handedness,
+        weight=weight,
+        height=height,
+    )
+    r = _create_recording_meg(;
+        data_type=data_type,
+        file_name=file_name,
+        file_size_mb=file_size_mb,
+        file_type="FIFF",
+        recording=recording,
+        recording_date=rec_d,
+        recording_time=rec_t,
+        recording_notes="",
+        channel_type=ch_type,
+        channel_order=_sort_channels(ch_type),
+        reference="",
+        clabels=clabels,
+        units=units,
+        prefiltering=repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
+        line_frequency=lf,
+        sampling_rate=sampling_rate,
+        magnetometers=magnetometers,
+        gradiometers=gradiometers,
+        coil_type=coil_type,
+        bad_channels=bad_channels,
+        ssp_labels=ssp_labels,
+        ssp_channels=ssp_channels,
+        ssp_data=ssp_data,
+    )
+    e = _create_experiment(; name=project_info, notes="", design="")
+    hdr = _create_header(s, r, e)
 
     history = String[]
 
@@ -615,10 +874,13 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
     _initialize_locs!(obj)
     l = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
-    add_locs!(obj, locs=l)
+    add_locs!(obj; locs=l)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
-
 end

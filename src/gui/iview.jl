@@ -18,8 +18,9 @@ Interactive view of continuous signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
-
+function iview(
+    obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true
+)::Union{Nothing,Tuple{Float64,Float64}}
     @assert nepochs(obj) == 1 "For epoched object iview_ep() must be used."
 
     obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
@@ -54,13 +55,12 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     end
 
     if mch
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], title="", bad=bad)
+        p = NeuroAnalyzer.plot(obj; ch=cl[ch_first:ch_last], title="", bad=bad)
     else
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], title="Channel: $(cl[ch_first])")
+        p = NeuroAnalyzer.plot(obj; ch=cl[ch_first], title="Channel: $(cl[ch_first])")
     end
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
         Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
@@ -106,7 +106,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         combo_ch = GtkComboBoxText()
         ch_types = uppercase.(unique(obj.header.recording[:channel_type]))
         for idx in ch_types
-            length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
+            length(get_channel(obj; type=lowercase(idx))) > 1 && push!(combo_ch, idx)
         end
         combo_ch.active = 0
         combo_ch.sensitive = false
@@ -114,15 +114,15 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
 
         if !mch
             ch_slider = GtkScale(:v, 1:nchannels(obj))
-            ch_slider.draw_value =  false
+            ch_slider.draw_value = false
         else
             if length(ch) > 15
                 ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
-                ch_slider.draw_value =  false
+                ch_slider.draw_value = false
             else
                 ch_slider = GtkScale(:v, ch[1]:ch[end])
-                ch_slider.draw_value =  false
-                ch_slider.sensitive =  false
+                ch_slider.draw_value = false
+                ch_slider.sensitive = false
             end
         end
         ch_slider.tooltip_text = "Scroll channels"
@@ -160,38 +160,46 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
             channel_type = lowercase.(ch_types)[combo_ch.active + 1]
             if mch
                 if plot_type == 0
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=cl[ch_first:ch_last],
-                                           seg=(time1, time2),
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           title="",
-                                           scale=scale)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch=cl[ch_first:ch_last],
+                        seg=(time1, time2),
+                        s_pos=(ts1, ts2),
+                        mono=mono,
+                        title="",
+                        scale=scale,
+                    )
                 elseif plot_type == 1
-                    p =  NeuroAnalyzer.plot(obj,
-                                            ch=get_channel(obj, type=channel_type),
-                                            seg=(time1, time2),
-                                            s_pos=(ts1, ts2),
-                                            mono=mono,
-                                            type=:butterfly,
-                                            avg=false)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch=get_channel(obj, type=channel_type),
+                        seg=(time1, time2),
+                        s_pos=(ts1, ts2),
+                        mono=mono,
+                        type=:butterfly,
+                        avg=false,
+                    )
                 elseif plot_type == 2
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=get_channel(obj, type=channel_type),
-                                           seg=(time1, time2),
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           type=:mean)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch=get_channel(obj, type=channel_type),
+                        seg=(time1, time2),
+                        s_pos=(ts1, ts2),
+                        mono=mono,
+                        type=:mean,
+                    )
                 end
             else
-                p = NeuroAnalyzer.plot(obj,
-                                       ch=cl[ch_first],
-                                       seg=(time1, time2),
-                                       s_pos=(ts1, ts2),
-                                       mono=mono,
-                                       title="Channel: $(cl[ch_first])",
-                                       scale=scale,
-                                       bad=bad)
+                p = NeuroAnalyzer.plot(
+                    obj,
+                    ch=cl[ch_first],
+                    seg=(time1, time2),
+                    s_pos=(ts1, ts2),
+                    mono=mono,
+                    title="Channel: $(cl[ch_first])",
+                    scale=scale,
+                    bad=bad,
+                )
             end
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
@@ -215,15 +223,19 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
+                    !isnothing(ch_idx) &&
+                        channel_info(obj; ch=obj.header.recording[:channel_order][ch_idx])
                 end
             else
                 time_current = entry_time.value
                 x > 1172 && (x = 1172)
                 if time_current + zoom < obj.time_pts[end]
-                    ts1 = time_current + round((x - 82) / (1090 / zoom), digits=3)
+                    ts1 = time_current + round((x - 82) / (1090 / zoom); digits=3)
                 else
-                    ts1 = time_current + round((x - 82) / (1090 / (obj.time_pts[end] - time_current)), digits=3)
+                    ts1 =
+                        time_current + round(
+                            (x - 82) / (1090 / (obj.time_pts[end] - time_current)); digits=3
+                        )
                 end
                 snap && (ts1 = round(ts1 * 4) / 4)
                 @idle_add entry_ts1.value = round(ts1, digits=3)
@@ -244,7 +256,14 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]])
+                    !isnothing(ch_idx) && (
+                        obj.header.recording[:bad_channel][obj.header.recording[:channel_order][
+                            ch_idx, 1
+                        ]] =
+                            !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][
+                                ch_idx, 1
+                            ]]
+                    )
                     draw(can)
                 end
             else
@@ -253,7 +272,9 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                 if time_current + zoom < obj.time_pts[end]
                     ts2 = time_current + ((x - 82) / (1090 / zoom))
                 else
-                    ts2 = time_current + ((x - 82) / (1090 / (obj.time_pts[end] - time_current)))
+                    ts2 =
+                        time_current +
+                        ((x - 82) / (1090 / (obj.time_pts[end] - time_current)))
                 end
                 snap && (ts2 = round(ts2 * 4) / 4)
                 @idle_add entry_ts2.value = round(ts2, digits=3)
@@ -381,25 +402,38 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
             time1 = obj.time_pts[vsearch(entry_ts1.value, obj.time_pts)]
             time2 = obj.time_pts[vsearch(entry_ts2.value, obj.time_pts)]
             if time1 > time2
-                warn_dialog(_nill, "Cannot delete!\nSegment start is larger than segment end.", win)
+                warn_dialog(
+                    _nill, "Cannot delete!\nSegment start is larger than segment end.", win
+                )
             elseif time1 == time2
-                warn_dialog(_nill, "Cannot delete!\nSegment start must be different from segment end.", win)
+                warn_dialog(
+                    _nill,
+                    "Cannot delete!\nSegment start must be different from segment end.",
+                    win,
+                )
             elseif time1 < time2
                 ask_dialog("Delete segment $time1:$time2 ?", win) do ans
                     if ans
-                        trim!(obj, seg=(time1, time2), remove_epochs=false)
+                        trim!(obj; seg=(time1, time2), remove_epochs=false)
                         _info("Deleted segment: $time1:$time2")
 
                         if time1 == time_current && time2 > obj.time_pts[end]
                             time_current = obj.time_pts[end] - zoom
-                            time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                            time_current < obj.time_pts[1] &&
+                                (time_current = obj.time_pts[1])
                         else
                             if obj.time_pts[end] % zoom == 0
-                                time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
+                                time_current >= (obj.time_pts[end] - zoom) &&
+                                    (time_current = obj.time_pts[end] - zoom)
                             else
-                                time_current >= (obj.time_pts[end] - (obj.time_pts[end] % zoom)) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                                time_current >=
+                                (obj.time_pts[end] - (obj.time_pts[end] % zoom)) && (
+                                    time_current =
+                                        obj.time_pts[end] - (obj.time_pts[end] % zoom)
+                                )
                             end
-                            time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                            time_current < obj.time_pts[1] &&
+                                (time_current = obj.time_pts[1])
                         end
 
                         @idle_add entry_time.value = time_current
@@ -523,13 +557,19 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
             end
 
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt(','))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -538,20 +578,35 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                     time_current = obj.time_pts[end] - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('s')
+            )
                 scale = !scale
                 draw(can)
             end
 
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('b'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('b')
+            )
                 if mch
                     if plot_type != 1
                         ch_slider.sensitive = false
@@ -564,7 +619,10 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                     end
                     draw(can)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('m'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('m')
+            )
                 if mch
                     if plot_type != 2
                         ch_slider.sensitive = false
@@ -577,24 +635,39 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                     end
                     draw(can)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('p'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('p')
+            )
                 if !mch
                     _info("Playing current segment as audio")
                     time_current = entry_time.value
-                    play(obj, ch=cl[ch_first], seg=(time_current, time_current+zoom), ep=1)
+                    play(obj; ch=cl[ch_first], seg=(time_current, time_current+zoom), ep=1)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == 0x0000ff0d) # Enter
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == 0x0000ff0d
+            ) # Enter
                 quit = false
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 snap = !snap
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + 1
                     time_current = time_current - 1
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - 1
                     time_current += 1
@@ -603,13 +676,19 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                     time_current = obj.time_pts[end] - 1
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('z'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('z')
+            )
                 if ch_first > 1
                     ch_first -= 1
                     ch_last -= 1
                     @idle_add Gtk4.value(ch_slider, ch_first)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('x'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('x')
+            )
                 if mch
                     if ch_last < length(ch)
                         ch_first += 1
@@ -622,29 +701,47 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                         @idle_add Gtk4.value(ch_slider, ch_first)
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('d'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('d')
+            )
                 time_current = entry_time.value
                 time1 = obj.time_pts[vsearch(entry_ts1.value, obj.time_pts)]
                 time2 = obj.time_pts[vsearch(entry_ts2.value, obj.time_pts)]
                 if time1 > time2
-                    warn_dialog(_nill, "Cannot delete!\nSegment start is larger than segment end.", win)
+                    warn_dialog(
+                        _nill,
+                        "Cannot delete!\nSegment start is larger than segment end.",
+                        win,
+                    )
                 elseif time1 == time2
-                    warn_dialog(_nill, "Cannot delete!\nSegment start must be different from segment end.", win)
+                    warn_dialog(
+                        _nill,
+                        "Cannot delete!\nSegment start must be different from segment end.",
+                        win,
+                    )
                 elseif time1 < time2
                     ask_dialog("Delete segment $time1:$time2 ?", win) do ans
                         if ans
-                            trim!(obj, seg=(time1, time2), remove_epochs=false)
+                            trim!(obj; seg=(time1, time2), remove_epochs=false)
                             _info("Deleted segment: $time1:$time2")
                             if time1 == time_current && time2 > obj.time_pts[end]
                                 time_current = obj.time_pts[end] - zoom
-                                time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                                time_current < obj.time_pts[1] &&
+                                    (time_current = obj.time_pts[1])
                             else
                                 if obj.time_pts[end] % zoom == 0
-                                    time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
+                                    time_current >= (obj.time_pts[end] - zoom) &&
+                                        (time_current = obj.time_pts[end] - zoom)
                                 else
-                                    time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                                    time_current >=
+                                    obj.time_pts[end] - (obj.time_pts[end] % zoom) && (
+                                        time_current =
+                                            obj.time_pts[end] - (obj.time_pts[end] % zoom)
+                                    )
                                 end
-                                time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                                time_current < obj.time_pts[1] &&
+                                    (time_current = obj.time_pts[1])
                             end
 
                             @idle_add entry_time.value = time_current
@@ -690,7 +787,6 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     else
         return nothing
     end
-
 end
 
 """
@@ -710,8 +806,9 @@ Interactive view of epoched signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
-
+function iview_ep(
+    obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bool=true, snap::Bool=true
+)::Union{Nothing,Tuple{Float64,Float64}}
     @assert nepochs(obj) > 1 "For continuous object iview() must be used."
     _check_epochs(obj, ep)
 
@@ -741,13 +838,14 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     end
 
     if mch
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], ep=ep, title="", bad=bad)
+        p = NeuroAnalyzer.plot(obj; ch=cl[ch_first:ch_last], ep=ep, title="", bad=bad)
     else
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], ep=ep, title="Channel: $(cl[ch_first])")
+        p = NeuroAnalyzer.plot(
+            obj; ch=cl[ch_first], ep=ep, title="Channel: $(cl[ch_first])"
+        )
     end
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ep()")
         Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
@@ -802,7 +900,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         combo_ch = GtkComboBoxText()
         ch_types = uppercase.(unique(obj.header.recording[:channel_type]))
         for idx in ch_types
-            length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
+            length(get_channel(obj; type=lowercase(idx))) > 1 && push!(combo_ch, idx)
         end
         combo_ch.active = 0
         combo_ch.sensitive = false
@@ -840,38 +938,46 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             channel_type = lowercase.(ch_types)[combo_ch.active + 1]
             if mch
                 if plot_type == 0
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=cl[ch_first:ch_last],
-                                           ep=ep,
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           title="",
-                                           scale=scale)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch=cl[ch_first:ch_last],
+                        ep=ep,
+                        s_pos=(ts1, ts2),
+                        mono=mono,
+                        title="",
+                        scale=scale,
+                    )
                 elseif plot_type == 1
-                    p =  NeuroAnalyzer.plot(obj,
-                                            ch=get_channel(obj, type=channel_type),
-                                            ep=ep,
-                                            s_pos=(ts1, ts2),
-                                            mono=mono,
-                                            type=:butterfly,
-                                            avg=false)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch=get_channel(obj, type=channel_type),
+                        ep=ep,
+                        s_pos=(ts1, ts2),
+                        mono=mono,
+                        type=:butterfly,
+                        avg=false,
+                    )
                 elseif plot_type == 2
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=get_channel(obj, type=channel_type),
-                                           ep=ep,
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           type=:mean)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch=get_channel(obj, type=channel_type),
+                        ep=ep,
+                        s_pos=(ts1, ts2),
+                        mono=mono,
+                        type=:mean,
+                    )
                 end
             else
-                p = NeuroAnalyzer.plot(obj,
-                                       ch=cl[ch_first],
-                                       ep=ep,
-                                       s_pos=(ts1, ts2),
-                                       mono=mono,
-                                       title="Channel: $(cl[ch_first])",
-                                       scale=scale,
-                                       bad=bad)
+                p = NeuroAnalyzer.plot(
+                    obj,
+                    ch=cl[ch_first],
+                    ep=ep,
+                    s_pos=(ts1, ts2),
+                    mono=mono,
+                    title="Channel: $(cl[ch_first])",
+                    scale=scale,
+                    bad=bad,
+                )
             end
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
@@ -895,12 +1001,16 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
+                    !isnothing(ch_idx) &&
+                        channel_info(obj; ch=obj.header.recording[:channel_order][ch_idx])
                 end
             else
                 x > 1172 && (x = 1172)
                 ep = Int64(entry_epoch.value)
-                ts1 = ((epoch_len(obj) / sr(obj)) * (ep - 1)) + obj.epoch_time[1] + (x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
+                ts1 =
+                    ((epoch_len(obj) / sr(obj)) * (ep - 1)) +
+                    obj.epoch_time[1] +
+                    (x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
                 snap && (ts1 = round(ts1 * 4) / 4)
                 @idle_add entry_ts1.value = round(ts1, digits=3)
             end
@@ -921,13 +1031,23 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep])
+                    !isnothing(ch_idx) && (
+                        obj.header.recording[:bad_channel][
+                            obj.header.recording[:channel_order][ch_idx], ep
+                        ] =
+                            !obj.header.recording[:bad_channel][
+                                obj.header.recording[:channel_order][ch_idx], ep
+                            ]
+                    )
                     draw(can)
                 end
             else
                 x > 1172 && (x = 1172)
                 ep = Int64(entry_epoch.value)
-                ts2 = ((epoch_len(obj) / sr(obj)) * (ep - 1)) + obj.epoch_time[1] + ((x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
+                ts2 =
+                    ((epoch_len(obj) / sr(obj)) * (ep - 1)) +
+                    obj.epoch_time[1] +
+                    ((x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
                 snap && (ts2 = round(ts2 * 4) / 4)
                 @idle_add entry_ts2.value = round(ts2, digits=3)
             end
@@ -1020,7 +1140,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 ep = Int64(entry_epoch.value)
                 ask_dialog("Delete epoch: $ep", win) do ans
                     if ans
-                        delete_epoch!(obj, ep=ep)
+                        delete_epoch!(obj; ep=ep)
                         _info("Deleted epoch: $ep")
                         @idle_add entry_epoch.value = ep
 
@@ -1075,20 +1195,35 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             k = keyval
 
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('s')
+            )
                 scale = !scale
                 draw(can)
             end
 
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('b'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('b')
+            )
                 if mch
                     if plot_type != 1
                         ch_slider.sensitive = false
@@ -1101,7 +1236,10 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                     end
                     draw(can)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('m'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('m')
+            )
                 if mch
                     if plot_type != 2
                         ch_slider.sensitive = false
@@ -1114,37 +1252,63 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                     end
                     draw(can)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('p'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('p')
+            )
                 if !mch
                     _info("Playing current segment as audio")
                     time_current = entry_time.value
-                    play(obj, ch=cl[ch_first], seg=(time_current, time_current + ep_len(obj)), ep=1)
+                    play(
+                        obj;
+                        ch=cl[ch_first],
+                        seg=(time_current, time_current + ep_len(obj)),
+                        ep=1,
+                    )
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == 0x0000ff0d) # Enter
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == 0x0000ff0d
+            ) # Enter
                 quit = false
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 snap = !snap
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
                     @idle_add entry_epoch.value = ep
                 end
                 draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
                     @idle_add entry_epoch.value = ep
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('z'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('z')
+            )
                 if ch_first > 1
                     ch_first -= 1
                     ch_last -= 1
                     @idle_add Gtk4.value(ch_slider, ch_first)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('x'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('x')
+            )
                 if mch
                     if ch_last < length(ch)
                         ch_first += 1
@@ -1157,11 +1321,14 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                         @idle_add Gtk4.value(ch_slider, ch_first)
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('d'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('d')
+            )
                 ep = Int64(entry_epoch.value)
                 ask_dialog("Delete epoch $ep ?", win) do ans
                     if ans
-                        delete_epoch!(obj, ep=ep)
+                        delete_epoch!(obj; ep=ep)
                         _info("Deleted epoch: $ep")
                         ep = ep > 1 ? ep -= 1 : ep = 1
                         @idle_add entry_epoch.value = ep
@@ -1196,7 +1363,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     else
         return nothing
     end
-
 end
 
 """
@@ -1215,7 +1381,6 @@ Interactive view of two continuous signals.
 - `Nothing`
 """
 function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
-
     @assert nepochs(obj1) == 1 "For epoched object iview_ep() must be used."
 
     obj1.time_pts[end] < zoom && (zoom = round(obj1.time_pts[end]) / 2)
@@ -1241,10 +1406,9 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         ch_last = length(ch)
     end
 
-    p = NeuroAnalyzer.plot(obj1, obj2, ch=cl[ch_first:ch_last], title="")
+    p = NeuroAnalyzer.plot(obj1, obj2; ch=cl[ch_first:ch_last], title="")
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
         Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
@@ -1286,7 +1450,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         end
         ch_slider.tooltip_text = "Scroll channels"
 
-        signal_slider = GtkScale(:h, 1:obj1.time_pts[end] - zoom)
+        signal_slider = GtkScale(:h, 1:(obj1.time_pts[end] - zoom))
         signal_slider.draw_value = false
         signal_slider.tooltip_text = "Time position"
 
@@ -1309,11 +1473,14 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
             time2 = time1 + zoom
             time2 > obj1.time_pts[end] && (time2 = obj1.time_pts[end])
             ctx = getgc(can)
-            p = NeuroAnalyzer.plot(obj1, obj2,
-                                   ch=cl[ch_first:ch_last],
-                                   seg=(time1, time2),
-                                   title="",
-                                   scale=scale)
+            p = NeuroAnalyzer.plot(
+                obj1,
+                obj2,
+                ch=cl[ch_first:ch_last],
+                seg=(time1, time2),
+                title="",
+                scale=scale,
+            )
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
@@ -1488,13 +1655,19 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
             end
 
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt(','))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj1.time_pts[1] + zoom
                     time_current = time_current - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj1.time_pts[end] - zoom
                     time_current += zoom
@@ -1503,23 +1676,38 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
                     time_current = obj1.time_pts[end] - zoom
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('s')
+            )
                 scale = !scale
                 draw(can)
             end
 
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj1.time_pts[1] + 1
                     time_current = time_current - 1
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj1.time_pts[end] - 1
                     time_current += 1
@@ -1528,13 +1716,19 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
                     time_current = obj1.time_pts[end] - 1
                     @idle_add entry_time.value = time_current
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('z'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('z')
+            )
                 if ch_first > 1
                     ch_first -= 1
                     ch_last -= 1
                     @idle_add Gtk4.value(ch_slider, ch_first)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('x'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('x')
+            )
                 if ch_last < length(ch)
                     ch_first += 1
                     ch_last += 1
@@ -1550,7 +1744,6 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
     Gtk4.run(app)
 
     return nothing
-
 end
 
 """
@@ -1568,9 +1761,9 @@ Interactive view of two epoched signals.
 
 - `Nothing`
 """
-function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1)::Nothing
-
-
+function iview_ep(
+    obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1
+)::Nothing
     @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."
@@ -1593,10 +1786,9 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         ch_last = length(ch)
     end
 
-    p = NeuroAnalyzer.plot(obj1, obj2, ch=cl[ch_first:ch_last], ep=ep, title="")
+    p = NeuroAnalyzer.plot(obj1, obj2; ch=cl[ch_first:ch_last], ep=ep, title="")
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ep()")
         Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
@@ -1653,11 +1845,9 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         @guarded draw(can) do widget
             ep = Int64(entry_epoch.value)
             ctx = getgc(can)
-            p = NeuroAnalyzer.plot(obj1, obj2,
-                                   ch=cl[ch_first:ch_last],
-                                   ep=ep,
-                                   title="",
-                                   scale=scale)
+            p = NeuroAnalyzer.plot(
+                obj1, obj2, ch=cl[ch_first:ch_last], ep=ep, title="", scale=scale
+            )
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
@@ -1753,39 +1943,63 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
             k = keyval
 
             # ALT
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('s'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('s')
+            )
                 scale = !scale
                 draw(can)
             end
 
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
                     @idle_add entry_epoch.value = ep
                 end
                 draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
                     @idle_add entry_epoch.value = ep
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('z'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('z')
+            )
                 if ch_first > 1
                     ch_first -= 1
                     ch_last -= 1
                     @idle_add Gtk4.value(ch_slider, ch_first)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('x'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('x')
+            )
                 if mch
                     if ch_last < length(ch)
                         ch_first += 1
@@ -1808,7 +2022,6 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
     Gtk4.run(app)
 
     return nothing
-
 end
 
 """
@@ -1825,7 +2038,6 @@ View plot object.
 - `Nothing`
 """
 function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
-
     function _activate(app)
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
         Gtk4.default_size(win, p.attr[:size][1] + 2, p.attr[:size][2] + 2)
@@ -1854,18 +2066,25 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -1877,7 +2096,6 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end
 
 """
@@ -1894,7 +2112,6 @@ View PNG image.
 - `Nothing`
 """
 function iview(file_name::String)::Nothing
-
     @assert isfile(file_name) "File $file_name cannot be opened."
     if splitext(file_name)[2] != ".png"
         _error("Incorrect filename!")
@@ -1923,7 +2140,10 @@ function iview(file_name::String)::Nothing
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -1935,9 +2155,7 @@ function iview(file_name::String)::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end
-
 
 """
     iview(c)
@@ -1953,7 +2171,6 @@ View Cairo surface object.
 - `Nothing`
 """
 function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
-
     function _activate(app)
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
         Gtk4.default_size(win, Int64(c.width), Int64(c.height))
@@ -1975,18 +2192,25 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+            if (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                        if Cairo.write_to_png(surface_buf, file_name) ==
+                            Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            elseif (
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -1998,5 +2222,4 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
     Gtk4.run(app)
 
     return nothing
-
 end

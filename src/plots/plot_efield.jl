@@ -16,7 +16,9 @@ Plot 2-dimensional electric field.
 
 - `p::GLMakie.Figure`
 """
-function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64}, d::Int64=2)::GLMakie.Figure
+function plot_efield2d(
+    q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64}, d::Int64=2
+)::GLMakie.Figure
 
     # m, n = size(norm_e)
     # x = round.(collect(range(-1, 1, m)), digits=3)
@@ -48,17 +50,19 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
 
     # prepare plot
     plot_size = (800, 800)
-    p = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(p[1, 1],
-                      aspect=DataAspect(),
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0),
-                      xzoomlock=true,
-                      yzoomlock=true,
-                      xpanlock=true,
-                      ypanlock=true,
-                      xrectzoom=false,
-                      yrectzoom=false)
+    p = GLMakie.Figure(; size=plot_size)
+    ax = GLMakie.Axis(
+        p[1, 1];
+        aspect=DataAspect(),
+        xautolimitmargin=(0, 0),
+        yautolimitmargin=(0, 0),
+        xzoomlock=true,
+        yzoomlock=true,
+        xpanlock=true,
+        ypanlock=true,
+        xrectzoom=false,
+        yrectzoom=false,
+    )
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -66,22 +70,26 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
     ax.yticklabelsize = 12
 
     # draw field lines
-    streamplot!(ax,
-                fieldE,
-                -5..5, -5..5;
-                arrow_size = 10,
-                linewidth = 1,
-                colorrange = (-3, 3),
-                colormap=:bluesreds)
+    streamplot!(
+        ax,
+        fieldE,
+        -5..5,
+        -5..5;
+        arrow_size=10,
+        linewidth=1,
+        colorrange=(-3, 3),
+        colormap=:bluesreds,
+    )
 
     # draw charges
     for idx in eachindex(qs)
-        GLMakie.scatter!(ax,
-                         Point(qs[idx][2:3]),
-                         markersize=abs(qs[idx][1]) * 20,
-                         color=qs[idx][1] > 0 ? :red : :blue)
+        GLMakie.scatter!(
+            ax,
+            Point(qs[idx][2:3]);
+            markersize=abs(qs[idx][1]) * 20,
+            color=qs[idx][1] > 0 ? :red : :blue,
+        )
     end
 
     return p
-
 end

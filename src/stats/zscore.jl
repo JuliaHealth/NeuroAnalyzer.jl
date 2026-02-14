@@ -14,13 +14,11 @@ Calculate z-scores for each value of the vector `x`.
 - `z::Vector{Float64}`
 """
 function zscore(x::AbstractVector)::Vector{Float64}
-
     m = mean(x)
     s = std(x)
     z = (x .- m) ./ s
 
     return z
-
 end
 
 """
@@ -39,9 +37,7 @@ Calculate z-score for `x`.
 - `z::Float64`
 """
 function zscore(x::Real, m::Real, sd::Real)::Float64
-
     z = (x - m) / sd
 
     return z
-
 end

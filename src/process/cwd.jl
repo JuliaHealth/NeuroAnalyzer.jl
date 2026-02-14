@@ -15,12 +15,12 @@ Perform continuous wavelet decomposition (CWD).
 
 - `ct::Matrix{Float64}`: CWT coefficients (by rows)
 """
-function cwd(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2))::Matrix{Float64} where {T<:CWT}
-
+function cwd(
+    s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2)
+)::Matrix{Float64} where {T<:CWT}
     ct = Matrix(real.(ContinuousWavelets.cwt(s, wt))')
 
     return ct
-
 end
 
 """
@@ -37,8 +37,9 @@ Perform continuous wavelet decomposition (CWD).
 
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cwd(s::AbstractArray; wt::T=wavelet(Morlet(2π), β=2))::Array{Float64, 4} where {T<:CWT}
-
+function cwd(
+    s::AbstractArray; wt::T=wavelet(Morlet(2π), β=2)
+)::Array{Float64,4} where {T<:CWT}
     _chk3d(s)
     ch_n, ep_len, ep_n = size(s)
 
@@ -54,7 +55,6 @@ function cwd(s::AbstractArray; wt::T=wavelet(Morlet(2π), β=2))::Array{Float64,
     _log_on()
 
     return ct
-
 end
 
 """
@@ -72,13 +72,15 @@ Perform continuous wavelet decomposition (CWD).
 
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(Morlet(2π), β=2))::Array{Float64, 4} where {T<:CWT}
-
-    ch = get_channel(obj, ch=ch)
+function cwd(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    wt::T=wavelet(Morlet(2π), β=2),
+)::Array{Float64,4} where {T<:CWT}
+    ch = get_channel(obj; ch=ch)
     ct = @views cwd(obj.data[ch, :, :], wt=wt)
 
     return ct
-
 end
 
 """
@@ -99,8 +101,9 @@ Perform inverse continuous wavelet transformation (iCWT).
 
 - `s::Vector{Float64}`: reconstructed signal
 """
-function icwd(ct::Matrix{Float64}; wt::T=wavelet(Morlet(2π), β=2), type::Symbol=:pd)::Vector{Float64} where {T<:CWT}
-
+function icwd(
+    ct::Matrix{Float64}; wt::T=wavelet(Morlet(2π), β=2), type::Symbol=:pd
+)::Vector{Float64} where {T<:CWT}
     _check_var(type, [:nd, :pd, :df], "type")
 
     # reconstruct array of CWT coefficients
@@ -115,5 +118,4 @@ function icwd(ct::Matrix{Float64}; wt::T=wavelet(Morlet(2π), β=2), type::Symbo
     end
 
     return vec(s)
-
 end

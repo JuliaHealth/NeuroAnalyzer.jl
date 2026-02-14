@@ -31,8 +31,18 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
-
+function psd(
+    s::AbstractVector;
+    fs::Int64,
+    db::Bool=false,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
     @assert nt >= 1 "nt must be ≥ 1."
     @assert fs >= 1 "fs must be ≥ 1."
@@ -43,41 +53,40 @@ function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch
 
     if method === :mt
         w = w ? hanning(length(s)) : ones(length(s))
-        p = mt_pgram(s .* w, fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
+        p = mt_pgram(s .* w; fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :stft
         w = w ? DSP.hanning : nothing
-        p = abs.(DSP.stft(s, wlen, woverlap, fs=fs, window=w))
+        p = abs.(DSP.stft(s, wlen, woverlap; fs=fs, window=w))
         # average STFT segments along time
-        p = vec(mean(p, dims=2))
+        p = vec(mean(p; dims=2))
         # create frequencies vector
         f = linspace(0, fs / 2, length(p))
         db && (p = pow2db.(p))
     elseif method === :welch
         w = w ? DSP.hanning : nothing
-        p = DSP.welch_pgram(s, wlen, woverlap, fs=fs, window=w)
+        p = DSP.welch_pgram(s, wlen, woverlap; fs=fs, window=w)
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :fft
         w = w ? DSP.hanning : nothing
-        p = DSP.periodogram(s, fs=fs, window=w)
+        p = DSP.periodogram(s; fs=fs, window=w)
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :mw
-        p, f = mwpsd(s, db=db, fs=fs, ncyc=ncyc, w=w)
+        p, f = mwpsd(s; db=db, fs=fs, ncyc=ncyc, w=w)
     elseif method === :gh
-        p, f = ghpsd(s, fs=fs, db=db, gw=gw, w=w)
+        p, f = ghpsd(s; fs=fs, db=db, gw=gw, w=w)
     end
 
     return (p=p, f=f)
-
 end
 
 """
@@ -109,18 +118,49 @@ Named tuple containing:
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
-
-    _, f = @views psd(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+function psd(
+    s::AbstractMatrix;
+    fs::Int64,
+    db::Bool=false,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+    _, f = @views psd(
+        s[1, :],
+        fs=fs,
+        db=db,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
 
     p = zeros(size(s, 1), length(f))
 
     Threads.@threads for ch_idx in axes(s, 1)
-        @inbounds p[ch_idx, :], _ = @views psd(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+        @inbounds p[ch_idx, :], _ = @views psd(
+            s[ch_idx, :],
+            fs=fs,
+            db=db,
+            method=method,
+            nt=nt,
+            wlen=wlen,
+            woverlap=woverlap,
+            w=w,
+            ncyc=ncyc,
+            gw=gw,
+        )
     end
 
     return (p=p, f=f)
-
 end
 
 """
@@ -152,24 +192,55 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
-
+function psd(
+    s::AbstractArray;
+    fs::Int64,
+    db::Bool=false,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=fs,
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+)::@NamedTuple{p::Array{Float64,3}, f::Vector{Float64}}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, f = @views psd(s[1, :, 1], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    _, f = @views psd(
+        s[1, :, 1],
+        fs=fs,
+        db=db,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
 
     p = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, :, ep_idx], _ = @views psd(s[ch_idx, :, ep_idx], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+            p[ch_idx, :, ep_idx], _ = @views psd(
+                s[ch_idx, :, ep_idx],
+                fs=fs,
+                db=db,
+                method=method,
+                nt=nt,
+                wlen=wlen,
+                woverlap=woverlap,
+                w=w,
+                ncyc=ncyc,
+                gw=gw,
+            )
         end
     end
 
     return (p=p, f=f)
-
 end
 
 """
@@ -203,13 +274,39 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, flim::Tuple{Real, Real}=(0, sr(obj) / 2))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
-
+function psd(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    db::Bool=false,
+    method::Symbol=:welch,
+    nt::Int64=7,
+    wlen::Int64=sr(obj),
+    woverlap::Int64=round(Int64, wlen * 0.90),
+    w::Bool=true,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    gw::Real=5,
+    flim::Tuple{Real,Real}=(0, sr(obj) / 2),
+)::@NamedTuple{p::Array{Float64,3}, f::Vector{Float64}}
     _check_tuple(flim, "flim", (0, sr(obj) / 2))
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = if exclude_bads
+        get_channel(obj; ch=ch, exclude="bad")
+    else
+        get_channel(obj; ch=ch, exclude="")
+    end
     _log_off()
-    p, f = @views psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    p, f = @views psd(
+        obj.data[ch, :, :],
+        fs=sr(obj),
+        db=db,
+        method=method,
+        nt=nt,
+        wlen=wlen,
+        woverlap=woverlap,
+        w=w,
+        ncyc=ncyc,
+        gw=gw,
+    )
     _log_on()
 
     f1 = vsearch(flim[1], f)
@@ -218,7 +315,6 @@ function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
     p = p[:, f1:f2, :]
 
     return (p=p, f=f)
-
 end
 
 """
@@ -241,8 +337,14 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
-
+function mwpsd(
+    s::AbstractVector;
+    pad::Int64=0,
+    db::Bool=true,
+    fs::Int64,
+    ncyc::Union{Int64,Tuple{Int64,Int64}}=32,
+    w::Bool=true,
+)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
     @assert fs >= 1 "fs must be ≥ 1."
     @assert pad >= 0 "pad must be ≥ 0."
 
@@ -268,13 +370,12 @@ function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::
         kernel = generate_morlet(fs, f[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         # w_conv = tconv(s .* w, kernel=kernel)
         w_conv = fconv(s .* w, kernel=kernel, norm=false)
-        p[frq_idx] = median((abs.(w_conv)).^2)
+        p[frq_idx] = median((abs.(w_conv)) .^ 2)
     end
 
     db && (p = pow2db.(p))
 
     return (p=p, f=f)
-
 end
 
 """
@@ -296,8 +397,9 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
-
+function ghpsd(
+    s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true
+)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
     @assert fs >= 1 "fs must be ≥ 1."
 
     flim = (0, fs / 2)
@@ -311,17 +413,16 @@ function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=
 
     @inbounds for frq_idx in eachindex(f)
         s_tmp = filter_g(s .* w, fs=fs, f=f[frq_idx], gw=gw)
-        p[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
+        p[frq_idx, :] = (abs.(hilbert(s_tmp))) .^ 2
         ph[frq_idx, :] = DSP.angle.(hilbert(s_tmp))
     end
 
     p[p .== -Inf] .= minimum(p[p .!== -Inf])
     p[p .== +Inf] .= maximum(p[p .!== +Inf])
 
-    p = vec(mean(p, dims=2))
+    p = vec(mean(p; dims=2))
 
     db && (p = pow2db.(p))
 
     return (p=p, f=f)
-
 end

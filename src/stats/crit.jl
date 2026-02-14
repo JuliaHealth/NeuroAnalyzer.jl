@@ -25,14 +25,12 @@ Critical region for one- tailed probability:
 Critical region for two-tailed probability: `(-∞ , -z] ∪ [z, ∞)`
 """
 function crit_z(alpha::Float64=0.05; twotailed::Bool=true)::Float64
-
     @assert alpha > 0.0 "alpha must be > 0.0."
     @assert alpha < 1.0 "alpha must be < 1.0."
 
-    z = cl2z(1 - alpha, twotailed=twotailed)
+    z = cl2z(1 - alpha; twotailed=twotailed)
 
     return z
-
 end
 
 """
@@ -59,7 +57,6 @@ Critical region for one- tailed probability:
 Critical region for two-tailed probability: `(-∞ , -t] ∪ [t, ∞)`
 """
 function crit_t(df::Real, alpha::Float64=0.05; twotailed::Bool=true)::Float64
-
     @assert alpha > 0.0 "alpha must be > 0.0."
     @assert alpha < 1.0 "alpha must be < 1.0."
 
@@ -70,7 +67,6 @@ function crit_t(df::Real, alpha::Float64=0.05; twotailed::Bool=true)::Float64
     end
 
     return t
-
 end
 
 """
@@ -88,12 +84,10 @@ Calculate critical Χ² score.
 - `chi::Float64`
 """
 function crit_chi(df::Real, alpha::Float64=0.05)::Float64
-
     @assert alpha > 0.0 "alpha must be > 0.0."
     @assert alpha < 1.0 "alpha must be < 1.0."
 
     chi = quantile(Distributions.Chisq(df), alpha)
 
     return chi
-
 end

@@ -15,10 +15,9 @@ Remove mean value (DC offset).
 
 - `s_new::Vector{Float64}`
 """
-function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}}=0)::Vector{Float64}
-
+function remove_dc(s::AbstractVector, n::Union{Int64,Tuple{Int64,Int64}}=0)::Vector{Float64}
     if isa(n, Int64)
-        @assert n >=0 "n must be ≥ 0."
+        @assert n >= 0 "n must be ≥ 0."
         @assert n <= length(s) "n must be ≤ $(length(s))."
 
         s_new = n == 0 ? s .- mean(s) : s .- mean(s[1:n])
@@ -29,7 +28,6 @@ function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}}=0)::V
     end
 
     return s_new
-
 end
 
 """
@@ -46,8 +44,7 @@ Remove mean value (DC offset).
 
 - `s::Matrix{Float64}`
 """
-function remove_dc(s::AbstractMatrix, n::Union{Int64, Tuple{Int64, Int64}}=0)::Matrix{Float64}
-
+function remove_dc(s::AbstractMatrix, n::Union{Int64,Tuple{Int64,Int64}}=0)::Matrix{Float64}
     ch_n = size(s, 1)
 
     s_new = similar(s)
@@ -56,7 +53,6 @@ function remove_dc(s::AbstractMatrix, n::Union{Int64, Tuple{Int64, Int64}}=0)::M
     end
 
     return s_new
-
 end
 
 """
@@ -73,8 +69,7 @@ Remove mean value (DC offset).
 
 - `s::Array{Float64, 3}`
 """
-function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)::Array{Float64, 3}
-
+function remove_dc(s::AbstractArray, n::Union{Int64,Tuple{Int64,Int64}}=0)::Array{Float64,3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -87,7 +82,6 @@ function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)::Ar
     end
 
     return s_new
-
 end
 
 """
@@ -105,15 +99,17 @@ Remove mean value (DC offset).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}}=0)::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function remove_dc(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    n::Union{Int64,Tuple{Int64,Int64}}=0,
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
     push!(obj_new.history, "remove_dc(OBJ, ch=$ch, n=$n)")
 
     return obj_new
-
 end
 
 """
@@ -131,12 +127,14 @@ Remove mean value (DC offset).
 
 - `Nothing`
 """
-function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}}=0)::Nothing
-
-    obj_new = remove_dc(obj, ch=ch, n=n)
+function remove_dc!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String,Vector{String},Regex},
+    n::Union{Int64,Tuple{Int64,Int64}}=0,
+)::Nothing
+    obj_new = remove_dc(obj; ch=ch, n=n)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

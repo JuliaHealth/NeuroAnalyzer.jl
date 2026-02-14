@@ -15,8 +15,9 @@ Export `NeuroAnalyzer.NEURO` object markers to CSV.
 
 - `Nothing`
 """
-function export_markers(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)::Nothing
-
+function export_markers(
+    obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false
+)::Nothing
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
     # MARKERS
@@ -26,5 +27,4 @@ function export_markers(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::
     end
 
     return nothing
-
 end

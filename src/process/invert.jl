@@ -15,15 +15,15 @@ Invert polarity.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function invert_polarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function invert_polarity(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = .- obj_new.data[ch, :, :]
     push!(obj_new.history, "invert_polarity(OBJ, ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -40,12 +40,12 @@ Invert polarity.
 
 - `Nothing`
 """
-function invert_polarity!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
-    obj_new = invert_polarity(obj, ch=ch)
+function invert_polarity!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Nothing
+    obj_new = invert_polarity(obj; ch=ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

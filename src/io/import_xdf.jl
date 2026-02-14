@@ -14,7 +14,6 @@ Load Extensible Data Format (XDF) and return `NeuroAnalyzer.NEURO` object.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
-
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".xdf" "This is not XDF file."
 
@@ -59,12 +58,14 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     eeg_idx = findall(n -> n == "EEG", stream_type)
     other_idx = findall(n -> n != "EEG", stream_type)
     @assert length(eeg_idx) > 0 "EEG streams not found in the $file_name."
-    @assert length(eeg_idx) == 1 _info("Importing files with > 1 EEG streams is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    @assert length(eeg_idx) == 1 _info(
+        "Importing files with > 1 EEG streams is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
 
     eeg_idx = eeg_idx[1]
     sampling_rate = round(Int64, streams[s_names[eeg_idx]]["srate"])
     time_pts0 = time[eeg_idx][1]
-    time_pts = round.(Float64.(time[eeg_idx]) .- time_pts0, digits=4)
+    time_pts = round.(Float64.(time[eeg_idx]) .- time_pts0; digits=4)
     ep_time = time_pts
     eeg_data = reshape(Float64.(data[eeg_idx]'), size(data[eeg_idx], 2), :, 1)
     ch_n = size(eeg_data, 1)
@@ -75,58 +76,70 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         clabels[idx] = streams[s_names[eeg_idx]]["name"] * "-$idx"
     end
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
     for idx in other_idx
         length(streams[s_names[idx]]["data"]) == 0 && break
         for data_idx in 1:streams[s_names[idx]]["nchannels"]
-            append!(markers, Dict(:id=>string.(data[idx][:, data_idx]), :start=>(time[idx] .- time[idx][1]), :length=>ones(length(time[idx])), :value=>repeat(["marker"], length(time[idx])), :channel=>zeros(Int64, length(time[idx]))))
+            append!(
+                markers,
+                Dict(
+                    :id=>string.(data[idx][:, data_idx]),
+                    :start=>(time[idx] .- time[idx][1]),
+                    :length=>ones(length(time[idx])),
+                    :value=>repeat(["marker"], length(time[idx])),
+                    :channel=>zeros(Int64, length(time[idx])),
+                ),
+            )
         end
     end
     sort!(markers, :start)
 
     file_type = "XDF"
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits=2)
 
     data_type = "eeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name="",
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording="",
-                              recording_date="",
-                              recording_time="",
-                              recording_notes="",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference="",
-                              clabels=clabels,
-                              transducers=repeat([""], ch_n),
-                              units=units,
-                              prefiltering=repeat([""], ch_n),
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=ones(ch_n),
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id="",
+        first_name="",
+        middle_name="",
+        last_name="",
+        head_circumference=-1,
+        handedness="",
+        weight=-1,
+        height=-1,
+    )
+    r = _create_recording_eeg(;
+        data_type=data_type,
+        file_name=file_name,
+        file_size_mb=file_size_mb,
+        file_type=file_type,
+        recording="",
+        recording_date="",
+        recording_time="",
+        recording_notes="",
+        channel_type=ch_type,
+        channel_order=_sort_channels(ch_type),
+        reference="",
+        clabels=clabels,
+        transducers=repeat([""], ch_n),
+        units=units,
+        prefiltering=repeat([""], ch_n),
+        line_frequency=50,
+        sampling_rate=sampling_rate,
+        gain=ones(ch_n),
+        bad_channels=zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name="", notes="", design="")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
-
+    hdr = _create_header(s, r, e)
 
     history = String[]
 
@@ -134,8 +147,11 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, eeg_data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
-
 end

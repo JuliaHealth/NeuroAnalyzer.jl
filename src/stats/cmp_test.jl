@@ -34,19 +34,85 @@ Otherwise, named tuple containing:
 - `df::Float64`: degrees of freedom
 - `p::Float64`: p value
 """
-function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false, nperm::Int64=1000, verbose::Bool=true)::Union{@NamedTuple{t::OneSampleTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64}, @NamedTuple{t::EqualVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64}, @NamedTuple{t::UnequalVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64}, @NamedTuple{t::ExactSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64}, @NamedTuple{t::ApproximateSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64}, @NamedTuple{t::ExactMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64}, @NamedTuple{t::ApproximateMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64}, @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64}}
-
+function cmp_test(
+    s1::AbstractVector,
+    s2::AbstractVector;
+    paired::Bool,
+    alpha::Float64=0.05,
+    type::Symbol=:auto,
+    exact::Bool=false,
+    nperm::Int64=1000,
+    verbose::Bool=true,
+)::Union{
+    @NamedTuple{
+        t::OneSampleTTest,
+        ts::Tuple{Float64,String},
+        tc::Tuple{Float64,Float64},
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::EqualVarianceTTest,
+        ts::Tuple{Float64,String},
+        tc::Tuple{Float64,Float64},
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::UnequalVarianceTTest,
+        ts::Tuple{Float64,String},
+        tc::Tuple{Float64,Float64},
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ExactSignedRankTest{Float64},
+        ts::Tuple{Float64,String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ApproximateSignedRankTest{Float64},
+        ts::Tuple{Float64,String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ExactMannWhitneyUTest{Float64},
+        ts::Tuple{Float64,String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ApproximateMannWhitneyUTest{Float64},
+        ts::Tuple{Float64,String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::@NamedTuple{perm_diff::Vector{Float64},obs_diff::Float64},p1::Float64,p2::Float64
+    }
+}
     _check_var(type, [:auto, :perm, :p, :np], "type")
-    paired && @assert length(s1) == length(s2) "For paired test both vectors must have the same size."
+    paired &&
+        @assert length(s1) == length(s2) "For paired test both vectors must have the same size."
     @assert alpha < 1.0 "alpha must be < 1.0."
     @assert alpha > 0.0 "alpha must be > 0.0."
     @assert nperm > 0 "nperm must be > 0."
 
     # ks = ApproximateTwoSampleKSTest(s1, s2)
     jb = JarqueBeraTest([s1; s2])
-    pjb = round(pvalue(jb), digits=3)
-    jb = round(jb.JB, digits=3)
-    pjb < 0.05 ? (verbose && println("Distribution: non-normal (Jarque-Bera test: JB=$jb, p=$pjb)")) : (verbose && println("Distribution: normal (Jarque-Bera test: JB=$jb, p=$pjb)"))
+    pjb = round(pvalue(jb); digits=3)
+    jb = round(jb.JB; digits=3)
+    if pjb < 0.05
+        (verbose && println("Distribution: non-normal (Jarque-Bera test: JB=$jb, p=$pjb)"))
+    else
+        (verbose && println("Distribution: normal (Jarque-Bera test: JB=$jb, p=$pjb)"))
+    end
     if type !== :perm
         if (pjb >= alpha && type === :auto) || type === :p
             if paired
@@ -64,12 +130,13 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
             end
             df = t.df
             ts = t.t
-            tc = confint(t, level=(1 - alpha))
+            tc = confint(t; level=(1 - alpha))
             tn = "t"
         elseif (pjb < alpha && type === :auto) || type === :np
             if paired
                 if exact
-                    verbose && println("Using exact signed rank (Wilcoxon) test (paired data)")
+                    verbose &&
+                        println("Using exact signed rank (Wilcoxon) test (paired data)")
                     t = ExactSignedRankTest(s1, s2)
                 else
                     verbose && println("Using signed rank (Wilcoxon) test (paired data)")
@@ -102,35 +169,44 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         perm_diff = zeros(nperm)
 
         # initialize progress bar
-        progbar = Progress(nperm, dt=1, barlen=20, color=:white, enabled=progress_bar)
+        progbar = Progress(nperm; dt=1, barlen=20, color=:white, enabled=progress_bar)
 
         @inbounds for idx in 1:nperm
             f_idx = randperm(n1 + n2)
             f_idx[f_idx .< n1 + 1] .= 0
-            f_idx[f_idx .> 0 ] .= 1
+            f_idx[f_idx .> 0] .= 1
             perm_diff[idx] = mean(g[f_idx .== 0]) - mean(g[f_idx .== 1])
 
             # update progress bar
             progress_bar && next!(progbar)
         end
         observed_difference = mean(g[g_idx .== 0]) - mean(g[g_idx .== 1])
-        observed_difference = round(observed_difference, digits=3)
+        observed_difference = round(observed_difference; digits=3)
     end
 
     if type !== :perm
         p = pvalue(t)
         p < eps() && (p = eps())
-        return (t=t, ts=(round(ts, digits=3), tn), tc=round.(tc, digits=3), df=round(df, digits=3), p=p)
+        return (
+            t=t,
+            ts=(round(ts; digits=3), tn),
+            tc=round.(tc; digits=3),
+            df=round(df; digits=3),
+            p=p,
+        )
     else
         if pjb < alpha
             verbose && println("H0 has non-normal distribution; p value for JB-test: $pjb")
             p_one_tailed = sum(perm_diff .> observed_difference) / nperm
         else
             z = (observed_difference - mean(perm_diff)) / std(perm_diff)
-            z = round(z, digits=3)
+            z = round(z; digits=3)
             p_one_tailed = 1 - cdf(Distributions.Normal(), abs(z))
         end
-        return (t=(perm_diff=perm_diff, obs_diff=observed_difference), p1=p_one_tailed, p2=(p_one_tailed / 2))
+        return (
+            t=(perm_diff=perm_diff, obs_diff=observed_difference),
+            p1=p_one_tailed,
+            p2=(p_one_tailed / 2),
+        )
     end
-
 end

@@ -22,7 +22,6 @@ Convert p value to z score.
 - `z::Float64`
 """
 function p2z(p::Float64=0.05; twotailed::Bool=false)::Float64
-
     _in(p, (0.0, 1.0), "p")
 
     d = Distributions.Normal(0.0, 1.0)
@@ -33,7 +32,6 @@ function p2z(p::Float64=0.05; twotailed::Bool=false)::Float64
     end
 
     return z
-
 end
 
 """
@@ -58,7 +56,6 @@ To calculate:
 - `P(0 < Z < z)` use `(1 - z2p(z, twotailed=true))/2`
 """
 function z2p(z::Real; twotailed::Bool=false)::Float64
-
     d = Distributions.Normal(0.0, 1.0)
     if twotailed
         p = 2 * ccdf(d, abs(z))
@@ -71,7 +68,6 @@ function z2p(z::Real; twotailed::Bool=false)::Float64
     end
 
     return p
-
 end
 
 """
@@ -97,7 +93,6 @@ To calculate:
 - `P(0 < T < t)` use `(1 - t2p(t, df=df, twotailed=true))/2`
 """
 function t2p(t::Real; df::Real, twotailed::Bool=false)::Float64
-
     d = Distributions.TDist(df)
     if twotailed
         p = 2 * ccdf(d, abs(t))
@@ -110,7 +105,6 @@ function t2p(t::Real; df::Real, twotailed::Bool=false)::Float64
     end
 
     return p
-
 end
 
 """
@@ -132,13 +126,10 @@ Convert Χ² score to right-tailed (`P(Chi > chi)`) p value.
 To calculate `P(Chi < chi)` (left-tailed) use `1 - chi2p(chi, df=df)`.
 """
 function chi2p(chi::Real; df::Real)::Float64
-
     p = ccdf(Distributions.Chisq(df), chi)
 
     return p
-
 end
-
 
 """
     f2p(t; <keyword arguments>)
@@ -160,11 +151,9 @@ Convert F score to right-tailed (`P(F > f)`) p value.
 To calculate `P(F < f)` (left-tailed) use `1 - f2p(f, df1=df1, df2=df2)`.
 """
 function f2p(f::Real; df1::Real, df2::Real)::Float64
-
     p = ccdf(Distributions.FDist(df1, df2), f)
 
     return p
-
 end
 
 export norminv
@@ -183,11 +172,9 @@ Convert probability to a normal distribution with a peak at 0.5.
 - `n::Float64`
 """
 function norminv(x::Real)::Float64
-
     n = quantile(Distributions.Normal(), x)
 
     return n
-
 end
 
 """
@@ -204,11 +191,9 @@ Convert probability to odds.
 - `o::Float64`
 """
 function p2o(p::Real)::Float64
-
     o = p / (1 - p)
 
     return o
-
 end
 
 """
@@ -225,9 +210,7 @@ Convert probability to odds.
 - `p::Float64`
 """
 function o2p(o::Real)::Float64
-
     p = o / (1 + o)
 
     return p
-
 end

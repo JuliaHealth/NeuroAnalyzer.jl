@@ -15,10 +15,8 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 - `s_new::Vector{Float64}`
 """
 function normpower(s::AbstractVector)::Vector{Float64}
-
     _, _, _, _, _, _, _, rms = amp(s)
     return s .* rms
-
 end
 
 """
@@ -34,8 +32,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `s_new::Array{Float64, 3}`
 """
-function normpower(s::AbstractArray)::Array{Float64, 3}
-
+function normpower(s::AbstractArray)::Array{Float64,3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -49,7 +46,6 @@ function normpower(s::AbstractArray)::Array{Float64, 3}
     end
 
     return s_new
-
 end
 
 """
@@ -66,15 +62,15 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function normpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
-
-    ch = get_channel(obj, ch=ch)
+function normpower(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::NeuroAnalyzer.NEURO
+    ch = get_channel(obj; ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = normpower(obj.data[ch, :, :])
     push!(obj_new.history, "normpower(OBJ, ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -91,12 +87,12 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `Nothing`
 """
-function normpower!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
-    obj_new = normpower(obj, ch=ch)
+function normpower!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String},Regex}
+)::Nothing
+    obj_new = normpower(obj; ch=ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

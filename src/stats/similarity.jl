@@ -20,14 +20,12 @@ Calculate Jaccard similarity between two vectors.
 To compute Jaccard distance, use `1 - jaccard(x, y)`
 """
 function jaccsim(x::AbstractVector, y::AbstractVector)::Float64
-
     i = float(length(intersect(x, y)))
     u = length(x) + length(y) - i
     u == 0 && @error "Length of x + length of y - $i must not be 0."
     j = i / u
 
     return j
-
 end
 
 """
@@ -54,11 +52,9 @@ Sorensen-Dice Index values range from 0 to 1:
 - 0.00-0.19: very low similarity
 """
 function sdi(x::AbstractVector, y::AbstractVector)::Float64
-
     a = length(x)
     b = length(y)
     c = float(length(intersect(x, y)))
-    
-    return round((2 * c) / (a + b), digits=2)
 
+    return round((2 * c) / (a + b); digits=2)
 end
