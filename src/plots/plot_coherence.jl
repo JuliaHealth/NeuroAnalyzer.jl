@@ -9,7 +9,7 @@ Plot coherence.
 
   - `coh::Vector{Float64}`: coherence
   - `f::Vector{Float64}`: frequencies
-  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
+  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
   - `xlabel::String="Frequency [Hz]"`: x-axis label
   - `ylabel::String="Coherence"`: y-axis label
   - `title::String=""`: plot title
@@ -87,7 +87,7 @@ Plot multi-channel coherence.
   - `coh::Matrix{Float64}`: coherence
   - `f::Vector{Float64}`: frequencies
   - `clabels::Vector{String}=string.(1:size(coh, 1))`: channel pairs labels vector
-  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
+  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
   - `xlabel::String="Frequency [Hz]"`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title

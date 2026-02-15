@@ -28,27 +28,29 @@ Plot filter response.
   - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
   - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
   - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `flim::Tuple{Real, Real}=(0, 0): frequency limit for the X-axis
+  - `flim::Tuple{Real, Real} = (0, fs / 2)`: frequency limit
   - `mono::Bool=false`: use color or gray palette
-  - `gui::Bool=false`: use color or gray palette
+  - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
   - `p::GLMakie.Figure`
+  - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(;
     fs::Int64,
     fprototype::Symbol,
     ftype::Union{Nothing, Symbol} = nothing,
     cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64}=nothing,
+    order::Union{Nothing, Int64} = nothing,
     rp::Union{Nothing, Real} = nothing,
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
-    mono::Bool = false,
     flim::Tuple{Real, Real} = (0, fs / 2),
-)::GLMakie.Figure
+    mono::Bool = false,
+    gui::Bool = true,
+)::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     _check_tuple(flim, (0, fs / 2), "flim")
     @assert fs >= 1 "fs must be ≥ 1."
@@ -109,8 +111,14 @@ function plot_filter(;
         end
     end
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        isnothing(rp) && (rp = fprototype === :elliptic ? 0.0025 : 2)
-        isnothing(rs) && (rp = fprototype === :elliptic ? 40 : 20)
+        if isnothing(rp)
+            rp = fprototype === :elliptic ? 0.0025 : 2
+            _info("rp set at $rp Hz.")
+        end
+        if isnothing(rs)
+            rs = fprototype === :elliptic ? 40 : 20
+            _info("rs set at $rs Hz.")
+        end
     end
     if fprototype !== :iirnotch
         @assert !isnothing(order) "order must be specified."
@@ -122,19 +130,8 @@ function plot_filter(;
         @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
     end
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        if ftype === :lp
-            @assert length(cutoff) == 1 "For :lp filter, cutoff must specify only one frequency."
-            responsetype = Lowpass(cutoff)
-        elseif ftype === :hp
-            @assert length(cutoff) == 1 "For :hp filter, cutoff must specify only one frequency."
-            responsetype = Highpass(cutoff)
-        elseif ftype === :bp
-            @assert length(cutoff) == 2 "For :bp filter, cutoff must specify two frequencies."
-            responsetype = Bandpass(cutoff[1], cutoff[2])
-        elseif ftype === :bs
-            @assert length(cutoff) == 2 "For :bs filter, cutoff must specify two frequencies."
-            responsetype = Bandstop(cutoff[1], cutoff[2])
-        end
+        ftype in [:lp, :hp] && @assert length(cutoff) == 1 "For :$(ftype) filter, cutoff must specify only one frequency."
+        ftype in [:bp, :bs] && @assert length(cutoff) == 2 "For :$(ftype) filter, cutoff must specify only one frequency."
     end
     if length(cutoff) == 1
         @assert cutoff > 0 "cutoff must be > 0 Hz."
@@ -151,6 +148,7 @@ function plot_filter(;
     !isnothing(rs) && (rs = Observable(float(rs)))
     fprototype in [:firls, :remez, :iirnotch] && @assert !isnothing(bw) "bw must be specified."
     !isnothing(bw) && (bw = Observable(float(bw)))
+
     # prepare plot
     plot_size = (1400, 900)
     p = GLMakie.Figure(; size = plot_size)
@@ -215,33 +213,6 @@ function plot_filter(;
         end
     end
 
-    if fprototype in [:firls, :remez]
-        _ = Label(
-                grid[2, 1],
-                "Band width",
-                fontsize = 15,
-            )
-        if length(cutoff[]) == 1
-            sl_bw = IntervalSlider(
-                                grid[1, 2],
-                                range = 0.1:0.1:(cutoff[] - 0.1),
-                                startvalues = bw[],
-                                horizontal = true,
-                            )
-        else
-            sl_bw = IntervalSlider(
-                                grid[1, 2],
-                                range = 0.1:0.1:(cutoff[][2] - 0.1),
-                                startvalues = bw[],
-                                horizontal = true,
-                            )
-        end
-        on(sl_bw.value) do val
-            bw[] = val
-            notify(bw)
-        end
-    end
-
     if ftype in [:hp, :lp]
         sl_cutoff = Slider(
                         grid[1, 2],
@@ -264,7 +235,6 @@ function plot_filter(;
             cutoff[] = val
             notify(cutoff)
         end
-
         on(sl_order.value) do val
             order[] = val
             notify(order)
@@ -291,7 +261,6 @@ function plot_filter(;
             cutoff[] = val
             notify(cutoff)
         end
-
         on(sl_order.value) do val
             order[] = val
             notify(order)
@@ -329,22 +298,22 @@ function plot_filter(;
         end
 
         ax1 = GLMakie.Axis(
-            p[1, 1];
-            xlabel = "Frequency [Hz]",
-            ylabel = "Magnitude [dB]",
-            title = title,
-            xticks = length(flim[1]:0.1:flim[2]) > 20 ? LinearTicks(10) : LinearTicks(20),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[1, 1];
+                        xlabel = "Frequency [Hz]",
+                        ylabel = "Magnitude [dB]",
+                        title = title,
+                        xticks = length(flim[1]:0.1:flim[2]) > 20 ? LinearTicks(10) : LinearTicks(20),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax1, flim)
         GLMakie.ylims!(ax1, (-100, 20))
         ax1.titlesize = 18
@@ -367,22 +336,22 @@ function plot_filter(;
         f = @lift(round.($phresp[2] .* fs / 2 / pi, digits=1))
 
         ax2 = GLMakie.Axis(
-            p[2, 1];
-            xlabel = "Frequency [Hz]",
-            ylabel = "Phase [rad]",
-            title = "Phase response",
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[2, 1];
+                        xlabel = "Frequency [Hz]",
+                        ylabel = "Phase [rad]",
+                        title = "Phase response",
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax2, flim)
         ax2.titlesize = 18
         ax2.xlabelsize = 18
@@ -402,22 +371,22 @@ function plot_filter(;
         tau = @lift(-derivative(rad2deg.($phresp[1])))
 
         ax3 = GLMakie.Axis(
-            p[3, 1];
-            xlabel = "Frequency [Hz]",
-            ylabel = "Group delay [samples]",
-            title = "Group delay",
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[3, 1];
+                        xlabel = "Frequency [Hz]",
+                        ylabel = "Group delay [samples]",
+                        title = "Group delay",
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax3, flim)
         ax3.titlesize = 18
         ax3.xlabelsize = 18
@@ -449,22 +418,22 @@ function plot_filter(;
         end
 
         ax1 = GLMakie.Axis(
-            p[1, 1];
-            xlabel = "Frequency [Hz]",
-            ylabel = "Magnitude\n[dB]",
-            title = title,
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[1, 1];
+                        xlabel = "Frequency [Hz]",
+                        ylabel = "Magnitude\n[dB]",
+                        title = title,
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax1, flim)
         GLMakie.ylims!(ax1, (-100, 20))
         ax1.titlesize = 18
@@ -487,22 +456,22 @@ function plot_filter(;
         w = w .* fs / 2 / pi
 
         ax2 = GLMakie.Axis(
-            p[2, 1];
-            xlabel = "Frequency [Hz]",
-            ylabel = "Phase\n[deg]",
-            title = "Phase response",
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[2, 1];
+                        xlabel = "Frequency [Hz]",
+                        ylabel = "Phase\n[deg]",
+                        title = "Phase response",
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax2, flim)
         ax2.titlesize = 18
         ax2.xlabelsize = 18
@@ -515,22 +484,22 @@ function plot_filter(;
         tau = -derivative(phi)
 
         ax3 = GLMakie.Axis(
-            p[3, 1];
-            xlabel = "Frequency [Hz]",
-            ylabel = "Group delay\n[samples]",
-            title = "Group delay",
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[3, 1];
+                        xlabel = "Frequency [Hz]",
+                        ylabel = "Group delay\n[samples]",
+                        title = "Group delay",
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax3, flim)
         ax3.titlesize = 18
         ax3.xlabelsize = 18
@@ -609,8 +578,12 @@ function plot_filter(;
                 )
     end
 
-
-    return p
+    if gui
+        wait(display(p))
+        return flt[]
+    else
+        return p
+    end
 
 end
 
@@ -643,12 +616,14 @@ Plot filter response.
   - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
   - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
   - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+  - `flim::Tuple{Real, Real}=(0, sr(obj) / 2): frequency limit
   - `mono::Bool=false`: use color or gray palette
-  - `flim::Tuple{Real, Real}=(0, 0): frequency limit for the X-axis
+  - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
   - `p::GLMakie.Figure`
+  - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(
     obj::NeuroAnalyzer.NEURO;
@@ -660,23 +635,25 @@ function plot_filter(
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
-    mono::Bool = false,
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    mono::Bool = false,
+    gui::Bool = true,
 )::GLMakie.Figure
 
-    p = plot_filter(;
-        fs = sr(obj),
-        fprototype = fprototype,
-        ftype = ftype,
-        cutoff = cutoff,
-        order = order,
-        rp = rp,
-        rs = rs,
-        bw = bw,
-        w = w,
-        mono = mono,
-        flim = flim,
-    )
+    return plot_filter(;
+                    fs = sr(obj),
+                    fprototype = fprototype,
+                    ftype = ftype,
+                    cutoff = cutoff,
+                    order = order,
+                    rp = rp,
+                    rs = rs,
+                    bw = bw,
+                    w = w,
+                    flim = flim,
+                    mono = mono,
+                    gui = gui,
+                )
 
     return p
 

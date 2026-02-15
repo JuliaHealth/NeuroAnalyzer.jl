@@ -13,7 +13,7 @@ Plot single-channel spectrogram.
   - `sp::Matrix{Float64}`: powers
   - `db::Bool=true`: whether powers are normalized to dB
   - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-  - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+  - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
@@ -146,7 +146,7 @@ Plot multiple-channel spectrogram.
   - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
   - `db::Bool=true`: whether powers are normalized to dB
   - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-  - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+  - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
@@ -278,7 +278,7 @@ Plot topographical map of spectrograms.
   - `sf::Vector{Float64}`: frequencies
   - `sp::Array{Float64, 3}`: powers
   - `db::Bool=true`: whether powers are normalized to dB
-  - `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
+  - `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title

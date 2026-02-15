@@ -86,7 +86,6 @@ function filter_create(;
                 bw = round(cutoff[2] - 0.1, digits=1)
                 _info("bw truncated to $bw Hz")
             end
-
         end
     end
     if fprototype === :firls
@@ -107,11 +106,11 @@ function filter_create(;
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         if isnothing(rp)
             rp = fprototype === :elliptic ? 0.0025 : 2
-            _info("rp: $rp Hz.")
+            _info("rp set at $rp Hz.")
         end
         if isnothing(rs)
             rs = fprototype === :elliptic ? 40 : 20
-            _info("rs: $rs Hz.")
+            _info("rs set at $rs Hz.")
         end
     end
     if fprototype !== :iirnotch
@@ -124,19 +123,8 @@ function filter_create(;
         @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
     end
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        if ftype === :lp
-            @assert length(cutoff) == 1 "For :lp filter, cutoff must specify only one frequency."
-            responsetype = Lowpass(cutoff)
-        elseif ftype === :hp
-            @assert length(cutoff) == 1 "For :hp filter, cutoff must specify only one frequency."
-            responsetype = Highpass(cutoff)
-        elseif ftype === :bp
-            @assert length(cutoff) == 2 "For :bp filter, cutoff must specify two frequencies."
-            responsetype = Bandpass(cutoff[1], cutoff[2])
-        elseif ftype === :bs
-            @assert length(cutoff) == 2 "For :bs filter, cutoff must specify two frequencies."
-            responsetype = Bandstop(cutoff[1], cutoff[2])
-        end
+        ftype in [:lp, :hp] && @assert length(cutoff) == 1 "For :$(ftype) filter, cutoff must specify only one frequency."
+        ftype in [:bp, :bs] && @assert length(cutoff) == 2 "For :$(ftype) filter, cutoff must specify only one frequency."
     end
     if length(cutoff) == 1
         @assert cutoff > 0 "cutoff must be > 0 Hz."
