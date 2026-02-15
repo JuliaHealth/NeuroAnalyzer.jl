@@ -23,13 +23,14 @@ Plot filter response.
       + `:bp`: band pass
       + `:bs`: band stop
   - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `order::Union{Nothing, Int64}`: filter order
+  - `order::Union{Nothing, Int64}=nothing`: filter order
   - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
   - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
   - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
   - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `mono::Bool=false`: use color or gray palette
   - `flim::Tuple{Real, Real}=(0, 0): frequency limit for the X-axis
+  - `mono::Bool=false`: use color or gray palette
+  - `gui::Bool=false`: use color or gray palette
 
 # Returns
 
@@ -40,7 +41,7 @@ function plot_filter(;
     fprototype::Symbol,
     ftype::Union{Nothing, Symbol} = nothing,
     cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64},
+    order::Union{Nothing, Int64}=nothing,
     rp::Union{Nothing, Real} = nothing,
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
@@ -49,8 +50,100 @@ function plot_filter(;
     flim::Tuple{Real, Real} = (0, fs / 2),
 )::GLMakie.Figure
 
-    pal = mono ? :grays : :darktest
-    _check_tuple(flim, "flim", (0, fs / 2))
+    _check_tuple(flim, (0, fs / 2), "flim")
+    @assert fs >= 1 "fs must be ≥ 1."
+
+    nqf = div(fs, 2)
+    nqf > flim[2] && (nqf = flim[2])
+
+    # check parameters
+
+    _check_var(
+        fprototype,
+        [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch],
+        "fprototype"
+    )
+    !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+    @assert fs >= 1 "fs must be ≥ 1."
+    if fprototype === :fir
+        @assert isnothing(order) || isnothing(w) "Either order or w must be specified."
+        if !isnothing(w)
+            ftype in [:hp, :bp, :bs] && @assert mod(w, 2) != 0 "Length of w must be odd."
+            @assert length(w) >= 1 "Length of w must be ≥ 1."
+            order = length(w)
+        elseif !isnothing(order)
+            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
+            w = DSP.hamming(order)
+        end
+        @assert length(w) == order "Length of w ($(length(w))) and order ($order) must be equal."
+    end
+    if fprototype in [:firls, :remez, :iirnotch]
+        @assert !isnothing(bw) "bw must be specified."
+        @assert bw > 0 "bw must be > 0."
+        if length(cutoff) == 1
+            if bw >= cutoff
+                bw = cutoff - 0.1
+                _info("bw truncated to $bw Hz")
+            end
+        else
+            if bw >= cutoff[2]
+                bw = cutoff[2] - 0.1
+                _info("bw truncated to $bw Hz")
+            end
+
+        end
+    end
+    if fprototype === :firls
+        if ftype in [:bp, :bs]
+            if !isnothing(w)
+                @assert length(w) == 6 "Length of w must be 6."
+            else
+                w = ones(6)
+            end
+        elseif ftype in [:lp, :hs]
+            if !isnothing(w)
+                @assert length(w) == 6 "Length of w must be 6."
+            else
+                w = ones(6)
+            end
+        end
+    end
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        isnothing(rp) && (rp = fprototype === :elliptic ? 0.0025 : 2)
+        isnothing(rs) && (rp = fprototype === :elliptic ? 40 : 20)
+    end
+    if fprototype !== :iirnotch
+        @assert !isnothing(order) "order must be specified."
+        @assert !isnothing(ftype) "ftype must be specified."
+    end
+    if fprototype === :iirnotch
+        !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
+        !isnothing(order) && _info("For :iirnotch filter order is ignored")
+        @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
+    end
+    if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        if ftype === :lp
+            @assert length(cutoff) == 1 "For :lp filter, cutoff must specify only one frequency."
+            responsetype = Lowpass(cutoff)
+        elseif ftype === :hp
+            @assert length(cutoff) == 1 "For :hp filter, cutoff must specify only one frequency."
+            responsetype = Highpass(cutoff)
+        elseif ftype === :bp
+            @assert length(cutoff) == 2 "For :bp filter, cutoff must specify two frequencies."
+            responsetype = Bandpass(cutoff[1], cutoff[2])
+        elseif ftype === :bs
+            @assert length(cutoff) == 2 "For :bs filter, cutoff must specify two frequencies."
+            responsetype = Bandstop(cutoff[1], cutoff[2])
+        end
+    end
+    if length(cutoff) == 1
+        @assert cutoff > 0 "cutoff must be > 0 Hz."
+        @assert cutoff < nqf "cutoff must be < $nqf Hz."
+    else
+        _check_tuple(cutoff, (0, nqf), "cutoff")
+    end
+
+    # create observables
 
     cutoff = Observable(float.(cutoff))
     order = Observable(order)
@@ -58,82 +151,76 @@ function plot_filter(;
     !isnothing(rs) && (rs = Observable(float(rs)))
     fprototype in [:firls, :remez, :iirnotch] && @assert !isnothing(bw) "bw must be specified."
     !isnothing(bw) && (bw = Observable(float(bw)))
-
-    nqf = div(fs, 2)
-
     # prepare plot
     plot_size = (1400, 900)
     p = GLMakie.Figure(; size = plot_size)
     grid = p[4, 1] = GridLayout()
 
-    lab_cutoff = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                )
-
-    if ftype in [:hp, :lp]
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+# cutoff
+# order
+# rp
+# rs
+    elseif fprototype in [:remez]
+# cutoff
+# order OR window
+# bw
+    elseif fprototype in [:fir]
+# cutoff
+# order OR window
+# bw
+    elseif fprototype in [:firls]
+# cutoff
+# order OR window
+# bw
+    elseif fprototype in [:iirnotch]
+        _ = Label(
+                grid[1, 1],
+                "Cutoff [Hz]",
+                fontsize = 15,
+            )
         sl_cutoff = Slider(
                         grid[1, 2],
-                        range = 0.1:0.1:(nqf - 0.1),
-                        startvalue = cutoff,
+                        range = 0.5:0.1:(nqf - 0.1),
+                        startvalue = cutoff[],
                         horizontal = true,
                     )
-        lab2 = Label(
-                    grid[2, 1],
-                    "Order (taps)",
-                    fontsize = 15,
-                )
-        sl_order = Slider(
-                        grid[2, 2],
-                        range = 1:1:500,
-                        startvalue = order,
-                        horizontal = true,
-                    )
-        on(sl_cutoff.value) do val
-            cutoff[] = val
+        on(sl_cutoff.value, priority=1) do val
+            cutoff[] = round(val, digits=1)
+            if cutoff[] > 10
+                sl_bw.range = 0.1:0.1:10
+            else
+                if bw[] >= cutoff[]
+                    bw[] = cutoff[] - 0.1
+                    set_close_to!(sl_bw, bw[])
+                end
+                sl_bw.range = 0.1:0.1:(cutoff[] - 0.1)
+            end
             notify(cutoff)
         end
-
-        on(sl_order.value) do val
-            order[] = val
-            notify(order)
-        end
-    else
-        sl_cutoff = IntervalSlider(
-                                grid[1, 2],
-                                range = 0.1:0.1:(nqf - 0.1),
-                                startvalues = cutoff,
-                                horizontal = true,
-                            )
-        lab2 = Label(
-                    grid[2, 1],
-                    "Order (taps)",
-                    fontsize = 15,
+        _ = Label(
+                grid[2, 1],
+                "Band width",
+                fontsize = 15,
+            )
+        sl_bw = Slider(
+                    grid[2, 2],
+                    range = cutoff[] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[] - 0.1)),
+                    startvalue = bw[],
+                    horizontal = true,
                 )
-        sl_order = Slider(
-                        grid[2, 2],
-                        range = 1:2:501,
-                        startvalue = order,
-                        horizontal = true,
-                    )
-        on(sl_cutoff.interval) do val
-            cutoff[] = val
-            notify(cutoff)
-        end
-
-        on(sl_order.value) do val
-            order[] = val
-            notify(order)
+        on(sl_bw.value) do val
+            bw[] = round(val, digits=1)
+            notify(bw)
         end
     end
 
-    if fprototype in [:firls, :remez, :iirnotch]
-        lab_bw = Label(
-                       grid[2, 1],
-                       "Band width",
-                       fontsize = 15,
-                    )
+    if fprototype in [:firls, :remez]
+        _ = Label(
+                grid[2, 1],
+                "Band width",
+                fontsize = 15,
+            )
         if length(cutoff[]) == 1
             sl_bw = IntervalSlider(
                                 grid[1, 2],
@@ -152,6 +239,62 @@ function plot_filter(;
         on(sl_bw.value) do val
             bw[] = val
             notify(bw)
+        end
+    end
+
+    if ftype in [:hp, :lp]
+        sl_cutoff = Slider(
+                        grid[1, 2],
+                        range = 0.1:0.1:(nqf - 0.1),
+                        startvalue = cutoff,
+                        horizontal = true,
+                    )
+        _ = Label(
+                grid[2, 1],
+                "Order (taps)",
+                fontsize = 15,
+            )
+        sl_order = Slider(
+                        grid[2, 2],
+                        range = 1:1:500,
+                        startvalue = order,
+                        horizontal = true,
+                    )
+        on(sl_cutoff.value) do val
+            cutoff[] = val
+            notify(cutoff)
+        end
+
+        on(sl_order.value) do val
+            order[] = val
+            notify(order)
+        end
+    elseif ftype in [:bp, :bs]
+        sl_cutoff = IntervalSlider(
+                                grid[1, 2],
+                                range = 0.1:0.1:(nqf - 0.1),
+                                startvalues = cutoff,
+                                horizontal = true,
+                            )
+        _ = Label(
+                grid[2, 1],
+                "Order (taps)",
+                fontsize = 15,
+            )
+        sl_order = Slider(
+                        grid[2, 2],
+                        range = 1:2:501,
+                        startvalue = order,
+                        horizontal = true,
+                    )
+        on(sl_cutoff.interval) do val
+            cutoff[] = val
+            notify(cutoff)
+        end
+
+        on(sl_order.value) do val
+            order[] = val
+            notify(order)
         end
     end
 
@@ -175,14 +318,14 @@ function plot_filter(;
         # convert to dB
         H = @lift(real.(20 * log10.(abs.($fresp[1]))))
         # convert rad/sample to Hz
-        w = @lift(round.($fresp[2] .* fs / 2 / pi, digits=1))
+        f = @lift(round.($fresp[2] .* fs / 2 / pi, digits=1))
 
         if fprototype !== :iirnotch
             fname = titlecase(String(fprototype))
-            title = @lift("Filter: $(fname), type: $(uppercase(String(ftype)))\ncutoff: $($cutoff) Hz, order: $($order)\n\nFrequency response")
+            title = @lift("Filter: $(fname), type: $(uppercase(String(ftype)))\ncutoff: $(round($cutoff, digits=1)) Hz, order: $($order)\n\nFrequency response")
         else
             fname = "IIR notch"
-            title = @lift("Filter: $(fname), cutoff: $($cutoff) Hz, transition band width: $($bw) Hz\n\nFrequency response")
+            title = @lift("Filter: $(fname), cutoff: $(round($cutoff, digits=1)) Hz, transition band width: $(round($bw, digits=1)) Hz\n\nFrequency response")
         end
 
         ax1 = GLMakie.Axis(
@@ -190,7 +333,7 @@ function plot_filter(;
             xlabel = "Frequency [Hz]",
             ylabel = "Magnitude [dB]",
             title = title,
-            xticks = LinearTicks(15),
+            xticks = length(flim[1]:0.1:flim[2]) > 20 ? LinearTicks(10) : LinearTicks(20),
             xminorticksvisible = true,
             xminorticks = IntervalsBetween(10),
             xautolimitmargin = (0, 0),
@@ -211,28 +354,22 @@ function plot_filter(;
         ax1.yticklabelsize = 12
 
         GLMakie.lines!(
-            ax1,
-            w,
-            H,
-            colormap = pal,
-        )
+                    ax1,
+                    f,
+                    H,
+                    color = mono ? :black : :blue,
+                )
 
-        if length(cutoff[]) == 1
-            GLMakie.vlines!(ax1, cutoff; linestyle = :dash, linewidth = 0.5, colormap = pal)
-        else
-            GLMakie.vlines!(ax1, cutoff[1]; linestyle = :dash, linewidth = 0.5, color = :red, colormap = pal)
-            GLMakie.vlines!(ax1, cutoff[2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
-        end
-
-        phi, w = phaseresp(flt[])
-        phi = rad2deg.(phi)
+        phresp = lift(DSP.phaseresp, flt)
+        #phi = @lift(rad2deg.($phresp[1]))
+        phi = @lift(($phresp[1]))
         # convert rad/sample to Hz
-        w = w .* fs / 2 / pi
+        f = @lift(round.($phresp[2] .* fs / 2 / pi, digits=1))
 
         ax2 = GLMakie.Axis(
             p[2, 1];
             xlabel = "Frequency [Hz]",
-            ylabel = "Phase [deg]",
+            ylabel = "Phase [rad]",
             title = "Phase response",
             xticks = LinearTicks(15),
             xminorticksvisible = true,
@@ -253,16 +390,16 @@ function plot_filter(;
         ax2.xticklabelsize = 12
         ax2.yticklabelsize = 12
 
-        GLMakie.lines!(ax2, w, phi; colormap = pal)
+        GLMakie.lines!(
+                    ax2,
+                    f,
+                    phi,
+                    color = mono ? :black : :blue,
+                    nan_color = mono ? :black : :blue,
+                )
 
-        if length(cutoff[]) == 1
-            GLMakie.vlines!(ax2, cutoff[]; linestyle = :dash, linewidth = 0.5, colormap = pal)
-        else
-            GLMakie.vlines!(ax2, cutoff[][1]; linestyle = :dash, linewidth = 0.5, color = :red, colormap = pal)
-            GLMakie.vlines!(ax2, cutoff[][2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
-        end
-
-        tau = -derivative(phi)
+        phresp = lift(DSP.phaseresp, flt)
+        tau = @lift(-derivative(rad2deg.($phresp[1])))
 
         ax3 = GLMakie.Axis(
             p[3, 1];
@@ -288,14 +425,12 @@ function plot_filter(;
         ax3.xticklabelsize = 12
         ax3.yticklabelsize = 12
 
-        GLMakie.lines!(ax3, w, tau; colormap = pal)
-
-        if length(cutoff[]) == 1
-            GLMakie.vlines!(ax3, cutoff[]; linestyle = :dash, linewidth = 0.5, colormap = pal)
-        else
-            GLMakie.vlines!(ax3, cutoff[][1]; linestyle = :dash, linewidth = 0.5, color = :red, colormap = pal)
-            GLMakie.vlines!(ax3, cutoff[][2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
-        end
+        GLMakie.lines!(
+                    ax3,
+                    f,
+                    tau,
+                    color = mono ? :black : :blue,
+                )
 
     else
         f = range(0; stop = pi, length = 1024)
@@ -303,9 +438,7 @@ function plot_filter(;
         # convert to dB
         H = amp2db.(abs.(H))
         # convert rad/sample to Hz
-        w = Observable(collect(f .* fs / 2 / pi))
-        @show H[]
-        @show w[]
+        f = Observable(collect(f .* fs / 2 / pi))
 
         if fprototype === :fir
             title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $order\n\nFrequency response"
@@ -347,13 +480,6 @@ function plot_filter(;
             colormap = pal,
         )
 
-        if length(cutoff) == 1
-            GLMakie.vlines!(ax1, cutoff; linestyle = :dash, linewidth = 0.5, colormap = pal)
-        else
-            GLMakie.vlines!(ax1, cutoff[1]; linestyle = :dash, linewidth = 0.5, color = :red, colormap = pal)
-            GLMakie.vlines!(ax1, cutoff[2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
-        end
-
         w = range(0; stop = pi, length = 1024)
         phi = _fir_response(flt[], w)
         phi = rad2deg.(-atan.(imag(phi), real(phi)))
@@ -386,13 +512,6 @@ function plot_filter(;
 
         GLMakie.lines!(ax2, w, phi; colormap = pal)
 
-        if length(cutoff) == 1
-            GLMakie.vlines!(ax2, cutoff; linestyle = :dash, linewidth = 0.5, colormap = pal)
-        else
-            GLMakie.vlines!(ax2, cutoff[1]; linestyle = :dash, linewidth = 0.5, color = :red, colormap = pal)
-            GLMakie.vlines!(ax2, cutoff[2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
-        end
-
         tau = -derivative(phi)
 
         ax3 = GLMakie.Axis(
@@ -421,13 +540,75 @@ function plot_filter(;
 
         GLMakie.lines!(ax3, w, tau; colormap = pal)
 
-        if length(cutoff) == 1
-            GLMakie.vlines!(ax3, cutoff; linestyle = :dash, linewidth = 0.5, colormap = pal)
-        else
-            GLMakie.vlines!(ax3, cutoff[1]; linestyle = :dash, linewidth = 0.5, color = :red, colormap = pal)
-            GLMakie.vlines!(ax3, cutoff[2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
-        end
     end
+
+    if length(cutoff[]) == 1
+        GLMakie.vlines!(
+                    ax1,
+                    cutoff,
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :red,
+                )
+        GLMakie.vlines!(
+                    ax2,
+                    cutoff,
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :red,
+                )
+        GLMakie.vlines!(
+                    ax3,
+                    cutoff,
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :red,
+                )
+    else
+        GLMakie.vlines!(
+                    ax1,
+                    cutoff[1],
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :red,
+                )
+        GLMakie.vlines!(
+                    ax1,
+                    cutoff[2],
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :green,
+                )
+        GLMakie.vlines!(
+                    ax2,
+                    cutoff[1],
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :red,
+                )
+        GLMakie.vlines!(
+                    ax2,
+                    cutoff[2],
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :green,
+                )
+        GLMakie.vlines!(
+                    ax3,
+                    cutoff[1],
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :red,
+                )
+        GLMakie.vlines!(
+                    ax3,
+                    cutoff[2],
+                    linestyle = :dash,
+                    linewidth = 1,
+                    color = mono ? :black : :green,
+                )
+    end
+
 
     return p
 
@@ -457,7 +638,7 @@ Plot filter response.
       + `:bp`: band pass
       + `:bs`: band stop
   - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `order::Union{Nothing, Int64}`: filter order
+  - `order::Union{Nothing, Int64}=nothing`: filter order
   - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
   - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
   - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
@@ -474,7 +655,7 @@ function plot_filter(
     fprototype::Symbol,
     ftype::Union{Nothing, Symbol} = nothing,
     cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64},
+    order::Union{Nothing, Int64}=nothing,
     rp::Union{Nothing, Real} = nothing,
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,

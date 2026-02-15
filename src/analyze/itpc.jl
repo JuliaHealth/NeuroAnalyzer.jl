@@ -192,7 +192,7 @@ function itpc_spec(
 )::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, f::Vector{Float64}}
 
     _check_var(frq, [:log, :lin], "frq")
-    _check_tuple(flim, "flim", (0, sr(obj) / 2))
+    _check_tuple(flim, (0, sr(obj) / 2), "flim")
     @assert nfrq >= 2 "nfrq must be ≥ 2."
     if frq === :log
         flim = flim[1] == 0 ? (0.01, flim[2]) : (flim[1], flim[2])

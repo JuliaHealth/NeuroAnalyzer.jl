@@ -47,7 +47,7 @@ function psd_slope(
     gw::Real = 5,
 )::@NamedTuple{lf::Vector{Float64}, ls::Float64, pf::Vector{Float64}}
 
-    _check_tuple(flim, "flim", (0, fs / 2))
+    _check_tuple(flim, (0, fs / 2), "flim")
 
     pw, pf = psd(
         s; fs = fs, db = db, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw

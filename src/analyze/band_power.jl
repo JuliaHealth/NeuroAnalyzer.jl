@@ -42,7 +42,7 @@ function band_power(
 )::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
-    _check_tuple(flim, "flim", (0, fs / 2))
+    _check_tuple(flim, (0, fs / 2), "flim")
 
     pw, pf = psd(
         s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw

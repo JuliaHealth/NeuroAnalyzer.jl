@@ -25,9 +25,7 @@ function psi(
 )::Tuple{Float64, Float64}
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
-    _check_tuple(flim, "flim", (0, fs / 2))
-    @assert flim[1] >= 1.0 "Lower frequency bound must be ≥ 1."
-    @assert flim[2] < fs/2 "Upper frequency bound must be ≤ $(round(Int64, fs / 2 - 1))."
+    _check_tuple(flim, (1, fs / 2 - 1), "flim", type=:in)
 
     if flim[1] != round(Int64, flim[1])
         _warn("Lower frequency bound rounded to: $(round(Int64, flim[1])) Hz")

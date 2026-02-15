@@ -300,7 +300,7 @@ function psd(
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
 )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
-    _check_tuple(flim, "flim", (0, sr(obj) / 2))
+    _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
     ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     _log_off()

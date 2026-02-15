@@ -30,8 +30,8 @@ function spec_seg(
     segp::Matrix{Float64}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}
 }
 
-    _check_tuple(t, "t", (st[1], st[end]))
-    _check_tuple(f, "f", (sf[1], sf[end]))
+    _check_tuple(t, (st[1], st[end]), "t")
+    _check_tuple(f, (sf[1], sf[end]), "f")
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)
@@ -74,8 +74,8 @@ function spec_seg(
     segp::Array{Float64, 3}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}
 }
 
-    _check_tuple(t, "t", (st[1], st[end]))
-    _check_tuple(f, "f", (sf[1], sf[end]))
+    _check_tuple(t, (st[1], st[end]), "t")
+    _check_tuple(f, (sf[1], sf[end]), "f")
     @assert ch in axes(sp, 3) "ch must be in [1, $(size(sp, 3))]."
 
     fidx1 = vsearch(f[1], sf)
@@ -113,7 +113,7 @@ function flim(
 
     @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
 
-    _check_tuple(flim, "flim", (f[1], f[end]))
+    _check_tuple(flim, (f[1], f[end]), "flim")
 
     f1_idx = vsearch(flim[1], f)
     f2_idx = vsearch(flim[2], f)
@@ -154,7 +154,7 @@ function tlim(
 )::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
 
     _chk4d(p)
-    _check_tuple(seg, "seg", (t[1], t[end]))
+    _check_tuple(seg, (t[1], t[end]), "seg")
 
     t1_idx = vsearch(seg[1], t)
     t2_idx = vsearch(seg[2], t)

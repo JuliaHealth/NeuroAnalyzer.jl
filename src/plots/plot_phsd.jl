@@ -614,7 +614,7 @@ function plot_phsd(
 
     # frequency limits
     fs = sr(obj)
-    _check_tuple(flim, "flim", (0, sr(obj) / 2))
+    _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
     # calculate PHSD
     sp, sf = phsd(signal; fs = fs)

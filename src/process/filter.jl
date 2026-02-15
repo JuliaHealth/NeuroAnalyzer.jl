@@ -49,53 +49,80 @@ function filter_create(;
     w::Union{Nothing, AbstractVector} = nothing,
 )::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
-    _check_var(
-        fprototype, [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch], "fprototype"
-    )
+    @assert fs >= 1 "fs must be ≥ 1."
+    nqf = div(fs, 2)
 
+    # check parameters
+
+    _check_var(
+        fprototype,
+        [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch],
+        "fprototype"
+    )
+    !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     if fprototype === :fir
         @assert isnothing(order) || isnothing(w) "Either order or w must be specified."
         if !isnothing(w)
-            @assert length(w) > 0 "Length of w must be ≥ 1."
+            ftype in [:hp, :bp, :bs] && @assert mod(w, 2) != 0 "Length of w must be odd."
+            @assert length(w) >= 1 "Length of w must be ≥ 1."
             order = length(w)
-            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "Length of w must be odd."
-        end
-        if !isnothing(order)
+        elseif !isnothing(order)
             ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
             w = DSP.hamming(order)
         end
         @assert length(w) == order "Length of w ($(length(w))) and order ($order) must be equal."
     end
+    if fprototype in [:firls, :remez, :iirnotch]
+        @assert !isnothing(bw) "bw must be specified."
+        @assert bw > 0 "bw must be > 0."
+        @assert bw <= 10 "bw must be ≤ 10."
+        if length(cutoff) == 1
+            if bw >= cutoff
+                bw = round(cutoff - 0.1, digits=1)
+                _info("bw truncated to $bw Hz")
+            end
+        else
+            if bw >= cutoff[2]
+                bw = round(cutoff[2] - 0.1, digits=1)
+                _info("bw truncated to $bw Hz")
+            end
 
+        end
+    end
+    if fprototype === :firls
+        if ftype in [:bp, :bs]
+            if !isnothing(w)
+                @assert length(w) == 6 "Length of w must be 6."
+            else
+                w = ones(6)
+            end
+        elseif ftype in [:lp, :hs]
+            if !isnothing(w)
+                @assert length(w) == 6 "Length of w must be 6."
+            else
+                w = ones(6)
+            end
+        end
+    end
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        if isnothing(rp)
+            rp = fprototype === :elliptic ? 0.0025 : 2
+            _info("rp: $rp Hz.")
+        end
+        if isnothing(rs)
+            rs = fprototype === :elliptic ? 40 : 20
+            _info("rs: $rs Hz.")
+        end
+    end
     if fprototype !== :iirnotch
         @assert !isnothing(order) "order must be specified."
         @assert !isnothing(ftype) "ftype must be specified."
-        _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     end
-
-    fprototype in [:firls, :remez, :iirnotch] && @assert !isnothing(bw) "bw must be specified."
-    @assert fs >= 1 "fs must be ≥ 1."
-
-    nqf = div(fs, 2)
-    if length(cutoff) == 1
-        @assert cutoff > 0 "cutoff must be > 0 Hz."
-        @assert cutoff < nqf "cutoff must be < $nqf Hz."
-    else
-        @assert cutoff[1] > 0 "cutoff[1] must be > 0 Hz."
-        @assert cutoff[2] < nqf "cutoff[2] must be < $nqf Hz."
+    if fprototype === :iirnotch
+        !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
+        !isnothing(order) && _info("For :iirnotch filter order is ignored")
+        @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
     end
-
-    if !isnothing(bw)
-        @assert bw > 0 "bw must be > 0."
-        if length(cutoff) == 1
-            @assert bw < cutoff "bw must be < $cutoff."
-        else
-            @assert bw < cutoff[2] "bw must be < $(cutoff[2])."
-        end
-#        @assert bw < fs - cutoff[1] "bw must be < $(fs - cutoff[1])."
-#        length(cutoff) == 2 && (@assert bw < fs - cutoff[2] "bw must be < $(fs - cutoff[2]).")
-    end
-
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         if ftype === :lp
             @assert length(cutoff) == 1 "For :lp filter, cutoff must specify only one frequency."
@@ -111,10 +138,30 @@ function filter_create(;
             responsetype = Bandstop(cutoff[1], cutoff[2])
         end
     end
+    if length(cutoff) == 1
+        @assert cutoff > 0 "cutoff must be > 0 Hz."
+        @assert cutoff < nqf "cutoff must be < $nqf Hz."
+    else
+        _check_tuple(cutoff, (0, nqf), "cutoff")
+    end
 
     ## FIR filters
+
+    if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        if ftype === :lp
+            responsetype = Lowpass(cutoff)
+        elseif ftype === :hp
+            responsetype = Highpass(cutoff)
+        elseif ftype === :bp
+            responsetype = Bandpass(cutoff[1], cutoff[2])
+        elseif ftype === :bs
+            responsetype = Bandstop(cutoff[1], cutoff[2])
+        end
+    end
+
     if fprototype in [:fir, :firls, :remez]
         if fprototype === :fir
+
             prototype = FIRWindow(w)
 
             if ftype in [:lp, :hp]
@@ -135,49 +182,37 @@ function filter_create(;
 
         elseif fprototype === :firls
             if ftype === :bp
+
                 f1_stop = cutoff[1] - bw
                 f1_pass = cutoff[1] + bw
                 f2_pass = cutoff[2] - bw
                 f2_stop = cutoff[2] + bw
                 flt_shape = [0, 0, 1, 1, 0, 0]
                 flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
-                if !isnothing(w)
-                    @assert length(w) == 6 "Length of w must be 6."
-                else
-                    w = ones(6)
-                end
+
             elseif ftype === :bs
+
                 f1_pass = cutoff[1] - (bw / 2)
                 f1_stop = cutoff[1] + (bw / 2)
                 f2_stop = cutoff[2] - (bw / 2)
                 f2_pass = cutoff[2] + (bw / 2)
                 flt_shape = [1, 1, 0, 0, 1, 1]
                 flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
-                if !isnothing(w)
-                    @assert length(w) == 6 "Length of w must be 6."
-                else
-                    w = ones(6)
-                end
+
             elseif ftype === :lp
+
                 f_pass = cutoff[1] - (bw / 2)
                 f_stop = cutoff[1] + (bw / 2)
                 flt_shape = [1, 1, 0, 0]
                 flt_frq = [0, f_pass, f_stop, fs / 2]
-                if !isnothing(w)
-                    @assert length(w) == 4 "Length of w must be 4."
-                else
-                    w = ones(4)
-                end
+
             elseif ftype === :hp
+
                 f_pass = cutoff[1] + (bw / 2)
                 f_stop = cutoff[1] - (bw / 2)
                 flt_shape = [0, 0, 1, 1]
                 flt_frq = [0, f_stop, f_pass, fs / 2]
-                if !isnothing(w)
-                    @assert length(w) == 4 "Length of w must be 4."
-                else
-                    w = ones(4)
-                end
+
             end
 
             if ftype in [:lp, :hp]
@@ -268,22 +303,6 @@ function filter_create(;
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
 
-        if isnothing(rp)
-            if fprototype === :elliptic
-                rp = 0.0025
-            else
-                rp = 2
-            end
-        end
-
-        if isnothing(rs)
-            if fprototype === :elliptic
-                rs = 40
-            else
-                rs = 20
-            end
-        end
-
         if fprototype === :butterworth
             prototype = Butterworth(order)
         elseif fprototype === :chebyshev1
@@ -302,13 +321,7 @@ function filter_create(;
 
         return flt
 
-    end
-
-    if fprototype === :iirnotch
-        if !isnothing(ftype)
-            _info("For :iirnotch filter ftype is ignored")
-        end
-        @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
+    elseif fprototype === :iirnotch
 
         flt = iirnotch(cutoff[1], bw; fs = fs)
 

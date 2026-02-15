@@ -23,7 +23,7 @@ function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}} = 0):
 
         s_new = n == 0 ? s .- mean(s) : s .- mean(s[1:n])
     else
-        n != (0, 0) && _check_tuple(n, "n", (1, length(s)))
+        n != (0, 0) && _check_tuple(n, (1, length(s)), "n")
 
         s_new = n == (0, 0) ? s .- mean(s) : s .- mean(s[n[1]:n[2]])
     end

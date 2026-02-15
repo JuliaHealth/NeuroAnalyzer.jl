@@ -28,11 +28,22 @@ function _chk4d(a::AbstractArray)::Nothing
     return nothing
 end
 
-function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}} = nothing)::Nothing
+function _check_tuple(
+    t::Tuple{Real, Real},
+    range::Union{Nothing, Tuple{Real, Real}},
+    name::Union{Nothing, String} = nothing,
+    type::Symbol=:bin
+)::Nothing
+    _check_var(type, [:in, :bin], "type")
     @assert t == tuple_order(t) "$name must contain two values in ascending order."
     @assert t[1] < t[2] "$name must contain two different values in ascending order."
+    isnothing(name) && (name = "Tuple")
     if range !== nothing
-        @assert !(t[1] < range[1] || t[2] < range[1] || t[1] > range[2] || t[2] > range[2]) "$name must be in [$(range[1]), $(range[2])]."
+        if type === :bin
+            @assert !(t[1] < range[1] || t[2] < range[1] || t[1] > range[2] || t[2] > range[2]) "$name must be in <$(range[1]), $(range[2])>."
+        else
+            @assert !(t[1] <= range[1] || t[2] <= range[1] || t[1] >= range[2] || t[2] >= range[2]) "$name must be in [$(range[1]), $(range[2])]."
+        end
     end
     return nothing
 end

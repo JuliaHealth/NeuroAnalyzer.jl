@@ -35,7 +35,7 @@ function average_epochs(
     # remove baseline prior to averaging
     if blfirst
         if bl != (0, 0)
-            _check_tuple(bl, "bl", (obj.epoch_time[1], obj.epoch_time[end]))
+            _check_tuple(bl, (obj.epoch_time[1], obj.epoch_time[end]), "bl")
             bl = (vsearch(bl[1], obj.epoch_time), vsearch(bl[2], obj.epoch_time))
             obj_new.data[:, :, :] = remove_dc(obj_new.data[:, :, :], bl)
         end
@@ -52,7 +52,7 @@ function average_epochs(
     # remove baseline after to averaging
     if !blfirst
         if bl != (0, 0)
-            _check_tuple(bl, "bl", (obj.epoch_time[1], obj.epoch_time[end]))
+            _check_tuple(bl, (obj.epoch_time[1], obj.epoch_time[end]), "bl")
             bl = (vsearch(bl[1], obj.epoch_time), vsearch(bl[2], obj.epoch_time))
             obj_new.data[:, :, 1] = remove_dc(obj_new.data[:, :, [1]], bl)
         end

@@ -49,7 +49,7 @@ function cpsd(
     @assert wlen >= 2 "wlen must be ≥ 2."
     @assert woverlap < wlen "woverlap must be < $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
-    _check_tuple(flim, "flim", (0, fs / 2))
+    _check_tuple(flim, (0, fs / 2), "flim")
 
     n_samples = length(s1)
 
@@ -172,7 +172,7 @@ function cpsd(
         w = w,
     )
     if flim !== nothing
-        _check_tuple(flim, "flim", (0, fs / 2))
+        _check_tuple(flim, (0, fs / 2), "flim")
         idx1 = vsearch(flim[1], f)
         idx2 = vsearch(flim[2], f)
         f = f[idx1:idx2]

@@ -41,7 +41,7 @@ function sef(
 )::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
-    _check_tuple(f, "f", (0, fs / 2))
+    _check_tuple(f, (0, fs / 2), "f")
 
     pw, pf = psd(s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
 

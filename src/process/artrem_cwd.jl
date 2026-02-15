@@ -36,8 +36,8 @@ function artrem_cwd(
     @assert fs >= 1 "fs must be ≥ 1."
 
     f = cwtfrq(s; fs = fs, wt = wt)
-    _check_tuple(tseg, "tseg", (t[1], t[end]))
-    _check_tuple(fseg, "fseg", (f[1], f[end]))
+    _check_tuple(tseg, (t[1], t[end]), "tseg")
+    _check_tuple(fseg, (f[1], f[end]), "fseg")
 
     # perform continuous wavelet transformation
     s_new = cwd(s; wt = wt)
