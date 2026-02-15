@@ -61,9 +61,9 @@ function filter_create(;
     )
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     if fprototype === :fir
-        @assert isnothing(order) || isnothing(w) "Either order or w must be specified."
+        @assert !(isnothing(order) && isnothing(w)) "Either order or w must be specified."
         if !isnothing(w)
-            ftype in [:hp, :bp, :bs] && @assert mod(w, 2) != 0 "Length of w must be odd."
+            ftype in [:hp, :bp, :bs] && @assert mod(length(w), 2) != 0 "Length of w must be odd."
             @assert length(w) >= 1 "Length of w must be ≥ 1."
             order = length(w)
         elseif !isnothing(order)
@@ -113,7 +113,7 @@ function filter_create(;
             _info("rs set at $rs Hz.")
         end
     end
-    if fprototype !== :iirnotch
+    if fprototype in [:firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         @assert !isnothing(order) "order must be specified."
         @assert !isnothing(ftype) "ftype must be specified."
     end
@@ -130,10 +130,12 @@ function filter_create(;
         @assert cutoff > 0 "cutoff must be > 0 Hz."
         @assert cutoff < nqf "cutoff must be < $nqf Hz."
     else
-        _check_tuple(cutoff, (0, nqf), "cutoff")
+        if cutoff[1] == cutoff[2]
+            cutoff = (cutoff[1], cutoff[1] + 0.1)
+        elseif cutoff[1] > cutoff[2]
+            cutoff = (cutoff[2], cutoff[1])
+        end
     end
-
-    ## FIR filters
 
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         if ftype === :lp
@@ -147,144 +149,145 @@ function filter_create(;
         end
     end
 
-    if fprototype in [:fir, :firls, :remez]
-        if fprototype === :fir
+    ## FIR filters
 
-            prototype = FIRWindow(w)
+    if fprototype === :fir
 
-            if ftype in [:lp, :hp]
-                ftype === :lp && _info("Creating LP filter:")
-                ftype === :hp && _info("Creating HP filter:")
-                _info(" Number of taps: $order")
-            elseif ftype === :bp
-                _info("Creating BP filter:")
-                _info(" Number of taps: $order")
-            elseif ftype === :bs
-                _info("Creating BS filter:")
-                _info(" Number of taps: $order")
-            end
+        prototype = FIRWindow(w)
 
-            flt = digitalfilter(responsetype, prototype; fs = fs)
+        if ftype in [:lp, :hp]
+            ftype === :lp && _info("Creating LP filter:")
+            ftype === :hp && _info("Creating HP filter:")
+            _info(" Number of taps: $order")
+        elseif ftype === :bp
+            _info("Creating BP filter:")
+            _info(" Number of taps: $order")
+        elseif ftype === :bs
+            _info("Creating BS filter:")
+            _info(" Number of taps: $order")
+        end
 
-            return flt
+        flt = digitalfilter(responsetype, prototype; fs = fs)
 
-        elseif fprototype === :firls
-            if ftype === :bp
+        return flt
 
-                f1_stop = cutoff[1] - bw
-                f1_pass = cutoff[1] + bw
-                f2_pass = cutoff[2] - bw
-                f2_stop = cutoff[2] + bw
-                flt_shape = [0, 0, 1, 1, 0, 0]
-                flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
+    elseif fprototype === :firls
+        if ftype === :bp
 
-            elseif ftype === :bs
+            f1_stop = cutoff[1] - bw
+            f1_pass = cutoff[1] + bw
+            f2_pass = cutoff[2] - bw
+            f2_stop = cutoff[2] + bw
+            flt_shape = [0, 0, 1, 1, 0, 0]
+            flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
 
-                f1_pass = cutoff[1] - (bw / 2)
-                f1_stop = cutoff[1] + (bw / 2)
-                f2_stop = cutoff[2] - (bw / 2)
-                f2_pass = cutoff[2] + (bw / 2)
-                flt_shape = [1, 1, 0, 0, 1, 1]
-                flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
+        elseif ftype === :bs
 
-            elseif ftype === :lp
+            f1_pass = cutoff[1] - (bw / 2)
+            f1_stop = cutoff[1] + (bw / 2)
+            f2_stop = cutoff[2] - (bw / 2)
+            f2_pass = cutoff[2] + (bw / 2)
+            flt_shape = [1, 1, 0, 0, 1, 1]
+            flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
 
-                f_pass = cutoff[1] - (bw / 2)
-                f_stop = cutoff[1] + (bw / 2)
-                flt_shape = [1, 1, 0, 0]
-                flt_frq = [0, f_pass, f_stop, fs / 2]
+        elseif ftype === :lp
 
-            elseif ftype === :hp
+            f_pass = cutoff[1] - (bw / 2)
+            f_stop = cutoff[1] + (bw / 2)
+            flt_shape = [1, 1, 0, 0]
+            flt_frq = [0, f_pass, f_stop, fs / 2]
 
-                f_pass = cutoff[1] + (bw / 2)
-                f_stop = cutoff[1] - (bw / 2)
-                flt_shape = [0, 0, 1, 1]
-                flt_frq = [0, f_stop, f_pass, fs / 2]
+        elseif ftype === :hp
 
-            end
-
-            if ftype in [:lp, :hp]
-                ftype === :lp && _info("Creating LP filter:")
-                ftype === :hp && _info("Creating HP filter:")
-                _info(" Number of taps: $order")
-                _info(" Transition band width: $bw Hz")
-                _info(" F_pass: $f_pass Hz")
-                _info(" F_stop: $f_stop Hz")
-            elseif ftype === :bp
-                _info("Creating BP filter:")
-                _info(" Number of taps: $order")
-                _info(" Transition band width: $bw Hz")
-                _info(" F1_stop: $f1_stop Hz")
-                _info(" F1_pass: $f1_pass Hz")
-                _info(" F2_pass: $f2_pass Hz")
-                _info(" F2_stop: $f2_stop Hz")
-            elseif ftype === :bs
-                _info("Creating BS filter:")
-                _info(" Number of taps: $order")
-                _info(" Transition band width: $bw Hz")
-                _info(" F1_pass: $f1_pass Hz")
-                _info(" F1_stop: $f1_stop Hz")
-                _info(" F2_stop: $f2_stop Hz")
-                _info(" F2_pass: $f2_pass Hz")
-            end
-
-            flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true; fs = fs)
-
-            return flt
-
-        elseif fprototype === :remez
-            if ftype === :bp
-                f1_stop = cutoff[1] - (bw / 2)
-                f1_pass = cutoff[1] + (bw / 2)
-                f2_pass = cutoff[2] - (bw / 2)
-                f2_stop = cutoff[2] + (bw / 2)
-                w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, fs / 2) => 0]
-            elseif ftype === :bs
-                f1_pass = cutoff[1] - (bw / 2)
-                f1_stop = cutoff[1] + (bw / 2)
-                f2_stop = cutoff[2] - (bw / 2)
-                f2_pass = cutoff[2] + (bw / 2)
-                w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, fs / 2) => 1]
-            elseif ftype === :lp
-                f_pass = cutoff[1] - (bw / 2)
-                f_stop = cutoff[1] + (bw / 2)
-                w = [(0, f_pass) => 1, (f_stop, fs / 2) => 0]
-            elseif ftype === :hp
-                f_pass = cutoff[1] + (bw / 2)
-                f_stop = cutoff[1] - (bw / 2)
-                w = [(0, f_stop) => 0, (f_pass, fs / 2) => 1]
-            end
-
-            if ftype in [:lp, :hp]
-                ftype === :lp && _info("Creating LP filter:")
-                ftype === :hp && _info("Creating HP filter:")
-                _info(" Number of taps: $order")
-                _info(" Transition band width: $bw Hz")
-                _info(" F_pass: $f_pass Hz")
-                _info(" F_stop: $f_stop Hz")
-            elseif ftype === :bp
-                _info("Creating BP filter:")
-                _info(" Number of taps: $order")
-                _info(" Transition band width: $bw Hz")
-                _info(" F1_stop: $f1_stop Hz")
-                _info(" F1_pass: $f1_pass Hz")
-                _info(" F2_pass: $f2_pass Hz")
-                _info(" F2_stop: $f2_stop Hz")
-            elseif ftype === :bs
-                _info("Creating BS filter:")
-                _info(" Number of taps: $order")
-                _info(" Transition band width: $bw Hz")
-                _info(" F1_pass: $f1_pass Hz")
-                _info(" F1_stop: $f1_stop Hz")
-                _info(" F2_stop: $f2_stop Hz")
-                _info(" F2_pass: $f2_pass Hz")
-            end
-
-            flt = remez(order, w; Hz = fs)
-
-            return flt
+            f_pass = cutoff[1] + (bw / 2)
+            f_stop = cutoff[1] - (bw / 2)
+            flt_shape = [0, 0, 1, 1]
+            flt_frq = [0, f_stop, f_pass, fs / 2]
 
         end
+
+        if ftype in [:lp, :hp]
+            ftype === :lp && _info("Creating LP filter:")
+            ftype === :hp && _info("Creating HP filter:")
+            _info(" Number of taps: $order")
+            _info(" Transition band width: $bw Hz")
+            _info(" F_pass: $f_pass Hz")
+            _info(" F_stop: $f_stop Hz")
+        elseif ftype === :bp
+            _info("Creating BP filter:")
+            _info(" Number of taps: $order")
+            _info(" Transition band width: $bw Hz")
+            _info(" F1_stop: $f1_stop Hz")
+            _info(" F1_pass: $f1_pass Hz")
+            _info(" F2_pass: $f2_pass Hz")
+            _info(" F2_stop: $f2_stop Hz")
+        elseif ftype === :bs
+            _info("Creating BS filter:")
+            _info(" Number of taps: $order")
+            _info(" Transition band width: $bw Hz")
+            _info(" F1_pass: $f1_pass Hz")
+            _info(" F1_stop: $f1_stop Hz")
+            _info(" F2_stop: $f2_stop Hz")
+            _info(" F2_pass: $f2_pass Hz")
+        end
+
+        flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true; fs = fs)
+
+        return flt
+
+    elseif fprototype === :remez
+
+        if ftype === :bp
+            f1_stop = cutoff[1] - (bw / 2)
+            f1_pass = cutoff[1] + (bw / 2)
+            f2_pass = cutoff[2] - (bw / 2)
+            f2_stop = cutoff[2] + (bw / 2)
+            w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, fs / 2) => 0]
+        elseif ftype === :bs
+            f1_pass = cutoff[1] - (bw / 2)
+            f1_stop = cutoff[1] + (bw / 2)
+            f2_stop = cutoff[2] - (bw / 2)
+            f2_pass = cutoff[2] + (bw / 2)
+            w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, fs / 2) => 1]
+        elseif ftype === :lp
+            f_pass = cutoff[1] - (bw / 2)
+            f_stop = cutoff[1] + (bw / 2)
+            w = [(0, f_pass) => 1, (f_stop, fs / 2) => 0]
+        elseif ftype === :hp
+            f_pass = cutoff[1] + (bw / 2)
+            f_stop = cutoff[1] - (bw / 2)
+            w = [(0, f_stop) => 0, (f_pass, fs / 2) => 1]
+        end
+
+        if ftype in [:lp, :hp]
+            ftype === :lp && _info("Creating LP filter:")
+            ftype === :hp && _info("Creating HP filter:")
+            _info(" Number of taps: $order")
+            _info(" Transition band width: $bw Hz")
+            _info(" F_pass: $f_pass Hz")
+            _info(" F_stop: $f_stop Hz")
+        elseif ftype === :bp
+            _info("Creating BP filter:")
+            _info(" Number of taps: $order")
+            _info(" Transition band width: $bw Hz")
+            _info(" F1_stop: $f1_stop Hz")
+            _info(" F1_pass: $f1_pass Hz")
+            _info(" F2_pass: $f2_pass Hz")
+            _info(" F2_stop: $f2_stop Hz")
+        elseif ftype === :bs
+            _info("Creating BS filter:")
+            _info(" Number of taps: $order")
+            _info(" Transition band width: $bw Hz")
+            _info(" F1_pass: $f1_pass Hz")
+            _info(" F1_stop: $f1_stop Hz")
+            _info(" F2_stop: $f2_stop Hz")
+            _info(" F2_pass: $f2_pass Hz")
+        end
+
+        flt = remez(order, w; Hz = fs)
+
+        return flt
+
     end
 
     ## IIR filters
