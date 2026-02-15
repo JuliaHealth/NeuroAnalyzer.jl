@@ -33,7 +33,7 @@ Plot continuous signal.
   - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
   - `n_channels::Int64=20`: number of visible channels
   - `res::Int64=1`: resampling factor (draw every res-nth sample)
-  - `snap::Bool=true`: snap to grid when placing marker
+  - `snap::Bool=true`: snap to grid when placing markers
   - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns

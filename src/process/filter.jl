@@ -76,19 +76,24 @@ function filter_create(;
     fprototype in [:firls, :remez, :iirnotch] && @assert !isnothing(bw) "bw must be specified."
     @assert fs >= 1 "fs must be ≥ 1."
 
+    nqf = div(fs, 2)
     if length(cutoff) == 1
-        @assert cutoff >= 0 "cutoff must be ≥ 0 Hz."
-        @assert cutoff <= fs / 2 "cutoff must be ≤ ($fs / 2) Hz."
+        @assert cutoff > 0 "cutoff must be > 0 Hz."
+        @assert cutoff < nqf "cutoff must be < $nqf Hz."
     else
-        @assert cutoff[1] >= 0 "cutoff[1] must be ≥ 0 Hz."
-        @assert cutoff[2] <= fs / 2 "cutoff[2] must be ≤ ($fs / 2) Hz."
+        @assert cutoff[1] > 0 "cutoff[1] must be > 0 Hz."
+        @assert cutoff[2] < nqf "cutoff[2] must be < $nqf Hz."
     end
 
     if !isnothing(bw)
         @assert bw > 0 "bw must be > 0."
-        @assert bw < cutoff[1] "bw must be < $(cutoff[1])."
-        @assert bw < fs - cutoff[1] "bw must be < $(fs - cutoff[1])."
-        length(cutoff) == 2 && (@assert bw < fs - cutoff[2] "bw must be < $(fs - cutoff[2]).")
+        if length(cutoff) == 1
+            @assert bw < cutoff "bw must be < $cutoff."
+        else
+            @assert bw < cutoff[2] "bw must be < $(cutoff[2])."
+        end
+#        @assert bw < fs - cutoff[1] "bw must be < $(fs - cutoff[1])."
+#        length(cutoff) == 2 && (@assert bw < fs - cutoff[2] "bw must be < $(fs - cutoff[2]).")
     end
 
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]

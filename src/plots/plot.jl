@@ -38,7 +38,7 @@ Plot signal.
   - `zl::Bool=true`: draw line at t = 0 (for ERP/ERF/MEP)
   - `mono::Bool=false`: use color or gray palette
   - `res::Int64=1`: resampling factor (draw every res-nth sample)
-  - `snap::Bool=true`: snap to grid when placing marker
+  - `snap::Bool=true`: snap to grid when placing markers
   - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
