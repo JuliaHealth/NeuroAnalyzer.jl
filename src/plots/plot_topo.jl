@@ -183,37 +183,41 @@ function plot_topo(
     end
 
     # prepare plot
-    p = GLMakie.Figure(; size = plot_size, figure_padding = ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0)) # L R B T
+    GLMakie.activate!(title = "plot_topo()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0), # L R B T
+                )
     ax = GLMakie.Axis(
-        p[1, 1];
-        aspect = 1,
-        xlabel = "",
-        ylabel = "",
-        title = title,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        backgroundcolor = :transparent,
-        titlesize = font_size,
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    aspect = 1,
+                    xlabel = "",
+                    ylabel = "",
+                    title = title,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    backgroundcolor = :transparent,
+                    titlesize = font_size,
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     hidedecorations!(ax)
     hidespines!(ax)
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
     if !isnothing(threshold) && threshold_method === :reg
         hm = GLMakie.heatmap!(
-            ax,
-            interpolated_x,
-            interpolated_y,
-            s_interpolated_threshold;
-            colorrange = extrema(s_interpolated[.!isnan.(s_interpolated)]),
-            colormap = pal,
-        )
+                            ax,
+                            interpolated_x,
+                            interpolated_y,
+                            s_interpolated_threshold;
+                            colorrange = extrema(s_interpolated[.!isnan.(s_interpolated)]),
+                            colormap = pal,
+                        )
     else
         hm = GLMakie.heatmap!(ax, interpolated_x, interpolated_y, s_interpolated; colormap = pal)
     end
@@ -222,15 +226,15 @@ function plot_topo(
     if contours > 0 &&
         ((isnothing(threshold) && threshold_method === :reg) || (!isnothing(threshold) && threshold_method === :loc))
         GLMakie.contour!(
-            ax,
-            interpolated_x,
-            interpolated_y,
-            s_interpolated;
-            linestyle = :dash,
-            levels = contours,
-            linewidth = 0.5,
-            color = :black,
-        )
+                        ax,
+                        interpolated_x,
+                        interpolated_y,
+                        s_interpolated;
+                        linestyle = :dash,
+                        levels = contours,
+                        linewidth = 0.5,
+                        color = :black,
+                    )
     end
 
     # draw head
@@ -284,14 +288,14 @@ function plot_topo(
             for idx in 1:ch_n
                 if idx in threshold_idx
                     GLMakie.scatter!(
-                        ax,
-                        loc_x[idx],
-                        loc_y[idx];
-                        markersize = marker_size * 2,
-                        color = :gray,
-                        strokewidth = sw,
-                        strokecolor = :black,
-                    )
+                                    ax,
+                                    loc_x[idx],
+                                    loc_y[idx];
+                                    markersize = marker_size * 2,
+                                    color = :gray,
+                                    strokewidth = sw,
+                                    strokecolor = :black,
+                                )
                 else
                     GLMakie.scatter!(ax, loc_x[idx], loc_y[idx]; markersize = marker_size, color = :black)
                 end

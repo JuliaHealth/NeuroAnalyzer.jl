@@ -85,31 +85,32 @@ function plot_spectrogram(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_spectrogram()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        yticks = LinearTicks(15),
-        yminorticksvisible = true,
-        yminorticks = IntervalsBetween(10),
-        yscale = frq===:lin ? identity : log,
-        xgridvisible = false,
-        ygridvisible = false,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = LinearTicks(10),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    yticks = LinearTicks(15),
+                    yminorticksvisible = true,
+                    yminorticks = IntervalsBetween(10),
+                    yscale = frq===:lin ? identity : log,
+                    xgridvisible = false,
+                    ygridvisible = false,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, (st[1], st[end]))
     GLMakie.ylims!(ax, flim)
     ax.titlesize = 18
@@ -217,28 +218,29 @@ function plot_spectrogram(
     reverse!(sp; dims = 1)
 
     # prepare plot
+    GLMakie.activate!(title = "plot_spectrogram()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = LinearTicks(15),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        yticks = (0.5:1:ch_n, reverse(clabels)),
-        yticksvisible = false,
-        xscale = frq===:lin ? identity : log,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = LinearTicks(15),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    yticks = (0.5:1:ch_n, reverse(clabels)),
+                    yticksvisible = false,
+                    xscale = frq===:lin ? identity : log,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, flim)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -407,22 +409,26 @@ function plot_spectrogram_topo(
     end
 
     # prepare plot
-    p = GLMakie.Figure(; size = plot_size, figure_padding = 0)
+    GLMakie.activate!(title = "plot_spectrogram()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = 0,
+                )
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = "",
-        ylabel = "",
-        title = title,
-        aspect = 1,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = "",
+                    ylabel = "",
+                    title = title,
+                    aspect = 1,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)

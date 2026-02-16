@@ -124,26 +124,30 @@ function plot_cont(
     else
         plot_size = (1200, 650)
     end
-    p = GLMakie.Figure(; size = plot_size, figure_padding = (10, 20, 10, 10)) # L R B T)
+    GLMakie.activate!(title = "plot()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = (10, 20, 10, 10), # L R B T
+                )
     ax1 = GLMakie.Axis(
-        p[1, 1];
-        xlabel = "",
-        ylabel = yl,
-        title = tt,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        yticks = (1:ch_n, clabels),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-        yticklabelspace = 60.0,
-    )
+                    p[1, 1];
+                    xlabel = "",
+                    ylabel = yl,
+                    title = tt,
+                    xticks = LinearTicks(10),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    yticks = (1:ch_n, clabels),
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                    yticklabelspace = 60.0,
+                )
     GLMakie.xlims!(ax1, seg)
     if gui
         if ch_n > nch[]
@@ -180,16 +184,16 @@ function plot_cont(
                 end
                 GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
                 GLMakie.text!(
-                    ax1,
-                    l_pos;
-                    markerspace = :pixel,
-                    text = string(r[][idx2]) * " " * cunits[idx1],
-                    fontsize = 10,
-                    color = :red,
-                    align = (:left, :bottom),
-                    #rotation=pi/2,
-                    offset = (5, 0),
-                )
+                            ax1,
+                            l_pos;
+                            markerspace = :pixel,
+                            text = string(r[][idx2]) * " " * cunits[idx1],
+                            fontsize = 10,
+                            color = :red,
+                            align = (:left, :bottom),
+                            #rotation=pi/2,
+                            offset = (5, 0),
+                        )
                 idx2 += 1
             end
         end

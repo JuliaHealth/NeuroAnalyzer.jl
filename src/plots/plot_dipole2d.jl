@@ -32,6 +32,7 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     mag = (mx, my, mz)
 
     # prepare plot
+    GLMakie.activate!(title = "plot_dipole_2d()")
     plot_size = (1200, 400)
     p = GLMakie.Figure(; size = plot_size)
     ax_xy = GLMakie.Axis(

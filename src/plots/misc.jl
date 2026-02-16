@@ -37,6 +37,8 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::G
         end
     end
 
+    # prepare plot
+    GLMakie.activate!(title = "plot_compose()")
     pc = GLMakie.Figure(; size = plot_size)
     gl = pc[1, 1] = GridLayout(layout[1], layout[2])
     p_idx = 1

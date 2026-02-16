@@ -64,27 +64,28 @@ function plot_matrix(
     pal = mono ? :grays : :bluesreds
 
     # prepare plot
+    GLMakie.activate!(title = "plot_matrix()")
     plot_size = (800, 800)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (1:n, xlabels),
-        xticklabelrotation = deg2rad(xrot),
-        xticksvisible = false,
-        yticks = (1:n, ylabels),
-        yticksvisible = false,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (1:n, xlabels),
+                    xticklabelrotation = deg2rad(xrot),
+                    xticksvisible = false,
+                    yticks = (1:n, ylabels),
+                    yticksvisible = false,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -122,25 +123,26 @@ function plot_xac(
 )::GLMakie.Figure
 
     # prepare plot
+    GLMakie.activate!(title = "plot_xac()")
     plot_size = (800, 300)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = LinearTicks(20),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = LinearTicks(20),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -216,24 +218,25 @@ function plot_histogram(
     sort!(unique(xticks))
 
     # prepare plot
+    GLMakie.activate!(title = "plot_histogram()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = xticks,
-        xticklabelrotation = pi/2,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = xticks,
+                    xticklabelrotation = pi/2,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, extrema(xticks))
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -301,23 +304,24 @@ function plot_bar(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_bar()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (eachindex(xlabels), xlabels),
-        xautolimitmargin = (0.01, 0.01),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (eachindex(xlabels), xlabels),
+                    xautolimitmargin = (0.01, 0.01),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -361,23 +365,24 @@ function plot_line(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_line()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (eachindex(xlabels), xlabels),
-        xautolimitmargin = (0.1, 0.1),
-        yautolimitmargin = (0.1, 0.1),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (eachindex(xlabels), xlabels),
+                    xautolimitmargin = (0.1, 0.1),
+                    yautolimitmargin = (0.1, 0.1),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -433,23 +438,24 @@ function plot_line(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_line()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (eachindex(xlabels), xlabels),
-        xautolimitmargin = (0.1, 0.1),
-        yautolimitmargin = (0.1, 0.1),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (eachindex(xlabels), xlabels),
+                    xautolimitmargin = (0.1, 0.1),
+                    yautolimitmargin = (0.1, 0.1),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -460,13 +466,13 @@ function plot_line(
     cmap = GLMakie.resample_cmap(pal, length(xlabels))
     for idx in axes(s, 1)
         GLMakie.lines!(
-            eachindex(xlabels),
-            s[idx, :];
-            label = rlabels[idx],
-            color = cmap[idx],
-            colormap = pal,
-            colorrange = eachindex(xlabels),
-        )
+                    eachindex(xlabels),
+                    s[idx, :];
+                    label = rlabels[idx],
+                    color = cmap[idx],
+                    colormap = pal,
+                    colorrange = eachindex(xlabels),
+                )
     end
 
     axislegend(; position = :rt)
@@ -515,23 +521,24 @@ function plot_box(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_box()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (eachindex(xlabels), xlabels),
-        xautolimitmargin = (0.01, 0.01),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (eachindex(xlabels), xlabels),
+                    xautolimitmargin = (0.01, 0.01),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -585,23 +592,24 @@ function plot_violin(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_violin()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (eachindex(xlabels), xlabels),
-        xautolimitmargin = (0.01, 0.01),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (eachindex(xlabels), xlabels),
+                    xautolimitmargin = (0.01, 0.01),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -660,23 +668,24 @@ function plot_dots(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_dots()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (eachindex(xlabels), xlabels),
-        xautolimitmargin = (0.25, 0.25),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (eachindex(xlabels), xlabels),
+                    xautolimitmargin = (0.25, 0.25),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -736,23 +745,24 @@ function plot_paired(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_paired()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = (eachindex(xlabels), xlabels),
-        xautolimitmargin = (0.25, 0.25),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = (eachindex(xlabels), xlabels),
+                    xautolimitmargin = (0.25, 0.25),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -821,9 +831,15 @@ function plot_polar(
     pal = mono ? :grays : :darktest
 
     # prepare plot
+    GLMakie.activate!(title = "plot_polar()")
     plot_size = (800, 800)
-    p = GLMakie.Figure(; size = plot_size)
-    ax = GLMakie.PolarAxis(p[1, 1]; title = title, thetazoomlock = true, rzoomlock = true)
+    p = GLMakie.Figure(size = plot_size)
+    ax = GLMakie.PolarAxis(
+                        p[1, 1],
+                        title = title,
+                        thetazoomlock = true,
+                        rzoomlock = true,
+                    )
     !ticks && hidespines!(ax)
 
     if ndims(s) == 1
@@ -943,27 +959,28 @@ function plot_eros(
         )
 
         # prepare plot
+        GLMakie.activate!(title = "plot_eros()")
         plot_size = (900, 450)
-        p = GLMakie.Figure(; size = plot_size)
+        p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis(
-            p[1, 1];
-            xlabel = xl,
-            ylabel = yl,
-            title = tt,
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            yticks = yt,
-            yscale = frq===:lin ? identity : log,
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[1, 1];
+                        xlabel = xl,
+                        ylabel = yl,
+                        title = tt,
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        yticks = yt,
+                        yscale = frq===:lin ? identity : log,
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.ylims!(ax, flim)
         ax.titlesize = 18
         ax.xlabelsize = 18
@@ -986,27 +1003,28 @@ function plot_eros(
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "ERP spectrogram")
 
         # prepare plot
+        GLMakie.activate!(title = "plot_eros()")
         plot_size = (1200, 800)
-        p = GLMakie.Figure(; size = plot_size)
+        p = GLMakie.Figure(size = plot_size)
         ax1 = GLMakie.Axis(
-            p[1, 1];
-            xlabel = xl,
-            ylabel = yl,
-            title = tt,
-            xticks = LinearTicks(10),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            yticks = yt,
-            yscale = frq===:lin ? identity : log,
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[1, 1];
+                        xlabel = xl,
+                        ylabel = yl,
+                        title = tt,
+                        xticks = LinearTicks(10),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        yticks = yt,
+                        yscale = frq===:lin ? identity : log,
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.ylims!(ax1, flim)
         ax1.titlesize = 18
         ax1.xlabelsize = 18
@@ -1034,24 +1052,24 @@ function plot_eros(
             xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs"
         )
         ax2 = GLMakie.Axis(
-            p[2, 1];
-            xlabel = xl,
-            ylabel = yl,
-            title = tt,
-            xticks = LinearTicks(10),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            yticks = yt,
-            yscale = frq===:lin ? identity : log,
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[2, 1];
+                        xlabel = xl,
+                        ylabel = yl,
+                        title = tt,
+                        xticks = LinearTicks(10),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        yticks = yt,
+                        yscale = frq===:lin ? identity : log,
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.ylims!(ax2, flim)
         ax2.titlesize = 18
         ax2.xlabelsize = 18
@@ -1144,26 +1162,27 @@ function plot_erop(
         end
 
         # prepare plot
+        GLMakie.activate!(title = "plot_erop()")
         plot_size = (900, 450)
-        p = GLMakie.Figure(; size = plot_size)
+        p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis(
-            p[1, 1];
-            xlabel = xl,
-            ylabel = yl,
-            title = tt,
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xscale = frq===:lin ? identity : log,
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[1, 1];
+                        xlabel = xl,
+                        ylabel = yl,
+                        title = tt,
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xscale = frq===:lin ? identity : log,
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 18
         ax.xlabelsize = 18
@@ -1186,26 +1205,27 @@ function plot_erop(
         end
 
         # prepare plot
+        GLMakie.activate!(title = "plot_erop()")
         plot_size = (1200, 800)
-        p = GLMakie.Figure(; size = plot_size)
+        p = GLMakie.Figure(size = plot_size)
         ax1 = GLMakie.Axis(
-            p[1, 1];
-            xlabel = xl,
-            ylabel = yl,
-            title = tt,
-            xticks = LinearTicks(15),
-            xminorticksvisible = true,
-            xminorticks = IntervalsBetween(10),
-            xscale = frq===:lin ? identity : log,
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[1, 1];
+                        xlabel = xl,
+                        ylabel = yl,
+                        title = tt,
+                        xticks = LinearTicks(15),
+                        xminorticksvisible = true,
+                        xminorticks = IntervalsBetween(10),
+                        xscale = frq===:lin ? identity : log,
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax1, flim)
         ax1.titlesize = 18
         ax1.xlabelsize = 18
@@ -1366,26 +1386,27 @@ function plot_ci(
     yticks = [yl[1], 0, yl[2]]
 
     # prepare plot
+    GLMakie.activate!(title = "plot_ci()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = LinearTicks(10),
-        yticks = yticks,
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = LinearTicks(10),
+                    yticks = yticks,
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -1452,24 +1473,25 @@ function plot_heatmap(
     pal = mono ? :grays : :bluesreds
 
     # prepare plot
+    GLMakie.activate!(title = "plot_heatmap()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = LinearTicks(10),
-        yticks = LinearTicks(10),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = LinearTicks(10),
+                    yticks = LinearTicks(10),
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -1521,8 +1543,9 @@ function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::Abstract
     yticks = [ylim[1], 0, ylim[2]]
 
     # prepare plot
+    GLMakie.activate!(title = "plot_imf()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
 
     nr = ceil(Int64, (n + 1) / 2)
 
@@ -1533,23 +1556,23 @@ function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::Abstract
         for idx2 in 1:2
             if idx <= n + 1
                 ax = GLMakie.Axis(
-                    p[idx1, idx2];
-                    xlabel = "Time [s]",
-                    ylabel = "",
-                    title = idx == n + 1 ? "Residual" : "IMF: $idx",
-                    xticks = LinearTicks(10),
-                    xminorticksvisible = true,
-                    xminorticks = IntervalsBetween(10),
-                    yticks = yticks,
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0, 0),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                )
+                                p[idx1, idx2];
+                                xlabel = "Time [s]",
+                                ylabel = "",
+                                title = idx == n + 1 ? "Residual" : "IMF: $idx",
+                                xticks = LinearTicks(10),
+                                xminorticksvisible = true,
+                                xminorticks = IntervalsBetween(10),
+                                yticks = yticks,
+                                xautolimitmargin = (0, 0),
+                                yautolimitmargin = (0, 0),
+                                xzoomlock = true,
+                                yzoomlock = true,
+                                xpanlock = true,
+                                ypanlock = true,
+                                xrectzoom = false,
+                                yrectzoom = false,
+                            )
                 GLMakie.ylims!(ax, ylim)
                 ax.titlesize = 18
                 ax.xlabelsize = 18
@@ -1649,25 +1672,26 @@ function plot_hs(
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Power [μV^2/Hz]", "")
 
     # prepare plot
+    GLMakie.activate!(title = "plot_hs()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xl,
-        ylabel = yl,
-        title = tt,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xl,
+                    ylabel = yl,
+                    title = tt,
+                    xticks = LinearTicks(10),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, _xlims(st))
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -1712,25 +1736,26 @@ function plot_fi(
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Frequency [Hz]", "")
 
     # prepare plot
+    GLMakie.activate!(title = "plot_fi()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xl,
-        ylabel = yl,
-        title = tt,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xl,
+                    ylabel = yl,
+                    title = tt,
+                    xticks = LinearTicks(10),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, _xlims(st))
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -1781,25 +1806,26 @@ function plot_phase(
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", unit === :rad ? "Phase [rad]" : "Phase [°]", "")
 
     # prepare plot
+    GLMakie.activate!(title = "plot_phase()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xl,
-        ylabel = yl,
-        title = tt,
-        xticks = LinearTicks(15),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xl,
+                    ylabel = yl,
+                    title = tt,
+                    xticks = LinearTicks(15),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, _xlims(sf))
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -1842,32 +1868,33 @@ function plot_polezero(
 )::GLMakie.Figure
 
     # prepare plot
+    GLMakie.activate!(title = "plot_polezero()")
     plot_size = (600, 600)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = "Real",
-        ylabel = "Imag",
-        aspect = 1,
-        title = title == "default" ? "Pole-zero map" : title,
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = "Real",
+                    ylabel = "Imag",
+                    aspect = 1,
+                    title = title == "default" ? "Pole-zero map" : title,
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.scatter!(ax, real.(pol), imag.(pol); markersize = 15, color = mono ? :black : :blue, marker = :xcross)
     GLMakie.scatter!(
-        ax,
-        real.(zer),
-        imag.(zer);
-        markersize = 15,
-        strokecolor = mono ? :black : :blue,
-        strokewidth = 2,
-        color = :transparent,
-        marker = :circle,
-    )
+                    ax,
+                    real.(zer),
+                    imag.(zer);
+                    markersize = 15,
+                    strokecolor = mono ? :black : :blue,
+                    strokewidth = 2,
+                    color = :transparent,
+                    marker = :circle,
+                )
     GLMakie.arc!(Point2f(0), 1, -pi, pi; linestyle = :dot, linewidth = 0.5, color = :black)
 
     return p
@@ -1901,8 +1928,9 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVe
     yticks = unique([ylim[1], 0, ylim[2]])
 
     # prepare plot
+    GLMakie.activate!(title = "plot_dwc()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
 
     nr = ceil(Int64, (n + 1) / 2)
 

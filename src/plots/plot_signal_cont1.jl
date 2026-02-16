@@ -173,7 +173,11 @@ function plot_cont(
     else
         plot_size = (1200, 650)
     end
-    p = GLMakie.Figure(; size = plot_size, figure_padding = (10, 20, 10, 10)) # L R B T)
+    GLMakie.activate!(title = "plot()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = (10, 20, 10, 10), # L R B T
+                )
     ax1 = GLMakie.Axis(
         p[1, 1];
         xlabel = "",

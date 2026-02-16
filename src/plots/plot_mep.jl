@@ -33,8 +33,9 @@ function plot_mep(
 )::GLMakie.Figure
 
     # prepare plot
+    GLMakie.activate!(title = "plot_mep()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = xlabel,
@@ -119,8 +120,9 @@ function plot_mep(
     ch_n = size(s, 1)
 
     # prepare plot
+    GLMakie.activate!(title = "plot_mep()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = xlabel,
@@ -245,8 +247,9 @@ function plot_mep_stack(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_mep()")
     plot_size = size(s, 1) <= 64 ? (1200, 800) : (1200, 1200)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = xlabel,

@@ -28,8 +28,8 @@ Create FIR or IIR filter.
   - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
   - `fs::Int64`: signal sampling rate
   - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
+  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
   - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
   - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 
@@ -103,13 +103,13 @@ function filter_create(;
             end
         end
     end
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+    if fprototype in [:chebyshev1, :chebyshev2, :elliptic]
         if isnothing(rp)
-            rp = fprototype === :elliptic ? 0.0025 : 2
+            rp = 0.5
             _info("rp set at $rp Hz.")
         end
         if isnothing(rs)
-            rs = fprototype === :elliptic ? 40 : 20
+            rs = 20
             _info("rs set at $rs Hz.")
         end
     end
@@ -174,10 +174,10 @@ function filter_create(;
     elseif fprototype === :firls
         if ftype === :bp
 
-            f1_stop = cutoff[1] - bw
-            f1_pass = cutoff[1] + bw
-            f2_pass = cutoff[2] - bw
-            f2_stop = cutoff[2] + bw
+            f1_stop = cutoff[1] - (bw / 2)
+            f1_pass = cutoff[1] + (bw / 2)
+            f2_pass = cutoff[2] - (bw / 2)
+            f2_stop = cutoff[2] + (bw / 2)
             flt_shape = [0, 0, 1, 1, 0, 0]
             flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
 
@@ -284,7 +284,7 @@ function filter_create(;
             _info(" F2_pass: $f2_pass Hz")
         end
 
-        flt = remez(order, w; Hz = fs)
+        flt = remez(order, w; Hz = fs, maxiter=100)
 
         return flt
 
@@ -297,14 +297,10 @@ function filter_create(;
         if fprototype === :butterworth
             prototype = Butterworth(order)
         elseif fprototype === :chebyshev1
-            _in(rs, (0, fs / 2), "rs")
-            prototype = Chebyshev1(order, rs)
+            prototype = Chebyshev1(order, rp)
         elseif fprototype === :chebyshev2
-            _in(rs, (0, fs / 2), "rs")
-            prototype = Chebyshev2(order, rp)
+            prototype = Chebyshev2(order, rs)
         elseif fprototype === :elliptic
-            _in(rs, (0, fs / 2), "rs")
-            _in(rp, (0, fs / 2), "rs")
             prototype = Elliptic(order, rp, rs)
         end
 

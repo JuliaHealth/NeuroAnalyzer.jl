@@ -17,6 +17,8 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
+    # prepare plot
+    GLMakie.activate!(title = "plot_gridlocs()")
     plot_size=(800, 800)
     p = GLMakie.Figure(; size = plot_size, figure_padding = 0)
     ax = GLMakie.Axis(

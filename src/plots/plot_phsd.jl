@@ -41,26 +41,27 @@ function plot_phsd(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_phsd()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = LinearTicks(15),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xscale = frq === :lin ? identity : log,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0.1, 0.1),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = LinearTicks(15),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    xscale = frq === :lin ? identity : log,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0.1, 0.1),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, extrema(ph))
     ax.titlesize = 18
@@ -129,26 +130,27 @@ function plot_phsd(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_phsd()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = xlabel,
-        ylabel = ylabel,
-        title = title,
-        xticks = LinearTicks(15),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xscale = frq === :lin ? identity : log,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0.1, 0.1),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
+                    p[1, 1];
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    title = title,
+                    xticks = LinearTicks(15),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    xscale = frq === :lin ? identity : log,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0.1, 0.1),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                )
     GLMakie.xlims!(ax, flim)
     if ci95
         GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
@@ -187,7 +189,8 @@ function plot_phsd(
             Makie.lines!(f, s; colormap = pal, linewidth = 4, color = :black)
         end
 
-        (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
+    GLMakie.activate!(title = "plot_phsd()")
+        (leg && ch_n < 30) && axislegend(position = :rt, colormap = pal)
 
     end
 
@@ -258,29 +261,30 @@ function plot_phsd_3d(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_phsd()")
     if variant === :w
         plot_size = (900, 450)
-        p = GLMakie.Figure(; size = plot_size)
+        p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            p[1, 1];
-            xlabel = xlabel,
-            ylabel = ylabel,
-            zlabel = zlabel,
-            title = title,
-            xticks = LinearTicks(15),
-            # xminorticksvisible=true,
-            # xminorticks=IntervalsBetween(10),
-            # xscale=frq === :lin ? identity : log,
-            yticks = (1:yts:ch_n, clabels[1:yts:end]),
-            zoommode = :disable,
-            xtranslationlock = true,
-            ytranslationlock = true,
-            ztranslationlock = true,
-            aspect = (1, 1, 0.5),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            zautolimitmargin = (0, 0),
-        )
+                        p[1, 1];
+                        xlabel = xlabel,
+                        ylabel = ylabel,
+                        zlabel = zlabel,
+                        title = title,
+                        xticks = LinearTicks(15),
+                        # xminorticksvisible=true,
+                        # xminorticks=IntervalsBetween(10),
+                        # xscale=frq === :lin ? identity : log,
+                        yticks = (1:yts:ch_n, clabels[1:yts:end]),
+                        zoommode = :disable,
+                        xtranslationlock = true,
+                        ytranslationlock = true,
+                        ztranslationlock = true,
+                        aspect = (1, 1, 0.5),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        zautolimitmargin = (0, 0),
+                    )
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 18
         ax.xlabelsize = 18
@@ -305,27 +309,27 @@ function plot_phsd_3d(
         f1 = vsearch(flim[1], f)
         f2 = vsearch(flim[2], f)
         plot_size = (900, 450)
-        p = GLMakie.Figure(; size = plot_size)
+        p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            p[1, 1];
-            xlabel = xlabel,
-            ylabel = ylabel,
-            zlabel = zlabel,
-            title = title,
-            xticks = LinearTicks(15),
-            # xminorticksvisible=true,
-            # xminorticks=IntervalsBetween(10),
-            # xscale=frq === :lin ? identity : log,
-            yticks = (1:yts:ch_n, clabels[1:yts:end]),
-            zoommode = :disable,
-            xtranslationlock = true,
-            ytranslationlock = true,
-            ztranslationlock = true,
-            aspect = (1, 1, 0.5),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            zautolimitmargin = (0, 0),
-        )
+                        p[1, 1];
+                        xlabel = xlabel,
+                        ylabel = ylabel,
+                        zlabel = zlabel,
+                        title = title,
+                        xticks = LinearTicks(15),
+                        # xminorticksvisible=true,
+                        # xminorticks=IntervalsBetween(10),
+                        # xscale=frq === :lin ? identity : log,
+                        yticks = (1:yts:ch_n, clabels[1:yts:end]),
+                        zoommode = :disable,
+                        xtranslationlock = true,
+                        ytranslationlock = true,
+                        ztranslationlock = true,
+                        aspect = (1, 1, 0.5),
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        zautolimitmargin = (0, 0),
+                    )
         ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
@@ -419,16 +423,20 @@ function plot_phsd_topo(
     pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(ph, 1)
-        pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
+    GLMakie.activate!(title = "plot_phsd()")
+        pp = GLMakie.Figure(
+                        size = marker_size,
+                        figure_padding = 0,
+                    )
         ax = GLMakie.Axis(
-            pp[1, 1];
-            xlabel = "",
-            ylabel = "",
-            title = locs[idx, :label],
-            xscale = frq === :lin ? identity : log,
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0.1, 0.1),
-        )
+                        pp[1, 1];
+                        xlabel = "",
+                        ylabel = "",
+                        title = locs[idx, :label],
+                        xscale = frq === :lin ? identity : log,
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0.1, 0.1),
+                    )
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
@@ -448,16 +456,20 @@ function plot_phsd_topo(
     end
 
     # prepare plot
-    p = GLMakie.Figure(; size = plot_size, figure_padding = 0)
+    GLMakie.activate!(title = "plot_phsd()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = 0,
+                )
     ax = GLMakie.Axis(
-        p[1, 1];
-        xlabel = "",
-        ylabel = "",
-        title = title,
-        aspect = 1,
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0.1, 0.1),
-    )
+                    p[1, 1];
+                    xlabel = "",
+                    ylabel = "",
+                    title = title,
+                    aspect = 1,
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0.1, 0.1),
+                )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)

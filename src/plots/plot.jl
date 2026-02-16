@@ -259,6 +259,7 @@ function plot(
     @assert length(t) == length(s) "Length of s must equal length of t."
 
     # prepare plot
+    GLMakie.activate!(title = "plot()")
     plot_size = (900, 450)
     p = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(

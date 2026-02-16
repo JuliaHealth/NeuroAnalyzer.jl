@@ -43,6 +43,7 @@ function plot_coherence(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_coherence()")
     plot_size = (900, 450)
     p = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
@@ -130,6 +131,7 @@ function plot_coherence(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_coherence()")
     plot_size = (900, 450)
     p = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(

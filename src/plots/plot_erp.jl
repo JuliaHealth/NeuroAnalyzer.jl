@@ -37,8 +37,9 @@ function plot_erp(
 )::GLMakie.Figure
 
     # prepare plot
+    GLMakie.activate!(title = "plot_erp()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = xlabel,
@@ -132,8 +133,9 @@ function plot_erp(
     ch_n = size(s, 1)
 
     # prepare plot
+    GLMakie.activate!(title = "plot_erp()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = xlabel,
@@ -321,7 +323,11 @@ function plot_erp_topo(
     end
 
     # prepare plot
-    p = GLMakie.Figure(; size = plot_size, figure_padding = 0)
+    GLMakie.activate!(title = "plot_erp()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = 0,
+                )
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = "",
@@ -465,8 +471,9 @@ function plot_erp_stack(
     end
 
     # prepare plot
+    GLMakie.activate!(title = "plot_erp()")
     plot_size = size(s, 1) <= 64 ? (900, 600) : (900, 900)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = xlabel,
@@ -550,6 +557,7 @@ function plot_gfp(
 )::GLMakie.Figure
 
     # prepare plot
+    GLMakie.activate!(title = "plot_gfp()")
     plot_size = (900, 450)
     p = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(

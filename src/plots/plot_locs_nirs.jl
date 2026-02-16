@@ -121,7 +121,11 @@ function plot_locs_nirs(
     end
 
     # prepare plot
-    p = GLMakie.Figure(; size = plot_size, figure_padding = 0)
+    GLMakie.activate!(title = "plot_locs_nirs()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = 0,
+                )
     if grid
         ax = GLMakie.Axis(
             p[1, 1];

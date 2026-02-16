@@ -86,26 +86,28 @@ function plot_locs3d(
         z_lim = (-2.0, 2.0)
     end
 
-    plot_size = 850
+    plot_size = (850, 850)
     marker_size = length(ch) > 64 ? 8 : 16
     font_size = 14
 
-    p = Figure(; size = (plot_size, plot_size))
+    # prepare plot
+    GLMakie.activate!(title = "plot_locs3d()")
+    p = GLMakie.Figure(size = plot_size)
 
-    ax = Axis3(
-        p[1, 1];
-        xlabel = "X",
-        ylabel = "Y",
-        zlabel = "Z",
-        limits = (x_lim, y_lim, z_lim),
-        title = "",
-        aspect = (1, 1, 1),
-        xticks = [-1, 0, 1],
-        yticks = [-1, 0, 1],
-        zticks = [-1, 0, 1],
-        elevation = deg2rad(cam[1]),
-        azimuth = deg2rad(cam[2]),
-    )
+    ax = GLMakie.Axis3(
+                    p[1, 1];
+                    xlabel = "X",
+                    ylabel = "Y",
+                    zlabel = "Z",
+                    limits = (x_lim, y_lim, z_lim),
+                    title = "",
+                    aspect = (1, 1, 1),
+                    xticks = [-1, 0, 1],
+                    yticks = [-1, 0, 1],
+                    zticks = [-1, 0, 1],
+                    elevation = deg2rad(cam[1]),
+                    azimuth = deg2rad(cam[2]),
+                )
 
     if mesh_type !== :disabled
         GLMakie.mesh!(msh; alpha = mesh_alpha, color = :gray)
@@ -119,59 +121,59 @@ function plot_locs3d(
         if idx in sch
             if mono
                 GLMakie.scatter!(
-                    loc_x[idx],
-                    loc_y[idx],
-                    loc_z[idx];
-                    markersize = marker_size,
-                    color = :gray,
-                    strokewidth = 1,
-                    strokecolor = :black,
-                )
+                                loc_x[idx],
+                                loc_y[idx],
+                                loc_z[idx];
+                                markersize = marker_size,
+                                color = :gray,
+                                strokewidth = 1,
+                                strokecolor = :black,
+                            )
 
             else
                 GLMakie.scatter!(
-                    loc_x[idx],
-                    loc_y[idx],
-                    loc_z[idx];
-                    markersize = marker_size,
-                    color = cmap[idx],
-                    colormap = pal,
-                    colorrange = 1:ch_n,
-                    strokewidth = 1,
-                    strokecolor = :black,
-                )
+                                loc_x[idx],
+                                loc_y[idx],
+                                loc_z[idx];
+                                markersize = marker_size,
+                                color = cmap[idx],
+                                colormap = pal,
+                                colorrange = 1:ch_n,
+                                strokewidth = 1,
+                                strokecolor = :black,
+                            )
             end
         else
             GLMakie.scatter!(
-                loc_x[idx],
-                loc_y[idx],
-                loc_z[idx];
-                markersize = marker_size,
-                color = :gray,
-                strokewidth = 1,
-                strokecolor = :black,
-            )
+                            loc_x[idx],
+                            loc_y[idx],
+                            loc_z[idx];
+                            markersize = marker_size,
+                            color = :gray,
+                            strokewidth = 1,
+                            strokecolor = :black,
+                        )
         end
     end
 
     if ch_labels
         GLMakie.text!(
-            loc_x[ch] * 1.15,
-            loc_y[ch] * 1.15,
-            loc_z[ch] * 1.15;
-            text = locs[ch, :label],
-            fontsize = font_size,
-            align = (:center, :center),
-        )
+                    loc_x[ch] * 1.15,
+                    loc_y[ch] * 1.15,
+                    loc_z[ch] * 1.15;
+                    text = locs[ch, :label],
+                    fontsize = font_size,
+                    align = (:center, :center),
+                )
         if sch != 0
             GLMakie.text!(
-                loc_x[sch] * 1.15,
-                loc_y[sch] * 1.15,
-                loc_z[sch] * 1.15;
-                text = locs[sch, :label],
-                fontsize = font_size,
-                align = (:center, :center),
-            )
+                        loc_x[sch] * 1.15,
+                        loc_y[sch] * 1.15,
+                        loc_z[sch] * 1.15;
+                        text = locs[sch, :label],
+                        fontsize = font_size,
+                        align = (:center, :center),
+                    )
         end
     end
 
@@ -179,13 +181,13 @@ function plot_locs3d(
         fid_names = ["NAS", "IN", "LPA", "RPA"]
         for idx in 1:length(NeuroAnalyzer.fiducial_points)
             GLMakie.text!(
-                NeuroAnalyzer.fiducial_points[idx][1],
-                NeuroAnalyzer.fiducial_points[idx][2],
-                NeuroAnalyzer.fiducial_points[idx][3];
-                text = fid_names[idx],
-                fontsize = font_size,
-                align = (:center, :center),
-            )
+                        NeuroAnalyzer.fiducial_points[idx][1],
+                        NeuroAnalyzer.fiducial_points[idx][2],
+                        NeuroAnalyzer.fiducial_points[idx][3];
+                        text = fid_names[idx],
+                        fontsize = font_size,
+                        align = (:center, :center),
+                    )
         end
     end
 
@@ -271,18 +273,18 @@ function plot_locs3d(
     end
 
     p = plot_locs3d(
-        locs;
-        ch = ch,
-        sch = sch,
-        ch_labels = ch_labels,
-        head_labels = head_labels,
-        mono = mono,
-        cart = cart,
-        cam = cam,
-        mesh_type = mesh_type,
-        mesh_alpha = mesh_alpha,
-        gui = gui,
-    )
+                locs;
+                ch = ch,
+                sch = sch,
+                ch_labels = ch_labels,
+                head_labels = head_labels,
+                mono = mono,
+                cart = cart,
+                cam = cam,
+                mesh_type = mesh_type,
+                mesh_alpha = mesh_alpha,
+                gui = gui,
+            )
 
     return p
 

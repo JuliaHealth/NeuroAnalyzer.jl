@@ -176,27 +176,31 @@ function plot_ep(
     else
         plot_size = (1200, 650)
     end
-    p = GLMakie.Figure(; size = plot_size, figure_padding = (10, 20, 10, 10)) # L R B T)
+    GLMakie.activate!(title = "plot()")
+    p = GLMakie.Figure(
+                    size = plot_size,
+                    figure_padding = (10, 20, 10, 10), # L R B T
+                )
     ax1 = GLMakie.Axis(
-        p[1, 1];
-        xlabel = "",
-        ylabel = yl,
-        title = tt,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        yticks = (1:ch_n, clabels),
-        # TO DO: yticklabelcolor=ytc[1:end],
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-        yticklabelspace = 60.0,
-    )
+                    p[1, 1];
+                    xlabel = "",
+                    ylabel = yl,
+                    title = tt,
+                    xticks = LinearTicks(10),
+                    xminorticksvisible = true,
+                    xminorticks = IntervalsBetween(10),
+                    yticks = (1:ch_n, clabels),
+                    # TO DO: yticklabelcolor=ytc[1:end],
+                    xautolimitmargin = (0, 0),
+                    yautolimitmargin = (0, 0),
+                    xzoomlock = true,
+                    yzoomlock = true,
+                    xpanlock = true,
+                    ypanlock = true,
+                    xrectzoom = false,
+                    yrectzoom = false,
+                    yticklabelspace = 60.0,
+                )
     GLMakie.xlims!(ax1, seg)
     if gui
         if ch_n > nch[]
@@ -237,14 +241,14 @@ function plot_ep(
             !mono && (cmap = GLMakie.resample_cmap(pal, size(s[], 1)))
             for idx in axes(s[], 1)
                 GLMakie.lines!(
-                    ax1,
-                    t[][1:res:end],
-                    @lift($s[idx, 1:res:end]);
-                    color = mono ? :black : cmap[idx],
-                    colormap = pal,
-                    colorrange = 1:size(s[], 1),
-                    linewidth = 0.5,
-                )
+                            ax1,
+                            t[][1:res:end],
+                            @lift($s[idx, 1:res:end]);
+                            color = mono ? :black : cmap[idx],
+                            colormap = pal,
+                            colorrange = 1:size(s[], 1),
+                            linewidth = 0.5,
+                        )
             end
 
             # plot averaged channels
@@ -276,16 +280,16 @@ function plot_ep(
                     end
                     GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
                     GLMakie.text!(
-                        ax1,
-                        l_pos;
-                        markerspace = :pixel,
-                        text = string(r[][idx2]) * " " * cunits[idx1],
-                        fontsize = 10,
-                        color = :red,
-                        align = (:left, :bottom),
-                        #rotation=pi/2,
-                        offset = (5, 0),
-                    )
+                                ax1,
+                                l_pos;
+                                markerspace = :pixel,
+                                text = string(r[][idx2]) * " " * cunits[idx1],
+                                fontsize = 10,
+                                color = :red,
+                                align = (:left, :bottom),
+                                #rotation=pi/2,
+                                offset = (5, 0),
+                            )
                     idx2 += 1
                 end
             end
@@ -299,16 +303,16 @@ function plot_ep(
                 end
                 GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
                 GLMakie.text!(
-                    ax1,
-                    l_pos;
-                    text = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
-                    markerspace = :pixel,
-                    fontsize = 10,
-                    color = :red,
-                    align = (:left, :bottom),
-                    #rotation=pi/2,
-                    offset = (5, 0),
-                )
+                            ax1,
+                            l_pos;
+                            text = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
+                            markerspace = :pixel,
+                            fontsize = 10,
+                            color = :red,
+                            align = (:left, :bottom),
+                            #rotation=pi/2,
+                            offset = (5, 0),
+                        )
             end
         end
     end
@@ -321,18 +325,18 @@ function plot_ep(
                 (markers_pos[idx], v1 + (v2 - 1) + 0.5)
             end
             GLMakie.textlabel!(
-                ax1,
-                markers_ypos;
-                text = "$(markers_id[idx]) / $(markers_desc[idx])",
-                text_align = (:left, :center),
-                fontsize = 8,
-                cornerradius = 0,
-                cornervertices = 2,
-                padding = 2,
-                strokewidth = 1,
-                offset = (0, 5),
-                text_rotation = pi/2,
-            )
+                            ax1,
+                            markers_ypos;
+                            text = "$(markers_id[idx]) / $(markers_desc[idx])",
+                            text_align = (:left, :center),
+                            fontsize = 8,
+                            cornerradius = 0,
+                            cornervertices = 2,
+                            padding = 2,
+                            strokewidth = 1,
+                            offset = (0, 5),
+                            text_rotation = pi/2,
+                        )
         end
     end
 
@@ -341,22 +345,22 @@ function plot_ep(
 
         # time bar
         ax2 = GLMakie.Axis(
-            p[2, 1];
-            xlabel = xl,
-            ylabel = "",
-            title = "",
-            xticks = LinearTicks(25),
-            yticksvisible = false,
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            backgroundcolor = :white,
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+                        p[2, 1];
+                        xlabel = xl,
+                        ylabel = "",
+                        title = "",
+                        xticks = LinearTicks(25),
+                        yticksvisible = false,
+                        xautolimitmargin = (0, 0),
+                        yautolimitmargin = (0, 0),
+                        backgroundcolor = :white,
+                        xzoomlock = true,
+                        yzoomlock = true,
+                        xpanlock = true,
+                        ypanlock = true,
+                        xrectzoom = false,
+                        yrectzoom = false,
+                    )
         GLMakie.xlims!(ax2, 0, ep_n[])
         GLMakie.ylims!(ax2, 0, 1)
         hideydecorations!(ax2)
