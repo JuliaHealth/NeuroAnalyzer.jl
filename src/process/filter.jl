@@ -95,11 +95,11 @@ function filter_create(;
             else
                 w = ones(6)
             end
-        elseif ftype in [:lp, :hs]
+        elseif ftype in [:lp, :hp]
             if !isnothing(w)
-                @assert length(w) == 6 "Length of w must be 6."
+                @assert length(w) == 4 "Length of w must be 4."
             else
-                w = ones(6)
+                w = ones(4)
             end
         end
     end
@@ -230,7 +230,10 @@ function filter_create(;
             _info(" F2_stop: $f2_stop Hz")
             _info(" F2_pass: $f2_pass Hz")
         end
-
+@show (order - 1)
+@show flt_frq
+@show flt_shape
+@show w
         flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true; fs = fs)
 
         return flt

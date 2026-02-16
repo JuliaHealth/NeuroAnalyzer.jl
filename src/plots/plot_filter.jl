@@ -149,326 +149,33 @@ function plot_filter(;
 
     # prepare plot
     GLMakie.activate!(title = "plot_filter()")
-    plot_size = (1400, 900)
-    p = GLMakie.Figure(; size = plot_size)
-    grid = p[4, 1] = GridLayout()
+    plot_size = gui ? (1200, 900) : (1200, 800)
+    p = GLMakie.Figure(size = plot_size)
 
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-# cutoff
-# order
-# rp
-# rs
+    # prepare sliders
+    if gui
+        grid = p[4, 1] = GridLayout()
 
-        if ftype in [:hp, :lp]
-            _ = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_cutoff = Slider(
-                            grid[1, 2],
-                            range = 0.5:0.1:(nqf - 0.1),
-                            startvalue = cutoff[],
-                            horizontal = true,
-                        )
-            on(sl_cutoff.value) do val
-                cutoff[] = round(val, digits=1)
-                notify(cutoff)
-            end
+        if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
 
-            _ = Label(
-                    grid[2, 1],
-                    "Order [taps]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            if ftype === :lp
-                sl_order = Slider(
-                                grid[2, 2],
-                                range = 1:1:1000,
-                                startvalue = order[],
-                                horizontal = true,
-                            )
-            elseif ftype === :hp
-                sl_order = Slider(
-                                grid[2, 2],
-                                range = 1:2:1001,
-                                startvalue = order[],
-                                horizontal = true,
-                            )
-            end
-            on(sl_order.value) do val
-                order[] = val
-                notify(order)
-            end
-
-            if isa(rp, Observable{Float64})
+            if ftype in [:hp, :lp]
                 _ = Label(
-                        grid[3, 1],
-                        "RP [dB]",
+                        grid[1, 1],
+                        "Cutoff [Hz]",
                         fontsize = 15,
                         halign = :right,
                     )
-                sl_rp = Slider(
-                            grid[3, 2],
-                            # range = fprototype === :elliptic ? (0.001:0.001:0.01) : (0.5:0.5:10),
-                            range = 0.1:0.1:rs[],
-                            startvalue = rp[],
-                            horizontal = true,
-                        )
-                on(sl_rp.value) do val
-                    rp[] = round(val, digits=1)
-                    notify(rp)
-                end
-            end
-
-            if isa(rs, Observable{Float64})
-                _ = Label(
-                        grid[fprototype === :chebyshev2 ? 3 : 4, 1],
-                        "RS [dB]",
-                        fontsize = 15,
-                        halign = :right,
-                    )
-                sl_rs = Slider(
-                            grid[fprototype === :chebyshev2 ? 3 : 4, 2],
-                            range = 1:1:100,
-                            startvalue = rs[],
-                            horizontal = true,
-                        )
-                on(sl_rs.value) do val
-                    rs[] = round(val, digits=1)
-                    sl_rp.range = 0.1:0.1:(rs[] - 0.1)
-                    notify(rs)
-                end
-            end
-
-        elseif ftype in [:bp, :bs]
-
-            _ = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_cutoff = IntervalSlider(
-                                    grid[1, 2],
-                                    range = 0.1:0.1:(nqf - 0.1),
-                                    startvalues = cutoff[],
-                                    horizontal = true,
-                                )
-            on(sl_cutoff.interval) do val
-                cutoff[] = round.(val, digits=1)
-                if cutoff[][1] == cutoff[][2]
-                    cutoff[] = (cutoff[][1], cutoff[][1] + 0.1)
-                elseif cutoff[][1] > cutoff[][2]
-                    cutoff[] = (cutoff[][2], cutoff[][1])
-                end
-                notify(cutoff)
-            end
-
-            _ = Label(
-                    grid[2, 1],
-                    "Order [taps]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_order = Slider(
-                            grid[2, 2],
-                            range = 1:2:1001,
-                            startvalue = order[],
-                            horizontal = true,
-                        )
-            on(sl_order.value) do val
-                order[] = val
-                notify(order)
-            end
-
-            if isa(rp, Observable{Float64})
-                _ = Label(
-                        grid[3, 1],
-                        "RP [dB]",
-                        fontsize = 15,
-                        halign = :right,
-                    )
-                sl_rp = Slider(
-                            grid[3, 2],
-                            # range = fprototype === :elliptic ? (0.001:0.001:0.01) : (0.5:0.5:10),
-                            range = 0.1:0.1:rs[],
-                            startvalue = rp[],
-                            horizontal = true,
-                        )
-                on(sl_rp.value) do val
-                    rp[] = round(val, digits=1)
-                    notify(rp)
-                end
-            end
-
-            if isa(rs, Observable{Float64})
-                _ = Label(
-                        grid[fprototype === :chebyshev2 ? 3 : 4, 1],
-                        "RS [dB]",
-                        fontsize = 15,
-                        halign = :right,
-                    )
-                sl_rs = Slider(
-                            grid[fprototype === :chebyshev2 ? 3 : 4, 2],
-                            range = 1:1:100,
-                            startvalue = rs[],
-                            horizontal = true,
-                        )
-                on(sl_rs.value) do val
-                    rs[] = round(val, digits=1)
-                    sl_rp.range = 0.1:0.1:(rs[] - 0.1)
-                    notify(rs)
-                end
-            end
-        end
-
-    elseif fprototype in [:remez]
-
-        if ftype in [:hp, :lp]
-            _ = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_cutoff = Slider(
-                            grid[1, 2],
-                            range = 0.5:0.1:(nqf - 0.1),
-                            startvalue = cutoff[],
-                            horizontal = true,
-                        )
-            on(sl_cutoff.value) do val
-                cutoff[] = round(val, digits=1)
-                notify(cutoff)
-            end
-
-            _ = Label(
-                    grid[2, 1],
-                    "Order [taps]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            if ftype === :lp
-                sl_order = Slider(
-                                grid[2, 2],
-                                range = 1:1:1000,
-                                startvalue = order[],
+                sl_cutoff = Slider(
+                                grid[1, 2],
+                                range = 0.5:0.1:(nqf - 0.1),
+                                startvalue = cutoff[],
                                 horizontal = true,
                             )
-            elseif ftype === :hp
-                sl_order = Slider(
-                                grid[2, 2],
-                                range = 1:2:1001,
-                                startvalue = order[],
-                                horizontal = true,
-                            )
-            end
-            on(sl_order.value) do val
-                order[] = val
-                notify(order)
-            end
-
-            _ = Label(
-                    grid[3, 1],
-                    "Band width [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_bw = Slider(
-                        grid[3, 2],
-                        range = cutoff[][1] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[][1] - 0.1)),
-                        startvalue = bw[],
-                        horizontal = true,
-                    )
-            on(sl_bw.value) do val
-                bw[] = round(val, digits=1)
-                notify(bw)
-            end
-
-        elseif ftype in [:bp, :bs]
-
-            _ = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_cutoff = IntervalSlider(
-                                    grid[1, 2],
-                                    range = 0.1:0.1:(nqf - 0.1),
-                                    startvalues = cutoff[],
-                                    horizontal = true,
-                                )
-            on(sl_cutoff.interval) do val
-                cutoff[] = round.(val, digits=1)
-                if cutoff[][1] == cutoff[][2]
-                    cutoff[] = (cutoff[][1], cutoff[][1] + 0.1)
-                elseif cutoff[][1] > cutoff[][2]
-                    cutoff[] = (cutoff[][2], cutoff[][1])
+                on(sl_cutoff.value) do val
+                    cutoff[] = round(val, digits=1)
+                    notify(cutoff)
                 end
-                notify(cutoff)
-            end
 
-            _ = Label(
-                    grid[2, 1],
-                    "Order [taps]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_order = Slider(
-                            grid[2, 2],
-                            range = 1:2:1001,
-                            startvalue = order[],
-                            horizontal = true,
-                        )
-            on(sl_order.value) do val
-                order[] = val
-                notify(order)
-            end
-
-            _ = Label(
-                    grid[3, 1],
-                    "Band width [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_bw = Slider(
-                        grid[3, 2],
-                        range = cutoff[][1] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[][1] - 0.1)),
-                        startvalue = bw[],
-                        horizontal = true,
-                    )
-            on(sl_bw.value) do val
-                bw[] = round(val, digits=1)
-                notify(bw)
-            end
-
-        end
-
-    elseif fprototype in [:fir]
-
-        if ftype in [:hp, :lp]
-            _ = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_cutoff = Slider(
-                            grid[1, 2],
-                            range = 0.5:0.1:(nqf - 0.1),
-                            startvalue = cutoff[],
-                            horizontal = true,
-                        )
-            on(sl_cutoff.value) do val
-                cutoff[] = round(val, digits=1)
-                notify(cutoff)
-            end
-
-            if isnothing(w)
                 _ = Label(
                         grid[2, 1],
                         "Order [taps]",
@@ -494,33 +201,71 @@ function plot_filter(;
                     order[] = val
                     notify(order)
                 end
-            end
 
-        elseif ftype in [:bp, :bs]
-
-            _ = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_cutoff = IntervalSlider(
-                                    grid[1, 2],
-                                    range = 0.1:0.1:(nqf - 0.1),
-                                    startvalues = cutoff[],
-                                    horizontal = true,
-                                )
-            on(sl_cutoff.interval) do val
-                cutoff[] = round.(val, digits=1)
-                if cutoff[][1] == cutoff[][2]
-                    cutoff[] = (cutoff[][1], cutoff[][1] + 0.1)
-                elseif cutoff[][1] > cutoff[][2]
-                    cutoff[] = (cutoff[][2], cutoff[][1])
+                if isa(rp, Observable{Float64})
+                    _ = Label(
+                            grid[3, 1],
+                            "RP [dB]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    sl_rp = Slider(
+                                grid[3, 2],
+                                # range = fprototype === :elliptic ? (0.001:0.001:0.01) : (0.5:0.5:10),
+                                range = 0.1:0.1:rs[],
+                                startvalue = rp[],
+                                horizontal = true,
+                            )
+                    on(sl_rp.value) do val
+                        rp[] = round(val, digits=1)
+                        notify(rp)
+                    end
                 end
-                notify(cutoff)
-            end
 
-            if isnothing(w)
+                if isa(rs, Observable{Float64})
+                    _ = Label(
+                            grid[fprototype === :chebyshev2 ? 3 : 4, 1],
+                            "RS [dB]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    sl_rs = Slider(
+                                grid[fprototype === :chebyshev2 ? 3 : 4, 2],
+                                range = 1:1:100,
+                                startvalue = rs[],
+                                horizontal = true,
+                            )
+                    on(sl_rs.value) do val
+                        rs[] = round(val, digits=1)
+                        sl_rp.range = 0.1:0.1:(rs[] - 0.1)
+                        notify(rs)
+                    end
+                end
+
+            elseif ftype in [:bp, :bs]
+
+                _ = Label(
+                        grid[1, 1],
+                        "Cutoff [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_cutoff = IntervalSlider(
+                                        grid[1, 2],
+                                        range = 0.1:0.1:(nqf - 0.1),
+                                        startvalues = cutoff[],
+                                        horizontal = true,
+                                    )
+                on(sl_cutoff.interval) do val
+                    cutoff[] = round.(val, digits=1)
+                    if cutoff[][1] == cutoff[][2]
+                        cutoff[] = (cutoff[][1], cutoff[][1] + 0.1)
+                    elseif cutoff[][1] > cutoff[][2]
+                        cutoff[] = (cutoff[][2], cutoff[][1])
+                    end
+                    notify(cutoff)
+                end
+
                 _ = Label(
                         grid[2, 1],
                         "Order [taps]",
@@ -537,13 +282,397 @@ function plot_filter(;
                     order[] = val
                     notify(order)
                 end
+
+                if isa(rp, Observable{Float64})
+                    _ = Label(
+                            grid[3, 1],
+                            "RP [dB]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    sl_rp = Slider(
+                                grid[3, 2],
+                                # range = fprototype === :elliptic ? (0.001:0.001:0.01) : (0.5:0.5:10),
+                                range = 0.1:0.1:rs[],
+                                startvalue = rp[],
+                                horizontal = true,
+                            )
+                    on(sl_rp.value) do val
+                        rp[] = round(val, digits=1)
+                        notify(rp)
+                    end
+                end
+
+                if isa(rs, Observable{Float64})
+                    _ = Label(
+                            grid[fprototype === :chebyshev2 ? 3 : 4, 1],
+                            "RS [dB]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    sl_rs = Slider(
+                                grid[fprototype === :chebyshev2 ? 3 : 4, 2],
+                                range = 1:1:100,
+                                startvalue = rs[],
+                                horizontal = true,
+                            )
+                    on(sl_rs.value) do val
+                        rs[] = round(val, digits=1)
+                        sl_rp.range = 0.1:0.1:(rs[] - 0.1)
+                        notify(rs)
+                    end
+                end
             end
 
-        end
+        elseif fprototype in [:remez]
 
-    elseif fprototype in [:firls]
+            if ftype in [:hp, :lp]
+                _ = Label(
+                        grid[1, 1],
+                        "Cutoff [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_cutoff = Slider(
+                                grid[1, 2],
+                                range = 0.5:0.1:(nqf - 0.1),
+                                startvalue = cutoff[],
+                                horizontal = true,
+                            )
+                on(sl_cutoff.value) do val
+                    cutoff[] = round(val, digits=1)
+                    notify(cutoff)
+                end
 
-        if ftype in [:hp, :lp]
+                _ = Label(
+                        grid[2, 1],
+                        "Order [taps]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                if ftype === :lp
+                    sl_order = Slider(
+                                    grid[2, 2],
+                                    range = 1:1:1000,
+                                    startvalue = order[],
+                                    horizontal = true,
+                                )
+                elseif ftype === :hp
+                    sl_order = Slider(
+                                    grid[2, 2],
+                                    range = 1:2:1001,
+                                    startvalue = order[],
+                                    horizontal = true,
+                                )
+                end
+                on(sl_order.value) do val
+                    order[] = val
+                    notify(order)
+                end
+
+                _ = Label(
+                        grid[3, 1],
+                        "Band width [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_bw = Slider(
+                            grid[3, 2],
+                            range = cutoff[][1] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[][1] - 0.1)),
+                            startvalue = bw[],
+                            horizontal = true,
+                        )
+                on(sl_bw.value) do val
+                    bw[] = round(val, digits=1)
+                    notify(bw)
+                end
+
+            elseif ftype in [:bp, :bs]
+
+                _ = Label(
+                        grid[1, 1],
+                        "Cutoff [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_cutoff = IntervalSlider(
+                                        grid[1, 2],
+                                        range = 0.1:0.1:(nqf - 0.1),
+                                        startvalues = cutoff[],
+                                        horizontal = true,
+                                    )
+                on(sl_cutoff.interval) do val
+                    cutoff[] = round.(val, digits=1)
+                    if cutoff[][1] == cutoff[][2]
+                        cutoff[] = (cutoff[][1], cutoff[][1] + 0.1)
+                    elseif cutoff[][1] > cutoff[][2]
+                        cutoff[] = (cutoff[][2], cutoff[][1])
+                    end
+                    notify(cutoff)
+                end
+
+                _ = Label(
+                        grid[2, 1],
+                        "Order [taps]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_order = Slider(
+                                grid[2, 2],
+                                range = 1:2:1001,
+                                startvalue = order[],
+                                horizontal = true,
+                            )
+                on(sl_order.value) do val
+                    order[] = val
+                    notify(order)
+                end
+
+                _ = Label(
+                        grid[3, 1],
+                        "Band width [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_bw = Slider(
+                            grid[3, 2],
+                            range = cutoff[][1] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[][1] - 0.1)),
+                            startvalue = bw[],
+                            horizontal = true,
+                        )
+                on(sl_bw.value) do val
+                    bw[] = round(val, digits=1)
+                    notify(bw)
+                end
+
+            end
+
+        elseif fprototype in [:fir]
+
+            if ftype in [:hp, :lp]
+                _ = Label(
+                        grid[1, 1],
+                        "Cutoff [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_cutoff = Slider(
+                                grid[1, 2],
+                                range = 0.5:0.1:(nqf - 0.1),
+                                startvalue = cutoff[],
+                                horizontal = true,
+                            )
+                on(sl_cutoff.value) do val
+                    cutoff[] = round(val, digits=1)
+                    notify(cutoff)
+                end
+
+                if isnothing(w)
+                    _ = Label(
+                            grid[2, 1],
+                            "Order [taps]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    if ftype === :lp
+                        sl_order = Slider(
+                                        grid[2, 2],
+                                        range = 1:1:1000,
+                                        startvalue = order[],
+                                        horizontal = true,
+                                    )
+                    elseif ftype === :hp
+                        sl_order = Slider(
+                                        grid[2, 2],
+                                        range = 1:2:1001,
+                                        startvalue = order[],
+                                        horizontal = true,
+                                    )
+                    end
+                    on(sl_order.value) do val
+                        order[] = val
+                        notify(order)
+                    end
+                end
+
+            elseif ftype in [:bp, :bs]
+
+                _ = Label(
+                        grid[1, 1],
+                        "Cutoff [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_cutoff = IntervalSlider(
+                                        grid[1, 2],
+                                        range = 0.1:0.1:(nqf - 0.1),
+                                        startvalues = cutoff[],
+                                        horizontal = true,
+                                    )
+                on(sl_cutoff.interval) do val
+                    cutoff[] = round.(val, digits=1)
+                    if cutoff[][1] == cutoff[][2]
+                        cutoff[] = (cutoff[][1], cutoff[][1] + 0.1)
+                    elseif cutoff[][1] > cutoff[][2]
+                        cutoff[] = (cutoff[][2], cutoff[][1])
+                    end
+                    notify(cutoff)
+                end
+
+                if isnothing(w)
+                    _ = Label(
+                            grid[2, 1],
+                            "Order [taps]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    sl_order = Slider(
+                                    grid[2, 2],
+                                    range = 1:2:1001,
+                                    startvalue = order[],
+                                    horizontal = true,
+                                )
+                    on(sl_order.value) do val
+                        order[] = val
+                        notify(order)
+                    end
+                end
+
+            end
+
+        elseif fprototype in [:firls]
+
+            if ftype in [:hp, :lp]
+                _ = Label(
+                        grid[1, 1],
+                        "Cutoff [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_cutoff = Slider(
+                                grid[1, 2],
+                                range = 0.5:0.1:(nqf - 0.1),
+                                startvalue = cutoff[],
+                                horizontal = true,
+                            )
+                on(sl_cutoff.value) do val
+                    cutoff[] = round(val, digits=1)
+                    if cutoff[] > 10
+                        sl_bw.range = 0.1:0.1:10
+                    else
+                        if bw[] >= cutoff[]
+                            bw[] = cutoff[] - 0.1
+                            set_close_to!(sl_bw, bw[])
+                        end
+                        sl_bw.range = 0.1:0.1:(cutoff[] - 0.1)
+                    end
+                    notify(cutoff)
+                end
+
+                _ = Label(
+                        grid[2, 1],
+                        "Band width [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_bw = Slider(
+                            grid[2, 2],
+                            range = cutoff[] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[] - 0.1)),
+                            startvalue = bw[],
+                            horizontal = true,
+                        )
+                on(sl_bw.value) do val
+                    bw[] = round(val, digits=1)
+                    notify(bw)
+                end
+
+                if isnothing(w)
+                    _ = Label(
+                            grid[3, 1],
+                            "Order [taps]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    sl_order = Slider(
+                                    grid[3, 2],
+                                    range = 1:1:1000,
+                                    startvalue = order,
+                                    horizontal = true,
+                                )
+                    on(sl_order.value) do val
+                        order[] = val
+                        notify(order)
+                    end
+                end
+
+            elseif ftype in [:bp, :bs]
+
+                _ = Label(
+                        grid[1, 1],
+                        "Cutoff [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_cutoff = IntervalSlider(
+                                        grid[1, 2],
+                                        range = 0.1:0.1:(nqf - 0.1),
+                                        startvalues = cutoff,
+                                        horizontal = true,
+                                    )
+                on(sl_cutoff.values) do val
+                    cutoff[] = round(val, digits=1)
+                    if cutoff[] > 10
+                        sl_bw.range = 0.1:0.1:10
+                    else
+                        if bw[] >= cutoff[]
+                            bw[] = cutoff[] - 0.1
+                            set_close_to!(sl_bw, bw[])
+                        end
+                        sl_bw.range = 0.1:0.1:(cutoff[] - 0.1)
+                    end
+                    notify(cutoff)
+                end
+
+                _ = Label(
+                        grid[2, 1],
+                        "Band width [Hz]",
+                        fontsize = 15,
+                        halign = :right,
+                    )
+                sl_bw = Slider(
+                            grid[2, 2],
+                            range = cutoff[] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[] - 0.1)),
+                            startvalue = bw[],
+                            horizontal = true,
+                        )
+                on(sl_bw.value) do val
+                    bw[] = round(val, digits=1)
+                    notify(bw)
+                end
+
+                if isnothing(w)
+                    _ = Label(
+                            grid[3, 1],
+                            "Order [taps]",
+                            fontsize = 15,
+                            halign = :right,
+                        )
+                    sl_order = Slider(
+                                    grid[3, 2],
+                                    range = 1:1:1000,
+                                    startvalue = order,
+                                    horizontal = true,
+                                )
+                    on(sl_order.value) do val
+                        order[] = val
+                        notify(order)
+                    end
+                end
+
+            end
+
+        elseif fprototype in [:iirnotch]
+
             _ = Label(
                     grid[1, 1],
                     "Cutoff [Hz]",
@@ -587,138 +716,11 @@ function plot_filter(;
                 notify(bw)
             end
 
-            if isnothing(w)
-                _ = Label(
-                        grid[3, 1],
-                        "Order [taps]",
-                        fontsize = 15,
-                        halign = :right,
-                    )
-                sl_order = Slider(
-                                grid[3, 2],
-                                range = 1:1:1000,
-                                startvalue = order,
-                                horizontal = true,
-                            )
-                on(sl_order.value) do val
-                    order[] = val
-                    notify(order)
-                end
-            end
-
-        elseif ftype in [:bp, :bs]
-
-            _ = Label(
-                    grid[1, 1],
-                    "Cutoff [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_cutoff = IntervalSlider(
-                                    grid[1, 2],
-                                    range = 0.1:0.1:(nqf - 0.1),
-                                    startvalues = cutoff,
-                                    horizontal = true,
-                                )
-            on(sl_cutoff.values) do val
-                cutoff[] = round(val, digits=1)
-                if cutoff[] > 10
-                    sl_bw.range = 0.1:0.1:10
-                else
-                    if bw[] >= cutoff[]
-                        bw[] = cutoff[] - 0.1
-                        set_close_to!(sl_bw, bw[])
-                    end
-                    sl_bw.range = 0.1:0.1:(cutoff[] - 0.1)
-                end
-                notify(cutoff)
-            end
-
-            _ = Label(
-                    grid[2, 1],
-                    "Band width [Hz]",
-                    fontsize = 15,
-                    halign = :right,
-                )
-            sl_bw = Slider(
-                        grid[2, 2],
-                        range = cutoff[] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[] - 0.1)),
-                        startvalue = bw[],
-                        horizontal = true,
-                    )
-            on(sl_bw.value) do val
-                bw[] = round(val, digits=1)
-                notify(bw)
-            end
-
-            if isnothing(w)
-                _ = Label(
-                        grid[3, 1],
-                        "Order [taps]",
-                        fontsize = 15,
-                        halign = :right,
-                    )
-                sl_order = Slider(
-                                grid[3, 2],
-                                range = 1:1:1000,
-                                startvalue = order,
-                                horizontal = true,
-                            )
-                on(sl_order.value) do val
-                    order[] = val
-                    notify(order)
-                end
-            end
-
-        end
-
-    elseif fprototype in [:iirnotch]
-
-        _ = Label(
-                grid[1, 1],
-                "Cutoff [Hz]",
-                fontsize = 15,
-                halign = :right,
-            )
-        sl_cutoff = Slider(
-                        grid[1, 2],
-                        range = 0.5:0.1:(nqf - 0.1),
-                        startvalue = cutoff[],
-                        horizontal = true,
-                    )
-        on(sl_cutoff.value) do val
-            cutoff[] = round(val, digits=1)
-            if cutoff[] > 10
-                sl_bw.range = 0.1:0.1:10
-            else
-                if bw[] >= cutoff[]
-                    bw[] = cutoff[] - 0.1
-                    set_close_to!(sl_bw, bw[])
-                end
-                sl_bw.range = 0.1:0.1:(cutoff[] - 0.1)
-            end
-            notify(cutoff)
-        end
-
-        _ = Label(
-                grid[2, 1],
-                "Band width [Hz]",
-                fontsize = 15,
-                halign = :right,
-            )
-        sl_bw = Slider(
-                    grid[2, 2],
-                    range = cutoff[] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[] - 0.1)),
-                    startvalue = bw[],
-                    horizontal = true,
-                )
-        on(sl_bw.value) do val
-            bw[] = round(val, digits=1)
-            notify(bw)
         end
 
     end
 
+    # create filter
     flt = @lift(
             filter_create(;
                 fprototype = fprototype,
@@ -732,6 +734,8 @@ function plot_filter(;
                 w = w,
             )
         )
+
+    # draw plots
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
 
@@ -1140,8 +1144,8 @@ function plot_filter(;
                         f_stop,
                         linestyle = :dash,
                         linewidth = 0.25,
-                        color = :black,
-                    )
+                        color = :black
+,                    )
             GLMakie.vlines!(
                         ax2,
                         f_stop,
