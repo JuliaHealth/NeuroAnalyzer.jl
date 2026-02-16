@@ -100,11 +100,11 @@ function plot_filter(;
             else
                 w = ones(6)
             end
-        elseif ftype in [:lp, :hs]
+        elseif ftype in [:lp, :hp]
             if !isnothing(w)
-                @assert length(w) == 6 "Length of w must be 6."
+                @assert length(w) == 4 "Length of w must be 4."
             else
-                w = ones(6)
+                w = ones(4)
             end
         end
     end
