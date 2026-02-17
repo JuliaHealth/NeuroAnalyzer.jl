@@ -48,11 +48,19 @@ p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:gfp)
 @info "Test: plot_filter()"
 p = plot_filter(fs=256, fprototype=:butterworth, ftype=:hp, cutoff=10, order=8, gui=false)
 @test p isa GLMakie.Figure
-p = plot_filter(fs=256, fprototype=:butterworth, ftype=:lp, cutoff=10, order=8, gui=false)
+p = plot_filter(fs=256, fprototype=:chebyshev1, ftype=:hp, cutoff=10, order=8, gui=false)
 @test p isa GLMakie.Figure
-p = plot_filter(fs=256, fprototype=:butterworth, ftype=:bp, cutoff=(10, 12), order=8, gui=false)
+p = plot_filter(fs=256, fprototype=:chebyshev2, ftype=:hp, cutoff=10, order=8, gui=false)
 @test p isa GLMakie.Figure
-p = plot_filter(fs=256, fprototype=:butterworth, ftype=:bs, cutoff=(10, 12), order=8, gui=false)
+p = plot_filter(fs=256, fprototype=:elliptic, ftype=:hp, cutoff=10, order=8, rs=4, rp=2, gui=false)
+@test p isa GLMakie.Figure
+p = plot_filter(fs=256, fprototype=:iirnotch, ftype=:lp, cutoff=10, bw=2, gui=false)
+@test p isa GLMakie.Figure
+p = plot_filter(fs=256, fprototype=:fir, ftype=:lp, cutoff=10, order=8, gui=false)
+@test p isa GLMakie.Figure
+p = plot_filter(fs=256, fprototype=:firls, ftype=:bp, cutoff=(10, 12), order=8, bw=2, gui=false)
+@test p isa GLMakie.Figure
+p = plot_filter(fs=256, fprototype=:remez, ftype=:bs, cutoff=(10, 12), order=8, bw=2, gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs()"
