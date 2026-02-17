@@ -172,6 +172,7 @@ function filter_create(;
         return flt
 
     elseif fprototype === :firls
+
         if ftype === :bp
 
             f1_stop = cutoff[1] - (bw / 2)
@@ -179,7 +180,7 @@ function filter_create(;
             f2_pass = cutoff[2] - (bw / 2)
             f2_stop = cutoff[2] + (bw / 2)
             flt_shape = [0, 0, 1, 1, 0, 0]
-            flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
+            flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, nqf]
 
         elseif ftype === :bs
 
@@ -188,21 +189,21 @@ function filter_create(;
             f2_stop = cutoff[2] - (bw / 2)
             f2_pass = cutoff[2] + (bw / 2)
             flt_shape = [1, 1, 0, 0, 1, 1]
-            flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
+            flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, nqf]
 
         elseif ftype === :lp
 
             f_pass = cutoff[1] - (bw / 2)
             f_stop = cutoff[1] + (bw / 2)
             flt_shape = [1, 1, 0, 0]
-            flt_frq = [0, f_pass, f_stop, fs / 2]
+            flt_frq = [0, f_pass, f_stop, nqf]
 
         elseif ftype === :hp
 
             f_pass = cutoff[1] + (bw / 2)
             f_stop = cutoff[1] - (bw / 2)
             flt_shape = [0, 0, 1, 1]
-            flt_frq = [0, f_stop, f_pass, fs / 2]
+            flt_frq = [0, f_stop, f_pass, nqf]
 
         end
 
@@ -230,10 +231,7 @@ function filter_create(;
             _info(" F2_stop: $f2_stop Hz")
             _info(" F2_pass: $f2_pass Hz")
         end
-@show (order - 1)
-@show flt_frq
-@show flt_shape
-@show w
+
         flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true; fs = fs)
 
         return flt
@@ -245,21 +243,21 @@ function filter_create(;
             f1_pass = cutoff[1] + (bw / 2)
             f2_pass = cutoff[2] - (bw / 2)
             f2_stop = cutoff[2] + (bw / 2)
-            w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, fs / 2) => 0]
+            w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, nqf) => 0]
         elseif ftype === :bs
             f1_pass = cutoff[1] - (bw / 2)
             f1_stop = cutoff[1] + (bw / 2)
             f2_stop = cutoff[2] - (bw / 2)
             f2_pass = cutoff[2] + (bw / 2)
-            w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, fs / 2) => 1]
+            w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, nqf) => 1]
         elseif ftype === :lp
             f_pass = cutoff[1] - (bw / 2)
             f_stop = cutoff[1] + (bw / 2)
-            w = [(0, f_pass) => 1, (f_stop, fs / 2) => 0]
+            w = [(0, f_pass) => 1, (f_stop, nqf) => 0]
         elseif ftype === :hp
             f_pass = cutoff[1] + (bw / 2)
             f_stop = cutoff[1] - (bw / 2)
-            w = [(0, f_stop) => 0, (f_pass, fs / 2) => 1]
+            w = [(0, f_stop) => 0, (f_pass, nqf) => 1]
         end
 
         if ftype in [:lp, :hp]
@@ -396,8 +394,10 @@ function filter_apply(
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(
-                obj.data[ch[ch_idx], :, ep_idx], flt = flt, dir = dir
-            )
+                                                                    obj.data[ch[ch_idx], :, ep_idx],
+                                                                    flt = flt,
+                                                                    dir = dir,
+                                                                )
             # update progress bar
             progress_bar && next!(progbar)
         end
@@ -435,8 +435,6 @@ function filter_apply!(
     dir::Symbol = :twopass,
 )::Nothing
 
-    _check_var(dir, [:twopass, :onepass, :reverse], "dir")
-
     obj_new = NeuroAnalyzer.filter_apply(obj; ch = ch, flt = flt, dir = dir)
 
     obj.data = obj_new.data
@@ -470,17 +468,17 @@ Apply filtering.
       + `:bp`: band pass
       + `:bs`: band stop
   - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `fs::Int64`: sampling rate
+  - `fs::Int64`: signal sampling rate
   - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
+  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
   - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
   - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `preview::Bool=false`: plot filter response
   - `dir:Symbol=:twopass`: filtering direction:
       + `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
       + `:onepass`: single pass
       + `:reverse`: one pass, reverse direction
+  - `preview::Bool=false`: plot filter response
 
 # Returns
 
@@ -499,38 +497,38 @@ function filter(
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
-    preview::Bool = false,
     dir::Symbol = :twopass,
+    preview::Bool = false,
 )::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        p = plot_filter_response(;
-            fs = sr(obj),
-            fprototype = fprototype,
-            ftype = ftype,
-            cutoff = cutoff,
-            order = order,
-            rp = rp,
-            rs = rs,
-            bw = bw,
-            w = w,
-        )
+        p = plot_filter(
+                    fs = sr(obj),
+                    fprototype = fprototype,
+                    ftype = ftype,
+                    cutoff = cutoff,
+                    order = order,
+                    rp = rp,
+                    rs = rs,
+                    bw = bw,
+                    w = w,
+                )
         return p
     end
 
-    flt = filter_create(;
-        fprototype = fprototype,
-        ftype = ftype,
-        cutoff = cutoff,
-        fs = sr(obj),
-        order = order,
-        rp = rp,
-        rs = rs,
-        bw = bw,
-        w = w,
-    )
+    flt = filter_create(
+                    fprototype = fprototype,
+                    ftype = ftype,
+                    cutoff = cutoff,
+                    fs = sr(obj),
+                    order = order,
+                    rp = rp,
+                    rs = rs,
+                    bw = bw,
+                    w = w,
+                )
     obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
 
     return obj_new
@@ -561,17 +559,17 @@ Apply filtering.
       + `:bp`: band pass
       + `:bs`: band stop
   - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `fs::Int64`: sampling rate
+  - `fs::Int64`: signal sampling rate
   - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
+  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
   - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
   - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `preview::Bool=false`: plot filter response
   - `dir:Symbol=:twopass`: filtering direction:
       + `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
       + `:onepass`: single pass
       + `:reverse`: one pass, reverse direction
+  - `preview::Bool=false`: plot filter response
 
 # Returns
 
@@ -590,40 +588,40 @@ function filter!(
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
-    preview::Bool = false,
     dir::Symbol = :twopass,
+    preview::Bool = false,
 )::Union{Nothing, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        p = plot_filter_response(;
-            fs = sr(obj),
-            fprototype = fprototype,
-            ftype = ftype,
-            cutoff = cutoff,
-            order = order,
-            rp = rp,
-            rs = rs,
-            bw = bw,
-            w = w,
-        )
+        p = plot_filter(
+                    fs = sr(obj),
+                    fprototype = fprototype,
+                    ftype = ftype,
+                    cutoff = cutoff,
+                    order = order,
+                    rp = rp,
+                    rs = rs,
+                    bw = bw,
+                    w = w,
+                )
         return p
     end
 
     obj_new = NeuroAnalyzer.filter(
-        obj;
-        ch = ch,
-        fprototype = fprototype,
-        ftype = ftype,
-        cutoff = cutoff,
-        order = order,
-        rp = rp,
-        rs = rs,
-        bw = bw,
-        dir = dir,
-        w = w,
-    )
+                                obj,
+                                ch = ch,
+                                fprototype = fprototype,
+                                ftype = ftype,
+                                cutoff = cutoff,
+                                order = order,
+                                rp = rp,
+                                rs = rs,
+                                bw = bw,
+                                dir = dir,
+                                w = w,
+                            )
 
     obj.data = obj_new.data
     obj.history = obj_new.history
