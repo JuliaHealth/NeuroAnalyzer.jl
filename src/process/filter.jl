@@ -137,7 +137,10 @@ function filter_create(;
         end
     end
 
-    if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
+    ## FIR filters
+
+    if fprototype === :fir
+
         if ftype === :lp
             responsetype = Lowpass(cutoff)
         elseif ftype === :hp
@@ -147,11 +150,6 @@ function filter_create(;
         elseif ftype === :bs
             responsetype = Bandstop(cutoff[1], cutoff[2])
         end
-    end
-
-    ## FIR filters
-
-    if fprototype === :fir
 
         prototype = FIRWindow(w)
 
@@ -294,6 +292,16 @@ function filter_create(;
     ## IIR filters
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+
+        if ftype === :lp
+            responsetype = Lowpass(cutoff)
+        elseif ftype === :hp
+            responsetype = Highpass(cutoff)
+        elseif ftype === :bp
+            responsetype = Bandpass(cutoff[1], cutoff[2])
+        elseif ftype === :bs
+            responsetype = Bandstop(cutoff[1], cutoff[2])
+        end
 
         if fprototype === :butterworth
             prototype = Butterworth(order)

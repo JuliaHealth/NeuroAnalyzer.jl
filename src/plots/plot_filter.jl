@@ -790,7 +790,6 @@ function plot_filter(;
                 )
 
         phresp = lift(DSP.phaseresp, flt)
-        #phi = @lift(rad2deg.($phresp[1]))
         phi = @lift(($phresp[1]))
         # convert rad/sample to Hz
         f = @lift(round.($phresp[2] .* fs / 2 / pi, digits=1))
@@ -911,7 +910,6 @@ function plot_filter(;
                 )
 
         fresp = lift(_fir_response, flt)
-        # phi = _fir_response(flt[], f)
         # convert to dB
         phi = @lift(rad2deg.(-atan.(imag($fresp), real($fresp))))
         # convert rad/sample to Hz
@@ -987,6 +985,7 @@ function plot_filter(;
     end
 
     if length(cutoff[]) == 1
+
         GLMakie.vlines!(
                     ax1,
                     cutoff,
@@ -1010,6 +1009,7 @@ function plot_filter(;
                 )
 
         if isa(bw, Observable{Float64})
+
             if ftype === :lp
                 f_pass = @lift($cutoff - ($bw / 2))
                 f_stop = @lift($cutoff + ($bw / 2))
@@ -1017,6 +1017,7 @@ function plot_filter(;
                 f_pass = @lift($cutoff + ($bw / 2))
                 f_stop = @lift($cutoff - ($bw / 2))
             end
+
             GLMakie.vlines!(
                         ax1,
                         f_pass,
@@ -1060,13 +1061,16 @@ function plot_filter(;
                         color = :black,
                     )
         end
+
     else
+
         c1 = lift(cutoff) do val
             val[1]
         end
         c2 = lift(cutoff) do val
             val[2]
         end
+
         GLMakie.vlines!(
                     ax1,
                     c1,
@@ -1111,6 +1115,7 @@ function plot_filter(;
                 )
 
         if isa(bw, Observable{Float64})
+
             if ftype === :bp
                 f_pass = @lift($cutoff[2] + ($bw / 2))
                 f_stop = @lift($cutoff[1] - ($bw / 2))
@@ -1118,6 +1123,7 @@ function plot_filter(;
                 f_pass = @lift($cutoff[1] - ($bw / 2))
                 f_stop = @lift($cutoff[2] + ($bw / 2))
             end
+
             GLMakie.vlines!(
                         ax1,
                         f_pass,
@@ -1144,8 +1150,8 @@ function plot_filter(;
                         f_stop,
                         linestyle = :dash,
                         linewidth = 0.25,
-                        color = :black
-,                    )
+                        color = :black,
+                    )
             GLMakie.vlines!(
                         ax2,
                         f_stop,
