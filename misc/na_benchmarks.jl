@@ -131,8 +131,10 @@ print(rpad("Virtual channel", 36))
 vch(e10, f="fp1 + fp2")
 @time vch(e10, f="fp1 + fp2")
 print(rpad("Detect bad channels and epochs", 36))
-detect_bad(e10, ch=get_channel(e10, type="eeg"))
-@time detect_bad(e10, ch=get_channel(e10, type="eeg"))
+channel_reject(e10, ch=get_channel(e10, type="eeg"))
+@time channel_reject(e10, ch=get_channel(e10, type="eeg"))
+epoch_reject(e10, ch=get_channel(e10, type="eeg"))
+@time epoch_reject(e10, ch=get_channel(e10, type="eeg"))
 
 @info "Benchmarking: PROCESS"
 println()

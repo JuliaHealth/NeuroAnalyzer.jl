@@ -99,8 +99,9 @@ function plot_cont(
     ctypes_uni_pos = zeros(Int64, ch_n)
     ctypes_uni_pos[ctypes_pos] .= 1
 
-    t = Observable(obj_tmp.time_pts)
-    s = Observable(obj_tmp.data[ch_order, :, 1])
+    t = Observable(obj_tmp.time_pts[1:res:end])
+    s = Observable(obj_tmp.data[ch_order, :, 1][:, 1:res:end])
+    fs = sr(obj)
 
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "")
 
@@ -238,14 +239,14 @@ function plot_cont(
             !mono && (cmap = GLMakie.resample_cmap(pal, size(s[], 1)))
             for idx in axes(s[], 1)
                 GLMakie.lines!(
-                    ax1,
-                    t[][1:res:end],
-                    @lift($s[idx, 1:res:end]);
-                    color = mono ? :black : cmap[idx],
-                    colormap = pal,
-                    colorrange = 1:size(s[], 1),
-                    linewidth = 0.5,
-                )
+                            ax1,
+                            t,
+                            s,
+                            color = mono ? :black : cmap[idx],
+                            colormap = pal,
+                            colorrange = 1:size(s, 1),
+                            linewidth = 0.5,
+                        )
             end
 
             # plot averaged channels
@@ -520,10 +521,33 @@ function plot_cont(
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if type === :normal
 
+                    if event.key == Keyboard.d
+                        if !isnan(vmarker1[]) && !isnan(vmarker2[])
+                            t1_idx = vsearch(marker_range[][1], t[])
+                            t2_idx = vsearch(marker_range[][2], t[])
+
+                            s[] = hcat(s[][:, 1:(t1_idx - 1)], s[][:, (t2_idx + 1):end])
+                            t[] = round.(collect(0:(1 / sr):(size(s[], 2) / sr))[1:(end - 1)]; digits = 4)
+
+                            r[] = Float64[]
+                            for idx in eachindex(ctypes_uni)
+                                push!(r[], round(_get_range(s[][ctypes .== ctypes_uni[idx], :])))
+                                s[][ctypes .== ctypes_uni[idx], :] = normalize_minmax(s[][ctypes .== ctypes_uni[idx], :])
+                            end
+                            s[] .+= collect(1:ch_n)
+
+                            vmarker1[] = NaN
+                            vmarker2[] = NaN
+                            marker_range[] = [NaN, NaN]
+                            notify(s)
+                            notify(t)
+                            notify(r)
+                        end
+                    end
+
                     if event.key == Keyboard.s
                         snap = !snap
                     end
-
 
                     if event.key == Keyboard.down
                         if ch1[] < ch_n - nch[] + 1

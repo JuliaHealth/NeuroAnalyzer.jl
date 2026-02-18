@@ -96,9 +96,12 @@ keep_epoch!(e10_tmp, ep=1:2)
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 
-@info "Test: detect_bad()"
-bm, be = detect_bad(e10, ch=["Fp1", "Fp2"])
-@test sum(bm) == 2
+@info "Test: channel_reject()"
+bc = channel_reject(e10, ch=["Fp1", "Fp2"])
+@test sum(bc) == 2
+
+@info "Test: eppoch_reject()"
+be = eppoch_reject(e10, ch=["Fp1", "Fp2"])
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "Test: epoch(), subepoch()"
@@ -228,11 +231,5 @@ delete_optode!(n, opt=1)
 @test size(n.header.recording[:optode_pairs]) == (70, 2)
 @test nrow(n.locs) == 35
 @test size(n) == (70, 500, 1)
-
-@info "Test: epoch_reject()"
-ep = epoch_reject(e10, ch="all", amp=1)
-@test length(ep) == 10
-ep = epoch_reject(e10, ch="all", amp=10000)
-@test length(ep) == 0
 
 true

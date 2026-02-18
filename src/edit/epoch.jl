@@ -4,7 +4,6 @@ export epoch_ts
 export epoch_ts!
 export subepoch
 export subepoch!
-export epoch_reject
 
 """
     epoch(obj; <keyword arguments>)
@@ -278,35 +277,5 @@ function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Noth
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
-
-end
-
-"""
-    epoch_reject(obj; <keyword arguments>)
-
-Reject epochs based on signal amplitude.
-
-# Arguments
-
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channels to be analyzed
-  - `amp::Real`: threshold amplitude, reject epochs where amplitude is above the `+threshold` or below `-threshold`
-
-# Returns
-
-  - `ep::Vector{Int64}`: epoch numbers to reject
-"""
-function epoch_reject(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, amp::Real)::Vector{Int64}
-
-    ep_n = nepochs(obj)
-    @assert ep_n > 1 "epoch_reject() must be applied to epoched object."
-    ch = get_channel(obj, ch=ch)
-
-    ep = Int64[]
-    @inbounds for ep_idx in 1:ep_n
-        @views (maximum(obj.data[ch, :, ep_idx]) > amp || minimum(obj.data[ch, :, ep_idx]) < -amp) && push!(ep, ep_idx)
-    end
-
-    return sort(ep)
 
 end
