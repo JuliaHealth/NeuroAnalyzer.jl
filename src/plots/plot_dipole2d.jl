@@ -34,7 +34,7 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     # prepare plot
     GLMakie.activate!(title = "plot_dipole_2d()")
     plot_size = (1200, 400)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax_xy = GLMakie.Axis(
         p[1, 1];
         aspect = DataAspect(),
@@ -86,8 +86,8 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     # draw head
     lw = 2
     # nose
-    GLMakie.lines!(ax_xy, [-0.1, 0], [0.995, 1.1]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax_xy, [0, 0.1], [1.1, 0.995]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
     # ears
     # left
     GLMakie.lines!(ax_xy, [-0.995, -1.03], [0.1, 0.15]; linewidth = lw, color = :black)

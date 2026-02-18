@@ -201,7 +201,12 @@ global progress_bar = @load_preference("progress_bar", true)
 global verbose = @load_preference("verbose", true)
 global exclude_bads = @load_preference("exclude_bads", false)
 global colors = @load_preference("colors", true)
-na_set_prefs(; progress_bar = progress_bar, verbose = verbose, exclude_bads = exclude_bads, colors = colors)
+na_set_prefs(
+            progress_bar = progress_bar,
+            verbose = verbose,
+            exclude_bads = exclude_bads,
+            colors = colors,
+        )
 
 # show major parameters
 

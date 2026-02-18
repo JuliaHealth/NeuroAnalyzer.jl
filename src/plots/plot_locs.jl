@@ -199,8 +199,8 @@ function plot_locs(
         ps === :s && (lw = 1)
         if plane === :xy
             # nose
-            GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
 
             # ears
             # left

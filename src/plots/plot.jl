@@ -261,7 +261,7 @@ function plot(
     # prepare plot
     GLMakie.activate!(title = "plot()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(; size = plot_size)
+    p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = xlabel,

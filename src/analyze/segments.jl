@@ -202,7 +202,7 @@ function seg_select(
     size_x = size(m, 2)
     size_y = size(m, 1)
 
-    p = GLMakie.Figure(; size = (size_x, size_y))
+    p = GLMakie.Figure(size = (size_x, size_y))
     ax = GLMakie.Axis(
         p[1, 1];
         xlabel = "",

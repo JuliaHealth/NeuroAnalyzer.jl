@@ -243,8 +243,8 @@ function plot_topo(
         ps === :m && (lw = 2)
         ps === :s && (lw = 1)
         # nose
-        GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
 
         # ears
         # left

@@ -372,7 +372,7 @@ function plot_spectrogram_topo(
     pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(sp, 3)
-        pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
+        pp = GLMakie.Figure(size = marker_size, figure_padding = 0)
         ax = GLMakie.Axis(
             pp[1, 1];
             xlabel = "",
@@ -437,8 +437,8 @@ function plot_spectrogram_topo(
 
     if head
         # nose
-        GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
 
         # ears
         # left
