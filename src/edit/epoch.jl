@@ -4,18 +4,18 @@ export epoch_ts
 export epoch_ts!
 export subepoch
 export subepoch!
+export epoch_reject
 
 """
     epoch(obj; <keyword arguments>)
 
-Split into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
+Split into epochs. Return signal that is split either by markers (if specified) or by epoch length.
 
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
   - `marker::String=""`: marker value to split at
   - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
-  - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
   - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 
 # Returns
@@ -26,9 +26,10 @@ function epoch(
     obj::NeuroAnalyzer.NEURO;
     marker::String = "",
     offset::Real = 0,
-    ep_n::Union{Int64, Nothing} = nothing,
     ep_len::Union{Real, Nothing} = nothing,
 )::NeuroAnalyzer.NEURO
+
+    @assert nepochs(obj) == 1 "epoch() must be applied to continuous object."
 
     obj_new = deepcopy(obj)
 
@@ -36,17 +37,13 @@ function epoch(
     if marker != ""
         epoch_id = marker
     elseif marker == ""
-        if ep_len !== nothing
-            epoch_id = "length_$(ep_len)s"
-        else
-            epoch_id = "n_$(ep_n)"
-        end
+        !isnothing(ep_len) && (epoch_id = "length_$(ep_len)s")
     end
 
     if marker != ""
         # split by markers
         @assert _has_markers(obj) "OBJ does not contain markers."
-        @assert ep_len !== nothing "ep_len must be specified."
+        @assert !isnothing(ep_len) "ep_len must be specified."
         _check_markers(obj, marker)
 
         # get marker positions
@@ -66,22 +63,22 @@ function epoch(
 
         # split into epochs
         epochs, obj_new.markers = _make_epochs_bymarkers(
-            obj_new.data;
-            marker = marker,
-            markers = deepcopy(obj_new.markers),
-            marker_start = round.(Int64, mrk_start * sr(obj)),
-            offset = round(Int64, offset * sr(obj)),
-            ep_len = round(Int64, ep_len * sr(obj)),
-            fs = sr(obj),
-        )
+                                                        obj_new.data;
+                                                        marker = marker,
+                                                        markers = deepcopy(obj_new.markers),
+                                                        marker_start = round.(Int64, mrk_start * sr(obj)),
+                                                        offset = round(Int64, offset * sr(obj)),
+                                                        ep_len = round(Int64, ep_len * sr(obj)),
+                                                        fs = sr(obj),
+                                                    )
 
     else
-        if ep_len !== nothing
+        if !isnothing(ep_len)
             @assert ep_len <= signal_len(obj) / sr(obj) "ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)))."
             ep_len = round(Int64, ep_len * sr(obj))
         end
-        # split by ep_len or ep_n
-        epochs = _make_epochs(obj.data; ep_n = ep_n, ep_len = ep_len)
+        # split by ep_len
+        epochs = _make_epochs(obj.data; ep_len = ep_len)
 
         # delete markers outside epochs
         for marker_idx in DataFrames.nrow(obj_new.markers):-1:1
@@ -104,7 +101,7 @@ function epoch(
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     obj_new.epoch_time .-= offset
 
-    push!(obj_new.history, "epoch(OBJ, marker=$marker, offset=$offset, ep_n=$ep_n, ep_len=$ep_len)")
+    push!(obj_new.history, "epoch(OBJ, marker=$marker, offset=$offset, ep_len=$ep_len)")
 
     return obj_new
 
@@ -120,7 +117,6 @@ Split into epochs. Return signal that is split either by markers (if specified),
   - `obj::NeuroAnalyzer.NEURO`
   - `marker::String=""`: marker value to split at
   - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
-  - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
   - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 
 # Returns
@@ -131,11 +127,10 @@ function epoch!(
     obj::NeuroAnalyzer.NEURO;
     marker::String = "",
     offset::Real = 0,
-    ep_n::Union{Int64, Nothing} = nothing,
     ep_len::Union{Real, Nothing} = nothing,
 )::Nothing
 
-    obj_new = epoch(obj; marker = marker, offset = offset, ep_n = ep_n, ep_len = ep_len)
+    obj_new = epoch(obj; marker = marker, offset = offset, ep_len = ep_len)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -203,8 +198,8 @@ Extract sub-epochs with a reduced time range.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ep_start::Real`: sub-epoch start
-  - `ep_end::Real`: sub-epoch end
+  - `ep_start::Real`: sub-epoch start in seconds
+  - `ep_end::Real`: sub-epoch end in seconds
 
 # Returns
 
@@ -266,8 +261,8 @@ Extract sub-epochs with a reduced time range.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ep_start::Real`: sub-epoch start
-  - `ep_end::Real`: sub-epoch end
+  - `ep_start::Real`: sub-epoch start in seconds
+  - `ep_end::Real`: sub-epoch end in seconds
 
 # Returns
 
@@ -283,5 +278,35 @@ function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Noth
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
+
+end
+
+"""
+    epoch_reject(obj; <keyword arguments>)
+
+Reject epochs based on signal amplitude.
+
+# Arguments
+
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channels to be analyzed
+  - `amp::Real`: threshold amplitude, reject epochs where amplitude is above the `+threshold` or below `-threshold`
+
+# Returns
+
+  - `ep::Vector{Int64}`: epoch numbers to reject
+"""
+function epoch_reject(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, amp::Real)::Vector{Int64}
+
+    ep_n = nepochs(obj)
+    @assert ep_n > 1 "epoch_reject() must be applied to epoched object."
+    ch = get_channel(obj, ch=ch)
+
+    ep = Int64[]
+    @inbounds for ep_idx in 1:ep_n
+        @views (maximum(obj.data[ch, :, ep_idx]) > amp || minimum(obj.data[ch, :, ep_idx]) < -amp) && push!(ep, ep_idx)
+    end
+
+    return sort(ep)
 
 end

@@ -122,7 +122,7 @@ function ica_decompose(
     f::Symbol = :tanh,
 )::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_var::Vector{Float64}}
 
-    @assert nepochs(obj) == 1 "ica_decompose() must be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_decompose() must be applied to continuous object."
 
     ch = get_channel(obj; ch = ch)
 
@@ -220,7 +220,7 @@ function ica_reconstruct(
     keep::Bool = false,
 )::NeuroAnalyzer.NEURO
 
-    @assert nepochs(obj) == 1 "ica_reconstruct() must be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_reconstruct() must be applied to continuous object."
 
     ch = get_channel(obj; ch = ch)
 
@@ -295,7 +295,7 @@ function ica_remove(
     ic_mw::Matrix{Float64},
 )::NeuroAnalyzer.NEURO
 
-    @assert nepochs(obj) == 1 "ica_remove() must be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_remove() must be applied to continuous object."
 
     ch = get_channel(obj; ch = ch)
     length(ch) == 1 && (ch = ch[1])

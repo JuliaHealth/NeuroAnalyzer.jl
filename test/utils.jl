@@ -200,7 +200,7 @@ s = rand(100)
 @test length(labels(e10)) == 24
 
 @info "Test: channel_cluster()"
-@test channel_cluster(e10, cluster=:f1) == [1, 3, 11]
+@test channel_cluster(e10, cluster=:f1) == ["Fp1", "F3", "F7"]
 
 @info "Test: band_frq()"
 @test band_frq(256, band=:alpha) == (8.0, 13.0)
@@ -264,7 +264,7 @@ delete_note!(e10)
 @test length(phases(e10.data[1, :, 1])) == 2560
 
 @info "Test: pick()"
-@test channel_pick(e10, p=[:l, :f]) == [1, 3, 11]
+@test channel_pick(e10, p=[:l, :f]) == ["Fp1", "F3", "F7"]
 
 @info "Test: t2s()"
 @test t2s(1.0, 256) == 256

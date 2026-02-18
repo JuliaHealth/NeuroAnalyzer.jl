@@ -718,15 +718,16 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
 # Returns
 
-  - `channels::Vector{Int64}`: channel numbers
+  - `ch::Vector{String}`: channel names
 """
-function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})::Vector{Int64}
+function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})::Vector{String}
 
     _check_datatype(obj, "eeg")
 
     @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
     if p isa Vector{Symbol}
+
         for idx in p
             _check_var(
                 idx,
@@ -747,10 +748,10 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
 
         # check which channels are in the picks list
         clabels = get_channel(obj; type = "eeg")
-        channels = Vector{Int64}()
+        ch = Vector{Int64}()
         for idx1 in eachindex(clabels)
             for idx2 in eachindex(c)
-                in(c[idx2], clabels[idx1]) && push!(channels, idx1)
+                in(c[idx2], clabels[idx1]) && push!(ch, idx1)
             end
         end
 
@@ -759,21 +760,21 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             if (p[idx1] === :left || p[idx1] === :l)
                 for idx2 in eachindex(p)
                     if (p[idx2] === :right || p[idx2] === :r)
-                        return channels
+                        return get_channel(obj, ch=ch)
                     end
                 end
             end
             if (p[idx1] === :right || p[idx1] === :r)
                 for idx2 in eachindex(p)
                     if (p[idx2] === :left || p[idx2] === :l)
-                        return channels
+                        return get_channel(obj, ch=ch)
                     end
                 end
             end
         end
 
         clabels = get_channel(obj; type = "eeg")
-        clabels = clabels[channels]
+        clabels = clabels[ch]
         pat = nothing
         for idx in p
             # for :right remove lefts
@@ -782,12 +783,15 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             (idx === :left || idx === :l) && (pat = r"[z02468]$")
         end
         if typeof(pat) == Regex
-            for idx in length(channels):-1:1
-                !isnothing(match(pat, clabels[idx])) && deleteat!(channels, idx)
+            for idx in length(ch):-1:1
+                !isnothing(match(pat, clabels[idx])) && deleteat!(ch, idx)
             end
         end
-        return channels
+
+        return get_channel(obj, ch=ch)
+
     else
+
         _check_var(
             p, [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p"
         )
@@ -802,15 +806,17 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         (p === :occipital || p === :o) && (c = ['O'])
 
         clabels = get_channel(obj; type = "eeg")
-        channels = Vector{Int64}()
+        ch = Vector{Int64}()
         for idx1 in eachindex(c)
             for idx2 in eachindex(clabels)
-                in(c[idx1], clabels[idx2]) && push!(channels, idx2)
+                in(c[idx1], clabels[idx2]) && push!(ch, idx2)
             end
         end
 
-        return channels
+        return get_channel(obj, ch=ch)
+
     end
+
 end
 
 """
@@ -834,9 +840,9 @@ Return channels belonging to a cluster of channels.
 
 # Returns
 
-  - `ch::Vector{Int64}`: channel numbers
+  - `ch::Vector{Int64}`: channel names
 """
-function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{Int64}
+function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
 
     @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
@@ -858,7 +864,7 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{Int6
         idx in clabels && push!(ch, idx)
     end
 
-    return get_channel(obj; ch = ch)
+    return ch
 
 end
 
@@ -1142,7 +1148,7 @@ function Base.size(obj::NeuroAnalyzer.NEURO)::Tuple{Int64, Int64, Int64}
 end
 
 """
-    size(obj, n)
+    size(obj, d)
 
 Return size of the object data.
 

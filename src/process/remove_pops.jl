@@ -235,7 +235,7 @@ function remove_pops(
     Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
 }
 
-    @assert nepochs(obj) == 1 "pop() must be applied to a continuous (non-epoched) signal."
+    @assert nepochs(obj) == 1 "pop() must be applied to continuous object."
 
     ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)

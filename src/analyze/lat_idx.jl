@@ -44,67 +44,67 @@ function lat_idx(
     @assert length(channel_pick(obj, p = :l)) > 0 "Could not detect left hemisphere channels, check OBJ labels."
     @assert length(channel_pick(obj, p = :r)) > 0 "Could not detect right hemisphere channels, check OBJ labels."
 
-    ch_l = channel_pick(obj; p = :l)
-    ch_r = channel_pick(obj; p = :r)
+    ch_l = get_channel(obj, ch=channel_pick(obj; p = :l))
+    ch_r = get_channel(obj, ch=channel_pick(obj; p = :r))
 
     _log_off()
 
     # left PSDs
     if datatype(obj) in ["erp", "erf"]
         p_left, f = psd(
-            obj.data[ch_l, :, 1];
-            fs = sr(obj),
-            db = false,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            gw = gw,
-        )
+                        obj.data[ch_l, :, 1];
+                        fs = sr(obj),
+                        db = false,
+                        method = method,
+                        nt = nt,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        ncyc = ncyc,
+                        gw = gw,
+                    )
     else
         p_left, f = psd(
-            obj.data[ch_l, :, :];
-            fs = sr(obj),
-            db = false,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            gw = gw,
-        )
+                        obj.data[ch_l, :, :];
+                        fs = sr(obj),
+                        db = false,
+                        method = method,
+                        nt = nt,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        ncyc = ncyc,
+                        gw = gw,
+                    )
     end
 
     # right PSDs
     if datatype(obj) in ["erp", "erf"]
         p_right, _ = psd(
-            obj.data[ch_r, :, 1];
-            fs = sr(obj),
-            db = false,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            gw = gw,
-        )
+                        obj.data[ch_r, :, 1];
+                        fs = sr(obj),
+                        db = false,
+                        method = method,
+                        nt = nt,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        ncyc = ncyc,
+                        gw = gw,
+                    )
     else
         p_right, _ = psd(
-            obj.data[ch_r, :, :];
-            fs = sr(obj),
-            db = false,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            gw = gw,
-        )
+                        obj.data[ch_r, :, :];
+                        fs = sr(obj),
+                        db = false,
+                        method = method,
+                        nt = nt,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        ncyc = ncyc,
+                        gw = gw,
+                    )
     end
 
     _log_on()
@@ -121,9 +121,7 @@ function lat_idx(
         p_left = p_left[1, frq_idx]
         p_right = p_right[1, frq_idx]
     else
-        _check_tuple(frq, "frq")
-        @assert frq[1] >= 0 "Lower frequency bound must be ≥ 0 Hz."
-        @assert frq[2] <= sr(obj) / 2 "Upper frequency bound must be ≤ $(sr(obj) / 2) Hz."
+        _check_tuple(frq, (0, sr(obj) / 2), "frq")
         frq_idx1 = vsearch(frq[1], f)
         frq_idx2 = vsearch(frq[2], f)
         p_left = mean(p_left[1, frq_idx1:frq_idx2])

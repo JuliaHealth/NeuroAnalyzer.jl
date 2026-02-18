@@ -1,24 +1,12 @@
 function _make_epochs(
-    s::AbstractMatrix; ep_n::Union{Int64, Nothing} = nothing, ep_len::Union{Int64, Nothing} = nothing
+    s::AbstractMatrix; ep_len::Int64 = nothing
 )::Array{Float64, 3}
 
-    ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
-    ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
-    ep_len === nothing && @assert ep_n !== nothing "Both ep_n and ep_len cannot be specified."
-    ep_n === nothing && @assert ep_len !== nothing "Both ep_n and ep_len cannot be specified."
-    @assert !(ep_len !== nothing && ep_len < 1) "ep_len must be ≥ 1."
-    @assert !(ep_n !== nothing && ep_n < 1) "ep_n must be ≥ 1."
+    @assert ep_len >= 1 "ep_len must be ≥ 1."
+    @assert ep_len <= size(s, 2) "ep_len must be ≤ $(size(s, 2))."
 
     ch_n = size(s, 1)
-    if ep_n === nothing
-        ep_n = size(s, 2) ÷ ep_len
-    else
-        ep_len = size(s, 2) ÷ ep_n
-    end
-
-    @assert ep_len <= size(s, 2) "ep_len must be ≤ $(size(s, 2))."
-    @assert ep_len >= 1 "ep_len must be ≥ 1."
-    @assert ep_n >= 1 "ep_n must be ≥ 1."
+    ep_n = size(s, 2) ÷ ep_len
 
     epochs = reshape(s[:, 1:(ep_len * ep_n)], ch_n, ep_len, ep_n)
 
@@ -26,23 +14,15 @@ function _make_epochs(
 end
 
 function _make_epochs(
-    s::AbstractArray; ep_n::Union{Int64, Nothing} = nothing, ep_len::Union{Int64, Nothing} = nothing
+    s::AbstractArray; ep_len::Int64 = nothing
 )::Array{Float64, 3}
 
     _chk3d(s)
-    ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
-    ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
-    ep_len === nothing && @assert ep_n !== nothing "Both ep_n and ep_len cannot be specified."
-    ep_n === nothing && @assert ep_len !== nothing "Both ep_n and ep_len cannot be specified."
-    @assert !(ep_len !== nothing && ep_len < 1) "ep_len must be ≥ 1."
-    @assert !(ep_n !== nothing && ep_n < 1) "ep_n must be ≥ 1."
+    @assert ep_len >= 1 "ep_len must be ≥ 1."
+    @assert ep_len <= size(s, 2) "ep_len must be ≤ $(size(s, 2))."
 
     ch_n = size(s, 1)
-    if ep_n === nothing
-        ep_n = size(s, 2) * size(s, 3) ÷ ep_len
-    else
-        ep_len = size(s, 2) * size(s, 3) ÷ ep_n
-    end
+    ep_n = size(s, 2) * size(s, 3) ÷ ep_len
     s = reshape(s, ch_n, (size(s, 2) * size(s, 3)), 1)
     epochs = reshape(s[:, 1:(ep_len * ep_n), 1], ch_n, ep_len, ep_n)
 
@@ -60,10 +40,6 @@ function _make_epochs_bymarkers(
 )::Tuple{Array{Float64, 3}, DataFrame}
 
     _chk3d(s)
-    if size(s, 3) > 1
-        _warn("Signal has already been epoched, parts of the signal might have been removed.")
-        s = reshape(s, ch_n, (size(s, 2) * size(s, 3)), 1)
-    end
 
     @assert offset >= 1 "offset must be ≥ 1."
     @assert ep_len >= 1 "ep_len must be ≥ 1."

@@ -34,7 +34,7 @@ function remove_powerline(
     q::Real = 0.1,
 )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
-    @assert nepochs(obj) == 1 "remove_powerline() must be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "remove_powerline() must be applied to continuous object."
     @assert pl_frq >= 0 "pl_freq must be ≥ 0."
     @assert pl_frq <= sr(obj) / 2 "pl_freq must be ≤ $(sr(obj) / 2)."
     @assert q >= 0.01 "q must be ≥ 0.01."

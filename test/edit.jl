@@ -229,4 +229,10 @@ delete_optode!(n, opt=1)
 @test nrow(n.locs) == 35
 @test size(n) == (70, 500, 1)
 
+@info "Test: epoch_reject()"
+ep = epoch_reject(e10, ch="all", amp=1)
+@test length(ep) == 10
+ep = epoch_reject(e10, ch="all", amp=10000)
+@test length(ep) == 0
+
 true
