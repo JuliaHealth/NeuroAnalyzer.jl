@@ -168,6 +168,53 @@ function detect_tkeo(
 
 end
 
+function detect_ransac(
+    s::AbstractMatrix;
+    loc_x::Vector{Float64},
+    loc_y::Vector{Float64},
+    w::Int64 = 10,
+    ransac_r::Float64 = 0.8,
+    ransac_tr::Float64 = 0.4,
+    ransac_t::Float64 = 100.0,
+)
+
+    ch_n = size(s, 1)
+    bad_chs = zeros(Bool, ch_n)
+
+    # Euclidean distance matrix
+    d = zeros(ch_n, ch_n)
+    @inbounds for idx1 in 1:ch_n
+        for idx2 in 1:ch_n
+            d[idx1, idx2] = euclidean([loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]])
+        end
+    end
+    # set weights not to reference to itself
+    d[d .== 0] .= Inf
+
+    @inbounds for ch_idx in 1:ch_n
+        _, nearest_idx = findmin(d[ch_idx, :])
+        y = @views s[ch_idx, :]
+        x = @views s[nearest_idx, :]
+        df = DataFrame(:y=>remove_dc(y), :x=>remove_dc(x))
+        reg = createRegressionSetting(@formula(y ~ x), df)
+        o = ransac(reg, t = ransac_t, k = 128)["outliers"]
+        idx = setdiff(1:length(x), o)
+        x = x[idx]
+        y = y[idx]
+        c = Float64[]
+        for w_idx in 1:w:(length(x) - w)
+            xx = @views x[w_idx:(w_idx + w)]
+            yy = @views y[w_idx:(w_idx + w)]
+            push!(c, cor(xx, yy))
+        end
+        bad_chs[ch_idx] = sum(c .< ransac_r) / length(c) > ransac_tr
+    end
+
+    return bad_chs
+
+end
+
+
 """
     channel_reject(obj; <keyword arguments>)
 
@@ -240,7 +287,7 @@ function channel_reject(
     :rmsd in method && @assert ch_n > 1 ":rmsd method requires > 1 channel."
     :euclid in method && @assert ch_n > 1 ":euclid method requires > 1 channel."
 
-    bc = zeros(Bool, ch_n)
+    bc = zeros(Bool, nchannels(obj))
 
     if :flat in method
 
@@ -404,44 +451,14 @@ function channel_reject(
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         chs = get_channel(obj; type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
         @assert length(setdiff(ch_list, chs)) == 0 "ch must contain only signal channels."
-        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+        chs = intersect(obj.locs[!, :label], ch_list)
         locs = Base.filter(:label => in(chs), obj.locs)
 
         loc_x = locs[!, :loc_x]
         loc_y = locs[!, :loc_y]
 
-        # Euclidean distance matrix
-        d = zeros(ch_n, ch_n)
-        @inbounds for idx1 in 1:ch_n
-            for idx2 in 1:ch_n
-                d[idx1, idx2] = euclidean([loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]])
-            end
-        end
-        # set weights not to reference to itself
-        d[d .== 0] .= Inf
-
-        s = @views obj.data[ch, :, :]
-
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                _, nearest_idx = findmin(d[ch_idx, :])
-                y = @views s[ch_idx, :, ep_idx]
-                x = @views s[nearest_idx, :, ep_idx]
-                df = DataFrame(:y=>remove_dc(y), :x=>remove_dc(x))
-                reg = createRegressionSetting(@formula(y ~ x), df)
-                o = ransac(reg, t = ransac_t, k = 128)["outliers"]
-                idx = setdiff(1:length(x), o)
-                x = x[idx]
-                y = y[idx]
-                c = Float64[]
-                for w_idx in 1:w:(length(x) - w)
-                    xx = @views x[w_idx:(w_idx + w)]
-                    yy = @views y[w_idx:(w_idx + w)]
-                    push!(c, cor(xx, yy))
-                end
-                bad_chs[ch_idx] = sum(c .< ransac_r) / length(c) > ransac_tr
-            end
+            bad_chs = @views detect_ransac(obj.data[ch, :, ep_idx], loc_x=loc_x, loc_y=loc_y, w=w, ransac_t=ransac_t, ransac_r=ransac_r, ransac_tr=ransac_tr)
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -457,7 +474,7 @@ function channel_reject(
 
     end
 
-    return bc
+    return bc[ch]
 
 end
 
@@ -530,7 +547,7 @@ function channel_reject!(
                     ransac_t = ransac_t,
                     amp_t = amp_t,
                 )
-    obj.header.recording[:bad_channel] = bc
+    obj.header.recording[:bad_channel][get_channel(obj, ch=ch)] = bc
 
     return nothing
 
@@ -611,7 +628,7 @@ function epoch_reject(
     :rmsd in method && @assert ch_n > 1 ":rmsd method requires > 1 channel."
     :euclid in method && @assert ch_n > 1 ":euclid method requires > 1 channel."
 
-    bc = zeros(Bool, ch_n)
+    bc = zeros(Bool, nchannels(obj))
     be = Int64[]
 
     if :flat in method
@@ -792,40 +809,8 @@ function epoch_reject(
         loc_x = locs[!, :loc_x]
         loc_y = locs[!, :loc_y]
 
-        # Euclidean distance matrix
-        d = zeros(ch_n, ch_n)
-        for idx1 in 1:ch_n
-            for idx2 in 1:ch_n
-                d[idx1, idx2] = euclidean([loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]])
-            end
-        end
-        # set weights not to reference to itself
-        d[d .== 0] .= Inf
-
-        s = @views obj.data[ch, :, :]
-
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                _, nearest_idx = findmin(d[ch_idx, :])
-                y = @views s[ch_idx, :, ep_idx]
-                x = @views s[nearest_idx, :, ep_idx]
-                df = DataFrame(:y=>remove_dc(y), :x=>remove_dc(x))
-                reg = createRegressionSetting(@formula(y ~ x), df)
-                o = ransac(reg, t = ransac_t, k = 128)["outliers"]
-                idx = setdiff(1:length(x), o)
-                x = x[idx]
-                y = y[idx]
-                c = Float64[]
-                for w_idx in 1:w:(length(x) - w)
-                    xx = @views x[w_idx:(w_idx + w)]
-                    yy = @views y[w_idx:(w_idx + w)]
-                    push!(c, cor(xx, yy))
-                end
-                if sum(c .< ransac_r) / length(c) > ransac_tr
-                    bad_chs[ch_idx] = true
-                end
-            end
+            bad_chs = @views detect_ransac(obj.data[ch, :, ep_idx], loc_x=loc_x, loc_y=loc_y, w=w, ransac_t=ransac_t, ransac_r=ransac_r, ransac_tr=ransac_tr)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end

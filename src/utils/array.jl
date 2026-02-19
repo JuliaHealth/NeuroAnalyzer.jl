@@ -45,7 +45,6 @@ function l2(a1::AbstractArray, a2::AbstractArray)::Float64
 
     @assert size(a1) == size(a2) "a1 and a2 mast have the same size."
 
-    # return sqrt(sum((a1 .- a2).^2))
     return euclidean(a1, a2)
 
 end
