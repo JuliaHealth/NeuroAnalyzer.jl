@@ -5,8 +5,11 @@ function _dict2labeled_matrix(d::Dict; rev::Bool = true)::Tuple{Vector{String}, 
         push!(l, kk)
         push!(v, vv)
     end
-    rev && return reverse!(l), reverse!(v)
-    !rev && return l, v
+    if rev
+        return reverse!(l), reverse!(v)
+    else
+        return l, v
+    end
 end
 
 function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})::Dict
