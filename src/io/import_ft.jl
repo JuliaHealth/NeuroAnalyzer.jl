@@ -493,7 +493,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
 
         history = [""]
 
-        obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
+        obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
 
         data_type == "eeg" && _initialize_locs!(obj)
 

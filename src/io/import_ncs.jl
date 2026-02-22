@@ -104,7 +104,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     time_pts = round.(
         collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 6
     )
-    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 6)
+    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 6)
 
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
@@ -149,7 +149,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
 
     _info(

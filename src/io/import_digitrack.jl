@@ -132,7 +132,7 @@ function import_digitrack(file_name::String; detect_type::Bool = true)::NeuroAna
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
 
     _info(

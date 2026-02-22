@@ -128,7 +128,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     time_pts = round.(
         collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
     )
-    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
     s = _create_subject(;
         id = "",
@@ -171,7 +171,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
     _info(
         "Imported: " *

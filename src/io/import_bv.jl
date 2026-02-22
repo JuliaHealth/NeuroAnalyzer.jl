@@ -358,7 +358,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     time_pts = round.(
         collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
     )
-    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
     file_size_mb = round(filesize(eeg_file) / 1024^2; digits = 2)
 
@@ -402,7 +402,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     history = String[]
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info(

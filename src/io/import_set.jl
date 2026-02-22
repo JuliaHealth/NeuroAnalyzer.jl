@@ -276,7 +276,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     hdr = _create_header(s, r, e)
 
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info(

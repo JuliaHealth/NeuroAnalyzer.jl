@@ -192,7 +192,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
     time_pts = collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]
     time_pts = round.(time_pts .- time_pts[stim_sample[1]]; digits = 4)
-    ep_time = time_pts
+    epoch_time = time_pts
 
     if splitext(file_name)[2] == ".ascii"
         for idx in eachindex(markers_pos)
@@ -248,7 +248,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     _info(
         "Imported: " *
         uppercase(obj.header.recording[:data_type]) *

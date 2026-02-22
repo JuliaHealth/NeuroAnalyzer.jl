@@ -244,7 +244,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         :loc_phi_sph=>Float64[],
     )
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, ep_time, data)
 
     return obj
 

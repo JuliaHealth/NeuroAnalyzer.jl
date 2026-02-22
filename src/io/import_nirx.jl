@@ -370,7 +370,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     history = String[]
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
 
     _info(
         "Imported: " *
