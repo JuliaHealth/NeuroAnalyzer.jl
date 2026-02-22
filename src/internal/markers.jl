@@ -22,10 +22,7 @@ function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
     markers_channel = 0
     if "mrk" in channel_types
         markers = true
-        markers_channel = nothing
-        for ch_idx in eachindex(channel_types)
-            channel_types[ch_idx] == "mrk" && (markers_channel = ch_idx)
-        end
+        [channel_types[ch_idx] == "mrk" && (markers_channel = ch_idx) for ch_idx in eachindex(channel_types)]
     end
     return markers, markers_channel
 end
@@ -45,15 +42,11 @@ function _a2df(annotations::Vector{String})::DataFrame
     a_event = Vector{String}()
 
     # remove empty
-    for idx in length(mrk):-1:1
-        !(length(mrk[idx]) == 0 || occursin('|', mrk[idx])) && deleteat!(mrk, idx)
-    end
+    [!(length(mrk[idx]) == 0 || occursin('|', mrk[idx])) && deleteat!(mrk, idx) for idx in length(mrk):-1:1]
 
     if length(mrk) == 1
         s = split(mrk[1], "|")
-        for idx in length(s):-1:1
-            s[idx] == "" && deleteat!(s, idx)
-        end
+        [s[idx] == "" && deleteat!(s, idx) for idx in length(s):-1:1]
         if length(s) % 3 == 0
             for idx in 1:3:(length(s) ÷ 3)
                 push!(a_start, parse(Float64, strip(s[idx])))
