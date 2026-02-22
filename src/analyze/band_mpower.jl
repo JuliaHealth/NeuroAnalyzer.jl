@@ -16,7 +16,7 @@ Calculate mean and maximum band power and its frequency and amplitude.
       + `:mt`: multi-tapered periodogram
       + `:stft`: short time Fourier transform
       + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
@@ -78,7 +78,7 @@ Calculate mean and maximum band power and its frequency and amplitude.
       + `:mt`: multi-tapered periodogram
       + `:stft`: short time Fourier transform
       + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
@@ -152,7 +152,7 @@ Calculate mean and maximum band power and its frequency and amplitude.
       + `:mt`: multi-tapered periodogram
       + `:stft`: short time Fourier transform
       + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window

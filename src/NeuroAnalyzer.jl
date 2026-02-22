@@ -176,12 +176,12 @@ end
 
 mutable struct NEURO
     header::NeuroAnalyzer.HEADER
+    history::Vector{String}
+    markers::DataFrame
+    locs::DataFrame
     time_pts::Vector{Float64}
     epoch_time::Vector{Float64}
     data::Array{<:Number, 3}
-    markers::DataFrame
-    locs::DataFrame
-    history::Vector{String}
 end
 
 mutable struct DIPOLE

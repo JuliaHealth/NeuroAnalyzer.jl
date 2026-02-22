@@ -382,7 +382,7 @@ Calculate power spectrum (in dB) envelope.
       + `:mt`: multi-tapered periodogram
       + `:stft`: short time Fourier transform
       + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
@@ -456,7 +456,7 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
       + `:mt`: multi-tapered periodogram
       + `:stft`: short time Fourier transform
       + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
@@ -562,7 +562,7 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
       + `:mt`: multi-tapered periodogram
       + `:stft`: short time Fourier transform
       + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
@@ -670,7 +670,7 @@ Calculate spectral envelope.
       + `:cwt`: continuous wavelet transformation
   - `pad::Int64=0`: number of zeros to add
   - `db::Bool=true`: normalize powers to dB
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `gw::Real=5`: Gaussian width in Hz
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
@@ -809,7 +809,7 @@ Calculate spectral envelope: mean and 95% CI.
       + `:cwt`: continuous wavelet transformation
   - `pad::Int64=0`: number of zeros to add
   - `db::Bool=true`: normalize powers to dB
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `gw::Real=5`: Gaussian width in Hz
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
@@ -955,7 +955,7 @@ Calculate spectral envelope: median and 95% CI.
       + `:cwt`: continuous wavelet transformation
   - `pad::Int64=0`: number of zeros to add
   - `db::Bool=true`: normalize powers to dB
-  - `nt::Int64=7`: number of Slepian tapers
+  - `nt::Int64=16`: number of Slepian tapers
   - `gw::Real=5`: Gaussian width in Hz
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets

@@ -9,7 +9,7 @@ function to_mat(
     pairs::Vector{Pair{T1, T2}} where {T1 <: Tuple{<:Real, <:Real}, T2 <: Union{Real, Tuple{<:Real, <:Real}}}
 )
     xmat, ymat = zeros(length(pairs), 2), zeros(length(pairs), 2)
-    for i in 1:length(pairs)
+    for i in eachindex(pairs)
         xmat[i, :] .= pairs[i].first
         ymat[i, :] .= pairs[i].second
     end
