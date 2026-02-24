@@ -1,11 +1,12 @@
-export erp_peaks
+export peaks
 export amp_at
 export avgamp_at
 export maxamp_at
 export minamp_at
+export auc
 
 """
-    erp_peaks(obj)
+    peaks(obj)
 
 Detect a pair of positive and negative peaks of ERP.
 
@@ -17,7 +18,7 @@ Detect a pair of positive and negative peaks of ERP.
 
   - `p::Matrix{Int64}`: peaks: channels × positive peak position, negative peak position
 """
-function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
+function peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
     _check_datatype(obj, ["erp", "erf", "mep"])
 
@@ -238,5 +239,59 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
     end
 
     return p
+
+end
+
+"""
+    auc(obj)
+
+Compute area under curve of ERP/ERF/MEP.
+
+# Arguments
+
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `seg::Tuple{Real, Real}=(obj.epoch_time[1], obj.epoch_time[end])`: time segment
+  - `type::Symbol=:all`: amplitude to analyze (`:all`, `:pos` only positive, `:neg` only negative)
+
+# Returns
+
+  - `aauc::Vector{Float64}`
+"""
+function auc(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
+    type::Symbol = :all,
+)::Vector{Float64}
+
+    _check_datatype(obj, ["erp", "erf", "mep"])
+    _check_var(type, [:all, :pos, :neg], "type")
+    _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg", :in)
+    t1 = vsearch(seg[1], obj.epoch_time)
+    t2 = vsearch(seg[2], obj.epoch_time)
+    ch = get_channel(obj, ch = ch)
+
+    aauc = zeros(length(ch))
+
+    # dx: time resolution
+    t = obj.epoch_time[t1:t2]
+    dx = t[2] - t[1]
+
+    @inbounds for ch_idx in eachindex(ch)
+        if type === :all
+            aauc[ch_idx] = simpson(obj.data[ch_idx, t1:t2, 1], t; dx = dx)
+        elseif type === :pos
+            s = obj.data[ch_idx, t1:t2, 1]
+            @assert length(s[s .> 0]) > 0 "No positive values, cannot proceed."
+            aauc[ch_idx] = simpson(s[s .> 0], t[s .> 0]; dx = dx)
+        elseif type === :neg
+            s = obj.data[ch_idx, t1:t2, 1]
+            @assert length(s[s .< 0]) > 0 "No negative values, cannot proceed."
+            aauc[ch_idx] = simpson(s[s .< 0], t[s .< 0]; dx = dx)
+        end
+    end
+
+    return aauc
 
 end
