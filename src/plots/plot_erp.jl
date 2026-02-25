@@ -841,7 +841,7 @@ function plot_erp(
     # draw peaks
     if peaks
         if length(ch) == 1 && type === :normal
-            pp = erp_peaks(obj)
+            pp = peaks(obj)
             GLMakie.scatter!(
                 p[1, 1],
                 t[pp[ch, 1]][1],
@@ -866,7 +866,7 @@ function plot_erp(
             mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)[:, :, :]
             obj_tmp = keep_channel(obj; ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
-            pp = erp_peaks(obj_tmp)
+            pp = peaks(obj_tmp)
             GLMakie.scatter!(
                 p[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]]; marker = :xcross, color = mono ? :black : :red, markersize = 15
             )

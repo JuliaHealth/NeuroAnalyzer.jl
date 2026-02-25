@@ -296,10 +296,14 @@ em, eu, el, t = henv_median(e10, ch="all", dims=3)
 @test length(el) == 2560
 @test length(t) == 2560
 
-@info "Test: erp_peaks()"
+@info "Test: peaks()"
 e = average_epochs(e10)
-p = erp_peaks(e)
+p = peaks(e)
 @test size(p) == (19, 2)
+
+@info "Test: auc()"
+v = auc(e, ch="all")
+@test length(v) == 19
 
 @info "Test: coherence()"
 c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, woverlap=5, method=:mt)
