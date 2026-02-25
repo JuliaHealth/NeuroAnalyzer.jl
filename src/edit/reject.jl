@@ -3,10 +3,7 @@ export channel_reject!
 export epoch_reject
 
 function detect_flat(
-    s::AbstractMatrix;
-    w::Int64 = 10,
-    flat_tol::Float64 = 0.1,
-    flat_fr::Float64 = 0.3,
+    s::AbstractMatrix; w::Int64 = 10, flat_tol::Float64 = 0.1, flat_fr::Float64 = 0.3
 )::Vector{Bool}
 
     @assert w < size(s, 2) "w must be < $(size(s, 2))."
@@ -28,9 +25,7 @@ function detect_flat(
 
 end
 
-function detect_rmse(
-    s::AbstractMatrix
-)::Vector{Bool}
+function detect_rmse(s::AbstractMatrix)::Vector{Bool}
 
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
@@ -41,7 +36,8 @@ function detect_rmse(
         rmse_ch[ch_idx] = @views rmse(s[ch_idx, :], ch_m)
     end
     for ch_idx in 1:ch_n
-        bad_chs[ch_idx] = rmse_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmse_ch))[1] ||
+        bad_chs[ch_idx] =
+            rmse_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmse_ch))[1] ||
             rmse_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2]
     end
 
@@ -49,9 +45,7 @@ function detect_rmse(
 
 end
 
-function detect_rmsd(
-    s::AbstractMatrix
-)::Vector{Bool}
+function detect_rmsd(s::AbstractMatrix)::Vector{Bool}
 
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
@@ -62,7 +56,8 @@ function detect_rmsd(
         rmsd_ch[ch_idx] = @views Distances.rmsd(s[ch_idx, :], ch_m)
     end
     for ch_idx in 1:ch_n
-        bad_chs[ch_idx] = rmsd_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmsd_ch))[1] ||
+        bad_chs[ch_idx] =
+            rmsd_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmsd_ch))[1] ||
             rmsd_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2]
     end
 
@@ -70,9 +65,7 @@ function detect_rmsd(
 
 end
 
-function detect_euclid(
-    s::AbstractMatrix
-)::Vector{Bool}
+function detect_euclid(s::AbstractMatrix)::Vector{Bool}
 
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
@@ -83,7 +76,8 @@ function detect_euclid(
         ed_ch[ch_idx] = @views Distances.euclidean(s[ch_idx, :], ch_m)
     end
     for ch_idx in 1:ch_n
-        bad_chs[ch_idx] = ed_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(ed_ch))[1] ||
+        bad_chs[ch_idx] =
+            ed_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(ed_ch))[1] ||
             ed_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2]
     end
 
@@ -91,10 +85,7 @@ function detect_euclid(
 
 end
 
-function detect_amp(
-    s::AbstractMatrix;
-    amp_t::Real = 400.0,
-)::Vector{Bool}
+function detect_amp(s::AbstractMatrix; amp_t::Real = 400.0)::Vector{Bool}
 
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
@@ -107,11 +98,7 @@ function detect_amp(
 
 end
 
-function detect_p2p(
-    s::AbstractMatrix;
-    w::Int64 = 10,
-    p::Float64=0.95,
-)::Vector{Bool}
+function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector{Bool}
 
     @assert w < size(s, 2) "w must be < $(size(s, 2))."
 
@@ -140,10 +127,7 @@ function detect_p2p(
 end
 
 function detect_tkeo(
-    s::AbstractMatrix,
-    t::AbstractVector;
-    tkeo_method::Symbol=:pow,
-    p::Float64=0.95,
+    s::AbstractMatrix, t::AbstractVector; tkeo_method::Symbol = :pow, p::Float64 = 0.95
 )::Vector{Bool}
 
     ch_n = size(s, 1)
@@ -157,8 +141,10 @@ function detect_tkeo(
         w = length(stkeo) ÷ 10
         bad_windows = 0
         for idx in 1:w:length(stkeo)
-            count(abs.(z_signal[idx:(idx + w - 1)]) - abs.(z_tkeo[idx:(idx + w - 1)]) .> cl2z(p)) > 1 &&
-                (bad_windows += 1)
+            count(
+                abs.(z_signal[idx:(idx + w - 1)]) - abs.(z_tkeo[idx:(idx + w - 1)]) .>
+                cl2z(p),
+            ) > 1 && (bad_windows += 1)
         end
         # mark channel as bad if there is at least one bad window
         bad_chs[ch_idx] = bad_windows > 1
@@ -185,7 +171,9 @@ function detect_ransac(
     d = zeros(ch_n, ch_n)
     @inbounds for idx1 in 1:ch_n
         for idx2 in 1:ch_n
-            d[idx1, idx2] = euclidean([loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]])
+            d[idx1, idx2] = euclidean(
+                [loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]]
+            )
         end
     end
     # set weights not to reference to itself
@@ -195,7 +183,7 @@ function detect_ransac(
         _, nearest_idx = findmin(d[ch_idx, :])
         y = @views s[ch_idx, :]
         x = @views s[nearest_idx, :]
-        df = DataFrame(:y=>remove_dc(y), :x=>remove_dc(x))
+        df = DataFrame(:y => remove_dc(y), :x => remove_dc(x))
         reg = createRegressionSetting(@formula(y ~ x), df)
         o = ransac(reg, t = ransac_t, k = 128)["outliers"]
         idx = setdiff(1:length(x), o)
@@ -254,7 +242,9 @@ Detect bad channels.
 function channel_reject(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    method::Union{Symbol, Vector{Symbol}} = [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp],
+    method::Union{Symbol, Vector{Symbol}} = [
+        :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp
+    ],
     w::Int64 = sr(obj),
     flat_tol::Float64 = 0.1,
     flat_fr::Float64 = 0.3,
@@ -275,7 +265,11 @@ function channel_reject(
 
     typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
-        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], "method")
+        _check_var(
+            idx,
+            [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp],
+            "method",
+        )
     end
 
     ch = get_channel(obj; ch = ch)
@@ -293,7 +287,9 @@ function channel_reject(
 
         _info("Using :flat method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_flat(obj.data[ch, :, ep_idx], w=w, flat_tol=flat_tol, flat_fr=flat_fr)
+            bad_chs = @views detect_flat(
+                obj.data[ch, :, ep_idx], w = w, flat_tol = flat_tol, flat_fr = flat_fr
+            )
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -357,7 +353,7 @@ function channel_reject(
 
         _info("Using :p2p method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w=w, p=p)
+            bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w = w, p = p)
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -367,7 +363,9 @@ function channel_reject(
 
         _info("Using :tkeo method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_tkeo(obj.data[ch, :, ep_idx], obj.time_pts, tkeo_method = tkeo_method, p = p)
+            bad_chs = @views detect_tkeo(
+                obj.data[ch, :, ep_idx], obj.time_pts, tkeo_method = tkeo_method, p = p
+            )
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -408,7 +406,8 @@ function channel_reject(
         s = abs.(s) .> z
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
+                    length(s[ch_idx, :, ep_idx])
             end
         end
         bad_idx = k .> p
@@ -428,7 +427,8 @@ function channel_reject(
         s = abs.(s) .> (z + 1)
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
+                    length(s[ch_idx, :, ep_idx])
             end
         end
         bad_idx = k .> p
@@ -458,7 +458,15 @@ function channel_reject(
         loc_y = locs[!, :loc_y]
 
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_ransac(obj.data[ch, :, ep_idx], loc_x=loc_x, loc_y=loc_y, w=w, ransac_t=ransac_t, ransac_r=ransac_r, ransac_tr=ransac_tr)
+            bad_chs = @views detect_ransac(
+                obj.data[ch, :, ep_idx],
+                loc_x = loc_x,
+                loc_y = loc_y,
+                w = w,
+                ransac_t = ransac_t,
+                ransac_r = ransac_r,
+                ransac_tr = ransac_tr,
+            )
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -468,7 +476,7 @@ function channel_reject(
 
         _info("Using :amp method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_amp(obj.data[ch, :, ep_idx], amp_t=amp_t)
+            bad_chs = @views detect_amp(obj.data[ch, :, ep_idx], amp_t = amp_t)
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -517,7 +525,9 @@ Detect bad channels and update the `:bad_channel` field in the OBJ header.
 function channel_reject!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    method::Union{Symbol, Vector{Symbol}} = [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp],
+    method::Union{Symbol, Vector{Symbol}} = [
+        :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp
+    ],
     w::Int64 = sr(obj),
     flat_tol::Float64 = 0.1,
     flat_fr::Float64 = 0.3,
@@ -532,22 +542,22 @@ function channel_reject!(
 )::Nothing
 
     bc = channel_reject(
-                    obj;
-                    ch = ch,
-                    method = method,
-                    w = w,
-                    flat_tol = flat_tol,
-                    flat_fr = flat_fr,
-                    p = p,
-                    tc = tc,
-                    tkeo_method = tkeo_method,
-                    z = z,
-                    ransac_r = ransac_r,
-                    ransac_tr = ransac_tr,
-                    ransac_t = ransac_t,
-                    amp_t = amp_t,
-                )
-    obj.header.recording[:bad_channel][get_channel(obj, ch=ch)] = bc
+        obj;
+        ch = ch,
+        method = method,
+        w = w,
+        flat_tol = flat_tol,
+        flat_fr = flat_fr,
+        p = p,
+        tc = tc,
+        tkeo_method = tkeo_method,
+        z = z,
+        ransac_r = ransac_r,
+        ransac_tr = ransac_tr,
+        ransac_t = ransac_t,
+        amp_t = amp_t,
+    )
+    obj.header.recording[:bad_channel][get_channel(obj, ch = ch)] = bc
 
     return nothing
 
@@ -593,7 +603,9 @@ Detect bad epochs.
 function epoch_reject(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    method::Union{Symbol, Vector{Symbol}} = [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp],
+    method::Union{Symbol, Vector{Symbol}} = [
+        :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp
+    ],
     w::Int64 = sr(obj),
     flat_tol::Float64 = 0.1,
     flat_fr::Float64 = 0.3,
@@ -605,7 +617,7 @@ function epoch_reject(
     ransac_tr::Float64 = 0.4,
     ransac_t::Float64 = 100.0,
     amp_t::Real = 400.0,
-    nbad::Int64=1,
+    nbad::Int64 = 1,
 )::Vector{Int64}
 
     @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
@@ -616,7 +628,11 @@ function epoch_reject(
     @assert nbad <= size(obj, 1) "nbad must be ≤ $(size(obj, 1))."
     typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
-        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], "method")
+        _check_var(
+            idx,
+            [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp],
+            "method",
+        )
     end
 
     ch = get_channel(obj; ch = ch)
@@ -635,7 +651,9 @@ function epoch_reject(
 
         _info("Using :flat method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_flat(obj.data[ch, :, ep_idx], w=w, flat_tol=flat_tol, flat_fr=flat_fr)
+            bad_chs = @views detect_flat(
+                obj.data[ch, :, ep_idx], w = w, flat_tol = flat_tol, flat_fr = flat_fr
+            )
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -704,7 +722,7 @@ function epoch_reject(
 
         _info("Using :p2p method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w=w, p=p)
+            bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w = w, p = p)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -715,7 +733,9 @@ function epoch_reject(
 
         _info("Using :tkeo method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_tkeo(obj.data[ch, :, ep_idx], obj.time_pts, tkeo_method = tkeo_method, p = p)
+            bad_chs = @views detect_tkeo(
+                obj.data[ch, :, ep_idx], obj.time_pts, tkeo_method = tkeo_method, p = p
+            )
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -758,7 +778,8 @@ function epoch_reject(
         s = abs.(s) .> z
         @inbounds for ep_idx in 1:ep_n
             for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
+                    length(s[ch_idx, :, ep_idx])
             end
         end
         bad_idx = k .> p
@@ -779,7 +800,8 @@ function epoch_reject(
         s = abs.(s) .> (z + 1)
         Threads.@threads for ep_idx in 1:ep_n
             @inbounds for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
+                    length(s[ch_idx, :, ep_idx])
             end
         end
         bad_idx = k .> p
@@ -810,7 +832,15 @@ function epoch_reject(
         loc_y = locs[!, :loc_y]
 
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_ransac(obj.data[ch, :, ep_idx], loc_x=loc_x, loc_y=loc_y, w=w, ransac_t=ransac_t, ransac_r=ransac_r, ransac_tr=ransac_tr)
+            bad_chs = @views detect_ransac(
+                obj.data[ch, :, ep_idx],
+                loc_x = loc_x,
+                loc_y = loc_y,
+                w = w,
+                ransac_t = ransac_t,
+                ransac_r = ransac_r,
+                ransac_tr = ransac_tr,
+            )
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -821,7 +851,7 @@ function epoch_reject(
 
         _info("Using :amp method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_amp(obj.data[ch, :, ep_idx], amp_t=amp_t)
+            bad_chs = @views detect_amp(obj.data[ch, :, ep_idx], amp_t = amp_t)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -831,4 +861,3 @@ function epoch_reject(
     return sort(unique(be))
 
 end
-

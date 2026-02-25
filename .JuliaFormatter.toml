@@ -16,4 +16,4 @@ join_lines_based_on_source = false
 trailing_comma = true
 format_docstrings = true
 conditional_to_if = false
-margin = 120
+margin = 90

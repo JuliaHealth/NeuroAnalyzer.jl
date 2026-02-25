@@ -11,8 +11,23 @@ module NeuroAnalyzer
 # set constants
 
 const VER = v"0.26.3-dev"
-const allow_wip = occursin("dev", string(VER))          # false for the stable branch, true for the devel branch
-const data_types = ["eeg", "ecog", "seeg", "ieeg", "csd", "meg", "nirs", "sensors", "eda", "mep", "erp", "erf", "tpt"]
+# false for the stable branch, true for the devel branch
+const allow_wip = occursin("dev", string(VER))
+const data_types = [
+    "eeg",
+    "ecog",
+    "seeg",
+    "ieeg",
+    "csd",
+    "meg",
+    "nirs",
+    "sensors",
+    "eda",
+    "mep",
+    "erp",
+    "erf",
+    "tpt",
+]
 const channel_types = [
     "all",
     "eeg",
@@ -62,19 +77,7 @@ const channel_types = [
     "other",
 ]
 const channel_units = [
-    "μV",
-    "mV",
-    "V",
-    "μV/m²",
-    "fT",
-    "fT/cm",
-    "μM/mm",
-    "m/s²",
-    "µT",
-    "°",
-    "μS",
-    "rad/s",
-    "",
+    "μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s", ""
 ]
 const fiducial_points = (
     nasion = (0.0, 1.03, -0.2),
@@ -202,11 +205,11 @@ global verbose = @load_preference("verbose", true)
 global exclude_bads = @load_preference("exclude_bads", false)
 global colors = @load_preference("colors", true)
 na_set_prefs(
-            progress_bar = progress_bar,
-            verbose = verbose,
-            exclude_bads = exclude_bads,
-            colors = colors,
-        )
+    progress_bar = progress_bar,
+    verbose = verbose,
+    exclude_bads = exclude_bads,
+    colors = colors,
+)
 
 # show major parameters
 
@@ -218,7 +221,7 @@ na_set_prefs(
 @info "   Exclude bads: $exclude_bads"
 @info "         Colors: $colors"
 @info "System info:"
-@info "    Free memory: $(round(Sys.free_memory() / 2^20, digits=1)) MB"
+@info "    Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
 
 # set package options
 
