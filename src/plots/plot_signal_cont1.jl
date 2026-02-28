@@ -99,9 +99,8 @@ function plot_cont(
     ctypes_uni_pos = zeros(Int64, ch_n)
     ctypes_uni_pos[ctypes_pos] .= 1
 
-    t = Observable(obj_tmp.time_pts[1:res:end])
-    s = Observable(obj_tmp.data[ch_order, :, 1][:, 1:res:end])
-    fs = sr(obj)
+    t = obj_tmp.time_pts[1:res:end]
+    s = obj_tmp.data[ch_order, :, 1][:, 1:res:end]
 
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "")
 
@@ -138,14 +137,14 @@ function plot_cont(
     # between -1.0 and +1.0 and shift so all channels are visible
     r = Observable(Float64[])
     for idx in eachindex(ctypes_uni)
-        push!(r[], round(_get_range(s[][ctypes .== ctypes_uni[idx], :])))
-        s[][ctypes .== ctypes_uni[idx], :] = normalize_minmax(s[][ctypes .== ctypes_uni[idx], :])
+        push!(r[], round(_get_range(s[ctypes .== ctypes_uni[idx], :])))
+        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(s[ctypes .== ctypes_uni[idx], :])
     end
     if type === :normal
-        s[] .+= collect(1:ch_n)
+        s .+= collect(1:ch_n)
     else
         for idx in eachindex(ctypes_uni)
-            s[][ctypes .== ctypes_uni[idx], :] .+= idx
+            s[ctypes .== ctypes_uni[idx], :] .+= idx
         end
     end
 
@@ -220,24 +219,24 @@ function plot_cont(
         @lift begin
             for idx in 1:ch_n
                 GLMakie.lines!(
-                    ax1, t[], $s[idx, :], linewidth = 1.5, color = $bad_ch[idx] ? :lightgray : :black
+                    ax1, t, s[idx, :], linewidth = 1.5, color = $bad_ch[idx] ? :lightgray : :black
                 )
             end
         end
     else
         if ci95
             for idx in eachindex(ctypes_uni)
-                s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s[][ctypes .== ctypes_uni[idx], :])
+                s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s[ctypes .== ctypes_uni[idx], :])
                 # draw 95% CI
                 Makie.band!(
-                    ax1, t[], s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5
+                    ax1, t, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5
                 )
                 # draw mean
-                Makie.lines!(ax1, t[], s_m; color = :black, linewidth = 2)
+                Makie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
             end
         else
-            !mono && (cmap = GLMakie.resample_cmap(pal, size(s[], 1)))
-            for idx in axes(s[], 1)
+            !mono && (cmap = GLMakie.resample_cmap(pal, size(s, 1)))
+            for idx in axes(s, 1)
                 GLMakie.lines!(
                             ax1,
                             t,
@@ -252,8 +251,8 @@ function plot_cont(
             # plot averaged channels
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[][ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
-                    GLMakie.lines!(ax1, t[], s_avg; linewidth = 2, color = :black)
+                    s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
+                    GLMakie.lines!(ax1, t, s_avg; linewidth = 2, color = :black)
                 end
             end
         end
@@ -358,7 +357,7 @@ function plot_cont(
             xrectzoom = false,
             yrectzoom = false,
         )
-        GLMakie.xlims!(ax2, t[][1], t[][end])
+        GLMakie.xlims!(ax2, t[1], t[end])
         GLMakie.ylims!(ax2, 0, 1)
         hideydecorations!(ax2)
         hidexdecorations!(ax2; label = false, ticks = false, ticklabels = false)
@@ -481,8 +480,8 @@ function plot_cont(
                             if vmarker1[] > vmarker2[]
                                 vmarker1[], vmarker2[] = vmarker2[], vmarker1[]
                             end
-                            vmarker1[] > t[][end] && (vmarker1[] = t[][end])
-                            vmarker2[] > t[][end] && (vmarker2[] = t[][end])
+                            vmarker1[] > t[end] && (vmarker1[] = t[end])
+                            vmarker2[] > t[end] && (vmarker2[] = t[end])
                             marker_range[] = [vmarker1[], vmarker2[]]
                             notify(vmarker1)
                             notify(vmarker2)
@@ -497,7 +496,7 @@ function plot_cont(
                         ax1.limits[] = (seg, ax1.limits[][2])
                         seg_pos[] = round(Int64, ax2_x)
                     elseif ax2_x >= 0 && ax2_x > (ax2.limits[][1][2] - seg_len) && ax2_y >= 0 && ax2_y <= 1
-                        seg = (ceil(t[][end]) - seg_len, ceil(t[][end]))
+                        seg = (ceil(t[end]) - seg_len, ceil(t[end]))
                         ax1.limits[] = (seg, ax1.limits[][2])
                         seg_pos[] = seg[1]
                     end
@@ -529,6 +528,7 @@ function plot_cont(
                             close(screen)
                             NeuroAnalyzer.plot(obj, 
                                             ch = ch,
+                                            seg = (ax1.limits[][1][1], ax1.limits[][1][1] + seg_len),
                                             xlabel = xlabel,
                                             ylabel = ylabel,
                                             title = title,
@@ -589,7 +589,7 @@ function plot_cont(
                 end
 
                 if event.key == Keyboard._end
-                    seg_pos[] = ceil(Int64, t[][end] - seg_len)
+                    seg_pos[] = ceil(Int64, t[end] - seg_len)
                     update_ax2 = true
                 end
 
@@ -608,14 +608,14 @@ function plot_cont(
                 end
 
                 if event.key == Keyboard.right
-                    if seg_pos[] < t[][end] - seg_len
+                    if seg_pos[] < t[end] - seg_len
                         seg_pos[] += 1
                         update_ax2 = true
                     end
                 end
 
                 if ispressed(p, Keyboard.left_shift & Keyboard.right)
-                    if seg_pos[] <= t[][end] - seg_len - (seg_len - 1)
+                    if seg_pos[] <= t[end] - seg_len - (seg_len - 1)
                         seg_pos[] += (seg_len - 1)
                         update_ax2 = true
                     end
