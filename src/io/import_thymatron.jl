@@ -78,7 +78,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         # thinning
         for idx in 1:dimy
             c = img_bin[:, idx]
-            l = sum(c) ÷ 2
+            l = Int64(div(sum(c), 2))
             l_idx = findfirst(isequal(1), c)
             img_bin[:, idx] .= 0
             l_idx !== nothing && (img_bin[l_idx + l, idx] = 1)

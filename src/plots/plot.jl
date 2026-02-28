@@ -77,6 +77,9 @@ function plot(
     gui::Bool = true,
 )::GLMakie.Figure
 
+    n_channels > nchannels(obj) && (n_channels = nchannels(obj))
+    n_epochs > nepochs(obj) && (n_epochs = nepochs(obj))
+
     if datatype(obj) in ["erp", "erf"]
         p = plot_erp(
             obj;
