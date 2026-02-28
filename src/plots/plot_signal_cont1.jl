@@ -220,7 +220,7 @@ function plot_cont(
         @lift begin
             for idx in 1:ch_n
                 GLMakie.lines!(
-                    ax1, t[][1:res:end], $s[idx, 1:res:end], linewidth = 1.5, color = $bad_ch[idx] ? :lightgray : :black
+                    ax1, t[], $s[idx, :], linewidth = 1.5, color = $bad_ch[idx] ? :lightgray : :black
                 )
             end
         end
@@ -230,10 +230,10 @@ function plot_cont(
                 s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s[][ctypes .== ctypes_uni[idx], :])
                 # draw 95% CI
                 Makie.band!(
-                    ax1, t[][1:res:end], s_u[1:res:end], s_l[1:res:end]; alpha = 0.25, color = :grey, strokewidth = 0.5
+                    ax1, t[], s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5
                 )
                 # draw mean
-                Makie.lines!(ax1, t[][1:res:end], s_m[1:res:end]; color = :black, linewidth = 2)
+                Makie.lines!(ax1, t[], s_m; color = :black, linewidth = 2)
             end
         else
             !mono && (cmap = GLMakie.resample_cmap(pal, size(s[], 1)))
@@ -253,7 +253,7 @@ function plot_cont(
             if avg
                 for idx in eachindex(ctypes_uni)
                     s_avg = mean(s[][ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
-                    GLMakie.lines!(ax1, t[][1:res:end], s_avg[1:res:end]; linewidth = 2, color = :black)
+                    GLMakie.lines!(ax1, t[], s_avg; linewidth = 2, color = :black)
                 end
             end
         end
@@ -434,7 +434,7 @@ function plot_cont(
                     if type === :normal
 
                         # mark channel as bad
-                        if ax1_x < 0
+                        if ax1_x < ax1.limits[][1][1]
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1]] =
                                 !obj.header.recording[:bad_channel][get_channel(
@@ -463,7 +463,7 @@ function plot_cont(
                     if type === :normal
 
                         # get channel info
-                        if ax1_x < 0
+                        if ax1_x < ax1.limits[][1][1]
                             channel_info(obj; ch = clabels[round(Int64, ax1_y)])
                         end
 
@@ -523,25 +523,29 @@ function plot_cont(
 
                     if event.key == Keyboard.d
                         if !isnan(vmarker1[]) && !isnan(vmarker2[])
-                            t1_idx = vsearch(marker_range[][1], t[])
-                            t2_idx = vsearch(marker_range[][2], t[])
 
-                            s[] = hcat(s[][:, 1:(t1_idx - 1)], s[][:, (t2_idx + 1):end])
-                            t[] = round.(collect(0:(1 / sr):(size(s[], 2) / sr))[1:(end - 1)]; digits = 4)
-
-                            r[] = Float64[]
-                            for idx in eachindex(ctypes_uni)
-                                push!(r[], round(_get_range(s[][ctypes .== ctypes_uni[idx], :])))
-                                s[][ctypes .== ctypes_uni[idx], :] = normalize_minmax(s[][ctypes .== ctypes_uni[idx], :])
-                            end
-                            s[] .+= collect(1:ch_n)
-
-                            vmarker1[] = NaN
-                            vmarker2[] = NaN
-                            marker_range[] = [NaN, NaN]
-                            notify(s)
-                            notify(t)
-                            notify(r)
+                            trim!(obj, seg=(marker_range[][1], marker_range[][2]))
+                            screen = display(p)
+                            close(screen)
+                            NeuroAnalyzer.plot(obj, 
+                                            ch = ch,
+                                            xlabel = xlabel,
+                                            ylabel = ylabel,
+                                            title = title,
+                                            markers = markers,
+                                            scale = scale,
+                                            group_ch = group_ch,
+                                            n_channels = n_channels,
+                                            mono = mono,
+                                            res = res,
+                                            gui = gui,
+                                               )
+#
+#                            vmarker1[] = NaN
+#                            vmarker2[] = NaN
+#                            marker_range[] = [NaN, NaN]
+#                            notify(t)
+#                            notify(r)
                         end
                     end
 

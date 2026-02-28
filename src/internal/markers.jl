@@ -1,14 +1,17 @@
-function _delete_markers(markers::DataFrame, segment::Tuple{Real, Real}, fs::Int64)::DataFrame
-    for marker_idx in DataFrames.nrow(markers):-1:1
-        !(round(Int64, fs * markers[marker_idx, :start]) in segment[1]:segment[2]) && deleteat!(markers, marker_idx)
+function _delete_markers(markers::DataFrame, seg::Tuple{Real, Real})::DataFrame
+    for idx in DataFrames.nrow(markers):-1:1
+        if markers[idx, :start] >= seg[1] && markers[idx, :start] <= seg[2]
+            deleteat!(markers, idx)
+        end
     end
     return markers
 end
 
-function _shift_markers(m::DataFrame, pos::Real, offset::Real, fs::Int64)::DataFrame
-    markers = deepcopy(m)
-    for marker_idx in 1:DataFrames.nrow(markers)
-        round(Int64, fs * markers[marker_idx, :start]) > pos && (markers[marker_idx, :start] -= (offset / fs))
+function _shift_markers(markers::DataFrame, seg::Tuple{Real, Real})::DataFrame
+    for idx in DataFrames.nrow(markers):-1:1
+        if markers[idx, :start] > seg[2]
+            markers[idx, :start] -= (seg[2] - seg[1])
+        end
     end
     return markers
 end

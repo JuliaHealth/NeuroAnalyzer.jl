@@ -104,26 +104,26 @@ Trim signal by removing parts of the signal.
 function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = false)::NeuroAnalyzer.NEURO
 
     @assert nepochs(obj) == 1 "trim() must be applied to continuous object."
-    NeuroAnalyzer._check_segment(obj, seg)
+    _check_segment(obj, seg)
 
-    s_idx = findfirst(x -> x == seg[1], obj.time_pts)
-    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+    s_idx = vsearch(seg[1], obj.time_pts)
+    seg_tpos = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) &&
         _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     obj_new = deepcopy(obj)
-    obj_new.data = trim(obj_new.data; seg = seg, keep = keep)
+    obj_new.data = trim(obj_new.data; seg = seg_tpos, keep = keep)
 
     if keep
-        obj_new.time_pts = obj.time_pts[seg[1]:seg[2]]
-        obj_new.epoch_time = obj.time_pts[seg[1]:seg[2]]
+        obj_new.time_pts = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
+        obj_new.epoch_time = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
     else
         obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     end
 
-    obj_new.markers = _delete_markers(obj_new.markers, seg, sr(obj))
-    obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]), sr(obj))
+    obj_new.markers = _delete_markers(obj_new.markers, seg)
+    obj_new.markers = _shift_markers(obj_new.markers, seg)
 
     if keep
         obj_new.time_pts = obj.time_pts[1:size(obj_new.data, 2)]
