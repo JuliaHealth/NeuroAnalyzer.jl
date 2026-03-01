@@ -1,8 +1,6 @@
 @info "Generating HTML documentation"
 
 using Pkg
-Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
-Pkg.add(url="https://github.com/ssnio/PhaseSlopeIndex.jl")
 Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git")
 Pkg.instantiate()
 using Documenter
