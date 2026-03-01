@@ -26,15 +26,15 @@ Named tuple containing:
   - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function iftt(
-    duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
-)::@NamedTuple{
-    taps::Vector{Int64},
-    tap_t::Vector{Vector{Float64}},
-    tap_d::Vector{Vector{Float64}},
-    taps_int::Vector{Int64},
-    tap_t_int::Vector{Vector{Float64}},
-    tap_d_int::Vector{Vector{Float64}},
-}
+        duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
+    )::@NamedTuple{
+        taps::Vector{Int64},
+        tap_t::Vector{Vector{Float64}},
+        tap_d::Vector{Vector{Float64}},
+        taps_int::Vector{Int64},
+        tap_t_int::Vector{Vector{Float64}},
+        tap_d_int::Vector{Vector{Float64}},
+    }
 
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
@@ -170,7 +170,7 @@ function iftt(
             sleep(0.1)
         end
 
-        signal_connect(bt_start, "clicked") do widget
+        return signal_connect(bt_start, "clicked") do widget
             if port_name == ""
                 bt_start.sensitive = false
                 Threads.@spawn begin
@@ -353,7 +353,7 @@ function iftt(
         end
 
         return (
-            taps = result, tap_t = t_kp, tap_d = d_kp, taps_int = int_result, tap_t_int = int_t_kp, tap_d_int = int_d_kp
+            taps = result, tap_t = t_kp, tap_d = d_kp, taps_int = int_result, tap_t_int = int_t_kp, tap_d_int = int_d_kp,
         )
 
     elseif !isnothing(sp)
@@ -480,15 +480,15 @@ Named tuple containing:
   - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function ftt(
-    duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
-)::@NamedTuple{
-    taps::Vector{Int64},
-    tap_t::Vector{Vector{Float64}},
-    tap_d::Vector{Vector{Float64}},
-    taps_int::Vector{Int64},
-    tap_t_int::Vector{Vector{Float64}},
-    tap_d_int::Vector{Vector{Float64}},
-}
+        duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
+    )::@NamedTuple{
+        taps::Vector{Int64},
+        tap_t::Vector{Vector{Float64}},
+        tap_d::Vector{Vector{Float64}},
+        taps_int::Vector{Int64},
+        tap_t_int::Vector{Vector{Float64}},
+        tap_d_int::Vector{Vector{Float64}},
+    }
 
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 

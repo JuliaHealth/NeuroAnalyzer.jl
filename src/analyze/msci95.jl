@@ -21,8 +21,8 @@ Named tuple containing:
   - `sl::Float64`: lower 95% CI
 """
 function msci95(
-    s::AbstractVector; n::Int64 = 3, method::Symbol = :normal
-)::@NamedTuple{sm::Float64, ss::Float64, su::Float64, sl::Float64}
+        s::AbstractVector; n::Int64 = 3, method::Symbol = :normal
+    )::@NamedTuple{sm::Float64, ss::Float64, su::Float64, sl::Float64}
 
     _check_var(method, [:normal, :boot], "method")
     @assert n >= 1 "n must be ≥ 1."
@@ -75,8 +75,8 @@ Named tuple containing:
   - `sl::Vector{Float64}`: lower 95% CI
 """
 function msci95(
-    s::AbstractMatrix; n::Int64 = 3, method::Symbol = :normal
-)::@NamedTuple{sm::Vector{Float64}, ss::Vector{Float64}, su::Vector{Float64}, sl::Vector{Float64}}
+        s::AbstractMatrix; n::Int64 = 3, method::Symbol = :normal
+    )::@NamedTuple{sm::Vector{Float64}, ss::Vector{Float64}, su::Vector{Float64}, sl::Vector{Float64}}
 
     _check_var(method, [:normal, :boot], "method")
     @assert n >= 1 "n must be ≥ 1."
@@ -129,8 +129,8 @@ Named tuple containing:
   - `sl::Matrix{Float64}`: lower 95% CI
 """
 function msci95(
-    s::AbstractArray; n::Int64 = 3, method::Symbol = :normal
-)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+        s::AbstractArray; n::Int64 = 3, method::Symbol = :normal
+    )::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     _check_var(method, [:normal, :boot], "method")
 
@@ -213,8 +213,8 @@ Named tuple containing:
   - `sl::Matrix{Float64}`: lower 95% CI
 """
 function msci95(
-    s1::AbstractArray, s2::AbstractArray
-)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+        s1::AbstractArray, s2::AbstractArray
+    )::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -260,8 +260,8 @@ Named tuple containing:
   - `sl::Matrix{Float64}`: lower 95% CI
 """
 function msci95(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64 = 3, method::Symbol = :normal
-)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64 = 3, method::Symbol = :normal
+    )::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     sm, ss, su, sl = @views NeuroAnalyzer.msci95(obj.data[ch, :, :], n = n, method = method)
@@ -294,13 +294,13 @@ Named tuple containing:
   - `sl::Matrix{Float64}`: lower 95% CI bound
 """
 function msci95(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     # check channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")

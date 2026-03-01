@@ -21,8 +21,8 @@ Named tuple containing:
   - `ey::Matrix{Float64}`: electric field Y axis vector
 """
 function efield2d(
-    q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64}
-)::@NamedTuple{qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}}
+        q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64}
+    )::@NamedTuple{qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}}
 
     @assert length(qx) == length(q) "Length of qx and number of charges must be equal."
     @assert length(qx) == length(q) "Length of qy and number of charges must be equal."

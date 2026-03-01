@@ -6,577 +6,577 @@ https://neuroanalyzer.org
 
 module NeuroAnalyzer
 
-@assert VERSION >= v"1.11.0" "NeuroAnalyzer requires Julia 1.11.0 or above."
+    @assert VERSION >= v"1.11.0" "NeuroAnalyzer requires Julia 1.11.0 or above."
 
-# set constants
+    # set constants
 
-const VER = v"0.26.3-dev"
-# false for the stable branch, true for the devel branch
-const allow_wip = occursin("dev", string(VER))
-const data_types = [
-    "eeg",
-    "ecog",
-    "seeg",
-    "ieeg",
-    "csd",
-    "meg",
-    "nirs",
-    "sensors",
-    "eda",
-    "mep",
-    "erp",
-    "erf",
-    "tpt",
-]
-const channel_types = [
-    "all",
-    "eeg",
-    "ecog",
-    "seeg",
-    "ieeg",
-    "csd",
-    "meg",
-    "grad",
-    "mag",
-    "csd",
-    "nirs",
-    "nirs_int",
-    "nirs_od",
-    "nirs_dmean",
-    "nirs_dvar",
-    "nirs_dskew",
-    "nirs_mua",
-    "nirs_musp",
-    "nirs_hbo",
-    "nirs_hbr",
-    "nirs_hbt",
-    "nirs_h2o",
-    "nirs_lipid",
-    "nirs_bfi",
-    "nirs_hrf_dod",
-    "nirs_hrf_dmean",
-    "nirs_hrf_dvar",
-    "nirs_hrf_dskew",
-    "nirs_hrf_hbo",
-    "nirs_hrf_hbr",
-    "nirs_hrf_hbt",
-    "nirs_hrf_bfi",
-    "nirs_aux",
-    "ecg",
-    "emg",
-    "eog",
-    "ref",
-    "mrk",
-    "sensors",
-    "accel",
-    "magfld",
-    "orient",
-    "angvel",
-    "mep",
-    "eda",
-    "other",
-]
-const channel_units = [
-    "μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s", ""
-]
-const fiducial_points = (
-    nasion = (0.0, 1.03, -0.2),
-    inion = (0.0, -1.03, -0.2),
-    lpa = (-1.04, 0.2, -0.2),
-    rpa = (1.04, 0.2, -0.2),
-)
-begin
-    tmp = pwd()
-    cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
-    global const PATH = pwd()
-    cd(tmp)
-end
-
-# initialize preferences
-
-progress_bar = nothing
-verbose = nothing
-exclude_bads = nothing
-colors = nothing
-
-# load dependencies
-
-using Artifacts
-using Cairo
-using ColorSchemes
-using ComplexityMeasures
-using ContinuousWavelets
-using Crayons.Box
-using Dates
-using Deconvolution
-using DICOM
-using Dierckx
-using DSP
-using Einsum
-using FFTW
-using FileIO
-using FindPeaks1D
-using FourierTools
-using FractalDimensions
-using GeometryBasics
-using Git
-using GLMakie
-using GR
-using Gtk4
-using Hurst
-using Images
-using ImageBinarization
-using ImageFiltering
-using ImageMorphology
-using InformationMeasures
-using Interpolations
-using Jacobi
-using JLD2
-using JSON
-using LibSerialPort
-using LinearAlgebra
-using LinRegOutliers
-using Logging
-using MAT
-using MLJ
-using NPZ
-using PiGPIO
-using Pkg
-using Plots
-using Plots.PlotMeasures
-using Polynomials
-using Preferences
-using PrettyTables
-using ProgressMeter
-using Random
-using REPL
-using SavitzkyGolay
-using ScatteredInterpolation
-using Simpson
-using StatsFuns
-using StatsKit
-using StatsModels
-using StatsPlots
-using TimeZones
-using TOML
-using WAV
-using Wavelets
-using WaveletsExt
-using XDF
-
-# Gtk4 modifiers
-const mask_shift = Gtk4.ModifierType_SHIFT_MASK
-const mask_ctrl = Gtk4.ModifierType_CONTROL_MASK
-const mask_alt = Gtk4.ModifierType_ALT_MASK
-
-# define structures
-
-mutable struct HEADER
-    subject::Dict
-    recording::Dict
-    experiment::Dict
-end
-
-mutable struct NEURO
-    header::NeuroAnalyzer.HEADER
-    history::Vector{String}
-    markers::DataFrame
-    locs::DataFrame
-    time_pts::Vector{Float64}
-    epoch_time::Vector{Float64}
-    data::Array{<:Number, 3}
-end
-
-mutable struct DIPOLE
-    pos::Tuple{Real, Real, Real}
-    mag::Tuple{Real, Real, Real}
-end
-
-# load NA functions
-
-include("na/internal.jl")
-include("na/setup.jl")
-include("na/plugins.jl")
-
-# load preferences
-
-global progress_bar = @load_preference("progress_bar", true)
-global verbose = @load_preference("verbose", true)
-global exclude_bads = @load_preference("exclude_bads", false)
-global colors = @load_preference("colors", true)
-na_set_prefs(
-    progress_bar = progress_bar,
-    verbose = verbose,
-    exclude_bads = exclude_bads,
-    colors = colors,
-)
-
-# show major parameters
-
-@info "NeuroAnalyzer v$(NeuroAnalyzer.VER)"
-@info "NeuroAnalyzer path: $(NeuroAnalyzer.PATH)"
-@info "Preferences:"
-@info "   Progress bar: $progress_bar"
-@info "        Verbose: $verbose"
-@info "   Exclude bads: $exclude_bads"
-@info "         Colors: $colors"
-@info "System info:"
-@info "    Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
-
-# set package options
-
-GR.setarrowsize(0.4)
-Plots.gr_cbar_width[] = 0.01
-Plots.gr_set_arrowstyle
-FFTW.set_provider!("fftw")
-FFTW.set_num_threads(Sys.CPU_THREADS)
-BLAS.set_num_threads(Sys.CPU_THREADS)
-
-# setup resources
-
-@info "Preparing resources"
-global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
-
-# load plugins
-
-@info "Loading plugins"
-global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
-if isdir(plugins_path)
-    if length(readdir(plugins_path)) > 0
-        na_plugins_reload()
+    const VER = v"0.26.3"
+    # false for the stable branch, true for the devel branch
+    const allow_wip = occursin("dev", string(VER))
+    const data_types = [
+        "eeg",
+        "ecog",
+        "seeg",
+        "ieeg",
+        "csd",
+        "meg",
+        "nirs",
+        "sensors",
+        "eda",
+        "mep",
+        "erp",
+        "erf",
+        "tpt",
+    ]
+    const channel_types = [
+        "all",
+        "eeg",
+        "ecog",
+        "seeg",
+        "ieeg",
+        "csd",
+        "meg",
+        "grad",
+        "mag",
+        "csd",
+        "nirs",
+        "nirs_int",
+        "nirs_od",
+        "nirs_dmean",
+        "nirs_dvar",
+        "nirs_dskew",
+        "nirs_mua",
+        "nirs_musp",
+        "nirs_hbo",
+        "nirs_hbr",
+        "nirs_hbt",
+        "nirs_h2o",
+        "nirs_lipid",
+        "nirs_bfi",
+        "nirs_hrf_dod",
+        "nirs_hrf_dmean",
+        "nirs_hrf_dvar",
+        "nirs_hrf_dskew",
+        "nirs_hrf_hbo",
+        "nirs_hrf_hbr",
+        "nirs_hrf_hbt",
+        "nirs_hrf_bfi",
+        "nirs_aux",
+        "ecg",
+        "emg",
+        "eog",
+        "ref",
+        "mrk",
+        "sensors",
+        "accel",
+        "magfld",
+        "orient",
+        "angvel",
+        "mep",
+        "eda",
+        "other",
+    ]
+    const channel_units = [
+        "μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s", "",
+    ]
+    const fiducial_points = (
+        nasion = (0.0, 1.03, -0.2),
+        inion = (0.0, -1.03, -0.2),
+        lpa = (-1.04, 0.2, -0.2),
+        rpa = (1.04, 0.2, -0.2),
+    )
+    begin
+        tmp = pwd()
+        cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
+        global const PATH = pwd()
+        cd(tmp)
     end
-else
-    mkpath(plugins_path)
-end
 
-# load sub-modules
+    # initialize preferences
 
-@info "Loading sub-modules"
+    progress_bar = nothing
+    verbose = nothing
+    exclude_bads = nothing
+    colors = nothing
 
-# dependencies
-include("deps/PhaseSlopeIndex.jl/PhaseSlopeIndex.jl")
-include("deps/FIRLSFilterDesign.jl/FIRLSFilterDesign.jl")
+    # load dependencies
 
-# internal
-include("internal/channels.jl")
-include("internal/check.jl")
-include("internal/convolution.jl")
-include("internal/create_header.jl")
-include("internal/epochs.jl")
-include("internal/fiff.jl")
-include("internal/fir_response.jl")
-include("internal/gdf_etp.jl")
-include("internal/gradient.jl")
-include("internal/gui.jl")
-include("internal/interpolate.jl")
-include("internal/labeled_matrix.jl")
-include("internal/labels.jl")
-include("internal/len.jl")
-include("internal/locs.jl")
-include("internal/map_channels.jl")
-include("internal/markers.jl")
-include("internal/mesh.jl")
-include("internal/misc.jl")
-include("internal/ml.jl")
-include("internal/tpt.jl")
-include("internal/plots.jl")
-include("internal/recorder.jl")
-include("internal/reflect_chop.jl")
-include("internal/select.jl")
-include("internal/statistics.jl")
-include("internal/tester.jl")
-include("internal/time.jl")
-include("internal/wl2ext.jl")
-include("internal/vec.jl")
+    using Artifacts
+    using Cairo
+    using ColorSchemes
+    using ComplexityMeasures
+    using ContinuousWavelets
+    using Crayons.Box
+    using Dates
+    using Deconvolution
+    using DICOM
+    using Dierckx
+    using DSP
+    using Einsum
+    using FFTW
+    using FileIO
+    using FindPeaks1D
+    using FourierTools
+    using FractalDimensions
+    using GeometryBasics
+    using Git
+    using GLMakie
+    using GR
+    using Gtk4
+    using Hurst
+    using Images
+    using ImageBinarization
+    using ImageFiltering
+    using ImageMorphology
+    using InformationMeasures
+    using Interpolations
+    using Jacobi
+    using JLD2
+    using JSON
+    using LibSerialPort
+    using LinearAlgebra
+    using LinRegOutliers
+    using Logging
+    using MAT
+    using MLJ
+    using NPZ
+    using PiGPIO
+    using Pkg
+    using Plots
+    using Plots.PlotMeasures
+    using Polynomials
+    using Preferences
+    using PrettyTables
+    using ProgressMeter
+    using Random
+    using REPL
+    using SavitzkyGolay
+    using ScatteredInterpolation
+    using Simpson
+    using StatsFuns
+    using StatsKit
+    using StatsModels
+    using StatsPlots
+    using TimeZones
+    using TOML
+    using WAV
+    using Wavelets
+    using WaveletsExt
+    using XDF
 
-# utils
-include("utils/apply.jl")
-include("utils/array.jl")
-include("utils/fft.jl")
-include("utils/filter.jl")
-include("utils/findpeaks.jl")
-include("utils/frequency.jl")
-include("utils/generate.jl")
-include("utils/gradient.jl")
-include("utils/info.jl")
-include("utils/labels.jl")
-include("utils/matrix.jl")
-include("utils/misc.jl")
-include("utils/note.jl")
-include("utils/pad.jl")
-include("utils/phase.jl")
-include("utils/play.jl")
-include("utils/time.jl")
-include("utils/to_df.jl")
-include("utils/vector.jl")
-include("utils/view_header.jl")
-include("utils/wavelets.jl")
-include("utils/fwhm.jl")
-include("utils/mri_coordinates.jl")
+    # Gtk4 modifiers
+    const mask_shift = Gtk4.ModifierType_SHIFT_MASK
+    const mask_ctrl = Gtk4.ModifierType_CONTROL_MASK
+    const mask_alt = Gtk4.ModifierType_ALT_MASK
 
-# io
-include("io/export_csv.jl")
-include("io/export_locs.jl")
-include("io/export_markers.jl")
-include("io/import_alice4.jl")
-include("io/import_bdf.jl")
-include("io/import_bv.jl")
-include("io/import_cnt.jl")
-include("io/import_csv.jl")
-include("io/import_dat.jl")
-include("io/import_digitrack.jl")
-include("io/import_duomag.jl")
-include("io/import_edf_annotations.jl")
-include("io/import_edf.jl")
-include("io/import_fiff.jl")
-include("io/import_ft.jl")
-include("io/import_gdf.jl")
-include("io/import.jl")
-include("io/import_locs.jl")
-include("io/import_montage.jl")
-include("io/import_ncs.jl")
-include("io/import_nirs.jl")
-include("io/import_nirx.jl")
-include("io/import_npy.jl")
-include("io/import_nwb.jl")
-include("io/import_set.jl")
-include("io/import_snirf.jl")
-include("io/import_thymatron.jl")
-include("io/import_xdf.jl")
-include("io/load_locs.jl")
-include("io/save_load.jl")
+    # define structures
 
-# locs
-include("locs/add_locs.jl")
-include("locs/center.jl")
-include("locs/convert.jl")
-include("locs/details.jl")
-include("locs/edit.jl")
-include("locs/flip.jl")
-include("locs/generate.jl")
-include("locs/origin.jl")
-include("locs/rotate.jl")
-include("locs/scale.jl")
-include("locs/swap.jl")
+    mutable struct HEADER
+        subject::Dict
+        recording::Dict
+        experiment::Dict
+    end
 
-# edit
-include("edit/channel.jl")
-include("edit/create.jl")
-include("edit/delete_channel.jl")
-include("edit/delete_epoch.jl")
-include("edit/delete_optode.jl")
-include("edit/reject.jl")
-include("edit/epoch.jl")
-include("edit/extract.jl")
-include("edit/join.jl")
-include("edit/marker.jl")
-include("edit/reflect_chop.jl")
-include("edit/trim.jl")
-include("edit/vch.jl")
+    mutable struct NEURO
+        header::NeuroAnalyzer.HEADER
+        history::Vector{String}
+        markers::DataFrame
+        locs::DataFrame
+        time_pts::Vector{Float64}
+        epoch_time::Vector{Float64}
+        data::Array{<:Number, 3}
+    end
 
-# process
-include("process/add_signal.jl")
-include("process/average.jl")
-include("process/bpsplit.jl")
-include("process/cbp.jl")
-include("process/ch_zero.jl")
-include("process/csd.jl")
-include("process/cwd.jl")
-include("process/denoise_fft.jl")
-include("process/denoise_wavelet.jl")
-include("process/denoise_wien.jl")
-include("process/derivative.jl")
-include("process/detrend.jl")
-include("process/dwd.jl")
-include("process/edit_montage.jl")
-include("process/erp.jl")
-include("process/fconv.jl")
-include("process/filter.jl")
-include("process/filter_g.jl")
-include("process/filter_mavg.jl")
-include("process/filter_mmed.jl")
-include("process/filter_poly.jl")
-include("process/filter_sg.jl")
-include("process/ica.jl")
-include("process/intensity2od.jl")
-include("process/invert.jl")
-include("process/lrinterpolate.jl")
-include("process/mlinterpolate.jl")
-include("process/normalize.jl")
-include("process/normpower.jl")
-include("process/npl.jl")
-include("process/od2conc.jl")
-include("process/pca.jl")
-include("process/plinterpolate.jl")
-include("process/reference.jl")
-include("process/artrem_cwd.jl")
-include("process/remove_dc.jl")
-include("process/remove_pops.jl")
-include("process/remove_powerline.jl")
-include("process/resample.jl")
-include("process/scale.jl")
-include("process/ssp.jl")
-include("process/standardize.jl")
-include("process/taper.jl")
-include("process/tconv.jl")
-include("process/wbp.jl")
+    mutable struct DIPOLE
+        pos::Tuple{Real, Real, Real}
+        mag::Tuple{Real, Real, Real}
+    end
 
-# stats
-include("stats/ba.jl")
-include("stats/binom.jl")
-include("stats/bootstrap.jl")
-include("stats/ci.jl")
-include("stats/cmp_test.jl")
-include("stats/correlation.jl")
-include("stats/crit.jl")
-include("stats/cvar.jl")
-include("stats/dap.jl")
-include("stats/descriptive.jl")
-include("stats/dprime.jl")
-include("stats/effsize.jl")
-include("stats/friedman.jl")
-include("stats/hildebrand_rule.jl")
-include("stats/linreg.jl")
-include("stats/make_table.jl")
-include("stats/means.jl")
-include("stats/misc.jl")
-include("stats/ml.jl")
-include("stats/outliers.jl")
-include("stats/p.jl")
-include("stats/pca.jl")
-include("stats/power.jl")
-include("stats/pred_int.jl")
-include("stats/ranks.jl")
-include("stats/res_norm.jl")
-include("stats/se.jl")
-include("stats/similarity.jl")
-include("stats/summary.jl")
-include("stats/vector.jl")
-include("stats/zscore.jl")
+    # load NA functions
 
-# analyze
-include("analyze/acor.jl")
-include("analyze/acov.jl")
-include("analyze/aecor.jl")
-include("analyze/amp.jl")
-include("analyze/ampdiff.jl")
-include("analyze/axc2frq.jl")
-include("analyze/band_asymmetry.jl")
-include("analyze/band_mpower.jl")
-include("analyze/band_power.jl")
-include("analyze/coherence.jl")
-include("analyze/corm.jl")
-include("analyze/covm.jl")
-include("analyze/cosim.jl")
-include("analyze/cph.jl")
-include("analyze/corr.jl")
-include("analyze/cpsd.jl")
-include("analyze/dirinrg.jl")
-include("analyze/dissimilarity.jl")
-include("analyze/emd.jl")
-include("analyze/entropy.jl")
-include("analyze/envelopes.jl")
-include("analyze/erop.jl")
-include("analyze/eros.jl")
-include("analyze/erp.jl")
-include("analyze/frqinst.jl")
-include("analyze/ftt.jl")
-include("analyze/ged.jl")
-include("analyze/gfp.jl")
-include("analyze/ghexp.jl")
-include("analyze/hfd.jl")
-include("analyze/hjorth.jl")
-include("analyze/hmspectrum.jl")
-include("analyze/hrv.jl")
-include("analyze/ispc.jl")
-include("analyze/itpc.jl")
-include("analyze/lat_idx.jl")
-include("analyze/mdiff.jl")
-include("analyze/mep_peaks.jl")
-include("analyze/mi.jl")
-include("analyze/msci95.jl")
-include("analyze/pacor.jl")
-include("analyze/peak.jl")
-include("analyze/phdiff.jl")
-include("analyze/phsd.jl")
-include("analyze/pli.jl")
-include("analyze/dpli.jl")
-include("analyze/wpli.jl")
-include("analyze/plv.jl")
-include("analyze/iplv.jl")
-include("analyze/psa.jl")
-include("analyze/psi.jl")
-include("analyze/psd.jl")
-include("analyze/psd_rel.jl")
-include("analyze/psd_slope.jl")
-include("analyze/rms.jl")
-include("analyze/sef.jl")
-include("analyze/segments.jl")
-include("analyze/snr.jl")
-include("analyze/specseg.jl")
-include("analyze/spectrogram.jl")
-include("analyze/stationarity.jl")
-include("analyze/stats.jl")
-include("analyze/std.jl")
-include("analyze/sumsim.jl")
-include("analyze/symmetry.jl")
-include("analyze/tkeo.jl")
-include("analyze/total_power.jl")
-include("analyze/tpt.jl")
-include("analyze/transform.jl")
-include("analyze/vartest.jl")
-include("analyze/xcor.jl")
-include("analyze/xcov.jl")
-include("analyze/zip.jl")
+    include("na/internal.jl")
+    include("na/setup.jl")
+    include("na/plugins.jl")
 
-# plots
-include("plots/cairo.jl")
-include("plots/misc.jl")
-include("plots/plot_filter.jl")
-include("plots/plot_locs.jl")
-include("plots/plot_locs3d.jl")
-include("plots/plot_locs_nirs.jl")
-include("plots/plot_gridlocs.jl")
-include("plots/plot_save.jl")
-include("plots/plot_topo.jl")
-include("plots/plot_connectivity_circle.jl")
-include("plots/plot_coherence.jl")
-include("plots/plot_efield.jl")
-include("plots/plot_varia.jl")
-include("plots/plot_dipole2d.jl")
-include("plots/plot_dipole3d.jl")
-include("plots/plot_erp.jl")
-include("plots/plot_mep.jl")
-include("plots/plot_phsd.jl")
-include("plots/plot_psd.jl")
-include("plots/plot_spectrogram.jl")
-include("plots/plot.jl")
-include("plots/plot_signal_cont1.jl")
-include("plots/plot_signal_cont2.jl")
-include("plots/plot_signal_ep.jl")
+    # load preferences
 
-# gui
-# include("gui/iedit.jl")
-# include("gui/ipsd.jl")
-# include("gui/ispectrogram.jl")
-# include("gui/itopo.jl")
-# include("gui/iview_ica.jl")
+    global progress_bar = @load_preference("progress_bar", true)
+    global verbose = @load_preference("verbose", true)
+    global exclude_bads = @load_preference("exclude_bads", false)
+    global colors = @load_preference("colors", true)
+    na_set_prefs(
+        progress_bar = progress_bar,
+        verbose = verbose,
+        exclude_bads = exclude_bads,
+        colors = colors,
+    )
 
-# recorder
-include("recorder/edar.jl")
-include("recorder/rt_plotter.jl")
+    # show major parameters
 
-# tester
-include("tester/ftt.jl")
-include("tester/iavh.jl")
-include("tester/tpt.jl")
+    @info "NeuroAnalyzer v$(NeuroAnalyzer.VER)"
+    @info "NeuroAnalyzer path: $(NeuroAnalyzer.PATH)"
+    @info "Preferences:"
+    @info "   Progress bar: $progress_bar"
+    @info "        Verbose: $verbose"
+    @info "   Exclude bads: $exclude_bads"
+    @info "         Colors: $colors"
+    @info "System info:"
+    @info "    Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
 
-# stim
-include("stim/ect.jl")
-include("stim/tes.jl")
+    # set package options
 
-# modeling
-include("model/efield.jl")
-include("model/tes_model.jl")
+    GR.setarrowsize(0.4)
+    Plots.gr_cbar_width[] = 0.01
+    Plots.gr_set_arrowstyle
+    FFTW.set_provider!("fftw")
+    FFTW.set_num_threads(Sys.CPU_THREADS)
+    BLAS.set_num_threads(Sys.CPU_THREADS)
+
+    # setup resources
+
+    @info "Preparing resources"
+    global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
+
+    # load plugins
+
+    @info "Loading plugins"
+    global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
+    if isdir(plugins_path)
+        if length(readdir(plugins_path)) > 0
+            na_plugins_reload()
+        end
+    else
+        mkpath(plugins_path)
+    end
+
+    # load sub-modules
+
+    @info "Loading sub-modules"
+
+    # dependencies
+    include("deps/PhaseSlopeIndex.jl/PhaseSlopeIndex.jl")
+    include("deps/FIRLSFilterDesign.jl/FIRLSFilterDesign.jl")
+
+    # internal
+    include("internal/channels.jl")
+    include("internal/check.jl")
+    include("internal/convolution.jl")
+    include("internal/create_header.jl")
+    include("internal/epochs.jl")
+    include("internal/fiff.jl")
+    include("internal/fir_response.jl")
+    include("internal/gdf_etp.jl")
+    include("internal/gradient.jl")
+    include("internal/gui.jl")
+    include("internal/interpolate.jl")
+    include("internal/labeled_matrix.jl")
+    include("internal/labels.jl")
+    include("internal/len.jl")
+    include("internal/locs.jl")
+    include("internal/map_channels.jl")
+    include("internal/markers.jl")
+    include("internal/mesh.jl")
+    include("internal/misc.jl")
+    include("internal/ml.jl")
+    include("internal/tpt.jl")
+    include("internal/plots.jl")
+    include("internal/recorder.jl")
+    include("internal/reflect_chop.jl")
+    include("internal/select.jl")
+    include("internal/statistics.jl")
+    include("internal/tester.jl")
+    include("internal/time.jl")
+    include("internal/wl2ext.jl")
+    include("internal/vec.jl")
+
+    # utils
+    include("utils/apply.jl")
+    include("utils/array.jl")
+    include("utils/fft.jl")
+    include("utils/filter.jl")
+    include("utils/findpeaks.jl")
+    include("utils/frequency.jl")
+    include("utils/generate.jl")
+    include("utils/gradient.jl")
+    include("utils/info.jl")
+    include("utils/labels.jl")
+    include("utils/matrix.jl")
+    include("utils/misc.jl")
+    include("utils/note.jl")
+    include("utils/pad.jl")
+    include("utils/phase.jl")
+    include("utils/play.jl")
+    include("utils/time.jl")
+    include("utils/to_df.jl")
+    include("utils/vector.jl")
+    include("utils/view_header.jl")
+    include("utils/wavelets.jl")
+    include("utils/fwhm.jl")
+    include("utils/mri_coordinates.jl")
+
+    # io
+    include("io/export_csv.jl")
+    include("io/export_locs.jl")
+    include("io/export_markers.jl")
+    include("io/import_alice4.jl")
+    include("io/import_bdf.jl")
+    include("io/import_bv.jl")
+    include("io/import_cnt.jl")
+    include("io/import_csv.jl")
+    include("io/import_dat.jl")
+    include("io/import_digitrack.jl")
+    include("io/import_duomag.jl")
+    include("io/import_edf_annotations.jl")
+    include("io/import_edf.jl")
+    include("io/import_fiff.jl")
+    include("io/import_ft.jl")
+    include("io/import_gdf.jl")
+    include("io/import.jl")
+    include("io/import_locs.jl")
+    include("io/import_montage.jl")
+    include("io/import_ncs.jl")
+    include("io/import_nirs.jl")
+    include("io/import_nirx.jl")
+    include("io/import_npy.jl")
+    include("io/import_nwb.jl")
+    include("io/import_set.jl")
+    include("io/import_snirf.jl")
+    include("io/import_thymatron.jl")
+    include("io/import_xdf.jl")
+    include("io/load_locs.jl")
+    include("io/save_load.jl")
+
+    # locs
+    include("locs/add_locs.jl")
+    include("locs/center.jl")
+    include("locs/convert.jl")
+    include("locs/details.jl")
+    include("locs/edit.jl")
+    include("locs/flip.jl")
+    include("locs/generate.jl")
+    include("locs/origin.jl")
+    include("locs/rotate.jl")
+    include("locs/scale.jl")
+    include("locs/swap.jl")
+
+    # edit
+    include("edit/channel.jl")
+    include("edit/create.jl")
+    include("edit/delete_channel.jl")
+    include("edit/delete_epoch.jl")
+    include("edit/delete_optode.jl")
+    include("edit/reject.jl")
+    include("edit/epoch.jl")
+    include("edit/extract.jl")
+    include("edit/join.jl")
+    include("edit/marker.jl")
+    include("edit/reflect_chop.jl")
+    include("edit/trim.jl")
+    include("edit/vch.jl")
+
+    # process
+    include("process/add_signal.jl")
+    include("process/average.jl")
+    include("process/bpsplit.jl")
+    include("process/cbp.jl")
+    include("process/ch_zero.jl")
+    include("process/csd.jl")
+    include("process/cwd.jl")
+    include("process/denoise_fft.jl")
+    include("process/denoise_wavelet.jl")
+    include("process/denoise_wien.jl")
+    include("process/derivative.jl")
+    include("process/detrend.jl")
+    include("process/dwd.jl")
+    include("process/edit_montage.jl")
+    include("process/erp.jl")
+    include("process/fconv.jl")
+    include("process/filter.jl")
+    include("process/filter_g.jl")
+    include("process/filter_mavg.jl")
+    include("process/filter_mmed.jl")
+    include("process/filter_poly.jl")
+    include("process/filter_sg.jl")
+    include("process/ica.jl")
+    include("process/intensity2od.jl")
+    include("process/invert.jl")
+    include("process/lrinterpolate.jl")
+    include("process/mlinterpolate.jl")
+    include("process/normalize.jl")
+    include("process/normpower.jl")
+    include("process/npl.jl")
+    include("process/od2conc.jl")
+    include("process/pca.jl")
+    include("process/plinterpolate.jl")
+    include("process/reference.jl")
+    include("process/artrem_cwd.jl")
+    include("process/remove_dc.jl")
+    include("process/remove_pops.jl")
+    include("process/remove_powerline.jl")
+    include("process/resample.jl")
+    include("process/scale.jl")
+    include("process/ssp.jl")
+    include("process/standardize.jl")
+    include("process/taper.jl")
+    include("process/tconv.jl")
+    include("process/wbp.jl")
+
+    # stats
+    include("stats/ba.jl")
+    include("stats/binom.jl")
+    include("stats/bootstrap.jl")
+    include("stats/ci.jl")
+    include("stats/cmp_test.jl")
+    include("stats/correlation.jl")
+    include("stats/crit.jl")
+    include("stats/cvar.jl")
+    include("stats/dap.jl")
+    include("stats/descriptive.jl")
+    include("stats/dprime.jl")
+    include("stats/effsize.jl")
+    include("stats/friedman.jl")
+    include("stats/hildebrand_rule.jl")
+    include("stats/linreg.jl")
+    include("stats/make_table.jl")
+    include("stats/means.jl")
+    include("stats/misc.jl")
+    include("stats/ml.jl")
+    include("stats/outliers.jl")
+    include("stats/p.jl")
+    include("stats/pca.jl")
+    include("stats/power.jl")
+    include("stats/pred_int.jl")
+    include("stats/ranks.jl")
+    include("stats/res_norm.jl")
+    include("stats/se.jl")
+    include("stats/similarity.jl")
+    include("stats/summary.jl")
+    include("stats/vector.jl")
+    include("stats/zscore.jl")
+
+    # analyze
+    include("analyze/acor.jl")
+    include("analyze/acov.jl")
+    include("analyze/aecor.jl")
+    include("analyze/amp.jl")
+    include("analyze/ampdiff.jl")
+    include("analyze/axc2frq.jl")
+    include("analyze/band_asymmetry.jl")
+    include("analyze/band_mpower.jl")
+    include("analyze/band_power.jl")
+    include("analyze/coherence.jl")
+    include("analyze/corm.jl")
+    include("analyze/covm.jl")
+    include("analyze/cosim.jl")
+    include("analyze/cph.jl")
+    include("analyze/corr.jl")
+    include("analyze/cpsd.jl")
+    include("analyze/dirinrg.jl")
+    include("analyze/dissimilarity.jl")
+    include("analyze/emd.jl")
+    include("analyze/entropy.jl")
+    include("analyze/envelopes.jl")
+    include("analyze/erop.jl")
+    include("analyze/eros.jl")
+    include("analyze/erp.jl")
+    include("analyze/frqinst.jl")
+    include("analyze/ftt.jl")
+    include("analyze/ged.jl")
+    include("analyze/gfp.jl")
+    include("analyze/ghexp.jl")
+    include("analyze/hfd.jl")
+    include("analyze/hjorth.jl")
+    include("analyze/hmspectrum.jl")
+    include("analyze/hrv.jl")
+    include("analyze/ispc.jl")
+    include("analyze/itpc.jl")
+    include("analyze/lat_idx.jl")
+    include("analyze/mdiff.jl")
+    include("analyze/mep_peaks.jl")
+    include("analyze/mi.jl")
+    include("analyze/msci95.jl")
+    include("analyze/pacor.jl")
+    include("analyze/peak.jl")
+    include("analyze/phdiff.jl")
+    include("analyze/phsd.jl")
+    include("analyze/pli.jl")
+    include("analyze/dpli.jl")
+    include("analyze/wpli.jl")
+    include("analyze/plv.jl")
+    include("analyze/iplv.jl")
+    include("analyze/psa.jl")
+    include("analyze/psi.jl")
+    include("analyze/psd.jl")
+    include("analyze/psd_rel.jl")
+    include("analyze/psd_slope.jl")
+    include("analyze/rms.jl")
+    include("analyze/sef.jl")
+    include("analyze/segments.jl")
+    include("analyze/snr.jl")
+    include("analyze/specseg.jl")
+    include("analyze/spectrogram.jl")
+    include("analyze/stationarity.jl")
+    include("analyze/stats.jl")
+    include("analyze/std.jl")
+    include("analyze/sumsim.jl")
+    include("analyze/symmetry.jl")
+    include("analyze/tkeo.jl")
+    include("analyze/total_power.jl")
+    include("analyze/tpt.jl")
+    include("analyze/transform.jl")
+    include("analyze/vartest.jl")
+    include("analyze/xcor.jl")
+    include("analyze/xcov.jl")
+    include("analyze/zip.jl")
+
+    # plots
+    include("plots/cairo.jl")
+    include("plots/misc.jl")
+    include("plots/plot_filter.jl")
+    include("plots/plot_locs.jl")
+    include("plots/plot_locs3d.jl")
+    include("plots/plot_locs_nirs.jl")
+    include("plots/plot_gridlocs.jl")
+    include("plots/plot_save.jl")
+    include("plots/plot_topo.jl")
+    include("plots/plot_connectivity_circle.jl")
+    include("plots/plot_coherence.jl")
+    include("plots/plot_efield.jl")
+    include("plots/plot_varia.jl")
+    include("plots/plot_dipole2d.jl")
+    include("plots/plot_dipole3d.jl")
+    include("plots/plot_erp.jl")
+    include("plots/plot_mep.jl")
+    include("plots/plot_phsd.jl")
+    include("plots/plot_psd.jl")
+    include("plots/plot_spectrogram.jl")
+    include("plots/plot.jl")
+    include("plots/plot_signal_cont1.jl")
+    include("plots/plot_signal_cont2.jl")
+    include("plots/plot_signal_ep.jl")
+
+    # gui
+    # include("gui/iedit.jl")
+    # include("gui/ipsd.jl")
+    # include("gui/ispectrogram.jl")
+    # include("gui/itopo.jl")
+    # include("gui/iview_ica.jl")
+
+    # recorder
+    include("recorder/edar.jl")
+    include("recorder/rt_plotter.jl")
+
+    # tester
+    include("tester/ftt.jl")
+    include("tester/iavh.jl")
+    include("tester/tpt.jl")
+
+    # stim
+    include("stim/ect.jl")
+    include("stim/tes.jl")
+
+    # modeling
+    include("model/efield.jl")
+    include("model/tes_model.jl")
 
 end # NeuroAnalyzer

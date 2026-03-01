@@ -22,8 +22,8 @@ Named tuple containing:
   - `s2ph::Vector{Float64}`: signal 2 phase
 """
 function wpli(
-    s1::AbstractVector, s2::AbstractVector; debiased::Bool = false
-)::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
+        s1::AbstractVector, s2::AbstractVector; debiased::Bool = false
+    )::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
@@ -77,16 +77,16 @@ Named tuple containing:
   - `s2ph::Array{Float64, 3}`: signal 2 phase
 """
 function wpli(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    debiased::Bool = false,
-)::@NamedTuple{
-    pv::Matrix{Float64}, sd::Array{Float64, 3}, phd::Array{Float64, 3}, s1ph::Array{Float64, 3}, s2ph::Array{Float64, 3}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        debiased::Bool = false,
+    )::@NamedTuple{
+        pv::Matrix{Float64}, sd::Array{Float64, 3}, phd::Array{Float64, 3}, s1ph::Array{Float64, 3}, s2ph::Array{Float64, 3},
+    }
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
@@ -137,8 +137,8 @@ Calculate weighted PLI (Phase Locking Index).
   - `pv::Array{Float64, 3}`: wPLI value
 """
 function wpli(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, debiased::Bool = false
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, debiased::Bool = false
+    )::Array{Float64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)

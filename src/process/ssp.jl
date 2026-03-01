@@ -20,8 +20,8 @@ Named tuple containing:
   - `U::Matrix{Float64}}`: SVD U orthogonal matrix
 """
 function generate_ssp_projectors(
-    obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0
-)::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}
+        obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0
+    )::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}
 
     _check_datatype(obj, "meg")
 
@@ -46,7 +46,7 @@ function generate_ssp_projectors(
     # reorthogonalize the vectors
     U, S, _ = svd(ssp_projectors)
 
-    # remove linearly dependent vectors - this code comes from proj.py of the mne-python project 
+    # remove linearly dependent vectors - this code comes from proj.py of the mne-python project
     nproj = sum(S ./ S[1] .> 0.01)
     U = U[:, 1:nproj]
 

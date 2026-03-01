@@ -17,8 +17,8 @@ Interactive view of ICA components.
   - `Nothing`
 """
 function iview_ica(
-    obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}, Regex}
-)::Nothing
+        obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}, Regex}
+    )::Nothing
 
     plot_sig_type = 0
     plot_psd_type = 0
@@ -340,7 +340,7 @@ function iview_ica(
         end
 
         function _mwheel_scroll(_, dx, dy)
-            if dy > 0.5
+            return if dy > 0.5
                 if k == 0x0000ffe1 # shift
                     time_current = entry_time.value
                     if time_current < obj.time_pts[end] - zoom
@@ -554,7 +554,7 @@ function iview_ica(
 
         win_key = Gtk4.GtkEventControllerKey(win)
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             # CONTROL
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))

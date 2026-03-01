@@ -49,8 +49,8 @@ _erpticks(t::Tuple{Real, Real})::AbstractVector = vcat(
 )
 
 function _set_defaults(
-    xl::String, yl::String, tt::String, x::String, y::String, t::String
-)::Tuple{String, String, String}
+        xl::String, yl::String, tt::String, x::String, y::String, t::String
+    )::Tuple{String, String, String}
     yl == "default" && (yl = y)
     xl == "default" && (xl = x)
     tt == "default" && (tt = t)

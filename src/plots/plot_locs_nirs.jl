@@ -31,22 +31,22 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
   - `p::GLMakie.Figure`
 """
 function plot_locs_nirs(
-    locs::DataFrame,
-    opt_pairs::Matrix{Int64},
-    src_n::Int64,
-    det_n::Int64;
-    src_labels::Bool = false,
-    det_labels::Bool = false,
-    opt_labels::Bool = false,
-    head::Bool = true,
-    head_labels::Bool = true,
-    mono::Bool = false,
-    grid::Bool = false,
-    ps::Symbol = :l,
-    cart::Bool = false,
-    plane::Symbol = :xy,
-    ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
-)::GLMakie.Figure
+        locs::DataFrame,
+        opt_pairs::Matrix{Int64},
+        src_n::Int64,
+        det_n::Int64;
+        src_labels::Bool = false,
+        det_labels::Bool = false,
+        opt_labels::Bool = false,
+        head::Bool = true,
+        head_labels::Bool = true,
+        mono::Bool = false,
+        grid::Bool = false,
+        ps::Symbol = :l,
+        cart::Bool = false,
+        plane::Symbol = :xy,
+        ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
+    )::GLMakie.Figure
 
     # TO DO: plot channel numbers
 
@@ -123,9 +123,9 @@ function plot_locs_nirs(
     # prepare plot
     GLMakie.activate!(title = "plot_locs_nirs()")
     p = GLMakie.Figure(
-                    size = plot_size,
-                    figure_padding = 0,
-                )
+        size = plot_size,
+        figure_padding = 0,
+    )
     if grid
         ax = GLMakie.Axis(
             p[1, 1];
@@ -179,8 +179,8 @@ function plot_locs_nirs(
         ps === :s && (lw = 1)
         if plane === :xy
             # nose
-            GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
 
             # ears
             # left
@@ -188,8 +188,8 @@ function plot_locs_nirs(
             GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.12, -1.1], [0.05, -0.1]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.1, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
@@ -199,8 +199,8 @@ function plot_locs_nirs(
             GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.12, 1.1], [0.05, -0.1]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.1, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = lw, color = :black)

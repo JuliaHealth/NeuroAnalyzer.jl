@@ -50,7 +50,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     locs_idx = 0
     soft_filt_idx = 0
 
-    vhdr = replace.(vhdr, " "=>"")
+    vhdr = replace.(vhdr, " " => "")
 
     any(startswith.(lowercase.(vhdr), "datafile=")) &&
         (eeg_file = split(vhdr[startswith.(lowercase.(vhdr), "datafile=")][1], '=')[2])
@@ -88,13 +88,13 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     ) # IEEE_FLOAT_32 / INT_16
     any(startswith.(lowercase.(vhdr), "averaged=")) && (
         averaged =
-            if lowercase(
+        if lowercase(
                 split(vhdr[startswith.(lowercase.(vhdr), "averaged=")][1], '=')[2]
             ) == "yes"
-                true
-            else
-                false # YES|NO
-            end
+            true
+        else
+            false # YES|NO
+        end
     ) # YES|NO
     any(startswith.(lowercase.(vhdr), "averagedsegments=")) && (
         averaged_segments = parse(
@@ -110,13 +110,13 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     )
     any(startswith.(lowercase.(vhdr), "segmentation=")) && (
         segmentation =
-            if lowercase(
+        if lowercase(
                 split(vhdr[startswith.(lowercase.(vhdr), "segmentation=")][1], '=')[2]
             ) == "yes"
-                true # YES|NO
-            else
-                false # YES|NO
-            end
+            true # YES|NO
+        else
+            false # YES|NO
+        end
     ) # YES|NO
 
     for idx in eachindex(vhdr)
@@ -138,16 +138,16 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             )
         end
     end
-    soft_filt_file = replace(splitext(file_name)[1], "eeg"=>"channels.tsv")
+    soft_filt_file = replace(splitext(file_name)[1], "eeg" => "channels.tsv")
     isfile(soft_filt_file) &&
         (soft_filt = CSV.read(soft_filt_file, stringtype = String, DataFrame))
 
     # JSON
     js_file = ""
     if splitext(file_name)[2] == ".vhdr"
-        js_file = replace(file_name, "vhdr"=>"json")
+        js_file = replace(file_name, "vhdr" => "json")
     elseif splitext(file_name)[2] == ".ahdr"
-        js_file = replace(file_name, "ahdr"=>"json")
+        js_file = replace(file_name, "ahdr" => "json")
     end
     e_name = ""
     e_notes = ""
@@ -246,16 +246,16 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             )
         end
         locs = DataFrame(
-            :ch_n=>1:ch_n,
-            :label=>clabels,
-            :loc_theta=>loc_theta,
-            :loc_radius=>loc_radius,
-            :loc_x=>loc_x,
-            :loc_y=>loc_y,
-            :loc_z=>loc_z,
-            :loc_radius_sph=>loc_radius_sph,
-            :loc_theta_sph=>loc_theta_sph,
-            :loc_phi_sph=>loc_phi_sph,
+            :ch_n => 1:ch_n,
+            :label => clabels,
+            :loc_theta => loc_theta,
+            :loc_radius => loc_radius,
+            :loc_x => loc_x,
+            :loc_y => loc_y,
+            :loc_z => loc_z,
+            :loc_radius_sph => loc_radius_sph,
+            :loc_theta_sph => loc_theta_sph,
+            :loc_phi_sph => loc_phi_sph,
         )
     end
 
@@ -308,35 +308,35 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             m_ch[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[5])
         end
         markers = DataFrame(
-            :id=>m_id,
-            :start=>(m_pos ./ sampling_rate),
-            :length=>round.(m_len ./ sampling_rate),
-            :value=>m_desc,
-            :channel=>m_ch,
+            :id => m_id,
+            :start => (m_pos ./ sampling_rate),
+            :length => round.(m_len ./ sampling_rate),
+            :value => m_desc,
+            :channel => m_ch,
         )
         if markers[!, :id] == repeat([""], DataFrames.nrow(markers))
             markers[!, :id] == repeat(["mrk"], DataFrames.nrow(markers))
         end
-    elseif isfile(replace(splitext(file_name)[1], "eeg"=>"events.tsv"))
+    elseif isfile(replace(splitext(file_name)[1], "eeg" => "events.tsv"))
         vmrk = CSV.read(
-            replace(splitext(file_name)[1], "eeg"=>"events.tsv");
+            replace(splitext(file_name)[1], "eeg" => "events.tsv");
             stringtype = String,
             DataFrame,
         )
         markers = DataFrame(
-            :id=>repeat(["mrk"], DataFrames.nrow(vmrk)),
-            :start=>(vmrk[!, :sample] ./ sampling_rate),
-            :length=>round.(vmrk[!, :duration] ./ sampling_rate),
-            :value=>(vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value])),
-            :channel=>m_ch,
+            :id => repeat(["mrk"], DataFrames.nrow(vmrk)),
+            :start => (vmrk[!, :sample] ./ sampling_rate),
+            :length => round.(vmrk[!, :duration] ./ sampling_rate),
+            :value => (vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value])),
+            :channel => m_ch,
         )
     else
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
     end
 
@@ -446,7 +446,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         file_type = file_type,
         recording = string(recording),
         recording_date = recording_date,
-        recording_time = replace(recording_time, '.'=>':'),
+        recording_time = replace(recording_time, '.' => ':'),
         recording_notes = r_notes,
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
@@ -471,8 +471,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

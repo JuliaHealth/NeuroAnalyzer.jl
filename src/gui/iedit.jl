@@ -217,7 +217,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         entry_ax_rot_degree.tooltip_text = "Rotation angle in degrees\nPositive angle rotates anti-clockwise for X andZ axes and clockwise for Y axis"
         entry_ax_rot_degree.value = 0
         bt_scale = GtkButton("Scale")
-        entry_scale = GtkSpinButton(0.1, 10.00, 0.1)
+        entry_scale = GtkSpinButton(0.1, 10.0, 0.1)
         entry_scale.tooltip_text = "Scaling factor"
         entry_scale.value = 1.0
         bt_origin_transform = GtkButton("Move origin")
@@ -791,7 +791,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         win_key = Gtk4.GtkEventControllerKey(win)
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             # CONTROL
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)

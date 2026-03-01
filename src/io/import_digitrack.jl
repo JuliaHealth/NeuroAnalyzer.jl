@@ -15,8 +15,8 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
   - `obj::NeuroAnalyzer.NEURO`
 """
 function import_digitrack(
-    file_name::String; detect_type::Bool = true
-)::NeuroAnalyzer.NEURO
+        file_name::String; detect_type::Bool = true
+    )::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -85,11 +85,11 @@ function import_digitrack(
     end
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     time_pts = round.(
@@ -122,7 +122,7 @@ function import_digitrack(
         file_type = file_type,
         recording = string(recording),
         recording_date = string(recording_date),
-        recording_time = replace(string(recording_time), '.'=>':'),
+        recording_time = replace(string(recording_time), '.' => ':'),
         recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
@@ -148,8 +148,8 @@ function import_digitrack(
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

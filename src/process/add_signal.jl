@@ -39,8 +39,8 @@ Add signal.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function add_signal(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     ch_n = length(ch)

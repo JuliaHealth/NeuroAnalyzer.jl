@@ -28,10 +28,10 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     file_type = "CSC"
 
     header = split(_vint2str(_fread(fid, 16 * 1024, :c)), "\r\n")
-    header = replace.(header, "\t-"=>"")
-    header = replace.(header, "-"=>"")
-    header = replace.(header, "\t"=>" ")
-    header = replace.(header, "  "=>" ")
+    header = replace.(header, "\t-" => "")
+    header = replace.(header, "-" => "")
+    header = replace.(header, "\t" => " ")
+    header = replace.(header, "  " => " ")
     for idx in eachindex(header)
         header[idx][end] == ' ' && (header[idx] = header[idx][1:(end - 1)])
     end
@@ -102,11 +102,11 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     time_pts = round.(
@@ -165,8 +165,8 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

@@ -34,8 +34,8 @@ Named tuple containing:
   - `n2::Int64`: group 2 sample size
 """
 function size_c2g(;
-    m1::Real, s1::Real, m2::Real, r::Int64 = 1, alpha::Float64 = 0.05, power::Float64 = 0.8
-)::@NamedTuple{n1::Int64, n2::Int64}
+        m1::Real, s1::Real, m2::Real, r::Int64 = 1, alpha::Float64 = 0.05, power::Float64 = 0.8
+    )::@NamedTuple{n1::Int64, n2::Int64}
 
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -69,8 +69,8 @@ Calculate required sample size for a continuous variable (group 1 vs population)
   - `n::Int64`: group sample size
 """
 function size_c1g(;
-    m::Real, s::Real, xbar::Real, alpha::Float64 = 0.05, power::Float64 = 0.8, iter::Bool = false
-)::Int64
+        m::Real, s::Real, xbar::Real, alpha::Float64 = 0.05, power::Float64 = 0.8, iter::Bool = false
+    )::Int64
 
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -109,8 +109,8 @@ Named tuple containing:
   - `n2::Int64`: group 2 sample size
 """
 function size_p2g(;
-    p1::Float64, p2::Float64, r::Int64 = 1, alpha::Float64 = 0.05, power::Float64 = 0.8
-)::@NamedTuple{n1::Int64, n2::Int64}
+        p1::Float64, p2::Float64, r::Int64 = 1, alpha::Float64 = 0.05, power::Float64 = 0.8
+    )::@NamedTuple{n1::Int64, n2::Int64}
 
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -125,7 +125,7 @@ function size_p2g(;
     n1 = ceil(
         Int64,
         ((cl2z(1 - alpha) * sqrt(p_dash * q_dash * (1 + 1 / r)) + cl2z(1 - beta) * sqrt(p1 * q1 + ((p2 * q2) / r))))^2 /
-        delta^2,
+            delta^2,
     )
     n2 = n1 * r
 
@@ -150,8 +150,8 @@ Calculate required sample size for a proportion (group 1 vs population).
   - `n::Int64`: group 1 sample size
 """
 function size_p1g(;
-    p1::Float64, p2::Float64, alpha::Float64 = 0.05, power::Float64 = 0.8
-)::Int64
+        p1::Float64, p2::Float64, alpha::Float64 = 0.05, power::Float64 = 0.8
+    )::Int64
 
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -186,8 +186,8 @@ Calculate study power for a continuous variable (group 1 vs group 2).
   - `p::Float64`: study power
 """
 function power_c2g(;
-    m1::Real, s1::Real, n1::Int64, m2::Real, s2::Real, n2::Int64, alpha::Float64 = 0.05
-)::Float64
+        m1::Real, s1::Real, n1::Int64, m2::Real, s2::Real, n2::Int64, alpha::Float64 = 0.05
+    )::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 
@@ -217,8 +217,8 @@ Calculate study power for a continuous variable (group 1 vs population).
   - `p::Float64`: study power
 """
 function power_c1g(;
-    m::Real, s::Real, xbar::Real, n::Int64, alpha::Float64 = 0.05
-)::Float64
+        m::Real, s::Real, xbar::Real, n::Int64, alpha::Float64 = 0.05
+    )::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 
@@ -255,8 +255,8 @@ Calculate study power for two proportions.
   - `p::Float64`: study power
 """
 function power_p2g(;
-    p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Float64 = 0.05
-)::Float64
+        p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Float64 = 0.05
+    )::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 
@@ -294,14 +294,14 @@ Calculate study power for one proportion.
   - `p::Float64`: study power
 """
 function power_p1g(;
-    p1::Float64, p2::Float64, n1::Int64, alpha::Float64 = 0.05
-)::Float64
+        p1::Float64, p2::Float64, n1::Int64, alpha::Float64 = 0.05
+    )::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 
     q0 = 1 - p2
     q1 = 1 - p1
-    z = (sqrt(n1 * ((p1 - p2)^2 / (p2 * q0))) - cl2z(1 - alpha)) / (sqrt((p1 * q1)/(p2 * q0)))
+    z = (sqrt(n1 * ((p1 - p2)^2 / (p2 * q0))) - cl2z(1 - alpha)) / (sqrt((p1 * q1) / (p2 * q0)))
     p = z2p(abs(z))
 
     return p

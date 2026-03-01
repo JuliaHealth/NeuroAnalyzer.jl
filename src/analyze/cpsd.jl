@@ -29,17 +29,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function cpsd(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{pxy::Vector{ComplexF64}, f::Vector{Float64}}
+        s1::AbstractVector,
+        s2::AbstractVector;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{pxy::Vector{ComplexF64}, f::Vector{Float64}}
 
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
@@ -140,17 +140,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function cpsd(
-    s1::AbstractArray,
-    s2::AbstractArray;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
+        s1::AbstractArray,
+        s2::AbstractArray;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -232,20 +232,20 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function cpsd(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    method::Symbol = :mt,
-    flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj1),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        method::Symbol = :mt,
+        flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj1),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")

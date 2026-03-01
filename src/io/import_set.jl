@@ -85,7 +85,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     else
         if length(dataset["chanlocs"]) > 0 &&
-            string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
+                string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
             ch_type = repeat(["eeg"], ch_n)
             units = repeat(["μV"], ch_n)
         else
@@ -127,7 +127,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         note[idx] == "" && deleteat!(note, idx)
     end
     note = string(note)
-    note = replace(note, '"'=>"")
+    note = replace(note, '"' => "")
 
     history = split(dataset["history"], "\n")
     # remove first two entries, 1st is empty, second is EEGLAB version
@@ -168,21 +168,21 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         end
         radius_sph == zeros(ch_n) && (radius_sph = radius)
         locs = DataFrame(
-            :label=>clabels,
-            :loc_theta=>theta,
-            :loc_radius=>radius,
-            :loc_x=>x,
-            :loc_y=>y,
-            :loc_z=>z,
-            :loc_radius_sph=>radius_sph,
-            :loc_theta_sph=>theta_sph,
-            :loc_phi_sph=>phi_sph,
+            :label => clabels,
+            :loc_theta => theta,
+            :loc_radius => radius,
+            :loc_x => x,
+            :loc_y => y,
+            :loc_z => z,
+            :loc_radius_sph => radius_sph,
+            :loc_theta_sph => theta_sph,
+            :loc_phi_sph => phi_sph,
         )
         for idx in DataFrames.nrow(locs):-1:1
             (
                 chanlocs["X"][:][idx] isa Float64 &&
-                chanlocs["Y"][:][idx] isa Float64 &&
-                chanlocs["Z"][:][idx] isa Float64
+                    chanlocs["Y"][:][idx] isa Float64 &&
+                    chanlocs["Z"][:][idx] isa Float64
             ) || deleteat!(locs, idx)
         end
         DataFrames.nrow(locs) > 0 && _info(
@@ -198,11 +198,11 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     # MARKERS
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     if "event" in keys(dataset)
@@ -217,11 +217,11 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             desc = String.(events["type"][:])
             id = repeat(["stim"], length(start))
             markers = DataFrame(
-                :id=>id,
-                :start=>start,
-                :length=>len,
-                :value=>desc,
-                :channel=>zeros(Int64, length(start)),
+                :id => id,
+                :start => start,
+                :length => len,
+                :value => desc,
+                :channel => zeros(Int64, length(start)),
             )
         end
     end
@@ -308,8 +308,8 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

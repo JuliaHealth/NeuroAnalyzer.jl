@@ -39,24 +39,24 @@ Plot single-channel spectrogram.
   - `p::GLMakie.Figure`
 """
 function plot_spectrogram(
-    st::Vector{Float64},
-    sf::Vector{<:Real},
-    sp::Matrix{Float64};
-    db::Bool = true,
-    frq::Symbol = :lin,
-    flim::Tuple{Real, Real} = (sf[1], sf[end]),
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    mono::Bool = false,
-    units::String = "",
-    smooth::Bool = false,
-    n::Int64 = 3,
-    cb::Bool = true,
-    cb_title::String = "",
-    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-    threshold_type::Symbol = :neq,
-)::GLMakie.Figure
+        st::Vector{Float64},
+        sf::Vector{<:Real},
+        sp::Matrix{Float64};
+        db::Bool = true,
+        frq::Symbol = :lin,
+        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        mono::Bool = false,
+        units::String = "",
+        smooth::Bool = false,
+        n::Int64 = 3,
+        cb::Bool = true,
+        cb_title::String = "",
+        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+        threshold_type::Symbol = :neq,
+    )::GLMakie.Figure
 
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
@@ -89,28 +89,28 @@ function plot_spectrogram(
     plot_size = (1200, 800)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-                    p[1, 1];
-                    xlabel = xlabel,
-                    ylabel = ylabel,
-                    title = title,
-                    xticks = LinearTicks(10),
-                    xminorticksvisible = true,
-                    xminorticks = IntervalsBetween(10),
-                    yticks = LinearTicks(15),
-                    yminorticksvisible = true,
-                    yminorticks = IntervalsBetween(10),
-                    yscale = frq===:lin ? identity : log,
-                    xgridvisible = false,
-                    ygridvisible = false,
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0, 0),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                )
+        p[1, 1];
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title = title,
+        xticks = LinearTicks(10),
+        xminorticksvisible = true,
+        xminorticks = IntervalsBetween(10),
+        yticks = LinearTicks(15),
+        yminorticksvisible = true,
+        yminorticks = IntervalsBetween(10),
+        yscale = frq === :lin ? identity : log,
+        xgridvisible = false,
+        ygridvisible = false,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+    )
     GLMakie.xlims!(ax, (st[1], st[end]))
     GLMakie.ylims!(ax, flim)
     ax.titlesize = 18
@@ -173,24 +173,24 @@ Plot multiple-channel spectrogram.
   - `p::GLMakie.Figure`
 """
 function plot_spectrogram(
-    sf::Vector{<:Real},
-    sp::Matrix{Float64};
-    clabels::Vector{String} = string.(1:size(sp, 1)),
-    db::Bool = true,
-    frq::Symbol = :lin,
-    flim::Tuple{Real, Real} = (sf[1], sf[end]),
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    mono::Bool = false,
-    units::String = "",
-    smooth::Bool = false,
-    n::Int64 = 3,
-    cb::Bool = true,
-    cb_title::String = "",
-    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-    threshold_type::Symbol = :neq,
-)::GLMakie.Figure
+        sf::Vector{<:Real},
+        sp::Matrix{Float64};
+        clabels::Vector{String} = string.(1:size(sp, 1)),
+        db::Bool = true,
+        frq::Symbol = :lin,
+        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        mono::Bool = false,
+        units::String = "",
+        smooth::Bool = false,
+        n::Int64 = 3,
+        cb::Bool = true,
+        cb_title::String = "",
+        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+        threshold_type::Symbol = :neq,
+    )::GLMakie.Figure
 
     @assert size(sp, 1) == length(clabels) "Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."
@@ -222,25 +222,25 @@ function plot_spectrogram(
     plot_size = (1200, 800)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-                    p[1, 1];
-                    xlabel = xlabel,
-                    ylabel = ylabel,
-                    title = title,
-                    xticks = LinearTicks(15),
-                    xminorticksvisible = true,
-                    xminorticks = IntervalsBetween(10),
-                    yticks = (0.5:1:ch_n, reverse(clabels)),
-                    yticksvisible = false,
-                    xscale = frq===:lin ? identity : log,
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0, 0),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                )
+        p[1, 1];
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title = title,
+        xticks = LinearTicks(15),
+        xminorticksvisible = true,
+        xminorticks = IntervalsBetween(10),
+        yticks = (0.5:1:ch_n, reverse(clabels)),
+        yticksvisible = false,
+        xscale = frq === :lin ? identity : log,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+    )
     GLMakie.xlims!(ax, flim)
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -299,25 +299,25 @@ Plot topographical map of spectrograms.
   - `p::GLMakie.Figure`
 """
 function plot_spectrogram_topo(
-    locs::DataFrame,
-    st::Vector{Float64},
-    sf::Vector{Float64},
-    sp::Array{Float64, 3};
-    db::Bool = true,
-    flim::Tuple{Real, Real} = (sf[1], sf[end]),
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    units::String = "",
-    cb::Bool = true,
-    cb_title::String = "",
-    smooth::Bool = false,
-    n::Int64 = 3,
-    mono::Bool = true,
-    frq::Symbol = :lin,
-    cart::Bool = false,
-    head::Bool = true,
-)::GLMakie.Figure
+        locs::DataFrame,
+        st::Vector{Float64},
+        sf::Vector{Float64},
+        sp::Array{Float64, 3};
+        db::Bool = true,
+        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        units::String = "",
+        cb::Bool = true,
+        cb_title::String = "",
+        smooth::Bool = false,
+        n::Int64 = 3,
+        mono::Bool = true,
+        frq::Symbol = :lin,
+        cart::Bool = false,
+        head::Bool = true,
+    )::GLMakie.Figure
 
     @assert size(sp, 3) == DataFrames.nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
@@ -411,24 +411,24 @@ function plot_spectrogram_topo(
     # prepare plot
     GLMakie.activate!(title = "plot_spectrogram()")
     p = GLMakie.Figure(
-                    size = plot_size,
-                    figure_padding = 0,
-                )
+        size = plot_size,
+        figure_padding = 0,
+    )
     ax = GLMakie.Axis(
-                    p[1, 1];
-                    xlabel = "",
-                    ylabel = "",
-                    title = title,
-                    aspect = 1,
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0, 0),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                )
+        p[1, 1];
+        xlabel = "",
+        ylabel = "",
+        title = title,
+        aspect = 1,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+    )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
@@ -437,8 +437,8 @@ function plot_spectrogram_topo(
 
     if head
         # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.98, 1.08], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.98, 1.08], linewidth = 3, color = :black)
 
         # ears
         # left
@@ -446,8 +446,8 @@ function plot_spectrogram_topo(
         GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.12, -1.1], [0.05, -0.1], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.1, -1.13], [-0.1, -0.3], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth = 3, color = :black)
@@ -457,8 +457,8 @@ function plot_spectrogram_topo(
         GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.12, 1.1], [0.05, -0.1], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.1, 1.13], [-0.1, -0.3], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth = 3, color = :black)
@@ -488,9 +488,9 @@ function plot_spectrogram_topo(
                 ax_y = mouseposition(ax)[2]
                 for idx in eachindex(loc_x)
                     if ax_x >= loc_x_range[idx][1] &&
-                        ax_x <= loc_x_range[idx][2] &&
-                        ax_y >= loc_y_range[idx][1] &&
-                        ax_y <= loc_y_range[idx][2]
+                            ax_x <= loc_x_range[idx][2] &&
+                            ax_y >= loc_y_range[idx][1] &&
+                            ax_y <= loc_y_range[idx][2]
                         display(GLMakie.Screen(), pp_full_vec[idx])
                         break
                     end
@@ -560,35 +560,35 @@ Plots spectrogram.
   - `p::GLMakie.Figure`
 """
 function plot_spectrogram(
-    obj::NeuroAnalyzer.NEURO;
-    seg::Tuple{Real, Real} = (0, 10),
-    ep::Int64 = 0,
-    ch::Union{String, Vector{String}, Regex} = datatype(obj),
-    db::Bool = true,
-    method::Symbol = :stft,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    gw::Real = 10,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    frq::Symbol = :lin,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    xlabel::String = "default",
-    ylabel::String = "default",
-    title::String = "default",
-    mono::Bool = false,
-    markers::Bool = true,
-    smooth::Bool = false,
-    n::Int64 = 3,
-    cb::Bool = true,
-    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-    threshold_type::Symbol = :neq,
-    type::Symbol = :normal,
-    cart::Bool = false,
-    head::Bool = true,
-)::GLMakie.Figure where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        seg::Tuple{Real, Real} = (0, 10),
+        ep::Int64 = 0,
+        ch::Union{String, Vector{String}, Regex} = datatype(obj),
+        db::Bool = true,
+        method::Symbol = :stft,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        gw::Real = 10,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        frq::Symbol = :lin,
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        xlabel::String = "default",
+        ylabel::String = "default",
+        title::String = "default",
+        mono::Bool = false,
+        markers::Bool = true,
+        smooth::Bool = false,
+        n::Int64 = 3,
+        cb::Bool = true,
+        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+        threshold_type::Symbol = :neq,
+        type::Symbol = :normal,
+        cart::Bool = false,
+        head::Bool = true,
+    )::GLMakie.Figure where {T <: CWT}
 
     _check_var(type, [:normal, :topo], "type")
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
@@ -851,7 +851,7 @@ function plot_spectrogram(
                         text = "$(markers_id[idx]) / $(markers_desc[idx])",
                         text_align = (:left, :center),
                         fontsize = 8,
-                        text_rotation = pi/2,
+                        text_rotation = pi / 2,
                     )
                 else
                     GLMakie.textlabel!(
@@ -860,7 +860,7 @@ function plot_spectrogram(
                         text = "$(markers_id[idx]) / $(markers_desc[idx])",
                         text_align = (:left, :center),
                         fontsize = 8,
-                        text_rotation = pi/2,
+                        text_rotation = pi / 2,
                     )
                 end
             end

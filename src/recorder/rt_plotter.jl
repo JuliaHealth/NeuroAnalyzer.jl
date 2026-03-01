@@ -33,7 +33,7 @@ function rt_plotter(; fs::Int64, l::Int64 = 5, duration::Int64 = 20)::Plots.Plot
             t_refresh = time()
         end
         while true
-            if time() >= (t_refresh + 1/fs)
+            if time() >= (t_refresh + 1 / fs)
                 y[t_idx] = rand(-1:0.1:1, 1)[1]
                 t_idx += 1
                 if t_idx > length(y)
@@ -41,7 +41,7 @@ function rt_plotter(; fs::Int64, l::Int64 = 5, duration::Int64 = 20)::Plots.Plot
                     seg_idx += 1
                 end
             end
-            if time() >= (t_refresh + 1/fs)
+            if time() >= (t_refresh + 1 / fs)
                 t = (l * seg_idx):(1 / fs):(l * (seg_idx + 1))
                 p = Plots.plot(
                     t,
@@ -65,4 +65,5 @@ function rt_plotter(; fs::Int64, l::Int64 = 5, duration::Int64 = 20)::Plots.Plot
         end
     end
 
+    return
 end

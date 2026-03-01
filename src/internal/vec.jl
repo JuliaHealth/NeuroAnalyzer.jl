@@ -10,7 +10,7 @@ end
 
 _zeros(s::AbstractVector)::Int64 = count(abs.(diff(sign.(s))) .!= 0)
 
-function _split(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.90))::Vector{Vector{Float64}}
+function _split(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.9))::Vector{Vector{Float64}}
     # get all segments available, the last one may be shorter
     s_new = Vector{Vector{Float64}}()
     n = length(s)
@@ -23,7 +23,7 @@ function _split(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, w
     return s_new
 end
 
-function _fsplit(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.90))::Vector{Vector{Float64}}
+function _fsplit(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.9))::Vector{Vector{Float64}}
     # get only complete segments
     s_new = Vector{Vector{Float64}}()
     n = length(s)
@@ -35,7 +35,7 @@ function _fsplit(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, 
     return s_new
 end
 
-function _chunks(n::Int64; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.90))::Matrix{Int64}
+function _chunks(n::Int64; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.9))::Matrix{Int64}
     # get all chunks available, the last one may be shorter
     chunks_idx = Matrix{Int64}(undef, 0, 2)
     idx = 1
@@ -47,7 +47,7 @@ function _chunks(n::Int64; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.
     return chunks_idx
 end
 
-function _chunks(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.90))::Matrix{Int64}
+function _chunks(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.9))::Matrix{Int64}
     # get all chunks available, the last one may be shorter
     chunks_idx = Matrix{Int64}(undef, 0, 2)
     n = length(s)
@@ -60,7 +60,7 @@ function _chunks(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, 
     return chunks_idx
 end
 
-function _fchunks(n::Int64; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.90))::Matrix{Int64}
+function _fchunks(n::Int64; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.9))::Matrix{Int64}
     # get only full chunks
     chunks_idx = Matrix{Int64}(undef, 0, 2)
     idx = 1
@@ -71,7 +71,7 @@ function _fchunks(n::Int64; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0
     return chunks_idx
 end
 
-function _fchunks(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.90))::Matrix{Int64}
+function _fchunks(s::AbstractVector; wlen::Int64, woverlap::Int64 = round(Int64, wlen * 0.9))::Matrix{Int64}
     # get only full chunks
     chunks_idx = Matrix{Int64}(undef, 0, 2)
     n = length(s)

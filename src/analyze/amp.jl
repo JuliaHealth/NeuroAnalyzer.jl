@@ -23,16 +23,16 @@ Named tuple containing:
   - `rmsq::Float64`: root mean square
 """
 function amp(
-    s::AbstractVector
-)::@NamedTuple{
-    p::Float64, r::Float64, p2p::Float64, semi_p2p::Float64, msa::Float64, rmsa::Float64, es::Float64, rmsq::Float64
-}
+        s::AbstractVector
+    )::@NamedTuple{
+        p::Float64, r::Float64, p2p::Float64, semi_p2p::Float64, msa::Float64, rmsa::Float64, es::Float64, rmsq::Float64,
+    }
 
     p = maximum(abs.(s))
     r = p / sqrt(2)
     p2p = abs(maximum(s)) + abs(minimum(s))
     semi_p2p = p2p / 2
-    msa = 1/length(s) * sum(s .^ 2)
+    msa = 1 / length(s) * sum(s .^ 2)
     rmsa = p2p / sqrt(2)
     es = sum(s .^ 2)
     rmsq = rms(s)
@@ -64,17 +64,17 @@ Named tuple containing:
   - `rmsq::Matrix{Float64}`: root mean square
 """
 function amp(
-    s::AbstractArray
-)::@NamedTuple{
-    p::Matrix{Float64},
-    r::Matrix{Float64},
-    p2p::Matrix{Float64},
-    semi_p2p::Matrix{Float64},
-    msa::Matrix{Float64},
-    rmsa::Matrix{Float64},
-    energy::Matrix{Float64},
-    rmsq::Matrix{Float64},
-}
+        s::AbstractArray
+    )::@NamedTuple{
+        p::Matrix{Float64},
+        r::Matrix{Float64},
+        p2p::Matrix{Float64},
+        semi_p2p::Matrix{Float64},
+        msa::Matrix{Float64},
+        rmsa::Matrix{Float64},
+        energy::Matrix{Float64},
+        rmsq::Matrix{Float64},
+    }
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -125,17 +125,17 @@ Named tuple containing:
   - `rmsq::Matrix{Float64}`: root mean square
 """
 function amp(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{
-    p::Matrix{Float64},
-    r::Matrix{Float64},
-    p2p::Matrix{Float64},
-    semi_p2p::Matrix{Float64},
-    msa::Matrix{Float64},
-    rmsa::Matrix{Float64},
-    energy::Matrix{Float64},
-    rmsq::Matrix{Float64},
-}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+    )::@NamedTuple{
+        p::Matrix{Float64},
+        r::Matrix{Float64},
+        p2p::Matrix{Float64},
+        semi_p2p::Matrix{Float64},
+        msa::Matrix{Float64},
+        rmsa::Matrix{Float64},
+        energy::Matrix{Float64},
+        rmsq::Matrix{Float64},
+    }
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 

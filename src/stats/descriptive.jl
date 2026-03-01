@@ -213,7 +213,7 @@ function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
     n = length(x)
     m = zeros(3, length(unique(x)) + 1)
     for idx in 1:length(unique(x))
-        m[1, idx] = count(z -> z==unique(x)[idx], x)
+        m[1, idx] = count(z -> z == unique(x)[idx], x)
         m[2, idx] = round(m[1, idx] / n, digits = 3)
         m[3, idx] = round(m[2, idx] * 100, digits = 2)
     end

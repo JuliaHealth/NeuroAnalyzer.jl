@@ -16,8 +16,8 @@ Delete optodes) and channels associated with removed optodes.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_optode(
-    obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
+    )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "nirs")
 
@@ -98,8 +98,8 @@ Delete optopode(s).
   - `Nothing`
 """
 function delete_optode!(
-    obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
+    )::Nothing
 
     obj_new = delete_optode(obj, opt = opt)
     obj.header = obj_new.header

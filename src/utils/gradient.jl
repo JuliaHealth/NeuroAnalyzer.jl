@@ -18,8 +18,8 @@ Named tuple containing:
   - `g_len::Vector{Float64}`: scalar field of gradient lengths
 """
 function gradient(
-    x::AbstractVector; rev::Bool = false
-)::@NamedTuple{g::Vector{Vector{Float64}}, g_len::Vector{Float64}}
+        x::AbstractVector; rev::Bool = false
+    )::@NamedTuple{g::Vector{Vector{Float64}}, g_len::Vector{Float64}}
 
     g_tmp, g_len = _gradient(x; rev = rev)
 
@@ -50,8 +50,8 @@ Named tuple containing:
   - `g_len::Matrix{Float64}`: scalar field of gradient lengths
 """
 function gradient(
-    x::AbstractMatrix; rev::Bool = false
-)::@NamedTuple{g::Matrix{Vector{Float64}}, g_len::Matrix{Float64}}
+        x::AbstractMatrix; rev::Bool = false
+    )::@NamedTuple{g::Matrix{Vector{Float64}}, g_len::Matrix{Float64}}
 
     g_tmp, g_len = _gradient(x; rev = rev)
 
@@ -82,8 +82,8 @@ Named tuple containing:
   - `g_len::Array{Float64, 3}`: scalar field of gradient lengths
 """
 function gradient(
-    x::AbstractArray; rev::Bool = false
-)::@NamedTuple{g::Array{Vector{Float64}, 3}, g_len::Array{Float64, 3}}
+        x::AbstractArray; rev::Bool = false
+    )::@NamedTuple{g::Array{Vector{Float64}, 3}, g_len::Array{Float64, 3}}
 
     g_tmp, g_len = _gradient(x; rev = rev)
 

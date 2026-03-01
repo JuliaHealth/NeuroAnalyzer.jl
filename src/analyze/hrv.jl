@@ -24,7 +24,7 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float6
     _info("ECG channel found: $(ch[1])")
     ch = get_channel(obj, ch = ch)
     ecg = obj.data[ch, :, :][:]
-    r_idx, _ = findpeaks1d(ecg, height = mean(ecg) + 2*std(ecg))
+    r_idx, _ = findpeaks1d(ecg, height = mean(ecg) + 2 * std(ecg))
 
     # convert to ms
     nn_seg = diff(r_idx) ./ sr(obj) * 1000
@@ -60,19 +60,19 @@ Named tuple containing:
   - `pnn20::Float64`, the proportion of NN20 divided by total number of NNs
 """
 function hrv_analyze(
-    nn_seg::Vector{Float64}
-)::@NamedTuple{
-    menn::Float64,
-    mdnn::Float64,
-    vnn::Float64,
-    sdnn::Float64,
-    rmssd::Float64,
-    sdsd::Float64,
-    nn50::Float64,
-    pnn50::Float64,
-    nn20::Float64,
-    pnn20::Float64,
-}
+        nn_seg::Vector{Float64}
+    )::@NamedTuple{
+        menn::Float64,
+        mdnn::Float64,
+        vnn::Float64,
+        sdnn::Float64,
+        rmssd::Float64,
+        sdsd::Float64,
+        nn50::Float64,
+        pnn50::Float64,
+        nn20::Float64,
+        pnn20::Float64,
+    }
 
     nn_diff = diff(nn_seg)
 

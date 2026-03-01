@@ -29,9 +29,9 @@ function _chk4d(a::AbstractArray)::Nothing
 end
 
 function _check_tuple(
-    t::Tuple{Real, Real},
-    name::Union{Nothing, String} = nothing,
-)::Nothing
+        t::Tuple{Real, Real},
+        name::Union{Nothing, String} = nothing,
+    )::Nothing
     isnothing(name) && (name = "Tuple")
     @assert t == sort(Float64.(t)) "$name must contain two values in ascending order."
     @assert t[1] < t[2] "$name must contain two different values in ascending order."
@@ -39,11 +39,11 @@ function _check_tuple(
 end
 
 function _check_tuple(
-    t::Tuple{Real, Real},
-    r::Union{Nothing, Tuple{Real, Real}}=nothing,
-    name::Union{Nothing, String} = nothing,
-    type::Symbol=:in
-)::Nothing
+        t::Tuple{Real, Real},
+        r::Union{Nothing, Tuple{Real, Real}} = nothing,
+        name::Union{Nothing, String} = nothing,
+        type::Symbol = :in
+    )::Nothing
     _check_var(type, [:in, :bin], "type")
     isnothing(name) && (name = "Tuple")
     @assert t == sort(Float64.(t)) "$name must contain two values in ascending order."
@@ -157,15 +157,15 @@ function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{String, Vector{St
     if type isa String
         @assert datatype(obj) == type "This function works only for $(uppercase(string(type))) objects."
     else
-        @assert obj.header.recording[:data_type] in type "This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects."
+        @assert obj.header.recording[:data_type] in type "This function works only for $(replace(uppercase(string(type)), "[" => "", "]" => "", ":" => "")) objects."
     end
     return nothing
 end
 
 function _check_svec(s::String)::Bool
-    s = replace(s, " "=>"")
-    s = replace(s, "["=>"", count = 1)
-    s = replace(s, "]"=>"", count = 1)
+    s = replace(s, " " => "")
+    s = replace(s, "[" => "", count = 1)
+    s = replace(s, "]" => "", count = 1)
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [","]) || return false
     end
@@ -177,16 +177,16 @@ function _check_svec(s::String)::Bool
 end
 
 function _check_srange(s::String)::Bool
-    s = replace(s, " "=>"")
+    s = replace(s, " " => "")
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [":"]) || return false
     end
     if occursin(":", s) &&
-        length(split(s, ":")) == 2 &&
-        length(s) > 0 &&
-        length(split(s, ":")[1]) > 0 &&
-        length(split(s, ":")[end]) > 0 &&
-        parse(Int64, split(s, ":")[1]) < parse(Int64, split(s, ":")[end])
+            length(split(s, ":")) == 2 &&
+            length(s) > 0 &&
+            length(split(s, ":")[1]) > 0 &&
+            length(split(s, ":")[end]) > 0 &&
+            parse(Int64, split(s, ":")[1]) < parse(Int64, split(s, ":")[end])
         return true
     else
         return false
@@ -194,7 +194,7 @@ function _check_srange(s::String)::Bool
 end
 
 function _check_stuplei(s::String)::Bool
-    s = replace(s, " "=>"")
+    s = replace(s, " " => "")
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [","], ["("], [")"]) || return false
     end
@@ -206,7 +206,7 @@ function _check_stuplei(s::String)::Bool
 end
 
 function _check_stuplef(s::String)::Bool
-    s = replace(s, " "=>"")
+    s = replace(s, " " => "")
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), ["."], [","], ["("], [")"]) || return false
     end

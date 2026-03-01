@@ -33,7 +33,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     file_type = "NIRX"
 
     # parse header
-    hdr = replace.(hdr, "=\""=>"=", "\""=>"")
+    hdr = replace.(hdr, "=\"" => "=", "\"" => "")
     recording_date = ""
     recording_time = ""
     device = ""
@@ -124,7 +124,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     study_type3 = ""
     if isfile(splitext(file_name)[1] * ".inf")
         inf = readlines(splitext(file_name)[1] * ".inf")
-        inf = replace.(inf, "=\""=>"=", "\""=>"")
+        inf = replace.(inf, "=\"" => "=", "\"" => "")
         subject = split(inf[findfirst(startswith.(lowercase.(inf), "name="))], "=")[2]
         subject = split(subject, "\\0")
         age = parse(
@@ -157,14 +157,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     # parse opt_pairs
     pairs = hdr[findfirst(startswith.(lowercase.(hdr), "s-d-key="))]
-    pairs = split(replace(lowercase.(pairs), "s-d-key="=>""), ",")[1:(end - 1)]
+    pairs = split(replace(lowercase.(pairs), "s-d-key=" => ""), ",")[1:(end - 1)]
     ch_n = length(pairs)
     opt_pairs = zeros(Int64, ch_n, 2)
     [
         opt_pairs[idx, :] = [
-            parse(Int64, split(pairs[idx], "-")[1]),
-            parse(Int64, split(split(pairs[idx], "-")[2], ":")[1]),
-        ] for idx in 1:ch_n
+                parse(Int64, split(pairs[idx], "-")[1]),
+                parse(Int64, split(split(pairs[idx], "-")[2], ":")[1]),
+            ] for idx in 1:ch_n
     ]
     ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
     masks = hdr[(ch_mask_start + 1):(ch_mask_start + sources)]
@@ -187,7 +187,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     chd = hdr[findfirst(startswith.(lowercase.(hdr), "chandis="))]
-    chd = replace(lowercase.(chd), "chandis="=>"")
+    chd = replace(lowercase.(chd), "chandis=" => "")
     chd = split.(chd, '\t')
     channel_distance = zeros(length(chd))
     [channel_distance[idx] = parse(Float64, chd[idx]) for idx in eachindex(chd)]
@@ -258,25 +258,25 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         stim_id = String[]
         [
             push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for
-            idx in axes(events, 1)
+                idx in axes(events, 1)
         ]
     end
 
     markers = if isnothing(stim_onset)
         DataFrame(
-            :id=>nothing,
-            :start=>nothing,
-            :length=>nothing,
-            :value=>nothing,
-            :channel=>nothing,
+            :id => nothing,
+            :start => nothing,
+            :length => nothing,
+            :value => nothing,
+            :channel => nothing,
         )
     else
         DataFrame(
-            :id=>stim_id,
-            :start=>stim_onset,
-            :length=>repeat([1], length(stim_id)),
-            :value=>repeat(["stim"], length(stim_id)),
-            :channel=>zeros(Int64, length(stim_id)),
+            :id => stim_id,
+            :start => stim_onset,
+            :length => repeat([1], length(stim_id)),
+            :value => repeat(["stim"], length(stim_id)),
+            :channel => zeros(Int64, length(stim_id)),
         )
     end
 
@@ -301,13 +301,13 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     clabels = repeat([""], ch_n)
     [
         clabels[idx] =
-        src_labels[opt_pairs[idx, :][1]] *
-        "_" *
-        det_labels[opt_pairs[idx, :][2]] *
-        " " *
-        string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
+            src_labels[opt_pairs[idx, :][1]] *
+            "_" *
+            det_labels[opt_pairs[idx, :][2]] *
+            " " *
+            string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
     ]
-    clabels = replace.(clabels, ".0"=>"")
+    clabels = replace.(clabels, ".0" => "")
 
     # probes["probeInfo"]["probes"]["coords_c2"]
     # probes["probeInfo"]["probes"]["coords_c3"]
@@ -361,15 +361,15 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
     locs = DataFrame(
-        :label=>opt_labels,
-        :loc_radius=>radius,
-        :loc_theta=>theta,
-        :loc_x=>x,
-        :loc_y=>y,
-        :loc_z=>z,
-        :loc_radius_sph=>radius_sph,
-        :loc_theta_sph=>theta_sph,
-        :loc_phi_sph=>phi_sph,
+        :label => opt_labels,
+        :loc_radius => radius,
+        :loc_theta => theta,
+        :loc_x => x,
+        :loc_y => y,
+        :loc_z => z,
+        :loc_radius_sph => radius_sph,
+        :loc_theta_sph => theta_sph,
+        :loc_phi_sph => phi_sph,
     )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -393,7 +393,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         file_type = file_type,
         recording = string(device[1]),
         recording_date = string(recording_date[1]),
-        recording_time = replace(string(recording_time[1]), '.'=>':'),
+        recording_time = replace(string(recording_time[1]), '.' => ':'),
         recording_notes = "NIRStar: $nirstar",
         wavelengths = wavelengths,
         wavelength_index = wavelength_index,
@@ -422,8 +422,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

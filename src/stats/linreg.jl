@@ -29,21 +29,21 @@ Named tuple containing:
   - `lf::Vector{Float64}`: linear fit (plot(x, lf))
 """
 function linreg(
-    x::AbstractVector, y::AbstractVector
-)::@NamedTuple{
-    lr::StatsModels.TableRegressionModel,
-    c::Vector{Float64},
-    se::Vector{Float64},
-    R2::Float64,
-    R2adj::Float64,
-    aic::Float64,
-    bic::Float64,
-    lf::Vector{Float64},
-}
+        x::AbstractVector, y::AbstractVector
+    )::@NamedTuple{
+        lr::StatsModels.TableRegressionModel,
+        c::Vector{Float64},
+        se::Vector{Float64},
+        R2::Float64,
+        R2adj::Float64,
+        aic::Float64,
+        bic::Float64,
+        lf::Vector{Float64},
+    }
 
     @assert length(x) == length(y) "Lengths of x and y must be equal."
 
-    df = DataFrame(:x=>x, :y=>y)
+    df = DataFrame(:x => x, :y => y)
     lr = GLM.lm(@formula(y ~ x), df)
     c = GLM.coef(lr)
     se = stderror(lr)
@@ -73,8 +73,8 @@ Named tuple containing:
   - `bic::Float64`
 """
 function infcrit(
-    m::T
-)::@NamedTuple{R2::Float64, R2adj::Float64, aic::Float64, bic::Float64} where {T <: StatsModels.TableRegressionModel}
+        m::T
+    )::@NamedTuple{R2::Float64, R2adj::Float64, aic::Float64, bic::Float64} where {T <: StatsModels.TableRegressionModel}
 
     k = length(GLM.coef(m)) - 1
     n = length(GLM.predict(m))
@@ -84,7 +84,7 @@ function infcrit(
     L = GLM.loglikelihood(m)
 
     aic = 2 * k - 2 * L
-    n/k < 40 && (aic = aic + (2 * k * (k + 1)) / (n - k - 1))
+    n / k < 40 && (aic = aic + (2 * k * (k + 1)) / (n - k - 1))
     bic = k * log(n) - 2 * L
 
     return (R2 = R2, R2adj = R2adj, aic = aic, bic = bic)

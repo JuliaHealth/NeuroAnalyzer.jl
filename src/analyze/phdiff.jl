@@ -54,12 +54,12 @@ Calculate phase difference between channels and mean phase of reference `ch`.
   - `phd::Array{Float64, 3}`
 """
 function phdiff(
-    s::AbstractArray;
-    ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
-    avg::Symbol = :phase,
-    pad::Int64 = 0,
-    h::Bool = false,
-)::Array{Float64, 3}
+        s::AbstractArray;
+        ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
+        avg::Symbol = :phase,
+        pad::Int64 = 0,
+        h::Bool = false,
+    )::Array{Float64, 3}
 
     _chk3d(s)
     _check_var(avg, [:phase, :signal], "avg")
@@ -138,12 +138,12 @@ Calculate phase difference between channels and mean phase of reference `ch`.
   - `phd::Array{Float64, 3}`
 """
 function phdiff(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    avg::Symbol = :phase,
-    pad::Int64 = 0,
-    h::Bool = false,
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        avg::Symbol = :phase,
+        pad::Int64 = 0,
+        h::Bool = false,
+    )::Array{Float64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     phd = @views phdiff(obj.data[ch, :, :], avg = avg, pad = pad, h = h)

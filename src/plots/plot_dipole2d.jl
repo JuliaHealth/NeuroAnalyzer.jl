@@ -86,16 +86,16 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     # draw head
     lw = 2
     # nose
-    GLMakie.lines!(ax_xy, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax_xy, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [-0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
     # ears
     # left
     GLMakie.lines!(ax_xy, [-0.995, -1.03], [0.1, 0.15]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [-1.03, -1.06], [0.15, 0.16]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [-1.06, -1.1], [0.16, 0.14]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [-1.1, -1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax_xy, [-1.12, -1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax_xy, [-1.10, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [-1.12, -1.1], [0.05, -0.1]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [-1.1, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [-1.13, -1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [-1.09, -1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [-1.02, -0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
@@ -105,8 +105,8 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     GLMakie.lines!(ax_xy, [1.03, 1.06], [0.15, 0.16]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [1.06, 1.1], [0.16, 0.14]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [1.1, 1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax_xy, [1.12, 1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax_xy, [1.10, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [1.12, 1.1], [0.05, -0.1]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [1.1, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [1.13, 1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [1.09, 1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
     GLMakie.lines!(ax_xy, [1.02, 0.98], [-0.39, -0.33]; linewidth = lw, color = :black)

@@ -52,13 +52,13 @@ Calculate Amplitude Envelope Correlation (AEC).
   - `aec::Matrix{Float64}`: AEC value
 """
 function aecor(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::Matrix{Float64}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
@@ -180,13 +180,13 @@ Calculate Envelope-to-Signal Correlation (ESC).
   - `esc::Matrix{Float64}`: ESC value
 """
 function escor(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::Matrix{Float64}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")

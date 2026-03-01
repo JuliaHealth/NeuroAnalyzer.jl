@@ -87,7 +87,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
         combo_imethod = GtkComboBoxText()
         imethod_types = [
-            "shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"
+            "shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian",
         ]
         for idx in imethod_types
             push!(combo_imethod, idx)
@@ -106,7 +106,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
         combo_nmethod = GtkComboBoxText()
         nmethod_types = [
-            "zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"
+            "zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none",
         ]
         for idx in nmethod_types
             push!(combo_nmethod, idx)
@@ -313,7 +313,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
         win_key = Gtk4.GtkEventControllerKey(win)
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
@@ -433,7 +433,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
         combo_imethod = GtkComboBoxText()
         imethod_types = [
-            "shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"
+            "shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian",
         ]
         for idx in imethod_types
             push!(combo_imethod, idx)
@@ -452,7 +452,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
         combo_nmethod = GtkComboBoxText()
         nmethod_types = [
-            "zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"
+            "zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none",
         ]
         for idx in nmethod_types
             push!(combo_nmethod, idx)
@@ -671,7 +671,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
         win_key = Gtk4.GtkEventControllerKey(win)
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""

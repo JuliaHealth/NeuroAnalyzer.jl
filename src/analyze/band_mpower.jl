@@ -33,17 +33,17 @@ Named tuple containing:
   - `maxba::Float64`: power at maximum band frequency
 """
 function band_mpower(
-    s::AbstractVector;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
+        s::AbstractVector;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -95,17 +95,17 @@ Named tuple containing:
   - `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
 """
 function band_mpower(
-    s::AbstractArray;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+        s::AbstractArray;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -169,17 +169,17 @@ Named tuple containing:
   - `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
 """
 function band_mpower(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 

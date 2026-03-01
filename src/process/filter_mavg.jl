@@ -18,8 +18,8 @@ Filter using moving average filter (with threshold).
   - `s_filtered::Vector{Float64}`
 """
 function filter_mavg(
-    s::AbstractVector; k::Int64 = 8, t::Real = 0, ww::AbstractVector = ones(2 * k + 1)
-)::Vector{Float64}
+        s::AbstractVector; k::Int64 = 8, t::Real = 0, ww::AbstractVector = ones(2 * k + 1)
+    )::Vector{Float64}
 
     # check k
     _in(k, (1, length(s)), "k")
@@ -82,8 +82,8 @@ Filter using moving average filter (with threshold).
   - `s_filtered::Array{Float64, 3}`
 """
 function filter_mavg(
-    s::AbstractArray; k::Int64 = 8, t::Real = 0, ww::AbstractVector = ones(2 * k + 1)
-)::Array{Float64, 3}
+        s::AbstractArray; k::Int64 = 8, t::Real = 0, ww::AbstractVector = ones(2 * k + 1)
+    )::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -123,20 +123,20 @@ Filter using moving average filter (with threshold).
  1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
 """
 function filter_mavg(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    k::Int64 = 8,
-    t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1),
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        k::Int64 = 8,
+        t::Real = 0,
+        ww::AbstractVector = ones(2 * k + 1),
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     _info("Window length: $(2 * k + 1) samples")
-    _info("Approximate cutoff frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
-    _info("1st zero at: $(round(sr(obj) / k, digits=2)) Hz")
-    _info("2nd zero at: $(round(2 * sr(obj) / k, digits=2)) Hz")
-    _info("3rd zero at: $(round(3 * sr(obj) / k, digits=2)) Hz")
-    _info("4th zero at: $(round(4 * sr(obj) / k, digits=2)) Hz")
+    _info("Approximate cutoff frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits = 2) * sr(obj)) Hz")
+    _info("1st zero at: $(round(sr(obj) / k, digits = 2)) Hz")
+    _info("2nd zero at: $(round(2 * sr(obj) / k, digits = 2)) Hz")
+    _info("3rd zero at: $(round(3 * sr(obj) / k, digits = 2)) Hz")
+    _info("4th zero at: $(round(4 * sr(obj) / k, digits = 2)) Hz")
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views filter_mavg(obj.data[ch, :, :], k = k, t = t, ww = ww)
     push!(obj_new.history, "filter_mavg(OBJ, ch=$ch, k=$k, t=$t, ww=$ww")
@@ -163,12 +163,12 @@ Filter using moving average filter (with threshold).
   - `Nothing`
 """
 function filter_mavg!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    k::Int64 = 8,
-    t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1),
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        k::Int64 = 8,
+        t::Real = 0,
+        ww::AbstractVector = ones(2 * k + 1),
+    )::Nothing
 
     obj_new = filter_mavg(obj, ch = ch, k = k, t = t, ww = ww)
     obj.data = obj_new.data

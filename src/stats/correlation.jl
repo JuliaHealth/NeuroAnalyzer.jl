@@ -89,15 +89,15 @@ Named tuple containing:
   - `p::Float64`: p value
 """
 function cor_test(
-    s1::AbstractVector, s2::AbstractVector
-)::@NamedTuple{
-    t::CorrelationTest{Float64},
-    r::Float64,
-    rc::Tuple{Float64, Float64},
-    ts::Tuple{Float64, String},
-    df::Int64,
-    p::Float64,
-}
+        s1::AbstractVector, s2::AbstractVector
+    )::@NamedTuple{
+        t::CorrelationTest{Float64},
+        r::Float64,
+        rc::Tuple{Float64, Float64},
+        ts::Tuple{Float64, String},
+        df::Int64,
+        p::Float64,
+    }
 
     @assert length(s1) == length(s2) "Lengths of s1 and s2 must be equal."
 

@@ -103,8 +103,8 @@ Named tuple containing:
   - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
 function hjorth(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+    )::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
 
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")

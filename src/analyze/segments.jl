@@ -67,8 +67,8 @@ Extract segment from a matrix.
   - `seg::Union{AbstractMatrix, AbstractVector}`
 """
 function seg_extract(
-    m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool = false, c::Bool = false
-)::Union{AbstractMatrix, AbstractVector}
+        m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool = false, c::Bool = false
+    )::Union{AbstractMatrix, AbstractVector}
 
     r1 = rc[1]
     c1 = rc[2]
@@ -129,8 +129,8 @@ Named tuple containing:
   - `bm::Matrix{Bool}`: map of the segment
 """
 function seg_extract(
-    m::AbstractMatrix; threshold::Union{Real, Tuple{Real, Real}} = 0, threshold_type::Symbol = :neq
-)::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
+        m::AbstractMatrix; threshold::Union{Real, Tuple{Real, Real}} = 0, threshold_type::Symbol = :neq
+    )::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
 
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
 
@@ -142,21 +142,21 @@ function seg_extract(
     end
 
     if threshold_type === :eq
-        idx = findall(x->x == threshold, m)
+        idx = findall(x -> x == threshold, m)
     elseif threshold_type === :neq
-        idx = findall(x->x != threshold, m)
+        idx = findall(x -> x != threshold, m)
     elseif threshold_type === :geq
-        idx = findall(x->x >= threshold, m)
+        idx = findall(x -> x >= threshold, m)
     elseif threshold_type === :leq
-        idx = findall(x->x <= threshold, m)
+        idx = findall(x -> x <= threshold, m)
     elseif threshold_type === :g
-        idx = findall(x->x > threshold, m)
+        idx = findall(x -> x > threshold, m)
     elseif threshold_type === :l
-        idx = findall(x->x < threshold, m)
+        idx = findall(x -> x < threshold, m)
     elseif threshold_type === :in
-        idx = findall(x->(x >= threshold[1] && x <= threshold[2]), m)
+        idx = findall(x -> (x >= threshold[1] && x <= threshold[2]), m)
     elseif threshold_type === :bin
-        idx = findall(x->(x > threshold[1] && x < threshold[2]), m)
+        idx = findall(x -> (x > threshold[1] && x < threshold[2]), m)
     end
 
     bm = zeros(Bool, size(m))
@@ -188,14 +188,14 @@ Interactive selection of a matrix area.
   - `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
 function seg_select(
-    m::AbstractMatrix; shape::Symbol = :r, extract::Bool = false, v::Bool = false
-)::Union{
-    Nothing,
-    <:Real,
-    Tuple{Int64, Int64},
-    Tuple{Int64, Int64, Int64, Int64},
-    Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
-}
+        m::AbstractMatrix; shape::Symbol = :r, extract::Bool = false, v::Bool = false
+    )::Union{
+        Nothing,
+        <:Real,
+        Tuple{Int64, Int64},
+        Tuple{Int64, Int64, Int64, Int64},
+        Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
+    }
 
     _check_var(shape, [:r, :p, :c], "shape")
 

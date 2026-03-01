@@ -34,18 +34,18 @@ Named tuple containing:
   - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
-    s::AbstractVector;
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{lf::Vector{Float64}, ls::Float64, pf::Vector{Float64}}
+        s::AbstractVector;
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{lf::Vector{Float64}, ls::Float64, pf::Vector{Float64}}
 
     _check_tuple(flim, (0, fs / 2), "flim")
 
@@ -97,18 +97,18 @@ Named tuple containing:
   - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
-    s::AbstractArray;
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
+        s::AbstractArray;
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -187,18 +187,18 @@ Named tuple containing:
   - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     _log_off()

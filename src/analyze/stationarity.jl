@@ -102,8 +102,8 @@ Calculate stationarity.
   - `s::Union{Matrix{Float64}, Array{Float64, 3}}`
 """
 function stationarity(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64 = 10, method::Symbol = :hilbert
-)::Union{Matrix{Float64}, Array{Float64, 3}}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64 = 10, method::Symbol = :hilbert
+    )::Union{Matrix{Float64}, Array{Float64, 3}}
 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     @assert window >= 1 "window must be ≥ 1."

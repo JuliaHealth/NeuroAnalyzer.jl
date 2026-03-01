@@ -16,10 +16,10 @@ Calculate the Generalised Hurst Exponents (GHEs).
   - `ghe::Matrix{Float64}`
 """
 function ghexp(
-    s::AbstractVector;
-    tau_range::UnitRange{Int64},
-    q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}} = nothing,
-)::Matrix{Float64}
+        s::AbstractVector;
+        tau_range::UnitRange{Int64},
+        q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}} = nothing,
+    )::Matrix{Float64}
 
     @assert tau_range[end] < length(s) "End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."
 
@@ -49,10 +49,10 @@ Calculate the Generalised Hurst Exponents (GHEs).
   - `ghe::Array{Float64, 4}`
 """
 function ghexp(
-    s::AbstractArray;
-    tau_range::UnitRange{Int64},
-    q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}} = nothing,
-)::Array{Float64, 4}
+        s::AbstractArray;
+        tau_range::UnitRange{Int64},
+        q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}} = nothing,
+    )::Array{Float64, 4}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -91,11 +91,11 @@ Calculate the Generalised Hurst Exponents (GHEs).
   - `ghe::Array{Float64, 4}`
 """
 function ghexp(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    tau_range::UnitRange{Int64},
-    q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}} = nothing,
-)::Array{Float64, 4}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        tau_range::UnitRange{Int64},
+        q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}} = nothing,
+    )::Array{Float64, 4}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 

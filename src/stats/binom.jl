@@ -52,27 +52,27 @@ Named tuple containing:
   - `p::Float64`: Binomial test p value
 """
 function binom_test(
-    p::Float64, n::Int64; verbose::Bool = true
-)::@NamedTuple{
-    x0::Int64,
-    x1::Int64,
-    p0::Float64,
-    p1::Float64,
-    ci0::Tuple{Float64, Float64},
-    ci1::Tuple{Float64, Float64},
-    p::Float64,
-}
+        p::Float64, n::Int64; verbose::Bool = true
+    )::@NamedTuple{
+        x0::Int64,
+        x1::Int64,
+        p0::Float64,
+        p1::Float64,
+        ci0::Tuple{Float64, Float64},
+        ci1::Tuple{Float64, Float64},
+        p::Float64,
+    }
 
     _in(p, (0.0, 1.0), "p")
     @assert n > 0 "n must be > 0."
     x = round(Int64, p * n)
     ci0 = cip(1 - p, n)
     verbose && println(
-        "Level 0: counts: $(n - x)\t proportion: $(round(1 - p, digits=3))\t 95%CI: $(round.(ci0[1], digits=3)), $(round.(ci0[2], digits=3))",
+        "Level 0: counts: $(n - x)\t proportion: $(round(1 - p, digits = 3))\t 95%CI: $(round.(ci0[1], digits = 3)), $(round.(ci0[2], digits = 3))",
     )
     ci1 = cip(p, n)
     verbose && println(
-        "Level 1: counts: $(x)\t proportion: $(round(p, digits=3))\t 95%CI: $(round.(ci1[1], digits=3)), $(round.(ci1[2], digits=3))",
+        "Level 1: counts: $(x)\t proportion: $(round(p, digits = 3))\t 95%CI: $(round.(ci1[1], digits = 3)), $(round.(ci1[2], digits = 3))",
     )
 
     pv = pvalue(BinomialTest(x, n, 0.5))
@@ -80,7 +80,7 @@ function binom_test(
         if round(pv, digits = 3) == 0.0
             println("Binomial test p value: <0.001")
         else
-            println("Binomial test p value: $(round(pv, digits=3))")
+            println("Binomial test p value: $(round(pv, digits = 3))")
         end
         println("Note: level 1 proportion is tested against 0.5")
     end
@@ -114,16 +114,16 @@ Named tuple containing:
   - `p::Float64`: Binomial test p value
 """
 function binom_test(
-    x::Vector{Bool}; verbose::Bool = true
-)::@NamedTuple{
-    x0::Int64,
-    x1::Int64,
-    p0::Float64,
-    p1::Float64,
-    ci0::Tuple{Float64, Float64},
-    ci1::Tuple{Float64, Float64},
-    p::Float64,
-}
+        x::Vector{Bool}; verbose::Bool = true
+    )::@NamedTuple{
+        x0::Int64,
+        x1::Int64,
+        p0::Float64,
+        p1::Float64,
+        ci0::Tuple{Float64, Float64},
+        ci1::Tuple{Float64, Float64},
+        p::Float64,
+    }
 
     n = length(x)
     @assert n > 0 "Number of observations must be > 0."
@@ -158,19 +158,19 @@ Named tuple containing:
   - `p::Float64`: Binomial test p value
 """
 function binom_test(
-    x::Int64, n::Int64; verbose::Bool = true
-)::@NamedTuple{
-    x0::Int64,
-    x1::Int64,
-    p0::Float64,
-    p1::Float64,
-    ci0::Tuple{Float64, Float64},
-    ci1::Tuple{Float64, Float64},
-    p::Float64,
-}
+        x::Int64, n::Int64; verbose::Bool = true
+    )::@NamedTuple{
+        x0::Int64,
+        x1::Int64,
+        p0::Float64,
+        p1::Float64,
+        ci0::Tuple{Float64, Float64},
+        ci1::Tuple{Float64, Float64},
+        p::Float64,
+    }
 
     _in(x, (0, n), "x")
 
-    return binom_test(x/n, n; verbose = verbose)
+    return binom_test(x / n, n; verbose = verbose)
 
 end

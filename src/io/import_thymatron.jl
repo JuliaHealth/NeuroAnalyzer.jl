@@ -173,11 +173,11 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     history = String[]
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     locs = _initialize_locs()
@@ -185,8 +185,8 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     _initialize_locs!(obj)
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

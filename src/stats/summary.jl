@@ -27,20 +27,20 @@ Named tuple containing:
   - `mo::Float64`: mode
 """
 function summary(
-    x::AbstractVector; g::String = ""
-)::@NamedTuple{
-    n::Int64,
-    ms::Int64,
-    m::Float64,
-    v::Float64,
-    s::Float64,
-    min::Float64,
-    q1::Float64,
-    me::Float64,
-    q3::Float64,
-    max::Float64,
-    mo::Float64,
-}
+        x::AbstractVector; g::String = ""
+    )::@NamedTuple{
+        n::Int64,
+        ms::Int64,
+        m::Float64,
+        v::Float64,
+        s::Float64,
+        min::Float64,
+        q1::Float64,
+        me::Float64,
+        q3::Float64,
+        max::Float64,
+        mo::Float64,
+    }
 
     x_tmp = rmna(x)
     n = length(x)

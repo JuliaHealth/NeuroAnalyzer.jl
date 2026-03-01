@@ -73,8 +73,8 @@ Perform continuous wavelet decomposition (CWD).
   - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
 function cwd(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T = wavelet(Morlet(2π), β = 2)
-)::Array{Float64, 4} where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T = wavelet(Morlet(2π), β = 2)
+    )::Array{Float64, 4} where {T <: CWT}
 
     ch = get_channel(obj, ch = ch)
     ct = @views cwd(obj.data[ch, :, :], wt = wt)
@@ -102,8 +102,8 @@ Perform inverse continuous wavelet transformation (iCWT).
   - `s::Vector{Float64}`: reconstructed signal
 """
 function icwd(
-    ct::Matrix{Float64}; wt::T = wavelet(Morlet(2π), β = 2), type::Symbol = :pd
-)::Vector{Float64} where {T <: CWT}
+        ct::Matrix{Float64}; wt::T = wavelet(Morlet(2π), β = 2), type::Symbol = :pd
+    )::Vector{Float64} where {T <: CWT}
 
     _check_var(type, [:nd, :pd, :df], "type")
 

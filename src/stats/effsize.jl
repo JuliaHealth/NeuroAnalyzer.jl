@@ -113,9 +113,9 @@ function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol = :cohen)::Fl
     n2 = length(x2)
 
     if type === :cohen
-        sp = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2))/(n1 + n2 - 2))
+        sp = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2 - 2))
     else
-        sp = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2))/(n1 + n2))
+        sp = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2))
     end
 
     return sp
@@ -147,9 +147,9 @@ function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol = :cohen)::
     type === :cohen && (@assert n1 + n2 > 2 "For :cohen equation n1 + n2 must be > 2.")
 
     if type === :cohen
-        ps = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2))/(n1 + n2 - 2))
+        ps = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2 - 2))
     else
-        ps = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2))/(n1 + n2))
+        ps = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2))
     end
 
     return ps
@@ -173,7 +173,7 @@ Calculate pooled standard deviation when number of subjects in groups are equal.
 """
 function stdp(s1::Real, s2::Real)::Float64
 
-    ps = sqrt((s1^2 + s2^2)/2)
+    ps = sqrt((s1^2 + s2^2) / 2)
 
     return ps
 

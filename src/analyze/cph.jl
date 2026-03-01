@@ -143,8 +143,8 @@ Named tuple containing:
   - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+    )::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
@@ -175,13 +175,13 @@ Named tuple containing:
   - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."

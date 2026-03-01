@@ -19,7 +19,7 @@ Calculate order of FIR filter using Harris formula.
 """
 function fir_order_bw(; bw::Real, a::Real = 60, fs::Int64)::Int64
 
-    n = round(Int64, (a * fs)/(22 * bw))
+    n = round(Int64, (a * fs) / (22 * bw))
 
     return n
 
@@ -124,14 +124,14 @@ Calculate order of IIR filter.
   - `n::Int64`
 """
 function iir_order(;
-    fprototype::Symbol,
-    ftype::Symbol,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    bw::Real,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    fs::Int64,
-)::Int64
+        fprototype::Symbol,
+        ftype::Symbol,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        bw::Real,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        fs::Int64,
+    )::Int64
 
     _check_var(
         fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype"
@@ -216,14 +216,14 @@ Calculate order of IIR filter.
   - `n::Int64`
 """
 function iir_order(
-    obj::NeuroAnalyzer.NEURO;
-    fprototype::Symbol,
-    ftype::Symbol,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    bw::Real,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-)::Int64
+        obj::NeuroAnalyzer.NEURO;
+        fprototype::Symbol,
+        ftype::Symbol,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        bw::Real,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+    )::Int64
 
     n = iir_order(;
         fprototype = fprototype,

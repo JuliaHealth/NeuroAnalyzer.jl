@@ -44,7 +44,7 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::G
     p_idx = 1
     for idx1 in 1:layout[1]
         for idx2 in 1:layout[2]
-            fname = tempname()*".png"
+            fname = tempname() * ".png"
             GLMakie.save(fname, p[p_idx])
             pp = FileIO.load(fname)
             rm(fname)

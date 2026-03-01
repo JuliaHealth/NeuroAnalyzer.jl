@@ -83,11 +83,11 @@ Named tuple containing:
   - `sc::Vector{Float64}`: spatial correlation
 """
 function diss(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-)::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+    )::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
 
     @assert datatype(obj1) in ["erp", "erf"] "diss() should be applied for ERP or ERF object only."
     @assert datatype(obj2) in ["erp", "erf"] "diss() should be applied for ERP or ERF object only."

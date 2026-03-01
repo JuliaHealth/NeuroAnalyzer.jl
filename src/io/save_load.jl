@@ -17,8 +17,8 @@ Save `NeuroAnalyzer.NEURO` object to `file_name` file (HDF5-based).
 Nothing
 """
 function save(
-    obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
+    )::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
     @assert lowercase(splitext(file_name)[2]) == ".hdf" "Filename extension must be .hdf"
@@ -58,8 +58,8 @@ function load(file_name::String)::NeuroAnalyzer.NEURO
 
     _info(
         "Loaded: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

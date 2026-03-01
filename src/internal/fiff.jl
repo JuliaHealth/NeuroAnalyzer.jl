@@ -27,8 +27,8 @@ _find_fiff_sss_job(n::Int64)::String = fiff_sss_job[:sss_job][findfirst(isequal(
 
 # data type
 fiff_data_type = Dict(
-    :id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 13, 14, 16, 20, 21, 23, 30, 31, 32, 33, 34, 35],
-    :name=>[
+    :id => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 13, 14, 16, 20, 21, 23, 30, 31, 32, 33, 34, 35],
+    :name => [
         "void",
         "byte",
         "int16",
@@ -56,7 +56,7 @@ fiff_data_type = Dict(
         "coord_trans_struct",
         "old_pack",
     ],
-    :data_type=>[
+    :data_type => [
         "void_t",
         "byte_t",
         "int16_t",
@@ -84,12 +84,12 @@ fiff_data_type = Dict(
         "coord_trans_t",
         "old_pack_tvariable",
     ],
-    :size=>[1, 1, 2, 4, 4, 8, 8, 2, 4, 8, 1, 1, 8, 2, 2, 2, 8, 16, 80, 20, 16, 20, 52, 80],
+    :size => [1, 1, 2, 4, 4, 8, 8, 2, 4, 8, 1, 1, 8, 2, 2, 2, 8, 16, 80, 20, 16, 20, 52, 80],
 )
 
 # units
 fiff_units = Dict(
-    :id=>[
+    :id => [
         -1,
         0,
         1,
@@ -120,7 +120,7 @@ fiff_units = Dict(
         201,
         202,
     ],
-    :unit=>[
+    :unit => [
         "none",
         "unitless",
         "m",
@@ -155,13 +155,13 @@ fiff_units = Dict(
 
 # value multipliers
 fiff_multipliers = Dict(
-    :id=>[18, 15, 12, 9, 6, 3, 2, 1, 0, -1, -2, -3, -6, -9, -12, -15, -18],
-    :multiplier=>["e", "pet", "t", "gig", "meg", "k", "h", "da", "none", "d", "c", "m", "mu", "n", "p", "f", "a"],
+    :id => [18, 15, 12, 9, 6, 3, 2, 1, 0, -1, -2, -3, -6, -9, -12, -15, -18],
+    :multiplier => ["e", "pet", "t", "gig", "meg", "k", "h", "da", "none", "d", "c", "m", "mu", "n", "p", "f", "a"],
 )
 
 # id tags
 fiff_tags = Dict(
-    :id=>[
+    :id => [
         100,
         101,
         102,
@@ -355,7 +355,7 @@ fiff_tags = Dict(
         3417,
         3501,
     ],
-    :tag=>[
+    :tag => [
         "file_id",
         "dir_pointer",
         "dir",
@@ -553,7 +553,7 @@ fiff_tags = Dict(
 
 # block types
 fiff_blocks = Dict(
-    :id=>[
+    :id => [
         999,
         100,
         101,
@@ -603,7 +603,7 @@ fiff_blocks = Dict(
         900,
         901,
     ],
-    :block=>[
+    :block => [
         "root",
         "meas",
         "meas_info",
@@ -657,7 +657,7 @@ fiff_blocks = Dict(
 
 # channel type
 fiff_channel_type = Dict(
-    :id=>[
+    :id => [
         1,
         2,
         3,
@@ -685,7 +685,7 @@ fiff_channel_type = Dict(
         1000,
         1001,
     ],
-    :channel_type=>[
+    :channel_type => [
         "meg",
         "eeg",
         "stim",
@@ -717,8 +717,8 @@ fiff_channel_type = Dict(
 
 # coil types
 fiff_coil_type = Dict(
-    :id=>[0, 1, 2, 3, 4, 5, 200, 1000, 2000, 2001, 3011, 3012, 3013, 3014, 3021, 3022, 3023, 3024, 4001, 4002, 5001],
-    :coil_type=>[
+    :id => [0, 1, 2, 3, 4, 5, 200, 1000, 2000, 2001, 3011, 3012, 3013, 3014, 3021, 3022, 3023, 3024, 4001, 4002, 5001],
+    :coil_type => [
         "none",
         "eeg",
         "nm_122",
@@ -744,24 +744,24 @@ fiff_coil_type = Dict(
 )
 
 # gantry
-fiff_gantry_type = Dict(:id=>[0, 1, 2], :gantry_type=>["fixed", "uni_axial", "free"])
+fiff_gantry_type = Dict(:id => [0, 1, 2], :gantry_type => ["fixed", "uni_axial", "free"])
 
 # acquisition system
-fiff_dacq_system = Dict(:id=>[0, 1, 2, 3, 4], :dacq_system=>["dau", "vxi", "rpu", "orion", "triux"])
+fiff_dacq_system = Dict(:id => [0, 1, 2, 3, 4], :dacq_system => ["dau", "vxi", "rpu", "orion", "triux"])
 
 # proj_item
 fiff_proj_item = Dict(
-    :id=>[0, 1, 2, 3, 4, 5, 10],
-    :proj_item=>["none", "field", "dip_fix", "dip_rot", "homog_grad", "homog_field", "eeg_avref"],
+    :id => [0, 1, 2, 3, 4, 5, 10],
+    :proj_item => ["none", "field", "dip_fix", "dip_rot", "homog_grad", "homog_field", "eeg_avref"],
 )
 
 # proj_bt
-fiff_proj_by = Dict(:id=>[0, 1], :proj_by=>["complement", "space"])
+fiff_proj_by = Dict(:id => [0, 1], :proj_by => ["complement", "space"])
 
 # aspect
 fiff_aspect = Dict(
-    :id=>[100, 101, 102, 103, 104, 105, 106, 200, 1100, 1101, 1102],
-    :aspect=>[
+    :id => [100, 101, 102, 103, 104, 105, 106, 200, 1100, 1101, 1102],
+    :aspect => [
         "average",
         "std_err",
         "single",
@@ -777,8 +777,8 @@ fiff_aspect = Dict(
 )
 # sss_job
 fiff_sss_job = Dict(
-    :id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    :sss_job=>[
+    :id => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    :sss_job => [
         "sss_job_nothing",
         "sss_job_ctc",
         "sss_job_filter",
@@ -853,7 +853,7 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})::Union{Vector{Float64}, Mat
             l = length(tmp[(end + 1 - dim[2] * 4):end])
             [
                 push!(col_start_idx, _i32i32(tmp[(end - l + idx):(end - l + 3 + idx)])) for
-                idx in 1:4:length(tmp[(end + 1 - dim[2] * 4):end])
+                    idx in 1:4:length(tmp[(end + 1 - dim[2] * 4):end])
             ]
             col_start_idx .+= 1
             tmp = buf[1:(end - l - length(dims) - 12)]
@@ -861,7 +861,7 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})::Union{Vector{Float64}, Mat
             l = length(tmp[(end + 1 - nz * 4):end])
             [
                 push!(row_idx, _i32i32(tmp[(end - l + idx):(end - l + 3 + idx)])) for
-                idx in 1:4:length(tmp[(end + 1 - nz * 4):end])
+                    idx in 1:4:length(tmp[(end + 1 - nz * 4):end])
             ]
             row_idx .+= 1
             tmp = tmp[1:(end - l)]
@@ -910,8 +910,8 @@ function _read_fiff_tag(fid::IOStream)::Tuple{Int32, Int32, Int32, Any, Int32}
 end
 
 function _get_fiff_block_type(
-    fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64}
-)::Vector{Int32}
+        fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64}
+    )::Vector{Int32}
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])
     readbytes!(fid, buf, tag[4])
@@ -1003,11 +1003,11 @@ function _pack_fiff_blocks(fiff_object::Vector{Any}, block::String, fields::Vect
     for f in fields
         tmp = fiff_object[block_idx][[fiff_object[block_idx][idx][2] for idx in eachindex(fiff_object[block_idx])] .== f]
         if length(tmp) == 1
-            push!(d, Symbol(f)=>tmp[1][4])
+            push!(d, Symbol(f) => tmp[1][4])
         elseif length(tmp) > 1
-            [push!(d, Symbol(f * "_$(lpad(n, length(string(length(tmp))), '0'))")=>tmp[n][4]) for n in eachindex(tmp)]
+            [push!(d, Symbol(f * "_$(lpad(n, length(string(length(tmp))), '0'))") => tmp[n][4]) for n in eachindex(tmp)]
         else
-            push!(d, Symbol(f)=>nothing)
+            push!(d, Symbol(f) => nothing)
         end
     end
     return d

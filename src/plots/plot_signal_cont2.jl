@@ -25,19 +25,19 @@ Plot two continuous signals.
   - `p::GLMakie.Figure`
 """
 function plot_cont(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = "all",
-    seg::Tuple{Real, Real} = (0, 10),
-    xlabel::String = "default",
-    ylabel::String = "default",
-    title::String = "default",
-    scale::Bool = true,
-    group_ch::Bool = true,
-    n_channels::Int64 = 20,
-    res::Int64 = 1,
-    gui::Bool = true,
-)::GLMakie.Figure
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex} = "all",
+        seg::Tuple{Real, Real} = (0, 10),
+        xlabel::String = "default",
+        ylabel::String = "default",
+        title::String = "default",
+        scale::Bool = true,
+        group_ch::Bool = true,
+        n_channels::Int64 = 20,
+        res::Int64 = 1,
+        gui::Bool = true,
+    )::GLMakie.Figure
 
     @assert size(obj1) == size(obj2) "Size of OBJ1 and OBJ2 must equal."
     @assert sr(obj1) == sr(obj2) "Sampling rate of OBJ1 and OBJ2 must equal."
@@ -126,28 +126,28 @@ function plot_cont(
     end
     GLMakie.activate!(title = "plot()")
     p = GLMakie.Figure(
-                    size = plot_size,
-                    figure_padding = (10, 20, 10, 10), # L R B T
-                )
+        size = plot_size,
+        figure_padding = (10, 20, 10, 10), # L R B T
+    )
     ax1 = GLMakie.Axis(
-                    p[1, 1];
-                    xlabel = "",
-                    ylabel = yl,
-                    title = tt,
-                    xticks = LinearTicks(10),
-                    xminorticksvisible = true,
-                    xminorticks = IntervalsBetween(10),
-                    yticks = (1:ch_n, clabels),
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0, 0),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                    yticklabelspace = 60.0,
-                )
+        p[1, 1];
+        xlabel = "",
+        ylabel = yl,
+        title = tt,
+        xticks = LinearTicks(10),
+        xminorticksvisible = true,
+        xminorticks = IntervalsBetween(10),
+        yticks = (1:ch_n, clabels),
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+        yticklabelspace = 60.0,
+    )
     GLMakie.xlims!(ax1, seg)
     if gui
         if ch_n > nch[]
@@ -184,16 +184,16 @@ function plot_cont(
                 end
                 GLMakie.poly!(ax1, s_rectangle, color = :red, strokecolor = :red, strokewidth = 2)
                 GLMakie.text!(
-                            ax1,
-                            l_pos;
-                            markerspace = :pixel,
-                            text = string(r[][idx2]) * " " * cunits[idx1],
-                            fontsize = 10,
-                            color = :red,
-                            align = (:left, :bottom),
-                            #rotation=pi/2,
-                            offset = (5, 0),
-                        )
+                    ax1,
+                    l_pos;
+                    markerspace = :pixel,
+                    text = string(r[][idx2]) * " " * cunits[idx1],
+                    fontsize = 10,
+                    color = :red,
+                    align = (:left, :bottom),
+                    #rotation=pi/2,
+                    offset = (5, 0),
+                )
                 idx2 += 1
             end
         end

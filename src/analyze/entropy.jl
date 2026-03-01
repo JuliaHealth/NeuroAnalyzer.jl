@@ -29,12 +29,12 @@ Shannon entropy and log energy entropy are calculated using `Wavelets.coefentrop
 Completely regular signals should have sample entropy approaching zero, while less regular signals should have higher sample entropy.
 """
 function entropy(
-    s::AbstractVector
-)::@NamedTuple{ent::Float64, shent::Float64, leent::Float64, sent::Float64, nsent::Float64}
+        s::AbstractVector
+    )::@NamedTuple{ent::Float64, shent::Float64, leent::Float64, sent::Float64, nsent::Float64}
 
     n = length(s)
     maxmin_range = maximum(s) - minimum(s)
-    fd_bins = ceil(Int64, maxmin_range/(2.0 * iqr(s) * n^(-1/3))) # Freedman-Diaconis
+    fd_bins = ceil(Int64, maxmin_range / (2.0 * iqr(s) * n^(-1 / 3))) # Freedman-Diaconis
 
     # recompute entropy with optimal bins for comparison
     h = StatsKit.fit(Histogram, s, nbins = fd_bins)
@@ -71,10 +71,10 @@ Named tuple containing:
   - `nsent::Matrix{Float64}`: normalized sample entropy
 """
 function entropy(
-    s::AbstractArray
-)::@NamedTuple{
-    ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64}
-}
+        s::AbstractArray
+    )::@NamedTuple{
+        ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64},
+    }
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -119,10 +119,10 @@ Named tuple containing:
   - `nsent::Matrix{Float64}`: normalized sample entropy
 """
 function entropy(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{
-    ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64}
-}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+    )::@NamedTuple{
+        ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64},
+    }
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ent, shent, leent, sent, nsent = @views entropy(obj.data[ch, :, :])

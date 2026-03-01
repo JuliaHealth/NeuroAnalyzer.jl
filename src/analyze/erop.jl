@@ -32,17 +32,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function erop(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    method::Symbol = :welch,
-    db::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        method::Symbol = :welch,
+        db::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     _log_off()
     p, f = psd(

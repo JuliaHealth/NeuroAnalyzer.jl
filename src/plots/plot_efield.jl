@@ -32,7 +32,7 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
     end
 
     function E(q, rx, ry, x, y)
-        d = sqrt((x-rx)^2 + (y-ry)^2)^3
+        d = sqrt((x - rx)^2 + (y - ry)^2)^3
         return (q * (x - rx) / d, q * (y - ry) / d)
     end
 
@@ -69,7 +69,7 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
     ax.yticklabelsize = 12
 
     # draw field lines
-    streamplot!(ax, fieldE, -5..5, -5..5; arrow_size = 10, linewidth = 1, colorrange = (-3, 3), colormap = :bluesreds)
+    streamplot!(ax, fieldE, -5 .. 5, -5 .. 5; arrow_size = 10, linewidth = 1, colorrange = (-3, 3), colormap = :bluesreds)
 
     # draw charges
     for idx in eachindex(qs)

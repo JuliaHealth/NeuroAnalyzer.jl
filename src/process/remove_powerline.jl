@@ -25,14 +25,14 @@ Remove power line noise and its peaks above power line frequency.
   - `df::DataFrame`: list of peaks detected
 """
 function remove_powerline(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pl_frq::Real = obj.header.recording[:line_frequency],
-    method::Symbol = :iir,
-    pr::Real = 2.0,
-    d::Real = 5.0,
-    q::Real = 0.1,
-)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pl_frq::Real = obj.header.recording[:line_frequency],
+        method::Symbol = :iir,
+        pr::Real = 2.0,
+        d::Real = 5.0,
+        q::Real = 0.1,
+    )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
     @assert nepochs(obj) == 1 "remove_powerline() must be applied to continuous object."
     @assert pl_frq >= 0 "pl_freq must be ≥ 0."
@@ -155,7 +155,7 @@ function remove_powerline(
             progress_bar && next!(progbar)
         end
 
-        df = DataFrame("channel"=>clabels[ch], "power line bandwidth"=>pl_best_bw)
+        df = DataFrame("channel" => clabels[ch], "power line bandwidth" => pl_best_bw)
         if length(pks_frq) > 0
             pks_best_bw_m = zeros(length(ch), length(pks_frq))
             pks_frq_m = zeros(length(ch), length(pks_frq))
@@ -205,14 +205,14 @@ Remove power line noise and harmonics.
   - `df::DataFrame`: list of peaks detected
 """
 function remove_powerline!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pl_frq::Real = obj.header.recording[:line_frequency],
-    method::Symbol = :iir,
-    pr::Real = 2.0,
-    d::Real = 5.0,
-    q::Real = 0.1,
-)::DataFrame
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pl_frq::Real = obj.header.recording[:line_frequency],
+        method::Symbol = :iir,
+        pr::Real = 2.0,
+        d::Real = 5.0,
+        q::Real = 0.1,
+    )::DataFrame
 
     obj_new, df = remove_powerline(obj, ch = ch, pl_frq = pl_frq, method = method, pr = pr, d = d, q = q)
     obj.data = obj_new.data
@@ -239,11 +239,11 @@ Detect power line noise frequency.
 function detect_powerline(s::AbstractVector; fs::Int64)::Float64
 
     n = length(s)
-    t = linspace(0, n * 1/fs, n)
+    t = linspace(0, n * 1 / fs, n)
     noise_power = zeros(fs ÷ 2)
 
     for noise_idx in 1:(fs ÷ 2)
-        df = DataFrame(:signal=>s, :b0=>ones(n), :b1=>sin.(2 * pi * noise_idx .* t), :b2=>cos.(2 * pi * noise_idx .* t))
+        df = DataFrame(:signal => s, :b0 => ones(n), :b1 => sin.(2 * pi * noise_idx .* t), :b2 => cos.(2 * pi * noise_idx .* t))
         lr = GLM.lm(@formula(signal ~ b0 + b1 + b2), df)
         b = StatsKit.coef(lr)
         noise_power[noise_idx] = b[3]^2 + b[4]^2

@@ -85,21 +85,21 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
         for idx in eachindex(ref_labels)
             (
                 occursin("a", lowercase(ref_labels[idx])) &&
-                occursin("1", ref_labels[idx])
+                    occursin("1", ref_labels[idx])
             ) && push!(
                 locs,
-                [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11],
+                [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.1, -165.96, -30.11],
             )
             (
                 occursin("a", lowercase(ref_labels[idx])) &&
-                occursin("2", ref_labels[idx])
+                    occursin("2", ref_labels[idx])
             ) && push!(
                 locs,
-                [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11],
+                [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.1, -14.04, -30.11],
             )
             (
                 occursin("m", lowercase(ref_labels[idx])) &&
-                occursin("1", ref_labels[idx])
+                    occursin("1", ref_labels[idx])
             ) && push!(
                 locs,
                 [
@@ -116,7 +116,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
             )
             (
                 occursin("m", lowercase(ref_labels[idx])) &&
-                occursin("2", ref_labels[idx])
+                    occursin("2", ref_labels[idx])
             ) && push!(
                 locs,
                 [ref_labels[idx], 0.95, -6.07, 0.94, -0.1, -0.3, 0.99, -6.07, -17.61],
@@ -130,16 +130,16 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
         for idx in eachindex(emg_labels)
             occursin("1", emg_labels[idx]) && push!(
                 locs,
-                [emg_labels[idx], 0.99, 135.0, -0.70, 0.70, -1.10, 1.48, 135.00, -48.01],
+                [emg_labels[idx], 0.99, 135.0, -0.7, 0.7, -1.1, 1.48, 135.0, -48.01],
             )
             occursin("2", emg_labels[idx]) && push!(
                 locs,
-                [emg_labels[idx], 0.99, 45.0, 0.70, 0.70, -1.10, 1.48, 45.00, -48.01],
+                [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01],
             )
             # if no numbers, assume that EMG channel is on the right side
             (!occursin("1", emg_labels[idx]) && !occursin("2", emg_labels[idx])) && push!(
                 locs,
-                [emg_labels[idx], 0.99, 45.0, 0.70, 0.70, -1.10, 1.48, 45.00, -48.01],
+                [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01],
             )
         end
     end
@@ -172,7 +172,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
                         -0.64,
                         0.77,
                         -0.04,
-                        1.00,
+                        1.0,
                         129.73,
                         -2.29,
                     ],
@@ -185,7 +185,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
                 )
                 occursin("h", lowercase(eog_labels[idx])) && push!(
                     locs,
-                    [eog_labels[idx], 1.01, 50.0, 0.64, 0.77, -0.04, 1.00, 50.27, -2.29],
+                    [eog_labels[idx], 1.01, 50.0, 0.64, 0.77, -0.04, 1.0, 50.27, -2.29],
                 )
             end
             # if no numbers, assume that EOG channels are on the right side
@@ -196,12 +196,12 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
                 )
                 occursin("h", lowercase(eog_labels[idx])) && push!(
                     locs,
-                    [eog_labels[idx], 1.01, 50.0, 0.64, 0.77, -0.04, 1.00, 50.27, -2.29],
+                    [eog_labels[idx], 1.01, 50.0, 0.64, 0.77, -0.04, 1.0, 50.27, -2.29],
                 )
             end
             # if no V/H indicators, assume that EEG channels are vertical
             if !occursin("v", lowercase(eog_labels[idx])) &&
-                !occursin("h", lowercase(eog_labels[idx]))
+                    !occursin("h", lowercase(eog_labels[idx]))
                 occursin("1", eog_labels[idx]) && push!(
                     locs,
                     [

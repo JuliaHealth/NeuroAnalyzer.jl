@@ -34,17 +34,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd(
-    s::AbstractVector;
-    fs::Int64,
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+        s::AbstractVector;
+        fs::Int64,
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
     @assert nt >= 1 "nt must be ≥ 1."
@@ -124,17 +124,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd(
-    s::AbstractMatrix;
-    fs::Int64,
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+        s::AbstractMatrix;
+        fs::Int64,
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     _, f = @views psd(
         s[1, :],
@@ -202,17 +202,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd(
-    s::AbstractArray;
-    fs::Int64,
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+        s::AbstractArray;
+        fs::Int64,
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -287,18 +287,18 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
@@ -349,13 +349,13 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function mwpsd(
-    s::AbstractVector;
-    pad::Int64 = 0,
-    db::Bool = true,
-    fs::Int64,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    w::Bool = true,
-)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+        s::AbstractVector;
+        pad::Int64 = 0,
+        db::Bool = true,
+        fs::Int64,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        w::Bool = true,
+    )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert pad >= 0 "pad must be ≥ 0."
@@ -412,8 +412,8 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function ghpsd(
-    s::AbstractVector; fs::Int64, db::Bool = true, gw::Real = 5, w::Bool = true
-)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+        s::AbstractVector; fs::Int64, db::Bool = true, gw::Real = 5, w::Bool = true
+    )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 

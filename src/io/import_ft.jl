@@ -21,8 +21,8 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
   - `markers::DataFrame` - for events
 """
 function import_ft(
-    file_name::String; type::Symbol, detect_type::Bool = false
-)::Union{NeuroAnalyzer.NEURO, DataFrame}
+        file_name::String; type::Symbol, detect_type::Bool = false
+    )::Union{NeuroAnalyzer.NEURO, DataFrame}
 
     _wip()
 
@@ -73,11 +73,11 @@ function import_ft(
         value = value[value_idx]
 
         markers = DataFrame(
-            :id=>string.(id),
-            :start=>Float64.(start),
-            :length=>Float64.(duration),
-            :value=>strip.(string.(value)),
-            :channel=>zeros(Int64, length(id)),
+            :id => string.(id),
+            :start => Float64.(start),
+            :length => Float64.(duration),
+            :value => strip.(string.(value)),
+            :channel => zeros(Int64, length(id)),
         )
         _info(
             "Imported: $(DataFrames.nrow(markers)) events; events start and length are in samples, use `markers_s2t()` to convert to seconds",
@@ -110,7 +110,7 @@ function import_ft(
             ch_type = _set_channel_types(clabels)
             if "chanunit" in keys(hdr)
                 units = strip.(string.(hdr["chanunit"][:]))
-                units = replace.(units, "uV"=>"μV")
+                units = replace.(units, "uV" => "μV")
             else
                 units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
             end
@@ -122,17 +122,17 @@ function import_ft(
             end
             if "chanunit" in keys(hdr)
                 units = string.(hdr["chanunit"][:])
-                units = replace.(units, "uV"=>"μV")
+                units = replace.(units, "uV" => "μV")
             else
                 units = repeat(["μV"], ch_n)
             end
         end
-        ch_type = replace.(ch_type, "nirs"=>"nirs_od")
-        ch_type = replace.(ch_type, "aux"=>"other")
-        ch_type = replace.(ch_type, "stimulus"=>"mrk")
-        ch_type = replace.(ch_type, "analog trigger"=>"mrk")
-        ch_type = replace.(ch_type, "digital trigger"=>"mrk")
-        ch_type = replace.(ch_type, "unknown"=>"other")
+        ch_type = replace.(ch_type, "nirs" => "nirs_od")
+        ch_type = replace.(ch_type, "aux" => "other")
+        ch_type = replace.(ch_type, "stimulus" => "mrk")
+        ch_type = replace.(ch_type, "analog trigger" => "mrk")
+        ch_type = replace.(ch_type, "digital trigger" => "mrk")
+        ch_type = replace.(ch_type, "unknown" => "other")
 
         @assert "trial" in keys(dataset) "Dataset does not contain trial field."
         ep_n = "trial" in keys(dataset) ? size(dataset["trial"], 2) : 1
@@ -180,11 +180,11 @@ function import_ft(
             "FieldTrip markers are stored separately and must be imported using `import_ft(file_name, type=:events)` and added manually using `add_markers()`",
         )
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
 
         if data_type == "eeg"
@@ -280,7 +280,7 @@ function import_ft(
                     @views data[ch_idx, :, 1] .*= 10^15
                     units[ch_idx] = "fT/cm"
                 elseif units[ch_idx] == "V" &&
-                    ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
+                        ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
                     @views data[ch_idx, :, 1] .*= 10^6
                     units[ch_idx] = "μV"
                 end
@@ -292,15 +292,15 @@ function import_ft(
                 y = dataset["grad"]["chanpos"][:, 2]
                 z = dataset["grad"]["chanpos"][:, 3]
                 meg_locs = DataFrame(
-                    :label=>meg_labels,
-                    :loc_radius=>zeros(length(meg_labels)),
-                    :loc_theta=>zeros(length(meg_labels)),
-                    :loc_x=>x,
-                    :loc_y=>y,
-                    :loc_z=>z,
-                    :loc_radius_sph=>zeros(length(meg_labels)),
-                    :loc_theta_sph=>zeros(length(meg_labels)),
-                    :loc_phi_sph=>zeros(length(meg_labels)),
+                    :label => meg_labels,
+                    :loc_radius => zeros(length(meg_labels)),
+                    :loc_theta => zeros(length(meg_labels)),
+                    :loc_x => x,
+                    :loc_y => y,
+                    :loc_z => z,
+                    :loc_radius_sph => zeros(length(meg_labels)),
+                    :loc_theta_sph => zeros(length(meg_labels)),
+                    :loc_phi_sph => zeros(length(meg_labels)),
                 )
                 locs_normalize!(meg_locs)
                 locs_cart2sph!(meg_locs)
@@ -319,15 +319,15 @@ function import_ft(
                 y = dataset["elec"]["chanpos"][:, 2]
                 z = dataset["elec"]["chanpos"][:, 3]
                 eeg_locs = DataFrame(
-                    :label=>eeg_labels,
-                    :loc_radius=>zeros(length(eeg_labels)),
-                    :loc_theta=>zeros(length(eeg_labels)),
-                    :loc_x=>x,
-                    :loc_y=>y,
-                    :loc_z=>z,
-                    :loc_radius_sph=>zeros(length(eeg_labels)),
-                    :loc_theta_sph=>zeros(length(eeg_labels)),
-                    :loc_phi_sph=>zeros(length(eeg_labels)),
+                    :label => eeg_labels,
+                    :loc_radius => zeros(length(eeg_labels)),
+                    :loc_theta => zeros(length(eeg_labels)),
+                    :loc_x => x,
+                    :loc_y => y,
+                    :loc_z => z,
+                    :loc_radius_sph => zeros(length(eeg_labels)),
+                    :loc_theta_sph => zeros(length(eeg_labels)),
+                    :loc_phi_sph => zeros(length(eeg_labels)),
                 )
                 locs_normalize!(eeg_locs)
                 locs_cart2sph!(eeg_locs)
@@ -423,9 +423,9 @@ function import_ft(
 
         elseif data_type == "nirs"
 
-            clabels = replace.(clabels, ".0"=>"")
-            clabels = replace.(clabels, " ["=>" ")
-            clabels = replace.(clabels, "nm]"=>"")
+            clabels = replace.(clabels, ".0" => "")
+            clabels = replace.(clabels, " [" => " ")
+            clabels = replace.(clabels, "nm]" => "")
 
             @assert "opto" in keys(dataset) "Dataset does not contain opto field."
             opto = dataset["opto"]
@@ -467,15 +467,15 @@ function import_ft(
             y = opto["optopos"][:, 2]
             z = opto["optopos"][:, 3]
             global locs = DataFrame(
-                :label=>opt_labels,
-                :loc_radius=>zeros(length(opt_labels)),
-                :loc_theta=>zeros(length(opt_labels)),
-                :loc_x=>x,
-                :loc_y=>y,
-                :loc_z=>z,
-                :loc_radius_sph=>zeros(length(opt_labels)),
-                :loc_theta_sph=>zeros(length(opt_labels)),
-                :loc_phi_sph=>zeros(length(opt_labels)),
+                :label => opt_labels,
+                :loc_radius => zeros(length(opt_labels)),
+                :loc_theta => zeros(length(opt_labels)),
+                :loc_x => x,
+                :loc_y => y,
+                :loc_z => z,
+                :loc_radius_sph => zeros(length(opt_labels)),
+                :loc_theta_sph => zeros(length(opt_labels)),
+                :loc_phi_sph => zeros(length(opt_labels)),
             )
             locs_normalize!(locs)
             locs_cart2sph!(locs)
@@ -527,8 +527,8 @@ function import_ft(
 
         _info(
             "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+                uppercase(obj.header.recording[:data_type]) *
+                " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
         )
 
         return obj

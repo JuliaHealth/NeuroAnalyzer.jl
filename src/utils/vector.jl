@@ -46,8 +46,8 @@ Return the positions of the value in the vector.
   - `d::Real`: the difference between `y` and `x[idx]`
 """
 function vsearch(
-    y::Real, x::AbstractVector; acc::Bool = false
-)::Union{Int64, Tuple{Int64, Real}}
+        y::Real, x::AbstractVector; acc::Bool = false
+    )::Union{Int64, Tuple{Int64, Real}}
 
     @assert length(x) > 0 "Length of x must be > 0."
     d, idx = findmin(abs.(x .- y))
@@ -73,8 +73,8 @@ Return the positions of the value in the vector.
   - `d::Real`: the difference between `y` and `x[idx:idx + length(y)]`
 """
 function vsearch(
-    y::AbstractVector, x::AbstractVector; acc::Bool = false
-)::Union{AbstractVector, Tuple{AbstractVector, AbstractVector}}
+        y::AbstractVector, x::AbstractVector; acc::Bool = false
+    )::Union{AbstractVector, Tuple{AbstractVector, AbstractVector}}
 
     @assert length(x) > 0 "Length of x must be > 0."
     @assert length(y) <= length(x) "Length of y must be ≤ length 'x'"
@@ -193,8 +193,8 @@ Reduce two vectors at indices of the second vector being multiplications of a co
   - `f_new::AbstractVector`
 """
 function vreduce(
-    x::AbstractVector, f::AbstractVector; n::Float64 = 0.5
-)::Tuple{AbstractVector, AbstractVector}
+        x::AbstractVector, f::AbstractVector; n::Float64 = 0.5
+    )::Tuple{AbstractVector, AbstractVector}
 
     @assert length(x) > 0 "Length of x must be > 0."
     @assert length(f) > 0 "Length of f must be > 0."

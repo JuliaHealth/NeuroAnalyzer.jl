@@ -19,10 +19,10 @@ Delete channel(s).
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_channel(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false,
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        del_opt::Bool = false,
+    )::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
     ch = get_channel(obj, ch = ch)
@@ -103,10 +103,10 @@ Delete channels.
   - `Nothing`
 """
 function delete_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false,
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        del_opt::Bool = false,
+    )::Nothing
 
     length(get_channel(obj, ch = ch)) == 0 && (return nothing)
     obj_new = delete_channel(obj, ch = ch, del_opt = del_opt)
@@ -134,8 +134,8 @@ Keep channels.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function keep_channel(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+    )::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
     length(get_channel(obj, ch = ch)) == ch_n && (return obj)
@@ -163,8 +163,8 @@ Keep channels.
   - `Nothing`
 """
 function keep_channel!(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+    )::Nothing
 
     length(get_channel(obj, ch = ch)) == nchannels(obj) && (return nothing)
     obj_new = keep_channel(obj, ch = ch)

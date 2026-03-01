@@ -26,12 +26,12 @@ Plot connectivity circle.
   - `p::GLMakie.Figure`
 """
 function plot_connectivity_circle(
-    m::AbstractMatrix;
-    clabels = Vector{String},
-    title::String = "",
-    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-    threshold_type::Symbol = :neq,
-)::GLMakie.Figure
+        m::AbstractMatrix;
+        clabels = Vector{String},
+        title::String = "",
+        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+        threshold_type::Symbol = :neq,
+    )::GLMakie.Figure
 
     @assert size(m, 1) == length(clabels) "Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."
     @assert size(m, 1) >= 2 "m must contain data for ≥ 2 channels."
@@ -116,7 +116,7 @@ function plot_connectivity_circle(
     # draw labels
     ang = t[1:(end - 1)]
     for idx in axes(clabels, 1)
-        if _bin(ang[idx], (-pi/2, pi/2))
+        if _bin(ang[idx], (-pi / 2, pi / 2))
             GLMakie.text!(
                 pos_x[idx] * 1.1,
                 pos_y[idx] * 1.1;

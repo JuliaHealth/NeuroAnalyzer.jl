@@ -84,8 +84,8 @@ Perform FFT denoising.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function denoise_fft(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
@@ -113,8 +113,8 @@ Perform FFT denoising.
   - `Nothing`
 """
 function denoise_fft!(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
+    )::Nothing
 
     obj_new = denoise_fft(obj, ch = ch, pad = pad, t = t)
     obj.data = obj_new.data

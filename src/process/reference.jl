@@ -29,8 +29,8 @@ Reference to common electrode(s). Only signal channels are processed.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_ce(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, med::Bool = false
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, med::Bool = false
+    )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
 
@@ -120,13 +120,13 @@ Reference to averaged reference. Only signal channels are processed.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_avg(
-    obj::NeuroAnalyzer.NEURO;
-    exclude_fpo::Bool = false,
-    exclude_current::Bool = false,
-    average::Bool = true,
-    med::Bool = false,
-    weighted::Bool = false,
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        exclude_fpo::Bool = false,
+        exclude_current::Bool = false,
+        average::Bool = true,
+        med::Bool = false,
+        weighted::Bool = false,
+    )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
 
@@ -240,13 +240,13 @@ Reference to averaged reference. Only signal channels are processed.
   - `Nothing`
 """
 function reference_avg!(
-    obj::NeuroAnalyzer.NEURO;
-    exclude_fpo::Bool = false,
-    exclude_current::Bool = false,
-    average::Bool = true,
-    med::Bool = false,
-    weighted::Bool = false,
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        exclude_fpo::Bool = false,
+        exclude_current::Bool = false,
+        average::Bool = true,
+        med::Bool = false,
+        weighted::Bool = false,
+    )::Nothing
 
     obj_new = reference_avg(
         obj;
@@ -597,8 +597,8 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_plap(
-    obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false
+    )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
     _has_locs(obj)
@@ -722,8 +722,8 @@ Reference using spherical Laplacian (using `nn` adjacent electrodes). Only signa
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_slap(
-    obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false
+    )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
     _has_locs(obj)
@@ -865,29 +865,29 @@ Examples of montages:
   - bipolar longitudinal: ["FPz-Fz", "Fz-Cz", "Cz-Pz", "Pz-Oz", "Fp1-F7", "Fp1-F3", "F7-T7", "F7-T3", "T7-P7", "T7-T5", "T3-P7", "T3-T5", "P7-O1", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "F8-T8", "F8-T4", "T8-P8", "T8-T6", "T4-P8", "T4-T6", "T6-O2", "P8-O2", "Fp2-F4", "F4-C4", "C4-P4", "P4-O2"], "longitudinal-BIP"
 """
 function reference_custom(
-    obj::NeuroAnalyzer.NEURO;
-    ref_list::Vector{String} = [
-        "Fz-Cz",
-        "Cz-Pz",
-        "Fp1-F7",
-        "Fp1-F3",
-        "F7-T3",
-        "T3-T5",
-        "T5-O1",
-        "F3-C3",
-        "C3-P3",
-        "P3-O1",
-        "Fp2-F8",
-        "F8-T4",
-        "T4-T6",
-        "T6-O2",
-        "Fp2-F4",
-        "F4-C4",
-        "C4-P4",
-        "P4-O2",
-    ],
-    ref_name::String = "longitudinal-BIP",
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ref_list::Vector{String} = [
+            "Fz-Cz",
+            "Cz-Pz",
+            "Fp1-F7",
+            "Fp1-F3",
+            "F7-T3",
+            "T3-T5",
+            "T5-O1",
+            "F3-C3",
+            "C3-P3",
+            "P3-O1",
+            "Fp2-F8",
+            "F8-T4",
+            "T4-T6",
+            "T6-O2",
+            "Fp2-F4",
+            "F4-C4",
+            "C4-P4",
+            "P4-O2",
+        ],
+        ref_name::String = "longitudinal-BIP",
+    )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
 
@@ -975,29 +975,29 @@ Examples of montages:
   - `Nothing`
 """
 function reference_custom!(
-    obj::NeuroAnalyzer.NEURO;
-    ref_list::Vector{String} = [
-        "Fz-Cz",
-        "Cz-Pz",
-        "Fp1-F7",
-        "Fp1-F3",
-        "F7-T3",
-        "T3-T5",
-        "T5-O1",
-        "F3-C3",
-        "C3-P3",
-        "P3-O1",
-        "Fp2-F8",
-        "Fp2-F4",
-        "F8-T4",
-        "T4-T6",
-        "T6-O2",
-        "F4-C4",
-        "C4-P4",
-        "P4-O2",
-    ],
-    ref_name::String = "BIP ||",
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ref_list::Vector{String} = [
+            "Fz-Cz",
+            "Cz-Pz",
+            "Fp1-F7",
+            "Fp1-F3",
+            "F7-T3",
+            "T3-T5",
+            "T5-O1",
+            "F3-C3",
+            "C3-P3",
+            "P3-O1",
+            "Fp2-F8",
+            "Fp2-F4",
+            "F8-T4",
+            "T4-T6",
+            "T6-O2",
+            "F4-C4",
+            "C4-P4",
+            "P4-O2",
+        ],
+        ref_name::String = "BIP ||",
+    )::Nothing
 
     obj_new = reference_custom(obj, ref_list = ref_list, ref_name = ref_name)
     obj.data = obj_new.data

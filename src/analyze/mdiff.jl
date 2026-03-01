@@ -23,8 +23,8 @@ Named tuple containing:
   - `p::Float64`
 """
 function mdiff(
-    s1::AbstractMatrix, s2::AbstractMatrix; n::Int64 = 3, method::Symbol = :absdiff
-)::@NamedTuple{st::Vector{Float64}, sts::Float64, p::Float64}
+        s1::AbstractMatrix, s2::AbstractMatrix; n::Int64 = 3, method::Symbol = :absdiff
+    )::@NamedTuple{st::Vector{Float64}, sts::Float64, p::Float64}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _check_var(method, [:absdiff, :diff2int], "method")
@@ -100,8 +100,8 @@ Named tuple containing:
   - `p::Vector{Float64}`
 """
 function mdiff(
-    s1::AbstractArray, s2::AbstractArray; n::Int64 = 3, method::Symbol = :absdiff
-)::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
+        s1::AbstractArray, s2::AbstractArray; n::Int64 = 3, method::Symbol = :absdiff
+    )::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     @assert n >= 1 "n must be ≥ 1."
@@ -149,15 +149,15 @@ Named tuple containing:
   - `p::Vector{Float64}`
 """
 function mdiff(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    n::Int64 = 3,
-    method::Symbol = :absdiff,
-)::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        n::Int64 = 3,
+        method::Symbol = :absdiff,
+    )::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")

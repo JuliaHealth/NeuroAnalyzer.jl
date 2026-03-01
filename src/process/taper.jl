@@ -71,8 +71,8 @@ Taper the signal.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function taper(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real}
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real}
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)

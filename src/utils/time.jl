@@ -47,7 +47,7 @@ function s2t(s::Real, fs::Int64)::Float64
         s = 1
     end
 
-    return round(s / fs - (1/fs), digits = 4)
+    return round(s / fs - (1 / fs), digits = 4)
 
 end
 

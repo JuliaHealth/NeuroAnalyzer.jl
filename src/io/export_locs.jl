@@ -16,8 +16,8 @@ Export channel locations data, format is based on `file_name` extension (.csv, .
   - `Nothing`
 """
 function export_locs(
-    obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
+    )::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 

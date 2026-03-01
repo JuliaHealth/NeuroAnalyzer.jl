@@ -149,7 +149,7 @@ function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float6
     @assert length(stat_dist) > 0 "Length of stat_dist is 0, cannot compute."
 
     type === :g && return count(stat_dist .> v) / length(stat_dist)
-    type === :l && return count(stat_dist .< v) / length(stat_dist)
+    return type === :l && return count(stat_dist .< v) / length(stat_dist)
 
 end
 

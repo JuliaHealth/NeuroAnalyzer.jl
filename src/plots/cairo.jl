@@ -50,7 +50,7 @@ function plot2canvas(p::GLMakie.Figure)::Cairo.CairoSurfaceBase{UInt32}
     p_size = size(p.scene)
     c = CairoRGBSurface(p_size[1], p_size[2])
     cr = CairoContext(c)
-    fname = tempname()*".png"
+    fname = tempname() * ".png"
     GLMakie.save(fname, p)
     img = read_from_png(fname)
     rm(fname)
@@ -105,8 +105,8 @@ Resize CairoSurfaceBase to make space for another canvas
   - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function add_topmargin_canvas(
-    c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}
-)::Cairo.CairoSurfaceBase{UInt32}
+        c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}
+    )::Cairo.CairoSurfaceBase{UInt32}
 
     c = CairoRGBSurface(c1.width, c1.height + c2.height)
     cr = CairoContext(c)
@@ -140,14 +140,14 @@ Place CairoSurfaceBase at another canvas at `x, y`. If `file_name` is provided, 
   - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function add_to_canvas(
-    c1::Cairo.CairoSurfaceBase{UInt32},
-    c2::Cairo.CairoSurfaceBase{UInt32};
-    x::Int64,
-    y::Int64,
-    title::String = "",
-    view::Bool = true,
-    file_name::String = "",
-)::Cairo.CairoSurfaceBase{UInt32}
+        c1::Cairo.CairoSurfaceBase{UInt32},
+        c2::Cairo.CairoSurfaceBase{UInt32};
+        x::Int64,
+        y::Int64,
+        title::String = "",
+        view::Bool = true,
+        file_name::String = "",
+    )::Cairo.CairoSurfaceBase{UInt32}
 
     c = CairoRGBSurface(c1.width, c1.height)
     cr = CairoContext(c)

@@ -33,18 +33,18 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd_rel(
-    s::AbstractVector;
-    fs::Int64,
-    db::Bool = false,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+        s::AbstractVector;
+        fs::Int64,
+        db::Bool = false,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     ref_pw = if flim === nothing
         total_power(s, fs = fs, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw)
@@ -106,18 +106,18 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd_rel(
-    s::AbstractMatrix;
-    fs::Int64,
-    db::Bool = false,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+        s::AbstractMatrix;
+        fs::Int64,
+        db::Bool = false,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     ch_n = size(s, 1)
 
@@ -190,18 +190,18 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd_rel(
-    s::AbstractArray;
-    fs::Int64,
-    db::Bool = false,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+        s::AbstractArray;
+        fs::Int64,
+        db::Bool = false,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -277,18 +277,18 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function psd_rel(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     p, f = @views psd_rel(

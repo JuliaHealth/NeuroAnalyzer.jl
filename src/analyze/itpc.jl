@@ -26,8 +26,8 @@ Named tuple containing:
  1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
 function itpc(
-    s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing} = nothing
-)::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
+        s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing} = nothing
+    )::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
 
     _chk3d(s)
     @assert t >= 1 "t must be ≥ 1."
@@ -77,13 +77,13 @@ Named tuple containing:
   - `itpc_ph::Matrix{Float64}`: phase difference (channel2 - channel1)
 """
 function itpc(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    t::Real,
-    w::Union{Vector{<:Real}, Nothing} = nothing,
-)::@NamedTuple{
-    itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        t::Real,
+        w::Union{Vector{<:Real}, Nothing} = nothing,
+    )::@NamedTuple{
+        itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64},
+    }
 
     ep_n = nepochs(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
@@ -126,10 +126,10 @@ Named tuple containing:
   - `itpc_ph::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
 """
 function itpc_spec(
-    s::AbstractArray; w::Union{AbstractVector, Nothing} = nothing
-)::@NamedTuple{
-    itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}
-}
+        s::AbstractArray; w::Union{AbstractVector, Nothing} = nothing
+    )::@NamedTuple{
+        itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64},
+    }
 
     _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
@@ -183,13 +183,13 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies list
 """
 function itpc_spec(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    nfrq::Int64 = _tlength(flim),
-    frq::Symbol = :log,
-    w::Union{Vector{<:Real}, Nothing} = nothing,
-)::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, f::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        nfrq::Int64 = _tlength(flim),
+        frq::Symbol = :log,
+        w::Union{Vector{<:Real}, Nothing} = nothing,
+    )::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, f::Vector{Float64}}
 
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(flim, (0, sr(obj) / 2), "flim")

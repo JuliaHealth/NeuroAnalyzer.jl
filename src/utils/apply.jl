@@ -16,8 +16,8 @@ Apply custom function.
   - `out::Array{Float64, 3}`
 """
 function apply(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, f::String
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, f::String
+    )::Array{Float64, 3}
 
     ch = get_channel(obj, ch = ch)
     ch_n = length(ch)

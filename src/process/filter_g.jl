@@ -90,8 +90,8 @@ Filter using Gaussian in the frequency domain.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function filter_g(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
@@ -120,8 +120,8 @@ Filter using Gaussian in the frequency domain.
   - `Nothing`
 """
 function filter_g!(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
+    )::Nothing
 
     obj_new = filter_g(obj, ch = ch, pad = pad, f = f, gw = gw)
     obj.data = obj_new.data

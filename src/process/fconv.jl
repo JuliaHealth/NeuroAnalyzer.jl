@@ -82,8 +82,8 @@ Perform convolution in the frequency domain.
   - `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
 function fconv(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector, norm::Bool = true
-)::Array{ComplexF64, 3}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector, norm::Bool = true
+    )::Array{ComplexF64, 3}
 
     ch = get_channel(obj, ch = ch)
     s_new = @views fconv(obj.data[ch, :, :], kernel = kernel, norm = norm)

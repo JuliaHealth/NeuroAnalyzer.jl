@@ -21,8 +21,8 @@ Calculate Phase Slope Index (PSI).
  1. Nolte, G., Ziehe, A., Nikulin, V. V., Schlögl, A., Krämer, N., Brismar, T., & Müller, K.-R. (2008). Robustly Estimating the Flow Direction of Information in Complex Physical Systems. Physical Review Letters. 2008; 100(23).
 """
 function psi(
-    s1::AbstractVector, s2::AbstractVector; fs::Int64, flim::Tuple{Real, Real} = (1, fs / 2 - 1)
-)::Tuple{Float64, Float64}
+        s1::AbstractVector, s2::AbstractVector; fs::Int64, flim::Tuple{Real, Real} = (1, fs / 2 - 1)
+    )::Tuple{Float64, Float64}
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
     _check_tuple(flim, (1, fs / 2 - 1), "flim")
@@ -71,14 +71,14 @@ Calculate Phase Slope Index (PSI).
   - `pv::Matrix{Float64}`: PSI value
 """
 function psi(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    flim::Tuple{Real, Real} = (1, sr(obj1) / 2 - 1),
-)::Matrix{Tuple{Float64, Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        flim::Tuple{Real, Real} = (1, sr(obj1) / 2 - 1),
+    )::Matrix{Tuple{Float64, Float64}}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
@@ -128,8 +128,8 @@ Calculate Phase Slope Index (PSI).
   - `pv::Array{Tuple{Float64, Float64}, 3}`: PSI value
 """
 function psi(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real} = (1, sr(obj) / 2 - 1)
-)::Array{Tuple{Float64, Float64}, 3}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real} = (1, sr(obj) / 2 - 1)
+    )::Array{Tuple{Float64, Float64}, 3}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)

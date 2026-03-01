@@ -25,14 +25,14 @@ Named tuple containing:
   - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pcacomp(
-    m::Matrix{Float64}; n::Int64 = size(m, 2), zstd::Bool = true
-)::@NamedTuple{
-    pc::DataFrame,
-    pcv::Vector{Float64},
-    pcm::Vector{Float64},
-    pcp::Matrix{Float64},
-    pc_model::MultivariateStats.PCA{Float64},
-}
+        m::Matrix{Float64}; n::Int64 = size(m, 2), zstd::Bool = true
+    )::@NamedTuple{
+        pc::DataFrame,
+        pcv::Vector{Float64},
+        pcm::Vector{Float64},
+        pcp::Matrix{Float64},
+        pc_model::MultivariateStats.PCA{Float64},
+    }
 
     @assert n >= 1 "n must be ≥ 1."
     @assert n <= size(m, 2) "n must be ≤ $(size(m, 2))."
@@ -96,14 +96,14 @@ Named tuple containing:
   - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pcacomp(
-    df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
-)::@NamedTuple{
-    pc::DataFrame,
-    pcv::Vector{Float64},
-    pcm::Vector{Float64},
-    pcp::Matrix{Float64},
-    pc_model::MultivariateStats.PCA{Float64},
-}
+        df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
+    )::@NamedTuple{
+        pc::DataFrame,
+        pcv::Vector{Float64},
+        pcm::Vector{Float64},
+        pcp::Matrix{Float64},
+        pc_model::MultivariateStats.PCA{Float64},
+    }
 
     @assert length(vars) > 1 "vars must contain at least 2 variable names."
     @assert n >= 1 "n must be ≥ 1."
@@ -136,8 +136,8 @@ Plot PCA biplot.
   - `Union{Nothing, GLMakie.Figure}`
 """
 function biplot(
-    df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
-)::Union{Nothing, GLMakie.Figure}
+        df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
+    )::Union{Nothing, GLMakie.Figure}
 
     pca = pcacomp(df, vars; n = n, zstd = zstd)
     n = length(pca.pc_model.prinvars)
@@ -147,8 +147,8 @@ function biplot(
             p[1, 1];
             aspect = 1,
             title = "Biplot",
-            xlabel = "PC1 ($(round(pca.pcv[1], digits=1))%)",
-            ylabel = "PC2 ($(round(pca.pcv[2], digits=1))%)",
+            xlabel = "PC1 ($(round(pca.pcv[1], digits = 1))%)",
+            ylabel = "PC2 ($(round(pca.pcv[2], digits = 1))%)",
         )
         GLMakie.xlims!(ax, (-4, 4))
         GLMakie.ylims!(ax, (-4, 4))
@@ -190,8 +190,8 @@ Plot PCA scree plot.
   - `p::GLMakie.Figure`
 """
 function screeplot(
-    df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
-)::GLMakie.Figure
+        df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
+    )::GLMakie.Figure
 
     pca = pcacomp(df, vars; n = n, zstd = zstd)
     n = length(pca.pc_model.prinvars)
@@ -279,7 +279,7 @@ function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real):
         end
     else
         eig = pc_model.prinvars
-        return count(x->x > value, eig)
+        return count(x -> x > value, eig)
     end
 
 end

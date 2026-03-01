@@ -19,7 +19,7 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
 
     # prepare plot
     GLMakie.activate!(title = "plot_gridlocs()")
-    plot_size=(800, 800)
+    plot_size = (800, 800)
     p = GLMakie.Figure(size = plot_size, figure_padding = 0)
     ax = GLMakie.Axis(
         p[1, 1];

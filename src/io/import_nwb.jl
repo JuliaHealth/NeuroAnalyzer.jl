@@ -87,7 +87,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         end
         # remove microseconds
         m = match(r".*(\.[0-9]*)\+.*", t)
-        m !== nothing && (t = replace(t, m.captures[1]=>""))
+        m !== nothing && (t = replace(t, m.captures[1] => ""))
         recording_date = ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz"))
         recording_date =
             string(Dates.year(recording_date)) *
@@ -128,7 +128,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         end
         # remove microseconds
         m = match(r".*(\.[0-9]*)\+.*", t)
-        m !== nothing && (t = replace(t, m.captures[1]=>""))
+        m !== nothing && (t = replace(t, m.captures[1] => ""))
         t_start =
             Dates.Second(ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz"))).value
     end
@@ -164,30 +164,30 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     time_pts =
         round.(
-            collect(
-                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-            )[1:(end - 1)];
-            digits = 4,
-        ) .+ t_start
+        collect(
+            0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
+        )[1:(end - 1)];
+        digits = 4,
+    ) .+ t_start
     epoch_time =
         round.(
-            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-            digits = 4,
-        ) .+ t_start
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
+    ) .+ t_start
 
     # events
     "acquisition/Stimulus/data" in k && (stim = dataset["acquisition/Stimulus/data"])
     # dataset["acquisition/Stimulus/timestamps"]
     # check if events file is available
     m = match(r".*(_[is]eeg).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1]=>"_events"))
+    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
     m = match(r".*(_eeg).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1]=>"_events"))
+    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
     m = match(r".*(_meg).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1]=>"_events"))
+    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
     m = match(r".*(_ecog).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1]=>"_events"))
-    occursin(".nwb", events_file) && (events_file = replace(events_file, ".nwb"=>".tsv"))
+    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
+    occursin(".nwb", events_file) && (events_file = replace(events_file, ".nwb" => ".tsv"))
     if isfile(events_file)
         events = CSV.read(events_file, DataFrame)
         _info("$(DataFrames.nrow(events)) markers found")
@@ -197,24 +197,24 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         event_start = zeros(length(event_start_sample))
         [
             event_start[idx] = time_pts[event_start_sample[idx]] for
-            idx in eachindex(event_start_sample)
+                idx in eachindex(event_start_sample)
         ]
         event_length = round.(events[!, :duration], digits = 4)
         event_channel = zeros(Int64, DataFrames.nrow(events))
         markers = DataFrame(
-            :id=>event_id,
-            :start=>event_start,
-            :length=>event_length,
-            :value=>event_description,
-            :channel=>event_channel,
+            :id => event_id,
+            :start => event_start,
+            :length => event_length,
+            :value => event_description,
+            :channel => event_channel,
         )
     else
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
     end
 
@@ -266,7 +266,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         file_type = file_type,
         recording = recording,
         recording_date = recording_date,
-        recording_time = replace(recording_time, '.'=>':'),
+        recording_time = replace(recording_time, '.' => ':'),
         recording_notes = recording_notes,
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
@@ -292,8 +292,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

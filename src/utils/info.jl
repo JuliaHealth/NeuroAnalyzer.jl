@@ -352,7 +352,7 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
     println("            File format: $(obj.header.recording[:file_type])")
     println("            Source file: $(obj.header.recording[:file_name])")
     println("         File size [MB]: $(obj.header.recording[:file_size_mb])")
-    println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits=2))")
+    println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits = 2))")
     if length(obj.header.subject[:id]) > 0
         println(
             "                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])",
@@ -368,13 +368,13 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
     println("         Recording time: $(obj.header.recording[:recording_time])")
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
-    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=4))")
+    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits = 4))")
     println("     Number of channels: $(nchannels(obj))")
     if !(datatype(obj) in ["mep", "sensors", "eda"])
         println("              Epochs ID: $(obj.header.recording[:epoch_id])")
         println("       Number of epochs: $(nepochs(obj))")
         println(" Epoch length [samples]: $(epoch_len(obj))")
-        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=4))")
+        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits = 4))")
     end
     if datatype(obj) == "eeg"
         if obj.header.recording[:reference] == ""
@@ -432,30 +432,30 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
     elseif datatype(obj) == "nirs"
         nch = 0
         for idx in [
-            "nirs",
-            "nirs_int",
-            "nirs_od",
-            "nirs_dmean",
-            "nirs_dvar",
-            "nirs_dskew",
-            "nirs_mua",
-            "nirs_musp",
-            "nirs_hbo",
-            "nirs_hbr",
-            "nirs_hbt",
-            "nirs_h2o",
-            "nirs_lipid",
-            "nirs_bfi",
-            "nirs_hrf_dod",
-            "nirs_hrf_dmean",
-            "nirs_hrf_dvar",
-            "nirs_hrf_dskew",
-            "nirs_hrf_hbo",
-            "nirs_hrf_hbr",
-            "nirs_hrf_hbt",
-            "nirs_hrf_bfi",
-            "nirs_aux",
-        ]
+                "nirs",
+                "nirs_int",
+                "nirs_od",
+                "nirs_dmean",
+                "nirs_dvar",
+                "nirs_dskew",
+                "nirs_mua",
+                "nirs_musp",
+                "nirs_hbo",
+                "nirs_hbr",
+                "nirs_hbt",
+                "nirs_h2o",
+                "nirs_lipid",
+                "nirs_bfi",
+                "nirs_hrf_dod",
+                "nirs_hrf_dmean",
+                "nirs_hrf_dvar",
+                "nirs_hrf_dskew",
+                "nirs_hrf_hbo",
+                "nirs_hrf_hbr",
+                "nirs_hrf_hbt",
+                "nirs_hrf_bfi",
+                "nirs_aux",
+            ]
             nch += count(x -> isequal(x, idx), obj.header.recording[:channel_type])
         end
         println("Number of NIRS channels: $nch")
@@ -485,7 +485,7 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     println("            File format: $(obj.header.recording[:file_type])")
     println("            Source file: $(obj.header.recording[:file_name])")
     println("         File size [MB]: $(obj.header.recording[:file_size_mb])")
-    println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits=2))")
+    println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits = 2))")
     if length(obj.header.subject[:id]) > 0
         println(
             "                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])",
@@ -501,13 +501,13 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     println("         Recording time: $(obj.header.recording[:recording_time])")
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
-    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=4))")
+    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits = 4))")
     println("     Number of channels: $(nchannels(obj))")
     if !(datatype(obj) in ["mep", "sensors", "eda"])
         println("              Epochs ID: $(obj.header.recording[:epoch_id])")
         println("       Number of epochs: $(nepochs(obj))")
         println(" Epoch length [samples]: $(epoch_len(obj))")
-        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=4))")
+        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits = 4))")
     end
     if datatype(obj) == "eeg"
         if obj.header.recording[:reference] == ""
@@ -565,30 +565,30 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     elseif datatype(obj) == "nirs"
         nch = 0
         for idx in [
-            "nirs",
-            "nirs_int",
-            "nirs_od",
-            "nirs_dmean",
-            "nirs_dvar",
-            "nirs_dskew",
-            "nirs_mua",
-            "nirs_musp",
-            "nirs_hbo",
-            "nirs_hbr",
-            "nirs_hbt",
-            "nirs_h2o",
-            "nirs_lipid",
-            "nirs_bfi",
-            "nirs_hrf_dod",
-            "nirs_hrf_dmean",
-            "nirs_hrf_dvar",
-            "nirs_hrf_dskew",
-            "nirs_hrf_hbo",
-            "nirs_hrf_hbr",
-            "nirs_hrf_hbt",
-            "nirs_hrf_bfi",
-            "nirs_aux",
-        ]
+                "nirs",
+                "nirs_int",
+                "nirs_od",
+                "nirs_dmean",
+                "nirs_dvar",
+                "nirs_dskew",
+                "nirs_mua",
+                "nirs_musp",
+                "nirs_hbo",
+                "nirs_hbr",
+                "nirs_hbt",
+                "nirs_h2o",
+                "nirs_lipid",
+                "nirs_bfi",
+                "nirs_hrf_dod",
+                "nirs_hrf_dmean",
+                "nirs_hrf_dvar",
+                "nirs_hrf_dskew",
+                "nirs_hrf_hbo",
+                "nirs_hrf_hbr",
+                "nirs_hrf_hbt",
+                "nirs_hrf_bfi",
+                "nirs_aux",
+            ]
             nch += count(x -> isequal(x, idx), obj.header.recording[:channel_type])
         end
         println("Number of NIRS channels: $nch")
@@ -598,63 +598,63 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     if obj.header.recording[:data_type] != "nirs"
         println(
             rpad(" ch", 8) *
-            rpad("label", 16) *
-            rpad("type", 12) *
-            rpad("unit", 8) *
-            rpad("bad", 8),
+                rpad("label", 16) *
+                rpad("type", 12) *
+                rpad("unit", 8) *
+                rpad("bad", 8),
         )
         println(
             " " *
-            repeat("-", 6) *
-            " " *
-            repeat("-", 15) *
-            " " *
-            repeat("-", 11) *
-            " " *
-            repeat("-", 7) *
-            " " *
-            repeat("-", 7),
+                repeat("-", 6) *
+                " " *
+                repeat("-", 15) *
+                " " *
+                repeat("-", 11) *
+                " " *
+                repeat("-", 7) *
+                " " *
+                repeat("-", 7),
         )
         for idx in eachindex(obj.header.recording[:label])
             println(
                 rpad(" $idx", 8) *
-                rpad("$(obj.header.recording[:label][idx])", 16) *
-                rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
-                rpad("$(obj.header.recording[:unit][idx])", 8) *
-                rpad("$(obj.header.recording[:bad_channel][idx])", 8),
+                    rpad("$(obj.header.recording[:label][idx])", 16) *
+                    rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
+                    rpad("$(obj.header.recording[:unit][idx])", 8) *
+                    rpad("$(obj.header.recording[:bad_channel][idx])", 8),
             )
         end
     else
         println(
             rpad(" ch", 8) *
-            rpad("label", 16) *
-            rpad("type", 12) *
-            rpad("unit", 8) *
-            rpad("wavelength", 8),
+                rpad("label", 16) *
+                rpad("type", 12) *
+                rpad("unit", 8) *
+                rpad("wavelength", 8),
         )
         println(
             " " *
-            repeat("-", 6) *
-            " " *
-            repeat("-", 15) *
-            " " *
-            repeat("-", 11) *
-            " " *
-            repeat("-", 7) *
-            " " *
-            repeat("-", 12),
+                repeat("-", 6) *
+                " " *
+                repeat("-", 15) *
+                " " *
+                repeat("-", 11) *
+                " " *
+                repeat("-", 7) *
+                " " *
+                repeat("-", 12),
         )
         for idx in eachindex(obj.header.recording[:label])
             if !(
-                obj.header.recording[:channel_type][idx] in
-                ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]
-            )
+                    obj.header.recording[:channel_type][idx] in
+                        ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]
+                )
                 println(
                     rpad(" $idx", 8) *
-                    rpad("$(obj.header.recording[:label][idx])", 16) *
-                    rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
-                    rpad("$(obj.header.recording[:unit][idx])", 8) *
-                    rpad(
+                        rpad("$(obj.header.recording[:label][idx])", 16) *
+                        rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
+                        rpad("$(obj.header.recording[:unit][idx])", 8) *
+                        rpad(
                         "$(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]])",
                         8,
                     ),
@@ -662,8 +662,8 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
             else
                 println(
                     rpad(" $idx", 8) *
-                    rpad("$(obj.header.recording[:label][idx])", 16) *
-                    rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12),
+                        rpad("$(obj.header.recording[:label][idx])", 16) *
+                        rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12),
                 )
             end
         end
@@ -697,8 +697,8 @@ Show channel info.
   - `channel_info::Union{Nothing, String}`
 """
 function channel_info(
-    obj::NeuroAnalyzer.NEURO; ch::String, pr::Bool = true
-)::Union{Nothing, String}
+        obj::NeuroAnalyzer.NEURO; ch::String, pr::Bool = true
+    )::Union{Nothing, String}
 
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 && (ch = ch[1])
@@ -747,8 +747,8 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
   - `ch::Vector{String}`: channel names
 """
 function channel_pick(
-    obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
-)::Vector{String}
+        obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
+    )::Vector{String}
 
     _check_datatype(obj, "eeg")
 
@@ -1133,54 +1133,54 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
     end
     if df
         df = DataFrame(
-            :ch=>collect(1:nchannels(obj)),
-            :label=>labels(obj),
-            :type=>uppercase.(obj.header.recording[:channel_type]),
-            :unit=>obj.header.recording[:unit],
-            :range=>d[1, :],
-            :mean=>d[2, :],
-            :sd=>d[3, :],
-            :min=>d[4, :],
-            :Q1=>d[5, :],
-            :median=>d[6, :],
-            :Q3=>d[7, :],
-            :max=>d[8, :],
+            :ch => collect(1:nchannels(obj)),
+            :label => labels(obj),
+            :type => uppercase.(obj.header.recording[:channel_type]),
+            :unit => obj.header.recording[:unit],
+            :range => d[1, :],
+            :mean => d[2, :],
+            :sd => d[3, :],
+            :min => d[4, :],
+            :Q1 => d[5, :],
+            :median => d[6, :],
+            :Q3 => d[7, :],
+            :max => d[8, :],
         )
         return df
     else
         println(
             "< " *
-            uppercase(obj.header.recording[:data_type]) *
-            ", $(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) ($(signal_len(obj) / sr(obj)) s) >",
+                uppercase(obj.header.recording[:data_type]) *
+                ", $(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) ($(signal_len(obj) / sr(obj)) s) >",
         )
         println(
             rpad("ch", 4) *
-            rpad("label", 16) *
-            rpad("type", 12) *
-            rpad("unit", 8) *
-            rpad("range", 10) *
-            rpad("mean", 10) *
-            rpad("sd", 10) *
-            rpad("min", 10) *
-            rpad("Q1", 10) *
-            rpad("median", 10) *
-            rpad("Q3", 10) *
-            rpad("max", 10),
+                rpad("label", 16) *
+                rpad("type", 12) *
+                rpad("unit", 8) *
+                rpad("range", 10) *
+                rpad("mean", 10) *
+                rpad("sd", 10) *
+                rpad("min", 10) *
+                rpad("Q1", 10) *
+                rpad("median", 10) *
+                rpad("Q3", 10) *
+                rpad("max", 10),
         )
         for idx in 1:nchannels(obj)
             println(
                 rpad(string(idx), 4) *
-                rpad(labels(obj)[idx], 16) *
-                rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
-                rpad(obj.header.recording[:unit][idx], 8) *
-                rpad(string(d[1, idx]), 10) *
-                rpad(string(d[2, idx]), 10) *
-                rpad(string(d[3, idx]), 10) *
-                rpad(string(d[4, idx]), 10) *
-                rpad(string(d[5, idx]), 10) *
-                rpad(string(d[6, idx]), 10) *
-                rpad(string(d[7, idx]), 10) *
-                rpad(string(d[8, idx]), 10),
+                    rpad(labels(obj)[idx], 16) *
+                    rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
+                    rpad(obj.header.recording[:unit][idx], 8) *
+                    rpad(string(d[1, idx]), 10) *
+                    rpad(string(d[2, idx]), 10) *
+                    rpad(string(d[3, idx]), 10) *
+                    rpad(string(d[4, idx]), 10) *
+                    rpad(string(d[5, idx]), 10) *
+                    rpad(string(d[6, idx]), 10) *
+                    rpad(string(d[7, idx]), 10) *
+                    rpad(string(d[8, idx]), 10),
             )
         end
         return nothing

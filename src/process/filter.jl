@@ -38,16 +38,16 @@ Create FIR or IIR filter.
   - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
 """
 function filter_create(;
-    fprototype::Symbol,
-    ftype::Union{Nothing, Symbol} = nothing,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    fs::Int64,
-    order::Union{Nothing, Int64} = nothing,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing,
-)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+        fprototype::Symbol,
+        ftype::Union{Nothing, Symbol} = nothing,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        fs::Int64,
+        order::Union{Nothing, Int64} = nothing,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        bw::Union{Nothing, Real} = nothing,
+        w::Union{Nothing, AbstractVector} = nothing,
+    )::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     nqf = div(fs, 2)
@@ -78,12 +78,12 @@ function filter_create(;
         @assert bw <= 10 "bw must be ≤ 10."
         if length(cutoff) == 1
             if bw >= cutoff
-                bw = round(cutoff - 0.1, digits=1)
+                bw = round(cutoff - 0.1, digits = 1)
                 _info("bw truncated to $bw Hz")
             end
         else
             if bw >= cutoff[2]
-                bw = round(cutoff[2] - 0.1, digits=1)
+                bw = round(cutoff[2] - 0.1, digits = 1)
                 _info("bw truncated to $bw Hz")
             end
         end
@@ -283,7 +283,7 @@ function filter_create(;
             _info(" F2_pass: $f2_pass Hz")
         end
 
-        flt = remez(order, w, Hz = fs, maxiter=100)
+        flt = remez(order, w, Hz = fs, maxiter = 100)
 
         return flt
 
@@ -346,16 +346,16 @@ Apply IIR or FIR filter.
   - `s_new::Vector{Float64}`
 """
 function filter_apply(
-    s::AbstractVector;
-    flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
-    dir::Symbol = :twopass,
-)::Vector{Float64}
+        s::AbstractVector;
+        flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
+        dir::Symbol = :twopass,
+    )::Vector{Float64}
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
     dir === :onepass && (return filt(flt, s))
     dir === :twopass && (return filtfilt(flt, s))
-    dir === :reverse && (return filt(flt, reverse(s)))
+    return dir === :reverse && (return filt(flt, reverse(s)))
 
 end
 
@@ -379,11 +379,11 @@ Apply IIR or FIR filter.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function filter_apply(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
-    dir::Symbol = :twopass,
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
+        dir::Symbol = :twopass,
+    )::NeuroAnalyzer.NEURO
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
@@ -402,10 +402,10 @@ function filter_apply(
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(
-                                                                    obj.data[ch[ch_idx], :, ep_idx],
-                                                                    flt = flt,
-                                                                    dir = dir,
-                                                                )
+                obj.data[ch[ch_idx], :, ep_idx],
+                flt = flt,
+                dir = dir,
+            )
             # update progress bar
             progress_bar && next!(progbar)
         end
@@ -437,11 +437,11 @@ Apply IIR or FIR filter.
   - `Nothing`
 """
 function filter_apply!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
-    dir::Symbol = :twopass,
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
+        dir::Symbol = :twopass,
+    )::Nothing
 
     obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
 
@@ -495,47 +495,47 @@ Apply filtering.
 If `preview=true`, it will return `GLMakie.Figure`.
 """
 function filter(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    fprototype::Symbol,
-    ftype::Union{Nothing, Symbol} = nothing,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64} = nothing,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing,
-    dir::Symbol = :twopass,
-    preview::Bool = false,
-)::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        fprototype::Symbol,
+        ftype::Union{Nothing, Symbol} = nothing,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        order::Union{Nothing, Int64} = nothing,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        bw::Union{Nothing, Real} = nothing,
+        w::Union{Nothing, AbstractVector} = nothing,
+        dir::Symbol = :twopass,
+        preview::Bool = false,
+    )::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter(
-                    fs = sr(obj),
-                    fprototype = fprototype,
-                    ftype = ftype,
-                    cutoff = cutoff,
-                    order = order,
-                    rp = rp,
-                    rs = rs,
-                    bw = bw,
-                    w = w,
-                )
+            fs = sr(obj),
+            fprototype = fprototype,
+            ftype = ftype,
+            cutoff = cutoff,
+            order = order,
+            rp = rp,
+            rs = rs,
+            bw = bw,
+            w = w,
+        )
         return p
     else
         flt = filter_create(
-                        fprototype = fprototype,
-                        ftype = ftype,
-                        cutoff = cutoff,
-                        fs = sr(obj),
-                        order = order,
-                        rp = rp,
-                        rs = rs,
-                        bw = bw,
-                        w = w,
-                    )
+            fprototype = fprototype,
+            ftype = ftype,
+            cutoff = cutoff,
+            fs = sr(obj),
+            order = order,
+            rp = rp,
+            rs = rs,
+            bw = bw,
+            w = w,
+        )
         obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
 
         return obj_new
@@ -586,50 +586,50 @@ Apply filtering.
 If `preview=true`, it will return `GLMakie.Figure`.
 """
 function filter!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    fprototype::Symbol,
-    ftype::Union{Symbol, Nothing} = nothing,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64} = nothing,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing,
-    dir::Symbol = :twopass,
-    preview::Bool = false,
-)::Union{Nothing, GLMakie.Figure}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        fprototype::Symbol,
+        ftype::Union{Symbol, Nothing} = nothing,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        order::Union{Nothing, Int64} = nothing,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        bw::Union{Nothing, Real} = nothing,
+        w::Union{Nothing, AbstractVector} = nothing,
+        dir::Symbol = :twopass,
+        preview::Bool = false,
+    )::Union{Nothing, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter(
-                    fs = sr(obj),
-                    fprototype = fprototype,
-                    ftype = ftype,
-                    cutoff = cutoff,
-                    order = order,
-                    rp = rp,
-                    rs = rs,
-                    bw = bw,
-                    w = w,
-                )
+            fs = sr(obj),
+            fprototype = fprototype,
+            ftype = ftype,
+            cutoff = cutoff,
+            order = order,
+            rp = rp,
+            rs = rs,
+            bw = bw,
+            w = w,
+        )
         return p
     end
 
     obj_new = NeuroAnalyzer.filter(
-                                obj,
-                                ch = ch,
-                                fprototype = fprototype,
-                                ftype = ftype,
-                                cutoff = cutoff,
-                                order = order,
-                                rp = rp,
-                                rs = rs,
-                                bw = bw,
-                                dir = dir,
-                                w = w,
-                            )
+        obj,
+        ch = ch,
+        fprototype = fprototype,
+        ftype = ftype,
+        cutoff = cutoff,
+        order = order,
+        rp = rp,
+        rs = rs,
+        bw = bw,
+        dir = dir,
+        w = w,
+    )
 
     obj.data = obj_new.data
     obj.history = obj_new.history

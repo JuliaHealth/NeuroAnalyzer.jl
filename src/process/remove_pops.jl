@@ -22,12 +22,12 @@ Named tuple containing:
   - `r_seg::Int64`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops(
-    s::AbstractVector; r::Int64 = 20, repair::Bool = true
-)::Union{
-    Nothing,
-    @NamedTuple{s::Vector{Float64}, pop_loc::Int64, l_seg::Int64, r_seg::Int64},
-    @NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}
-}
+        s::AbstractVector; r::Int64 = 20, repair::Bool = true
+    )::Union{
+        Nothing,
+        @NamedTuple{s::Vector{Float64}, pop_loc::Int64, l_seg::Int64, r_seg::Int64},
+        @NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}
+    }
 
     @assert length(s) >= 2 * r + 1 "s length must be ≥ $(2 * r + 1)."
 
@@ -55,12 +55,14 @@ function remove_pops(
     s_post = s[(pop_loc + r):end]
     s_pop = s[(pop_loc - r):(pop_loc + r)]
     s_pop_ci = (mean(s_pop) - 2 * std(s_pop), mean(s_pop) + 2 * std(s_pop))
-    s_ci = extrema([
-        mean(s_pre) - 2 * std(s_pre),
-        mean(s_post) - 2 * std(s_post),
-        mean(s_pre) + 2 * std(s_pre),
-        mean(s_post) + 2 * std(s_post),
-    ])
+    s_ci = extrema(
+        [
+            mean(s_pre) - 2 * std(s_pre),
+            mean(s_post) - 2 * std(s_post),
+            mean(s_pre) + 2 * std(s_pre),
+            mean(s_post) + 2 * std(s_post),
+        ]
+    )
     # if not, this is ignore this pop
     s_pop_ci[1] > s_ci[1] || s_pop_ci[2] < s_ci[2] && return nothing
 
@@ -101,13 +103,13 @@ function remove_pops(
             #  |/
 
             t = collect(eachindex(s_pop[1:p_idx]))
-            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx])
+            df = DataFrame(:t => t, :s => s_pop[1:p_idx])
             lr = GLM.lm(@formula(s ~ t), df)
             ll1 = MultivariateStats.predict(lr)
             s_pop[1:p_idx] -= ll1
 
             t = collect(eachindex(s_pop[p_idx:end]))
-            df = DataFrame(:t=>t, :s=>s_pop[p_idx:end])
+            df = DataFrame(:t => t, :s => s_pop[p_idx:end])
             lr = GLM.lm(@formula(s ~ t), df)
             ll2 = MultivariateStats.predict(lr)
             s_pop[p_idx:end] += abs.(ll2)
@@ -143,13 +145,13 @@ function remove_pops(
             # \|
 
             t = collect(eachindex(s_pop[1:p_idx]))
-            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx])
+            df = DataFrame(:t => t, :s => s_pop[1:p_idx])
             lr = GLM.lm(@formula(s ~ t), df)
             ll1 = MultivariateStats.predict(lr)
             s_pop[1:p_idx] += ll1
 
             t = collect(eachindex(s_pop[p_idx:end]))
-            df = DataFrame(:t=>t, :s=>s_pop[p_idx:end])
+            df = DataFrame(:t => t, :s => s_pop[p_idx:end])
             lr = GLM.lm(@formula(s ~ t), df)
             ll2 = MultivariateStats.predict(lr)
             s_pop[p_idx:end] -= abs.(ll2)
@@ -225,15 +227,15 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
   - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    repair::Bool = true,
-    window::Real = 10.0,
-    r::Int64 = sr(obj)÷2,
-)::Union{
-    Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
-    Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        repair::Bool = true,
+        window::Real = 10.0,
+        r::Int64 = sr(obj) ÷ 2,
+    )::Union{
+        Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
+        Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
+    }
 
     @assert nepochs(obj) == 1 "pop() must be applied to continuous object."
 
@@ -296,12 +298,12 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
   - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    repair::Bool = true,
-    window::Real = 10.0,
-    r::Int64 = sr(obj)÷2,
-)::Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        repair::Bool = true,
+        window::Real = 10.0,
+        r::Int64 = sr(obj) ÷ 2,
+    )::Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}}
 
     obj_new, pop_loc, l_seg, r_seg = remove_pops(obj, ch = ch, repair = true, window = window, r = r)
     if repair

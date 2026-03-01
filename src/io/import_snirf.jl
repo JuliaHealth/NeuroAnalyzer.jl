@@ -384,7 +384,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
                 "S" * string(source_index[idx]) * "_D" * string(detector_index[idx])
         end
     end
-    clabels = replace.(clabels, ".0"=>"")
+    clabels = replace.(clabels, ".0" => "")
 
     # source and detector names
     if src_labels === nothing
@@ -437,11 +437,11 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
     if stim_data !== nothing
         markers = DataFrame(
-            :id=>repeat([""], size(stim_data, 2)),
-            :start=>stim_data[1, :],
-            :length=>stim_data[2, :],
-            :value=>stim_name,
-            :channel=>repeat([0], size(stim_data, 2)),
+            :id => repeat([""], size(stim_data, 2)),
+            :start => stim_data[1, :],
+            :length => stim_data[2, :],
+            :value => stim_name,
+            :channel => repeat([0], size(stim_data, 2)),
         )
         # generate unique IDs
         value = unique(markers[!, :value])
@@ -451,11 +451,11 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         end
     else
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
     end
 
@@ -562,15 +562,15 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
     locs = DataFrame(
-        :label=>opt_labels,
-        :loc_radius=>radius,
-        :loc_theta=>theta,
-        :loc_x=>x,
-        :loc_y=>y,
-        :loc_z=>z,
-        :loc_radius_sph=>radius_sph,
-        :loc_theta_sph=>theta_sph,
-        :loc_phi_sph=>phi_sph,
+        :label => opt_labels,
+        :loc_radius => radius,
+        :loc_theta => theta,
+        :loc_x => x,
+        :loc_y => y,
+        :loc_z => z,
+        :loc_radius_sph => radius_sph,
+        :loc_theta_sph => theta_sph,
+        :loc_phi_sph => phi_sph,
     )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -619,8 +619,8 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

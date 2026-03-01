@@ -140,7 +140,7 @@ function na_plugins_install(plugin::String)::Nothing
             Sys.which("unzip") === nothing && (@error "Unknown command: unzip")
             _info("Installing from .ZIP archive")
             try
-                run(`unzip -oq $plugin`);
+                run(`unzip -oq $plugin`)
             catch
                 @error "Cannot install $plugin."
             end
@@ -148,7 +148,7 @@ function na_plugins_install(plugin::String)::Nothing
             Sys.which("tar") === nothing && (@error "Unknown command: tar")
             _info("Installing from .TAR.GZ archive")
             try
-                run(`tar --overwrite  -xzf $plugin`);
+                run(`tar --overwrite  -xzf $plugin`)
             catch
                 @error "Cannot install $plugin."
             end

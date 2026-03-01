@@ -21,11 +21,11 @@ Named tuple containing:
   - `bf::Vector{Tuple{Real, Real}}`: band frequencies
 """
 function bpsplit(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    order::Int64 = 91,
-    w::Union{Nothing, AbstractVector, <:Real} = nothing,
-)::@NamedTuple{s::Array{Float64, 4}, bn::Vector{Symbol}, bf::Vector{Tuple{Real, Real}}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        order::Int64 = 91,
+        w::Union{Nothing, AbstractVector, <:Real} = nothing,
+    )::@NamedTuple{s::Array{Float64, 4}, bn::Vector{Symbol}, bf::Vector{Tuple{Real, Real}}}
 
     bn = [
         :delta,

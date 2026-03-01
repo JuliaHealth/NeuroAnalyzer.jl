@@ -374,7 +374,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
             elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1 &&
-                (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
+                    (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
                 warn_dialog(_nill, "For multi-channel $(string(type)) plot all channels must be of the same type.", win)
                 no_error = false
             end
@@ -419,7 +419,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
         end
 
         function _mwheel_scroll(_, dx, dy)
-            if dy > 0.5
+            return if dy > 0.5
                 if k == 0x0000ffe1 # shift
                     time_current = entry_time.value
                     if time_current < obj.time_pts[end] - zoom
@@ -570,7 +570,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
             k = nothing
         end
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             if keyval == UInt('[')
                 if zoom > 1
@@ -1048,7 +1048,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
             elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1 &&
-                (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
+                    (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
                 warn_dialog(_nill, "For multi-channel $(string(type)) plot all channels must be of the same type.", win)
                 no_error = false
             end
@@ -1091,7 +1091,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         end
 
         function _mwheel_scroll(_, dx, dy)
-            if dy > 0.5
+            return if dy > 0.5
                 if k == 0x0000ffe1 # shift
                     ep = Int64(entry_epoch.value)
                     if ep < nepochs(obj)
@@ -1208,7 +1208,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             k = nothing
         end
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             # ALT
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))

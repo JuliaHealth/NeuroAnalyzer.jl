@@ -47,12 +47,12 @@ end
 _tlength(t::Tuple{Real, Real})::Int64 = length(t[1]:1:t[2])
 
 function _s2i(s::String)::Union{Int64, Vector{Int64}}
-    s = replace(s, " "=>"")
+    s = replace(s, " " => "")
     if occursin(":", s)
         return collect(parse(Int64, split(s, ":")[1]):parse(Int64, split(s, ":")[2]))
     elseif occursin(",", s)
-        s = replace(s, "["=>"")
-        s = replace(s, "]"=>"")
+        s = replace(s, "[" => "")
+        s = replace(s, "]" => "")
         return parse.(Int64, split(s, ","))
     elseif _check_sint(s)
         return parse.(Int64, s)
@@ -62,22 +62,22 @@ end
 function _i2s(s::Union{Int64, Vector{Int64}, AbstractRange})::String
     !isa(s, Int64) && (s = collect(s))
     s = string(s)
-    s = replace(s, "["=>"")
-    s = replace(s, "]"=>"")
+    s = replace(s, "[" => "")
+    s = replace(s, "]" => "")
     return s
 end
 
 function _s2tf(s::String)::Tuple{Float64, Float64}
-    s = replace(s, " "=>"")
-    s = replace(s, "("=>"")
-    s = replace(s, ")"=>"")
+    s = replace(s, " " => "")
+    s = replace(s, "(" => "")
+    s = replace(s, ")" => "")
     return (parse(Float64, split(s, ",")[1]), parse(Float64, split(s, ",")[2]))
 end
 
 function _s2ti(s::String)::Tuple{Int64, Int64}
-    s = replace(s, " "=>"")
-    s = replace(s, "("=>"")
-    s = replace(s, ")"=>"")
+    s = replace(s, " " => "")
+    s = replace(s, "(" => "")
+    s = replace(s, ")" => "")
     return (parse(Int64, split(s, ",")[1]), parse(Int64, split(s, ",")[2]))
 end
 
@@ -148,12 +148,12 @@ function _fread(fid, n, t)::Union{Int64, Float64, Vector{Int64}}
     t === :i64 && return Int64(map(ltoh, reinterpret(Int64, header))[1])
     t === :f16 && return Float64(map(ltoh, reinterpret(Float16, header))[1])
     t === :f32 && return Float64(map(ltoh, reinterpret(Float32, header))[1])
-    t === :f64 && return Float64(map(ltoh, reinterpret(Float64, header))[1])
+    return t === :f64 && return Float64(map(ltoh, reinterpret(Float64, header))[1])
 end
 
 function _vint2str(x::Vector{Int64})::String
     s = strip(String(Char.(x)))
-    return replace(s, "\0"=>"")
+    return replace(s, "\0" => "")
 end
 
 _swap(x, y)::Tuple{Real, Real} = y, x

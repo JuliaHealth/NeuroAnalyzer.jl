@@ -119,8 +119,8 @@ Filter using polynomial filter.
   - `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
 """
 function filter_poly(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
@@ -148,8 +148,8 @@ Filter using polynomial filter.
   - `Nothing`
 """
 function filter_poly!(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10
+    )::Nothing
 
     obj_new = filter_poly(obj, ch = ch, order = order, window = window)
     obj.data = obj_new.data

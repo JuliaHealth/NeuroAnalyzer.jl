@@ -72,7 +72,7 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
             Cairo.paint(ctx)
         end
 
-        @guarded signal_connect(bt_record, "clicked") do widget
+        return @guarded signal_connect(bt_record, "clicked") do widget
             bt_record.sensitive = false
             Threads.@spawn begin
                 @idle_add lb_status2.label = "PREPARING"

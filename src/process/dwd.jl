@@ -20,8 +20,8 @@ Perform discrete wavelet decomposition (DWD).
   - `dc::Matrix{Float64}`: DWD coefficients (by rows)
 """
 function dwd(
-    s::AbstractVector; wt::T = wavelet(WT.haar), type::Symbol, l::Int64 = maxtransformlevels(s)
-)::Matrix{Float64} where {T <: DiscreteWavelet}
+        s::AbstractVector; wt::T = wavelet(WT.haar), type::Symbol, l::Int64 = maxtransformlevels(s)
+    )::Matrix{Float64} where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
 
@@ -56,8 +56,8 @@ Perform discrete wavelet decomposition (DWD).
   - `dc::Array{Float64, 4}`: DWD coefficients
 """
 function dwd(
-    s::AbstractArray; wt::T = wavelet(WT.haar), type::Symbol, l::Int64 = maxtransformlevels(s[1, :, 1])
-)::Array{Float64, 4} where {T <: DiscreteWavelet}
+        s::AbstractArray; wt::T = wavelet(WT.haar), type::Symbol, l::Int64 = maxtransformlevels(s[1, :, 1])
+    )::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     _chk3d(s)
 
@@ -98,12 +98,12 @@ Perform discrete wavelet decomposition (DWD).
   - `dc::Array{Float64, 4}`: DWD coefficients
 """
 function dwd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    wt::T = wavelet(WT.haar),
-    type::Symbol,
-    l::Int64 = 0,
-)::Array{Float64, 4} where {T <: DiscreteWavelet}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        wt::T = wavelet(WT.haar),
+        type::Symbol,
+        l::Int64 = 0,
+    )::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     if l == 0
         l = maxtransformlevels(obj.data[1, :, 1])
@@ -136,11 +136,11 @@ Perform inverse discrete wavelet decomposition (iDWD).
   - `s::AbstractArray`: reconstructed signal
 """
 function idwd(
-    dc::Matrix{Float64};
-    wt::T = wavelet(WT.haar),
-    type::Symbol,
-    c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
-)::AbstractArray where {T <: DiscreteWavelet}
+        dc::Matrix{Float64};
+        wt::T = wavelet(WT.haar),
+        type::Symbol,
+        c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
+    )::AbstractArray where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
 

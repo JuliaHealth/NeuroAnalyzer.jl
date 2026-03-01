@@ -25,10 +25,10 @@ Named tuple containing:
   - `fidx::Tuple{Real, Real}`: frequency indices
 """
 function spec_seg(
-    sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real}
-)::@NamedTuple{
-    segp::Matrix{Float64}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}
-}
+        sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real}
+    )::@NamedTuple{
+        segp::Matrix{Float64}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real},
+    }
 
     _check_tuple(t, (st[1], st[end]), "t")
     _check_tuple(f, (sf[1], sf[end]), "f")
@@ -69,10 +69,10 @@ Named tuple containing:
   - `fidx::Tuple{Real, Real}`: frequency indices
 """
 function spec_seg(
-    sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real}
-)::@NamedTuple{
-    segp::Array{Float64, 3}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}
-}
+        sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real}
+    )::@NamedTuple{
+        segp::Array{Float64, 3}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real},
+    }
 
     _check_tuple(t, (st[1], st[end]), "t")
     _check_tuple(f, (sf[1], sf[end]), "f")
@@ -108,8 +108,8 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function spec_flim(
-    p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real}
-)::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
+        p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real}
+    )::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
 
     @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
 
@@ -150,8 +150,8 @@ Named tuple containing:
   - `t::Vector{Float64}`: time points
 """
 function spec_tlim(
-    p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real}
-)::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
+        p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real}
+    )::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
 
     _chk4d(p)
     _check_tuple(seg, (t[1], t[end]), "seg")

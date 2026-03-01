@@ -115,8 +115,8 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function phsd(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+    )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ph, f = phsd(obj.data[ch, :, :], fs = sr(obj))

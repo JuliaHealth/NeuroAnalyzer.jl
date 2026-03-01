@@ -792,7 +792,7 @@ function iavh()::Nothing
         function _lmb_click(_, _, x, y)
             x_pos = x
             y_pos = y
-            Threads.@spawn begin
+            return Threads.@spawn begin
                 @guarded draw(can) do widget
                     ctx = getgc(widget)
                     h = Cairo.height(can)
@@ -804,7 +804,7 @@ function iavh()::Nothing
                     Cairo.set_source_surface(ctx, img, 1, 1)
                     Cairo.paint(ctx)
 
-                    Gtk4.arc(ctx, x_pos, y_pos, 10, 0, 2*pi)
+                    Gtk4.arc(ctx, x_pos, y_pos, 10, 0, 2 * pi)
                     Gtk4.set_source_rgb(ctx, 1, 0, 0)
                     Gtk4.stroke(ctx)
                     Gtk4.reveal(widget)
@@ -817,7 +817,7 @@ function iavh()::Nothing
                 y_pos == -0.0 && (y_pos = 0)
                 d_l = sqrt((x_pos - -0.05)^2 + (y_pos^2))
                 d_r = sqrt((x_pos - 0.05)^2 + (y_pos^2))
-                if d_l < 0.10 || d_r < 0.10
+                if d_l < 0.1 || d_r < 0.1
                     d_l = 0
                     d_r = 0
                 end
@@ -961,7 +961,7 @@ function iavh()::Nothing
             end
         end
 
-        signal_connect(bt_close, "clicked") do widget
+        return signal_connect(bt_close, "clicked") do widget
             close(win)
         end
     end

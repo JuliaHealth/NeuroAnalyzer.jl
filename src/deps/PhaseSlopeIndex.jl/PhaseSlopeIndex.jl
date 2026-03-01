@@ -17,7 +17,7 @@ int(x) = trunc(Int, x)
     dropmean(X, d) = dropdims(mean(X, dims=d), dims=d)
 """
 function dropmean(X, d)
-    if ndims(X) == 1
+    return if ndims(X) == 1
         mean(X, dims = d)
     else
         dropdims(mean(X, dims = d), dims = d)
@@ -97,15 +97,15 @@ Extracts and builds a named tuple of parameters.
   - `parameters::NamedTuple`: a named tuple of parameters
 """
 function data2para(
-    data::AbstractArray,
-    seglen::Integer,
-    segshift::Integer,
-    eplen::Integer,
-    freqlist::AbstractArray{Int},
-    method::String,
-    subave::Bool,
-    verbose::Bool,
-)
+        data::AbstractArray,
+        seglen::Integer,
+        segshift::Integer,
+        eplen::Integer,
+        freqlist::AbstractArray{Int},
+        method::String,
+        subave::Bool,
+        verbose::Bool,
+    )
     # data dimension
     if ndims(data) != 2
         data = squeeze(data)
@@ -200,8 +200,8 @@ Partitioning data into epochs and segments
 **Note**: returned Array may have more data entries than input data.
 """
 function make_eposeg(
-    data::AbstractArray, seglen::Integer, eplen::Integer, nep::Integer, nseg::Integer, nchan::Integer, segshift::Integer
-)::AbstractArray
+        data::AbstractArray, seglen::Integer, eplen::Integer, nep::Integer, nseg::Integer, nchan::Integer, segshift::Integer
+    )::AbstractArray
 
     # preallocation
     epseg = Array{Float64}(undef, seglen, nep, nseg, nchan)
@@ -253,7 +253,7 @@ function cs2ps(cs::AbstractArray)
     @einsum coh[f, i, j] := cs[f, i, j] / sqrt(cs[f, i, i] * cs[f, j, j])
 
     # phase slope (Eq. 3)
-    @views imag.(sum(conj(coh[1:(end - 1), :, :]) .* coh[2:end, :, :], dims = 1))
+    return @views imag.(sum(conj(coh[1:(end - 1), :, :]) .* coh[2:end, :, :], dims = 1))
 end
 
 """
@@ -277,7 +277,7 @@ function data2cs(data::AbstractArray)
     # cs: cross-spectral matrix
 
     # Eq. 2 size(csepseg) = (maxfreq, nep, nseg, nchan, nchan)
-    @einsum cs[f, e, s, i, j] := data[f, e, s, i] * conj(data[f, e, s, j])
+    return @einsum cs[f, e, s, i, j] := data[f, e, s, i] * conj(data[f, e, s, j])
 end
 
 """
@@ -300,37 +300,37 @@ preparing Cross Spectra for Phase Slope by segment averaging and subtraction
   - `_cs_::AbstractArray`: segment averaged and subtracted Cross Spectra
 """
 function cs2cs_(
-    data::AbstractArray,
-    cs::AbstractArray,
-    fband::AbstractArray,
-    nep::Integer,
-    segave::Bool,
-    subave::Bool,
-    method::String,
-)
+        data::AbstractArray,
+        cs::AbstractArray,
+        fband::AbstractArray,
+        nep::Integer,
+        segave::Bool,
+        subave::Bool,
+        method::String,
+    )
     if segave
         if method == "bootstrap"
             randboot = rand(1:nep, nep)
-            cs_ = dropmean(view(cs,:,randboot,:,:,:), (2, 3))
-            av_ = dropmean(view(data,fband,randboot,:,:), (2, 3))
+            cs_ = dropmean(view(cs, :, randboot, :, :, :), (2, 3))
+            av_ = dropmean(view(data, fband, randboot, :, :), (2, 3))
         elseif method == "psi"
             cs_ = dropmean(cs, (2, 3))
-            av_ = dropmean(view(data,fband,:,:,:), (2, 3))
+            av_ = dropmean(view(data, fband, :, :, :), (2, 3))
         elseif method == "jackknife"
             cs_ = dropmean(cs, 3)
-            av_ = dropmean(view(data,fband,:,:,:), 3)
+            av_ = dropmean(view(data, fband, :, :, :), 3)
         end
     else
         if method == "bootstrap"
             randboot = rand(1:nep, nep)
-            cs_ = dropmean(view(cs,:,randboot,1,:,:), 2)
+            cs_ = dropmean(view(cs, :, randboot, 1, :, :), 2)
             av_ = dropmean(view(data, fband, randboot, 1, :), 2)
         elseif method == "psi"
-            cs_ = dropmean(view(cs,:,:,1,:,:), 2)
-            av_ = dropmean(view(data,fband,:,1,:), 2)
+            cs_ = dropmean(view(cs, :, :, 1, :, :), 2)
+            av_ = dropmean(view(data, fband, :, 1, :), 2)
         elseif method == "jackknife"
-            cs_ = view(cs,:,:,1,:,:)
-            av_ = view(data,fband,:,1,:)
+            cs_ = view(cs, :, :, 1, :, :)
+            av_ = view(data, fband, :, 1, :)
         end
     end
 
@@ -380,19 +380,19 @@ Calculates phase slope index (PSI)
   - `psi_std::AbstractArray`: PSI estimated standard deviation with shape `(channel, channel, frequency bands)`
 """
 function data2psi(
-    data::AbstractArray,
-    seglen::Integer;
-    segshift::Integer = 0,
-    eplen::Integer = 0,
-    freqlist::AbstractArray{Int} = Int[],
-    method::String = "jackknife",
-    subave::Bool = false,
-    segave::Bool = true,
-    nboot::Integer = 100,
-    detrend::Bool = false,
-    window::Function = hanning_fun,
-    verbose::Bool = false,
-)
+        data::AbstractArray,
+        seglen::Integer;
+        segshift::Integer = 0,
+        eplen::Integer = 0,
+        freqlist::AbstractArray{Int} = Int[],
+        method::String = "jackknife",
+        subave::Bool = false,
+        segave::Bool = true,
+        nboot::Integer = 100,
+        detrend::Bool = false,
+        window::Function = hanning_fun,
+        verbose::Bool = false,
+    )
 
     (data, nsamples, nchan, eplen, nep, method, subave, segshift, nseg, freqlist, maxfreq, nfbands) = data2para(
         data, seglen, segshift, eplen, freqlist, method, subave, verbose
@@ -406,7 +406,7 @@ function data2psi(
 
     eposeg .*= window(seglen)
 
-    eposeg = view(fft(eposeg, 1),(2:(maxfreq + 1)),:,:,:)
+    eposeg = view(fft(eposeg, 1), (2:(maxfreq + 1)), :, :, :)
 
     # preallocation
     psi = Array{Float64}(undef, nchan, nchan, nfbands)
@@ -416,7 +416,7 @@ function data2psi(
         psi_est = Array{Float64}(undef, nchan, nchan, nfbands, nboot)
     end
     for (f, fband) in enumerate(eachrow(freqlist'))
-        cs_full = data2cs(view(eposeg,fband,:,:,:))
+        cs_full = data2cs(view(eposeg, fband, :, :, :))
 
         cs_psi = cs2cs_(eposeg, cs_full, fband, nep, segave, subave, "psi")
         psi[:, :, f] = cs2ps(cs_psi)
@@ -424,7 +424,7 @@ function data2psi(
         if method == "jackknife"
             cs_jack = cs2cs_(eposeg, cs_full, fband, nep, segave, subave, "jackknife")
             for e in 1:nep
-                cs_jack_se = (nep * cs_psi - view(cs_jack,:,e,:,:)) / (nep + 1)
+                cs_jack_se = (nep * cs_psi - view(cs_jack, :, e, :, :)) / (nep + 1)
                 psi_est[:, :, f, e] = cs2ps(cs_jack_se)
             end
         elseif method == "bootstrap"

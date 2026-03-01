@@ -52,21 +52,21 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     sampling_rate = round(Int64, 1 / time_pts[2] * 1000)
     gain = ones(ch_n)
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     time_pts = round.(
@@ -125,8 +125,8 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

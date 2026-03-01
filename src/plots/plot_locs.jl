@@ -38,24 +38,24 @@ Preview channel locations.
   - `p::GLMakie.Figure`
 """
 function plot_locs(
-    locs::DataFrame;
-    ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
-    sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
-    ch_labels::Bool = true,
-    head::Bool = true,
-    head_labels::Bool = false,
-    mono::Bool = false,
-    grid::Bool = false,
-    ps::Symbol = :l,
-    cart::Bool = false,
-    plane::Symbol = :xy,
-    connections::Matrix{<:Real} = [0 0; 0 0],
-    threshold::Real = 0,
-    threshold_type::Symbol = :neq,
-    weights::Union{Bool, Vector{<:Real}} = true,
-    ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
-    gui::Bool = true,
-)::GLMakie.Figure
+        locs::DataFrame;
+        ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
+        sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
+        ch_labels::Bool = true,
+        head::Bool = true,
+        head_labels::Bool = false,
+        mono::Bool = false,
+        grid::Bool = false,
+        ps::Symbol = :l,
+        cart::Bool = false,
+        plane::Symbol = :xy,
+        connections::Matrix{<:Real} = [0 0; 0 0],
+        threshold::Real = 0,
+        threshold_type::Symbol = :neq,
+        weights::Union{Bool, Vector{<:Real}} = true,
+        ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
+        gui::Bool = true,
+    )::GLMakie.Figure
 
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(plane, [:xy, :yz, :xz], "plane")
@@ -143,9 +143,9 @@ function plot_locs(
     # prepare plot
     GLMakie.activate!(title = "plot_locs()")
     p = GLMakie.Figure(
-                    size = plot_size,
-                    figure_padding = (0, 0, 0, 0),
-                ) # L R B T
+        size = plot_size,
+        figure_padding = (0, 0, 0, 0),
+    ) # L R B T
     if grid
         ax = GLMakie.Axis(
             p[1, 1];
@@ -199,8 +199,8 @@ function plot_locs(
         ps === :s && (lw = 1)
         if plane === :xy
             # nose
-            GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-0.2, 0], [0.98, 1.08], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [0.2, 0], [0.98, 1.08], linewidth = lw, color = :black)
 
             # ears
             # left
@@ -208,8 +208,8 @@ function plot_locs(
             GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.12, -1.1], [0.05, -0.1], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.1, -1.13], [-0.1, -0.3], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth = lw, color = :black)
@@ -219,8 +219,8 @@ function plot_locs(
             GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.12, 1.1], [0.05, -0.1], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.1, 1.13], [-0.1, -0.3], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth = lw, color = :black)
             GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth = lw, color = :black)
@@ -994,9 +994,9 @@ function plot_locs(
                     ax_y = mouseposition(ax)[2]
                     for idx in eachindex(loc_x)
                         if ax_x >= loc_x_range[idx][1] &&
-                            ax_x <= loc_x_range[idx][2] &&
-                            ax_y >= loc_y_range[idx][1] &&
-                            ax_y <= loc_y_range[idx][2]
+                                ax_x <= loc_x_range[idx][2] &&
+                                ax_y >= loc_y_range[idx][1] &&
+                                ax_y <= loc_y_range[idx][2]
                             println(ch_info[idx])
                             break
                         end
@@ -1055,26 +1055,26 @@ Preview of channel locations.
   - `Union{GLMakie.Figure, Nothing}`
 """
 function plot_locs(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    sch::Union{String, Vector{String}, Regex} = "",
-    ch_labels::Bool = true,
-    src_labels::Bool = false,
-    det_labels::Bool = false,
-    opt_labels::Bool = false,
-    head::Bool = true,
-    head_labels::Bool = false,
-    mono::Bool = false,
-    grid::Bool = false,
-    ps::Symbol = :l,
-    cart::Bool = false,
-    plane::Symbol = :xy,
-    connections::Matrix{<:Real} = [0 0; 0 0],
-    threshold::Real = 0,
-    threshold_type::Symbol = :neq,
-    weights::Union{Bool, Vector{<:Real}} = true,
-    gui::Bool = true,
-)::Union{GLMakie.Figure, Nothing}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        sch::Union{String, Vector{String}, Regex} = "",
+        ch_labels::Bool = true,
+        src_labels::Bool = false,
+        det_labels::Bool = false,
+        opt_labels::Bool = false,
+        head::Bool = true,
+        head_labels::Bool = false,
+        mono::Bool = false,
+        grid::Bool = false,
+        ps::Symbol = :l,
+        cart::Bool = false,
+        plane::Symbol = :xy,
+        connections::Matrix{<:Real} = [0 0; 0 0],
+        threshold::Real = 0,
+        threshold_type::Symbol = :neq,
+        weights::Union{Bool, Vector{<:Real}} = true,
+        gui::Bool = true,
+    )::Union{GLMakie.Figure, Nothing}
 
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
 

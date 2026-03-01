@@ -18,11 +18,11 @@ Interpolate channel using linear regression.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function lrinterpolate_channel(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Int64,
+        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)[1]
     channels = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
@@ -39,7 +39,7 @@ function lrinterpolate_channel(
 
     # train
     df = @views DataFrame(hcat(signal_ref[ch, :, 1], signal_ref[ch_ref, :, 1]'), :auto)
-    train, test = _split(df, 0.80)
+    train, test = _split(df, 0.8)
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = GLM.lm(fm, train)
     prediction = GLM.predict(linear_regressor, test)
@@ -50,12 +50,12 @@ function lrinterpolate_channel(
     R2, R2adj, aic, bic = infcrit(linear_regressor)
 
     _info("Accuracy report:")
-    _info(" R²: $(round(R2, digits=3))")
-    _info(" R² adj: $(round(R2adj, digits=3))")
-    _info(" AIC: $(round(aic, digits=3))")
-    _info(" BIC: $(round(bic, digits=3))")
-    _info(" RMSE: $(round(acc_rmse, digits=3))")
-    _info(" MAE: $(round(acc_mae, digits=3))")
+    _info(" R²: $(round(R2, digits = 3))")
+    _info(" R² adj: $(round(R2adj, digits = 3))")
+    _info(" AIC: $(round(aic, digits = 3))")
+    _info(" BIC: $(round(bic, digits = 3))")
+    _info(" RMSE: $(round(acc_rmse, digits = 3))")
+    _info(" MAE: $(round(acc_mae, digits = 3))")
 
     # predict
     obj_new = deepcopy(obj)
@@ -85,11 +85,11 @@ Interpolate channel using linear regression.
   - `Nothing`
 """
 function lrinterpolate_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Int64,
+        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    )::Nothing
 
     obj_new = lrinterpolate_channel(obj, ch = ch, ep = ep, ep_ref = ep_ref)
     obj.data = obj_new.data

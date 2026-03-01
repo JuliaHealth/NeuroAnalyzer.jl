@@ -100,8 +100,8 @@ Return vector of frequencies and Nyquist frequency for time vector.
   - `nqf::Float64`
 """
 function freqs(
-    t::Union{AbstractVector, AbstractRange}; nf::Bool = false
-)::Tuple{Vector{Float64}, Float64}
+        t::Union{AbstractVector, AbstractRange}; nf::Bool = false
+    )::Tuple{Vector{Float64}, Float64}
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
@@ -143,8 +143,8 @@ Return vector of frequencies and Nyquist frequency for signal.
   - `nqf::Float64`
 """
 function freqs(
-    s::AbstractVector, fs::Int64; nf::Bool = false
-)::Tuple{Vector{Float64}, Float64}
+        s::AbstractVector, fs::Int64; nf::Bool = false
+    )::Tuple{Vector{Float64}, Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -214,8 +214,8 @@ Named tuple containing:
   - `nqf::Float64`
 """
 function freqs(
-    obj::NeuroAnalyzer.NEURO; nf::Bool = false
-)::@NamedTuple{hz::Vector{Float64}, nqf::Float64}
+        obj::NeuroAnalyzer.NEURO; nf::Bool = false
+    )::@NamedTuple{hz::Vector{Float64}, nqf::Float64}
 
     hz, nqf = freqs(obj.data[1, :, 1], sr(obj); nf = nf)
 

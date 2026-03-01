@@ -22,14 +22,14 @@ Plot PSD (power spectrum density).
   - `p::GLMakie.Figure`
 """
 function plot_psd(
-    sf::Vector{Float64},
-    sp::Vector{Float64};
-    flim::Tuple{Real, Real} = (sf[1], sf[end]),
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    frq::Symbol = :lin,
-)::GLMakie.Figure
+        sf::Vector{Float64},
+        sp::Vector{Float64};
+        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        frq::Symbol = :lin,
+    )::GLMakie.Figure
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -45,23 +45,23 @@ function plot_psd(
     plot_size = (900, 450)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-                    p[1, 1];
-                    xlabel = xlabel,
-                    ylabel = ylabel,
-                    title = title,
-                    xticks = LinearTicks(15),
-                    xminorticksvisible = true,
-                    xminorticks = IntervalsBetween(10),
-                    xscale = frq === :lin ? identity : log,
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0.1, 0.1),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                )
+        p[1, 1];
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title = title,
+        xticks = LinearTicks(15),
+        xminorticksvisible = true,
+        xminorticks = IntervalsBetween(10),
+        xscale = frq === :lin ? identity : log,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0.1, 0.1),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+    )
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, extrema(sp))
     ax.titlesize = 18
@@ -102,19 +102,19 @@ Plot multi-channel PSD (power spectrum density).
   - `p::GLMakie.Figure`
 """
 function plot_psd(
-    sf::Vector{Float64},
-    sp::Matrix{Float64};
-    clabels::Vector{String} = string.(1:size(sp, 1)),
-    flim::Tuple{Real, Real} = (sf[1], sf[end]),
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    mono::Bool = false,
-    frq::Symbol = :lin,
-    avg::Bool = false,
-    ci95::Bool = false,
-    leg::Bool = true,
-)::GLMakie.Figure
+        sf::Vector{Float64},
+        sp::Matrix{Float64};
+        clabels::Vector{String} = string.(1:size(sp, 1)),
+        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        mono::Bool = false,
+        frq::Symbol = :lin,
+        avg::Bool = false,
+        ci95::Bool = false,
+        leg::Bool = true,
+    )::GLMakie.Figure
 
     ch_n = size(sp, 1)
 
@@ -134,23 +134,23 @@ function plot_psd(
     plot_size = (900, 450)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-                    p[1, 1];
-                    xlabel = xlabel,
-                    ylabel = ylabel,
-                    title = title,
-                    xticks = LinearTicks(15),
-                    xminorticksvisible = true,
-                    xminorticks = IntervalsBetween(10),
-                    xscale = frq === :lin ? identity : log,
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0.1, 0.1),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                )
+        p[1, 1];
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title = title,
+        xticks = LinearTicks(15),
+        xminorticksvisible = true,
+        xminorticks = IntervalsBetween(10),
+        xscale = frq === :lin ? identity : log,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0.1, 0.1),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+    )
     GLMakie.xlims!(ax, flim)
     if ci95
         GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
@@ -223,19 +223,19 @@ Plot 3-d PSD (power spectrum density).
   - `p::GLMakie.Figure`
 """
 function plot_psd_3d(
-    sf::Vector{Float64},
-    sp::Matrix{Float64};
-    clabels::Vector{String} = string.(1:size(sp, 1)),
-    db::Bool = true,
-    flim::Tuple{Real, Real} = (sf[1], sf[end]),
-    xlabel::String = "",
-    ylabel::String = "",
-    zlabel::String = "",
-    title::String = "",
-    mono::Bool = false,
-    frq::Symbol = :lin,
-    variant::Symbol,
-)::GLMakie.Figure
+        sf::Vector{Float64},
+        sp::Matrix{Float64};
+        clabels::Vector{String} = string.(1:size(sp, 1)),
+        db::Bool = true,
+        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        xlabel::String = "",
+        ylabel::String = "",
+        zlabel::String = "",
+        title::String = "",
+        mono::Bool = false,
+        frq::Symbol = :lin,
+        variant::Symbol,
+    )::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -266,25 +266,25 @@ function plot_psd_3d(
         plot_size = (900, 450)
         p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-                        p[1, 1];
-                        xlabel = xlabel,
-                        ylabel = ylabel,
-                        zlabel = zlabel,
-                        title = title,
-                        xticks = LinearTicks(15),
-                        # xminorticksvisible=true,
-                        # xminorticks=IntervalsBetween(10),
-                        # xscale=frq === :lin ? identity : log,
-                        yticks = (1:yts:ch_n, clabels[1:yts:end]),
-                        zoommode = :disable,
-                        xtranslationlock = true,
-                        ytranslationlock = true,
-                        ztranslationlock = true,
-                        aspect = (1, 1, 0.5),
-                        xautolimitmargin = (0, 0),
-                        yautolimitmargin = (0, 0),
-                        zautolimitmargin = (0, 0),
-                    )
+            p[1, 1];
+            xlabel = xlabel,
+            ylabel = ylabel,
+            zlabel = zlabel,
+            title = title,
+            xticks = LinearTicks(15),
+            # xminorticksvisible=true,
+            # xminorticks=IntervalsBetween(10),
+            # xscale=frq === :lin ? identity : log,
+            yticks = (1:yts:ch_n, clabels[1:yts:end]),
+            zoommode = :disable,
+            xtranslationlock = true,
+            ytranslationlock = true,
+            ztranslationlock = true,
+            aspect = (1, 1, 0.5),
+            xautolimitmargin = (0, 0),
+            yautolimitmargin = (0, 0),
+            zautolimitmargin = (0, 0),
+        )
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 18
         ax.xlabelsize = 18
@@ -311,25 +311,25 @@ function plot_psd_3d(
         plot_size = (900, 450)
         p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-                        p[1, 1];
-                        xlabel = xlabel,
-                        ylabel = ylabel,
-                        zlabel = zlabel,
-                        title = title,
-                        xticks = LinearTicks(15),
-                        # xminorticksvisible=true,
-                        # xminorticks=IntervalsBetween(10),
-                        # xscale=frq === :lin ? identity : log,
-                        yticks = (1:yts:ch_n, clabels[1:yts:end]),
-                        zoommode = :disable,
-                        xtranslationlock = true,
-                        ytranslationlock = true,
-                        ztranslationlock = true,
-                        aspect = (1, 1, 0.5),
-                        xautolimitmargin = (0, 0),
-                        yautolimitmargin = (0, 0),
-                        zautolimitmargin = (0, 0),
-                    )
+            p[1, 1];
+            xlabel = xlabel,
+            ylabel = ylabel,
+            zlabel = zlabel,
+            title = title,
+            xticks = LinearTicks(15),
+            # xminorticksvisible=true,
+            # xminorticks=IntervalsBetween(10),
+            # xscale=frq === :lin ? identity : log,
+            yticks = (1:yts:ch_n, clabels[1:yts:end]),
+            zoommode = :disable,
+            xtranslationlock = true,
+            ytranslationlock = true,
+            ztranslationlock = true,
+            aspect = (1, 1, 0.5),
+            xautolimitmargin = (0, 0),
+            yautolimitmargin = (0, 0),
+            zautolimitmargin = (0, 0),
+        )
         ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
@@ -368,17 +368,17 @@ Plot topographical map of PSDs (power spectrum density).
   - `p::GLMakie.Figure`
 """
 function plot_psd_topo(
-    locs::DataFrame,
-    sf::Vector{Float64},
-    sp::Matrix{Float64};
-    flim::Tuple{Real, Real} = (sf[1], sf[end]),
-    title::String = "",
-    xlabel::String = "",
-    ylabel::String = "",
-    frq::Symbol = :lin,
-    cart::Bool = false,
-    head::Bool = true,
-)::GLMakie.Figure
+        locs::DataFrame,
+        sf::Vector{Float64},
+        sp::Matrix{Float64};
+        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        title::String = "",
+        xlabel::String = "",
+        ylabel::String = "",
+        frq::Symbol = :lin,
+        cart::Bool = false,
+        head::Bool = true,
+    )::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -426,17 +426,18 @@ function plot_psd_topo(
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(sp, 1)
         pp = GLMakie.Figure(
-                        size = marker_size,
-                        figure_padding = 0,)
+            size = marker_size,
+            figure_padding = 0,
+        )
         ax = GLMakie.Axis(
-                        pp[1, 1];
-                        xlabel = "",
-                        ylabel = "",
-                        title = locs[idx, :label],
-                        xscale = frq === :lin ? identity : log,
-                        xautolimitmargin = (0, 0),
-                        yautolimitmargin = (0.1, 0.1),
-                    )
+            pp[1, 1];
+            xlabel = "",
+            ylabel = "",
+            title = locs[idx, :label],
+            xscale = frq === :lin ? identity : log,
+            xautolimitmargin = (0, 0),
+            yautolimitmargin = (0.1, 0.1),
+        )
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
@@ -458,24 +459,24 @@ function plot_psd_topo(
     # prepare plot
     GLMakie.activate!(title = "plot_psd()")
     p = GLMakie.Figure(
-                    size = plot_size,
-                    figure_padding = 0,
-                )
+        size = plot_size,
+        figure_padding = 0,
+    )
     ax = GLMakie.Axis(
-                    p[1, 1];
-                    xlabel = "",
-                    ylabel = "",
-                    title = title,
-                    aspect = 1,
-                    xautolimitmargin = (0, 0),
-                    yautolimitmargin = (0, 0),
-                    xzoomlock = true,
-                    yzoomlock = true,
-                    xpanlock = true,
-                    ypanlock = true,
-                    xrectzoom = false,
-                    yrectzoom = false,
-                )
+        p[1, 1];
+        xlabel = "",
+        ylabel = "",
+        title = title,
+        aspect = 1,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+    )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
@@ -484,8 +485,8 @@ function plot_psd_topo(
 
     if head
         # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.98, 1.08]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.98, 1.08]; linewidth = 3, color = :black)
 
         # ears
         # left
@@ -493,8 +494,8 @@ function plot_psd_topo(
         GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.12, -1.1], [0.05, -0.1]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.1, -1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth = 3, color = :black)
@@ -504,8 +505,8 @@ function plot_psd_topo(
         GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.12, 1.1], [0.05, -0.1]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.1, 1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = 3, color = :black)
         GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = 3, color = :black)
@@ -535,9 +536,9 @@ function plot_psd_topo(
                 ax_y = mouseposition(ax)[2]
                 for idx in eachindex(loc_x)
                     if ax_x >= loc_x_range[idx][1] &&
-                        ax_x <= loc_x_range[idx][2] &&
-                        ax_y >= loc_y_range[idx][1] &&
-                        ax_y <= loc_y_range[idx][2]
+                            ax_x <= loc_x_range[idx][2] &&
+                            ax_y >= loc_y_range[idx][1] &&
+                            ax_y <= loc_y_range[idx][2]
                         display(GLMakie.Screen(), pp_full_vec[idx])
                         break
                     end
@@ -599,33 +600,33 @@ Plot PSD (power spectrum density).
   - `p::GLMakie.Figure`
 """
 function plot_psd(
-    obj::NeuroAnalyzer.NEURO;
-    seg::Tuple{Real, Real} = (0, 10),
-    ep::Int64 = 0,
-    ch::Union{String, Vector{String}, Regex} = datatype(obj),
-    db::Bool = true,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    ref::Symbol = :abs,
-    frq::Symbol = :lin,
-    xlabel::String = "default",
-    ylabel::String = "default",
-    zlabel::String = "default",
-    title::String = "default",
-    mono::Bool = false,
-    type::Symbol = :normal,
-    cart::Bool = false,
-    head::Bool = true,
-    leg::Bool = true,
-    avg::Bool = false,
-    ci95::Bool = false,
-)::GLMakie.Figure
+        obj::NeuroAnalyzer.NEURO;
+        seg::Tuple{Real, Real} = (0, 10),
+        ep::Int64 = 0,
+        ch::Union{String, Vector{String}, Regex} = datatype(obj),
+        db::Bool = true,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        ref::Symbol = :abs,
+        frq::Symbol = :lin,
+        xlabel::String = "default",
+        ylabel::String = "default",
+        zlabel::String = "default",
+        title::String = "default",
+        mono::Bool = false,
+        type::Symbol = :normal,
+        cart::Bool = false,
+        head::Bool = true,
+        leg::Bool = true,
+        avg::Bool = false,
+        ci95::Bool = false,
+    )::GLMakie.Figure
 
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -787,22 +788,22 @@ function plot_psd(
             sp, sf = psd_rel(signal; fs = fs, db = db, flim = flim, wlen = wlen, woverlap = woverlap, w = w)
             if ep != 0
                 title == "default" && (
-                    title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep]"
+                    title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
                 )
             else
                 title == "default" && (
-                    title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_"=>" ")) power\n[time window: $t_s1:$t_s2]"
+                    title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_" => " ")) power\n[time window: $t_s1:$t_s2]"
                 )
             end
         elseif method === :fft
             sp, sf = psd_rel(signal; fs = fs, db = db, method = :fft, flim = flim, w = w)
             if ep != 0
                 title == "default" && (
-                    title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep]"
+                    title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
                 )
             else
                 title == "default" && (
-                    title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power\n[time window: $t_s1:$t_s2]"
+                    title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[time window: $t_s1:$t_s2]"
                 )
             end
         elseif method === :stft
@@ -811,11 +812,11 @@ function plot_psd(
             )
             if ep != 0
                 title == "default" && (
-                    title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep]"
+                    title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
                 )
             else
                 title == "default" && (
-                    title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power\n[time window: $t_s1:$t_s2]"
+                    title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[time window: $t_s1:$t_s2]"
                 )
             end
         elseif method === :mt
@@ -824,32 +825,32 @@ function plot_psd(
             )
             if ep != 0
                 title == "default" &&
-                    (title = "PSD (multi-taper) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep]")
+                    (title = "PSD (multi-taper) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]")
             else
                 title == "default" && (
-                    title = "PSD (multi-taper) relative to $(replace(string(ref), "_"=>" ")) power\n[time window: $t_s1:$t_s2]"
+                    title = "PSD (multi-taper) relative to $(replace(string(ref), "_" => " ")) power\n[time window: $t_s1:$t_s2]"
                 )
             end
         elseif method === :mw
             sp, sf = psd_rel(signal; fs = fs, db = db, method = :mw, flim = flim, ncyc = ncyc, w = w)
             if ep != 0
                 title == "default" && (
-                    title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep]"
+                    title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
                 )
             else
                 title == "default" && (
-                    title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power\n[time window: $t_s1:$t_s2]"
+                    title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_" => " ")) power\n[time window: $t_s1:$t_s2]"
                 )
             end
         elseif method === :gh
             sp, sf = psd_rel(signal; fs = fs, db = db, method = :gh, gw = gw, w = w)
             if ep != 0
                 title == "default" && (
-                    title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep]"
+                    title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
                 )
             else
                 title == "default" && (
-                    title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_"=>" ")) power\n[time window: $t_s1:$t_s2]"
+                    title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_" => " ")) power\n[time window: $t_s1:$t_s2]"
                 )
             end
         end

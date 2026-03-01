@@ -84,21 +84,21 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     header = String(Char.(header))
     [
         transducers[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
-        idx in 1:ch_n
+            idx in 1:ch_n
     ]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     [units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
-    units = replace(lowercase.(units), "uv"=>"μV")
+    units = replace(lowercase.(units), "uv" => "μV")
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     [
         physical_minimum[idx] =
-        parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
+            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
     ]
 
     header = UInt8[]
@@ -106,7 +106,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     header = String(Char.(header))
     [
         physical_maximum[idx] =
-        parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
+            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
     ]
 
     header = UInt8[]
@@ -114,7 +114,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     header = String(Char.(header))
     [
         digital_minimum[idx] =
-        parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
+            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
     ]
 
     header = UInt8[]
@@ -122,7 +122,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     header = String(Char.(header))
     [
         digital_maximum[idx] =
-        parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
+            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
     ]
 
     header = UInt8[]
@@ -130,7 +130,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     header = String(Char.(header))
     [
         prefiltering[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
-        idx in 1:ch_n
+            idx in 1:ch_n
     ]
 
     header = UInt8[]
@@ -138,7 +138,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     header = String(Char.(header))
     [
         samples_per_datarecord[idx] =
-        parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
+            parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
     ]
 
     close(fid)
@@ -164,7 +164,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         sampling_rate = round.(
             Int64,
             samples_per_datarecord[setdiff(1:ch_n, annotation_channels)] /
-            data_records_duration,
+                data_records_duration,
         )
     end
 
@@ -265,11 +265,11 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     if length(annotation_channels) == 0
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
     else
         markers = _a2df(annotations)
@@ -312,7 +312,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         file_type = file_type,
         recording = string(recording),
         recording_date = recording_date,
-        recording_time = replace(recording_time, '.'=>':'),
+        recording_time = replace(recording_time, '.' => ':'),
         recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
@@ -337,8 +337,8 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     _initialize_locs!(obj)
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

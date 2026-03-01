@@ -28,16 +28,16 @@ Calculate total power.
   - `tp::Float64`: total power
 """
 function total_power(
-    s::AbstractVector;
-    fs::Int64,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)
+        s::AbstractVector;
+        fs::Int64,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )
 
     pw, pf = psd(
         s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw
@@ -79,16 +79,16 @@ Calculate total power.
   - `tp::Matrix{Float64}`: total power
 """
 function total_power(
-    s::AbstractArray;
-    fs::Int64,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)
+        s::AbstractArray;
+        fs::Int64,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -143,16 +143,16 @@ Calculate total power.
   - `tp::Matrix{Float64}`: total power
 """
 function total_power(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     _log_off()

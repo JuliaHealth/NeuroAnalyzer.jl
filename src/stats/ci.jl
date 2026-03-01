@@ -66,7 +66,7 @@ function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::B
     s = sem(x)
 
     if d === :t
-        tc = crit_t(df, 1-cl; twotailed = twotailed)
+        tc = crit_t(df, 1 - cl; twotailed = twotailed)
         e = tc * s
     else
         zc = crit_z(1 - cl; twotailed = twotailed)
@@ -243,10 +243,10 @@ function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     n = length(x)
     df = n - 1
 
-    chi1_crit = crit_chi(df, 1-α/2)
-    chi2_crit = crit_chi(df, α/2)
+    chi1_crit = crit_chi(df, 1 - α / 2)
+    chi2_crit = crit_chi(df, α / 2)
 
-    return (sqrt(((n - 1) * s^2)/chi1_crit), sqrt(((n - 1) * s^2)/chi2_crit))
+    return (sqrt(((n - 1) * s^2) / chi1_crit), sqrt(((n - 1) * s^2) / chi2_crit))
 
 end
 
@@ -273,9 +273,9 @@ function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     n = length(x)
     df = n - 1
 
-    chi1_crit = crit_chi(df, 1-α/2)
-    chi2_crit = crit_chi(df, α/2)
+    chi1_crit = crit_chi(df, 1 - α / 2)
+    chi2_crit = crit_chi(df, α / 2)
 
-    return (((n - 1) * v)/chi1_crit, ((n - 1) * v)/chi2_crit)
+    return (((n - 1) * v) / chi1_crit, ((n - 1) * v) / chi2_crit)
 
 end

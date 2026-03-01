@@ -46,14 +46,14 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     file_type_ver = parse(Float64, String(Char.(header[5:8])))
     @assert file_type == "GDF" "File $file_name is not GDF file."
 
-    (file_type_ver == 1.25 || file_type_ver == 2.20) ||
+    (file_type_ver == 1.25 || file_type_ver == 2.2) ||
         _warn("GDF versions other than 1.25 and 2.20 may not be supported correctly.")
 
-    if file_type_ver < 2.00
+    if file_type_ver < 2.0
 
-        patient = replace(strip(String(Char.(header[9:88]))), '\0'=>"")
-        recording = replace(strip(String(Char.(header[89:168]))), '\0'=>"")
-        recording_date = replace(strip(String(Char.(header[169:184]))), '\0'=>"")
+        patient = replace(strip(String(Char.(header[9:88]))), '\0' => "")
+        recording = replace(strip(String(Char.(header[89:168]))), '\0' => "")
+        recording_date = replace(strip(String(Char.(header[169:184]))), '\0' => "")
         recording_date == "" && (recording_time = "")
         header_bytes = reinterpret(Int64, header[185:192])[1]
         equipment_id = reinterpret(Int64, header[193:200])[1]
@@ -62,7 +62,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         data_records = reinterpret(Int64, header[237:244])[1]
         sampling_rate = Int64(
             reinterpret(Int32, header[245:252])[2] ÷
-            reinterpret(Int32, header[245:252])[1],
+                reinterpret(Int32, header[245:252])[1],
         )
         ch_n = reinterpret(Int32, header[253:256])[1]
 
@@ -76,10 +76,10 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         buf = UInt8[]
         for idx in 1:ch_n
             readbytes!(fid, buf, 8)
-            push!(units, replace(strip(String(Char.(buf))), '\0'=>"", '\x10'=>""))
+            push!(units, replace(strip(String(Char.(buf))), '\0' => "", '\x10' => ""))
             # push!(units, strip(String(Char.(buf))))
         end
-        units = replace(lowercase.(units), "uv"=>"μV")
+        units = replace(lowercase.(units), "uv" => "μV")
 
         physical_minimum = Float64[]
         buf = UInt8[]
@@ -113,7 +113,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         buf = UInt8[]
         for idx in 1:ch_n
             readbytes!(fid, buf, 80)
-            push!(prefiltering, replace(strip(String(Char.(buf))), '\0'=>""))
+            push!(prefiltering, replace(strip(String(Char.(buf))), '\0' => ""))
         end
 
         samples_per_datarecord = Int32[]
@@ -132,14 +132,14 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     else
 
-        patient = replace(strip(String(Char.(header[9:66]))), '\0'=>"")
+        patient = replace(strip(String(Char.(header[9:66]))), '\0' => "")
         patient_weight = header[86] == 0 ? -1 : header[86]
         patient_height = header[87] == 0 ? -1 : header[86]
         bitstring(header[88])[(end - 1):end] == "00" && (patient_gender = "")
         bitstring(header[88])[(end - 1):end] == "01" && (patient_gender = "M")
         bitstring(header[88])[(end - 1):end] == "10" && (patient_gender = "W")
-        recording = replace(strip(String(Char.(header[89:152]))), '\0'=>"")
-        recording_date = replace(strip(String(Char.(header[169:176]))), '\0'=>"")
+        recording = replace(strip(String(Char.(header[89:152]))), '\0' => "")
+        recording_date = replace(strip(String(Char.(header[169:176]))), '\0' => "")
         recording_date == "" && (recording_time = "")
         header_bytes = reinterpret(Int16, header[185:186])[1] * 256
         etv_hdr = reinterpret(Int16, header[185:186])[1]
@@ -152,7 +152,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         @assert data_records != -1 "Number of data records cannot be -1."
         sampling_rate = Int64(
             reinterpret(Int32, header[245:252])[2] ÷
-            reinterpret(Int32, header[245:252])[1],
+                reinterpret(Int32, header[245:252])[1],
         )
         ch_n = reinterpret(Int16, header[253:254])[1]
 
@@ -160,14 +160,14 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         buf = UInt8[]
         for idx in 1:ch_n
             readbytes!(fid, buf, 16)
-            push!(clabels, replace(strip(String(Char.(buf))), '\0'=>""))
+            push!(clabels, replace(strip(String(Char.(buf))), '\0' => ""))
         end
 
         transducers = String[]
         buf = UInt8[]
         for idx in 1:ch_n
             readbytes!(fid, buf, 80)
-            push!(transducers, replace(strip(String(Char.(buf))), '\0'=>""))
+            push!(transducers, replace(strip(String(Char.(buf))), '\0' => ""))
         end
 
         # obsolete
@@ -176,7 +176,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         buf = UInt8[]
         for idx in 1:ch_n
             readbytes!(fid, buf, 6)
-            push!(units, replace(strip(String(Char.(buf))), '\0'=>"", '\x10'=>""))
+            push!(units, replace(strip(String(Char.(buf))), '\0' => "", '\x10' => ""))
         end
 
         units = String[]
@@ -262,7 +262,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         buf = UInt8[]
         for _ in 1:ch_n
             readbytes!(fid, buf, 64)
-            push!(prefiltering, replace(strip(String(Char.(buf))), '\0'=>""))
+            push!(prefiltering, replace(strip(String(Char.(buf))), '\0' => ""))
         end
 
         time_offset = Float32[]
@@ -348,7 +348,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             end
             buf = UInt8[]
             readbytes!(fid, buf, 19 * ch_n)
-            imp = @. Float64(2 ^ (imp / 8))
+            imp = @. Float64(2^(imp / 8))
         end
 
     end
@@ -364,7 +364,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     seek(fid, header_bytes)
 
     # check TLV header
-    if file_type_ver >= 2.10 && (etv_hdr - (ch_n + 1)) * 256 > 0
+    if file_type_ver >= 2.1 && (etv_hdr - (ch_n + 1)) * 256 > 0
         tlv_tag = UInt8[]
         tlv_len = UInt8[]
         tlv_val = UInt8[]
@@ -447,11 +447,11 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     data .*= gain
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     if file_type_ver < 2.0
@@ -505,19 +505,19 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             end
             if etp_sr == 0
                 markers = DataFrame(
-                    :id=>id,
-                    :start=>round.(start ./ sampling_rate, digits = 4),
-                    :length=>round.(len ./ sampling_rate, digits = 4),
-                    :value=>value,
-                    :channel=>ch,
+                    :id => id,
+                    :start => round.(start ./ sampling_rate, digits = 4),
+                    :length => round.(len ./ sampling_rate, digits = 4),
+                    :value => value,
+                    :channel => ch,
                 )
             else
                 markers = DataFrame(
-                    :id=>id,
-                    :start=>round.(start ./ etp_sr, digits = 4),
-                    :length=>round.(len ./ sampling_rate, digits = 4),
-                    :value=>value,
-                    :channel=>ch,
+                    :id => id,
+                    :start => round.(start ./ etp_sr, digits = 4),
+                    :length => round.(len ./ sampling_rate, digits = 4),
+                    :value => value,
+                    :channel => ch,
                 )
             end
         end
@@ -572,19 +572,19 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             end
             if etp_sr == 0
                 markers = DataFrame(
-                    :id=>id,
-                    :start=>round.(start ./ sampling_rate, digits = 4),
-                    :length=>round.(len ./ sampling_rate, digits = 4),
-                    :value=>value,
-                    :channel=>ch,
+                    :id => id,
+                    :start => round.(start ./ sampling_rate, digits = 4),
+                    :length => round.(len ./ sampling_rate, digits = 4),
+                    :value => value,
+                    :channel => ch,
                 )
             else
                 markers = DataFrame(
-                    :id=>id,
-                    :start=>round.(start ./ etp_sr, digits = 4),
-                    :length=>round.(len ./ sampling_rate, digits = 4),
-                    :value=>value,
-                    :channel=>ch,
+                    :id => id,
+                    :start => round.(start ./ etp_sr, digits = 4),
+                    :length => round.(len ./ sampling_rate, digits = 4),
+                    :value => value,
+                    :channel => ch,
                 )
             end
         end
@@ -630,7 +630,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         file_type = file_type,
         recording = recording,
         recording_date = recording_date,
-        recording_time = replace(recording_time, '.'=>':'),
+        recording_time = replace(recording_time, '.' => ':'),
         recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
@@ -656,8 +656,8 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

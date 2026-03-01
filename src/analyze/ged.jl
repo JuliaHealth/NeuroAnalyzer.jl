@@ -19,8 +19,8 @@ Named tuple containing:
   - `ress_norm::Vector{Float64}`: RESS normalized to -1..1
 """
 function ged(
-    s1::AbstractMatrix, s2::AbstractMatrix
-)::@NamedTuple{sged::Matrix{Float64}, ress::Vector{Float64}, ress_norm::Vector{Float64}}
+        s1::AbstractMatrix, s2::AbstractMatrix
+    )::@NamedTuple{sged::Matrix{Float64}, ress::Vector{Float64}, ress_norm::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk2d(s1)
@@ -65,13 +65,13 @@ Named tuple containing:
   - `ress_norm::Matrix{Float64}`: RESS normalized to -1..1
 """
 function ged(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-)::@NamedTuple{sged::Array{Float64, 3}, ress::Matrix{Float64}, ress_norm::Matrix{Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::@NamedTuple{sged::Array{Float64, 3}, ress::Matrix{Float64}, ress_norm::Matrix{Float64}}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")

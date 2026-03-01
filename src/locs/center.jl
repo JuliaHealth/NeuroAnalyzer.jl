@@ -18,8 +18,8 @@ Center locs at (0, 0).
   - `locs_new::DataFrame`
 """
 function locs_center(
-    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
-)::DataFrame
+        locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+    )::DataFrame
 
     locs_new = deepcopy(locs)
     # locs_new = locs_rotz(locs, a=90)
@@ -89,8 +89,8 @@ Center locs at (0, 0).
   - `Nothing`
 """
 function locs_center!(
-    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
-)::Nothing
+        locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+    )::Nothing
 
     locs[!, :] = locs_center(locs; polar = polar, cart = cart, spherical = spherical)[
         !, :,

@@ -22,11 +22,11 @@ Split into epochs. Return signal that is split either by markers (if specified) 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function epoch(
-    obj::NeuroAnalyzer.NEURO;
-    marker::String = "",
-    offset::Real = 0,
-    ep_len::Union{Real, Nothing} = nothing,
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        marker::String = "",
+        offset::Real = 0,
+        ep_len::Union{Real, Nothing} = nothing,
+    )::NeuroAnalyzer.NEURO
 
     @assert nepochs(obj) == 1 "epoch() must be applied to continuous object."
 
@@ -83,7 +83,7 @@ function epoch(
         for marker_idx in DataFrames.nrow(obj_new.markers):-1:1
 
             round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in
-            0:(size(epochs, 2) * size(epochs, 3)) ||
+                0:(size(epochs, 2) * size(epochs, 3)) ||
                 deleteat!(obj_new.markers, marker_idx)
         end
     end
@@ -124,11 +124,11 @@ Split into epochs. Return signal that is split either by markers (if specified),
   - `Nothing`
 """
 function epoch!(
-    obj::NeuroAnalyzer.NEURO;
-    marker::String = "",
-    offset::Real = 0,
-    ep_len::Union{Real, Nothing} = nothing,
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        marker::String = "",
+        offset::Real = 0,
+        ep_len::Union{Real, Nothing} = nothing,
+    )::Nothing
 
     obj_new = epoch(obj, marker = marker, offset = offset, ep_len = ep_len)
     obj.header = obj_new.header
@@ -206,8 +206,8 @@ Extract sub-epochs with a reduced time range.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function subepoch(
-    obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real
+    )::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     ep_time = obj.epoch_time
@@ -233,7 +233,7 @@ function subepoch(
     mrk_epoch = _markers_epochs(obj)
     for mrk_idx in length(mrk_start):-1:1
         if mrk_start[mrk_idx] < ep_tps[1, mrk_epoch[mrk_idx]] ||
-            mrk_start[mrk_idx] > ep_tps[2, mrk_epoch[mrk_idx]]
+                mrk_start[mrk_idx] > ep_tps[2, mrk_epoch[mrk_idx]]
             deleteat!(obj_new.markers, mrk_idx)
             deleteat!(mrk_epoch, mrk_idx)
         end
@@ -245,7 +245,7 @@ function subepoch(
         mrk_start[mrk_idx] -= (
             ep_start + (
                 (mrk_epoch[mrk_idx] - 1) *
-                (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end))
+                    (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end))
             )
         )
     end

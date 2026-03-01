@@ -46,15 +46,15 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{
 
         # check IMF basic conditions
         if n_roots >= n_extrema - 1 &&
-            n_roots <= n_extrema + 1 &&
-            n_extrema >= n_roots - 1 &&
-            n_extrema <= n_roots + 1 &&
-            n_roots > 1 &&
-            n_extrema > 1
+                n_roots <= n_extrema + 1 &&
+                n_extrema >= n_roots - 1 &&
+                n_extrema <= n_roots + 1 &&
+                n_roots > 1 &&
+                n_extrema > 1
 
             # calculate stopping criterion
             push!(imf_v, imf_tmp)
-            _info("IMF found: $(length(imf_v)), sieves: $n_sieves, SD: $(round(sd, digits=2))")
+            _info("IMF found: $(length(imf_v)), sieves: $n_sieves, SD: $(round(sd, digits = 2))")
             s_tmp = res
             n_sieves = 1
         else

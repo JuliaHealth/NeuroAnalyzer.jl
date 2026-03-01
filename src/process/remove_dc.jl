@@ -106,8 +106,8 @@ Remove mean value (DC offset).
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function remove_dc(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
@@ -134,8 +134,8 @@ Remove mean value (DC offset).
   - `Nothing`
 """
 function remove_dc!(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
+    )::Nothing
 
     obj_new = remove_dc(obj, ch = ch, n = n)
     obj.data = obj_new.data

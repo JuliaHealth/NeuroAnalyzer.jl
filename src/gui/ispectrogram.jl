@@ -123,7 +123,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
 
         combo_method = GtkComboBoxText()
         spectrogram_methods = [
-            "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"
+            "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT",
         ]
         for idx in spectrogram_methods
             push!(combo_method, idx)
@@ -362,7 +362,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
         end
 
         function _mwheel_scroll(_, dx, dy)
-            if dy > 0.5
+            return if dy > 0.5
                 if k == 0x0000ffe1 # shift
                     time_current = entry_time.value
                     if time_current < obj.time_pts[end] - zoom
@@ -499,7 +499,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
             k = nothing
         end
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             if keyval == UInt('[')
                 if zoom > 1
@@ -748,7 +748,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 
         combo_method = GtkComboBoxText()
         spectrogram_methods = [
-            "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"
+            "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT",
         ]
         for idx in spectrogram_methods
             push!(combo_method, idx)
@@ -983,7 +983,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         end
 
         function _mwheel_scroll(_, dx, dy)
-            if dy > 0.5
+            return if dy > 0.5
                 if k == 0x0000ffe1 # shift
                     ep = Int64(entry_epoch.value)
                     if ep < nepochs(obj)
@@ -1088,7 +1088,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             k = nothing
         end
 
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+        return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             # ALT
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))

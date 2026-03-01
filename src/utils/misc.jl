@@ -157,8 +157,8 @@ Find nearest position tuple in a matrix of positions.
   - `pos::Tuple{Int64, Int64}`: row and column in m
 """
 function f_nearest(
-    m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64}
-)::Tuple{Int64, Int64}
+        m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64}
+    )::Tuple{Int64, Int64}
 
     d = zeros(size(m))
 
@@ -213,10 +213,10 @@ Return signal channel in the form trials × time.
   - `s::Matrix{Float64}`
 """
 function trtm(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
+    )::Matrix{Float64}
 
     _check_epochs(obj, ep)
     ch = get_channel(obj, ch = ch)

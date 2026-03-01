@@ -42,12 +42,12 @@ This is a meta-function that triggers appropriate `import_*()` function. File fo
   - `markers::DataFrame` - for events
 """
 function import_recording(
-    file_name::String;
-    detect_type::Bool = true,
-    type::Union{Nothing, Symbol} = nothing,
-    sampling_rate::Union{Nothing, Int64} = nothing,
-    n::Int64 = 0,
-)::NeuroAnalyzer.NEURO
+        file_name::String;
+        detect_type::Bool = true,
+        type::Union{Nothing, Symbol} = nothing,
+        sampling_rate::Union{Nothing, Int64} = nothing,
+        n::Int64 = 0,
+    )::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -79,6 +79,6 @@ function import_recording(
     splitext(file_name)[2] == ".snirf" && return import_snirf(file_name, n = n)
     splitext(file_name)[2] == ".nirs" && return import_nirs(file_name)
     splitext(file_name)[2] == ".ascii" && return import_duomag(file_name)
-    splitext(file_name)[2] == ".m" && return import_duomag(file_name)
+    return splitext(file_name)[2] == ".m" && return import_duomag(file_name)
 
 end

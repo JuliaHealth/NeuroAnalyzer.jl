@@ -29,8 +29,8 @@ Named tuple containing:
 To get frequencies for the signal, use `f, _ = freqs(s, fs)`.
 """
 function ftransform(
-    s::AbstractVector; pad::Int64 = 0, db::Bool = false, nf::Bool = false
-)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+        s::AbstractVector; pad::Int64 = 0, db::Bool = false, nf::Bool = false
+    )::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     if nf
         # this will return positive and negative frequencies
@@ -100,8 +100,8 @@ Named tuple containing:
   - `ph::Vector{Float64}`: phases (in radians)
 """
 function htransform(
-    s::AbstractVector; pad::Int64 = 0, db::Bool = false
-)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+        s::AbstractVector; pad::Int64 = 0, db::Bool = false
+    )::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     # Hilbert transform
     ht = DSP.hilbert(pad0(s, pad))
@@ -142,8 +142,8 @@ Named tuple containing:
   - `ph::Array{Float64, 3}`: phases (in radians)
 """
 function ftransform(
-    s::AbstractArray; pad::Int64 = 0, db::Bool = false, nf::Bool = false
-)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+        s::AbstractArray; pad::Int64 = 0, db::Bool = false, nf::Bool = false
+    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -195,8 +195,8 @@ Named tuple containing:
   - `ph::Array{Float64, 3}`: phases (in radians)
 """
 function htransform(
-    s::AbstractArray; pad::Int64 = 0, db::Bool = false
-)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+        s::AbstractArray; pad::Int64 = 0, db::Bool = false
+    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -243,8 +243,8 @@ Named tuple containing:
   - `ph::Array{Float64, 3}: phases (in radians)
 """
 function transform(
-    s::AbstractArray; pad::Int64 = 0, h::Bool = false, db::Bool = false, nf::Bool = false
-)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+        s::AbstractArray; pad::Int64 = 0, h::Bool = false, db::Bool = false, nf::Bool = false
+    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     h && _warn("htransform() uses Hilbert transform, the signal should be narrowband for best results.")
@@ -282,13 +282,13 @@ Named tuple containing:
   - `ph::Array{Float64, 3}: phases (in radians)
 """
 function transform(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    h::Bool = false,
-    db::Bool = false,
-    nf::Bool = false,
-)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        h::Bool = false,
+        db::Bool = false,
+        nf::Bool = false,
+    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     c, a, p, ph = NeuroAnalyzer.transform(obj.data[ch, :, :], pad = pad, h = h, db = db, nf = nf)
@@ -368,8 +368,8 @@ Calculate complex analytic signal using Hilbert transformation.
   - `ha::Vector{ComplexF64}`:
 """
 function hanalytic(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0
-)::Array{ComplexF64, 3}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0
+    )::Array{ComplexF64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ha = NeuroAnalyzer.hanalytic(obj.data[ch, :, :], pad = pad)

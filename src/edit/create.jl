@@ -22,11 +22,11 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
     _check_var(data_type, data_types, "data_type")
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     time_pts = Float64[]
@@ -239,15 +239,15 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
     history = String[]
 
     locs = DataFrame(
-        :label=>String[],
-        :loc_radius=>Float64[],
-        :loc_theta=>Float64[],
-        :loc_x=>Float64[],
-        :loc_y=>Float64[],
-        :loc_z=>Float64[],
-        :loc_radius_sph=>Float64[],
-        :loc_theta_sph=>Float64[],
-        :loc_phi_sph=>Float64[],
+        :label => String[],
+        :loc_radius => Float64[],
+        :loc_theta => Float64[],
+        :loc_x => Float64[],
+        :loc_y => Float64[],
+        :loc_z => Float64[],
+        :loc_radius_sph => Float64[],
+        :loc_theta_sph => Float64[],
+        :loc_phi_sph => Float64[],
     )
 
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, ep_time, data)
@@ -326,8 +326,8 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function create_data(
-    obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String
+    )::NeuroAnalyzer.NEURO
 
     @assert length(obj.data) == 0 "OBJ already contains data."
     @assert length(obj.time_pts) == 0 "OBJ already has time points."
@@ -366,8 +366,8 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
   - `Nothing`
 """
 function create_data!(
-    obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String
+    )::Nothing
 
     obj_new = create_data(obj, data = data, fs = fs, type = type)
     obj.header = obj_new.header

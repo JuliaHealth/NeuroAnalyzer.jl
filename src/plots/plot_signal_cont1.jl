@@ -41,24 +41,24 @@ Plot continuous signal.
   - `p::GLMakie.Figure`
 """
 function plot_cont(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = "all",
-    seg::Tuple{Real, Real} = (0, 10),
-    xlabel::String = "default",
-    ylabel::String = "default",
-    title::String = "default",
-    mono::Bool = false,
-    markers::Bool = true,
-    scale::Bool = true,
-    group_ch::Bool = true,
-    type::Symbol = :normal,
-    avg::Bool = true,
-    ci95::Bool = false,
-    n_channels::Int64 = 20,
-    res::Int64 = 1,
-    snap::Bool = true,
-    gui::Bool = true,
-)::GLMakie.Figure
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex} = "all",
+        seg::Tuple{Real, Real} = (0, 10),
+        xlabel::String = "default",
+        ylabel::String = "default",
+        title::String = "default",
+        mono::Bool = false,
+        markers::Bool = true,
+        scale::Bool = true,
+        group_ch::Bool = true,
+        type::Symbol = :normal,
+        avg::Bool = true,
+        ci95::Bool = false,
+        n_channels::Int64 = 20,
+        res::Int64 = 1,
+        snap::Bool = true,
+        gui::Bool = true,
+    )::GLMakie.Figure
 
     @assert res >= 1 "res must be ≥ 1."
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
@@ -175,9 +175,9 @@ function plot_cont(
     end
     GLMakie.activate!(title = "plot()")
     p = GLMakie.Figure(
-                    size = plot_size,
-                    figure_padding = (10, 20, 10, 10), # L R B T
-                )
+        size = plot_size,
+        figure_padding = (10, 20, 10, 10), # L R B T
+    )
     ax1 = GLMakie.Axis(
         p[1, 1];
         xlabel = "",
@@ -238,14 +238,14 @@ function plot_cont(
             !mono && (cmap = GLMakie.resample_cmap(pal, size(s, 1)))
             for idx in axes(s, 1)
                 GLMakie.lines!(
-                            ax1,
-                            t,
-                            s,
-                            color = mono ? :black : cmap[idx],
-                            colormap = pal,
-                            colorrange = 1:size(s, 1),
-                            linewidth = 0.5,
-                        )
+                    ax1,
+                    t,
+                    s,
+                    color = mono ? :black : cmap[idx],
+                    colormap = pal,
+                    colorrange = 1:size(s, 1),
+                    linewidth = 0.5,
+                )
             end
 
             # plot averaged channels
@@ -328,7 +328,7 @@ function plot_cont(
                 padding = 2,
                 strokewidth = 1,
                 offset = (0, 5),
-                text_rotation = pi/2,
+                text_rotation = pi / 2,
             )
         end
     end
@@ -436,17 +436,19 @@ function plot_cont(
                         if ax1_x < ax1.limits[][1][1]
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][get_channel(obj, ch = clabels[round(Int64, ax1_y)])[1]] =
-                                !obj.header.recording[:bad_channel][get_channel(
+                                !obj.header.recording[:bad_channel][
+                                get_channel(
                                     obj; ch = clabels[round(Int64, ax1_y)]
-                                )[1]]
+                                )[1],
+                            ]
                             notify(bad_ch)
                         end
 
                         # place marker
                         if ax1_x >= ax1.limits[][1][1] &&
-                            ax1_x <= ax1.limits[][1][2] &&
-                            ax1_y >= ax1.limits[][2][1] &&
-                            ax1_y <= ax1.limits[][2][2]
+                                ax1_x <= ax1.limits[][1][2] &&
+                                ax1_y >= ax1.limits[][2][1] &&
+                                ax1_y <= ax1.limits[][2][2]
                             vmarker1[] = NaN
                             vmarker2[] = NaN
                             marker_range[] = [NaN, NaN]
@@ -468,9 +470,9 @@ function plot_cont(
 
                         # place marker
                         if ax1_x >= ax1.limits[][1][1] &&
-                            ax1_x <= ax1.limits[][1][2] &&
-                            ax1_y >= ax1.limits[][2][1] &&
-                            ax1_y <= ax1.limits[][2][2]
+                                ax1_x <= ax1.limits[][1][2] &&
+                                ax1_y >= ax1.limits[][2][1] &&
+                                ax1_y <= ax1.limits[][2][2]
                             vmarker_pos = snap ? round(ax1_x, digits = 1) : ax1_x
                             if isnan(vmarker1[])
                                 vmarker1[] = vmarker_pos
@@ -523,29 +525,30 @@ function plot_cont(
                     if event.key == Keyboard.d
                         if !isnan(vmarker1[]) && !isnan(vmarker2[])
 
-                            trim!(obj, seg=(marker_range[][1], marker_range[][2]))
+                            trim!(obj, seg = (marker_range[][1], marker_range[][2]))
                             screen = display(p)
                             close(screen)
-                            NeuroAnalyzer.plot(obj, 
-                                            ch = ch,
-                                            seg = (ax1.limits[][1][1], ax1.limits[][1][1] + seg_len),
-                                            xlabel = xlabel,
-                                            ylabel = ylabel,
-                                            title = title,
-                                            markers = markers,
-                                            scale = scale,
-                                            group_ch = group_ch,
-                                            n_channels = n_channels,
-                                            mono = mono,
-                                            res = res,
-                                            gui = gui,
-                                               )
-#
-#                            vmarker1[] = NaN
-#                            vmarker2[] = NaN
-#                            marker_range[] = [NaN, NaN]
-#                            notify(t)
-#                            notify(r)
+                            NeuroAnalyzer.plot(
+                                obj,
+                                ch = ch,
+                                seg = (ax1.limits[][1][1], ax1.limits[][1][1] + seg_len),
+                                xlabel = xlabel,
+                                ylabel = ylabel,
+                                title = title,
+                                markers = markers,
+                                scale = scale,
+                                group_ch = group_ch,
+                                n_channels = n_channels,
+                                mono = mono,
+                                res = res,
+                                gui = gui,
+                            )
+                            #
+                            #                            vmarker1[] = NaN
+                            #                            vmarker2[] = NaN
+                            #                            marker_range[] = [NaN, NaN]
+                            #                            notify(t)
+                            #                            notify(r)
                         end
                     end
 

@@ -31,17 +31,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function coherence(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{coh::Vector{ComplexF64}, imcoh::Vector{Float64}, msc::Vector{Float64}, f::Vector{Float64}}
+        s1::AbstractVector,
+        s2::AbstractVector;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{coh::Vector{ComplexF64}, imcoh::Vector{Float64}, msc::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
@@ -119,17 +119,17 @@ Calculate coherence, imaginary part of coherence and magnitude-squared coherence
   - `f::Vector{Float64}`: frequencies
 """
 function coherence(
-    s1::AbstractArray,
-    s2::AbstractArray;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
+        s1::AbstractArray,
+        s2::AbstractArray;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -214,20 +214,20 @@ Calculate coherence, imaginary part of coherence and magnitude-squared coherence
   - `f::Vector{Float64}`: frequencies
 """
 function coherence(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    method::Symbol = :mt,
-    flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj1),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}},
+        ch2::Union{String, Vector{String}},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        method::Symbol = :mt,
+        flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj1),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."

@@ -28,83 +28,83 @@ Calculate lateralization index (log(A / B), where A is average power at given fr
   - `lidx::Float64`: lateralization index
 """
 function lat_idx(
-    obj::NeuroAnalyzer.NEURO;
-    frq::Union{Real, Tuple{<:Real, <:Real}} = 10,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-)::Float64
+        obj::NeuroAnalyzer.NEURO;
+        frq::Union{Real, Tuple{<:Real, <:Real}} = 10,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+    )::Float64
 
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
 
     @assert length(channel_pick(obj, p = :l)) > 0 "Could not detect left hemisphere channels, check OBJ labels."
     @assert length(channel_pick(obj, p = :r)) > 0 "Could not detect right hemisphere channels, check OBJ labels."
 
-    ch_l = get_channel(obj, ch=channel_pick(obj, p = :l))
-    ch_r = get_channel(obj, ch=channel_pick(obj, p = :r))
+    ch_l = get_channel(obj, ch = channel_pick(obj, p = :l))
+    ch_r = get_channel(obj, ch = channel_pick(obj, p = :r))
 
     _log_off()
 
     # left PSDs
     if datatype(obj) in ["erp", "erf"]
         p_left, f = psd(
-                        obj.data[ch_l, :, 1];
-                        fs = sr(obj),
-                        db = false,
-                        method = method,
-                        nt = nt,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        ncyc = ncyc,
-                        gw = gw,
-                    )
+            obj.data[ch_l, :, 1];
+            fs = sr(obj),
+            db = false,
+            method = method,
+            nt = nt,
+            wlen = wlen,
+            woverlap = woverlap,
+            w = w,
+            ncyc = ncyc,
+            gw = gw,
+        )
     else
         p_left, f = psd(
-                        obj.data[ch_l, :, :];
-                        fs = sr(obj),
-                        db = false,
-                        method = method,
-                        nt = nt,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        ncyc = ncyc,
-                        gw = gw,
-                    )
+            obj.data[ch_l, :, :];
+            fs = sr(obj),
+            db = false,
+            method = method,
+            nt = nt,
+            wlen = wlen,
+            woverlap = woverlap,
+            w = w,
+            ncyc = ncyc,
+            gw = gw,
+        )
     end
 
     # right PSDs
     if datatype(obj) in ["erp", "erf"]
         p_right, _ = psd(
-                        obj.data[ch_r, :, 1];
-                        fs = sr(obj),
-                        db = false,
-                        method = method,
-                        nt = nt,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        ncyc = ncyc,
-                        gw = gw,
-                    )
+            obj.data[ch_r, :, 1];
+            fs = sr(obj),
+            db = false,
+            method = method,
+            nt = nt,
+            wlen = wlen,
+            woverlap = woverlap,
+            w = w,
+            ncyc = ncyc,
+            gw = gw,
+        )
     else
         p_right, _ = psd(
-                        obj.data[ch_r, :, :];
-                        fs = sr(obj),
-                        db = false,
-                        method = method,
-                        nt = nt,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        ncyc = ncyc,
-                        gw = gw,
-                    )
+            obj.data[ch_r, :, :];
+            fs = sr(obj),
+            db = false,
+            method = method,
+            nt = nt,
+            wlen = wlen,
+            woverlap = woverlap,
+            w = w,
+            ncyc = ncyc,
+            gw = gw,
+        )
     end
 
     _log_on()

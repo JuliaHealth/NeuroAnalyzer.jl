@@ -21,15 +21,15 @@ Plot coherence.
   - `p::GLMakie.Figure`
 """
 function plot_coherence(
-    coh::Vector{Float64},
-    f::Vector{Float64};
-    flim::Tuple{Real, Real} = (f[1], f[end]),
-    xlabel::String = "Frequency [Hz]",
-    ylabel::String = "Coherence",
-    title::String = "",
-    frq::Symbol = :lin,
-    mono::Bool = false,
-)::GLMakie.Figure
+        coh::Vector{Float64},
+        f::Vector{Float64};
+        flim::Tuple{Real, Real} = (f[1], f[end]),
+        xlabel::String = "Frequency [Hz]",
+        ylabel::String = "Coherence",
+        title::String = "",
+        frq::Symbol = :lin,
+        mono::Bool = false,
+    )::GLMakie.Figure
 
     @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -71,8 +71,8 @@ function plot_coherence(
 
     max_coh = maxat(coh, f)
     min_coh = minat(coh, f)
-    _info("Minimum coherence $(round(coh[min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-    _info("Maximum coherence $(round(coh[max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+    _info("Minimum coherence $(round(coh[min_coh[2]], digits = 3)) at $(round(min_coh[1], digits = 2)) Hz")
+    _info("Maximum coherence $(round(coh[max_coh[2]], digits = 3)) at $(round(max_coh[1], digits = 2)) Hz")
 
     return p
 
@@ -103,19 +103,19 @@ Plot multi-channel coherence.
   - `p::GLMakie.Figure`
 """
 function plot_coherence(
-    coh::Matrix{Float64},
-    f::Vector{Float64};
-    clabels::Vector{String} = string.(1:size(coh, 1)),
-    flim::Tuple{Real, Real} = (f[1], f[end]),
-    xlabel::String = "Frequency [Hz]",
-    ylabel::String = "",
-    title::String = "",
-    frq::Symbol = :lin,
-    avg::Bool = false,
-    ci95::Bool = false,
-    leg::Bool = true,
-    mono::Bool = false,
-)::GLMakie.Figure
+        coh::Matrix{Float64},
+        f::Vector{Float64};
+        clabels::Vector{String} = string.(1:size(coh, 1)),
+        flim::Tuple{Real, Real} = (f[1], f[end]),
+        xlabel::String = "Frequency [Hz]",
+        ylabel::String = "",
+        title::String = "",
+        frq::Symbol = :lin,
+        avg::Bool = false,
+        ci95::Bool = false,
+        leg::Bool = true,
+        mono::Bool = false,
+    )::GLMakie.Figure
 
     ch_n = size(coh, 1)
 

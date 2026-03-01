@@ -117,7 +117,7 @@ function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
     if length(x) == length(y)
         sd = sqrt(sem(x)^2 + sem(y)^2)
     else
-        sd = stdp(x, y) * sqrt(1/legth(x) + 1/length(y))
+        sd = stdp(x, y) * sqrt(1 / legth(x) + 1 / length(y))
     end
 
     return sd

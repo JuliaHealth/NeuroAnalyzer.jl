@@ -27,8 +27,8 @@ function _kbd_listener(c::Channel)::Nothing
 end
 
 function _serial_open(
-    port_name::String = "/dev/ttyACM0"; baudrate::Int64 = 115200, m = LibSerialPort.SP_MODE_READ
-)::SerialPort
+        port_name::String = "/dev/ttyACM0"; baudrate::Int64 = 115200, m = LibSerialPort.SP_MODE_READ
+    )::SerialPort
     @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
     if Sys.isunix()
         @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
@@ -44,7 +44,7 @@ function _serial_open(
 end
 
 function _serial_listener(sp::LibSerialPort.SerialPort)::Union{String, Nothing}
-    if isopen(sp)
+    return if isopen(sp)
         if bytesavailable(sp) > 0
             return String(readline(sp))
         else
@@ -65,13 +65,13 @@ function _serial_close(port_name::String)::Nothing
 end
 
 function _serial_recorder(
-    port_name::String = "/dev/ttyUSB0";
-    baudrate::Int64 = 115200,
-    m = LibSerialPort.SP_MODE_READ,
-    blocks::Int64 = 256,
-    n::Int64 = 1,
-    t::Real = 0,
-)::DataFrame
+        port_name::String = "/dev/ttyUSB0";
+        baudrate::Int64 = 115200,
+        m = LibSerialPort.SP_MODE_READ,
+        blocks::Int64 = 256,
+        n::Int64 = 1,
+        t::Real = 0,
+    )::DataFrame
     # `blocks`: number of data blocks to record
     # `n`: number of records per block
     # `t`: recording time in seconds; if t > 0, blocks ignored and calculated based on recorded data

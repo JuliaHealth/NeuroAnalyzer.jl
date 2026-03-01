@@ -17,10 +17,10 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function od2conc(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
-    ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+        ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
+    )::NeuroAnalyzer.NEURO
 
     @assert length(get_channel(obj, type = "nirs_od")) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
     @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
@@ -101,7 +101,7 @@ function od2conc(
         obj_new.header.recording[:channel_order],
         collect((obj_new.header.recording[:channel_order][end] + 1):size(obj_new.data, 1)),
     )
-    obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0"=>"")
+    obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0" => "")
     obj_new.header.recording[:bad_channel] = [
         obj_new.header.recording[:bad_channel];
         zeros(Bool, size(obj_new.data, 1))
@@ -136,10 +136,10 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
   - `Nothing`
 """
 function od2conc!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
-    ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+        ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
+    )::Nothing
 
     obj_new = od2conc(obj, ch = ch, ppf = ppf)
     obj.data = obj_new.data

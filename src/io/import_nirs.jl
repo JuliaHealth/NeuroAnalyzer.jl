@@ -51,7 +51,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # col4: wavelength index
     tmp = Int.(probes["MeasList"])
     ch_n = size(tmp, 1)
-    opt_pairs=zeros(Int64, size(tmp, 1), 2)
+    opt_pairs = zeros(Int64, size(tmp, 1), 2)
     for idx in axes(tmp, 1)
         opt_pairs[idx, 1] = tmp[idx, 1]
         opt_pairs[idx, 2] = tmp[idx, 2]
@@ -96,7 +96,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
             " " *
             string(wavelengths[wavelength_index[idx]])
     end
-    clabels = replace.(clabels, ".0"=>"")
+    clabels = replace.(clabels, ".0" => "")
 
     # data contains intensity (RAW) data
     data_unit = repeat(["V"], ch_n)
@@ -109,20 +109,20 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     s = nirs["s"][:]
     if s == zeros(length(time_pts))
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
     else
         s_n = size(s, 2)
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
         for idx1 in 1:s_n
             s_start = findall(s[:, idx1] .!= 0.0)
@@ -171,15 +171,15 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
     locs = DataFrame(
-        :label=>opt_labels,
-        :loc_radius=>radius,
-        :loc_theta=>theta,
-        :loc_x=>x,
-        :loc_y=>y,
-        :loc_z=>z,
-        :loc_radius_sph=>radius_sph,
-        :loc_theta_sph=>theta_sph,
-        :loc_phi_sph=>phi_sph,
+        :label => opt_labels,
+        :loc_radius => radius,
+        :loc_theta => theta,
+        :loc_x => x,
+        :loc_y => y,
+        :loc_z => z,
+        :loc_radius_sph => radius_sph,
+        :loc_theta_sph => theta_sph,
+        :loc_phi_sph => phi_sph,
     )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -228,8 +228,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

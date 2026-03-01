@@ -75,7 +75,7 @@ function meang(x::AbstractVector)::Float64
     @assert length(x) > 0 "Length of x must be > 0."
 
     # m = exp(mean(log.(x)))
-    m = prod(x)^(1/length(x))
+    m = prod(x)^(1 / length(x))
 
     return m
 

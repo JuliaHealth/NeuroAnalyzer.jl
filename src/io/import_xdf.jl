@@ -78,11 +78,11 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
     for idx in other_idx
         length(streams[s_names[idx]]["data"]) == 0 && break
@@ -91,11 +91,11 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
             append!(
                 markers,
                 Dict(
-                    :id=>string.(data[idx][:, data_idx]),
-                    :start=>(time[idx] .- time[idx][1]),
-                    :length=>ones(length(time[idx])),
-                    :value=>repeat(["marker"], length(time[idx])),
-                    :channel=>zeros(Int64, length(time[idx])),
+                    :id => string.(data[idx][:, data_idx]),
+                    :start => (time[idx] .- time[idx][1]),
+                    :length => ones(length(time[idx])),
+                    :value => repeat(["marker"], length(time[idx])),
+                    :channel => zeros(Int64, length(time[idx])),
                 ),
             )
         end
@@ -151,8 +151,8 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     _initialize_locs!(obj)
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

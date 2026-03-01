@@ -24,14 +24,14 @@ Remove artifacts using continuous wavelet decomposition (CWD).
   - `s_new::Vector{Float64}`
 """
 function artrem_cwd(
-    s::AbstractVector,
-    t::AbstractVector;
-    fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    tseg::Tuple{Real, Real},
-    fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
-) where {T <: CWT}
+        s::AbstractVector,
+        t::AbstractVector;
+        fs::Int64,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        tseg::Tuple{Real, Real},
+        fseg::Tuple{Real, Real},
+        type::Symbol = :nd,
+    ) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -81,14 +81,14 @@ Remove artifacts using continuous wavelet decomposition (CWD).
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function artrem_cwd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    tseg::Tuple{Real, Real},
-    fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
-) where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Int64,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        tseg::Tuple{Real, Real},
+        fseg::Tuple{Real, Real},
+        type::Symbol = :nd,
+    ) where {T <: CWT}
 
     ch = get_channel(obj, ch = ch)[1]
     _check_epochs(obj, ep)
@@ -124,14 +124,14 @@ Remove artifacts using continuous wavelet decomposition (CWD).
       + `:df`: DualFrames
 """
 function artrem_cwd!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    tseg::Tuple{Real, Real},
-    fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
-) where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Int64,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        tseg::Tuple{Real, Real},
+        fseg::Tuple{Real, Real},
+        type::Symbol = :nd,
+    ) where {T <: CWT}
 
     obj_new = artrem_cwd(obj, ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
     obj.data = obj_new.data

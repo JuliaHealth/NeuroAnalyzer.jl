@@ -26,8 +26,8 @@ Named tuple containing:
   - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
 """
 function ica_decompose(
-    s::AbstractMatrix; n::Int64, iter::Int64 = 100, f::Symbol = :tanh
-)::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}}
+        s::AbstractMatrix; n::Int64, iter::Int64 = 100, f::Symbol = :tanh
+    )::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}}
 
     _check_var(f, [:tanh, :gaus], "f")
     @assert n >= 1 "n must be ≥ 1."
@@ -115,12 +115,12 @@ Named tuple containing:
   - `ic_var::Vector{Float64}`: variance of components
 """
 function ica_decompose(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    n::Int64 = length(ch),
-    iter::Int64 = 100,
-    f::Symbol = :tanh,
-)::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_var::Vector{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        n::Int64 = length(ch),
+        iter::Int64 = 100,
+        f::Symbol = :tanh,
+    )::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_var::Vector{Float64}}
 
     @assert nepochs(obj) == 1 "ica_decompose() must be applied to continuous object."
 
@@ -143,7 +143,7 @@ function ica_decompose(
     ic_var = ic_var[ic_var_idx]
 
     for ic_idx in 1:n
-        _info("Component $(lpad(ic_idx, 2)): percent variance accounted for: $(round(ic_var[ic_idx], digits=2))")
+        _info("Component $(lpad(ic_idx, 2)): percent variance accounted for: $(round(ic_var[ic_idx], digits = 2))")
     end
 
     return (ic = ic, ic_mw = ic_mw, ic_var = ic_var)
@@ -167,8 +167,8 @@ Reconstruct signal using ICA components.
   - `s_new::Matrix{Float64}`: reconstructed signal
 """
 function ica_reconstruct(;
-    ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}, keep::Bool = false
-)::Matrix{Float64}
+        ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}, keep::Bool = false
+    )::Matrix{Float64}
 
     typeof(ic_idx) <: AbstractRange && (ic_idx = collect(ic_idx))
     @assert size(ic, 1) == size(ic_mw, 2) "ic and ic_mw dimensions do not match (ic: $(size(ic)), ic_mw: $(size(ic_mw)))."
@@ -212,13 +212,13 @@ Reconstruct signals using ICA components.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function ica_reconstruct(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-    ic::Matrix{Float64},
-    ic_mw::Matrix{Float64},
-    keep::Bool = false,
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+        ic::Matrix{Float64},
+        ic_mw::Matrix{Float64},
+        keep::Bool = false,
+    )::NeuroAnalyzer.NEURO
 
     @assert nepochs(obj) == 1 "ica_reconstruct() must be applied to continuous object."
 
@@ -254,13 +254,13 @@ Reconstruct signals using ICA components.
   - `Nothing`
 """
 function ica_reconstruct!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-    ic::Matrix{Float64},
-    ic_mw::Matrix{Float64},
-    keep::Bool = false,
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+        ic::Matrix{Float64},
+        ic_mw::Matrix{Float64},
+        keep::Bool = false,
+    )::Nothing
 
     obj_new = ica_reconstruct(obj, ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
     obj.data = obj_new.data
@@ -288,12 +288,12 @@ Remove ICA components from the signal.
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function ica_remove(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-    ic::Matrix{Float64},
-    ic_mw::Matrix{Float64},
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+        ic::Matrix{Float64},
+        ic_mw::Matrix{Float64},
+    )::NeuroAnalyzer.NEURO
 
     @assert nepochs(obj) == 1 "ica_remove() must be applied to continuous object."
 
@@ -334,12 +334,12 @@ Remove ICA components from the signal.
   - `Nothing`
 """
 function ica_remove!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-    ic::Matrix{Float64},
-    ic_mw::Matrix{Float64},
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+        ic::Matrix{Float64},
+        ic_mw::Matrix{Float64},
+    )::Nothing
 
     obj_new = ica_remove(obj, ic, ic_mw; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw)
     obj.data = obj_new.data

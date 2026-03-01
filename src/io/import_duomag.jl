@@ -42,12 +42,12 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         _ = readline(f)
         sampling_interval = parse(Int, (split(strip(readline(f)), '=')[2]))
         sampling_interval_unit = split(strip(readline(f)), '=')[2]
-        sampling_interval_unit = replace(sampling_interval_unit, "\xb5"=>"μ")
+        sampling_interval_unit = replace(sampling_interval_unit, "\xb5" => "μ")
         sensitivity = parse(
             Float64, replace(split(strip(readline(f)), '=')[2], ',' => '.')
         )
         sensitivity_unit = split(strip(readline(f)), '=')[2]
-        sensitivity_unit = replace(sensitivity_unit, "\xb5"=>"μ")
+        sensitivity_unit = replace(sensitivity_unit, "\xb5" => "μ")
         signal_count = parse(Int, split(strip(readline(f)), '=')[2])
         _ = parse.(Int, split(strip(readline(f)), ' ')[2:end])
         _ = parse.(Int, split(strip(readline(f)), ' ')[2:end])
@@ -68,8 +68,8 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         mep_signal = zeros((samples_count[1], signal_count))
         [
             mep_signal[idx, :] in
-            parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')) for
-            idx in axes(mep_signal)[1]
+                parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')) for
+                idx in axes(mep_signal)[1]
         ]
 
         close(f)
@@ -92,12 +92,12 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         markers = readline(f)
         close(f)
 
-        record_info = replace(record_info, "RecordInfo = struct("=>"")
-        record_info = replace(record_info, ");"=>"")
-        record_info = replace(record_info, "\xb5"=>"μ")
-        record_info = replace(record_info, "'"=>"")
-        record_info = replace(record_info, "{"=>"")
-        record_info = replace(record_info, "}"=>"")
+        record_info = replace(record_info, "RecordInfo = struct(" => "")
+        record_info = replace(record_info, ");" => "")
+        record_info = replace(record_info, "\xb5" => "μ")
+        record_info = replace(record_info, "'" => "")
+        record_info = replace(record_info, "{" => "")
+        record_info = replace(record_info, "}" => "")
         record_info = split(record_info, ',')
         record_id = record_info[2]
         subject = record_info[4]
@@ -109,26 +109,26 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         sampling_interval = parse(Int64, record_info[20])
         sampling_interval_unit = record_info[22]
 
-        signals_info = replace(signals_info, "SignalsInfo = struct("=>"")
-        signals_info = replace(signals_info, ");"=>"")
-        signals_info = replace(signals_info, "\xb5"=>"μ")
-        signals_info = replace(signals_info, "'"=>"")
-        signals_info = replace(signals_info, "{"=>"")
-        signals_info = replace(signals_info, "}"=>"")
-        signals_info = replace(signals_info, ";"=>" ")
+        signals_info = replace(signals_info, "SignalsInfo = struct(" => "")
+        signals_info = replace(signals_info, ");" => "")
+        signals_info = replace(signals_info, "\xb5" => "μ")
+        signals_info = replace(signals_info, "'" => "")
+        signals_info = replace(signals_info, "{" => "")
+        signals_info = replace(signals_info, "}" => "")
+        signals_info = replace(signals_info, ";" => " ")
         signals_info = split(signals_info, ',')
         popfirst!(signals_info)
         popfirst!(signals_info)
         sensitivity = parse(Float64, split(signals_info[2], ' ')[1])
         sensitivity_unit = split(signals_info[2], ' ')[2]
 
-        stimulations_info = replace(stimulations_info, "StimulationInfo = struct("=>"")
-        stimulations_info = replace(stimulations_info, ");"=>"")
-        stimulations_info = replace(stimulations_info, "\xb5"=>"μ")
-        stimulations_info = replace(stimulations_info, "'"=>"")
-        stimulations_info = replace(stimulations_info, "{"=>"")
-        stimulations_info = replace(stimulations_info, "}"=>"")
-        stimulations_info = replace(stimulations_info, ";"=>" ")
+        stimulations_info = replace(stimulations_info, "StimulationInfo = struct(" => "")
+        stimulations_info = replace(stimulations_info, ");" => "")
+        stimulations_info = replace(stimulations_info, "\xb5" => "μ")
+        stimulations_info = replace(stimulations_info, "'" => "")
+        stimulations_info = replace(stimulations_info, "{" => "")
+        stimulations_info = replace(stimulations_info, "}" => "")
+        stimulations_info = replace(stimulations_info, ";" => " ")
         stimulations_info = split(stimulations_info, ',')
         popfirst!(stimulations_info)
         popfirst!(stimulations_info)
@@ -139,26 +139,26 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             push!(coil_type, split(stimulations_info[idx], ' ')[2])
         end
 
-        signals_data = replace(signals_data, "SignalsData = ["=>"")
-        signals_data = replace(signals_data, "];"=>"")
+        signals_data = replace(signals_data, "SignalsData = [" => "")
+        signals_data = replace(signals_data, "];" => "")
         signals_data = split(signals_data, ';')
         mep_signal = zeros(length(signals_data), length(split(signals_data[1], ' ')))
         for idx in eachindex(signals_data)
             mep_signal[idx, :] = parse.(Float64, split(signals_data[idx], ' '))
         end
 
-        markers = replace(markers, "Markers = struct("=>"")
-        markers = replace(markers, ");"=>"")
-        markers = replace(markers, "\xb5"=>"μ")
-        markers = replace(markers, "'"=>"")
-        markers = replace(markers, "{"=>"")
-        markers = replace(markers, "}"=>"")
-        markers = replace(markers, ";"=>" ")
+        markers = replace(markers, "Markers = struct(" => "")
+        markers = replace(markers, ");" => "")
+        markers = replace(markers, "\xb5" => "μ")
+        markers = replace(markers, "'" => "")
+        markers = replace(markers, "{" => "")
+        markers = replace(markers, "}" => "")
+        markers = replace(markers, ";" => " ")
         markers = split(markers, ',')
         popfirst!(markers)
         popfirst!(markers)
-        replace.(markers, '{'=>"")
-        replace.(markers, '}'=>"")
+        replace.(markers, '{' => "")
+        replace.(markers, '}' => "")
 
         stim_sample = zeros(Int64, signal_count)
         markers_neg = zeros(Int64, signal_count)
@@ -178,7 +178,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         # reduce stimulation amplitude
         data[idx, (stim_sample[1] - 10):(stim_sample[1] + 10), 1] .*= 0.05
         # remove DC offset
-        data[idx, :] = remove_dc(data[idx, :], stim_sample[idx]-10)
+        data[idx, :] = remove_dc(data[idx, :], stim_sample[idx] - 10)
     end
     data .*= sensitivity
 
@@ -232,7 +232,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         file_type = "DuoMAG",
         recording = "",
         recording_date = string(split(record_created, ' ')[1]),
-        recording_time = replace(string(split(record_created, ' ')[2]), '.'=>':'),
+        recording_time = replace(string(split(record_created, ' ')[2]), '.' => ':'),
         recording_notes = "",
         channel_type = repeat(["mep"], ch_n),
         channel_order = _sort_channels(repeat(["mep"], ch_n)),
@@ -253,19 +253,19 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     history = String[]
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

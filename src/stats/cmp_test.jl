@@ -37,32 +37,32 @@ Otherwise, named tuple containing:
   - `p::Float64`: p value
 """
 function cmp_test(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    paired::Bool,
-    alpha::Float64 = 0.05,
-    type::Symbol = :auto,
-    exact::Bool = false,
-    nperm::Int64 = 1000,
-    verbose::Bool = true,
-)::Union{
-    @NamedTuple{t::OneSampleTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
-    @NamedTuple{
-        t::EqualVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64
-    },
-    @NamedTuple{
-        t::UnequalVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64
-    },
-    @NamedTuple{t::ExactSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-    @NamedTuple{
-        t::ApproximateSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64
-    },
-    @NamedTuple{t::ExactMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-    @NamedTuple{
-        t::ApproximateMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64
-    },
-    @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64}
-}
+        s1::AbstractVector,
+        s2::AbstractVector;
+        paired::Bool,
+        alpha::Float64 = 0.05,
+        type::Symbol = :auto,
+        exact::Bool = false,
+        nperm::Int64 = 1000,
+        verbose::Bool = true,
+    )::Union{
+        @NamedTuple{t::OneSampleTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
+        @NamedTuple{
+            t::EqualVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64,
+        },
+        @NamedTuple{
+            t::UnequalVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64,
+        },
+        @NamedTuple{t::ExactSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
+        @NamedTuple{
+            t::ApproximateSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64,
+        },
+        @NamedTuple{t::ExactMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
+        @NamedTuple{
+            t::ApproximateMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64,
+        },
+        @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64}
+    }
 
     _check_var(type, [:auto, :perm, :p, :np], "type")
     paired && @assert length(s1) == length(s2) "For paired test both vectors must have the same size."
@@ -129,8 +129,8 @@ function cmp_test(
         p = randperm(n1 + n2)
         g = g[p]
         g_idx = g_idx[p]
-        verbose && println("Group 1 mean: $(round(mean(s1), digits=3))")
-        verbose && println("Group 2 mean: $(round(mean(s2), digits=3))")
+        verbose && println("Group 1 mean: $(round(mean(s1), digits = 3))")
+        verbose && println("Group 2 mean: $(round(mean(s2), digits = 3))")
         perm_diff = zeros(nperm)
 
         # initialize progress bar

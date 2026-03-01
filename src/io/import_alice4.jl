@@ -79,7 +79,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     for idx in 1:ch_n
         units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
     end
-    units = replace(lowercase.(units), "uv"=>"μV")
+    units = replace(lowercase.(units), "uv" => "μV")
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
@@ -241,11 +241,11 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
     if length(annotation_channels) == 0
         markers = DataFrame(
-            :id=>String[],
-            :start=>Float64[],
-            :length=>Float64[],
-            :value=>String[],
-            :channel=>Int64[],
+            :id => String[],
+            :start => Float64[],
+            :length => Float64[],
+            :value => String[],
+            :channel => Int64[],
         )
     else
         markers = _a2df(annotations)
@@ -288,7 +288,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         file_type = file_type,
         recording = string(recording),
         recording_date = recording_date,
-        recording_time = replace(recording_time, '.'=>':'),
+        recording_time = replace(recording_time, '.' => ':'),
         recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
@@ -314,8 +314,8 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

@@ -238,8 +238,8 @@ Normalize channel(s).
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function normalize(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
+    )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     ch_n = length(ch)
@@ -299,8 +299,8 @@ Normalize channel(s).
   - `Nothing`
 """
 function normalize!(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
-)::Nothing
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
+    )::Nothing
 
     obj_new = NeuroAnalyzer.normalize(obj, ch = ch, method = method, bych = bych, n = n)
     obj.data = obj_new.data

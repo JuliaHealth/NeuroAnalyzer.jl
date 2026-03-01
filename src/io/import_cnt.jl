@@ -20,8 +20,8 @@ Load Neuroscan continuous signal file and return `NeuroAnalyzer.NEURO` object.
 Based on loadcnt.m by Sean Fitzgibbon and Arnaud Delorme (https://cnl.salk.edu/~arno/cntload/index.html)
 """
 function import_cnt(
-    file_name::String; data_format::Symbol = :i32, detect_type::Bool = true
-)::NeuroAnalyzer.NEURO
+        file_name::String; data_format::Symbol = :i32, detect_type::Bool = true
+    )::NeuroAnalyzer.NEURO
 
     _check_var(data_format, [:i32, :i16], "data_format")
 
@@ -427,11 +427,11 @@ function import_cnt(
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     markers = DataFrame(
-        :id=>String[],
-        :start=>Float64[],
-        :length=>Float64[],
-        :value=>String[],
-        :channel=>Int64[],
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
 
     time_pts = round.(
@@ -463,7 +463,7 @@ function import_cnt(
         file_type = file_type,
         recording = "",
         recording_date = recording_date,
-        recording_time = replace(recording_time, '.'=>':'),
+        recording_time = replace(recording_time, '.' => ':'),
         recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
@@ -489,8 +489,8 @@ function import_cnt(
 
     _info(
         "Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

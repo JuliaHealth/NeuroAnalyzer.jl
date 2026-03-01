@@ -27,8 +27,8 @@ Named tuple containing:
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """
 function tdcs_dose(;
-    current::Real, pad_area::Real, duration::Int64
-)::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
+        current::Real, pad_area::Real, duration::Int64
+    )::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
 
     charge = (current / 1_000) * duration
     current_density = (current / 1_000) / (pad_area / 1_000)
@@ -61,8 +61,8 @@ Named tuple containing:
   - `charge_density::Float64`: delivered charge density [kC/m²]
 """
 function tacs_dose(;
-    current::Real, pad_area::Real, duration::Int64, offset::Real, frequency::Real, phase::Real
-)::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
+        current::Real, pad_area::Real, duration::Int64, offset::Real, frequency::Real, phase::Real
+    )::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
 
     # calculate sine current along one cycle
     t = collect(0:0.001:1)
@@ -103,8 +103,8 @@ Named tuple containing:
   - `charge_density::Float64`: delivered charge density [kC/m²]
 """
 function tpcs_dose(;
-    current::Real, pad_area::Real, duration::Real, pw::Real, isi::Real
-)::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
+        current::Real, pad_area::Real, duration::Real, pw::Real, isi::Real
+    )::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
 
     @assert isi > pw "isi must be > pw."
 
@@ -152,19 +152,19 @@ Create TES (tDCS/tACS/tRNS/tPCS) protocol.
   - `protocol::Dict`
 """
 function tes_protocol(;
-    type::Symbol,
-    hd::Bool,
-    current::Real,
-    frequency::Real = 0,
-    anode_size::Tuple{Int64, Int64},
-    cathode_size::Tuple{Int64, Int64},
-    anode_loc::Symbol,
-    cathode_loc::Symbol,
-    duration::Real,
-    ramp_in::Real,
-    ramp_out::Real,
-    sham::Bool,
-)::Dict
+        type::Symbol,
+        hd::Bool,
+        current::Real,
+        frequency::Real = 0,
+        anode_size::Tuple{Int64, Int64},
+        cathode_size::Tuple{Int64, Int64},
+        anode_loc::Symbol,
+        cathode_loc::Symbol,
+        duration::Real,
+        ramp_in::Real,
+        ramp_out::Real,
+        sham::Bool,
+    )::Dict
 
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
     @assert current > 0 "current must be > 0 mA."
@@ -178,18 +178,18 @@ function tes_protocol(;
     @assert ramp_out >= 0 "ramp_out must be ≥ 0 s."
 
     protocol = Dict(
-        :type=>type,
-        :hd=>hd,
-        :current=>current,
-        :frequency=>frequency,
-        :cathode_size=>cathode_size,
-        :cathode_size=>cathode_size,
-        :anode_loc=>anode_loc,
-        :cathode_loc=>cathode_loc,
-        :duration=>duration,
-        :ramp_in=>ramp_in,
-        :ramp_out=>ramp_out,
-        :sham=>sham,
+        :type => type,
+        :hd => hd,
+        :current => current,
+        :frequency => frequency,
+        :cathode_size => cathode_size,
+        :cathode_size => cathode_size,
+        :anode_loc => anode_loc,
+        :cathode_loc => cathode_loc,
+        :duration => duration,
+        :ramp_in => ramp_in,
+        :ramp_out => ramp_out,
+        :sham => sham,
     )
 
     return protocol

@@ -68,8 +68,8 @@ Calculate Global Field Power (GFP).
 Global field power is a measure of agreement of the signals picked up by all sensors across the entire scalp: if all sensors have the same value at a given time point, the GFP will be zero at that time point; if the signals differ, the GFP will be non-zero at that time point. GFP peaks may reflect “interesting” brain activity, warranting further investigation. Mathematically, the GFP is the population standard deviation across all sensors, calculated separately for every time point.
 """
 function erp_gfp(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false
-)::Union{Vector{Float64}, Matrix{Float64}}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false
+    )::Union{Vector{Float64}, Matrix{Float64}}
 
     _check_datatype(obj, ["erp", "erf"])
 

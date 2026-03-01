@@ -60,9 +60,9 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)
     GLMakie.activate!(title = "plot_dipole_3d()")
     plot_size = (800, 800)
     p = Figure(
-            backgroundcolor = :black,
-            size = plot_size,
-        )
+        backgroundcolor = :black,
+        size = plot_size,
+    )
     ax = Axis3(p[1, 1])
     hidedecorations!(ax)
 

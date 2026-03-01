@@ -457,20 +457,20 @@ function locs_generate(locs::DataFrame)::DataFrame
     z[lab .== "a2"] .= -0.55
 
     x[lab .== "m1"] .= -0.94
-    y[lab .== "m1"] .= -0.10
-    z[lab .== "m1"] .= -0.30
+    y[lab .== "m1"] .= -0.1
+    z[lab .== "m1"] .= -0.3
 
     x[lab .== "m2"] .= 0.94
-    y[lab .== "m2"] .= -0.10
-    z[lab .== "m2"] .= -0.30
+    y[lab .== "m2"] .= -0.1
+    z[lab .== "m2"] .= -0.3
 
-    x[lab .== "emg1"] .= -0.70
-    y[lab .== "emg1"] .= 0.70
-    z[lab .== "emg1"] .= -1.10
+    x[lab .== "emg1"] .= -0.7
+    y[lab .== "emg1"] .= 0.7
+    z[lab .== "emg1"] .= -1.1
 
-    x[lab .== "emg2"] .= 0.70
-    y[lab .== "emg2"] .= 0.70
-    z[lab .== "emg2"] .= -1.10
+    x[lab .== "emg2"] .= 0.7
+    y[lab .== "emg2"] .= 0.7
+    z[lab .== "emg2"] .= -1.1
 
     x[lab .== "eog1"] .= -0.87
     y[lab .== "eog1"] .= 0.51

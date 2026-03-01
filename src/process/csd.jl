@@ -57,7 +57,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64 = 4, n::Int64 = 8, lambda::Float
         # C = dataGs .- (sum(dataGs,dims=2)/sum(Gs_inv_sum))*Gs_inv_sum
         C = data .- (sum(dataGs, dims = 2) / sum(Gs_inv_sum)) * Gs_inv_sum
         # compute surface Laplacian
-        obj_new.data[ch, :, ep_idx] = (C'*H)'
+        obj_new.data[ch, :, ep_idx] = (C' * H)'
     end
 
     obj_new.header.recording[:data_type] = "csd"
