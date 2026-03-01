@@ -351,8 +351,8 @@ function plot_erp_topo(
 
     if head
         # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = 3, color = :black)
 
         # ears
         # left
@@ -790,7 +790,7 @@ function plot_erp(
 
     elseif type === :gfp
 
-        g = gfp(obj, ch = labels(obj)[ch])
+        g = erp_gfp(obj, ch = labels(obj)[ch])
         xl, yl, tt = _set_defaults(
             xlabel,
             ylabel,
@@ -841,7 +841,7 @@ function plot_erp(
     # draw peaks
     if peaks
         if length(ch) == 1 && type === :normal
-            pp = peaks(obj)
+            pp = erp_peaks(obj)
             GLMakie.scatter!(
                 p[1, 1],
                 t[pp[ch, 1]][1],
@@ -866,7 +866,7 @@ function plot_erp(
             mep_tmp = mean(obj.data[ch, :, 1], dims = 1)[:, :, :]
             obj_tmp = keep_channel(obj, ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
-            pp = peaks(obj_tmp)
+            pp = erp_peaks(obj_tmp)
             GLMakie.scatter!(
                 p[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]]; marker = :xcross, color = mono ? :black : :red, markersize = 15
             )

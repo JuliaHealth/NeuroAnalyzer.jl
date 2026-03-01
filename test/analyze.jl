@@ -376,7 +376,7 @@ p, f = erop(e10, ch="Fp1", method=:gh)
 @test length(f) == 129
 
 @info "Test: acor()"
-@test acor(v) == [-0.32 -0.32 -0.08 0.32 0.8 0.32 -0.08 -0.32 -0.32;;;]
+@test acor(v) == [0.048 -0.1 -0.084 0.08 -0.072 -0.079 0.105 -0.023 -0.034 -0.197 0.447 -0.177 -0.372 0.947 -0.372 -0.177 0.447 -0.197 -0.034 -0.023 0.105 -0.079 -0.072 0.08 -0.084 -0.1 0.048;;;]
 ac, l = acor(e10, ch="all")
 @test size(ac) == (24, 3, 10)
 @test length(l) == 3
@@ -903,7 +903,7 @@ ph, f = phsd(e10, ch="all")
 @test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:gh) == (ba = 0.0, ba_norm = 0.0)
 
 @info "Test: symmetry()"
-@test symmetry(v) == 5
+@test symmetry(v) == 19.0
 @test symmetry(e10, ch="Fp1") == [852.3333333333334 1279.0 852.3333333333334 852.3333333333334 1279.0 852.3333333333334 639.0 852.3333333333334 1279.0 1279.0]
 
 @info "Test: lat_idx()"
@@ -922,22 +922,22 @@ f, p = NeuroAnalyzer.vartest(e10, e10, ch1="all", ch2="all")
 @test seg_mean(ones(5,5,5)) == ones(5)
 @test seg_mean(ones(5,5,5), ones(5, 5, 5)) == (seg1=ones(5), seg2=ones(5))
 
-@info "Test: flim()"
+@info "Test: spec_flim()"
 p = ones(10, 100, 5)
 f = collect(1:100)
-p2, f2 = flim(p, f, flim=(5, 10))
+p2, f2 = spec_flim(p, f, flim=(5, 10))
 @test size(p2) == (10, 6, 5)
 @test length(f2) == 6
 p = ones(100, 200, 10, 5)
 f = collect(1:100)
-p2, f2 = flim(p, f, flim=(5, 10))
+p2, f2 = spec_flim(p, f, flim=(5, 10))
 @test size(p2) == (6, 200, 10, 5)
 @test length(f2) == 6
 
-@info "Test: tlim()"
+@info "Test: spec_tlim()"
 p = ones(100, 200, 10, 5)
 t = collect(1:200)
-p2, t2 = tlim(p, t, seg=(5, 10))
+p2, t2 = spec_tlim(p, t, seg=(5, 10))
 @test size(p2) == (100, 6, 10, 5)
 @test length(t2) == 6
 

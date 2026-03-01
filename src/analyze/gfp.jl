@@ -1,8 +1,9 @@
-export gfp
-export gfp_norm
+export erp_gfp
+export erp_gfp_norm
+export erp_gfp
 
 """
-    gfp(s)
+    erp_gfp(s)
 
 Calculate GFP (Global Field Power).
 
@@ -14,7 +15,7 @@ Calculate GFP (Global Field Power).
 
   - `g::Vector{Float64}`: GFP values over time points
 """
-function gfp(s::AbstractMatrix)::Vector{Float64}
+function erp_gfp(s::AbstractMatrix)::Vector{Float64}
 
     g = std(s, dims = 1)[:]
 
@@ -23,7 +24,7 @@ function gfp(s::AbstractMatrix)::Vector{Float64}
 end
 
 """
-    gfp_norm(s)
+    erp_gfp_norm(s)
 
 Calculate signal normalized for GFP (Global Field Power).
 
@@ -35,9 +36,9 @@ Calculate signal normalized for GFP (Global Field Power).
 
   - `gn::Matrix{Float64}`: normalized signal
 """
-function gfp_norm(s::AbstractMatrix)::Matrix{Float64}
+function erp_gfp_norm(s::AbstractMatrix)::Matrix{Float64}
 
-    g = gfp(s)
+    g = erp_gfp(s)
     gn = similar(s)
     Threads.@threads for ch_idx in axes(s, 1)
         @views gn[ch_idx, :] = s[ch_idx, :] ./ g
@@ -48,7 +49,7 @@ function gfp_norm(s::AbstractMatrix)::Matrix{Float64}
 end
 
 """
-    gfp(obj)
+    erp_gfp(obj)
 
 Calculate Global Field Power (GFP).
 
@@ -66,7 +67,7 @@ Calculate Global Field Power (GFP).
 
 Global field power is a measure of agreement of the signals picked up by all sensors across the entire scalp: if all sensors have the same value at a given time point, the GFP will be zero at that time point; if the signals differ, the GFP will be non-zero at that time point. GFP peaks may reflect “interesting” brain activity, warranting further investigation. Mathematically, the GFP is the population standard deviation across all sensors, calculated separately for every time point.
 """
-function gfp(
+function erp_gfp(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false
 )::Union{Vector{Float64}, Matrix{Float64}}
 
@@ -77,9 +78,9 @@ function gfp(
 
     s = @views obj.data[ch, :, 1]
     if norm
-        return gfp_norm(s)
+        return erp_gfp_norm(s)
     else
-        return gfp(s)
+        return erp_gfp(s)
     end
 
 end

@@ -1,4 +1,4 @@
-export peaks
+export erp_peak
 export amp_at
 export avgamp_at
 export maxamp_at
@@ -6,7 +6,7 @@ export minamp_at
 export auc
 
 """
-    peaks(obj)
+    erp_peaks(obj)
 
 Detect a pair of positive and negative peaks of ERP.
 
@@ -18,7 +18,7 @@ Detect a pair of positive and negative peaks of ERP.
 
   - `p::Matrix{Int64}`: peaks: channels × positive peak position, negative peak position
 """
-function peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
+function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
     _check_datatype(obj, ["erp", "erf", "mep"])
 
@@ -243,7 +243,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 end
 
 """
-    auc(obj)
+    erp_auc(obj)
 
 Compute area under curve of ERP/ERF/MEP.
 
@@ -256,9 +256,9 @@ Compute area under curve of ERP/ERF/MEP.
 
 # Returns
 
-  - `aauc::Vector{Float64}`
+  - `auc::Vector{Float64}`
 """
-function auc(
+function erp_auc(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
@@ -272,7 +272,7 @@ function auc(
     t2 = vsearch(seg[2], obj.epoch_time)
     ch = get_channel(obj, ch = ch)
 
-    aauc = zeros(length(ch))
+    auc = zeros(length(ch))
 
     # dx: time resolution
     t = obj.epoch_time[t1:t2]
@@ -280,18 +280,18 @@ function auc(
 
     @inbounds for ch_idx in eachindex(ch)
         if type === :all
-            aauc[ch_idx] = simpson(obj.data[ch_idx, t1:t2, 1], t, dx = dx)
+            auc[ch_idx] = simpson(obj.data[ch_idx, t1:t2, 1], t, dx = dx)
         elseif type === :pos
             s = obj.data[ch_idx, t1:t2, 1]
             @assert length(s[s .> 0]) > 0 "No positive values, cannot proceed."
-            aauc[ch_idx] = simpson(s[s .> 0], t[s .> 0], dx = dx)
+            auc[ch_idx] = simpson(s[s .> 0], t[s .> 0], dx = dx)
         elseif type === :neg
             s = obj.data[ch_idx, t1:t2, 1]
             @assert length(s[s .< 0]) > 0 "No negative values, cannot proceed."
-            aauc[ch_idx] = simpson(s[s .< 0], t[s .< 0], dx = dx)
+            auc[ch_idx] = simpson(s[s .< 0], t[s .< 0], dx = dx)
         end
     end
 
-    return aauc
+    return auc
 
 end

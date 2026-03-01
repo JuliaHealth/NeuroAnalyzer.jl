@@ -1,6 +1,6 @@
 export spec_seg
-export flim
-export tlim
+export spec_flim
+export spec_tlim
 
 """
     spec_seg(sp, st, sf; <keyword arguments>)
@@ -90,7 +90,7 @@ function spec_seg(
 end
 
 """
-    flim(p, f; <keyword arguments>)
+    spec_flim(p, f; <keyword arguments>)
 
 Trim power spectrum or spectrogram array to a range of frequencies.
 
@@ -98,7 +98,7 @@ Trim power spectrum or spectrogram array to a range of frequencies.
 
   - `p::AbstractArray`: powers
   - `f::AbstractVector`: frequencies
-  - `flim::Tuple{Real, Real}`: frequency bounds
+  - `spec_flim::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
@@ -107,7 +107,7 @@ Named tuple containing:
   - `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
   - `f::Vector{Float64}`: frequencies
 """
-function flim(
+function spec_flim(
     p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real}
 )::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
 
@@ -132,7 +132,7 @@ function flim(
 end
 
 """
-    tlim(p, f; <keyword arguments>)
+    spec_tlim(p, f; <keyword arguments>)
 
 Trim spectrogram array to a range of time points.
 
@@ -149,7 +149,7 @@ Named tuple containing:
   - `p::Array{Float64, 4}`: powers
   - `t::Vector{Float64}`: time points
 """
-function tlim(
+function spec_tlim(
     p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real}
 )::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
 

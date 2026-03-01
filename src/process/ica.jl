@@ -166,7 +166,7 @@ Reconstruct signal using ICA components.
 
   - `s_new::Matrix{Float64}`: reconstructed signal
 """
-function ica_reconstruct(
+function ica_reconstruct(;
     ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}, keep::Bool = false
 )::Matrix{Float64}
 
