@@ -1,9 +1,9 @@
-export erp_peak
+export erp_peaks
 export amp_at
 export avgamp_at
 export maxamp_at
 export minamp_at
-export auc
+export erp_auc
 
 """
     erp_peaks(obj)
@@ -243,7 +243,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 end
 
 """
-    erp_auc(obj)
+    erp_auc(obj; <keyword arguments>)
 
 Compute area under curve of ERP/ERF/MEP.
 

@@ -302,7 +302,7 @@ p = erp_peaks(e)
 @test size(p) == (19, 2)
 
 @info "Test: auc()"
-v = auc(e, ch="all")
+v = erp_auc(e, ch="all")
 @test length(v) == 19
 
 @info "Test: coherence()"
