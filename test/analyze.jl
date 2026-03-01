@@ -296,9 +296,9 @@ em, eu, el, t = henv_median(e10, ch="all", dims=3)
 @test length(el) == 2560
 @test length(t) == 2560
 
-@info "Test: peaks()"
+@info "Test: erp_peaks()"
 e = average_epochs(e10)
-p = peaks(e)
+p = erp_peaks(e)
 @test size(p) == (19, 2)
 
 @info "Test: auc()"

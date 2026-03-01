@@ -437,8 +437,8 @@ function plot_spectrogram_topo(
 
     if head
         # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = 3, color = :black)
 
         # ears
         # left

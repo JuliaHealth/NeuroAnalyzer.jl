@@ -110,11 +110,11 @@ p = NeuroAnalyzer.plot(t, s)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot(e10, ch="Fp1", gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, avg=false)
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, avg=false, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, ci95=true)
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, ci95=true, gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_spectrogram()"

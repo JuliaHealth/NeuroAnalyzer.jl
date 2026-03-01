@@ -2,7 +2,6 @@ export linspace
 export logspace
 export cmax
 export cmin
-export tuple_order
 export cums
 export f_nearest
 export ntapers
@@ -112,29 +111,6 @@ Tuple containing:
 function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64, ComplexF64}
 
     return (cmax(x), cmin(x))
-
-end
-
-"""
-    tuple_order(t, rev)
-
-Order tuple elements in ascending or descending (`rev=true`) order.
-
-# Arguments
-
-  - `t::Tuple{Real, Real}`
-  - `rev::Bool=false`
-
-# Returns
-
-  - `t::Tuple{Real, Real}`
-"""
-function tuple_order(t::Tuple{Real, Real}, rev::Bool = false)::Tuple{Real, Real}
-
-    (!rev && t[1] > t[2]) && (t = (t[2], t[1]))
-    (rev && t[1] < t[2]) && (t = (t[2], t[1]))
-
-    return t
 
 end
 

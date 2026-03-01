@@ -231,9 +231,6 @@ s = rand(100)
 @info "Test: cmin()"
 @test cmin([1 + 2im, 10 + 10im]) == 1 + 2im
 
-@info "Test: tuple_order()"
-@test tuple_order((2, 1)) == (1, 2)
-
 @info "Test: cums()"
 @test cums(a1) == [1.0 2.0 3.0; 1.0 2.0 3.0;;; 1.0 2.0 3.0; 1.0 2.0 3.0]
 

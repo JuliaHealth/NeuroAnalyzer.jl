@@ -283,7 +283,7 @@ function plot(
         yrectzoom = false,
     )
     if minimum(s) == 0
-        GLMakie.ylims!(ax, 0, maximum(s)[2] * 1.1)
+        GLMakie.ylims!(ax, 0, extrema(s)[2] * 1.1)
     else
         GLMakie.ylims!(ax, extrema(s) .* 1.1)
     end
@@ -293,7 +293,7 @@ function plot(
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    GLMakie.lines!(ax, t, s; color = :black)
+    GLMakie.lines!(ax, t, s, color = :black)
 
     return p
 

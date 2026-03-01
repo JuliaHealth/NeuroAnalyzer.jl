@@ -115,7 +115,6 @@ function plot_connectivity_circle(
 
     # draw labels
     ang = t[1:(end - 1)]
-    @show ang
     for idx in axes(clabels, 1)
         if _bin(ang[idx], (-pi/2, pi/2))
             GLMakie.text!(

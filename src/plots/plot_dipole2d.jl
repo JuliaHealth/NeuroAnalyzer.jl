@@ -86,8 +86,8 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     # draw head
     lw = 2
     # nose
-    GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax_xy, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
     # ears
     # left
     GLMakie.lines!(ax_xy, [-0.995, -1.03], [0.1, 0.15]; linewidth = lw, color = :black)
