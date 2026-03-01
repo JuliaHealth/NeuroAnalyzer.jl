@@ -33,16 +33,16 @@ function acor(
     ac = zeros(l + 1)
 
     if method === :sum
-        ac = acov(s; l = l, demean = demean, biased = biased, method = :sum)[1, :, 1]
+        ac = acov(s, l = l, demean = demean, biased = biased, method = :sum)[1, :, 1]
         # normalize by the variance of s
-        ac = round.(ac ./ StatsBase.var(s); digits = 3)
+        ac = round.(ac ./ StatsBase.var(s), digits = 3)
     elseif method === :cor
-        ac = acov(s; l = l, demean = demean, biased = biased, method = :cov)[1, :, 1]
+        ac = acov(s, l = l, demean = demean, biased = biased, method = :cov)[1, :, 1]
         # normalize by the variance of s
-        ac = round.(ac ./ StatsBase.var(s); digits = 3)
+        ac = round.(ac ./ StatsBase.var(s), digits = 3)
     elseif method === :stat
-        ac = StatsBase.autocor(s, 0:l; demean = demean)
-        ac = round.(ac; digits = 3)
+        ac = StatsBase.autocor(s, 0:l, demean = demean)
+        ac = round.(ac, digits = 3)
         ac = vcat(reverse(ac), ac[2:end])
     end
 
@@ -171,11 +171,11 @@ function acor(
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     if datatype(obj) == "erp"
         ac = @views acor(obj.data[ch, :, 2:end], l = l, demean = demean, biased = biased, method = method)
-        ac = cat(mean(ac; dims = 3), ac; dims = 3)
+        ac = cat(mean(ac, dims = 3), ac, dims = 3)
     else
         ac = @views acor(obj.data[ch, :, :], l = l, demean = demean, biased = biased, method = method)
     end

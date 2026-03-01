@@ -35,10 +35,10 @@ function reference_ce(
     _check_datatype(obj, "eeg")
 
     # reference channels
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
 
     # channels that will be referenced
-    referenced_channels = get_channel(obj; ch = get_channel(obj; type = "eeg"))
+    referenced_channels = get_channel(obj, ch = get_channel(obj, type = "eeg"))
     obj_new = deepcopy(obj)
     s = @view obj_new.data[referenced_channels, :, :]
     ch_n = size(s, 1)
@@ -91,7 +91,7 @@ Reference to common electrode(s). Only signal channels are processed.
 """
 function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, med::Bool = false)::Nothing
 
-    obj_new = reference_ce(obj; ch = ch, med = med)
+    obj_new = reference_ce(obj, ch = ch, med = med)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -131,7 +131,7 @@ function reference_avg(
     _check_datatype(obj, "eeg")
 
     # channels that will be referenced
-    ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
+    ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
 
     # source signals
     obj_new = deepcopy(obj)
@@ -291,14 +291,14 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
     @assert "a2" in lowercase.(labels(obj)) "OBJ does not contain A2 channel."
 
     # keep signal channels
-    ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
+    ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
     obj_new = deepcopy(obj)
     s = @view obj_new.data[ch, :, :]
 
     a1_idx = labels(obj)[findfirst(isequal("a1"), lowercase.(labels(obj)))]
     a2_idx = labels(obj)[findfirst(isequal("a2"), lowercase.(labels(obj)))]
-    a1 = extract_channel(obj; ch = a1_idx)
-    a2 = extract_channel(obj; ch = a2_idx)
+    a1 = extract_channel(obj, ch = a1_idx)
+    a2 = extract_channel(obj, ch = a2_idx)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -319,7 +319,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :i
-        c_picks = channel_pick(obj; p = :central)
+        c_picks = channel_pick(obj, p = :central)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             if !med
@@ -332,7 +332,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A1A2"
             end
         end
-        l_picks = channel_pick(obj; p = :left)
+        l_picks = channel_pick(obj, p = :left)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a1[:, :, ep_idx])
@@ -341,7 +341,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A1"
             end
         end
-        r_picks = channel_pick(obj; p = :right)
+        r_picks = channel_pick(obj, p = :right)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a2[:, :, ep_idx])
@@ -351,7 +351,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :c
-        c_picks = channel_pick(obj; p = :central)
+        c_picks = channel_pick(obj, p = :central)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             if !med
@@ -364,7 +364,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A1A2"
             end
         end
-        l_picks = channel_pick(obj; p = :left)
+        l_picks = channel_pick(obj, p = :left)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a2[:, :, ep_idx])
@@ -373,7 +373,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A2"
             end
         end
-        r_picks = channel_pick(obj; p = :right)
+        r_picks = channel_pick(obj, p = :right)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a1[:, :, ep_idx])
@@ -421,7 +421,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 """
 function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = false)::Nothing
 
-    obj_new = reference_a(obj; type = type, med = med)
+    obj_new = reference_a(obj, type = type, med = med)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -457,14 +457,14 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
     @assert "m2" in lowercase.(labels(obj)) "OBJ does not contain M2 channel."
 
     # keep signal channels
-    ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
+    ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
     obj_new = deepcopy(obj)
     s = @view obj_new.data[ch, :, :]
 
     m1_idx = labels(obj)[findfirst(isequal("m1"), lowercase.(labels(obj)))]
     m2_idx = labels(obj)[findfirst(isequal("m2"), lowercase.(labels(obj)))]
-    m1 = extract_channel(obj; ch = m1_idx)
-    m2 = extract_channel(obj; ch = m2_idx)
+    m1 = extract_channel(obj, ch = m1_idx)
+    m2 = extract_channel(obj, ch = m2_idx)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -485,7 +485,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :i
-        c_picks = channel_pick(obj; p=:central)
+        c_picks = channel_pick(obj, p = :central)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             if !med
@@ -498,7 +498,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M1M2"
             end
         end
-        l_picks = channel_pick(obj; p=:left)
+        l_picks = channel_pick(obj, p = :left)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m1[:, :, ep_idx])
@@ -507,7 +507,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M1"
             end
         end
-        r_picks = channel_pick(obj; p = :right)
+        r_picks = channel_pick(obj, p = :right)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m2[:, :, ep_idx])
@@ -517,7 +517,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :c
-        c_picks = channel_pick(obj; p = :central)
+        c_picks = channel_pick(obj, p = :central)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             if !med
@@ -530,7 +530,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M1M2"
             end
         end
-        l_picks = channel_pick(obj; p = :left)
+        l_picks = channel_pick(obj, p = :left)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m2[:, :, ep_idx])
@@ -539,7 +539,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M2"
             end
         end
-        r_picks = channel_pick(obj; p = :right)
+        r_picks = channel_pick(obj, p = :right)
         c_picks = get_channel(obj, ch = c_picks)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m1[:, :, ep_idx])
@@ -587,7 +587,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 """
 function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = false)::Nothing
 
-    obj_new = reference_m(obj; type = type, med = med)
+    obj_new = reference_m(obj, type = type, med = med)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -621,7 +621,7 @@ function reference_plap(
     _has_locs(obj)
 
     # keep signal channels
-    ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
+    ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
@@ -711,7 +711,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 """
 function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false)::Nothing
 
-    obj_new = reference_plap(obj; nn = nn, weighted = weighted, med = med)
+    obj_new = reference_plap(obj, nn = nn, weighted = weighted, med = med)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -746,7 +746,7 @@ function reference_slap(
     _has_locs(obj)
 
     # keep signal channels
-    ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
+    ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
@@ -844,7 +844,7 @@ Reference using spherical Laplacian (using `nn` adjacent electrodes). Only signa
 """
 function reference_slap!(obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false)::Nothing
 
-    obj_new = reference_slap(obj; nn = nn, weighted = weighted, med = med)
+    obj_new = reference_slap(obj, nn = nn, weighted = weighted, med = med)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -908,7 +908,7 @@ function reference_custom(
 
     _check_datatype(obj, "eeg")
 
-    ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
+    ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
 
     for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]
@@ -936,7 +936,7 @@ function reference_custom(
         end
     end
 
-    obj_new = delete_channel(obj; ch = get_channel(obj; type = "eeg"))
+    obj_new = delete_channel(obj; ch = get_channel(obj, type = "eeg"))
     obj_new.data = vcat(s, obj_new.data)
     obj_new.header.recording[:label] = vcat(ref_list, labels(obj_new))
     obj_new.header.recording[:reference] = ref_name
@@ -1016,7 +1016,7 @@ function reference_custom!(
     ref_name::String = "BIP ||",
 )::Nothing
 
-    obj_new = reference_custom(obj; ref_list = ref_list, ref_name = ref_name)
+    obj_new = reference_custom(obj, ref_list = ref_list, ref_name = ref_name)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history

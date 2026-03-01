@@ -48,7 +48,7 @@ Named tuple containing:
 function phsd(s::AbstractMatrix; fs::Int64)::@NamedTuple{ph::Matrix{Float64}, f::Vector{Float64}}
 
     ch_n = size(s, 1)
-    _, f = phsd(s[1, :]; fs = fs)
+    _, f = phsd(s[1, :], fs = fs)
 
     ph = zeros(ch_n, length(f))
 
@@ -83,7 +83,7 @@ function phsd(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, f = phsd(s[1, :, 1]; fs = fs)
+    _, f = phsd(s[1, :, 1], fs = fs)
 
     ph = zeros(ch_n, length(f), ep_n)
 
@@ -118,8 +118,8 @@ function phsd(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
-    ph, f = phsd(obj.data[ch, :, :]; fs = sr(obj))
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ph, f = phsd(obj.data[ch, :, :], fs = sr(obj))
 
     return (ph = ph, f = f)
 

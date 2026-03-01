@@ -80,7 +80,7 @@ function plot_ep(
     ep_selected = zeros(Bool, ep_n[])
 
     # check channels and meta data
-    _ = get_channel(obj; ch = ch)
+    _ = get_channel(obj, ch = ch)
     obj_tmp = deepcopy(obj)
     keep_channel!(obj_tmp; ch = ch)
     epoch!(obj_tmp; ep_n = 1)
@@ -429,7 +429,7 @@ function plot_ep(
                     if type === :normal
                         if ax1_x < 0
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
-                            obj.header.recording[:bad_channel][get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1]] =
+                            obj.header.recording[:bad_channel][get_channel(obj, ch = clabels[round(Int64, ax1_y)])[1]] =
                                 !obj.header.recording[:bad_channel][get_channel(
                                     obj; ch = clabels[round(Int64, ax1_y)]
                                 )[1]]

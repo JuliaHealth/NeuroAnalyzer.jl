@@ -102,7 +102,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
 
     data_type = "eeg"
 
-    s = _create_subject(;
+    s = _create_subject(
         id = "",
         first_name = "",
         middle_name = "",
@@ -112,7 +112,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         weight = -1,
         height = -1,
     )
-    r = _create_recording_eeg(;
+    r = _create_recording_eeg(
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -133,17 +133,16 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         gain = ones(ch_n),
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
+    e = _create_experiment(name = "", notes = "", design = "")
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, eeg_data, markers, locs, history)
-    _initialize_locs!(obj)
 
+    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, eeg_data)
+    _initialize_locs!(obj)
     _info(
         "Imported: " *
         uppercase(obj.header.recording[:data_type]) *

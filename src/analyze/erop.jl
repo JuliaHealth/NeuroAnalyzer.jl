@@ -53,9 +53,9 @@ function erop(
     p = p[1, :, :]
 
     if datatype(obj) == "erp"
-        p = cat(p[:, 1], mean(p; dims = 2); dims = 2)[:, :]
+        p = cat(p[:, 1], mean(p, dims = 2), dims = 2)[:, :]
     else
-        p = mean(p; dims = 2)[:, :]
+        p = mean(p, dims = 2)[:, :]
     end
 
     return (p = p, f = f)

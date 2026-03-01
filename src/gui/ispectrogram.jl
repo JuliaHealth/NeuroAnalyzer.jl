@@ -26,7 +26,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 
     ch_init = ch
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     clabels = labels(obj)
 
     k = nothing
@@ -657,7 +657,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     @assert nepochs(obj) > 1 "For continuous object ispectrogram() must be used."
 
     ch_init = ch
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     clabels = labels(obj)
 
     k = nothing

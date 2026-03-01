@@ -57,11 +57,11 @@ function plot_cont(
     end
 
     # check channels and meta data
-    _ = get_channel(obj1; ch = ch)
+    _ = get_channel(obj1, ch = ch)
     obj_tmp1 = deepcopy(obj1)
-    keep_channel!(obj_tmp1; ch = ch)
+    keep_channel!(obj_tmp1, ch = ch)
     obj_tmp2 = deepcopy(obj2)
-    keep_channel!(obj_tmp2; ch = ch)
+    keep_channel!(obj_tmp2, ch = ch)
     ch_n = nchannels(obj_tmp1)
     if group_ch
         ch_order = _sort_channels(obj_tmp1.header.recording[:channel_type])
@@ -166,8 +166,8 @@ function plot_cont(
 
     # draw channels
     for idx in 1:ch_n
-        GLMakie.lines!(ax1, t[1:res:end], s1[idx, 1:res:end]; linewidth = 1.5, alpha = 0.4, color = :blue)
-        GLMakie.lines!(ax1, t[1:res:end], s2[idx, 1:res:end]; linewidth = 1.5, color = :black)
+        GLMakie.lines!(ax1, t[1:res:end], s1[idx, 1:res:end], linewidth = 1.5, alpha = 0.4, color = :blue)
+        GLMakie.lines!(ax1, t[1:res:end], s2[idx, 1:res:end], linewidth = 1.5, color = :black)
     end
 
     # draw scale bars
@@ -182,7 +182,7 @@ function plot_cont(
                 l_pos = lift(seg_pos) do seg_pos
                     (seg_pos + 0.01, idx1 + 0.49)
                 end
-                GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                GLMakie.poly!(ax1, s_rectangle, color = :red, strokecolor = :red, strokewidth = 2)
                 GLMakie.text!(
                             ax1,
                             l_pos;
@@ -222,7 +222,7 @@ function plot_cont(
         GLMakie.xlims!(ax2, t[1], t[end])
         GLMakie.ylims!(ax2, 0, 1)
         hideydecorations!(ax2)
-        hidexdecorations!(ax2; label = false, ticks = false, ticklabels = false)
+        hidexdecorations!(ax2, label = false, ticks = false, ticklabels = false)
         ax2.xticklabelsize = 12
 
         # time line marker
@@ -230,7 +230,7 @@ function plot_cont(
         t_rectangle = lift(seg_pos) do v
             Rect(v, 0, seg_len, 1)
         end
-        poly!(ax2, t_rectangle; color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.5)
+        GLMakie.poly!(ax2, t_rectangle, color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.5)
 
         # channel bar
         ax3 = GLMakie.Axis(
@@ -258,14 +258,14 @@ function plot_cont(
         # mark channel types
         if group_ch
             for idx in eachindex(ctypes_pos)
-                GLMakie.hlines!(ax3, ctypes_pos[idx]; linewidth = 5, color = :black)
+                GLMakie.hlines!(ax3, ctypes_pos[idx], linewidth = 5, color = :black)
             end
         end
 
         # channel marker
         # define a square: Rect(x, y, width, height)
         ch_rectangle = @lift(Rect(0, $ch1, 1, $nch - 1))
-        GLMakie.poly!(ax3, ch_rectangle; color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.25)
+        GLMakie.poly!(ax3, ch_rectangle, color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.25)
 
         on(events(p).mousebutton) do event
             ax1_x = mouseposition(ax1)[1]

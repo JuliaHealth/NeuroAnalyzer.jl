@@ -16,7 +16,7 @@ Calculate GFP (Global Field Power).
 """
 function gfp(s::AbstractMatrix)::Vector{Float64}
 
-    g = std(s; dims = 1)[:]
+    g = std(s, dims = 1)[:]
 
     return g
 
@@ -72,7 +72,7 @@ function gfp(
 
     _check_datatype(obj, ["erp", "erf"])
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     @assert length(ch) > 1 "More than 1 channel must be selected."
 
     s = @views obj.data[ch, :, 1]

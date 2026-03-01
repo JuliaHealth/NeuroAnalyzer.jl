@@ -44,7 +44,7 @@ function export_csv(
     if names
         CSV.write(file_name, DataFrame(s, l))
     else
-        CSV.write(file_name, DataFrame(s, l); writeheader = false)
+        CSV.write(file_name, DataFrame(s, l), writeheader = false)
     end
 
     # HEADER

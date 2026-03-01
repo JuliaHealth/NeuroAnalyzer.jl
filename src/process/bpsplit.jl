@@ -43,7 +43,7 @@ function bpsplit(
         :gamma_higher,
     ]
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

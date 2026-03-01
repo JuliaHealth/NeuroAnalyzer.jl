@@ -149,7 +149,7 @@ function ftransform(
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    fft_size = length(NeuroAnalyzer.ftransform(s[1, :, 1]; pad = pad, db = db, nf = nf).c)
+    fft_size = length(NeuroAnalyzer.ftransform(s[1, :, 1], pad = pad, db = db, nf = nf).c)
     if nf
         c = zeros(ComplexF64, ch_n, fft_size, ep_n)
         a = similar(s)
@@ -290,8 +290,8 @@ function transform(
     nf::Bool = false,
 )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
-    c, a, p, ph = NeuroAnalyzer.transform(obj.data[ch, :, :]; pad = pad, h = h, db = db, nf = nf)
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    c, a, p, ph = NeuroAnalyzer.transform(obj.data[ch, :, :], pad = pad, h = h, db = db, nf = nf)
 
     return (c = c, a = a, p = p, ph = ph)
 
@@ -371,8 +371,8 @@ function hanalytic(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0
 )::Array{ComplexF64, 3}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
-    ha = NeuroAnalyzer.hanalytic(obj.data[ch, :, :]; pad = pad)
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ha = NeuroAnalyzer.hanalytic(obj.data[ch, :, :], pad = pad)
 
     return ha
 

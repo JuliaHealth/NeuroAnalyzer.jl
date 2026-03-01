@@ -535,7 +535,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(;
+    s = _create_subject(
         id = subject_id,
         first_name = "",
         middle_name = "",
@@ -545,7 +545,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         weight = -1,
         height = -1,
     )
-    r = _create_recording_nirs(;
+    r = _create_recording_nirs(
         data_type = "nirs",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -567,10 +567,9 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         sampling_rate = round(Int64, sampling_rate),
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
+    e = _create_experiment(name = "", notes = "", design = "")
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

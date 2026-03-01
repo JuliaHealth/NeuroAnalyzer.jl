@@ -200,7 +200,7 @@ function psd_slope(
     gw::Real = 5,
 )::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     _log_off()
     lf, ls, pf = psd_slope(
         obj.data[ch, :, :];

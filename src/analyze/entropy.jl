@@ -37,7 +37,7 @@ function entropy(
     fd_bins = ceil(Int64, maxmin_range/(2.0 * iqr(s) * n^(-1/3))) # Freedman-Diaconis
 
     # recompute entropy with optimal bins for comparison
-    h = StatsKit.fit(Histogram, s; nbins = fd_bins)
+    h = StatsKit.fit(Histogram, s, nbins = fd_bins)
     hdat1 = h.weights ./ sum(h.weights)
 
     # convert histograms to probability values
@@ -124,7 +124,7 @@ function entropy(
     ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64}
 }
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ent, shent, leent, sent, nsent = @views entropy(obj.data[ch, :, :])
 
     return (ent = ent, shent = shent, leent = leent, sent = sent, nsent = nsent)
@@ -176,7 +176,7 @@ function negentropy(s::AbstractArray)::Matrix{Float64}
     ne = zeros(ch_n, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
@@ -207,7 +207,7 @@ Calculate negentropy.
 """
 function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ne = @views negentropy(obj.data[ch, :, :])
 
     return ne

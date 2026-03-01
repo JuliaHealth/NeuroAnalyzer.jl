@@ -42,7 +42,7 @@ Calculate order of FIR filter using Harris formula.
 """
 function fir_order_bw(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real = 60)::Int64
 
-    n = fir_order_bw(; bw = bw, a = a, fs = sr(obj))
+    n = fir_order_bw(bw = bw, a = a, fs = sr(obj))
 
     return n
 

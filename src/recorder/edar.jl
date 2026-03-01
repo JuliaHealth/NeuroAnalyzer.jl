@@ -25,7 +25,7 @@ function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neur
     t = collect(0:(1 / fs):duration)
     eda_signal = repeat([NaN], length(t))
 
-    p = Plots.plot(;
+    p = Plots.plot(
         ylims = (0, 10),
         xlims = (t[1], t[end]),
         legend = false,

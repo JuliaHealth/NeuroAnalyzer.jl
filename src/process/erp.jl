@@ -24,10 +24,10 @@ function average_epochs(
 
     _check_datatype(obj, ["eeg", "meg"])
 
-    nchannels(obj) > length(get_channel(obj; type = datatype(obj))) && _warn("Non-signal channels will be removed.")
+    nchannels(obj) > length(get_channel(obj, type = datatype(obj))) && _warn("Non-signal channels will be removed.")
 
     if datatype(obj) == "eeg"
-        obj_new = keep_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+        obj_new = keep_channel(obj; ch = get_channel(obj, type = datatype(obj)))
     else
         obj_new = keep_channel(obj; ch = ["meg", "mag", "grad"])
     end

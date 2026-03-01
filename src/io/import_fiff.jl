@@ -748,7 +748,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         lf = round(lf; digits = 1)
     end
 
-    s = _create_subject(;
+    s = _create_subject(
         id = id,
         first_name = first_name,
         middle_name = middle_name,
@@ -758,7 +758,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         weight = weight,
         height = height,
     )
-    r = _create_recording_meg(;
+    r = _create_recording_meg(
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -783,9 +783,8 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         ssp_channels = ssp_channels,
         ssp_data = ssp_data,
     )
-    e = _create_experiment(; name = project_info, notes = "", design = "")
-    hdr = _create_header(s, r, e)
-
+    e = _create_experiment(name = project_info, notes = "", design = "")
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

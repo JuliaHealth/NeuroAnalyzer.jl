@@ -59,7 +59,7 @@ Expand signal by adding reflected signal before the signal and after the signal,
 """
 function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::nothing
 
-    obj_new = reflect(obj; n = n)
+    obj_new = reflect(obj, n = n)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -125,7 +125,7 @@ Reduce signal by removing reflected signal before the signal and after the signa
 """
 function chop!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
 
-    obj_new = chop(obj; n = n)
+    obj_new = chop(obj, n = n)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history

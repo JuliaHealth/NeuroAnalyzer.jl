@@ -110,7 +110,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
 
     data_type = "ieeg"
 
-    s = _create_subject(;
+    s = _create_subject(
         id = "",
         first_name = "",
         middle_name = "",
@@ -120,7 +120,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         weight = -1,
         height = -1,
     )
-    r = _create_recording_eeg(;
+    r = _create_recording_eeg(
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -141,10 +141,9 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         gain = ones(ch_n),
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
+    e = _create_experiment(name = "", notes = "", design = "")
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

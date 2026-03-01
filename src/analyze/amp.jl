@@ -137,7 +137,7 @@ function amp(
     rmsq::Matrix{Float64},
 }
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = @views amp(obj.data[ch, :, :])
 

@@ -44,8 +44,8 @@ function lat_idx(
     @assert length(channel_pick(obj, p = :l)) > 0 "Could not detect left hemisphere channels, check OBJ labels."
     @assert length(channel_pick(obj, p = :r)) > 0 "Could not detect right hemisphere channels, check OBJ labels."
 
-    ch_l = get_channel(obj, ch=channel_pick(obj; p = :l))
-    ch_r = get_channel(obj, ch=channel_pick(obj; p = :r))
+    ch_l = get_channel(obj, ch=channel_pick(obj, p = :l))
+    ch_r = get_channel(obj, ch=channel_pick(obj, p = :r))
 
     _log_off()
 
@@ -110,11 +110,11 @@ function lat_idx(
     _log_on()
 
     # average across epochs
-    size(p_left, 3) > 1 && (p_left = mean(p_left; dims = 3))
-    size(p_right, 3) > 1 && (p_right = mean(p_right; dims = 3))
+    size(p_left, 3) > 1 && (p_left = mean(p_left, dims = 3))
+    size(p_right, 3) > 1 && (p_right = mean(p_right, dims = 3))
     # average across channels
-    p_left = mean(p_left; dims = 1)
-    p_right = mean(p_right; dims = 1)
+    p_left = mean(p_left, dims = 1)
+    p_right = mean(p_right, dims = 1)
 
     if length(frq) == 1
         frq_idx = vsearch(frq, f)

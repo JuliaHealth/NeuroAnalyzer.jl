@@ -87,7 +87,7 @@ function itpc(
 
     ep_n = nepochs(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
     t_idx = vsearch(t, obj.epoch_time)
 
@@ -197,12 +197,12 @@ function itpc_spec(
     if frq === :log
         flim = flim[1] == 0 ? (0.01, flim[2]) : (flim[1], flim[2])
         flim = (flim[1], flim[2])
-        f = round.(logspace(flim[1], flim[2], nfrq); digits = 3)
+        f = round.(logspace(flim[1], flim[2], nfrq), digits = 3)
     else
         f = linspace(flim[1], flim[2], nfrq)
     end
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")[1]
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")[1]
     ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
@@ -211,7 +211,7 @@ function itpc_spec(
     itpcz_s = zeros(nfrq, ep_len)
 
     # initialize progress bar
-    progbar = Progress(nfrq; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(nfrq, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     Threads.@threads for frq_idx in 1:nfrq
         # create Morlet wavelet

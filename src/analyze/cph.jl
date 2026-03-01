@@ -23,7 +23,7 @@ function cph(s1::AbstractVector, s2::AbstractVector; fs::Int64)::@NamedTuple{ph:
     @assert fs >= 1 "fs must be ≥ 1."
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
-    p = mt_cross_power_spectra(hcat(s1, s2)'; fs = fs)
+    p = mt_cross_power_spectra(hcat(s1, s2)', fs = fs)
     ph = DSP.angle.(imag.(p.power))[1, 2, :]
     f = Vector(p.freq)
 
@@ -58,7 +58,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     ph = zeros(ch_n, ch_n, length(f), ep_n)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
@@ -146,9 +146,9 @@ function cph(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 )::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    ph, f = cph(obj.data[ch, :, :]; fs = sr(obj))
+    ph, f = cph(obj.data[ch, :, :], fs = sr(obj))
 
     return (ph = ph, f = f)
 
@@ -188,8 +188,8 @@ function cph(
     @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
+    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])

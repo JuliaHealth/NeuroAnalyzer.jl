@@ -30,13 +30,13 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{
         # s_tmp must not contain 0s
         s_tmp[s_tmp .== 0] .= eps()
         # cubic spline envelopes of all local extremas
-        e_max = env_up(s_tmp, x; d = 2)
-        e_min = env_lo(s_tmp, x; d = 2)
+        e_max = env_up(s_tmp, x, d = 2)
+        e_min = env_lo(s_tmp, x, d = 2)
         e_avg = @. (e_max + e_min) / 2
         imf_tmp = @. s_tmp - e_avg
 
-        maxs = findpeaks(imf_tmp; d = 2)
-        mins = findpeaks(_flipx(imf_tmp); d = 2)
+        maxs = findpeaks(imf_tmp, d = 2)
+        mins = findpeaks(_flipx(imf_tmp), d = 2)
         n_extrema = length(maxs) + length(mins)
 
         n_roots = _zeros(imf_tmp)
@@ -100,7 +100,7 @@ Perform Empirical Mode Decomposition (EMD).
 """
 function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real = 0.3)::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] : get_channel(obj; ch = ch, exclude = "")[1]
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad")[1] : get_channel(obj, ch = ch, exclude = "")[1]
     _check_epochs(obj, ep)
     imf = @views emd(obj.data[ch, :, ep], obj.epoch_time, epsilon = epsilon)
     size(imf, 1) > 0 && _info("$(size(imf, 1) - 1) IMFs were calculated")

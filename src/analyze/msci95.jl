@@ -82,8 +82,8 @@ function msci95(
     @assert n >= 1 "n must be ≥ 1."
 
     if method === :normal
-        sm = mean(s; dims = 1)'
-        ss = std(s; dims = 1)' / sqrt(size(s, 1))
+        sm = mean(s, dims = 1)'
+        ss = std(s, dims = 1)' / sqrt(size(s, 1))
         su = sm + 1.96 * ss
         sl = sm - 1.96 * ss
     else
@@ -97,9 +97,9 @@ function msci95(
             s_tmp1[idx1, :] = mean(s_tmp2, dims = 1)
         end
 
-        sm = mean(s_tmp1; dims = 1)'
-        ss = std(s_tmp1; dims = 1)' / sqrt(size(s_tmp1, 1))
-        ssorted = sort(s_tmp1; dims = 1)
+        sm = mean(s_tmp1, dims = 1)'
+        ss = std(s_tmp1, dims = 1)' / sqrt(size(s_tmp1, 1))
+        ssorted = sort(s_tmp1, dims = 1)
         sl = ssorted[round(Int, 0.025 * size(s_tmp1, 1)), :]
         su = ssorted[round(Int, 0.975 * size(s_tmp1, 1)), :]
     end
@@ -263,7 +263,7 @@ function msci95(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64 = 3, method::Symbol = :normal
 )::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     sm, ss, su, sl = @views NeuroAnalyzer.msci95(obj.data[ch, :, :], n = n, method = method)
 
     return (sm = sm, ss = ss, su = su, sl = sl)
@@ -303,8 +303,8 @@ function msci95(
 )::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     # check channels
-    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
+    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     # check epochs

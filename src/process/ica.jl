@@ -51,7 +51,7 @@ function ica_decompose(
     final_tol = nothing
 
     # initialize progress bar
-    progbar = Progress(iter * length(tol); dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(iter * length(tol), dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for tol_idx in eachindex(tol)
         for _ in 1:iter
@@ -124,7 +124,7 @@ function ica_decompose(
 
     @assert nepochs(obj) == 1 "ica_decompose() must be applied to continuous object."
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
 
     signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
@@ -166,7 +166,7 @@ Reconstruct signal using ICA components.
 
   - `s_new::Matrix{Float64}`: reconstructed signal
 """
-function ica_reconstruct(;
+function ica_reconstruct(
     ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}, keep::Bool = false
 )::Matrix{Float64}
 
@@ -222,7 +222,7 @@ function ica_reconstruct(
 
     @assert nepochs(obj) == 1 "ica_reconstruct() must be applied to continuous object."
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, 1] = @views ica_reconstruct(ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)[
@@ -297,7 +297,7 @@ function ica_remove(
 
     @assert nepochs(obj) == 1 "ica_remove() must be applied to continuous object."
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     length(ch) == 1 && (ch = ch[1])
 
     obj_new = deepcopy(obj)

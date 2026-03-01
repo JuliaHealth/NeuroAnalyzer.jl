@@ -30,7 +30,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64 = 4, n::Int64 = 8, lambda::Float
     @assert n >= 1 "n must be ≥ 1."
     @assert lambda > 0 "lambda must be > 0."
 
-    ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+    ch = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
     locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 

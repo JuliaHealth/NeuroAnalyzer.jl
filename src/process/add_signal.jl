@@ -42,7 +42,7 @@ function add_signal(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

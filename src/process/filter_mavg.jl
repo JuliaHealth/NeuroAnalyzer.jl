@@ -130,7 +130,7 @@ function filter_mavg(
     ww::AbstractVector = ones(2 * k + 1),
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     _info("Window length: $(2 * k + 1) samples")
     _info("Approximate cutoff frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
     _info("1st zero at: $(round(sr(obj) / k, digits=2)) Hz")

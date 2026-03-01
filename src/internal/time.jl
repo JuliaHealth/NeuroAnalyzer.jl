@@ -1,12 +1,12 @@
 function _get_t(obj::NeuroAnalyzer.NEURO)::Tuple{Vector{Float64}, Vector{Float64}}
     fs = sr(obj)
-    time_pts = round.(collect(0:(1 / fs):(size(obj.data, 2) * size(obj.data, 3) / fs))[1:(end - 1)]; digits = 4)
+    time_pts = round.(collect(0:(1 / fs):(size(obj.data, 2) * size(obj.data, 3) / fs))[1:(end - 1)], digits = 4)
     if length(obj.epoch_time) > 0
         epoch_time = round.(
-            (collect(0:(1 / fs):(size(obj.data, 2) / fs)) .+ obj.epoch_time[1])[1:(end - 1)]; digits = 4
+            (collect(0:(1 / fs):(size(obj.data, 2) / fs)) .+ obj.epoch_time[1])[1:(end - 1)], digits = 4
         )
     else
-        epoch_time = round.((collect(0:(1 / fs):(size(obj.data, 2) / fs)))[1:(end - 1)]; digits = 4)
+        epoch_time = round.((collect(0:(1 / fs):(size(obj.data, 2) / fs)))[1:(end - 1)], digits = 4)
     end
     return time_pts, epoch_time
 end
@@ -14,7 +14,7 @@ end
 function _get_t(from::Int64, to::Int64, fs::Int64)::Vector{Float64}
     t = collect((from / fs):(1 / fs):(to / fs))
     t .-= t[1]
-    t = round.(t; digits = 4)
+    t = round.(t, digits = 4)
     #t = t[1:(end - 1)]
     #t[1] = floor(t[1], digits=2)
     #t[2:(end - 1)] = round.(t[2:(end - 1)], digits=3)
@@ -22,10 +22,10 @@ function _get_t(from::Int64, to::Int64, fs::Int64)::Vector{Float64}
 end
 
 function _convert_t(t1::Float64, t2::Float64)::Tuple{Float64, String, Float64, String}
-    abs(t1) < 1.0 && (ts1 = string(floor(t1; digits = 4) * 1000) * " ms")
-    abs(t1) >= 1.0 && (ts1 = string(floor(t1; digits = 4)) * " s")
-    abs(t2) < 1.0 && (ts2 = string(ceil(t2; digits = 4) * 1000) * " ms")
-    abs(t2) >= 1.0 && (ts2 = string(ceil(t2; digits = 4)) * " s")
+    abs(t1) < 1.0 && (ts1 = string(floor(t1, digits = 4) * 1000) * " ms")
+    abs(t1) >= 1.0 && (ts1 = string(floor(t1, digits = 4)) * " s")
+    abs(t2) < 1.0 && (ts2 = string(ceil(t2, digits = 4) * 1000) * " ms")
+    abs(t2) >= 1.0 && (ts2 = string(ceil(t2, digits = 4)) * " s")
     return t1, ts1, t2, ts2
 end
 

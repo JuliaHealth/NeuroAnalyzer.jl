@@ -75,7 +75,7 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     m = zeros(ch_n, ch_n, ep_n)
 
@@ -113,7 +113,7 @@ Calculate mutual information between channels. Currently only one estimator (max
 """
 function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     m = @views mutual_information(obj.data[ch, :, :])
 
     return m
@@ -148,8 +148,8 @@ function mutual_information(
 )::Matrix{Float64}
 
     # check channels
-    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
+    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     # check epochs

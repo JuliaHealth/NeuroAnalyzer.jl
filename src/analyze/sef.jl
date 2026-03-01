@@ -43,7 +43,7 @@ function sef(
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(f, (0, fs / 2), "f")
 
-    pw, pf = psd(s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, pf = psd(s, fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
 
     f1_idx = vsearch(f[1], pf)
     f2_idx = vsearch(f[2], pf)
@@ -54,7 +54,7 @@ function sef(
     pw = pw[f1_idx:f2_idx]
     pf = pf[f1_idx:f2_idx]
 
-    tp = simpson(pw; dx = dx)
+    tp = simpson(pw, dx = dx)
     tp_threshold = tp * x
 
     sef_frq = nothing
@@ -174,7 +174,7 @@ function sef(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
 )::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     sef_frq = @views sef(
         obj.data[ch, :, :],
         x = x,

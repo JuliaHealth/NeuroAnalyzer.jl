@@ -280,15 +280,15 @@ function auc(
 
     @inbounds for ch_idx in eachindex(ch)
         if type === :all
-            aauc[ch_idx] = simpson(obj.data[ch_idx, t1:t2, 1], t; dx = dx)
+            aauc[ch_idx] = simpson(obj.data[ch_idx, t1:t2, 1], t, dx = dx)
         elseif type === :pos
             s = obj.data[ch_idx, t1:t2, 1]
             @assert length(s[s .> 0]) > 0 "No positive values, cannot proceed."
-            aauc[ch_idx] = simpson(s[s .> 0], t[s .> 0]; dx = dx)
+            aauc[ch_idx] = simpson(s[s .> 0], t[s .> 0], dx = dx)
         elseif type === :neg
             s = obj.data[ch_idx, t1:t2, 1]
             @assert length(s[s .< 0]) > 0 "No negative values, cannot proceed."
-            aauc[ch_idx] = simpson(s[s .< 0], t[s .< 0]; dx = dx)
+            aauc[ch_idx] = simpson(s[s .< 0], t[s .< 0], dx = dx)
         end
     end
 

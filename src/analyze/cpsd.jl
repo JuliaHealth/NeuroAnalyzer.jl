@@ -66,7 +66,7 @@ function cpsd(
         f = f[f1_idx:f2_idx]
         pxy = pxy[1, 2, f1_idx:f2_idx]
     elseif method === :stft
-        chunks_idx = _fchunks(length(s1); wlen = wlen, woverlap = woverlap)
+        chunks_idx = _fchunks(length(s1), wlen = wlen, woverlap = woverlap)
         pxy = zeros(ComplexF64, nextpow(2, wlen + 1))
         w = w ? hanning(wlen) : ones(wlen)
         for idx in axes(chunks_idx, 1)
@@ -91,8 +91,8 @@ function cpsd(
     elseif method === :fft
         w = w ? hanning(n_samples) : ones(n_samples)
         if demean
-            s1_tmp = detrend(s1; type = :mean) .* w
-            s2_tmp = detrend(s2; type = :mean) .* w
+            s1_tmp = detrend(s1, type = :mean) .* w
+            s2_tmp = detrend(s2, type = :mean) .* w
         else
             s1_tmp = s1 .* w
             s2_tmp = s2 .* w
@@ -247,8 +247,8 @@ function cpsd(
     w::Bool = true,
 )::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
 
-    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
+    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])

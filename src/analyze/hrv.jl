@@ -20,11 +20,11 @@ Named tuple containing:
 function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Float64}}
 
     @assert "ecg" in obj.header.recording[:channel_type] "OBJ does not contain ECG channel."
-    ch = get_channel(obj; type = "ecg")
+    ch = get_channel(obj, type = "ecg")
     _info("ECG channel found: $(ch[1])")
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ecg = obj.data[ch, :, :][:]
-    r_idx, _ = findpeaks1d(ecg; height = mean(ecg) + 2*std(ecg))
+    r_idx, _ = findpeaks1d(ecg, height = mean(ecg) + 2*std(ecg))
 
     # convert to ms
     nn_seg = diff(r_idx) ./ sr(obj) * 1000
@@ -76,16 +76,16 @@ function hrv_analyze(
 
     nn_diff = diff(nn_seg)
 
-    menn = round(mean(nn_seg); digits = 3)
-    mdnn = round(median(nn_seg); digits = 3)
-    vnn = round(var(nn_seg); digits = 3)
-    sdnn = round(std(nn_seg); digits = 3)
-    rmssd = round(sqrt(mean(nn_diff .^ 2)); digits = 3)
-    sdsd = round(std(nn_diff); digits = 3)
+    menn = round(mean(nn_seg), digits = 3)
+    mdnn = round(median(nn_seg), digits = 3)
+    vnn = round(var(nn_seg), digits = 3)
+    sdnn = round(std(nn_seg), digits = 3)
+    rmssd = round(sqrt(mean(nn_diff .^ 2)), digits = 3)
+    sdsd = round(std(nn_diff), digits = 3)
     nn50 = length(findall(abs.(nn_diff) .> 50))
-    pnn50 = round(nn50 / length(nn_seg); digits = 3)
+    pnn50 = round(nn50 / length(nn_seg), digits = 3)
     nn20 = length(findall(abs.(nn_diff) .> 20))
-    pnn20 = round(nn20 / length(nn_seg); digits = 3)
+    pnn20 = round(nn20 / length(nn_seg), digits = 3)
 
     return (
         menn = menn,

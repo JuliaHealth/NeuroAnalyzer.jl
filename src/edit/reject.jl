@@ -272,7 +272,7 @@ function channel_reject(
         )
     end
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ch_list = labels(obj)[ch]
     ch_n = length(ch)
     ep_n = nepochs(obj)
@@ -332,7 +332,7 @@ function channel_reject(
         # mean variance
         s_mv = @views vec(mean(s_v, dims = 3))
         # variance outliers
-        o = reshape(outlier_detect(vec(s_v); method = :iqr), ch_n, ep_n)
+        o = reshape(outlier_detect(vec(s_v), method = :iqr), ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
             bad_chs = zeros(Bool, ch_n)
@@ -449,7 +449,7 @@ function channel_reject(
         _info("Using :ransac method")
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
-        chs = get_channel(obj; type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
+        chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
         @assert length(setdiff(ch_list, chs)) == 0 "ch must contain only signal channels."
         chs = intersect(obj.locs[!, :label], ch_list)
         locs = Base.filter(:label => in(chs), obj.locs)
@@ -635,7 +635,7 @@ function epoch_reject(
         )
     end
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ch_list = labels(obj)[ch]
     ch_n = length(ch)
     ep_n = nepochs(obj)
@@ -700,7 +700,7 @@ function epoch_reject(
         # mean variance
         s_mv = @views vec(mean(s_v, dims = 3))
         # variance outliers
-        o = reshape(outlier_detect(vec(s_v); method = :iqr), ch_n, ep_n)
+        o = reshape(outlier_detect(vec(s_v), method = :iqr), ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
             bad_chs = zeros(Bool, ch_n)
@@ -823,7 +823,7 @@ function epoch_reject(
         _info("Using :ransac method")
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
-        chs = get_channel(obj; type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
+        chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
         @assert length(setdiff(ch_list, chs)) == 0 "ch must contain only signal channels."
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)

@@ -63,11 +63,11 @@ function tpt_analyze(
         _warn("Only 1 pinch was detected, intervals cannot be calculated.")
         return nothing
     elseif n > 0
-        t_diff = round.(diff(t); digits = 1)
-        t_mean = round(mean(t_diff); digits = 1)
-        t_median = round(median(t_diff); digits = 1)
-        t_rmssd = round(sqrt(mean(t_diff .^ 2)); digits = 1)
-        t_sdsd = round(std(t_diff); digits = 1)
+        t_diff = round.(diff(t), digits = 1)
+        t_mean = round(mean(t_diff), digits = 1)
+        t_median = round(median(t_diff), digits = 1)
+        t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits = 1)
+        t_sdsd = round(std(t_diff), digits = 1)
         return (n = n, t_mean = t_mean, t_median = t_median, t_rmssd = t_rmssd, t_sdsd = t_sdsd)
     else
         return nothing

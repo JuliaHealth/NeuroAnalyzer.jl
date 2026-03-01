@@ -20,7 +20,7 @@ Named tuple containing:
   - `ex::Matrix{Float64}`: electric field X axis vector
   - `ey::Matrix{Float64}`: electric field Y axis vector
 """
-function efield2d(;
+function efield2d(
     q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64}
 )::@NamedTuple{qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}}
 

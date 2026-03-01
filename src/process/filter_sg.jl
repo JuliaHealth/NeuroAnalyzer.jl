@@ -82,7 +82,7 @@ function filter_sg(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 6, window::Int64 = 11
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :]; order = order, window = window)
     push!(obj_new.history, "filter_sg(OBJ, ch=$ch, order=$order, window=$window")

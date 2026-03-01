@@ -312,7 +312,7 @@ function _create_experiment(; name::String, notes::String, design::String)::Dict
 
 end
 
-function _create_header(subject::Dict, recording::Dict, experiment::Dict)::NeuroAnalyzer.HEADER
+function _create_header(; subject::Dict, recording::Dict, experiment::Dict)::NeuroAnalyzer.HEADER
 
     return NeuroAnalyzer.HEADER(subject, recording, experiment)
 

@@ -43,11 +43,11 @@ function pacor(
         s_tmp = s
     end
 
-    pac = pacf(s_tmp, collect(0:l); method = method)
-    pac_neg = pacf(reverse(s_tmp), collect(0:l); method = method)
+    pac = pacf(s_tmp, collect(0:l), method = method)
+    pac_neg = pacf(reverse(s_tmp), collect(0:l), method = method)
 
     pac = vcat(reverse(pac_neg), pac[2:end])
-    pac = round.(pac; digits = 3)
+    pac = round.(pac, digits = 3)
 
     return reshape(pac, 1, :, 1)
 
@@ -163,13 +163,13 @@ function pacor(
 
     @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
     if datatype(obj) == "erp"
         pac = @views pacor(obj.data[ch, :, 2:end], l = l, demean = demean, method = method)
-        pac = cat(mean(pac; dims = 3), pac; dims = 3)
+        pac = cat(mean(pac, dims = 3), pac, dims = 3)
     else
         pac = @views pacor(obj.data[ch, :, :], l = l, demean = demean, method = method)
     end

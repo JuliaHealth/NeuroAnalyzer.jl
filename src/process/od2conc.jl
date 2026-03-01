@@ -26,8 +26,8 @@ function od2conc(
     @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
 
     _check_datatype(obj, "nirs")
-    _check_channels(get_channel(obj; type = "nirs_od"), ch)
-    ch = get_channel(obj; ch = ch)
+    _check_channels(get_channel(obj, type = "nirs_od"), ch)
+    ch = get_channel(obj, ch = ch)
 
     obj_new = deepcopy(obj)
 

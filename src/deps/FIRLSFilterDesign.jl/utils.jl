@@ -1,7 +1,7 @@
 to_mat(A::AbstractMatrix) = A
 function to_mat(y::AbstractVector)
-    ymat = zeros(eltype(y), length(y)-1, 2);
-    ymat[:, 1] .= @view y[1:(end - 1)];
+    ymat = zeros(eltype(y), length(y)-1, 2)
+    ymat[:, 1] .= @view y[1:(end - 1)]
     ymat[:, 2] .= @view y[2:end]
     return ymat
 end
@@ -53,7 +53,7 @@ function nan2zero!(x::Array{T}) where {T}
 end
 
 function freqz(h::Vector{T}; fs::Real = 1, N = 1000) where {T}
-    ω = range(0; stop = π, length = N)
+    ω = range(0, stop = π, length = N)
     H = zeros(Complex{T}, length(ω))
     for (idx, h_n) in enumerate(h)
         n = idx-1

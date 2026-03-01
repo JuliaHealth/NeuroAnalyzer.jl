@@ -325,8 +325,8 @@ v2 = [6, 5, 4, 3, 2]
 
 @info "Test: paired_labels()"
 l = ["ch1", "ch2", "ch3"]
-@test length(paired_labels(l; unq=true)) == 6
-@test length(paired_labels(l; unq=false)) == 9
+@test length(paired_labels(l, unq=true)) == 6
+@test length(paired_labels(l, unq=false)) == 9
 @test length(paired_labels(l, l)) == 3
 
 @info "Test: vreduce()"
@@ -377,7 +377,7 @@ x2, f2 = areduce(x, f)
 @test fir_order_bw(bw=0.2, a=50, fs=256) == 2909
 
 @info "Test: fir_order_f()"
-@test fir_order_f(eeg; f=35) == (32, 40)
+@test fir_order_f(eeg, f=35) == (32, 40)
 @test fir_order_f(f=35, fs=256) == (32, 40)
 
 @info "Test: iir_order()"

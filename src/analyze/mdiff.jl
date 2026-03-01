@@ -30,8 +30,8 @@ function mdiff(
     _check_var(method, [:absdiff, :diff2int], "method")
     @assert n >= 1 "n must be ≥ 1."
 
-    s1_mean = vec(mean(s1; dims = 1))
-    s2_mean = vec(mean(s2; dims = 1))
+    s1_mean = vec(mean(s1, dims = 1))
+    s2_mean = vec(mean(s2, dims = 1))
 
     if method === :absdiff
         # statistic: maximum difference
@@ -159,8 +159,8 @@ function mdiff(
     method::Symbol = :absdiff,
 )::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
 
-    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
+    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     _check_epochs(obj1, ep1)

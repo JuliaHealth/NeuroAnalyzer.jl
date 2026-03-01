@@ -72,7 +72,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 """
 function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = derivative(obj.data[ch, :, :])
     push!(obj_new.history, "derivative(OBJ, ch=$ch)")

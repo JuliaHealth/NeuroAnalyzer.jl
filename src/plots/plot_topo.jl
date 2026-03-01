@@ -129,7 +129,7 @@ function plot_topo(
                 @assert length(threshold) == 2 "threshold must contain two values."
                 _check_tuple(threshold, "threshold")
             end
-            s_norm = normalize(s; method = nmethod)
+            s_norm = normalize(s, method = nmethod)
             if threshold_type === :eq
                 threshold_idx = findall(x->x == threshold, s_norm)
             elseif threshold_type === :neq
@@ -148,7 +148,7 @@ function plot_topo(
                 threshold_idx = findall(x->(x > threshold[1] && x < threshold[2]), s_norm)
             end
         else
-            _, bm = seg_extract(s_interpolated; threshold = threshold, threshold_type = threshold_type)
+            _, bm = seg_extract(s_interpolated, threshold = threshold, threshold_type = threshold_type)
             s_interpolated_threshold[.!bm] .= NaN
         end
     end
@@ -219,7 +219,7 @@ function plot_topo(
                             colormap = pal,
                         )
     else
-        hm = GLMakie.heatmap!(ax, interpolated_x, interpolated_y, s_interpolated; colormap = pal)
+        hm = GLMakie.heatmap!(ax, interpolated_x, interpolated_y, s_interpolated, colormap = pal)
     end
 
     # draw contours
@@ -243,35 +243,35 @@ function plot_topo(
         ps === :m && (lw = 2)
         ps === :s && (lw = 1)
         # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
 
         # ears
         # left
-        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth = lw, color = :black)
         # right
-        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth = lw, color = :black)
 
         # head
-        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
+        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi, linewidth = lw, color = :black)
     end
 
     # draw electrodes
@@ -282,7 +282,7 @@ function plot_topo(
         ps === :s && (sw = 1)
         if (isnothing(threshold) && isnothing(sch)) || (!isnothing(threshold) && threshold_method === :reg)
             for idx in 1:ch_n
-                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx]; markersize = marker_size, color = :black)
+                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], markersize = marker_size, color = :black)
             end
         elseif threshold_method === :loc
             for idx in 1:ch_n
@@ -297,7 +297,7 @@ function plot_topo(
                                     strokecolor = :black,
                                 )
                 else
-                    GLMakie.scatter!(ax, loc_x[idx], loc_y[idx]; markersize = marker_size, color = :black)
+                    GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], markersize = marker_size, color = :black)
                 end
             end
         elseif !isnothing(sch)
@@ -313,7 +313,7 @@ function plot_topo(
                         strokecolor = :black,
                     )
                 else
-                    GLMakie.scatter!(ax, loc_x[idx], loc_y[idx]; markersize = marker_size, color = :black)
+                    GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], markersize = marker_size, color = :black)
                 end
             end
         end
@@ -321,7 +321,7 @@ function plot_topo(
 
     # draw mask
     if head12
-        GLMakie.arc!(ax, Point2f(0), r, -pi, pi; linewidth = 5, color = :white)
+        GLMakie.arc!(ax, Point2f(0), r, -pi, pi, linewidth = 5, color = :white)
     end
 
     # draw colorbar
@@ -462,7 +462,7 @@ function plot_topo(
     )
 
     # get channels and selected channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     if !isnothing(sch)
         if isa(sch, String)
             @assert length(intersect(ch, get_channel(obj, ch = sch))) == 1 "sch channel was not found in ch."
@@ -485,13 +485,13 @@ function plot_topo(
         if nepochs(obj) == 1
             data = obj.data[ch, tpos, 1]
         else
-            data = epoch(obj; ep_n = 1).data[ch, tpos, 1]
+            data = epoch(obj, ep_n = 1).data[ch, tpos, 1]
         end
         title == "default" && (title = "$(obj.time_pts[tpos]) s")
     else
         !isnothing(tpos) && _info("If data is provided, tpos is ignored")
         if ndims(data) == 2
-            data = amethod === :mean ? mean(data; dims = 2)[:] : median(data; dims = 2)[:]
+            data = amethod === :mean ? mean(data; dims = 2)[:] : median(data, dims = 2)[:]
         end
         @assert length(data) == length(ch) "Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."
         title == "default" && (title = "")

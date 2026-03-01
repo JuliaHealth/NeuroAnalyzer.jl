@@ -184,7 +184,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         event_description = events[!, :value]
         event_start_sample = events[!, :sample] .+ 1
         event_start = zeros(length(event_start_sample))
-        [event_start[idx] in time_pts[event_start_sample[idx]] for idx in eachindex(event_start_sample)]
+        [event_start[idx] = time_pts[event_start_sample[idx]] for idx in eachindex(event_start_sample)]
         event_length = round.(events[!, :duration]; digits = 4)
         event_channel = zeros(Int64, DataFrames.nrow(events))
         markers = DataFrame(
@@ -229,7 +229,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(;
+    s = _create_subject(
         id = subj_id,
         first_name = "",
         middle_name = "",
@@ -239,7 +239,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         weight = -1,
         height = -1,
     )
-    r = _create_recording_eeg(;
+    r = _create_recording_eeg(
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -260,10 +260,9 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         gain = gain,
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = exp_name, notes = exp_notes, design = exp_design)
+    e = _create_experiment(name = exp_name, notes = exp_notes, design = exp_design)
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

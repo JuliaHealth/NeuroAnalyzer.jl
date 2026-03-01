@@ -47,7 +47,7 @@ function psd_rel(
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     ref_pw = if flim === nothing
-        total_power(s; fs = fs, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw)
+        total_power(s, fs = fs, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw)
     else
         band_power(
             s;
@@ -290,7 +290,7 @@ function psd_rel(
     gw::Real = 5,
 )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     p, f = @views psd_rel(
         obj.data[ch, :, :],
         fs = sr(obj),

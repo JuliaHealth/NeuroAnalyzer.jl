@@ -38,7 +38,7 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Flo
     e = zeros(length(s))
 
     # find peaks
-    p_idx = findpeaks(s; d = d)
+    p_idx = findpeaks(s, d = d)
 
     if length(p_idx) < 2
         _info("Envelope cannot be not interpolated, less than 2 peaks detected")
@@ -50,7 +50,7 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Flo
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
         # interpolate peaks using cubic spline
-        model = Spline1D(x[p_idx], s[p_idx]; bc = "extrapolate")
+        model = Spline1D(x[p_idx], s[p_idx], bc = "extrapolate")
         e = model(x)
     end
 
@@ -83,7 +83,7 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Flo
     s_tmp = _flipx(s)
 
     # find peaks
-    p_idx = findpeaks(s_tmp; d = d)
+    p_idx = findpeaks(s_tmp, d = d)
 
     if length(p_idx) < 2
         _info("Envelope cannot be not interpolated, less than 2 peaks detected")
@@ -95,7 +95,7 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Flo
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
         # interpolate peaks using cubic spline
-        model = Spline1D(x[p_idx], s[p_idx]; bc = "extrapolate")
+        model = Spline1D(x[p_idx], s[p_idx], bc = "extrapolate")
         e = model(x)
     end
 
@@ -175,7 +175,7 @@ function tenv(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64 = 32
 )::@NamedTuple{e::Array{Float64, 3}, t::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     t = obj.epoch_time
@@ -231,7 +231,7 @@ function tenv_mean(
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_a, t = tenv(obj; ch = ch, d = d)
+    s_a, t = tenv(obj, ch = ch, d = d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -265,11 +265,11 @@ function tenv_mean(
     else
         # mean over channels and epochs
 
-        e_m, e_u, e_l, _ = tenv_mean(obj; ch = ch, dims = 1, d = d)
+        e_m, e_u, e_l, _ = tenv_mean(obj, ch = ch, dims = 1, d = d)
 
-        e_m = mean(e_m; dims = 2)
-        e_u = mean(e_u; dims = 2)
-        e_l = mean(e_l; dims = 2)
+        e_m = mean(e_m, dims = 2)
+        e_u = mean(e_u, dims = 2)
+        e_l = mean(e_l, dims = 2)
 
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
@@ -319,7 +319,7 @@ function tenv_median(
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_a, t = tenv(obj; ch = ch, d = d)
+    s_a, t = tenv(obj, ch = ch, d = d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -353,10 +353,10 @@ function tenv_median(
     else
         # median over channels and epochs
 
-        e_m, e_u, e_l, _ = tenv_median(obj; ch = ch, dims = 1, d = d)
-        e_m = median(e_m; dims = 2)
-        e_u = median(e_u; dims = 2)
-        e_l = median(e_l; dims = 2)
+        e_m, e_u, e_l, _ = tenv_median(obj, ch = ch, dims = 1, d = d)
+        e_m = median(e_m, dims = 2)
+        e_u = median(e_u, dims = 2)
+        e_l = median(e_l, dims = 2)
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
         e_l = reshape(e_l, size(e_l, 1))
@@ -407,7 +407,7 @@ function penv(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
 )::@NamedTuple{e::Array{Float64, 3}, f::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
@@ -498,7 +498,7 @@ function penv_mean(
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, f = penv(obj; ch = ch, d = d, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, f = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -532,10 +532,10 @@ function penv_mean(
     else
         # mean over channels and epochs
 
-        e_m, e_u, e_l, _ = penv_mean(obj; ch = ch, dims = 1, d = d)
-        e_m = mean(e_m; dims = 2)
-        e_u = mean(e_u; dims = 2)
-        e_l = mean(e_l; dims = 2)
+        e_m, e_u, e_l, _ = penv_mean(obj, ch = ch, dims = 1, d = d)
+        e_m = mean(e_m, dims = 2)
+        e_u = mean(e_u, dims = 2)
+        e_l = mean(e_l, dims = 2)
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
         e_l = reshape(e_l, size(e_l, 1))
@@ -604,7 +604,7 @@ function penv_median(
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, f = penv(obj; ch = ch, d = d, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, f = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -638,10 +638,10 @@ function penv_median(
     else
         # median over channels and epochs
 
-        e_m, e_u, e_l, _ = penv_median(obj; ch = ch, dims = 1, d = d)
-        e_m = median(e_m; dims = 2)
-        e_u = median(e_u; dims = 2)
-        e_l = median(e_l; dims = 2)
+        e_m, e_u, e_l, _ = penv_median(obj, ch = ch, dims = 1, d = d)
+        e_m = median(e_m, dims = 2)
+        e_u = median(e_u, dims = 2)
+        e_l = median(e_l, dims = 2)
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
         e_l = reshape(e_l, size(e_l, 1))
@@ -702,7 +702,7 @@ function senv(
     w::Bool = true,
 )::@NamedTuple{e::Array{Float64, 3}, t::Vector{Float64}} where {T <: CWT}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
@@ -923,9 +923,9 @@ function senv_mean(
             woverlap = woverlap,
             w = w,
         )
-        e_m = mean(e_m; dims = 2)
-        e_u = mean(e_u; dims = 2)
-        e_l = mean(e_l; dims = 2)
+        e_m = mean(e_m, dims = 2)
+        e_u = mean(e_u, dims = 2)
+        e_l = mean(e_l, dims = 2)
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
         e_l = reshape(e_l, size(e_l, 1))
@@ -1072,9 +1072,9 @@ function senv_median(
             woverlap = woverlap,
             w = w,
         )
-        e_m = median(e_m; dims = 2)
-        e_u = median(e_u; dims = 2)
-        e_l = median(e_l; dims = 2)
+        e_m = median(e_m, dims = 2)
+        e_u = median(e_u, dims = 2)
+        e_l = median(e_l, dims = 2)
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
         e_l = reshape(e_l, size(e_l, 1))
@@ -1106,7 +1106,7 @@ function henv(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64 = 32
 )::@NamedTuple{e::Array{Float64, 3}, t::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
     _, hamp, _, _ = @views htransform(obj.data[ch, :, :])
@@ -1166,7 +1166,7 @@ function henv_mean(
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_a, t = henv(obj; ch = ch, d = d)
+    s_a, t = henv(obj, ch = ch, d = d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -1200,10 +1200,10 @@ function henv_mean(
     else
         # mean over channels and epochs
 
-        e_m, e_u, e_l, _ = henv_mean(obj; ch = ch, dims = 1, d = d)
-        e_m = mean(e_m; dims = 2)
-        e_u = mean(e_u; dims = 2)
-        e_l = mean(e_l; dims = 2)
+        e_m, e_u, e_l, _ = henv_mean(obj, ch = ch, dims = 1, d = d)
+        e_m = mean(e_m, dims = 2)
+        e_u = mean(e_u, dims = 2)
+        e_l = mean(e_l, dims = 2)
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
         e_l = reshape(e_l, size(e_l, 1))
@@ -1252,7 +1252,7 @@ function henv_median(
         @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
     end
 
-    s_a, t = henv(obj; ch = ch, d = d)
+    s_a, t = henv(obj, ch = ch, d = d)
 
     ch_n = size(s_a, 1)
     ep_n = size(s_a, 3)
@@ -1286,10 +1286,10 @@ function henv_median(
     else
         # median over channels and epochs
 
-        e_m, e_u, e_l, _ = henv_median(obj; ch = ch, dims = 1, d = d)
-        e_m = median(e_m; dims = 2)
-        e_u = median(e_u; dims = 2)
-        e_l = median(e_l; dims = 2)
+        e_m, e_u, e_l, _ = henv_median(obj, ch = ch, dims = 1, d = d)
+        e_m = median(e_m, dims = 2)
+        e_u = median(e_u, dims = 2)
+        e_l = median(e_l, dims = 2)
         e_m = reshape(e_m, size(e_m, 1))
         e_u = reshape(e_u, size(e_u, 1))
         e_l = reshape(e_l, size(e_l, 1))

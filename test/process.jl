@@ -442,7 +442,7 @@ pc, pcv, pcm, _ = pca_decompose(e10, ch="all", n=4)
 
 @info "Test: pca_reconstruct()"
 pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2), n=2)
-s = pca_reconstruct(rand(4, 4, 2); pc=pc, pc_model=pc_model)
+s = pca_reconstruct(rand(4, 4, 2), pc=pc, pc_model=pc_model)
 @test size(s) == (4, 4, 2)
 pc, pcv, pcm, pc_model = pca_decompose(e10, ch="all", n=4)
 e10_rec = pca_reconstruct(e10, ch="all", pc=pc, pc_model=pc_model)

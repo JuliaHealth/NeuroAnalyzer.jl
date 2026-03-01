@@ -21,11 +21,11 @@ Named tuple containing:
 function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64 = 0, h::Bool = false)::Vector{Float64}
 
     if h
-        _, _, _, ph1 = NeuroAnalyzer.htransform(s1; pad = pad)
-        _, _, _, ph2 = NeuroAnalyzer.htransform(s2; pad = pad)
+        _, _, _, ph1 = NeuroAnalyzer.htransform(s1, pad = pad)
+        _, _, _, ph2 = NeuroAnalyzer.htransform(s2, pad = pad)
     else
-        _, _, _, ph1 = NeuroAnalyzer.ftransform(s1; pad = pad)
-        _, _, _, ph2 = NeuroAnalyzer.ftransform(s2; pad = pad)
+        _, _, _, ph1 = NeuroAnalyzer.ftransform(s1, pad = pad)
+        _, _, _, ph2 = NeuroAnalyzer.ftransform(s2, pad = pad)
     end
 
     phd = ph1 - ph2
@@ -145,7 +145,7 @@ function phdiff(
     h::Bool = false,
 )::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     phd = @views phdiff(obj.data[ch, :, :], avg = avg, pad = pad, h = h)
 
     return phd

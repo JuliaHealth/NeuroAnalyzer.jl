@@ -291,8 +291,8 @@ print(rpad("Remove power line noise: IIR", 36))
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10_tmp = epoch(eeg, ep_len=10)
 keep_epoch!(e10_tmp, ep=1)
-remove_powerline(e10_tmp, ch="all", pl_frq=50, method=:iir);
-@time remove_powerline(e10_tmp, ch="all", pl_frq=50, method=:iir);
+remove_powerline(e10_tmp, ch="all", pl_frq=50, method=:iir)
+@time remove_powerline(e10_tmp, ch="all", pl_frq=50, method=:iir)
 print(rpad("Normalize power", 36))
 normpower(e10, ch="all");
 @time normpower(e10, ch="all");

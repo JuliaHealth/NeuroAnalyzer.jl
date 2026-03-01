@@ -28,7 +28,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
 
     data = Array{Float64, 3}(undef, 0, 0, 0)
 
-    s = _create_subject(;
+    s = _create_subject(
         id = "",
         first_name = "",
         middle_name = "",
@@ -39,7 +39,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         height = -1,
     )
     if data_type == "eeg"
-        r = _create_recording_eeg(;
+        r = _create_recording_eeg(
             data_type = "eeg",
             file_name = "",
             file_size_mb = 0,
@@ -61,7 +61,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             gain = Float64[],
         )
     elseif data_type == "seeg"
-        r = _create_recording_seeg(;
+        r = _create_recording_seeg(
             data_type = "eeg",
             file_name = "",
             file_size_mb = 0,
@@ -83,7 +83,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             gain = Float64[],
         )
     elseif data_type == "ecog"
-        r = _create_recording_ecog(;
+        r = _create_recording_ecog(
             data_type = "ecog",
             file_name = "",
             file_size_mb = 0,
@@ -105,7 +105,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             gain = Float64[],
         )
     elseif data_type == "meg"
-        r = _create_recording_eeg(;
+        r = _create_recording_eeg(
             data_type = "meg",
             file_name = "",
             file_size_mb = 0,
@@ -127,7 +127,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             gain = Float64[],
         )
     elseif data_type == "nirs"
-        r = _create_recording_nirs(;
+        r = _create_recording_nirs(
             data_type = "nirs",
             file_name = "",
             file_size_mb = 0,
@@ -150,7 +150,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             bad_channels = [false],
         )
     elseif data_type == "sensors"
-        r = _create_recording_sensors(;
+        r = _create_recording_sensors(
             data_type = "sensors",
             file_name = "",
             file_size_mb = 0,
@@ -168,7 +168,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             bad_channels = [false],
         )
     elseif data_type == "mep"
-        r = _create_recording_mep(;
+        r = _create_recording_mep(
             data_type = "mep",
             file_name = "",
             file_size_mb = 0,
@@ -190,7 +190,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             bad_channels = [false],
         )
     elseif data_type == "eda"
-        r = _create_recording_eda(;
+        r = _create_recording_eda(
             data_type = "eda",
             file_name = "",
             file_size_mb = 0,
@@ -208,7 +208,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             bad_channels = [false],
         )
     elseif data_type == "tpt"
-        r = _create_recording_eda(;
+        r = _create_recording_eda(
             data_type = "tpt",
             file_name = "",
             file_size_mb = 0,
@@ -226,9 +226,9 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             bad_channels = zeros(Bool, 6),
         )
     end
-    e = _create_experiment(; name = "", notes = "", design = "")
+    e = _create_experiment(name = "", notes = "", design = "")
 
-    hdr = _create_header(s, r, e)
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 
@@ -294,7 +294,7 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 """
 function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
 
-    obj_new = create_time(obj; fs = fs)
+    obj_new = create_time(obj, fs = fs)
     obj.header = obj_new.header
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
@@ -359,7 +359,7 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 """
 function create_data!(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)::Nothing
 
-    obj_new = create_data(obj; data = data, fs = fs, type = type)
+    obj_new = create_data(obj, data = data, fs = fs, type = type)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.time_pts = obj_new.time_pts

@@ -17,7 +17,7 @@ Interactive edit signal channels properties and locations.
 function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
     @assert datatype(obj) in ["eeg", "meg"] "Currently this function only works for EEG or MEG objects."
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must be a single channel."
     current_channel = ch[1]
 
@@ -39,7 +39,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:unit]
     ch_labels = labels(obj_new)
-    ch_signal = get_channel(obj_new; ch = get_channel(obj_new; type = ["mag", "grad", "eeg", "eog", "ref"]))
+    ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type = ["mag", "grad", "eeg", "eog", "ref"]))
 
     if DataFrames.nrow(obj_new.locs) > 0
         chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
@@ -441,7 +441,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 sch = 0
                 current_channel in ch_signal && (sch = _find_bylabel(locs, ch_labels[current_channel]))
                 sch == Int64[] && (sch = 0)
-                p = plot_locs3d(locs, sch = sch, ch_labels = false, head_labels = hdlab, cart = cart);
+                p = plot_locs3d(locs, sch = sch, ch_labels = false, head_labels = hdlab, cart = cart)
                 ctx = getgc(can4)
                 if !already_scaled4
                     Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -484,13 +484,13 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
             ch = ch_labels[current_channel]
             ask_dialog("Delete channel $ch ?") do ans
                 if ans
-                    delete_channel!(obj_new; ch = ch)
+                    delete_channel!(obj_new, ch = ch)
                     current_channel > nchannels(obj_new) && (current_channel = nchannels(obj_new))
                     ch_types = obj_new.header.recording[:channel_type]
                     ch_units = obj_new.header.recording[:unit]
                     ch_labels = labels(obj_new)
                     ch_signal = get_channel(
-                        obj_new; ch = get_channel(obj_new; type = ["mag", "grad", "eeg", "eog", "ref"])
+                        obj_new; ch = get_channel(obj_new, type = ["mag", "grad", "eeg", "eog", "ref"])
                     )
                     chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
                     locs = Base.filter(:label => in(chs), obj_new.locs)
@@ -515,7 +515,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         signal_connect(combo_chtype, "changed") do widget
             ch_types[current_channel] = string(NeuroAnalyzer.channel_types[combo_chtype.active + 2])
-            ch_signal = get_channel(obj_new; ch = get_channel(obj_new; type = ["mag", "grad", "eeg", "eog", "ref"]))
+            ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type = ["mag", "grad", "eeg", "eog", "ref"]))
             combo_chunits.active = findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1
             refresh = false
             _refresh_locs()
@@ -586,8 +586,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         signal_connect(bt_flip, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "eog"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "ref"))
             locs_tmp = obj_tmp.locs
             combo_flip.active == 0 && locs_flipx!(
                 locs_tmp; polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active
@@ -608,8 +608,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         signal_connect(bt_ax_rot, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "ref"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "eog"))
             locs_tmp = obj_tmp.locs
             ax = Int64(combo_ax_rot.active)
             if ax == 0
@@ -647,8 +647,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         signal_connect(bt_scale, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "ref"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "eog"))
             locs_tmp = obj_tmp.locs
             locs_scale!(
                 locs_tmp;
@@ -667,8 +667,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         signal_connect(bt_normalize, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "ref"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "eog"))
             locs_tmp = obj_tmp.locs
             locs_normalize!(
                 locs_tmp; polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active
@@ -682,9 +682,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         signal_connect(bt_origin_transform, "clicked") do widget
             origin_axis = combo_origin_transform.active
-            origin_axis == 0 && locs_origin!(locs; x = origin_transform.value)
-            origin_axis == 1 && locs_origin!(locs; y = origin_transform.value)
-            origin_axis == 2 && locs_origin!(locs; z = origin_transform.value)
+            origin_axis == 0 && locs_origin!(locs, x = origin_transform.value)
+            origin_axis == 1 && locs_origin!(locs, y = origin_transform.value)
+            origin_axis == 2 && locs_origin!(locs, z = origin_transform.value)
             refresh = false
             _refresh_locs()
             refresh = true
@@ -708,10 +708,10 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         signal_connect(bt_swapxy, "clicked") do widget
             # do not modify "ref" and "eog" channels
             obj_tmp = deepcopy(obj_new)
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
-            delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "ref"))
+            delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "eog"))
             locs_tmp = obj_tmp.locs
-            locs_swapxy!(locs_tmp; polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active)
+            locs_swapxy!(locs_tmp, polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active)
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false
             _refresh_locs()
@@ -735,7 +735,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                     ask_dialog("Replace channel locations ?", win) do ans
                         if ans
                             try
-                                load_locs!(obj_new; file_name = file_name)
+                                load_locs!(obj_new, file_name = file_name)
                             catch
                                 warn_dialog(_nill, "File could not be opened!", win)
                             end
@@ -757,7 +757,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 if file_name != ""
                     if splitext(file_name)[2] in [".ced", ".locs", ".tsv"]
                         try
-                            export_locs(obj_new; file_name = file_name, overwrite = true)
+                            export_locs(obj_new, file_name = file_name, overwrite = true)
                         catch
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end

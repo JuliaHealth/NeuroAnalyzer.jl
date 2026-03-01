@@ -110,7 +110,7 @@ function dwd(
         _info("Calculating DWD using maximum level: $l")
     end
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     dc = @views dwd(obj.data[ch, :, :], wt = wt, type = type, l = l)
 
     return dc

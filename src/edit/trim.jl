@@ -113,7 +113,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = fal
         _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     obj_new = deepcopy(obj)
-    obj_new.data = trim(obj_new.data; seg = seg_tpos, keep = keep)
+    obj_new.data = trim(obj_new.data, seg = seg_tpos, keep = keep)
 
     if keep
         obj_new.time_pts = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
@@ -131,7 +131,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = fal
     end
 
     if !keep
-        add_marker!(obj_new; id = "NA", start = obj_new.time_pts[s_idx], value = "DELETED")
+        add_marker!(obj_new, id = "NA", start = obj_new.time_pts[s_idx], value = "DELETED")
         obj_new.markers = unique(obj_new.markers)
     end
 
@@ -160,7 +160,7 @@ function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = fa
 
     @assert nepochs(obj) == 1 "trim!() must be applied to continuous object."
 
-    obj_new = trim(obj; seg = seg, keep = keep)
+    obj_new = trim(obj, seg = seg, keep = keep)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.time_pts = obj_new.time_pts
@@ -189,7 +189,7 @@ function crop(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::NeuroAnalyzer.N
 
     @assert nepochs(obj) == 1 "crop() must be applied to continuous object."
 
-    obj_new = trim(obj; seg = seg, keep = true)
+    obj_new = trim(obj, seg = seg, keep = true)
 
     return obj_new
 
@@ -213,7 +213,7 @@ function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
 
     @assert nepochs(obj) == 1 "crop!() must be applied to continuous object."
 
-    obj_new = trim(obj; seg = seg, keep = true)
+    obj_new = trim(obj, seg = seg, keep = true)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.time_pts = obj_new.time_pts

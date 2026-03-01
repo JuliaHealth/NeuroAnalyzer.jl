@@ -97,7 +97,7 @@ function ghexp(
     q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}} = nothing,
 )::Array{Float64, 4}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     ghe = @views ghexp(obj.data[ch, :, :], tau_range = tau_range, q_range = q_range)
 

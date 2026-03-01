@@ -76,7 +76,7 @@ function cwd(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T = wavelet(Morlet(2π), β = 2)
 )::Array{Float64, 4} where {T <: CWT}
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ct = @views cwd(obj.data[ch, :, :], wt = wt)
 
     return ct

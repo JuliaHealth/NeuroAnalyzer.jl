@@ -169,33 +169,33 @@ function normalize(s::AbstractArray, n::Real = 1; bych::Bool = false, method::Sy
     )
 
     if method === :zscore
-        return normalize_zscore(s; bych = bych)
+        return normalize_zscore(s, bych = bych)
     elseif method === :minmax
-        return normalize_minmax(s, n; bych = bych)
+        return normalize_minmax(s, n, bych = bych)
     elseif method === :log
-        return normalize_log(s; bych = bych)
+        return normalize_log(s, bych = bych)
     elseif method === :log10
-        return normalize_log10(s; bych = bych)
+        return normalize_log10(s, bych = bych)
     elseif method === :neglog
-        return normalize_neglog(s; bych = bych)
+        return normalize_neglog(s, bych = bych)
     elseif method === :neglog10
-        return normalize_neglog10(s; bych = bych)
+        return normalize_neglog10(s, bych = bych)
     elseif method === :neg
-        return normalize_neg(s; bych = bych)
+        return normalize_neg(s, bych = bych)
     elseif method === :pos
-        return normalize_pos(s; bych = bych)
+        return normalize_pos(s, bych = bych)
     elseif method === :perc
-        return normalize_perc(s; bych = bych)
+        return normalize_perc(s, bych = bych)
     elseif method === :gauss
-        return normalize_gauss(s; bych = bych)
+        return normalize_gauss(s, bych = bych)
     elseif method === :invroot
-        return normalize_invroot(s; bych = bych)
+        return normalize_invroot(s, bych = bych)
     elseif method === :n
-        return normalize_n(s, n; bych = bych)
+        return normalize_n(s, n, bych = bych)
     elseif method === :softmax
-        return normalize_softmax(s; bych = bych)
+        return normalize_softmax(s, bych = bych)
     elseif method === :sigmoid
-        return normalize_sigmoid(s; bych = bych)
+        return normalize_sigmoid(s, bych = bych)
     elseif method === :none
         return s
     end
@@ -241,7 +241,7 @@ function normalize(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -255,7 +255,7 @@ function normalize(
             end
         end
     else
-        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], n; method = method, bych = false)
+        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], n, method = method, bych = false)
     end
 
     push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$method, n=$n)")
@@ -302,7 +302,7 @@ function normalize!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
 )::Nothing
 
-    obj_new = NeuroAnalyzer.normalize(obj; ch = ch, method = method, bych = bych, n = n)
+    obj_new = NeuroAnalyzer.normalize(obj, ch = ch, method = method, bych = bych, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

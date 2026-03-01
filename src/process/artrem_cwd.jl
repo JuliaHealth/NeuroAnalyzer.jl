@@ -90,7 +90,7 @@ function artrem_cwd(
     type::Symbol = :nd,
 ) where {T <: CWT}
 
-    ch = get_channel(obj; ch = ch)[1]
+    ch = get_channel(obj, ch = ch)[1]
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)

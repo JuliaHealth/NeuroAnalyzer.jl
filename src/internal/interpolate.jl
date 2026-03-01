@@ -10,8 +10,8 @@ function _interpolate2d(
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
-    max_x = ceil(maximum(abs.(loc_x)); digits = 1)
-    max_y = ceil(maximum(abs.(loc_y)); digits = 1)
+    max_x = ceil(maximum(abs.(loc_x)), digits = 1)
+    max_y = ceil(maximum(abs.(loc_y)), digits = 1)
     extr = max_x > max_y ? max_x : max_y
     extr = extr > 1.2 ? 1.6 : 1.2
     x_lim_int = (-extr, extr)
@@ -19,8 +19,8 @@ function _interpolate2d(
 
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], ifactor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], ifactor)
-    interpolated_x = round.(interpolated_x; digits = 2)
-    interpolated_y = round.(interpolated_y; digits = 2)
+    interpolated_x = round.(interpolated_x, digits = 2)
+    interpolated_y = round.(interpolated_y, digits = 2)
     interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, ifactor, ifactor)
 
     @inbounds for idx1 in 1:ifactor
@@ -50,6 +50,6 @@ function _interpolate2d(
 
     s_interpolated = rotl90(s_interpolated)
 
-    return NeuroAnalyzer.normalize(s_interpolated; method = nmethod), interpolated_x, interpolated_y
+    return NeuroAnalyzer.normalize(s_interpolated, method = nmethod), interpolated_x, interpolated_y
 
 end

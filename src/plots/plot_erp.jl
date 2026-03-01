@@ -70,16 +70,16 @@ function plot_erp(
 
     # plot 0 v-line
     if zl
-        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 2)
     end
 
     # plot ERP
-    GLMakie.lines!(ax, t, s; color = :black, linewidth = 1)
+    GLMakie.lines!(ax, t, s, color = :black, linewidth = 1)
 
     # plot RT v-line
     if !isnothing(rt)
         if rt >= t[1] && rt <= t[end]
-            GLMakie.vlines!(ax, rt; linewidth = 1, color = mono ? :black : :red)
+            GLMakie.vlines!(ax, rt, linewidth = 1, color = mono ? :black : :red)
         end
     end
 
@@ -166,7 +166,7 @@ function plot_erp(
 
     # plot 0 v-line
     if zl
-        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 2)
     end
 
     # plot ERPs
@@ -175,10 +175,10 @@ function plot_erp(
         leg = false
         s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s)
         # draw 95% CI
-        Makie.band!(ax, t, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
+        Makie.band!(ax, t, s_u, s_l, alpha = 0.25, color = :grey, strokewidth = 0.5)
 
         # draw mean
-        Makie.lines!(ax, t, s_m; color = :black, linewidth = 2)
+        Makie.lines!(ax, t, s_m, color = :black, linewidth = 2)
     else
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx in 1:ch_n
@@ -198,17 +198,17 @@ function plot_erp(
 
     # plot averaged ERP
     if avg
-        GLMakie.lines!(ax, t, mean(s; dims = 1)[:]; color = :black, linewidth = 2)
+        GLMakie.lines!(ax, t, mean(s, dims = 1)[:], color = :black, linewidth = 2)
     end
 
     # plot RT v-line
     if !isnothing(rt)
         if rt >= t[1] && rt <= t[end]
-            GLMakie.vlines!(ax, rt; linewidth = 1.0, color = mono ? :black : :red)
+            GLMakie.vlines!(ax, rt, linewidth = 1.0, color = mono ? :black : :red)
         end
     end
 
-    (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
+    (leg && ch_n < 30) && axislegend(position = :rt, colormap = pal)
 
     return p
 
@@ -308,17 +308,17 @@ function plot_erp_topo(
         hidedecorations!(ax)
         ax.titlesize = 8
         # plot ERPs
-        GLMakie.hlines!(ax, 0; color = :black, linewidth = 1)
-        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 1)
-        GLMakie.lines!(ax, t, s[idx, :]; linewidth = 1, color = :black)
+        GLMakie.hlines!(ax, 0, color = :black, linewidth = 1)
+        GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 1)
+        GLMakie.lines!(ax, t, s[idx, :], linewidth = 1, color = :black)
         # plot RT v-line
         if !isnothing(rt)
             if rt >= t[1] && rt <= t[end]
-                GLMakie.vlines!(ax, rt; linewidth = 1, color = mono ? :black : :red)
+                GLMakie.vlines!(ax, rt, linewidth = 1, color = mono ? :black : :red)
             end
         end
         push!(pp_vec, pp)
-        pp_full = plot_erp(t, s[idx, :]; xlabel = xlabel, ylabel = ylabel, title = title, rt = rt, yrev = yrev)
+        pp_full = plot_erp(t, s[idx, :], xlabel = xlabel, ylabel = ylabel, title = title, rt = rt, yrev = yrev)
         push!(pp_full_vec, pp_full)
     end
 
@@ -351,42 +351,42 @@ function plot_erp_topo(
 
     if head
         # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
 
         # ears
         # left
-        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth = 3, color = :black)
         # right
-        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth = 3, color = :black)
 
         # head
-        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth = 3, color = :black)
+        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi, linewidth = 3, color = :black)
     end
 
     for idx in axes(s, 1)
         io = IOBuffer()
         show(io, MIME"image/png"(), pp_vec[idx])
         pp = FileIO.load(io)
-        GLMakie.scatter!(loc_x[idx], loc_y[idx]; marker = pp, markersize = marker_size, markerspace = :pixel)
+        GLMakie.scatter!(loc_x[idx], loc_y[idx], marker = pp, markersize = marker_size, markerspace = :pixel)
     end
 
     loc_x_range = Tuple{Float64, Float64}[]
@@ -499,25 +499,25 @@ function plot_erp_stack(
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s); colormap = pal)
+    hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s), colormap = pal)
 
     # plot 0 v-line
     if zl
-        GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0, color = :white, linestyle = :dash, linewidth = 2)
     end
 
     # plot RT v-line
     if !isnothing(rt)
         for idx in eachindex(rt)
             if rt[idx] >= t[1] && rt[idx] <= t[end]
-                GLMakie.lines!(ax, rt[idx], idx; linewidth = 1, color = mono ? :black : :red)
+                GLMakie.lines!(ax, rt[idx], idx, linewidth = 1, color = mono ? :black : :red)
             end
         end
     end
 
     # draw colorbar
     if cb
-        Colorbar(p[1, 2], hm; label = cb_title, labelsize = 16)
+        Colorbar(p[1, 2], hm, label = cb_title, labelsize = 16)
     end
 
     return p
@@ -589,17 +589,17 @@ function plot_gfp(
 
     # plot 0 v-line
     if zl
-        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 2)
     end
 
     # plot GFP
-    GLMakie.band!(ax, t, 0, g; color = :gray)
-    GLMakie.lines!(ax, t, g; color = :black, linewidth = 1)
+    GLMakie.band!(ax, t, 0, g, color = :gray)
+    GLMakie.lines!(ax, t, g, color = :black, linewidth = 1)
 
     # plot RT v-line
     if !isnothing(rt)
         if rt >= t[1] && rt <= t[end]
-            GLMakie.vlines!(ax, rt; linewidth = 1, color = mono ? :black : :red)
+            GLMakie.vlines!(ax, rt, linewidth = 1, color = mono ? :black : :red)
         end
     end
 
@@ -673,7 +673,7 @@ function plot_erp(
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
     # check channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
     length(ch) > 1 && (eavg = false)
     type === :gfp && @assert length(ch) > 1 "More than 1 channel must be selected."
@@ -735,7 +735,7 @@ function plot_erp(
             xl, yl, tt = _set_defaults(
                 xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude, $(clabels[1]), avgₑ: $ep_n"
             )
-            p = plot_erp(t, s; xlabel = xl, ylabel = yl, title = tt, rt = rt, yrev = yrev, zl = zl, mono = mono)
+            p = plot_erp(t, s, xlabel = xl, ylabel = yl, title = tt, rt = rt, yrev = yrev, zl = zl, mono = mono)
 
         end
 
@@ -790,7 +790,7 @@ function plot_erp(
 
     elseif type === :gfp
 
-        g = gfp(obj; ch = labels(obj)[ch])
+        g = gfp(obj, ch = labels(obj)[ch])
         xl, yl, tt = _set_defaults(
             xlabel,
             ylabel,
@@ -799,7 +799,7 @@ function plot_erp(
             "GFP [$units]",
             "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n",
         )
-        p = plot_gfp(t, g; xlabel = xl, ylabel = yl, title = tt, rt = rt, zl = zl, mono = mono)
+        p = plot_gfp(t, g, xlabel = xl, ylabel = yl, title = tt, rt = rt, zl = zl, mono = mono)
 
     elseif type === :topo
 
@@ -834,7 +834,7 @@ function plot_erp(
             @assert tm[idx] / 1000 >= t[1] "tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
             @assert tm[idx] / 1000 <= t[end] "tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
             tm[idx] = vsearch(tm[idx] / 1000, t)
-            GLMakie.vlines!(p[1, 1], t[tm[idx]]; linewidth = 0.5, color = :black)
+            GLMakie.vlines!(p[1, 1], t[tm[idx]], linewidth = 0.5, color = :black)
         end
     end
 
@@ -863,8 +863,8 @@ function plot_erp(
             _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000, digits=0)) ms")
             _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1], digits=2)) $units")
         elseif length(ch) > 1 && type === :normal
-            mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)[:, :, :]
-            obj_tmp = keep_channel(obj; ch = labels(obj)[1])
+            mep_tmp = mean(obj.data[ch, :, 1], dims = 1)[:, :, :]
+            obj_tmp = keep_channel(obj, ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
             pp = peaks(obj_tmp)
             GLMakie.scatter!(

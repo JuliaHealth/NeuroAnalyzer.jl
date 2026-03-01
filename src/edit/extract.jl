@@ -21,7 +21,7 @@ Extract channel data.
 """
 function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3}
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     d = reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
 
     return d
@@ -74,7 +74,7 @@ Extract epoch.
 """
 function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
 
-    obj_new = extract_epoch(obj; ep = ep)
+    obj_new = extract_epoch(obj, ep = ep)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -115,7 +115,7 @@ function extract_data(
     Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}},
 }
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 

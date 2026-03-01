@@ -130,7 +130,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     )
     epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
-    s = _create_subject(;
+    s = _create_subject(
         id = "",
         first_name = "",
         middle_name = "",
@@ -140,7 +140,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         weight = -1,
         height = -1,
     )
-    r = _create_recording_eeg(;
+    r = _create_recording_eeg(
         data_type = "eeg",
         file_name = file_name[1],
         file_size_mb = 0,
@@ -161,10 +161,9 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         gain = ones(ch_n),
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
+    e = _create_experiment(name = "", notes = "", design = "")
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

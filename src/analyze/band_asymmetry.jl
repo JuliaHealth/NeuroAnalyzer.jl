@@ -46,8 +46,8 @@ function band_asymmetry(
     gw::Real = 5,
 )::@NamedTuple{ba::Float64, ba_norm::Float64}
 
-    ch1 = get_channel(obj; ch = ch1)
-    ch2 = get_channel(obj; ch = ch2)
+    ch1 = get_channel(obj, ch = ch1)
+    ch2 = get_channel(obj, ch = ch2)
 
     _log_off()
     bp1 = @views band_power(

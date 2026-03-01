@@ -33,29 +33,29 @@ function plinterpolate_channel(
     ifactor::Int64 = 100,
 )::NeuroAnalyzer.NEURO
 
-    channels = get_channel(obj; type = datatype(obj))
+    channels = get_channel(obj, type = datatype(obj))
     @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj)
 
-    ch = get_channel(obj; ch = ch)[1]
+    ch = get_channel(obj, ch = ch)[1]
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)
-    delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
-    delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
+    delete_channel!(obj_tmp, ch = get_channel(obj_tmp; type = "ref"))
+    delete_channel!(obj_tmp, ch = get_channel(obj_tmp; type = "eog"))
 
     locs_x1 = obj_tmp.locs[!, :loc_x]
     locs_y1 = obj_tmp.locs[!, :loc_y]
 
-    delete_channel!(obj_tmp; ch = labels(obj_tmp)[ch])
+    delete_channel!(obj_tmp, ch = labels(obj_tmp)[ch])
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
-    chs = get_channel(obj_tmp; ch = get_channel(obj_tmp; type = datatype(obj_tmp)))
+    chs = get_channel(obj_tmp, ch = get_channel(obj_tmp; type = datatype(obj_tmp)))
 
     ep_n = length(ep)
     ep_len = epoch_len(obj_tmp)
@@ -63,7 +63,7 @@ function plinterpolate_channel(
     s_interpolated = zeros(Float64, length(ch), ep_len, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ep_len; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ep_n * ep_len, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in eachindex(ep)
         Threads.@threads for length_idx in 1:ep_len

@@ -40,7 +40,7 @@ function remove_powerline(
     @assert q >= 0.01 "q must be ≥ 0.01."
     @assert q < 5 "q must be < 5."
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     clabels = labels(obj)
 
     _check_var(method, [:iir], "method")
@@ -61,7 +61,7 @@ function remove_powerline(
         bw_values = collect(0:q:20.0)[2:end]
 
         # initialize progress bar
-        progbar = Progress(length(ch); dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+        progbar = Progress(length(ch), dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
         @inbounds for ch_idx in ch
             # detect power line peak
@@ -277,7 +277,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
     noise_frq = zeros(ch_n, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ch_n * ep_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ch_n * ep_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
@@ -313,7 +313,7 @@ function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
     noise_frq = zeros(ch_n, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ch_n * ep_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ch_n * ep_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n

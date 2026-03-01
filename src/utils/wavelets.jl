@@ -19,7 +19,7 @@ function cwtfrq(s::AbstractVector; fs::Int64, wt::T = wavelet(Morlet(2π), β = 
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs); digits = 2)
+    f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs), digits = 2)
     f[1] = 0
 
     return f
@@ -45,7 +45,7 @@ function cwtfrq(s::AbstractArray; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2
 
     _chk3d(s)
 
-    f = cwtfrq(s[1, :]; fs = fs, wt = wt)
+    f = cwtfrq(s[1, :], fs = fs, wt = wt)
 
     return f
 

@@ -25,7 +25,7 @@ Named tuple containing:
   - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
   - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function iftt(;
+function iftt(
     duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
 )::@NamedTuple{
     taps::Vector{Int64},
@@ -326,10 +326,10 @@ function iftt(;
                 int_d_kp[idx] = int_d_kp[idx][1:l]
                 int_result[idx] = length(int_t_kp[idx])
             end
-            d_kp[idx] = round.((d_kp[idx] .- t_kp[idx]) .* 1000; digits = 1)
-            t_kp[idx] = round.((t_kp[idx] .- t_idx[idx]) .* 1000; digits = 1)
-            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000; digits = 1)
-            int_t_kp[idx] = round.((int_t_kp[idx] .- int_idx[idx]) .* 1000; digits = 1)
+            d_kp[idx] = round.((d_kp[idx] .- t_kp[idx]) .* 1000, digits = 1)
+            t_kp[idx] = round.((t_kp[idx] .- t_idx[idx]) .* 1000, digits = 1)
+            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000, digits = 1)
+            int_t_kp[idx] = round.((int_t_kp[idx] .- int_idx[idx]) .* 1000, digits = 1)
         end
 
         # remove out of time boundary taps
@@ -358,10 +358,10 @@ function iftt(;
 
     elseif !isnothing(sp)
         # format time points
-        d_kp = round.((d_kp .- t_kp) .* 1000; digits = 1)
-        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits = 1)
-        t_kp = round.(t_kp .* 1000; digits = 1)
-        int_t_kp = round.(int_t_kp .* 1000; digits = 1)
+        d_kp = round.((d_kp .- t_kp) .* 1000, digits = 1)
+        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000, digits = 1)
+        t_kp = round.(t_kp .* 1000, digits = 1)
+        int_t_kp = round.(int_t_kp .* 1000, digits = 1)
 
         # format time points
         t_keypressed = Vector{Vector{Float64}}()
@@ -375,8 +375,8 @@ function iftt(;
             end
             reverse!(tk)
             reverse!(td)
-            push!(t_keypressed, round.(tk; digits = 1))
-            push!(d_keypressed, round.(td; digits = 1))
+            push!(t_keypressed, round.(tk, digits = 1))
+            push!(d_keypressed, round.(td, digits = 1))
         end
         reverse!(t_keypressed)
         reverse!(d_keypressed)
@@ -393,8 +393,8 @@ function iftt(;
             end
             reverse!(tk)
             reverse!(td)
-            push!(int_t_keypressed, round.(tk; digits = 1))
-            push!(int_d_keypressed, round.(td; digits = 1))
+            push!(int_t_keypressed, round.(tk, digits = 1))
+            push!(int_d_keypressed, round.(td, digits = 1))
         end
         reverse!(int_t_keypressed)
         reverse!(int_d_keypressed)
@@ -479,7 +479,7 @@ Named tuple containing:
   - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
   - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function ftt(;
+function ftt(
     duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
 )::@NamedTuple{
     taps::Vector{Int64},
@@ -631,7 +631,7 @@ function ftt(;
         end
 
         # format time points
-        t = round.(t .* 1000; digits = 3)
+        t = round.(t .* 1000, digits = 3)
         if r > 0
             for idx1 in 1:r
                 for idx2 in 1:(2 * trials)
@@ -798,10 +798,10 @@ function ftt(;
 
     # format time points
     if rpi isa PiGPIO.Pi || !isnothing(sp)
-        d_kp = round.((d_kp .- t_kp) .* 1000; digits = 1)
-        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits = 1)
-        t_kp = round.(t_kp .* 1000; digits = 1)
-        int_t_kp = round.(int_t_kp .* 1000; digits = 1)
+        d_kp = round.((d_kp .- t_kp) .* 1000, digits = 1)
+        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000, digits = 1)
+        t_kp = round.(t_kp .* 1000, digits = 1)
+        int_t_kp = round.(int_t_kp .* 1000, digits = 1)
     end
 
     # format time points
@@ -816,8 +816,8 @@ function ftt(;
         end
         reverse!(tk)
         reverse!(td)
-        push!(t_keypressed, round.(tk; digits = 1))
-        push!(d_keypressed, round.(td; digits = 1))
+        push!(t_keypressed, round.(tk, digits = 1))
+        push!(d_keypressed, round.(td, digits = 1))
     end
     reverse!(t_keypressed)
     reverse!(d_keypressed)
@@ -834,19 +834,19 @@ function ftt(;
         end
         reverse!(tk)
         reverse!(td)
-        push!(int_t_keypressed, round.(tk; digits = 1))
-        push!(int_d_keypressed, round.(td; digits = 1))
+        push!(int_t_keypressed, round.(tk, digits = 1))
+        push!(int_d_keypressed, round.(td, digits = 1))
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)
 
     if isnothing(sp) && !(rpi isa PiGPIO.Pi)
         for idx in eachindex(t_keypressed)
-            t_keypressed[idx] = round.(t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000; digits = 3)
+            t_keypressed[idx] = round.(t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000, digits = 3)
         end
         for idx in eachindex(int_t_keypressed)
             int_t_keypressed[idx] = round.(
-                int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000); digits = 1
+                int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000), digits = 1
             )
         end
     end

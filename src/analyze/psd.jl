@@ -56,37 +56,37 @@ function psd(
 
     if method === :mt
         w = w ? hanning(length(s)) : ones(length(s))
-        p = mt_pgram(s .* w; fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
+        p = mt_pgram(s .* w, fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :stft
         w = w ? DSP.hanning : nothing
-        p = abs.(DSP.stft(s, wlen, woverlap; fs = fs, window = w))
+        p = abs.(DSP.stft(s, wlen, woverlap, fs = fs, window = w))
         # average STFT segments along time
-        p = vec(mean(p; dims = 2))
+        p = vec(mean(p, dims = 2))
         # create frequencies vector
         f = linspace(0, fs / 2, length(p))
         db && (p = pow2db.(p))
     elseif method === :welch
         w = w ? DSP.hanning : nothing
-        p = DSP.welch_pgram(s, wlen, woverlap; fs = fs, window = w)
+        p = DSP.welch_pgram(s, wlen, woverlap, fs = fs, window = w)
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :fft
         w = w ? DSP.hanning : nothing
-        p = DSP.periodogram(s; fs = fs, window = w)
+        p = DSP.periodogram(s, fs = fs, window = w)
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :mw
-        p, f = mwpsd(s; db = db, fs = fs, ncyc = ncyc, w = w)
+        p, f = mwpsd(s, db = db, fs = fs, ncyc = ncyc, w = w)
     elseif method === :gh
-        p, f = ghpsd(s; fs = fs, db = db, gw = gw, w = w)
+        p, f = ghpsd(s, fs = fs, db = db, gw = gw, w = w)
     end
 
     return (p = p, f = f)
@@ -302,7 +302,7 @@ function psd(
 
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     _log_off()
     p, f = @views psd(
         obj.data[ch, :, :],
@@ -435,7 +435,7 @@ function ghpsd(
     p[p .== -Inf] .= minimum(p[p .!== -Inf])
     p[p .== +Inf] .= maximum(p[p .!== +Inf])
 
-    p = vec(mean(p; dims = 2))
+    p = vec(mean(p, dims = 2))
 
     db && (p = pow2db.(p))
 

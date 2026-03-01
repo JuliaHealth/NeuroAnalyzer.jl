@@ -26,7 +26,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 
     ch_init = ch
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     clabels = labels(obj)
 
     k = nothing
@@ -461,7 +461,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
             ch = Int64(combo_ch.active) + 1
             if ch in 1:length(ctypes)
                 ch = lowercase(ctypes[ch])
-                if length(get_channel(obj; type = ch)) > 1
+                if length(get_channel(obj, type = ch)) > 1
                     combo_type.sensitive = true
                 else
                     combo_type.active = 0
@@ -709,7 +709,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     @assert nepochs(obj) > 1 "For continuous object ipsd() must be used."
 
     ch_init = ch
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     clabels = labels(obj)
 
     k = nothing
@@ -1117,7 +1117,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             ch = Int64(combo_ch.active) + 1
             if ch in 1:length(ctypes)
                 ch = lowercase(ctypes[ch])
-                if length(get_channel(obj; type = ch)) > 1
+                if length(get_channel(obj, type = ch)) > 1
                     combo_type.sensitive = true
                 else
                     combo_type.active = 0

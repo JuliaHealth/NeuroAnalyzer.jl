@@ -33,9 +33,9 @@ function _check_accuracy()::Nothing
     for idx in 1:100
         t = n[idx]
         tt = @elapsed sleep(t)
-        t1 = round(t - tt; digits = length(string(t)))
+        t1 = round(t - tt, digits = length(string(t)))
         tt = @elapsed asleep(t, l)
-        t2 = round(t - tt; digits = length(string(t)))
+        t2 = round(t - tt, digits = length(string(t)))
         # t2 = t - @elapsed wait(t, l)
         ac[idx] = t2 - t1
     end

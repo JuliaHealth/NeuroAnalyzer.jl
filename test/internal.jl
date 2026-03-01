@@ -30,13 +30,13 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._check_markers(["aa", "bb"], "aa") === nothing
 s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
 @test s isa Dict{Symbol, Any}
-r = NeuroAnalyzer._create_recording_eeg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false])
+r = NeuroAnalyzer._create_recording_eeg(data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false])
 @test r isa Dict{Symbol, Any}
-r = NeuroAnalyzer._create_recording_meg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false], ssp_labels=String[], ssp_data=Array{Float64}(undef, 0, 0), ssp_channels=Bool[])
+r = NeuroAnalyzer._create_recording_meg(data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false], ssp_labels=String[], ssp_data=Array{Float64}(undef, 0, 0), ssp_channels=Bool[])
 @test r isa Dict{Symbol, Any}
 e = NeuroAnalyzer._create_experiment(name="a", notes="a", design="a")
 @test e isa Dict{Symbol, String}
-hdr = NeuroAnalyzer._create_header(s, r, e)
+hdr = NeuroAnalyzer._create_header(subject = s, recording = r, experiment = e)
 @test hdr isa NeuroAnalyzer.HEADER
 r = NeuroAnalyzer._fir_response(rand(100), range(0, stop=π, length=1024))
 @test r isa Vector{ComplexF32}
@@ -82,12 +82,8 @@ locs = NeuroAnalyzer._locs_round(locs)
 @test NeuroAnalyzer._locs_remove_nans(DataFrame(:a=>[0.0, 1.0, NaN])) == DataFrame(:a=>[0.0, 1.0, 0.0])
 a = NeuroAnalyzer._make_epochs(rand(10, 1000), ep_len=100)
 @test size(a) == (10, 100, 10)
-a = NeuroAnalyzer._make_epochs(rand(10, 1000), ep_n=100)
-@test size(a) == (10, 10, 100)
 a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_len=100)
 @test size(a) == (10, 100, 20)
-a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_n=100)
-@test size(a) == (10, 20, 100)
 @test NeuroAnalyzer._get_epoch_markers(e10) == 0.0:10.0:90.0
 @test NeuroAnalyzer._tuple_max((2, 1)) == (-2, 2)
 df1, df2 = NeuroAnalyzer._split(DataFrame(:a=>1:10))

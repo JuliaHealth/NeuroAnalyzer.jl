@@ -126,7 +126,7 @@ function filter_mmed(
     ww::AbstractVector = ones(2 * k + 1),
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     _info("Window length: $(2 * k + 1) samples")
 
     obj_new = deepcopy(obj)

@@ -88,7 +88,7 @@ function denoise_cwd(
 
     _log_off()
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views denoise_cwd(
@@ -134,7 +134,7 @@ function denoise_cwd(
     type::Symbol = :nd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_cwd(obj.data[ch, :, :], fs = sr(obj), wt = wt, nf = nf, w = w, type = type)
     push!(obj_new.history, "denoise_cwd(OBJ, ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
@@ -296,7 +296,7 @@ function denoise_dwd(
         _info("Calculating DWD using maximum level: $l")
     end
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
     push!(obj_new.history, "denoise_dwd(OBJ, ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))")

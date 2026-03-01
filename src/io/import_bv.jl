@@ -103,7 +103,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         end
     end
     soft_filt_file = replace(splitext(file_name)[1], "eeg"=>"channels.tsv")
-    isfile(soft_filt_file) && (soft_filt = CSV.read(soft_filt_file; stringtype = String, DataFrame))
+    isfile(soft_filt_file) && (soft_filt = CSV.read(soft_filt_file, stringtype = String, DataFrame))
 
     # JSON
     js_file = ""
@@ -364,7 +364,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     data_type = "eeg"
 
-    s = _create_subject(;
+    s = _create_subject(
         id = "",
         first_name = "",
         middle_name = "",
@@ -374,7 +374,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         weight = -1,
         height = -1,
     )
-    r = _create_recording_eeg(;
+    r = _create_recording_eeg(
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -395,10 +395,9 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         gain = gain,
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = e_name, notes = e_notes, design = "")
+    e = _create_experiment(name = e_name, notes = e_notes, design = "")
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

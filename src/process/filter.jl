@@ -165,7 +165,7 @@ function filter_create(;
             _info(" Number of taps: $order")
         end
 
-        flt = digitalfilter(responsetype, prototype; fs = fs)
+        flt = digitalfilter(responsetype, prototype, fs = fs)
 
         return flt
 
@@ -230,7 +230,7 @@ function filter_create(;
             _info(" F2_pass: $f2_pass Hz")
         end
 
-        flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true; fs = fs)
+        flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true, fs = fs)
 
         return flt
 
@@ -283,7 +283,7 @@ function filter_create(;
             _info(" F2_pass: $f2_pass Hz")
         end
 
-        flt = remez(order, w; Hz = fs, maxiter=100)
+        flt = remez(order, w, Hz = fs, maxiter=100)
 
         return flt
 
@@ -313,13 +313,13 @@ function filter_create(;
             prototype = Elliptic(order, rp, rs)
         end
 
-        flt = digitalfilter(responsetype, prototype; fs = fs)
+        flt = digitalfilter(responsetype, prototype, fs = fs)
 
         return flt
 
     elseif fprototype === :iirnotch
 
-        flt = iirnotch(cutoff[1], bw; fs = fs)
+        flt = iirnotch(cutoff[1], bw, fs = fs)
 
         return flt
 
@@ -387,7 +387,7 @@ function filter_apply(
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     ep_n = nepochs(obj)
 
     ep_n > 1 && _warn("filter() should be applied to a continuous signal.")
@@ -397,7 +397,7 @@ function filter_apply(
     obj_new = deepcopy(obj)
 
     # initialize progress bar
-    progbar = Progress(ep_n * length(ch); dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ep_n * length(ch), dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(ch)

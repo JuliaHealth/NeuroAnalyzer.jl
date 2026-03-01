@@ -1,7 +1,7 @@
 export hmspectrum
 
 """
-    hmspectrum(obj; ch)
+    hmspectrum(obj; <keyword arguments>)
 
 Calculate Hilbert marginal spectrum.
 
@@ -19,8 +19,8 @@ Named tuple containing:
 """
 function hmspectrum(obj; ch::String)::@NamedTuple{p::Array{Float64, 3}, t::Vector{Float64}}
 
-    p, _, t = NeuroAnalyzer.spectrogram(obj; ch = ch, method = :hht, db = false)
-    p = dropdims(sum(p; dims = 1); dims = 3)
+    p, _, t = NeuroAnalyzer.spectrogram(obj, ch = ch, method = :hht, db = false)
+    p = dropdims(sum(p, dims = 1), dims = 3)
 
     return (p = p, t = t)
 

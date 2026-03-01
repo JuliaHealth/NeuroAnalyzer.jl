@@ -31,7 +31,7 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
     phi_sph = obj.locs[!, :loc_phi_sph]
 
     if splitext(file_name)[2] == ".ced"
-        df = DataFrame(;
+        df = DataFrame(
             Number = channels,
             labels = clabels,
             theta = theta,
@@ -43,12 +43,12 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
             sph_phi = phi_sph,
             sph_radius = radius_sph,
         )
-        CSV.write(file_name, df; delim = "\t", header = true)
+        CSV.write(file_name, df, delim = "\t", header = true)
     elseif splitext(file_name)[2] == ".locs"
-        df = DataFrame(; Number = channels, theta = theta, radius = radius, labels = clabels)
-        CSV.write(file_name, df; delim = "\t", header = false)
+        df = DataFrame(Number = channels, theta = theta, radius = radius, labels = clabels)
+        CSV.write(file_name, df, delim = "\t", header = false)
     elseif splitext(file_name)[2] == ".tsv"
-        df = DataFrame(;
+        df = DataFrame(
             labels = clabels,
             x = x,
             y = y,
@@ -59,9 +59,9 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
             theta_sph = theta_sph,
             phi_sph = phi_sph,
         )
-        CSV.write(file_name, df; delim = "\t", header = true)
+        CSV.write(file_name, df, delim = "\t", header = true)
     elseif splitext(file_name)[2] == ".csv"
-        CSV.write(file_name, obj.locs; header = true)
+        CSV.write(file_name, obj.locs, header = true)
     else
         @error "$file_name format must be .csv, .ced, .locs or .tsv."
     end
@@ -101,7 +101,7 @@ function export_locs(locs::DataFrame; file_name::String, overwrite::Bool = false
     phi_sph = locs[!, :loc_phi_sph]
 
     if splitext(file_name)[2] == ".ced"
-        df = DataFrame(;
+        df = DataFrame(
             Number = channels,
             labels = clabels,
             theta = theta,
@@ -114,12 +114,12 @@ function export_locs(locs::DataFrame; file_name::String, overwrite::Bool = false
             sph_radius = radius_sph,
             head = true,
         )
-        CSV.write(file_name, df; delim = "\t")
+        CSV.write(file_name, df, delim = "\t")
     elseif splitext(file_name)[2] == ".locs"
-        df = DataFrame(; Number = channels, theta = theta, radius = radius, labels = clabels)
-        CSV.write(file_name, df; delim = "\t", header = false)
+        df = DataFrame(Number = channels, theta = theta, radius = radius, labels = clabels)
+        CSV.write(file_name, df, delim = "\t", header = false)
     elseif splitext(file_name)[2] == ".tsv"
-        df = DataFrame(;
+        df = DataFrame(
             labels = clabels,
             x = x,
             y = y,
@@ -130,7 +130,7 @@ function export_locs(locs::DataFrame; file_name::String, overwrite::Bool = false
             theta_sph = theta_sph,
             phi_sph = phi_sph,
         )
-        CSV.write(file_name, df; delim = "\t", header = true)
+        CSV.write(file_name, df, delim = "\t", header = true)
     else
         @error "file_name format must be .ced, .locs or .tsv."
     end

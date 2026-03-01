@@ -128,9 +128,9 @@ Calculate covariance matrix of `signal * signal'`.
 """
 function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false)::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    cm = covm(obj.data[ch, :, :]; norm = norm)
+    cm = covm(obj.data[ch, :, :], norm = norm)
 
     return cm
 

@@ -45,7 +45,7 @@ function total_power(
 
     # dx: frequency resolution
     dx = pf[2] - pf[1]
-    tp = simpson(pw; dx = dx)
+    tp = simpson(pw, dx = dx)
 
     return tp
 
@@ -154,7 +154,7 @@ function total_power(
     gw::Real = 5,
 )
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     _log_off()
     tp = @views total_power(
         obj.data[ch, :, :],

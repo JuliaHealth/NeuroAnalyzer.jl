@@ -452,7 +452,7 @@ function import_locs_csd(file_name::String)::DataFrame
     @assert lowercase(splitext(file_name)[2]) == ".csd" "This is not CSD file."
 
     locs = CSV.read(
-        file_name; skipto = 3, delim = ' ', header = false, ignorerepeated = true, stringtype = String, DataFrame
+        file_name, skipto = 3, delim = ' ', header = false, ignorerepeated = true, stringtype = String, DataFrame
     )
 
     DataFrames.rename!(locs, [:label, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])

@@ -94,7 +94,7 @@ function pca_decompose(
     pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}
 }
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     pc, pcv, pcm, pc_model = @views pca_decompose(obj.data[ch, :, :], n = n)
 
     return (pc = pc, pcv = pcv, pcm = pcm, pc_model = pc_model)
@@ -155,7 +155,7 @@ function pca_reconstruct(
     pc_model::MultivariateStats.PCA{Float64},
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc = pc, pc_model = pc_model)

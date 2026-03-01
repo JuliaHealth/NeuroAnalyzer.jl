@@ -199,41 +199,41 @@ function plot_locs(
         ps === :s && (lw = 1)
         if plane === :xy
             # nose
-            GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
 
             # ears
             # left
-            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth = lw, color = :black)
             # right
-            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22]; linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth = lw, color = :black)
+            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth = lw, color = :black)
 
             # head
-            GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
+            GLMakie.arc!(ax, (0, 0), 1, 0, 2pi, linewidth = lw, color = :black)
         elseif plane === :yz
             # head
-            GLMakie.arc!(ax, (0, 0), 1, 0, pi; linewidth = lw, color = :black)
+            GLMakie.arc!(ax, (0, 0), 1, 0, pi, linewidth = lw, color = :black)
         elseif plane === :xz
             # head
-            GLMakie.arc!(ax, (0, 0), 1, 0, pi; linewidth = lw, color = :black)
+            GLMakie.arc!(ax, (0, 0), 1, 0, pi, linewidth = lw, color = :black)
         end
     end
 
@@ -932,7 +932,7 @@ function plot_locs(
                 fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
                 fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
             end
-            GLMakie.text!(fid_loc_x, fid_loc_y; text = fid_names[idx], fontsize = font_size, align = (:center, :center))
+            GLMakie.text!(fid_loc_x, fid_loc_y, text = fid_names[idx], fontsize = font_size, align = (:center, :center))
         end
     end
 
@@ -1079,8 +1079,8 @@ function plot_locs(
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
 
     ch_info = String[]
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
-    [push!(ch_info, channel_info(obj; ch = labels(obj)[ch[idx]], pr = false)) for idx in eachindex(ch)]
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    [push!(ch_info, channel_info(obj, ch = labels(obj)[ch[idx]], pr = false)) for idx in eachindex(ch)]
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
@@ -1088,7 +1088,7 @@ function plot_locs(
     if sch == ""
         sch = 0
     else
-        sch = exclude_bads ? get_channel(obj; ch = sch, exclude = "bad") : get_channel(obj; ch = sch, exclude = "")
+        sch = exclude_bads ? get_channel(obj, ch = sch, exclude = "bad") : get_channel(obj, ch = sch, exclude = "")
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
     end

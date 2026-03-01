@@ -116,10 +116,8 @@ function import_edf_annotations(file_name::String)::DataFrame
 
     # we assume that all channels have the same sampling rate
     gain = Vector{Float64}(undef, ch_n)
-    [
-        gain[idx] in (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx]) for
-        idx in 1:ch_n
-    ]
+    [gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx]) for
+        idx in 1:ch_n]
 
     fid = nothing
     try

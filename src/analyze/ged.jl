@@ -30,9 +30,9 @@ function ged(
     s2cov = cov(s2')
 
     eig_val, eig_vec = eigen(s1cov, s2cov)
-    eig_val_idx = sortperm(eig_val; rev = true)
+    eig_val_idx = sortperm(eig_val, rev = true)
     eig_val = eig_val[eig_val_idx]
-    eig_vec = m_sort(eig_vec, eig_val_idx; dims = 2)
+    eig_vec = m_sort(eig_vec, eig_val_idx, dims = 2)
 
     sged = s2 .* eig_vec[:, 1]
     ress = pinv(eig_vec[:, 1]')
@@ -73,8 +73,8 @@ function ged(
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
 )::@NamedTuple{sged::Array{Float64, 3}, ress::Matrix{Float64}, ress_norm::Matrix{Float64}}
 
-    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
+    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     _check_epochs(obj1, ep1)

@@ -43,13 +43,13 @@ function ftt_analyze(
         if length(t.tap_t[idx]) == 1
             push!(t_diff, t.tap_t[idx][1])
         elseif length(t.tap_t[idx]) > 1
-            append!(t_diff, round.(diff(t.tap_t[idx]); digits = 1))
+            append!(t_diff, round.(diff(t.tap_t[idx]), digits = 1))
         end
     end
-    t_mean = round(mean(t_diff); digits = 1)
-    t_median = round(median(t_diff); digits = 1)
-    t_rmssd = round(sqrt(mean(t_diff .^ 2)); digits = 1)
-    t_sdsd = round(std(t_diff); digits = 1)
+    t_mean = round(mean(t_diff), digits = 1)
+    t_median = round(median(t_diff), digits = 1)
+    t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits = 1)
+    t_sdsd = round(std(t_diff), digits = 1)
 
     return (n = n, t_mean = t_mean, t_median = t_median, t_rmssd = t_rmssd, t_sdsd = t_sdsd)
 

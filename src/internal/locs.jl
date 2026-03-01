@@ -39,7 +39,7 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Da
 end
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::DataFrame
-    return _ch_locs(obj, get_channel(obj; ch = ch))
+    return _ch_locs(obj, get_channel(obj, ch = ch))
 end
 
 function _find_bylabel(
@@ -97,7 +97,7 @@ function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
 end
 
 function _initialize_locs(obj::NeuroAnalyzer.NEURO)::DataFrame
-    locs_ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+    locs_ch = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
     return DataFrame(
         :label=>labels(obj)[locs_ch],
         :loc_radius=>zeros(length(locs_ch)),
@@ -113,26 +113,26 @@ end
 
 function _locs_round(locs::DataFrame)::DataFrame
     locs_new = deepcopy(locs)
-    locs_new[!, :loc_radius] = round.(locs[!, :loc_radius]; digits = 2)
-    locs_new[!, :loc_theta] = round.(locs[!, :loc_theta]; digits = 2)
-    locs_new[!, :loc_x] = round.(locs[!, :loc_x]; digits = 2)
-    locs_new[!, :loc_y] = round.(locs[!, :loc_y]; digits = 2)
-    locs_new[!, :loc_z] = round.(locs[!, :loc_z]; digits = 2)
-    locs_new[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph]; digits = 2)
-    locs_new[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph]; digits = 2)
-    locs_new[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph]; digits = 2)
+    locs_new[!, :loc_radius] = round.(locs[!, :loc_radius], digits = 2)
+    locs_new[!, :loc_theta] = round.(locs[!, :loc_theta], digits = 2)
+    locs_new[!, :loc_x] = round.(locs[!, :loc_x], digits = 2)
+    locs_new[!, :loc_y] = round.(locs[!, :loc_y], digits = 2)
+    locs_new[!, :loc_z] = round.(locs[!, :loc_z], digits = 2)
+    locs_new[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits = 2)
+    locs_new[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits = 2)
+    locs_new[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits = 2)
     return locs_new
 end
 
 function _locs_round!(locs::DataFrame)::Nothing
-    locs[!, :loc_radius] = round.(locs[!, :loc_radius]; digits = 2)
-    locs[!, :loc_theta] = round.(locs[!, :loc_theta]; digits = 2)
-    locs[!, :loc_x] = round.(locs[!, :loc_x]; digits = 2)
-    locs[!, :loc_y] = round.(locs[!, :loc_y]; digits = 2)
-    locs[!, :loc_z] = round.(locs[!, :loc_z]; digits = 2)
-    locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph]; digits = 2)
-    locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph]; digits = 2)
-    locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph]; digits = 2)
+    locs[!, :loc_radius] = round.(locs[!, :loc_radius], digits = 2)
+    locs[!, :loc_theta] = round.(locs[!, :loc_theta], digits = 2)
+    locs[!, :loc_x] = round.(locs[!, :loc_x], digits = 2)
+    locs[!, :loc_y] = round.(locs[!, :loc_y], digits = 2)
+    locs[!, :loc_z] = round.(locs[!, :loc_z], digits = 2)
+    locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits = 2)
+    locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits = 2)
+    locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits = 2)
     return nothing
 end
 

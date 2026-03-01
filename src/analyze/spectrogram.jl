@@ -54,10 +54,10 @@ function spectrogram(
             wlen = div(wlen, 2)
             woverlap = div(woverlap, 2)
         end
-        p = DSP.spectrogram(s, wlen, woverlap; fs = fs, window = w)
+        p = DSP.spectrogram(s, wlen, woverlap, fs = fs, window = w)
     elseif method === :mt
         w = w ? hanning(length(s)) : ones(length(s))
-        p = DSP.mt_spectrogram(s .* w; fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
+        p = DSP.mt_spectrogram(s .* w, fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
     end
 
     p = p.power
@@ -175,7 +175,7 @@ function spectrogram(
 )::@NamedTuple{p::Array{Float64, 4}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
@@ -207,7 +207,7 @@ function spectrogram(
     p = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
@@ -256,8 +256,8 @@ function spectrogram(
         end
     end
 
-    f = round.(f; digits = 2)
-    t = round.(t; digits = 3)
+    f = round.(f, digits = 2)
+    t = round.(t, digits = 3)
     t .+= obj.epoch_time[1]
 
     return (p = p, f = f, t = t)
@@ -380,7 +380,7 @@ function mwspectrogram(
     cs::Array{ComplexF64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}
 }
 
-    _, _, _, f_tmp, t_tmp = mwspectrogram(s[1, :]; pad = pad, db = db, fs = fs, ncyc = ncyc, w = w)
+    _, _, _, f_tmp, t_tmp = mwspectrogram(s[1, :], pad = pad, db = db, fs = fs, ncyc = ncyc, w = w)
 
     cs = zeros(ComplexF64, length(f_tmp), length(t_tmp), size(s, 1))
     p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
@@ -476,7 +476,7 @@ function ghtspectrogram(
     s::AbstractMatrix; fs::Int64, db::Bool = true, gw::Real = 10, w::Bool = true
 )::@NamedTuple{p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
 
-    _, _, f_tmp, t_tmp = ghtspectrogram(s[1, :]; fs = fs, db = db, gw = gw, w = w)
+    _, _, f_tmp, t_tmp = ghtspectrogram(s[1, :], fs = fs, db = db, gw = gw, w = w)
 
     p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
@@ -515,7 +515,7 @@ function cwtspectrogram(
 
     m = abs.(ContinuousWavelets.cwt(s, wt)')
     # m = amp2db.(m)
-    f = cwtfrq(s; fs = fs, wt = wt)
+    f = cwtfrq(s, fs = fs, wt = wt)
 
     # reverse order
     f_idx = sortperm(f)
@@ -552,7 +552,7 @@ function cwtspectrogram(
     s::AbstractMatrix; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2)
 )::@NamedTuple{m::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
-    _, f_tmp, t_tmp = cwtspectrogram(s[1, :]; fs = fs, wt = wt)
+    _, f_tmp, t_tmp = cwtspectrogram(s[1, :], fs = fs, wt = wt)
 
     m = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     Threads.@threads for ch_idx in axes(s, 1)
@@ -589,7 +589,7 @@ function hhtspectrogram(
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    f = round.(linspace(0, fs/2, fs ÷ 2); digits = 2)
+    f = round.(linspace(0, fs/2, fs ÷ 2), digits = 2)
 
     p = zeros(size(s))
     ph = zeros(size(s))

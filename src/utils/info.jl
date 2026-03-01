@@ -674,7 +674,7 @@ Show channel info.
 """
 function channel_info(obj::NeuroAnalyzer.NEURO; ch::String, pr::Bool = true)::Union{Nothing, String}
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     length(ch) == 1 && (ch = ch[1])
     chi = nothing
 
@@ -747,7 +747,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         end
 
         # check which channels are in the picks list
-        clabels = get_channel(obj; type = "eeg")
+        clabels = get_channel(obj, type = "eeg")
         ch = Vector{Int64}()
         for idx1 in eachindex(clabels)
             for idx2 in eachindex(c)
@@ -760,20 +760,20 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             if (p[idx1] === :left || p[idx1] === :l)
                 for idx2 in eachindex(p)
                     if (p[idx2] === :right || p[idx2] === :r)
-                        return get_channel(obj, ch=ch)
+                        return labels(obj)[ch]
                     end
                 end
             end
             if (p[idx1] === :right || p[idx1] === :r)
                 for idx2 in eachindex(p)
                     if (p[idx2] === :left || p[idx2] === :l)
-                        return get_channel(obj, ch=ch)
+                        return labels(obj)[ch]
                     end
                 end
             end
         end
 
-        clabels = get_channel(obj; type = "eeg")
+        clabels = get_channel(obj, type = "eeg")
         clabels = clabels[ch]
         pat = nothing
         for idx in p
@@ -788,7 +788,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             end
         end
 
-        return get_channel(obj, ch=ch)
+        return labels(obj)[ch]
 
     else
 
@@ -805,7 +805,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         (p === :parietal || p === :p) && (c = ['P'])
         (p === :occipital || p === :o) && (c = ['O'])
 
-        clabels = get_channel(obj; type = "eeg")
+        clabels = get_channel(obj, type = "eeg")
         ch = Vector{Int64}()
         for idx1 in eachindex(c)
             for idx2 in eachindex(clabels)
@@ -813,7 +813,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             end
         end
 
-        return get_channel(obj, ch=ch)
+        return labels(obj)[ch]
 
     end
 

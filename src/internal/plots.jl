@@ -8,8 +8,8 @@ function _ylims(s::Union{AbstractVector, AbstractMatrix})::Tuple{Real, Real}
     elseif maximum(abs.(s)) < 10
         n = 0
     end
-    max = ceil(Int64, round(maximum(s); digits = n))
-    min = floor(Int64, round(minimum(s); digits = n))
+    max = ceil(Int64, round(maximum(s), digits = n))
+    min = floor(Int64, round(minimum(s), digits = n))
     if abs(min) == 0 && abs(max) == 0
         max = 1.0
         min = -1.0

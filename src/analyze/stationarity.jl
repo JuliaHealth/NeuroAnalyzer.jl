@@ -46,7 +46,7 @@ function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
 
-    stm = mean(s; dims = 1)[:]
+    stm = mean(s, dims = 1)[:]
 
     return stm
 
@@ -74,7 +74,7 @@ function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
 
-    stv = var(s; dims = 1)[:]
+    stv = var(s, dims = 1)[:]
 
     return stv
 
@@ -109,7 +109,7 @@ function stationarity(
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= epoch_len(obj) "window must be ≤ $(epoch_len(obj))."
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -188,7 +188,7 @@ function stationarity(
         s = zeros(ch_n, 2, ep_n)
 
         # initialize progress bar
-        progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+        progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx in 1:ep_n

@@ -70,9 +70,9 @@ function eros(
     s = s[:, :, 1, :]
 
     if datatype(obj) in ["erp", "erf"]
-        s = cat(s[:, :, 1], mean(s; dims = 3); dims = 3)
+        s = cat(s[:, :, 1], mean(s, dims = 3), dims = 3)
     else
-        s = mean(s; dims = 3)
+        s = mean(s, dims = 3)
     end
 
     return (s = s, f = f, t = t)

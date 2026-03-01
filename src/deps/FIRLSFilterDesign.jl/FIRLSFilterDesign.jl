@@ -162,7 +162,7 @@ function firls_design(
     solver::Function = \,
 )
     firls_design(
-        filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric; fs = fs, solver = solver
+        filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric, fs = fs, solver = solver
     )
 end
 

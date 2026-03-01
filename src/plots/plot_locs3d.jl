@@ -259,7 +259,7 @@ function plot_locs3d(
 
     @assert datatype(obj) in ["eeg"] "Currently plot_locs3d() works for EEG objects only."
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
@@ -267,7 +267,7 @@ function plot_locs3d(
     if sch == ""
         sch = 0
     else
-        sch = get_channel(obj; ch = sch)
+        sch = get_channel(obj, ch = sch)
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
     end

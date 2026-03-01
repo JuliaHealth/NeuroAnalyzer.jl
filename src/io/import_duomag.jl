@@ -207,7 +207,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(;
+    s = _create_subject(
         id = string(subject_id),
         first_name = "",
         middle_name = "",
@@ -217,7 +217,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         weight = -1,
         height = -1,
     )
-    r = _create_recording_mep(;
+    r = _create_recording_mep(
         data_type = "mep",
         file_name = file_name,
         file_size_mb = 0,
@@ -238,10 +238,9 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         markers_neg = markers_neg,
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
+    e = _create_experiment(name = "", notes = "", design = "")
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

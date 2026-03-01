@@ -19,7 +19,7 @@ function import_dat(file_name)::DataFrame
     @assert lowercase(splitext(file_name)[2]) == ".dat" "This is not DAT file."
 
     dat = CSV.read(
-        file_name; stringtype = String, delim = ' ', ignorerepeated = true, skipto = 21, header = 0, DataFrame
+        file_name, stringtype = String, delim = ' ', ignorerepeated = true, skipto = 21, header = 0, DataFrame
     )
     DataFrames.rename!(dat, [:event, :trial, :response, :type, :correct])
     dat[!, :event] .-= 1

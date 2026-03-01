@@ -70,15 +70,15 @@ function xcor(
             xc_neg[idx + 1] = @views cor(s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end])
         end
     elseif method === :stat
-        xc = crosscor(s1, s2, 0:l; demean = demean)
-        xc_neg = crosscor(s2, s1, 0:l; demean = demean)
+        xc = crosscor(s1, s2, 0:l, demean = demean)
+        xc_neg = crosscor(s2, s1, 0:l, demean = demean)
     end
 
     xc = vcat(reverse(xc_neg), xc[2:end])
     if method === :sum
         xc = xc ./ (std(s1) * std(s2))
     end
-    xc = round.(xc; digits = 3)
+    xc = round.(xc, digits = 3)
 
     return reshape(xc, 1, :, 1)
 
@@ -225,8 +225,8 @@ function xcor(
     @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
+    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])
@@ -244,7 +244,7 @@ function xcor(
             biased = biased,
             method = method,
         )
-        xc = cat(mean(xc; dims = 3), xc; dims = 3)
+        xc = cat(mean(xc; dims = 3), xc, dims = 3)
     else
         xc = @views xcor(
             obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean, biased = biased, method = method

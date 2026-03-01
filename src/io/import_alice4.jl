@@ -178,7 +178,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
         data_size = filesize(file_name) - data_offset
         data = zeros(UInt8, data_size)
-        readbytes!(fid, data, data_size; all = true)
+        readbytes!(fid, data, data_size, all = true)
         signal = map(ltoh, reinterpret(Int16, data))
         data_records = length(signal) ÷ sum(sampling_rate)
         data = zeros(ch_n, data_records * max_sampling_rate)
@@ -237,15 +237,15 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     end
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)], digits = 4
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)], digits = 4)
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     data_type = "eeg"
 
-    s = _create_subject(;
+    s = _create_subject(
         id = "",
         first_name = "",
         middle_name = "",
@@ -255,7 +255,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         weight = -1,
         height = -1,
     )
-    r = _create_recording_eeg(;
+    r = _create_recording_eeg(
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -276,10 +276,9 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         gain = gain,
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
+    e = _create_experiment(name = "", notes = "", design = "")
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

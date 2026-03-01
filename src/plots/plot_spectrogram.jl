@@ -75,7 +75,7 @@ function plot_spectrogram(
 
     if !isnothing(threshold)
         sp_threshold = deepcopy(sp)
-        _, bm = seg_extract(sp; threshold = threshold, threshold_type = threshold_type)
+        _, bm = seg_extract(sp, threshold = threshold, threshold_type = threshold_type)
         sp_threshold[.!bm] .= NaN
     end
 
@@ -121,14 +121,14 @@ function plot_spectrogram(
 
     # draw spectrogram
     if !isnothing(threshold)
-        hm = GLMakie.heatmap!(ax, st, sf, sp_threshold; colorrange = extrema(sp[.!isnan.(sp)]), colormap = pal)
+        hm = GLMakie.heatmap!(ax, st, sf, sp_threshold, colorrange = extrema(sp[.!isnan.(sp)]), colormap = pal)
     else
-        hm = GLMakie.heatmap!(ax, st, sf, sp; colormap = pal)
+        hm = GLMakie.heatmap!(ax, st, sf, sp, colormap = pal)
     end
 
     # draw colorbar
     if cb
-        Colorbar(p[1, 2], hm; label = cb_title, labelsize = 16)
+        Colorbar(p[1, 2], hm, label = cb_title, labelsize = 16)
     end
 
     return p
@@ -215,7 +215,7 @@ function plot_spectrogram(
 
     ch = collect(eachindex(clabels)) .- 0.5
     ch_n = length(ch)
-    reverse!(sp; dims = 1)
+    reverse!(sp, dims = 1)
 
     # prepare plot
     GLMakie.activate!(title = "plot_spectrogram()")
@@ -248,19 +248,19 @@ function plot_spectrogram(
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    hm = GLMakie.heatmap!(ax, sf, ch, sp'; colormap = pal)
+    hm = GLMakie.heatmap!(ax, sf, ch, sp', colormap = pal)
 
     # draw thresholded region
     if !isnothing(threshold)
-        _, bm = seg_extract(sp; threshold = threshold, threshold_type = threshold_type)
+        _, bm = seg_extract(sp, threshold = threshold, threshold_type = threshold_type)
         reg = ones(size(sp)) .* minimum(sp)
         reg[bm] .= maximum(sp)
-        GLMakie.contour!(ax, sf, ch, reg'; levels = 1, color = :black, linewidth = 2)
+        GLMakie.contour!(ax, sf, ch, reg', levels = 1, color = :black, linewidth = 2)
     end
 
     # draw colorbar
     if cb
-        Colorbar(p[1, 2], hm; label = cb_title, labelsize = 16)
+        Colorbar(p[1, 2], hm, label = cb_title, labelsize = 16)
     end
 
     return p
@@ -386,7 +386,7 @@ function plot_spectrogram_topo(
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot powers
-        GLMakie.heatmap!(ax, sf, st, sp[:, :, idx]'; colormap = pal)
+        GLMakie.heatmap!(ax, sf, st, sp[:, :, idx]', colormap = pal)
         push!(pp_vec, pp)
         pp_full = plot_spectrogram(
             st,
@@ -437,42 +437,42 @@ function plot_spectrogram_topo(
 
     if head
         # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08]; linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [-0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
+        GLMakie.lines!(ax, [0.2, 0], [0.980, 1.08], linewidth = lw, color = :black)
 
         # ears
         # left
-        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth = 3, color = :black)
         # right
-        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = 3, color = :black)
-        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22]; linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth = 3, color = :black)
+        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth = 3, color = :black)
 
         # head
-        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth = 3, color = :black)
+        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi, linewidth = 3, color = :black)
     end
 
     for idx in axes(sp, 3)
         io = IOBuffer()
         show(io, MIME"image/png"(), pp_vec[idx])
         pp = FileIO.load(io)
-        GLMakie.scatter!(loc_x[idx], loc_y[idx]; marker = pp, markersize = marker_size, markerspace = :pixel)
+        GLMakie.scatter!(loc_x[idx], loc_y[idx], marker = pp, markersize = marker_size, markerspace = :pixel)
     end
 
     loc_x_range = Tuple{Float64, Float64}[]
@@ -594,7 +594,7 @@ function plot_spectrogram(
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert n > 0 "n must be ≥ 1."
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     if method === :cwt
         if type === :normal
             @assert length(ch) == 1 "For :cwt method only one channel must be selected."
@@ -652,14 +652,14 @@ function plot_spectrogram(
                 title == "default" && (title = "Spectrogram (multi-tapered)")
             end
         elseif method === :mw
-            _, sp, _, sf, st = NeuroAnalyzer.mwspectrogram(signal; fs = fs, ncyc = ncyc, db = false, w = w)
+            _, sp, _, sf, st = NeuroAnalyzer.mwspectrogram(signal, fs = fs, ncyc = ncyc, db = false, w = w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Spectrogram (Morlet wavelet)")
             end
         elseif method === :gh
-            sp, _, sf, st = NeuroAnalyzer.ghtspectrogram(signal; fs = fs, db = false, gw = gw, w = w)
+            sp, _, sf, st = NeuroAnalyzer.ghtspectrogram(signal, fs = fs, db = false, gw = gw, w = w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep]")
             else
@@ -667,7 +667,7 @@ function plot_spectrogram(
             end
         elseif method === :cwt
             _log_off()
-            sp, sf, st = NeuroAnalyzer.cwtspectrogram(signal; fs = fs, wt = wt)
+            sp, sf, st = NeuroAnalyzer.cwtspectrogram(signal, fs = fs, wt = wt)
             _log_on()
             sf[1] > flim[1] && (flim = (sf[1], flim[2]))
             sf[end] < flim[2] && (flim = (flim[1], sf[end]))
@@ -678,7 +678,7 @@ function plot_spectrogram(
             end
         elseif method === :hht
             imf = emd(signal, t)
-            sp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :]; fs = fs, db = false)
+            sp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs = fs, db = false)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep]")
             else
@@ -687,28 +687,28 @@ function plot_spectrogram(
         end
     elseif length(ch) > 1 && type === :normal
         if method === :stft
-            sp, sf = psd(signal; fs = fs, db = db, method = :stft, nt = nt, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd(signal, fs = fs, db = db, method = :stft, nt = nt, wlen = wlen, woverlap = woverlap, w = w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Spectrogram (short-time Fourier)")
             end
         elseif method === :mt
-            sp, sf = psd(signal; fs = fs, db = db, method = :mt, nt = nt, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd(signal, fs = fs, db = db, method = :mt, nt = nt, wlen = wlen, woverlap = woverlap, w = w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Spectrogram (multi-tapered)")
             end
         elseif method === :mw
-            sp, sf = psd(signal; fs = fs, db = db, method = :mw, w = w, ncyc = ncyc)
+            sp, sf = psd(signal, fs = fs, db = db, method = :mw, w = w, ncyc = ncyc)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Spectrogram (Morlet wavelet)")
             end
         elseif method === :gh
-            sp, sf = psd(signal; fs = fs, db = db, method = :gh, w = w, gw = gw)
+            sp, sf = psd(signal, fs = fs, db = db, method = :gh, w = w, gw = gw)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep]")
             else
@@ -716,7 +716,7 @@ function plot_spectrogram(
             end
         elseif method === :cwt
             _log_off()
-            sp, sf = psd(signal; fs = fs, method = :cwt, wt = wt)
+            sp, sf = psd(signal, fs = fs, method = :cwt, wt = wt)
             _log_on()
             sf[1] > flim[1] && (flim = (sf[1], flim[2]))
             sf[end] < flim[2] && (flim = (flim[1], sf[end]))
@@ -727,12 +727,12 @@ function plot_spectrogram(
             end
         elseif method === :hht
             imf = emd(signal[1, :], t)
-            sp_tmp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :]; fs = fs, db = db)
+            sp_tmp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs = fs, db = db)
             sp = zeros(size(signal, 1), length(sp_tmp))
             sp[1, :] = sp_tmp
             for idx in axes(signal, 1)[(begin + 1):end]
                 imf = emd(signal[idx, :], t)
-                sp[idx, :], _, _, _ = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :]; fs = fs, db = db)
+                sp[idx, :], _, _, _ = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs = fs, db = db)
             end
             if ep != 0
                 title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep]")
@@ -842,11 +842,11 @@ function plot_spectrogram(
         markers_desc = obj.markers[!, :value]
         for idx in eachindex(markers_pos)
             if _in(markers_pos[idx], (obj.time_pts[1], obj.time_pts[end]))
-                GLMakie.vlines!(p[1, 1], markers_pos[idx]; linestyle = :dash, linewidth = 1, color = :black)
+                GLMakie.vlines!(p[1, 1], markers_pos[idx], linestyle = :dash, linewidth = 1, color = :black)
                 if length(ch) > 1
                     GLMakie.textlabel!(
                         p[1, 1],
-                        (markers_pos[idx] + 0.07, ch_n > 20 ? 20.4 : ch_n + 0.4);
+                        (markers_pos[idx] + 0.07, ch_n > 20 ? 20.4 : ch_n + 0.4),
                         text = "$(markers_id[idx]) / $(markers_desc[idx])",
                         text_align = (:left, :center),
                         fontsize = 8,
@@ -855,7 +855,7 @@ function plot_spectrogram(
                 else
                     GLMakie.textlabel!(
                         p[1, 1],
-                        (markers_pos[idx] + 0.07, 0.97 * minimum(obj.data[ch, :, :]));
+                        (markers_pos[idx] + 0.07, 0.97 * minimum(obj.data[ch, :, :])),
                         text = "$(markers_id[idx]) / $(markers_desc[idx])",
                         text_align = (:left, :center),
                         fontsize = 8,

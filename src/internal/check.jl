@@ -55,12 +55,12 @@ function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, Abstr
 end
 
 function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Nothing
-    _check_channels(get_channel(obj; type = "all"), ch)
+    _check_channels(get_channel(obj, type = "all"), ch)
     return nothing
 end
 
 function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex}, type::String)::Nothing
-    _check_channels(get_channel(obj; type = type), ch)
+    _check_channels(get_channel(obj, type = type), ch)
     return nothing
 end
 
@@ -154,8 +154,8 @@ end
 
 function _check_svec(s::String)::Bool
     s = replace(s, " "=>"")
-    s = replace(s, "["=>""; count = 1)
-    s = replace(s, "]"=>""; count = 1)
+    s = replace(s, "["=>"", count = 1)
+    s = replace(s, "]"=>"", count = 1)
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [","]) || return false
     end

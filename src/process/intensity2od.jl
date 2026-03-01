@@ -43,9 +43,9 @@ function intensity2od(
 
     @assert length(get_channel(obj, type = "nirs_int")) > 0 "OBJ does not contain NIRS intensity channels."
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     _check_datatype(obj, "nirs")
-    _check_channels(get_channel(obj; type = "nirs_int"), ch)
+    _check_channels(get_channel(obj, type = "nirs_int"), ch)
 
     obj_new = deepcopy(obj)
 

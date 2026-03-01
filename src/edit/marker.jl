@@ -40,8 +40,8 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
         println(
             rpad(string(mrk_idx), 5) *
             rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) *
-            rpad(string(round(obj.markers[mrk_idx, :start]; digits = 3)), 12) *
-            rpad(string(round(obj.markers[mrk_idx, :length]; digits = 3)), 12) *
+            rpad(string(round(obj.markers[mrk_idx, :start], digits = 3)), 12) *
+            rpad(string(round(obj.markers[mrk_idx, :length], digits = 3)), 12) *
             rpad("'" * obj.markers[mrk_idx, :value] * "'", 24) *
             rpad(string(obj.markers[mrk_idx, :channel]), 1),
         )
@@ -71,14 +71,14 @@ function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
     nn = DataFrames.nrow(obj_new.markers)
     @assert !(n < 1 || n > nn) "n must be in [1, $nn]."
     deleteat!(obj_new.markers, n)
-    push!(obj_new.history, "delete_marker(OBJ; n=$n)")
+    push!(obj_new.history, "delete_marker(OBJ, n=$n)")
 
     return obj_new
 
 end
 
 """
-    delete_marker!(obj; n)
+    delete_marker!(obj; <keyword arguments>)
 
 Delete marker.
 
@@ -93,7 +93,7 @@ Delete marker.
 """
 function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
 
-    obj_new = delete_marker(obj; n = n)
+    obj_new = delete_marker(obj, n = n)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -131,14 +131,14 @@ function add_marker(
     obj_new = deepcopy(obj)
     append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :value=>value, :channel=>ch))
     sort!(obj_new.markers, :start)
-    push!(obj_new.history, "add_marker(OBJ; id=$id, start=$start, len=$len, value=$value, ch=$ch)")
+    push!(obj_new.history, "add_marker(OBJ, id=$id, start=$start, len=$len, value=$value, ch=$ch)")
 
     return obj_new
 
 end
 
 """
-    add_marker!(obj; id, start, len, value, ch)
+    add_marker!(obj; <keyword arguments>)
 
 Add marker.
 
@@ -159,7 +159,7 @@ function add_marker!(
     obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real = 1.0, value::String, ch::Int64 = 0
 )::Nothing
 
-    obj_new = add_marker(obj; id = id, start = start, len = len, value = value, ch = ch)
+    obj_new = add_marker(obj, id = id, start = start, len = len, value = value, ch = ch)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -201,14 +201,14 @@ function edit_marker(
     obj_new = deepcopy(obj)
     obj_new.markers[n, :] = Dict(:id=>id, :start=>start, :length=>len, :value=>value, :channel=>ch)
     sort!(obj_new.markers, :start)
-    push!(obj_new.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, value=$value, ch=$ch)")
+    push!(obj_new.history, "edit_marker(OBJ, id=$id, start=$start, len=$len, value=$value, ch=$ch)")
 
     return obj_new
 
 end
 
 """
-    edit_marker!(obj; n, id, start, len, value, ch)
+    edit_marker!(obj; <keyword arguments>)
 
 Edit marker.
 
@@ -230,7 +230,7 @@ function edit_marker!(
     obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real = 1.0, value::String, ch::Int64 = 0
 )::Nothing
 
-    obj_new = edit_marker(obj; n = n, id = id, start = start, len = len, value = value, ch = ch)
+    obj_new = edit_marker(obj, n = n, id = id, start = start, len = len, value = value, ch = ch)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -259,8 +259,8 @@ function channel2marker(
     obj::NeuroAnalyzer.NEURO; ch::String, v::Real = 1.0, id::String = "", value::String = ""
 )::NeuroAnalyzer.NEURO
 
-    stim_ch = get_channel(obj; type = "mrk")
-    ch = get_channel(obj; ch = ch)[1]
+    stim_ch = get_channel(obj, type = "mrk")
+    ch = get_channel(obj, ch = ch)[1]
 
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]
@@ -345,7 +345,7 @@ function channel2marker!(
     obj::NeuroAnalyzer.NEURO; ch::String, v::Real = 1.0, id::String = "", value::String = ""
 )::Nothing
 
-    obj_new = channel2marker(obj; ch = ch, v = v, id = id, value = value)
+    obj_new = channel2marker(obj, ch = ch, v = v, id = id, value = value)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -354,7 +354,7 @@ function channel2marker!(
 end
 
 """
-    add_markers(obj; markers)
+    add_markers(obj; <keyword arguments>)
 
 Add markers.
 
@@ -378,7 +378,7 @@ function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyze
 end
 
 """
-    add_markers!(obj; markers)
+    add_markers!(obj; <keyword arguments>)
 
 Add markers.
 

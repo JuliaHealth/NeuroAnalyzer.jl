@@ -23,9 +23,9 @@ function delete_channel(
 )::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     length(ch) == 0 && (return obj)
-    length(ch) > 1 && (ch = sort!(ch; rev = true))
+    length(ch) > 1 && (ch = sort!(ch, rev = true))
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
     obj_new = deepcopy(obj)
 
@@ -99,8 +99,8 @@ function delete_channel!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, del_opt::Bool = false
 )::Nothing
 
-    length(get_channel(obj; ch = ch)) == 0 && (return nothing)
-    obj_new = delete_channel(obj; ch = ch, del_opt = del_opt)
+    length(get_channel(obj, ch = ch)) == 0 && (return nothing)
+    obj_new = delete_channel(obj, ch = ch, del_opt = del_opt)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -127,11 +127,11 @@ Keep channels.
 function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
-    length(get_channel(obj; ch = ch)) == ch_n && (return obj)
-    chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj; ch = ch))]
+    length(get_channel(obj, ch = ch)) == ch_n && (return obj)
+    chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch = ch))]
     @assert length(chs_to_remove) < ch_n "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."
 
-    obj_new = delete_channel(obj; ch = chs_to_remove)
+    obj_new = delete_channel(obj, ch = chs_to_remove)
 
     return obj_new
 
@@ -153,8 +153,8 @@ Keep channels.
 """
 function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    length(get_channel(obj; ch = ch)) == nchannels(obj) && (return nothing)
-    obj_new = keep_channel(obj; ch = ch)
+    length(get_channel(obj, ch = ch)) == nchannels(obj) && (return nothing)
+    obj_new = keep_channel(obj, ch = ch)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history

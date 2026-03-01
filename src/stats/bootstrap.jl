@@ -30,7 +30,7 @@ function bootstrap_ci(
     @assert n2 > 0 "n2 must be > 0."
 
     # initialize progress bar
-    progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(n1, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     s_avg = zeros(n1, size(s, 1))
     @inbounds for idx1 in 1:n1
@@ -96,7 +96,7 @@ function bootstrap_stat(s::AbstractMatrix; n1::Int64 = 3000, n2::Int64 = 1000, f
     out = zeros(typeof(out_tmp), n1)
 
     # initialize progress bar
-    progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(n1, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     s_avg = zeros(n1, size(s, 1))
     @inbounds for idx1 in 1:n1

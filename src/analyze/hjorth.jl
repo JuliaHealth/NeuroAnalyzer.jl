@@ -107,7 +107,7 @@ function hjorth(
 )::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
 
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     h_act, h_mob, h_comp = @views hjorth(obj.data[ch, :, :])
 
     return (h_act = h_act, h_mob = h_mob, h_comp = h_comp)

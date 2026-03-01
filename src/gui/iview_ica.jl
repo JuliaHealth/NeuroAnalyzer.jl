@@ -29,7 +29,7 @@ function iview_ica(
     zoom = 10
     obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
     seg = (obj.time_pts[1], obj.time_pts[1] + zoom)
-    chn = get_channel(obj; ch = ch)
+    chn = get_channel(obj, ch = ch)
     cl = labels(obj)
     ch_idx = 1
 
@@ -84,8 +84,8 @@ function iview_ica(
         end
     end
 
-    p_sig = NeuroAnalyzer.plot(obj; ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
-    p_psd = NeuroAnalyzer.plot_psd(obj; ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
+    p_sig = NeuroAnalyzer.plot(obj, ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
+    p_psd = NeuroAnalyzer.plot_psd(obj, ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
 
     k = nothing
     scaled_sig = false
@@ -454,7 +454,7 @@ function iview_ica(
                         _info(
                             "Reconstructing the signal using the IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))",
                         )
-                        ica_reconstruct!(obj_new, ic, ic_mw; ch = ch, ic_idx = ic_idx[ic_remove_idx], keep = true)
+                        ica_reconstruct!(obj_new, ic, ic_mw, ch = ch, ic_idx = ic_idx[ic_remove_idx], keep = true)
                         ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                         ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                         cb_mark.sensitive = ic_available_for_removal_idx[current_ic]
@@ -483,7 +483,7 @@ function iview_ica(
                     if ans
                         current_ic = Int64(entry_ic.value)
                         _info("Removing IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
-                        ica_reconstruct!(obj_new, ic, ic_mw; ch = ch, ic_idx = ic_idx[ic_remove_idx])
+                        ica_reconstruct!(obj_new, ic, ic_mw, ch = ch, ic_idx = ic_idx[ic_remove_idx])
                         ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                         ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                         cb_mark.sensitive = ic_available_for_removal_idx[current_ic]

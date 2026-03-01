@@ -239,7 +239,7 @@ function trtm(
 )::Matrix{Float64}
 
     _check_epochs(obj, ep)
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
 
     s = zeros(length(ep), epoch_len(obj))
     @inbounds for ep_idx in eachindex(ep)

@@ -18,7 +18,7 @@ Calculate mean of a segment (e.g. spectrogram).
 function seg_mean(seg::AbstractArray)::Vector{Float64}
 
     _chk3d(seg)
-    sm = reshape(mean(mean(seg; dims = 1); dims = 2), size(seg, 3))
+    sm = reshape(mean(mean(seg; dims = 1), dims = 2), size(seg, 3))
 
     return sm
 
@@ -221,7 +221,7 @@ function seg_select(
         yrectzoom = false,
     )
     hidedecorations!(ax)
-    hm = GLMakie.heatmap!(m[end:-1:1, :]'; colormap = :darktest)
+    hm = GLMakie.heatmap!(m[end:-1:1, :]', colormap = :darktest)
 
     poins = nothing
     if shape in [:p, :r]
@@ -233,7 +233,7 @@ function seg_select(
 
     if shape === :p
 
-        GLMakie.scatter!(ax, points; marker = :rect, markersize = 10, color = :red)
+        GLMakie.scatter!(ax, points, marker = :rect, markersize = 10, color = :red)
 
         on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
@@ -257,9 +257,9 @@ function seg_select(
 
     elseif shape === :c
 
-        GLMakie.arc!(ax, points, radius, -pi, pi; linewidth = 5, color = :red)
+        GLMakie.arc!(ax, points, radius, -pi, pi, linewidth = 5, color = :red)
 
-        on(events(p).scroll; priority = 1) do (dx, dy)
+        on(events(p).scroll, priority = 1) do (dx, dy)
             if dy == 1.0
                 radius[] <= size_x && (radius[] += dy)
             elseif dy == -1.0
@@ -283,7 +283,7 @@ function seg_select(
 
     elseif shape === :r
 
-        GLMakie.lines!(ax, points; linewidth = 5, color = :red)
+        GLMakie.lines!(ax, points, linewidth = 5, color = :red)
         on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
                 pos = round.(Int64, mouseposition(ax))
@@ -386,7 +386,7 @@ function seg_select(
         r1 > r2 && ((r1, r2) = _swap(r1, r2))
         c1 > c2 && ((c1, c2) = _swap(c1, c2))
         c = shape == :c
-        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2); v = v, c = c)
+        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v = v, c = c)
     else
         return !extract ? (r, c) : m[r, c]
     end

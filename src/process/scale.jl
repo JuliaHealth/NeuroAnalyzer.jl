@@ -18,7 +18,7 @@ Multiply channel(s) by `factor`.
 """
 function scale(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, factor::Real)::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views obj_new.data[ch, :, :] .* factor
     push!(obj_new.history, "scale(OBJ, ch=$ch, factor=$factor)")

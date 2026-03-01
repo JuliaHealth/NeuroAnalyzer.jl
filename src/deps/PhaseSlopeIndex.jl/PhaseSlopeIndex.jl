@@ -18,9 +18,9 @@ int(x) = trunc(Int, x)
 """
 function dropmean(X, d)
     if ndims(X) == 1
-        mean(X; dims = d)
+        mean(X, dims = d)
     else
-        dropdims(mean(X; dims = d); dims = d)
+        dropdims(mean(X, dims = d), dims = d)
     end
 end
 
@@ -55,7 +55,7 @@ function detrend!(data::AbstractArray, n::Integer)
 
     data = reshape(data, (nsamp, :))  # reshaping data
     if n == 0
-        data .-= mean(data; dims = 1)
+        data .-= mean(data, dims = 1)
     elseif n == 1
         data .-= A * (A \ data)
     end
@@ -68,7 +68,7 @@ end
 Hanning window similar to MATLAB `hanning` implementation
 """
 function hanning_fun(N::Integer)
-    x = [range(0.0, 1.0; length = N + 2);]
+    x = [range(0.0, 1.0, length = N + 2);]
     window = 0.5 .* (1 .- cospi.(2 .* x))
     window = (window + window[end:-1:1]) ./ 2  # forcing symmetry
     return window[2:(end - 1)]  # excluding the zero values
@@ -253,7 +253,7 @@ function cs2ps(cs::AbstractArray)
     @einsum coh[f, i, j] := cs[f, i, j] / sqrt(cs[f, i, i] * cs[f, j, j])
 
     # phase slope (Eq. 3)
-    @views imag.(sum(conj(coh[1:(end - 1), :, :]) .* coh[2:end, :, :]; dims = 1))
+    @views imag.(sum(conj(coh[1:(end - 1), :, :]) .* coh[2:end, :, :], dims = 1))
 end
 
 """
@@ -351,19 +351,15 @@ function cs2cs_(
 end
 
 """
-    data2psi(data, seglen ; segshift, eplen, freqlist, method,
-                            nboot, segave, subave, detrend)
+    data2psi(data, seglen; <keyword arguments>)
 
-calculates phase slope index (PSI)
+Calculates phase slope index (PSI)
 
-### Arguments
+# Arguments
 
   - `data::AbstractArray`: NxM array for N data points in M channels
   - `seglen::Integer`: segment length (determines the frequency resolution).
     If defining `freqlist`, `seglen` must be the same as sampling frequency.
-
-*optional arguments*
-
   - `segshift::Integer`: number of bins by which neighboring segments are shifted
     (default is `seglen / 2`)
   - `eplen::Integer`: length of epochs (default is number of samples)
@@ -378,7 +374,7 @@ calculates phase slope index (PSI)
   - `window::Function`: window function with interval length as sole necessary argument (default is `Hanning`)
   - `verbose::Bool`: if `true`, warnings and info logs would be echoed. (default is `false`)
 
-### Returns
+# Returns
 
   - `psi::AbstractArray`: Phase Slope Index with shape `(channel, channel, frequency bands)`
   - `psi_std::AbstractArray`: PSI estimated standard deviation with shape `(channel, channel, frequency bands)`
@@ -440,9 +436,9 @@ function data2psi(
     end
 
     if method == "jackknife"
-        psi_std = sqrt(nep) * squeeze(std(psi_est; corrected = true, dims = 4))
+        psi_std = sqrt(nep) * squeeze(std(psi_est, corrected = true, dims = 4))
     elseif method == "bootstrap"
-        psi_std = squeeze(std(psi_est; corrected = true, dims = 4))
+        psi_std = squeeze(std(psi_est, corrected = true, dims = 4))
     else
         psi_std = fill(NaN, (nchan, nchan, nfbands))
     end

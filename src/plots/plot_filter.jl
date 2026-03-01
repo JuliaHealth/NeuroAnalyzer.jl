@@ -37,7 +37,7 @@ Plot filter response.
   - `p::GLMakie.Figure`
   - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
-function plot_filter(;
+function plot_filter(
     fs::Int64,
     fprototype::Symbol,
     ftype::Union{Nothing, Symbol} = nothing,
@@ -722,7 +722,7 @@ function plot_filter(;
 
     # create filter
     flt = @lift(
-            filter_create(;
+            filter_create(
                 fprototype = fprototype,
                 ftype = ftype,
                 cutoff = $cutoff,

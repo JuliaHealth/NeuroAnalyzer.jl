@@ -206,7 +206,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
     for idx1 in eachindex(l)
         if l[idx1] in NeuroAnalyzer.channel_types
             for idx2 in NeuroAnalyzer.channel_types
-                l[idx1] == idx2 && append!(l_tmp, get_channel(obj; type = idx2))
+                l[idx1] == idx2 && append!(l_tmp, get_channel(obj, type = idx2))
             end
         else
             push!(l_tmp, l[idx1])

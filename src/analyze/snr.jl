@@ -147,7 +147,7 @@ function snr(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol = :rms
 )::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     sn, f = @views snr(obj.data[ch, :, :], t = obj.epoch_time, type = type)
 
     return (sn = sn, f = f)

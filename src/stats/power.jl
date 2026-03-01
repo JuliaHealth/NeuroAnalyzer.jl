@@ -149,7 +149,9 @@ Calculate required sample size for a proportion (group 1 vs population).
 
   - `n::Int64`: group 1 sample size
 """
-function size_p1g(; p1::Float64, p2::Float64, alpha::Float64 = 0.05, power::Float64 = 0.8)::Int64
+function size_p1g(;
+    p1::Float64, p2::Float64, alpha::Float64 = 0.05, power::Float64 = 0.8
+)::Int64
 
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -183,7 +185,9 @@ Calculate study power for a continuous variable (group 1 vs group 2).
 
   - `p::Float64`: study power
 """
-function power_c2g(; m1::Real, s1::Real, n1::Int64, m2::Real, s2::Real, n2::Int64, alpha::Float64 = 0.05)::Float64
+function power_c2g(;
+    m1::Real, s1::Real, n1::Int64, m2::Real, s2::Real, n2::Int64, alpha::Float64 = 0.05
+)::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 
@@ -212,7 +216,9 @@ Calculate study power for a continuous variable (group 1 vs population).
 
   - `p::Float64`: study power
 """
-function power_c1g(; m::Real, s::Real, xbar::Real, n::Int64, alpha::Float64 = 0.05)::Float64
+function power_c1g(;
+    m::Real, s::Real, xbar::Real, n::Int64, alpha::Float64 = 0.05
+)::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 
@@ -248,7 +254,9 @@ Calculate study power for two proportions.
 
   - `p::Float64`: study power
 """
-function power_p2g(; p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Float64 = 0.05)::Float64
+function power_p2g(;
+    p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Float64 = 0.05
+)::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 
@@ -285,7 +293,9 @@ Calculate study power for one proportion.
 
   - `p::Float64`: study power
 """
-function power_p1g(; p1::Float64, p2::Float64, n1::Int64, alpha::Float64 = 0.05)::Float64
+function power_p1g(;
+    p1::Float64, p2::Float64, n1::Int64, alpha::Float64 = 0.05
+)::Float64
 
     _in(alpha, (0, 1.0), "alpha")
 

@@ -136,12 +136,12 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         gains_start = findfirst(startswith.(hdr, "Gains="))
         buf = hdr[(gains_start + 1):(gains_start + sources)]
         gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] in parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
+        [gains[idx, :] = parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
     else
         buf = readlines(splitext(file_name)[1] * ".set")
         buf = split.(buf, ' ')
         gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
+        [gains[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
     end
 
     # parse opt_pairs
@@ -178,10 +178,10 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     chd = replace(lowercase.(chd), "chandis="=>"")
     chd = split.(chd, '\t')
     channel_distance = zeros(length(chd))
-    [channel_distance[idx] in parse(Float64, chd[idx]) for idx in eachindex(chd)]
+    [channel_distance[idx] = parse(Float64, chd[idx]) for idx in eachindex(chd)]
 
     # read raw light intensity channels (V)
-    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1"; header = false, stringtype = String, DataFrame))'[
+    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", header = false, stringtype = String, DataFrame))'[
         ch_masks, :,
     ]
     wavelength_index = repeat([1], ch_n)
@@ -190,7 +190,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     for idx in 2:length(wavelengths)
         nirs_int = vcat(
             nirs_int,
-            Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx"; header = false, stringtype = String, DataFrame))'[
+            Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", header = false, stringtype = String, DataFrame))'[
                 ch_masks, :,
             ],
         )
@@ -213,14 +213,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         buf = hdr[(events_start + 1):(events_end - 2)]
         buf = split.(buf, '\t')
         events = zeros(Float64, length(buf), length(buf[1]))
-        [events[idx, :] in parse.(Float64, buf[idx]) for idx in eachindex(buf)]
+        [events[idx, :] = parse.(Float64, buf[idx]) for idx in eachindex(buf)]
         stim_onset = Int.(events[:, 3])
         stim_id = string.(Int.(events[:, 2]))
     elseif isfile(splitext(file_name)[1] * ".evt")
         buf = readlines(splitext(file_name)[1] * ".evt")
         buf = split.(buf, '\t')
         events = zeros(Int64, length(buf), length(buf[1]))
-        [events[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
+        [events[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
         # what are those 0s and 1s in events[] ???
         stim_onset = events[:, 1]
         stim_id = String[]
@@ -243,7 +243,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     buf = readlines(splitext(file_name)[1] * ".dat")
     buf_r = length(parse.(Float64, split(buf[1], ' ')))
     data = zeros(buf_r, length(buf))
-    [data[:, idx] in parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
+    [data[:, idx] = parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
 
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
@@ -258,14 +258,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     opt_labels = string.(vcat(src_labels, det_labels))
 
     clabels = repeat([""], ch_n)
-    [
-        clabels[idx] in
-        src_labels[opt_pairs[idx, :][1]] *
-        "_" *
-        det_labels[opt_pairs[idx, :][2]] *
-        " " *
-        string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
-    ]
+    [clabels[idx] = src_labels[opt_pairs[idx, :][1]] * "_" * det_labels[opt_pairs[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n]
     clabels = replace.(clabels, ".0"=>"")
 
     # probes["probeInfo"]["probes"]["coords_c2"]
@@ -331,7 +324,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(;
+    s = _create_subject(
         id = string(subject_id[1]),
         first_name = string(subject[1]),
         middle_name = "",
@@ -341,7 +334,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         weight = -1,
         height = -1,
     )
-    r = _create_recording_nirs(;
+    r = _create_recording_nirs(
         data_type = "nirs",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -363,10 +356,9 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         sampling_rate = sampling_rate,
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(; name = string(study_type1), notes = string(study_type2), design = string(study_type3))
+    e = _create_experiment(name = string(study_type1), notes = string(study_type2), design = string(study_type3))
 
-    hdr = _create_header(s, r, e)
-
+    hdr = _create_header(subject = s, recording = r, experiment = e)
 
     history = String[]
 

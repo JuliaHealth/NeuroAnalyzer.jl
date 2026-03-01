@@ -36,7 +36,7 @@ function tkeo(s::AbstractVector, t::AbstractVector = collect(1:length(s)); metho
         d2 = derivative(d1)
         tk = @. d1 - s * d2
     else
-        tk = env_up(s, t; d = 8) .^ 2
+        tk = env_up(s, t, d = 8) .^ 2
     end
 
     return tk
@@ -98,7 +98,7 @@ function tkeo(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol = :pow
 )::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method = method)
 
     return tk

@@ -35,7 +35,7 @@ function _serial_open(
     end
     sp = nothing
     try
-        sp = LibSerialPort.open(port_name, baudrate; mode = m)
+        sp = LibSerialPort.open(port_name, baudrate, mode = m)
         sleep(1)
     catch
         error("Serial port $port_name cannot be opened.")
@@ -84,7 +84,7 @@ function _serial_recorder(
 
     sp = nothing
     try
-        sp = LibSerialPort.open(port_name, baudrate; mode = m)
+        sp = LibSerialPort.open(port_name, baudrate, mode = m)
         sleep(1)
     catch
         error("Serial port $port_name cannot be opened.")
@@ -129,7 +129,7 @@ function _serial_recorder(
     # calculate sampling rate
     sr = round(Int64, 1 / (tp[end] - tp[end - 1]))
     _info("Sampling rate: $sr Hz")
-    tp = round.(tp; digits = 4)
+    tp = round.(tp, digits = 4)
 
     # create data frame
     names = String[]

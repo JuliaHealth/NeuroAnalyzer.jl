@@ -56,10 +56,10 @@ function acov(
             end
         end
     elseif method === :stat
-        ac = StatsBase.autocov(s, 0:l; demean = demean)
+        ac = StatsBase.autocov(s, 0:l, demean = demean)
     end
 
-    ac = round.(ac; digits = 3)
+    ac = round.(ac, digits = 3)
     ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
@@ -190,11 +190,11 @@ function acov(
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     if datatype(obj) == "erp"
         ac = @views acov(obj.data[ch, :, 2:end], l = l, demean = demean, biased = biased, method = method)
-        ac = cat(mean(ac; dims = 3), ac; dims = 3)
+        ac = cat(mean(ac, dims = 3), ac, dims = 3)
     else
         ac = @views acov(obj.data[ch, :, :], l = l, demean = demean, biased = biased, method = method)
     end

@@ -51,7 +51,7 @@ function standardize(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 )::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
     push!(obj_new.history, "standardize(OBJ)")

@@ -156,7 +156,7 @@ function detrend(
     f::Float64 = 1.0,
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = detrend(obj.data[ch, :, :]; type = type, offset = offset, order = order, f = f)

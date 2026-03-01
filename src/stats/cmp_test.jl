@@ -134,7 +134,7 @@ function cmp_test(
         perm_diff = zeros(nperm)
 
         # initialize progress bar
-        progbar = Progress(nperm; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+        progbar = Progress(nperm, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
         @inbounds for idx in 1:nperm
             f_idx = randperm(n1 + n2)

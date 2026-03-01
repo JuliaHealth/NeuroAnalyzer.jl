@@ -54,7 +54,7 @@ function summary(
     q3 = quantile!(x_tmp, 0.75)
     mo = mode(x_tmp)
 
-    make_table(;
+    make_table(
         header = ["" g],
         data = [
             "n" n;
@@ -127,7 +127,7 @@ function summary(x::AbstractMatrix; g::Vector{String}, d::Int64 = 3)::DataFrame
         push!(df, [g[idx], n, ms, m, v, s, min, q1, me, q3, max, mo])
     end
 
-    make_table(;
+    make_table(
         header = ["group" reshape(g[:, :], 1, :)],
         data = [
             "n" reshape(df[:, :n], 1, :);
@@ -200,7 +200,7 @@ function summary(x::AbstractArray...; g::Vector{String}, d::Int64 = 3)::DataFram
         push!(df, [g[idx], n, ms, m, v, s, min, q1, me, q3, max, mo])
     end
 
-    make_table(;
+    make_table(
         header = ["group" reshape(g[:, :], 1, :)],
         data = [
             "n" reshape(df[:, :n], 1, :);

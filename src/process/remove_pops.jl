@@ -237,7 +237,7 @@ function remove_pops(
 
     @assert nepochs(obj) == 1 "pop() must be applied to continuous object."
 
-    ch = get_channel(obj; ch = ch)
+    ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
 
     s = @views obj_new.data[ch, :, :]

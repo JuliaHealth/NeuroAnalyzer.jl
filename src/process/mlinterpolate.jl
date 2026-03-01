@@ -26,7 +26,7 @@ function mlinterpolate_channel(
     model::T,
 )::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
 
-    channels = get_channel(obj; type = datatype(obj))
+    channels = get_channel(obj, type = datatype(obj))
     @assert length(channels) > 1 "signal must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
     @assert nepochs(obj) > 1 "Training the model requires the signal to have > 1 epoch."
@@ -35,8 +35,8 @@ function mlinterpolate_channel(
     @assert !(ep in ep_ref) "ep must not be in ep_rep."
 
     ch_ref = setdiff(channels, ch)
-    signal_ref = _make_epochs(obj.data[get_channel(obj; ch = channels), :, ep_ref]; ep_n = 1)[:, :]
-    ch = get_channel(obj; ch = ch)[1]
+    signal_ref = _make_epochs(obj.data[get_channel(obj, ch = channels), :, ep_ref]; ep_n = 1)[:, :]
+    ch = get_channel(obj, ch = ch)[1]
 
     # train
     y = signal_ref[ch, :, 1]

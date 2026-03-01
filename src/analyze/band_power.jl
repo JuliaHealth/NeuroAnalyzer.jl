@@ -56,7 +56,7 @@ function band_power(
     dx = pf[2] - pf[1]
 
     # integrate
-    bp = simpson(pw[frq_idx[1]:frq_idx[2]], pf[frq_idx[1]:frq_idx[2]]; dx = dx)
+    bp = simpson(pw[frq_idx[1]:frq_idx[2]], pf[frq_idx[1]:frq_idx[2]], dx = dx)
 
     return bp
 
@@ -170,7 +170,7 @@ function band_power(
     gw::Real = 5,
 )::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     _log_off()
     bp = @views band_power(

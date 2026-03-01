@@ -24,8 +24,8 @@ function lrinterpolate_channel(
     ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
 )::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj; ch = ch)[1]
-    channels = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+    ch = get_channel(obj, ch = ch)[1]
+    channels = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
     @assert length(channels) > 1 "signal must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
     @assert nepochs(obj) > 1 "Training the model requires the signal to have > 1 epoch."
