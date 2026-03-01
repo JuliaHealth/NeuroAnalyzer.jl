@@ -19,7 +19,9 @@ Load Neuroscan continuous signal file and return `NeuroAnalyzer.NEURO` object.
 
 Based on loadcnt.m by Sean Fitzgibbon and Arnaud Delorme (https://cnl.salk.edu/~arno/cntload/index.html)
 """
-function import_cnt(file_name::String; data_format::Symbol = :i32, detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_cnt(
+    file_name::String; data_format::Symbol = :i32, detect_type::Bool = true
+)::NeuroAnalyzer.NEURO
 
     _check_var(data_format, [:i32, :i16], "data_format")
 
@@ -424,12 +426,22 @@ function import_cnt(file_name::String; data_format::Symbol = :i32, detect_type::
     end
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
-    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
-    time_pts = round.(collect(0:(1 / sampling_rate):(nums / sampling_rate))[1:(end - 1)]; digits = 4)
-    epoch_time = round.((collect(0:(1 / sampling_rate):(nums / sampling_rate)))[1:(end - 1)]; digits = 4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(nums / sampling_rate))[1:(end - 1)], digits = 4
+    )
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(nums / sampling_rate)))[1:(end - 1)], digits = 4
+    )
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     data_type = "eeg"
 

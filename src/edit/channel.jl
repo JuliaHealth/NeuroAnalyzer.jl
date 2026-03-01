@@ -61,7 +61,8 @@ function get_channel(
         else
             for type_idx in eachindex(type)
                 for ch_idx in eachindex(obj.header.recording[:channel_type])
-                    obj.header.recording[:channel_type][ch_idx] == type[type_idx] && push!(ch, l[ch_idx])
+                    obj.header.recording[:channel_type][ch_idx] == type[type_idx] &&
+                        push!(ch, l[ch_idx])
                 end
             end
         end
@@ -70,7 +71,8 @@ function get_channel(
         @assert wl in obj.header.recording[:wavelengths] "OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."
         wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
         for ch_idx in eachindex(obj.header.recording[:wavelength_index])
-            obj.header.recording[:wavelength_index][ch_idx] == wl_idx && push!(ch, l[ch_idx])
+            obj.header.recording[:wavelength_index][ch_idx] == wl_idx &&
+                push!(ch, l[ch_idx])
         end
     end
 
@@ -120,7 +122,9 @@ Set channel type.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::NeuroAnalyzer.NEURO
+function set_channel_type(
+    obj::NeuroAnalyzer.NEURO; ch::String, type::String
+)::NeuroAnalyzer.NEURO
 
     type = lowercase(type)
     _check_var(type, string.(channel_types), "type")
@@ -177,7 +181,9 @@ Rename channel.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function rename_channel(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::NeuroAnalyzer.NEURO
+function rename_channel(
+    obj::NeuroAnalyzer.NEURO; ch::String, name::String
+)::NeuroAnalyzer.NEURO
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -239,7 +245,9 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function edit_channel(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String)::NeuroAnalyzer.NEURO
+function edit_channel(
+    obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String
+)::NeuroAnalyzer.NEURO
 
     @assert value !== nothing "value cannot be empty."
     ch = get_channel(obj, ch = ch)[1]
@@ -270,7 +278,9 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
   - `Nothing`
 """
-function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String)::Nothing
+function edit_channel!(
+    obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String
+)::Nothing
 
     obj_new = edit_channel(obj, ch = ch, field = field, value = value)
     obj.header = obj_new.header
@@ -295,12 +305,15 @@ Replace channel.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)::NeuroAnalyzer.NEURO
+function replace_channel(
+    obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray
+)::NeuroAnalyzer.NEURO
 
     _chk3d(s)
     @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) &&
-        _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+    )
 
     ch = get_channel(obj, ch = ch)[1]
     obj_new = deepcopy(obj)
@@ -327,7 +340,9 @@ Replace channel.
 
   - `Nothing`
 """
-function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64, 3})::Nothing
+function replace_channel!(
+    obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64, 3}
+)::Nothing
 
     obj_new = replace_channel(obj, ch = ch, s = s)
     obj.header = obj_new.header
@@ -425,8 +440,9 @@ function add_channel(
         @assert type[idx] in channel_types "Unknown channel type $(type[idx])."
     end
 
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) &&
-        _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+    )
 
     obj_new = deepcopy(obj)
     if length(obj.data) > 0

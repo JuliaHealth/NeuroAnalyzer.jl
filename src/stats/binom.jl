@@ -77,7 +77,7 @@ function binom_test(
 
     pv = pvalue(BinomialTest(x, n, 0.5))
     if verbose
-        if round(pv; digits = 3) == 0.0
+        if round(pv, digits = 3) == 0.0
             println("Binomial test p value: <0.001")
         else
             println("Binomial test p value: $(round(pv, digits=3))")

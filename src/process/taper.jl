@@ -100,7 +100,7 @@ Taper the signal.
 """
 function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::Nothing
 
-    obj_new = taper(obj; ch = ch, t = t)
+    obj_new = taper(obj, ch = ch, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

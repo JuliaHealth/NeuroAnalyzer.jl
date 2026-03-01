@@ -42,7 +42,7 @@ Invert polarity.
 """
 function invert_polarity!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = invert_polarity(obj; ch = ch)
+    obj_new = invert_polarity(obj, ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

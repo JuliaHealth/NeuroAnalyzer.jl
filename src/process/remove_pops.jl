@@ -123,7 +123,7 @@ function remove_pops(
             # s_pop[s_pop_min:end] += ll2
 
             # s_pop = filter_mavg(s_pop, k=12)
-            s_pop = filter_mavg(s_pop; k = 4)
+            s_pop = filter_mavg(s_pop, k = 4)
 
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
@@ -172,7 +172,7 @@ function remove_pops(
 
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
-            s_pop = filter_mavg(s_pop; k = 4)
+            s_pop = filter_mavg(s_pop, k = 4)
 
             # s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
             # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
@@ -303,7 +303,7 @@ function remove_pops!(
     r::Int64 = sr(obj)÷2,
 )::Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}}
 
-    obj_new, pop_loc, l_seg, r_seg = remove_pops(obj; ch = ch, repair = true, window = window, r = r)
+    obj_new, pop_loc, l_seg, r_seg = remove_pops(obj, ch = ch, repair = true, window = window, r = r)
     if repair
         obj.data = obj_new.data
         obj.history = obj_new.history

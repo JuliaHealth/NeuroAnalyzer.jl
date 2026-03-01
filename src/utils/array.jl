@@ -69,10 +69,7 @@ Named tuple containing:
   - `bm::BitMatrix`: binarized mask of statistically significant positions
 """
 function perm_cmp(
-    a1::Array{<:Real, 3},
-    a2::Array{<:Real, 3};
-    p::Float64 = 0.05,
-    perm_n::Int64 = 1000,
+    a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64 = 0.05, perm_n::Int64 = 1000
 )::@NamedTuple{zmap::Matrix{Float64}, bm::BitMatrix}
 
     @assert size(a1) == size(a2) "Both arrays must have the same size"
@@ -89,7 +86,8 @@ function perm_cmp(
         rand_idx = sample(1:ep_n, ep_n, replace = false)
         rand_spec = @view spec_all[:, :, rand_idx]
         perm_maps[:, :, perm_idx] = @views dropdims(
-            mean(rand_spec[:, :, (ep_n ÷ 2 + 1):end], dims = 3) .- mean(rand_spec[:, :, 1:(ep_n ÷ 2)], dims = 3),
+            mean(rand_spec[:, :, (ep_n ÷ 2 + 1):end], dims = 3) .-
+            mean(rand_spec[:, :, 1:(ep_n ÷ 2)], dims = 3),
             dims = 3,
         )
     end
@@ -174,7 +172,9 @@ Reduce an array at indices of a vector being multiplications of a constant. Usef
   - `a_new::Array{eltype(a), ndims(a)}`
   - `f_new::Vector{eltype(f)}`
 """
-function areduce(a::AbstractArray, f::AbstractVector; n::Float64 = 0.5)::Tuple{AbstractArray, AbstractVector}
+function areduce(
+    a::AbstractArray, f::AbstractVector; n::Float64 = 0.5
+)::Tuple{AbstractArray, AbstractVector}
 
     @assert ndims(a) <= 3 "areduce() only works for 2- and 3-dimensional arrays."
     @assert size(a, 2) == length(f) "Length of both vectors must be equal."

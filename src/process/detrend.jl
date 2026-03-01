@@ -199,7 +199,7 @@ function detrend!(
     f::Float64 = 1.0,
 )::Nothing
 
-    obj_new = detrend(obj; ch = ch, type = type, offset = offset, order = order, f = f)
+    obj_new = detrend(obj, ch = ch, type = type, offset = offset, order = order, f = f)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

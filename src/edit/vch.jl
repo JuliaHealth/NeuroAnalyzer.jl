@@ -23,8 +23,11 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
     Threads.@threads for ep_idx in 1:ep_n
         f_tmp = f
         @inbounds for ch_idx in eachindex(clabels)
-            occursin(clabels[ch_idx], f) &&
-                (f_tmp = replace(f_tmp, clabels[ch_idx] => "$(obj.data[ch_idx, :, ep_idx])"))
+            occursin(clabels[ch_idx], f) && (
+                f_tmp = replace(
+                    f_tmp, clabels[ch_idx] => "$(obj.data[ch_idx, :, ep_idx])"
+                )
+            )
         end
         try
             @inbounds vc[1, :, ep_idx] = eval(Meta.parse("@. " * f_tmp))

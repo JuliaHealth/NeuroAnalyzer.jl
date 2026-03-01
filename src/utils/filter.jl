@@ -133,7 +133,9 @@ function iir_order(;
     fs::Int64,
 )::Int64
 
-    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype")
+    _check_var(
+        fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype"
+    )
     _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
 
     nqf = fs / 2
@@ -224,14 +226,14 @@ function iir_order(
 )::Int64
 
     n = iir_order(;
-                fprototype = fprototype,
-                ftype = ftype,
-                cutoff = cutoff,
-                bw = bw,
-                rp = rp,
-                rs = rs,
-                fs = sr(obj),
-            )
+        fprototype = fprototype,
+        ftype = ftype,
+        cutoff = cutoff,
+        bw = bw,
+        rp = rp,
+        rs = rs,
+        fs = sr(obj),
+    )
 
     return n
 

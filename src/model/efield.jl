@@ -37,8 +37,8 @@ function efield2d(
         _in(qy[idx], (1, n))
     end
 
-    x = round.(collect(range(-1, 1, m)); digits = 3)
-    y = round.(collect(range(-1, 1, n)); digits = 3)
+    x = round.(collect(range(-1, 1, m)), digits = 3)
+    y = round.(collect(range(-1, 1, n)), digits = 3)
 
     #strength
     ex = zeros(n, m)

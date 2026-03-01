@@ -262,7 +262,7 @@ function ica_reconstruct!(
     keep::Bool = false,
 )::Nothing
 
-    obj_new = ica_reconstruct(obj; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
+    obj_new = ica_reconstruct(obj, ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

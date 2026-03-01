@@ -111,7 +111,7 @@ function filter_sg!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 6, window::Int64 = 11
 )::Nothing
 
-    obj_new = filter_sg(obj; ch = ch, order = order, window = window)
+    obj_new = filter_sg(obj, ch = ch, order = order, window = window)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

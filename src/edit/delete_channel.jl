@@ -19,7 +19,9 @@ Delete channel(s).
   - `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_channel(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, del_opt::Bool = false
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    del_opt::Bool = false,
 )::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
@@ -29,8 +31,9 @@ function delete_channel(
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
     obj_new = deepcopy(obj)
 
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) &&
-        _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+    )
 
     # update headers
     for idx in ch
@@ -49,9 +52,11 @@ function delete_channel(
             deleteat!(obj_new.header.recording[:prefiltering], idx)
             deleteat!(obj_new.header.recording[:coil_type], idx)
             idx_tmp = findfirst(isequal(idx), obj_new.header.recording[:gradiometers])
-            !isnothing(idx_tmp) && deleteat!(obj_new.header.recording[:gradiometers], idx_tmp)
+            !isnothing(idx_tmp) &&
+                deleteat!(obj_new.header.recording[:gradiometers], idx_tmp)
             idx_tmp = findfirst(isequal(idx), obj_new.header.recording[:magnetometers])
-            !isnothing(idx_tmp) && deleteat!(obj_new.header.recording[:magnetometers], idx_tmp)
+            !isnothing(idx_tmp) &&
+                deleteat!(obj_new.header.recording[:magnetometers], idx_tmp)
         elseif obj_new.header.recording[:data_type] == "nirs"
             if !del_opt && idx in 1:length(obj_new.header.recording[:optode_labels])
                 _warn("NIRS signal channels must be deleted using delete_optode().")
@@ -69,7 +74,9 @@ function delete_channel(
         end
     end
 
-    obj_new.header.recording[:channel_order] = _sort_channels(obj_new.header.recording[:channel_type])
+    obj_new.header.recording[:channel_order] = _sort_channels(
+        obj_new.header.recording[:channel_type]
+    )
 
     # remove channel
     obj_new.data = obj_new.data[setdiff(_c(ch_n), ch), :, :]
@@ -96,7 +103,9 @@ Delete channels.
   - `Nothing`
 """
 function delete_channel!(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, del_opt::Bool = false
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    del_opt::Bool = false,
 )::Nothing
 
     length(get_channel(obj, ch = ch)) == 0 && (return nothing)
@@ -124,7 +133,9 @@ Keep channels.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
+function keep_channel(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+)::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
     length(get_channel(obj, ch = ch)) == ch_n && (return obj)
@@ -151,7 +162,9 @@ Keep channels.
 
   - `Nothing`
 """
-function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
+function keep_channel!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+)::Nothing
 
     length(get_channel(obj, ch = ch)) == nchannels(obj) && (return nothing)
     obj_new = keep_channel(obj, ch = ch)

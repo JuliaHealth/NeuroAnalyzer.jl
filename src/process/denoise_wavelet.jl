@@ -172,7 +172,7 @@ function denoise_cwd!(
     type::Symbol = :nd,
 )::Nothing where {T <: CWT}
 
-    obj_new = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, type = type)
+    obj_new = denoise_cwd(obj, ch = ch, wt = wt, nf = nf, type = type)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
@@ -332,7 +332,7 @@ function denoise_dwd!(
     smooth::Symbol = :regular,
 )::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
-    obj_new = denoise_dwd(obj; ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
+    obj_new = denoise_dwd(obj, ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

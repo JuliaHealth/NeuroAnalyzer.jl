@@ -60,6 +60,6 @@ function sdi(x::AbstractVector, y::AbstractVector)::Float64
     b = length(y)
     c = float(length(intersect(x, y)))
 
-    return round((2 * c) / (a + b); digits = 2)
+    return round((2 * c) / (a + b), digits = 2)
 
 end

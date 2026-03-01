@@ -463,7 +463,7 @@ function plot_cont(
 
                         # get channel info
                         if ax1_x < ax1.limits[][1][1]
-                            channel_info(obj; ch = clabels[round(Int64, ax1_y)])
+                            channel_info(obj, ch = clabels[round(Int64, ax1_y)])
                         end
 
                         # place marker
@@ -471,7 +471,7 @@ function plot_cont(
                             ax1_x <= ax1.limits[][1][2] &&
                             ax1_y >= ax1.limits[][2][1] &&
                             ax1_y <= ax1.limits[][2][2]
-                            vmarker_pos = snap ? round(ax1_x; digits = 1) : ax1_x
+                            vmarker_pos = snap ? round(ax1_x, digits = 1) : ax1_x
                             if isnan(vmarker1[])
                                 vmarker1[] = vmarker_pos
                             else

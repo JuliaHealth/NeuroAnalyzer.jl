@@ -51,18 +51,27 @@ function import_recording(
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
-    splitext(file_name)[2] == ".edf" && return import_edf(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".bdf" && return import_bdf(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".gdf" && return import_gdf(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".vhdr" && return import_bv(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".ahdr" && return import_bv(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".csv" && return import_csv(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".edf" &&
+        return import_edf(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".bdf" &&
+        return import_bdf(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".gdf" &&
+        return import_gdf(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".vhdr" &&
+        return import_bv(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".ahdr" &&
+        return import_bv(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".csv" &&
+        return import_csv(file_name, detect_type = detect_type)
     (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") &&
         return import_csv(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".npy" && return import_npy(file_name, sampling_rate = sampling_rate)
+    splitext(file_name)[2] == ".set" &&
+        return import_set(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".npy" &&
+        return import_npy(file_name, sampling_rate = sampling_rate)
     splitext(file_name)[2] == ".xdf" && return import_xdf(file_name)
-    splitext(file_name)[2] == ".nwb" && return import_nwb(file_name, detect_type = detect_type)
+    splitext(file_name)[2] == ".nwb" &&
+        return import_nwb(file_name, detect_type = detect_type)
     splitext(file_name)[2] == ".ncs" && return import_ncs(file_name)
     splitext(file_name)[2] == ".fif" && return import_fiff(file_name)
     splitext(file_name)[2] == ".fiff" && return import_fiff(file_name)

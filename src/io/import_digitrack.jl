@@ -14,7 +14,9 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 
   - `obj::NeuroAnalyzer.NEURO`
 """
-function import_digitrack(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_digitrack(
+    file_name::String; detect_type::Bool = true
+)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -82,14 +84,24 @@ function import_digitrack(file_name::String; detect_type::Bool = true)::NeuroAna
         data[:, idx, 1] = parse.(Float64, signals)
     end
 
-    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits = 4,
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
+    )
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     data_type = "eeg"
 

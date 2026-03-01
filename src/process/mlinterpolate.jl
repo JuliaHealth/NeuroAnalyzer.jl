@@ -90,7 +90,7 @@ function mlinterpolate_channel!(
     model::T,
 )::Nothing where {T <: MLJ.Model}
 
-    obj_new = mlinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref, model = model)
+    obj_new = mlinterpolate_channel(obj, ch = ch, ep = ep, ep_ref = ep_ref, model = model)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

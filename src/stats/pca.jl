@@ -215,7 +215,7 @@ function screeplot(
     end
     ax2 = GLMakie.Axis(p[2, 1]; title = "", xticks = (1:n, xl), xlabel = "", ylabel = "Eigenvalues")
     GLMakie.xlims!(ax2, (0.5, n + 0.5))
-    GLMakie.ylims!(ax2, (0, ceil(maximum(pca.pc_model.prinvars); digits = 0)))
+    GLMakie.ylims!(ax2, (0, ceil(maximum(pca.pc_model.prinvars), digits = 0)))
     GLMakie.lines!(ax2, 1:n, pca.pc_model.prinvars; color = :black)
     GLMakie.scatter!(ax2, 1:n, pca.pc_model.prinvars; markersize = 10, color = :black)
     GLMakie.hlines!(ax2, 1; linestyle = :dash, color = :black)

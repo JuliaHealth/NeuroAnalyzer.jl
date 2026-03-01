@@ -52,7 +52,8 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     AmpHiCut = 0
     for idx in eachindex(header)
         header[idx][1] == "ADBitVolts" && (ADBitVolts = parse(Float64, header[idx][2]))
-        header[idx][1] == "SamplingFrequency" && (sampling_rate = parse(Int64, header[idx][2]))
+        header[idx][1] == "SamplingFrequency" &&
+            (sampling_rate = parse(Int64, header[idx][2]))
         header[idx][1] == "ADChannel" && (ADChannel = parse(Int64, header[idx][2]))
         header[idx][1] == "ADGain" && (ADGain = parse(Float64, header[idx][2]))
         header[idx][1] == "AmpGain" && (AmpGain = parse(Float64, header[idx][2]))
@@ -87,7 +88,8 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         dwNumValidSamples[idx] = _fread(fid, 1, :ui32)
         buf = UInt8[]
         readbytes!(fid, buf, dwNumValidSamples[idx] * 2)
-        data[1, (1 + (512 * (idx - 1))):(idx * 512), 1] = map(ltoh, reinterpret(Int16, buf)) .* gain
+        data[1, (1 + (512 * (idx - 1))):(idx * 512), 1] =
+            map(ltoh, reinterpret(Int16, buf)) .* gain
     end
 
     ch_n = length(unique(dwChannelNumber))
@@ -99,14 +101,24 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     ch_type = repeat(["ieeg"], ch_n)
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
-    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 6
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits = 6,
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 6)
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 6,
+    )
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     data_type = "ieeg"
 

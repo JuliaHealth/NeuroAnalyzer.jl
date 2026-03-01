@@ -15,7 +15,9 @@ Delete optodes) and channels associated with removed optodes.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange})::NeuroAnalyzer.NEURO
+function delete_optode(
+    obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
+)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "nirs")
 
@@ -31,9 +33,14 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
     for idx in opt
         if optode_labels(obj_new)[idx] in obj_new.locs[!, :label]
             if length(_find_bylabel(obj_new.locs, optode_labels(obj)[idx])) == 1
-                deleteat!(obj_new.locs, _find_bylabel(obj_new.locs, optode_labels(obj)[idx]))
+                deleteat!(
+                    obj_new.locs, _find_bylabel(obj_new.locs, optode_labels(obj)[idx])
+                )
             else
-                deleteat!(obj_new.locs, sort(_find_bylabel(obj_new.locs, optode_labels(obj)[idx])))
+                deleteat!(
+                    obj_new.locs,
+                    sort(_find_bylabel(obj_new.locs, optode_labels(obj)[idx])),
+                )
             end
         end
     end
@@ -46,14 +53,20 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
         if ol in source_labels(obj_new)
             chp = obj_new.header.recording[:optode_pairs][:, 1]
             chs_to_delete = vcat(chs_to_delete, findall(isequal(idx), chp))
-            deleteat!(obj_new.header.recording[:src_labels], obj_new.header.recording[:src_labels] .== ol)
+            deleteat!(
+                obj_new.header.recording[:src_labels],
+                obj_new.header.recording[:src_labels] .== ol,
+            )
             chp[chp .== idx] .= 0
             chp[chp .> idx] .-= 1
             obj_new.header.recording[:optode_pairs][:, 1] = chp
         elseif ol in detector_labels(obj_new)
             chp = obj_new.header.recording[:optode_pairs][:, 2]
             chs_to_delete = vcat(chs_to_delete, findall(isequal(idx), chp))
-            deleteat!(obj_new.header.recording[:det_labels], obj_new.header.recording[:det_labels] .== ol)
+            deleteat!(
+                obj_new.header.recording[:det_labels],
+                obj_new.header.recording[:det_labels] .== ol,
+            )
             chp[chp .== idx] .= 0
             chp[chp .> idx] .-= 1
             obj_new.header.recording[:optode_pairs][:, 2] = chp
@@ -84,7 +97,9 @@ Delete optopode(s).
 
   - `Nothing`
 """
-function delete_optode!(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
+function delete_optode!(
+    obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
+)::Nothing
 
     obj_new = delete_optode(obj, opt = opt)
     obj.header = obj_new.header

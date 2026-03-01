@@ -87,7 +87,7 @@ Perform convolution bandpass filtering.
 """
 function cbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real)::Nothing
 
-    obj_new = cbp(obj; ch = ch, pad = pad, frq = frq)
+    obj_new = cbp(obj, ch = ch, pad = pad, frq = frq)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

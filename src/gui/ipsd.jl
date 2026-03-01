@@ -32,7 +32,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_psd(obj; ch = clabels[ch])
+    p = NeuroAnalyzer.plot_psd(obj, ch = clabels[ch])
 
     function _activate(app)
 
@@ -714,7 +714,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 
     k = nothing
 
-    p = NeuroAnalyzer.plot_psd(obj; ch = clabels[ch], ep = 1)
+    p = NeuroAnalyzer.plot_psd(obj, ch = clabels[ch], ep = 1)
 
     function _activate(app)
 

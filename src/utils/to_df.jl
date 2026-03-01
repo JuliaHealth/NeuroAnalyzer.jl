@@ -15,7 +15,9 @@ Export object data as DataFrames.
 """
 function to_df(obj::NeuroAnalyzer.NEURO)::DataFrame
 
-    df = DataFrame(hcat(obj.time_pts, reshape(obj.data, nchannels(obj), :, 1)[:, :]'), :auto)
+    df = DataFrame(
+        hcat(obj.time_pts, reshape(obj.data, nchannels(obj), :, 1)[:, :]'), :auto
+    )
     DataFrames.rename!(df, vcat(:time, Symbol.(labels(obj))))
 
     return df

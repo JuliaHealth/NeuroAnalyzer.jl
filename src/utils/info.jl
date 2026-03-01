@@ -358,7 +358,9 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
             "                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])",
         )
     else
-        println("                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+        println(
+            "                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])",
+        )
     end
     println("              Recording: $(obj.header.recording[:recording])")
     println("        Recording notes: $(obj.header.recording[:recording_notes])")
@@ -489,7 +491,9 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
             "                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])",
         )
     else
-        println("                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+        println(
+            "                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])",
+        )
     end
     println("              Recording: $(obj.header.recording[:recording])")
     println("        Recording notes: $(obj.header.recording[:recording_notes])")
@@ -592,7 +596,13 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     println()
     println("Channels:")
     if obj.header.recording[:data_type] != "nirs"
-        println(rpad(" ch", 8) * rpad("label", 16) * rpad("type", 12) * rpad("unit", 8) * rpad("bad", 8))
+        println(
+            rpad(" ch", 8) *
+            rpad("label", 16) *
+            rpad("type", 12) *
+            rpad("unit", 8) *
+            rpad("bad", 8),
+        )
         println(
             " " *
             repeat("-", 6) *
@@ -615,7 +625,13 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
             )
         end
     else
-        println(rpad(" ch", 8) * rpad("label", 16) * rpad("type", 12) * rpad("unit", 8) * rpad("wavelength", 8))
+        println(
+            rpad(" ch", 8) *
+            rpad("label", 16) *
+            rpad("type", 12) *
+            rpad("unit", 8) *
+            rpad("wavelength", 8),
+        )
         println(
             " " *
             repeat("-", 6) *
@@ -629,13 +645,19 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
             repeat("-", 12),
         )
         for idx in eachindex(obj.header.recording[:label])
-            if !(obj.header.recording[:channel_type][idx] in ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"])
+            if !(
+                obj.header.recording[:channel_type][idx] in
+                ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]
+            )
                 println(
                     rpad(" $idx", 8) *
                     rpad("$(obj.header.recording[:label][idx])", 16) *
                     rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
                     rpad("$(obj.header.recording[:unit][idx])", 8) *
-                    rpad("$(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]])", 8),
+                    rpad(
+                        "$(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]])",
+                        8,
+                    ),
                 )
             else
                 println(
@@ -648,7 +670,9 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     end
 
     if df
-        df = DataFrame(hcat(obj.time_pts, reshape(obj.data, nchannels(obj), :, 1)[:, :]'), :auto)
+        df = DataFrame(
+            hcat(obj.time_pts, reshape(obj.data, nchannels(obj), :, 1)[:, :]'), :auto
+        )
         DataFrames.rename!(df, vcat(:time, Symbol.(labels(obj))))
         return df
     else
@@ -672,7 +696,9 @@ Show channel info.
 
   - `channel_info::Union{Nothing, String}`
 """
-function channel_info(obj::NeuroAnalyzer.NEURO; ch::String, pr::Bool = true)::Union{Nothing, String}
+function channel_info(
+    obj::NeuroAnalyzer.NEURO; ch::String, pr::Bool = true
+)::Union{Nothing, String}
 
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 && (ch = ch[1])
@@ -720,7 +746,9 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
   - `ch::Vector{String}`: channel names
 """
-function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})::Vector{String}
+function channel_pick(
+    obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
+)::Vector{String}
 
     _check_datatype(obj, "eeg")
 
@@ -731,7 +759,22 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         for idx in p
             _check_var(
                 idx,
-                [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o],
+                [
+                    :central,
+                    :c,
+                    :left,
+                    :l,
+                    :right,
+                    :r,
+                    :frontal,
+                    :f,
+                    :temporal,
+                    :t,
+                    :parietal,
+                    :p,
+                    :occipital,
+                    :o,
+                ],
                 "p",
             )
         end
@@ -793,7 +836,24 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
     else
 
         _check_var(
-            p, [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p"
+            p,
+            [
+                :central,
+                :c,
+                :left,
+                :l,
+                :right,
+                :r,
+                :frontal,
+                :f,
+                :temporal,
+                :t,
+                :parietal,
+                :p,
+                :occipital,
+                :o,
+            ],
+            "p",
         )
 
         c = Vector{Char}()
@@ -858,7 +918,8 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{Stri
     cluster === :c2 && (cluster = ["Pz", "P1", "P2", "CP1", "CP2", "CPz"])
     cluster === :P1 && (cluster = ["P3", "P5", "P7", "P9", "CP3", "CP5", "TP7", "TP9"])
     cluster === :P2 && (cluster = ["P4", "P6", "P8", "P10", "CP4", "CP6", "TP8", "TP10"])
-    cluster === :o && (cluster = ["O1", "O2", "POz", "PO3", "PO4", "PO7", "PO8", "PO9", "PO10"])
+    cluster === :o &&
+        (cluster = ["O1", "O2", "POz", "PO3", "PO4", "PO7", "PO8", "PO9", "PO10"])
 
     for idx in cluster
         idx in clabels && push!(ch, idx)
@@ -924,7 +985,7 @@ function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)::Tuple{Float64, Float6
         return nothing
     end
 
-    band === :total && (bf = (0.1, round(sr(obj) / 2; digits = 1)))
+    band === :total && (bf = (0.1, round(sr(obj) / 2, digits = 1)))
     band === :delta && (bf = (0.1, 4.0))
     band === :theta && (bf = (4.0, 8.0))
     band === :alpha && (bf = (8.0, 13.0))
@@ -1012,7 +1073,7 @@ function band_frq(fs::Int64; band::Symbol)::Tuple{Float64, Float64}
         return nothing
     end
 
-    band === :total && (bf = (0.1, round(fs / 2; digits = 1)))
+    band === :total && (bf = (0.1, round(fs / 2, digits = 1)))
     band === :delta && (bf = (0.1, 4.0))
     band === :theta && (bf = (4.0, 8.0))
     band === :alpha && (bf = (8.0, 13.0))

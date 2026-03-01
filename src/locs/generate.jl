@@ -512,9 +512,9 @@ function locs_generate(locs::DataFrame)::DataFrame
     y[lab .== "heog"] .= 0.77
     z[lab .== "heog"] .= -0.04
 
-    x = round.(x; digits = 3)
-    y = round.(y; digits = 3)
-    z = round.(z; digits = 3)
+    x = round.(x, digits = 3)
+    y = round.(y, digits = 3)
+    z = round.(z, digits = 3)
 
     locs_new[:, :loc_x] = x
     locs_new[:, :loc_y] = y
@@ -524,7 +524,8 @@ function locs_generate(locs::DataFrame)::DataFrame
     locs_sph2pol!(locs_new)
 
     no_match = setdiff(lab, e_labels)
-    length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be generated.")
+    length(no_match) > 0 &&
+        _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be generated.")
 
     return locs_new
 

@@ -17,7 +17,9 @@ Remove epochs.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::NeuroAnalyzer.NEURO
+function delete_epoch(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
+)::NeuroAnalyzer.NEURO
 
     @assert nepochs(obj) > 1 "You cannot delete the last epoch."
     typeof(ep) <: AbstractRange && (ep = collect(ep))
@@ -60,7 +62,9 @@ Remove epochs.
 
   - `Nothing`
 """
-function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
+function delete_epoch!(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
+)::Nothing
 
     obj_new = delete_epoch(obj, ep = ep)
     obj.header = obj_new.header
@@ -87,7 +91,9 @@ Keep epochs.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function keep_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::NeuroAnalyzer.NEURO
+function keep_epoch(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
+)::NeuroAnalyzer.NEURO
 
     @assert nepochs(obj) > 1 "OBJ contains only one epoch."
     typeof(ep) <: AbstractRange && (ep = collect(ep))
@@ -120,7 +126,9 @@ Keep epochs.
 
   - `Nothing`
 """
-function keep_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
+function keep_epoch!(
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
+)::Nothing
 
     obj_new = keep_epoch(obj, ep = ep)
     obj.header = obj_new.header

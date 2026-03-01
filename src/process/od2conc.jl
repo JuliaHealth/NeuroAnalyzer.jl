@@ -141,7 +141,7 @@ function od2conc!(
     ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
 )::Nothing
 
-    obj_new = od2conc(obj; ch = ch, ppf = ppf)
+    obj_new = od2conc(obj, ch = ch, ppf = ppf)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history

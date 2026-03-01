@@ -74,7 +74,9 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     shortbundles = split(hdr[startswith.(lowercase.(hdr), "shortbundles=")][1], '=')[2]
     shortbundles = parse(Int64, shortbundles)
     if any(startswith.(lowercase.(hdr), "shortdetindex="))
-        shortdetindex = split(hdr[startswith.(lowercase.(hdr), "shortdetindex=")][1], '=')[2]
+        shortdetindex = split(
+            hdr[startswith.(lowercase.(hdr), "shortdetindex=")][1], '='
+        )[2]
         shortdetindex = parse.(Int64, split(shortdetindex, '\t'))
     end
     any(startswith.(lowercase.(hdr), "steps=")) &&
@@ -93,8 +95,9 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     any(startswith.(lowercase.(hdr), "anins=")) &&
         (anins = split(hdr[startswith.(lowercase.(hdr), "anins=")][1], '=')[2])
     anins = parse(Int64, anins)
-    any(startswith.(lowercase.(hdr), "samplingrate=")) &&
-        (sampling_rate = split(hdr[startswith.(lowercase.(hdr), "samplingrate=")][1], '=')[2])
+    any(startswith.(lowercase.(hdr), "samplingrate=")) && (
+        sampling_rate = split(hdr[startswith.(lowercase.(hdr), "samplingrate=")][1], '=')[2]
+    )
     sampling_rate = round(Int64, parse(Float64, sampling_rate))
     if any(startswith.(lowercase.(hdr), "mod amp="))
         modamp = split(hdr[startswith.(lowercase.(hdr), "mod amp=")][1], '=')[2]
@@ -124,11 +127,19 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         inf = replace.(inf, "=\""=>"=", "\""=>"")
         subject = split(inf[findfirst(startswith.(lowercase.(inf), "name="))], "=")[2]
         subject = split(subject, "\\0")
-        age = parse(Float64, split(inf[findfirst(startswith.(lowercase.(inf), "age="))], "=")[2])
+        age = parse(
+            Float64, split(inf[findfirst(startswith.(lowercase.(inf), "age="))], "=")[2]
+        )
         gender = split(inf[findfirst(startswith.(lowercase.(inf), "gender="))], "=")[2]
-        study_type1 = split(inf[findfirst(startswith.(lowercase.(inf), "study type="))], "=")[2]
-        study_type2 = split(inf[findfirst(startswith.(lowercase.(inf), "experiment history="))], "=")[2]
-        study_type3 = split(inf[findfirst(startswith.(lowercase.(inf), "additional notes="))], "=")[2]
+        study_type1 = split(
+            inf[findfirst(startswith.(lowercase.(inf), "study type="))], "="
+        )[2]
+        study_type2 = split(
+            inf[findfirst(startswith.(lowercase.(inf), "experiment history="))], "="
+        )[2]
+        study_type3 = split(
+            inf[findfirst(startswith.(lowercase.(inf), "additional notes="))], "="
+        )[2]
     end
 
     # parse gains if .set is not available
@@ -136,12 +147,12 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         gains_start = findfirst(startswith.(hdr, "Gains="))
         buf = hdr[(gains_start + 1):(gains_start + sources)]
         gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] = parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
+        [gains[idx, :] in parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
     else
         buf = readlines(splitext(file_name)[1] * ".set")
         buf = split.(buf, ' ')
         gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
+        [gains[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
     end
 
     # parse opt_pairs
@@ -150,9 +161,10 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     ch_n = length(pairs)
     opt_pairs = zeros(Int64, ch_n, 2)
     [
-        opt_pairs[idx, :] in
-        [parse(Int64, split(pairs[idx], "-")[1]), parse(Int64, split(split(pairs[idx], "-")[2], ":")[1])] for
-        idx in 1:ch_n
+        opt_pairs[idx, :] in [
+            parse(Int64, split(pairs[idx], "-")[1]),
+            parse(Int64, split(split(pairs[idx], "-")[2], ":")[1]),
+        ] for idx in 1:ch_n
     ]
     ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
     masks = hdr[(ch_mask_start + 1):(ch_mask_start + sources)]
@@ -178,10 +190,17 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     chd = replace(lowercase.(chd), "chandis="=>"")
     chd = split.(chd, '\t')
     channel_distance = zeros(length(chd))
-    [channel_distance[idx] = parse(Float64, chd[idx]) for idx in eachindex(chd)]
+    [channel_distance[idx] in parse(Float64, chd[idx]) for idx in eachindex(chd)]
 
     # read raw light intensity channels (V)
-    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", header = false, stringtype = String, DataFrame))'[
+    nirs_int = Matrix(
+        CSV.read(
+            splitext(file_name)[1] * ".wl1",
+            header = false,
+            stringtype = String,
+            DataFrame,
+        ),
+    )'[
         ch_masks, :,
     ]
     wavelength_index = repeat([1], ch_n)
@@ -190,7 +209,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     for idx in 2:length(wavelengths)
         nirs_int = vcat(
             nirs_int,
-            Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", header = false, stringtype = String, DataFrame))'[
+            Matrix(
+                CSV.read(
+                    splitext(file_name)[1] * ".wl$idx",
+                    header = false,
+                    stringtype = String,
+                    DataFrame,
+                ),
+            )'[
                 ch_masks, :,
             ],
         )
@@ -201,8 +227,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     end
     ch_n = size(nirs_int, 1)
 
-    time_pts = round.(collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)]; digits = 4)
-    epoch_time = round.(collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)]; digits = 4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)];
+        digits = 4,
+    )
+    epoch_time = round.(
+        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)];
+        digits = 4,
+    )
 
     # parse events if .evt is not available
     stim_onset = nothing
@@ -213,22 +245,31 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         buf = hdr[(events_start + 1):(events_end - 2)]
         buf = split.(buf, '\t')
         events = zeros(Float64, length(buf), length(buf[1]))
-        [events[idx, :] = parse.(Float64, buf[idx]) for idx in eachindex(buf)]
+        [events[idx, :] in parse.(Float64, buf[idx]) for idx in eachindex(buf)]
         stim_onset = Int.(events[:, 3])
         stim_id = string.(Int.(events[:, 2]))
     elseif isfile(splitext(file_name)[1] * ".evt")
         buf = readlines(splitext(file_name)[1] * ".evt")
         buf = split.(buf, '\t')
         events = zeros(Int64, length(buf), length(buf[1]))
-        [events[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
+        [events[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
         # what are those 0s and 1s in events[] ???
         stim_onset = events[:, 1]
         stim_id = String[]
-        [push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for idx in axes(events, 1)]
+        [
+            push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for
+            idx in axes(events, 1)
+        ]
     end
 
     markers = if isnothing(stim_onset)
-        DataFrame(:id=>nothing, :start=>nothing, :length=>nothing, :value=>nothing, :channel=>nothing)
+        DataFrame(
+            :id=>nothing,
+            :start=>nothing,
+            :length=>nothing,
+            :value=>nothing,
+            :channel=>nothing,
+        )
     else
         DataFrame(
             :id=>stim_id,
@@ -243,7 +284,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     buf = readlines(splitext(file_name)[1] * ".dat")
     buf_r = length(parse.(Float64, split(buf[1], ' ')))
     data = zeros(buf_r, length(buf))
-    [data[:, idx] = parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
+    [data[:, idx] in parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
 
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
@@ -258,7 +299,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     opt_labels = string.(vcat(src_labels, det_labels))
 
     clabels = repeat([""], ch_n)
-    [clabels[idx] = src_labels[opt_pairs[idx, :][1]] * "_" * det_labels[opt_pairs[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n]
+    [
+        clabels[idx] in
+            src_labels[opt_pairs[idx, :][1]] *
+            "_" *
+            det_labels[opt_pairs[idx, :][2]] *
+            " " *
+            string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
+    ]
     clabels = replace.(clabels, ".0"=>"")
 
     # probes["probeInfo"]["probes"]["coords_c2"]
@@ -287,10 +335,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     pos3d = hcat(src_pos3d, detector_pos3d)
     if src_pos3d === nothing
         if src_pos2d === nothing
-            _warn("The data does not contain 3D nor 2D location information for the optode positions.")
+            _warn(
+                "The data does not contain 3D nor 2D location information for the optode positions.",
+            )
             x = zeros(length(opt_labels))
         else
-            _warn("The data only contains 2D location information for the optode positions.")
+            _warn(
+                "The data only contains 2D location information for the optode positions."
+            )
             x = pos2d[1, :]
         end
     else
@@ -322,7 +374,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     s = _create_subject(
         id = string(subject_id[1]),
@@ -356,7 +408,11 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         sampling_rate = sampling_rate,
         bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(name = string(study_type1), notes = string(study_type2), design = string(study_type3))
+    e = _create_experiment(
+        name = string(study_type1),
+        notes = string(study_type2),
+        design = string(study_type3),
+    )
 
     hdr = _create_header(subject = s, recording = r, experiment = e)
 

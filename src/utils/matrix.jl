@@ -123,7 +123,9 @@ Sorts matrix using sorting index.
 
   - `m_sorted::AbstractMatrix`
 """
-function m_sort(m::AbstractMatrix, m_idx::Vector{Int64}; rev::Bool = false, dims::Int64 = 1)::AbstractMatrix
+function m_sort(
+    m::AbstractMatrix, m_idx::Vector{Int64}; rev::Bool = false, dims::Int64 = 1
+)::AbstractMatrix
 
     @assert dims in [1, 2] "dims must be 1 or 2."
 
@@ -239,7 +241,9 @@ Create mesh grid (pair of x and y coordinates) from two vectors.
 
   - `m::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}`
 """
-function meshgrid(x::Vector{Float64}, y::Vector{Float64})::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}
+function meshgrid(
+    x::Vector{Float64}, y::Vector{Float64}
+)::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}
 
     xn = length(x)
     yn = length(y)

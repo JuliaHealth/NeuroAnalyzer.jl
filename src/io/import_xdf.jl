@@ -66,7 +66,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     eeg_idx = eeg_idx[1]
     sampling_rate = round(Int64, streams[s_names[eeg_idx]]["srate"])
     time_pts0 = time[eeg_idx][1]
-    time_pts = round.(Float64.(time[eeg_idx]) .- time_pts0; digits = 4)
+    time_pts = round.(Float64.(time[eeg_idx]) .- time_pts0, digits = 4)
     epoch_time = time_pts
     eeg_data = reshape(Float64.(data[eeg_idx]'), size(data[eeg_idx], 2), :, 1)
     ch_n = size(eeg_data, 1)
@@ -77,7 +77,13 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         clabels[idx] = streams[s_names[eeg_idx]]["name"] * "-$idx"
     end
 
-    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
     for idx in other_idx
         length(streams[s_names[idx]]["data"]) == 0 && break
         for data_idx in 1:streams[s_names[idx]]["nchannels"]
@@ -98,7 +104,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
 
     file_type = "XDF"
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     data_type = "eeg"
 

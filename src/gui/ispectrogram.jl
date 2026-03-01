@@ -32,7 +32,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj; ch = clabels[ch])
+    p = NeuroAnalyzer.plot_spectrogram(obj, ch = clabels[ch])
 
     function _activate(app)
 
@@ -663,7 +663,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj; ch = clabels[ch], ep = 1)
+    p = NeuroAnalyzer.plot_spectrogram(obj, ch = clabels[ch], ep = 1)
 
     function _activate(app)
 

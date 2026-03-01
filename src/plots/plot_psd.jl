@@ -681,7 +681,7 @@ function plot_psd(
 
     # frequency limits
     fs = sr(obj)
-    ref !== :abs && (flim = band_frq(obj; band = ref))
+    ref !== :abs && (flim = band_frq(obj, band = ref))
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
     # calculate PSD

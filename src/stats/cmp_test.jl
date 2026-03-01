@@ -72,8 +72,8 @@ function cmp_test(
 
     # ks = ApproximateTwoSampleKSTest(s1, s2)
     jb = JarqueBeraTest([s1; s2])
-    pjb = round(pvalue(jb); digits = 3)
-    jb = round(jb.JB; digits = 3)
+    pjb = round(pvalue(jb), digits = 3)
+    jb = round(jb.JB, digits = 3)
     if pjb < 0.05
         (verbose && println("Distribution: non-normal (Jarque-Bera test: JB=$jb, p=$pjb)"))
     else
@@ -146,20 +146,20 @@ function cmp_test(
             progress_bar && next!(progbar)
         end
         observed_difference = mean(g[g_idx .== 0]) - mean(g[g_idx .== 1])
-        observed_difference = round(observed_difference; digits = 3)
+        observed_difference = round(observed_difference, digits = 3)
     end
 
     if type !== :perm
         p = pvalue(t)
         p < eps() && (p = eps())
-        return (t = t, ts = (round(ts; digits = 3), tn), tc = round.(tc; digits = 3), df = round(df; digits = 3), p = p)
+        return (t = t, ts = (round(ts, digits = 3), tn), tc = round.(tc, digits = 3), df = round(df, digits = 3), p = p)
     else
         if pjb < alpha
             verbose && println("H0 has non-normal distribution; p value for JB-test: $pjb")
             p_one_tailed = sum(perm_diff .> observed_difference) / nperm
         else
             z = (observed_difference - mean(perm_diff)) / std(perm_diff)
-            z = round(z; digits = 3)
+            z = round(z, digits = 3)
             p_one_tailed = 1 - cdf(Distributions.Normal(), abs(z))
         end
         return (t = (perm_diff = perm_diff, obs_diff = observed_difference), p1 = p_one_tailed, p2 = (p_one_tailed / 2))

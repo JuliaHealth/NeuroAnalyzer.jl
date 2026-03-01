@@ -436,7 +436,7 @@ function plot_mep(
             _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1], digits=2)) $units")
         elseif length(ch) > 1 && type === :normal
             mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)[:, :, :]
-            obj_tmp = keep_channel(obj; ch = labels(obj)[1])
+            obj_tmp = keep_channel(obj, ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
             pp = erp_peaks(obj_tmp)
             GLMakie.scatter!(

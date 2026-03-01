@@ -400,7 +400,7 @@ function size_p1diff(; p1::Float64, p2::Float64, power::Float64 = 0.8)::Int64
     _in(power, (0, 1.0), "power")
 
     p = (p2 + p1) / 2
-    sdiff = round((p2 - p1) / sqrt(p * (1 - p)); digits = 1)
+    sdiff = round((p2 - p1) / sqrt(p * (1 - p)), digits = 1)
 
     sdiff_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
     power_values = [0.99, 0.95, 0.9, 0.8]

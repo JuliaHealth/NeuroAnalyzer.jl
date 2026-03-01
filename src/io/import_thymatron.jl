@@ -104,11 +104,12 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         eeg_signal = zeros(dimy)
         eeg_time = zeros(dimy)
         for idx in 1:dimy
-            eeg_signal[idx] = px_uv * ((dimx ÷ 2) - findfirst(isequal(1), img_bin[:, idx]))
+            eeg_signal[idx] =
+                px_uv * ((dimx ÷ 2) - findfirst(isequal(1), img_bin[:, idx]))
             eeg_time[idx] = idx * px_s
         end
 
-        eeg_signal = round.(eeg_signal; digits = 3)
+        eeg_signal = round.(eeg_signal, digits = 3)
 
         push!(data_tmp, eeg_signal)
 
@@ -126,9 +127,13 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         clabels[idx] *= string(idx)
     end
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits = 4,
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
+    )
 
     s = _create_subject(
         id = "",
@@ -167,7 +172,13 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
 
     history = String[]
 
-    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)

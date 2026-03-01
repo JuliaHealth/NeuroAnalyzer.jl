@@ -48,7 +48,7 @@ function bootstrap_ci(
     s_ci_l = zeros(size(s_avg, 2))
     s_ci_h = zeros(size(s_avg, 2))
 
-    ci_l = round((1.0 - cl) / 2; digits = 3)
+    ci_l = round((1.0 - cl) / 2, digits = 3)
     ci_h = 1.0 - ci_l
 
     @inbounds for idx in axes(s_avg, 2)

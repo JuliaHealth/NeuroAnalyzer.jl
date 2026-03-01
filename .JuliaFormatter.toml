@@ -6,7 +6,6 @@ short_to_long_function_def = false
 whitespace_in_kwargs = true
 whitespace_typedefs = true
 whitespace_ops_in_indices = true
-always_for_in = true
 align_conditional = true
 align_struct_field = true
 align_assignment = false

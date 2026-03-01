@@ -189,7 +189,7 @@ function pca_reconstruct!(
     pc_model::MultivariateStats.PCA{Float64},
 )::Nothing
 
-    obj_new = pca_reconstruct(obj; ch = ch, pc = pc, pc_model = pc_model)
+    obj_new = pca_reconstruct(obj, ch = ch, pc = pc, pc_model = pc_model)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

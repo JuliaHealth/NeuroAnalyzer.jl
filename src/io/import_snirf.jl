@@ -33,14 +33,17 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     file_type = "SNIRF"
 
     if typeof(nirs["formatVersion"]) == Vector{String}
-        parse(Float64, nirs["formatVersion"][1]) > 1.0 && _info("SNIRF version >1.0 detected")
+        parse(Float64, nirs["formatVersion"][1]) > 1.0 &&
+            _info("SNIRF version >1.0 detected")
     else
-        parse(Float64, nirs["formatVersion"]) > 1.0 && _info("SNIRF version >1.0 detected")
+        parse(Float64, nirs["formatVersion"]) > 1.0 &&
+            _info("SNIRF version >1.0 detected")
     end
 
     # check for multi-subject recordings
     n_id = "nirs"
-    n != 0 && @assert !any(occursin.("nirs$n", keys(nirs))) "No data for subject $n found in the recording."
+    n != 0 &&
+        @assert !any(occursin.("nirs$n", keys(nirs))) "No data for subject $n found in the recording."
     if any(occursin.("nirs1", keys(nirs)))
         @assert n != 0 "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."
         n_id = "nirs$n"
@@ -185,7 +188,9 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         sampling_rate = 1 / (time_pts[2] - time_pts[1])
     else
         sampling_rate = 1 / time_pts[2]
-        time_pts = collect(time_pts[1]:(1 / sampling_rate):(time_pts[1] + size(data, 2) * time_pts[2]))[1:(end - 1)]
+        time_pts = collect(
+            time_pts[1]:(1 / sampling_rate):(time_pts[1] + size(data, 2) * time_pts[2])
+        )[1:(end - 1)]
     end
     time_pts .-= time_pts[1]
     epoch_time = time_pts
@@ -276,18 +281,34 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         # Hemodynamic response function for blood flow index (BFi)
         data_type_label = replace(lowercase.(data_type_label), "bfi" => "nirs_bfi")
         # Hemodynamic response function for change in optical density
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dod" => "nirs_hrf_dod")
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dmean" => "nirs_hrf_dmean")
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dvar" => "nirs_hrf_dvar")
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dskew" => "nirs_hrf_dskew")
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_dod" => "nirs_hrf_dod"
+        )
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_dmean" => "nirs_hrf_dmean"
+        )
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_dvar" => "nirs_hrf_dvar"
+        )
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_dskew" => "nirs_hrf_dskew"
+        )
         # Hemodynamic response function for oxyhemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hrf_hbo" => "nirs_hrf_hbo")
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_hbo" => "nirs_hrf_hbo"
+        )
         # emodynamic response function for deoxyhemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hrf_hbr" => "nirs_hrf_hbr")
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_hbr" => "nirs_hrf_hbr"
+        )
         # Hemodynamic response function for total hemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hrf_hbt" => "nirs_hrf_hbt")
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_hbt" => "nirs_hrf_hbt"
+        )
         # Hemodynamic response function for blood flow index (BFi)
-        data_type_label = replace(lowercase.(data_type_label), "hrf_bfi" => "nirs_hrf_bfi")
+        data_type_label = replace(
+            lowercase.(data_type_label), "hrf_bfi" => "nirs_hrf_bfi"
+        )
 
         # Data type index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeIndex"
@@ -320,16 +341,26 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         for idx in eachindex(data_type)
             data_type[idx] == 1 && push!(tmp, "Amplitude")
             data_type[idx] == 51 && push!(tmp, "Fluorescence Amplitude")
-            data_type[idx] == 101 && push!(tmp, "Raw: Frequency Domain (FD): AC Amplitude")
+            data_type[idx] == 101 &&
+                push!(tmp, "Raw: Frequency Domain (FD): AC Amplitude")
             data_type[idx] == 102 && push!(tmp, "Raw: Frequency Domain (FD): Phase")
-            data_type[idx] == 151 && push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Amplitude")
-            data_type[idx] == 152 && push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Phase")
-            data_type[idx] == 201 && push!(tmp, "Raw: Time Domain: Gated (TD Gated): Amplitude")
-            data_type[idx] == 251 && push!(tmp, "Raw: Time Domain: Gated (TD Gated): Fluorescence Amplitude")
-            data_type[idx] == 301 && push!(tmp, "Raw: Time Domain: Moments (TD Moments): Amplitude")
-            data_type[idx] == 351 && push!(tmp, "Raw: Time Domain: Moments (TD Moments): Fluorescence Amplitude")
-            data_type[idx] == 351 && push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): g2")
-            data_type[idx] == 410 && push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): BFi")
+            data_type[idx] == 151 &&
+                push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Amplitude")
+            data_type[idx] == 152 &&
+                push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Phase")
+            data_type[idx] == 201 &&
+                push!(tmp, "Raw: Time Domain: Gated (TD Gated): Amplitude")
+            data_type[idx] == 251 &&
+                push!(tmp, "Raw: Time Domain: Gated (TD Gated): Fluorescence Amplitude")
+            data_type[idx] == 301 &&
+                push!(tmp, "Raw: Time Domain: Moments (TD Moments): Amplitude")
+            data_type[idx] == 351 && push!(
+                tmp, "Raw: Time Domain: Moments (TD Moments): Fluorescence Amplitude"
+            )
+            data_type[idx] == 351 &&
+                push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): g2")
+            data_type[idx] == 410 &&
+                push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): BFi")
             data_type[idx] == 99999 && push!(tmp, "Processed")
         end
         data_type = tmp
@@ -349,7 +380,8 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
                 " " *
                 string(wavelengths[wavelength_index[idx]])
         else
-            clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx])
+            clabels[idx] =
+                "S" * string(source_index[idx]) * "_D" * string(detector_index[idx])
         end
     end
     clabels = replace.(clabels, ".0"=>"")
@@ -418,7 +450,13 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
             markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
         end
     else
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     end
 
     # auxiliary measurements
@@ -483,10 +521,14 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     pos3d = hcat(src_pos3d, detector_pos3d)
     if src_pos3d === nothing
         if src_pos2d === nothing
-            _warn("The data does not contain 3D nor 2D location information for the optode positions.")
+            _warn(
+                "The data does not contain 3D nor 2D location information for the optode positions.",
+            )
             x = zeros(length(opt_labels))
         else
-            _warn("The data only contains 2D location information for the optode positions.")
+            _warn(
+                "The data only contains 2D location information for the optode positions."
+            )
             x = pos2d[1, :]
         end
     else
@@ -533,7 +575,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     s = _create_subject(
         id = subject_id,

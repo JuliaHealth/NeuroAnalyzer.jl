@@ -442,7 +442,7 @@ function plot_ep(
 
                     # get channel info
                     if ax1_x < 0
-                        channel_info(obj; ch = clabels[round(Int64, ax1_y)])
+                        channel_info(obj, ch = clabels[round(Int64, ax1_y)])
                     end
 
                     # select / deselect epochs

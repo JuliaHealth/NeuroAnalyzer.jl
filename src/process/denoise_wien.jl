@@ -73,7 +73,7 @@ Perform Wiener deconvolution denoising.
 """
 function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = denoise_wien(obj; ch = ch)
+    obj_new = denoise_wien(obj, ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

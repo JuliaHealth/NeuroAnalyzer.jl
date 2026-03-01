@@ -116,7 +116,7 @@ function denoise_fft!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
 )::Nothing
 
-    obj_new = denoise_fft(obj; ch = ch, pad = pad, t = t)
+    obj_new = denoise_fft(obj, ch = ch, pad = pad, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

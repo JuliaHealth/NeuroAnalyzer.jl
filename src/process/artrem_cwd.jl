@@ -133,7 +133,7 @@ function artrem_cwd!(
     type::Symbol = :nd,
 ) where {T <: CWT}
 
-    obj_new = artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
+    obj_new = artrem_cwd(obj, ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

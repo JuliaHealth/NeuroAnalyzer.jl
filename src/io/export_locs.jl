@@ -15,7 +15,9 @@ Export channel locations data, format is based on `file_name` extension (.csv, .
 
   - `Nothing`
 """
-function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false)::Nothing
+function export_locs(
+    obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
+)::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
@@ -45,7 +47,9 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
         )
         CSV.write(file_name, df, delim = "\t", header = true)
     elseif splitext(file_name)[2] == ".locs"
-        df = DataFrame(Number = channels, theta = theta, radius = radius, labels = clabels)
+        df = DataFrame(
+            Number = channels, theta = theta, radius = radius, labels = clabels
+        )
         CSV.write(file_name, df, delim = "\t", header = false)
     elseif splitext(file_name)[2] == ".tsv"
         df = DataFrame(
@@ -116,7 +120,9 @@ function export_locs(locs::DataFrame; file_name::String, overwrite::Bool = false
         )
         CSV.write(file_name, df, delim = "\t")
     elseif splitext(file_name)[2] == ".locs"
-        df = DataFrame(Number = channels, theta = theta, radius = radius, labels = clabels)
+        df = DataFrame(
+            Number = channels, theta = theta, radius = radius, labels = clabels
+        )
         CSV.write(file_name, df, delim = "\t", header = false)
     elseif splitext(file_name)[2] == ".tsv"
         df = DataFrame(

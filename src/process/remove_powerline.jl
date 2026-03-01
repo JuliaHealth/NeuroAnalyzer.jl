@@ -214,7 +214,7 @@ function remove_powerline!(
     q::Real = 0.1,
 )::DataFrame
 
-    obj_new, df = remove_powerline(obj; ch = ch, pl_frq = pl_frq, method = method, pr = pr, d = d, q = q)
+    obj_new, df = remove_powerline(obj, ch = ch, pl_frq = pl_frq, method = method, pr = pr, d = d, q = q)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

@@ -76,7 +76,7 @@ Standardize channels.
 """
 function standardize!(obj::NeuroAnalyzer.NEURO)::Vector{ZScoreTransform{Float64, Vector{Float64}}}
 
-    obj_new, scaler = standardize(obj; ch = ch)
+    obj_new, scaler = standardize(obj, ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

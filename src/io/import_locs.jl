@@ -44,7 +44,9 @@ function import_locs(file_name::String)::DataFrame
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
-    _info("Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org")
+    _info(
+        "Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org"
+    )
     _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"
@@ -164,7 +166,9 @@ function import_locs_locs(file_name::String)::DataFrame
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".locs" "This is not LOCS file."
 
-    locs = CSV.read(file_name, header = false, delim = "\t", stringtype = String, DataFrame)
+    locs = CSV.read(
+        file_name, header = false, delim = "\t", stringtype = String, DataFrame
+    )
 
     DataFrames.rename!(locs, [:number, :theta, :radius, :label])
 
@@ -306,7 +310,14 @@ function import_locs_tsv(file_name::String)::DataFrame
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".tsv" "This is not TSV file."
 
-    locs = CSV.read(file_name, header = true, delim = "\t", ignorerepeated = true, stringtype = String, DataFrame)
+    locs = CSV.read(
+        file_name,
+        header = true,
+        delim = "\t",
+        ignorerepeated = true,
+        stringtype = String,
+        DataFrame,
+    )
 
     colnames = lowercase.(names(locs))
     DataFrames.rename!(locs, Symbol.(colnames))
@@ -379,11 +390,26 @@ function import_locs_sfp(file_name::String)::DataFrame
     locs = CSV.read(file_name, header = false, stringtype = String, DataFrame)
     _info("Checking TAB as delimeter")
     size(locs, 2) != 4 && (
-        locs = CSV.read(file_name, header = false, delim = "/t", ignorerepeated = true, stringtype = String, DataFrame)
+        locs = CSV.read(
+            file_name,
+            header = false,
+            delim = "/t",
+            ignorerepeated = true,
+            stringtype = String,
+            DataFrame,
+        )
     )
     _info("Checking SPACE as delimeter")
-    size(locs, 2) != 4 &&
-        (locs = CSV.read(file_name, header = false, delim = " ", ignorerepeated = true, stringtype = String, DataFrame))
+    size(locs, 2) != 4 && (
+        locs = CSV.read(
+            file_name,
+            header = false,
+            delim = " ",
+            ignorerepeated = true,
+            stringtype = String,
+            DataFrame,
+        )
+    )
     @assert size(locs, 2) == 4 "File $file_name cannot be opened, check delimeters."
 
     DataFrames.rename!(locs, [:label, :x, :y, :z])
@@ -452,10 +478,18 @@ function import_locs_csd(file_name::String)::DataFrame
     @assert lowercase(splitext(file_name)[2]) == ".csd" "This is not CSD file."
 
     locs = CSV.read(
-        file_name, skipto = 3, delim = ' ', header = false, ignorerepeated = true, stringtype = String, DataFrame
+        file_name,
+        skipto = 3,
+        delim = ' ',
+        header = false,
+        ignorerepeated = true,
+        stringtype = String,
+        DataFrame,
     )
 
-    DataFrames.rename!(locs, [:label, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
+    DataFrames.rename!(
+        locs, [:label, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface]
+    )
     clabels = string.(lstrip.(locs[!, :label]))
 
     x = Float64.(locs[!, :x])
@@ -645,7 +679,9 @@ function import_locs_txt(file_name::String)::DataFrame
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".txt" "This is not TXT file."
 
-    locs = CSV.read(file_name, header = true, delim = "\t", stringtype = String, DataFrame)
+    locs = CSV.read(
+        file_name, header = true, delim = "\t", stringtype = String, DataFrame
+    )
 
     DataFrames.rename!(locs, [:label, :theta, :phi])
     clabels = lstrip.(locs[!, :label])
@@ -720,7 +756,14 @@ function import_locs_dat(file_name::String)::DataFrame
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".dat" "Not DAT file."
 
-    locs = CSV.read(file_name, ignorerepeated = true, delim = ' ', stringtype = String, header = 0, DataFrame)
+    locs = CSV.read(
+        file_name,
+        ignorerepeated = true,
+        delim = ' ',
+        stringtype = String,
+        header = 0,
+        DataFrame,
+    )
     if ncol(locs) == 4
         if typeof(locs[!, 2]) == Vector{String}
             colnames = ["channel", "labels", "x", "y"]
@@ -813,7 +856,8 @@ function import_locs_asc(file_name::String)::DataFrame
     buffer = buffer[(length(labels) + 1):(2 * length(labels))]
     locs = zeros(length(labels), 4)
     locs_regexp = match.(
-        r"([0-9]+ +)([0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+)", buffer
+        r"([0-9]+ +)([0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+)",
+        buffer,
     )
     for idx in eachindex(labels_regexp)
         locs[idx, 1] = parse(Float64, strip(locs_regexp[idx][3]))
@@ -874,7 +918,15 @@ function import_locs_csv(file_name::String)::DataFrame
 
     locs = CSV.read(file_name, header = true, delim = ",", stringtype = String, DataFrame)
     @assert names(locs) == [
-        "label", "loc_radius", "loc_theta", "loc_x", "loc_y", "loc_z", "loc_radius_sph", "loc_theta_sph", "loc_phi_sph"
+        "label",
+        "loc_radius",
+        "loc_theta",
+        "loc_x",
+        "loc_y",
+        "loc_z",
+        "loc_radius_sph",
+        "loc_theta_sph",
+        "loc_phi_sph",
     ] "This is not a NeuroAnalyzer locs CSV file."
 
     return locs

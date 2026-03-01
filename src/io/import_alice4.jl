@@ -83,22 +83,30 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        physical_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        physical_minimum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        physical_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        physical_maximum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        digital_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        digital_minimum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        digital_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        digital_maximum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = _v2s(_fread(fid, ch_n * 80, :s))
@@ -108,7 +116,9 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        samples_per_datarecord[idx] = parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        samples_per_datarecord[idx] = parse(
+            Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     close(fid)
@@ -125,7 +135,9 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         annotation_channels = Int64[]
         markers_channel = []
     else
-        annotation_channels = sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
+        annotation_channels = sort(
+            getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1)
+        )
         markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
@@ -158,8 +170,11 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
                 else
                     signal = map(ltoh, reinterpret(Int16, signal))
                 end
-                data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] =
-                    signal .* gain[idx2]
+                data[
+                    idx2,
+                    ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]),
+                    1,
+                ] = signal .* gain[idx2]
             end
         end
         close(fid)
@@ -194,7 +209,8 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
                 # tmp = @. (tmp - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
                 tmp .*= gain[idx2]
                 if sampling_rate[idx2] == max_sampling_rate
-                    data[idx2, ((idx1 - 1) * data_segment + 1):(idx1 * data_segment)] = tmp
+                    data[idx2, ((idx1 - 1) * data_segment + 1):(idx1 * data_segment)] =
+                        tmp
                 else
                     tmp_upsampled = FourierTools.resample(tmp, max_sampling_rate)
                     data[idx2, ((idx1 - 1) * data_segment + 1):(idx1 * data_segment)] = FourierTools.resample(
@@ -224,7 +240,13 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     end
 
     if length(annotation_channels) == 0
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     else
         markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)
@@ -237,9 +259,13 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     end
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)], digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)],
+        digits = 4,
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)], digits = 4)
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
+        digits = 4,
+    )
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 

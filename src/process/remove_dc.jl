@@ -137,7 +137,7 @@ function remove_dc!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
 )::Nothing
 
-    obj_new = remove_dc(obj; ch = ch, n = n)
+    obj_new = remove_dc(obj, ch = ch, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

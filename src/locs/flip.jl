@@ -21,7 +21,9 @@ Flip channel locations along y axis.
 
   - `locs_new::DataFrame`
 """
-function locs_flipy(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
+function locs_flipy(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -75,7 +77,9 @@ Flip channel locations along y axis.
 
   - `Nothing`
 """
-function locs_flipy!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
+function locs_flipy!(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::Nothing
 
     locs[!, :] = locs_flipy(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
@@ -99,7 +103,9 @@ Flip channel locations along x axis.
 
   - `locs_new::DataFrame`
 """
-function locs_flipx(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
+function locs_flipx(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -150,7 +156,9 @@ Flip channel locations along x axis.
 
   - `Nothing`
 """
-function locs_flipx!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
+function locs_flipx!(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::Nothing
 
     locs[!, :] = locs_flipx(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
@@ -174,7 +182,9 @@ Flip channel locations along z axis.
 
   - `locs_new::DataFrame`
 """
-function locs_flipz(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
+function locs_flipz(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -192,7 +202,8 @@ function locs_flipz(locs::DataFrame; polar::Bool = true, cart::Bool = true, sphe
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
+    polar &&
+        _warn("For polar coordinates this is a lossy conversion and will be ignored.")
 
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
@@ -217,7 +228,9 @@ Flip channel locations along z axis.
 
   - `Nothing`
 """
-function locs_flipz!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
+function locs_flipz!(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::Nothing
 
     locs[!, :] = locs_flipz(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 

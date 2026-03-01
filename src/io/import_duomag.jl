@@ -43,7 +43,9 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         sampling_interval = parse(Int, (split(strip(readline(f)), '=')[2]))
         sampling_interval_unit = split(strip(readline(f)), '=')[2]
         sampling_interval_unit = replace(sampling_interval_unit, "\xb5"=>"μ")
-        sensitivity = parse(Float64, replace(split(strip(readline(f)), '=')[2], ',' => '.'))
+        sensitivity = parse(
+            Float64, replace(split(strip(readline(f)), '=')[2], ',' => '.')
+        )
         sensitivity_unit = split(strip(readline(f)), '=')[2]
         sensitivity_unit = replace(sensitivity_unit, "\xb5"=>"μ")
         signal_count = parse(Int, split(strip(readline(f)), '=')[2])
@@ -64,7 +66,11 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
         # data matrix: signals × samples
         mep_signal = zeros((samples_count[1], signal_count))
-        [mep_signal[idx, :] = parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')) for idx in axes(mep_signal)[1]]
+        [
+            mep_signal[idx, :] in parse.(
+                Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')
+            ) for idx in axes(mep_signal)[1]
+        ]
 
         close(f)
     elseif splitext(file_name)[2] == ".m"
@@ -190,8 +196,10 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     sampling_interval_unit == "ms" && (sampling_interval *= 10^-3)
     sampling_rate = round(Int64, 1 / sampling_interval)
 
-    time_pts = collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]
-    time_pts = round.(time_pts .- time_pts[stim_sample[1]]; digits = 4)
+    time_pts = collect(
+        0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
+    )[1:(end - 1)]
+    time_pts = round.(time_pts .- time_pts[stim_sample[1]], digits = 4)
     epoch_time = time_pts
 
     if splitext(file_name)[2] == ".ascii"
@@ -205,7 +213,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         markers_neg = Int64.(markers_neg)
     end
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     s = _create_subject(
         id = string(subject_id),
@@ -244,7 +252,13 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
     history = String[]
 
-    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)

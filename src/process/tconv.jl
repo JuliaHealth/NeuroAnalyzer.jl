@@ -112,9 +112,9 @@ function tconv!(
 )::Union{Nothing, Array{ComplexF64, 3}}
 
     if eltype(kernel) == ComplexF64
-        return tconv(obj.data; ch = ch, kernel = kernel)
+        return tconv(obj.data, ch = ch, kernel = kernel)
     else
-        obj_new = tconv(obj; ch = ch, kernel = kernel)
+        obj_new = tconv(obj, ch = ch, kernel = kernel)
         obj.data = obj_new.data
         obj.history = obj_new.history
         return nothing

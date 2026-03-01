@@ -78,7 +78,7 @@ function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vecto
     obj_new = deepcopy(obj)
 
     # generate
-    ssp_projectors, U = generate_ssp_projectors(obj; proj = proj)
+    ssp_projectors, U = generate_ssp_projectors(obj, proj = proj)
 
     # apply
     _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
@@ -107,7 +107,7 @@ Apply SSP projectors from embedded projections.
 """
 function apply_ssp_projectors!(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0)::Nothing
 
-    obj_new = apply_ssp_projectors(obj; proj = proj)
+    obj_new = apply_ssp_projectors(obj, proj = proj)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

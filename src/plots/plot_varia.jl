@@ -198,18 +198,18 @@ function plot_histogram(
 
     if !isnothing(x)
         xticks = [
-            round(minimum(s); digits = 2),
-            round(mean(s); digits = 2),
-            round(median(s); digits = 2),
-            round(x; digits = 2),
-            round(maximum(s); digits = 2),
+            round(minimum(s), digits = 2),
+            round(mean(s), digits = 2),
+            round(median(s), digits = 2),
+            round(x, digits = 2),
+            round(maximum(s), digits = 2),
         ]
     else
         xticks = [
-            round(minimum(s); digits = 2),
-            round(mean(s); digits = 2),
-            round(median(s); digits = 2),
-            round(maximum(s); digits = 2),
+            round(minimum(s), digits = 2),
+            round(mean(s), digits = 2),
+            round(median(s), digits = 2),
+            round(maximum(s), digits = 2),
         ]
     end
 
@@ -245,8 +245,8 @@ function plot_histogram(
     ax.yticklabelsize = 12
     GLMakie.hist!(s; bins = bins, colormap = pal, strokecolor = :black, color = :grey, alpha = 0.5)
 
-    draw_mean && (GLMakie.vlines!(round(mean(s); digits = 2); linestyle = :dot, color = :black, label = "mean"))
-    draw_median && (GLMakie.vlines!(round(median(s); digits = 2); linestyle = :dash, color = :grey, label = "median"))
+    draw_mean && (GLMakie.vlines!(round(mean(s), digits = 2); linestyle = :dot, color = :black, label = "mean"))
+    draw_median && (GLMakie.vlines!(round(median(s), digits = 2); linestyle = :dash, color = :grey, label = "median"))
 
     if isnothing(x) != true
         if mono
@@ -254,7 +254,7 @@ function plot_histogram(
         else
             GLMakie.vlines!([x]; linewidth = 2, color = :red, label = "test value")
         end
-        prop = round(cmp_stat(s, x); digits = 3)
+        prop = round(cmp_stat(s, x), digits = 3)
         _info("Proportion of values > $x: $prop")
         _info("Proportion of values < $x: $(1 - prop)")
     end
@@ -298,9 +298,9 @@ function plot_bar(
     color = mono ? :lightgrey : :lightblue
 
     yl = if minimum(s) > 0
-        (0, ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     else
-        (floor(Int64, round(minimum(s) * 1.5; digits = 1)), ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (floor(Int64, round(minimum(s) * 1.5, digits = 1)), ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     end
 
     # prepare plot
@@ -359,9 +359,9 @@ function plot_line(
     @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
 
     yl = if minimum(s) > 0
-        (0, ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     else
-        (floor(Int64, round(minimum(s) * 1.5; digits = 1)), ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (floor(Int64, round(minimum(s) * 1.5, digits = 1)), ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     end
 
     # prepare plot
@@ -432,9 +432,9 @@ function plot_line(
     pal = mono ? :grays : :darktest
 
     yl = if minimum(s) > 0
-        (0, ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     else
-        (floor(Int64, round(minimum(s) * 1.5; digits = 1)), ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (floor(Int64, round(minimum(s) * 1.5, digits = 1)), ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     end
 
     # prepare plot
@@ -515,9 +515,9 @@ function plot_box(
     color = mono ? :lightgrey : :lightblue
 
     yl = if minimum(s) > 0
-        (0, ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     else
-        (floor(Int64, round(minimum(s) * 1.5; digits = 1)), ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (floor(Int64, round(minimum(s) * 1.5, digits = 1)), ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     end
 
     # prepare plot
@@ -586,9 +586,9 @@ function plot_violin(
     color = mono ? :lightgrey : :lightblue
 
     yl = if minimum(s) > 0
-        (0, ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     else
-        (floor(Int64, round(minimum(s) * 1.5; digits = 1)), ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (floor(Int64, round(minimum(s) * 1.5, digits = 1)), ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     end
 
     # prepare plot
@@ -662,9 +662,9 @@ function plot_dots(
     pal = mono ? :grays : :darktest
 
     yl = if minimum(s) > 0
-        (0, ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     else
-        (floor(Int64, round(minimum(s) * 1.5; digits = 1)), ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (floor(Int64, round(minimum(s) * 1.5, digits = 1)), ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     end
 
     # prepare plot
@@ -739,9 +739,9 @@ function plot_paired(
 
     pal = mono ? :grays : :darktest
     yl = if minimum(s) > 0
-        (0, ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     else
-        (floor(Int64, round(minimum(s) * 1.5; digits = 1)), ceil(Int64, round(maximum(s) * 1.5; digits = 1)))
+        (floor(Int64, round(minimum(s) * 1.5, digits = 1)), ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
     end
 
     # prepare plot
@@ -931,7 +931,7 @@ function plot_eros(
             _warn("Lower frequency bound truncated to $(sf[2]) Hz")
             flim = (sf[2], flim[2])
         end
-        yt = round.(logspace(flim[1], flim[2], nfrq); digits = 1)
+        yt = round.(logspace(flim[1], flim[2], nfrq), digits = 1)
     end
 
     if smooth
@@ -1324,7 +1324,7 @@ function plot_icatopo(
 
     p_topo = GLMakie.Figure[]
     for idx in eachindex(ic_idx)
-        obj_tmp = ica_reconstruct(obj; ch = ch, ic = ic, ic_mw = ic_mw, ic_idx = idx, keep = true)
+        obj_tmp = ica_reconstruct(obj, ch = ch, ic = ic, ic_mw = ic_mw, ic_idx = idx, keep = true)
         p_tmp = plot_topo(
             obj_tmp;
             ch = ch,
@@ -1340,7 +1340,7 @@ function plot_icatopo(
         push!(p_topo, p_tmp)
     end
 
-    p = plot_compose(p_topo; layout = (1, length(ic_idx)))
+    p = plot_compose(p_topo, layout = (1, length(ic_idx)))
 
     return p
 
@@ -1381,7 +1381,7 @@ function plot_ci(
 
     pal = mono ? :grays : :darktest
 
-    yl = (floor(minimum(s_l); digits = 0), ceil(maximum(s_u); digits = 0))
+    yl = (floor(minimum(s_l), digits = 0), ceil(maximum(s_u), digits = 0))
     yl = _tuple_max(yl)
     yticks = [yl[1], 0, yl[2]]
 
@@ -1538,7 +1538,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::Abstract
     s_restored = sum(imf; dims = 1)[:]
     imf = vcat(imf, s_restored')
 
-    ylim = (floor(minimum(imf); digits = 0), ceil(maximum(imf); digits = 0))
+    ylim = (floor(minimum(imf), digits = 0), ceil(maximum(imf), digits = 0))
     ylim = _tuple_max(ylim)
     yticks = [ylim[1], 0, ylim[2]]
 
@@ -1923,7 +1923,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVe
     @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."
     @assert size(dc, 2) == length(t) "Length of t $(size(dc, 2)) and number of dc columns ($(size(m, 2))) must be equal."
 
-    ylim = (floor(minimum(dc); digits = 0), ceil(maximum(dc); digits = 1))
+    ylim = (floor(minimum(dc), digits = 0), ceil(maximum(dc), digits = 1))
     ylim = _tuple_max(ylim)
     yticks = unique([ylim[1], 0, ylim[2]])
 

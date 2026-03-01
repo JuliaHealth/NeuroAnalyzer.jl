@@ -76,7 +76,7 @@ Add signal.
 """
 function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
 
-    obj_new = add_signal(obj; ch = ch, s = s)
+    obj_new = add_signal(obj, ch = ch, s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

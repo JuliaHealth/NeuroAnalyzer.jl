@@ -151,7 +151,7 @@ function filter_poly!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10
 )::Nothing
 
-    obj_new = filter_poly(obj; ch = ch, order = order, window = window)
+    obj_new = filter_poly(obj, ch = ch, order = order, window = window)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

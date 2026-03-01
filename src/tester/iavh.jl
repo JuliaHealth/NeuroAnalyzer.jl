@@ -480,7 +480,7 @@ function iavh()::Nothing
             vol < 1.0 && (vol += 0.1)
             vol > 0.1 && (bt_vol_down.sensitive = 1)
             vol == 1.0 && (bt_vol_up.sensitive = 0)
-            vol = round(vol; digits = 1)
+            vol = round(vol, digits = 1)
 
             type = types[Int64(combo_type.active) + 1]
             lang = langs[Int64(combo_lang.active) + 1]
@@ -586,7 +586,7 @@ function iavh()::Nothing
             vol > 0.1 && (vol -= 0.1)
             vol == 0.1 && (bt_vol_down.sensitive = 0)
             vol < 1.0 && (bt_vol_up.sensitive = 1)
-            vol = round(vol; digits = 1)
+            vol = round(vol, digits = 1)
 
             type = types[Int64(combo_type.active) + 1]
             lang = langs[Int64(combo_lang.active) + 1]

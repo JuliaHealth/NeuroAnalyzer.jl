@@ -46,8 +46,10 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         k = keys(header)
         recording = "Manufacturer" in k ? header["Manufacturer"] : ""
         recording_reference = "iEEGReference" in k ? header["iEEGReference"] : ""
-        recording_notes = "iEEGGround" in k ? ("iEEG ground: " * header["iEEGGround"]) : ""
-        sampling_rate = "SamplingFrequency" in k ? round(Int64, header["SamplingFrequency"]) : nothing
+        recording_notes =
+            "iEEGGround" in k ? ("iEEG ground: " * header["iEEGGround"]) : ""
+        sampling_rate =
+            "SamplingFrequency" in k ? round(Int64, header["SamplingFrequency"]) : nothing
         exp_name = "TaskName" in k ? header["TaskName"] : ""
         exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
         exp_notes = "Instructions" in k ? header["Instructions"] : ""
@@ -94,7 +96,9 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             "-" *
             lpad(string(Dates.day(recording_date)), 2, '0')
         # convert to UTC time
-        recording_time = astimezone(ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz")), tz"UTC")
+        recording_time = astimezone(
+            ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz")), tz"UTC"
+        )
         recording_time =
             lpad(string(Dates.hour(recording_time)), 2, '0') *
             ":" *
@@ -125,7 +129,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         # remove microseconds
         m = match(r".*(\.[0-9]*)\+.*", t)
         m !== nothing && (t = replace(t, m.captures[1]=>""))
-        t_start = Dates.Second(ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz"))).value
+        t_start =
+            Dates.Second(ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz"))).value
     end
 
     eeg_regexp = r"acquisition.*EEG.*data"
@@ -159,10 +164,16 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     time_pts =
         round.(
-            collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+            collect(
+                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
+            )[1:(end - 1)];
+            digits = 4,
         ) .+ t_start
     epoch_time =
-        round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4) .+ t_start
+        round.(
+            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+            digits = 4,
+        ) .+ t_start
 
     # events
     "acquisition/Stimulus/data" in k && (stim = dataset["acquisition/Stimulus/data"])
@@ -184,8 +195,11 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         event_description = events[!, :value]
         event_start_sample = events[!, :sample] .+ 1
         event_start = zeros(length(event_start_sample))
-        [event_start[idx] = time_pts[event_start_sample[idx]] for idx in eachindex(event_start_sample)]
-        event_length = round.(events[!, :duration]; digits = 4)
+        [
+            event_start[idx] in time_pts[event_start_sample[idx]] for
+            idx in eachindex(event_start_sample)
+        ]
+        event_length = round.(events[!, :duration], digits = 4)
         event_channel = zeros(Int64, DataFrames.nrow(events))
         markers = DataFrame(
             :id=>event_id,
@@ -195,7 +209,13 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :channel=>event_channel,
         )
     else
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     end
 
     @assert isfile(file_json) "$file_json not found."
@@ -227,7 +247,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # dataset["specifications/hdmf-experimental/0.2.0/resources"]
 
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     s = _create_subject(
         id = subj_id,

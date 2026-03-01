@@ -108,7 +108,7 @@ function intensity2od!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int")
 )::Nothing
 
-    obj_new = intensity2od(obj; ch = ch)
+    obj_new = intensity2od(obj, ch = ch)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history

@@ -51,7 +51,8 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     patient = strip(header[9:88])
     recording = strip(header[89:168])
     # EDF exported from Alice does not conform EDF standard
-    occursin("Alice 4", recording) && return import_alice4(file_name; detect_type = detect_type)
+    occursin("Alice 4", recording) &&
+        return import_alice4(file_name; detect_type = detect_type)
     recording_date = header[169:176]
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
@@ -76,48 +77,74 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     header = UInt8[]
     readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
-    [clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)]) for idx in 1:ch_n]
+    [clabels[idx] in strip(header[(1 + ((idx - 1) * 16)):(idx * 16)]) for idx in 1:ch_n]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    [transducers[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
+    [
+        transducers[idx] in strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
+        idx in 1:ch_n
+    ]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
+    [units[idx] in strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
     units = replace(lowercase.(units), "uv"=>"μV")
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [physical_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [
+        physical_minimum[idx] in parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        ) for idx in 1:ch_n
+    ]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [physical_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [
+        physical_maximum[idx] in parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        ) for idx in 1:ch_n
+    ]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [digital_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [
+        digital_minimum[idx] in parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        ) for idx in 1:ch_n
+    ]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [digital_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [
+        digital_maximum[idx] in parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        ) for idx in 1:ch_n
+    ]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    [prefiltering[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
+    [
+        prefiltering[idx] in strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
+        idx in 1:ch_n
+    ]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [samples_per_datarecord[idx] = parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [
+        samples_per_datarecord[idx] in parse(
+            Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        ) for idx in 1:ch_n
+    ]
 
     close(fid)
 
@@ -129,7 +156,9 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         annotation_channels = Int64[]
         markers_channel = []
     else
-        annotation_channels = sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
+        annotation_channels = sort(
+            getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1)
+        )
         markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
@@ -138,7 +167,9 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
     else
         sampling_rate = round.(
-            Int64, samples_per_datarecord[setdiff(1:ch_n, annotation_channels)] / data_records_duration
+            Int64,
+            samples_per_datarecord[setdiff(1:ch_n, annotation_channels)] /
+            data_records_duration,
         )
     end
 
@@ -179,7 +210,9 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     else
         # ignore annotations channels
         max_sampling_rate = maximum(sampling_rate[setdiff(1:ch_n, annotation_channels)])
-        max_samples_per_datarecord = maximum(samples_per_datarecord[setdiff(1:ch_n, annotation_channels)])
+        max_samples_per_datarecord = maximum(
+            samples_per_datarecord[setdiff(1:ch_n, annotation_channels)]
+        )
 
         fid = nothing
         try
@@ -206,7 +239,8 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
                     tmp = zeros(data_segment)
                 else
                     tmp = Float64.(reinterpret(Int16, tmp))
-                    sampling_rate[idx2] != max_sampling_rate && (tmp = FourierTools.resample(tmp, max_sampling_rate))
+                    sampling_rate[idx2] != max_sampling_rate &&
+                        (tmp = FourierTools.resample(tmp, max_sampling_rate))
                 end
                 data[idx2, ((idx1 - 1) * data_segment + 1):(idx1 * data_segment)] = tmp
             end
@@ -235,7 +269,13 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     end
 
     if length(annotation_channels) == 0
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     else
         markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)
@@ -248,11 +288,15 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     end
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits = 4,
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
+    )
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     data_type = "eeg"
 

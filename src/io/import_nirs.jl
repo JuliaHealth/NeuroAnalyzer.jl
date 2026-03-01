@@ -108,10 +108,22 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # stimuli
     s = nirs["s"][:]
     if s == zeros(length(time_pts))
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     else
         s_n = size(s, 2)
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
         for idx1 in 1:s_n
             s_start = findall(s[:, idx1] .!= 0.0)
             for idx2 in eachindex(s_start)
@@ -172,7 +184,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 
     s = _create_subject(
         id = "",

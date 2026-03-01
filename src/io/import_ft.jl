@@ -20,7 +20,9 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
   - `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
   - `markers::DataFrame` - for events
 """
-function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::Union{NeuroAnalyzer.NEURO, DataFrame}
+function import_ft(
+    file_name::String; type::Symbol, detect_type::Bool = false
+)::Union{NeuroAnalyzer.NEURO, DataFrame}
 
     _wip()
 
@@ -150,28 +152,40 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
                 else
                     time_pts .+= abs(time_pts[1])
                 end
-                epoch_time = round.(epoch_time; digits = 4)
-                time_pts = round.(time_pts; digits = 4)
+                epoch_time = round.(epoch_time, digits = 4)
+                time_pts = round.(time_pts, digits = 4)
             else
-                epoch_time = round.(dataset["time"][1][:]; digits = 4)
+                epoch_time = round.(dataset["time"][1][:], digits = 4)
                 time_pts = round.(
-                    collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+                    collect(
+                        0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
+                    )[1:(end - 1)];
                     digits = 4,
                 )
             end
         else
             epoch_time = round.(
-                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4
+                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+                digits = 4,
             )
             time_pts = round.(
-                collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+                collect(
+                    0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
+                )[1:(end - 1)];
+                digits = 4,
             )
         end
 
         _info(
             "FieldTrip markers are stored separately and must be imported using `import_ft(file_name, type=:events)` and added manually using `add_markers()`",
         )
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
 
         if data_type == "eeg"
 
@@ -197,7 +211,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
             r = _create_recording_eeg(
                 data_type = data_type,
                 file_name = file_name,
-                file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
+                file_size_mb = round(filesize(file_name) / 1024^2, digits = 2),
                 file_type = file_type,
                 recording = "RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
                 recording_date = "",
@@ -238,7 +252,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
             coil_type[grad_idx] .= "grad"
             pgrad_idx = occursin.(r".*planar.*", lowercase.(ch_type))
             coil_type[pgrad_idx] .= "pgrad"
-            agrad_idx = occursin.(r".*axial.*", lowercase.(ch_type)) .|| occursin.(r".*ctf.*", lowercase.(ch_type))
+            agrad_idx =
+                occursin.(r".*axial.*", lowercase.(ch_type)) .||
+                occursin.(r".*ctf.*", lowercase.(ch_type))
             coil_type[agrad_idx] .= "agrad"
             grad_idx .+= pgrad_idx
             grad_idx .+= agrad_idx
@@ -263,7 +279,8 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
                 elseif units[ch_idx] == "T/cm"
                     @views data[ch_idx, :, 1] .*= 10^15
                     units[ch_idx] = "fT/cm"
-                elseif units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
+                elseif units[ch_idx] == "V" &&
+                    ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
                     @views data[ch_idx, :, 1] .*= 10^6
                     units[ch_idx] = "μV"
                 end
@@ -290,7 +307,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
                 locs_sph2pol!(meg_locs)
                 locs_scale!(meg_locs; r = 1.5)
             else
-                locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+                locs = import_locs_csv(
+                    joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv")
+                )
             end
 
             # EEG
@@ -339,12 +358,20 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
                     ssp_channels = zeros(Bool, ch_n)
                     ssp_sorting_idx = Int64[]
                     for idx in eachindex(ssp_channels_tmp)
-                        push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels))
+                        push!(
+                            ssp_sorting_idx,
+                            findfirst(isequal(ssp_channels_tmp[idx]), clabels),
+                        )
                     end
                     ssp_channels[ssp_sorting_idx] .= true
                     ssp_sorting_idx = Int64[]
                     for idx in eachindex(ssp_channels_tmp)
-                        push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels[ssp_channels]))
+                        push!(
+                            ssp_sorting_idx,
+                            findfirst(
+                                isequal(ssp_channels_tmp[idx]), clabels[ssp_channels]
+                            ),
+                        )
                     end
                     ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])
                     @inbounds for idx in axes(ssp_data, 1)
@@ -354,12 +381,12 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
             end
 
             lp = if "lowpass" in keys(hdr["orig"])
-                string(round(hdr["orig"]["lowpass"][1]; digits = 1))
+                string(round(hdr["orig"]["lowpass"][1], digits = 1))
             else
                 "?"
             end
             hp = if "highpass" in keys(hdr["orig"])
-                string(round(hdr["orig"]["highpass"][1]; digits = 1))
+                string(round(hdr["orig"]["highpass"][1], digits = 1))
             else
                 "?"
             end
@@ -367,7 +394,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
             r = _create_recording_meg(
                 data_type = data_type,
                 file_name = file_name,
-                file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
+                file_size_mb = round(filesize(file_name) / 1024^2, digits = 2),
                 file_type = "FT",
                 recording = if "dataformat" in keys(dataset["cfg"])
                     string(dataset["cfg"]["dataformat"])
@@ -407,8 +434,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
             for idx1 in eachindex(ch_type)
                 if ch_type[idx1] == "nirs"
                     for idx2 in eachindex(wavelengths)
-                        occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1]) &&
-                            push!(wavelength_index, idx2)
+                        occursin(
+                            string(round(Int64, wavelengths[idx2])), clabels[idx1]
+                        ) && push!(wavelength_index, idx2)
                     end
                 end
             end
@@ -456,7 +484,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::
             r = _create_recording_nirs(
                 data_type = data_type,
                 file_name = file_name,
-                file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
+                file_size_mb = round(filesize(file_name) / 1024^2, digits = 2),
                 file_type = file_type,
                 recording = "",
                 recording_date = "",

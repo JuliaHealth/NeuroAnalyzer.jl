@@ -16,7 +16,9 @@ Play channel signal as audio.
 
   - `Nothing`
 """
-function play(obj::NeuroAnalyzer.NEURO; ch::String, seg::Tuple{Real, Real}, ep::Int64)::Nothing
+function play(
+    obj::NeuroAnalyzer.NEURO; ch::String, seg::Tuple{Real, Real}, ep::Int64
+)::Nothing
 
     _check_epochs(obj, ep)
 

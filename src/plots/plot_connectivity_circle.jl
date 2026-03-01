@@ -45,8 +45,8 @@ function plot_connectivity_circle(
         pos_y[idx] = sin(t[idx])
     end
 
-    pos_x = round.(pos_x; digits = 3)
-    pos_y = round.(pos_y; digits = 3)
+    pos_x = round.(pos_x, digits = 3)
+    pos_y = round.(pos_y, digits = 3)
 
     # prepare plot
     GLMakie.activate!(title = "plot_connectivity_circle()")

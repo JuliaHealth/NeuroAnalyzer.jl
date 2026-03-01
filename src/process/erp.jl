@@ -27,9 +27,9 @@ function average_epochs(
     nchannels(obj) > length(get_channel(obj, type = datatype(obj))) && _warn("Non-signal channels will be removed.")
 
     if datatype(obj) == "eeg"
-        obj_new = keep_channel(obj; ch = get_channel(obj, type = datatype(obj)))
+        obj_new = keep_channel(obj, ch = get_channel(obj, type = datatype(obj)))
     else
-        obj_new = keep_channel(obj; ch = ["meg", "mag", "grad"])
+        obj_new = keep_channel(obj, ch = ["meg", "mag", "grad"])
     end
 
     # remove baseline prior to averaging
@@ -146,7 +146,7 @@ Sort epochs.
 """
 function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
 
-    obj_new = sort_epochs(obj; s = s)
+    obj_new = sort_epochs(obj, s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.markers = obj_new.markers

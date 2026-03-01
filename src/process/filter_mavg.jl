@@ -170,7 +170,7 @@ function filter_mavg!(
     ww::AbstractVector = ones(2 * k + 1),
 )::Nothing
 
-    obj_new = filter_mavg(obj; ch = ch, k = k, t = t, ww = ww)
+    obj_new = filter_mavg(obj, ch = ch, k = k, t = t, ww = ww)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

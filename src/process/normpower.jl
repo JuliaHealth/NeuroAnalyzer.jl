@@ -93,7 +93,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 """
 function normpower!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = normpower(obj; ch = ch)
+    obj_new = normpower(obj, ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

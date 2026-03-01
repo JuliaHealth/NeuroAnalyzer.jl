@@ -31,9 +31,13 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyz
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     # merge markers
-    DataFrames.nrow(obj2.markers) > 0 && (obj_new.markers = vcat(obj1.markers, obj2.markers))
-    DataFrames.nrow(obj1.markers) > 0 &&
-        (obj_new.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (signal_len(obj1) / sr(obj1)))
+    DataFrames.nrow(obj2.markers) > 0 &&
+        (obj_new.markers = vcat(obj1.markers, obj2.markers))
+    DataFrames.nrow(obj1.markers) > 0 && (
+        obj_new.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (
+            signal_len(obj1) / sr(obj1)
+        )
+    )
 
 
     push!(obj_new.history, "join(OBJ1, OBJ2)")

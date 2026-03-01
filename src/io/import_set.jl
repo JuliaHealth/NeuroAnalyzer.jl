@@ -84,11 +84,13 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         ch_type = _set_channel_types(clabels, "eeg")
         units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     else
-        if length(dataset["chanlocs"]) > 0 && string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
+        if length(dataset["chanlocs"]) > 0 &&
+            string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
             ch_type = repeat(["eeg"], ch_n)
             units = repeat(["μV"], ch_n)
         else
-            length(dataset["chanlocs"]) > 0 && (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
+            length(dataset["chanlocs"]) > 0 &&
+                (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
             units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
         end
     end
@@ -153,11 +155,16 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             chanlocs["X"][:][idx] isa Float64 && (x[idx] = chanlocs["X"][:][idx])
             chanlocs["Y"][:][idx] isa Float64 && (y[idx] = chanlocs["Y"][:][idx])
             chanlocs["Z"][:][idx] isa Float64 && (z[idx] = chanlocs["Z"][:][idx])
-            chanlocs["theta"][:][idx] isa Float64 && (theta[idx] = chanlocs["theta"][:][idx])
-            chanlocs["radius"][:][idx] isa Float64 && (radius[idx] = chanlocs["radius"][:][idx])
-            chanlocs["sph_phi"][:][idx] isa Float64 && (phi_sph[idx] = chanlocs["sph_phi"][:][idx])
-            chanlocs["sph_radius"][:][idx] isa Float64 && (radius_sph[idx] = chanlocs["sph_radius"][:][idx])
-            chanlocs["sph_theta"][:][idx] isa Float64 && (theta_sph[idx] = chanlocs["sph_theta"][:][idx])
+            chanlocs["theta"][:][idx] isa Float64 &&
+                (theta[idx] = chanlocs["theta"][:][idx])
+            chanlocs["radius"][:][idx] isa Float64 &&
+                (radius[idx] = chanlocs["radius"][:][idx])
+            chanlocs["sph_phi"][:][idx] isa Float64 &&
+                (phi_sph[idx] = chanlocs["sph_phi"][:][idx])
+            chanlocs["sph_radius"][:][idx] isa Float64 &&
+                (radius_sph[idx] = chanlocs["sph_radius"][:][idx])
+            chanlocs["sph_theta"][:][idx] isa Float64 &&
+                (theta_sph[idx] = chanlocs["sph_theta"][:][idx])
         end
         radius_sph == zeros(ch_n) && (radius_sph = radius)
         locs = DataFrame(
@@ -178,8 +185,9 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
                 chanlocs["Z"][:][idx] isa Float64
             ) || deleteat!(locs, idx)
         end
-        DataFrames.nrow(locs) > 0 &&
-            _info("Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found")
+        DataFrames.nrow(locs) > 0 && _info(
+            "Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found",
+        )
         if DataFrames.nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
             locs_normalize!(locs)
@@ -189,7 +197,13 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     end
 
     # MARKERS
-    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+    markers = DataFrame(
+        :id=>String[],
+        :start=>Float64[],
+        :length=>Float64[],
+        :value=>String[],
+        :channel=>Int64[],
+    )
 
     if "event" in keys(dataset)
         events = dataset["event"]
@@ -203,7 +217,11 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             desc = String.(events["type"][:])
             id = repeat(["stim"], length(start))
             markers = DataFrame(
-                :id=>id, :start=>start, :length=>len, :value=>desc, :channel=>zeros(Int64, length(start))
+                :id=>id,
+                :start=>start,
+                :length=>len,
+                :value=>desc,
+                :channel=>zeros(Int64, length(start)),
             )
         end
     end
@@ -216,26 +234,36 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             epoch_time = dataset["times"][:]
         else
             epoch_time = round.(
-                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4
+                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+                digits = 4,
             )
         end
         time_pts = round.(
-            collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+            collect(
+                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
+            )[1:(end - 1)];
+            digits = 4,
         )
     else
         # if length(dataset["times"][:]) > 0
         #     time_pts = dataset["times"][:]
         # end
         time_pts = round.(
-            collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+            collect(
+                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
+            )[1:(end - 1)];
+            digits = 4,
         )
-        epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+        epoch_time = round.(
+            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+            digits = 4,
+        )
     end
 
     if data_src isa String
-        file_size_mb = round(filesize(data_src) / 1024^2; digits = 2)
+        file_size_mb = round(filesize(data_src) / 1024^2, digits = 2)
     else
-        file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
+        file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
     end
 
     data_type = "eeg"

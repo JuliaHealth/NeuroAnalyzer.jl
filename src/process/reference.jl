@@ -919,7 +919,7 @@ function reference_custom(
         end
     end
 
-    obj_new = delete_channel(obj; ch = get_channel(obj, type = "eeg"))
+    obj_new = delete_channel(obj, ch = get_channel(obj, type = "eeg"))
     obj_new.data = vcat(s, obj_new.data)
     obj_new.header.recording[:label] = vcat(ref_list, labels(obj_new))
     obj_new.header.recording[:reference] = ref_name

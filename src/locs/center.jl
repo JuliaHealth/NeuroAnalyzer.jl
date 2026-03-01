@@ -17,7 +17,9 @@ Center locs at (0, 0).
 
   - `locs_new::DataFrame`
 """
-function locs_center(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
+function locs_center(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::DataFrame
 
     locs_new = deepcopy(locs)
     # locs_new = locs_rotz(locs, a=90)
@@ -41,7 +43,8 @@ function locs_center(locs::DataFrame; polar::Bool = true, cart::Bool = true, sph
         (cl = findfirst(lowercase.(locs[!, :label]) .== "c1"))
     findfirst(lowercase.(locs[!, :label]) .== "c2") !== nothing &&
         (cl = findfirst(lowercase.(locs[!, :label]) .== "c2"))
-    cl === nothing && _warn("Cz/C1/C2 electrodes could not be find, cannot center along Y axis")
+    cl === nothing &&
+        _warn("Cz/C1/C2 electrodes could not be find, cannot center along Y axis")
     y_offset = locs[cl, :loc_y]
 
     if cart
@@ -85,9 +88,13 @@ Center locs at (0, 0).
 
   - `Nothing`
 """
-function locs_center!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
+function locs_center!(
+    locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
+)::Nothing
 
-    locs[!, :] = locs_center(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
+    locs[!, :] = locs_center(locs; polar = polar, cart = cart, spherical = spherical)[
+        !, :,
+    ]
 
     return nothing
 

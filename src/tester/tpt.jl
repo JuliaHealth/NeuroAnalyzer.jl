@@ -138,7 +138,7 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],
         unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
     )
-    create_time!(obj; fs = fs)
+    create_time!(obj, fs = fs)
 
     return obj
 
@@ -240,7 +240,7 @@ function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroA
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],
         unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
     )
-    create_time!(obj; fs = fs)
+    create_time!(obj, fs = fs)
 
     return obj
 

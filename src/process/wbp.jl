@@ -121,7 +121,7 @@ function wbp!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real, ncyc::Int64 = 6
 )::Nothing
 
-    obj_new = wbp(obj; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
+    obj_new = wbp(obj, ch = ch, pad = pad, frq = frq, ncyc = ncyc)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

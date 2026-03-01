@@ -92,7 +92,7 @@ Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp poten
 """
 function csd!(obj::NeuroAnalyzer.NEURO; m::Int64 = 4, n::Int64 = 8, lambda::Float64 = 10^-5)::Nothing
 
-    obj_new = csd(obj; m = m, n = n, lambda = lambda)
+    obj_new = csd(obj, m = m, n = n, lambda = lambda)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history

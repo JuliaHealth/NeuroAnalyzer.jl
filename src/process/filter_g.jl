@@ -123,7 +123,7 @@ function filter_g!(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
 )::Nothing
 
-    obj_new = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
+    obj_new = filter_g(obj, ch = ch, pad = pad, f = f, gw = gw)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

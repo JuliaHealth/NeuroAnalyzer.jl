@@ -44,7 +44,7 @@ Multiply channel(s) by `factor`.
 """
 function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, factor::Real)::Nothing
 
-    obj_new = scale(obj; ch = ch, factor = factor)
+    obj_new = scale(obj, ch = ch, factor = factor)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

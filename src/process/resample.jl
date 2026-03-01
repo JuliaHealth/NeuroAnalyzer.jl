@@ -57,7 +57,7 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64
 
     ch_n, _, ep_n = size(s)
 
-    s_new = NeuroAnalyzer.resample(s[1, :, 1]; old_sr = old_sr, new_sr = new_sr)
+    s_new = NeuroAnalyzer.resample(s[1, :, 1], old_sr = old_sr, new_sr = new_sr)
     s_new = zeros(ch_n, length(s_new), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
@@ -90,9 +90,13 @@ function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
     @assert new_sr >= 1 "new_sr must be ≥ 1."
 
-    new_sr > sr(obj) && return upsample(obj; new_sr = new_sr)
-    new_sr < sr(obj) && return downsample(obj; new_sr = new_sr)
-    new_sr == sr(obj) && return obj
+    if new_sr > sr(obj)
+        return upsample(obj, new_sr = new_sr)
+    elseif new_sr < sr(obj)
+        return downsample(obj, new_sr = new_sr)
+    else
+        return obj
+    end
 
 end
 
@@ -112,7 +116,7 @@ Resample (up- or down-sample).
 """
 function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
-    obj_new = resample(obj; new_sr = new_sr)
+    obj_new = resample(obj, new_sr = new_sr)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -174,7 +178,7 @@ Upsample.
 """
 function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
-    obj_new = upsample(obj; new_sr = new_sr)
+    obj_new = upsample(obj, new_sr = new_sr)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -240,7 +244,7 @@ Downsample.
 """
 function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
-    obj_new = downsample(obj; new_sr = new_sr)
+    obj_new = downsample(obj, new_sr = new_sr)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history

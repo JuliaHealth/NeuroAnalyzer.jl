@@ -15,7 +15,9 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 
   - `f::Vector{Float64}`: frequencies
 """
-function cwtfrq(s::AbstractVector; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2)) where {T <: CWT}
+function cwtfrq(
+    s::AbstractVector; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2)
+) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -41,7 +43,9 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 
   - `f::Vector{Float64}`: frequencies
 """
-function cwtfrq(s::AbstractArray; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2)) where {T <: CWT}
+function cwtfrq(
+    s::AbstractArray; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2)
+) where {T <: CWT}
 
     _chk3d(s)
 

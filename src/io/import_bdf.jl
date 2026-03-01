@@ -44,7 +44,8 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     file_type = Int(header[1])
     file_type == 255 && (file_type = "BDF")
-    file_type == "BDF" && @assert strip(header[3:9]) == "BIOSEMI" "File $file_name is not BDF file."
+    file_type == "BDF" &&
+        @assert strip(header[3:9]) == "BIOSEMI" "File $file_name is not BDF file."
 
     patient = strip(header[10:89])
     recording = strip(header[90:169])
@@ -94,28 +95,36 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        physical_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        physical_minimum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        physical_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        physical_maximum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        digital_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        digital_minimum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        digital_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        digital_maximum[idx] = parse(
+            Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     header = zeros(UInt8, ch_n * 80)
@@ -129,7 +138,9 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        samples_per_datarecord[idx] = parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
+        samples_per_datarecord[idx] = parse(
+            Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
+        )
     end
 
     close(fid)
@@ -150,7 +161,12 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     else
         # in BDF+ files the last channel is always the Status channel + additional annotations channels are possible
         annotation_channels = sort(
-            unique(vcat(ch_n, getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1)))
+            unique(
+                vcat(
+                    ch_n,
+                    getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1),
+                ),
+            ),
         )
         markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
@@ -199,8 +215,11 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
                     end
                 end
             end
-            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] =
-                signal
+            data[
+                idx2,
+                ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]),
+                1,
+            ] = signal
         end
     end
 
@@ -223,7 +242,13 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     close(fid)
 
     if length(annotation_channels) == 0
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     else
         markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)
@@ -237,9 +262,13 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)], digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)],
+        digits = 4,
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)], digits = 4)
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
+        digits = 4,
+    )
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
 

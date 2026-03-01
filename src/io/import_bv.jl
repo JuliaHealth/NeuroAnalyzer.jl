@@ -55,39 +55,75 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     any(startswith.(lowercase.(vhdr), "datafile=")) &&
         (eeg_file = split(vhdr[startswith.(lowercase.(vhdr), "datafile=")][1], '=')[2])
     eeg_file = replace(eeg_file, raw"$b" => split(file_name)[1])
-    any(startswith.(lowercase.(vhdr), "markerfile=")) &&
-        (marker_file = split(vhdr[startswith.(lowercase.(vhdr), "markerfile=")][1], '=')[2])
+    any(startswith.(lowercase.(vhdr), "markerfile=")) && (
+        marker_file = split(vhdr[startswith.(lowercase.(vhdr), "markerfile=")][1], '=')[2]
+    )
     marker_file = replace(marker_file, raw"$b" => split(file_name)[1])
-    any(startswith.(lowercase.(vhdr), "dataformat=")) &&
-        (data_format = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "dataformat=")][1], '=')[2])) # BINARY or ASCII
-    any(startswith.(lowercase.(vhdr), "numberofchannels=")) &&
-        (ch_n = parse(Int64, split(vhdr[startswith.(lowercase.(vhdr), "numberofchannels=")][1], '=')[2]))
-    any(startswith.(lowercase.(vhdr), "dataorientation=")) &&
-        (data_orientation = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "dataorientation=")][1], '=')[2])) # MULTIPLEXED
-    any(startswith.(lowercase.(vhdr), "samplinginterval=")) &&
-        (sampling_interval = parse(Float64, split(vhdr[startswith.(lowercase.(vhdr), "samplinginterval=")][1], '=')[2]))
-    any(startswith.(lowercase.(vhdr), "binaryformat=")) &&
-        (binary_format = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "binaryformat=")][1], '=')[2])) # IEEE_FLOAT_32 / INT_16
-    any(startswith.(lowercase.(vhdr), "averaged=")) &&
-        (averaged = if lowercase(split(vhdr[startswith.(lowercase.(vhdr), "averaged=")][1], '=')[2]) == "yes"
-            true
-        else
-            false # YES|NO
-        end) # YES|NO
-    any(startswith.(lowercase.(vhdr), "averagedsegments=")) &&
-        (averaged_segments = parse(Int64, split(vhdr[startswith.(lowercase.(vhdr), "averagedsegments=")][1], '=')[2]))
-    any(startswith.(lowercase.(vhdr), "averageddatapoints=")) &&
-        (averaged_points = parse(Int64, split(vhdr[startswith.(lowercase.(vhdr), "averageddatapoints=")][1], '=')[2]))
-    any(startswith.(lowercase.(vhdr), "segmentation=")) &&
-        (segmentation = if lowercase(split(vhdr[startswith.(lowercase.(vhdr), "segmentation=")][1], '=')[2]) == "yes"
-            true # YES|NO
-        else
-            false # YES|NO
-        end) # YES|NO
+    any(startswith.(lowercase.(vhdr), "dataformat=")) && (
+        data_format = lowercase(
+            split(vhdr[startswith.(lowercase.(vhdr), "dataformat=")][1], '=')[2]
+        )
+    ) # BINARY or ASCII
+    any(startswith.(lowercase.(vhdr), "numberofchannels=")) && (
+        ch_n = parse(
+            Int64,
+            split(vhdr[startswith.(lowercase.(vhdr), "numberofchannels=")][1], '=')[2],
+        )
+    )
+    any(startswith.(lowercase.(vhdr), "dataorientation=")) && (
+        data_orientation = lowercase(
+            split(vhdr[startswith.(lowercase.(vhdr), "dataorientation=")][1], '=')[2]
+        )
+    ) # MULTIPLEXED
+    any(startswith.(lowercase.(vhdr), "samplinginterval=")) && (
+        sampling_interval = parse(
+            Float64,
+            split(vhdr[startswith.(lowercase.(vhdr), "samplinginterval=")][1], '=')[2],
+        )
+    )
+    any(startswith.(lowercase.(vhdr), "binaryformat=")) && (
+        binary_format = lowercase(
+            split(vhdr[startswith.(lowercase.(vhdr), "binaryformat=")][1], '=')[2]
+        )
+    ) # IEEE_FLOAT_32 / INT_16
+    any(startswith.(lowercase.(vhdr), "averaged=")) && (
+        averaged =
+            if lowercase(
+                split(vhdr[startswith.(lowercase.(vhdr), "averaged=")][1], '=')[2]
+            ) == "yes"
+                true
+            else
+                false # YES|NO
+            end
+    ) # YES|NO
+    any(startswith.(lowercase.(vhdr), "averagedsegments=")) && (
+        averaged_segments = parse(
+            Int64,
+            split(vhdr[startswith.(lowercase.(vhdr), "averagedsegments=")][1], '=')[2],
+        )
+    )
+    any(startswith.(lowercase.(vhdr), "averageddatapoints=")) && (
+        averaged_points = parse(
+            Int64,
+            split(vhdr[startswith.(lowercase.(vhdr), "averageddatapoints=")][1], '=')[2],
+        )
+    )
+    any(startswith.(lowercase.(vhdr), "segmentation=")) && (
+        segmentation =
+            if lowercase(
+                split(vhdr[startswith.(lowercase.(vhdr), "segmentation=")][1], '=')[2]
+            ) == "yes"
+                true # YES|NO
+            else
+                false # YES|NO
+            end
+    ) # YES|NO
 
     for idx in eachindex(vhdr)
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "[channelinfos]") && (channels_idx = idx)
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "[coordinates]") && (locs_idx = idx)
+        startswith(lowercase(replace(vhdr[idx], " " => "")), "[channelinfos]") &&
+            (channels_idx = idx)
+        startswith(lowercase(replace(vhdr[idx], " " => "")), "[coordinates]") &&
+            (locs_idx = idx)
         if startswith(lowercase(replace(vhdr[idx], " " => "")), "softwarefilters")
             (soft_filt_idx = idx)
         end
@@ -103,7 +139,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         end
     end
     soft_filt_file = replace(splitext(file_name)[1], "eeg"=>"channels.tsv")
-    isfile(soft_filt_file) && (soft_filt = CSV.read(soft_filt_file, stringtype = String, DataFrame))
+    isfile(soft_filt_file) &&
+        (soft_filt = CSV.read(soft_filt_file, stringtype = String, DataFrame))
 
     # JSON
     js_file = ""
@@ -140,17 +177,22 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     for idx in 1:ch_n
         tmp = split(split(vhdr[idx + channels_idx], '=')[2], ',')
         # channel label
-        clabels[idx] = replace(split(split(vhdr[idx + channels_idx], '=')[2], ',')[1], "\1" => ",")
+        clabels[idx] = replace(
+            split(split(vhdr[idx + channels_idx], '=')[2], ',')[1], "\1" => ","
+        )
         # reference channel name
         ref_chs = split(split(vhdr[idx + channels_idx], '=')[2], ',')[2]
         # resolution in units
         if length(tmp) >= 3
             if split(split(vhdr[idx + channels_idx], '=')[2], ',')[3] != ""
-                gain[idx] = parse(Float64, split(split(vhdr[idx + channels_idx], '=')[2], ',')[3])
+                gain[idx] = parse(
+                    Float64, split(split(vhdr[idx + channels_idx], '=')[2], ',')[3]
+                )
             end
         end
         # units name, e.g. μV
-        length(tmp) >= 4 && (units[idx] = split(split(vhdr[idx + channels_idx], '=')[2], ',')[4])
+        length(tmp) >= 4 &&
+            (units[idx] = split(split(vhdr[idx + channels_idx], '=')[2], ',')[4])
     end
 
     if soft_filt != false
@@ -161,8 +203,10 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
                 (ch_type[idx] = lowercase(soft_filt[idx, :type]))
         end
         prefiltering =
-            repeat(["LP: "], ch_n) .* string.(round.(soft_filt[!, :low_cutoff]; digits = 4)) .*
-            repeat([" Hz, HP: "], ch_n) .* string.(round.(soft_filt[!, :high_cutoff]; digits = 4)) .* " Hz"
+            repeat(["LP: "], ch_n) .*
+            string.(round.(soft_filt[!, :low_cutoff], digits = 4)) .*
+            repeat([" Hz, HP: "], ch_n) .*
+            string.(round.(soft_filt[!, :high_cutoff], digits = 4)) .* " Hz"
     end
 
     clabels = _clean_labels(clabels)
@@ -197,7 +241,9 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             loc_phi_sph[idx] = parse(Float64, split(l, ',')[3])
             loc_theta[idx] = loc_theta_sph[idx]
             loc_radius[idx] = loc_radius_sph[idx]
-            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
+            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(
+                loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx]
+            )
         end
         locs = DataFrame(
             :ch_n=>1:ch_n,
@@ -233,7 +279,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         @assert startswith(lowercase(replace(vmrk[1], " " => "")), "brainvision") "File $file_name is not BrainVision .VMRK file."
         markers_idx = 0
         for idx in eachindex(vmrk)
-            startswith(lowercase(replace(vmrk[idx], " " => "")), "[markerinfos]") && (markers_idx = idx)
+            startswith(lowercase(replace(vmrk[idx], " " => "")), "[markerinfos]") &&
+                (markers_idx = idx)
         end
         markers = repeat([""], length(vmrk) - markers_idx)
         for idx in eachindex(markers)
@@ -250,8 +297,11 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         m_ch = zeros(Int64, length(markers))
         for idx in eachindex(markers)
             m_id[idx] = replace(split(split(markers[idx], '=')[2], ',')[1], "\1" => ",")
-            replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ",") != "" &&
-                (m_desc[idx] = replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ","))
+            replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ",") != "" && (
+                m_desc[idx] = replace(
+                    split(split(markers[idx], '=')[2], ',')[2], "\1" => ","
+                )
+            )
             m_pos[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[3])
             m_len[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[4])
             # 0 = marker is related to all channels
@@ -268,7 +318,11 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             markers[!, :id] == repeat(["mrk"], DataFrames.nrow(markers))
         end
     elseif isfile(replace(splitext(file_name)[1], "eeg"=>"events.tsv"))
-        vmrk = CSV.read(replace(splitext(file_name)[1], "eeg"=>"events.tsv"); stringtype = String, DataFrame)
+        vmrk = CSV.read(
+            replace(splitext(file_name)[1], "eeg"=>"events.tsv");
+            stringtype = String,
+            DataFrame,
+        )
         markers = DataFrame(
             :id=>repeat(["mrk"], DataFrames.nrow(vmrk)),
             :start=>(vmrk[!, :sample] ./ sampling_rate),
@@ -277,7 +331,13 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             :channel=>m_ch,
         )
     else
-        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
+        markers = DataFrame(
+            :id=>String[],
+            :start=>Float64[],
+            :length=>Float64[],
+            :value=>String[],
+            :channel=>Int64[],
+        )
     end
 
     # read data
@@ -320,7 +380,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         close(fid)
         # split signal into channels
         if data_orientation == "multiplexed"
-            length(signal) % ch_n != 0 && (signal = signal[1:(end - length(signal) % ch_n)])
+            length(signal) % ch_n != 0 &&
+                (signal = signal[1:(end - length(signal) % ch_n)])
             data = zeros(ch_n, length(signal) ÷ ch_n, 1)
             idx2 = 1
             @inbounds for idx1 in 1:ch_n:length(signal)
@@ -356,11 +417,15 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     end
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits = 4,
     )
-    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
+    epoch_time = round.(
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
+    )
 
-    file_size_mb = round(filesize(eeg_file) / 1024^2; digits = 2)
+    file_size_mb = round(filesize(eeg_file) / 1024^2, digits = 2)
 
     data_type = "eeg"
 

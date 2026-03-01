@@ -62,14 +62,14 @@ function epoch(
 
         # split into epochs
         epochs, obj_new.markers = _make_epochs_bymarkers(
-                                                        obj_new.data;
-                                                        marker = marker,
-                                                        markers = deepcopy(obj_new.markers),
-                                                        marker_start = round.(Int64, mrk_start * sr(obj)),
-                                                        offset = round(Int64, offset * sr(obj)),
-                                                        ep_len = round(Int64, ep_len * sr(obj)),
-                                                        fs = sr(obj),
-                                                    )
+            obj_new.data;
+            marker = marker,
+            markers = deepcopy(obj_new.markers),
+            marker_start = round.(Int64, mrk_start * sr(obj)),
+            offset = round(Int64, offset * sr(obj)),
+            ep_len = round(Int64, ep_len * sr(obj)),
+            fs = sr(obj),
+        )
 
     else
         if !isnothing(ep_len)
@@ -82,7 +82,8 @@ function epoch(
         # delete markers outside epochs
         for marker_idx in DataFrames.nrow(obj_new.markers):-1:1
 
-            round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:(size(epochs, 2) * size(epochs, 3)) ||
+            round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in
+            0:(size(epochs, 2) * size(epochs, 3)) ||
                 deleteat!(obj_new.markers, marker_idx)
         end
     end
@@ -204,7 +205,9 @@ Extract sub-epochs with a reduced time range.
 
   - `obj_new::NeuroAnalyzer.NEURO`
 """
-function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::NeuroAnalyzer.NEURO
+function subepoch(
+    obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real
+)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     ep_time = obj.epoch_time
@@ -229,7 +232,8 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Neuro
     mrk_start = obj.markers[!, :start]
     mrk_epoch = _markers_epochs(obj)
     for mrk_idx in length(mrk_start):-1:1
-        if mrk_start[mrk_idx] < ep_tps[1, mrk_epoch[mrk_idx]] || mrk_start[mrk_idx] > ep_tps[2, mrk_epoch[mrk_idx]]
+        if mrk_start[mrk_idx] < ep_tps[1, mrk_epoch[mrk_idx]] ||
+            mrk_start[mrk_idx] > ep_tps[2, mrk_epoch[mrk_idx]]
             deleteat!(obj_new.markers, mrk_idx)
             deleteat!(mrk_epoch, mrk_idx)
         end
@@ -239,7 +243,10 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Neuro
     mrk_start = deepcopy(obj_new.markers[!, :start])
     for mrk_idx in eachindex(mrk_start)
         mrk_start[mrk_idx] -= (
-            ep_start + ((mrk_epoch[mrk_idx] - 1) * (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end)))
+            ep_start + (
+                (mrk_epoch[mrk_idx] - 1) *
+                (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end))
+            )
         )
     end
     mrk_start = round.(mrk_start, digits = 3)
