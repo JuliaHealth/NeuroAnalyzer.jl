@@ -190,7 +190,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     chd = replace(lowercase.(chd), "chandis="=>"")
     chd = split.(chd, '\t')
     channel_distance = zeros(length(chd))
-    [channel_distance[idx] in parse(Float64, chd[idx]) for idx in eachindex(chd)]
+    [channel_distance[idx] = parse(Float64, chd[idx]) for idx in eachindex(chd)]
 
     # read raw light intensity channels (V)
     nirs_int = Matrix(
@@ -300,12 +300,12 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     clabels = repeat([""], ch_n)
     [
-        clabels[idx] in
-            src_labels[opt_pairs[idx, :][1]] *
-            "_" *
-            det_labels[opt_pairs[idx, :][2]] *
-            " " *
-            string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
+        clabels[idx] =
+        src_labels[opt_pairs[idx, :][1]] *
+        "_" *
+        det_labels[opt_pairs[idx, :][2]] *
+        " " *
+        string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
     ]
     clabels = replace.(clabels, ".0"=>"")
 

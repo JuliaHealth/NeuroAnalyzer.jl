@@ -196,7 +196,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         event_start_sample = events[!, :sample] .+ 1
         event_start = zeros(length(event_start_sample))
         [
-            event_start[idx] in time_pts[event_start_sample[idx]] for
+            event_start[idx] = time_pts[event_start_sample[idx]] for
             idx in eachindex(event_start_sample)
         ]
         event_length = round.(events[!, :duration], digits = 4)
