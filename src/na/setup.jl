@@ -190,7 +190,7 @@ function na_set_colors(value::Bool)::Nothing
 end
 
 """
-    na_set_prefs(; progress_bar, verbose, exclude_bads, colors)
+    na_set_prefs(; <keyword arguments>)
 
 Set and save NeuroAnalyzer preferences.
 
