@@ -301,7 +301,7 @@ e = average_epochs(e10)
 p = erp_peaks(e)
 @test size(p) == (19, 2)
 
-@info "Test: auc()"
+@info "Test: erp_auc()"
 v = erp_auc(e, ch="all")
 @test length(v) == 19
 
@@ -965,11 +965,11 @@ erp = average_epochs(e10)
 s = topo_var(erp, ch="eeg")
 @test length(s) == 2560
 
-@info "Test: gfp()"
+@info "Test: erp_gfp()"
 erp = average_epochs(e10)
-s = gfp(erp, ch="all")
+s = erp_gfp(erp, ch="all")
 @test length(s) == 2560
-s = gfp(erp, ch="all", norm=true)
+s = erp_gfp(erp, ch="all", norm=true)
 @test size(s) == (19, 2560)
 
 @info "Test: diss()"

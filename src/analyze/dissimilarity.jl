@@ -48,8 +48,8 @@ function diss(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{gd::Vector{Fl
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     n_ch = size(s1, 1)
-    g1 = gfp_norm(s1)
-    g2 = gfp_norm(s2)
+    g1 = erp_gfp_norm(s1)
+    g2 = erp_gfp_norm(s2)
 
     gd = zeros(size(s1, 2))
     sc = zeros(size(s1, 2))
