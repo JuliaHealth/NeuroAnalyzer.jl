@@ -443,7 +443,7 @@ function filter_apply!(
     dir::Symbol = :twopass,
 )::Nothing
 
-    obj_new = NeuroAnalyzer.filter_apply(obj; ch = ch, flt = flt, dir = dir)
+    obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
 
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -524,23 +524,23 @@ function filter(
                     w = w,
                 )
         return p
+    else
+        flt = filter_create(
+                        fprototype = fprototype,
+                        ftype = ftype,
+                        cutoff = cutoff,
+                        fs = sr(obj),
+                        order = order,
+                        rp = rp,
+                        rs = rs,
+                        bw = bw,
+                        w = w,
+                    )
+        obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
+
+        return obj_new
+
     end
-
-    flt = filter_create(
-                    fprototype = fprototype,
-                    ftype = ftype,
-                    cutoff = cutoff,
-                    fs = sr(obj),
-                    order = order,
-                    rp = rp,
-                    rs = rs,
-                    bw = bw,
-                    w = w,
-                )
-    obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
-
-    return obj_new
-
 end
 
 """

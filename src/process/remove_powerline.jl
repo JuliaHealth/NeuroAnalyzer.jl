@@ -58,7 +58,7 @@ function remove_powerline(
     pks_best_bw = Vector{Float64}[]
 
     if method === :iir
-        bw_values = collect(0:q:20.0)[2:end]
+        bw_values = collect(0:q:10.0)[2:end]
 
         # initialize progress bar
         progbar = Progress(length(ch), dt = 1, barlen = 20, color = :white, enabled = progress_bar)

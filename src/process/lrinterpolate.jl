@@ -35,7 +35,7 @@ function lrinterpolate_channel(
 
     signal_src = @views obj.data[:, :, ep]
     ch_ref = setdiff(channels, ch)
-    signal_ref = @views _make_epochs(obj.data[:, :, ep_ref], ep_n = 1)
+    signal_ref = reshape(obj.data, size(obj.data, 1), (size(obj.data, 2) * size(obj.data, 3)), 1)
 
     # train
     df = @views DataFrame(hcat(signal_ref[ch, :, 1], signal_ref[ch_ref, :, 1]'), :auto)
@@ -43,7 +43,7 @@ function lrinterpolate_channel(
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = GLM.lm(fm, train)
     prediction = GLM.predict(linear_regressor, test)
-    accuracy_testdf = DataFrame(; signal_actual = test[!, :x1], signal_predicted = prediction)
+    accuracy_testdf = DataFrame(signal_actual = test[!, :x1], signal_predicted = prediction)
     accuracy_testdf.error = accuracy_testdf[!, :signal_actual]
     acc_rmse = sqrt(sum((accuracy_testdf.error) .^ 2)) / length(accuracy_testdf.error)
     acc_mae = mean(abs.(accuracy_testdf.error))

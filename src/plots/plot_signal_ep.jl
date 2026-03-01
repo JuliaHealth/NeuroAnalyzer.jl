@@ -83,7 +83,8 @@ function plot_ep(
     _ = get_channel(obj, ch = ch)
     obj_tmp = deepcopy(obj)
     keep_channel!(obj_tmp; ch = ch)
-    epoch!(obj_tmp; ep_n = 1)
+    obj_tmp.data = reshape(obj_tmp.data, size(obj_tmp.data, 1), size(obj_tmp.data, 2) * size(obj_tmp.data, 3))
+
     ch_n = nchannels(obj_tmp)
     if group_ch
         ch_order = _sort_channels(obj_tmp.header.recording[:channel_type])

@@ -32,7 +32,7 @@ function _check_tuple(
     t::Tuple{Real, Real},
     r::Union{Nothing, Tuple{Real, Real}},
     name::Union{Nothing, String} = nothing,
-    type::Symbol=:bin
+    type::Symbol=:in
 )::Nothing
     _check_var(type, [:in, :bin], "type")
     @assert t == tuple_order(t) "$name must contain two values in ascending order."
@@ -42,7 +42,7 @@ function _check_tuple(
         if type === :bin
             @assert !(t[1] > r[1] || t[2] > r[1] || t[1] < r[2] || t[2] < r[2]) "$name must be in <$(r[1]), $(r[2])>."
         else
-            @assert t[1] >= r[1] && t[2] >= r[1] && t[1] < r[2] && t[2] <= r[2] "$name must be in [$(r[1]), $(r[2])]."
+            @assert (t[1] >= r[1] && t[2] >= r[1] && t[1] < r[2] && t[2] <= r[2]) "$name must be in [$(r[1]), $(r[2])]."
         end
     end
     return nothing

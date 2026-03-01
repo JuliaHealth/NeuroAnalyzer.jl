@@ -35,7 +35,9 @@ function mlinterpolate_channel(
     @assert !(ep in ep_ref) "ep must not be in ep_rep."
 
     ch_ref = setdiff(channels, ch)
-    signal_ref = _make_epochs(obj.data[get_channel(obj, ch = channels), :, ep_ref]; ep_n = 1)[:, :]
+    signal_ref = deepcopy(obj)
+    keep_channel!(signal_ref, ch = labels(obj)[channels])
+    signal_ref.data = reshape(signal_ref.data[:, :, ep_ref], size(signal_ref.data[:, :, ep_ref], 1), (size(signal_ref.data[:, :, ep_ref], 2) * size(signal_ref.data[:, :, ep_ref], 3)), 1)
     ch = get_channel(obj, ch = ch)[1]
 
     # train

@@ -100,18 +100,17 @@ keep_epoch!(e10_tmp, ep=1:2)
 bc = channel_reject(e10, ch=["Fp1", "Fp2"])
 @test sum(bc) == 2
 
-@info "Test: eppoch_reject()"
-be = eppoch_reject(e10, ch=["Fp1", "Fp2"])
+@info "Test: epoch_reject()"
+be = epoch_reject(e10, ch=["Fp1", "Fp2"])
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "Test: epoch(), subepoch()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
 @test epoch_len(e10) == 10 * sr(eeg)
-e10 = epoch(eeg, ep_n=10)
-@test nepochs(e10) == 10
+@test nepochs(e10) == 120
 e2 = subepoch(e10, ep_start=2, ep_end=8)
-@test nepochs(e2) == 10
+@test nepochs(e2) == 120
 
 @info "Test: epoch_time()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))

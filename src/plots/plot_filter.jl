@@ -1,7 +1,7 @@
 export plot_filter
 
 """
-    plot_filter(<keyword arguments>)
+    plot_filter(; <keyword arguments>)
 
 Plot filter response.
 
@@ -37,7 +37,7 @@ Plot filter response.
   - `p::GLMakie.Figure`
   - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
-function plot_filter(
+function plot_filter(;
     fs::Int64,
     fprototype::Symbol,
     ftype::Union{Nothing, Symbol} = nothing,

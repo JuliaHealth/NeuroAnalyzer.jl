@@ -267,7 +267,7 @@ function auc(
 
     _check_datatype(obj, ["erp", "erf", "mep"])
     _check_var(type, [:all, :pos, :neg], "type")
-    _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg", :in)
+    _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
     t1 = vsearch(seg[1], obj.epoch_time)
     t2 = vsearch(seg[2], obj.epoch_time)
     ch = get_channel(obj, ch = ch)

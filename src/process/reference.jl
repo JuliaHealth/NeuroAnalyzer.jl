@@ -287,19 +287,16 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
-    @assert "a1" in lowercase.(labels(obj)) "OBJ does not contain A1 channel."
-    @assert "a2" in lowercase.(labels(obj)) "OBJ does not contain A2 channel."
+    @assert "A1" in labels(obj) "OBJ does not contain A1 channel."
+    @assert "A2" in labels(obj) "OBJ does not contain A2 channel."
 
     # keep signal channels
     ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
     obj_new = deepcopy(obj)
     s = @view obj_new.data[ch, :, :]
 
-    a1_idx = labels(obj)[findfirst(isequal("a1"), lowercase.(labels(obj)))]
-    a2_idx = labels(obj)[findfirst(isequal("a2"), lowercase.(labels(obj)))]
-    a1 = extract_channel(obj, ch = a1_idx)
-    a2 = extract_channel(obj, ch = a2_idx)
-
+    a1 = extract_channel(obj, ch = "A1")
+    a2 = extract_channel(obj, ch = "A2")
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     s_ref = similar(s)
@@ -319,8 +316,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :i
-        c_picks = channel_pick(obj, p = :central)
-        c_picks = get_channel(obj, ch = c_picks)
+        c_picks = get_channel(obj, ch = channel_pick(obj, p = :central))
         @inbounds for ep_idx in 1:ep_n
             if !med
                 ref_ch = @views vec(mean(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims = 1))
@@ -332,8 +328,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A1A2"
             end
         end
-        l_picks = channel_pick(obj, p = :left)
-        c_picks = get_channel(obj, ch = c_picks)
+        l_picks = get_channel(obj, ch = channel_pick(obj, p = :left))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a1[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -341,8 +336,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A1"
             end
         end
-        r_picks = channel_pick(obj, p = :right)
-        c_picks = get_channel(obj, ch = c_picks)
+        r_picks = get_channel(obj, ch = channel_pick(obj, p = :right))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a2[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks
@@ -351,8 +345,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :c
-        c_picks = channel_pick(obj, p = :central)
-        c_picks = get_channel(obj, ch = c_picks)
+        c_picks = get_channel(obj, ch = channel_pick(obj, p = :central))
         @inbounds for ep_idx in 1:ep_n
             if !med
                 ref_ch = @views vec(mean(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims = 1))
@@ -364,8 +357,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A1A2"
             end
         end
-        l_picks = channel_pick(obj, p = :left)
-        c_picks = get_channel(obj, ch = c_picks)
+        l_picks = get_channel(obj, ch = channel_pick(obj, p = :left))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a2[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -373,8 +365,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-A2"
             end
         end
-        r_picks = channel_pick(obj, p = :right)
-        c_picks = get_channel(obj, ch = c_picks)
+        r_picks = get_channel(obj, ch = channel_pick(obj, p = :right))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a1[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks
@@ -453,18 +444,16 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
-    @assert "m1" in lowercase.(labels(obj)) "OBJ does not contain M1 channel."
-    @assert "m2" in lowercase.(labels(obj)) "OBJ does not contain M2 channel."
+    @assert "M1" in labels(obj) "OBJ does not contain M1 channel."
+    @assert "M2" in labels(obj) "OBJ does not contain M2 channel."
 
     # keep signal channels
     ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
     obj_new = deepcopy(obj)
     s = @view obj_new.data[ch, :, :]
 
-    m1_idx = labels(obj)[findfirst(isequal("m1"), lowercase.(labels(obj)))]
-    m2_idx = labels(obj)[findfirst(isequal("m2"), lowercase.(labels(obj)))]
-    m1 = extract_channel(obj, ch = m1_idx)
-    m2 = extract_channel(obj, ch = m2_idx)
+    m1 = extract_channel(obj, ch = "M1")
+    m2 = extract_channel(obj, ch = "M2")
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -485,8 +474,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :i
-        c_picks = channel_pick(obj, p = :central)
-        c_picks = get_channel(obj, ch = c_picks)
+        c_picks = get_channel(obj, ch = channel_pick(obj, p = :central))
         @inbounds for ep_idx in 1:ep_n
             if !med
                 ref_ch = @views vec(mean(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims = 1))
@@ -498,8 +486,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M1M2"
             end
         end
-        l_picks = channel_pick(obj, p = :left)
-        c_picks = get_channel(obj, ch = c_picks)
+        l_picks = get_channel(obj, ch = channel_pick(obj, p = :left))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m1[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -507,8 +494,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M1"
             end
         end
-        r_picks = channel_pick(obj, p = :right)
-        c_picks = get_channel(obj, ch = c_picks)
+        r_picks = get_channel(obj, ch = channel_pick(obj, p = :right))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m2[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks
@@ -517,8 +503,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
             end
         end
     elseif type === :c
-        c_picks = channel_pick(obj, p = :central)
-        c_picks = get_channel(obj, ch = c_picks)
+        c_picks = get_channel(obj, ch = channel_pick(obj, p = :central))
         @inbounds for ep_idx in 1:ep_n
             if !med
                 ref_ch = @views vec(mean(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims = 1))
@@ -530,8 +515,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M1M2"
             end
         end
-        l_picks = channel_pick(obj, p = :left)
-        c_picks = get_channel(obj, ch = c_picks)
+        l_picks = get_channel(obj, ch = channel_pick(obj, p = :left))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m2[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -539,8 +523,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
                 ref_label[ch_idx] = "-M2"
             end
         end
-        r_picks = channel_pick(obj, p = :right)
-        c_picks = get_channel(obj, ch = c_picks)
+        r_picks = get_channel(obj, ch = channel_pick(obj, p = :right))
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m1[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks

@@ -485,7 +485,7 @@ function plot_topo(
         if nepochs(obj) == 1
             data = obj.data[ch, tpos, 1]
         else
-            data = epoch(obj, ep_n = 1).data[ch, tpos, 1]
+            data = reshape(obj.data, size(obj.data, 1), size(obj.data, 2) * size(obj.data, 3))[ch, tpos]
         end
         title == "default" && (title = "$(obj.time_pts[tpos]) s")
     else
