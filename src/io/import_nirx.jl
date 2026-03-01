@@ -147,12 +147,12 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         gains_start = findfirst(startswith.(hdr, "Gains="))
         buf = hdr[(gains_start + 1):(gains_start + sources)]
         gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] in parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
+        [gains[idx, :] = parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
     else
         buf = readlines(splitext(file_name)[1] * ".set")
         buf = split.(buf, ' ')
         gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
+        [gains[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
     end
 
     # parse opt_pairs
@@ -161,7 +161,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     ch_n = length(pairs)
     opt_pairs = zeros(Int64, ch_n, 2)
     [
-        opt_pairs[idx, :] in [
+        opt_pairs[idx, :] = [
             parse(Int64, split(pairs[idx], "-")[1]),
             parse(Int64, split(split(pairs[idx], "-")[2], ":")[1]),
         ] for idx in 1:ch_n
@@ -245,14 +245,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         buf = hdr[(events_start + 1):(events_end - 2)]
         buf = split.(buf, '\t')
         events = zeros(Float64, length(buf), length(buf[1]))
-        [events[idx, :] in parse.(Float64, buf[idx]) for idx in eachindex(buf)]
+        [events[idx, :] = parse.(Float64, buf[idx]) for idx in eachindex(buf)]
         stim_onset = Int.(events[:, 3])
         stim_id = string.(Int.(events[:, 2]))
     elseif isfile(splitext(file_name)[1] * ".evt")
         buf = readlines(splitext(file_name)[1] * ".evt")
         buf = split.(buf, '\t')
         events = zeros(Int64, length(buf), length(buf[1]))
-        [events[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
+        [events[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
         # what are those 0s and 1s in events[] ???
         stim_onset = events[:, 1]
         stim_id = String[]
