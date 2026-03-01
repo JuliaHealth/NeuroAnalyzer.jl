@@ -33,7 +33,7 @@ function plot_coherence(
 
     @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(f), "flim")
 
     pal = mono ? :grays : :darktest
 
@@ -121,7 +121,7 @@ function plot_coherence(
 
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(f), "flim")
 
     pal = mono ? :grays : :darktest
 

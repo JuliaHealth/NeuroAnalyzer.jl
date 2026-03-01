@@ -138,7 +138,7 @@ function seg_extract(
         @assert length(threshold) == 1 "threshold must contain a single value."
     else
         @assert length(threshold) == 2 "threshold must contain two values."
-        _check_tuple(threshold, "threshold")
+        _check_tuple(threshold, extrema(m), "threshold")
     end
 
     if threshold_type === :eq

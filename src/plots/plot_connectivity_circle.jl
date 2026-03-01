@@ -83,7 +83,7 @@ function plot_connectivity_circle(
                     @assert length(threshold) == 1 "threshold must contain a single value."
                 else
                     @assert length(threshold) == 2 "threshold must contain two values."
-                    _check_tuple(threshold, "threshold")
+                    _check_tuple(threshold, extrema(m), "threshold")
                 end
                 (threshold_type === :eq && m[idx1, idx2] != threshold) && break
                 (threshold_type === :neq && m[idx1, idx2] == threshold) && break

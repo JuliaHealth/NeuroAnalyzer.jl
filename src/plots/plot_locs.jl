@@ -246,7 +246,7 @@ function plot_locs(
             @assert length(threshold) == 1 "threshold must contain a single value."
         else
             @assert length(threshold) == 2 "threshold must contain two values."
-            _check_tuple(threshold, "threshold")
+            _check_tuple(threshold, extrema(connections), "threshold")
         end
         m_tmp = normalize_n(abs.(connections))
         for idx1 in axes(connections, 1)

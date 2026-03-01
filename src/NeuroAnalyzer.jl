@@ -557,7 +557,6 @@ module NeuroAnalyzer
 
     # gui
     # include("gui/iedit.jl")
-    # include("gui/ipsd.jl")
     # include("gui/ispectrogram.jl")
     # include("gui/itopo.jl")
     # include("gui/iview_ica.jl")

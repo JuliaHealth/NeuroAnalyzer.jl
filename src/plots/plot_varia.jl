@@ -915,7 +915,7 @@ function plot_eros(
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     pal = mono ? :grays : :darktest
     cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
@@ -1141,7 +1141,7 @@ function plot_erop(
     @assert size(sp, 2) <= 2 "sp must contain ≤ 2 epochs."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     pal = mono ? :grays : :darktest
 

@@ -63,7 +63,7 @@ function plot_spectrogram(
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     pal = mono ? :grays : :darktest
 
@@ -197,7 +197,7 @@ function plot_spectrogram(
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     pal = mono ? :grays : :darktest
 
@@ -325,7 +325,7 @@ function plot_spectrogram_topo(
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     pal = mono ? :grays : :darktest
 

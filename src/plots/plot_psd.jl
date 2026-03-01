@@ -33,7 +33,7 @@ function plot_psd(
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
@@ -120,7 +120,7 @@ function plot_psd(
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     pal = mono ? :grays : :darktest
 
@@ -240,7 +240,7 @@ function plot_psd_3d(
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     ch_n = size(sp, 1)
 
@@ -382,7 +382,7 @@ function plot_psd_topo(
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, "flim")
+    _check_tuple(flim, extrema(sf), "flim")
 
     if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
