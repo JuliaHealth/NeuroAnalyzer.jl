@@ -68,7 +68,7 @@ function plot_matrix(
     plot_size = (800, 800)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -127,11 +127,11 @@ function plot_xac(
     plot_size = (800, 300)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
-        xticks = LinearTicks(20),
+        xticks = LinearTicks(10),
         xminorticksvisible = true,
         xminorticks = IntervalsBetween(10),
         xautolimitmargin = (0, 0),
@@ -222,7 +222,7 @@ function plot_histogram(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -308,7 +308,7 @@ function plot_bar(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -369,7 +369,7 @@ function plot_line(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -442,7 +442,7 @@ function plot_line(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -525,7 +525,7 @@ function plot_box(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -596,7 +596,7 @@ function plot_violin(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -672,7 +672,7 @@ function plot_dots(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -749,7 +749,7 @@ function plot_paired(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -963,7 +963,7 @@ function plot_eros(
         plot_size = (900, 450)
         p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis(
-            p[1, 1];
+            p[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1007,7 +1007,7 @@ function plot_eros(
         plot_size = (1200, 800)
         p = GLMakie.Figure(size = plot_size)
         ax1 = GLMakie.Axis(
-            p[1, 1];
+            p[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1166,7 +1166,7 @@ function plot_erop(
         plot_size = (900, 450)
         p = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis(
-            p[1, 1];
+            p[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1209,7 +1209,7 @@ function plot_erop(
         plot_size = (1200, 800)
         p = GLMakie.Figure(size = plot_size)
         ax1 = GLMakie.Axis(
-            p[1, 1];
+            p[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1390,7 +1390,7 @@ function plot_ci(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -1477,7 +1477,7 @@ function plot_heatmap(
     plot_size = (800, 500)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -1676,7 +1676,7 @@ function plot_hs(
     plot_size = (900, 450)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xl,
         ylabel = yl,
         title = tt,
@@ -1740,7 +1740,7 @@ function plot_fi(
     plot_size = (900, 450)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xl,
         ylabel = yl,
         title = tt,
@@ -1810,7 +1810,7 @@ function plot_phase(
     plot_size = (900, 450)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xl,
         ylabel = yl,
         title = tt,
@@ -1872,7 +1872,7 @@ function plot_polezero(
     plot_size = (600, 600)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = "Real",
         ylabel = "Imag",
         aspect = 1,
