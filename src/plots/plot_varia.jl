@@ -43,7 +43,7 @@ Plot matrix.
   - `p::GLMakie.Figure`
 """
 function plot_matrix(
-        m::Matrix{<:Real};
+        m::Matrix{<:Real},
         xlabels::Vector{String},
         ylabels::Vector{String},
         xlabel::String = "",
@@ -119,7 +119,7 @@ Plot cross/auto-covariance/correlation.
   - `p::GLMakie.Figure`
 """
 function plot_xac(
-        m::AbstractVector, lags::AbstractVector; xlabel::String = "Lag [s]", ylabel::String = "", title::String = ""
+        m::AbstractVector, lags::AbstractVector, xlabel::String = "Lag [s]", ylabel::String = "", title::String = ""
     )::GLMakie.Figure
 
     # prepare plot
@@ -252,7 +252,7 @@ function plot_histogram(
         if mono
             GLMakie.vlines!(x; linewidth = 2, color = :black, label = "test value")
         else
-            GLMakie.vlines!([x]; linewidth = 2, color = :red, label = "test value")
+            GLMakie.vlines!([x], linewidth = 2, color = :red, label = "test value")
         end
         prop = round(cmp_stat(s, x), digits = 3)
         _info("Proportion of values > $x: $prop")
@@ -467,7 +467,7 @@ function plot_line(
     for idx in axes(s, 1)
         GLMakie.lines!(
             eachindex(xlabels),
-            s[idx, :];
+            s[idx, :],
             label = rlabels[idx],
             color = cmap[idx],
             colormap = pal,
@@ -546,7 +546,7 @@ function plot_box(
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    GLMakie.boxplot!(repeat(eachindex(xlabels), size(s, 2)), s[:]; color = color, colormap = pal)
+    GLMakie.boxplot!(repeat(eachindex(xlabels), size(s, 2)), s[:], color = color, colormap = pal)
 
     return p
 
@@ -619,7 +619,7 @@ function plot_violin(
 
     GLMakie.violin!(
         repeat(eachindex(xlabels), size(s, 2)),
-        s[:];
+        s[:],
         strokecolor = :black,
         strokewidth = 0.25,
         #colormap=pal,
@@ -696,10 +696,10 @@ function plot_dots(
     cmap = GLMakie.resample_cmap(pal, length(xlabels))
     for idx in eachindex(xlabels)
         if mono
-            GLMakie.scatter!(repeat([idx], size(s, 2)), s[idx, :]; color = :black)
+            GLMakie.scatter!(repeat([idx], size(s, 2)), s[idx, :], color = :black)
         else
             GLMakie.scatter!(
-                repeat([idx], size(s, 2)), s[idx, :]; color = cmap[idx], colormap = pal, colorrange = eachindex(xlabels)
+                repeat([idx], size(s, 2)), s[idx, :], color = cmap[idx], colormap = pal, colorrange = eachindex(xlabels)
             )
         end
     end
@@ -773,10 +773,10 @@ function plot_paired(
     cmap = GLMakie.resample_cmap(pal, length(xlabels))
     for idx in eachindex(xlabels)
         if mono
-            GLMakie.scatter!(repeat([idx], size(s, 2)), s[idx, :]; color = :black)
+            GLMakie.scatter!(repeat([idx], size(s, 2)), s[idx, :], color = :black)
         else
             GLMakie.scatter!(
-                repeat([idx], size(s, 2)), s[idx, :]; color = cmap[idx], colormap = pal, colorrange = eachindex(xlabels)
+                repeat([idx], size(s, 2)), s[idx, :], color = cmap[idx], colormap = pal, colorrange = eachindex(xlabels)
             )
         end
     end
@@ -784,15 +784,15 @@ function plot_paired(
     cmap = GLMakie.resample_cmap(pal, length(xlabels))
     for idx in eachindex(xlabels)
         if mono
-            GLMakie.scatter!(repeat([idx], size(s, 2)), s[idx, :]; color = :black)
+            GLMakie.scatter!(repeat([idx], size(s, 2)), s[idx, :], color = :black)
         else
             GLMakie.scatter!(
-                repeat([idx], size(s, 2)), s[idx, :]; color = cmap[idx], colormap = pal, colorrange = eachindex(xlabels)
+                repeat([idx], size(s, 2)), s[idx, :], color = cmap[idx], colormap = pal, colorrange = eachindex(xlabels)
             )
         end
     end
     for idx in axes(s, 2)
-        GLMakie.lines!(eachindex(xlabels), s[:, idx]; color = :black, linewidth = 0.5)
+        GLMakie.lines!(eachindex(xlabels), s[:, idx], color = :black, linewidth = 0.5)
     end
 
     return p
@@ -817,7 +817,7 @@ Polar plot.
   - `p::GLMakie.Figure`
 """
 function plot_polar(
-        s::Union{AbstractVector, AbstractMatrix};
+        s::Union{AbstractVector, AbstractMatrix},
         m::Tuple{Real, Real} = (0, 0),
         title::String = "",
         mono::Bool = false,
@@ -843,20 +843,20 @@ function plot_polar(
     !ticks && hidespines!(ax)
 
     if ndims(s) == 1
-        GLMakie.lines!([0, s[1]], [0, 1]; linewidth = 2, color = :black)
+        GLMakie.lines!([0, s[1]], [0, 1], linewidth = 2, color = :black)
         for idx in eachindex(s)[(begin + 1):end]
-            GLMakie.lines!([0, s[idx]], [0, 1]; linewidth = 2, color = :black)
+            GLMakie.lines!([0, s[idx]], [0, 1], linewidth = 2, color = :black)
         end
     else
-        GLMakie.lines!([0, s[1, 1]], [0, s[1, 2]]; linewidth = 2, color = :black)
+        GLMakie.lines!([0, s[1, 1]], [0, s[1, 2]], linewidth = 2, color = :black)
         for idx in axes(s, 1)[(begin + 1):end]
-            GLMakie.lines!([0, s[idx, 1]], [0, s[idx, 2]]; linewidth = 2, color = :black)
+            GLMakie.lines!([0, s[idx, 1]], [0, s[idx, 2]], linewidth = 2, color = :black)
         end
 
     end
 
     if m != (0, 0)
-        GLMakie.lines!([0, m[1]], [0, m[2]]; linewidth = 2, color = mono ? :darkgray : :red)
+        GLMakie.lines!([0, m[1]], [0, m[2]], linewidth = 2, color = mono ? :darkgray : :red)
     end
 
     return p
@@ -996,7 +996,7 @@ function plot_eros(
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                GLMakie.vlines!(p[1, 1], [st[tm[tm_idx]]]; color = :black, linewidth = 1)
+                GLMakie.vlines!(p[1, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
             end
         end
     else
@@ -1039,12 +1039,12 @@ function plot_eros(
         end
 
         # plot 0 v-line
-        GLMakie.vlines!(ax1, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
+        GLMakie.vlines!(ax1, [0], linestyle = :dash, linewidth = 0.5, color = :black)
 
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                GLMakie.vlines!(p[1, 1], [st[tm[tm_idx]]]; color = :black, linewidth = 1)
+                GLMakie.vlines!(p[1, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
             end
         end
 
@@ -1052,7 +1052,7 @@ function plot_eros(
             xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs"
         )
         ax2 = GLMakie.Axis(
-            p[2, 1];
+            p[2, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1084,12 +1084,12 @@ function plot_eros(
         end
 
         # plot 0 v-line
-        GLMakie.vlines!(ax2, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
+        GLMakie.vlines!(ax2, [0], linestyle = :dash, linewidth = 0.5, color = :black)
 
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                GLMakie.vlines!(p[2, 1], [st[tm[tm_idx]]]; color = :black, linewidth = 1)
+                GLMakie.vlines!(p[2, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
             end
         end
 
@@ -1191,7 +1191,7 @@ function plot_erop(
         ax.yticklabelsize = 12
 
         # plot powers
-        Makie.lines!(sf, sp[:, 1]; color = :black)
+        Makie.lines!(sf, sp[:, 1], color = :black)
 
     else
         if db
@@ -1234,7 +1234,7 @@ function plot_erop(
         ax1.yticklabelsize = 12
 
         # plot powers
-        Makie.lines!(ax1, sf, sp[:, 1]; color = :black)
+        Makie.lines!(ax1, sf, sp[:, 1], color = :black)
 
         if db
             xl, yl, tt = _set_defaults(
@@ -1247,7 +1247,7 @@ function plot_erop(
         end
 
         ax2 = GLMakie.Axis(
-            p[2, 1];
+            p[2, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1272,7 +1272,7 @@ function plot_erop(
         ax2.yticklabelsize = 12
 
         # plot powers
-        Makie.lines!(ax2, sf, sp[:, 2]; color = :black)
+        Makie.lines!(ax2, sf, sp[:, 2], color = :black)
     end
 
     return p
@@ -1529,7 +1529,7 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 
   - `p::GLMakie.Figure`
 """
-function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::AbstractVector)::GLMakie.Figure
+function plot_imf(imf::Matrix{Float64}, n::Int64 = size(imf, 1) - 1, t::AbstractVector)::GLMakie.Figure
 
     @assert n > 0 "n must be ≥ 1."
     @assert n + 1 <= size(imf, 1) "n must be ≤ $(size(imf, 1) - 1)."
@@ -1556,7 +1556,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::Abstract
         for idx2 in 1:2
             if idx <= n + 1
                 ax = GLMakie.Axis(
-                    p[idx1, idx2];
+                    p[idx1, idx2],
                     xlabel = "Time [s]",
                     ylabel = "",
                     title = idx == n + 1 ? "Residual" : "IMF: $idx",
@@ -1580,7 +1580,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::Abstract
                 ax.xticklabelsize = 12
                 ax.yticklabelsize = 12
 
-                GLMakie.lines!(ax, t, imf[idx, :]; color = :black)
+                GLMakie.lines!(ax, t, imf[idx, :], color = :black)
                 idx += 1
                 cidx += 1
             end
@@ -1589,7 +1589,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::Abstract
 
     if cidx == 1
         ax = GLMakie.Axis(
-            p[nr, 1:2];
+            p[nr, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Reconstructed signal",
@@ -1608,7 +1608,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64 = size(imf, 1) - 1, t::Abstract
         )
     else
         ax = GLMakie.Axis(
-            p[nr + 1, 1:2];
+            p[nr + 1, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Reconstructed signal",
@@ -1658,7 +1658,7 @@ Plot Hilbert spectrum.
 """
 function plot_hs(
         sp::Vector{Float64},
-        st::Vector{Float64};
+        st::Vector{Float64},
         xlabel::String = "default",
         ylabel::String = "default",
         title::String = "default",
@@ -1725,7 +1725,7 @@ Plot instantaneous frequencies.
 """
 function plot_fi(
         fi::Vector{Float64},
-        st::Vector{Float64};
+        st::Vector{Float64},
         xlabel::String = "default",
         ylabel::String = "default",
         title::String = "default",
@@ -1791,7 +1791,7 @@ Plot phases.
 """
 function plot_phase(
         ph::Vector{Float64},
-        sf::Vector{Float64};
+        sf::Vector{Float64},
         unit::Symbol = :rad,
         type::Symbol = :line,
         xlabel::String = "default",
@@ -1864,7 +1864,7 @@ Polar pole-zero map.
   - `p::GLMakie.Figure`
 """
 function plot_polezero(
-        pol::Vector{Complex{Float64}}, zer::Vector{Complex{Float64}}; title::String = "default", mono::Bool = false
+        pol::Vector{Complex{Float64}}, zer::Vector{Complex{Float64}}, title::String = "default", mono::Bool = false
     )::GLMakie.Figure
 
     # prepare plot
@@ -1917,7 +1917,7 @@ Plot discrete wavelet decomposition coefficients.
 
   - `p::GLMakie.Figure`
 """
-function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVector)::GLMakie.Figure
+function plot_dwc(dc::Matrix{Float64}, n::Int64 = size(dc, 1) - 1, t::AbstractVector)::GLMakie.Figure
 
     @assert n > 1 "n must be > 1."
     @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."
@@ -1941,7 +1941,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVe
         for idx2 in 1:2
             if idx < n + 2
                 ax = GLMakie.Axis(
-                    p[idx1, idx2];
+                    p[idx1, idx2],
                     xlabel = "Time [s]",
                     ylabel = "",
                     title = "Coefficient #$(idx - 1)",
@@ -1965,7 +1965,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVe
                 ax.xticklabelsize = 12
                 ax.yticklabelsize = 12
 
-                GLMakie.lines!(ax, t, dc[idx, :]; color = :black)
+                GLMakie.lines!(ax, t, dc[idx, :], color = :black)
                 idx += 1
                 cidx += 1
             end
@@ -1974,7 +1974,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVe
 
     if cidx == 1
         ax = GLMakie.Axis(
-            p[nr, 1:2];
+            p[nr, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Original signal",
@@ -1998,10 +1998,10 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVe
         ax.xticklabelsize = 12
         ax.yticklabelsize = 12
 
-        GLMakie.lines!(ax, t, dc[1, :]; color = :black)
+        GLMakie.lines!(ax, t, dc[1, :], color = :black)
     else
         ax = GLMakie.Axis(
-            p[nr + 1, 1:2];
+            p[nr + 1, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Original signal",
@@ -2025,7 +2025,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64 = size(dc, 1) - 1, t::AbstractVe
         ax.xticklabelsize = 12
         ax.yticklabelsize = 12
 
-        GLMakie.lines!(ax, t, dc[1, :]; color = :black)
+        GLMakie.lines!(ax, t, dc[1, :], color = :black)
     end
 
     return p
