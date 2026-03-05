@@ -43,7 +43,7 @@ Plot matrix.
   - `p::GLMakie.Figure`
 """
 function plot_matrix(
-        m::Matrix{<:Real},
+        m::Matrix{<:Real};
         xlabels::Vector{String},
         ylabels::Vector{String},
         xlabel::String = "",
@@ -119,7 +119,11 @@ Plot cross/auto-covariance/correlation.
   - `p::GLMakie.Figure`
 """
 function plot_xac(
-        m::AbstractVector, lags::AbstractVector, xlabel::String = "Lag [s]", ylabel::String = "", title::String = ""
+        m::AbstractVector,
+        lags::AbstractVector;
+        xlabel::String = "Lag [s]",
+        ylabel::String = "",
+        title::String = ""
     )::GLMakie.Figure
 
     # prepare plot
@@ -353,7 +357,11 @@ Line plot.
   - `p::GLMakie.Figure`
 """
 function plot_line(
-        s::AbstractVector; xlabels::Vector{String}, xlabel::String = "", ylabel::String = "", title::String = ""
+        s::AbstractVector;
+        xlabels::Vector{String},
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = ""
     )::GLMakie.Figure
 
     @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
@@ -817,7 +825,7 @@ Polar plot.
   - `p::GLMakie.Figure`
 """
 function plot_polar(
-        s::Union{AbstractVector, AbstractMatrix},
+        s::Union{AbstractVector, AbstractMatrix};
         m::Tuple{Real, Real} = (0, 0),
         title::String = "",
         mono::Bool = false,
@@ -1347,7 +1355,7 @@ function plot_icatopo(
 end
 
 """
-    plot_ci(s, s_ci_l, s_ci_h; <keyword arguments>)
+    plot_ci(s, s_ci_l, s_ci_h, t; <keyword arguments>)
 
 Confidence interval plot.
 
@@ -1529,7 +1537,11 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 
   - `p::GLMakie.Figure`
 """
-function plot_imf(imf::Matrix{Float64}, n::Int64 = size(imf, 1) - 1, t::AbstractVector)::GLMakie.Figure
+function plot_imf(
+        imf::Matrix{Float64};
+        n::Int64 = size(imf, 1) - 1,
+        t::AbstractVector
+    )::GLMakie.Figure
 
     @assert n > 0 "n must be ≥ 1."
     @assert n + 1 <= size(imf, 1) "n must be ≤ $(size(imf, 1) - 1)."
@@ -1658,7 +1670,7 @@ Plot Hilbert spectrum.
 """
 function plot_hs(
         sp::Vector{Float64},
-        st::Vector{Float64},
+        st::Vector{Float64};
         xlabel::String = "default",
         ylabel::String = "default",
         title::String = "default",
@@ -1725,7 +1737,7 @@ Plot instantaneous frequencies.
 """
 function plot_fi(
         fi::Vector{Float64},
-        st::Vector{Float64},
+        st::Vector{Float64};
         xlabel::String = "default",
         ylabel::String = "default",
         title::String = "default",
@@ -1791,7 +1803,7 @@ Plot phases.
 """
 function plot_phase(
         ph::Vector{Float64},
-        sf::Vector{Float64},
+        sf::Vector{Float64};
         unit::Symbol = :rad,
         type::Symbol = :line,
         xlabel::String = "default",
@@ -1835,9 +1847,9 @@ function plot_phase(
 
     # plot phases
     if type === :line
-        GLMakie.lines!(sf, ph; linewidth = 1, color = :black)
+        GLMakie.lines!(sf, ph, linewidth = 1, color = :black)
     else
-        GLMakie.stem!(sf, ph; markersize = 10, color = :black)
+        GLMakie.stem!(sf, ph, markersize = 10, color = :black)
     end
 
     return p
@@ -1845,7 +1857,7 @@ function plot_phase(
 end
 
 """
-    plot_polezero(s; <keyword arguments>)
+    plot_polezero(pol, zer; <keyword arguments>)
 
 Polar pole-zero map.
 
@@ -1864,7 +1876,10 @@ Polar pole-zero map.
   - `p::GLMakie.Figure`
 """
 function plot_polezero(
-        pol::Vector{Complex{Float64}}, zer::Vector{Complex{Float64}}, title::String = "default", mono::Bool = false
+        pol::Vector{Complex{Float64}},
+        zer::Vector{Complex{Float64}};
+        title::String = "default",
+        mono::Bool = false
     )::GLMakie.Figure
 
     # prepare plot
@@ -1884,11 +1899,11 @@ function plot_polezero(
         xrectzoom = false,
         yrectzoom = false,
     )
-    GLMakie.scatter!(ax, real.(pol), imag.(pol); markersize = 15, color = mono ? :black : :blue, marker = :xcross)
+    GLMakie.scatter!(ax, real.(pol), imag.(pol), markersize = 15, color = mono ? :black : :blue, marker = :xcross)
     GLMakie.scatter!(
         ax,
         real.(zer),
-        imag.(zer);
+        imag.(zer),
         markersize = 15,
         strokecolor = mono ? :black : :blue,
         strokewidth = 2,
@@ -1917,7 +1932,11 @@ Plot discrete wavelet decomposition coefficients.
 
   - `p::GLMakie.Figure`
 """
-function plot_dwc(dc::Matrix{Float64}, n::Int64 = size(dc, 1) - 1, t::AbstractVector)::GLMakie.Figure
+function plot_dwc(
+        dc::Matrix{Float64};
+        n::Int64 = size(dc, 1) - 1,
+        t::AbstractVector
+    )::GLMakie.Figure
 
     @assert n > 1 "n must be > 1."
     @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."
