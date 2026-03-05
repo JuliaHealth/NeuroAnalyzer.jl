@@ -228,7 +228,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     r = _create_recording_mep(
         data_type = "mep",
         file_name = file_name,
-        file_size_mb = 0,
+        file_size_mb = file_size_mb,
         file_type = "DuoMAG",
         recording = "",
         recording_date = string(split(record_created, ' ')[1]),
