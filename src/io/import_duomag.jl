@@ -67,7 +67,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         # data matrix: signals × samples
         mep_signal = zeros((samples_count[1], signal_count))
         [
-            mep_signal[idx, :] in
+            mep_signal[idx, :] =
                 parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')) for
                 idx in axes(mep_signal)[1]
         ]

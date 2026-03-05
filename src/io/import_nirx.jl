@@ -284,7 +284,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     buf = readlines(splitext(file_name)[1] * ".dat")
     buf_r = length(parse.(Float64, split(buf[1], ' ')))
     data = zeros(buf_r, length(buf))
-    [data[:, idx] in parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
+    [data[:, idx] = parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
 
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
