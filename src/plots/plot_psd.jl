@@ -40,6 +40,9 @@ function plot_psd(
         flim = (sf[2], flim[2])
     end
 
+    f1 = vsearch(flim[1], sf)
+    f2 = vsearch(flim[2], sf)
+
     # prepare plot
     GLMakie.activate!(title = "plot_psd()")
     plot_size = (900, 450)
@@ -61,7 +64,7 @@ function plot_psd(
         xrectzoom = false,
         yrectzoom = false,
     )
-    GLMakie.xlims!(ax, flim)
+    GLMakie.autolimits!(ax)
     ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -70,8 +73,8 @@ function plot_psd(
 
     # draw powers
     Makie.lines!(ax,
-                 sf,
-                 sp,
+                 sf[f1:f2],
+                 sp[f1:f2],
                  linewidth = 2,
                  color = :black)
 
@@ -126,9 +129,12 @@ function plot_psd(
 
     pal = mono ? :grays : :darktest
 
+    f1 = vsearch(flim[1], sf)
+    f2 = vsearch(flim[2], sf)
+
     # get mean and 95%CI
     if ci95
-        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(sp)
+        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(sp[f1:f2])
     end
 
     # prepare plot
@@ -136,7 +142,7 @@ function plot_psd(
     plot_size = (900, 450)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -153,12 +159,7 @@ function plot_psd(
         xrectzoom = false,
         yrectzoom = false,
     )
-    GLMakie.xlims!(ax, flim)
-#     if ci95
-#         GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
-#     else
-#         GLMakie.ylims!(ax, extrema(sp))
-#     end
+    GLMakie.autolimits!(ax)
     ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -167,17 +168,17 @@ function plot_psd(
 
     if ci95
         # draw 95% CI
-        Makie.band!(ax, sf, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
+        Makie.band!(ax, sf[f1:f2], s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
 
         # draw mean
-        Makie.lines!(ax, sf, s_m; color = :black, linewidth = 2)
+        Makie.lines!(ax, sf[f1:f2], s_m; color = :black, linewidth = 2)
     else
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx in 1:ch_n
             Makie.lines!(
                 ax,
-                sf,
-                sp[idx, :];
+                sf[f1:f2],
+                sp[idx, f1:f2];
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -188,8 +189,15 @@ function plot_psd(
 
         # draw averaged channels
         if avg
-            s = mean(sp; dims = 1)[:]
-            Makie.lines!(ax, sf, s; colormap = pal, linewidth = 4, color = :black)
+            s = mean(sp[f1:f2], dims = 1)[:]
+            Makie.lines!(
+                ax,
+                sf[f1:f2],
+                s,
+                colormap = pal,
+                linewidth = 4,
+                color = :black,
+            )
         end
 
         (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
