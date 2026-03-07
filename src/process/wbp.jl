@@ -9,7 +9,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
   - `s::AbstractVector`
-  - `pad::Int64`: pad with `pad` zeros
+  - `pad::Int64`: number of zeros to append
   - `frq::Real`: filter frequency
   - `fs::Int64`: sampling rate
   - `ncyc::Int64=6`: number of cycles for Morlet wavelet

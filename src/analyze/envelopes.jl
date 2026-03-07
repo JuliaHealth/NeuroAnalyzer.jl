@@ -668,7 +668,7 @@ Calculate spectral envelope.
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
       + `:cwt`: continuous wavelet transformation
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `nt::Int64=16`: number of Slepian tapers
   - `gw::Real=5`: Gaussian width in Hz
@@ -807,7 +807,7 @@ Calculate spectral envelope: mean and 95% CI.
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
       + `:cwt`: continuous wavelet transformation
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `nt::Int64=16`: number of Slepian tapers
   - `gw::Real=5`: Gaussian width in Hz
@@ -953,7 +953,7 @@ Calculate spectral envelope: median and 95% CI.
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
       + `:cwt`: continuous wavelet transformation
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `nt::Int64=16`: number of Slepian tapers
   - `gw::Real=5`: Gaussian width in Hz

@@ -134,7 +134,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `method::Symbol=:stft`: method of calculating spectrogram:
       + `:stft`: short-time Fourier transform
       + `:mt`: multi-tapered periodogram
@@ -272,7 +272,7 @@ Calculate spectrogram using wavelet convolution.
 # Arguments
 
   - `s::AbstractVector`
-  - `pad::Int64`: pad with `pad` zeros
+  - `pad::Int64`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `fs::Int64`: sampling rate
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
@@ -353,7 +353,7 @@ Calculate spectrogram using wavelet convolution.
 # Arguments
 
   - `s::AbstractMatrix`
-  - `pad::Int64`: pad with `pad` zeros
+  - `pad::Int64`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `fs::Int64`: sampling rate
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`

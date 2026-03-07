@@ -11,7 +11,7 @@ Calculate Fourier transformation.
 # Arguments
 
   - `s::AbstractVector`
-  - `pad::Int64=0`: number of zeros padding the signal
+  - `pad::Int64=0`: number of zeros to append
   - `db::Bool=false`: normalize powers to dB
   - `nf::Bool=false`: if true, return Fourier coefficients for negative and positive frequencies, otherwise return Fourier coefficients for positive frequencies only
 
@@ -87,7 +87,7 @@ Calculate Hilbert transformation.
 # Arguments
 
   - `s::AbstractVector`
-  - `pad::Int64`: number of zeros padding the signal
+  - `pad::Int64`: number of zeros to append
   - `db::Bool=false`: normalize powers to dB
 
 # Returns
@@ -128,7 +128,7 @@ Calculate Fourier transformation.
 # Arguments
 
   - `s::AbstractArray`
-  - `pad::Int64`: number of zeros padding the signal
+  - `pad::Int64`: number of zeros to append
   - `db::Bool=false`: normalize powers to dB
   - `nf::Bool=false`: if true, return Fourier coefficients for negative and positive frequencies, otherwise return Fourier coefficients for positive frequencies only
 
@@ -182,7 +182,7 @@ Calculate Hilbert transformation.
 # Arguments
 
   - `s::AbstractArray`
-  - `pad::Int64`: number of zeros padding the signal
+  - `pad::Int64`: number of zeros to append
   - `db::Bool=false`: normalize powers to dB
 
 # Returns
@@ -228,7 +228,7 @@ Calculate Fourier/Hilbert transformation.
 # Arguments
 
   - `s::AbstractArray`
-  - `pad::Int64=0`: number of zeros padding the signal
+  - `pad::Int64=0`: number of zeros to append
   - `h::Bool=false`: perform Hilbert transformation
   - `db::Bool=false`: normalize powers to dB
   - `nf::Bool=false`: if true, return Fourier coefficients for negative and positive frequencies, otherwise return Fourier coefficients for positive frequencies only
@@ -267,7 +267,7 @@ Calculate Fourier/Hilbert transformation.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-  - `pad::Int64=0`: number of zeros to add signal for FFT
+  - `pad::Int64=0`: number of zeros to append
   - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
   - `db::Bool=false`: normalize powers to dB
   - `nf::Bool=false`: if true, return Fourier coefficients for negative and positive frequencies, otherwise return Fourier coefficients for positive frequencies only
@@ -305,7 +305,7 @@ Calculate complex analytic signal using Hilbert transformation.
 # Arguments
 
   - `s::AbstractVector`
-  - `pad::Int64`: number of zeros padding the signal
+  - `pad::Int64`: number of zeros to append
 
 # Returns
 
@@ -327,7 +327,7 @@ Calculate complex analytic signal using Hilbert transformation.
 # Arguments
 
   - `s::AbstractArray`
-  - `pad::Int64`: number of zeros padding the signal
+  - `pad::Int64`: number of zeros to append
 
 # Returns
 
@@ -361,7 +361,7 @@ Calculate complex analytic signal using Hilbert transformation.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-  - `pad::Int64=0`: number of zeros to add signal for FFT
+  - `pad::Int64=0`: number of zeros to append
 
 # Returns
 

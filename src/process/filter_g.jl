@@ -9,7 +9,7 @@ Filter using Gaussian in the frequency domain.
 
   - `s::AbstractVector`
   - `fs::Int64`: sampling rate
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `f::Real`: filter frequency
   - `gw::Real=5`: Gaussian width in Hz
 
@@ -47,7 +47,7 @@ Filter using Gaussian in the frequency domain.
 
   - `s::AbstractArray`
   - `fs::Int64`: sampling rate
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `f::Real`: filter frequency
   - `gw::Real=5`: Gaussian width in Hz
 
@@ -81,7 +81,7 @@ Filter using Gaussian in the frequency domain.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `f::Real`: filter frequency
   - `gw::Real=5`: Gaussian width in Hz
 
@@ -111,7 +111,7 @@ Filter using Gaussian in the frequency domain.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `f::Real`: filter frequency
   - `gw::Real=5`: Gaussian width in Hz
 

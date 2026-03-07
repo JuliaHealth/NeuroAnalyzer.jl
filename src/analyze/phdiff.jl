@@ -9,7 +9,7 @@ Calculate phase difference between signals.
 
   - `s1::AbstractVector`
   - `s2::AbstractVector`
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
@@ -46,7 +46,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
   - `avg::Symbol=:phase`: method of averaging:
       + `:phase`: phase is calculated for each reference channel separately and then averaged
       + `:signal`: signals are averaged prior to phase calculation
-  - `pad::Int64=0`: pad signals with 0s
+  - `pad::Int64=0`: number of zeros to append
   - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
@@ -130,7 +130,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
   - `avg::Symbol=:phase`: method of averaging:
       + `:phase`: phase is calculated for each reference channel separately and then averaged
       + `:signal`: signals are averaged prior to phase calculation
-  - `pad::Int64=0`: pad signals with 0s
+  - `pad::Int64=0`: number of zeros to append
   - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns

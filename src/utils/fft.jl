@@ -13,7 +13,7 @@ Perform zeros-padded FFT.
 # Arguments
 
   - `x::AbstractVector`
-  - `n::Int64`: number of zeros to add
+  - `n::Int64`: number of zeros to append
 
 # Returns
 
@@ -102,7 +102,7 @@ Perform zeros-padded single-sided FFT.
 # Arguments
 
   - `x::AbstractVector`
-  - `n::Int64`: number of zeros to add
+  - `n::Int64`: number of zeros to append
 
 # Returns
 

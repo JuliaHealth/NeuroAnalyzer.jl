@@ -9,7 +9,7 @@ Perform FFT denoising.
 # Arguments
 
   - `s::AbstractVector`
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
@@ -43,7 +43,7 @@ Perform FFT denoising.
 # Arguments
 
   - `s::AbstractArray`
-  - `pad::Int64=0`: number of zeros to add
+  - `pad::Int64=0`: number of zeros to append
   - `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
@@ -76,7 +76,7 @@ Perform FFT denoising.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-  - `pad::Int64=0`: number of zeros to add signal for FFT
+  - `pad::Int64=0`: number of zeros to append
   - `t::Int64=100`: PSD threshold for keeping frequency components
 
 # Returns
@@ -105,7 +105,7 @@ Perform FFT denoising.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-  - `pad::Int64=0`: number of zeros to add signal for FFT
+  - `pad::Int64=0`: number of zeros to append
   - `t::Int64=100`: PSD threshold for keeping frequency components
 
 # Returns

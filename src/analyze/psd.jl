@@ -335,7 +335,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 # Arguments
 
   - `s::AbstractVector`
-  - `pad::Int64=0`: pad with `pad` zeros
+  - `pad::Int64=0`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `fs::Int64`: sampling rate
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`

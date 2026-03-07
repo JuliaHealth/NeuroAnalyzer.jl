@@ -10,7 +10,7 @@ Pad row(s) with zeros. Works with 1-, 2- and 3-dimensional arrays.
 # Arguments
 
   - `x::Union{AbstractVector, AbstractArray}`
-  - `n::Int64`: padding length (number of zeros to add)
+  - `n::Int64`: number of zeros to append
 
 # Returns
 
