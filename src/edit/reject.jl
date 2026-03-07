@@ -13,12 +13,9 @@ function detect_flat(
 
     for ch_idx in 1:ch_n
         v = @views s[ch_idx, :]
-        sm = Vector{Float64}()
-        for idx in 1:w:(length(v) - w)
-            @views push!(sm, mean(v[idx:(idx + w)]))
-        end
+        sm = [mean(@view v[idx:(idx + w)]) for idx in 1:w:(length(v) - w)]
         r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
-        bad_chs[ch_idx] = r > flat_fr && bad_chs[ch_idx]
+        bad_chs[ch_idx] = r > flat_fr
     end
 
     return bad_chs
@@ -285,13 +282,17 @@ function channel_reject(
 
     if :flat in method
 
+        @assert w < size(s, 2) "w must be < $(size(s, 2))."
         _info("Using :flat method")
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_flat(
-                obj.data[ch, :, ep_idx], w = w, flat_tol = flat_tol, flat_fr = flat_fr
-            )
-            bc[ch] = bc[ch] .|| bad_chs
+        bad_chs = zeros(Bool, ch_n, ep_n)
+        n_samples = size(obj.data, 2)
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            sm = [mean(@view obj.data[ch_idx, idx_w:(idx_w + w), ep_idx]) for idx_w in 1:w:(n_samples - w)]
+            r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
+            bad_chs[ch_idx, ep_idx] = r > flat_fr
         end
+        bc[ch] = bc[ch] .|| vec(any(bad_mat, dims = 2))
 
     end
 
@@ -376,23 +377,13 @@ function channel_reject(
         _info("Using :kurt method")
         @assert z > 0 "z must be > 0."
         k = zeros(ch_n, ep_n)
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
-            end
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
         end
         k = normalize_zscore(k)
         bad_idx = abs.(k) .> z
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                if bad_idx[ch_idx, ep_idx]
-                    bad_chs[ch_idx] = true
-                end
-            end
-            bc[ch] = bc[ch] .|| bad_chs
-        end
-
+        bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2))
     end
 
     if :z in method
@@ -404,43 +395,23 @@ function channel_reject(
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> z
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
-                    length(s[ch_idx, :, ep_idx])
-            end
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                if bad_idx[ch_idx, ep_idx]
-                    bad_chs[ch_idx] = true
-                end
-            end
-            bc[ch] = bc[ch] .|| bad_chs
-        end
+        bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2))
 
         # by individual-channel threshold
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> (z + 1)
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
-                    length(s[ch_idx, :, ep_idx])
-            end
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                if bad_idx[ch_idx, ep_idx]
-                    bad_chs[ch_idx] = true
-                end
-            end
-            bc[ch] = bc[ch] .|| bad_chs
-        end
+        bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2))
 
     end
 
@@ -649,14 +620,18 @@ function epoch_reject(
 
     if :flat in method
 
+        @assert w < size(s, 2) "w must be < $(size(s, 2))."
         _info("Using :flat method")
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_flat(
-                obj.data[ch, :, ep_idx], w = w, flat_tol = flat_tol, flat_fr = flat_fr
-            )
-            bc[ch] = bc[ch] .|| bad_chs
-            count(bad_chs) >= nbad && push!(be, ep_idx)
+        bad_chs = zeros(Bool, ch_n, ep_n)
+        n_samples = size(obj.data, 2)
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            sm = [mean(@view obj.data[ch_idx, idx_w:(idx_w + w), ep_idx]) for idx_w in 1:w:(n_samples - w)]
+            r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
+            bad_chs[ch_idx, ep_idx] = r > flat_fr
         end
+        bc[ch] = bc[ch] .|| vec(any(bad_mat, dims = 2))
+        append!(be, findall(vec(sum(bad_mat, dims = 1)) .>= nbad))
 
     end
 
@@ -685,11 +660,16 @@ function epoch_reject(
     if :euclid in method
 
         _info("Using :euclid method")
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_euclid(obj.data[ch, :, ep_idx])
-            bc[ch] = bc[ch] .|| bad_chs
-            count(bad_chs) >= nbad && push!(be, ep_idx)
+
+        bad_mat = zeros(Bool, length(ch), ep_n)
+        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+            # each thread writes to its own column — no overlap, no race
+            bad_mat[:, ep_idx] = @views detect_euclid(obj.data[ch, :, ep_idx])
         end
+
+        # reductions are serial but vectorised — no loop needed
+        bc[ch] = bc[ch] .|| vec(any(bad_mat, dims = 2))
+        append!(be, findall(vec(sum(bad_mat, dims = 1)) .>= nbad))
 
     end
 
@@ -702,26 +682,26 @@ function epoch_reject(
         # variance outliers
         o = reshape(outlier_detect(vec(s_v), method = :iqr), ch_n, ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            ch_v = @views vec(var(obj.data[ch, :, ep_idx], dims = 2))
-            s_mv = vcat(s_mv, ch_v)
-            for ch_idx in 1:ch_n
-                #if ch_v[ch_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2] || o[ch_idx, ep_idx]
-                if o[ch_idx, ep_idx]
-                    bad_chs[ch_idx] = true
-                end
-            end
-            bc[ch] = bc[ch] .|| bad_chs
-            count(bad_chs) >= nbad && push!(be, ep_idx)
+        # parallelise only the expensive per-epoch variance computation
+        s_mv_mat = zeros(ch_n, ep_n)
+        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+            # each thread writes to its own column — no overlap, no race condition
+            s_mv_mat[:, ep_idx] = @views vec(var(obj.data[ch, :, ep_idx], dims = 2))
         end
+
+        # flatten variance results in epoch order
+        s_mv = vcat(s_mv, vec(s_mv_mat))
+
+        # vectorised reductions — no loop needed
+        bc[ch] = bc[ch] .|| vec(any(o, dims = 2))
+        append!(be, findall(vec(sum(o, dims = 1)) .>= nbad))
 
     end
 
     if :p2p in method
 
         _info("Using :p2p method")
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
             bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w = w, p = p)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
@@ -747,23 +727,15 @@ function epoch_reject(
         _info("Using :kurt method")
         @assert z > 0 "z must be > 0."
         k = zeros(ch_n, ep_n)
-        @inbounds for ep_idx in 1:ep_n
-            for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
-            end
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
         end
         k = normalize_zscore(k)
         bad_idx = abs.(k) .> z
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                if bad_idx[ch_idx, ep_idx]
-                    bad_chs[ch_idx] = true
-                end
-            end
-            bc[ch] = bc[ch] .|| bad_chs
-            count(bad_chs) >= nbad && push!(be, ep_idx)
-        end
+        bad_per_epoch = vec(sum(bad_idx, dims = 1)) # bad channel count per epoch
+        bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2)) # OR over epochs per channel
+        append!(be, findall(bad_per_epoch .>= nbad)) # epochs exceeding threshold
 
     end
 
@@ -776,45 +748,27 @@ function epoch_reject(
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> z
-        @inbounds for ep_idx in 1:ep_n
-            for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
-                    length(s[ch_idx, :, ep_idx])
-            end
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                if bad_idx[ch_idx, ep_idx]
-                    bad_chs[ch_idx] = true
-                end
-            end
-            bc[ch] = bc[ch] .|| bad_chs
-            count(bad_chs) >= nbad && push!(be, ep_idx)
-        end
+        bad_per_epoch = vec(sum(bad_idx, dims = 1)) # bad channel count per epoch
+        bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2)) # OR over epochs per channel
+        append!(be, findall(bad_per_epoch .>= nbad)) # epochs exceeding threshold
 
         # by individual-channel threshold
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> (z + 1)
-        Threads.@threads for ep_idx in 1:ep_n
-            @inbounds for ch_idx in 1:ch_n
-                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) /
-                    length(s[ch_idx, :, ep_idx])
-            end
+        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
-        @inbounds for ep_idx in 1:ep_n
-            bad_chs = zeros(Bool, ch_n)
-            for ch_idx in 1:ch_n
-                if bad_idx[ch_idx, ep_idx]
-                    bad_chs[ch_idx] = true
-                end
-            end
-            bc[ch] = bc[ch] .|| bad_chs
-            count(bad_chs) >= nbad && push!(be, ep_idx)
-        end
+        bad_per_epoch = vec(sum(bad_idx, dims = 1)) # bad channel count per epoch
+        bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2)) # OR over epochs per channel
+        append!(be, findall(bad_per_epoch .>= nbad)) # epochs exceeding threshold
 
     end
 

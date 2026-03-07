@@ -2,7 +2,6 @@ export l1
 export l2
 export perm_cmp
 export tavg
-export delmean
 export areduce
 
 """
@@ -126,33 +125,6 @@ function tavg(s::AbstractArray)::AbstractArray
     _chk3d(s)
 
     return mean(s; dims = 3)
-
-end
-
-"""
-    delmean(s)
-
-Demean signal.
-
-# Arguments
-
-  - `s::AbstractArray`
-
-# Returns
-
-  - `s_new::AbstractArray`
-"""
-function delmean(s::AbstractArray; dims::Union{Int64, Nothing} = nothing)::AbstractArray
-
-    ms = 0
-    if isnothing(dims)
-        ms = mean(s)
-    else
-        @assert dims <= ndims(s) "dims must be ≤ $(ndims(s))"
-        ms = mean(s; dims = dims)
-    end
-
-    return s .- ms
 
 end
 

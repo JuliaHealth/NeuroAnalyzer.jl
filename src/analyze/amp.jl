@@ -23,10 +23,17 @@ Named tuple containing:
   - `rmsq::Float64`: root mean square
 """
 function amp(
-        s::AbstractVector
-    )::@NamedTuple{
-        p::Float64, r::Float64, p2p::Float64, semi_p2p::Float64, msa::Float64, rmsa::Float64, es::Float64, rmsq::Float64,
-    }
+    s::AbstractVector
+)::@NamedTuple{
+    p::Float64,
+    r::Float64,
+    p2p::Float64,
+    semi_p2p::Float64,
+    msa::Float64,
+    rmsa::Float64,
+    es::Float64,
+    rmsq::Float64
+}
 
     p = maximum(abs.(s))
     r = p / sqrt(2)
@@ -64,17 +71,17 @@ Named tuple containing:
   - `rmsq::Matrix{Float64}`: root mean square
 """
 function amp(
-        s::AbstractArray
-    )::@NamedTuple{
-        p::Matrix{Float64},
-        r::Matrix{Float64},
-        p2p::Matrix{Float64},
-        semi_p2p::Matrix{Float64},
-        msa::Matrix{Float64},
-        rmsa::Matrix{Float64},
-        energy::Matrix{Float64},
-        rmsq::Matrix{Float64},
-    }
+    s::AbstractArray
+)::@NamedTuple{
+    p::Matrix{Float64},
+    r::Matrix{Float64},
+    p2p::Matrix{Float64},
+    semi_p2p::Matrix{Float64},
+    msa::Matrix{Float64},
+    rmsa::Matrix{Float64},
+    energy::Matrix{Float64},
+    rmsq::Matrix{Float64},
+}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -89,12 +96,11 @@ function amp(
     nrg = zeros(ch_n, ep_n)
     rmsq = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, ep_idx], r[ch_idx, ep_idx], p2p[ch_idx, ep_idx], semi_p2p[ch_idx, ep_idx], msa[ch_idx, ep_idx], rmsa[ch_idx, ep_idx], nrg[ch_idx, ep_idx], rmsq[ch_idx, ep_idx] = @views amp(
-                s[ch_idx, :, ep_idx]
-            )
-        end
+    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        p[ch_idx, ep_idx], r[ch_idx, ep_idx], p2p[ch_idx, ep_idx], semi_p2p[ch_idx, ep_idx], msa[ch_idx, ep_idx], rmsa[ch_idx, ep_idx], nrg[ch_idx, ep_idx], rmsq[ch_idx, ep_idx] = @views amp(
+            s[ch_idx, :, ep_idx]
+        )
     end
 
     return (p = p, r = r, p2p = p2p, semi_p2p = semi_p2p, msa = msa, rmsa = rmsa, energy = nrg, rmsq = rmsq)

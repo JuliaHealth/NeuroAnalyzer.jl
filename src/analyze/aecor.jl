@@ -52,13 +52,13 @@ Calculate Amplitude Envelope Correlation (AEC).
   - `aec::Matrix{Float64}`: AEC value
 """
 function aecor(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}},
-        ch2::Union{String, Vector{String}},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::Matrix{Float64}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}},
+    ch2::Union{String, Vector{String}},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::Matrix{Float64}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
@@ -77,12 +77,11 @@ function aecor(
 
     aec = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            aec[ch_idx, ep_idx] = @views aecor(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
-            )
-        end
+    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        aec[ch_idx, ep_idx] = @views aecor(
+            obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
+        )
     end
 
     return aec
@@ -114,13 +113,12 @@ function aecor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
     aec = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                aec[ch_idx1, ch_idx2, ep_idx] = @views aecor(
-                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
-                )
-            end
+    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1
+            aec[ch_idx1, ch_idx2, ep_idx] = @views aecor(
+                obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
+            )
         end
     end
 

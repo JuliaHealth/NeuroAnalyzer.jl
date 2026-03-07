@@ -290,10 +290,6 @@ n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
 @test length(source_labels(n)) == 1
 @test length(detector_labels(n)) == 2
 
-@info "Test: delmean()"
-@test delmean(v1) == [-2, -1, 0, 1, 2]
-@test delmean(a1, dims=3) == zeros(2, 3, 2)
-
 @info "Test: tavg()"
 @test tavg(a1) == ones(2, 3, 1)
 
