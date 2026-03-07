@@ -54,13 +54,37 @@ function coherence(
     _check_tuple(flim, (0, fs / 2), "flim")
 
     s1s1, f = cpsd(
-        s1, s1; fs = fs, wlen = wlen, woverlap = woverlap, w = w, demean = demean, method = method, flim = flim
+        s1,
+        s1,
+        fs = fs,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        demean = demean,
+        method = method,
+        flim = flim
     )
     s1s2, f = cpsd(
-        s1, s2; fs = fs, wlen = wlen, woverlap = woverlap, w = w, demean = demean, method = method, flim = flim
+        s1,
+        s2,
+        fs = fs,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        demean = demean,
+        method = method,
+        flim = flim
     )
     s2s2, f = cpsd(
-        s2, s2; fs = fs, wlen = wlen, woverlap = woverlap, w = w, demean = demean, method = method, flim = flim
+        s2,
+        s2,
+        fs = fs,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        demean = demean,
+        method = method,
+        flim = flim
     )
 
     coh = @. s1s2 / sqrt(s1s1 * s2s2)
@@ -140,7 +164,7 @@ function coherence(
 
     _, _, _, f = NeuroAnalyzer.coherence(
         s1[1, :, 1],
-        s2[1, :, 1];
+        s2[1, :, 1],
         method = method,
         fs = fs,
         flim = flim,

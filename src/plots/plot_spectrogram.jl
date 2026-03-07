@@ -96,7 +96,6 @@ function plot_spectrogram(
         xticks = LinearTicks(10),
         xminorticksvisible = true,
         xminorticks = IntervalsBetween(10),
-        yticks = LinearTicks(15),
         yminorticksvisible = true,
         yminorticks = IntervalsBetween(10),
         yscale = frq === :lin ? identity : log,
@@ -636,7 +635,7 @@ function plot_spectrogram(
     if length(ch) == 1 || type === :topo
         if method === :stft
             sp, sf, st = NeuroAnalyzer.spectrogram(
-                signal; fs = fs, db = false, method = :stft, wlen = wlen, woverlap = woverlap, w = w
+                signal, fs = fs, db = false, method = :stft, wlen = wlen, woverlap = woverlap, w = w
             )
             if ep != 0
                 title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep]")
@@ -645,7 +644,7 @@ function plot_spectrogram(
             end
         elseif method === :mt
             sp, sf, st = NeuroAnalyzer.spectrogram(
-                signal; fs = fs, db = false, method = :mt, nt = nt, wlen = wlen, woverlap = woverlap, w = w
+                signal, fs = fs, db = false, method = :mt, nt = nt, wlen = wlen, woverlap = woverlap, w = w
             )
             if ep != 0
                 title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep]")

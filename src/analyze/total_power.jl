@@ -22,6 +22,7 @@ Calculate total power.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -37,10 +38,21 @@ function total_power(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )
 
     pw, pf = psd(
-        s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw
+        s,
+        fs = fs,
+        db = false,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+        demean = demean,
     )
 
     # dx: frequency resolution
@@ -73,6 +85,7 @@ Calculate total power.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -88,6 +101,7 @@ function total_power(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )
 
     _chk3d(s)
@@ -108,6 +122,7 @@ function total_power(
                 w = w,
                 ncyc = ncyc,
                 gw = gw,
+                demean = demean,
             )
         end
     end
@@ -137,6 +152,7 @@ Calculate total power.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -152,6 +168,7 @@ function total_power(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -166,6 +183,7 @@ function total_power(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
     _log_on()
 

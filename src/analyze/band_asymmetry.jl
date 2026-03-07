@@ -24,6 +24,7 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -44,6 +45,7 @@ function band_asymmetry(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::@NamedTuple{ba::Float64, ba_norm::Float64}
 
     ch1 = get_channel(obj, ch = ch1)
@@ -61,6 +63,7 @@ function band_asymmetry(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
     bp2 = @views band_power(
         obj.data[ch2, :, :],
@@ -73,6 +76,7 @@ function band_asymmetry(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
     _log_on()
 

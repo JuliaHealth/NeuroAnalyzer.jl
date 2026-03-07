@@ -22,6 +22,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -38,12 +39,23 @@ function sef(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(f, (0, fs / 2), "f")
 
-    pw, pf = psd(s, fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, pf = psd(s,
+                fs = fs,
+                db = false,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                demean = demean,
+            )
 
     f1_idx = vsearch(f[1], pf)
     f2_idx = vsearch(f[2], pf)
@@ -91,6 +103,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -107,6 +120,7 @@ function sef(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     _chk3d(s)
@@ -127,6 +141,7 @@ function sef(
                 woverlap = woverlap,
                 w = w,
                 ncyc = ncyc,
+                demean = demean,
             )
         end
     end
@@ -156,6 +171,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -172,6 +188,7 @@ function sef(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -186,6 +203,7 @@ function sef(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
+        demean = demean,
     )
 
     return sef_frq

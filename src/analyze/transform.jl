@@ -29,9 +29,13 @@ Named tuple containing:
 To get frequencies for the signal, use `f, _ = freqs(s, fs)`.
 """
 function ftransform(
-        s::AbstractVector; pad::Int64 = 0, db::Bool = false, nf::Bool = false
-    )::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+    s::AbstractVector;
+    pad::Int64 = 0,
+    db::Bool = false,
+    nf::Bool = false,
+)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
+    n = length(s)
     if nf
         # this will return positive and negative frequencies
         ft = fft0(s, pad)
@@ -43,27 +47,16 @@ function ftransform(
     # amplitudes per frequencies
     a = abs.(ft)
     # normalize
-    a ./= length(s)
-    # for two-sided amplitude
-    # nf && (a = a[1:div(length(s), 2) + 1])
+    a ./= n
     # multiple by 2 to compensate removed negative frequencies, except 0 Hz and Nyquist
-    if !nf
-        if mod(length(s), 2) == 0
-            (a[2:(end - 1)] .*= 2)
-        else
-            (a[2:end] .*= 2)
-        end
-    end
+    !nf && (a[2:(end - 1)] .*= 2)
 
     # powers per frequencies
-    if nf
-        p = abs2.(ft)               # p = a .^ 2 = abs.(ft .* conj(ft))
-        p ./= length(s)^2
-    else
-        p = a .^ 2
-    end
-    # for two-sided power
-    # nf && (p = p[1:div(length(s), 2) + 1])
+    p = abs2.(ft)
+    # normalize
+    p ./= n
+    # multiple by 2 to compensate removed negative frequencies, except 0 Hz and Nyquist
+    !nf && (p[2:(end - 1)] .*= 2)
 
     # convert do dB
     db && (p = pow2db.(p))
@@ -72,8 +65,7 @@ function ftransform(
     ft[abs.(ft) .< eps()] .= 0
 
     # phase
-    ph = DSP.angle.(ft)         # ph = atan.(imag(ft), real(ft))
-    # ph = DSP.unwrap(ph)
+    ph = DSP.angle.(ft)
 
     return (c = ft, a = a, p = p, ph = ph)
 
@@ -100,8 +92,10 @@ Named tuple containing:
   - `ph::Vector{Float64}`: phases (in radians)
 """
 function htransform(
-        s::AbstractVector; pad::Int64 = 0, db::Bool = false
-    )::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+    s::AbstractVector;
+    pad::Int64 = 0,
+    db::Bool = false,
+)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     # Hilbert transform
     ht = DSP.hilbert(pad0(s, pad))
@@ -142,31 +136,35 @@ Named tuple containing:
   - `ph::Array{Float64, 3}`: phases (in radians)
 """
 function ftransform(
-        s::AbstractArray; pad::Int64 = 0, db::Bool = false, nf::Bool = false
-    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+    s::AbstractArray;
+    pad::Int64 = 0,
+    db::Bool = false,
+    nf::Bool = false,
+)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    fft_size = length(NeuroAnalyzer.ftransform(s[1, :, 1], pad = pad, db = db, nf = nf).c)
-    if nf
-        c = zeros(ComplexF64, ch_n, fft_size, ep_n)
-        a = similar(s)
-        p = similar(s)
-        ph = similar(s)
-    else
-        c = zeros(ComplexF64, ch_n, fft_size, ep_n)
-        a = zeros(Float64, ch_n, fft_size, ep_n)
-        p = zeros(Float64, ch_n, fft_size, ep_n)
-        ph = zeros(Float64, ch_n, fft_size, ep_n)
-    end
+    fft_tmp = NeuroAnalyzer.ftransform(
+                                s[1, :, 1],
+                                pad = pad,
+                                db = db,
+                                nf = nf,
+                            )
+    c = zeros(ComplexF64, ch_n, length(fft_tmp.c), ep_n)
+    a = zeros(Float64, ch_n, length(fft_tmp.a), ep_n)
+    p = zeros(Float64, ch_n, length(fft_tmp.p), ep_n)
+    ph = zeros(Float64, ch_n, length(fft_tmp.ph), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.ftransform(
-                s[ch_idx, :, ep_idx], pad = pad, db = db, nf = nf
-            )
+                    s[ch_idx, :, ep_idx],
+                    pad = pad,
+                    db = db,
+                    nf = nf,
+                )
         end
     end
 
@@ -195,8 +193,10 @@ Named tuple containing:
   - `ph::Array{Float64, 3}`: phases (in radians)
 """
 function htransform(
-        s::AbstractArray; pad::Int64 = 0, db::Bool = false
-    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+    s::AbstractArray;
+    pad::Int64 = 0,
+    db::Bool = false,
+)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -211,8 +211,10 @@ function htransform(
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.htransform(
-                s[ch_idx, :, ep_idx], pad = pad, db = db
-            )
+                    s[ch_idx, :, ep_idx],
+                    pad = pad,
+                    db = db,
+                )
         end
     end
 
@@ -243,8 +245,12 @@ Named tuple containing:
   - `ph::Array{Float64, 3}: phases (in radians)
 """
 function transform(
-        s::AbstractArray; pad::Int64 = 0, h::Bool = false, db::Bool = false, nf::Bool = false
-    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+    s::AbstractArray;
+    pad::Int64 = 0,
+    h::Bool = false,
+    db::Bool = false,
+    nf::Bool = false,
+)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     h && _warn("htransform() uses Hilbert transform, the signal should be narrowband for best results.")
@@ -282,16 +288,22 @@ Named tuple containing:
   - `ph::Array{Float64, 3}: phases (in radians)
 """
 function transform(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pad::Int64 = 0,
-        h::Bool = false,
-        db::Bool = false,
-        nf::Bool = false,
-    )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    h::Bool = false,
+    db::Bool = false,
+    nf::Bool = false,
+)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    c, a, p, ph = NeuroAnalyzer.transform(obj.data[ch, :, :], pad = pad, h = h, db = db, nf = nf)
+    c, a, p, ph = NeuroAnalyzer.transform(
+                                    obj.data[ch, :, :],
+                                    pad = pad,
+                                    h = h,
+                                    db = db,
+                                    nf = nf,
+                                )
 
     return (c = c, a = a, p = p, ph = ph)
 
@@ -368,8 +380,8 @@ Calculate complex analytic signal using Hilbert transformation.
   - `ha::Vector{ComplexF64}`:
 """
 function hanalytic(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0
-    )::Array{ComplexF64, 3}
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0
+)::Array{ComplexF64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ha = NeuroAnalyzer.hanalytic(obj.data[ch, :, :], pad = pad)
