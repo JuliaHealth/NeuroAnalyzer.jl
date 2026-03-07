@@ -25,6 +25,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -32,6 +33,10 @@ Named tuple containing:
 
   - `p::Vector{Float64}`: powers
   - `f::Vector{Float64}`: frequencies
+
+# Notes
+
+Setting `demean=true` reduces (but doesn't fully eliminate) DC contamination. Importantly, this mitigates the 0 Hz bin's value, but the bin is still present in the output.
 """
 function psd(
         s::AbstractVector;
@@ -44,6 +49,7 @@ function psd(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
@@ -54,39 +60,79 @@ function psd(
     @assert woverlap < wlen "woverlap must be < $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
 
+    n = length(s)
+
     if method === :mt
-        w = w ? hanning(length(s)) : ones(length(s))
-        p = mt_pgram(s .* w, fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
+        demean && (s = remove_dc(s))
+        w = w ? hanning(n) : ones(n)
+        p = mt_pgram(
+                s .* w,
+                fs = fs,
+                nw = ((nt + 1) ÷ 2),
+                ntapers = nt,
+            )
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :stft
+        demean && (s = remove_dc(s))
         w = w ? DSP.hanning : nothing
-        p = abs.(DSP.stft(s, wlen, woverlap, fs = fs, window = w))
+        p = abs.(DSP.stft(
+                        s,
+                        wlen,
+                        woverlap,
+                        fs = fs,
+                        window = w,
+                    )
+                )
         # average STFT segments along time
         p = vec(mean(p, dims = 2))
         # create frequencies vector
         f = linspace(0, fs / 2, length(p))
         db && (p = pow2db.(p))
     elseif method === :welch
+        demean && (s = remove_dc(s))
         w = w ? DSP.hanning : nothing
-        p = DSP.welch_pgram(s, wlen, woverlap, fs = fs, window = w)
-        pw = power(p)
+        p = DSP.welch_pgram(
+                        s,
+                        wlen,
+                        woverlap,
+                        fs = fs,
+                        window = w,
+                    )
         f = Vector(freq(p))
-        p = pw[1:length(f)]
+        p = power(p)
         db && (p = pow2db.(p))
     elseif method === :fft
         w = w ? DSP.hanning : nothing
-        p = DSP.periodogram(s, fs = fs, window = w)
+        p = DSP.periodogram(
+                        s,
+                        fs = fs,
+                        window = w,
+                    )
         pw = power(p)
         f = Vector(freq(p))
         p = pw[1:length(f)]
         db && (p = pow2db.(p))
     elseif method === :mw
-        p, f = mwpsd(s, db = db, fs = fs, ncyc = ncyc, w = w)
+        p, f = mwpsd(
+                    s,
+                    db = db,
+                    fs = fs,
+                    ncyc = ncyc,
+                    w = w,
+                    demean = demean,
+                )
     elseif method === :gh
-        p, f = ghpsd(s, fs = fs, db = db, gw = gw, w = w)
+        p, f = ghpsd(
+                    s,
+                    fs = fs,
+                    db = db,
+                    gw = gw,
+                    w = w,
+                    demean = demean,
+                )
     end
 
     return (p = p, f = f)
@@ -115,6 +161,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -134,6 +181,7 @@ function psd(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool=true,
     )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     _, f = @views psd(
@@ -147,6 +195,7 @@ function psd(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
 
     p = zeros(size(s, 1), length(f))
@@ -163,6 +212,7 @@ function psd(
             w = w,
             ncyc = ncyc,
             gw = gw,
+            demean = demean,
         )
     end
 
@@ -193,6 +243,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -212,6 +263,7 @@ function psd(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
@@ -229,6 +281,7 @@ function psd(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
 
     p = zeros(ch_n, length(f), ep_n)
@@ -246,6 +299,7 @@ function psd(
                 w = w,
                 ncyc = ncyc,
                 gw = gw,
+                demean = demean,
             )
         end
     end
@@ -278,6 +332,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `gw::Real=5`: Gaussian width in Hz
   - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -298,6 +353,7 @@ function psd(
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
         flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        demean::Bool = true,
     )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
@@ -315,6 +371,7 @@ function psd(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
     _log_on()
 
@@ -340,6 +397,7 @@ Calculate power spectrum using Morlet wavelet convolution.
   - `fs::Int64`: sampling rate
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `w::Bool=true`: if true, apply Hanning window
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -355,11 +413,13 @@ function mwpsd(
         fs::Int64,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         w::Bool = true,
+        demean::Bool = true,
     )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert pad >= 0 "pad must be ≥ 0."
 
+    demean && (s = remove_dc(s))
     pad > 0 && (s = pad0(s, pad))
 
     w = w ? hanning(length(s)) : ones(length(s))
@@ -403,6 +463,7 @@ Calculate power spectrum using Gaussian and Hilbert transform.
   - `db::Bool=true`: normalize powers to dB
   - `gw::Real=5`: Gaussian width in Hz
   - `w::Bool=true`: if true, apply Hanning window
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -412,11 +473,17 @@ Named tuple containing:
   - `f::Vector{Float64}`: frequencies
 """
 function ghpsd(
-        s::AbstractVector; fs::Int64, db::Bool = true, gw::Real = 5, w::Bool = true
+        s::AbstractVector;
+        fs::Int64,
+        db::Bool = true,
+        gw::Real = 5,
+        w::Bool = true,
+        demean::Bool = true,
     )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
+    demean && (s = remove_dc(s))
     flim = (0, fs / 2)
     nfrq = _tlength(flim)
     f = linspace(flim[1], flim[2], nfrq)

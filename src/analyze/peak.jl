@@ -23,6 +23,7 @@ Calculate peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -38,12 +39,23 @@ function peak_frq(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    pw, pf = psd(s, fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, pf = psd(s,
+                fs = fs,
+                db = false,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                demean = demean,
+            )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -77,6 +89,7 @@ Calculate amplitude at peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -92,12 +105,23 @@ function peak_amp(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    pw, pf = psd(s, fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, pf = psd(s,
+                fs = fs,
+                db = false,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                demean = demean,
+            )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -130,6 +154,7 @@ Calculate power at peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -145,12 +170,23 @@ function peak_pow(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    pw, pf = psd(s, fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, pf = psd(s,
+                fs = fs,
+                db = false,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                demean = demean,
+            )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -183,6 +219,7 @@ Calculate peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -198,6 +235,7 @@ function peak_frq(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     _chk3d(s)
@@ -217,6 +255,7 @@ function peak_frq(
                 woverlap = woverlap,
                 w = w,
                 ncyc = ncyc,
+                demean = demean,
             )
         end
     end
@@ -246,6 +285,7 @@ Calculate amplitude at peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -261,6 +301,7 @@ function peak_amp(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     _chk3d(s)
@@ -280,6 +321,7 @@ function peak_amp(
                 woverlap = woverlap,
                 w = w,
                 ncyc = ncyc,
+                demean = demean,
             )
         end
     end
@@ -309,6 +351,7 @@ Calculate power at peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -324,6 +367,7 @@ function peak_pow(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     _chk3d(s)
@@ -343,6 +387,7 @@ function peak_pow(
                 woverlap = woverlap,
                 w = w,
                 ncyc = ncyc,
+                demean = demean,
             )
         end
     end
@@ -371,6 +416,7 @@ Calculate peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -386,6 +432,7 @@ function peak_frq(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -399,6 +446,7 @@ function peak_frq(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
+        demean = demean,
     )
 
     return pf
@@ -425,6 +473,7 @@ Calculate amplitude at peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -440,6 +489,7 @@ function peak_amp(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -453,6 +503,7 @@ function peak_amp(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
+        demean = demean,
     )
 
     return pa
@@ -479,6 +530,7 @@ Calculate power at peak frequency in a band.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -494,6 +546,7 @@ function peak_pow(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -507,6 +560,7 @@ function peak_pow(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
+        demean = demean,
     )
 
     return pw

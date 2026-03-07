@@ -387,6 +387,7 @@ Calculate power spectrum (in dB) envelope.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -405,6 +406,7 @@ function penv(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::@NamedTuple{e::Array{Float64, 3}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -414,7 +416,15 @@ function penv(
 
     _log_off()
     pw, f = psd(
-        obj.data[1, :, 1]; fs = fs, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc
+        obj.data[1, :, 1],
+        fs = fs,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        demean = demean,
     )
     e = zeros(ch_n, length(pw), ep_n)
     @inbounds for ep_idx in 1:ep_n
@@ -429,6 +439,7 @@ function penv(
                 woverlap = woverlap,
                 w = w,
                 ncyc = ncyc,
+                demean = demean,
             )
             e[ch_idx, :, ep_idx] = env_up(pw, f, d = d)
         end
@@ -461,6 +472,7 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -482,6 +494,7 @@ function penv_mean(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::@NamedTuple{
         e_m::Union{Vector{Float64}, Matrix{Float64}},
         e_u::Union{Vector{Float64}, Matrix{Float64}},
@@ -498,7 +511,17 @@ function penv_mean(
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, f = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, f = penv(obj,
+                ch = ch,
+                d = d,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                demean = demean,
+            )
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -567,6 +590,7 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -588,6 +612,7 @@ function penv_median(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
     )::@NamedTuple{
         e_m::Union{Vector{Float64}, Matrix{Float64}},
         e_u::Union{Vector{Float64}, Matrix{Float64}},
@@ -604,7 +629,17 @@ function penv_median(
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, f = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc)
+    pw, f = penv(obj,
+                ch = ch,
+                d = d,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                demean = demean,
+            )
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)

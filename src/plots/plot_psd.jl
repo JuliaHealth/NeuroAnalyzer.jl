@@ -45,13 +45,12 @@ function plot_psd(
     plot_size = (900, 450)
     p = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
-        xticks = LinearTicks(15),
         xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
+        xminorticks = IntervalsBetween(5),
         xscale = frq === :lin ? identity : log,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0.1, 0.1),
@@ -63,7 +62,6 @@ function plot_psd(
         yrectzoom = false,
     )
     GLMakie.xlims!(ax, flim)
-    GLMakie.ylims!(ax, extrema(sp))
     ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -71,7 +69,11 @@ function plot_psd(
     ax.yticklabelsize = 12
 
     # draw powers
-    Makie.lines!(ax, sf, sp; linewidth = 2, color = :black)
+    Makie.lines!(ax,
+                 sf,
+                 sp,
+                 linewidth = 2,
+                 color = :black)
 
     return p
 
@@ -152,11 +154,11 @@ function plot_psd(
         yrectzoom = false,
     )
     GLMakie.xlims!(ax, flim)
-    if ci95
-        GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
-    else
-        GLMakie.ylims!(ax, extrema(sp))
-    end
+#     if ci95
+#         GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
+#     else
+#         GLMakie.ylims!(ax, extrema(sp))
+#     end
     ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -282,7 +284,7 @@ function plot_psd_3d(
             ztranslationlock = true,
             aspect = (1, 1, 0.5),
             xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
+            yautolimitmargin = (0.1, 0.1),
             zautolimitmargin = (0, 0),
         )
         GLMakie.xlims!(ax, flim)
@@ -578,6 +580,7 @@ Plot PSD (power spectrum density).
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `gw::Real=5`: Gaussian width in Hz
   - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
+  - `demean::Bool=true`: subtract DC before calculating PSD
   - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
   - `xlabel::String="default"`: x-axis label
   - `ylabel::String="default"`: y-axis label
@@ -614,6 +617,7 @@ function plot_psd(
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
         ref::Symbol = :abs,
+        demean::Bool = true,
         frq::Symbol = :lin,
         xlabel::String = "default",
         ylabel::String = "default",
@@ -688,21 +692,46 @@ function plot_psd(
     # calculate PSD
     if ref === :abs
         if method === :welch
-            sp, sf = psd(signal; fs = fs, db = db, method = :welch, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :welch,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "Absolute PSD (Welch's periodogram)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Absolute PSD (Welch's periodogram)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :fft
-            sp, sf = psd(signal; fs = fs, db = db, method = :fft, w = w)
+            sp, sf = psd(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :fft,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "Absolute PSD (fast Fourier transform)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Absolute PSD (fast Fourier transform)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :stft
-            sp, sf = psd(signal; fs = fs, db = db, method = :stft, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :stft,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "Absolute PSD (short-time Fourier transform)\n[epoch: $ep]")
             else
@@ -710,21 +739,47 @@ function plot_psd(
                     (title = "Absolute PSD (short-time Fourier transform)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mt
-            sp, sf = psd(signal; fs = fs, db = db, method = :mt, nt = nt, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :mt,
+                        nt = nt,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "Absolute PSD (multi-taper)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Absolute PSD (multi-taper)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mw
-            sp, sf = psd(signal; fs = fs, db = db, method = :mw, ncyc = ncyc, w = w)
+            sp, sf = psd(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :mw,
+                        ncyc = ncyc,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "Absolute PSD (Morlet wavelet convolution)\n[epoch: $ep]")
             else
                 title == "default" && (title = "Absolute PSD (Morlet wavelet convolution)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :gh
-            sp, sf = psd(signal; fs = fs, db = db, method = :gh, gw = gw, w = w)
+            sp, sf = psd(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :gh,
+                        gw = gw,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "Absolute PSD (Gaussian and Hilbert transform)\n[epoch: $ep]")
             else
@@ -734,7 +789,16 @@ function plot_psd(
         end
     elseif ref === :total
         if method === :welch
-            sp, sf = psd_rel(signal; fs = fs, db = db, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :welch,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "PSD (Welch's periodogram) relative to total power\n[epoch: $ep]")
             else
@@ -742,7 +806,14 @@ function plot_psd(
                     (title = "PSD (Welch's periodogram) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :fft
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :fft, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :fft,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "PSD (fast Fourier transform) relative to total power\n[epoch: $ep]")
             else
@@ -750,7 +821,16 @@ function plot_psd(
                     (title = "PSD (fast Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :stft
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :stft, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :stft,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" &&
                     (title = "PSD (short-time Fourier transform) relative to total power\n[epoch: $ep]")
@@ -759,14 +839,32 @@ function plot_psd(
                     (title = "PSD (short-time Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mt
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :mt, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :mt,
+                        nt = nt,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "PSD (multi-taper) relative to total power\n[epoch: $ep]")
             else
                 title == "default" && (title = "PSD (multi-taper) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mw
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :mw, ncyc = ncyc, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :mw,
+                        ncyc = ncyc,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power\n[epoch: $ep]")
             else
@@ -774,7 +872,15 @@ function plot_psd(
                     (title = "PSD (Morlet wavelet convolution) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :gh
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :gh, gw = gw, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :gh,
+                        gw = gw,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" &&
                     (title = "PSD (Gaussian and Hilbert transform) relative to total power\n[epoch: $ep]")
@@ -785,7 +891,17 @@ function plot_psd(
         end
     else
         if method === :welch
-            sp, sf = psd_rel(signal; fs = fs, db = db, flim = flim, wlen = wlen, woverlap = woverlap, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :welch,
+                        flim = flim,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (
                     title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -796,7 +912,15 @@ function plot_psd(
                 )
             end
         elseif method === :fft
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :fft, flim = flim, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :fft,
+                        flim = flim,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (
                     title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -808,8 +932,16 @@ function plot_psd(
             end
         elseif method === :stft
             sp, sf = psd_rel(
-                signal; fs = fs, db = db, method = :stft, flim = flim, wlen = wlen, woverlap = woverlap, w = w
-            )
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :stft,
+                        flim = flim,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (
                     title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -821,8 +953,17 @@ function plot_psd(
             end
         elseif method === :mt
             sp, sf = psd_rel(
-                signal; fs = fs, db = db, method = :mt, flim = flim, wlen = wlen, woverlap = woverlap, w = w
-            )
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :mt,
+                        flim = flim,
+                        nt = nt,
+                        wlen = wlen,
+                        woverlap = woverlap,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" &&
                     (title = "PSD (multi-taper) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]")
@@ -832,7 +973,16 @@ function plot_psd(
                 )
             end
         elseif method === :mw
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :mw, flim = flim, ncyc = ncyc, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :mw,
+                        flim = flim,
+                        ncyc = ncyc,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (
                     title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -843,7 +993,16 @@ function plot_psd(
                 )
             end
         elseif method === :gh
-            sp, sf = psd_rel(signal; fs = fs, db = db, method = :gh, gw = gw, w = w)
+            sp, sf = psd_rel(
+                        signal,
+                        fs = fs,
+                        db = db,
+                        method = :gh,
+                        flim = flim,
+                        gw = gw,
+                        w = w,
+                        demean = demean,
+                    )
             if ep != 0
                 title == "default" && (
                     title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -868,7 +1027,7 @@ function plot_psd(
         else
             p = plot_psd(
                 sf,
-                sp;
+                sp,
                 xlabel = xlabel,
                 ylabel = "",
                 clabels = clabels,
@@ -888,7 +1047,7 @@ function plot_psd(
         ch_t = obj.header.recording[:channel_type]
         p = plot_psd_3d(
             sf,
-            sp;
+            sp,
             clabels = clabels,
             xlabel = xlabel,
             ylabel = ylabel,
@@ -912,7 +1071,7 @@ function plot_psd(
         p = plot_psd_topo(
             locs,
             sf,
-            sp;
+            sp,
             xlabel = xlabel,
             ylabel = ylabel,
             title = title,

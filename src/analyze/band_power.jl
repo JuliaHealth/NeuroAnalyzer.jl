@@ -23,6 +23,7 @@ Calculate absolute band power between two frequencies.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -39,13 +40,24 @@ function band_power(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, (0, fs / 2), "flim")
 
     pw, pf = psd(
-        s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw
+        s,
+        fs = fs,
+        db = false,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+        demean = demean,
     )
 
     f1_idx = vsearch(flim[1], pf)
@@ -85,6 +97,7 @@ Calculate absolute band power between two frequencies.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -101,6 +114,7 @@ function band_power(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean = demean,
     )::Matrix{Float64}
 
     _chk3d(s)
@@ -121,6 +135,7 @@ function band_power(
                 w = w,
                 ncyc = ncyc,
                 gw = gw,
+                demean = demean,
             )
         end
     end
@@ -152,6 +167,7 @@ Calculate absolute band power between two frequencies.
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -168,6 +184,7 @@ function band_power(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -184,6 +201,7 @@ function band_power(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
     _log_on()
 

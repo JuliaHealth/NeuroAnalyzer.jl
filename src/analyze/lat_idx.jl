@@ -22,6 +22,7 @@ Calculate lateralization index (log(A / B), where A is average power at given fr
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -37,6 +38,7 @@ function lat_idx(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::Float64
 
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
@@ -62,6 +64,7 @@ function lat_idx(
             w = w,
             ncyc = ncyc,
             gw = gw,
+            demean = demean,
         )
     else
         p_left, f = psd(
@@ -75,6 +78,7 @@ function lat_idx(
             w = w,
             ncyc = ncyc,
             gw = gw,
+            demean = demean,
         )
     end
 
@@ -91,6 +95,7 @@ function lat_idx(
             w = w,
             ncyc = ncyc,
             gw = gw,
+            demean = demean,
         )
     else
         p_right, _ = psd(
@@ -104,6 +109,7 @@ function lat_idx(
             w = w,
             ncyc = ncyc,
             gw = gw,
+            demean = demean,
         )
     end
 

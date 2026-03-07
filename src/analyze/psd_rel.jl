@@ -24,6 +24,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -44,13 +45,25 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     ref_pw = if flim === nothing
-        total_power(s, fs = fs, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw)
+        total_power(
+            s,
+            fs = fs,
+            method = method,
+            nt = nt,
+            wlen = wlen,
+            woverlap = woverlap,
+            w = w,
+            ncyc = ncyc,
+            gw = gw,
+            demean = demean,
+        )
     else
         band_power(
-            s;
+            s,
             fs = fs,
             flim = flim,
             method = method,
@@ -60,11 +73,22 @@ function psd_rel(
             w = w,
             ncyc = ncyc,
             gw = gw,
+            demean = demean,
         )
     end
 
     p, f = psd(
-        s; fs = fs, db = db, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw
+        s,
+        fs = fs,
+        db = db,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+        demean = demean,
     )
 
     p = p ./ ref_pw
@@ -97,6 +121,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -117,6 +142,7 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     ch_n = size(s, 1)
@@ -133,6 +159,7 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
 
     p = zeros(ch_n, length(f))
@@ -150,6 +177,7 @@ function psd_rel(
             w = w,
             ncyc = ncyc,
             gw = gw,
+            demean = demean,
         )
     end
 
@@ -181,6 +209,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -201,6 +230,7 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
@@ -218,6 +248,7 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
 
     p = zeros(ch_n, length(f), ep_n)
@@ -236,6 +267,7 @@ function psd_rel(
                 w = w,
                 ncyc = ncyc,
                 gw = gw,
+                demean = demean,
             )
         end
     end
@@ -268,6 +300,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
   - `gw::Real=5`: Gaussian width in Hz
+  - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
@@ -288,6 +321,7 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
+        demean::Bool = true,
     )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -303,6 +337,7 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
+        demean = demean,
     )
 
     return (p = p, f = f)
