@@ -12,43 +12,46 @@ Perform zeros-padded FFT.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `n::Int64`: number of zeros to append
+- `x::AbstractVector`: signal vector
+- `n::Int64`: number of zeros to append before transforming
 
 # Returns
 
-  - `fft0::Vector{ComplexF64}`
+- `fft0::Vector{ComplexF64}`: full (two-sided) Fourier coefficients
 """
 function fft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
     @assert n >= 0 "n must be ≥ 0."
 
-    if n == 0
-        return fft(x)
-    else
-        return fft(pad0(x, n))
-    end
+    # when n == 0, skip pad0() to avoid an unnecessary copy.
+    return n == 0 ? fft(x) : fft(pad0(x, n))
 
 end
 
 """
     ifft0(x, n)
 
-Perform IFFT of zero-padded vector.
+Perform IFFT of a zero-padded spectrum and trim the result to the original length.
+
+If a signal of length `L` was zero-padded by `n` samples before the forward FFT, the padded spectrum has length `L + n`. This function recovers the original `L`-sample signal by discarding the trailing `n` samples after the IFFT.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `n::Int64`: number of zeros added to `x`
+- `x::AbstractVector`: zero-padded spectrum (length `L + n`)
+- `n::Int64`: number of zeros that were appended to the original signal
 
 # Returns
 
-  - `ifft0::Vector{ComplexF64}`: reconstructed signal trimmed to original length
+- `ifft0::Vector{ComplexF64}`: reconstructed signal of length `length(x) - n`
 """
 function ifft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
     @assert n >= 0 "n must be ≥ 0."
 
+    # when n == 0 no trimming is required; return the full IFFT
+    n == 0 && return ifft(x)
+
+    # trim the IFFT output back to the original signal length
     return ifft(x)[1:(length(x) - n)]
 
 end
@@ -56,18 +59,19 @@ end
 """
     fft2(x)
 
-Perform zeros-padded FFT, so the length of padded vector is a power of 2.
+Perform zero-padded FFT, padding the input to the next power of 2 in length.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`: signal vector
 
 # Returns
 
-  - `fft2::Vector{ComplexF64}`
+- `fft2::Vector{ComplexF64}`: full (two-sided) Fourier coefficients
 """
 function fft2(x::AbstractVector)::Vector{ComplexF64}
 
+    # compute the number of zeros needed to reach the next power of 2
     n = nextpow2(length(x)) - length(x)
 
     return fft0(x, n)
@@ -77,19 +81,18 @@ end
 """
     nextpow2(x)
 
-Return the next power of 2 for a given number.
+Return the smallest power of 2 that is ≥ `x`.
 
-# Argument
+# Arguments
 
-  - `x::Int64`
+- `x::Int64`
 
 # Returns
 
-  - `nextpow2::Int64`
+- `nextpow2::Int64`
 """
 function nextpow2(x::Int64)::Int64
 
-    # return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
     return nextpow(2, x)
 
 end
@@ -97,41 +100,38 @@ end
 """
     rfft0(x, n)
 
-Perform zeros-padded single-sided FFT.
+Perform zero-padded one-sided FFT (positive frequencies only).
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `n::Int64`: number of zeros to append
+- `x::AbstractVector`: signal vector
+- `n::Int64`: number of zeros to append before transforming
 
 # Returns
 
-  - `rfft0::Vector{ComplexF64}`
+- `rfft0::Vector{ComplexF64}`: one-sided Fourier coefficients
 """
 function rfft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
     @assert n >= 0 "n must be ≥ 0."
 
-    if n == 0
-        return rfft(x)
-    else
-        return rfft(pad0(x, n))
-    end
+    # when n == 0, skip pad0() to avoid an unnecessary copy
+    return n == 0 ? rfft(x) : rfft(pad0(x, n))
 
 end
 
 """
     rfft2(x)
 
-Perform zeros-padded single-sided FFT, so the length of padded vector is a power of 2.
+Perform zero-padded one-sided FFT, padding the input to the next power of 2 in length.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`: signal vector
 
 # Returns
 
-  - `rfft2::Vector{ComplexF64}`
+- `rfft2::Vector{ComplexF64}`: one-sided Fourier coefficients
 """
 function rfft2(x::AbstractVector)::Vector{ComplexF64}
 

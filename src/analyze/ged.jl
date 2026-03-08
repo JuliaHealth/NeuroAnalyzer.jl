@@ -49,29 +49,33 @@ Perform generalized eigendecomposition.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`: object to be analyzed
-  - `obj2::NeuroAnalyzer.NEURO`: original object
-  - `ch1::Union{String, Vector{String}}: list of channels
-  - `ch2::Union{String, Vector{String}}: list of channels
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `obj1::NeuroAnalyzer.NEURO`: object to be analyzed
+- `obj2::NeuroAnalyzer.NEURO`: original object
+- `ch1::Union{String, Vector{String}}: channel name(s)
+- `ch2::Union{String, Vector{String}}: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
 Named tuple containing:
 
-  - `sged::Array{Float64, 3}`
-  - `ress::Matrix{Float64}`
-  - `ress_norm::Matrix{Float64}`: RESS normalized to -1..1
+- `sged::Array{Float64, 3}`
+- `ress::Matrix{Float64}`
+- `ress_norm::Matrix{Float64}`: RESS normalized to -1..1
 """
 function ged(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}},
-        ch2::Union{String, Vector{String}},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::@NamedTuple{sged::Array{Float64, 3}, ress::Matrix{Float64}, ress_norm::Matrix{Float64}}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}},
+    ch2::Union{String, Vector{String}},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::@NamedTuple{
+    sged::Array{Float64, 3},
+    ress::Matrix{Float64},
+    ress_norm::Matrix{Float64}
+}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
