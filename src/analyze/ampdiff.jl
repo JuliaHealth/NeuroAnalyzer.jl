@@ -3,30 +3,39 @@ export ampdiff
 """
     ampdiff(s; <keyword arguments>)
 
-Calculate amplitude difference between each channel and mean amplitude of reference channels.
+Calculate amplitude difference to reference mean: amplitude difference between each channel and mean amplitude of reference channels.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `ch::Union{Int64, Vector{Int64}}=size(s, 1)`: index of reference channels, default is all channels except the analyzed one
+- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `ch::Union{Int64, Vector{Int64}}=size(s, 1)`: indices of reference channels; default is all channels, for each analyzed channel, that channel itself is excluded from the reference mean
 
 # Returns
 
-  - `ad::Array{Float64, 3}`
+- `ad::Array{Float64, 3}`: amplitude difference of shape `(channels, samples, epochs)`
 """
-function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)))::Array{Float64, 3}
+function ampdiff(
+    s::AbstractArray;
+    ch::Union{Int64, Vector{Int64}} = _c(size(s, 1))
+)::Array{Float64, 3}
 
+    # validate shape and that all requested channel indices are in bounds
     _chk3d(s)
     _check_channels(s, ch)
 
+    # pre-allocate output
     ad = similar(s)
 
-    @inbounds for ep_idx in axes(s, 3)
-        Threads.@threads for ch_idx in axes(s, 1)
-            ref_ch = setdiff(ch, ch_idx)
-            amp_ref = @views vec(mean(s[ref_ch, :, ep_idx], dims = 1))
-            ad[ch_idx, :, ep_idx] = @views s[ch[ch_idx], :, ep_idx] - amp_ref
-        end
+    # number of channels
+    ch_n = size(s, 1)
+    # number of epochs
+    ep_n = size(s, 3)
+
+    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        ref_ch = setdiff(ch, ch_idx)
+        amp_ref = dropdims(mean(@view(s[ref_ch, :, ep_idx]), dims = 1), dims = 1)
+        ad[ch_idx, :, ep_idx] .= @view(s[ch_idx, :, ep_idx]) .- amp_ref
     end
 
     return ad
@@ -36,23 +45,22 @@ end
 """
     ampdiff(obj; <keyword arguments>)
 
-Calculate amplitude difference between each channel and mean amplitude of reference channels.
+Calculate amplitude difference to reference mean: amplitude difference between each channel and mean amplitude of reference channels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: index of reference channels
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: reference channel name(s)
 
 # Returns
 
-  - `ad::Array{Float64, 3}`
+- `ad::Array{Float64, 3}`: amplitude difference of shape `(channels, samples, epochs)`
 """
 function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    ad = @views ampdiff(obj.data[ch, :, :], ch = ch)
-
-    return ad
+    return ampdiff(@view(obj.data[ch, :, :]), ch = _c(length(ch)))
 
 end
