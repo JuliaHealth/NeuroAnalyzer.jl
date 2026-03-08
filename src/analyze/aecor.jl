@@ -283,8 +283,7 @@ function escor(
         end
     end
 
-    # mirror the lower triangle to the upper triangle to produce the full
-    # symmetric matrix
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     esc = _copy_lt2ut(esc)
 
     return esc

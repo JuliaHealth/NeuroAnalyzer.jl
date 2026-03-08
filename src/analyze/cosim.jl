@@ -34,7 +34,7 @@ end
 """
     cosim(obj1, obj2; <keyword arguments>)
 
-Measures the cosine of the angle between paired channels across two objects:
+Measures the cosine of the angle between paired channels across two objects.
 
 CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
@@ -102,7 +102,7 @@ end
 """
     cosim(obj; <keyword arguments>)
 
-Measures the cosine of the angle between all channel pairs within one object:
+Measures the cosine of the angle between all channel pairs within one object.
 
 # Arguments
 

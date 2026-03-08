@@ -59,11 +59,11 @@ end
 """
     covm(s; <keyword arguments>)
 
-Calculate covariance matrix of a channels × samples matrix.
+Calculate covariance matrix of a matrix.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix
+- `s::AbstractMatrix`: signal matrix (channels × samples)
 - `norm::Bool=false`: normalize covariance matrix
 
 # Returns
@@ -86,16 +86,16 @@ end
 """
     covm(s; <keyword arguments>)
 
-Calculate covariance matrix for each epoch within a single NEURO object.
+Calculate covariance matrix of an array.
 
 # Arguments
 
-- `s::AbstractArray`: signal array
+- `s::AbstractArray`: signal array (channels × samples × epochs)
 - `norm::Bool=false`: normalize covariance matrix
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix of shape (channels × channels)
+- `cm::Array{Float64, 3}`: covariance matrix of shape (channels × channels × epochs)
 """
 function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
@@ -121,7 +121,7 @@ end
 """
     covm(obj; <keyword arguments>)
 
-Calculate covariance matrix of `signal * signal'`.
+Calculate covariance matrix between all channel pairs within a single object.
 
 # Arguments
 
@@ -131,7 +131,7 @@ Calculate covariance matrix of `signal * signal'`.
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix for each epoch
+- `cm::Array{Float64, 3}`: covariance matrix of shape (channels × channels × epochs)
 """
 function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false)::Array{Float64, 3}
 

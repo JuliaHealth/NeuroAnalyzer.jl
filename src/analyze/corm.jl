@@ -3,7 +3,7 @@ export corm
 """
     corm(s1, s2; <keyword arguments>)
 
-Computes the channels × channels Pearson correlation matrix from a signal.
+Computes the channel × channel Pearson correlation matrix.
 
 # Arguments
 

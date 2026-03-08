@@ -44,7 +44,7 @@ function coherence(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = round(Int64, wlen * 0.90),
     w::Bool = true,
 )::@NamedTuple{coh::Vector{ComplexF64}, imcoh::Vector{Float64}, msc::Vector{Float64}, f::Vector{Float64}}
 
@@ -133,7 +133,7 @@ function coherence(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = round(Int64, wlen * 0.90),
     w::Bool = true,
 )::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
 
@@ -239,7 +239,7 @@ function coherence(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj1),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = round(Int64, wlen * 0.90),
     w::Bool = true,
 )::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
 
@@ -260,7 +260,7 @@ function coherence(
     @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    return coherence(
+    result = coherence(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
         method = method,
@@ -272,5 +272,7 @@ function coherence(
         woverlap = woverlap,
         w = w,
     )
+
+    return result
 
 end
