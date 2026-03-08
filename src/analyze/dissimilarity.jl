@@ -88,10 +88,8 @@ Calculate DISS (global dissimilarity) and spatial correlation. Operates on ERP/E
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: must be an ERP or ERF object
-- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
@@ -118,7 +116,10 @@ function diss(
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
 
-    result = diss(@view(obj1.data[ch1, :, 1]), @view(obj2.data[ch2, :, 1]))
+    result = diss(
+        @view(obj1.data[ch1, :, 1]),
+        @view(obj2.data[ch2, :, 1])
+    )
 
     return result
 

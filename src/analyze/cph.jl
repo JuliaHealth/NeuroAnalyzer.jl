@@ -199,7 +199,8 @@ Calculate cross-phases between paired channels of two objects.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`
+- `obj2::NeuroAnalyzer.NEURO`
 - `ch1::Union{String, Vector{String}}: channel name(s)
 - `ch2::Union{String, Vector{String}}: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
