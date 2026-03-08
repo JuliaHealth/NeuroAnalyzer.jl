@@ -181,22 +181,22 @@ function acov(
         # compute per-trial auto-correlations first, then prepend the mean across
         # trials as epoch 1 of the output (preserving the ERP convention)
         ac = acov(
-                @view(obj.data[ch, :, 2:end]),
-                l = l,
-                demean = demean,
-                biased = biased,
-                method = method,
-            )
+            @view(obj.data[ch, :, 2:end]),
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = method,
+        )
         ac = cat(mean(ac, dims = 3), ac, dims = 3)
 
     else
         ac = acov(
-                @view(obj.data[ch, :, :]),
-                l = l,
-                demean = demean,
-                biased = biased,
-                method = method,
-            )
+            @view(obj.data[ch, :, :]),
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = method,
+        )
     end
 
     return (ac = ac, l = collect((-l):l) .* 1 / sr(obj))

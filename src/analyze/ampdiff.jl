@@ -62,6 +62,8 @@ function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    return ampdiff(@view(obj.data[ch, :, :]), ch = _c(length(ch)))
+    ad = ampdiff(@view(obj.data[ch, :, :]), ch = _c(length(ch)))
+
+    return ad
 
 end

@@ -16,11 +16,11 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
-  + `:welch`: Welch's periodogram
-  + `:fft`: fast Fourier transform
-  + `:mt`: multi-tapered periodogram
-  + `:stft`: short time Fourier transform
-  + `:mw`: Morlet wavelet convolution
+  - `:welch`: Welch's periodogram
+  - `:fft`: fast Fourier transform
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short time Fourier transform
+  - `:mw`: Morlet wavelet convolution
 - `nt::Int64=16`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
@@ -36,21 +36,21 @@ Named tuple containing:
 - `mbp::Float64`: mean band power
 - `maxfrq::Float64`: frequency of maximum band power
 - `maxbp::Float64`: power at maximum band frequency
-- `maxba::Float64`: power at maximum band frequency
+- `maxba::Float64`: amplitude at maximum band frequency
 """
 function band_mpower(
-        s::AbstractVector;
-        fs::Int64,
-        flim::Tuple{Real, Real},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -128,18 +128,18 @@ Named tuple containing:
 - `maxba::Matrix{Float64}`: amplitude at maximum band frequency of shape `(channels, epochs)`
 """
 function band_mpower(
-        s::AbstractArray;
-        fs::Int64,
-        flim::Tuple{Real, Real},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+    s::AbstractArray;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     # validate that the input is a proper 3-D array (channels × samples × epochs)
     _chk3d(s)
@@ -238,18 +238,18 @@ function band_mpower(
 
     _log_off()
     result = band_mpower(
-                    @view(obj.data[ch, :, :]),
-                    fs = sr(obj),
-                    flim = flim,
-                    method = method,
-                    nt = nt,
-                    wlen = wlen,
-                    woverlap = woverlap,
-                    w = w,
-                    ncyc = ncyc,
-                    gw = gw,
-                    demean = demean,
-                )
+        @view(obj.data[ch, :, :]),
+        fs = sr(obj),
+        flim = flim,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+        demean = demean,
+    )
 
     _log_on()
 

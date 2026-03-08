@@ -3,11 +3,11 @@ export amp
 """
     amp(s)
 
-Computes eight amplitude descriptors.
+Computes amplitude descriptors.
 
 # Arguments
 
-  - `s::AbstractVector`: signal vector
+- `s::AbstractVector`: signal vector
 
 # Returns
 
@@ -52,11 +52,11 @@ end
 """
     amp(s)
 
-Calculate amplitudes.
+Computes amplitude descriptors.
 
 # Arguments
 
-  - `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels × samples × epochs)
 
 # Returns
 

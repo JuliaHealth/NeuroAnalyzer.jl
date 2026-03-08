@@ -24,8 +24,10 @@ function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     # instantaneous amplitude envelopes via Hilbert transform
-    _, e1, _, _ = htransform(s1)
-    _, e2, _, _ = htransform(s2)
+    ht1 = htransform(s1)
+    ht2 = htransform(s2)
+    e1 = ht1.a
+    e2 = ht2.a
 
     # AEC is the Pearson correlation of the two amplitude envelopes
     aec = cor(e1, e2)
@@ -64,9 +66,6 @@ function aecor(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    # normalize scalar channel arguments to vectors so indexing is uniform
-    isa(ch1, Int64) && (ch1 = [ch1])
-    isa(ch2, Int64) && (ch2 = [ch2])
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
 
     # validate epoch indices and ensure both objects have matching epoch structure
@@ -90,9 +89,9 @@ function aecor(
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         aec[ch_idx, ep_idx] = aecor(
-                                @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-                                @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
-                            )
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+        )
     end
 
     return aec
@@ -121,9 +120,6 @@ function aecor(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    # normalize scalar channel arguments to vectors so indexing is uniform
-    isa(ch, Int64) && (ch = [ch])
-
     # number of channels
     ch_n = length(ch1)
     # number of epochs
@@ -137,9 +133,9 @@ function aecor(
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 in 1:ch_idx1
             aec[ch_idx1, ch_idx2, ep_idx] = aecor(
-                                                @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                                                @view(obj.data[ch[ch_idx2], :, ep_idx])
-                                            )
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
+            )
         end
     end
 
@@ -174,8 +170,9 @@ function escor(s1::AbstractVector, s2::AbstractVector)::Float64
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     # instantaneous amplitude envelope via Hilbert transform
-    # Only s2's envelope is needed; s1 enters the correlation as the raw signal.
-    _, e2, _, _ = htransform(s2)
+    # only s2's envelope is needed; s1 enters the correlation as the raw signal
+    ht2 = htransform(s2)
+    e2 = ht2.a
 
     # ESC: correlation of the raw s1 signal against s2's amplitude envelope
     esc = cor(s1, e2)
@@ -214,9 +211,6 @@ function escor(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    # normalize scalar channel arguments to vectors so indexing is uniform
-    isa(ch1, Int64) && (ch1 = [ch1])
-    isa(ch2, Int64) && (ch2 = [ch2])
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
 
     # validate epoch indices and ensure both objects have matching epoch structure
@@ -240,9 +234,9 @@ function escor(
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         esc[ch_idx, ep_idx] = @views escor(
-                                        obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
-                                        obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
-                                    )
+            obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
+            obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
+        )
     end
 
     return esc
@@ -271,9 +265,6 @@ function escor(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     
-    # normalize scalar channel arguments to vectors so indexing is uniform
-    isa(ch, Int64) && (ch = [ch])
-
     # number of channels
     ch_n = length(ch1)
     # number of epochs
@@ -286,9 +277,9 @@ function escor(
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 in 1:ch_idx1
             esc[ch_idx1, ch_idx2, ep_idx] = escor(
-                                                @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                                                @view(obj.data[ch[ch_idx2], :, ep_idx])
-                                            )
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
+            )
         end
     end
 

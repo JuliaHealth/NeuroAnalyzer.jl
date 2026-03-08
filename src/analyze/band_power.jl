@@ -51,7 +51,7 @@ function band_power(
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # compute the power spectral density over the full frequency range
-    pw, pf = psd(
+    result = psd(
         s,
         fs = fs,
         db = false,
@@ -64,16 +64,18 @@ function band_power(
         gw = gw,
         demean = demean,
     )
+    pow = result.p
+    frq = result.f
 
     # locate the PSD bin indices that bracket the requested frequency band
-    f1_idx = vsearch(flim[1], pf)
-    f2_idx = vsearch(flim[2], pf)
+    f1_idx = vsearch(flim[1], frq)
+    f2_idx = vsearch(flim[2], frq)
 
     # frequency resolution: uniform bin spacing from the PSD
-    dx = pf[2] - pf[1]
+    dx = frq[2] - frq[1]
 
     # integrate
-    bp = simpson(@view(pw[f1_idx:f2_idx]), @view(pf[f1_idx:f2_idx]), dx = dx)
+    bp = simpson(@view(pow[f1_idx:f2_idx]), @view(frq[f1_idx:f2_idx]), dx = dx)
 
     return bp
 
@@ -137,18 +139,18 @@ function band_power(
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         bp[ch_idx, ep_idx] = band_power(
-                                    @view(s[ch_idx, :, ep_idx]),
-                                    fs = fs,
-                                    flim = flim,
-                                    method = method,
-                                    nt = nt,
-                                    wlen = wlen,
-                                    woverlap = woverlap,
-                                    w = w,
-                                    ncyc = ncyc,
-                                    gw = gw,
-                                    demean = demean,
-                                )
+            @view(s[ch_idx, :, ep_idx]),
+            fs = fs,
+            flim = flim,
+            method = method,
+            nt = nt,
+            wlen = wlen,
+            woverlap = woverlap,
+            w = w,
+            ncyc = ncyc,
+            gw = gw,
+            demean = demean,
+        )
     end
 
     return bp

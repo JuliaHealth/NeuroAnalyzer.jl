@@ -36,12 +36,12 @@ function acor(
         # compute raw autocovariance via element-wise products, then divide by
         # the signal variance to obtain a correlation-scale (unitless) result
         ac = acov(
-                s,
-                l = l,
-                demean = demean,
-                biased = biased,
-                method = :sum,
-            )
+            s,
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = :sum,
+        )
         # normalize by variance to bring values onto [-1, 1] scale
         ac = round.(ac ./ Statistics.var(s), digits = 3)
 
@@ -50,12 +50,12 @@ function acor(
         # similar to :sum but uses a covariance-based approach internally;
         # the final normalization step is the same
         ac = acov(
-                s,
-                l = l,
-                demean = demean,
-                biased = biased,
-                method = :cov,
-            )
+            s,
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = :cov,
+        )
         # normalize by variance to bring values onto [-1, 1] scale
         ac = round.(ac ./ Statistics.var(s), digits = 3)
 
@@ -64,10 +64,10 @@ function acor(
         # delegate entirely to StatsBase.autocor, which handles normalization internally
         # the `biased` keyword is intentionally ignored here
         ac = StatsBase.autocor(
-                            s,
-                            0:l,
-                            demean = demean,
-                        )
+            s,
+            0:l,
+            demean = demean,
+        )
         ac = round.(ac, digits = 3)
         ac = vcat(reverse(ac), ac[2:end])
 
@@ -120,12 +120,12 @@ function acor(
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ac[ch_idx, :, ep_idx] = acor(
-                                    @view(s[ch_idx, :, ep_idx]),
-                                    l = l,
-                                    demean = demean,
-                                    biased = biased,
-                                    method = method,
-                                )
+            @view(s[ch_idx, :, ep_idx]),
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = method,
+        )
     end
 
     return ac
@@ -178,23 +178,23 @@ function acor(
         # compute per-trial auto-correlations first, then prepend the mean across
         # trials as epoch 1 of the output (preserving the ERP convention)
         ac = acor(
-                @view(obj.data[ch, :, 2:end]),
-                l = l,
-                demean = demean,
-                biased = biased,
-                method = method,
-            )
+            @view(obj.data[ch, :, 2:end]),
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = method,
+        )
         ac = cat(mean(ac, dims = 3), ac, dims = 3)
 
     else
 
         ac = acor(
-                @view(obj.data[ch, :, :]),
-                l = l,
-                demean = demean,
-                biased = biased,
-                method = method,
-            )
+            @view(obj.data[ch, :, :]),
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = method,
+        )
 
     end
 
