@@ -256,6 +256,7 @@ module NeuroAnalyzer
     # dependencies
     include("deps/PhaseSlopeIndex.jl/PhaseSlopeIndex.jl")
     include("deps/FIRLSFilterDesign.jl/FIRLSFilterDesign.jl")
+    include("deps/Simpson.jl/Simpson.jl")
 
     # internal
     include("internal/channels.jl")
