@@ -152,7 +152,6 @@ module NeuroAnalyzer
     using REPL
     using SavitzkyGolay
     using ScatteredInterpolation
-    using Simpson
     using StatsFuns
     using StatsKit
     using StatsModels

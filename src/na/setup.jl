@@ -96,7 +96,6 @@ function na_info()::Nothing
             "ProgressMeter",
             "SavitzkyGolay",
             "ScatteredInterpolation",
-            "Simpson",
             "StatsFuns",
             "StatsKit",
             "StatsModels",
