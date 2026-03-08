@@ -12,8 +12,8 @@ Calculate auto-correlation.
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-  - `:sum`: `acf = sum(s[1:end - l] .* s[1+l:end]) ./ var(s)`
-  - `:cor`: `acf = cor(s[1:end - l], s[1+l:end]) ./ var(s)`
+  - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
+  - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
   - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
@@ -21,18 +21,15 @@ Calculate auto-correlation.
 - `ac::Vector{Float64}`: auto-correlation of length `2l + 1`
 """
 function acor(
-        s::AbstractVector;
-        l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum,
-    )::Vector{Float64}
+    s::AbstractVector;
+    l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum,
+)::Vector{Float64}
 
     # reject any method symbol not in the supported set
     _check_var(method, [:sum, :cor, :stat], "method")
-
-    # pre-allocate result for lags 0 … l (negative lags added later)
-    ac = zeros(l + 1)
 
     if method === :sum
 
@@ -92,21 +89,21 @@ Calculate auto-correlation.
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-  + `:sum`: `acf = sun(s[1:end - l] .* s[1+l:end]) ./ var(s)`
-  + `:cor`: `acf = cor(s[1:end - l], s[1+l:end]) ./ var(s)`
-  + `:stat`: use StatsBase `autocor()`, `biased` value is ignored
+  - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
+  - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
+  - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
 
-  - `ac::Array{Float64, 3}`: auto-correlation of length `2l + 1`
+  - `ac::Array{Float64, 3}`: auto-correlations of shape `(channels, 2l+1, epochs)`
 """
 function acor(
-        s::AbstractArray;
-        l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels × samples × epochs)
     _chk3d(s)
@@ -148,28 +145,25 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-  - `:sum`: `acf = Σ(s[1:end - l] .* s[1+l:end]) ./ var(s)`
-  - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`
+  - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
+  - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
   - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
 
 Named tuple containing:
 
-- `ac::Array{Float64, 3}`: auto-correlation of length `2l + 1`
+- `ac::Array{Float64, 3}`: auto-correlations of shape `(channels, 2l+1, epochs)`
 - `l::Vector{Float64}`: lags in seconds
 """
 function acor(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        l::Int64=round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum,
-    )::@NamedTuple{
-            ac::Array{Float64, 3},
-            l::Vector{Float64},
-        }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    l::Int64=round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum,
+)::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
 
     # validate lag bounds: must be non-negative and within the signal length
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
@@ -195,12 +189,12 @@ function acor(
     else
 
         ac = acor(
-                 @view(obj.data[ch, :, :]),
-                 l = l,
-                 demean = demean,
-                 biased = biased,
-                 method = method,
-                )
+                @view(obj.data[ch, :, :]),
+                l = l,
+                demean = demean,
+                biased = biased,
+                method = method,
+            )
 
     end
 
