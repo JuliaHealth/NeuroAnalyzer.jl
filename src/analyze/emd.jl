@@ -60,7 +60,7 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{
         n_extrema = length(maxs) + length(mins)
         n_roots = _zeros(imf_tmp)
 
-        # esidue after removing the candidate IMF
+        # residue after removing the candidate IMF
         res = @. s_tmp - imf_tmp
         sd = sum((s_tmp[i] - imf_tmp[i])^2 / s_tmp[i]^2 for i in eachindex(s_tmp))
 

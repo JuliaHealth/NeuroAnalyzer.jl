@@ -144,7 +144,7 @@ function cph(
     result = cph(@view(s1[1, :, 1]), @view(s2[1, :, 1]), fs = fs)
     f = result.f
 
-    # pre-allocate
+    # pre-allocate output
     ph = zeros(ch_n, ch_n, length(f), ep_n)
 
     # calculate over channel and epochs
