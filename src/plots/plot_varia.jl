@@ -135,7 +135,6 @@ function plot_xac(
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
-        xticks = LinearTicks(10),
         xminorticksvisible = true,
         xminorticks = IntervalsBetween(10),
         xautolimitmargin = (0, 0),
@@ -1178,7 +1177,6 @@ function plot_erop(
             xlabel = xl,
             ylabel = yl,
             title = tt,
-            xticks = LinearTicks(15),
             xminorticksvisible = true,
             xminorticks = IntervalsBetween(10),
             xscale = frq === :lin ? identity : log,
@@ -1221,7 +1219,6 @@ function plot_erop(
             xlabel = xl,
             ylabel = yl,
             title = tt,
-            xticks = LinearTicks(15),
             xminorticksvisible = true,
             xminorticks = IntervalsBetween(10),
             xscale = frq === :lin ? identity : log,
@@ -1259,7 +1256,6 @@ function plot_erop(
             xlabel = xl,
             ylabel = yl,
             title = tt,
-            xticks = LinearTicks(15),
             xminorticksvisible = true,
             xminorticks = IntervalsBetween(10),
             xscale = frq === :lin ? identity : log,
@@ -1712,7 +1708,7 @@ function plot_hs(
     ax.yticklabelsize = 12
 
     # plot powers
-    GLMakie.lines!(st, sp; linewidth = 1, color = :black)
+    GLMakie.lines!(st, sp, linewidth = 1, color = :black)
 
     return p
 
@@ -1826,11 +1822,10 @@ function plot_phase(
         xlabel = xl,
         ylabel = yl,
         title = tt,
-        xticks = LinearTicks(15),
         xminorticksvisible = true,
         xminorticks = IntervalsBetween(10),
         xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
+        yautolimitmargin = (0.05, 0.05),
         xzoomlock = true,
         yzoomlock = true,
         xpanlock = true,
