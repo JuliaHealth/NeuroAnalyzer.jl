@@ -267,11 +267,11 @@ S_{ij}(f) = \\langle \\hat{y}_i(f) \\hat{y}_i^*(f)\\rangle .
 
 ### Arguments
 
-  - `data::AbstractArray`: Segmented data of shape `(maxfreq, nep, nseg, nchan)`
+  - `data::AbstractArray`: Segmented data, shape `(maxfreq, nep, nseg, nchan)`
 
 ### Return
 
-  - `cs::AbstractArray{Complex}`: Cross Spectral of shape `(maxfreq, nep, nseg, nchan, nchan)`
+  - `cs::AbstractArray{Complex}`: Cross Spectral, shape `(maxfreq, nep, nseg, nchan, nchan)`
 """
 function data2cs(data::AbstractArray)
     # cs: cross-spectral matrix

@@ -86,7 +86,7 @@ function corm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
     cm = zeros(ch_n, ch_n, ep_n)
 
     # calculate over epochs
-    @inbounds Threads.@threads for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
         cm[:, :, ep_idx] = corm(@view(s[:, :, ep_idx]), norm = norm)
     end
 

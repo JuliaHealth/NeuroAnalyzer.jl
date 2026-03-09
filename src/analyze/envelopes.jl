@@ -166,7 +166,7 @@ Calculate temporal envelope.
 
 Named tuple containing:
 
-- `e::Array{Float64, 3}`: temporal envelope of shape `(channels, samples, epochs)`
+- `e::Array{Float64, 3}`: temporal envelope, shape `(channels, samples, epochs)`
 - `t::Vector{Float64}`: time points
 """
 function tenv(
@@ -414,7 +414,7 @@ Calculate power spectrum (in dB) envelope.
 
 Named tuple containing:
 
-- `e::Array{Float64, 3}`: power spectrum envelope of shape `(channels, frequencies, epochs)`
+- `e::Array{Float64, 3}`: power spectrum envelope, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies
 """
 function penv(
@@ -782,7 +782,7 @@ Calculate spectral envelope (dominant frequency over time).
 
 Named tuple containing:
 
-- `e::Array{Float64, 3}`: spectral envelope of shape `(channels, samples, epochs)`
+- `e::Array{Float64, 3}`: spectral envelope, shape `(channels, samples, epochs)`
 - `t::Vector{Float64}`: spectrogram time
 """
 function senv(
@@ -1263,7 +1263,7 @@ Calculate Hilbert spectrum amplitude envelope.
 
 Named tuple containing:
 
-- `e::Array{Float64, 3}`: Hilbert amplitude envelope of shape `(channels, samples, epochs)`
+- `e::Array{Float64, 3}`: Hilbert amplitude envelope, shape `(channels, samples, epochs)`
 - `t::Vector{Float64}`: time points
 """
 function henv(

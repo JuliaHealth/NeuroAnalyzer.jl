@@ -187,7 +187,7 @@ function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     # compute lower triangle (ch_idx2 < ch_idx1); diagonal is zero by definition
     # the outer loop is parallelized over epochs
     # the inner two loops over channel pairs are not nested @threads (no nesting issue here)
-    @inbounds Threads.@threads for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
         for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1 - 1
                 ipl[ch_idx1, ch_idx2, ep_idx] = iplv(

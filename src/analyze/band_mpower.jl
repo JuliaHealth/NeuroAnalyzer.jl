@@ -122,10 +122,10 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 Named tuple containing:
 
-- `mbp::Matrix{Float64}`: mean band power of shape `(channels, epochs)`
-- `maxfrq::Matrix{Float64}`: frequency of maximum band power of shape `(channels, epochs)`
-- `maxbp::Matrix{Float64}`: power at maximum band frequency of shape `(channels, epochs)`
-- `maxba::Matrix{Float64}`: amplitude at maximum band frequency of shape `(channels, epochs)`
+- `mbp::Matrix{Float64}`: mean band power, shape `(channels, epochs)`
+- `maxfrq::Matrix{Float64}`: frequency of maximum band power, shape `(channels, epochs)`
+- `maxbp::Matrix{Float64}`: power at maximum band frequency, shape `(channels, epochs)`
+- `maxba::Matrix{Float64}`: amplitude at maximum band frequency, shape `(channels, epochs)`
 """
 function band_mpower(
     s::AbstractArray;
@@ -214,10 +214,10 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 Named tuple containing:
 
-- `mbp::Matrix{Float64}`: mean band power of shape `(channels, epochs)`
-- `maxfrq::Matrix{Float64}`: frequency of maximum band power of shape `(channels, epochs)`
-- `maxbp::Matrix{Float64}`: power at maximum band frequency of shape `(channels, epochs)`
-- `maxba::Matrix{Float64}`: amplitude at maximum band frequency of shape `(channels, epochs)`
+- `mbp::Matrix{Float64}`: mean band power, shape `(channels, epochs)`
+- `maxfrq::Matrix{Float64}`: frequency of maximum band power, shape `(channels, epochs)`
+- `maxbp::Matrix{Float64}`: power at maximum band frequency, shape `(channels, epochs)`
+- `maxba::Matrix{Float64}`: amplitude at maximum band frequency, shape `(channels, epochs)`
 """
 function band_mpower(
     obj::NeuroAnalyzer.NEURO;

@@ -145,7 +145,7 @@ function gh(locs::DataFrame; m::Int64 = 4, n::Int64 = 8)::@NamedTuple{G::Matrix{
     x, y, z = _locs_norm(x, y, z)
 
     # compute all cosine distances
-    Threads.@threads for i in 1:ch_n
+    Threads.@threads :dynamic for i in 1:ch_n
         @inbounds for j in 1:ch_n
             cosdist[i, j] = 1 - (((x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2) / 2)
         end
@@ -153,14 +153,14 @@ function gh(locs::DataFrame; m::Int64 = 4, n::Int64 = 8)::@NamedTuple{G::Matrix{
 
     # compute Legendre polynomial
     legpoly = zeros(n, ch_n, ch_n)
-    Threads.@threads for idx1 in 1:n
+    Threads.@threads :dynamic for idx1 in 1:n
         @inbounds for idx2 in 1:ch_n
             legpoly[idx1, idx2, :] = @views legendre.(cosdist[idx2, :], idx1)
         end
     end
 
     # compute G and H
-    Threads.@threads for i in 1:ch_n
+    Threads.@threads :dynamic for i in 1:ch_n
         @inbounds for j in 1:ch_n
             g = 0
             h = 0

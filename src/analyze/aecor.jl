@@ -52,7 +52,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 # Returns
 
-- `aec::Matrix{Float64}`: AEC value of shape `(channels, epochs)`
+- `aec::Matrix{Float64}`: AEC value, shape `(channels, epochs)`
 """
 function aecor(
     obj1::NeuroAnalyzer.NEURO,
@@ -110,7 +110,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 # Returns
 
-- `aec::Array{Float64, 3}`: AEC value of shape `(channels, channels, epochs)`
+- `aec::Array{Float64, 3}`: AEC value, shape `(channels, channels, epochs)`
 """
 function aecor(
     obj::NeuroAnalyzer.NEURO;
@@ -197,7 +197,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 # Returns
 
-- `esc::Matrix{Float64}`: ESC value of shape `(channels, epochs)`
+- `esc::Matrix{Float64}`: ESC value, shape `(channels, epochs)`
 """
 function escor(
     obj1::NeuroAnalyzer.NEURO,
@@ -255,7 +255,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 # Returns
 
-- `esc::Array{Float64, 3}`: ESC value of shape `(channels, channels, epochs)`
+- `esc::Array{Float64, 3}`: ESC value, shape `(channels, channels, epochs)`
 """
 function escor(
     obj::NeuroAnalyzer.NEURO;

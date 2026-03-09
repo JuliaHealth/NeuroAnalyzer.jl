@@ -97,7 +97,7 @@ Calculate auto-covariance.
 
 # Returns
 
-  - `ac::Array{Float64, 3}`: auto-covariances of shape `(channels, 2l+1, epochs)`
+  - `ac::Array{Float64, 3}`: auto-covariances, shape `(channels, 2l+1, epochs)`
 """
 function acov(
     s::AbstractArray;
@@ -156,7 +156,7 @@ Calculate auto-covariance. For ERP return trial-averaged auto-covariance.
 
 Named tuple containing:
 
-- `ac::Array{Float64, 3}`: auto-covariances of of shape `(channels, 2l+1, epochs)`
+- `ac::Array{Float64, 3}`: auto-covariances of, shape `(channels, 2l+1, epochs)`
 - `l::Vector{Float64}`: lags in seconds
 """
 function acov(

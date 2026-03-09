@@ -38,7 +38,7 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Returns
 
-- `hd::Matrix{Float64}`: the Higuchi fractal dimension of shape `(channels, epochs)`
+- `hd::Matrix{Float64}`: the Higuchi fractal dimension, shape `(channels, epochs)`
 
 # Notes
 

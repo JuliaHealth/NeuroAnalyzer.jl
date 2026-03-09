@@ -12,7 +12,7 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 
 # Returns
 
-- `ad::Array{Float64, 3}`: amplitude difference of shape `(channels, samples, epochs)`
+- `ad::Array{Float64, 3}`: amplitude difference, shape `(channels, samples, epochs)`
 """
 function ampdiff(
     s::AbstractArray;
@@ -55,7 +55,7 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 
 # Returns
 
-- `ad::Array{Float64, 3}`: amplitude difference of shape `(channels, samples, epochs)`
+- `ad::Array{Float64, 3}`: amplitude difference, shape `(channels, samples, epochs)`
 """
 function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

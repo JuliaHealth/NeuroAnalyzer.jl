@@ -42,7 +42,7 @@ The two-column layout allows direct comparison between the "evoked" power (colum
 
 Named tuple containing:
 
-- `p::Matrix{Float64}`: powers of shape `(frequencies, 1)` or `(frequencies, 2)`
+- `p::Matrix{Float64}`: powers, shape `(frequencies, 1)` or `(frequencies, 2)`
 - `f::Vector{Float64}`: frequencies
 """
 function erop(

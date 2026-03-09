@@ -52,7 +52,7 @@ Computes the instantaneous phase of the cross-power spectrum between all channel
 
 Named tuple containing:
 
-- `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians) of shape `(channels, channels, frequencies, epochs)`
+- `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians), shape `(channels, channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
@@ -120,7 +120,7 @@ Calculate cross-phases between paired channels of two arrays.
 
 Named tuple containing:
 
-- `ph::Array{Float64, 3}`: cross-power spectrum phase in radians of shape `(channels, frequencies, epochs)`
+- `ph::Array{Float64, 3}`: cross-power spectrum phase in radians, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
@@ -175,7 +175,7 @@ Calculate cross-phases between all channel pairs.
 
 Named tuple containing:
 
-- `ph::Array{Float64, 4}`: cross-power spectrum phase in radians of shape `(channels, channels, frequencies, epochs)`
+- `ph::Array{Float64, 4}`: cross-power spectrum phase in radians, shape `(channels, channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
@@ -210,7 +210,7 @@ Calculate cross-phases between paired channels of two objects.
 
 Named tuple containing:
 
-- `ph::Array{Float64, 3}`: cross-power spectrum phase in radians of shape `(channels, frequencies, epochs)`
+- `ph::Array{Float64, 3}`: cross-power spectrum phase in radians, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(

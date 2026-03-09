@@ -73,7 +73,7 @@ function psa(
     ps = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             ps[ch_idx, ep_idx] = @views psa(
                 obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
             )
@@ -108,7 +108,7 @@ function psa(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})
     ps = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
+        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
                 ps[ch_idx1, ch_idx2, ep_idx] = @views psa(
                     obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]

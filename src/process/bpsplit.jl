@@ -56,7 +56,7 @@ function bpsplit(
         push!(bf, band_f)
         flt = filter_create(fs = fs, fprototype = :fir, ftype = :bp, cutoff = band_f, order = order, w = w)
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx in 1:ch_n
+            Threads.@threads :dynamic for ch_idx in 1:ch_n
                 s[band_idx, ch_idx, :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt = flt)
             end
         end

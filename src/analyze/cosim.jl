@@ -53,7 +53,7 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
 # Returns
 
-- `cs::Matrix{Float64}`: cosine similarity values of shape `(channels, epochs)`
+- `cs::Matrix{Float64}`: cosine similarity values, shape `(channels, epochs)`
 """
 function cosim(
     obj1::NeuroAnalyzer.NEURO,
@@ -111,7 +111,7 @@ Measures the cosine of the angle between all channel pairs within one object.
 
 # Returns
 
-- `cs::Array{Float64, 3}`: cosine similarity values of shape `(channels, channels, epochs)`
+- `cs::Array{Float64, 3}`: cosine similarity values, shape `(channels, channels, epochs)`
 """
 function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

@@ -32,7 +32,7 @@ function apply(
         ch_n * ep_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar
     )
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             f_tmp = replace(f, "obj" => "$(obj.data[ch[ch_idx], :, ep_idx])")
             try
                 out[ch_idx, :, ep_idx] = eval(Meta.parse(f_tmp))

@@ -122,7 +122,7 @@ function pacor(
     pac = zeros(ch_n, length((-l):l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             pac[ch_idx, :, ep_idx] = @views pacor(s[ch_idx, :, ep_idx], l = l, demean = demean, method = method)
         end
     end

@@ -22,7 +22,7 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::String`: channel name
-- `method::Symbol=:stft`: method of calculating spectrogram:
+- `method::Symbol=:stft`: spectrogram method:
   - `:stft`: short-time Fourier transform
   - `:mt`: multi-tapered periodogram
   - `:mw`: Morlet wavelet convolution

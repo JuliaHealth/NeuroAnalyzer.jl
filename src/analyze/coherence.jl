@@ -119,9 +119,9 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 # Returns
 
-- `coh::Array{ComplexF64, 3}`: coherence of shape `(channels, frequencies, epochs)`
-- `imcoh::Array{Float64, 3}`: imaginary part of coherence of shape `(channels, frequencies, epochs)`
-- `msc::Array{Float64, 3}`: magnitude-squared coherence of shape `(channels, frequencies, epochs)`
+- `coh::Array{ComplexF64, 3}`: coherence, shape `(channels, frequencies, epochs)`
+- `imcoh::Array{Float64, 3}`: imaginary part of coherence, shape `(channels, frequencies, epochs)`
+- `msc::Array{Float64, 3}`: magnitude-squared coherence, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies in Hz
 """
 function coherence(
@@ -222,9 +222,9 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 # Returns
 
-- `coh::Array{ComplexF64, 3}`: coherence of shape `(channels, frequencies, epochs)`
-- `imcoh::Array{Float64, 3}`: imaginary part of coherence of shape `(channels, frequencies, epochs)`
-- `msc::Array{Float64, 3}`: magnitude-squared coherence of shape `(channels, frequencies, epochs)`
+- `coh::Array{ComplexF64, 3}`: coherence, shape `(channels, frequencies, epochs)`
+- `imcoh::Array{Float64, 3}`: imaginary part of coherence, shape `(channels, frequencies, epochs)`
+- `msc::Array{Float64, 3}`: magnitude-squared coherence, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies
 """
 function coherence(

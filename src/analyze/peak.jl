@@ -244,7 +244,7 @@ function peak_frq(
     pf = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             pf[ch_idx, ep_idx] = @views peak_frq(
                 s[ch_idx, :, ep_idx],
                 fs = fs,
@@ -310,7 +310,7 @@ function peak_amp(
     pa = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             pa[ch_idx, ep_idx] = @views peak_amp(
                 s[ch_idx, :, ep_idx],
                 fs = fs,
@@ -376,7 +376,7 @@ function peak_pow(
     pp = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             pp[ch_idx, ep_idx] = @views peak_pow(
                 s[ch_idx, :, ep_idx],
                 fs = fs,

@@ -16,7 +16,7 @@ Compute the Pearson correlation between paired channels across two NEURO objects
 
 # Returns
 
-- `cr::Matrix{Float64}`: correlation coefficients of shape `(channels, epochs)`
+- `cr::Matrix{Float64}`: correlation coefficients, shape `(channels, epochs)`
 """
 function corr(
     obj1::NeuroAnalyzer.NEURO,
@@ -74,7 +74,7 @@ Compute the Pearson correlation between all channel pairs within a single NEURO 
 
 # Returns
 
-- `cr::Array{Float64, 3}`: correlation coefficient of shape `(channels, channels, epochs)`
+- `cr::Array{Float64, 3}`: correlation coefficient, shape `(channels, channels, epochs)`
 """
 function corr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

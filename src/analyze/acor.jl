@@ -95,7 +95,7 @@ Calculate auto-correlation.
 
 # Returns
 
-  - `ac::Array{Float64, 3}`: auto-correlations of shape `(channels, 2l+1, epochs)`
+  - `ac::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
 """
 function acor(
     s::AbstractArray;
@@ -153,7 +153,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 
 Named tuple containing:
 
-- `ac::Array{Float64, 3}`: auto-correlations of shape `(channels, 2l+1, epochs)`
+- `ac::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
 - `l::Vector{Float64}`: lags in seconds
 """
 function acor(

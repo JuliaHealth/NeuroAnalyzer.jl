@@ -110,7 +110,7 @@ function wpli(
     s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             pv[ch_idx, ep_idx], sd[ch_idx, :, ep_idx], phd[ch_idx, :, ep_idx], s1ph[ch_idx, :, ep_idx], s2ph[ch_idx, :, ep_idx] = @views wpli(
                 obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]], debiased = debiased
             )
@@ -148,7 +148,7 @@ function wpli(
     pv = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
+        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
                 pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views wpli(
                     obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx], debiased = debiased

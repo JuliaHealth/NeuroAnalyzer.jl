@@ -34,7 +34,7 @@ function msci95(
         sl = sm - 1.96 * ss
     else
         s_tmp1 = zeros(length(s) * n)
-        Threads.@threads for idx1 in eachindex(s) * n
+        Threads.@threads :dynamic for idx1 in eachindex(s) * n
             s_tmp2 = zeros(length(s))
             sample_idx = rand(1:length(s), length(s))
             @inbounds for idx2 in eachindex(s)
@@ -88,7 +88,7 @@ function msci95(
         sl = sm - 1.96 * ss
     else
         s_tmp1 = zeros(size(s, 1) * n, size(s, 2))
-        Threads.@threads for idx1 in axes(s, 1) * n
+        Threads.@threads :dynamic for idx1 in axes(s, 1) * n
             s_tmp2 = zeros(size(s))
             sample_idx = rand(axes(s, 1), size(s, 1))
             @inbounds for idx2 in axes(s, 1)
@@ -142,7 +142,7 @@ function msci95(
     su = zeros(ep_n, ep_len)
     sl = zeros(ep_n, ep_len)
 
-    Threads.@threads for ep_idx in 1:ep_n
+    Threads.@threads :dynamic for ep_idx in 1:ep_n
         @inbounds sm[ep_idx, :], ss[ep_idx, :], su[ep_idx, :], sl[ep_idx, :] = @views msci95(
             s[:, :, ep_idx], n = n, method = method
         )
@@ -226,7 +226,7 @@ function msci95(
     su = zeros(ch_n, ep_n)
     sl = zeros(ch_n, ep_n)
 
-    Threads.@threads for ep_idx in 1:ep_n
+    Threads.@threads :dynamic for ep_idx in 1:ep_n
         @inbounds for ch_idx in 1:ch_n
             sm[ch_idx, ep_idx], ss[ch_idx, ep_idx], su[ch_idx, ep_idx], sl[ch_idx, ep_idx] = @views msci95(
                 s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx]

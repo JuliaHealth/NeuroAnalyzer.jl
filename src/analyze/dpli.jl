@@ -95,11 +95,11 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 Named tuple containing:
 
-- `pv::Matrix{Float64}`: dPLI values of shape `(channels, epochs)`
-- `sd::Array{Float64, 3}`: signal difference of shape `(channels, samples, epochs)`
-- `phd::Array{Float64, 3}`: phase difference of shape `(channels, samples, epochs)`
-- `s1ph::Array{Float64, 3}`: signal 1 instantaneous phase of shape `(channels, samples, epochs)`
-- `s2ph::Array{Float64, 3}`: signal 2 instantaneous phase of shape `(channels, samples, epochs)`
+- `pv::Matrix{Float64}`: dPLI values, shape `(channels, epochs)`
+- `sd::Array{Float64, 3}`: signal difference, shape `(channels, samples, epochs)`
+- `phd::Array{Float64, 3}`: phase difference, shape `(channels, samples, epochs)`
+- `s1ph::Array{Float64, 3}`: signal 1 instantaneous phase, shape `(channels, samples, epochs)`
+- `s2ph::Array{Float64, 3}`: signal 2 instantaneous phase, shape `(channels, samples, epochs)`
 """
 function dpli(
     obj1::NeuroAnalyzer.NEURO,
@@ -180,7 +180,7 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 # Returns
 
-- `pv::Array{Float64, 3}`: dPLI values of shape `(channels, channels, epochs)`
+- `pv::Array{Float64, 3}`: dPLI values, shape `(channels, channels, epochs)`
 """
 function dpli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

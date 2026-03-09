@@ -514,7 +514,7 @@ Plots spectrogram.
   - `ep::Int64=0`: epoch to display
   - `ch::Union{String, Vector{String}, Regex}=datatype(obj)`: channel name or list of channel names
   - `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
-  - `method::Symbol=:stft`: method of calculating spectrogram:
+  - `method::Symbol=:stft`: spectrogram method:
       + `:stft`: short-time Fourier
       + `:mt`: multi-tapered periodogram
       + `:mw`: Morlet wavelet convolution

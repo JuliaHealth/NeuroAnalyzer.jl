@@ -106,7 +106,7 @@ function ispc(
     ispcv = zeros(ch_n, ch_n, ep_n)
     ispca = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds Threads.@threads for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
         for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1 - 1
                 ispc_data = ispc(

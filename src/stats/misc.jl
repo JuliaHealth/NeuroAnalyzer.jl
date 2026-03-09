@@ -205,7 +205,7 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
     if ndims(s) == 2
         s_new = zeros(n, size(s, 1), size(s, 2))
         @inbounds for idx1 in 1:n
-            Threads.@threads for idx2 in axes(s, 1)
+            Threads.@threads :dynamic for idx2 in axes(s, 1)
                 x = rand(2:size(s, 2))
                 s1 = s[idx2, x:end]
                 s2 = s[idx2, 1:(x - 1)]
@@ -216,7 +216,7 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
         s_new = zeros(n, size(s, 1), size(s, 2), size(s, 3))
         for idx1 in 1:n
             @inbounds for idx2 in axes(s, 1)
-                Threads.@threads for idx3 in axes(s, 3)
+                Threads.@threads :dynamic for idx3 in axes(s, 3)
                     x = rand(2:size(s, 2))
                     s1 = s[idx2, x:end, idx3]
                     s2 = s[idx2, 1:(x - 1), idx3]

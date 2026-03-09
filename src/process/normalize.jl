@@ -248,7 +248,7 @@ function normalize(
     obj_new = deepcopy(obj)
     if bych
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx in 1:ch_n
+            Threads.@threads :dynamic for ch_idx in 1:ch_n
                 @views obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(
                     obj_new.data[ch[ch_idx], :, ep_idx], n, method = method
                 )

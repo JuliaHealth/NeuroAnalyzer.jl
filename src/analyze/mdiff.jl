@@ -3,75 +3,95 @@ export mdiff
 """
     mdiff(s1, s2; <keyword arguments>)
 
-Calculate mean difference and 95% confidence interval for 2 signals.
+Calculate the mean difference and its bootstrap p-value for two signal matrices. Estimate whether the mean difference between two signal matrices is statistically significant using a permutation/bootstrap approach:
+
+1. Compute the observed statistic (max absolute difference or integrated squared difference) between the mean waveforms of s1 and s2.
+2. Pool s1 and s2 rows; repeatedly resample with replacement and compute the same statistic on random pairs of sub-groups.
+3. p = proportion of bootstrap statistics exceeding the observed statistic.
 
 # Arguments
 
-  - `s1::AbstractMatrix`
-  - `s2::AbstractMatrix`
-  - `n::Int64=3`: number of bootstraps
-  - `method::Symbol=:absdiff`:
-      + `:absdiff`: maximum difference
-      + `:diff2int`: integrated area of the squared difference
+- `s1::AbstractMatrix`: signal matrix (channels × samples)
+- `s2::AbstractMatrix`: signal matrix (channels × samples)
+- `n::Int64=3`: number of bootstrap iterations per channel
+- `method::Symbol=:absdiff`: test statistic:
+    - `:absdiff`: maximum absolute difference between mean waveforms
+    - `:diff2int`: integrated area of the squared difference
 
 # Returns
 
 Named tuple containing:
 
-  - `st::Vector{Float64}`
-  - `sts::Float64`
-  - `p::Float64`
+- `st::Vector{Float64}`: bootstrap distribution of the test statistic
+- `sts::Float64`: observed test statistic
+- `p::Float64`: proportion of bootstrap statistics exceeding `sts`
 """
 function mdiff(
-        s1::AbstractMatrix, s2::AbstractMatrix; n::Int64 = 3, method::Symbol = :absdiff
-    )::@NamedTuple{st::Vector{Float64}, sts::Float64, p::Float64}
+    s1::AbstractMatrix,
+    s2::AbstractMatrix;
+    n::Int64 = 3,
+    method::Symbol = :absdiff
+)::@NamedTuple{
+    st::Vector{Float64},
+    sts::Float64,
+    p::Float64
+}
 
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _check_var(method, [:absdiff, :diff2int], "method")
+    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     @assert n >= 1 "n must be ≥ 1."
 
+    # calculate means over channels
     s1_mean = vec(mean(s1, dims = 1))
     s2_mean = vec(mean(s2, dims = 1))
 
+    # observed test statistic.
     if method === :absdiff
-        # statistic: maximum difference
-        s_diff = s1_mean - s2_mean
-        sts = maximum(abs.(s_diff))
+        # statistic: maximum absolute difference between mean waveforms
+        sts = maximum(abs, s1_mean .- s2_mean)
     else
         # statistic: integrated area of the squared difference
-        s_diff_squared = (s1_mean - s2_mean) .^ 2
-        sts = simpson(s_diff_squared)
+        sts = simpson((s1_mean .- s2_mean) .^ 2)
     end
 
+    # pooled sample for bootstrapping
     ss = [s1; s2]
-    st = zeros(size(s1, 1) * n)
+    n_boot = size(s1, 1) * n
+    st = zeros(n_boot)
 
-    Threads.@threads for idx1 in 1:(size(s1, 1) * n)
+    # pre-allocate bootstrap buffers outside the thread loop 
+    # each thread needs its own buffers to avoid races
+    # allocate inside the loop per iteration since Threads.@threads
+    # does not provide thread-local storage here
+    Threads.@threads :dynamic for idx in 1:n_boot
+
+        # sample two independent bootstrap groups from the pooled data
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
-        sample_idx = rand(axes(ss, 1), size(ss, 1))
+        idx_a  = rand(axes(ss, 1), size(s1, 1))
         @inbounds for idx2 in axes(s1, 1)
-            s_tmp1[idx2, :] = @views ss[sample_idx[idx2], :]'
+            s_tmp1[idx2, :] = ss[idx_a[idx2], :]
         end
-        s1_mean = vec(mean(s_tmp1, dims = 1))
-        s_tmp1 = zeros(size(s1, 1), size(s1, 2))
-        sample_idx = rand(axes(ss, 1), size(ss, 1))
+        bs1_mean = vec(mean(s_tmp1, dims = 1))
+
+        s_tmp2 = zeros(size(s1, 1), size(s1, 2))
+        idx_b  = rand(axes(ss, 1), size(s1, 1))
         @inbounds for idx2 in axes(s1, 1)
-            s_tmp1[idx2, :] = @views ss[sample_idx[idx2], :]'
+            s_tmp2[idx2, :] = ss[idx_b[idx2], :]
         end
-        s2_mean = vec(mean(s_tmp1, dims = 1))
+        bs2_mean = vec(mean(s_tmp2, dims = 1))
+
         if method === :absdiff
-            # statistic: maximum difference
-            s_diff = s1_mean - s2_mean
-            @inbounds st[idx1] = maximum(abs.(s_diff))
+            # statistic: maximum absolute difference between mean waveforms
+            @inbounds st[idx] = maximum(abs, bs1_mean .- bs2_mean)
         else
             # statistic: integrated area of the squared difference
-            s_diff_squared = (s1_mean - s2_mean) .^ 2
-            @inbounds st[idx1] = simpson(s_diff_squared)
+            @inbounds st[idx] = simpson((bs1_mean .- bs2_mean) .^ 2)
         end
+
     end
 
-    p = length(st[st .> sts]) / size(s1, 1) * n
-    p > 1 && (p = 1.0)
+    p = count(x -> x > sts, st) / n_boot
+    p > 1.0 && (p = 1.0)
 
     return (st = st, sts = sts, p = p)
 
@@ -80,43 +100,64 @@ end
 """
     mdiff(s1, s2; <keyword arguments>)
 
-Calculate mean difference and its 95% CI between channels.
+Calculate the mean difference and its bootstrap p-value for each epoch.
 
 # Arguments
 
-  - `s1::AbstractArray`
-  - `s2::AbstractArray`
-  - `n::Int64=3`: number of bootstraps
-  - `method::Symbol=:absdiff`
-      + `:absdiff`: maximum difference
-      + `:diff2int`: integrated area of the squared difference
+- `s1::AbstractArray`: signal array (channels × samples × epochs)
+- `s2::AbstractArray`: signal array (channels × samples × epochs)
+- `n::Int64=3`: number of bootstrap iterations per channel
+- `method::Symbol=:absdiff`: test statistic:
+    - `:absdiff`: maximum absolute difference
+    - `:diff2int`: integrated area of the squared difference
 
 # Returns
 
 Named tuple containing:
 
-  - `st::Matrix{Float64}`
-  - `sts::Vector{Float64}`
-  - `p::Vector{Float64}`
+- `st::Matrix{Float64}`: bootstrap distributions, shape `(epochs, channels*n)`
+- `sts::Vector{Float64}`: observed statistics per epoch
+- `p::Vector{Float64}`: p-values per epoch
 """
 function mdiff(
-        s1::AbstractArray, s2::AbstractArray; n::Int64 = 3, method::Symbol = :absdiff
-    )::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
+    s1::AbstractArray,
+    s2::AbstractArray;
+    n::Int64 = 3,
+    method::Symbol = :absdiff
+)::@NamedTuple{
+    st::Matrix{Float64},
+    sts::Vector{Float64},
+    p::Vector{Float64}
+}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     @assert n >= 1 "n must be ≥ 1."
+
+    # validate that the input is a proper 3-D array (channels × samples × epochs)
     _chk3d(s1)
     _chk3d(s2)
 
-    ch_n = size(s1, 1)
-    ep_n = size(s1, 3)
+    # number of channels
+    ch_n = size(s, 1)
+    # number of vectors
+    ep_n = size(s, 3)
 
+    # pre-allocate outputs
     st = zeros(ep_n, ch_n * n)
     sts = zeros(ep_n)
     p = zeros(ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        st[ep_idx, :], sts[ep_idx], p[ep_idx] = mdiff(s1[:, :, ep_idx], s2[:, :, ep_idx], n = n, method = method)
+    # calculate over epochs
+    @inbounds @Threads.threads :dynamic for ep_idx in 1:ep_n
+        mdriff_data = mdiff(
+            @view(s1[:, :, ep_idx]),
+            @view(s2[:, :, ep_idx]),
+            n = n,
+            method = method,
+        )
+        st[ep_idx, :] = mdriff_data.st
+        sts[ep_idx] = mdriff_data.sts
+        p[ep_idx] = mdriff_data.p
     end
 
     return (st = st, sts = sts, p = p)
@@ -125,53 +166,65 @@ end
 """
     mdiff(obj1, obj2; <keyword arguments>)
 
-Calculate mean difference and 95% confidence interval for two channels.
+Calculate the mean difference and its bootstrap p-value for two objects.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2:NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
-  - `n::Int64`: number of bootstraps
-  - `method::Symbol[:absdiff, :diff2int]`
-      + `:absdiff`: maximum difference
-      + `:diff2int`: integrated area of the squared difference
+- `obj1::NeuroAnalyzer.NEURO`
+- `obj2:NeuroAnalyzer.NEURO`
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `n::Int64`: number of bootstraps
+- `method::Symbol=:absdiff`: test statistic:
+    - `:absdiff`: maximum absolute difference
+    - `:diff2int`: integrated area of the squared difference
 
 # Returns
 
 Named tuple containing:
 
-  - `st::Matrix{Float64}`
-  - `sts::Vector{Float64}`
-  - `p::Vector{Float64}`
+- `st::Matrix{Float64}`: bootstrap distributions, shape `(epochs, channels*n)`
+- `sts::Vector{Float64}`: observed statistics per epoch
+- `p::Vector{Float64}`: p-values per epoch
 """
 function mdiff(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-        n::Int64 = 3,
-        method::Symbol = :absdiff,
-    )::@NamedTuple{st::Matrix{Float64}, sts::Vector{Float64}, p::Vector{Float64}}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    n::Int64 = 3,
+    method::Symbol = :absdiff,
+)::@NamedTuple{
+    st::Matrix{Float64},
+    sts::Vector{Float64},
+    p::Vector{Float64}
+}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
+    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
 
+    # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
-
+    # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
+    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
+    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    st, sts, p = @views NeuroAnalyzer.mdiff(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], n = n, method = method)
+    mdiff_data = NeuroAnalyzer.mdiff(
+        @view(obj1.data[ch1, :, ep1]),
+        @view(obj2.data[ch2, :, ep2]),
+        n = n,
+        method = method,
+    )
 
-    return (st = st, sts = sts, p = p)
+    return mdiff_data
+
 end

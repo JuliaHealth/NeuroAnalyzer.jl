@@ -132,7 +132,7 @@ function itpc(
     itpca = zeros(ch_n)
     itpcph = zeros(ch_n, ep_n)
 
-    Threads.@threads for ch_idx in 1:ch_n
+    Threads.@threads :dynamic for ch_idx in 1:ch_n
         @inbounds begin
             itpc_data = itpc(
                 reshape(
@@ -292,7 +292,7 @@ function itpc_spec(
     # initialize progress bar
     progbar = Progress(nfrq, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    Threads.@threads for frq_idx in 1:nfrq
+    Threads.@threads :dynamic for frq_idx in 1:nfrq
 
         # build Morlet wavelet and compute half-kernel offset for trimming
         kernel = generate_morlet(sr(obj), f[frq_idx], 1, ncyc = 10)

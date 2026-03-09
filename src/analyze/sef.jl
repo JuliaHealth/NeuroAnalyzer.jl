@@ -129,7 +129,7 @@ function sef(
     sef_frq = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             sef_frq[ch_idx, ep_idx] = @views sef(
                 s[ch_idx, :, ep_idx],
                 x = x,

@@ -108,7 +108,7 @@ Calculate absolute band power between two frequencies.
 
 # Returns
 
-- `bp::Matrix{Float64}`: band power of shape `(channels, epochs)`
+- `bp::Matrix{Float64}`: band power, shape `(channels, epochs)`
 """
 function band_power(
     s::AbstractArray;
@@ -184,7 +184,7 @@ Calculate absolute band power between two frequencies.
 
 # Returns
 
-  - `bp::Matrix{Float64}`: band power of shape `(channels, epochs)`
+  - `bp::Matrix{Float64}`: band power, shape `(channels, epochs)`
 """
 function band_power(
         obj::NeuroAnalyzer.NEURO;

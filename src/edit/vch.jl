@@ -45,13 +45,13 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
 
     # ── Step 4: parallel loop — no eval, no parsing, no string alloc per epoch ───
     # @view avoids copying channel slices; ntuple builds a type-stable argument list.
-    Threads.@threads for ep_idx in 1:ep_n
+    Threads.@threads :dynamic for ep_idx in 1:ep_n
         args = ntuple(k -> @view(obj.data[active_idx[k], :, ep_idx]), length(active_idx))
         @inbounds vc[1, :, ep_idx] = f_func(args...)
     end
 =#
 
-    Threads.@threads for ep_idx in 1:ep_n
+    Threads.@threads :dynamic for ep_idx in 1:ep_n
         f_tmp = f
         @inbounds for ch_idx in eachindex(clabels)
             occursin(clabels[ch_idx], f) && (

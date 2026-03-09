@@ -56,7 +56,7 @@ function cbp(
 
     obj_new = deepcopy(obj)
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in eachindex(ch)
+        Threads.@threads :dynamic for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views cbp(
                 obj_new.data[ch[ch_idx], :, ep_idx], pad = pad, frq = frq, fs = fs
             )

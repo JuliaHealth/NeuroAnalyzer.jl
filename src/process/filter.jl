@@ -400,7 +400,7 @@ function filter_apply(
     progbar = Progress(ep_n * length(ch), dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in eachindex(ch)
+        Threads.@threads :dynamic for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(
                 obj.data[ch[ch_idx], :, ep_idx],
                 flt = flt,

@@ -80,7 +80,7 @@ function phdiff(
     end
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             if avg === :phase
                 ref_channels = setdiff(ch, ch_idx)
                 ph_ref = zeros(length(ref_channels), ep_len)

@@ -98,7 +98,7 @@ function psi(
     pv = Matrix{Tuple{Float64, Float64}}(undef, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             pv[ch_idx, ep_idx] = @views psi(
                 obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
                 obj2.data[ch2[ch_idx], :, ep2[ep_idx]],
@@ -139,7 +139,7 @@ function psi(
     pv = Array{Tuple{Float64, Float64}}(undef, ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
+        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
                 pv[ch_idx1, ch_idx2, ep_idx] = @views psi(
                     obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx], fs = sr(obj), flim = flim

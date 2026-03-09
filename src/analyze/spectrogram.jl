@@ -115,7 +115,7 @@ function spectrogram(
     )
 
     p = zeros(length(f), length(t), size(s, 1))
-    Threads.@threads for ch_idx in axes(s, 1)
+    Threads.@threads :dynamic for ch_idx in axes(s, 1)
         p[:, :, ch_idx], _, _ = @views NeuroAnalyzer.spectrogram(
             s[ch_idx, :], fs = fs, db = db, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w
         )
@@ -132,24 +132,24 @@ Calculate spectrogram. Default method is short time Fourier transform.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pad::Int64=0`: number of zeros to append
-  - `method::Symbol=:stft`: method of calculating spectrogram:
-      + `:stft`: short-time Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
-      + `:cwt`: continuous wavelet transformation
-      + `:hht`: Hilbert-Huang transform
-  - `db::Bool=true`: normalize powers to dB
-  - `nt::Int64=16`: number of Slepian tapers
-  - `gw::Real=10`: Gaussian width in Hz
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-  - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-  - `w::Bool=true`: if true, apply Hanning window
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pad::Int64=0`: number of zeros to append
+- `method::Symbol=:stft`: spectrogram method:
+  - `:stft`: short-time Fourier transform
+  - `:mt`: multi-tapered periodogram
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian and Hilbert transform
+  - `:cwt`: continuous wavelet transformation
+  - `:hht`: Hilbert-Huang transform
+- `db::Bool=true`: normalize powers to dB
+- `nt::Int64=16`: number of Slepian tapers
+- `gw::Real=10`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -210,7 +210,7 @@ function spectrogram(
     progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             if method === :stft
                 p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(
                     obj.data[ch[ch_idx], :, ep_idx],
@@ -385,7 +385,7 @@ function mwspectrogram(
     cs = zeros(ComplexF64, length(f_tmp), length(t_tmp), size(s, 1))
     p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
-    Threads.@threads for ch_idx in axes(s, 1)
+    Threads.@threads :dynamic for ch_idx in axes(s, 1)
         cs[:, :, ch_idx], p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views mwspectrogram(
             s[ch_idx, :], pad = pad, db = db, fs = fs, ncyc = ncyc, w = w
         )
@@ -480,7 +480,7 @@ function ghtspectrogram(
 
     p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
-    Threads.@threads for ch_idx in axes(s, 1)
+    Threads.@threads :dynamic for ch_idx in axes(s, 1)
         p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views ghtspectrogram(s[ch_idx, :], fs = fs, db = db, gw = gw, w = w)
     end
 
@@ -555,7 +555,7 @@ function cwtspectrogram(
     _, f_tmp, t_tmp = cwtspectrogram(s[1, :], fs = fs, wt = wt)
 
     m = zeros(length(f_tmp), length(t_tmp), size(s, 1))
-    Threads.@threads for ch_idx in axes(s, 1)
+    Threads.@threads :dynamic for ch_idx in axes(s, 1)
         m[:, :, ch_idx], _, _ = @views cwtspectrogram(s[ch_idx, :], fs = fs, wt = wt)
     end
 

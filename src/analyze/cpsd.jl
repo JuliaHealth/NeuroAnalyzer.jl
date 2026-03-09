@@ -179,7 +179,7 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 
 Named tuple containing:
 
-- `pxy::Array{ComplexF64, 3}`: cross-power spectrum of shape `(channels, frequencies, epochs)`
+- `pxy::Array{ComplexF64, 3}`: cross-power spectrum, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies
 """
 function cpsd(
@@ -274,7 +274,7 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 
 Named tuple containing:
 
-- `pxy::Array{ComplexF64, 3}`: cross-power spectrum of shape `(channels, frequencies, epochs)`
+- `pxy::Array{ComplexF64, 3}`: cross-power spectrum, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies
 """
 function cpsd(

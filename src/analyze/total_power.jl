@@ -111,7 +111,7 @@ function total_power(
     tp = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :dynamic for ch_idx in 1:ch_n
             tp[ch_idx, ep_idx] = @views total_power(
                 s[ch_idx, :, ep_idx],
                 fs = fs,
