@@ -109,7 +109,7 @@ Filter using moving median filter (with threshold).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `k::Int64=8`: window length is `2 × k + 1`
   - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
   - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
@@ -145,7 +145,7 @@ Filter using moving median filter (with threshold).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `k::Int64=8`: window length is `2 × k + 1`
   - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
   - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window

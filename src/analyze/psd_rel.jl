@@ -284,7 +284,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `db::Bool=false`: normalize do dB
   - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
   - `method::Symbol=:welch`: method used to calculate PSD:

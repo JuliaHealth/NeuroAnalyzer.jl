@@ -23,7 +23,7 @@ Image properties:
 
   - `obj::NeuroAnalyzer.NEURO`
 
-# Source
+# Reference
 
  1. Wysokiński A. EEG_ADC: Digitizer and Analyzer of Electroconvulsive Therapy Paper Electroencephalogram Recordings. JECT 2022; 4: 255-256
 """

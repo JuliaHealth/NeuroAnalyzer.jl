@@ -17,7 +17,7 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
   - `obj_new::NeuroAnalyzer.NEURO`: with `csd` channel types and `µV/m²` units
 
-# Source
+# Reference
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-187
 Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clin Neurophysiol 2006;117(2):348-368
@@ -86,7 +86,7 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
   - `Nothing`
 
-# Source
+# Reference
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
@@ -119,7 +119,7 @@ Named tuple containing:
   - `G::Matrix{Float64}`: transformation matrix (SP spline)
   - `H::Matrix{Float64}`: transformation matrix (CSD spline)
 
-# Source
+# Reference
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """

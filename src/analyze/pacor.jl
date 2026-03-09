@@ -139,7 +139,7 @@ Calculate partial auto-correlation. For ERP return trial-averaged auto-correlati
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `l::Real=1`: lags range is `-l:l`
   - `demean::Bool=true`: demean signal before computing auto-correlation
   - `method::Symbol=:yw`: method of calculating auto-correlation:

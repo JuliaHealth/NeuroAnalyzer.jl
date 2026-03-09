@@ -460,7 +460,7 @@ Apply filtering.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `fprototype::Symbol`: filter prototype:
       + `:fir`: FIR filter
       + `:firls`: weighted least-squares FIR filter
@@ -551,7 +551,7 @@ Apply filtering.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `fprototype::Symbol`: filter prototype:
       + `:fir`: FIR filter
       + `:firls`: weighted least-squares FIR filter

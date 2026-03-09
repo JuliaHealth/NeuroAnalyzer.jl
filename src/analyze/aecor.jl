@@ -15,7 +15,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 - `aec::Float64`: AEC value
 
-# Source
+# Reference
 
 1. Bruns, A., Eckhorn, R., Jokeit, H., & Ebner, A. (2000). Amplitude envelope correlation detects coupling among incoherent brain signals. Neuroreport, 11(7), 1509-1514.
 """
@@ -45,8 +45,8 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}: channel name(s)
-- `ch2::Union{String, Vector{String}}: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
@@ -57,8 +57,8 @@ Calculate Amplitude Envelope Correlation (AEC).
 function aecor(
     obj1::NeuroAnalyzer.NEURO,
     obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
     ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
 )::Matrix{Float64}
@@ -161,7 +161,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 - `esc::Float64`: ESC value
 
-# Source
+# Reference
 
 1. Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequency signals among visual cortical areas in human subdural recordings. International Journal of Psychophysiology, 51(2), 97-116.
 """
@@ -190,8 +190,8 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}`: channel name(s)
-- `ch2::Union{String, Vector{String}}`: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
@@ -202,8 +202,8 @@ Calculate Envelope-to-Signal Correlation (ESC).
 function escor(
     obj1::NeuroAnalyzer.NEURO,
     obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
     ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
 )::Matrix{Float64}

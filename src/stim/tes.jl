@@ -22,7 +22,7 @@ Named tuple containing:
   - `current_density::Float64`: current density [A/m²]
   - `charge_density::Float64`: delivered charge density [kC/m²]
 
-# Source
+# Reference
 
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """

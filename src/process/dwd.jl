@@ -86,7 +86,7 @@ Perform discrete wavelet decomposition (DWD).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
   - `type::Symbol`: transformation type:
       + `:sdwt`: stationary discrete wavelet transform

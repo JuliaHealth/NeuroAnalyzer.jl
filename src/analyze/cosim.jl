@@ -46,8 +46,8 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}: channel name(s)
-- `ch2::Union{String, Vector{String}}: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
@@ -58,8 +58,8 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 function cosim(
     obj1::NeuroAnalyzer.NEURO,
     obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
     ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
 )::Matrix{Float64}

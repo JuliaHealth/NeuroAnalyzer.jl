@@ -26,7 +26,7 @@ Named tuple containing:
 - `s1ph::Vector{Float64}`: instantaneous phase of s1
 - `s2ph::Vector{Float64}`: instantaneous phase of s2
 
-# Source
+# Reference
 
  1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
@@ -86,8 +86,8 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}`: channel name(s)
-- `ch2::Union{String, Vector{String}}`: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
@@ -104,8 +104,8 @@ Named tuple containing:
 function dpli(
     obj1::NeuroAnalyzer.NEURO,
     obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
     ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
 )::@NamedTuple{

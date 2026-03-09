@@ -188,7 +188,7 @@ Detect bad channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
   - `:flat`: flat channel(s)
   - `:rmse`: RMSE vs average channel outside of 95% CI
@@ -446,7 +446,7 @@ Detect bad channels and update the `:bad_channel` field in the OBJ header.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
       + `:flat`: flat channel(s)
       + `:rmse`: RMSE vs average channel outside of 95% CI
@@ -523,7 +523,7 @@ Detect bad epochs.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
       + `:flat`: flat channel(s)
       + `:rmse`: RMSE vs average channel outside of 95% CI

@@ -344,7 +344,7 @@ Generate Morlet wavelet using FWHM (full width at half maximum) formula.
 
   - `mw::Vector{ComplexF64}`
 
-# Source
+# Reference
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
 """

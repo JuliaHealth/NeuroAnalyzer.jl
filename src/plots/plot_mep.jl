@@ -299,7 +299,7 @@ Plot MEP.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `xlabel::String="default"`: x-axis label
   - `ylabel::String="default"`: y-axis label
   - `title::String="default"`: plot title

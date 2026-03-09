@@ -284,7 +284,7 @@ Compute area under curve of an ERP/ERF/MEP (epoch 1).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `seg::Tuple{Real, Real}=(obj.epoch_time[1], obj.epoch_time[end])`: time segment in seconds
 - `type::Symbol=:all`: which part of the signal to integrate:
     - `:all` - full waveform

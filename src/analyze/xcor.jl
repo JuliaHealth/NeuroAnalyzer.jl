@@ -188,10 +188,10 @@ Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
   - `obj1::NeuroAnalyzer.NEURO`
   - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}}`: list of channels
-  - `ch2::Union{String, Vector{String}}`: list of channels
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
   - `l::Real=1`: lags range is `-l:l`
   - `demean::Bool=true`: demean signal before computing cross-correlation
   - `biased::Bool=true`: calculate biased or unbiased cross-correlation
@@ -210,8 +210,8 @@ Named tuple containing:
 function xcor(
         obj1::NeuroAnalyzer.NEURO,
         obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}},
-        ch2::Union{String, Vector{String}},
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
         l::Real = 1,

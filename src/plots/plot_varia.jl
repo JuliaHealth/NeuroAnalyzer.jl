@@ -1293,7 +1293,7 @@ Topographical plot of external ICA components.
   - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
   - `ic::Matrix{Float64}`: components IC(1)..IC(n)
   - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=axes(ic_idx, 1)`: component(s) to plot, default is all components
   - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
   - `imethod::Symbol=:sh`: interpolation method:

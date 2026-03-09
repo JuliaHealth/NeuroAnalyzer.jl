@@ -64,7 +64,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
@@ -89,7 +89,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 

@@ -11,8 +11,8 @@ Computes the log-ratio and normalized difference of mean band power between two 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}`: channel name(s), e.g. left frontal channels
-- `ch2::Union{String, Vector{String}}`: channel name(s), e.g. right frontal channels
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s), e.g. left frontal channels
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s), e.g. right frontal channels
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
   - `:welch`: Welch's periodogram
@@ -38,8 +38,8 @@ Named tuple containing:
 """
 function band_asymmetry(
     obj::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
     flim::Tuple{Real, Real},
     method::Symbol = :welch,
     nt::Int64 = 7,

@@ -11,11 +11,11 @@ Convert frequency in Hz to rad/s.
 
 # Arguments
 
-  - `f::Real`
+- `f::Real`
 
 # Returns
 
-  - `f_rads::Float64`
+- `f_rads::Float64`
 """
 function hz2rads(f::Real)::Float64
 
@@ -30,11 +30,11 @@ Convert frequency in rad/s to Hz.
 
 # Arguments
 
-  - `f::Real`
+- `f::Real`
 
 # Returns
 
-  - `f_rads::Float64`
+- `f_rads::Float64`
 """
 function rads2hz(f::Real)::Float64
 
@@ -49,11 +49,11 @@ Convert cycle length in ms to frequency.
 
 # Arguments
 
-  - `t::Real`: cycle length in ms
+- `t::Real`: cycle length in ms
 
 # Returns
 
-  - `f::Float64`: frequency in Hz
+- `f::Float64`: frequency in Hz
 """
 function t2f(t::Real)::Float64
 
@@ -70,11 +70,11 @@ Convert frequency in Hz to cycle length in ms.
 
 # Arguments
 
-  - `f::Real`: frequency in Hz
+- `f::Real`: frequency in Hz
 
 # Returns
 
-  - `f::Float64`: cycle length in ms
+- `f::Float64`: cycle length in ms
 """
 function f2t(f::Real)::Float64
 
@@ -91,13 +91,13 @@ Return vector of frequencies and Nyquist frequency for time vector.
 
 # Arguments
 
-  - `t::AbstractVector, AbstractRange}`: time vector
-  - `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
+- `t::AbstractVector, AbstractRange}`: time vector
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
 
 # Returns
 
-  - `hz::Vector{Float64}`
-  - `nqf::Float64`
+- `hz::Vector{Float64}`: frequencies
+- `nqf::Float64`: Nyquist frequency
 """
 function freqs(
         t::Union{AbstractVector, AbstractRange}; nf::Bool = false
@@ -133,14 +133,14 @@ Return vector of frequencies and Nyquist frequency for signal.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `fs::Int64`
-  - `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
+- `s::AbstractVector`: signal vector
+- `fs::Int64`
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
 
 # Returns
 
-  - `hz::Vector{Float64`: signal vector
-  - `nqf::Float64`
+- `hz::Vector{Float64}`: frequencies
+- `nqf::Float64`: Nyquist frequency
 """
 function freqs(
         s::AbstractVector, fs::Int64; nf::Bool = false
@@ -169,14 +169,14 @@ Return vector of frequencies and Nyquist frequency for signal.
 
 # Arguments
 
-  - `n::Int64`: number of samples
-  - `fs::Int64`
-  - `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
+- `n::Int64`: number of samples
+- `fs::Int64`
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
 
 # Returns
 
-  - `hz::Vector{Float64`: signal vector
-  - `nqf::Float64`
+- `hz::Vector{Float64}`: frequencies
+- `nqf::Float64`: Nyquist frequency
 """
 function freqs(n::Int64, fs::Int64; nf::Bool = false)::Tuple{Vector{Float64}, Float64}
 
@@ -203,19 +203,19 @@ Return vector of frequencies and Nyquist frequency.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
+- `obj::NeuroAnalyzer.NEURO`
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
 
 # Returns
 
 Named tuple containing:
 
-  - `hz::Vector{Float64}`
-  - `nqf::Float64`
+- `hz::Vector{Float64}`: frequencies
+- `nqf::Float64`: Nyquist frequency
 """
 function freqs(
-        obj::NeuroAnalyzer.NEURO; nf::Bool = false
-    )::@NamedTuple{hz::Vector{Float64}, nqf::Float64}
+    obj::NeuroAnalyzer.NEURO; nf::Bool = false
+)::@NamedTuple{hz::Vector{Float64}, nqf::Float64}
 
     hz, nqf = freqs(obj.data[1, :, 1], sr(obj); nf = nf)
 

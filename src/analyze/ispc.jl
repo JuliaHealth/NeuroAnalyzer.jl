@@ -62,7 +62,7 @@ Calculate ISPCs (Inter-Site-Phase Clustering).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
@@ -109,10 +109,10 @@ Calculate ISPC (Inter-Site-Phase Clustering).
 
   - `obj1::NeuroAnalyzer.NEURO`
   - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}}: list of channels
-  - `ch2::Union{String, Vector{String}}: list of channels
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
@@ -128,8 +128,8 @@ Named tuple containing:
 function ispc(
         obj1::NeuroAnalyzer.NEURO,
         obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}},
-        ch2::Union{String, Vector{String}},
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
     )::@NamedTuple{

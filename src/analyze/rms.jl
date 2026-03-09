@@ -64,7 +64,7 @@ Calculate Root Mean Square (RMS).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}}: list of channels
+  - `ch::Union{String, Vector{String}, Regex}: list of channels
   - `ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj))`: default use all epochs
 
 # Returns
@@ -73,7 +73,7 @@ Calculate Root Mean Square (RMS).
 """
 function rms(
         obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}},
+        ch::Union{String, Vector{String}, Regex},
         ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
     )::Matrix{Float64}
 
@@ -157,10 +157,10 @@ Calculate Root Mean Square Error (RMSE).
 
   - `obj1::NeuroAnalyzer.NEURO`
   - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}}: list of channels
-  - `ch2::Union{String, Vector{String}}: list of channels
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
@@ -169,8 +169,8 @@ Calculate Root Mean Square Error (RMSE).
 function rmse(
         obj1::NeuroAnalyzer.NEURO,
         obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}},
-        ch2::Union{String, Vector{String}},
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
     )::Matrix{Float64}

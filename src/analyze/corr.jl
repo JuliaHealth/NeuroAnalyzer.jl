@@ -9,8 +9,8 @@ Compute the Pearson correlation between paired channels across two NEURO objects
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}: channel name(s)
-- `ch2::Union{String, Vector{String}}: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
@@ -21,8 +21,8 @@ Compute the Pearson correlation between paired channels across two NEURO objects
 function corr(
     obj1::NeuroAnalyzer.NEURO,
     obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
     ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
 )::Matrix{Float64}

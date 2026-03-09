@@ -60,7 +60,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
@@ -85,7 +85,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 

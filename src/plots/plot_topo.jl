@@ -355,7 +355,7 @@ Topographical plot.
 
   - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
   - `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: channels × values, will be averaged by channels
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
   - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
   - `title::String="default"`: plot title, default is tpos value

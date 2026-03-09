@@ -7,22 +7,22 @@ Calculate Imaginary Phase Locking Value (IPLV).
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
+- `s1::AbstractVector`
+- `s2::AbstractVector`
 
 # Returns
 
 Named tuple containing:
 
-  - `pv::Float64`: PLV value
-  - `sd::Vector{Float64}`: signal difference (s2 - s1)
-  - `phd::Vector{Float64}`: phase difference (s2 - s1)
-  - `s1ph::Vector{Float64}`: signal 1 phase
-  - `s2ph::Vector{Float64}`: signal 2 phase
+- `pv::Float64`: PLV value
+- `sd::Vector{Float64}`: signal difference (s2 - s1)
+- `phd::Vector{Float64}`: phase difference (s2 - s1)
+- `s1ph::Vector{Float64}`: signal 1 phase
+- `s2ph::Vector{Float64}`: signal 2 phase
 
-# Source
+# Reference
 
- 1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
+Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function iplv(
         s1::AbstractVector, s2::AbstractVector
@@ -31,8 +31,10 @@ function iplv(
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     # get instatenous phases
-    _, _, _, s1ph = htransform(s1)
-    _, _, _, s2ph = htransform(s2)
+    h1 = htransform(s1)
+    h2 = htransform(s2)
+    s1ph = h1.ph
+    s2ph = h2.ph
 
     # signal difference
     sd = s1 - s2
@@ -57,28 +59,28 @@ Calculate Imaginary Phase Locking Value (IPLV).
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}}: list of channels
-  - `ch2::Union{String, Vector{String}}: list of channels
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `obj1::NeuroAnalyzer.NEURO`
+- `obj2::NeuroAnalyzer.NEURO`
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
 Named tuple containing:
 
-  - `pv::Matrix{Float64}`: PLV value
-  - `sd::Array{Float64, 3}`: signal difference (s2 - s1)
-  - `phd::Array{Float64, 3}`: phase difference (s2 - s1)
-  - `s1ph::Array{Float64, 3}`: signal 1 phase
-  - `s2ph::Array{Float64, 3}`: signal 2 phase
+- `pv::Matrix{Float64}`: PLV value
+- `sd::Array{Float64, 3}`: signal difference (s2 - s1)
+- `phd::Array{Float64, 3}`: phase difference (s2 - s1)
+- `s1ph::Array{Float64, 3}`: signal 1 phase
+- `s2ph::Array{Float64, 3}`: signal 2 phase
 """
 function iplv(
         obj1::NeuroAnalyzer.NEURO,
         obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}},
-        ch2::Union{String, Vector{String}},
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
     )::@NamedTuple{
@@ -125,12 +127,12 @@ Calculate Imaginary Phase Locking Value (IPLV).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `pv::Array{Float64, 3}`: PLV value
+- `pv::Array{Float64, 3}`: PLV value
 """
 function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

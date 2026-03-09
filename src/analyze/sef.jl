@@ -158,7 +158,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `x::Float64=0.95`: threshold
   - `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: lower and upper frequency bounds, default is total power
   - `method::Symbol=:welch`: method used to calculate PSD:

@@ -3,25 +3,32 @@ export hmspectrum
 """
     hmspectrum(obj; <keyword arguments>)
 
-Calculate Hilbert marginal spectrum.
+Calculate Hilbert marginal spectrum. The Hilbert marginal spectrum is computed from the Hilbert-Huang Transform (HHT) spectrogram by integrating (summing) the instantaneous power over time for each frequency, independently per epoch. The result is a frequency × epochs power matrix analogous to a classical power spectrum.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel name
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::String`: channel name
 
 # Returns
 
 Named tuple containing:
 
-  - `p::Array{Float64, 3}`: Hilbert marginal spectra for each epoch
-  - `t::Vector{Float64}`: time points
+- `p::Array{Float64, 3}`: Hilbert marginal spectra, shape `(frequency, epochs)`
+- `f::Vector{Float64}`: frequencies
+
+# Reference
+
+Huang et al. (1998), "The empirical mode decomposition and the Hilbert spectrum for nonlinear and non-stationary time series analysis."
 """
 function hmspectrum(obj; ch::String)::@NamedTuple{p::Array{Float64, 3}, t::Vector{Float64}}
 
-    p, _, t = NeuroAnalyzer.spectrogram(obj, ch = ch, method = :hht, db = false)
-    p = dropdims(sum(p, dims = 1), dims = 3)
+    # compute HHT time-frequency spectrogram without dB normalization
+    spec = NeuroAnalyzer.spectrogram(obj, ch = ch, method = :hht, db = false)
 
-    return (p = p, t = t)
+    p = dropdims(spec.p, dims = 3)
+    p = dropdims(sum(p, dims = 2), dims = 2)
+
+    return (p = p, f = spec.f)
 
 end

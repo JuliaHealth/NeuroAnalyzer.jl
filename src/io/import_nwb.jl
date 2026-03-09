@@ -14,7 +14,7 @@ Load EEG data from Neurodata Without Borders (NWB) file and return `NeuroAnalyze
 
   - `obj::NeuroAnalyzer.NEURO`
 
-# Source
+# Reference
 
  1. https://www.biorxiv.org/content/10.1101/523035v1
 """

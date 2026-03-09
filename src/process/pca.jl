@@ -76,7 +76,7 @@ Calculate `n` first Primary Components (PCs).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `n::Int64`: number of PCs to calculate
 
 # Returns
@@ -140,7 +140,7 @@ Reconstruct signal using PCA components (`pc` and `pca`).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
   - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 
@@ -174,7 +174,7 @@ Reconstruct signals using PCA components (`pc` and `pc_model`).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
   - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 

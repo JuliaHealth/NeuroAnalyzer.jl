@@ -78,7 +78,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pad::Int64`: pad the `signal` with `pad` zeros
   - `frq::Real`: filter frequency
   - `ncyc::Int64=6`: number of cycles for Morlet wavelet
@@ -108,7 +108,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pad::Int64`: pad the `signal` with `pad` zeros
   - `frq::Real`: filter frequency
   - `ncyc::Int64=6`: number of cycles for Morlet wavelet

@@ -550,7 +550,7 @@ Plot PHSD (phase spectral density).
   - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
   - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
   - `ep::Int64=0`: epoch to display
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
   - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
   - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]

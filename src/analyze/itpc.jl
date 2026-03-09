@@ -21,7 +21,7 @@ Named tuple containing:
   - `itpc_ang::Float64`: ITPC angle
   - `itpc_ph::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 
-# Source
+# Reference
 
  1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
@@ -63,7 +63,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `t::Real`: time point at which ITPC is calculated
   - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 

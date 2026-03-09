@@ -11,7 +11,7 @@ Remove power line noise and its peaks above power line frequency.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
   - `method::Symbol=:iir`:
       + `:iir`: use IIR filter
@@ -193,7 +193,7 @@ Remove power line noise and harmonics.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
   - `method::Symbol=:iir`: use IIR filter
   - `pr::Real=2.0`: prominence of noise peaks in dB

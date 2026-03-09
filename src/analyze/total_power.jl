@@ -138,7 +138,7 @@ Calculate total power.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `method::Symbol=:welch`: method used to calculate PSD:
       + `:welch`: Welch's periodogram
       + `:fft`: fast Fourier transform

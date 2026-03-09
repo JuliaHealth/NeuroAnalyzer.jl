@@ -133,7 +133,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pad::Int64=0`: number of zeros to append
   - `method::Symbol=:stft`: method of calculating spectrogram:
       + `:stft`: short-time Fourier transform

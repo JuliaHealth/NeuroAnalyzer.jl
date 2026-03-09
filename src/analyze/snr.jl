@@ -34,7 +34,7 @@ Calculate mean-based SNR.
 
   - `snr::Float64`: SNR
 
-# Source
+# Reference
 
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
@@ -131,7 +131,7 @@ Calculate SNR.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `type::Symbol=:rms`: SNR type:
       + `:mean`: mean-based
       + `:rms`: RMS-based

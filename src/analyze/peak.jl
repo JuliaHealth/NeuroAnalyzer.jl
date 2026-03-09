@@ -404,7 +404,7 @@ Calculate peak frequency in a band.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
   - `method::Symbol=:welch`: method used to calculate PSD:
       + `:welch`: Welch's periodogram
@@ -461,7 +461,7 @@ Calculate amplitude at peak frequency in a band.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
   - `method::Symbol=:welch`: method used to calculate PSD:
       + `:welch`: Welch's periodogram
@@ -518,7 +518,7 @@ Calculate power at peak frequency in a band.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
   - `method::Symbol=:welch`: method used to calculate PSD:
       + `:welch`: Welch's periodogram

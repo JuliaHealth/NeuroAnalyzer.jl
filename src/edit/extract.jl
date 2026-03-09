@@ -92,7 +92,7 @@ Extract data.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `ep::Union{Int64, Vector{Int64}, AbstractRange}=1:nepochs(obj)`: index of epochs, default is all epochs
   - `time::Bool=false`: return time vector
   - `etime::Bool=false`: return epoch time vector

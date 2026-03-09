@@ -194,7 +194,7 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
   - `:welch`: Welch's periodogram

@@ -214,7 +214,7 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `repair::Bool=true`: recover the segment if `true`
   - `window::Real=10.0`: window length (in seconds) in which the signal is scanned and repaired (windows are non-overlapping)
   - `r::Int64=sr(obj)÷2`: detection segment length; pops are checked within `(pop_loc - r):(pop_loc + r)` samples
@@ -286,7 +286,7 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `repair::Bool=true`: recover the segment if `true`
   - `window::Real=20.0`: window length (in seconds) in which the signal is scanned and repaired (windows are non-overlapping)
   - `r::Int64=sr(obj)÷2`: detection segment length; pops are checked within `pop_loc - r:pop_loc + r` samples

@@ -201,8 +201,8 @@ Calculate cross-phases between paired channels of two objects.
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}: channel name(s)
-- `ch2::Union{String, Vector{String}}: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
@@ -216,8 +216,8 @@ Named tuple containing:
 function cph(
     obj1::NeuroAnalyzer.NEURO,
     obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}},
-    ch2::Union{String, Vector{String}},
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
     ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
 )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}

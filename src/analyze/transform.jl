@@ -291,7 +291,7 @@ Calculate Fourier/Hilbert transform.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: (FFT only) number of zeros to append
 - `h::Bool=false`: if true, use Hilbert transform instead of FFT
 - `db::Bool=false`: normalize powers to dB
@@ -400,7 +400,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: number of zeros to append
 
 # Returns

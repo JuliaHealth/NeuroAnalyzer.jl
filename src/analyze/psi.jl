@@ -16,7 +16,7 @@ Calculate Phase Slope Index (PSI).
 
   - `pv::Tuple{Float64, Float64}`: PSI value (signal1 -> signal2, signal2 -> signal1)
 
-# Source
+# Reference
 
  1. Nolte, G., Ziehe, A., Nikulin, V. V., Schlögl, A., Krämer, N., Brismar, T., & Müller, K.-R. (2008). Robustly Estimating the Flow Direction of Information in Complex Physical Systems. Physical Review Letters. 2008; 100(23).
 """
@@ -60,10 +60,10 @@ Calculate Phase Slope Index (PSI).
 
   - `obj1::NeuroAnalyzer.NEURO`
   - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}}: list of channels
-  - `ch2::Union{String, Vector{String}}: list of channels
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
   - `flim::Tuple{Real, Real}=(1, sr(obj1) / 2 - 1))`: frequency bounds
 
 # Returns
@@ -73,8 +73,8 @@ Calculate Phase Slope Index (PSI).
 function psi(
         obj1::NeuroAnalyzer.NEURO,
         obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}},
-        ch2::Union{String, Vector{String}},
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
         flim::Tuple{Real, Real} = (1, sr(obj1) / 2 - 1),
@@ -120,7 +120,7 @@ Calculate Phase Slope Index (PSI).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}=(1, sr(obj) / 2 - 1))`: frequency bounds
 
 # Returns

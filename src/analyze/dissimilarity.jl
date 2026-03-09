@@ -9,13 +9,13 @@ Calculate the variance across channels at each time point of an ERP/ERF object (
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: must be an ERP or ERF object
-- `ch::Union{String, Vector{String}}`: channel name(s)
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
 - `tv::Vector{Float64}`: topographical variance
 """
-function topo_var(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
+function topo_var(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Vector{Float64}
 
     @assert datatype(obj) in ["erp", "erf"] "topo_var() should be applied for ERP or ERF object only."
     

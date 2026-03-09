@@ -131,7 +131,7 @@ Perform piecewise detrending.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `type::Symbol=:linear`: detrending method
       + `:loess`: fit loess approximation and subtract it from `s`
       + `:poly`: polynomial of `order` is subtracted from `s`
@@ -174,7 +174,7 @@ Perform piecewise detrending.
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `type::Symbol=:linear`: detrending method
       + `:loess`: fit loess approximation and subtract it from `s`
       + `:poly`: polynomial of `order` is subtracted from `s`

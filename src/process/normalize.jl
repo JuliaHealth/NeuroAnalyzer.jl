@@ -211,7 +211,7 @@ Normalize channel(s).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `method::Symbol`:
       + `:zscore`: by z-score
       + `:minmax`: in [-n, +n]
@@ -272,7 +272,7 @@ Normalize channel(s).
 # Arguments
 
   - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `method::Symbol`:
       + `:zscore`: by z-score
       + `:minmax`: in [-n, +n]

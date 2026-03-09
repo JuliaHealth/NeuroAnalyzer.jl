@@ -16,7 +16,7 @@ Convert MNI coordinates to Talairach coordinates: redo the affine transform of T
 
   - `t::Vector{Float64}`: Talairach X, Y, Z coordinates
 
-# Source
+# Reference
 
 https://www.brainmap.org/training/BrettTransform.html
 """
@@ -47,7 +47,7 @@ Convert Talairach coordinates to MNI coordinates: do the affine transform of MNI
 
   - `t::Vector{Float64}`: MNI X, Y, Z coordinates
 
-# Source
+# Reference
 
 https://www.brainmap.org/training/BrettTransform.html
 """
@@ -78,7 +78,7 @@ Convert MNI coordinates to Talairach coordinates: a non-linear transform of MNI 
 
   - `t::Vector{Float64}`: Talairach X, Y, Z coordinates
 
-# Source
+# Reference
 
 https://www.brainmap.org/training/BrettTransform.html
 """
@@ -113,7 +113,7 @@ Convert Talairach coordinates to MNI coordinates: a non-linear transform of MNI 
 
   - `m::Vector{Float64}`: MNI X, Y, Z coordinates
 
-# Source
+# Reference
 
 https://www.brainmap.org/training/BrettTransform.html
 """
