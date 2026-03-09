@@ -3,53 +3,63 @@ export ispc
 """
     ispc(s1, s2)
 
-Calculate ISPC (Inter-Site-Phase Clustering) between `s1` and `s2`.
+Calculate ISPC (Inter-Site-Phase Clustering) between two signals. ISPC measures the consistency of the phase difference between two signals across trials (or, here, across time within a single trial):
+
+ISPC value = |mean( exp(i·Δφ) )| (0 = no clustering, 1 = perfect lock)
+
+ISPC angle = angle( mean( exp(i·Δφ) ) ) (preferred phase difference)
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
 
 # Returns
 
 Named tuple containing:
 
-  - `ispc_val::Float64`: ISPC value
-  - `ispc_ang::Float64`: ISPC angle
-  - `s_diff::Vector{Float64}`: signal difference (s2 - s1)
-  - `ph_diff::Vector{Float64}`: phase difference (s2 - s1)
-  - `s1_phase::Vector{Float64}`: signal 1 phase
-  - `s2_phase::Vector{Float64}`: signal 2 phase
+- `ispcv::Float64`: ISPC value (phase-locking magnitude)
+- `ispca::Float64`: ISPC angle (preferred phase difference)
+- `sd::Vector{Float64}`: signal difference (s1 - s2)
+- `phd::Vector{Float64}`: phase difference (s1 - s2)
+- `s1ph::Vector{Float64}`: instantaneous phase of s1
+- `s2ph::Vector{Float64}`: instantaneous phase of s2
 """
 function ispc(
-        s1::AbstractVector, s2::AbstractVector
-    )::@NamedTuple{
-        ispc_val::Float64,
-        ispc_ang::Float64,
-        s_diff::Vector{Float64},
-        ph_diff::Vector{Float64},
-        s1_phase::Vector{Float64},
-        s2_phase::Vector{Float64},
-    }
+    s1::AbstractVector,
+    s2::AbstractVector
+)::@NamedTuple{
+    ispcv::Float64,
+    ispca::Float64,
+    sd::Vector{Float64},
+    phd::Vector{Float64},
+    s1ph::Vector{Float64},
+    s2ph::Vector{Float64}
+}
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
-    _, _, _, s1_phase = htransform(s1)
-    _, _, _, s2_phase = htransform(s2)
+    h1 = htransform(s1)
+    h2 = htransform(s2)
+    s1ph = h1.ph
+    s2ph = h2.ph
 
-    s_diff = s2 - s1
-    ph_diff = s2_phase - s1_phase
+    # signal and phase differences
+    sd  = s1 .- s2
+    phd = s1ph .- s2ph
 
-    ispc_val = abs(mean(exp.(1im .* ph_diff)))
-    ispc_ang = DSP.angle(mean(exp.(1im .* ph_diff)))
+    # compute the mean complex phase difference once and reuse it for both the magnitude (ispcv) and angle (ispca)
+    mcphd = mean(Base.cis.(phd)) # cis.(phd) = exp.(im .* phd)
+    ispcv = abs(mcphd)
+    ispca = DSP.angle(mcphd)
 
     return (
-        ispc_val = ispc_val,
-        ispc_ang = ispc_ang,
-        s_diff = s_diff,
-        ph_diff = ph_diff,
-        s1_phase = s1_phase,
-        s2_phase = s2_phase,
+        ispcv = ispcv,
+        ispca = ispca,
+        sd = sd,
+        phd = phd,
+        s1ph = s1ph,
+        s2ph = s2ph,
     )
 
 end
@@ -57,127 +67,155 @@ end
 """
     ispc(obj; <keyword arguments>)
 
-Calculate ISPCs (Inter-Site-Phase Clustering).
+Calculate ISPC (Inter-Site Phase Clustering) for all channel pairs. ISPC measures the consistency of the phase difference between two signals across trials (or, here, across time within a single trial):
+
+ISPC value = |mean( exp(i·Δφ) )| (0 = no clustering, 1 = perfect lock)
+
+ISPC angle = angle( mean( exp(i·Δφ) ) ) (preferred phase difference)
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
 Named tuple containing:
 
-  - `ispc_val::Array{Float64, 3}`: ISPC value matrices over epochs
-  - `ispc_ang::Array{Float64, 3}`: ISPC angle matrices over epochs
+- `ispcv::Array{Float64, 3}`: ISPC value matrices, shape `(channels, channels, epochs)`
+- `ispca::Array{Float64, 3}`: ISPC angle matrices, shape `(channels, channels, epochs)`
 """
 function ispc(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-    )::@NamedTuple{ispc_val::Array{Float64, 3}, ispc_ang::Array{Float64, 3}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}
+)::@NamedTuple{
+    ispcv::Array{Float64, 3},
+    ispca::Array{Float64, 3}
+}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+
+    # number of channels
     ch_n = length(ch)
+    # number of epochs
     ep_n = nepochs(obj)
 
-    ispc_val = zeros(ch_n, ch_n, ep_n)
-    ispc_ang = zeros(ch_n, ch_n, ep_n)
+    # pre-allocate symmetric output: channels × channels × epochs
+    # only the lower triangle is computed
+    ispcv = zeros(ch_n, ch_n, ep_n)
+    ispca = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                ispc_val[ch_idx1, ch_idx2, ep_idx], ispc_ang[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views ispc(
-                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
+    @inbounds Threads.@threads for ep_idx in 1:ep_n
+        for ch_idx1 in 1:ch_n
+            for ch_idx2 in 1:ch_idx1 - 1
+                ispc_data = ispc(
+                    @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                    @view(obj.data[ch[ch_idx2], :, ep_idx])
                 )
+                ispcv[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispcv
+                ispca[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispca
             end
         end
     end
 
     # copy lower triangle to upper triangle
-    ispc_val = _copy_lt2ut(ispc_val)
-    ispc_ang = _copy_lt2ut(ispc_ang)
+    ispcv = _copy_lt2ut(ispcv)
+    ispca = _copy_lt2ut(ispca)
 
-    return (ispc_val = ispc_val, ispc_ang = ispc_ang)
+    return (ispcv = ispcv, ispca = ispca)
 
 end
 
 """
     ispc(obj1, obj2; <keyword arguments>)
 
-Calculate ISPC (Inter-Site-Phase Clustering).
+Calculate ISPC (Inter-Site Phase Clustering) between channel-matched pairs.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `obj1::NeuroAnalyzer.NEURO`
+- `obj2::NeuroAnalyzer.NEURO`
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
 Named tuple containing:
 
-  - `ispc_val::Matrix{Float64}`: ISPC value
-  - `ispc_ang::Matrix{Float64}`: ISPC angle
-  - `s_diff::Array{Float64, 3}`: signal difference (s2 - s1)
-  - `ph_diff::Array{Float64, 3}`: phase difference (s2 - s1)
-  - `s1_phase::Array{Float64, 3}`: signal 1 phase
-  - `s2_phase::Array{Float64, 3}`: signal 2 phase
+- `ispcv::Matrix{Float64}`: ISPC value, shape `(channels, epochs)`
+- `ispca::Matrix{Float64}`: ISPC angle, shape `(channels, epochs)`
+- `sd::Array{Float64, 3}`: signal difference (s1 - s2), shape `(channels, samples, epochs)`
+- `phd::Array{Float64, 3}`: phase difference (s1 - s2), shape `(channels, samples, epochs)`
+- `s1ph::Array{Float64, 3}`: signal 1 phases, shape `(channels, samples, epochs)`
+- `s2ph::Array{Float64, 3}`: signal 2 phases, shape `(channels, samples, epochs)`
 """
 function ispc(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::@NamedTuple{
-        ispc_val::Matrix{Float64},
-        ispc_ang::Matrix{Float64},
-        s_diff::Array{Float64, 3},
-        ph_diff::Array{Float64, 3},
-        s1_phase::Array{Float64, 3},
-        s2_phase::Array{Float64, 3},
-    }
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
+)::@NamedTuple{
+    ispcv::Matrix{Float64},
+    ispca::Matrix{Float64},
+    sd::Array{Float64, 3},
+    phd::Array{Float64, 3},
+    s1ph::Array{Float64, 3},
+    s2ph::Array{Float64, 3}
+}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
+    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
 
+    # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
-
+    # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
+    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
+    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    ep_n = length(ep1)
+    # number of channels
     ch_n = length(ch1)
+    # number of epochs
+    ep_n = length(ep1)
 
-    ispc_val = zeros(ch_n, ep_n)
-    ispc_ang = zeros(ch_n, ep_n)
-    s_diff = zeros(ch_n, epoch_len(obj1), ep_n)
-    ph_diff = zeros(ch_n, epoch_len(obj1), ep_n)
-    s1_phase = zeros(ch_n, epoch_len(obj1), ep_n)
-    s2_phase = zeros(ch_n, epoch_len(obj1), ep_n)
+    # pre-allocate output
+    ispcv = zeros(ch_n, ep_n)
+    ispca = zeros(ch_n, ep_n)
+    sd = zeros(ch_n, epoch_len(obj1), ep_n)
+    phd = zeros(ch_n, epoch_len(obj1), ep_n)
+    s1ph = zeros(ch_n, epoch_len(obj1), ep_n)
+    s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            ispc_val[ch_idx, ep_idx], ispc_ang[ch_idx, ep_idx], s_diff[ch_idx, :, ep_idx], ph_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views ispc(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
-            )
-        end
+    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        ispc_data = ispc(
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+        )
+        ispcv[ch_idx, ep_idx] = ispc_data.ispcv
+        ispca[ch_idx, ep_idx] = ispc_data.ispca
+        sd[ch_idx, :, ep_idx] = ispc_data.sd
+        phd[ch_idx, :, ep_idx] = ispc_data.phd
+        s1ph[ch_idx, :, ep_idx] = ispc_data.s1ph
+        s2ph[ch_idx, :, ep_idx] = ispc_data.s2ph
     end
 
     return (
-        ispc_val = ispc_val,
-        ispc_ang = ispc_ang,
-        s_diff = s_diff,
-        ph_diff = ph_diff,
-        s1_phase = s1_phase,
-        s2_phase = s2_phase,
+        ispcv = ispcv,
+        ispca = ispca,
+        sd = sd,
+        phd = phd,
+        s1ph = s1ph,
+        s2ph = s2ph
     )
 
 end

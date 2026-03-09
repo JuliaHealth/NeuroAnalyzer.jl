@@ -14,16 +14,16 @@ Calculate the absolute power in a frequency band by:
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
+- `method::Symbol=:welch`: PSD method:
   - `:welch`: Welch's periodogram
   - `:fft`: fast Fourier transform
   - `:mt`: multi-tapered periodogram
-  - `:stft`: short time Fourier transform
+  - `:stft`: short-time Fourier transform
   - `:mw`: Morlet wavelet convolution
   - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=16`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
@@ -51,7 +51,7 @@ function band_power(
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # compute the power spectral density over the full frequency range
-    result = psd(
+    psd_data = psd(
         s,
         fs = fs,
         db = false,
@@ -64,8 +64,8 @@ function band_power(
         gw = gw,
         demean = demean,
     )
-    pow = result.p
-    frq = result.f
+    pow = psd_data.p
+    frq = psd_data.f
 
     # locate the PSD bin indices that bracket the requested frequency band
     f1_idx = vsearch(flim[1], frq)
@@ -91,16 +91,16 @@ Calculate absolute band power between two frequencies.
 - `s::AbstractArray`: signal array (channels × samples × epochs)
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
+- `method::Symbol=:welch`: PSD method:
   - `:welch`: Welch's periodogram
   - `:fft`: fast Fourier transform
   - `:mt`: multi-tapered periodogram
-  - `:stft`: short time Fourier transform
+  - `:stft`: short-time Fourier transform
   - `:mw`: Morlet wavelet convolution
   - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=16`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
@@ -167,18 +167,18 @@ Calculate absolute band power between two frequencies.
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-  - `method::Symbol=:welch`: method used to calculate PSD:
+  - `method::Symbol=:welch`: PSD method:
       + `:welch`: Welch's periodogram
       + `:fft`: fast Fourier transform
       + `:mt`: multi-tapered periodogram
-      + `:stft`: short time Fourier transform
+      + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
   - `nt::Int64=16`: number of Slepian tapers
-  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
   - `gw::Real=5`: Gaussian width in Hz
   - `demean::Bool=true`: subtract DC before calculating PSD
 
@@ -204,7 +204,7 @@ function band_power(
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     _log_off()
-    result = band_power(
+    power_data = band_power(
                     @view(obj.data[ch, :, :]),
                     fs = sr(obj),
                     flim = flim,
@@ -219,6 +219,6 @@ function band_power(
                 )
     _log_on()
 
-    return result
+    return power_data
 
 end

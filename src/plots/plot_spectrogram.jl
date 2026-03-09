@@ -12,7 +12,7 @@ Plot single-channel spectrogram.
   - `sf::Vector{<:Real}`: frequencies
   - `sp::Matrix{Float64}`: powers
   - `db::Bool=true`: whether powers are normalized to dB
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
@@ -145,7 +145,7 @@ Plot multiple-channel spectrogram.
   - `sp::Matrix{Float64}`: powers
   - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
   - `db::Bool=true`: whether powers are normalized to dB
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
@@ -289,7 +289,7 @@ Plot topographical map of spectrograms.
   - `smooth::Bool=false`: smooth the image using Gaussian blur
   - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
   - `mono::Bool=false`: unused, for compatibility only
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
   - `head::Bool=true`: plot head shape
 
@@ -522,13 +522,13 @@ Plots spectrogram.
       + `:cwt`: continuous wavelet transformation
       + `:hht`: Hilbert-Huang transform
   - `nt::Int64=16`: number of Slepian tapers
-  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
   - `gw::Real=10`: Gaussian width in Hz
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
   - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
   - `xlabel::String="default"`: x-axis label
   - `ylabel::String="default"`: y-axis label

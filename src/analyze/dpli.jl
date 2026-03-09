@@ -147,15 +147,15 @@ function dpli(
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = dpli(
+        dpli_data = dpli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
         )
-        pv[ch_idx, ep_idx] = result.pv
-        sd[ch_idx, :, ep_idx] = result.sd
-        phd[ch_idx, :, ep_idx] = result.phd
-        s1ph[ch_idx, :, ep_idx] = result.s1ph
-        s2ph[ch_idx, :, ep_idx] = result.s2ph
+        pv[ch_idx, ep_idx] = dpli_data.pv
+        sd[ch_idx, :, ep_idx] = dpli_data.sd
+        phd[ch_idx, :, ep_idx] = dpli_data.phd
+        s1ph[ch_idx, :, ep_idx] = dpli_data.s1ph
+        s2ph[ch_idx, :, ep_idx] = dpli_data.s2ph
     end
 
     return (pv = pv, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)

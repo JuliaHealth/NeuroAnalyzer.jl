@@ -116,11 +116,11 @@ function diss(
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
 
-    result = diss(
+    diss_data = diss(
         @view(obj1.data[ch1, :, 1]),
         @view(obj2.data[ch2, :, 1])
     )
 
-    return result
+    return diss_data
 
 end

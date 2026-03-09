@@ -68,8 +68,8 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     # pilot call to determine the frequency vector length — uses the first
     # channel pair
     # f is independent of signal values.
-    result = cph(@view(s[1, :, 1]), @view(s[1, :, 1]), fs = fs)
-    f = result.f
+    cph_data = cph(@view(s[1, :, 1]), @view(s[1, :, 1]), fs = fs)
+    f = cph_data.f
 
     # pre-allocate
     ph = zeros(ch_n, ch_n, length(f), ep_n)
@@ -141,8 +141,8 @@ function cph(
 
     # pilot call to determine the frequency vector length — uses the first channel pair
     # f is independent of signal values.
-    result = cph(@view(s1[1, :, 1]), @view(s2[1, :, 1]), fs = fs)
-    f = result.f
+    cph_data = cph(@view(s1[1, :, 1]), @view(s2[1, :, 1]), fs = fs)
+    f = cph_data.f
 
     # pre-allocate output
     ph = zeros(ch_n, ch_n, length(f), ep_n)
@@ -150,11 +150,11 @@ function cph(
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ph[ch_idx, :, ep_idx], _ = cph(
+        ph[ch_idx, :, ep_idx] = cph(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx]),
             fs = fs,
-        )
+        ).ph
     end
 
     return (ph = ph, f = f)
@@ -186,9 +186,9 @@ function cph(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    result = cph(@view(obj.data[ch, :, :]), fs = sr(obj))
+    cph_data = cph(@view(obj.data[ch, :, :]), fs = sr(obj))
 
-    return result
+    return cph_data
 
 end
 
@@ -239,12 +239,12 @@ function cph(
     @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    result = cph(
+    cph_data = cph(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
         fs = sr(obj1),
     )
 
-    return result
+    return cph_data
 
 end

@@ -15,13 +15,13 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 - `method::Symbol=:mt`: method used to calculate CPSD:
   - `:mt`: multi-tapered cross-power spectra
   - `:fft`: fast Fourier transformation
-  - `:stft`: short time Fourier transformation
+  - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -113,8 +113,7 @@ function cpsd(
         # average cross-power over all segments
         pxy /= size(chunks_idx, 1)
 
-        result = freqs(nextfastfft(wlen), fs)
-        f = result.f
+        f = freqs(nextfastfft(wlen), fs)[1]
 
         # trim to the requested frequency band
         f1_idx = vsearch(flim[1], f)
@@ -167,13 +166,13 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 - `method::Symbol=:mt`: method used to calculate CPSD:
   - `:mt`: multi-tapered cross-power spectra
   - `:fft`: fast Fourier transformation
-  - `:stft`: short time Fourier transformation
+  - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -207,7 +206,7 @@ function cpsd(
     ep_n = size(s1, 3)
 
     # pre-compute the frequency vector with a single pilot call on the first channel/epoch pair
-    result = cpsd(
+    cpsd_data = cpsd(
         @view(s1[1, :, 1]),
         @view(s2[1, :, 1]);
         method = method,
@@ -219,7 +218,7 @@ function cpsd(
         woverlap = woverlap,
         w = w,
     )
-    f = result.f
+    f = cpsd_data.f
     
     # pre-allocate output
     pxy = zeros(ComplexF64, ch_n, length(f), ep_n)
@@ -263,12 +262,12 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 - `method::Symbol=:mt`: method used to calculate CPSD:
   - `:mt`: multi-tapered cross-power spectra
   - `:fft`: fast Fourier transformation
-  - `:stft`: short time Fourier transformation
+  - `:stft`: short-time Fourier transformation
 - `flim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj1)`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -311,7 +310,7 @@ function cpsd(
     @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    result = cpsd(
+    cpsd_data = cpsd(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
         method = method,
@@ -324,6 +323,6 @@ function cpsd(
         w = w,
     )
 
-    return result
+    return cpsd_data
 
 end

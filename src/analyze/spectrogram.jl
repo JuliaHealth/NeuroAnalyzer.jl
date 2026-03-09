@@ -14,12 +14,12 @@ Calculate spectrogram. Default method is short time Fourier transform.
   - `s::AbstractVector`
   - `fs::Int64`: sampling frequency
   - `db::Bool=true`: normalize powers to dB
-  - `method::Symbol=:stft`: method used to calculate PSD:
-      + `:stft`: short time Fourier transform
+  - `method::Symbol=:stft`: PSD method:
+      + `:stft`: short-time Fourier transform
       + `:mt`: multi-tapered periodogram
   - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=fs`: window length, default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -83,12 +83,12 @@ Calculate spectrogram. Default method is short time Fourier transform.
   - `s::AbstractMatrix`
   - `fs::Int64`: sampling frequency
   - `db::Bool=true`: normalize powers to dB
-  - `method::Symbol=:stft`: method used to calculate PSD:
-      + `:stft`: short time Fourier transform
+  - `method::Symbol=:stft`: PSD method:
+      + `:stft`: short-time Fourier transform
       + `:mt`: multi-tapered periodogram
   - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=fs`: window length, default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -145,10 +145,10 @@ Calculate spectrogram. Default method is short time Fourier transform.
   - `db::Bool=true`: normalize powers to dB
   - `nt::Int64=16`: number of Slepian tapers
   - `gw::Real=10`: Gaussian width in Hz
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
   - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
 
 # Returns

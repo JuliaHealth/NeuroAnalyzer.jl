@@ -881,7 +881,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
   - `sf::AbstractVector`: ERO frequencies
   - `st::AbstractVector`: ERO time
   - `db::Bool=true`: whether ERO powers are normalized to dB
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
   - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
   - `xlabel::String="default"`
@@ -1120,7 +1120,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
   - `ylabel::String="default"`
   - `title::String="default"`
   - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `units::String="μV"`
   - `mono::Bool=false`: use color or gray palette
 

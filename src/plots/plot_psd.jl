@@ -15,7 +15,7 @@ Plot PSD (power spectrum density).
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
 
 # Returns
 
@@ -97,7 +97,7 @@ Plot multi-channel PSD (power spectrum density).
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
   - `mono::Bool=false`: use color or gray palette
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `avg::Bool=false`: if true, plot averaged PSD
   - `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
   - `leg::Bool=true`: if true, add legend with channel labels
@@ -225,7 +225,7 @@ Plot 3-d PSD (power spectrum density).
   - `zlabel::String=""`: y-axis label
   - `title::String=""`: plot title
   - `mono::Bool=false`: use color or gray palette
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
 
 # Returns
@@ -369,7 +369,7 @@ Plot topographical map of PSDs (power spectrum density).
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
   - `head::Bool=true`: plot head shape
 
@@ -573,23 +573,23 @@ Plot PSD (power spectrum density).
   - `ep::Int64=0`: epoch to display
   - `ch::Union{String, Vector{String}, Regex}=datatype(obj)`: channel name or list of channel names
   - `db::Bool=true`: normalize powers to dB
-  - `method::Symbol=:welch`: method used to calculate PSD:
+  - `method::Symbol=:welch`: PSD method:
       + `:welch`: Welch's periodogram
       + `:fft`: fast Fourier transform
       + `:mt`: multi-taper periodogram
-      + `:stft`: short time Fourier transform
+      + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
   - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=fs`: window length (in samples), default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
   - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
   - `gw::Real=5`: Gaussian width in Hz
   - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
   - `demean::Bool=true`: subtract DC before calculating PSD
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `xlabel::String="default"`: x-axis label
   - `ylabel::String="default"`: y-axis label
   - `zlabel::String="default"`: z-axis label for 3-d plots

@@ -15,7 +15,7 @@ Plot PHSD (phase spectral density).
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
 
 # Returns
 
@@ -91,7 +91,7 @@ Plot multi-channel PHSD (phase spectral density).
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
   - `mono::Bool=false`: use color or gray palette
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `avg::Bool=false`: if true, plot averaged PHSD
   - `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PHSDs
   - `leg::Bool=true`: if true, add legend with channel labels
@@ -213,7 +213,7 @@ Plot 3-d PHSD (phase phectral density).
   - `zlabel::String=""`: y-axis label
   - `title::String=""`: plot title
   - `mono::Bool=false`: use color or gray palette
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
 
 # Returns
@@ -355,7 +355,7 @@ Plot topographical map of PHSDs (phase spectral density).
   - `xlabel::String=""`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
   - `head::Bool=true`: plot head shape
 
@@ -552,7 +552,7 @@ Plot PHSD (phase spectral density).
   - `ep::Int64=0`: epoch to display
   - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
   - `ylabel::String="default"`: y-axis label, default is Phase [rad]
   - `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]

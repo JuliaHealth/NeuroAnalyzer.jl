@@ -13,7 +13,7 @@ Plot coherence.
   - `xlabel::String="Frequency [Hz]"`: x-axis label
   - `ylabel::String="Coherence"`: y-axis label
   - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `mono::Bool=false`: use color or gray palette
 
 # Returns
@@ -91,7 +91,7 @@ Plot multi-channel coherence.
   - `xlabel::String="Frequency [Hz]"`: x-axis label
   - `ylabel::String=""`: y-axis label
   - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `avg::Bool=false`: if true, plot averaged PSD
   - `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
   - `leg::Bool=true`: if true, add legend with channel labels

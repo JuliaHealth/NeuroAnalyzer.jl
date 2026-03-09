@@ -122,16 +122,16 @@ function ftransform(
 
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = ftransform(
+        ftransform_data = ftransform(
             @view(s[ch_idx, :, ep_idx]),
             pad = pad,
             db = db,
             nf = nf
         )
-        c[ch_idx, :, ep_idx]  = result.c
-        a[ch_idx, :, ep_idx]  = result.a
-        p[ch_idx, :, ep_idx]  = result.p
-        ph[ch_idx, :, ep_idx] = result.ph
+        c[ch_idx, :, ep_idx]  = ftransform_data.c
+        a[ch_idx, :, ep_idx]  = ftransform_data.a
+        p[ch_idx, :, ep_idx]  = ftransform_data.p
+        ph[ch_idx, :, ep_idx] = ftransform_data.ph
     end
 
     return (c = c, a = a, p = p, ph = ph)
@@ -222,14 +222,14 @@ function htransform(
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = htransform(
+        htransform_data = htransform(
             @view(s[ch_idx, :, ep_idx]),
             db = db
         )
-        c[ch_idx, :, ep_idx]  = result.c
-        a[ch_idx, :, ep_idx]  = result.a
-        p[ch_idx, :, ep_idx]  = result.p
-        ph[ch_idx, :, ep_idx] = result.ph
+        c[ch_idx, :, ep_idx]  = htransform_data.c
+        a[ch_idx, :, ep_idx]  = htransform_data.a
+        p[ch_idx, :, ep_idx]  = htransform_data.p
+        ph[ch_idx, :, ep_idx] = htransform_data.ph
     end
 
     return (c = c, a = a, p = p, ph = ph)

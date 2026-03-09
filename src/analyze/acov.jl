@@ -31,7 +31,7 @@ function acov(
     # reject any method symbol not in the supported set
     _check_var(method, [:sum, :cov, :stat], "method")
 
-    # pre-allocate result for lags 0 … l (negative lags added later)
+    # pre-allocate output for lags 0 … l (negative lags added later)
     ac = zeros(l + 1)
 
     if method === :sum

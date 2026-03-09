@@ -17,13 +17,13 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `method::Symbol=:mt`: method used to calculate CPSD:
   - `:mt`: multi-tapered cross-power spectra
   - `:fft`: fast Fourier transformation
-  - `:stft`: short time Fourier transformation
+  - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=16`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -108,13 +108,13 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `method::Symbol=:mt`: method used to calculate CPSD:
   - `:mt`: multi-tapered cross-power spectra
   - `:fft`: fast Fourier transformation
-  - `:stft`: short time Fourier transformation
+  - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=16`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -148,7 +148,7 @@ function coherence(
     ep_n = size(s1, 3)
 
     # pre-compute the frequency vector with a single pilot call on the first channel/epoch pair
-    result = NeuroAnalyzer.coherence(
+    coh_data = NeuroAnalyzer.coherence(
         @view(s1[1, :, 1]),
         @view(s2[1, :, 1]),
         method = method,
@@ -160,7 +160,7 @@ function coherence(
         woverlap = woverlap,
         w = w,
     )
-    f = result.f
+    f = coh_data.f
 
     # pre-allocate outputs
     coh = zeros(ComplexF64, ch_n, length(f), ep_n)
@@ -170,7 +170,7 @@ function coherence(
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = coherence(
+        coh_data = coherence(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx]),
             method = method,
@@ -182,9 +182,9 @@ function coherence(
             woverlap = woverlap,
             w = w,
         )
-        coh[ch_idx, :, ep_idx] = result.coh
-        imcoh[ch_idx, :, ep_idx] = result.imcoh
-        msc[ch_idx, :, ep_idx] = result.msc
+        coh[ch_idx, :, ep_idx] = coh_data.coh
+        imcoh[ch_idx, :, ep_idx] = coh_data.imcoh
+        msc[ch_idx, :, ep_idx] = coh_data.msc
     end
 
     return (coh = coh, imcoh = imcoh, msc = msc, f = f)
@@ -211,13 +211,13 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `method::Symbol=:mt`: method used to calculate CPSD:
   - `:mt`: multi-tapered cross-power spectra
   - `:fft`: fast Fourier transformation
-  - `:stft`: short time Fourier transformation
+  - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=16`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -260,7 +260,7 @@ function coherence(
     @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    result = coherence(
+    coh_data = coherence(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
         method = method,
@@ -273,6 +273,6 @@ function coherence(
         w = w,
     )
 
-    return result
+    return coh_data
 
 end

@@ -126,13 +126,13 @@ function ged(
     ress_norm = zeros(ch_n, ep_n)
 
     @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
-        result = ged(
+        ged_data = ged(
             @view(obj1.data[ch1, :, ep1[ep_idx]]),
             @view(obj2.data[ch2, :, ep2[ep_idx]]),
         )
-        sged[:, :, ep_idx] = result.sged
-        ress[:, ep_idx] = result.ress
-        ress_norm[:, ep_idx] = result.ress_norm
+        sged[:, :, ep_idx] = ged_data.sged
+        ress[:, ep_idx] = ged_data.ress
+        ress_norm[:, ep_idx] = ged_data.ress_norm
     end
 
     return (sged = sged, ress = ress, ress_norm = ress_norm)

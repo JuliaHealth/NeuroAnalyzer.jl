@@ -120,12 +120,12 @@ function entropy(
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = entropy(@view(s[ch_idx, :, ep_idx]))
-        ent[ch_idx, ep_idx]   = result.ent
-        shent[ch_idx, ep_idx] = result.shent
-        leent[ch_idx, ep_idx] = result.leent
-        sent[ch_idx, ep_idx]  = result.sent
-        nsent[ch_idx, ep_idx] = result.nsent
+        entropy_data = entropy(@view(s[ch_idx, :, ep_idx]))
+        ent[ch_idx, ep_idx]   = entropy_data.ent
+        shent[ch_idx, ep_idx] = entropy_data.shent
+        leent[ch_idx, ep_idx] = entropy_data.leent
+        sent[ch_idx, ep_idx]  = entropy_data.sent
+        nsent[ch_idx, ep_idx] = entropy_data.nsent
     end
 
     return (ent = ent, shent = shent, leent = leent, sent = sent, nsent = nsent)
@@ -161,9 +161,9 @@ function entropy(
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    result = entropy(@view(obj.data[ch, :, :]))
+    entropy_data = entropy(@view(obj.data[ch, :, :]))
 
-    return result
+    return entropy_data
 
 end
 

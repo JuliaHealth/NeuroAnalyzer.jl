@@ -74,10 +74,10 @@ function hjorth(s::AbstractArray)::@NamedTuple{h_act::Matrix{Float64}, h_mob::Ma
 
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = hjorth(@view(s[ch_idx, :, ep_idx]))
-        h_act[ch_idx, ep_idx]  = result.h_act
-        h_mob[ch_idx, ep_idx]  = result.h_mob
-        h_comp[ch_idx, ep_idx] = result.h_comp
+        hjorth_data = hjorth(@view(s[ch_idx, :, ep_idx]))
+        h_act[ch_idx, ep_idx]  = hjorth_data.h_act
+        h_mob[ch_idx, ep_idx]  = hjorth_data.h_mob
+        h_comp[ch_idx, ep_idx] = hjorth_data.h_comp
     end
 
     return (h_act = h_act, h_mob = h_mob, h_comp = h_comp)

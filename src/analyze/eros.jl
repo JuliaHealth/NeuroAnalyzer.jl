@@ -30,12 +30,12 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
   - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length, default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=5`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns

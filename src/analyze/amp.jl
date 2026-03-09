@@ -104,15 +104,15 @@ function amp(
 
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = amp(@view(s[ch_idx, :, ep_idx]))
-        p[ch_idx, ep_idx] = result.p
-        r[ch_idx, ep_idx] = result.r
-        p2p[ch_idx, ep_idx] = result.p2p
-        semi_p2p[ch_idx, ep_idx] = result.semi_p2p
-        msa[ch_idx, ep_idx] = result.msa
-        rmsa[ch_idx, ep_idx] = result.rmsa
-        nrg[ch_idx, ep_idx] = result.es
-        rmsq[ch_idx, ep_idx] = result.rmsq
+        amp_data = amp(@view(s[ch_idx, :, ep_idx]))
+        p[ch_idx, ep_idx] = amp_data.p
+        r[ch_idx, ep_idx] = amp_data.r
+        p2p[ch_idx, ep_idx] = amp_data.p2p
+        semi_p2p[ch_idx, ep_idx] = amp_data.semi_p2p
+        msa[ch_idx, ep_idx] = amp_data.msa
+        rmsa[ch_idx, ep_idx] = amp_data.rmsa
+        nrg[ch_idx, ep_idx] = amp_data.es
+        rmsq[ch_idx, ep_idx] = amp_data.rmsq
     end
 
     return (p = p, r = r, p2p = p2p, semi_p2p = semi_p2p, msa = msa, rmsa = rmsa, es = es, rmsq = rmsq)

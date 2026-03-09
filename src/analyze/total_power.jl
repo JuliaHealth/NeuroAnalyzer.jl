@@ -9,16 +9,16 @@ Calculate total power.
 
   - `s::AbstractVector`
   - `fs::Int64`: sampling rate
-  - `method::Symbol=:welch`: method used to calculate PSD:
+  - `method::Symbol=:welch`: PSD method:
       + `:welch`: Welch's periodogram
       + `:fft`: fast Fourier transform
       + `:mt`: multi-tapered periodogram
-      + `:stft`: short time Fourier transform
+      + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
   - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=fs`: window length (in samples), default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
@@ -72,16 +72,16 @@ Calculate total power.
 
   - `s::AbstractArray`
   - `fs::Int64`: sampling rate
-  - `method::Symbol=:welch`: method used to calculate PSD:
+  - `method::Symbol=:welch`: PSD method:
       + `:welch`: Welch's periodogram
       + `:fft`: fast Fourier transform
       + `:mt`: multi-tapered periodogram
-      + `:stft`: short time Fourier transform
+      + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
   - `nt::Int64=16`: number of Slepian tapers
   - `wlen::Int64=fs`: window length (in samples), default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
@@ -139,18 +139,18 @@ Calculate total power.
 
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `method::Symbol=:welch`: method used to calculate PSD:
+  - `method::Symbol=:welch`: PSD method:
       + `:welch`: Welch's periodogram
       + `:fft`: fast Fourier transform
       + `:mt`: multi-tapered periodogram
-      + `:stft`: short time Fourier transform
+      + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
   - `nt::Int64=16`: number of Slepian tapers
-  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
   - `gw::Real=5`: Gaussian width in Hz
   - `demean::Bool=true`: subtract DC before calculating PSD
 

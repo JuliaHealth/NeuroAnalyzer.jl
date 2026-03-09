@@ -97,12 +97,12 @@ Splits vector into pieces.
 
 # Argument
 
-  - `x::AbstractVector`
-  - `n::Int64`: length of one piece
+- `x::AbstractVector`
+- `n::Int64`: length of one piece
 
 # Returns
 
-  - `x::Vector{AbstractVector}`
+- `x::Vector{AbstractVector}`
 """
 function vsplit(x::AbstractVector, n::Int64 = 1)::Vector{AbstractVector}
 

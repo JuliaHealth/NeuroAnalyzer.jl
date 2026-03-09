@@ -397,17 +397,17 @@ Calculate power spectrum (in dB) envelope.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `method::Symbol=:welch`: method used to calculate PSD:
+- `method::Symbol=:welch`: PSD method:
   - `:welch`: Welch's periodogram
   - `:fft`: fast Fourier transform
   - `:mt`: multi-tapered periodogram
-  - `:stft`: short time Fourier transform
+  - `:stft`: short-time Fourier transform
   - `:mw`: Morlet wavelet convolution
 - `nt::Int64=16`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
 - `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
@@ -442,7 +442,7 @@ function penv(
 
     # pilot call to determine the frequency vector length
     _log_off()
-    result = psd(
+    psd_data = psd(
         @view(obj.data[ch[1], :, 1]),
         fs = fs,
         method = method,
@@ -453,7 +453,7 @@ function penv(
         ncyc = ncyc,
         demean = demean,
     )
-    f = result.f
+    f = psd_data.f
     _log_on()
 
     # pre-allocate output
@@ -462,7 +462,7 @@ function penv(
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = psd(
+        psd_data = psd(
             @view(obj.data[ch[ch_idx], :, ep_idx]),
             fs = fs,
             db = true,
@@ -474,7 +474,7 @@ function penv(
             ncyc = ncyc,
             demean = demean,
         )
-        e[ch_idx, :, ep_idx] = env_up(result.p, f, d = d)
+        e[ch_idx, :, ep_idx] = env_up(psd_data.p, f, d = d)
     end
     _log_on()
 
@@ -493,17 +493,17 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `method::Symbol=:welch`: method used to calculate PSD:
+- `method::Symbol=:welch`: PSD method:
   - `:welch`: Welch's periodogram
   - `:fft`: fast Fourier transform
   - `:mt`: multi-tapered periodogram
-  - `:stft`: short time Fourier transform
+  - `:stft`: short-time Fourier transform
   - `:mw`: Morlet wavelet convolution
 - `nt::Int64=16`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
 - `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
@@ -623,17 +623,17 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `method::Symbol=:welch`: method used to calculate PSD:
+- `method::Symbol=:welch`: PSD method:
   - `:welch`: Welch's periodogram
   - `:fft`: fast Fourier transform
   - `:mt`: multi-tapered periodogram
-  - `:stft`: short time Fourier transform
+  - `:stft`: short-time Fourier transform
   - `:mw`: Morlet wavelet convolution
 - `nt::Int64=16`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
 - `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
@@ -772,9 +772,9 @@ Calculate spectral envelope (dominant frequency over time).
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=16`: number of Slepian tapers
 - `gw::Real=5`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -958,9 +958,9 @@ Calculate spectral envelope: mean and 95% CI.
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=16`: number of Slepian tapers
 - `gw::Real=5`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -1114,9 +1114,9 @@ Calculate spectral envelope: median and 95% CI.
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=16`: number of Slepian tapers
 - `gw::Real=5`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
 - `w::Bool=true`: if true, apply Hanning window
 
