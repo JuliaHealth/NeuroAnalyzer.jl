@@ -104,7 +104,7 @@ function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
     # number of channels
     ch_n = size(s, 1)
-    # number of vectors
+    # number of epochs
     ep_n = size(s, 3)
 
     # pre-allocate output

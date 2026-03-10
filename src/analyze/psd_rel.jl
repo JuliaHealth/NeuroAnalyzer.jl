@@ -18,11 +18,11 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
       + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
-  - `nt::Int64=16`: number of Slepian tapers
-  - `wlen::Int64=fs`: window length (in samples), default is 1 second
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
   - `demean::Bool=true`: subtract DC before calculating PSD
 
@@ -115,11 +115,11 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
       + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
-  - `nt::Int64=16`: number of Slepian tapers
-  - `wlen::Int64=fs`: window length (in samples), default is 1 second
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
   - `demean::Bool=true`: subtract DC before calculating PSD
 
@@ -203,11 +203,11 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
       + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
-  - `nt::Int64=16`: number of Slepian tapers
-  - `wlen::Int64=fs`: window length (in samples), default is 1 second
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `gw::Real=5`: Gaussian width in Hz
   - `demean::Bool=true`: subtract DC before calculating PSD
 
@@ -294,11 +294,11 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
       + `:stft`: short-time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
-  - `nt::Int64=16`: number of Slepian tapers
+  - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
   - `gw::Real=5`: Gaussian width in Hz
   - `demean::Bool=true`: subtract DC before calculating PSD
 

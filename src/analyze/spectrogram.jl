@@ -17,7 +17,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
   - `method::Symbol=:stft`: PSD method:
       + `:stft`: short-time Fourier transform
       + `:mt`: multi-tapered periodogram
-  - `nt::Int64=16`: number of Slepian tapers
+  - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
@@ -86,7 +86,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
   - `method::Symbol=:stft`: PSD method:
       + `:stft`: short-time Fourier transform
       + `:mt`: multi-tapered periodogram
-  - `nt::Int64=16`: number of Slepian tapers
+  - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
@@ -143,9 +143,9 @@ Calculate spectrogram. Default method is short time Fourier transform.
   - `:cwt`: continuous wavelet transformation
   - `:hht`: Hilbert-Huang transform
 - `db::Bool=true`: normalize powers to dB
-- `nt::Int64=16`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers
 - `gw::Real=10`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -275,7 +275,7 @@ Calculate spectrogram using wavelet convolution.
   - `pad::Int64`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `fs::Int64`: sampling rate
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
@@ -356,7 +356,7 @@ Calculate spectrogram using wavelet convolution.
   - `pad::Int64`: number of zeros to append
   - `db::Bool=true`: normalize powers to dB
   - `fs::Int64`: sampling rate
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
   - `w::Bool=true`: if true, apply Hanning window
 
 # Returns

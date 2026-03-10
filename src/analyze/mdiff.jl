@@ -139,7 +139,7 @@ function mdiff(
 
     # number of channels
     ch_n = size(s, 1)
-    # number of vectors
+    # number of epochs
     ep_n = size(s, 3)
 
     # pre-allocate outputs

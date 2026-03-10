@@ -20,7 +20,7 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -171,7 +171,7 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -266,7 +266,7 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 - `flim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=sr(obj1)`: window length (in samples), default is 1 second
+- `wlen::Int64=sr(obj1)`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if true, apply Hanning window
 

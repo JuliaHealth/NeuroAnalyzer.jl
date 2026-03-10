@@ -12,7 +12,7 @@ Perform wavelet band-pass filtering.
   - `pad::Int64`: number of zeros to append
   - `frq::Real`: filter frequency
   - `fs::Int64`: sampling rate
-  - `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  - `ncyc::Int64=6`: Morlet wavelet cycles
 
 # Returns
 
@@ -47,7 +47,7 @@ Perform wavelet band-pass filtering.
   - `pad::Int64`: pad the `signal` with `pad` zeros
   - `frq::Real`: filter frequency
   - `fs::Int64`: sampling rate
-  - `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  - `ncyc::Int64=6`: Morlet wavelet cycles
 
 # Returns
 
@@ -81,7 +81,7 @@ Perform wavelet band-pass filtering.
   - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pad::Int64`: pad the `signal` with `pad` zeros
   - `frq::Real`: filter frequency
-  - `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  - `ncyc::Int64=6`: Morlet wavelet cycles
 
 # Returns
 
@@ -111,7 +111,7 @@ Perform wavelet band-pass filtering.
   - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `pad::Int64`: pad the `signal` with `pad` zeros
   - `frq::Real`: filter frequency
-  - `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  - `ncyc::Int64=6`: Morlet wavelet cycles
 
 # Returns
 

@@ -7,26 +7,33 @@ Detect a pair of positive and negative peaks of MEP.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `p::Matrix{Int64}`: peaks: channels × positive peak position, negative peak position
+- `p::Matrix{Int64}`: peaks, shape (channels × positive peak position, negative peak position)
 """
 function mep_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
     _check_datatype(obj, "mep")
 
-    ch_n = size(obj)[1]
+    # number of channels
+    ch_n = nchannels(obj)
+
+    # pre-allocate output
     p = zeros(Int64, ch_n, 2)
-    @inbounds for ch_idx in 1:ch_n
-        pp_pos = @views maximum(obj.data[ch_idx, (obj.header.recording[:stimulation_sample][ch_idx] + 20):end, 1])
-        pp_neg = @views minimum(obj.data[ch_idx, (obj.header.recording[:stimulation_sample][ch_idx] + 20):end, 1])
-        p[ch_idx, :] = @views [
-            vsearch(pp_pos, obj.data[ch_idx, (obj.header.recording[:stimulation_sample][ch_idx] + 20):end, 1]),
-            vsearch(pp_neg, obj.data[ch_idx, (obj.header.recording[:stimulation_sample][ch_idx] + 20):end, 1]),
+
+    # calculate over channels
+    ss = obj.header.recording[:stimulation_sample] .+ 20
+    @inbounds Threads.@threads :dynamic for ch_idx in 1:ch_n
+
+        p[ch_idx, :] = [
+            argmax(@view(obj.data[ch_idx, ss[idx]:end, 1])),
+            argmin(@view(obj.data[ch_idx, ss[idx]:end, 1]))
         ]
-        p[ch_idx, :] .+= (obj.header.recording[:stimulation_sample][ch_idx] + 20)
+
+        p[ch_idx, :] .+= ss[idx]
+
     end
 
     return p

@@ -35,7 +35,7 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=5`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns

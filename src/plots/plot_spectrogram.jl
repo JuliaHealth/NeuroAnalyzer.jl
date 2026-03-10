@@ -521,12 +521,12 @@ Plots spectrogram.
       + `:gh`: Gaussian and Hilbert transform
       + `:cwt`: continuous wavelet transformation
       + `:hht`: Hilbert-Huang transform
-  - `nt::Int64=16`: number of Slepian tapers
+  - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
   - `w::Bool=true`: if true, apply Hanning window
   - `gw::Real=10`: Gaussian width in Hz
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
   - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
   - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
   - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits

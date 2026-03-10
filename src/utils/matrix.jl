@@ -175,7 +175,7 @@ Reshape vector into matrix using fixed segment length and overlapping.
 # Arguments
 
   - `x::AbstractVector`
-  - `wlen::Int64`: window length (in samples)
+  - `wlen::Int64`: window length in samples
   - `woverlap::Int64`: overlap with the previous window (in samples)
 
 # Returns
