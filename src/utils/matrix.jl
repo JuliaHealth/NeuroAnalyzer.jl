@@ -13,11 +13,11 @@ Pad matrix with zeros to make it square.
 
 # Arguments
 
-  - `m::AbstractMatrix`
+- `m::AbstractMatrix`
 
 # Returns
 
-  - `m::AbstractMatrix`
+- `m::AbstractMatrix`
 """
 function m_pad0(m::AbstractMatrix)::AbstractMatrix
 
@@ -42,13 +42,13 @@ Pad matrix with zeros to make its size r × c.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `r::Int64`: number of rows
-  - `c::Int64`: number of columns
+- `m::AbstractMatrix`
+- `r::Int64`: number of rows
+- `c::Int64`: number of columns
 
 # Returns
 
-  - `m::AbstractMatrix`
+- `m::AbstractMatrix`
 """
 function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
 
@@ -78,13 +78,13 @@ Generates matrix sorting index.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `rev::Bool`: reverse sort
-  - `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
+- `m::AbstractMatrix`
+- `rev::Bool`: reverse sort
+- `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
 
 # Returns
 
-  - `idx::Matrix{Int64}`
+- `idx::Matrix{Int64}`
 """
 function m_sortperm(m::AbstractMatrix; rev::Bool = false, dims::Int64 = 1)::AbstractMatrix
 
@@ -114,14 +114,14 @@ Sorts matrix using sorting index.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `m_idx::Vector{Int64}`: sorting index
-  - `rev::Bool=false`: reverse sort
-  - `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
+- `m::AbstractMatrix`
+- `m_idx::Vector{Int64}`: sorting index
+- `rev::Bool=false`: reverse sort
+- `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
 
 # Returns
 
-  - `m_sorted::AbstractMatrix`
+- `m_sorted::AbstractMatrix`
 """
 function m_sort(
         m::AbstractMatrix, m_idx::Vector{Int64}; rev::Bool = false, dims::Int64 = 1
@@ -155,11 +155,11 @@ Normalize matrix.
 
 # Arguments
 
-  - `m::AbstractArray`
+- `m::AbstractArray`
 
 # Returns
 
-  - `m_norm::AbstractArray`
+- `m_norm::AbstractArray`
 """
 function m_norm(m::AbstractArray)::AbstractArray
 
@@ -174,13 +174,13 @@ Reshape vector into matrix using fixed segment length and overlapping.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `wlen::Int64`: window length in samples
-  - `woverlap::Int64`: overlap with the previous window (in samples)
+- `x::AbstractVector`
+- `wlen::Int64`: window length in samples
+- `woverlap::Int64`: overlap with the previous window (in samples)
 
 # Returns
 
-  - `m::AbstractMatrix`
+- `m::AbstractMatrix`
 """
 function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatrix
 
@@ -208,11 +208,11 @@ Reshape array into matrix.
 
 # Arguments
 
-  - `x::AbstractArray`
+- `x::AbstractArray`
 
 # Returns
 
-  - `m::AbstractMatrix`
+- `m::AbstractMatrix`
 """
 function arr2mat(x::AbstractArray)::AbstractMatrix
 
@@ -234,12 +234,12 @@ Create mesh grid (pair of x and y coordinates) from two vectors.
 
 # Arguments
 
-  - `x::Vector{Float64}`
-  - `y::Vector{Float64}`
+- `x::Vector{Float64}`
+- `y::Vector{Float64}`
 
 # Returns
 
-  - `m::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}`
+- `m::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}`
 """
 function meshgrid(
         x::Vector{Float64}, y::Vector{Float64}

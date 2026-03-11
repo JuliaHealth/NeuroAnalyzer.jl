@@ -7,14 +7,14 @@ Perform convolution band-pass filtering.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `pad::Int64`: number of zeros to append
-  - `frq::Real`: filter frequency
-  - `fs::Int64`: sampling rate
+- `s::AbstractVector`: signal vector
+- `pad::Int64`: number of zeros to append
+- `frq::Real`: filter frequency
+- `fs::Int64`: sampling rate
 
 # Returns
 
-  - `cbp::Vector{Float64}`
+- `cbp::Vector{Float64}`
 """
 function cbp(s::AbstractVector; pad::Int64 = 0, frq::Real, fs::Int64)::Vector{Float64}
 
@@ -37,14 +37,14 @@ Perform convolution bandpass filtering.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pad::Int64`: pad the `signal` with `pad` zeros
-  - `frq::Real`: filter frequency
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Real`: filter frequency
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function cbp(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real
@@ -76,14 +76,14 @@ Perform convolution bandpass filtering.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pad::Int64`: pad the `signal` with `pad` zeros
-  - `frq::Tuple{Real, Real}`: filter frequency
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Tuple{Real, Real}`: filter frequency
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function cbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real)::Nothing
 

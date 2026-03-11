@@ -7,14 +7,14 @@ Plot 2-dimensional electric field.
 
 # Arguments
 
-  - `q::Vector{Int64}`: charges values
-  - `qx::Vector{Float64}`: charges x-axis positions
-  - `qy::Vector{Float64}`: charges y-axis positions
-  - `d::Int64=2`: density of field vectors
+- `q::Vector{Int64}`: charges values
+- `qx::Vector{Float64}`: charges x-axis positions
+- `qy::Vector{Float64}`: charges y-axis positions
+- `d::Int64=2`: density of field vectors
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64}, d::Int64 = 2)::GLMakie.Figure
 

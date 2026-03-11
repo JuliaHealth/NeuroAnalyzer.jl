@@ -9,13 +9,13 @@ Calculate order of FIR filter using Harris formula.
 
 # Arguments
 
-  - `bw::Real`: transition band width in Hz
-  - `a::Real`: attenuation in dB
-  - `fs::Int64`: sampling rate
+- `bw::Real`: transition band width in Hz
+- `a::Real`: attenuation in dB
+- `fs::Int64`: sampling rate
 
 # Returns
 
-  - `n::Int64`
+- `n::Int64`
 """
 function fir_order_bw(; bw::Real, a::Real = 60, fs::Int64)::Int64
 
@@ -32,13 +32,13 @@ Calculate order of FIR filter using Harris formula.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `bw::Real`: transition band width
-  - `a::Real`: attenuation in dB
+- `obj::NeuroAnalyzer.NEURO`
+- `bw::Real`: transition band width
+- `a::Real`: attenuation in dB
 
 # Returns
 
-  - `n::Int64`
+- `n::Int64`
 """
 function fir_order_bw(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real = 60)::Int64
 
@@ -55,12 +55,12 @@ Calculate order of FIR filter using lower frequency bound.
 
 # Arguments
 
-  - `f::Real`: lower frequency bound for analyzed range
-  - `fs::Int64`: sampling rate
+- `f::Real`: lower frequency bound for analyzed range
+- `fs::Int64`: sampling rate
 
 # Returns
 
-  - `n::Tuple{Int64, Int64}`: recommended order range
+- `n::Tuple{Int64, Int64}`: recommended order range
 """
 function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
 
@@ -81,12 +81,12 @@ Calculate order of FIR filter using lower frequency bound.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `f::Real`: lower frequency bound for analyzed range
+- `obj::NeuroAnalyzer.NEURO`
+- `f::Real`: lower frequency bound for analyzed range
 
 # Returns
 
-  - `n::Tuple{Int64, Int64}`: recommended order range
+- `n::Tuple{Int64, Int64}`: recommended order range
 """
 function fir_order_f(obj::NeuroAnalyzer.NEURO; f::Real)::Tuple{Int64, Int64}
 
@@ -103,25 +103,25 @@ Calculate order of IIR filter.
 
 # Arguments
 
-  - `fprototype::Symbol`: filter prototype:
-      + `:butterworth`
-      + `:chebyshev1`
-      + `:chebyshev2`
-      + `:elliptic`
-  - `ftype::Symbol`: filter type:
-      + `:lp`: low pass
-      + `:hp`: high pass
-      + `:bp`: band pass
-      + `:bs`: band stop
-  - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (a pair of frequencies for band pass and band stop filters)
-  - `bw::Real`: transition band width
-  - `rp::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-  - `rs::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-  - `fs::Int64`: sampling rate
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+- `ftype::Symbol`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (a pair of frequencies for band pass and band stop filters)
+- `bw::Real`: transition band width
+- `rp::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `fs::Int64`: sampling rate
 
 # Returns
 
-  - `n::Int64`
+- `n::Int64`
 """
 function iir_order(;
         fprototype::Symbol,
@@ -195,25 +195,25 @@ Calculate order of IIR filter.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `fprototype::Symbol`: filter prototype:
-      + `:butterworth`
-      + `:chebyshev1`
-      + `:chebyshev2`
-      + `:elliptic`
-  - `ftype::Symbol`: filter type:
-      + `:lp`: low pass
-      + `:hp`: high pass
-      + `:bp`: band pass
-      + `:bs`: band stop
-  - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (a pair of frequencies for band pass and band stop filters)
-  - `bw::Real`: transition band width
-  - `rp::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-  - `rs::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `obj::NeuroAnalyzer.NEURO`
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+- `ftype::Symbol`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (a pair of frequencies for band pass and band stop filters)
+- `bw::Real`: transition band width
+- `rp::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 
 # Returns
 
-  - `n::Int64`
+- `n::Int64`
 """
 function iir_order(
         obj::NeuroAnalyzer.NEURO;

@@ -8,13 +8,13 @@ Filter using polynomial filter.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `order::Int64=8`: polynomial order
-  - `window::Int64=10`: window length
+- `s::AbstractVector`: signal vector
+- `order::Int64=8`: polynomial order
+- `window::Int64=10`: window length
 
 # Returns
 
-  - `s_filtered::Vector{Float64}`
+- `s_filtered::Vector{Float64}`
 """
 function filter_poly(s::AbstractVector; order::Int64 = 8, window::Int64 = 10)::Vector{Float64}
 
@@ -76,13 +76,13 @@ Filter using polynomial filter.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `order::Int64=8`: polynomial order
-  - `window::Int64=10`: window length
+- `s::AbstractArray`
+- `order::Int64=8`: polynomial order
+- `window::Int64=10`: window length
 
 # Returns
 
-  - `s_filtered::Array{Float64, 3}`: convoluted signal
+- `s_filtered::Array{Float64, 3}`: convoluted signal
 """
 function filter_poly(s::AbstractArray; order::Int64 = 8, window::Int64 = 10)::Array{Float64, 3}
 
@@ -109,14 +109,14 @@ Filter using polynomial filter.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `order::Int64=8`: polynomial order
-  - `window::Int64=10`: window length
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `order::Int64=8`: polynomial order
+- `window::Int64=10`: window length
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
+- `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
 """
 function filter_poly(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10
@@ -138,14 +138,14 @@ Filter using polynomial filter.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `order::Int64=8`: polynomial order
-  - `window::Int64=10`: window length
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `order::Int64=8`: polynomial order
+- `window::Int64=10`: window length
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function filter_poly!(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10

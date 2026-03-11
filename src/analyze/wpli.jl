@@ -7,19 +7,19 @@ Calculate weighted PLI (Phase Locking Index).
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
-  - `debiased::Bool=false`: if `true`, calculate debiased wPLI
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
+- `debiased::Bool=false`: if `true`, calculate debiased wPLI
 
 # Returns
 
 Named tuple containing:
 
-  - `pv::Float64`: wPLI value
-  - `sd::Vector{Float64}`: signal difference (s2 - s1)
-  - `phd::Vector{Float64}`: phase difference (s2 - s1)
-  - `s1ph::Vector{Float64}`: signal 1 phase
-  - `s2ph::Vector{Float64}`: signal 2 phase
+- `pv::Float64`: wPLI value
+- `sd::Vector{Float64}`: signal difference (s2 - s1)
+- `phd::Vector{Float64}`: phase difference (s2 - s1)
+- `s1ph::Vector{Float64}`: signal 1 phase
+- `s2ph::Vector{Float64}`: signal 2 phase
 """
 function wpli(
         s1::AbstractVector, s2::AbstractVector; debiased::Bool = false
@@ -58,23 +58,23 @@ Calculate weighted PLI (Phase Locking Index).
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
-  - `debiased::Bool=false`: if `true`, calculate debiased wPLI
+- `obj1::NeuroAnalyzer.NEURO`
+- `obj2::NeuroAnalyzer.NEURO`
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `debiased::Bool=false`: if `true`, calculate debiased wPLI
 
 # Returns
 
 Named tuple containing:
 
-  - `pv::Matrix{Float64}`: PLI value
-  - `sd::Array{Float64, 3}`: signal difference (s2 - s1)
-  - `phd::Array{Float64, 3}`: phase difference (s2 - s1)
-  - `s1ph::Array{Float64, 3}`: signal 1 phase
-  - `s2ph::Array{Float64, 3}`: signal 2 phase
+- `pv::Matrix{Float64}`: PLI value
+- `sd::Array{Float64, 3}`: signal difference (s2 - s1)
+- `phd::Array{Float64, 3}`: phase difference (s2 - s1)
+- `s1ph::Array{Float64, 3}`: signal 1 phase
+- `s2ph::Array{Float64, 3}`: signal 2 phase
 """
 function wpli(
         obj1::NeuroAnalyzer.NEURO,
@@ -128,13 +128,13 @@ Calculate weighted PLI (Phase Locking Index).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `debiased::Bool=false`: if `true`, calculate debiased wPLI
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `debiased::Bool=false`: if `true`, calculate debiased wPLI
 
 # Returns
 
-  - `pv::Array{Float64, 3}`: wPLI value
+- `pv::Array{Float64, 3}`: wPLI value
 """
 function wpli(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, debiased::Bool = false

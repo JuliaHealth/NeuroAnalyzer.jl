@@ -7,15 +7,15 @@ Calculate d' and response bias for two proportions.
 
 # Arguments
 
-  - `p1::Real`
-  - `p2::Real`
+- `p1::Real`
+- `p2::Real`
 
 # Returns
 
 Named tuple containing:
 
-  - `dp::Float64`
-  - `rb::Float64`: response bias
+- `dp::Float64`
+- `rb::Float64`: response bias
 """
 function dprime(p1::Real, p2::Real)::@NamedTuple{dp::Float64, rb::Float64}
 

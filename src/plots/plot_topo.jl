@@ -7,42 +7,42 @@ Plot topographical view.
 
 # Arguments
 
-  - `s::AbstractVector`: values to plot (one value per channel)
-  - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-  - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
-  - `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: list of significant channels
-  - `cb::Bool=true`: plot colorbar
-  - `cb_title::String="[A.U.]"`: colorbar title
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `imethod::Symbol=:sh`: interpolation method:
-      + `:sh`: Shepard
-      + `:mq`: Multiquadratic
-      + `:imq`: InverseMultiquadratic
-      + `:tp`: ThinPlate
-      + `:nn`: NearestNeighbour
-      + `:ga`: Gaussian
-  - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-  - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
-  - `electrodes::Bools=true`: plot electrodes over topo plot
-  - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-  - `head::Bool=true`: draw head
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-  - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-      + `:in`: draw region is values are in the threshold values, including threshold boundaries
-      + `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
-  - `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
+- `s::AbstractVector`: signal vector: values to plot (one value per channel)
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
+- `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: list of significant channels
+- `cb::Bool=true`: plot colorbar
+- `cb_title::String="[A.U.]"`: colorbar title
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
+- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
+- `electrodes::Bools=true`: plot electrodes over topo plot
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `head::Bool=true`: draw head
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_topo(
         s::AbstractVector;
@@ -353,48 +353,48 @@ Topographical plot.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: channels × values, will be averaged by channels
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
-  - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
-  - `title::String="default"`: plot title, default is tpos value
-  - `mono::Bool=false`: use color or gray palette
-  - `cb::Bool=true`: plot colorbar
-  - `cb_title::String="[A.U.]"`: colorbar title
-  - `amethod::Symbol=:mean`: averaging method:
-      + `:mean`
-      + `:median`
-  - `imethod::Symbol=:sh`: interpolation method:
-      + `:sh`: Shepard
-      + `:mq`: Multiquadratic
-      + `:imq`: InverseMultiquadratic
-      + `:tp`: ThinPlate
-      + `:nn`: NearestNeighbour
-      + `:ga`: Gaussian
-  - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-  - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
-  - `electrodes::Bools=true`: plot electrodes over topo plot
-  - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-  - `head::Bool=true`: draw head
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-  - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-      + `:in`: draw region is values are in the threshold values, including threshold boundaries
-      + `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
-  - `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
-  - `nr::Int64=0`: number of rows to place topomaps
-  - `nc::Int64=0`: number of columns to place topomaps
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: channels × values, will be averaged by channels
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
+- `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
+- `title::String="default"`: plot title, default is tpos value
+- `mono::Bool=false`: use color or gray palette
+- `cb::Bool=true`: plot colorbar
+- `cb_title::String="[A.U.]"`: colorbar title
+- `amethod::Symbol=:mean`: averaging method:
+    - `:mean`
+    - `:median`
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
+- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
+- `electrodes::Bools=true`: plot electrodes over topo plot
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `head::Bool=true`: draw head
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
+- `nr::Int64=0`: number of rows to place topomaps
+- `nc::Int64=0`: number of columns to place topomaps
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_topo(
         obj::NeuroAnalyzer.NEURO;

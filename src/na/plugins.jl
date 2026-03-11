@@ -15,7 +15,7 @@ Nothing
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_plugins_reload()::Nothing
 
@@ -51,7 +51,7 @@ Nothing
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_plugins_list()::Nothing
 
@@ -78,11 +78,11 @@ Remove NeuroAnalyzer plugin.
 
 # Arguments
 
-  - `plugin::String`: plugin name
+- `plugin::String`: plugin name
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_plugins_remove(plugin::String)::Nothing
 
@@ -113,11 +113,11 @@ Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.Z
 
 # Arguments
 
-  - `plugin::String`: plugin Git repository URL or file name (with full path)
+- `plugin::String`: plugin Git repository URL or file name (with full path)
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_plugins_install(plugin::String)::Nothing
 
@@ -169,11 +169,11 @@ Update NeuroAnalyzer plugin(s).
 
 # Arguments
 
-  - `plugin::String`: plugin to update; if empty, update all
+- `plugin::String`: plugin to update; if empty, update all
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_plugins_update(plugin::String = "")::Nothing
 

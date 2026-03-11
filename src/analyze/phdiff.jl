@@ -7,16 +7,16 @@ Calculate phase difference between signals.
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
-  - `pad::Int64=0`: number of zeros to append
-  - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
+- `pad::Int64=0`: number of zeros to append
+- `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
 
 Named tuple containing:
 
-  - `phd::Vector{Float64}`: phase differences in radians
+- `phd::Vector{Float64}`: phase differences in radians
 """
 function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64 = 0, h::Bool = false)::Vector{Float64}
 
@@ -41,17 +41,17 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))`: index of reference channels, default is all  channels except the analyzed one
-  - `avg::Symbol=:phase`: method of averaging:
-      + `:phase`: phase is calculated for each reference channel separately and then averaged
-      + `:signal`: signals are averaged prior to phase calculation
-  - `pad::Int64=0`: number of zeros to append
-  - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
+- `s::AbstractArray`
+- `ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))`: index of reference channels, default is all  channels except the analyzed one
+- `avg::Symbol=:phase`: method of averaging:
+    - `:phase`: phase is calculated for each reference channel separately and then averaged
+    - `:signal`: signals are averaged prior to phase calculation
+- `pad::Int64=0`: number of zeros to append
+- `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
 
-  - `phd::Array{Float64, 3}`
+- `phd::Array{Float64, 3}`
 """
 function phdiff(
         s::AbstractArray;
@@ -125,17 +125,17 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: index of reference channels
-  - `avg::Symbol=:phase`: method of averaging:
-      + `:phase`: phase is calculated for each reference channel separately and then averaged
-      + `:signal`: signals are averaged prior to phase calculation
-  - `pad::Int64=0`: number of zeros to append
-  - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: index of reference channels
+- `avg::Symbol=:phase`: method of averaging:
+    - `:phase`: phase is calculated for each reference channel separately and then averaged
+    - `:signal`: signals are averaged prior to phase calculation
+- `pad::Int64=0`: number of zeros to append
+- `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
 
-  - `phd::Array{Float64, 3}`
+- `phd::Array{Float64, 3}`
 """
 function phdiff(
         obj::NeuroAnalyzer.NEURO;

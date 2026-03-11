@@ -8,12 +8,12 @@ Calculate SNR between two signals
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
 
 # Returns
 
-  - `snr::Float64`: SNR
+- `snr::Float64`: SNR
 """
 function snr(s1::AbstractVector, s2::AbstractVector)::Float64
 
@@ -28,11 +28,11 @@ Calculate mean-based SNR.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `snr::Float64`: SNR
+- `snr::Float64`: SNR
 
 # Reference
 
@@ -51,11 +51,11 @@ Calculate RMS-based SNR.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `snr2::Float64`: SNR
+- `snr2::Float64`: SNR
 """
 function snr2(s::AbstractVector)::Float64
 
@@ -71,18 +71,18 @@ Calculate SNR.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `t::Vector{Float64}`: epoch time
-  - `type::Symbol=:rms`: SNR type:
-      + `:mean`: mean-based
-      + `:rms`: RMS-based
+- `s::AbstractArray`
+- `t::Vector{Float64}`: epoch time
+- `type::Symbol=:rms`: SNR type:
+    - `:mean`: mean-based
+    - `:rms`: RMS-based
 
 # Returns
 
 Named tuple containing:
 
-  - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
-  - `f::Vector{Float64}`: frequencies
+- `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
+- `f::Vector{Float64}`: frequencies
 """
 function snr(
         s::AbstractArray; t::Vector{Float64}, type::Symbol = :rms
@@ -130,18 +130,18 @@ Calculate SNR.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `type::Symbol=:rms`: SNR type:
-      + `:mean`: mean-based
-      + `:rms`: RMS-based
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `type::Symbol=:rms`: SNR type:
+    - `:mean`: mean-based
+    - `:rms`: RMS-based
 
 # Returns
 
 Named tuple containing:
 
-  - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
-  - `f::Vector{Float64}`: frequencies
+- `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
+- `f::Vector{Float64}`: frequencies
 """
 function snr(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol = :rms

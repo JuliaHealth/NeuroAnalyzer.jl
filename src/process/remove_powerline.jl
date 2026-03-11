@@ -10,19 +10,19 @@ Remove power line noise and its peaks above power line frequency.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
-  - `method::Symbol=:iir`:
-      + `:iir`: use IIR filter
-  - `pr::Real=2.0`: prominence of noise peaks in dB
-  - `d::Real=5.0`: minimum distance between peaks in Hz
-  - `q::Real=0.1`: optimization step size
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
+- `method::Symbol=:iir`:
+    - `:iir`: use IIR filter
+- `pr::Real=2.0`: prominence of noise peaks in dB
+- `d::Real=5.0`: minimum distance between peaks in Hz
+- `q::Real=0.1`: optimization step size
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
-  - `df::DataFrame`: list of peaks detected
+- `obj_new::NeuroAnalyzer.NEURO`
+- `df::DataFrame`: list of peaks detected
 """
 function remove_powerline(
         obj::NeuroAnalyzer.NEURO;
@@ -192,17 +192,17 @@ Remove power line noise and harmonics.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
-  - `method::Symbol=:iir`: use IIR filter
-  - `pr::Real=2.0`: prominence of noise peaks in dB
-  - `d::Real=5.0`: minimum distance between peaks in Hz
-  - `q::Real=0.1`: optimization step size
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
+- `method::Symbol=:iir`: use IIR filter
+- `pr::Real=2.0`: prominence of noise peaks in dB
+- `d::Real=5.0`: minimum distance between peaks in Hz
+- `q::Real=0.1`: optimization step size
 
 # Returns
 
-  - `df::DataFrame`: list of peaks detected
+- `df::DataFrame`: list of peaks detected
 """
 function remove_powerline!(
         obj::NeuroAnalyzer.NEURO;
@@ -229,12 +229,12 @@ Detect power line noise frequency.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `fs::Int64`: sampling rate
+- `s::AbstractVector`: signal vector
+- `fs::Int64`: sampling rate
 
 # Returns
 
-  - `noise_frq::Float64`: peak noise frequency in Hz
+- `noise_frq::Float64`: peak noise frequency in Hz
 """
 function detect_powerline(s::AbstractVector; fs::Int64)::Float64
 
@@ -263,11 +263,11 @@ Detect power line noise frequency.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `noise_frq::Array{Float64, 2}`: peak noise frequency in Hz for channels × epochs
+- `noise_frq::Array{Float64, 2}`: peak noise frequency in Hz for channels × epochs
 """
 function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
 
@@ -299,11 +299,11 @@ Detect power line noise frequency.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
 

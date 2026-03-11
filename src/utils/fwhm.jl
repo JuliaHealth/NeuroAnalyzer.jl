@@ -7,13 +7,13 @@ Calculate indices of full-width half-maximum points of a Gaussian-like distribut
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `p1_idx::Int64`: pre-peak half-maximum point
-  - `p_idx::Int64`: peak
-  - `p2_idx::Int64`: post-peak half-maximum point
+- `p1_idx::Int64`: pre-peak half-maximum point
+- `p_idx::Int64`: peak
+- `p2_idx::Int64`: post-peak half-maximum point
 """
 function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
 

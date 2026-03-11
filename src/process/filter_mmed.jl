@@ -8,14 +8,14 @@ Filter using moving median filter (with threshold).
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `k::Int64=8`: window length is `2 × k + 1`
-  - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
-  - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
+- `s::AbstractVector`: signal vector
+- `k::Int64=8`: window length is `2 × k + 1`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
+- `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 # Returns
 
-  - `s_filtered::Vector{Float64}`
+- `s_filtered::Vector{Float64}`
 """
 function filter_mmed(
         s::AbstractVector; k::Int64 = 8, t::Real = 0, ww::AbstractVector = ones(2 * k + 1)
@@ -72,14 +72,14 @@ Filter using moving median filter (with threshold).
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `k::Int64=8`: window length is `2 × k + 1`
-  - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
-  - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
+- `s::AbstractArray`
+- `k::Int64=8`: window length is `2 × k + 1`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
+- `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 # Returns
 
-  - `s_filtered::Array{Float64, 3}`
+- `s_filtered::Array{Float64, 3}`
 """
 function filter_mmed(
         s::AbstractArray; k::Int64 = 8, t::Real = 0, ww::AbstractVector = ones(2 * k + 1)
@@ -108,15 +108,15 @@ Filter using moving median filter (with threshold).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `k::Int64=8`: window length is `2 × k + 1`
-  - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
-  - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `k::Int64=8`: window length is `2 × k + 1`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
+- `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function filter_mmed(
         obj::NeuroAnalyzer.NEURO;
@@ -144,15 +144,15 @@ Filter using moving median filter (with threshold).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `k::Int64=8`: window length is `2 × k + 1`
-  - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
-  - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `k::Int64=8`: window length is `2 × k + 1`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
+- `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function filter_mmed!(
         obj::NeuroAnalyzer.NEURO;

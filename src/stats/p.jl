@@ -14,12 +14,12 @@ Convert p value to z score.
 
 # Arguments
 
-  - `p::Float64=0.05`: p value
-  - `twotailed::Bool=false`: one- or two-tailed probability
+- `p::Float64=0.05`: p value
+- `twotailed::Bool=false`: one- or two-tailed probability
 
 # Returns
 
-  - `z::Float64`
+- `z::Float64`
 """
 function p2z(p::Float64 = 0.05; twotailed::Bool = false)::Float64
 
@@ -43,20 +43,20 @@ Convert z score to p value.
 
 # Arguments
 
-  - `z::Real`: z value
-  - `twotailed::Bool=false`: one- (`P(Z > z)`) or two-tailed (`P(Z < -z or Z > z)`) probability
+- `z::Real`: z value
+- `twotailed::Bool=false`: one- (`P(Z > z)`) or two-tailed (`P(Z < -z or Z > z)`) probability
 
 # Returns
 
-  - `p::Float64`
+- `p::Float64`
 
 # Notes
 
 To calculate:
 
-  - `P(Z < z)` (left-tailed) use `1 - z2p(z, twotailed=false)`
-  - `P(-z < Z < z)` use `1 - z2p(z, twotailed=true)`
-  - `P(0 < Z < z)` use `(1 - z2p(z, twotailed=true))/2`
+- `P(Z < z)` (left-tailed) use `1 - z2p(z, twotailed=false)`
+- `P(-z < Z < z)` use `1 - z2p(z, twotailed=true)`
+- `P(0 < Z < z)` use `(1 - z2p(z, twotailed=true))/2`
 """
 function z2p(z::Real; twotailed::Bool = false)::Float64
 
@@ -82,21 +82,21 @@ Convert t score to p value.
 
 # Arguments
 
-  - `t::Real`: t score
-  - `df::Real`: degrees of freedom
-  - `twotailed::Bool=false`: one- (`P(Z > t)`) or two-tailed (`P(T < -t or T > t)`) probability
+- `t::Real`: t score
+- `df::Real`: degrees of freedom
+- `twotailed::Bool=false`: one- (`P(Z > t)`) or two-tailed (`P(T < -t or T > t)`) probability
 
 # Returns
 
-  - `p::Float64`
+- `p::Float64`
 
 # Notes
 
 To calculate:
 
-  - `P(T < t)` (left-tailed) use `1 - t2p(t, df=df, twotailed=false)`
-  - `P(-t < T < t)` use `1 - t2p(t, df=df, twotailed=true)`
-  - `P(0 < T < t)` use `(1 - t2p(t, df=df, twotailed=true))/2`
+- `P(T < t)` (left-tailed) use `1 - t2p(t, df=df, twotailed=false)`
+- `P(-t < T < t)` use `1 - t2p(t, df=df, twotailed=true)`
+- `P(0 < T < t)` use `(1 - t2p(t, df=df, twotailed=true))/2`
 """
 function t2p(t::Real; df::Real, twotailed::Bool = false)::Float64
 
@@ -122,12 +122,12 @@ Convert Χ² score to right-tailed (`P(Chi > chi)`) p value.
 
 # Arguments
 
-  - `chi::Real`: Χ² score
-  - `df::Real`: degrees of freedom
+- `chi::Real`: Χ² score
+- `df::Real`: degrees of freedom
 
 # Returns
 
-  - `p::Float64`
+- `p::Float64`
 
 # Notes
 
@@ -149,13 +149,13 @@ Convert F score to right-tailed (`P(F > f)`) p value.
 
 # Arguments
 
-  - `f::Real`: F score (`F = var(x) / var(y)`)
-  - `df1::Real`: numerator degrees of freedom (DF1)
-  - `df2::Real`: denominator degrees of freedom (DF2)
+- `f::Real`: F score (`F = var(x) / var(y)`)
+- `df1::Real`: numerator degrees of freedom (DF1)
+- `df2::Real`: denominator degrees of freedom (DF2)
 
 # Returns
 
-  - `p::Float64`
+- `p::Float64`
 
 # Notes
 
@@ -178,11 +178,11 @@ Convert probability to a normal distribution with a peak at 0.5.
 
 # Arguments
 
-  - `x::Real`
+- `x::Real`
 
 # Returns
 
-  - `n::Float64`
+- `n::Float64`
 """
 function norminv(x::Real)::Float64
 
@@ -199,11 +199,11 @@ Convert probability to odds.
 
 # Arguments
 
-  - `p::Float64`
+- `p::Float64`
 
 # Returns
 
-  - `o::Float64`
+- `o::Float64`
 """
 function p2o(p::Real)::Float64
 
@@ -220,11 +220,11 @@ Convert probability to odds.
 
 # Arguments
 
-  - `o::Float64`
+- `o::Float64`
 
 # Returns
 
-  - `p::Float64`
+- `p::Float64`
 """
 function o2p(o::Real)::Float64
 

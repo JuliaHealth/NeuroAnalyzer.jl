@@ -9,17 +9,17 @@ Plot PHSD (phase spectral density).
 
 # Arguments
 
-  - `f::Vector{Float64}`: frequencies
-  - `ph::Vector{Float64}`: phases
-  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `f::Vector{Float64}`: frequencies
+- `ph::Vector{Float64}`: phases
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_phsd(
         f::Vector{Float64},
@@ -83,22 +83,22 @@ Plot multi-channel PHSD (phase spectral density).
 
 # Arguments
 
-  - `f::Vector{Float64}`: frequencies
-  - `ph::Matrix{Float64}`: phases
-  - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `avg::Bool=false`: if true, plot averaged PHSD
-  - `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PHSDs
-  - `leg::Bool=true`: if true, add legend with channel labels
+- `f::Vector{Float64}`: frequencies
+- `ph::Matrix{Float64}`: phases
+- `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `avg::Bool=false`: if true, plot averaged PHSD
+- `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PHSDs
+- `leg::Bool=true`: if true, add legend with channel labels
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_phsd(
         f::Vector{Float64},
@@ -203,22 +203,22 @@ Plot 3-d PHSD (phase phectral density).
 
 # Arguments
 
-  - `f::Vector{Float64}`: frequencies
-  - `ph::Array{Float64, 3}`: phases
-  - `clabels::Vector{String}=string.(1:size(ph, 1))`: channel labels
-  - `db::Bool=true`: whether powers are normalized to dB
-  - `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `zlabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
+- `f::Vector{Float64}`: frequencies
+- `ph::Array{Float64, 3}`: phases
+- `clabels::Vector{String}=string.(1:size(ph, 1))`: channel labels
+- `db::Bool=true`: whether powers are normalized to dB
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `zlabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_phsd_3d(
         f::Vector{Float64},
@@ -348,20 +348,20 @@ Plot topographical map of PHSDs (phase spectral density).
 
 # Arguments
 
-  - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-  - `f::Vector{Float64}`: frequencies
-  - `ph::Array{Float64, 3}`: phases
-  - `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
-  - `head::Bool=true`: plot head shape
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `f::Vector{Float64}`: frequencies
+- `ph::Array{Float64, 3}`: phases
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_phsd_topo(
         locs::DataFrame,
@@ -547,31 +547,31 @@ Plot PHSD (phase spectral density).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-  - `ep::Int64=0`: epoch to display
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
-  - `ylabel::String="default"`: y-axis label, default is Phase [rad]
-  - `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]
-  - `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
-  - `mono::Bool=false`: use color or gray palette
-  - `type::Symbol=:normal`: plot type:
-      + `:normal` single channel or butterfly for multichannel
-      + `:w3d`: 3-d waterfall
-      + `:s3d`: 3-d surface
-      + `:topo`: topographical
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
-  - `head::Bool=true`: plot head shape
-  - `leg::Bool=true`: if true, add legend with channel labels
-  - `avg::Bool=false`: if true, plot averaged PSD
-  - `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `ep::Int64=0`: epoch to display
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
+- `ylabel::String="default"`: y-axis label, default is Phase [rad]
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]
+- `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
+- `mono::Bool=false`: use color or gray palette
+- `type::Symbol=:normal`: plot type:
+    - `:normal` single channel or butterfly for multichannel
+    - `:w3d`: 3-d waterfall
+    - `:s3d`: 3-d surface
+    - `:topo`: topographical
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
+- `leg::Bool=true`: if true, add legend with channel labels
+- `avg::Bool=false`: if true, plot averaged PSD
+- `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_phsd(
         obj::NeuroAnalyzer.NEURO;

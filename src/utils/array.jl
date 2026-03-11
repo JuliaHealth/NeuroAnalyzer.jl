@@ -11,12 +11,12 @@ Compare two arrays (e.g. two spectrograms), using L1 (Manhattan) distance.
 
 # Arguments
 
-  - `a1::AbstractArray`: first array
-  - `a2::AbstractArray`: second array
+- `a1::AbstractArray`: first array
+- `a2::AbstractArray`: second array
 
 # Returns
 
-  - `l1::Float64`
+- `l1::Float64`
 """
 function l1(a1::AbstractArray, a2::AbstractArray)::Float64
 
@@ -33,12 +33,12 @@ Compare two arrays (e.g. two spectrograms), using L2 (Euclidean) distance.
 
 # Arguments
 
-  - `a1::AbstractArray`: first array
-  - `a2::AbstractArray`: second array
+- `a1::AbstractArray`: first array
+- `a2::AbstractArray`: second array
 
 # Returns
 
-  - `l2::Float64`
+- `l2::Float64`
 """
 function l2(a1::AbstractArray, a2::AbstractArray)::Float64
 
@@ -55,17 +55,17 @@ Compare two 3-dimensional arrays (e.g. two spectrograms), using permutation base
 
 # Arguments
 
-  - `a1::Array{<:Real, 3}`: first array
-  - `a2::Array{<:Real, 3}`: second array
-  - `p::Float64=0.05`: p-value
-  - `perm_n::Int64=1000`: number of permutations
+- `a1::Array{<:Real, 3}`: first array
+- `a2::Array{<:Real, 3}`: second array
+- `p::Float64=0.05`: p-value
+- `perm_n::Int64=1000`: number of permutations
 
 # Returns
 
 Named tuple containing:
 
-  - `zmap::Matrix{Float64}`: array of Z-values
-  - `bm::BitMatrix`: binarized mask of statistically significant positions
+- `zmap::Matrix{Float64}`: array of Z-values
+- `bm::BitMatrix`: binarized mask of statistically significant positions
 """
 function perm_cmp(
         a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64 = 0.05, perm_n::Int64 = 1000
@@ -114,11 +114,11 @@ Average signal across trials.
 
 # Arguments
 
-  - `s::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
-  - `s_new::AbstractArray`
+- `s_new::AbstractArray`
 """
 function tavg(s::AbstractArray)::AbstractArray
 
@@ -135,14 +135,14 @@ Reduce an array at indices of a vector being multiplications of a constant. Usef
 
 # Arguments
 
-  - `a::AbstractArray`: e.g. signal data
-  - `f::AbstractVector`: e.g. frequencies
-  - `n::Float64=0.5`: reduce at multiplications of this value
+- `a::AbstractArray`: e.g. signal data
+- `f::AbstractVector`: e.g. frequencies
+- `n::Float64=0.5`: reduce at multiplications of this value
 
 # Returns
 
-  - `a_new::Array{eltype(a), ndims(a)}`
-  - `f_new::Vector{eltype(f)}`
+- `a_new::Array{eltype(a), ndims(a)}`
+- `f_new::Vector{eltype(f)}`
 """
 function areduce(
         a::AbstractArray, f::AbstractVector; n::Float64 = 0.5

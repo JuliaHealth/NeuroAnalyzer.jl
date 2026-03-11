@@ -10,12 +10,12 @@ Remove epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to be removed
+- `obj::NeuroAnalyzer.NEURO`
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to be removed
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_epoch(
         obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
@@ -55,12 +55,12 @@ Remove epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to be removed
+- `obj::NeuroAnalyzer.NEURO`
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to be removed
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function delete_epoch!(
         obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
@@ -84,12 +84,12 @@ Keep epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to keep
+- `obj::NeuroAnalyzer.NEURO`
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to keep
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function keep_epoch(
         obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
@@ -119,12 +119,12 @@ Keep epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to keep
+- `obj::NeuroAnalyzer.NEURO`
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to keep
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function keep_epoch!(
         obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}

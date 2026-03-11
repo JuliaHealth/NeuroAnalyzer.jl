@@ -12,13 +12,13 @@ Resample to `new_sr` sampling frequency.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `old_sr::Int64`: old sampling rate
-  - `new_sr::Int64`: new sampling rate
+- `s::AbstractVector`: signal vector
+- `old_sr::Int64`: old sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `s_new::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
 function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float64}
 
@@ -42,13 +42,13 @@ Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `old_sr::Int64`: old sampling rate
-  - `new_sr::Int64`: new sampling rate
+- `s::AbstractArray`
+- `old_sr::Int64`: old sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `s_new::Array{Float64, 3}`
+- `s_new::Array{Float64, 3}`
 """
 function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64, 3}
 
@@ -79,12 +79,12 @@ Resample (up- or down-sample).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `old_sr::Int64`: old sampling rate - `new_sr::Int64`: new sampling rate
+- `obj::NeuroAnalyzer.NEURO`
+- `old_sr::Int64`: old sampling rate - `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
@@ -107,12 +107,12 @@ Resample (up- or down-sample).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `new_sr::Int64`: new sampling rate
+- `obj::NeuroAnalyzer.NEURO`
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
@@ -134,12 +134,12 @@ Upsample.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `new_sr::Int64`: new sampling rate
+- `obj::NeuroAnalyzer.NEURO`
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
@@ -169,12 +169,12 @@ Upsample.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `new_sr::Int64`: new sampling rate
+- `obj::NeuroAnalyzer.NEURO`
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
@@ -196,12 +196,12 @@ Downsample.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `new_sr::Int64`: new sampling rate
+- `obj::NeuroAnalyzer.NEURO`
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
@@ -235,12 +235,12 @@ Downsample.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `new_sr::Int64`: new sampling rate
+- `obj::NeuroAnalyzer.NEURO`
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 

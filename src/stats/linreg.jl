@@ -8,8 +8,8 @@ Linear regression between two vectors.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `y::AbstractVector`
+- `x::AbstractVector`
+- `y::AbstractVector`
 
 # Notes
 
@@ -19,14 +19,14 @@ To predict, use: `new_x = DataFrame(x = [3.5, 7]); predict(lr, new_x)
 
 Named tuple containing:
 
-  - `lr::StatsModels.TableRegressionModel`: model
-  - `c::Vector{Float64}`: coefficients
-  - `se::Vector{Float64}`: standard error for coefficients
-  - `R2::Float64`: R²
-  - `R2adj::Float64`: R² adjusted
-  - `aic::Float64`:: Akaike’s Information Criterion (AIC)
-  - `bic::Float64`:: Bayesian Information Criterion (BIC)
-  - `lf::Vector{Float64}`: linear fit (plot(x, lf))
+- `lr::StatsModels.TableRegressionModel`: model
+- `c::Vector{Float64}`: coefficients
+- `se::Vector{Float64}`: standard error for coefficients
+- `R2::Float64`: R²
+- `R2adj::Float64`: R² adjusted
+- `aic::Float64`:: Akaike’s Information Criterion (AIC)
+- `bic::Float64`:: Bayesian Information Criterion (BIC)
+- `lf::Vector{Float64}`: linear fit (plot(x, lf))
 """
 function linreg(
         x::AbstractVector, y::AbstractVector
@@ -61,16 +61,16 @@ Calculate R², R² adjusted, Akaike’s Information Criterion (AIC) and Bayesian
 
 # Arguments
 
-  - `m::StatsModels.TableRegressionModel`: linear regression model
+- `m::StatsModels.TableRegressionModel`: linear regression model
 
 # Returns
 
 Named tuple containing:
 
-  - `R2::Float64`
-  - `R2adj::Float64`
-  - `bic::Float64`
-  - `bic::Float64`
+- `R2::Float64`
+- `R2adj::Float64`
+- `bic::Float64`
+- `bic::Float64`
 """
 function infcrit(
         m::T

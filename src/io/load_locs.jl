@@ -23,23 +23,23 @@ Accepted formats:
 
 Channel locations:
 
-  - `loc_theta`: polar angle
-  - `loc_radius`: polar radius
-  - `loc_x`: spherical Cartesian x
-  - `loc_y`: spherical Cartesian y
-  - `loc_z`: spherical Cartesian z
-  - `loc_radius_sph`: spherical radius
-  - `loc_theta_sph`: spherical horizontal angle
-  - `loc_phi_sph`: spherical azimuth angle
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
+- `loc_x`: spherical Cartesian x
+- `loc_y`: spherical Cartesian y
+- `loc_z`: spherical Cartesian z
+- `loc_radius_sph`: spherical radius
+- `loc_theta_sph`: spherical horizontal angle
+- `loc_phi_sph`: spherical azimuth angle
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `file_name::String`: name of the file to load
+- `obj::NeuroAnalyzer.NEURO`
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.NEURO
 
@@ -267,19 +267,19 @@ Accepted formats:
 
 Channel locations:
 
-  - `loc_theta`: polar angle
-  - `loc_radius`: polar radius
-  - `loc_x`: spherical Cartesian x
-  - `loc_y`: spherical Cartesian y
-  - `loc_z`: spherical Cartesian z
-  - `loc_radius_sph`: spherical radius
-  - `loc_theta_sph`: spherical horizontal angle
-  - `loc_phi_sph`: spherical azimuth angle
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
+- `loc_x`: spherical Cartesian x
+- `loc_y`: spherical Cartesian y
+- `loc_z`: spherical Cartesian z
+- `loc_radius_sph`: spherical radius
+- `loc_theta_sph`: spherical horizontal angle
+- `loc_phi_sph`: spherical azimuth angle
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `file_name::String`
+- `obj::NeuroAnalyzer.NEURO`
+- `file_name::String`
 
 # Return
 

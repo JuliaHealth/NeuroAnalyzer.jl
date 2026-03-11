@@ -7,18 +7,18 @@ Create model of 2-dimensional electric field.
 
 # Arguments
 
-  - `q::Vector{Int64}`: charges values, qy::Vector{Int64}::String`: anode location
-  - `qx::Vector{Int64}`: charges X positions (1 to 100)
-  - `qy::Vector{Int64}`: charges Y positions (1 to 100)
+- `q::Vector{Int64}`: charges values, qy::Vector{Int64}::String`: anode location
+- `qx::Vector{Int64}`: charges X positions (1 to 100)
+- `qy::Vector{Int64}`: charges Y positions (1 to 100)
 
 # Returns
 
 Named tuple containing:
 
-  - `qq::Vector{Vector{Float64}}`: charges positions
-  - `norm_e::Matrix{Float64}`: normalized electric field
-  - `ex::Matrix{Float64}`: electric field X axis vector
-  - `ey::Matrix{Float64}`: electric field Y axis vector
+- `qq::Vector{Vector{Float64}}`: charges positions
+- `norm_e::Matrix{Float64}`: normalized electric field
+- `ex::Matrix{Float64}`: electric field X axis vector
+- `ey::Matrix{Float64}`: electric field Y axis vector
 """
 function efield2d(
         q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64}

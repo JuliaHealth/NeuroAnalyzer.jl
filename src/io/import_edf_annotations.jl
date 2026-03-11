@@ -7,11 +7,11 @@ Load annotations from EDF+ file and return `markers` DataFrame. This function is
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `markers::DataFrame`
+- `markers::DataFrame`
 """
 function import_edf_annotations(file_name::String)::DataFrame
 

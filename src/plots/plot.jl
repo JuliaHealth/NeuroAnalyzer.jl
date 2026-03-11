@@ -7,43 +7,43 @@ Plot signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
-  - `ep::Int64=1`: first epoch to display
-  - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-  - `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points (for ERP/ERF)
-  - `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot (for ERP/ERF)
-  - `xlabel::String="default"`: x-axis label
-  - `ylabel::String="default"`: y-axis label
-  - `title::String="default"`: plot title
-  - `markers::Bool=true`: draw markers if available
-  - `scale::Bool=true`: draw scales
-  - `group_ch::Bool=true`: group channels by type
-  - `type::Symbol=:normal`: plot type:
-      + `:normal`
-      + `:butterfly`
-      + `:stack`: for ERP/ERF/MEP
-      + `:topo`: for ERP/ERF
-  - `avg::Bool=false`: plot averaged channel in butterfly plot
-  - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
-  - `n_channels::Int64=20`: number of visible channels
-  - `n_epochs::Int64=5`: number of visible epochs
-  - `cb::Bool=true`: plot color bar (for ERP/ERF/MEP)
-  - `cb_title::String="default"`: color bar title (for ERP/ERF/MEP)
-  - `peaks::Bool=true`: draw peaks (for ERP/ERF/MEP)
-  - `leg::Bool=true`: if true, add legend with channel labels (for ERP/ERF/MEP)
-  - `yrev::Bool=false`: reverse y-axis (for ERP/ERF/MEP)
-  - `smooth::Bool=false`: smooth the image using Gaussian blur (for ERP/ERF/MEP)
-  - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing) (for ERP/ERF/MEP)
-  - `zl::Bool=true`: draw line at t = 0 (for ERP/ERF/MEP)
-  - `mono::Bool=false`: use color or gray palette
-  - `res::Int64=1`: resampling factor (draw every res-nth sample)
-  - `snap::Bool=true`: snap to grid when placing markers
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
+- `ep::Int64=1`: first epoch to display
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points (for ERP/ERF)
+- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot (for ERP/ERF)
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `markers::Bool=true`: draw markers if available
+- `scale::Bool=true`: draw scales
+- `group_ch::Bool=true`: group channels by type
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:butterfly`
+    - `:stack`: for ERP/ERF/MEP
+    - `:topo`: for ERP/ERF
+- `avg::Bool=false`: plot averaged channel in butterfly plot
+- `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
+- `n_channels::Int64=20`: number of visible channels
+- `n_epochs::Int64=5`: number of visible epochs
+- `cb::Bool=true`: plot color bar (for ERP/ERF/MEP)
+- `cb_title::String="default"`: color bar title (for ERP/ERF/MEP)
+- `peaks::Bool=true`: draw peaks (for ERP/ERF/MEP)
+- `leg::Bool=true`: if true, add legend with channel labels (for ERP/ERF/MEP)
+- `yrev::Bool=false`: reverse y-axis (for ERP/ERF/MEP)
+- `smooth::Bool=false`: smooth the image using Gaussian blur (for ERP/ERF/MEP)
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing) (for ERP/ERF/MEP)
+- `zl::Bool=true`: draw line at t = 0 (for ERP/ERF/MEP)
+- `mono::Bool=false`: use color or gray palette
+- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `snap::Bool=true`: snap to grid when placing markers
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot(
         obj::NeuroAnalyzer.NEURO;
@@ -180,23 +180,23 @@ Plot signal.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
-  - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-  - `xlabel::String="default"`: x-axis label
-  - `ylabel::String="default"`: y-axis label
-  - `title::String="default"`: plot title
-  - `scale::Bool=true`: draw scales
-  - `group_ch::Bool=true`: group channels by type
-  - `n_channels::Int64=20`: number of visible channels
-  - `n_epochs::Int64=5`: number of visible epochs
-  - `res::Int64=1`: resampling factor (draw every res-nth sample)
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `scale::Bool=true`: draw scales
+- `group_ch::Bool=true`: group channels by type
+- `n_channels::Int64=20`: number of visible channels
+- `n_epochs::Int64=5`: number of visible epochs
+- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot(
         obj1::NeuroAnalyzer.NEURO,
@@ -245,15 +245,15 @@ Plot continuous signal.
 
 # Arguments
 
-  - `t::AbstractVector`: time points
-  - `s::AbstractVector`: signal data
-  - `xlabel::String="Time [s]"`: x-axis label
-  - `ylabel::String="Amplitude"`: y-axis label
-  - `title::String=""`: plot title
+- `t::AbstractVector`: time points
+- `s::AbstractVector`: signal vector: signal data
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude"`: y-axis label
+- `title::String=""`: plot title
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot(
         t::AbstractVector, s::AbstractVector; xlabel::String = "Time [s]", ylabel::String = "Amplitude", title::String = ""

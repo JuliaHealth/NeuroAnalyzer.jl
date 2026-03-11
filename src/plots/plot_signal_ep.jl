@@ -18,29 +18,29 @@ Plot epoched signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
-  - `ep::Int64=1`: first epoch to plot
-  - `xlabel::String="default"`: x-axis label, default is Time [s]
-  - `ylabel::String="default"`: y-axis label, default is no label
-  - `title::String="default"`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `markers::Bool`: draw markers if available
-  - `scale::Bool=true`: draw scale
-  - `group_ch::Bool=true`: group channels by type
-  - `type::Symbol=:normal`: plot type:
-      + `:normal`
-      + `:butterfly`: butterfly plot
-  - `avg::Bool=false`: plot averaged channel in butterfly plot
-  - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
-  - `n_channels::Int64=20`: number of visible channels
-  - `n_epochs::Int64=5`: number of visible epochs
-  - `res::Int64=1`: resampling factor (draw every res-nth sample)
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
+- `ep::Int64=1`: first epoch to plot
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is no label
+- `title::String="default"`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `markers::Bool`: draw markers if available
+- `scale::Bool=true`: draw scale
+- `group_ch::Bool=true`: group channels by type
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:butterfly`: butterfly plot
+- `avg::Bool=false`: plot averaged channel in butterfly plot
+- `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
+- `n_channels::Int64=20`: number of visible channels
+- `n_epochs::Int64=5`: number of visible epochs
+- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_ep(
         obj::NeuroAnalyzer.NEURO;

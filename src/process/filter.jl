@@ -11,31 +11,31 @@ Create FIR or IIR filter.
 
 # Arguments
 
-  - `fprototype::Symbol`: filter prototype:
-      + `:fir`: FIR filter
-      + `:firls`: weighted least-squares FIR filter
-      + `:remez`: Remez FIR filter
-      + `:butterworth`: IIR filter
-      + `:chebyshev1` IIR filter
-      + `:chebyshev2` IIR filter
-      + `:elliptic` IIR filter
-      + `:iirnotch`: second-order IIR notch filter
-  - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
-      + `:lp`: low pass
-      + `:hp`: high pass
-      + `:bp`: band pass
-      + `:bs`: band stop
-  - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `fs::Int64`: signal sampling rate
-  - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-  - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-  - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
+    - `:iirnotch`: second-order IIR notch filter
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `fs::Int64`: signal sampling rate
+- `order::Union{Nothing, Int64}=nothing`: filter order
+- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
+- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 
 # Returns
 
-  - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
 """
 function filter_create(;
         fprototype::Symbol,
@@ -334,16 +334,16 @@ Apply IIR or FIR filter.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-  - `dir:Symbol=:twopass`: filtering direction:
-      + `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-      + `:onepass`: single pass
-      + `:reverse`: one pass, reverse direction
+- `s::AbstractVector`: signal vector
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
+    - `:reverse`: one pass, reverse direction
 
 # Returns
 
-  - `s_new::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
 function filter_apply(
         s::AbstractVector;
@@ -366,17 +366,17 @@ Apply IIR or FIR filter.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`
-  - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-  - `dir:Symbol=:twopass`: filtering direction:
-      + `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-      + `:onepass`: single pass
-      + `:reverse`: one pass, reverse direction
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
+    - `:reverse`: one pass, reverse direction
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function filter_apply(
         obj::NeuroAnalyzer.NEURO;
@@ -424,17 +424,17 @@ Apply IIR or FIR filter.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`
-  - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-  - `dir:Symbol=:twopass`: filtering direction:
-      + `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-      + `:onepass`: single pass
-      + `:reverse`: one pass, reverse direction
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
+    - `:reverse`: one pass, reverse direction
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function filter_apply!(
         obj::NeuroAnalyzer.NEURO;
@@ -459,38 +459,38 @@ Apply filtering.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `fprototype::Symbol`: filter prototype:
-      + `:fir`: FIR filter
-      + `:firls`: weighted least-squares FIR filter
-      + `:remez`: Remez FIR filter
-      + `:butterworth`: IIR filter
-      + `:chebyshev1` IIR filter
-      + `:chebyshev2` IIR filter
-      + `:elliptic` IIR filter
-      + `:iirnotch`: second-order IIR notch filter
-  - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
-      + `:lp`: low pass
-      + `:hp`: high pass
-      + `:bp`: band pass
-      + `:bs`: band stop
-  - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `fs::Int64`: signal sampling rate
-  - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-  - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-  - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `dir:Symbol=:twopass`: filtering direction:
-      + `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-      + `:onepass`: single pass
-      + `:reverse`: one pass, reverse direction
-  - `preview::Bool=false`: plot filter response
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
+    - `:iirnotch`: second-order IIR notch filter
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `fs::Int64`: signal sampling rate
+- `order::Union{Nothing, Int64}=nothing`: filter order
+- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
+- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
+    - `:reverse`: one pass, reverse direction
+- `preview::Bool=false`: plot filter response
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 
 If `preview=true`, it will return `GLMakie.Figure`.
 """
@@ -550,38 +550,38 @@ Apply filtering.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `fprototype::Symbol`: filter prototype:
-      + `:fir`: FIR filter
-      + `:firls`: weighted least-squares FIR filter
-      + `:remez`: Remez FIR filter
-      + `:butterworth`: IIR filter
-      + `:chebyshev1` IIR filter
-      + `:chebyshev2` IIR filter
-      + `:elliptic` IIR filter
-      + `:iirnotch`: second-order IIR notch filter
-  - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
-      + `:lp`: low pass
-      + `:hp`: high pass
-      + `:bp`: band pass
-      + `:bs`: band stop
-  - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `fs::Int64`: signal sampling rate
-  - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-  - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-  - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `dir:Symbol=:twopass`: filtering direction:
-      + `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-      + `:onepass`: single pass
-      + `:reverse`: one pass, reverse direction
-  - `preview::Bool=false`: plot filter response
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
+    - `:iirnotch`: second-order IIR notch filter
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `fs::Int64`: signal sampling rate
+- `order::Union{Nothing, Int64}=nothing`: filter order
+- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
+- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
+    - `:reverse`: one pass, reverse direction
+- `preview::Bool=false`: plot filter response
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 
 If `preview=true`, it will return `GLMakie.Figure`.
 """

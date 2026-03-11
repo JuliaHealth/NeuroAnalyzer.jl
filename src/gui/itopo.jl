@@ -8,12 +8,12 @@ Interactive topographical map of continuous signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}`: channels to plot
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
@@ -349,12 +349,12 @@ Interactive topographical map of epoched signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}`: channels to plot
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

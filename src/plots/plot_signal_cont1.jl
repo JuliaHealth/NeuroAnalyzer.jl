@@ -16,29 +16,29 @@ Plot continuous signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
-  - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-  - `xlabel::String="default"`: x-axis label
-  - `ylabel::String="default"`: y-axis label
-  - `title::String="default"`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `markers::Bool`: draw markers if available
-  - `scale::Bool=true`: draw scale
-  - `group_ch::Bool=true`: group channels by type
-  - `type::Symbol=:normal`: plot type:
-      + `:normal`
-      + `:butterfly`: butterfly plot
-  - `avg::Bool=false`: plot averaged channel in butterfly plot
-  - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
-  - `n_channels::Int64=20`: number of visible channels
-  - `res::Int64=1`: resampling factor (draw every res-nth sample)
-  - `snap::Bool=true`: snap to grid when placing markers
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `markers::Bool`: draw markers if available
+- `scale::Bool=true`: draw scale
+- `group_ch::Bool=true`: group channels by type
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:butterfly`: butterfly plot
+- `avg::Bool=false`: plot averaged channel in butterfly plot
+- `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
+- `n_channels::Int64=20`: number of visible channels
+- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `snap::Bool=true`: snap to grid when placing markers
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_cont(
         obj::NeuroAnalyzer.NEURO;

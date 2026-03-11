@@ -18,12 +18,12 @@ Hemisphere channels are detected automatically via `channel_pick()`.
 - `obj::NeuroAnalyzer.NEURO`
 - `frq::Union{Real, Tuple{<:Real, <:Real}}`: frequency at which the index is calculated; if range is provided, than averaged index across the range is calculated
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples

@@ -8,22 +8,22 @@ Perform Finger Tapping Test (FTT) in GUI mode. Use computer keyboard (SPACEBAR k
 
 # Arguments
 
-  - `duration::Int64=20`: single trial duration in seconds
-  - `trials::Int64=2`: number of trials
-  - `interval::Int64=2`: interval between trials in seconds
-  - `gpio::Int64=-1`: Raspberry Pi GPIO to which the switch is connected (e.g. `gpio=23` is Pi board pin 16); set to -1 to disable using GPIO
-  - `port_name::String=""`: serial port to which the switch is connected (e.g. `/dev/ttyACM0`); set to "" to disable using serial port
+- `duration::Int64=20`: single trial duration in seconds
+- `trials::Int64=2`: number of trials
+- `interval::Int64=2`: interval between trials in seconds
+- `gpio::Int64=-1`: Raspberry Pi GPIO to which the switch is connected (e.g. `gpio=23` is Pi board pin 16); set to -1 to disable using GPIO
+- `port_name::String=""`: serial port to which the switch is connected (e.g. `/dev/ttyACM0`); set to "" to disable using serial port
 
 # Returns
 
 Named tuple containing:
 
-  - `taps::Vector{Int64}`: number of taps per trial
-  - `tap_t::Vector{Vector{Float64}}`: taps time point [ms]
-  - `tap_d::Vector{Vector{Float64}}`: taps duration [ms]
-  - `taps_int::Vector{Int64}`: number of taps per trial during intervals
-  - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
-  - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
+- `taps::Vector{Int64}`: number of taps per trial
+- `tap_t::Vector{Vector{Float64}}`: taps time point [ms]
+- `tap_d::Vector{Vector{Float64}}`: taps duration [ms]
+- `taps_int::Vector{Int64}`: number of taps per trial during intervals
+- `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
+- `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function iftt(
         duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
@@ -462,22 +462,22 @@ Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR k
 
 # Arguments
 
-  - `duration::Int64=20`: single trial duration in seconds
-  - `trials::Int64=2`: number of trials
-  - `interval::Int64=2`: interval between trials in seconds
-  - `gpio::Int64=-1`: Raspberry Pi GPIO to which the switch is connected (e.g. `gpio=23` is Pi board pin 16); set to -1 to disable using GPIO
-  - `port_name::String=""`: serial port to which the switch is connected (e.g. `/dev/ttyACM0`); set to "" to disable using serial port
+- `duration::Int64=20`: single trial duration in seconds
+- `trials::Int64=2`: number of trials
+- `interval::Int64=2`: interval between trials in seconds
+- `gpio::Int64=-1`: Raspberry Pi GPIO to which the switch is connected (e.g. `gpio=23` is Pi board pin 16); set to -1 to disable using GPIO
+- `port_name::String=""`: serial port to which the switch is connected (e.g. `/dev/ttyACM0`); set to "" to disable using serial port
 
 # Returns
 
 Named tuple containing:
 
-  - `taps::Vector{Int64}`: number of taps per trial
-  - `tap_t::Vector{Vector{Float64}}`: taps time point [ms]
-  - `tap_d::Vector{Vector{Float64}}`: taps duration [ms]
-  - `taps_int::Vector{Int64}`: number of taps per trial during intervals
-  - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
-  - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
+- `taps::Vector{Int64}`: number of taps per trial
+- `tap_t::Vector{Vector{Float64}}`: taps time point [ms]
+- `tap_d::Vector{Vector{Float64}}`: taps duration [ms]
+- `taps_int::Vector{Int64}`: number of taps per trial during intervals
+- `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
+- `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function ftt(
         duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""

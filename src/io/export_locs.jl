@@ -7,13 +7,13 @@ Export channel locations data, format is based on `file_name` extension (.csv, .
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `file_name::String`
-  - `overwrite::Bool=false`
+- `obj::NeuroAnalyzer.NEURO`
+- `file_name::String`
+- `overwrite::Bool=false`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function export_locs(
         obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
@@ -81,13 +81,13 @@ Export channel locations, format is based on `file_name` extension (.ced, .locs,
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `file_name::String`
-  - `overwrite::Bool=false`
+- `locs::DataFrame`
+- `file_name::String`
+- `overwrite::Bool=false`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function export_locs(locs::DataFrame; file_name::String, overwrite::Bool = false)::Nothing
 

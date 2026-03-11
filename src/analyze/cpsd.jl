@@ -10,12 +10,12 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -164,9 +164,9 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 - `s1::AbstractArray`: signal array (channels × samples × epochs)
 - `s2::AbstractArray`: signal array (channels × samples × epochs)
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -260,9 +260,9 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `flim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers

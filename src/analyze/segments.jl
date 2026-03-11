@@ -9,11 +9,11 @@ Calculate mean of a segment (e.g. spectrogram).
 
 # Arguments
 
-  - `seg::AbstractArray`
+- `seg::AbstractArray`
 
 # Returns
 
-  - `sm::Vector{Float64}`: averaged segment
+- `sm::Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)::Vector{Float64}
 
@@ -31,15 +31,15 @@ Calculate mean of two segments (e.g. spectrograms).
 
 # Arguments
 
-  - `seg1::AbstractArray`
-  - `seg2::AbstractArray`
+- `seg1::AbstractArray`
+- `seg2::AbstractArray`
 
 # Returns
 
 Named tuple containing:
 
-  - `seg1::Vector{Float64}`: averaged segment 1
-  - `seg2::Vector{Float64}`: averaged segment 2
+- `seg1::Vector{Float64}`: averaged segment 1
+- `seg2::Vector{Float64}`: averaged segment 2
 """
 function seg_mean(seg1::AbstractArray, seg2::AbstractArray)::@NamedTuple{seg1::Vector{Float64}, seg2::Vector{Float64}}
 
@@ -57,14 +57,14 @@ Extract segment from a matrix.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `rc::NTuple{4, Int64}`: upper-left corner row and column, bottom-right corner row and column
-  - `c::Bool=false`: if true, use circular segment; for circular segment the segment is always returned as vector
-  - `v::Bool=false`: if true, return as vector (matrix m by rows over columns)
+- `m::AbstractMatrix`
+- `rc::NTuple{4, Int64}`: upper-left corner row and column, bottom-right corner row and column
+- `c::Bool=false`: if true, use circular segment; for circular segment the segment is always returned as vector
+- `v::Bool=false`: if true, return as vector (matrix m by rows over columns)
 
 # Returns
 
-  - `seg::Union{AbstractMatrix, AbstractVector}`
+- `seg::Union{AbstractMatrix, AbstractVector}`
 """
 function seg_extract(
         m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool = false, c::Bool = false
@@ -109,24 +109,24 @@ Extract segment from a matrix using thresholding.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `threshold::Union{Real, Tuple{Real, Real}}=0`: threshold
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: return equal to threshold
-      + `:neq`: return not equal to threshold
-      + `:geq`: return ≥ to threshold
-      + `:leq`: return ≤ to threshold
-      + `:g`: return > to threshold
-      + `:l`: return < to threshold
-      + `:in`: draw region is values are in the threshold values, including threshold boundaries
-      + `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `m::AbstractMatrix`
+- `threshold::Union{Real, Tuple{Real, Real}}=0`: threshold
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: return equal to threshold
+    - `:neq`: return not equal to threshold
+    - `:geq`: return ≥ to threshold
+    - `:leq`: return ≤ to threshold
+    - `:g`: return > to threshold
+    - `:l`: return < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
 Named tuple containing:
 
-  - `idx::Vector{CartesianIndex{2}}`: Cartesian coordinates of matrix elements
-  - `bm::Matrix{Bool}`: map of the segment
+- `idx::Vector{CartesianIndex{2}}`: Cartesian coordinates of matrix elements
+- `bm::Matrix{Bool}`: map of the segment
 """
 function seg_extract(
         m::AbstractMatrix; threshold::Union{Real, Tuple{Real, Real}} = 0, threshold_type::Symbol = :neq
@@ -175,17 +175,17 @@ Interactive selection of a matrix area.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `shape::Symbol=:r`: selection shape:
-      + `:r`: rectangular
-      + `:p`: point
-      + `:c`: circular
-  - `extract::Bool=false`: if true, return values of the matrix
-  - `v::Bool=false`: if true, return as vector (matrix m by rows over columns), always true if `shape=:c`
+- `m::AbstractMatrix`
+- `shape::Symbol=:r`: selection shape:
+    - `:r`: rectangular
+    - `:p`: point
+    - `:c`: circular
+- `extract::Bool=false`: if true, return values of the matrix
+- `v::Bool=false`: if true, return as vector (matrix m by rows over columns), always true if `shape=:c`
 
 # Returns
 
-  - `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
+- `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
 function seg_select(
         m::AbstractMatrix; shape::Symbol = :r, extract::Bool = false, v::Bool = false

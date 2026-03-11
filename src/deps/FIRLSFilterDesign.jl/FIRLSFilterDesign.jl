@@ -292,14 +292,14 @@ Constructs the matrix ``Q`` used in the equation ``Qa = b``, based on a set of w
 
 # Arguments
 
-  - `M::Integer`      : indicator of the amount of elements needed.
-  - `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
-  - `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
-  - `fir_type::FIR`   : indicates the type of FIR filter.
+- `M::Integer`      : indicator of the amount of elements needed.
+- `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
+- `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
+- `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
 
-  - `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
+- `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
 """
 function get_Q(M, f, W, fir_type)
     q = get_q(M, f, W, fir_type)
@@ -313,12 +313,12 @@ Constructs the matrix ``Q`` used in the equation ``Qa = b``, when there are no w
 
 # Arguments
 
-  - `M::Integer`      : indicator of the amount of elements needed.
-  - `fir_type::FIR`   : indicates the type of FIR filter.
+- `M::Integer`      : indicator of the amount of elements needed.
+- `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
 
-  - `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
+- `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
 """
 get_Q(M, fir_type) = I
 """
@@ -328,12 +328,12 @@ Constructs the matrix ``Q`` used in the equation ``Qa = b``, when there are no w
 
 # Arguments
 
-  - `M::Integer`      : indicator of the amount of elements needed.
-  - `fir_type::FIR_I`   : indicates the type of FIR filter is I.
+- `M::Integer`      : indicator of the amount of elements needed.
+- `fir_type::FIR_I`   : indicates the type of FIR filter is I.
 
 # Outputs
 
-  - `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
+- `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
 """
 function get_Q(M, fir_type::FIR_I)
     v_diag = fill(1.0, M + 1)
@@ -363,14 +363,14 @@ Finds the vector ``q`` which is used to populate the matrix ``Q``.
 
 # Arguments
 
-  - `M::Integer`      : indicator of the amount of elements needed.
-  - `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
-  - `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
-  - `fir_type::FIR`   : indicates the type of FIR filter.
+- `M::Integer`      : indicator of the amount of elements needed.
+- `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
+- `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
+- `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
 
-  - `q_out::Vector`   : a vector of q-values that are used to fill in the Q-matrix.
+- `q_out::Vector`   : a vector of q-values that are used to fill in the Q-matrix.
     ...
 """
 function get_q(M, f, W, fir_type)
@@ -434,15 +434,15 @@ Finds the vector ``b`` used in the equation ``Qa = b``.
 
 # Arguments
 
-  - `M::Integer`      : Size of the `b` vector is `M+1` .
-  - `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning the interval [0, fs/2].
-  - `D::Matrix`       : a matrix of size `(N,2)` which contains rows of desired frequency response values for the frequency bands in `f`. The first and second columns indicate the desired response at the lower and upper bound of the frequency bands, interpolated linearly in between.
-  - `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
-  - `fir_type::FIR`   : indicates the type of FIR filter.
+- `M::Integer`      : Size of the `b` vector is `M+1` .
+- `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning the interval [0, fs/2].
+- `D::Matrix`       : a matrix of size `(N,2)` which contains rows of desired frequency response values for the frequency bands in `f`. The first and second columns indicate the desired response at the lower and upper bound of the frequency bands, interpolated linearly in between.
+- `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
+- `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
 
-  - `b_out::Vector`   : a vector of size `(M+1,)`, the b-vector used in the equation ``Qa = b``.
+- `b_out::Vector`   : a vector of size `(M+1,)`, the b-vector used in the equation ``Qa = b``.
     ...
 """
 function get_b(M, f, D, W, fir_type)

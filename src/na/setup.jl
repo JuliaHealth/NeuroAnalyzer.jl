@@ -17,7 +17,7 @@ Nothing
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_info()::Nothing
 
@@ -129,11 +129,11 @@ Change `progress_bar` preference.
 
 # Arguments
 
-  - `value::Bool`: value
+- `value::Bool`: value
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_set_progress_bar(value::Bool)::Nothing
 
@@ -151,11 +151,11 @@ Change `verbose` preference.
 
 # Arguments
 
-  - `value::Bool`: value
+- `value::Bool`: value
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_set_verbose(value::Bool)::Nothing
 
@@ -173,11 +173,11 @@ Change `colors` preference.
 
 # Arguments
 
-  - `value::Bool`: value
+- `value::Bool`: value
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_set_colors(value::Bool)::Nothing
 
@@ -195,14 +195,14 @@ Set and save NeuroAnalyzer preferences.
 
 # Arguments
 
-  - `progress_bar::Bool`
-  - `verbose::Bool`
-  - `exclude_bads::Bool`
-  - `colors::Bool`
+- `progress_bar::Bool`
+- `verbose::Bool`
+- `exclude_bads::Bool`
+- `colors::Bool`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_set_prefs(; progress_bar::Bool, verbose::Bool, exclude_bads::Bool, colors::Bool)::Nothing
 
@@ -226,7 +226,7 @@ Nothing
 
 # Returns
 
-  - `VER::String`
+- `VER::String`
 """
 function na_version()::String
 
@@ -248,11 +248,11 @@ Change `exclude_bads` preference.
 
 # Arguments
 
-  - `value::Bool`: value
+- `value::Bool`: value
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function na_set_exclude_bads(value::Bool)::Nothing
 

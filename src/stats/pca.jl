@@ -10,19 +10,19 @@ Calculate `n` first Primary Components (PCs).
 
 # Arguments
 
-  - `m::Matrix{Float64}`: observations × variables
-  - `n=size(m, 2)::Int64`: number of PCs
-  - `zstd::Bool=true`: perform z score standardization before performing PCA
+- `m::Matrix{Float64}`: observations × variables
+- `n=size(m, 2)::Int64`: number of PCs
+- `zstd::Bool=true`: perform z score standardization before performing PCA
 
 # Returns
 
 Named tuple containing:
 
-  - `pc::DataFrame`: PC(1)..PC(n)
-  - `pcv::Vector{Float64}`: PC variances (fraction of total variance explained)
-  - `pcm::Vector{Float64}`: PC means
-  - `pcp::Matrix{Float64}`: PC projections
-  - `pc_model::MultivariateStats.PCA{Float64}`: PC model
+- `pc::DataFrame`: PC(1)..PC(n)
+- `pcv::Vector{Float64}`: PC variances (fraction of total variance explained)
+- `pcm::Vector{Float64}`: PC means
+- `pcp::Matrix{Float64}`: PC projections
+- `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pcacomp(
         m::Matrix{Float64}; n::Int64 = size(m, 2), zstd::Bool = true
@@ -80,20 +80,20 @@ Calculate `n` first Primary Components (PCs).
 
 # Arguments
 
-  - `df::DataFrame`
-  - `vars::Union{Vector{String}, Vector{Symbol}}`: variable names
-  - `n::Int64`: number of PCs
-  - `zstd::Bool=true`: perform z score standardization before performing PCA
+- `df::DataFrame`
+- `vars::Union{Vector{String}, Vector{Symbol}}`: variable names
+- `n::Int64`: number of PCs
+- `zstd::Bool=true`: perform z score standardization before performing PCA
 
 # Returns
 
 Named tuple containing:
 
-  - `pc::DataFrame`: PC(1)..PC(n)
-  - `pcv::Vector{Float64}`: PC variances (fraction of total variance explained)
-  - `pcm::Vector{Float64}`: PC means
-  - `pcp::Matrix{Float64}`: PC projections
-  - `pc_model::MultivariateStats.PCA{Float64}`: PC model
+- `pc::DataFrame`: PC(1)..PC(n)
+- `pcv::Vector{Float64}`: PC variances (fraction of total variance explained)
+- `pcm::Vector{Float64}`: PC means
+- `pcp::Matrix{Float64}`: PC projections
+- `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pcacomp(
         df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
@@ -126,14 +126,14 @@ Plot PCA biplot.
 
 # Arguments
 
-  - `df::DataFrame`
-  - `vars::Union{Vector{String}, Vector{Symbol}}`: variable names
-  - `n::Int64`: number of PCs
-  - `zstd::Bool=true`: perform z score standardization before performing PCA
+- `df::DataFrame`
+- `vars::Union{Vector{String}, Vector{Symbol}}`: variable names
+- `n::Int64`: number of PCs
+- `zstd::Bool=true`: perform z score standardization before performing PCA
 
 # Returns
 
-  - `Union{Nothing, GLMakie.Figure}`
+- `Union{Nothing, GLMakie.Figure}`
 """
 function biplot(
         df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
@@ -180,14 +180,14 @@ Plot PCA scree plot.
 
 # Arguments
 
-  - `df::DataFrame`
-  - `vars::Union{Vector{String}, Vector{Symbol}}`: variable names
-  - `n::Int64`: number of PCs
-  - `zstd::Bool=true`: perform z score standardization before performing PCA
+- `df::DataFrame`
+- `vars::Union{Vector{String}, Vector{Symbol}}`: variable names
+- `n::Int64`: number of PCs
+- `zstd::Bool=true`: perform z score standardization before performing PCA
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function screeplot(
         df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64 = length(vars), zstd::Bool = true
@@ -231,16 +231,16 @@ Calculate recommended number of Primary Components (PCs).
 
 # Arguments
 
-  - `m::Matrix{Float64}`: observations × variables
-  - `zstd::Bool=true`: perform z score standardization before performing PCA
-  - `type::Symbol`
-      + `:var`: use total variation
-      + `:eig`: use eigenvalue
-  - `value::Real`: minimum % of total variation or threshold for eigenvalues (keep the components with eigenvalues greater than the threshold)
+- `m::Matrix{Float64}`: observations × variables
+- `zstd::Bool=true`: perform z score standardization before performing PCA
+- `type::Symbol`
+    - `:var`: use total variation
+    - `:eig`: use eigenvalue
+- `value::Real`: minimum % of total variation or threshold for eigenvalues (keep the components with eigenvalues greater than the threshold)
 
 # Returns
 
-  - `n::Int64`: recommended number of PCs
+- `n::Int64`: recommended number of PCs
 """
 function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real)::Int64
 

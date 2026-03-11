@@ -145,7 +145,7 @@ Calculate Hilbert transform (analytic signal).
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 - `db::Bool=false`: normalize powers to dB
 
 # Returns

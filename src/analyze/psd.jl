@@ -13,12 +13,12 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram (default)
-  - `:fft`: plain FFT periodogram
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform averaged over segments
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -127,12 +127,12 @@ Calculate Power Spectral Density for each channel of a matrix. Default method is
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram (default)
-  - `:fft`: plain FFT periodogram
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform averaged over segments
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -209,12 +209,12 @@ Calculate Power Spectral Density for a 3-D signal array. Default method is Welch
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram (default)
-  - `:fft`: plain FFT periodogram
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform averaged over segments
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -303,12 +303,12 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram (default)
-  - `:fft`: plain FFT periodogram
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform averaged over segments
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples

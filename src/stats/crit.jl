@@ -9,12 +9,12 @@ Calculate critical z score.
 
 # Arguments
 
-  - `alpha::Float64=0.05`: alpha value
-  - `twotailed::Bool=true`: one- or two-tailed probability
+- `alpha::Float64=0.05`: alpha value
+- `twotailed::Bool=true`: one- or two-tailed probability
 
 # Returns
 
-  - `z::Float64`
+- `z::Float64`
 
 # Notes
 
@@ -43,13 +43,13 @@ Calculate critical t value.
 
 # Arguments
 
-  - `df::Real`: degrees of freedom (usually df = n - 1)
-  - `alpha::Float64=0.05`: alpha value
-  - `twotailed::Bool=true`: one- or two-tailed probability
+- `df::Real`: degrees of freedom (usually df = n - 1)
+- `alpha::Float64=0.05`: alpha value
+- `twotailed::Bool=true`: one- or two-tailed probability
 
 # Returns
 
-  - `t::Float64`
+- `t::Float64`
 
 # Notes
 
@@ -82,12 +82,12 @@ Calculate critical Χ² score.
 
 # Arguments
 
-  - `df::Real`: degrees of freedom (usually df = n - 1)
-  - `alpha::Float64=0.05`: alpha value
+- `df::Real`: degrees of freedom (usually df = n - 1)
+- `alpha::Float64=0.05`: alpha value
 
 # Returns
 
-  - `chi::Float64`
+- `chi::Float64`
 """
 function crit_chi(df::Real, alpha::Float64 = 0.05)::Float64
 

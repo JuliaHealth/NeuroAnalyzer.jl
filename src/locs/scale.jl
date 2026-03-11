@@ -10,15 +10,15 @@ Scale channel locations.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `r::Real`: scaling factor
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `r::Real`: scaling factor
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_scale(locs::DataFrame; r::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
@@ -52,15 +52,15 @@ Scale channel locations.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `r::Real`: scaling factor
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `r::Real`: scaling factor
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_scale!(locs::DataFrame; r::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
@@ -77,14 +77,14 @@ Normalize channel locations to fit the unit sphere.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_normalize(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
@@ -131,14 +131,14 @@ Normalize channel locations to fit the unit sphere.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_normalize!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 

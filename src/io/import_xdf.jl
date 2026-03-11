@@ -7,11 +7,11 @@ Load Extensible Data Format (XDF) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 """
 function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
 

@@ -7,11 +7,11 @@ Plot a simplified plot of 10-20 EEG channels on a grid.
 
 # Arguments
 
-  - `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
 

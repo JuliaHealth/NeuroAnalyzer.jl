@@ -7,11 +7,11 @@ Zero channels at the beginning and at the end.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function ch_zero(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -32,11 +32,11 @@ Zero channels at the beginning and at the end.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function ch_zero!(obj::NeuroAnalyzer.NEURO)::Nothing
 

@@ -8,14 +8,14 @@ Center locs at (0, 0).
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_center(
         locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
@@ -79,14 +79,14 @@ Center locs at (0, 0).
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_center!(
         locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true

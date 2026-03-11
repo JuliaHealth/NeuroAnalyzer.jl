@@ -7,11 +7,11 @@ Load Neuroscan DAT file.
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `dat::DataFrame`
+- `dat::DataFrame`
 """
 function import_dat(file_name)::DataFrame
 

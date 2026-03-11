@@ -7,18 +7,18 @@ Calculate Phase Locking Value (PLV).
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
 
 # Returns
 
 Named tuple containing:
 
-  - `pv::Float64`: PLV value
-  - `sd::Vector{Float64}`: signal difference (s2 - s1)
-  - `phd::Vector{Float64}`: phase difference (s2 - s1)
-  - `s1ph::Vector{Float64}`: signal 1 phase
-  - `s2ph::Vector{Float64}`: signal 2 phase
+- `pv::Float64`: PLV value
+- `sd::Vector{Float64}`: signal difference (s2 - s1)
+- `phd::Vector{Float64}`: phase difference (s2 - s1)
+- `s1ph::Vector{Float64}`: signal 1 phase
+- `s2ph::Vector{Float64}`: signal 2 phase
 
 # Reference
 
@@ -57,22 +57,22 @@ Calculate Phase Locking Value (PLV).
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `obj1::NeuroAnalyzer.NEURO`
+- `obj2::NeuroAnalyzer.NEURO`
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
 Named tuple containing:
 
-  - `pv::Matrix{Float64}`: PLV value
-  - `sd::Array{Float64, 3}`: signal difference (s2 - s1)
-  - `phd::Array{Float64, 3}`: phase difference (s2 - s1)
-  - `s1ph::Array{Float64, 3}`: signal 1 phase
-  - `s2ph::Array{Float64, 3}`: signal 2 phase
+- `pv::Matrix{Float64}`: PLV value
+- `sd::Array{Float64, 3}`: signal difference (s2 - s1)
+- `phd::Array{Float64, 3}`: phase difference (s2 - s1)
+- `s1ph::Array{Float64, 3}`: signal 1 phase
+- `s2ph::Array{Float64, 3}`: signal 2 phase
 """
 function plv(
         obj1::NeuroAnalyzer.NEURO,
@@ -125,12 +125,12 @@ Calculate Phase Locking Value (PLV).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `pv::Array{Float64, 3}`: PLV value
+- `pv::Array{Float64, 3}`: PLV value
 """
 function plv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

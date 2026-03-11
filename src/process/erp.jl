@@ -10,13 +10,13 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `bl::Tuple{Real, Real}=(0, 0)`: baseline is from `b[1]` to `b[2]` seconds; if `bl` is greater than (0, 0), DC value is calculated as mean of the `b[1]` to `b[2]` seconds and subtracted from the signal
-  - `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
+- `obj::NeuroAnalyzer.NEURO`
+- `bl::Tuple{Real, Real}=(0, 0)`: baseline is from `b[1]` to `b[2]` seconds; if `bl` is greater than (0, 0), DC value is calculated as mean of the `b[1]` to `b[2]` seconds and subtracted from the signal
+- `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function average_epochs(
         obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real} = (0, 0), blfirst::Bool = false
@@ -77,13 +77,13 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `bl::Tuple{Real, Real}=(0, 0)`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
-  - `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
+- `obj::NeuroAnalyzer.NEURO`
+- `bl::Tuple{Real, Real}=(0, 0)`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
+- `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function average_epochs!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real} = (0, 0), blfirst::Bool = false)::Nothing
 
@@ -106,12 +106,12 @@ Sort epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `s::Vector{Int64}`: vector of sorting indices
+- `obj::NeuroAnalyzer.NEURO`
+- `s::Vector{Int64}`: vector of sorting indices
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.NEURO
 
@@ -137,12 +137,12 @@ Sort epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `s::Vector{Int64}`: vector of sorting indices
+- `obj::NeuroAnalyzer.NEURO`
+- `s::Vector{Int64}`: vector of sorting indices
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
 

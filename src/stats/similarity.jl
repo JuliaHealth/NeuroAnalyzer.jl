@@ -8,12 +8,12 @@ Calculate Jaccard similarity between two vectors.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `y::AbstractVector`
+- `x::AbstractVector`
+- `y::AbstractVector`
 
 # Returns
 
-  - `j::Float64`
+- `j::Float64`
 
 # Notes
 
@@ -37,12 +37,12 @@ Calculate Sorensen-Dice similarity index between two vectors.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `y::AbstractVector`
+- `x::AbstractVector`
+- `y::AbstractVector`
 
 # Returns
 
-  - `sdi::Float64`
+- `sdi::Float64`
 
 # Notes
 

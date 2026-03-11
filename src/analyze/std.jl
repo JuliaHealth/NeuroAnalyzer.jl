@@ -7,11 +7,11 @@ Calculate standard deviation of the signal data (along epochs).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `s::Matrix{Float64}`
+- `s::Matrix{Float64}`
 """
 function Statistics.std(obj::NeuroAnalyzer.NEURO)::Matrix{Float64}
 

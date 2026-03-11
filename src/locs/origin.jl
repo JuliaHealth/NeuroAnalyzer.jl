@@ -8,14 +8,14 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `x::Real=0`: move origin along X axis
-  - `y::Real=0`: move origin along Y axis
-  - `z::Real=0`: move origin along Z axis
+- `obj::NeuroAnalyzer.NEURO`
+- `x::Real=0`: move origin along X axis
+- `y::Real=0`: move origin along Y axis
+- `z::Real=0`: move origin along Z axis
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_origin(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::DataFrame
 
@@ -37,14 +37,14 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `x::Real=0`: move origin along X axis
-  - `y::Real=0`: move origin along Y axis
-  - `z::Real=0`: move origin along Z axis
+- `obj::NeuroAnalyzer.NEURO`
+- `x::Real=0`: move origin along X axis
+- `y::Real=0`: move origin along Y axis
+- `z::Real=0`: move origin along Z axis
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_origin!(obj::NeuroAnalyzer.NEURO; x::Real = 0, y::Real = 0, z::Real = 0)::Nothing
 
@@ -61,14 +61,14 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `x::Real=0`: move origin along X axis
-  - `y::Real=0`: move origin along Y axis
-  - `z::Real=0`: move origin along Z axis
+- `locs::DataFrame`
+- `x::Real=0`: move origin along X axis
+- `y::Real=0`: move origin along Y axis
+- `z::Real=0`: move origin along Z axis
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_origin!(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::Nothing
 

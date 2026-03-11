@@ -7,23 +7,23 @@ Return channel location details.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel name
-  - `out::Bool=true`: if true, print details
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::String`: channel name
+- `out::Bool=true`: if true, print details
 
 # Returns
 
 Named tuple containing:
 
-  - `label::String`: location label
-  - `theta_pl::Float64`: polar angle
-  - `radius_pl::Float64`: polar radius
-  - `x::Float64`: Cartesian X spherical coordinate
-  - `y::Float64`: Cartesian Y spherical coordinate
-  - `z::Float64`: Cartesian Z spherical coordinate
-  - `theta_sph::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  - `radius_sph::Float64`: spherical radius, the distance from the origin to the point
-  - `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `label::String`: location label
+- `theta_pl::Float64`: polar angle
+- `radius_pl::Float64`: polar radius
+- `x::Float64`: Cartesian X spherical coordinate
+- `y::Float64`: Cartesian Y spherical coordinate
+- `z::Float64`: Cartesian Z spherical coordinate
+- `theta_sph::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Float64`: spherical radius, the distance from the origin to the point
+- `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
 function locs_details(
         obj::NeuroAnalyzer.NEURO; ch::String, out::Bool = true

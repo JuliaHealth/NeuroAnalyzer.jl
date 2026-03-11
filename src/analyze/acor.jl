@@ -12,9 +12,9 @@ Calculate auto-correlation.
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-  - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
-  - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
-  - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
+    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
+    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
+    - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
 
@@ -89,13 +89,13 @@ Calculate auto-correlation.
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-  - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
-  - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
-  - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
+    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
+    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
+    - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
 
-  - `ac::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
+- `ac::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
 """
 function acor(
     s::AbstractArray;
@@ -145,9 +145,9 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-  - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
-  - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
-  - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
+    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
+    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
+    - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
 

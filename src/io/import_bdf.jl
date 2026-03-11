@@ -7,12 +7,12 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
-  - `detect_type::Bool=true`: detect channel type based on channel label
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on channel label
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 

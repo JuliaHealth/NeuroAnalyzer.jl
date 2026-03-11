@@ -398,11 +398,11 @@ Calculate power spectrum (in dB) envelope.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -494,11 +494,11 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -624,11 +624,11 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -763,11 +763,11 @@ Calculate spectral envelope (dominant frequency over time).
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
@@ -949,11 +949,11 @@ Calculate spectral envelope: mean and 95% CI.
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
@@ -1105,11 +1105,11 @@ Calculate spectral envelope: median and 95% CI.
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers

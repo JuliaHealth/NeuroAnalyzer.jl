@@ -11,12 +11,12 @@ Calculate spectrogram using STFT or multi-tapered method.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling frequency
 - `db::Bool=true`: normalize powers to dB
 - `method::Symbol=:stft`: PSD method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -85,24 +85,24 @@ Calculate spectrogram for each channel of a matrix.
 
 # Arguments
 
-  - `s::AbstractMatrix`: signal matrix (channels × samples)
-  - `fs::Int64`: sampling frequency
-  - `db::Bool=true`: normalize powers to dB
-  - `method::Symbol=:stft`: PSD method:
-      + `:stft`: short-time Fourier transform
-      + `:mt`: multi-tapered periodogram
-  - `nt::Int64=7`: number of Slepian tapers
-  - `wlen::Int64=fs`: window length, default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-  - `w::Bool=true`: if true, apply Hanning window
+- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `fs::Int64`: sampling frequency
+- `db::Bool=true`: normalize powers to dB
+- `method::Symbol=:stft`: PSD method:
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+- `nt::Int64=7`: number of Slepian tapers
+- `wlen::Int64=fs`: window length, default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
 Named tuple containing:
 
-  - `p::Array{Float64, 3}`: powers, shape `(freq, time, channels)`
-  - `f::Vector{Float64}`: frequencies
-  - `t::Vector{Float64}`: time points
+- `p::Array{Float64, 3}`: powers, shape `(freq, time, channels)`
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time points
 """
 function spectrogram(
     s::AbstractMatrix;
@@ -158,12 +158,12 @@ Calculate spectrogram.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: number of zeros to append
 - `method::Symbol=:stft`: spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
-  - `:hht`: Hilbert-Huang transform
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
+- `:hht`: Hilbert-Huang transform
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
 - `gw::Real=10`: Gaussian width in Hz

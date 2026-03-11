@@ -7,26 +7,26 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `x::Float64=0.95`: threshold
-  - `fs::Int64`: sampling rate
-  - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
-  - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
-  - `wlen::Int64=fs`: window length in samples, default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-  - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-  - `demean::Bool=true`: subtract DC before calculating PSD
+- `s::AbstractVector`: signal vector
+- `x::Float64=0.95`: threshold
+- `fs::Int64`: sampling rate
+- `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
+- `method::Symbol=:welch`: PSD method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+- `nt::Int64=7`: number of Slepian tapers
+- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `w::Bool=true`: if true, apply Hanning window
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+- `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
-  - `sef_frq::Float64`: spectral edge frequency
+- `sef_frq::Float64`: spectral edge frequency
 """
 function sef(
         s::AbstractVector;
@@ -88,26 +88,26 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `x::Float64=0.95`: threshold
-  - `fs::Int64`: sampling rate
-  - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
-  - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-  - `nt::Int64=7`: number of Slepian tapers
-  - `wlen::Int64=fs`: window length in samples, default is 1 second
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-  - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-  - `demean::Bool=true`: subtract DC before calculating PSD
+- `s::AbstractArray`
+- `x::Float64=0.95`: threshold
+- `fs::Int64`: sampling rate
+- `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
+- `method::Symbol=:welch`: PSD method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+- `nt::Int64=7`: number of Slepian tapers
+- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `w::Bool=true`: if true, apply Hanning window
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+- `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
-  - `sef_frq::Matrix{Float64}`: spectral edge frequency
+- `sef_frq::Matrix{Float64}`: spectral edge frequency
 """
 function sef(
         s::AbstractArray;
@@ -157,25 +157,25 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `x::Float64=0.95`: threshold
-  - `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: lower and upper frequency bounds, default is total power
-  - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-  - `nt::Int64=7`: number of Slepian tapers
-  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-  - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-  - `demean::Bool=true`: subtract DC before calculating PSD
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `x::Float64=0.95`: threshold
+- `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: lower and upper frequency bounds, default is total power
+- `method::Symbol=:welch`: PSD method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+- `nt::Int64=7`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `w::Bool=true`: if true, apply Hanning window
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
-  - `sef_frq::Matrix{Float64}`: spectral edge frequency
+- `sef_frq::Matrix{Float64}`: spectral edge frequency
 """
 function sef(
         obj::NeuroAnalyzer.NEURO;

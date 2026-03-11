@@ -8,12 +8,12 @@ Performs convolution in the time domain.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `kernel::AbstractVector`
+- `s::AbstractVector`: signal vector
+- `kernel::AbstractVector`
 
 # Returns
 
-  - `s_new::Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
+- `s_new::Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
 """
 function tconv(s::AbstractVector; kernel::AbstractVector)::Union{Vector{Float64}, Vector{ComplexF64}}
 
@@ -31,12 +31,12 @@ Perform convolution in the time domain.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `kernel::AbstractVector`: convolution kernel
+- `s::AbstractArray`
+- `kernel::AbstractVector`: convolution kernel
 
 # Returns
 
-  - `s_new::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+- `s_new::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
 function tconv(s::AbstractArray; kernel::AbstractVector)::Union{Array{Float64, 3}, Array{ComplexF64, 3}}
 
@@ -69,13 +69,13 @@ Perform convolution in the time domain.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `kernel::AbstractVector`: convolution kernel
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `kernel::AbstractVector`: convolution kernel
 
 # Returns
 
-  - `Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}`: convoluted signal
+- `Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}`: convoluted signal
 """
 function tconv(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector
@@ -103,9 +103,9 @@ Perform convolution in the time domain.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `kernel::AbstractVector`: convolution kernel
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `kernel::AbstractVector`: convolution kernel
 """
 function tconv!(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector

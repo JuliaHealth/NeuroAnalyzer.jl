@@ -8,21 +8,21 @@ Perform piecewise detrending.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `type::Symbol=:linear`:
-      + `:loess`: fit loess approximation and subtract it from `s`
-      + `:poly`: polynomial of `order` is subtracted from `s`
-      + `:mean`: the mean of `s` is subtracted from `s`
-      + `:constant`: `offset` is subtracted from `s`
-      + `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
-      + `:linear`: linear trend (1st order polynomial) is subtracted from `s`
-  - `offset::Real=0`: constant for `:constant` detrending
-  - `order::Int64=1`: polynomial fitting order
-  - `f::Float64=1.0`: smoothing factor for `:loess` detrending
+- `s::AbstractVector`: signal vector
+- `type::Symbol=:linear`:
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
+    - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
+- `offset::Real=0`: constant for `:constant` detrending
+- `order::Int64=1`: polynomial fitting order
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 
-  - `s_new::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
 function detrend(
         s::AbstractVector; type::Symbol = :linear, offset::Real = 0, order::Int64 = 1, f::Float64 = 1.0
@@ -86,21 +86,21 @@ Perform piecewise detrending.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `type::Symbol=:linear`: detrending method
-      + `:loess`: fit loess approximation and subtract it from `s`
-      + `:poly`: polynomial of `order` is subtracted from `s`
-      + `:mean`: the mean of `s` is subtracted from `s`
-      + `:constant`: `offset` is subtracted from `s`
-      + `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
-      + `:linear`: linear trend (1st order polynomial) is subtracted from `s`
-  - `offset::Real=0`: constant for `:constant` detrending
-  - `order::Int64=1`: polynomial fitting order
-  - `f::Float64=1.0`: smoothing factor for `:loess` detrending
+- `s::AbstractArray`
+- `type::Symbol=:linear`: detrending method
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
+    - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
+- `offset::Real=0`: constant for `:constant` detrending
+- `order::Int64=1`: polynomial fitting order
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 
-  - `s_new::Array{Float64, 3}`
+- `s_new::Array{Float64, 3}`
 """
 function detrend(
         s::AbstractArray; type::Symbol = :linear, offset::Real = 0, order::Int64 = 1, f::Float64 = 1.0
@@ -130,22 +130,22 @@ Perform piecewise detrending.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `type::Symbol=:linear`: detrending method
-      + `:loess`: fit loess approximation and subtract it from `s`
-      + `:poly`: polynomial of `order` is subtracted from `s`
-      + `:mean`: the mean of `s` is subtracted from `s`
-      + `:constant`: `offset` is subtracted from `s`
-      + `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
-      + `:linear`: linear trend (1st order polynomial) is subtracted from `s`
-  - `offset::Real=0`: constant for `:constant` detrending
-  - `order::Int64=1`: polynomial fitting order
-  - `f::Float64=1.0`: smoothing factor for `:loess` detrending
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `type::Symbol=:linear`: detrending method
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
+    - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
+- `offset::Real=0`: constant for `:constant` detrending
+- `order::Int64=1`: polynomial fitting order
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function detrend(
         obj::NeuroAnalyzer.NEURO;
@@ -173,22 +173,22 @@ Perform piecewise detrending.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `type::Symbol=:linear`: detrending method
-      + `:loess`: fit loess approximation and subtract it from `s`
-      + `:poly`: polynomial of `order` is subtracted from `s`
-      + `:mean`: the mean of `s` is subtracted from `s`
-      + `:constant`: `offset` is subtracted from `s`
-      + `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
-      + `:linear`: linear trend (1st order polynomial) is subtracted from `s`
-  - `offset::Real=0`: constant for `:constant` detrending
-  - `order::Int64=1`: polynomial fitting order
-  - `f::Float64=1.0`: smoothing factor for `:loess` detrending
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `type::Symbol=:linear`: detrending method
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
+    - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
+- `offset::Real=0`: constant for `:constant` detrending
+- `order::Int64=1`: polynomial fitting order
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function detrend!(
         obj::NeuroAnalyzer.NEURO;

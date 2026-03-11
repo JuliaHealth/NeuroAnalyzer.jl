@@ -7,35 +7,35 @@ Plot filter response.
 
 # Arguments
 
-  - `fs::Int64`: sampling rate
-  - `fprototype::Symbol`: filter prototype:
-      + `:fir`: FIR filter
-      + `:firls`: weighted least-squares FIR filter
-      + `:remez`: Remez FIR filter
-      + `:butterworth`: IIR filter
-      + `:chebyshev1` IIR filter
-      + `:chebyshev2` IIR filter
-      + `:elliptic` IIR filter
-      + `:iirnotch`: second-order IIR notch filter
-  - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
-      + `:lp`: low pass
-      + `:hp`: high pass
-      + `:bp`: band pass
-      + `:bs`: band stop
-  - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-  - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-  - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `flim::Tuple{Real, Real} = (0, fs / 2)`: frequency limit
-  - `mono::Bool=false`: use color or gray palette
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `fs::Int64`: sampling rate
+- `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
+    - `:iirnotch`: second-order IIR notch filter
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `order::Union{Nothing, Int64}=nothing`: filter order
+- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
+- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `flim::Tuple{Real, Real} = (0, fs / 2)`: frequency limit
+- `mono::Bool=false`: use color or gray palette
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `p::GLMakie.Figure`
-  - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
+- `p::GLMakie.Figure`
+- `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(;
         fs::Int64,
@@ -1188,36 +1188,36 @@ Plot filter response.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `n::Int64`: signal length in samples
-  - `fprototype::Symbol`: filter prototype:
-      + `:fir`: FIR filter
-      + `:firls`: weighted least-squares FIR filter
-      + `:remez`: Remez FIR filter
-      + `:butterworth`: IIR filter
-      + `:chebyshev1` IIR filter
-      + `:chebyshev2` IIR filter
-      + `:elliptic` IIR filter
-      + `:iirnotch`: second-order IIR notch filter
-  - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
-      + `:lp`: low pass
-      + `:hp`: high pass
-      + `:bp`: band pass
-      + `:bs`: band stop
-  - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-  - `order::Union{Nothing, Int64}=nothing`: filter order
-  - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-  - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-  - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-  - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-  - `flim::Tuple{Real, Real}=(0, sr(obj) / 2): frequency limit
-  - `mono::Bool=false`: use color or gray palette
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `obj::NeuroAnalyzer.NEURO`
+- `n::Int64`: signal length in samples
+- `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
+    - `:iirnotch`: second-order IIR notch filter
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `order::Union{Nothing, Int64}=nothing`: filter order
+- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2): frequency limit
+- `mono::Bool=false`: use color or gray palette
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `p::GLMakie.Figure`
-  - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
+- `p::GLMakie.Figure`
+- `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(
         obj::NeuroAnalyzer.NEURO;

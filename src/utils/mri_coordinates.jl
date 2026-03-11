@@ -10,11 +10,11 @@ Convert MNI coordinates to Talairach coordinates: redo the affine transform of T
 
 # Arguments
 
-  - `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
+- `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
 
 # Returns
 
-  - `t::Vector{Float64}`: Talairach X, Y, Z coordinates
+- `t::Vector{Float64}`: Talairach X, Y, Z coordinates
 
 # Reference
 
@@ -41,11 +41,11 @@ Convert Talairach coordinates to MNI coordinates: do the affine transform of MNI
 
 # Arguments
 
-  - `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
+- `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
 
 # Returns
 
-  - `t::Vector{Float64}`: MNI X, Y, Z coordinates
+- `t::Vector{Float64}`: MNI X, Y, Z coordinates
 
 # Reference
 
@@ -72,11 +72,11 @@ Convert MNI coordinates to Talairach coordinates: a non-linear transform of MNI 
 
 # Arguments
 
-  - `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
+- `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
 
 # Returns
 
-  - `t::Vector{Float64}`: Talairach X, Y, Z coordinates
+- `t::Vector{Float64}`: Talairach X, Y, Z coordinates
 
 # Reference
 
@@ -107,11 +107,11 @@ Convert Talairach coordinates to MNI coordinates: a non-linear transform of MNI 
 
 # Arguments
 
-  - `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
+- `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
 
 # Returns
 
-  - `m::Vector{Float64}`: MNI X, Y, Z coordinates
+- `m::Vector{Float64}`: MNI X, Y, Z coordinates
 
 # Reference
 

@@ -8,16 +8,16 @@ Perform FFT denoising.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `pad::Int64=0`: number of zeros to append
-  - `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
+- `s::AbstractVector`: signal vector
+- `pad::Int64=0`: number of zeros to append
+- `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
 
 Named tuple containing:
 
-  - `s::Vector{Float64}`: denoised signal
-  - `f_idx::BitVector`: index of components zeroed
+- `s::Vector{Float64}`: denoised signal
+- `f_idx::BitVector`: index of components zeroed
 """
 function denoise_fft(s::AbstractVector; pad::Int64 = 0, t::Real = 0)::@NamedTuple{s::Vector{Float64}, f_idx::BitVector}
 
@@ -42,13 +42,13 @@ Perform FFT denoising.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `pad::Int64=0`: number of zeros to append
-  - `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
+- `s::AbstractArray`
+- `pad::Int64=0`: number of zeros to append
+- `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
 
-  - `s_new::Array{Float64, 3}`
+- `s_new::Array{Float64, 3}`
 """
 function denoise_fft(s::AbstractArray; pad::Int64 = 0, t::Real = 0)::Array{Float64, 3}
 
@@ -74,14 +74,14 @@ Perform FFT denoising.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pad::Int64=0`: number of zeros to append
-  - `t::Int64=100`: PSD threshold for keeping frequency components
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pad::Int64=0`: number of zeros to append
+- `t::Int64=100`: PSD threshold for keeping frequency components
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function denoise_fft(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
@@ -103,14 +103,14 @@ Perform FFT denoising.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pad::Int64=0`: number of zeros to append
-  - `t::Int64=100`: PSD threshold for keeping frequency components
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pad::Int64=0`: number of zeros to append
+- `t::Int64=100`: PSD threshold for keeping frequency components
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function denoise_fft!(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100

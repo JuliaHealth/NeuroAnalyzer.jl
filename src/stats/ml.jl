@@ -15,14 +15,14 @@ MCC’s value ranges from -1 to 1, depending on:
 
 # Arguments
 
-  - `tp::Int64`: number of true positives
-  - `tn::Int64`: number of true negatives
-  - `fp::Int64`: number of false positives
-  - `fn::Int64`: number of false negatives
+- `tp::Int64`: number of true positives
+- `tn::Int64`: number of true negatives
+- `fp::Int64`: number of false positives
+- `fn::Int64`: number of false negatives
 
 # Returns
 
-  - `mcc::Float64`
+- `mcc::Float64`
 
 # Reference
 
@@ -43,18 +43,18 @@ Assess performance of the classification model using F1-score. F1-score value ra
 
 # Arguments
 
-  - `tp::Int64`: number of true positives
-  - `tn::Int64`: number of true negatives
-  - `fp::Int64`: number of false positives
-  - `fn::Int64`: number of false negatives
+- `tp::Int64`: number of true positives
+- `tn::Int64`: number of true negatives
+- `fp::Int64`: number of false positives
+- `fn::Int64`: number of false negatives
 
 # Returns
 
 Named tuple containing:
 
-  - `f1::Float64`: F1-score
-  - `p::Float64`: precision
-  - `r::Float64`: recall
+- `f1::Float64`: F1-score
+- `p::Float64`: precision
+- `r::Float64`: recall
 
 # Reference
 
@@ -77,17 +77,17 @@ Assess performance of the classification model using misclassification rate.
 
 # Arguments
 
-  - `tp::Int64`: number of true positives
-  - `tn::Int64`: number of true negatives
-  - `fp::Int64`: number of false positives
-  - `fn::Int64`: number of false negatives
+- `tp::Int64`: number of true positives
+- `tn::Int64`: number of true negatives
+- `fp::Int64`: number of false positives
+- `fn::Int64`: number of false negatives
 
 # Returns
 
 Named tuple containing:
 
-  - `mr::Float64`: misclassification rate
-  - `acc::Float64`: accuracy
+- `mr::Float64`: misclassification rate
+- `acc::Float64`: accuracy
 
 # Reference
 

@@ -8,14 +8,14 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
-  - `n::Int64=8`: Legendre polynomial order
-  - `lambda::Float64=10^-5`: smoothing factor
+- `obj::NeuroAnalyzer.NEURO`
+- `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
+- `n::Int64=8`: Legendre polynomial order
+- `lambda::Float64=10^-5`: smoothing factor
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`: with `csd` channel types and `µV/m²` units
+- `obj_new::NeuroAnalyzer.NEURO`: with `csd` channel types and `µV/m²` units
 
 # Reference
 
@@ -77,14 +77,14 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
-  - `n::Int64=8`: Legendre polynomial order
-  - `lambda::Float64=10^-5`: smoothing factor
+- `obj::NeuroAnalyzer.NEURO`
+- `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
+- `n::Int64=8`: Legendre polynomial order
+- `lambda::Float64=10^-5`: smoothing factor
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 
 # Reference
 
@@ -108,16 +108,16 @@ Generate G and H matrices.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
-  - `n::Int64=8`: Legendre polynomial order
+- `locs::DataFrame`
+- `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
+- `n::Int64=8`: Legendre polynomial order
 
 # Returns
 
 Named tuple containing:
 
-  - `G::Matrix{Float64}`: transformation matrix (SP spline)
-  - `H::Matrix{Float64}`: transformation matrix (CSD spline)
+- `G::Matrix{Float64}`: transformation matrix (SP spline)
+- `H::Matrix{Float64}`: transformation matrix (CSD spline)
 
 # Reference
 

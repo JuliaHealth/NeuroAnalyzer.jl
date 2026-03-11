@@ -7,19 +7,19 @@ Export `NeuroAnalyzer.NEURO` object to CSV.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `file_name::String`
-  - `names::Bool=true`: export channel names
-  - `header::Bool=false`: export header
-  - `epoch_time::Bool=false`: export epoch time points
-  - `markers::Bool=false`: export event markers
-  - `locs::Bool=false`: export channel locations
-  - `history::Bool=false`: export history
-  - `overwrite::Bool=false`
+- `obj::NeuroAnalyzer.NEURO`
+- `file_name::String`
+- `names::Bool=true`: export channel names
+- `header::Bool=false`: export header
+- `epoch_time::Bool=false`: export epoch time points
+- `markers::Bool=false`: export event markers
+- `locs::Bool=false`: export channel locations
+- `history::Bool=false`: export history
+- `overwrite::Bool=false`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function export_csv(
         obj::NeuroAnalyzer.NEURO;

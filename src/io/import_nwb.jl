@@ -7,12 +7,12 @@ Load EEG data from Neurodata Without Borders (NWB) file and return `NeuroAnalyze
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
-  - `detect_type::Bool=true`: detect channel type based on its label
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Reference
 

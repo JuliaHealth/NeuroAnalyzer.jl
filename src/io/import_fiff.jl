@@ -8,13 +8,13 @@ Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `fiff::Dict{Symbol, Dict{Any, Any}}`
-  - `fiff_object::Vector{Any}`
-  - `fiff_blocks::Matrix{Int64}`
+- `fiff::Dict{Symbol, Dict{Any, Any}}`
+- `fiff_object::Vector{Any}`
+- `fiff_blocks::Matrix{Int64}`
 
 # Reference
 
@@ -604,11 +604,11 @@ Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 """
 function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 

@@ -7,22 +7,22 @@ Plot two continuous signals.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
-  - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-  - `xlabel::String="default"`: x-axis label, default is Time [s]
-  - `ylabel::String="default"`: y-axis label, default is no label
-  - `title::String="default"`: plot title
-  - `scale::Bool=true`: draw scale
-  - `group_ch::Bool=true`: group channels by type
-  - `n_channels::Int64=20`: number of visible channels
-  - `res::Int64=1`: resampling factor (draw every res-nth sample)
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is no label
+- `title::String="default"`: plot title
+- `scale::Bool=true`: draw scale
+- `group_ch::Bool=true`: group channels by type
+- `n_channels::Int64=20`: number of visible channels
+- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_cont(
         obj1::NeuroAnalyzer.NEURO,

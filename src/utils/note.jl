@@ -11,11 +11,11 @@ Return the object recording note.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `note::String`
+- `note::String`
 """
 function view_note(obj::NeuroAnalyzer.NEURO)::String
 
@@ -30,12 +30,12 @@ Add recording note to the object header.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `note::String`
+- `obj::NeuroAnalyzer.NEURO`
+- `note::String`
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function add_note(obj::NeuroAnalyzer.NEURO; note::String)::NeuroAnalyzer.NEURO
 
@@ -53,12 +53,12 @@ Add recording note to the object header.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `note::String`
+- `obj::NeuroAnalyzer.NEURO`
+- `note::String`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function add_note!(obj::NeuroAnalyzer.NEURO; note::String)::Nothing
 
@@ -75,11 +75,11 @@ Delete recording note from the object header.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_note(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -97,11 +97,11 @@ Delete recording note from the object header.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function delete_note!(obj::NeuroAnalyzer.NEURO)::Nothing
 

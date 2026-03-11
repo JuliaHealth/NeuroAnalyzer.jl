@@ -8,9 +8,9 @@ Save `NeuroAnalyzer.NEURO` object to `file_name` file (HDF5-based).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `file_name::String`: name of the file to save to
-  - `overwrite::Bool=false`
+- `obj::NeuroAnalyzer.NEURO`
+- `file_name::String`: name of the file to save to
+- `overwrite::Bool=false`
 
 # Return
 
@@ -44,11 +44,11 @@ Load `NeuroAnalyzer.NEURO` object from `file_name` file (HDF5-based).
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 """
 function load(file_name::String)::NeuroAnalyzer.NEURO
 

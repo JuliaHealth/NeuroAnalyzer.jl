@@ -14,12 +14,12 @@ Calculate variance of the proportion.
 
 # Arguments
 
-  - `p::Float64`: proportion
-  - `n::Int64`: number of observations
+- `p::Float64`: proportion
+- `n::Int64`: number of observations
 
 # Returns
 
-  - `σ2::Float64`
+- `σ2::Float64`
 """
 function varp(p::Float64, n::Int64)::Float64
 
@@ -39,12 +39,12 @@ Calculate standard deviation of the proportion.
 
 # Arguments
 
-  - `p::Float64`: proportion
-  - `n::Int64`: number of observations
+- `p::Float64`: proportion
+- `n::Int64`: number of observations
 
 # Returns
 
-  - `σ::Float64`
+- `σ::Float64`
 """
 function stdp(p::Float64, n::Int64)::Float64
 
@@ -61,12 +61,12 @@ Calculate variance of categorical data.
 
 # Arguments
 
-  - `g::Vector{Int64}`: group (e.g. [0, 1, 2, 3])
-  - `x::Vector{Int64}`: amount of subject per group (e.g. [2, 8, 27, 45])
+- `g::Vector{Int64}`: group (e.g. [0, 1, 2, 3])
+- `x::Vector{Int64}`: amount of subject per group (e.g. [2, 8, 27, 45])
 
 # Returns
 
-  - `σ2::Float64`
+- `σ2::Float64`
 """
 function varc(g::Vector{Int64}, x::Vector{Int64})::Float64
 
@@ -87,12 +87,12 @@ Calculate standard deviation of categorical data.
 
 # Arguments
 
-  - `g::Vector{Int64}`: group (e.g. [0, 1, 2, 3])
-  - `x::Vector{Int64}`: amount of subject per group (e.g. [2, 8, 27, 45])
+- `g::Vector{Int64}`: group (e.g. [0, 1, 2, 3])
+- `x::Vector{Int64}`: amount of subject per group (e.g. [2, 8, 27, 45])
 
 # Returns
 
-  - `σ::Float64`
+- `σ::Float64`
 """
 function stdc(g::Vector{Int64}, x::Vector{Int64})::Float64
 
@@ -109,11 +109,11 @@ Calculate range.
 
 # Arguments
 
-  - `x::AbstractArray`
+- `x::AbstractArray`
 
 # Returns
 
-  - `r::Float64`
+- `r::Float64`
 """
 function rng(x::AbstractArray)::Float64
 
@@ -130,11 +130,11 @@ Calculate midrange.
 
 # Arguments
 
-  - `x::AbstractArray`
+- `x::AbstractArray`
 
 # Returns
 
-  - `mr::Float64`
+- `mr::Float64`
 """
 function mrng(x::AbstractArray)::Float64
 
@@ -151,11 +151,11 @@ Calculate margin of error for given sample size `n`.
 
 # Arguments
 
-  - `n::Int64`
+- `n::Int64`
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function moe(n::Int64)::Float64
 
@@ -174,11 +174,11 @@ Calculate margin of error.
 
 # Arguments
 
-  - `x::AbstractArray`
+- `x::AbstractArray`
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function moe(x::AbstractArray)::Float64
 
@@ -198,12 +198,12 @@ Calculate absolute and relative frequencies.
 
 # Arguments
 
-  - `df::DataFrame`
-  - `var::Union{Symbol, String}`: variable name
+- `df::DataFrame`
+- `var::Union{Symbol, String}`: variable name
 
 # Returns
 
-  - `m::Matrix{Float64}`: first row: absolute frequencies, second row: relative frequencies (proportion), third row: second row: relative frequencies (percentage); last column: totals
+- `m::Matrix{Float64}`: first row: absolute frequencies, second row: relative frequencies (proportion), third row: second row: relative frequencies (percentage); last column: totals
 """
 function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
 

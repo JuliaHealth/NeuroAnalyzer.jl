@@ -12,15 +12,15 @@ Rotate channel locations around the Z axis.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_rotz(locs::DataFrame; a::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
@@ -62,15 +62,15 @@ Rotate channel locations in the xy-plane.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_rotz!(locs::DataFrame; a::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
@@ -87,15 +87,15 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `a::Real`: angle of rotation (in degrees); positive angle rotates clockwise
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `a::Real`: angle of rotation (in degrees); positive angle rotates clockwise
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_roty(locs::DataFrame; a::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
@@ -137,15 +137,15 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `a::Real`: angle of rotation (in degrees); positive angle rotates clockwise
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `a::Real`: angle of rotation (in degrees); positive angle rotates clockwise
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_roty!(locs::DataFrame; a::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
@@ -162,15 +162,15 @@ Rotate channel locations around the X axis (in the YZ-plane).
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_rotx(locs::DataFrame; a::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
@@ -212,15 +212,15 @@ Rotate channel locations around the X axis (in the YZ-plane).
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_rotx!(locs::DataFrame; a::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 

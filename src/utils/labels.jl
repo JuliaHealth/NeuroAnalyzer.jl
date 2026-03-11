@@ -7,12 +7,12 @@ Return paired labels.
 
 # Arguments
 
-  - `l::Vector{String}`
-  - `unq::Bool=true`: if true, do not add pairs of the same labels, e.g. "label1-label1"
+- `l::Vector{String}`
+- `unq::Bool=true`: if true, do not add pairs of the same labels, e.g. "label1-label1"
 
 # Returns
 
-  - `l_paired::Vector{String}`: paired labels
+- `l_paired::Vector{String}`: paired labels
 """
 function paired_labels(l::Vector{String}; unq::Bool = true)::Vector{String}
 
@@ -46,12 +46,12 @@ Return paired labels.
 
 # Arguments
 
-  - `l1::Vector{String}`
-  - `l2::Vector{String}`
+- `l1::Vector{String}`
+- `l2::Vector{String}`
 
 # Returns
 
-  - `l_paired::Vector{String}`: paired labels
+- `l_paired::Vector{String}`: paired labels
 """
 function paired_labels(l1::Vector{String}, l2::Vector{String})::Vector{String}
 

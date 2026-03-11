@@ -7,17 +7,19 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `fs::Int64`: sampling rate
-  - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `s::AbstractVector`: signal vector
+- `fs::Int64`: sampling rate
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
-  - `f::Vector{Float64}`: frequencies
+- `f::Vector{Float64}`: frequencies
 """
 function cwtfrq(
-        s::AbstractVector; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2)
-    ) where {T <: CWT}
+    s::AbstractVector;
+    fs::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2)
+) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -35,17 +37,19 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `fs::Int64`: sampling rate
-  - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `s::AbstractArray`
+- `fs::Int64`: sampling rate
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
-  - `f::Vector{Float64}`: frequencies
+- `f::Vector{Float64}`: frequencies
 """
 function cwtfrq(
-        s::AbstractArray; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2)
-    ) where {T <: CWT}
+    s::AbstractArray;
+    fs::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2)
+) where {T <: CWT}
 
     _chk3d(s)
 
@@ -62,12 +66,12 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `obj::NeuroAnalyzer.NEURO`
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
-  - `f::Vector{Float64}`: frequencies
+- `f::Vector{Float64}`: frequencies
 """
 function cwtfrq(obj::NeuroAnalyzer.NEURO; wt::T = wavelet(Morlet())) where {T <: CWT}
 

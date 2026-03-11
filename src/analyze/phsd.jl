@@ -7,15 +7,15 @@ Calculate phase spectral density.
 
 # Arguments
 
-  - `s::Vector{Float64}`
-  - `fs::Int64`: sampling rate
+- `s::Vector{Float64}`
+- `fs::Int64`: sampling rate
 
 # Returns
 
 Named tuple containing:
 
-  - `ph::Vector{Float64}`: phases (in radians)
-  - `f::Vector{Float64}`: frequencies
+- `ph::Vector{Float64}`: phases (in radians)
+- `f::Vector{Float64}`: frequencies
 """
 function phsd(s::AbstractVector; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
 
@@ -35,15 +35,15 @@ Calculate phase spectral density.
 
 # Arguments
 
-  - `s::AbstractMatrix`
-  - `fs::Int64`: sampling rate
+- `s::AbstractMatrix`
+- `fs::Int64`: sampling rate
 
 # Returns
 
 Named tuple containing:
 
-  - `ph::Matrix{Float64}`: phases (in radians)
-  - `f::Vector{Float64}`: frequencies
+- `ph::Matrix{Float64}`: phases (in radians)
+- `f::Vector{Float64}`: frequencies
 """
 function phsd(s::AbstractMatrix; fs::Int64)::@NamedTuple{ph::Matrix{Float64}, f::Vector{Float64}}
 
@@ -67,15 +67,15 @@ Calculate phase spectral density.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `fs::Int64`: sampling rate
+- `s::AbstractArray`
+- `fs::Int64`: sampling rate
 
 # Returns
 
 Named tuple containing:
 
-  - `ph::Array{Float64, 3}`: phases (in radians)
-  - `f::Vector{Float64}`: frequencies
+- `ph::Array{Float64, 3}`: phases (in radians)
+- `f::Vector{Float64}`: frequencies
 """
 function phsd(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
@@ -104,15 +104,15 @@ Calculate phase spectral density.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
 Named tuple containing:
 
-  - `ph::Array{Float64, 3}`: phases (in radians)
-  - `f::Vector{Float64}`: frequencies
+- `ph::Array{Float64, 3}`: phases (in radians)
+- `f::Vector{Float64}`: frequencies
 """
 function phsd(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}

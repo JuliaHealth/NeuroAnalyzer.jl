@@ -7,15 +7,15 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `fs::Int64`: sampling rate
-  - `pad::Int64=0`: number of zeros to append
-  - `f::Real`: filter frequency
-  - `gw::Real=5`: Gaussian width in Hz
+- `s::AbstractVector`: signal vector
+- `fs::Int64`: sampling rate
+- `pad::Int64=0`: number of zeros to append
+- `f::Real`: filter frequency
+- `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-  - `s_new::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
 function filter_g(s::AbstractVector; fs::Int64, pad::Int64 = 0, f::Real, gw::Real = 5)::Vector{Float64}
 
@@ -45,15 +45,15 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `fs::Int64`: sampling rate
-  - `pad::Int64=0`: number of zeros to append
-  - `f::Real`: filter frequency
-  - `gw::Real=5`: Gaussian width in Hz
+- `s::AbstractArray`
+- `fs::Int64`: sampling rate
+- `pad::Int64=0`: number of zeros to append
+- `f::Real`: filter frequency
+- `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-  - `s_new::Array{Float64, 3}`
+- `s_new::Array{Float64, 3}`
 """
 function filter_g(s::AbstractArray; fs::Int64, pad::Int64 = 0, f::Real, gw::Real = 5)::Array{Float64, 3}
 
@@ -79,15 +79,15 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pad::Int64=0`: number of zeros to append
-  - `f::Real`: filter frequency
-  - `gw::Real=5`: Gaussian width in Hz
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pad::Int64=0`: number of zeros to append
+- `f::Real`: filter frequency
+- `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function filter_g(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
@@ -109,15 +109,15 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `pad::Int64=0`: number of zeros to append
-  - `f::Real`: filter frequency
-  - `gw::Real=5`: Gaussian width in Hz
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `pad::Int64=0`: number of zeros to append
+- `f::Real`: filter frequency
+- `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function filter_g!(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5

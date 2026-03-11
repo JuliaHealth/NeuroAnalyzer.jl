@@ -13,11 +13,11 @@ Calculate peak frequency within a frequency band.
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds in Hz
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -82,11 +82,11 @@ Calculate peak frequency within a frequency band.
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -155,10 +155,10 @@ Calculate peak frequency within a frequency band.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -215,11 +215,11 @@ Calculate amplitude at the peak frequency within a frequency band.
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -281,11 +281,11 @@ Calculate amplitude at peak frequency within a frequency band.
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -353,10 +353,10 @@ Calculate amplitude at peak frequency within a frequency band.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -412,11 +412,11 @@ Calculate power at the peak frequency within a frequency band.
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -478,11 +478,11 @@ Calculate power at peak frequency within a frequency band.
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -550,10 +550,10 @@ Calculate power at peak frequency within a frequency band.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples

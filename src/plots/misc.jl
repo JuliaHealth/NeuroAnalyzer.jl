@@ -9,12 +9,12 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
 # Arguments
 
-  - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
-  - `layout::Tuple{Int64, Int64}`: layout, number of rows × number of columns
+- `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
+- `layout::Tuple{Int64, Int64}`: layout, number of rows × number of columns
 
 # Returns
 
-  - `pc::GLMakie.Figure`
+- `pc::GLMakie.Figure`
 """
 function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::GLMakie.Figure
 
@@ -76,7 +76,7 @@ Return an empty plot, useful for filling matrices of plots.
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_empty()::GLMakie.Figure
 
@@ -93,12 +93,12 @@ Add locations to a plot. Locations are placed in the top right corner.
 
 # Arguments
 
-  - `p1::GLMakie.Figure`: primary plot
-  - `p2::GLMakie.Figure`: locations plot
+- `p1::GLMakie.Figure`: primary plot
+- `p2::GLMakie.Figure`: locations plot
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
 

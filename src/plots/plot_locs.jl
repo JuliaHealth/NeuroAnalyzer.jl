@@ -7,35 +7,35 @@ Preview channel locations.
 
 # Arguments
 
-  - `locs::DataFrame`: columns: `channel`, `labels`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`
-  - `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
-  - `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels are selected
-  - `ch_labels::Bool=true`: plot locations labels
-  - `head::Bool=true`: draw head
-  - `head_labels::Bool=false`: plot head labels
-  - `mono::Bool=false`: use color or gray palette
-  - `grid::Bool=false`: draw grid, useful for locating positions
-  - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-  - `plane::Symbol=:xy`: which plane to plot:
-      + `:xy`: horizontal (top)
-      + `:xz`: coronary (front)
-      + `:yz`: sagittal (side)
-  - `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
-  - `threshold::Real=0`: threshold for plotting, see below
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-  - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
-  - `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channels info
+- `locs::DataFrame`: columns: `channel`, `labels`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
+- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels are selected
+- `ch_labels::Bool=true`: plot locations labels
+- `head::Bool=true`: draw head
+- `head_labels::Bool=false`: plot head labels
+- `mono::Bool=false`: use color or gray palette
+- `grid::Bool=false`: draw grid, useful for locating positions
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `plane::Symbol=:xy`: which plane to plot:
+    - `:xy`: horizontal (top)
+    - `:xz`: coronary (front)
+    - `:yz`: sagittal (side)
+- `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
+- `threshold::Real=0`: threshold for plotting, see below
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+- `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
+- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channels info
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_locs(
         locs::DataFrame;
@@ -1104,38 +1104,38 @@ Preview of channel locations.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `sch::Union{String, Vector{String}, Regex}`: which channels are selected
-  - `ch_labels::Bool=true`: plot channel labels
-  - `src_labels::Bool=false`: plot source labels
-  - `det_labels::Bool=false`: plot detector labels
-  - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
-  - `head::Bool=true`: draw head
-  - `head_labels::Bool=false`: plot head labels
-  - `mono::Bool=false`: use color or gray palette
-  - `grid::Bool=false`: draw grid, useful for locating positions
-  - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-  - `plane::Symbol=:xy`: which plane to plot:
-      + `:xy`: horizontal (top)
-      + `:xz`: coronary (front)
-      + `:yz`: sagittal (side)
-  - `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
-  - `threshold::Real=0`: threshold for plotting, see below
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-  - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
-  - `gui::Bool=true`: if true, keep window open and use it interactively
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `sch::Union{String, Vector{String}, Regex}`: which channels are selected
+- `ch_labels::Bool=true`: plot channel labels
+- `src_labels::Bool=false`: plot source labels
+- `det_labels::Bool=false`: plot detector labels
+- `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
+- `head::Bool=true`: draw head
+- `head_labels::Bool=false`: plot head labels
+- `mono::Bool=false`: use color or gray palette
+- `grid::Bool=false`: draw grid, useful for locating positions
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `plane::Symbol=:xy`: which plane to plot:
+    - `:xy`: horizontal (top)
+    - `:xz`: coronary (front)
+    - `:yz`: sagittal (side)
+- `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
+- `threshold::Real=0`: threshold for plotting, see below
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+- `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-  - `Union{GLMakie.Figure, Nothing}`
+- `Union{GLMakie.Figure, Nothing}`
 """
 function plot_locs(
         obj::NeuroAnalyzer.NEURO;
