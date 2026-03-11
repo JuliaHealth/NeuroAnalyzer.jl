@@ -10,7 +10,7 @@ Computes the log-ratio and normalized difference of mean band power between two 
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s), e.g. left frontal channels
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s), e.g. right frontal channels
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
@@ -31,7 +31,7 @@ Computes the log-ratio and normalized difference of mean band power between two 
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ba::Float64`: log band asymmetry
 - `nba::Float64`: normalized band asymmetry

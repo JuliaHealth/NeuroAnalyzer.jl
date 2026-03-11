@@ -11,7 +11,7 @@ Calculate D'Agostino-Pearson Omnibus Test for normality.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `zs::Float64`: skewness test
 - `zk::Float64`: kurtosis test

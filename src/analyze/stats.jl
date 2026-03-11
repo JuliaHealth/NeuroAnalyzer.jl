@@ -8,11 +8,11 @@ Calculate epochs statistics.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `e_mean::Vector{Float64}`: mean
 - `e_median::Vector{Float64}`: median
@@ -88,11 +88,11 @@ Calculate channels statistics per epoch.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `c_mean::Matrix{Float64}`: mean
 - `c_median::Matrix{Float64}`: median

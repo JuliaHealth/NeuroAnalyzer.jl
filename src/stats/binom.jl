@@ -41,7 +41,7 @@ Test proportion against 0.5.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `x0::Int64`: level 0 counts
 - `x1::Int64`: level 1 counts
@@ -103,7 +103,7 @@ Test proportion against 0.5.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `x0::Int64`: level 0 counts
 - `x1::Int64`: level 1 counts
@@ -147,7 +147,7 @@ Test proportion against 0.5.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `x0::Int64`: level 0 counts
 - `x1::Int64`: level 1 counts

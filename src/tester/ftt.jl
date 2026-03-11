@@ -16,7 +16,7 @@ Perform Finger Tapping Test (FTT) in GUI mode. Use computer keyboard (SPACEBAR k
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `taps::Vector{Int64}`: number of taps per trial
 - `tap_t::Vector{Vector{Float64}}`: taps time point [ms]
@@ -470,7 +470,7 @@ Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR k
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `taps::Vector{Int64}`: number of taps per trial
 - `tap_t::Vector{Vector{Float64}}`: taps time point [ms]

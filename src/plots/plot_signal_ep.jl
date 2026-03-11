@@ -18,7 +18,7 @@ Plot epoched signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
 - `ep::Int64=1`: first epoch to plot
 - `xlabel::String="default"`: x-axis label, default is Time [s]

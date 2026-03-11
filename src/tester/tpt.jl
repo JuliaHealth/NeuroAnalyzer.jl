@@ -13,7 +13,7 @@ Perform Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 ac
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
@@ -156,7 +156,7 @@ Perform Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 ac
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 

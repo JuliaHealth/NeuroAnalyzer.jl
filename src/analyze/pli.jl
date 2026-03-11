@@ -12,7 +12,7 @@ Calculate Phase Locking Index (PLI).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pv::Float64`: PLI value
 - `sd::Vector{Float64}`: signal difference (s2 - s1)
@@ -55,8 +55,8 @@ Calculate Phase Locking Index (PLI).
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
@@ -64,7 +64,7 @@ Calculate Phase Locking Index (PLI).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pv::Matrix{Float64}`: PLI value
 - `sd::Array{Float64, 3}`: signal difference (s2 - s1)
@@ -123,7 +123,7 @@ Calculate Phase Locking Index (PLI).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns

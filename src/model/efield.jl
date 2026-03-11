@@ -13,7 +13,7 @@ Create model of 2-dimensional electric field.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `qq::Vector{Vector{Float64}}`: charges positions
 - `norm_e::Matrix{Float64}`: normalized electric field

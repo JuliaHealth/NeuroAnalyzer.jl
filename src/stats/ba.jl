@@ -13,7 +13,7 @@ Calculate Bland-Altman comparison between two clinical measurements.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `m::Float64`: mean of the difference
 - `s_u::Float64`: +1.96 (for default la) × standard deviation of the difference

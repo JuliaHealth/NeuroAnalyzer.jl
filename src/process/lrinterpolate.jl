@@ -8,14 +8,14 @@ Interpolate channel using linear regression.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
 - `ep::Int64`: epoch number(s) within to interpolate
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function lrinterpolate_channel(
         obj::NeuroAnalyzer.NEURO;
@@ -75,7 +75,7 @@ Interpolate channel using linear regression.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
 - `ep::Int64`: epoch number(s) within to interpolate
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one

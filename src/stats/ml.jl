@@ -50,7 +50,7 @@ Assess performance of the classification model using F1-score. F1-score value ra
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `f1::Float64`: F1-score
 - `p::Float64`: precision
@@ -84,7 +84,7 @@ Assess performance of the classification model using misclassification rate.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `mr::Float64`: misclassification rate
 - `acc::Float64`: accuracy

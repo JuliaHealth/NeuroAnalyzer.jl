@@ -10,12 +10,12 @@ Expand signal by adding reflected signal before the signal and after the signal,
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `n::Int64=sr(obj)`: number of samples to add, default is 1 second
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reflect(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
 
@@ -51,7 +51,7 @@ Expand signal by adding reflected signal before the signal and after the signal,
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `n::Int64=sr(obj)`: number of samples to add, default is 1 second
 
 # Returns
@@ -78,12 +78,12 @@ Reduce signal by removing reflected signal before the signal and after the signa
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `n::Int64=sr(obj)`: number of samples to remove, default is 1 second
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function chop(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
 
@@ -116,7 +116,7 @@ Reduce signal by removing reflected signal before the signal and after the signa
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `n::Int64=sr(obj)`: number of samples to remove, default is 1 second
 
 # Returns

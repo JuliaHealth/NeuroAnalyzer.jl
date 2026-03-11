@@ -12,7 +12,7 @@ Calculate phase spectral density.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Vector{Float64}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
@@ -40,7 +40,7 @@ Calculate phase spectral density.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Matrix{Float64}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
@@ -72,7 +72,7 @@ Calculate phase spectral density.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Array{Float64, 3}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
@@ -104,12 +104,12 @@ Calculate phase spectral density.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Array{Float64, 3}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies

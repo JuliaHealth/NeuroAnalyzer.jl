@@ -21,7 +21,7 @@ Image properties:
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Reference
 

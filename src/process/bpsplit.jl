@@ -7,14 +7,14 @@ Split signal into frequency bands using a FIR band-pass filter.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `order::Int64=91`: number of taps for FIR band-pass filter
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `s::Array{Float64, 4}`: split signal
 - `bn::Vector{Symbol}`: band names

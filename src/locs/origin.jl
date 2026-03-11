@@ -8,7 +8,7 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `x::Real=0`: move origin along X axis
 - `y::Real=0`: move origin along Y axis
 - `z::Real=0`: move origin along Z axis
@@ -37,7 +37,7 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `x::Real=0`: move origin along X axis
 - `y::Real=0`: move origin along Y axis
 - `z::Real=0`: move origin along Z axis

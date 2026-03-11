@@ -10,11 +10,11 @@ The ECG channel is located automatically from the `channel_type` field of `obj.h
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `nn_seg::Vector{Float64}`: NN (normal-to-normal) interval durations [ms]
 - `r_idx::Vector{Float64}`: sample indices of detected R-peaks
@@ -55,7 +55,7 @@ Analyze time-domain heart rate variability (HRV) statistics from NN intervals. N
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `menn::Float64`: mean NN interval [ms]
 - `mdnn::Float64`: median NN interval [ms]

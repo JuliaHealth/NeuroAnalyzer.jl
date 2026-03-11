@@ -16,7 +16,7 @@ Calculate `charge`, `current_density` and `charge_ density` for tDCS stimulation
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `charge::Float64`: charge [C]
 - `current_density::Float64`: current density [A/m²]
@@ -54,7 +54,7 @@ Calculate `charge`, `current_density` and `charge_ density` for tACS stimulation
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `charge::Float64`: charge [C]
 - `current_density::Float64`: current density [A/m²]
@@ -96,7 +96,7 @@ Calculate `charge`, `current_density` and `charge_ density` for tPCS stimulation
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `charge::Float64`: charge [C]
 - `current_density::Float64`: current density [A/m²]

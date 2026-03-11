@@ -17,7 +17,7 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object - for EEG, MEG, fNIRS data
 - `markers::DataFrame` - for events
 """
 function import_ft(

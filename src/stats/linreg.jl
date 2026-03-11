@@ -17,7 +17,7 @@ To predict, use: `new_x = DataFrame(x = [3.5, 7]); predict(lr, new_x)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `lr::StatsModels.TableRegressionModel`: model
 - `c::Vector{Float64}`: coefficients
@@ -65,7 +65,7 @@ Calculate R², R² adjusted, Akaike’s Information Criterion (AIC) and Bayesian
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `R2::Float64`
 - `R2adj::Float64`

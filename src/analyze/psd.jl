@@ -29,7 +29,7 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -123,7 +123,7 @@ Calculate Power Spectral Density for each channel of a matrix. Default method is
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
@@ -142,7 +142,7 @@ Calculate Power Spectral Density for each channel of a matrix. Default method is
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Matrix{Float64}`: powers, shape `(channels, frequencies)`
 - `f::Vector{Float64}`: frequencies
@@ -205,7 +205,7 @@ Calculate Power Spectral Density for a 3-D signal array. Default method is Welch
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
@@ -225,7 +225,7 @@ Calculate Power Spectral Density for a 3-D signal array. Default method is Welch
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -244,7 +244,7 @@ function psd(
     demean::Bool = true
 )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -299,7 +299,7 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
@@ -320,7 +320,7 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 3}`: powers, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies (trimmed to `flim`)
@@ -385,7 +385,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -450,7 +450,7 @@ Calculate power spectrum using Gaussian filter and Hilbert transform.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies

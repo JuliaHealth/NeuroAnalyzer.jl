@@ -10,7 +10,7 @@ Remove power line noise and its peaks above power line frequency.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
 - `method::Symbol=:iir`:
@@ -21,7 +21,7 @@ Remove power line noise and its peaks above power line frequency.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 - `df::DataFrame`: list of peaks detected
 """
 function remove_powerline(
@@ -192,7 +192,7 @@ Remove power line noise and harmonics.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
 - `method::Symbol=:iir`: use IIR filter
@@ -263,7 +263,7 @@ Detect power line noise frequency.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -299,7 +299,7 @@ Detect power line noise frequency.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 

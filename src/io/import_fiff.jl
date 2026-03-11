@@ -608,7 +608,7 @@ Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 """
 function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 

@@ -17,7 +17,7 @@ Return spectrogram segment.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `segp::Matrix{Float64}`: powers
 - `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
@@ -61,7 +61,7 @@ Return spectrogram segment.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `segp::Array{Float64, 3}`: segment of powers
 - `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
@@ -102,7 +102,7 @@ Trim power spectrum or spectrogram array to a range of frequencies.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -144,7 +144,7 @@ Trim spectrogram array to a range of time points.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 4}`: powers
 - `t::Vector{Float64}`: time points

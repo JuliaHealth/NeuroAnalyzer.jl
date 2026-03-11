@@ -7,7 +7,7 @@ Analyze taps in a TPT (Tapping Performance Task) recording. Summarizes inter-tap
 
 # Arguments
 
-Named tuple containing:
+Named tuple:
 
 - `taps::Vector{Int64}`: number of taps per trial
 - `tap_t::Vector{Vector{Float64}}`: tap time points per trial [ms]
@@ -18,7 +18,7 @@ Named tuple containing:
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `n::Int64`: total number of taps across all trials
 - `t_mean::Float64`: mean inter-tap interval [ms]

@@ -11,7 +11,7 @@ Estimate Friedman's nonparametric two-way analysis of variance (and Kendall's co
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `q::Float64`: Friedman's Q statistics
 - `w::Float64`: Kendall's coefficient of concordance

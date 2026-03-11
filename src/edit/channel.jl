@@ -20,7 +20,7 @@ Return list of channel names of specified type or their numbers if names are spe
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
 - `type::Union{String, Vector{String}}="all"`: channels types
 - `wl::Real`: return NIRS channels for wavelength (in nm)
@@ -91,7 +91,7 @@ Get channel type.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 
 # Returns
@@ -114,13 +114,13 @@ Set channel type.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `type::String`: new type
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function set_channel_type(
         obj::NeuroAnalyzer.NEURO; ch::String, type::String
@@ -148,7 +148,7 @@ Set channel type.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `type::String`
 
@@ -173,13 +173,13 @@ Rename channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `name::String`: new name
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function rename_channel(
         obj::NeuroAnalyzer.NEURO; ch::String, name::String
@@ -210,7 +210,7 @@ Rename channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `name::String`: new name
 
@@ -236,14 +236,14 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `field::Symbol`
 - `value::String`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_channel(
         obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String
@@ -269,7 +269,7 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `field::Symbol`
 - `value::String`
@@ -297,13 +297,13 @@ Replace channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `s::AbstractArray`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function replace_channel(
         obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray
@@ -332,7 +332,7 @@ Replace channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `s::Array{Float64, 3}`: signal to replace with
 
@@ -360,12 +360,12 @@ Add channel labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `clabels::Vector{String}`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnalyzer.NEURO
 
@@ -387,7 +387,7 @@ Add channel labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `clabels::Vector{String}`
 
 # Returns
@@ -411,14 +411,14 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `data::Array{<:Number, 3}`: channels data
 - `label::Union{String, Vector{String}}`: channels labels
 - `type::Union{String, Vector{String}}`: channels types
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_channel(
         obj::NeuroAnalyzer.NEURO;
@@ -489,7 +489,7 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `data::Array{<:Number, 3}`: channels data
 - `label::Union{String, Vector{String}}`: channels labels
 - `type::Union{String, Vector{String}}`: channels types

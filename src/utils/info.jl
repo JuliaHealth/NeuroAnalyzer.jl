@@ -29,7 +29,7 @@ Return sampling rate.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -50,7 +50,7 @@ Return number `type` channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `type::String="all"`: channel type (stored in the global `channel_types` constant variable)
 
 # Returns
@@ -86,7 +86,7 @@ Return number of epochs.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -109,7 +109,7 @@ Return signal length.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -136,7 +136,7 @@ Return epoch length.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -159,7 +159,7 @@ Return signal duration.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -180,7 +180,7 @@ Return epoch length.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -201,7 +201,7 @@ Show processing history.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -222,7 +222,7 @@ Return channel labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -245,7 +245,7 @@ Return optode labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -269,7 +269,7 @@ Return NIRS source labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -293,7 +293,7 @@ Return NIRS detector labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -317,7 +317,7 @@ Return channel types.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -340,7 +340,7 @@ Show object header.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -472,7 +472,7 @@ Show info.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `df::Bool=false`: if true, return object data as a DataFrame containing time points and channels
 
 # Returns
@@ -688,7 +688,7 @@ Show channel info.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`
 - `pr::Bool=true`: if true, print to output, otherwise return a string
 
@@ -732,7 +732,7 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `p::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
     - `:central` (or `:c`)
     - `:left` (or `:l`)
@@ -886,7 +886,7 @@ Return channels belonging to a cluster of channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `cluster::Symbol`: available clusters are:
     - `:f1`: left frontal (F1, F3, F5, F7, AF3, AF7)
     - `:f2`: right frontal (F2, F4, F6, F8, AF4, AF8)
@@ -936,7 +936,7 @@ Return band frequency limits.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `band::Symbol`: band range name:
     - `:list`
     - `:total`
@@ -1112,7 +1112,7 @@ Return basic descriptive statistics of the object data.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `df::Bool=false`: if true, return statistics as a DataFrame
 
 # Returns
@@ -1194,7 +1194,7 @@ Return size of the object data.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -1215,7 +1215,7 @@ Return size of the object data.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `d::Int64`: compute size along dimension `d`
 
 # Returns
@@ -1238,7 +1238,7 @@ Return data type of the object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -1259,7 +1259,7 @@ Return channel order of the object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 

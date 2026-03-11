@@ -65,7 +65,7 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `ep::Int64`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
@@ -78,7 +78,7 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function artrem_cwd(
         obj::NeuroAnalyzer.NEURO;
@@ -112,7 +112,7 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `ep::Int64`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets

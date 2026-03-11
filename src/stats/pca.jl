@@ -16,7 +16,7 @@ Calculate `n` first Primary Components (PCs).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pc::DataFrame`: PC(1)..PC(n)
 - `pcv::Vector{Float64}`: PC variances (fraction of total variance explained)
@@ -87,7 +87,7 @@ Calculate `n` first Primary Components (PCs).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pc::DataFrame`: PC(1)..PC(n)
 - `pcv::Vector{Float64}`: PC variances (fraction of total variance explained)

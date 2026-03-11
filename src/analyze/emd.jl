@@ -121,7 +121,7 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `ep::Int64`: epoch number
 - `epsilon::Real=0.3`: decomposition stops when the normalised sum of squared differences (SD criterion) drops below `epsilon`

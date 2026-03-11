@@ -20,13 +20,13 @@ Reference to common electrode(s). Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s) used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reference_ce(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, med::Bool = false
@@ -81,7 +81,7 @@ Reference to common electrode(s). Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s) used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
@@ -108,7 +108,7 @@ Reference to averaged reference. Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `exclude_fpo::Bool=false`: exclude Fp1, Fp2 (due to eye blinks), O1, O2 (due to head movements) from CAR calculation
 - `exclude_current::Bool=false`: exclude current channel from CAR calculation
 - `average::Bool=true`: average reference channels prior to subtracting, otherwise add all reference channels
@@ -117,7 +117,7 @@ Reference to averaged reference. Only signal channels are processed.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reference_avg(
         obj::NeuroAnalyzer.NEURO;
@@ -228,7 +228,7 @@ Reference to averaged reference. Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `exclude_fpo::Bool=false`: exclude Fp1, Fp2 (due to eye blinks), O1, O2 (due to head movements) from CAR calculation
 - `exclude_current::Bool=false`: exclude current channel from CAR mean calculation
 - `average::Bool=true`: average reference channels prior to subtracting, otherwise add all reference channels
@@ -272,7 +272,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `type::Symbol=:l`:
     - `:l`: linked - average of A1 and A2
     - `:i`: ipsilateral - A1 for left channels, A2 for right channels
@@ -281,7 +281,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = false)::NeuroAnalyzer.NEURO
 
@@ -399,7 +399,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `type::Symbol=:l`:
     - `:l`: linked - average of A1 and A2
     - `:i`: ipsilateral - A1 for left channels, A2 for right channels
@@ -429,7 +429,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `type::Symbol=:l`:
     - `:l`: linked - average of M1 and M2
     - `:i`: ipsilateral - M1 for left channels, M2 for right channels
@@ -438,7 +438,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = false)::NeuroAnalyzer.NEURO
 
@@ -557,7 +557,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `type::Symbol=:l`:
     - `:l`: linked - average of M1 and M2
     - `:i`: ipsilateral - M1 for left channels, M2 for right channels
@@ -587,14 +587,14 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `nn::Int64=4`: use `nn` adjacent electrodes
 - `weighted::Bool=false`: use mean of `nn` nearest channels if false; if true, mean of `nn` nearest channels is weighted by distance to the referenced channel
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reference_plap(
         obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false
@@ -683,7 +683,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `nn::Int64=4`: use `nn` adjacent electrodes
 - `weighted::Bool=false`: use distance weights; use mean of nearest channels if false
 - `med::Bool=false`: use median instead of mean
@@ -712,14 +712,14 @@ Reference using spherical Laplacian (using `nn` adjacent electrodes). Only signa
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `nn::Int64=4`: use `nn` adjacent electrodes
 - `weighted::Bool=false`: use mean of `nn` nearest channels if false; if true, mean of `nn` nearest channels is weighted by distance to the referenced channel
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reference_slap(
         obj::NeuroAnalyzer.NEURO; nn::Int64 = 4, weighted::Bool = false, med::Bool = false
@@ -816,7 +816,7 @@ Reference using spherical Laplacian (using `nn` adjacent electrodes). Only signa
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `nn::Int64=4`: use `nn` adjacent electrodes
 - `weighted::Bool=false`: use distance weights; use mean of nearest channels if false
 - `med::Bool=false`: use median instead of mean
@@ -844,13 +844,13 @@ Reference using custom montage. Only signal channels are processed. Custom monta
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]`: list of channel pairs
 - `ref_name::String="longitudinal-BIP"`: name of the montage
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 
 # Notes
 
@@ -955,7 +955,7 @@ Reference using custom montage. Only signal channels are processed. Custom monta
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]`: list of channel pairs
 - `ref_name::String="BIP ||"`: name of the montage
 

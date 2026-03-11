@@ -7,7 +7,7 @@ Export `NeuroAnalyzer.NEURO` object markers to CSV.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `file_name::String`
 - `overwrite::Bool=false`
 

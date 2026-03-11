@@ -353,7 +353,7 @@ Topographical plot.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: channels × values, will be averaged by channels
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels

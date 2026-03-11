@@ -24,7 +24,7 @@ Calculate spectrogram using STFT or multi-tapered method.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -85,7 +85,7 @@ Calculate spectrogram for each channel of a matrix.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 - `fs::Int64`: sampling frequency
 - `db::Bool=true`: normalize powers to dB
 - `method::Symbol=:stft`: PSD method:
@@ -98,9 +98,9 @@ Calculate spectrogram for each channel of a matrix.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-- `p::Array{Float64, 3}`: powers, shape `(freq, time, channels)`
+- `p::Array{Float64, 3}`: powers, shape (freq, time, channels)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
@@ -154,7 +154,7 @@ Calculate spectrogram.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: number of zeros to append
 - `method::Symbol=:stft`: spectrogram method:
@@ -175,7 +175,7 @@ Calculate spectrogram.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 4}`: powers (magnitudes for `:cwt`), shape `(freq, time, channels, epochs)`
 - `f::Vector{Float64}`: frequencies
@@ -365,7 +365,7 @@ Calculate spectrogram using Morlet wavelet convolution.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `cs::Matrix{ComplexF64}`: convolved analytic signal
 - `p::Matrix{Float64}`: powers
@@ -440,7 +440,7 @@ Calculate Morlet wavelet spectrogram for each channel of a matrix.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 - `pad::Int64`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
@@ -449,7 +449,7 @@ Calculate Morlet wavelet spectrogram for each channel of a matrix.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `cs::Array{ComplexF64, 3}`: convolved analytic signals
 - `p::Array{Float64, 3}`: powers
@@ -510,7 +510,7 @@ Calculate spectrogram using Gaussian filter and Hilbert transform.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Matrix{Float64}`: powers
 - `ph::Matrix{Float64}`: phases
@@ -568,7 +568,7 @@ Calculate spectrogram using Gaussian and Hilbert transform for each channel of a
 
 # Arguments
 
-- `s::AbstractArray`: signal matrix (channels × samples)
+- `s::AbstractArray`: signal matrix (channels, samples)
 - `fs::Int64`: sampling rate
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=10`: Gaussian width in Hz
@@ -576,7 +576,7 @@ Calculate spectrogram using Gaussian and Hilbert transform for each channel of a
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 3}`: powers, shape `(freq, time, channels)`
 - `ph::Array{Float64, 3}`: phases, shape `(freq, time, channels)`
@@ -641,7 +641,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `m::Matrix{Float64}`: magnitudes
 - `f::Vector{Float64}`: frequencies
@@ -683,15 +683,15 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT) for each chan
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 - `fs::Int64`: sampling rate
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-- `m::Array{Float64, 3}`: magnitudes, shape (time points × frequencies × channels)
+- `m::Array{Float64, 3}`: magnitudes, shape (time points, frequencies, channels)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
@@ -736,7 +736,7 @@ Calculate spectrogram using Hilbert-Huang transform.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Matrix{Float64}`: powers (frequencies × time points)
 - `f::Vector{Float64}`: frequencies

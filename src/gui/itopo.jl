@@ -8,7 +8,7 @@ Interactive topographical map of continuous signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns
@@ -349,7 +349,7 @@ Interactive topographical map of epoched signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns

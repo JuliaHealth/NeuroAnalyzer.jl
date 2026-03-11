@@ -87,7 +87,7 @@ Calculate stationarity.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}: list of channels
 - `window::Int64=10`: time window in samples
 - `method::Symbol=:euclid`: stationarity method:

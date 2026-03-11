@@ -84,7 +84,7 @@ Calculate auto-correlation.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2))))`: range of lags is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -105,7 +105,7 @@ function acor(
     method::Symbol = :sum,
 )::Array{Float64, 3}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -139,7 +139,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `l::Int64=round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2))))`: range of lags is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
@@ -151,7 +151,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ac::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
 - `l::Vector{Float64}`: lags in seconds

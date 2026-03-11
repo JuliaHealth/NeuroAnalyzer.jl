@@ -7,12 +7,12 @@ Calculate Hilbert marginal spectrum. The Hilbert marginal spectrum is computed f
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 3}`: Hilbert marginal spectra, shape `(frequency, epochs)`
 - `f::Vector{Float64}`: frequencies

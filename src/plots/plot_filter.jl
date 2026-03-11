@@ -1188,7 +1188,7 @@ Plot filter response.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `n::Int64`: signal length in samples
 - `fprototype::Symbol`: filter prototype:
     - `:fir`: FIR filter

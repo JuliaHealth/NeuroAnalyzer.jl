@@ -130,7 +130,7 @@ Perform piecewise detrending.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `type::Symbol=:linear`: detrending method
     - `:loess`: fit loess approximation and subtract it from `s`
@@ -145,7 +145,7 @@ Perform piecewise detrending.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function detrend(
         obj::NeuroAnalyzer.NEURO;
@@ -173,7 +173,7 @@ Perform piecewise detrending.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `type::Symbol=:linear`: detrending method
     - `:loess`: fit loess approximation and subtract it from `s`

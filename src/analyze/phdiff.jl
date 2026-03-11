@@ -14,7 +14,7 @@ Calculate phase difference between signals.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `phd::Vector{Float64}`: phase differences in radians
 """
@@ -125,7 +125,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: index of reference channels
 - `avg::Symbol=:phase`: method of averaging:
     - `:phase`: phase is calculated for each reference channel separately and then averaged

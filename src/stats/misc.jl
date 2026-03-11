@@ -21,7 +21,7 @@ Calculate number of categories for a given sample size `n`.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `k1::Float64`: sqrt(n)
 - `k2::Float64`: 1 + 3.222 * log10(n)
@@ -99,7 +99,7 @@ Collect thresholded elements, e.g. in a topographical map.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `x_t::Matrix{Bool}`: thresholded matrix
 - `n::Int64`: number of elements

@@ -58,7 +58,7 @@ Convert time in seconds to sample number.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `t::Real`: time in seconds
 
 # Returns
@@ -78,7 +78,7 @@ Convert time in samples to seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `s::Int64`: time in samples
 
 # Returns
@@ -145,7 +145,7 @@ Convert markers start and length from samples to seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -169,7 +169,7 @@ Convert markers start and length from samples to seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -192,7 +192,7 @@ Convert epoch number to time segment in seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ep::Int64`: epoch number
 
 # Returns
@@ -217,7 +217,7 @@ Convert epoch number to time segment in seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ep::AbstractVector`: epoch number
 
 # Returns

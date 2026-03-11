@@ -46,7 +46,7 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
@@ -60,7 +60,7 @@ function frqinst(s::AbstractArray)::Array{Float64, 3}
 
     _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -92,7 +92,7 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns

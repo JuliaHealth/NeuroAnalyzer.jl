@@ -186,8 +186,8 @@ Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
@@ -202,7 +202,7 @@ Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `xc::Array{Float64, 3}`: cross-correlation
 - `l::Vector{Float64}`: lags [s]

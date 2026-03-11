@@ -77,7 +77,7 @@ Perform wavelet band-pass filtering.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
@@ -85,7 +85,7 @@ Perform wavelet band-pass filtering.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function wbp(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real, ncyc::Int64 = 6
@@ -107,7 +107,7 @@ Perform wavelet band-pass filtering.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency

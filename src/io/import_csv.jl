@@ -12,7 +12,7 @@ Load CSV file (e.g. exported from EEGLAB) and return `NeuroAnalyzer.NEURO` objec
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Notes
 

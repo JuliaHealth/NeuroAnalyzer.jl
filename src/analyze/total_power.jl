@@ -137,7 +137,7 @@ Calculate total power.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram (default)

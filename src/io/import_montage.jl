@@ -16,7 +16,7 @@ Each channel/channel pair must be in a separate line
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ref_list::Vector{String}`: list of channel pairs
 - `ref_name::String`: name of the montage

@@ -20,7 +20,7 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `method::Symbol=:stft`: spectrogram method:
 - `:stft`: short-time Fourier transform
@@ -40,7 +40,7 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `s::Array{Float64, 3}`: spectrogram(s)
 - `f::Vector{Float64}`: frequencies

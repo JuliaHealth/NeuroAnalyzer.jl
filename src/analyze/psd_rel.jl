@@ -28,7 +28,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -125,7 +125,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -213,7 +213,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
@@ -283,7 +283,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `db::Bool=false`: normalize do dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
@@ -304,7 +304,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies

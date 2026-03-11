@@ -109,14 +109,14 @@ Filter using polynomial filter.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `order::Int64=8`: polynomial order
 - `window::Int64=10`: window length
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object: convoluted signal
 """
 function filter_poly(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 8, window::Int64 = 10
@@ -138,7 +138,7 @@ Filter using polynomial filter.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `order::Int64=8`: polynomial order
 - `window::Int64=10`: window length

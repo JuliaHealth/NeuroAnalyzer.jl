@@ -28,7 +28,7 @@ Calculate required sample size for a continuous variable (group 1 vs group 2).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `n1::Int64`: group 1 sample size
 - `n2::Int64`: group 2 sample size
@@ -103,7 +103,7 @@ Calculate required sample size for a proportion (group 1 vs group 2).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `n1::Int64`: group 1 sample size
 - `n2::Int64`: group 2 sample size

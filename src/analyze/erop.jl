@@ -20,7 +20,7 @@ The two-column layout allows direct comparison between the "evoked" power (colum
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `method::Symbol=:welch`: power spectrum method:
 - `:welch`: Welch's periodogram
@@ -40,7 +40,7 @@ The two-column layout allows direct comparison between the "evoked" power (colum
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Matrix{Float64}`: powers, shape `(frequencies, 1)` or `(frequencies, 2)`
 - `f::Vector{Float64}`: frequencies

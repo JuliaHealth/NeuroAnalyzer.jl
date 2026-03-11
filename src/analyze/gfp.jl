@@ -11,7 +11,7 @@ GFP is the population standard deviation across all selected channels at each ti
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 
 # Returns
 
@@ -44,7 +44,7 @@ Each column (time point) is divided by the GFP value at that time, so that the r
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 
 # Returns
 
@@ -72,7 +72,7 @@ GFP is the population standard deviation across all selected channels at each ti
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `norm::Bool=false`: if true, return the GFP-normalised signal instead of GFP values
 

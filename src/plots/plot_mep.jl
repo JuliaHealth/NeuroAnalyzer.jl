@@ -298,7 +298,7 @@ Plot MEP.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label

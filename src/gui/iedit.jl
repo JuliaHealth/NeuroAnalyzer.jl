@@ -7,7 +7,7 @@ Interactive edit signal channels properties and locations.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::String`: initial channel
 
 # Returns

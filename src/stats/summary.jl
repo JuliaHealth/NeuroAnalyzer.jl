@@ -12,7 +12,7 @@ Return summary statistics.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `n::Int64`: number of observations
 - `ms::Int64`: missings

@@ -7,13 +7,13 @@ Return channel location details.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `out::Bool=true`: if true, print details
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `label::String`: location label
 - `theta_pl::Float64`: polar angle

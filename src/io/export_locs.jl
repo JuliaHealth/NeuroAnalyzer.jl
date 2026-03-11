@@ -7,7 +7,7 @@ Export channel locations data, format is based on `file_name` extension (.csv, .
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `file_name::String`
 - `overwrite::Bool=false`
 

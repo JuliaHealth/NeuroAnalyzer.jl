@@ -15,7 +15,7 @@ Calculate Confidence Interval using bootstrapping.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `s_avg::Vector{Float64}`: averaged signal
 - `s_ci_l::Vector{Float64}`: lower bound of the confidence interval

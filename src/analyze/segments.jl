@@ -36,7 +36,7 @@ Calculate mean of two segments (e.g. spectrograms).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
@@ -123,7 +123,7 @@ Extract segment from a matrix using thresholding.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `idx::Vector{CartesianIndex{2}}`: Cartesian coordinates of matrix elements
 - `bm::Matrix{Bool}`: map of the segment

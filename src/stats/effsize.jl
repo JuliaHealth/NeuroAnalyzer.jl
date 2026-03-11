@@ -15,7 +15,7 @@ Calculate effect sizes.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `d::Float64`: Cohen's d
 - `g::Float64`: Hedges g, uses maximum likelihood estimator by Hedges and Olkin

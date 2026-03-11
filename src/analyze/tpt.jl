@@ -8,7 +8,7 @@ Detect pinches in TPT recording.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -35,11 +35,11 @@ Analyze pinches in TPT recording.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `n::Int64`: number of pinches
 - `t_mean::Float64`: mean interval between pinches [ms]

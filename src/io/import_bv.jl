@@ -11,7 +11,7 @@ Load BrainVision BVCDF file and return `NeuroAnalyzer.NEURO` object. At least tw
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 """
 function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 

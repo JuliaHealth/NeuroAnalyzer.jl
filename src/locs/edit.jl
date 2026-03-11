@@ -8,7 +8,7 @@ Edit electrode.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
@@ -23,7 +23,7 @@ Edit electrode.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_locs(
         obj::NeuroAnalyzer.NEURO;
@@ -74,7 +74,7 @@ Edit electrode.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel number or name
 - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate

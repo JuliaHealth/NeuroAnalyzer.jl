@@ -12,7 +12,7 @@ Calculate d' and response bias for two proportions.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `dp::Float64`
 - `rb::Float64`: response bias

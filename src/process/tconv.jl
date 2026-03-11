@@ -69,7 +69,7 @@ Perform convolution in the time domain.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `kernel::AbstractVector`: convolution kernel
 
@@ -103,7 +103,7 @@ Perform convolution in the time domain.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `kernel::AbstractVector`: convolution kernel
 """

@@ -8,7 +8,7 @@ Calculate the variance across channels at each time point of an ERP/ERF object (
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: must be an ERP or ERF object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: must be an ERP or ERF object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
@@ -42,12 +42,12 @@ Spatial correlation is the linear rescaling of DISS onto [-1, 1].
 
 # Arguments
 
-- `s1::AbstractMatrix`: signal matrix (channels × samples)
-- `s2::AbstractMatrix`: signal matrix (channels × samples)
+- `s1::AbstractMatrix`: signal matrix (channels, samples)
+- `s2::AbstractMatrix`: signal matrix (channels, samples)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `gd::Vector{Float64}`: global dissimilarity ∈ [0, 2], one value per time point
 - `sc::Vector{Float64}`: spatial correlation ∈ [-1, 1], one value per time point
@@ -87,13 +87,13 @@ Calculate DISS (global dissimilarity) and spatial correlation. Operates on ERP/E
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: must be an ERP or ERF object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: must be an ERP or ERF object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `gd::Vector{Float64}`: global dissimilarity ∈ [0, 2], one value per time point
 - `sc::Vector{Float64}`: spatial correlation ∈ [-1, 1], one value per time point

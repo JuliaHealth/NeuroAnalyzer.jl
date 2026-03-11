@@ -111,7 +111,7 @@ Perform denoising using continuous wavelet decomposition (CWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
@@ -123,7 +123,7 @@ Perform denoising using continuous wavelet decomposition (CWD).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function denoise_cwd(
         obj::NeuroAnalyzer.NEURO;
@@ -150,7 +150,7 @@ Perform denoising using continuous wavelet decomposition (CWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
@@ -271,7 +271,7 @@ Perform denoising using discrete wavelet decomposition (DWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
@@ -280,7 +280,7 @@ Perform denoising using discrete wavelet decomposition (DWD).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function denoise_dwd(
         obj::NeuroAnalyzer.NEURO;
@@ -312,7 +312,7 @@ Perform denoising using discrete wavelet decomposition (DWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `l::Int64=0`: number of levels, default maximum number of levels available or total transformation

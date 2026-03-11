@@ -7,7 +7,7 @@ Plot signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
 - `ep::Int64=1`: first epoch to display
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
@@ -180,8 +180,8 @@ Plot signal.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label

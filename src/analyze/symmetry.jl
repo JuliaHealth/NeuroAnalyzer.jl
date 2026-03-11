@@ -59,7 +59,7 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns

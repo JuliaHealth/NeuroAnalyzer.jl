@@ -8,11 +8,11 @@ Calculate non-phase-locked signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: must be ERP object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: must be ERP object
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -35,7 +35,7 @@ Calculate non-phase-locked signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: must be ERP object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: must be ERP object
 
 # Returns
 

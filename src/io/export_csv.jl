@@ -7,7 +7,7 @@ Export `NeuroAnalyzer.NEURO` object to CSV.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `file_name::String`
 - `names::Bool=true`: export channel names
 - `header::Bool=false`: export header

@@ -18,7 +18,7 @@ Calculate signal entropy descriptors:
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ent::Float64`: entropy in bits
 - `shent::Float64`: Shanon entropy
@@ -80,17 +80,17 @@ Calculate signal entropy descriptors:
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-- `ent::Matrix{Float64}`: entropy in bits of shape (channels × epochs)
-- `shent::Matrix{Float64}`: Shanon entropy of shape (channels × epochs)
-- `leent::Matrix{Float64}`: log energy entropy of shape (channels × epochs)
-- `sent::Matrix{Float64}`: sample entropy of shape (channels × epochs)
-- `nsent::Matrix{Float64}`: normalized sample entropy of shape (channels × epochs)
+- `ent::Matrix{Float64}`: entropy in bits, shape (channels, epochs)
+- `shent::Matrix{Float64}`: Shanon entropy, shape (channels, epochs)
+- `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
+- `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
+- `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
 """
 function entropy(
     s::AbstractArray
@@ -102,7 +102,7 @@ function entropy(
     nsent::Matrix{Float64},
 }
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -145,13 +145,13 @@ Calculate signal entropy descriptors:
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-- `ent::Matrix{Float64}`: entropy in bits of shape (channels × epochs)
-- `shent::Matrix{Float64}`: Shanon entropy of shape (channels × epochs)
-- `leent::Matrix{Float64}`: log energy entropy of shape (channels × epochs)
-- `sent::Matrix{Float64}`: sample entropy of shape (channels × epochs)
-- `nsent::Matrix{Float64}`: normalized sample entropy of shape (channels × epochs)
+- `ent::Matrix{Float64}`: entropy in bits, shape (channels, epochs)
+- `shent::Matrix{Float64}`: Shanon entropy, shape (channels, epochs)
+- `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
+- `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
+- `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
 """
 function entropy(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
@@ -202,15 +202,15 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
-- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal) of shape (channel × epochs)
+- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(s::AbstractArray)::Matrix{Float64}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -242,12 +242,12 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal) of shape (channel × epochs)
+- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 

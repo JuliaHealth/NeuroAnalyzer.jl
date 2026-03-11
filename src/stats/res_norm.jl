@@ -12,7 +12,7 @@ Test normal distribution of residuals.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `adt_p::Vector{Float64}`: p values for k-sample Anderson–Darling test vs normal distribution
 - `ks_p::Vector{Float64}`: p values for one-sample exact Kolmogorov–Smirnov test vs normal distribution

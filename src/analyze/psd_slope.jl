@@ -28,7 +28,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `lf::Vector{Float64}`: linear fit
 - `ls::Float64`: slopes of linear fit
@@ -103,7 +103,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `lf::Array{Float64, 3}`: linear fit
 - `ls::Matrix{Float64}`: slope of linear fit
@@ -176,7 +176,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range flim[1] to flim[2]
 - `db::Bool=false`: normalize do dB
@@ -197,7 +197,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `lf::Array{Float64, 3}`: linear fit
 - `ls::Matrix{Float64}`: slope of linear fit

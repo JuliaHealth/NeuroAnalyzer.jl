@@ -22,13 +22,13 @@ Compare two vectors. Jarque–Bera is used first to test normality of distributi
 
 # Returns
 
-For permutation-based test, named tuple containing:
+For permutation-based test, Named tuple:
 
 - `t::Tuple{perm_diff::Vector{Float64}, obs_diff::Float64}`: test result (permutation difference, observed difference)
 - `p1::Float64`: one-tiled p value
 - `p2::Float64`: two-tiled p value
 
-Otherwise, named tuple containing:
+Otherwise, Named tuple:
 
 - `t::Union{OneSampleTTest, EqualVarianceTTest, UnequalVarianceTTest, ExactSignedRankTest, ApproximateSignedRankTest, ExactMannWhitneyUTest, ApproximateMannWhitneyUTest}`: statistical test
 - `ts::Tuple{Float64, String}`: test statistic value and name

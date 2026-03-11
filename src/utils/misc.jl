@@ -179,7 +179,7 @@ Return recommended number of Slepian tapers for multi-taper power spectrum analy
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `df::Real`: frequency resolution (bandwidth); smallest distance between frequency peaks that we want to observe (e.g. 1 Hz)
 
 # Returns
@@ -204,7 +204,7 @@ Return signal channel in the form trials × time.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj))`: epoch numbers; default use all epochs
 

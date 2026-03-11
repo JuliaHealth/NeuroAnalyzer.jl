@@ -10,13 +10,13 @@ Delete channel(s).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_channel(
         obj::NeuroAnalyzer.NEURO;
@@ -94,7 +94,7 @@ Delete channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 
@@ -126,12 +126,12 @@ Keep channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to keep
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function keep_channel(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
@@ -155,7 +155,7 @@ Keep channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to keep
 
 # Returns

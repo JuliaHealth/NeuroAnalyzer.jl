@@ -12,14 +12,14 @@ Split into epochs. Return signal that is split either by markers (if specified) 
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `marker::String=""`: marker value to split at
 - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function epoch(
         obj::NeuroAnalyzer.NEURO;
@@ -114,7 +114,7 @@ Split into epochs. Return signal that is split either by markers (if specified),
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `marker::String=""`: marker value to split at
 - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
@@ -148,12 +148,12 @@ Edit epochs time start.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ts::Real`: time start in seconds
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)::NeuroAnalyzer.NEURO
 
@@ -173,7 +173,7 @@ Edit OBJ epochs time start.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ts::Real`: time start in seconds
 
 # Returns
@@ -197,13 +197,13 @@ Extract sub-epochs with a reduced time range.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ep_start::Real`: sub-epoch start in seconds
 - `ep_end::Real`: sub-epoch end in seconds
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function subepoch(
         obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real
@@ -266,7 +266,7 @@ Extract sub-epochs with a reduced time range.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ep_start::Real`: sub-epoch start in seconds
 - `ep_end::Real`: sub-epoch end in seconds
 

@@ -7,7 +7,7 @@ Calculate standard deviation of the signal data (along epochs).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 

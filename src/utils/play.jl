@@ -7,7 +7,7 @@ Play channel signal as audio.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `seg::Tuple{Real, Real}`: time segment to play
 - `ep::Int64`: epoch number

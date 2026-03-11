@@ -9,12 +9,12 @@ Generate SSP projectors from embedded projections.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ssp_projectors::Matrix{Float64}`: projectors
 - `U::Matrix{Float64}}`: SVD U orthogonal matrix
@@ -64,12 +64,12 @@ Apply SSP projectors from embedded projections.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0)::NeuroAnalyzer.NEURO
 
@@ -98,7 +98,7 @@ Apply SSP projectors from embedded projections.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
 
 # Returns

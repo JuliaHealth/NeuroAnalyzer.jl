@@ -14,7 +14,7 @@ Calculate `n` first Primary Components (PCs).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pcv::Matrix{Float64}`: PC(1)..PC(n) variances (fraction of total variance explained)
@@ -75,13 +75,13 @@ Calculate `n` first Primary Components (PCs).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `n::Int64`: number of PCs to calculate
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pcv::Matrix{Float64}`: PC variances (fraction of total variance explained)
@@ -139,14 +139,14 @@ Reconstruct signal using PCA components (`pc` and `pca`).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function pca_reconstruct(
         obj::NeuroAnalyzer.NEURO;
@@ -173,7 +173,7 @@ Reconstruct signals using PCA components (`pc` and `pc_model`).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model

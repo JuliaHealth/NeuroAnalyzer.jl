@@ -8,7 +8,7 @@ Interactive spectrogram of continuous signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::String`: channel name
 - `zoom::Real=10`: how many seconds are displayed in one segment
 
@@ -645,7 +645,7 @@ Interactive spectrogram of epoched signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ch::String`: channel name
 
 # Returns

@@ -79,7 +79,7 @@ Calculate correlation between two vectors.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `t::CorrelationTest{Float64}`
 - `r::Float64`: correlation coefficient

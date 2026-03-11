@@ -1104,7 +1104,7 @@ Preview of channel locations.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `sch::Union{String, Vector{String}, Regex}`: which channels are selected
 - `ch_labels::Bool=true`: plot channel labels

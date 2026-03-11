@@ -366,7 +366,7 @@ Apply IIR or FIR filter.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
 - `dir:Symbol=:twopass`: filtering direction:
@@ -376,7 +376,7 @@ Apply IIR or FIR filter.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function filter_apply(
         obj::NeuroAnalyzer.NEURO;
@@ -424,7 +424,7 @@ Apply IIR or FIR filter.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
 - `dir:Symbol=:twopass`: filtering direction:
@@ -459,7 +459,7 @@ Apply filtering.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `fprototype::Symbol`: filter prototype:
     - `:fir`: FIR filter
@@ -490,7 +490,7 @@ Apply filtering.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 
 If `preview=true`, it will return `GLMakie.Figure`.
 """
@@ -550,7 +550,7 @@ Apply filtering.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `fprototype::Symbol`: filter prototype:
     - `:fir`: FIR filter

@@ -11,7 +11,7 @@ Load Neuralinx Continuously Sampled Channels (CSC) and return `NeuroAnalyzer.NEU
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 """
 function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
 

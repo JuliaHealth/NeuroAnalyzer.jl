@@ -79,7 +79,7 @@ Calculate SNR.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
 - `f::Vector{Float64}`: frequencies
@@ -130,7 +130,7 @@ Calculate SNR.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `type::Symbol=:rms`: SNR type:
     - `:mean`: mean-based
@@ -138,7 +138,7 @@ Calculate SNR.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
 - `f::Vector{Float64}`: frequencies
