@@ -168,12 +168,12 @@ Calculate absolute band power between two frequencies.
   - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples

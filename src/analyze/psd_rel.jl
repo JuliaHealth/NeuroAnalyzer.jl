@@ -12,12 +12,12 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `db::Bool=false`: normalize do dB
   - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -109,12 +109,12 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `db::Bool=false`: normalize do dB
   - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -197,12 +197,12 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `db::Bool=false`: normalize do dB
   - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -288,12 +288,12 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
   - `db::Bool=false`: normalize do dB
   - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples

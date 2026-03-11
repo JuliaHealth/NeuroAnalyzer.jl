@@ -1,7 +1,7 @@
 export frqinst
 
 """
-    frqinst(s; <keyword arguments>)
+    frqinst(s)
 
 Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
@@ -34,7 +34,7 @@ function frqinst(s::AbstractVector)::Vector{Float64}
 end
 
 """
-    frqinst(s; <keyword arguments>)
+    frqinst(s)
 
 Estimate the instantaneous frequency of a signal via the Hilbert transform:
 

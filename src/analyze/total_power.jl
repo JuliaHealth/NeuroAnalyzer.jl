@@ -10,12 +10,12 @@ Calculate total power.
   - `s::AbstractVector`
   - `fs::Int64`: sampling rate
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -73,12 +73,12 @@ Calculate total power.
   - `s::AbstractArray`
   - `fs::Int64`: sampling rate
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length in samples, default is 1 second
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -140,12 +140,12 @@ Calculate total power.
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
   - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
+  - `:welch`: Welch's periodogram (default)
+  - `:fft`: plain FFT periodogram
+  - `:mt`: multi-tapered periodogram
+  - `:stft`: short-time Fourier transform averaged over segments
+  - `:mw`: Morlet wavelet convolution
+  - `:gh`: Gaussian filter + Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
   - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
