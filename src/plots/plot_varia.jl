@@ -1653,25 +1653,25 @@ Plot Hilbert spectrum.
 
 # Arguments
 
-  - `sp::Vector{Float64}`: Hilbert transform powers
-  - `st::Vector{Float64}`: time
-  - `xlabel::String="default"`: x-axis label, default is Time [s]
-  - `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
-  - `title::String="default"`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `sp::Vector{Float64}`: Hilbert transform powers
+- `st::Vector{Float64}`: time
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `title::String="default"`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_hs(
-        sp::Vector{Float64},
-        st::Vector{Float64};
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    sp::Vector{Float64},
+    st::Vector{Float64};
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     @assert length(sp) == length(st) "Length of powers ($(length(sp))) and time points ($(length(st))) must be equal."
 
@@ -1798,14 +1798,14 @@ Plot phases.
   - `p::GLMakie.Figure`
 """
 function plot_phase(
-        ph::Vector{Float64},
-        sf::Vector{Float64};
-        unit::Symbol = :rad,
-        type::Symbol = :line,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-    )::GLMakie.Figure
+    ph::Vector{Float64},
+    sf::Vector{Float64};
+    unit::Symbol = :rad,
+    type::Symbol = :line,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+)::GLMakie.Figure
 
     _check_var(unit, [:rad, :deg], "unit")
     _check_var(type, [:line, :stem], "type")

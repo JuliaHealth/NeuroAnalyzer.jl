@@ -226,9 +226,9 @@ function htransform(
             @view(s[ch_idx, :, ep_idx]),
             db = db
         )
-        c[ch_idx, :, ep_idx]  = htransform_data.c
-        a[ch_idx, :, ep_idx]  = htransform_data.a
-        p[ch_idx, :, ep_idx]  = htransform_data.p
+        c[ch_idx, :, ep_idx] = htransform_data.c
+        a[ch_idx, :, ep_idx] = htransform_data.a
+        p[ch_idx, :, ep_idx] = htransform_data.p
         ph[ch_idx, :, ep_idx] = htransform_data.ph
     end
 
@@ -360,12 +360,12 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Arguments
 
-  - `s::AbstractArray`: signal array (channels × samples × epochs)
-  - `pad::Int64`: number of zeros to append
+- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `pad::Int64`: number of zeros to append
 
 # Returns
 
-  - `ha::Vector{ComplexF64}`: complex analytic signal of shape (channels × samples × epochs)
+- `ha::Vector{ComplexF64}`: complex analytic signal of shape (channels × samples × epochs)
 """
 function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
 
