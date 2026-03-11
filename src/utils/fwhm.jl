@@ -8,6 +8,7 @@ Calculate the indices of the full-width at half-maximum (FWHM) points of a Gauss
 # Arguments
 
 - `s::AbstractVector`: signal vector; must contain at least 2 elements
+
 # Returns
 
 - `p1_idx::Int64`: index of the pre-peak half-maximum point
@@ -20,7 +21,7 @@ Calculate the indices of the full-width at half-maximum (FWHM) points of a Gauss
 
 # Notes
 
-- The input `s` is normalised internally; the original vector is not modified.
+- The input `s` is normalized internally; the original vector is not modified.
 - For noisy or non-unimodal signals, `vsearch` may return the index of the closest sample to 0.5 rather than a true half-maximum crossing.
 
 # See also
@@ -31,7 +32,7 @@ function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
 
     @assert length(s) >= 2 "s must contain at least 2 elements."
 
-    # normalise to [0, 1] so the half-maximum level is always 0.5
+    # normalize to [0, 1] so the half-maximum level is always 0.5
     s = normalize_n(s)
 
     # index of the global peak
