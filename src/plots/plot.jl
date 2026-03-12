@@ -82,7 +82,7 @@ function plot(
 
     if datatype(obj) in ["erp", "erf"]
         p = plot_erp(
-            obj;
+            obj,
             ch = ch,
             tm = tm,
             rt = rt,
@@ -105,7 +105,7 @@ function plot(
         )
     elseif datatype(obj) == "mep"
         p = plot_mep(
-            obj;
+            obj,
             ch = ch,
             xlabel = xlabel,
             ylabel = ylabel,
@@ -127,7 +127,7 @@ function plot(
     else
         if nepochs(obj) == 1
             p = plot_cont(
-                obj;
+                obj,
                 ch = ch,
                 seg = seg,
                 xlabel = xlabel,
@@ -147,7 +147,7 @@ function plot(
             )
         else
             p = plot_ep(
-                obj;
+                obj,
                 ch = ch,
                 ep = ep,
                 xlabel = xlabel,

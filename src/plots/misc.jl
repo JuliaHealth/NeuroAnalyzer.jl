@@ -104,16 +104,19 @@ function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
 
     io = IOBuffer()
     show(io, MIME"image/png"(), pl)
+
     pp = FileIO.load(io)
     transparent_pp = map(c -> RGBA(color(c), 1.0), pp)
     transparent_pp[transparent_pp .== RGBA(1.0, 1.0, 1.0, 1.0)] .= RGBA(1.0, 1.0, 1.0, 0.0)
     transparent_pp[transparent_pp .== RGBA(0.999, 0.999, 0.999, 1.0)] .= RGBA(0.999, 0.999, 0.999, 0.0)
     transparent_pp[transparent_pp .== RGBA(0.998, 0.998, 0.998, 1.0)] .= RGBA(0.998, 0.998, 0.998, 0.0)
+
     # top right corner
     ax = contents(p[1, 1])[1]
-    ax = ax.targetlimits[].origin .+ ax.targetlimits[].widths
-    pos_x = ax[1]
-    pos_y = ax[2]
+    # ax = ax.targetlimits[].origin .+ ax.targetlimits[].widths
+    pos_x = (ax.targetlimits[].origin .+ ax.targetlimits[].widths)[1]
+    pos_y = ax.targetlimits[].origin[2]
+
     GLMakie.scatter!(
         p[1, 1],
         pos_x,

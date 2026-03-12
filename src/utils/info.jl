@@ -733,7 +733,7 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `p::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
+- `pick::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
     - `:central` (or `:c`)
     - `:left` (or `:l`)
     - `:right` (or `:r`)
@@ -747,16 +747,17 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 - `ch::Vector{String}`: channel names
 """
 function channel_pick(
-        obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
-    )::Vector{String}
+    obj::NeuroAnalyzer.NEURO;
+    pick::Union{Symbol, Vector{Symbol}}
+)::Vector{String}
 
     _check_datatype(obj, "eeg")
 
     @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
-    if p isa Vector{Symbol}
+    if pick isa Vector{Symbol}
 
-        for idx in p
+        for idx in pick
             _check_var(
                 idx,
                 [
@@ -775,13 +776,13 @@ function channel_pick(
                     :occipital,
                     :o,
                 ],
-                "p",
+                "pick",
             )
         end
 
         # convert picks to channel labels
         c = Vector{Char}()
-        for idx in p
+        for idx in pick
             (idx === :central || idx === :c) && push!(c, 'z')
             (idx === :frontal || idx === :f) && push!(c, 'F')
             (idx === :temporal || idx === :t) && push!(c, 'T')
@@ -799,17 +800,17 @@ function channel_pick(
         end
 
         # check for both :l and :r
-        for idx1 in eachindex(p)
-            if (p[idx1] === :left || p[idx1] === :l)
-                for idx2 in eachindex(p)
-                    if (p[idx2] === :right || p[idx2] === :r)
+        for idx1 in eachindex(pick)
+            if (pick[idx1] === :left || pick[idx1] === :l)
+                for idx2 in eachindex(pick)
+                    if (pick[idx2] === :right || pick[idx2] === :r)
                         return labels(obj)[ch]
                     end
                 end
             end
-            if (p[idx1] === :right || p[idx1] === :r)
-                for idx2 in eachindex(p)
-                    if (p[idx2] === :left || p[idx2] === :l)
+            if (pick[idx1] === :right || pick[idx1] === :r)
+                for idx2 in eachindex(pick)
+                    if (pick[idx2] === :left || pick[idx2] === :l)
                         return labels(obj)[ch]
                     end
                 end
@@ -819,7 +820,7 @@ function channel_pick(
         clabels = get_channel(obj, type = "eeg")
         clabels = clabels[ch]
         pat = nothing
-        for idx in p
+        for idx in pick
             # for :right remove lefts
             (idx === :right || idx === :r) && (pat = r"[z13579]$")
             # for :left remove rights
@@ -836,7 +837,7 @@ function channel_pick(
     else
 
         _check_var(
-            p,
+            pick,
             [
                 :central,
                 :c,
@@ -853,17 +854,17 @@ function channel_pick(
                 :occipital,
                 :o,
             ],
-            "p",
+            "pick",
         )
 
         c = Vector{Char}()
-        (p === :central || p === :c) && (c = ['z'])
-        (p === :left || p === :l) && (c = ['1', '3', '5', '7', '9'])
-        (p === :right || p === :r) && (c = ['2', '4', '6', '8'])
-        (p === :frontal || p === :f) && (c = ['F'])
-        (p === :temporal || p === :t) && (c = ['T'])
-        (p === :parietal || p === :p) && (c = ['P'])
-        (p === :occipital || p === :o) && (c = ['O'])
+        (pick === :central || pick === :c) && (c = ['z'])
+        (pick === :left || pick === :l) && (c = ['1', '3', '5', '7', '9'])
+        (pick === :right || pick === :r) && (c = ['2', '4', '6', '8'])
+        (pick === :frontal || pick === :f) && (c = ['F'])
+        (pick === :temporal || pick === :t) && (c = ['T'])
+        (pick === :parietal || pick === :p) && (c = ['P'])
+        (pick === :occipital || pick === :o) && (c = ['O'])
 
         clabels = get_channel(obj, type = "eeg")
         ch = Vector{Int64}()

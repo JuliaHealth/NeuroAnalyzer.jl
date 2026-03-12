@@ -125,7 +125,7 @@ function plot_cont(
             ch1 = Observable(1)
             ch2 = ch_n
         end
-    else
+    elseif type === :butterfly
         ch1 = Observable(1)
         ch2 = length(ctypes_uni)
         clabels = uppercase.(ctypes_uni)
@@ -142,7 +142,7 @@ function plot_cont(
     end
     if type === :normal
         s .+= collect(1:ch_n)
-    else
+    elseif type === :butterfly
         for idx in eachindex(ctypes_uni)
             s[ctypes .== ctypes_uni[idx], :] .+= idx
         end
@@ -152,7 +152,7 @@ function plot_cont(
     if type === :normal
         ytc = repeat([:black], nchannels(obj_tmp))
         ytc[bad_ch[]] .= :lightgray
-    else
+    elseif type === :butterfly
         ytc = repeat([:black], ch_n)
     end
 
@@ -167,7 +167,7 @@ function plot_cont(
     if gui
         if type === :normal
             plot_size = (1250, 700)
-        else
+        elseif type === :butterfly
             plot_size = (1200, 700)
         end
     else
@@ -179,7 +179,7 @@ function plot_cont(
         figure_padding = (10, 20, 10, 10), # L R B T
     )
     ax1 = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = "",
         ylabel = yl,
         title = tt,
@@ -219,20 +219,36 @@ function plot_cont(
         @lift begin
             for idx in 1:ch_n
                 GLMakie.lines!(
-                    ax1, t, s[idx, :], linewidth = 1.5, color = $bad_ch[idx] ? :lightgray : :black
+                    ax1,
+                    t,
+                    s[idx, :],
+                    linewidth = 1.5,
+                    color = $bad_ch[idx] ? :lightgray : :black
                 )
             end
         end
-    else
+    elseif type === :butterfly
         if ci95
             for idx in eachindex(ctypes_uni)
                 s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s[ctypes .== ctypes_uni[idx], :])
                 # draw 95% CI
                 Makie.band!(
-                    ax1, t, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5
+                    ax1,
+                    t,
+                    s_u,
+                    s_l,
+                    alpha = 0.25,
+                    color = :grey,
+                    strokewidth = 0.5
                 )
                 # draw mean
-                Makie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
+                Makie.lines!(
+                    ax1,
+                    t,
+                    s_m,
+                    color = :black,
+                    linewidth = 2
+                )
             end
         else
             !mono && (cmap = GLMakie.resample_cmap(pal, size(s, 1)))
@@ -240,7 +256,7 @@ function plot_cont(
                 GLMakie.lines!(
                     ax1,
                     t,
-                    s,
+                    s[idx, :],
                     color = mono ? :black : cmap[idx],
                     colormap = pal,
                     colorrange = 1:size(s, 1),
@@ -252,7 +268,13 @@ function plot_cont(
             if avg
                 for idx in eachindex(ctypes_uni)
                     s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
-                    GLMakie.lines!(ax1, t, s_avg; linewidth = 2, color = :black)
+                    GLMakie.lines!(
+                        ax1,
+                        t,
+                        s_avg,
+                        linewidth = 2,
+                        color = :black
+                    )
                 end
             end
         end
@@ -286,7 +308,7 @@ function plot_cont(
                     idx2 += 1
                 end
             end
-        else
+        elseif type === :butterfly
             for idx in 1:ch_n
                 s_rectangle = lift(seg_pos) do seg_pos
                     Rect(seg_pos, (idx - 0.475), 0.01, 0.975)

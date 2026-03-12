@@ -51,11 +51,11 @@ function lat_idx(
 
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
 
-    @assert length(channel_pick(obj, p = :l)) > 0 "Could not detect left hemisphere channels, check OBJ labels."
-    @assert length(channel_pick(obj, p = :r)) > 0 "Could not detect right hemisphere channels, check OBJ labels."
+    @assert length(channel_pick(obj, pick = :l)) > 0 "Could not detect left hemisphere channels, check OBJ labels."
+    @assert length(channel_pick(obj, pick = :r)) > 0 "Could not detect right hemisphere channels, check OBJ labels."
 
-    ch_l = get_channel(obj, ch = channel_pick(obj, p = :l))
-    ch_r = get_channel(obj, ch = channel_pick(obj, p = :r))
+    ch_l = get_channel(obj, ch = channel_pick(obj, pick = :l))
+    ch_r = get_channel(obj, ch = channel_pick(obj, pick = :r))
 
     # shared PSD keyword arguments — avoids repeating them four times
     psd_kwargs = (
