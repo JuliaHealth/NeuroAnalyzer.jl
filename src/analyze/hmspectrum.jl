@@ -14,16 +14,16 @@ Calculate Hilbert marginal spectrum. The Hilbert marginal spectrum is computed f
 
 Named tuple containing:
 
-- `p::Array{Float64, 3}`: Hilbert marginal spectra, shape `(frequency, epochs)`
+- `p::Matrix{Float64}`: Hilbert marginal spectra, shape `(frequency, epochs)`
 - `f::Vector{Float64}`: frequencies
 
 # Reference
 
 Huang et al. (1998), "The empirical mode decomposition and the Hilbert spectrum for nonlinear and non-stationary time series analysis."
 """
-function hmspectrum(obj; ch::String)::@NamedTuple{p::Array{Float64, 3}, t::Vector{Float64}}
+function hmspectrum(obj; ch::String)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
-    # compute HHT time-frequency spectrogram without dB normalization
+    # compute HHT time-frequency spectrogram with dB normalization
     spec = NeuroAnalyzer.spectrogram(obj, ch = ch, method = :hht, db = false)
 
     p = dropdims(spec.p, dims = 3)

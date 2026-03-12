@@ -14,7 +14,6 @@ export plot_icatopo
 export plot_ci
 export plot_heatmap
 export plot_imf
-export plot_hs
 export plot_fi
 export plot_phase
 export plot_polezero
@@ -27,33 +26,33 @@ Plot matrix.
 
 # Arguments
 
-  - `m::Matrix{<:Real}`
-  - `xlabels::Vector{String}`
-  - `ylabels::Vector{String}`
-  - `xlabel::String=""`
-  - `ylabel::String=""`
-  - `title::String=""`
-  - `cb::Bool=true`: draw colorbar
-  - `cb_title::String=""`: colorbar title
-  - `xrot::Int64=90`: rotate xlabels (in degrees)
-  - `mono::Bool=false`: use color or gray palette
+- `m::Matrix{<:Real}`
+- `xlabels::Vector{String}`
+- `ylabels::Vector{String}`
+- `xlabel::String=""`
+- `ylabel::String=""`
+- `title::String=""`
+- `cb::Bool=true`: draw colorbar
+- `cb_title::String=""`: colorbar title
+- `xrot::Int64=90`: rotate xlabels (in degrees)
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_matrix(
-        m::Matrix{<:Real};
-        xlabels::Vector{String},
-        ylabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        cb::Bool = true,
-        cb_title::String = "",
-        xrot::Int64 = 90,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    m::Matrix{<:Real};
+    xlabels::Vector{String},
+    ylabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    cb::Bool = true,
+    cb_title::String = "",
+    xrot::Int64 = 90,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     @assert size(m, 1) == size(m, 2) "Matrix must be square."
     @assert length(xlabels) == length(ylabels) "Lengths of xlabels ($(length(xlabels))) and ylabels ($(length(ylabels))) must be equal."
@@ -108,23 +107,23 @@ Plot cross/auto-covariance/correlation.
 
 # Arguments
 
-  - `m::AbstractVector`
-  - `lags::AbstractVector`
-  - `xlabel::String="Lag [s]"`
-  - `ylabel::String=""`
-  - `title::String=""`
+- `m::AbstractVector`
+- `lags::AbstractVector`
+- `xlabel::String="Lag [s]"`
+- `ylabel::String=""`
+- `title::String=""`
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_xac(
-        m::AbstractVector,
-        lags::AbstractVector;
-        xlabel::String = "Lag [s]",
-        ylabel::String = "",
-        title::String = ""
-    )::GLMakie.Figure
+    m::AbstractVector,
+    lags::AbstractVector;
+    xlabel::String = "Lag [s]",
+    ylabel::String = "",
+    title::String = ""
+)::GLMakie.Figure
 
     # prepare plot
     GLMakie.activate!(title = "plot_xac()")
@@ -165,33 +164,33 @@ Plot histogram.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `x::Union{Nothing, Real}=nothing`: value to plot against the histogram
-  - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
-  - `bins::Int64=15`: histogram bins: number of bins
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `draw_mean::Bool=true`
-  - `draw_median::Bool=true`
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractVector`
+- `x::Union{Nothing, Real}=nothing`: value to plot against the histogram
+- `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
+- `bins::Int64=15`: histogram bins: number of bins
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `draw_mean::Bool=true`
+- `draw_median::Bool=true`
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_histogram(
-        s::AbstractVector,
-        x::Union{Nothing, Real} = nothing;
-        type::Symbol = :hist,
-        bins::Int64 = 15,
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        draw_mean::Bool = true,
-        draw_median::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractVector,
+    x::Union{Nothing, Real} = nothing;
+    type::Symbol = :hist,
+    bins::Int64 = 15,
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    draw_mean::Bool = true,
+    draw_median::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     _check_var(type, [:hist, :kd], "type")
 
@@ -275,25 +274,25 @@ Bar plot.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `xlabels::Vector{String}`: x-ticks labels
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractVector`
+- `xlabels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_bar(
-        s::AbstractVector;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractVector;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
 
@@ -345,23 +344,23 @@ Line plot.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `xlabels::Vector{String}`: x-ticks labels
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
+- `s::AbstractVector`
+- `xlabels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_line(
-        s::AbstractVector;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = ""
-    )::GLMakie.Figure
+    s::AbstractVector;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = ""
+)::GLMakie.Figure
 
     @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
 
@@ -410,27 +409,27 @@ Line plot.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `rlabels::Vector{String}`: signal rows labels
-  - `xlabels::Vector{String}`: x-ticks labels
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractArray`
+- `rlabels::Vector{String}`: signal rows labels
+- `xlabels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_line(
-        s::AbstractArray;
-        rlabels::Vector{String},
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    rlabels::Vector{String},
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     _chk2d(s)
     @assert size(s, 1) == length(rlabels) "Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal."
@@ -495,25 +494,25 @@ Box plot.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `xlabels::Vector{String}`: group labels (X ticks)
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractArray`
+- `xlabels::Vector{String}`: group labels (X ticks)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_box(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     _chk2d(s)
     @assert size(s, 1) == length(xlabels) "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
@@ -566,25 +565,25 @@ Violin plot.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `glabels::Vector{String}`: group labels (X ticks)
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractArray`
+- `glabels::Vector{String}`: group labels (X ticks)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_violin(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     _chk2d(s)
     @assert size(s, 1) == length(xlabels) "Number of s columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
@@ -644,25 +643,25 @@ Dots plot.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `xlabels::Vector{String}`: group labels (X ticks)
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractArray`
+- `xlabels::Vector{String}`: group labels (X ticks)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_dots(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     @assert size(s, 1) == length(xlabels) "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
 
@@ -722,25 +721,25 @@ Plot paired data.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `xlabels::Vector{String}`: group labels (x-axis ticks)
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractArray`
+- `xlabels::Vector{String}`: group labels (x-axis ticks)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_paired(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     @assert size(s, 1) == length(xlabels) "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
 
@@ -813,23 +812,23 @@ Polar plot.
 
 # Arguments
 
-  - `s::Union{AbstractVector, AbstractMatrix}`
-  - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `ticks::Bool=false`: draw x- and y-axis ticks
+- `s::Union{AbstractVector, AbstractMatrix}`
+- `m::Tuple{Real, Real}=(0, 0)`: major value to plot
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `ticks::Bool=false`: draw x- and y-axis ticks
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_polar(
-        s::Union{AbstractVector, AbstractMatrix};
-        m::Tuple{Real, Real} = (0, 0),
-        title::String = "",
-        mono::Bool = false,
-        ticks::Bool = true,
-    )::GLMakie.Figure
+    s::Union{AbstractVector, AbstractMatrix};
+    m::Tuple{Real, Real} = (0, 0),
+    title::String = "",
+    mono::Bool = false,
+    ticks::Bool = true,
+)::GLMakie.Figure
 
     size(s, 1) == 2 && (s = s')
     @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
@@ -877,43 +876,43 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 
 # Arguments
 
-  - `sp::AbstractArray`: ERO spectrogram
-  - `sf::AbstractVector`: ERO frequencies
-  - `st::AbstractVector`: ERO time
-  - `db::Bool=true`: whether ERO powers are normalized to dB
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
-  - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
-  - `xlabel::String="default"`
-  - `ylabel::String="default"`
-  - `title::String="default"`
-  - `cb::Bool=true`: draw colorbar
-  - `mono::Bool=false`: use color or gray palette
-  - `units::String="μV"`
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `sp::AbstractArray`: ERO spectrogram
+- `sf::AbstractVector`: ERO frequencies
+- `st::AbstractVector`: ERO time
+- `db::Bool=true`: whether ERO powers are normalized to dB
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
+- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
+- `xlabel::String="default"`
+- `ylabel::String="default"`
+- `title::String="default"`
+- `cb::Bool=true`: draw colorbar
+- `mono::Bool=false`: use color or gray palette
+- `units::String="μV"`
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_eros(
-        sp::AbstractArray,
-        sf::AbstractVector,
-        st::AbstractVector;
-        db::Bool = true,
-        frq::Symbol = :lin,
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        tm::Union{Int64, Vector{Int64}} = 0,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        cb::Bool = true,
-        mono::Bool = false,
-        units::String = "μV",
-        smooth::Bool = false,
-        n::Int64 = 3,
-    )::GLMakie.Figure
+    sp::AbstractArray,
+    sf::AbstractVector,
+    st::AbstractVector;
+    db::Bool = true,
+    frq::Symbol = :lin,
+    flim::Tuple{Real, Real} = (sf[1], sf[end]),
+    tm::Union{Int64, Vector{Int64}} = 0,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    cb::Bool = true,
+    mono::Bool = false,
+    units::String = "μV",
+    smooth::Bool = false,
+    n::Int64 = 3,
+)::GLMakie.Figure
 
     @assert size(sp, 1) == length(sf) "Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal."
     @assert size(sp, 2) == length(st) "Length of st ($(length(st))) and number of spectrogram columns ($(size(sp, 2))) must be equal."
@@ -1113,33 +1112,33 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 
 # Arguments
 
-  - `p::AbstractArray`: ERO powers
-  - `f::AbstractVector`: ERO frequencies
-  - `db::Bool=true`: whether ERO powers are normalized to dB
-  - `xlabel::String="default"`
-  - `ylabel::String="default"`
-  - `title::String="default"`
-  - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `units::String="μV"`
-  - `mono::Bool=false`: use color or gray palette
+- `p::AbstractArray`: ERO powers
+- `f::AbstractVector`: ERO frequencies
+- `db::Bool=true`: whether ERO powers are normalized to dB
+- `xlabel::String="default"`
+- `ylabel::String="default"`
+- `title::String="default"`
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `units::String="μV"`
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_erop(
-        sp::AbstractArray,
-        sf::AbstractVector;
-        db::Bool = true,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        frq::Symbol = :lin,
-        units::String = "μV",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    sp::AbstractArray,
+    sf::AbstractVector;
+    db::Bool = true,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    flim::Tuple{Real, Real} = (sf[1], sf[end]),
+    frq::Symbol = :lin,
+    units::String = "μV",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     _in(flim[1], (sf[1], sf[end]), "flim")
     _in(flim[2], (sf[1], sf[end]), "flim")
@@ -1290,41 +1289,41 @@ Topographical plot of external ICA components.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n)
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=axes(ic_idx, 1)`: component(s) to plot, default is all components
-  - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
-  - `imethod::Symbol=:sh`: interpolation method:
-      + `:sh`: Shepard
-      + `:mq`: Multiquadratic
-      + `:imq`: InverseMultiquadratic
-      + `:tp`: ThinPlate
-      + `:nn`: NearestNeighbour
-      + `:ga`: Gaussian
-  - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-  - `contours::Int64=0`: number of contour levels to plot
-  - `electrodes::Bools=true`: plot electrodes over topo plot
-  - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ic::Matrix{Float64}`: components IC(1)..IC(n)
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=axes(ic_idx, 1)`: component(s) to plot, default is all components
+- `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
+- `imethod::Symbol=:sh`: interpolation method:
+  - `:sh`: Shepard
+  - `:mq`: Multiquadratic
+  - `:imq`: InverseMultiquadratic
+  - `:tp`: ThinPlate
+  - `:nn`: NearestNeighbour
+  - `:ga`: Gaussian
+- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `contours::Int64=0`: number of contour levels to plot
+- `electrodes::Bools=true`: plot electrodes over topo plot
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 
 # Returns
 
-  - `p::GLMakie.figure`
+- `p::GLMakie.figure`
 """
 function plot_icatopo(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange} = axes(ic_idx, 1),
-        tpos::Union{Nothing, Real, AbstractVector},
-        imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
-        contours::Int64 = 0,
-        electrodes::Bool = true,
-        ps::Symbol = :l,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange} = axes(ic_idx, 1),
+    tpos::Union{Nothing, Real, AbstractVector},
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+    contours::Int64 = 0,
+    electrodes::Bool = true,
+    ps::Symbol = :l,
+)::GLMakie.Figure
 
     p_topo = GLMakie.Figure[]
     for idx in eachindex(ic_idx)
@@ -1357,29 +1356,29 @@ Confidence interval plot.
 
 # Arguments
 
-  - `s::AbstractVector`: signal
-  - `s_l::AbstractVector`: CI lower bound
-  - `s_u::AbstractVector`: CI upper bound
-  - `t::AbstractVector`: time points
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
+- `s::AbstractVector`: signal
+- `s_l::AbstractVector`: CI lower bound
+- `s_u::AbstractVector`: CI upper bound
+- `t::AbstractVector`: time points
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_ci(
-        s::AbstractVector,
-        s_l::AbstractVector,
-        s_u::AbstractVector,
-        t::AbstractVector;
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractVector,
+    s_l::AbstractVector,
+    s_u::AbstractVector,
+    t::AbstractVector;
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     @assert length(s) == length(s_l) == length(s_u) "All input signals must be of the same length."
 
@@ -1435,41 +1434,41 @@ Plot heatmap.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `x::AbstractVector`
-  - `y::AbstractVector`
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `cb::Bool=true`: draw colorbar
-  - `cb_title::String=""`: colorbar title
-  - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
+- `m::AbstractMatrix`
+- `x::AbstractVector`
+- `y::AbstractVector`
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `cb::Bool=true`: draw colorbar
+- `cb_title::String=""`: colorbar title
+- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+  - `:eq`: draw region is values are equal to threshold
+  - `:neq`: draw region is values are not equal to threshold
+  - `:geq`: draw region is values are ≥ to threshold
+  - `:leq`: draw region is values are ≤ to threshold
+  - `:g`: draw region is values are > to threshold
+  - `:l`: draw region is values are < to threshold
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_heatmap(
-        m::AbstractMatrix;
-        x::AbstractVector,
-        y::AbstractVector,
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-        cb::Bool = true,
-        cb_title::String = "",
-        threshold::Union{Nothing, Real} = nothing,
-        threshold_type::Symbol = :neq,
-    )::GLMakie.Figure
+    m::AbstractMatrix;
+    x::AbstractVector,
+    y::AbstractVector,
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+    cb::Bool = true,
+    cb_title::String = "",
+    threshold::Union{Nothing, Real} = nothing,
+    threshold_type::Symbol = :neq,
+)::GLMakie.Figure
 
     @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) must be equal."
     @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) must be equal."
@@ -1647,97 +1646,29 @@ function plot_imf(
 end
 
 """
-    plot_hs(sp, st; <keyword arguments>)
-
-Plot Hilbert spectrum.
-
-# Arguments
-
-- `sp::Vector{Float64}`: Hilbert transform powers
-- `st::Vector{Float64}`: time
-- `xlabel::String="default"`: x-axis label, default is Time [s]
-- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
-- `title::String="default"`: plot title
-- `mono::Bool=false`: use color or gray palette
-
-# Returns
-
-- `p::GLMakie.Figure`
-"""
-function plot_hs(
-    sp::Vector{Float64},
-    st::Vector{Float64};
-    xlabel::String = "default",
-    ylabel::String = "default",
-    title::String = "default",
-    mono::Bool = false,
-)::GLMakie.Figure
-
-    @assert length(sp) == length(st) "Length of powers ($(length(sp))) and time points ($(length(st))) must be equal."
-
-    pal = mono ? :grays : :darktest
-
-    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Power [μV^2/Hz]", "")
-
-    # prepare plot
-    GLMakie.activate!(title = "plot_hs()")
-    plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
-    ax = GLMakie.Axis(
-        p[1, 1],
-        xlabel = xl,
-        ylabel = yl,
-        title = tt,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
-        xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
-    )
-    GLMakie.xlims!(ax, _xlims(st))
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
-
-    # plot powers
-    GLMakie.lines!(st, sp, linewidth = 1, color = :black)
-
-    return p
-
-end
-
-"""
     plot_fi(fi, st; <keyword arguments>)
 
 Plot instantaneous frequencies.
 
 # Arguments
 
-  - `fi::Vector{Float64}`: instantaneous frequencies
-  - `st::Vector{Float64}`: time
-  - `xlabel::String="default"`: x-axis label, default is Time [s]
-  - `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
-  - `title::String="default"`: plot title
+- `fi::Vector{Float64}`: instantaneous frequencies
+- `st::Vector{Float64}`: time
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `title::String="default"`: plot title
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_fi(
-        fi::Vector{Float64},
-        st::Vector{Float64};
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-    )::GLMakie.Figure
+    fi::Vector{Float64},
+    st::Vector{Float64};
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+)::GLMakie.Figure
 
     @assert length(fi) == length(st) "Length of frequencies ($(length(fi))) and time points ($(length(st))) must be equal."
 
@@ -1785,17 +1716,17 @@ Plot phases.
 
 # Arguments
 
-  - `ph::Vector{Float64}`: phases
-  - `sf::Vector{Float64}`: frequencies
-  - `unit::Symbol=:rad`: phase unit (radians or degrees)
-  - `type::Symbol=:line`: plot type (`:line`: line, `:stem`: stems)
-  - `xlabel::String="default"`: x-axis label, default is Time [s]
-  - `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
-  - `title::String="default"`: plot title
+- `ph::Vector{Float64}`: phases
+- `sf::Vector{Float64}`: frequencies
+- `unit::Symbol=:rad`: phase unit (radians or degrees)
+- `type::Symbol=:line`: plot type (`:line`: line, `:stem`: stems)
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `title::String="default"`: plot title
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_phase(
     ph::Vector{Float64},
@@ -1858,24 +1789,24 @@ Polar pole-zero map.
 
 # Arguments
 
-  - `p::Vector{Complex{Float64}}`: vector of poles
-  - `z::Vector{Complex{Float64}}`: vector of zeros
-  - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
-  - `title::String=""`: plot title
-  - `ticks::Bool=false`: draw x- and y-axis ticks
-  - `ms::Symbol=:circle`: marker shape for drawing complex numbers (`:circle` or `:xcross`)
-  - `mono::Bool=false`: use color or gray palette
+- `p::Vector{Complex{Float64}}`: vector of poles
+- `z::Vector{Complex{Float64}}`: vector of zeros
+- `m::Tuple{Real, Real}=(0, 0)`: major value to plot
+- `title::String=""`: plot title
+- `ticks::Bool=false`: draw x- and y-axis ticks
+- `ms::Symbol=:circle`: marker shape for drawing complex numbers (`:circle` or `:xcross`)
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_polezero(
-        pol::Vector{Complex{Float64}},
-        zer::Vector{Complex{Float64}};
-        title::String = "default",
-        mono::Bool = false
-    )::GLMakie.Figure
+    pol::Vector{Complex{Float64}},
+    zer::Vector{Complex{Float64}};
+    title::String = "default",
+    mono::Bool = false
+)::GLMakie.Figure
 
     # prepare plot
     GLMakie.activate!(title = "plot_polezero()")
@@ -1919,19 +1850,19 @@ Plot discrete wavelet decomposition coefficients.
 
 # Arguments
 
-  - `dc::Matrix{Float64}`: coefficients
-  - `n::Int64=size(dc, 1) - 1`: number of coefficients to plot
-  - `t::AbstractVector`: time points
+- `dc::Matrix{Float64}`: coefficients
+- `n::Int64=size(dc, 1) - 1`: number of coefficients to plot
+- `t::AbstractVector`: time points
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_dwc(
-        dc::Matrix{Float64};
-        n::Int64 = size(dc, 1) - 1,
-        t::AbstractVector
-    )::GLMakie.Figure
+    dc::Matrix{Float64};
+    n::Int64 = size(dc, 1) - 1,
+    t::AbstractVector
+)::GLMakie.Figure
 
     @assert n > 1 "n must be > 1."
     @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."

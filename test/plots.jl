@@ -338,12 +338,6 @@ p = plot_imf(imf, t=t)
 p = plot_gridlocs()
 @test p isa GLMakie.Figure
 
-@info "Test: plot_hs()"
-hms, t = hmspectrum(e10, ch="Fp1")
-hms = vec(hms[:, :, 1])
-p = plot_hs(hms, t)
-@test p isa GLMakie.Figure
-
 @info "Test: plot_fi()"
 t = e10.epoch_time
 fi = frqinst(e10, ch="Fp1")

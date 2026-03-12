@@ -579,20 +579,21 @@ Calculate spectrogram using Hilbert-Huang transform.
 Named tuple containing:
 
   - `p::Matrix{Float64}`: powers
-  - `ph::Matrix{Float64}`: phases
   - `f::Vector{Float64}`: frequencies
   - `t::Vector{Float64}`: time
 """
 function hhtspectrogram(
-        s::AbstractMatrix; fs::Int64, db::Bool = true
-    )::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+    s::AbstractMatrix; fs::Int64, db::Bool = true
+)::@NamedTuple{
+    p::Matrix{Float64},
+    f::Vector{Float64},
+    t::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
     f = round.(linspace(0, fs / 2, fs ÷ 2), digits = 2)
 
     p = zeros(size(s))
-    ph = zeros(size(s))
     fi = zeros(size(s))
 
     @inbounds for idx in axes(s, 1)
@@ -612,7 +613,8 @@ function hhtspectrogram(
 
     t = 0:(1 / fs):(size(s, 2) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
+    # f = linspace(0, (fs / 2), size(p, 2))
 
-    return (p = sp, ph = ph, f = f, t = t)
+    return (p = sp, f = f, t = t)
 
 end
