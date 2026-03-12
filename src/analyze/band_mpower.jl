@@ -13,7 +13,7 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram
@@ -102,7 +102,7 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram

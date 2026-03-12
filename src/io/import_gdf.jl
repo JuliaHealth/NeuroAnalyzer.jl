@@ -20,7 +20,7 @@ Load GDF file and return `NeuroAnalyzer.NEURO` object.
   - gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
   - value = (value - digital minimum ) × gain + physical minimum
 
-# Reference
+# References
 
  1. Schlögl A, Filz O, Ramoser H, Pfurtscheller G. GDF - A General Dataformat for Biosignals Version 1.25. 1998
  2. Schlögl, A. GDF - A General Dataformat for Biosignals Version 2.12. 2009

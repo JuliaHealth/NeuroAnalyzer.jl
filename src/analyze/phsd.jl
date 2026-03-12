@@ -8,7 +8,7 @@ Calculate phase spectral density.
 # Arguments
 
 - `s::Vector{Float64}`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 
@@ -36,7 +36,7 @@ Calculate phase spectral density.
 # Arguments
 
 - `s::AbstractMatrix`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 
@@ -68,7 +68,7 @@ Calculate phase spectral density.
 # Arguments
 
 - `s::AbstractArray`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 

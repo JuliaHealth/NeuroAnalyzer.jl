@@ -14,7 +14,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
-# Reference
+# References
 
  1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """

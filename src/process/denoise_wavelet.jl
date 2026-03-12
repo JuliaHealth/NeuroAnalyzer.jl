@@ -11,7 +11,7 @@ Perform denoising using continuous wavelet decomposition (CWD).
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
 - `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
@@ -55,7 +55,7 @@ Perform denoising using continuous wavelet decomposition (CWD).
 # Arguments
 
 - `s::AbstractArray`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
 - `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)

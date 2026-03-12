@@ -7,7 +7,7 @@ Plot filter response.
 
 # Arguments
 
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `fprototype::Symbol`: filter prototype:
     - `:fir`: FIR filter
     - `:firls`: weighted least-squares FIR filter

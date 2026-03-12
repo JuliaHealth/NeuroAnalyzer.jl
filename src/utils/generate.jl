@@ -41,7 +41,11 @@ Return an `n`-point symmetric window of the given type.
 
 [`generate_sine`](@ref), [`generate_gaussian`](@ref)
 """
-function generate_window(type::Symbol, n::Int64; even::Bool = false)::Vector{Float64}
+function generate_window(
+    type::Symbol,
+    n::Int64;
+    even::Bool = false
+)::Vector{Float64}
 
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
     @assert n >= 1 "n must be ≥ 1."
@@ -205,14 +209,18 @@ Computes `a × exp(i × 2πft)`.
 
 [`generate_sine`](@ref), [`generate_cosine`](@ref)
 """
-function generate_csine(f::Real, t::AbstractVector, a::Real = 1)::Vector{ComplexF64}
+function generate_csine(
+    f::Real,
+    t::AbstractVector,
+    a::Real = 1
+)::Vector{ComplexF64}
 
     return @. a * exp(1im * 2 * pi * f * t)
 
 end
 
 """
-    generate_sinc(t, f, peak, norm)
+    generate_sinc(t; <keyword arguments>)
 
 Generate a sinc function.
 
@@ -316,7 +324,7 @@ The standard deviation of the Gaussian is `σ = ncyc / (2πf)`. The time axis sp
 - `f::Real`: frequency in Hz; determines the Gaussian width via `σ = ncyc / (2πf)`
 - `t::Real=1`: half-length of the time axis in seconds; must be > 0
 - `ncyc::Int64`: : number of cycles; controls the width (SD) of the Gaussian; must be ≥ 1
-- `a::Real=1`: peak amplitude
+- `a::Real=1.0`: peak amplitude
 
 # Returns
 
@@ -375,7 +383,11 @@ The raw noise is normalized to `[−1, 1]` and then scaled by `a`.
 
 [`generate_signal`](@ref)
 """
-function generate_noise(n::Int64, a::Real = 1.0; type::Symbol = :whiten)::Vector{Float64}
+function generate_noise(
+    n::Int64,
+    a::Real = 1.0;
+    type::Symbol = :whiten
+)::Vector{Float64}
 
     _check_var(type, [:whiten, :whiteu, :pink], "type")
     @assert n >= 1 "n must be ≥ 1."
@@ -402,7 +414,7 @@ end
 
 Generate a random walk signal based on cumulative normally distributed noise.
 
-The cumulative sum introduces temporal autocorrelation, producing a Brownian-motion–like signal. The result is normalised to `[−1, 1]` and scaled by `a`.
+The cumulative sum introduces temporal autocorrelation, producing a Brownian-motion–like signal. The result is normalized to `[−1, 1]` and scaled by `a`.
 
 # Arguments
 
@@ -415,7 +427,7 @@ The cumulative sum introduces temporal autocorrelation, producing a Brownian-mot
 
 # Throws
 
-- `ArgumentError`: Iif `n < 1`.
+- `ArgumentError`: if `n < 1`
 
 # See also
 
@@ -452,7 +464,7 @@ Uses the FWHM-based Gaussian envelope `exp(−4 ln 2 × t² / h²)` instead of a
 
 - `ArgumentError`: if `fs < 1`, `t ≤ 0`, or `h ≤ 0`
 
-# Reference
+# References
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
 
@@ -477,14 +489,14 @@ function generate_morlet_fwhm(
 end
 
 """
-    generate_square(t, a, p, w, offset)
+    generate_square(t, a, p; <keyword arguments>)
 
 Generate a square wave.
 
 # Arguments
 
 - `t::AbstractVector`: time vector
-- `a::Real=1`: amplitude scaling factor
+- `a::Real`: amplitude scaling factor
 - `p::Real`: phase (horizontal shift of the wave) = duty cycle
 - `w::Real`: width = duty-cycle threshold; samples where `mod(p + t, 2) > w` are high
 - `offset::Real=0`: vertical amplitude offset
@@ -499,8 +511,8 @@ Generate a square wave.
 """
 function generate_square(
     t::AbstractVector,
-    a::Real = 1,
-    p::Real,
+    a::Real,
+    p::Real;
     w::Real = 1,
     offset::Real = 0
 )::Vector{Float64}
@@ -529,7 +541,10 @@ Computes `a × |mod(t, 2) − 1|`, which produces a symmetric triangle wave with
 
 [`generate_square`](@ref)
 """
-function generate_triangle(t::AbstractVector, a::Real = 1)::Vector{Float64}
+function generate_triangle(
+    t::AbstractVector,
+    a::Real = 1
+)::Vector{Float64}
 
     return @. a * abs(mod(t, 2) - 1)
 

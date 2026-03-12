@@ -122,8 +122,8 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
-- `ep::Int64`: epoch number
+- `ch::String`: channel name; must resolve to exactly one channel
+- `ep::Int64`: epoch index
 - `epsilon::Real=0.3`: decomposition stops when the normalised sum of squared differences (SD criterion) drops below `epsilon`
 
 # Returns
@@ -134,6 +134,7 @@ function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real = 0.
 
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad")[1] : get_channel(obj, ch = ch, exclude = "")[1]
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
 
     _check_epochs(obj, ep)
 

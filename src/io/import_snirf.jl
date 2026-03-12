@@ -14,7 +14,7 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
-# Reference
+# References
 
  1. https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 """

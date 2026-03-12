@@ -8,7 +8,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize do dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: PSD method:
@@ -105,7 +105,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 # Arguments
 
 - `s::AbstractMatrix`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize do dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: PSD method:
@@ -193,7 +193,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 # Arguments
 
 - `s::AbstractArray`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize do dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: PSD method:

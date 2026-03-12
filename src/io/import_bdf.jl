@@ -20,7 +20,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
   - gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
   - value = (value - digital minimum ) × gain + physical minimum
 
-# Reference
+# References
 
  1. https://www.biosemi.com/faq/file_format.htm
 """

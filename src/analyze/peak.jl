@@ -10,7 +10,7 @@ Calculate peak frequency within a frequency band.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds in Hz
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram
@@ -79,7 +79,7 @@ Calculate peak frequency within a frequency band.
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram
@@ -212,7 +212,7 @@ Calculate amplitude at the peak frequency within a frequency band.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram
@@ -278,7 +278,7 @@ Calculate amplitude at peak frequency within a frequency band.
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram
@@ -409,7 +409,7 @@ Calculate power at the peak frequency within a frequency band.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram
@@ -475,7 +475,7 @@ Calculate power at peak frequency within a frequency band.
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram

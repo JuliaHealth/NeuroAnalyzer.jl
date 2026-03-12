@@ -9,7 +9,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 - `s::AbstractVector`: signal vector
 - `x::Float64=0.95`: threshold
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram
@@ -90,7 +90,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 - `s::AbstractArray`
 - `x::Float64=0.95`: threshold
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram

@@ -3,22 +3,31 @@ export phases
 """
     phases(s)
 
-Computes the instantaneous phase of a signal via the Hilbert transform: φ(t) = angle( H(s)(t) )  ∈ (−π, π]
+Compute the instantaneous phase of a signal via the Hilbert transform. The analytic signal is obtained as `z = DSP.hilbert(s)`, then the wrapped instantaneous phase is extracted as `φ(t) = angle(z(t)) = atan(imag(z), real(z))`.
 
-The result is the wrapped instantaneous phase in radians. For the unwrapped phase (suitable for differentiation to obtain instantaneous frequency) use DSP.unwrap() on the output.
+For the unwrapped phase (suitable for differentiating to obtain instantaneous frequency) apply `DSP.unwrap` to the output.
 
 # Arguments
 
-- `s::AbstractVector`: signal vector
+- `s::AbstractVector`: signal vector; must contain at least 1 element
 
 # Returns
 
-- `phases::Vector{Float64}`: instantaneous phase in radians ∈ (−π, π]
+- `Vector{Float64}`: instantaneous phase in radians ∈ (−π, π].
+
+# Throws
+
+- `ArgumentError`: if `s` is empty
+
+# See also
+
+[`DSP.hilbert`](https://docs.juliadsp.org), [`DSP.unwrap`](https://docs.juliadsp.org)
 """
 function phases(s::AbstractVector)::Vector{Float64}
 
+    @assert length(s) > 0 "s must not be empty."
     # DSP.hilbert() returns the analytic signal z = s + i·H(s)
-    # angle(z) = atan(imag(z), real(z)) is the instantaneous phase
-    return DSP.angle.(DSP.hilbert(s))
+    # Base.angle(z) = atan(imag(z), real(z)) gives the wrapped instantaneous phase
+    return Base.angle.(DSP.hilbert(s))
 
 end

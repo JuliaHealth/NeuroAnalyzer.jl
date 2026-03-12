@@ -24,7 +24,7 @@ Named tuple:
 - `s1ph::Vector{Float64}`: instantaneous phase of s1
 - `s2ph::Vector{Float64}`: instantaneous phase of s2
 
-# Reference
+# References
 
 Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
@@ -85,7 +85,7 @@ Named tuple:
 - `s1ph::Array{Float64, 3}`: signal 1 phases, shape `(channels, samples, epochs)`
 - `s2ph::Array{Float64, 3}`: signal 2 phases, shape `(channels, samples, epochs)`
 
-# Reference
+# References
 
 Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
@@ -166,7 +166,7 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 - `ipl::Array{Float64, 3}`: IPLV matrix, shape `(channels, channels, epochs)`; symmetric with zeros on the diagonal
 
-# Reference
+# References
 
 Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """

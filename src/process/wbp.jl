@@ -11,7 +11,7 @@ Perform wavelet band-pass filtering.
 - `s::AbstractVector`: signal vector
 - `pad::Int64`: number of zeros to append
 - `frq::Real`: filter frequency
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Int64=6`: Morlet wavelet cycles
 
 # Returns
@@ -44,7 +44,7 @@ Perform wavelet band-pass filtering.
 - `s::AbstractArray`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Int64=6`: Morlet wavelet cycles
 
 # Returns

@@ -8,7 +8,7 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `pad::Int64=0`: number of zeros to append
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
@@ -46,7 +46,7 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `s::AbstractArray`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `pad::Int64=0`: number of zeros to append
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz

@@ -21,14 +21,14 @@ The two-column layout allows direct comparison between the "evoked" power (colum
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `method::Symbol=:welch`: power spectrum method:
-- `:welch`: Welch's periodogram
-- `:stft`: short-time Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:fft`: Fast Fourier transform
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian and Hilbert transform
+    - `:welch`: Welch's periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:fft`: Fast Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -58,6 +58,8 @@ function erop(
     gw::Real = 5,
     demean::Bool = true,
 )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+
+    @assert length(get_channel(obj, ch=ch)) == 1 "ch must resolve to exactly one channel."
 
     # compute per-epoch power spectra for the selected channel
     _log_off()

@@ -282,7 +282,7 @@ Convert event channel to markers.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `v::Real=1.0`: event channel value interpreted as an event
 - `id::String`: prefix for marker ID; default is based on event channel name (e.g. "stim1_")
 - `value::String=""`: marker value; default is based on event channel name (e.g. "stim1")
@@ -292,15 +292,17 @@ Convert event channel to markers.
 - `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function channel2marker(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        v::Real = 1.0,
-        id::String = "",
-        value::String = "",
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    v::Real = 1.0,
+    id::String = "",
+    value::String = "",
+)::NeuroAnalyzer.NEURO
+
+    ch = get_channel(obj, ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
 
     stim_ch = get_channel(obj, type = "mrk")
-    ch = get_channel(obj, ch = ch)[1]
 
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]
@@ -376,7 +378,7 @@ Convert event channel to markers.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `v::Real=1.0`: event channel value interpreted as an event
 - `id::String`: prefix for marker ID; default is "mrk_"
 - `value::String=""`: prefix for marker value; default is based on event channel name (e.g. "stim1_")

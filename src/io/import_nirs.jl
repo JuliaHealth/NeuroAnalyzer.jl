@@ -13,7 +13,7 @@ Load NIRS file and return `NeuroAnalyzer.NEURO` object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
-# Reference
+# References
 
  1. https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """

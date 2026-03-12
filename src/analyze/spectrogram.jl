@@ -359,7 +359,7 @@ Calculate spectrogram using Morlet wavelet convolution.
 - `s::AbstractVector`: signal vector
 - `pad::Int64`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -443,7 +443,7 @@ Calculate Morlet wavelet spectrogram for each channel of a matrix.
 - `s::AbstractMatrix`: signal matrix (channels, samples)
 - `pad::Int64`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -503,7 +503,7 @@ Calculate spectrogram using Gaussian filter and Hilbert transform.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=10`: Gaussian width in Hz
 - `w::Bool=true`: if true, apply Hanning window
@@ -569,7 +569,7 @@ Calculate spectrogram using Gaussian and Hilbert transform for each channel of a
 # Arguments
 
 - `s::AbstractArray`: signal matrix (channels, samples)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=10`: Gaussian width in Hz
 - `w::Bool=true`: if true, apply Hanning window
@@ -636,7 +636,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT).
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
@@ -684,7 +684,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT) for each chan
 # Arguments
 
 - `s::AbstractMatrix`: signal matrix (channels, samples)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
@@ -731,7 +731,7 @@ Calculate spectrogram using Hilbert-Huang transform.
 # Arguments
 
 - `s::AbstractMatrix`: signal matrix
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 
 # Returns

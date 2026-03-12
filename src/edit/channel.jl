@@ -92,7 +92,7 @@ Get channel type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 
 # Returns
 
@@ -101,6 +101,8 @@ Get channel type.
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
     ch = get_channel(obj, ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+
     cht = obj.header.recording[:channel_type][ch]
 
     return cht[1]
@@ -115,7 +117,7 @@ Set channel type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `type::String`: new type
 
 # Returns
@@ -123,15 +125,19 @@ Set channel type.
 - `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function set_channel_type(
-        obj::NeuroAnalyzer.NEURO; ch::String, type::String
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    type::String
+)::NeuroAnalyzer.NEURO
 
     type = lowercase(type)
     _check_var(type, string.(channel_types), "type")
 
+    ch = get_channel(ch, ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+
     # create new dataset
     obj_new = deepcopy(obj)
-    ch = get_channel(obj_new, ch = ch)[1]
     obj_new.header.recording[:channel_type][ch] = type
 
     # add entry to :history field
@@ -149,7 +155,7 @@ Set channel type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `type::String`
 
 # Returns
@@ -174,7 +180,7 @@ Rename channel.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `name::String`: new name
 
 # Returns
@@ -211,7 +217,7 @@ Rename channel.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `name::String`: new name
 
 # Returns
@@ -237,7 +243,7 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `field::Symbol`
 - `value::String`
 
@@ -250,7 +256,9 @@ function edit_channel(
     )::NeuroAnalyzer.NEURO
 
     @assert value !== nothing "value cannot be empty."
-    ch = get_channel(obj, ch = ch)[1]
+    ch = get_channel(obj, ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+
     _check_var(field, [:channel_type, :label], "field")
 
     obj_new = deepcopy(obj)
@@ -270,7 +278,7 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `field::Symbol`
 - `value::String`
 
@@ -298,7 +306,7 @@ Replace channel.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `s::AbstractArray`
 
 # Returns
@@ -315,7 +323,9 @@ function replace_channel(
         "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
     )
 
-    ch = get_channel(obj, ch = ch)[1]
+    ch = get_channel(obj, ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = s
 
@@ -333,7 +343,7 @@ Replace channel.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `s::Array{Float64, 3}`: signal to replace with
 
 # Returns
@@ -421,12 +431,12 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 - `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_channel(
-        obj::NeuroAnalyzer.NEURO;
-        data::Array{<:Number, 3},
-        label::Union{String, Vector{String}},
-        type::Union{String, Vector{String}},
-        unit::Union{String, Vector{String}},
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}},
+)::NeuroAnalyzer.NEURO
 
     if length(obj.data) > 0
         @assert signal_len(obj) == size(data, 2) "Epoch length of the new data ($(size(data, 2))) and the object data ($(signal_len(obj)))must be equal."

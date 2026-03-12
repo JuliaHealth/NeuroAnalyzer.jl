@@ -10,7 +10,7 @@ Interpolate channel using linear regression.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
-- `ep::Int64`: epoch number(s) within to interpolate
+- `ep::Int64`: epoch index(s) within to interpolate
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
 
 # Returns
@@ -77,7 +77,7 @@ Interpolate channel using linear regression.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
-- `ep::Int64`: epoch number(s) within to interpolate
+- `ep::Int64`: epoch index(s) within to interpolate
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
 
 # Returns

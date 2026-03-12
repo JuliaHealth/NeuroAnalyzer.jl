@@ -10,7 +10,7 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 
 - `s::AbstractVector`: signal vector
 - `t::AbstractVector`: time points
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `tseg::Tuple{Real, Real}`: artifact time location
 - `fseg::Tuple{Real, Real}`: artifact frequency location
@@ -66,7 +66,7 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `ep::Int64`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `tseg::Tuple{Real, Real}`: artifact time location
@@ -90,7 +90,9 @@ function artrem_cwd(
         type::Symbol = :nd,
     ) where {T <: CWT}
 
-    ch = get_channel(obj, ch = ch)[1]
+    ch = get_channel(obj, ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)
@@ -113,7 +115,7 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `ep::Int64`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `tseg::Tuple{Real, Real}`: artifact time location

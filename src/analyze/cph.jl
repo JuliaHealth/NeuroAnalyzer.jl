@@ -9,7 +9,7 @@ Computes the instantaneous phase of the cross-power spectrum between two signals
 
 - `s1::AbstractVector`: signal vector
 - `s2::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 
@@ -46,7 +46,7 @@ Computes the instantaneous phase of the cross-power spectrum between all channel
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 
@@ -114,7 +114,7 @@ Calculate cross-phases between paired channels of two arrays.
 
 - `s1::AbstractArray`: signal array (channels, samples, epochs)
 - `s2::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 

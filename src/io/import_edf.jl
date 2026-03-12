@@ -20,7 +20,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
   - gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
   - value = (value - digital minimum ) × gain + physical minimum
 
-# Reference
+# References
 
  1. Kemp B, Varri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992; 82(5): 391–3
  2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003; 114: 1755–61

@@ -24,7 +24,7 @@ MCC’s value ranges from -1 to 1, depending on:
 
 - `mcc::Float64`
 
-# Reference
+# References
 
 https://finnstats.com/index.php/2022/09/06/assess-performance-of-the-classification-model/
 """
@@ -56,7 +56,7 @@ Named tuple:
 - `p::Float64`: precision
 - `r::Float64`: recall
 
-# Reference
+# References
 
 https://www.statology.org/what-is-a-good-f1-score/
 """
@@ -89,7 +89,7 @@ Named tuple:
 - `mr::Float64`: misclassification rate
 - `acc::Float64`: accuracy
 
-# Reference
+# References
 
 https://www.statology.org/misclassification-rate/
 """

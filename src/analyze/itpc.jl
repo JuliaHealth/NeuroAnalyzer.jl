@@ -27,7 +27,7 @@ Named tuple:
 - `itpca::Float64`: ITPC angle (preferred phase)
 - `itpcph::Vector{Float64}`: instantaneous phases at time `t` across epochs
 
-# Reference
+# References
 
 Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """

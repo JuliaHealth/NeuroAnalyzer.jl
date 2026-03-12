@@ -13,7 +13,7 @@ Load NIRX file and return `NeuroAnalyzer.NEURO` object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
-# Reference
+# References
 
  1. https://nirx.net/file-formats
 """

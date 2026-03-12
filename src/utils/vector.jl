@@ -7,49 +7,68 @@ export vreduce
 """
     vsearch(y, x)
 
-Return the positions of the string in the vector of strings.
+Return the index of the first occurrence of string `y` in vector `x`, or `nothing` if `y` is not present.
 
 # Arguments
 
-- `y::String`: value of interest
+- `y::String`: value to search for
 - `x::Vector{String}`: vector to search within
 
 # Returns
 
-- `idx::Union{Int64, Nothing}`
+- `Union{Int64, Nothing}`: index of the first match, or `nothing` if not found
+
+# See also
+
+[`vsearch(::Real, ::AbstractVector)`](@ref)
 """
-function vsearch(y::String, x::Vector{String})::Union{Int64, Nothing}
+function vsearch(
+    y::String,
+    x::Vector{String}
+)::Union{
+    Int64,
+    Nothing
+}
 
-    idx = nothing
-    if y in x
-        idx = findfirst(isequal(y), x)
-    end
-
-    return idx
+    # findfirst already returns nothing on no match
+    return findfirst(isequal(y), x)
 
 end
 
 """
     vsearch(y, x; <keyword arguments>)
 
-Return the positions of the value in the vector.
+Return the index of the element in `x` nearest to scalar `y`.
 
 # Arguments
 
 - `y::Real`: value of interest
-- `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[idx]`
+- `x::AbstractVector`: vector to search within; must not be empty
+- `acc::Bool=false`: if `true`, also return the absolute difference between `y` and `x[idx]`
 
 # Returns
 
-- `idx::Int64`
-- `d::Real`: the difference between `y` and `x[idx]`
+- `Int64`: index of the nearest element
+- `Tuple{Int64, Real}`: `(index, |y − x[index]|)` when `acc=true`
+
+# Throws
+
+- `ArgumentError`: if `x` is empty
+
+# See also
+
+[`vsearch(::AbstractVector, ::AbstractVector)`](@ref)
 """
 function vsearch(
-        y::Real, x::AbstractVector; acc::Bool = false
-    )::Union{Int64, Tuple{Int64, Real}}
+    y::Real,
+    x::AbstractVector;
+    acc::Bool = false
+)::Union{
+    Int64,
+    Tuple{Int64, Real}
+}
 
-    @assert length(x) > 0 "Length of x must be > 0."
+    @assert length(x) > 0 "x must not be empty."
     d, idx = findmin(abs.(x .- y))
 
     return acc ? (idx, d) : idx
@@ -59,158 +78,192 @@ end
 """
     vsearch(y, x; <keyword arguments>)
 
-Return the positions of the value in the vector.
+Return the indices of the elements in `x` nearest to each element of `y`.
 
 # Arguments
 
 - `y::AbstractVector`: vector of interest
-- `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[idx:idx + length(y)]`
+- `x::AbstractVector`: vector to search within; must not be empty and must be at least as long as `y`.
+- `acc::Bool=false`: if `true`, also return the absolute differences between each `y[i]` and its nearest match in `x`
 
 # Returns
 
-- `idx::Int64`
-- `d::Real`: the difference between `y` and `x[idx:idx + length(y)]`
+- `Vector{Int64}`: indices of nearest elements (one per entry of `y`)
+- `Tuple{Vector{Int64}, Vector{Real}}`: `(indices, differences)` when `acc=true`
+
+# Throws
+
+- `ArgumentError`: if `x` is empty or `length(y) > length(x)`
+
+# See also
+
+[`vsearch(::Real, ::AbstractVector)`](@ref)
 """
 function vsearch(
-        y::AbstractVector, x::AbstractVector; acc::Bool = false
-    )::Union{AbstractVector, Tuple{AbstractVector, AbstractVector}}
+    y::AbstractVector,
+    x::AbstractVector;
+    acc::Bool = false
+)::Union{
+    AbstractVector,
+    Tuple{AbstractVector, AbstractVector}
+}
 
-    @assert length(x) > 0 "Length of x must be > 0."
-    @assert length(y) <= length(x) "Length of y must be ≤ length 'x'"
+    @assert length(x) > 0 "x must not be empty."
+    @assert length(y) <= length(x) "length(y) must be ≤ length(x)."
 
-    idx = zeros(length(y))
-    d = zeros(length(y))
-
-    @inbounds for y_idx in eachindex(y)
-        d[y_idx], idx[y_idx] = findmin(abs.(x .- y[y_idx]))
+    idx = Vector{Int64}(undef, length(y))
+    d = Vector{Float64}(undef, length(y))
+    @inbounds for i in eachindex(y)
+        d[i], idx[i] = findmin(abs.(x .- y[i]))
     end
 
-    return acc ? (convert.(Int64, idx), d) : idx
+    return acc ? (idx, d) : idx
 
 end
 
 """
     vsplit(x, n)
 
-Splits vector into pieces.
+Split a vector into contiguous pieces of equal length `n`.
 
 # Argument
 
-- `x::AbstractVector`
-- `n::Int64`: length of one piece
+- `x::AbstractVector`: input vector; must not be empty and its length must be divisible by `n`
+- `n::Int64`: length of each piece; must be ≥ 1
 
 # Returns
 
-- `x::Vector{AbstractVector}`
+- `Vector{AbstractVector}`: vector of `length(x) ÷ n` sub-vectors, each of length `n`
+
+# Throws
+
+- `ArgumentError`: if `x` is empty, `n < 1`, or `length(x)` is not a multiple of `n`
 """
 function vsplit(x::AbstractVector, n::Int64 = 1)::Vector{AbstractVector}
 
-    @assert length(x) > 0 "Length of x must be > 0."
+    @assert length(x) > 0 "x must not be empty."
     @assert n >= 1 "n must be ≥ 1."
-    @assert length(x) % n == 0 "Length of x must be a multiple of n."
+    @assert length(x) % n == 0 "length(x) must be a multiple of n."
 
-    x_m = reshape(x, length(x) ÷ n, n)
-    result = [x_m[1, :]]
-    @inbounds for idx in 2:size(x_m, 1)
-        result = vcat(result, [x_m[idx, :]])
-    end
+    n_pieces = length(x) ÷ n
 
-    return result
+    # pre-allocate and fill
+    return [x[(i - 1) * n + 1 : i * n] for i in 1:n_pieces]
 
 end
 
 """
     minat(x, y)
 
-Find minimum value of one vector and return value at its index from another vector.
+Find the minimum value of `x` and return the corresponding value from `y` at that index.
 
 # Argument
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+- `x::AbstractVector`: vector to find the minimum of; must not be empty
+- `y::AbstractVector`: vector to read the value from; must be the same length as `x`
 
 # Returns
 
-- `value::Real`
-- `idx::Int64`
+- `Real`: `y[idx]` where `idx = argmin(x)`
+- `Int64`: index of the minimum value in `x`
+
+# Throws
+
+- `ArgumentError`: if `x` or `y` is empty, or their lengths differ
+
+# See also
+
+[`maxat`](@ref)
 """
 function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
-    @assert length(x) > 0 "Length of x must be > 0."
-    @assert length(y) > 0 "Length of y must be > 0."
-    @assert length(x) == length(x) "x and y length must be equal."
+    @assert length(x) > 0 "x must not be empty."
+    @assert length(y) > 0 "y must not be empty."
+    @assert length(x) == length(y) "x and y must have the same length."
 
     idx = vsearch(minimum(x), x)
-    value = y[idx]
 
-    return value, idx
+    return y[idx], idx
 
 end
 
 """
     maxat(x, y)
 
-Find maximum value of one vector and return value at its index from another vector.
+Find the maximum value of `x` and return the corresponding value from `y` at that index.
 
 # Argument
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+- `x::AbstractVector`: vector to find the maximum of; must not be empty
+- `y::AbstractVector`: vector to read the value from; must be the same length as `x`
 
 # Returns
 
-- `value::Real`
-- `idx::Int64`
+- `Real`: `y[idx]` where `idx = argmin(x)`
+- `Int64`: index of the maximum value in `x`
+
+# Throws
+
+- `ArgumentError`: if `x` or `y` is empty, or their lengths differ
+
+# See also
+
+[`minat`](@ref)
 """
 function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
-    @assert length(x) > 0 "Length of x must be > 0."
-    @assert length(y) > 0 "Length of y must be > 0."
-    @assert length(x) == length(x) "Lengths of x and y must be equal."
+    @assert length(x) > 0 "x must not be empty."
+    @assert length(y) > 0 "y must not be empty."
+    @assert length(x) == length(y) "x and y must have the same length."
 
     idx = vsearch(maximum(x), x)
-    value = y[idx]
 
-    return value, idx
+    return y[idx], idx
 
 end
 
 """
     vreduce(x, f; <keyword arguments>)
 
-Reduce two vectors at indices of the second vector being multiplications of a constant. Useful e.g. for simplifying values across frequencies, when the number of frequencies (and thus values) is high.
+Reduce two same-length vectors by resampling `f` at regular intervals of `n` and returning the corresponding values from `x`.
+
+Useful for downsampling a frequency axis (and its associated data) when the number of frequency bins is large. The nearest existing entry in `f` is used for each target frequency (via `vsearch`); no interpolation is performed.
 
 # Arguments
 
-- `x::AbstractVector`: e.g. signal data
-- `f::AbstractVector`: e.g. frequencies
-- `n::Float64=0.5`: reduce at multiplications of this value
+- `x::AbstractVector`: data vector (e.g. spectral power); must not be empty
+- `f::AbstractVector`: index vector (e.g. frequencies); must have the same length as `x`
+- `n::Float64=0.5`: step size for the reduced grid (in the same units as `f`)
 
 # Returns
 
-- `x_new::AbstractVector`
-- `f_new::AbstractVector`
+- `AbstractVector`: reduced data values
+- `AbstractVector`: reduced frequency grid
+
+# Throws
+
+- `ArgumentError`: if `x` or `f` is empty, or their lengths differ
+
+# See also
+
+[`vsearch`](@ref)
 """
 function vreduce(
-        x::AbstractVector, f::AbstractVector; n::Float64 = 0.5
-    )::Tuple{AbstractVector, AbstractVector}
+    x::AbstractVector,
+    f::AbstractVector;
+    n::Float64 = 0.5
+)::Tuple{AbstractVector, AbstractVector}
 
-    @assert length(x) > 0 "Length of x must be > 0."
-    @assert length(f) > 0 "Length of f must be > 0."
-    @assert length(x) == length(f) "Lengths of x and f must be equal."
+    @assert length(x) > 0 "x must not be empty."
+    @assert length(f) > 0 "f must not be empty."
+    @assert length(x) == length(f) "x and f must have the same length."
 
-    f1_idx = vsearch(round(f[1]), f)
-    f2_idx = vsearch(round(f[end]), f)
-    f1 = round(f[f1_idx])
-    f2 = round(f[f2_idx])
-
+    # build the reduced frequency grid from rounded min/max frequencies
+    f1 = round(f[vsearch(round(f[1]), f)])
+    f2 = round(f[vsearch(round(f[end]), f)])
     f_new = collect(f1:n:f2)
-    x_new = zeros(length(f_new))
-    @inbounds for idx in eachindex(f_new)
-        f_idx = vsearch(f_new[idx], f)
-        x_new[idx] = x[f_idx]
-    end
+
+    x_new = [x[vsearch(freq, f)] for freq in f_new]
 
     return x_new, f_new
 

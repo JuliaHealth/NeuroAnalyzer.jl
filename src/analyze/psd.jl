@@ -10,7 +10,7 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
 # Arguments
 
 - `s::Vector{Float64}`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram (default)
@@ -124,7 +124,7 @@ Calculate Power Spectral Density for each channel of a matrix. Default method is
 # Arguments
 
 - `s::AbstractMatrix`: signal matrix (channels, samples)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram (default)
@@ -206,7 +206,7 @@ Calculate Power Spectral Density for a 3-D signal array. Default method is Welch
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram (default)
@@ -378,7 +378,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `s::AbstractVector`: signal vector
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `w::Bool=true`: if true, apply Hanning window
 - `demean::Bool=true`: subtract DC before calculating PSD
@@ -442,7 +442,7 @@ Calculate power spectrum using Gaussian filter and Hilbert transform.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=5`: Gaussian width in Hz
 - `w::Bool=true`: if true, apply Hanning window

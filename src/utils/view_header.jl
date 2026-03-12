@@ -3,29 +3,32 @@ export view_header
 """
     header(obj)
 
-Show keys and values of the object header.
+Print all keys and values stored in the object header.
+
+Iterates over the `:subject`, `:recording`, and `:experiment` sub-dictionaries of `obj.header` and prints each key–value pair in the format `header.<section>[:<key>]: <value>`.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-
+    
 # Returns
 
 - `Nothing`
+
+# See also
+
+[`header`](@ref), [`info`](@ref)
 """
 function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
 
-    f = string(fieldnames(typeof(obj.header)))
-    f = replace(f, "(" => "", ")" => "", ":" => "")
-    println("Header fields: $f")
-    for (key, value) in obj.header.subject
-        println("header.subject[:$key]: $value")
-    end
-    for (key, value) in obj.header.recording
-        println("header.recording[:$key]: $value")
-    end
-    for (key, value) in obj.header.experiment
-        println("header.experiment[:$key]: $value")
+    # print the top-level header field names (struct fields, not dict keys)
+    fields = join(fieldnames(typeof(obj.header)), ", ")
+    println("Header fields: $fields")
+
+    for section in (:subject, :recording, :experiment)
+        for (key, value) in getfield(obj.header, section)
+            println("header.$section[:$key]: $value")
+        end
     end
 
     return nothing

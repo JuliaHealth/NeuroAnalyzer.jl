@@ -8,7 +8,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: PSD method:
@@ -83,7 +83,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 # Arguments
 
 - `s::AbstractArray`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: PSD method:

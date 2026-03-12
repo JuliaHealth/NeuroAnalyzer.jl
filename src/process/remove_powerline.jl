@@ -230,7 +230,7 @@ Detect power line noise frequency.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 

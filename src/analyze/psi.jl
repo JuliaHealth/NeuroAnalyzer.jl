@@ -9,14 +9,14 @@ Calculate Phase Slope Index (PSI).
 
 - `s1::AbstractVector`: signal vector
 - `s2::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(1, fs / 2 - 1))`: frequency bounds
 
 # Returns
 
 - `pv::Tuple{Float64, Float64}`: PSI value (signal1 -> signal2, signal2 -> signal1)
 
-# Reference
+# References
 
  1. Nolte, G., Ziehe, A., Nikulin, V. V., Schlögl, A., Krämer, N., Brismar, T., & Müller, K.-R. (2008). Robustly Estimating the Flow Direction of Information in Complex Physical Systems. Physical Review Letters. 2008; 100(23).
 """

@@ -9,7 +9,7 @@ Edit electrode.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
 - `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
@@ -40,8 +40,10 @@ function edit_locs(
         type::String = "",
     )::NeuroAnalyzer.NEURO
 
-    obj_new = deepcopy(obj)
     ch = get_channel(obj_new; ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    
+    obj_new = deepcopy(obj)
     loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])[1]
 
     @assert length(loc_idx) > 0 "$(labels(obj)[ch]) not found in obj.locs labels."
@@ -75,7 +77,7 @@ Edit electrode.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel number or name
+- `ch1::String`: channel name; must resolve to exactly one channel
 - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
 - `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
@@ -92,19 +94,19 @@ Edit electrode.
 - `Nothing`
 """
 function edit_locs!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        x::Union{Real, Nothing} = nothing,
-        y::Union{Real, Nothing} = nothing,
-        z::Union{Real, Nothing} = nothing,
-        theta::Union{Real, Nothing} = nothing,
-        radius::Union{Real, Nothing} = nothing,
-        theta_sph::Union{Real, Nothing} = nothing,
-        radius_sph::Union{Real, Nothing} = nothing,
-        phi_sph::Union{Real, Nothing} = nothing,
-        name::String = "",
-        type::String = "",
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    x::Union{Real, Nothing} = nothing,
+    y::Union{Real, Nothing} = nothing,
+    z::Union{Real, Nothing} = nothing,
+    theta::Union{Real, Nothing} = nothing,
+    radius::Union{Real, Nothing} = nothing,
+    theta_sph::Union{Real, Nothing} = nothing,
+    radius_sph::Union{Real, Nothing} = nothing,
+    phi_sph::Union{Real, Nothing} = nothing,
+    name::String = "",
+    type::String = "",
+)::Nothing
 
     obj_new = edit_locs(
         obj;

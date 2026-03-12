@@ -13,7 +13,7 @@ Extract channel data.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 
 # Returns
 
@@ -22,6 +22,8 @@ Extract channel data.
 function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3}
 
     ch = get_channel(obj, ch = ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+
     d = reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
 
     return d

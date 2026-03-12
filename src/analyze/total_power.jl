@@ -8,7 +8,7 @@ Calculate total power.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram (default)
 - `:fft`: plain FFT periodogram
@@ -71,7 +71,7 @@ Calculate total power.
 `# Arguments
 
 - `s::AbstractArray`
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `method::Symbol=:welch`: PSD method:
 - `:welch`: Welch's periodogram (default)
 - `:fft`: plain FFT periodogram

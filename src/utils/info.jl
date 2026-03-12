@@ -522,7 +522,7 @@ Return or print information for a single channel.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `pr::Bool=true`: if `true`, print to stdout and return `nothing`; if `false`, return the info string
 
 # Returns
@@ -535,35 +535,33 @@ function channel_info(
     pr::Bool = true
 )::Union{Nothing, String}
 
-    ch_idx = get_channel(obj, ch=ch)
-    # require exactly one channel to be resolved
-    @assert length(ch_idx) == 1 "ch must resolve to exactly one channel; got $(length(ch_idx))."
-    ch_idx = ch_idx[1]
+    ch = get_channel(obj, ch=ch)
+    @assert length(ch) == 1 "ch must resolve to exactly one channel."
 
     rec = obj.header.recording
     local chi::String
 
     if rec[:data_type] != "nirs"
 
-        chi = " ch: $(rpad(string(ch_idx), 4))" *
-              " label: $(rpad(rec[:label][ch_idx], 8))" *
-              " type: $(rpad(uppercase(rec[:channel_type][ch_idx]), 8))" *
-              " unit: $(rpad(rec[:unit][ch_idx], 8))" *
-              " bad: $(rec[:bad_channel][ch_idx])"
+        chi = " ch: $(rpad(string(ch), 4))" *
+              " label: $(rpad(rec[:label][ch], 8))" *
+              " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))" *
+              " unit: $(rpad(rec[:unit][ch], 8))" *
+              " bad: $(rec[:bad_channel][ch])"
 
-    elseif rec[:channel_type][ch_idx] != "nirs_aux"
+    elseif rec[:channel_type][ch] != "nirs_aux"
 
-        chi = " ch: $(rpad(string(ch_idx), 4))" *
-              " label: $(rpad(rec[:label][ch_idx], 8))" *
-              " type: $(rpad(uppercase(rec[:channel_type][ch_idx]), 8))" *
-              " unit: $(rpad(rec[:unit][ch_idx], 8))" *
-              " wavelength: $(rec[:wavelength_index][ch_idx])"
+        chi = " ch: $(rpad(string(ch), 4))" *
+              " label: $(rpad(rec[:label][ch], 8))" *
+              " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))" *
+              " unit: $(rpad(rec[:unit][ch], 8))" *
+              " wavelength: $(rec[:wavelength_index][ch])"
 
     else
 
-        chi = " ch: $(rpad(string(ch_idx), 4))" *
-              " label: $(rpad(rec[:label][ch_idx], 8))" *
-              " type: $(rpad(uppercase(rec[:channel_type][ch_idx]), 8))"
+        chi = " ch: $(rpad(string(ch), 4))" *
+              " label: $(rpad(rec[:label][ch], 8))" *
+              " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))"
 
     end
 
@@ -822,7 +820,7 @@ When `band = :list`, the available band names are printed to stdout and the func
 
 # Arguments
 
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `band::Symbol`: band name (see list below or pass `:list` to print all names):
     - `:list`
     - `:total`

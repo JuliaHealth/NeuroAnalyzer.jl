@@ -118,7 +118,7 @@ Filter using moving average filter (with threshold).
 
 - `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 
-# Reference
+# References
 
  1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
 """

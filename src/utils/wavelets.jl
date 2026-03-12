@@ -3,17 +3,26 @@ export cwtfrq
 """
     cwtfrq(s; <keyword arguments>)
 
-Return mean frequencies of a collection of analytic or real wavelets for a given signal.
+Return the mean frequencies of a collection of analytic or real wavelets for a signal of a given length.
+
+The first frequency bin is set to `0.0` Hz because `getMeanFreq` returns a non-physical low-frequency artifact for the lowest scale.
 
 # Arguments
 
-- `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `s::AbstractVector`: signal vector; used only for its length
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see the [ContinuousWavelets.jl documentation](https://github.com/dsweber2/ContinuousWavelets.jl) for the full list of available wavelets
 
 # Returns
 
-- `f::Vector{Float64}`: frequencies
+- `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places), length determined by the number of wavelet scales
+
+# Throws
+- `ArgumentError`: if `fs < 1`
+
+# See also
+
+[`cwtfrq(::AbstractArray)`](@ref), [`cwtfrq(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function cwtfrq(
     s::AbstractVector;
@@ -23,8 +32,9 @@ function cwtfrq(
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs), digits = 2)
-    f[1] = 0
+    f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs), digits=2)
+    # lowest scale returns a non-physical frequency; replace with DC (0 Hz)
+    f[1] = 0.0
 
     return f
 
@@ -33,17 +43,27 @@ end
 """
     cwtfrq(s; <keyword arguments>)
 
-Return mean frequencies of a collection of analytic or real wavelets for a given signal.
+Return the mean frequencies of a collection of analytic or real wavelets for a 3-dimensional signal array.
+
+Delegates to the vector method using the first channel and first epoch `s[1, :, 1]` to determine the wavelet frequency grid (all channels and epochs share the same grid for a fixed signal length).
 
 # Arguments
 
-- `s::AbstractArray`
-- `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `s::AbstractArray`: 3-dimensional signal array `(channels, samples, epochs)`
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see the [ContinuousWavelets.jl documentation](https://github.com/dsweber2/ContinuousWavelets.jl) for the full list of available wavelets
 
 # Returns
 
-- `f::Vector{Float64}`: frequencies
+- `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places)
+
+# Throws
+
+- `ArgumentError`: if `s` is not 3-dimensional or `fs < 1`
+
+# See also
+
+[`cwtfrq(::AbstractVector)`](@ref), [`cwtfrq(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function cwtfrq(
     s::AbstractArray;
@@ -53,27 +73,34 @@ function cwtfrq(
 
     _chk3d(s)
 
-    f = cwtfrq(s[1, :], fs = fs, wt = wt)
-
-    return f
+    # all epochs/channels share the same length → any single slice is representative
+    return cwtfrq(@view(s[1, :, 1]); fs=fs, wt=wt)
 
 end
 
 """
     cwtfrq(obj; <keyword arguments>)
 
-Return mean frequencies of a collection of analytic or real wavelets for a given signal.
+Return the mean frequencies of a collection of analytic or real wavelets for a NEURO object.
+
+Uses the first channel and first epoch to determine the wavelet frequency grid.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see the [ContinuousWavelets.jl documentation](https://github.com/dsweber2/ContinuousWavelets.jl) for the full list of available wavelets
 
 # Returns
 
-- `f::Vector{Float64}`: frequencies
+- `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places)
+
+# See also
+[`cwtfrq(::AbstractVector)`](@ref), [`cwtfrq(::AbstractArray)`](@ref)
 """
-function cwtfrq(obj::NeuroAnalyzer.NEURO; wt::T = wavelet(Morlet())) where {T <: CWT}
+function cwtfrq(
+    obj::NeuroAnalyzer.NEURO;
+    wt::T=wavelet(Morlet(2π), β=2)
+) where {T <: CWT}
 
     _log_off()
     f = @views cwtfrq(obj.data[1, :, 1], fs = sr(obj), wt = wt)

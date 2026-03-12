@@ -15,7 +15,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 - `aec::Float64`: AEC value
 
-# Reference
+# References
 
 1. Bruns, A., Eckhorn, R., Jokeit, H., & Ebner, A. (2000). Amplitude envelope correlation detects coupling among incoherent brain signals. Neuroreport, 11(7), 1509-1514.
 """
@@ -161,7 +161,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 - `esc::Float64`: ESC value
 
-# Reference
+# References
 
 Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequency signals among visual cortical areas in human subdural recordings. International Journal of Psychophysiology, 51(2), 97-116.
 """

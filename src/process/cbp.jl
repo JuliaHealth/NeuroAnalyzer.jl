@@ -10,7 +10,7 @@ Perform convolution band-pass filtering.
 - `s::AbstractVector`: signal vector
 - `pad::Int64`: number of zeros to append
 - `frq::Real`: filter frequency
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 

@@ -12,7 +12,7 @@ Calculate the absolute power in a frequency band by:
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram
@@ -89,7 +89,7 @@ Calculate absolute band power between two frequencies.
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
     - `:welch`: Welch's periodogram

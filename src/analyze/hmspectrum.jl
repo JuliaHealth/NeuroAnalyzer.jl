@@ -8,7 +8,7 @@ Calculate Hilbert marginal spectrum. The Hilbert marginal spectrum is computed f
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 
 # Returns
 
@@ -17,11 +17,13 @@ Named tuple:
 - `p::Matrix{Float64}`: Hilbert marginal spectra, shape `(frequency, epochs)`
 - `f::Vector{Float64}`: frequencies
 
-# Reference
+# References
 
 Huang et al. (1998), "The empirical mode decomposition and the Hilbert spectrum for nonlinear and non-stationary time series analysis."
 """
 function hmspectrum(obj; ch::String)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+
+    @assert length(get_channel(obj, ch=ch)) == 1 "ch must resolve to exactly one channel."
 
     # compute HHT time-frequency spectrogram with dB normalization
     spec = NeuroAnalyzer.spectrogram(obj, ch = ch, method = :hht, db = false)

@@ -7,7 +7,7 @@ export delete_note!
 """
     view_note(obj)
 
-Return the object recording note.
+Return the recording note stored in the object header.
 
 # Arguments
 
@@ -15,7 +15,11 @@ Return the object recording note.
 
 # Returns
 
-- `note::String`
+- `String`: recording note (empty string if no note has been set)
+
+# See also
+
+[`add_note!`](@ref), [`delete_note!`](@ref)
 """
 function view_note(obj::NeuroAnalyzer.NEURO)::String
 
@@ -26,16 +30,20 @@ end
 """
     add_note(obj; <keyword arguments>)
 
-Add recording note to the object header.
+Return a copy of `obj` with the recording note set to `note`. The original object is not modified.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `note::String`
+- `note::String`: note text to store
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: new NEURO object with the updated recording note
+
+# See also
+
+[`add_note!`](@ref), [`view_note`](@ref), [`delete_note`](@ref)
 """
 function add_note(obj::NeuroAnalyzer.NEURO; note::String)::NeuroAnalyzer.NEURO
 
@@ -49,16 +57,20 @@ end
 """
     add_note!(obj; <keyword arguments>)
 
-Add recording note to the object header.
+Set the recording note in `obj` in-place.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `note::String`
+- `note::String`: note text to store
 
 # Returns
 
 - `Nothing`
+
+# See also
+
+[`add_note`](@ref), [`view_note`](@ref), [`delete_note!`](@ref)
 """
 function add_note!(obj::NeuroAnalyzer.NEURO; note::String)::Nothing
 
@@ -71,7 +83,7 @@ end
 """
     delete_note(obj)
 
-Delete recording note from the object header.
+Return a copy of `obj` with the recording note cleared. The original object is not modified.
 
 # Arguments
 
@@ -79,7 +91,11 @@ Delete recording note from the object header.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: new NEURO object with an empty recording note
+
+# See also
+
+[`delete_note!`](@ref), [`view_note`](@ref), [`add_note`](@ref)
 """
 function delete_note(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -93,7 +109,7 @@ end
 """
     delete_note!(obj)
 
-Delete recording note from the object header.
+Clear the recording note in `obj` in-place.
 
 # Arguments
 
@@ -102,6 +118,10 @@ Delete recording note from the object header.
 # Returns
 
 - `Nothing`
+
+# See also
+
+[`delete_note`](@ref), [`view_note`](@ref), [`add_note!`](@ref)
 """
 function delete_note!(obj::NeuroAnalyzer.NEURO)::Nothing
 

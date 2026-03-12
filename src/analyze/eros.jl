@@ -21,7 +21,7 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name
+- `ch::String`: channel name; must resolve to exactly one channel
 - `method::Symbol=:stft`: spectrogram method:
 - `:stft`: short-time Fourier transform
 - `:mt`: multi-tapered periodogram
@@ -60,6 +60,8 @@ function eros(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     wt::T = wavelet(Morlet(2π), β = 2),
 )::@NamedTuple{s::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+
+    @assert length(get_channel(obj, ch=ch)) == 1 "ch must resolve to exactly one channel."
 
     # compute per-epoch power spectra for the selected channel
     _log_off()

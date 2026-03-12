@@ -26,7 +26,7 @@ Named tuple:
 - `s1ph::Vector{Float64}`: instantaneous phase of s1
 - `s2ph::Vector{Float64}`: instantaneous phase of s2
 
-# Reference
+# References
 
  1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """

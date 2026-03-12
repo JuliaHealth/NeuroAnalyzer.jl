@@ -16,7 +16,7 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
@@ -167,7 +167,7 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
-- `fs::Int64`: sampling rate
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
