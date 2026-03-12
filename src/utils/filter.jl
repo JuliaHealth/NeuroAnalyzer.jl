@@ -64,7 +64,7 @@ Convenience wrapper that reads the sampling rate from `obj`.
 """
 function fir_order_bw(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real = 60)::Int64
 
-    return fir_order_bw(bw = bw, a = a, fs = sr(obj)): estimated FIR filter order
+    return fir_order_bw(bw = bw, a = a, fs = sr(obj))
 
 end
 

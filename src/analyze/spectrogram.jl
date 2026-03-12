@@ -754,13 +754,20 @@ function hhtspectrogram(
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-
     # pre-allocate outputs
     imf_p = Vector{Vector{Float64}}()
     imf_fi = Vector{Vector{Float64}}()
 
     # perform EMD
     @inbounds for idx1 in axes(s, 1)
+        imfs = emd(s[idx1, :])
+        imfs_n = size(imfs, 1)
+        # last IMF is a residual, ignore it
+        for idx2 in 1:(imfs_n - 1)
+            # get instantaneous frequencies of IMF
+            push!(imf_fi, frqinst(imfs[idx2, :]) .* fs)
+            # perform Hilbert transform and get instantaneous powers of IMF
+            push!(imf_p, htransform(imfs[idx2, :]).p)
         end
     end
 
