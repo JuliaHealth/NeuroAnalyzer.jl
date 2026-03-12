@@ -3,61 +3,65 @@ export paired_labels
 """
     paired_labels(l; <keyword arguments>)
 
-Return paired labels.
+Generate all ordered pairwise label combinations from a single label vector.
 
 # Arguments
 
-- `l::Vector{String}`
-- `unq::Bool=true`: if true, do not add pairs of the same labels, e.g. "label1-label1"
+- `l::Vector{String}`: input label vector; must not be empty
+- `unq::Bool=true`: if `true`, exclude self-pairs (`"label1-label1"`)
 
 # Returns
 
-- `l_paired::Vector{String}`: paired labels
+- `Vector{String}`: ordered paired labels
+
+# Throws
+
+- `ArgumentError`: if `l` is empty
+
+# See also
+
+[`paired_labels(::Vector{String}, ::Vector{String})`](@ref)
 """
 function paired_labels(l::Vector{String}; unq::Bool = true)::Vector{String}
 
+    @assert length(l) > 0 "l must not be empty."
+
     if unq
-        l_paired = repeat([""], length(l)^2 - length(l))
+        # exclude diagonal (self-pairs): n × (n − 1) ordered pairs
+        return [l[i] * "-" * l[j] for i in eachindex(l) for j in eachindex(l) if i != j]
     else
-        l_paired = repeat([""], length(l)^2)
+        # include all n² ordered pairs
+        return [l[i] * "-" * l[j] for i in eachindex(l) for j in eachindex(l)]
     end
-
-    idx = 1
-    for idx1 in 1:length(l), idx2 in eachindex(l)
-        if unq
-            if idx1 != idx2
-                l_paired[idx] = l[idx1] * "-" * l[idx2]
-                idx += 1
-            end
-        else
-            l_paired[idx] = l[idx1] * "-" * l[idx2]
-            idx += 1
-        end
-    end
-
-    return l_paired
 
 end
 
 """
     paired_labels(l1, l2)
 
-Return paired labels.
+Generate element-wise paired labels from two label vectors of equal length.
 
 # Arguments
 
-- `l1::Vector{String}`
-- `l2::Vector{String}`
+- `l1::Vector{String}`: first label vector; must not be empty
+- `l2::Vector{String}`: second label vector; must have the same length as `l1`
 
 # Returns
 
-- `l_paired::Vector{String}`: paired labels
+- `Vector{String}`: element-wise paired labels of length `length(l1)`
+
+# Throws
+- `ArgumentError`: if `l1` and `l2` have different lengths, or if either is empty
+
+# See also
+
+[`paired_labels(::Vector{String})`](@ref)
 """
 function paired_labels(l1::Vector{String}, l2::Vector{String})::Vector{String}
 
-    @assert length(l1) == length(l2) "l1 and l2 length must be equal."
-    l_paired = l1 .* "-" .* l2
+    @assert length(l1) > 0 "l1 must not be empty."
+    @assert length(l1) == length(l2) "l1 and l2 must have the same length."
 
-    return l_paired
+    return l1 .* "-" .* l2
 
 end
