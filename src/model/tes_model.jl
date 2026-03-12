@@ -7,14 +7,14 @@ Create model of TES stimulation.
 
 # Arguments
 
-  - `anode::String`: anode location
-  - `cathode::String`: cathode location
-  - `anode_curr::Real=2.0`: anode current [mA]
-  - `cathode_curr::Real=-2.0`: cathode current [mA]
+- `anode::String`: anode location
+- `cathode::String`: cathode location
+- `anode_curr::Real=2.0`: anode current [mA]
+- `cathode_curr::Real=-2.0`: cathode current [mA]
 
 # Returns
 
-  - `p::Plots.Plot{Plots.GRBackend}`
+- `p::Plots.Plot{Plots.GRBackend}`
 
 # Notes
 

@@ -7,15 +7,15 @@ Calculate variance F-test.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}: list of channels
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}: list of channels
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `f::Array{Float64, 3}`
-  - `p::Array{Float64, 3}`
+- `f::Array{Float64, 3}`
+- `p::Array{Float64, 3}`
 """
 function vartest(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
@@ -54,19 +54,19 @@ Calculate variance F-test.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `f::Array{Float64, 3}`
-  - `p::Array{Float64, 3}`
+- `f::Array{Float64, 3}`
+- `p::Array{Float64, 3}`
 """
 function vartest(
         obj1::NeuroAnalyzer.NEURO,

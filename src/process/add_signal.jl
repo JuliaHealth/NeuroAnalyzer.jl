@@ -8,12 +8,12 @@ Add signal.
 
 # Arguments
 
-  - `s1::AbstractVector`: target signal
-  - `s2::AbstractVector`: signal to be added
+- `s1::AbstractVector`: target signal
+- `s2::AbstractVector`: signal to be added
 
 # Returns
 
-  - `s_noisy::AbstractVector`
+- `s_noisy::AbstractVector`
 """
 function add_signal(s1::AbstractVector, s2::AbstractVector)::AbstractVector
 
@@ -30,13 +30,13 @@ Add signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `s::AbstractVector`: signal to be added to each channel
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `s::AbstractVector`: signal vector: signal to be added to each channel
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_signal(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector
@@ -66,13 +66,13 @@ Add signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `s::AbstractVector`: signal to be added to each channel
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `s::AbstractVector`: signal vector: signal to be added to each channel
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
 

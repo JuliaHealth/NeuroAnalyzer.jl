@@ -18,7 +18,7 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pv::Float64`: dPLI value ∈ [0, 1]
 - `sd::Vector{Float64}`: signal difference (s2 - s1)
@@ -84,8 +84,8 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
@@ -93,7 +93,7 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pv::Matrix{Float64}`: dPLI values, shape `(channels, epochs)`
 - `sd::Array{Float64, 3}`: signal difference, shape `(channels, samples, epochs)`
@@ -175,7 +175,7 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns

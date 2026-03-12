@@ -10,17 +10,17 @@ Computes the log-ratio and normalized difference of mean band power between two 
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s), e.g. left frontal channels
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s), e.g. right frontal channels
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -31,7 +31,7 @@ Computes the log-ratio and normalized difference of mean band power between two 
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ba::Float64`: log band asymmetry
 - `nba::Float64`: normalized band asymmetry

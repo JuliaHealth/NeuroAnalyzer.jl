@@ -10,19 +10,19 @@ Plot ERP/ERF (single channel).
 
 # Arguments
 
-  - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-  - `s::AbstractVector`: data to plot
-  - `rt::Union{Nothing, Real}=nothing`: response time value(s)
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `yrev::Bool=false`: reverse y-axis
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `s::AbstractVector`: signal vector: data to plot
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `yrev::Bool=false`: reverse y-axis
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_erp(
         t::Union{AbstractVector, AbstractRange},
@@ -94,23 +94,23 @@ Plot ERP/ERF (multi-channel).
 
 # Arguments
 
-  - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-  - `s::AbstractMatrix`: data to plot
-  - `rt::Union{Nothing, Real}=nothing`: response time value(s)
-  - `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `yrev::Bool=false`: reverse y-axis
-  - `avg::Bool=true`: if true, plot averaged ERP
-  - `ci95::Bool=false`: if true, plot mean and ±95% CI
-  - `leg::Bool=true`: if true, add legend with channel labels
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `s::AbstractMatrix`: data to plot
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `yrev::Bool=false`: reverse y-axis
+- `avg::Bool=true`: if true, plot averaged ERP
+- `ci95::Bool=false`: if true, plot mean and ±95% CI
+- `leg::Bool=true`: if true, add legend with channel labels
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_erp(
         t::Union{AbstractVector, AbstractRange},
@@ -221,23 +221,23 @@ Plot topographical map ERPs.
 
 # Arguments
 
-  - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-  - `t::Vector{Float64}`: time vector
-  - `s::Matrix{Float64}`: ERPs
-  - `rt::Union{Nothing, Real}=nothing`: response time value(s)
-  - `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `yrev::Bool=false`: reverse y-axis
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-  - `head::Bool=true`: plot head shape
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `t::Vector{Float64}`: time vector
+- `s::Matrix{Float64}`: ERPs
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `yrev::Bool=false`: reverse y-axis
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `head::Bool=true`: plot head shape
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_erp_topo(
         locs::DataFrame,
@@ -424,23 +424,23 @@ Plot EPRs stacked by channels or by epochs.
 
 # Arguments
 
-  - `t::AbstractVector`: x-axis values
-  - `s::AbstractMatrix`
-  - `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
-  - `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `cb::Bool=true`: plot color bar
-  - `cb_title::String=""`: color bar title
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
+- `t::AbstractVector`: x-axis values
+- `s::AbstractMatrix`
+- `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar title
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_erp_stack(
         t::AbstractVector,
@@ -531,18 +531,18 @@ Plot Global Field Power.
 
 # Arguments
 
-  - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-  - `g::AbstractVector`: data to plot
-  - `rt::Union{Nothing, Real}=nothing`: response time value(s)
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `g::AbstractVector`: data to plot
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_gfp(
         t::Union{AbstractVector, AbstractRange},
@@ -615,35 +615,35 @@ Plot ERP/ERF.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points
-  - `xlabel::String="default"`: x-axis label
-  - `ylabel::String="default"`: y-axis label
-  - `title::String="default"`: plot title
-  - `cb::Bool=true`: plot color bar
-  - `cb_title::String="default"`: color bar title
-  - `peaks::Bool=true`: draw peaks
-  - `leg::Bool=true`: if true, add legend with channel labels
-  - `type::Symbol=:normal`: plot type:
-      + `:normal`
-      + `:gfp`: plot Global Field Power
-      + `:stack`: stacked epochs/channels
-      + `:topo`: topographical plot of ERPs
-  - `yrev::Bool=false`: reverse y-axis
-  - `avg::Bool=true`: if true, plot averaged ERP
-  - `ci95::Bool=false`: if true, plot mean and ±95% CI
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
-  - `sort_epochs::Bool=false`:: sort epochs by rt vector
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
-  - `gui::Bool=false`: ignored
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `cb::Bool=true`: plot color bar
+- `cb_title::String="default"`: color bar title
+- `peaks::Bool=true`: draw peaks
+- `leg::Bool=true`: if true, add legend with channel labels
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:gfp`: plot Global Field Power
+    - `:stack`: stacked epochs/channels
+    - `:topo`: topographical plot of ERPs
+- `yrev::Bool=false`: reverse y-axis
+- `avg::Bool=true`: if true, plot averaged ERP
+- `ci95::Bool=false`: if true, plot mean and ±95% CI
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
+- `sort_epochs::Bool=false`:: sort epochs by rt vector
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
+- `gui::Bool=false`: ignored
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_erp(
         obj::NeuroAnalyzer.NEURO;

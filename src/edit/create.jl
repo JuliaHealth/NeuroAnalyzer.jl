@@ -11,11 +11,11 @@ Create an empty `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-  - `data_type::String`: data type of the new object
+- `data_type::String`: data type of the new object
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_object(; data_type::String)::NeuroAnalyzer.NEURO
 
@@ -263,12 +263,12 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `fs::Int64`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `fs::Int64`
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
 
@@ -291,12 +291,12 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `fs::Int64`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `fs::Int64`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
 
@@ -316,14 +316,14 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `data::Array{Float64, 3}`
-  - `fs::Int64`
-  - `type::String`: channel types of imported data channels
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `data::Array{Float64, 3}`
+- `fs::Int64`
+- `type::String`: channel types of imported data channels
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_data(
         obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String
@@ -356,14 +356,14 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `data::Array{Float64, 3}`
-  - `fs::Int64`
-  - `type::String`: channel types of imported data channels
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `data::Array{Float64, 3}`
+- `fs::Int64`
+- `type::String`: channel types of imported data channels
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function create_data!(
         obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String

@@ -7,12 +7,12 @@ Plot dipole in 3D.
 
 # Arguments
 
-  - `d::NeuroAnalyzer.DIPOLE`
-  - `project::Bool=true`: plot lines projected onto X, Y and Z axes
+- `d::NeuroAnalyzer.DIPOLE`
+- `project::Bool=true`: plot lines projected onto X, Y and Z axes
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 
 # Notes
 

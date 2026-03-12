@@ -8,12 +8,12 @@ Standardize channels.
 
 # Arguments
 
-  - `s::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
-  - `s_new::Array{Float64, 3}`:
-  - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+- `s_new::Array{Float64, 3}`:
+- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(s::AbstractArray)::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
@@ -39,13 +39,13 @@ Standardize channels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
-  - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
@@ -67,12 +67,12 @@ Standardize channels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize!(obj::NeuroAnalyzer.NEURO)::Vector{ZScoreTransform{Float64, Vector{Float64}}}
 

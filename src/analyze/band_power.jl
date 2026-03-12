@@ -15,12 +15,12 @@ Calculate the absolute power in a frequency band by:
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -88,16 +88,16 @@ Calculate absolute band power between two frequencies.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -124,7 +124,7 @@ function band_power(
     demean = demean,
 )::Matrix{Float64}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -164,27 +164,27 @@ Calculate absolute band power between two frequencies.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-  - `method::Symbol=:welch`: PSD method:
-      + `:welch`: Welch's periodogram
-      + `:fft`: fast Fourier transform
-      + `:mt`: multi-tapered periodogram
-      + `:stft`: short-time Fourier transform
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
-  - `nt::Int64=7`: number of Slepian tapers
-  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-  - `w::Bool=true`: if true, apply Hanning window
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-  - `gw::Real=5`: Gaussian width in Hz
-  - `demean::Bool=true`: subtract DC before calculating PSD
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
+- `method::Symbol=:welch`: PSD method:
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
+- `nt::Int64=7`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `w::Bool=true`: if true, apply Hanning window
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `gw::Real=5`: Gaussian width in Hz
+- `demean::Bool=true`: subtract DC before calculating PSD
 
 # Returns
 
-  - `bp::Matrix{Float64}`: band power, shape `(channels, epochs)`
+- `bp::Matrix{Float64}`: band power, shape `(channels, epochs)`
 """
 function band_power(
         obj::NeuroAnalyzer.NEURO;

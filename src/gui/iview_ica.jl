@@ -7,14 +7,14 @@ Interactive view of ICA components.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n)
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `ic::Matrix{Float64}`: components IC(1)..IC(n)
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function iview_ica(
         obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}, Regex}

@@ -18,7 +18,7 @@ Two methods:
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sm::Float64`: mean
 - `se::Float64`: standard error
@@ -96,7 +96,7 @@ Two methods:
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sm::Vector{Float64}`: column-wise mean
 - `se::Vector{Float64}`: column-wise standard error
@@ -162,13 +162,13 @@ Calculate mean, standard error and 95% CI.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `n::Int64=3`: bootstrap resampling factor
 - `method::Symbol=:normal`: `:normal` (analytical) or `:boot` (bootstrap)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sm::Matrix{Float64}`: mean, shape `(epochs, samples)`
 - `se::Matrix{Float64}`: standard error, shape `(epochs, samples)`
@@ -224,7 +224,7 @@ Calculate mean difference, standard error and 95% CI between two vectors.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sm::Float64`: mean
 - `se::Float64`: pooled standard error
@@ -266,12 +266,12 @@ Calculate mean difference, standard error and 95% CI per channel and epoch.
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels × samples × epochs)
-- `s2::AbstractArray`: signal array (channels × samples × epochs)
+- `s1::AbstractArray`: signal array (channels, samples, epochs)
+- `s2::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sm::Matrix{Float64}`: mean difference, shape `(channels, epochs)`
 - `se::Matrix{Float64}`: pooled SE, shape `(channels, epochs)`
@@ -324,14 +324,14 @@ Calculate mean, standard error and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `n::Int64=3`: bootstrap resampling factor
 - `method::Symbol=:normal`: `:normal` (analytical) or `:boot` (bootstrap)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sm::Matrix{Float64}`: mean
 - `se::Matrix{Float64}`: standard error
@@ -358,7 +358,7 @@ Calculate mean difference, standard ERROR and 95% CI between two objects.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2:NeuroAnalyzer.NEURO`
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
@@ -367,7 +367,7 @@ Calculate mean difference, standard ERROR and 95% CI between two objects.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sm::Matrix{Float64}`: mean difference, shape `(channels, epochs)`
 - `se::Matrix{Float64}`: pooled SE, shape `(channels, epochs)`

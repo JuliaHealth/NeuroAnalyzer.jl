@@ -55,7 +55,7 @@ Calculate the Generalised Hurst Exponents (GHEs).
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `tau_range::UnitRange{Int64}`: lag range over which the q-th moment of absolute increments is estimated
 - `q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}}=nothing`: moments at which GHEs are estimated; if `nothing`, the standard Hurst exponent is returned
 
@@ -69,7 +69,7 @@ function ghexp(
     q_range::_QRange = nothing,
 )::Array{Float64, 4}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -102,7 +102,7 @@ Calculate the Generalised Hurst Exponents (GHEs).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `tau_range::UnitRange{Int64}`: lag range over which the q-th moment of absolute increments is estimated
 - `q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}}=nothing`: moments at which GHEs are estimated; if `nothing`, the standard Hurst exponent is returned

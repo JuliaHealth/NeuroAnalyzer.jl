@@ -7,11 +7,11 @@ Plot dipole in 2D.
 
 # Arguments
 
-  - `d::NeuroAnalyzer.DIPOLE`
+- `d::NeuroAnalyzer.DIPOLE`
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 
 # Notes
 

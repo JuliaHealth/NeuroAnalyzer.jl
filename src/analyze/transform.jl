@@ -17,7 +17,7 @@ Calculate Fourier transform (FFT / rFFT).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `c::Vector{ComplexF64}`: Fourier coefficients
 - `a::Vector{Float64}`: amplitudes
@@ -74,19 +74,19 @@ Calculate Fourier transform (FFT / rFFT)
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `pad::Int64`: number of zeros to append
 - `db::Bool=false`: normalize powers to dB
 - `nf::Bool=false`: if true, return Fourier coefficients for negative and positive frequencies, otherwise return Fourier coefficients for positive frequencies only
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-- `c::Array{ComplexF64, 3}`: Fourier coefficients of shape (channels × samples × epochs)
-- `a::Array{Float64, 3}`: amplitudes of shape (channels × samples × epochs)
-- `p::Array{Float64, 3}`: powers of shape (channels × samples × epochs)
-- `ph::Array{Float64, 3}`: phases in radians of shape (channels × samples × epochs)
+- `c::Array{ComplexF64, 3}`: Fourier coefficients, shape (channels, samples, epochs)
+- `a::Array{Float64, 3}`: amplitudes, shape (channels, samples, epochs)
+- `p::Array{Float64, 3}`: powers, shape (channels, samples, epochs)
+- `ph::Array{Float64, 3}`: phases in radians, shape (channels, samples, epochs)
 """
 function ftransform(
     s::AbstractArray;
@@ -100,7 +100,7 @@ function ftransform(
     ph::Array{Float64, 3}
 }
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -145,12 +145,12 @@ Calculate Hilbert transform (analytic signal).
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 - `db::Bool=false`: normalize powers to dB
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `c::Vector{ComplexF64}`: analytic (Hilbert) coefficients
 - `a::Vector{Float64}`: instantaneous amplitudes
@@ -186,12 +186,12 @@ Calculate Hilbert transform (analytic signal).
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `db::Bool=false`: normalize powers to dB
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `c::Array{ComplexF64, 3}`: Hilbert coefficients
 - `a::Array{Float64, 3}`: amplitudes
@@ -203,7 +203,7 @@ function htransform(
     db::Bool = false,
 )::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -243,7 +243,7 @@ Calculate Fourier or Hilbert transformation.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `pad::Int64=0`: (FFT only) number of zeros to append
 - `h::Bool=false`: if true, use Hilbert transform instead of FFT
 - `db::Bool=false`: normalize powers to dB
@@ -251,7 +251,7 @@ Calculate Fourier or Hilbert transformation.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `c::Array{ComplexF64, 3}`: Fourier or Hilbert coefficients
 - `a::Array{Float64, 3}`: amplitudes
@@ -271,7 +271,7 @@ function transform(
     ph::Array{Float64, 3}
 }
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     if h
@@ -290,7 +290,7 @@ Calculate Fourier/Hilbert transform.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: (FFT only) number of zeros to append
 - `h::Bool=false`: if true, use Hilbert transform instead of FFT
@@ -298,7 +298,7 @@ Calculate Fourier/Hilbert transform.
 - `nf::Bool=false`: (FFT only) if true, return negative and positive frequency coefficients; otherwise positive frequencies only
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `c::Array{ComplexF64, 3}`: Fourier or Hilbert coefficients
 - `a::Array{Float64, 3}`: amplitudes
@@ -360,16 +360,16 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `pad::Int64`: number of zeros to append
 
 # Returns
 
-- `ha::Vector{ComplexF64}`: complex analytic signal of shape (channels × samples × epochs)
+- `ha::Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -399,13 +399,13 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: number of zeros to append
 
 # Returns
 
-- `ha::Vector{ComplexF64}`: complex analytic signal of shape (channels × samples × epochs)
+- `ha::Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function hanalytic(
     obj::NeuroAnalyzer.NEURO;

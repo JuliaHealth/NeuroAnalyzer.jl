@@ -7,12 +7,12 @@ Calculate Phase Synchronization Analysis.
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
 
 # Returns
 
-  - `ps::Float64`: PSA value
+- `ps::Float64`: PSA value
 """
 function psa(s1::AbstractVector, s2::AbstractVector)::Float64
 
@@ -35,16 +35,16 @@ Calculate Phase Synchronization Analysis.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 
 # Returns
 
-  - `ps::Matrix{Float64}`: PSA value
+- `ps::Matrix{Float64}`: PSA value
 """
 function psa(
         obj1::NeuroAnalyzer.NEURO,
@@ -91,12 +91,12 @@ Calculate Phase Synchronization Analysis.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `ps::Array{Float64, 3}`: PSA value
+- `ps::Array{Float64, 3}`: PSA value
 """
 function psa(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

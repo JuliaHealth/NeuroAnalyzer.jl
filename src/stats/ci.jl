@@ -13,12 +13,12 @@ Convert confidence level to z score.
 
 # Arguments
 
-  - `cl::Float64`: confidence level
-  - `twotailed::Bool=true`: one- or two-tailed probability
+- `cl::Float64`: confidence level
+- `twotailed::Bool=true`: one- or two-tailed probability
 
 # Returns
 
-  - `z::Float64`
+- `z::Float64`
 
 # Notes
 
@@ -46,14 +46,14 @@ Calculate confidence interval for the mean.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `cl::Float64=0.95`: confidence level
-  - `d::Symbol=:t`: distribution used for critical value calculation (`:z` or `:t`)
-  - `twotailed::Bool=true`: interval type, use `twotailed=false` to calculate lower and upper bound separately (both will be returned)
+- `x::AbstractVector`
+- `cl::Float64=0.95`: confidence level
+- `d::Symbol=:t`: distribution used for critical value calculation (`:z` or `:t`)
+- `twotailed::Bool=true`: interval type, use `twotailed=false` to calculate lower and upper bound separately (both will be returned)
 
 # Returns
 
-  - `cim::Tuple{Float64, Float64}`: lower and upper bound
+- `cim::Tuple{Float64, Float64}`: lower and upper bound
 """
 function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::Bool = true)::Tuple{Float64, Float64}
 
@@ -84,12 +84,12 @@ Calculate confidence interval for the median.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`
+- `cl::Float64=0.95`: confidence level
 
 # Returns
 
-  - `cimd::Tuple{Float64, Float64}`
+- `cimd::Tuple{Float64, Float64}`
 """
 function cimd(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -113,12 +113,12 @@ Calculate confidence interval for the median.
 
 # Arguments
 
-  - `x::AbstractArray`
-  - `cl::Float64=0.95`: confidence level
+- `x::AbstractArray`
+- `cl::Float64=0.95`: confidence level
 
 # Returns
 
-  - `cimd::Tuple{Float64, Float64}`
+- `cimd::Tuple{Float64, Float64}`
 """
 function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -142,13 +142,13 @@ Calculate confidence interval for the proportion.
 
 # Arguments
 
-  - `p::Float64`: proportion
-  - `n::Int64`: sample size
-  - `cl::Float64=0.95`: confidence level
+- `p::Float64`: proportion
+- `n::Int64`: sample size
+- `cl::Float64=0.95`: confidence level
 
 # Returns
 
-  - `cip::Tuple{Float64, Float64}`
+- `cip::Tuple{Float64, Float64}`
 """
 function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -169,13 +169,13 @@ Calculate confidence interval for the correlation coefficient.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `y::AbstractVector`
-  - `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`
+- `y::AbstractVector`
+- `cl::Float64=0.95`: confidence level
 
 # Returns
 
-  - `cir::Tuple{Float64, Float64}`
+- `cir::Tuple{Float64, Float64}`
 """
 function cir(x::AbstractVector, y::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -197,13 +197,13 @@ Calculate confidence interval for the correlation coefficient.
 
 # Arguments
 
-  - `r::Float64`: correlation coefficient
-  - `n::Int64`: number of observations
-  - `cl::Float64=0.95`: confidence level
+- `r::Float64`: correlation coefficient
+- `n::Int64`: number of observations
+- `cl::Float64=0.95`: confidence level
 
 # Returns
 
-  - `cir::Tuple{Float64, Float64}`
+- `cir::Tuple{Float64, Float64}`
 """
 function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -227,12 +227,12 @@ Calculate confidence interval for the standard deviation.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`
+- `cl::Float64=0.95`: confidence level
 
 # Returns
 
-  - `cis::Tuple{Float64, Float64}`: lower and upper bound
+- `cis::Tuple{Float64, Float64}`: lower and upper bound
 """
 function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -257,12 +257,12 @@ Calculate confidence interval for the variance.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`
+- `cl::Float64=0.95`: confidence level
 
 # Returns
 
-  - `civ::Tuple{Float64, Float64}`: lower and upper bound
+- `civ::Tuple{Float64, Float64}`: lower and upper bound
 """
 function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 

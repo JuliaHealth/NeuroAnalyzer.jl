@@ -16,7 +16,7 @@ The first (largest) eigenvector defines the spatial filter that maximally distin
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sged::Matrix{Float64}`: reference signal weighted by the first eigenvector, shape `(channels, samples)`
 - `ress::Vector{Float64}`: RESS spatial filter (pseudoinverse of leading eigenvector)
@@ -71,8 +71,8 @@ The first (largest) eigenvector defines the spatial filter that maximally distin
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`: object to be analyzed (target)
-- `obj2::NeuroAnalyzer.NEURO`: original object (reference)
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object: object to be analyzed (target)
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object: original object (reference)
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
@@ -80,7 +80,7 @@ The first (largest) eigenvector defines the spatial filter that maximally distin
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `sged::Array{Float64, 3}`: GED output, shape `(channels, samples, epochs)`
 - `ress::Matrix{Float64}`: RESS spatial filter, shape `(channels, epochs)`

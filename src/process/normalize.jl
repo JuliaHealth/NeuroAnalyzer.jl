@@ -24,30 +24,30 @@ Normalize.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `n::Real=1`
-  - `method::Symbol`:
-      + `:zscore`: by z-score
-      + `:minmax`: in [-n, +n]
-      + `:log`: using log-transformation
-      + `:log10`: using log10-transformation
-      + `:neglog`: using -log-transformation
-      + `:neglog10`: using -log10-transformation
-      + `:neg`: in [-∞, 0]
-      + `:pos`: in [0, +∞]
-      + `:perc`: in percentages
-      + `:gauss`: to Gaussian
-      + `:invroot`: to inverse root: 1/sqrt(x)
-      + `:n`: in [0, n], default is [0, 1]
-      + `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
-      + `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
-      + `:mad`: by MAD
-      + `:rank`: using tiedranks
-      + `:none`
+- `s::AbstractVector`: signal vector
+- `n::Real=1`
+- `method::Symbol`:
+    - `:zscore`: by z-score
+    - `:minmax`: in [-n, +n]
+    - `:log`: using log-transformation
+    - `:log10`: using log10-transformation
+    - `:neglog`: using -log-transformation
+    - `:neglog10`: using -log10-transformation
+    - `:neg`: in [-∞, 0]
+    - `:pos`: in [0, +∞]
+    - `:perc`: in percentages
+    - `:gauss`: to Gaussian
+    - `:invroot`: to inverse root: 1/sqrt(x)
+    - `:n`: in [0, n], default is [0, 1]
+    - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
+    - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
+    - `:mad`: by MAD
+    - `:rank`: using tiedranks
+    - `:none`
 
 # Returns
 
-  - `normalized::AbstractVector`
+- `normalized::AbstractVector`
 """
 function normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVector
 
@@ -120,29 +120,29 @@ Normalize.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `n::Real=1`
-  - `bych::Bool=false`: if true, normalize each channel separately
-  - `method::Symbol`:
-      + `:zscore`: by z-score
-      + `:minmax`: in [-n, +n]
-      + `:log`: using log-transformation
-      + `:log10`: using log10-transformation
-      + `:neglog`: using -log-transformation
-      + `:neglog10`: using -log10-transformation
-      + `:neg`: in [-∞, 0]
-      + `:pos`: in [0, +∞]
-      + `:perc`: in percentages
-      + `:gauss`: to Gaussian
-      + `:invroot`: to inverse root: 1/sqrt(x)
-      + `:n`: in [0, n], default is [0, 1]; <keyword arguments>) .+ n1`
-      + `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
-      + `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
-      + `:none`
+- `s::AbstractArray`
+- `n::Real=1`
+- `bych::Bool=false`: if true, normalize each channel separately
+- `method::Symbol`:
+    - `:zscore`: by z-score
+    - `:minmax`: in [-n, +n]
+    - `:log`: using log-transformation
+    - `:log10`: using log10-transformation
+    - `:neglog`: using -log-transformation
+    - `:neglog10`: using -log10-transformation
+    - `:neg`: in [-∞, 0]
+    - `:pos`: in [0, +∞]
+    - `:perc`: in percentages
+    - `:gauss`: to Gaussian
+    - `:invroot`: to inverse root: 1/sqrt(x)
+    - `:n`: in [0, n], default is [0, 1]; <keyword arguments>) .+ n1`
+    - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
+    - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
+    - `:none`
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize(s::AbstractArray, n::Real = 1; bych::Bool = false, method::Symbol)::AbstractArray
 
@@ -210,32 +210,32 @@ Normalize channel(s).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `method::Symbol`:
-      + `:zscore`: by z-score
-      + `:minmax`: in [-n, +n]
-      + `:log`: using log-transformation
-      + `:log10`: using log10-transformation
-      + `:neglog`: using -log-transformation
-      + `:neglog10`: using -log10-transformation
-      + `:neg`: in [-∞, 0]
-      + `:pos`: in [0, +∞]
-      + `:perc`: in percentages
-      + `:gauss`: to Gaussian
-      + `:invroot`: to inverse root: 1/sqrt(x)
-      + `:n`: in [0, n], default is [0, 1]
-      + `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
-      + `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
-      + `:mad`: by MAD
-      + `:rank`: using tiedranks
-      + `:none`
-  - `bych::Bool=false`: if true, normalize each channel separately
-  - `n::Real=1`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `method::Symbol`:
+    - `:zscore`: by z-score
+    - `:minmax`: in [-n, +n]
+    - `:log`: using log-transformation
+    - `:log10`: using log10-transformation
+    - `:neglog`: using -log-transformation
+    - `:neglog10`: using -log10-transformation
+    - `:neg`: in [-∞, 0]
+    - `:pos`: in [0, +∞]
+    - `:perc`: in percentages
+    - `:gauss`: to Gaussian
+    - `:invroot`: to inverse root: 1/sqrt(x)
+    - `:n`: in [0, n], default is [0, 1]
+    - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
+    - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
+    - `:mad`: by MAD
+    - `:rank`: using tiedranks
+    - `:none`
+- `bych::Bool=false`: if true, normalize each channel separately
+- `n::Real=1`
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function normalize(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
@@ -271,32 +271,32 @@ Normalize channel(s).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `method::Symbol`:
-      + `:zscore`: by z-score
-      + `:minmax`: in [-n, +n]
-      + `:log`: using log-transformation
-      + `:log10`: using log10-transformation
-      + `:neglog`: using -log-transformation
-      + `:neglog10`: using -log10-transformation
-      + `:neg`: in [-∞, 0]
-      + `:pos`: in [0, +∞]
-      + `:perc`: in percentages
-      + `:gauss`: to Gaussian
-      + `:invroot`: to inverse root: 1/sqrt(x)
-      + `:n`: in [0, n], default is [0, 1]
-      + `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
-      + `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
-      + `:mad`: by MAD
-      + `:rank`: using tiedranks
-      + `:none`
-  - `bych::Bool=false`: if true, normalize each channel separately
-  - `n::Real=1`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `method::Symbol`:
+    - `:zscore`: by z-score
+    - `:minmax`: in [-n, +n]
+    - `:log`: using log-transformation
+    - `:log10`: using log10-transformation
+    - `:neglog`: using -log-transformation
+    - `:neglog10`: using -log10-transformation
+    - `:neg`: in [-∞, 0]
+    - `:pos`: in [0, +∞]
+    - `:perc`: in percentages
+    - `:gauss`: to Gaussian
+    - `:invroot`: to inverse root: 1/sqrt(x)
+    - `:n`: in [0, n], default is [0, 1]
+    - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
+    - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
+    - `:mad`: by MAD
+    - `:rank`: using tiedranks
+    - `:none`
+- `bych::Bool=false`: if true, normalize each channel separately
+- `n::Real=1`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function normalize!(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
@@ -317,11 +317,11 @@ Normalize by z-score.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_zscore(s::AbstractVector)::AbstractVector
 
@@ -343,12 +343,12 @@ end
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_zscore(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -389,12 +389,12 @@ Normalize in [-n, +n]. If all elements are the same, they are normalized to +n.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `n::Real=1`
+- `s::AbstractVector`: signal vector
+- `n::Real=1`
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_minmax(s::AbstractVector, n::Real = 1)::AbstractVector
 
@@ -464,12 +464,12 @@ Normalize in [0, n], default is [0, +1].
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `n::Real=1`
+- `s::AbstractVector`: signal vector
+- `n::Real=1`
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_n(s::AbstractVector, n::Real = 1)::AbstractVector
 
@@ -492,13 +492,13 @@ Normalize in [0, n], default is [0, +1].
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `n::Real=1`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `n::Real=1`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_n(s::AbstractArray, n::Real = 1; bych::Bool = false)::AbstractArray
 
@@ -538,11 +538,11 @@ Normalize using log-transformation.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_log(s::AbstractVector)::AbstractVector
 
@@ -560,12 +560,12 @@ Normalize using log-transformation.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_log(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -600,11 +600,11 @@ Normalize to Gaussian.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_gauss(s::AbstractVector)::AbstractVector
 
@@ -629,12 +629,12 @@ Normalize to Gaussian.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -670,11 +670,11 @@ Normalize using log10-transformation.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_log10(s::AbstractVector)::AbstractVector
 
@@ -692,12 +692,12 @@ Normalize using log10-transformation.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_log10(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -732,12 +732,12 @@ Normalize to using -log-transformation.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: ignored
+- `s::AbstractArray`
+- `bych::Bool=false`: ignored
 
 # Returns
 
-  - `sn::Vector{Float64}`
+- `sn::Vector{Float64}`
 """
 function normalize_neglog(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -754,12 +754,12 @@ Normalize using -log10-transformation.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: ignored
+- `s::AbstractArray`
+- `bych::Bool=false`: ignored
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_neglog10(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -776,11 +776,11 @@ Normalize in [-∞, 0].
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_neg(s::AbstractVector)::AbstractVector
 
@@ -798,12 +798,12 @@ Normalize in [-∞, 0].
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -838,11 +838,11 @@ Normalize in [0, +∞].
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_pos(s::AbstractVector)::AbstractVector
 
@@ -860,12 +860,12 @@ Normalize in [0, +∞].
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -900,11 +900,11 @@ Normalize in percentages.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_perc(s::AbstractVector)::AbstractVector
 
@@ -929,12 +929,12 @@ Normalize in percentages.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_perc(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -975,11 +975,11 @@ Normalize in inverse root (1/sqrt(x)).
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_invroot(s::AbstractVector)::AbstractVector
 
@@ -999,12 +999,12 @@ Normalize in inverse root (1/sqrt(x)).
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_invroot(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1040,12 +1040,12 @@ Softmax normalize: `exp(x_i) / sum(exp(x))`
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: ignored
+- `s::AbstractArray`
+- `bych::Bool=false`: ignored
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_softmax(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1060,12 +1060,12 @@ Normalize using sigmoid function: `1 / (1 + e^-x_i)`
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: ignored
+- `s::AbstractArray`
+- `bych::Bool=false`: ignored
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_sigmoid(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1080,11 +1080,11 @@ Normalize by MAD.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_mad(s::AbstractVector)::AbstractVector
 
@@ -1106,12 +1106,12 @@ end
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1152,11 +1152,11 @@ Normalize using tiedranks.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_rank(s::AbstractVector)::AbstractVector
 
@@ -1173,12 +1173,12 @@ Normalize using tiedranks.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: if true, normalize each channel separately
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1214,11 +1214,11 @@ Normalize using Fisher z-transform. Converts uniform distribution into normal di
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `sn::AbstractVector`
+- `sn::AbstractVector`
 """
 function normalize_fisher(s::AbstractVector)::AbstractVector
 
@@ -1238,12 +1238,12 @@ Normalize using Fisher z-transform. Converts uniform distribution into normal di
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `bych::Bool=false`: ignored
+- `s::AbstractArray`
+- `bych::Bool=false`: ignored
 
 # Returns
 
-  - `sn::AbstractArray`
+- `sn::AbstractArray`
 """
 function normalize_fisher(s::AbstractArray; bych::Bool = false)::AbstractArray
 

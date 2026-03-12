@@ -7,15 +7,15 @@ Calculate gradient of a 1-dimensional scalar field.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
+- `x::AbstractVector`
+- `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `g::Vector{Vector{Float64}}`: vector field of gradients
-  - `g_len::Vector{Float64}`: scalar field of gradient lengths
+- `g::Vector{Vector{Float64}}`: vector field of gradients
+- `g_len::Vector{Float64}`: scalar field of gradient lengths
 """
 function gradient(
         x::AbstractVector; rev::Bool = false
@@ -39,15 +39,15 @@ Calculate gradient of a 2-dimensional scalar field.
 
 # Arguments
 
-  - `x::AbstractMatrix`
-  - `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
+- `x::AbstractMatrix`
+- `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `g::Matrix{Vector{Float64}}`: vector field of gradients
-  - `g_len::Matrix{Float64}`: scalar field of gradient lengths
+- `g::Matrix{Vector{Float64}}`: vector field of gradients
+- `g_len::Matrix{Float64}`: scalar field of gradient lengths
 """
 function gradient(
         x::AbstractMatrix; rev::Bool = false
@@ -71,15 +71,15 @@ Calculate gradient of a ≥3-dimensional scalar field.
 
 # Arguments
 
-  - `x::AbstractArray`
-  - `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
+- `x::AbstractArray`
+- `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `g::Array{Vector{Float64}, 3}`: vector field of gradients
-  - `g_len::Array{Float64, 3}`: scalar field of gradient lengths
+- `g::Array{Vector{Float64}, 3}`: vector field of gradients
+- `g_len::Array{Float64, 3}`: scalar field of gradient lengths
 """
 function gradient(
         x::AbstractArray; rev::Bool = false

@@ -7,34 +7,34 @@ Compare two vectors. Jarque–Bera is used first to test normality of distributi
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
-  - `paired::Bool`
-  - `alpha::Float64=0.05`: confidence level
-  - `type::Symbol=:auto`
-      + `:auto`: choose test automatically
-      + `:perm`: permutation-based
-      + `:p`: parametric
-      + `:np`: non-parametric
-  - `exact::Bool=false`: if true, use exact Wilcoxon test
-  - `nperm::Int64=1000`: number of permutation for `:perm` method
-  - `verbose::Bool=true`: print detailed output
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
+- `paired::Bool`
+- `alpha::Float64=0.05`: confidence level
+- `type::Symbol=:auto`
+    - `:auto`: choose test automatically
+    - `:perm`: permutation-based
+    - `:p`: parametric
+    - `:np`: non-parametric
+- `exact::Bool=false`: if true, use exact Wilcoxon test
+- `nperm::Int64=1000`: number of permutation for `:perm` method
+- `verbose::Bool=true`: print detailed output
 
 # Returns
 
-For permutation-based test, named tuple containing:
+For permutation-based test, Named tuple:
 
-  - `t::Tuple{perm_diff::Vector{Float64}, obs_diff::Float64}`: test result (permutation difference, observed difference)
-  - `p1::Float64`: one-tiled p value
-  - `p2::Float64`: two-tiled p value
+- `t::Tuple{perm_diff::Vector{Float64}, obs_diff::Float64}`: test result (permutation difference, observed difference)
+- `p1::Float64`: one-tiled p value
+- `p2::Float64`: two-tiled p value
 
-Otherwise, named tuple containing:
+Otherwise, Named tuple:
 
-  - `t::Union{OneSampleTTest, EqualVarianceTTest, UnequalVarianceTTest, ExactSignedRankTest, ApproximateSignedRankTest, ExactMannWhitneyUTest, ApproximateMannWhitneyUTest}`: statistical test
-  - `ts::Tuple{Float64, String}`: test statistic value and name
-  - `tc::Tuple{Float64, Float64}`: test statistic confidence interval
-  - `df::Float64`: degrees of freedom
-  - `p::Float64`: p value
+- `t::Union{OneSampleTTest, EqualVarianceTTest, UnequalVarianceTTest, ExactSignedRankTest, ApproximateSignedRankTest, ExactMannWhitneyUTest, ApproximateMannWhitneyUTest}`: statistical test
+- `ts::Tuple{Float64, String}`: test statistic value and name
+- `tc::Tuple{Float64, Float64}`: test statistic confidence interval
+- `df::Float64`: degrees of freedom
+- `p::Float64`: p value
 """
 function cmp_test(
         s1::AbstractVector,

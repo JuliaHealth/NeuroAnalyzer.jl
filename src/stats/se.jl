@@ -15,11 +15,11 @@ Calculate standard error of the mean.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sem(x::AbstractVector)::Float64
 
@@ -36,11 +36,11 @@ Calculate standard error of the median.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function semd(x::AbstractVector)::Float64
 
@@ -57,12 +57,12 @@ Calculate standard error of the proportion.
 
 # Arguments
 
-  - `p::Float64`: proportion
-  - `n::Int64`: number of observations
+- `p::Float64`: proportion
+- `n::Int64`: number of observations
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sep(p::Float64, n::Int64)::Float64
 
@@ -82,11 +82,11 @@ Calculate standard error of the number.
 
 # Arguments
 
-  - `n::Int64`: number of observations
+- `n::Int64`: number of observations
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sen(n::Int64)::Float64
 
@@ -105,12 +105,12 @@ Calculate SEM (standard error of the mean) of difference between two means.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `y::AbstractVector`
+- `x::AbstractVector`
+- `y::AbstractVector`
 
 # Returns
 
-  - `sd::Float64`
+- `sd::Float64`
 """
 function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
 
@@ -131,14 +131,14 @@ Calculate standard error of the difference of two proportions.
 
 # Arguments
 
-  - `p1::Float64`: proportion 1
-  - `p2::Float64`: proportion 1
-  - `n1::Int64`: number of observations in group 1
-  - `n2::Int64`: number of observations in group 2
+- `p1::Float64`: proportion 1
+- `p2::Float64`: proportion 1
+- `n1::Int64`: number of observations in group 1
+- `n2::Int64`: number of observations in group 2
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sep_diff(p1::Float64, p2::Float64, n1::Int64, n2::Int64)::Float64
 
@@ -160,12 +160,12 @@ Calculate standard error of the difference between two numbers.
 
 # Arguments
 
-  - `n1::Int64`: number of observations in group 1
-  - `n2::Int64`: number of observations in group 2
+- `n1::Int64`: number of observations in group 1
+- `n2::Int64`: number of observations in group 2
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sen_diff(n1::Int64, n2::Int64)::Float64
 
@@ -185,11 +185,11 @@ Calculate standard error of the skewness.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function ses(x::AbstractVector)::Float64
 
@@ -209,11 +209,11 @@ Calculate standard error of the skewness.
 
 # Arguments
 
-  - `n::Int64`: number of observations
+- `n::Int64`: number of observations
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function ses(n::Int64)::Float64
 
@@ -232,11 +232,11 @@ Calculate standard error of the kurtosis.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sek(x::AbstractVector)::Float64
 
@@ -256,11 +256,11 @@ Calculate standard error of the skewness.
 
 # Arguments
 
-  - `n::Int64`: number of observations
+- `n::Int64`: number of observations
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sek(n::Int64)::Float64
 

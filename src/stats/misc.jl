@@ -17,14 +17,14 @@ Calculate number of categories for a given sample size `n`.
 
 # Arguments
 
-  - `n::Int64`: sample size
+- `n::Int64`: sample size
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `k1::Float64`: sqrt(n)
-  - `k2::Float64`: 1 + 3.222 * log10(n)
+- `k1::Float64`: sqrt(n)
+- `k2::Float64`: 1 + 3.222 * log10(n)
 """
 function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
 
@@ -42,12 +42,12 @@ Calculate slope of the line crossing two points.
 
 # Arguments
 
-  - `p1::Tuple{Real, Real}`
-  - `p2::Tuple{Real, Real}`
+- `p1::Tuple{Real, Real}`
+- `p2::Tuple{Real, Real}`
 
 # Returns
 
-  - `s::Float64`: slope
+- `s::Float64`: slope
 """
 function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
@@ -66,12 +66,12 @@ Calculate distance between two points.
 
 # Arguments
 
-  - `p1::Tuple{Real, Real}`
-  - `p2::Tuple{Real, Real}`
+- `p1::Tuple{Real, Real}`
+- `p2::Tuple{Real, Real}`
 
 # Returns
 
-  - `d::Float64`: distance
+- `d::Float64`: distance
 """
 function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
@@ -88,21 +88,21 @@ Collect thresholded elements, e.g. in a topographical map.
 
 # Arguments
 
-  - `x::AbstractMatrix`
-  - `t::Real`: threshold value
-  - `t_type::Symbol=:g`: rule for thresholding:
-      + `:eq`: =
-      + `:geq`: ≥
-      + `:leq`: ≤
-      + `:g`: >
-      + `:l`: <
+- `x::AbstractMatrix`
+- `t::Real`: threshold value
+- `t_type::Symbol=:g`: rule for thresholding:
+    - `:eq`: =
+    - `:geq`: ≥
+    - `:leq`: ≤
+    - `:g`: >
+    - `:l`: <
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `x_t::Matrix{Bool}`: thresholded matrix
-  - `n::Int64`: number of elements
+- `x_t::Matrix{Bool}`: thresholded matrix
+- `n::Int64`: number of elements
 """
 function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol = :g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
 
@@ -135,13 +135,13 @@ Calculate proportion of elements below or above a given statistic value.
 
 # Arguments
 
-  - `stat_dist::AbstractVector`: statistic values distribution
-  - `v::Real`: statistic value
-  - `type::Symbol=:g`: calculation proportion of elements greater (`:g`) or lesser (`:l`) than `v`
+- `stat_dist::AbstractVector`: statistic values distribution
+- `v::Real`: statistic value
+- `type::Symbol=:g`: calculation proportion of elements greater (`:g`) or lesser (`:l`) than `v`
 
 # Returns
 
-  - `p::Float64`
+- `p::Float64`
 """
 function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float64
 
@@ -160,12 +160,12 @@ Permute signal data.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `n::Int64`: number of permutations
+- `s::AbstractVector`: signal vector
+- `n::Int64`: number of permutations
 
 # Returns
 
-  - `s_new::Matrix{Float64}`
+- `s_new::Matrix{Float64}`
 """
 function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
 
@@ -190,12 +190,12 @@ Permute signal data.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `n::Int64`: number of permutations
+- `s::AbstractArray`
+- `n::Int64`: number of permutations
 
 # Returns
 
-  - `s_new::Union{Array{Float64, 3}, Array{Float64, 4}}`
+- `s_new::Union{Array{Float64, 3}, Array{Float64, 4}}`
 """
 function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
 
@@ -237,11 +237,11 @@ Convert proportion to logit.
 
 # Arguments
 
-  - `p::Float64`: proportion
+- `p::Float64`: proportion
 
 # Returns
 
-  - `l::Float64`
+- `l::Float64`
 """
 function logit(p::Float64)::Float64
 
@@ -260,11 +260,11 @@ Calculate sum of squares.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `s::Float64`
+- `s::Float64`
 """
 function sumsq(x::AbstractVector)::Float64
 
@@ -282,11 +282,11 @@ Return values of x ignoring NaNs and Missing values.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `x::Vector{Float64}`
+- `x::Vector{Float64}`
 """
 function rmna(x::AbstractVector)::Vector{Float64}
 
@@ -305,11 +305,11 @@ Calculate degrees of freedom.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `df::Int64`
+- `df::Int64`
 """
 function df(x::AbstractVector)::Int64
 
@@ -324,11 +324,11 @@ Center values by subtracting mean.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `x::Vector{Float64}`
+- `x::Vector{Float64}`
 """
 function center(x::AbstractVector)::Vector{Float64}
 

@@ -14,13 +14,13 @@ Generates a sequence of evenly spaced numbers between `start` and `stop`.
 
 # Arguments
 
-  - `start::Number`
-  - `stop::Number`
-  - `n::Int64`: sequence length
+- `start::Number`
+- `stop::Number`
+- `n::Int64`: sequence length
 
 # Returns
 
-  - `range::Vector{Float64}`
+- `range::Vector{Float64}`
 """
 function linspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
@@ -37,13 +37,13 @@ Generates a sequence of `n` logarithmically spaced numbers between `start` and `
 
 # Arguments
 
-  - `start::Number`
-  - `stop::Number`
-  - `n::Int64`: sequence length
+- `start::Number`
+- `stop::Number`
+- `n::Int64`: sequence length
 
 # Returns
 
-  - `range::Vector{Float64}`
+- `range::Vector{Float64}`
 """
 function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
@@ -61,11 +61,11 @@ Return maximum value of the complex vector.
 
 # Arguments
 
-  - `x::Vector{ComplexF64}`
+- `x::Vector{ComplexF64}`
 
 # Returns
 
-  - `cmax::ComplexF64`
+- `cmax::ComplexF64`
 """
 function cmax(x::Vector{<:Complex})::ComplexF64
 
@@ -80,11 +80,11 @@ Return minimum value of the complex vector.
 
 # Arguments
 
-  - `x::Vector{ComplexF64}`
+- `x::Vector{ComplexF64}`
 
 # Returns
 
-  - `cmin::ComplexF64`
+- `cmin::ComplexF64`
 """
 function cmin(x::Vector{<:Complex})::ComplexF64
 
@@ -99,14 +99,14 @@ Return extreme values of the complex vector.
 
 # Arguments
 
-  - `x::Vector{ComplexF64}`
+- `x::Vector{ComplexF64}`
 
 # Returns
 
 Tuple containing:
 
-  - `cmax::ComplexF64`
-  - `cmin::ComplexF64`
+- `cmax::ComplexF64`
+- `cmin::ComplexF64`
 """
 function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64, ComplexF64}
 
@@ -121,11 +121,11 @@ Calculate cumulative sum of a 3-dimensional array.
 
 # Arguments
 
-  - `signal::Array{<:Real, 3}`
+- `signal::Array{<:Real, 3}`
 
 # Returns
 
-  - `signal_cs::Array{Float64, 3}`
+- `signal_cs::Array{Float64, 3}`
 """
 function cums(signal::Array{<:Real, 3})::Array{Float64, 3}
 
@@ -149,12 +149,12 @@ Find nearest position tuple in a matrix of positions.
 
 # Arguments
 
-  - `m::Matrix{Tuple{Float64, Float64}}`: matrix of positions
-  - `p::Tuple{Float64, Float64}`: position tuple
+- `m::Matrix{Tuple{Float64, Float64}}`: matrix of positions
+- `p::Tuple{Float64, Float64}`: position tuple
 
 # Returns
 
-  - `pos::Tuple{Int64, Int64}`: row and column in m
+- `pos::Tuple{Int64, Int64}`: row and column in m
 """
 function f_nearest(
         m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64}
@@ -179,12 +179,12 @@ Return recommended number of Slepian tapers for multi-taper power spectrum analy
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `df::Real`: frequency resolution (bandwidth); smallest distance between frequency peaks that we want to observe (e.g. 1 Hz)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `df::Real`: frequency resolution (bandwidth); smallest distance between frequency peaks that we want to observe (e.g. 1 Hz)
 
 # Returns
 
-  - `nt::Int64`
+- `nt::Int64`
 """
 function ntapers(obj::NeuroAnalyzer.NEURO; df::Real)::Int64
 
@@ -204,13 +204,13 @@ Return signal channel in the form trials × time.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel name
-  - `ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj))`: epoch numbers; default use all epochs
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel name
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj))`: epoch numbers; default use all epochs
 
 # Returns
 
-  - `s::Matrix{Float64}`
+- `s::Matrix{Float64}`
 """
 function trtm(
         obj::NeuroAnalyzer.NEURO;

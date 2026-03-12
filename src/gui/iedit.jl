@@ -7,12 +7,12 @@ Interactive edit signal channels properties and locations.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::String`: initial channel
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `ch::String`: initial channel
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 

@@ -10,11 +10,11 @@ Calculate phase stationarity using Hilbert transformation.
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `stph::Vector{Float64}`
+- `stph::Vector{Float64}`
 """
 function stationarity_hilbert(s::AbstractVector)::Vector{Float64}
 
@@ -31,12 +31,12 @@ Calculate mean stationarity. Signal is split into `window`-long windows and aver
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `window::Int64`: time window in samples
+- `s::AbstractVector`: signal vector
+- `window::Int64`: time window in samples
 
 # Returns
 
-  - `stm::Vector{Float64}`
+- `stm::Vector{Float64}`
 """
 function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
 
@@ -59,12 +59,12 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `window::Int64`: time window in samples
+- `s::AbstractVector`: signal vector
+- `window::Int64`: time window in samples
 
 # Returns
 
-  - `stv::Vector{Float64}`
+- `stv::Vector{Float64}`
 """
 function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
 
@@ -87,19 +87,19 @@ Calculate stationarity.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}: list of channels
-  - `window::Int64=10`: time window in samples
-  - `method::Symbol=:euclid`: stationarity method:
-      + `:mean`: mean across `window`-long windows
-      + `:var`: variance across `window`-long windows
-      + `:cov`: covariance stationarity based on Euclidean distance between covariance matrix of adjacent time windows
-      + `:hilbert`: phase stationarity using Hilbert transformation
-      + `:adf`: Augmented Dickey–Fuller test; returns ADF-test value and p-value (H0: signal is non-stationary; p-value < alpha means that signal is stationary)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}: list of channels
+- `window::Int64=10`: time window in samples
+- `method::Symbol=:euclid`: stationarity method:
+    - `:mean`: mean across `window`-long windows
+    - `:var`: variance across `window`-long windows
+    - `:cov`: covariance stationarity based on Euclidean distance between covariance matrix of adjacent time windows
+    - `:hilbert`: phase stationarity using Hilbert transformation
+    - `:adf`: Augmented Dickey–Fuller test; returns ADF-test value and p-value (H0: signal is non-stationary; p-value < alpha means that signal is stationary)
 
 # Returns
 
-  - `s::Union{Matrix{Float64}, Array{Float64, 3}}`
+- `s::Union{Matrix{Float64}, Array{Float64, 3}}`
 """
 function stationarity(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64 = 10, method::Symbol = :hilbert

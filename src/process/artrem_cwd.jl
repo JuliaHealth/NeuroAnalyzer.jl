@@ -8,20 +8,20 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `t::AbstractVector`: time points
-  - `fs::Int64`: sampling rate
-  - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-  - `tseg::Tuple{Real, Real}`: artifact time location
-  - `fseg::Tuple{Real, Real}`: artifact frequency location
-  - `type::Symbol=:nd`: inverse style type:
-      + `:pd`: PenroseDelta
-      + `:nd`: NaiveDelta
-      + `:df`: DualFrames
+- `s::AbstractVector`: signal vector
+- `t::AbstractVector`: time points
+- `fs::Int64`: sampling rate
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `tseg::Tuple{Real, Real}`: artifact time location
+- `fseg::Tuple{Real, Real}`: artifact frequency location
+- `type::Symbol=:nd`: inverse style type:
+    - `:pd`: PenroseDelta
+    - `:nd`: NaiveDelta
+    - `:df`: DualFrames
 
 # Returns
 
-  - `s_new::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
 function artrem_cwd(
         s::AbstractVector,
@@ -65,20 +65,20 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel name
-  - `ep::Int64`
-  - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-  - `tseg::Tuple{Real, Real}`: artifact time location
-  - `fseg::Tuple{Real, Real}`: artifact frequency location
-  - `type::Symbol=:nd`: inverse style type:
-      + `:pd`: PenroseDelta
-      + `:nd`: NaiveDelta
-      + `:df`: DualFrames
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel name
+- `ep::Int64`
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `tseg::Tuple{Real, Real}`: artifact time location
+- `fseg::Tuple{Real, Real}`: artifact frequency location
+- `type::Symbol=:nd`: inverse style type:
+    - `:pd`: PenroseDelta
+    - `:nd`: NaiveDelta
+    - `:df`: DualFrames
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function artrem_cwd(
         obj::NeuroAnalyzer.NEURO;
@@ -112,16 +112,16 @@ Remove artifacts using continuous wavelet decomposition (CWD).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel name
-  - `ep::Int64`
-  - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-  - `tseg::Tuple{Real, Real}`: artifact time location
-  - `fseg::Tuple{Real, Real}`: artifact frequency location
-  - `type::Symbol=:nd`: inverse style type:
-      + `:pd`: PenroseDelta
-      + `:nd`: NaiveDelta
-      + `:df`: DualFrames
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel name
+- `ep::Int64`
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `tseg::Tuple{Real, Real}`: artifact time location
+- `fseg::Tuple{Real, Real}`: artifact frequency location
+- `type::Symbol=:nd`: inverse style type:
+    - `:pd`: PenroseDelta
+    - `:nd`: NaiveDelta
+    - `:df`: DualFrames
 """
 function artrem_cwd!(
         obj::NeuroAnalyzer.NEURO;

@@ -18,21 +18,21 @@ Return the `n`-point long symmetric window `type`.
 
 # Arguments
 
-  - `type::Symbol`: window type:
-      + `:hann`: Hann
-      + `:bh`: Blackman-Harris
-      + `:bohman`: Bohman
-      + `:flat`: Flat-top window
-      + `:bn`: Blackman-Nuttall
-      + `:nutall`: Nuttall
-      + `:triangle`: symmetric triangle (left half ↑, right half ↓)
-      + `:exp`: symmetric exponential (left half ↑, right half ↓)
-  - `n::Int64`: window length
-  - `even::Bool=false`: if true, make the window of even length (increase length by 1 for odd value of `n`)
+- `type::Symbol`: window type:
+    - `:hann`: Hann
+    - `:bh`: Blackman-Harris
+    - `:bohman`: Bohman
+    - `:flat`: Flat-top window
+    - `:bn`: Blackman-Nuttall
+    - `:nutall`: Nuttall
+    - `:triangle`: symmetric triangle (left half ↑, right half ↓)
+    - `:exp`: symmetric exponential (left half ↑, right half ↓)
+- `n::Int64`: window length
+- `even::Bool=false`: if true, make the window of even length (increase length by 1 for odd value of `n`)
 
 # Returns
 
-  - `w::Vector{Float64}`:: generated window
+- `w::Vector{Float64}`:: generated window
 """
 function generate_window(type::Symbol, n::Int64; even::Bool = false)::Vector{Float64}
 
@@ -94,10 +94,10 @@ Generate sine wave.
 
 # Arguments
 
-  - `f::Real`: frequency [Hz]
-  - `t::AbstractVector`: time vector
-  - `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
-  - `p::Real`: phase shift [degrees]
+- `f::Real`: frequency [Hz]
+- `t::AbstractVector`: time vector
+- `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
+- `p::Real`: phase shift [degrees]
 
 # Returns
 
@@ -120,10 +120,10 @@ Generate cosine wave.
 
 # Arguments
 
-  - `f::Real`: frequency [Hz]
-  - `t::AbstractVector`: time vector
-  - `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
-  - `p::Real`: phase shift [degrees]
+- `f::Real`: frequency [Hz]
+- `t::AbstractVector`: time vector
+- `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
+- `p::Real`: phase shift [degrees]
 
 # Returns
 
@@ -146,9 +146,9 @@ Generate complex sine wave.
 
 # Arguments
 
-  - `f::Real`: frequency [Hz]
-  - `t::AbstractVector`: time vector
-  - `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
+- `f::Real`: frequency [Hz]
+- `t::AbstractVector`: time vector
+- `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
 
 # Returns
 
@@ -169,14 +169,14 @@ Generate sinc function.
 
 # Arguments
 
-  - `t::AbstractVector=-2:0.01:2`: time
-  - `f::Real=1.0: frequency
-  - `peak::Real=0`: sinc peak time
-  - `norm::Bool=true`: generate normalized function
+- `t::AbstractVector=-2:0.01:2`: time
+- `f::Real=1.0: frequency
+- `peak::Real=0`: sinc peak time
+- `norm::Bool=true`: generate normalized function
 
 # Returns
 
-  - `s::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_sinc(
         t::AbstractVector = -2:0.01:2; f::Real = 1.0, peak::Real = 0, norm::Bool = true
@@ -204,15 +204,15 @@ Generate Morlet wavelet.
 
 # Arguments
 
-  - `fs::Int64`: sampling rate
-  - `f::Real`: frequency
-  - `t::Real=1`: wavelet length is `-t:1/fs:t`
-  - `ncyc::Int64=5`: number of cycles
-  - `complex::Bool=false`: generate complex Morlet
+- `fs::Int64`: sampling rate
+- `f::Real`: frequency
+- `t::Real=1`: wavelet length is `-t:1/fs:t`
+- `ncyc::Int64=5`: number of cycles
+- `complex::Bool=false`: generate complex Morlet
 
 # Returns
 
-  - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
+- `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
 function generate_morlet(
         fs::Int64, f::Real, t::Real = 1; ncyc::Int64 = 5, complex::Bool = false
@@ -238,15 +238,15 @@ Generate Gaussian wave.
 
 # Arguments
 
-  - `fs::Int64`: sampling rate
-  - `f::Real`: frequency
-  - `t::Real=1`: length = -t:1/fs:t
-  - `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
-  - `a::Real=1`: peak amp
+- `fs::Int64`: sampling rate
+- `f::Real`: frequency
+- `t::Real=1`: length = -t:1/fs:t
+- `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
+- `a::Real=1`: peak amp
 
 # Returns
 
-  - `g::Vector{Float64}`
+- `g::Vector{Float64}`
 """
 function generate_gaussian(
         fs::Int64, f::Real, t::Real = 1; ncyc::Int64 = 5, a::Real = 1.0
@@ -274,16 +274,16 @@ Generate noise.
 
 # Arguments
 
-  - `n::Int64`: length (in samples)
-  - `a::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
-  - `type::Symbol=:whiten`: noise type:
-      + `:whiten`: normally distributed
-      + `:whiteu`: uniformly distributed
-      + `:pink`
+- `n::Int64`: length (in samples)
+- `a::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
+- `type::Symbol=:whiten`: noise type:
+    - `:whiten`: normally distributed
+    - `:whiteu`: uniformly distributed
+    - `:pink`
 
 # Returns
 
-  - `s::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_noise(n::Int64, a::Real = 1.0; type::Symbol = :whiten)::Vector{Float64}
 
@@ -311,12 +311,12 @@ Generate signal based on normally distributed random noise.
 
 # Arguments
 
-  - `n::Int64`: length (in samples)
-  - `a::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
+- `n::Int64`: length (in samples)
+- `a::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
 
 # Returns
 
-  - `s::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_signal(n::Int64, a::Real = 1.0)::Vector{Float64}
 
@@ -335,14 +335,14 @@ Generate Morlet wavelet using FWHM (full width at half maximum) formula.
 
 # Arguments
 
-  - `fs::Int64`: sampling rate
-  - `f::Real`: frequency
-  - `t::Real=1`: length = -t:1/fs:t
-  - `h::Float64=0.25`: full width at half-maximum in seconds (FWHM)
+- `fs::Int64`: sampling rate
+- `f::Real`: frequency
+- `t::Real=1`: length = -t:1/fs:t
+- `h::Float64=0.25`: full width at half-maximum in seconds (FWHM)
 
 # Returns
 
-  - `mw::Vector{ComplexF64}`
+- `mw::Vector{ComplexF64}`
 
 # Reference
 
@@ -366,15 +366,15 @@ Generate square wave.
 
 # Arguments
 
-  - `t::AbstractVector`: time vector
-  - `a::Real`: amplitude
-  - `p::Real`: duty cycle
-  - `w::Real`: width
-  - `offset::Real`: amplitude offset
+- `t::AbstractVector`: time vector
+- `a::Real`: amplitude
+- `p::Real`: duty cycle
+- `w::Real`: width
+- `offset::Real`: amplitude offset
 
 # Returns
 
-  - `s::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_square(
         t::AbstractVector, p::Real, a::Real = 1, offset::Real = 0, w::Real = 1
@@ -392,12 +392,12 @@ Generate triangle wave.
 
 # Arguments
 
-  - `t::AbstractVector`: time vector
-  - `a::Real`: amplitude
+- `t::AbstractVector`: time vector
+- `a::Real`: amplitude
 
 # Returns
 
-  - `s::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_triangle(t::AbstractVector, a::Real = 1)::Vector{Float64}
 

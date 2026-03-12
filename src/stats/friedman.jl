@@ -7,15 +7,15 @@ Estimate Friedman's nonparametric two-way analysis of variance (and Kendall's co
 
 # Arguments
 
-  - `m::AbstractArray`: values × groups
+- `m::AbstractArray`: values × groups
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `q::Float64`: Friedman's Q statistics
-  - `w::Float64`: Kendall's coefficient of concordance
-  - `p::Float64`: p value
+- `q::Float64`: Friedman's Q statistics
+- `w::Float64`: Kendall's coefficient of concordance
+- `p::Float64`: p value
 
 # Notes
 

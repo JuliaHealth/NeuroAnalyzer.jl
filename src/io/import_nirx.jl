@@ -7,11 +7,11 @@ Load NIRX file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-  - `file_name::String`: name of the file to load, should point to .hdr file.
+- `file_name::String`: name of the file to load, should point to .hdr file.
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Reference
 

@@ -7,13 +7,13 @@ Calculate summed similarity using an exponential decay model between two signals
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
-  - `theta::Real`: decay parameter
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
+- `theta::Real`: decay parameter
 
 # Returns
 
-  - `ss::Float64`: summed similarity
+- `ss::Float64`: summed similarity
 
 # Notes
 
@@ -35,13 +35,13 @@ Calculate summed similarity using an exponential decay model between two signals
 
 # Arguments
 
-  - `s1::AbstractArray`
-  - `s2::AbstractArray`
-  - `theta::Real`: decay parameter
+- `s1::AbstractArray`
+- `s2::AbstractArray`
+- `theta::Real`: decay parameter
 
 # Returns
 
-  - `ss::Matrix{Float64}`: signal symmetry
+- `ss::Matrix{Float64}`: signal symmetry
 
 # Notes
 
@@ -75,17 +75,17 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
-  - `theta::Real`: decay parameter
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `theta::Real`: decay parameter
 
 # Returns
 
-  - `ss::Matrix{Float64}`: signal symmetry
+- `ss::Matrix{Float64}`: signal symmetry
 
 # Notes
 

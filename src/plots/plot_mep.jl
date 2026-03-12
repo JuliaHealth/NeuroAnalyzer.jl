@@ -8,18 +8,18 @@ Plot MEP (single channel).
 
 # Arguments
 
-  - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-  - `s::AbstractVector`: data to plot
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `zl::Bool=true`: draw line at t = 0
-  - `yrev::Bool=false`: reverse y-axis
-  - `mono::Bool=false`: use color or gray palette
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `s::AbstractVector`: signal vector: data to plot
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `zl::Bool=true`: draw line at t = 0
+- `yrev::Bool=false`: reverse y-axis
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_mep(
         t::Union{AbstractVector, AbstractRange},
@@ -83,22 +83,22 @@ Plot MEP (multi-channel).
 
 # Arguments
 
-  - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-  - `s::AbstractMatrix`: data to plot
-  - `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `yrev::Bool=false`: reverse y-axis
-  - `avg::Bool=true`: if true, plot averaged MEP
-  - `ci95::Bool=false`: if true, plot mean and ±95% CI
-  - `leg::Bool=true`: if true, add legend with channel labels
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `s::AbstractMatrix`: data to plot
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `yrev::Bool=false`: reverse y-axis
+- `avg::Bool=true`: if true, plot averaged MEP
+- `ci95::Bool=false`: if true, plot mean and ±95% CI
+- `leg::Bool=true`: if true, add legend with channel labels
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_mep(
         t::Union{AbstractVector, AbstractRange},
@@ -206,22 +206,22 @@ Plot MEPs stacked by channels or by epochs.
 
 # Arguments
 
-  - `t::AbstractVector`: x-axis values
-  - `s::AbstractMatrix`
-  - `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `cb::Bool=true`: plot color bar
-  - `cb_title::String=""`: color bar title
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
+- `t::AbstractVector`: x-axis values
+- `s::AbstractMatrix`
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar title
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_mep_stack(
         t::AbstractVector,
@@ -298,30 +298,30 @@ Plot MEP.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `xlabel::String="default"`: x-axis label
-  - `ylabel::String="default"`: y-axis label
-  - `title::String="default"`: plot title
-  - `cb::Bool=true`: plot color bar
-  - `cb_title::String="default"`: color bar title
-  - `peaks::Bool=true`: draw peaks
-  - `leg::Bool=true`: if true, add legend with channel labels
-  - `type::Symbol=:normal`: multi-channel plot type:
-      + `:normal`: butterfly or mean and ±95% CI
-      + `:stack`: stacked channels
-  - `yrev::Bool=false`: reverse y-axis
-  - `avg::Bool=true`: if true, plot averaged MEP
-  - `ci95::Bool=false`: if true, plot mean and ±95% CI
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `zl::Bool=true`: draw line at t = 0
-  - `mono::Bool=false`: use color or gray palette
-  - `gui::Bool=false`: ignored
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `cb::Bool=true`: plot color bar
+- `cb_title::String="default"`: color bar title
+- `peaks::Bool=true`: draw peaks
+- `leg::Bool=true`: if true, add legend with channel labels
+- `type::Symbol=:normal`: multi-channel plot type:
+    - `:normal`: butterfly or mean and ±95% CI
+    - `:stack`: stacked channels
+- `yrev::Bool=false`: reverse y-axis
+- `avg::Bool=true`: if true, plot averaged MEP
+- `ci95::Bool=false`: if true, plot mean and ±95% CI
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
+- `gui::Bool=false`: ignored
 
 # Returns
 
-  - `p::Plots.Plot{Plots.GRBackend}`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_mep(
         obj::NeuroAnalyzer.NEURO;

@@ -8,13 +8,13 @@ Interactive PSD of continuous signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::String`: channel name
-  - `zoom::Real=10`: how many seconds are displayed in one segment
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `ch::String`: channel name
+- `zoom::Real=10`: how many seconds are displayed in one segment
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
 
@@ -697,12 +697,12 @@ Interactive PSD of epoched signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-  - `ch::String`: channel name
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `ch::String`: channel name
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 

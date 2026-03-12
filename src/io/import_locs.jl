@@ -34,11 +34,11 @@ This is a meta-function that triggers appropriate `import_locs_*()` function. Fi
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs(file_name::String)::DataFrame
 
@@ -88,11 +88,11 @@ Load channel locations from CED file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_ced(file_name::String)::DataFrame
 
@@ -155,11 +155,11 @@ Load channel locations from LOCS file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_locs(file_name::String)::DataFrame
 
@@ -220,11 +220,11 @@ Load channel locations from ELC file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_elc(file_name::String)::DataFrame
 
@@ -299,11 +299,11 @@ Load channel locations from TSV file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_tsv(file_name::String)::DataFrame
 
@@ -376,11 +376,11 @@ Load channel locations from SFP file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_sfp(file_name::String)::DataFrame
 
@@ -466,11 +466,11 @@ Load channel locations from CSD file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_csd(file_name::String)::DataFrame
 
@@ -531,11 +531,11 @@ Load channel locations from GEO file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_geo(file_name::String)::DataFrame
 
@@ -609,11 +609,11 @@ Load channel locations from MAT file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_mat(file_name::String)::DataFrame
 
@@ -668,11 +668,11 @@ Load channel locations from TXT file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_txt(file_name::String)::DataFrame
 
@@ -745,11 +745,11 @@ Load channel locations from DAT file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_dat(file_name::String)::DataFrame
 
@@ -828,11 +828,11 @@ Load channel locations from ASC file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_asc(file_name::String)::DataFrame
 
@@ -905,11 +905,11 @@ Load channel locations from CSV file.
 
 # Arguments
 
-  - `file_name::String`
+- `file_name::String`
 
 # Returns
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 """
 function import_locs_csv(file_name::String)::DataFrame
 

@@ -7,11 +7,11 @@ Average all channels.
 
 # Arguments
 
-  - `s::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
-  - `average::AbstractArray`
+- `average::AbstractArray`
 """
 function average(s::AbstractArray)::AbstractArray
 
@@ -26,12 +26,12 @@ Averages two signals.
 
 # Arguments
 
-  - `s1::AbstractArray`
-  - `s2::AbstractArray`
+- `s1::AbstractArray`
+- `s2::AbstractArray`
 
 # Returns
 
-  - `average::AbstractArray`
+- `average::AbstractArray`
 """
 function average(s1::AbstractArray, s2::AbstractArray)::AbstractArray
 
@@ -46,12 +46,12 @@ Return the average signal of channels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
@@ -73,12 +73,12 @@ Return the average signal of channels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `Nothing`
+Nothing
 """
 function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
@@ -98,12 +98,12 @@ Return the average signal of two objects.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 

@@ -9,21 +9,21 @@ Interpolate channel using planar interpolation.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel to interpolate
-  - `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
-  - `imethod::Symbol=:sh`: interpolation method:
-      + `:sh`: Shepard
-      + `:mq`: Multiquadratic
-      + `:imq`: InverseMultiquadratic
-      + `:tp`: ThinPlate
-      + `:nn`: NearestNeighbour
-      + `:ga`: Gaussian
-  - `ifactor::Int64=100`: interpolation quality
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
+- `ifactor::Int64=100`: interpolation quality
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function plinterpolate_channel(
         obj::NeuroAnalyzer.NEURO;
@@ -96,15 +96,15 @@ Interpolate channel using planar interpolation.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel to interpolate
-  - `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
-  - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
-  - `ifactor::Int64=100`: interpolation quality
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `ifactor::Int64=100`: interpolation quality
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function plinterpolate_channel!(
         obj::NeuroAnalyzer.NEURO;
@@ -129,27 +129,27 @@ Interpolate channel using planar interpolation.
 
 # Arguments
 
-  - `s::Matrix{Float64}`: values to plot (one value per channel)
-  - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-  - `ch::Int64`: channel to interpolate
-  - `imethod::Symbol=:sh`: interpolation method:
-      + `:sh`: Shepard
-      + `:mq`: Multiquadratic
-      + `:imq`: InverseMultiquadratic
-      + `:tp`: ThinPlate
-      + `:nn`: NearestNeighbour
-      + `:ga`: Gaussian
-  - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-  - `ifactor::Int64=100`: interpolation quality
+- `s::Matrix{Float64}`: values to plot (one value per channel)
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `ch::Int64`: channel to interpolate
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
+- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `ifactor::Int64=100`: interpolation quality
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `int_s::Matrix{Float64}`: interpolated signal
-  - `int_x::Vector{Float64}`: X-axis coordinates
-  - `int_y::Vector{Float64}`: Y-axis coordinates
+- `int_s::Matrix{Float64}`: interpolated signal
+- `int_x::Vector{Float64}`: X-axis coordinates
+- `int_y::Vector{Float64}`: Y-axis coordinates
 """
 function plinterpolate(
         s::Matrix{Float64};

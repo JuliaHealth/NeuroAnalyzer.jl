@@ -10,17 +10,17 @@ Calculate `charge`, `current_density` and `charge_ density` for tDCS stimulation
 
 # Arguments
 
-  - `current::Real`: stimulation current [mA]
-  - `pad_area::Real`: electrode pad area [cm²]
-  - `duration::Int64`: stimulation duration [s]
+- `current::Real`: stimulation current [mA]
+- `pad_area::Real`: electrode pad area [cm²]
+- `duration::Int64`: stimulation duration [s]
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `charge::Float64`: charge [C]
-  - `current_density::Float64`: current density [A/m²]
-  - `charge_density::Float64`: delivered charge density [kC/m²]
+- `charge::Float64`: charge [C]
+- `current_density::Float64`: current density [A/m²]
+- `charge_density::Float64`: delivered charge density [kC/m²]
 
 # Reference
 
@@ -45,20 +45,20 @@ Calculate `charge`, `current_density` and `charge_ density` for tACS stimulation
 
 # Arguments
 
-  - `current::Real`: stimulation current (peak to peak) [mA]
-  - `pad_area::Real`: electrode pad area [cm²]
-  - `duration::Real`: stimulation duration [s]
-  - `offset::Real`: current offset [μA]
-  - `frequency::Real`: sinus frequency [Hz]
-  - `phase::Real`: phase shift [degree]
+- `current::Real`: stimulation current (peak to peak) [mA]
+- `pad_area::Real`: electrode pad area [cm²]
+- `duration::Real`: stimulation duration [s]
+- `offset::Real`: current offset [μA]
+- `frequency::Real`: sinus frequency [Hz]
+- `phase::Real`: phase shift [degree]
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `charge::Float64`: charge [C]
-  - `current_density::Float64`: current density [A/m²]
-  - `charge_density::Float64`: delivered charge density [kC/m²]
+- `charge::Float64`: charge [C]
+- `current_density::Float64`: current density [A/m²]
+- `charge_density::Float64`: delivered charge density [kC/m²]
 """
 function tacs_dose(;
         current::Real, pad_area::Real, duration::Int64, offset::Real, frequency::Real, phase::Real
@@ -88,19 +88,19 @@ Calculate `charge`, `current_density` and `charge_ density` for tPCS stimulation
 
 # Arguments
 
-  - `current::Real`: stimulation current (peak to peak) [mA]
-  - `pad_area::Real`: electrode pad area [cm²]
-  - `duration::Real`: stimulation duration [s]
-  - `pw::Real`: pulse width [ms]
-  - `isi::Real`: interstimulus interval [ms]
+- `current::Real`: stimulation current (peak to peak) [mA]
+- `pad_area::Real`: electrode pad area [cm²]
+- `duration::Real`: stimulation duration [s]
+- `pw::Real`: pulse width [ms]
+- `isi::Real`: interstimulus interval [ms]
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `charge::Float64`: charge [C]
-  - `current_density::Float64`: current density [A/m²]
-  - `charge_density::Float64`: delivered charge density [kC/m²]
+- `charge::Float64`: charge [C]
+- `current_density::Float64`: current density [A/m²]
+- `charge_density::Float64`: delivered charge density [kC/m²]
 """
 function tpcs_dose(;
         current::Real, pad_area::Real, duration::Real, pw::Real, isi::Real
@@ -134,22 +134,22 @@ Create TES (tDCS/tACS/tRNS/tPCS) protocol.
 
 # Arguments
 
-  - `type::Symbol`: stimulation type (`:tDCS`, `:tACS`, `:tRNS`, `:tPCS`)
-  - `hd::Bool`: high-density electrodes
-  - `current::Real`: stimulation current [mA]
-  - `frequency::Real=0`: stimulation frequency [mA]
-  - `anode_size::Tuple{Int64, Int64}`: anode dimensions [mm]
-  - `cathode_size::Tuple{Int64, Int64}`: cathode dimensions [mm]
-  - `anode_loc::Symbol`: anode location (according to 10-20 Positioning System)
-  - `cathode_loc::Symbol`: cathode location (according to 10-20 Positioning System)
-  - `duration::Real`: stimulation duration [s]
-  - `ramp_in::Real`: stimulation duration [s]
-  - `ramp_out::Real`: stimulation duration [s]
-  - `sham::Bool`: protocol includes sham stimulations
+- `type::Symbol`: stimulation type (`:tDCS`, `:tACS`, `:tRNS`, `:tPCS`)
+- `hd::Bool`: high-density electrodes
+- `current::Real`: stimulation current [mA]
+- `frequency::Real=0`: stimulation frequency [mA]
+- `anode_size::Tuple{Int64, Int64}`: anode dimensions [mm]
+- `cathode_size::Tuple{Int64, Int64}`: cathode dimensions [mm]
+- `anode_loc::Symbol`: anode location (according to 10-20 Positioning System)
+- `cathode_loc::Symbol`: cathode location (according to 10-20 Positioning System)
+- `duration::Real`: stimulation duration [s]
+- `ramp_in::Real`: stimulation duration [s]
+- `ramp_out::Real`: stimulation duration [s]
+- `sham::Bool`: protocol includes sham stimulations
 
 # Returns
 
-  - `protocol::Dict`
+- `protocol::Dict`
 """
 function tes_protocol(;
         type::Symbol,

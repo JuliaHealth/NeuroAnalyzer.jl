@@ -7,7 +7,7 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `ch::Union{Int64, Vector{Int64}}=size(s, 1)`: indices of reference channels; default is all channels, for each analyzed channel, that channel itself is excluded from the reference mean
 
 # Returns
@@ -50,7 +50,7 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: reference channel name(s)
 
 # Returns

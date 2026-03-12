@@ -6,12 +6,12 @@ Load BrainVision BVCDF file and return `NeuroAnalyzer.NEURO` object. At least tw
 
 # Arguments
 
-  - `file_name::String`: name of the file to load, should point to .vhdr file.
-  - `detect_type::Bool=true`: detect channel type based on its label
+- `file_name::String`: name of the file to load, should point to .vhdr file.
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 """
 function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 

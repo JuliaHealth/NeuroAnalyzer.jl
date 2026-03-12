@@ -7,23 +7,23 @@ Plot connectivity circle.
 
 # Arguments
 
-  - `m::AbstractMatrix`: matrix of connectivities (channel vs. channel)
-  - `clabels=Vector{String}`: channels labels
-  - `title::String=""`: plot title
-  - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-      + `:in`: draw region is values are in the threshold values, including threshold boundaries
-      + `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `m::AbstractMatrix`: matrix of connectivities (channel vs. channel)
+- `clabels=Vector{String}`: channels labels
+- `title::String=""`: plot title
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_connectivity_circle(
         m::AbstractMatrix;

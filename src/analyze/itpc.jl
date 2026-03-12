@@ -20,7 +20,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `itpcv::Float64`: ITPC (or wITPC) value
 - `itpcz::Float64`: Rayleigh's ITPC z statistic
@@ -42,7 +42,7 @@ function itpc(
     itpcph::Vector{Float64}
 }
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     @assert t >= 1 "t must be ≥ 1."
@@ -89,14 +89,14 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `t::Real`: time point in seconds at which ITPC is calculated
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional per-epoch weights
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `itpcv::Vector{Float64}`: ITPC or wITPC value per channel
 - `itpcz::Vector{Float64}`: Rayleigh's ITPC z statistic per channel
@@ -170,7 +170,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `itpcv::Vector{Float64}`: ITPC or wITPC value per channel
 - `itpcz::Vector{Float64}`: Rayleigh's ITPC z statistic per channel
@@ -187,7 +187,7 @@ function itpc_spec(
     itpcph::Matrix{Float64}
 }
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
 
@@ -234,7 +234,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to analyze
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
 - `nfrq::Int64=_tlength(flim)`: number of frequencies
@@ -243,7 +243,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `itpcs::Matrix{Float64}`: ITPC spectrogram, shape `(frequencies, samples)`
 - `itpczs::Matrix{Float64}`: ITPCZ spectrogram, shape `(frequencies, samples)`

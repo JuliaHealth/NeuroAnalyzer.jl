@@ -16,7 +16,7 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ipl::Float64`: PLV value
 - `sd::Vector{Float64}`: signal difference (s1 - s2)
@@ -68,8 +68,8 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
@@ -77,7 +77,7 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ipl::Matrix{Float64}`: IPLV value, shape `(channels, epochs)`
 - `sd::Array{Float64, 3}`: signal difference (s1 - s2), shape `(channels, samples, epochs)`
@@ -159,7 +159,7 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns

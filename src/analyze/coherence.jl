@@ -15,9 +15,9 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `s1::AbstractVector`: signal vector
 - `s2::AbstractVector`: signal vector
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -28,7 +28,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `coh::Vector{ComplexF64}`: coherence
 - `imcoh::Vector{Float64}`: imaginary part of coherence
@@ -106,9 +106,9 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `s1::AbstractArray`: signal array
 - `s2::AbstractArray`: signal array
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -202,16 +202,16 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))` epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))` epoch number(s)
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed

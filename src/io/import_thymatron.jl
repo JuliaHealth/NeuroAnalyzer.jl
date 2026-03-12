@@ -16,12 +16,12 @@ Image properties:
 
 # Arguments
 
-  - `file_name::Union{String, Vector{String}}`: name(s) of the file(s) to load
-  - `dpi::Int64=100`: DPI of the scanned images
+- `file_name::Union{String, Vector{String}}`: name(s) of the file(s) to load
+- `dpi::Int64=100`: DPI of the scanned images
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Reference
 

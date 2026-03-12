@@ -7,11 +7,11 @@ Load DuoMAG TMS MEP recording file (.ascii or .m) and return `NeuroAnalyzer.NEUR
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 """
 function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 

@@ -8,13 +8,13 @@ Filter using Savitzky-Golay filter.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
-  - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
+- `s::AbstractVector`: signal vector
+- `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
+- `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
 # Returns
 
-  - `s_filtered::Vector{Float64}`
+- `s_filtered::Vector{Float64}`
 """
 function filter_sg(s::AbstractVector; order::Int64 = 6, window::Int64 = 11)::Vector{Float64}
 
@@ -36,13 +36,13 @@ Filter using Savitzky-Golay filter.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
-  - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
+- `s::AbstractArray`
+- `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
+- `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
 # Returns
 
-  - `s_filtered::Array{Float64, 3}`: convoluted signal
+- `s_filtered::Array{Float64, 3}`: convoluted signal
 """
 function filter_sg(s::AbstractArray; order::Int64 = 6, window::Int64 = 11)::Array{Float64, 3}
 
@@ -69,14 +69,14 @@ Filter using Savitzky-Golay filter.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
-  - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
+- `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function filter_sg(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 6, window::Int64 = 11
@@ -98,14 +98,14 @@ Filter using Savitzky-Golay filter.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
-  - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
+- `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function filter_sg!(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64 = 6, window::Int64 = 11

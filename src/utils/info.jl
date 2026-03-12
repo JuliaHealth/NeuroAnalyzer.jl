@@ -29,11 +29,11 @@ Return sampling rate.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `fs::Int64`
+- `fs::Int64`
 """
 function sr(obj::NeuroAnalyzer.NEURO)::Int64
 
@@ -50,12 +50,12 @@ Return number `type` channels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `type::String="all"`: channel type (stored in the global `channel_types` constant variable)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `type::String="all"`: channel type (stored in the global `channel_types` constant variable)
 
 # Returns
 
-  - `ch_n::Int64`
+- `ch_n::Int64`
 """
 function nchannels(obj::NeuroAnalyzer.NEURO; type::String = "all")::Int64
 
@@ -86,11 +86,11 @@ Return number of epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `ep_n::Int64`
+- `ep_n::Int64`
 """
 function nepochs(obj::NeuroAnalyzer.NEURO)::Int64
 
@@ -109,11 +109,11 @@ Return signal length.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `sl::Int64`
+- `sl::Int64`
 """
 function signal_len(obj::NeuroAnalyzer.NEURO)::Int64
 
@@ -136,11 +136,11 @@ Return epoch length.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `len::Int64`
+- `len::Int64`
 """
 function epoch_len(obj::NeuroAnalyzer.NEURO)::Int64
 
@@ -159,11 +159,11 @@ Return signal duration.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `sd::Float64`
+- `sd::Float64`
 """
 function signal_duration(obj::NeuroAnalyzer.NEURO)::Float64
 
@@ -180,11 +180,11 @@ Return epoch length.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `ed::Float64`
+- `ed::Float64`
 """
 function epoch_duration(obj::NeuroAnalyzer.NEURO)::Float64
 
@@ -201,11 +201,11 @@ Show processing history.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `h::Vector{String}`
+- `h::Vector{String}`
 """
 function history(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -222,11 +222,11 @@ Return channel labels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `l::Vector{String}`
+- `l::Vector{String}`
 """
 function labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -245,11 +245,11 @@ Return optode labels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `l::Vector{String}`
+- `l::Vector{String}`
 """
 function optode_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -269,11 +269,11 @@ Return NIRS source labels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `l::Vector{String}`
+- `l::Vector{String}`
 """
 function source_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -293,11 +293,11 @@ Return NIRS detector labels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `l::Vector{String}`
+- `l::Vector{String}`
 """
 function detector_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -317,11 +317,11 @@ Return channel types.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `cht::Vector{String}`
+- `cht::Vector{String}`
 """
 function chtypes(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -340,11 +340,11 @@ Show object header.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function header(obj::NeuroAnalyzer.NEURO)::Nothing
 
@@ -472,12 +472,12 @@ Show info.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `df::Bool=false`: if true, return object data as a DataFrame containing time points and channels
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `df::Bool=false`: if true, return object data as a DataFrame containing time points and channels
 
 # Returns
 
-  - `Union{Nothing, DataFrame}`
+- `Union{Nothing, DataFrame}`
 """
 function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFrame}
 
@@ -688,13 +688,13 @@ Show channel info.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`
-  - `pr::Bool=true`: if true, print to output, otherwise return a string
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`
+- `pr::Bool=true`: if true, print to output, otherwise return a string
 
 # Returns
 
-  - `channel_info::Union{Nothing, String}`
+- `channel_info::Union{Nothing, String}`
 """
 function channel_info(
         obj::NeuroAnalyzer.NEURO; ch::String, pr::Bool = true
@@ -732,19 +732,19 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `p::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
-      + `:central` (or `:c`)
-      + `:left` (or `:l`)
-      + `:right` (or `:r`)
-      + `:frontal` (or `:f`)
-      + `:temporal` (or `:t`)
-      + `:parietal` (or `:p`)
-      + `:occipital` (or `:o`)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `p::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
+    - `:central` (or `:c`)
+    - `:left` (or `:l`)
+    - `:right` (or `:r`)
+    - `:frontal` (or `:f`)
+    - `:temporal` (or `:t`)
+    - `:parietal` (or `:p`)
+    - `:occipital` (or `:o`)
 
 # Returns
 
-  - `ch::Vector{String}`: channel names
+- `ch::Vector{String}`: channel names
 """
 function channel_pick(
         obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
@@ -886,21 +886,21 @@ Return channels belonging to a cluster of channels.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `cluster::Symbol`: available clusters are:
-      + `:f1`: left frontal (F1, F3, F5, F7, AF3, AF7)
-      + `:f2`: right frontal (F2, F4, F6, F8, AF4, AF8)
-      + `:t1`: left temporal (C3, C5, T7, FC3, FC5, FT7)
-      + `:t2`: right temporal (C4, C6, T8, FC4, FC6, FT8)
-      + `:c1`: anterior central (Cz, C1, C2, FC1, FC2, FCz)
-      + `:c2`: posterior central (Pz, P1, P2, CP1, CP2, CPz)
-      + `:p1`: left parietal (P3, P5, P7, CP3, CP5, TP7)
-      + `:p2`: right parietal (P4, P6, P8, CP4, CP6, TP8)
-      + `:o`: occipital (Oz, O1, O2, POz, PO3, PO4)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `cluster::Symbol`: available clusters are:
+    - `:f1`: left frontal (F1, F3, F5, F7, AF3, AF7)
+    - `:f2`: right frontal (F2, F4, F6, F8, AF4, AF8)
+    - `:t1`: left temporal (C3, C5, T7, FC3, FC5, FT7)
+    - `:t2`: right temporal (C4, C6, T8, FC4, FC6, FT8)
+    - `:c1`: anterior central (Cz, C1, C2, FC1, FC2, FCz)
+    - `:c2`: posterior central (Pz, P1, P2, CP1, CP2, CPz)
+    - `:p1`: left parietal (P3, P5, P7, CP3, CP5, TP7)
+    - `:p2`: right parietal (P4, P6, P8, CP4, CP6, TP8)
+    - `:o`: occipital (Oz, O1, O2, POz, PO3, PO4)
 
 # Returns
 
-  - `ch::Vector{Int64}`: channel names
+- `ch::Vector{Int64}`: channel names
 """
 function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
 
@@ -936,27 +936,27 @@ Return band frequency limits.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `band::Symbol`: band range name:
-      + `:list`
-      + `:total`
-      + `:delta`: 0.1 - 4.0 Hz
-      + `:theta`: 4.0 - 8.0 Hz
-      + `:alpha`: 8.0 - 13.0 Hz
-      + `:alpha_lower`: 8.0 - 10.5 Hz
-      + `:alpha_higher`: 10.5 - 13.0 Hz
-      + `:beta`: 14.0 - 30.0 Hz
-      + `:beta_lower`: 14.0 - 25.0 Hz
-      + `:beta_higher`: 25.0 - 30.0 Hz
-      + `:gamma`: 30.0 - 150.0 Hz
-      + `:gamma_1`: 30.0 - 40.0 Hz
-      + `:gamma_2`: 40.0 - 50.0 Hz
-      + `:gamma_lower`: 30.0 - 80.0 Hz
-      + `:gamma_higher`: 80.0 - 150.0 Hz
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `band::Symbol`: band range name:
+    - `:list`
+    - `:total`
+    - `:delta`: 0.1 - 4.0 Hz
+    - `:theta`: 4.0 - 8.0 Hz
+    - `:alpha`: 8.0 - 13.0 Hz
+    - `:alpha_lower`: 8.0 - 10.5 Hz
+    - `:alpha_higher`: 10.5 - 13.0 Hz
+    - `:beta`: 14.0 - 30.0 Hz
+    - `:beta_lower`: 14.0 - 25.0 Hz
+    - `:beta_higher`: 25.0 - 30.0 Hz
+    - `:gamma`: 30.0 - 150.0 Hz
+    - `:gamma_1`: 30.0 - 40.0 Hz
+    - `:gamma_2`: 40.0 - 50.0 Hz
+    - `:gamma_lower`: 30.0 - 80.0 Hz
+    - `:gamma_higher`: 80.0 - 150.0 Hz
 
 # Returns
 
-  - `bf::Tuple{Float64, Float64}`
+- `bf::Tuple{Float64, Float64}`
 """
 function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)::Tuple{Float64, Float64}
 
@@ -1024,27 +1024,27 @@ Return band frequency limits.
 
 # Arguments
 
-  - `fs::Int64`: sampling rate
-  - `band::Symbol`: band range name:
-      + `:list`
-      + `:total`
-      + `:delta`: 0.1 - 4.0 Hz
-      + `:theta`: 4.0 - 8.0 Hz
-      + `:alpha`: 8.0 - 13.0 Hz
-      + `:alpha_lower`: 8.0 - 10.5 Hz
-      + `:alpha_higher`: 10.5 - 13.0 Hz
-      + `:beta`: 14.0 - 30.0 Hz
-      + `:beta_lower`: 14.0 - 25.0 Hz
-      + `:beta_higher`: 25.0 - 30.0 Hz
-      + `:gamma`: 30.0 - 150.0 Hz
-      + `:gamma_1`: 30.0 - 40.0 Hz
-      + `:gamma_2`: 40.0 - 50.0 Hz
-      + `:gamma_lower`: 30.0 - 80.0 Hz
-      + `:gamma_higher`: 80.0 - 150.0 Hz
+- `fs::Int64`: sampling rate
+- `band::Symbol`: band range name:
+    - `:list`
+    - `:total`
+    - `:delta`: 0.1 - 4.0 Hz
+    - `:theta`: 4.0 - 8.0 Hz
+    - `:alpha`: 8.0 - 13.0 Hz
+    - `:alpha_lower`: 8.0 - 10.5 Hz
+    - `:alpha_higher`: 10.5 - 13.0 Hz
+    - `:beta`: 14.0 - 30.0 Hz
+    - `:beta_lower`: 14.0 - 25.0 Hz
+    - `:beta_higher`: 25.0 - 30.0 Hz
+    - `:gamma`: 30.0 - 150.0 Hz
+    - `:gamma_1`: 30.0 - 40.0 Hz
+    - `:gamma_2`: 40.0 - 50.0 Hz
+    - `:gamma_lower`: 30.0 - 80.0 Hz
+    - `:gamma_higher`: 80.0 - 150.0 Hz
 
 # Returns
 
-  - `bf::Tuple{Float64, Float64}`
+- `bf::Tuple{Float64, Float64}`
 """
 function band_frq(fs::Int64; band::Symbol)::Tuple{Float64, Float64}
 
@@ -1112,12 +1112,12 @@ Return basic descriptive statistics of the object data.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `df::Bool=false`: if true, return statistics as a DataFrame
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `df::Bool=false`: if true, return statistics as a DataFrame
 
 # Returns
 
-  - `Union{Nothing, DataFrame}`
+- `Union{Nothing, DataFrame}`
 """
 function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFrame}
     d = zeros(8, nchannels(obj))
@@ -1194,11 +1194,11 @@ Return size of the object data.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `s::Tuple{Int64, Int64, Int64}`
+- `s::Tuple{Int64, Int64, Int64}`
 """
 function Base.size(obj::NeuroAnalyzer.NEURO)::Tuple{Int64, Int64, Int64}
 
@@ -1215,12 +1215,12 @@ Return size of the object data.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `d::Int64`: compute size along dimension `d`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `d::Int64`: compute size along dimension `d`
 
 # Returns
 
-  - `s::Int64`
+- `s::Int64`
 """
 function Base.size(obj::NeuroAnalyzer.NEURO, d::Int64)::Int64
 
@@ -1238,11 +1238,11 @@ Return data type of the object.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `dt::String`
+- `dt::String`
 """
 function datatype(obj::NeuroAnalyzer.NEURO)::String
 
@@ -1259,11 +1259,11 @@ Return channel order of the object.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `co::Vector{Int64}`
+- `co::Vector{Int64}`
 """
 function channel_order(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 

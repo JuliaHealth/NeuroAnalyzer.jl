@@ -24,7 +24,7 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 
 # Returns
 
-  - `imf::Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row; returns an empty `0×0` matrix if no IMFs found
+- `imf::Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row; returns an empty `0×0` matrix if no IMFs found
 """
 function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{Float64}
 
@@ -121,7 +121,7 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `ep::Int64`: epoch number
 - `epsilon::Real=0.3`: decomposition stops when the normalised sum of squared differences (SD criterion) drops below `epsilon`

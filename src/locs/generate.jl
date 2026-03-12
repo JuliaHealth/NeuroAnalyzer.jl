@@ -8,11 +8,11 @@ Generate spherical coordinates according to 10/10 system.
 
 # Arguments
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 
 # Returns
 
-  - `locs_new::DataFrame`
+- `locs_new::DataFrame`
 """
 function locs_generate(locs::DataFrame)::DataFrame
 
@@ -538,11 +538,11 @@ Generate spherical coordinates according to 10/5 system.
 
 # Arguments
 
-  - `locs::DataFrame`
+- `locs::DataFrame`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_generate!(locs::DataFrame)::Nothing
 
@@ -568,11 +568,11 @@ Generate spherical coordinates according to 10/5 system.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function locs_generate(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -594,11 +594,11 @@ Generate spherical coordinates according to 10/5 system.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_generate!(obj::NeuroAnalyzer.NEURO)::Nothing
 

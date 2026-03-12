@@ -7,19 +7,19 @@ Calculate cross-correlation.
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
-  - `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
-  - `demean::Bool=true`: demean signal before computing cross-correlation
-  - `biased::Bool=true`: calculate biased or unbiased cross-correlation
-  - `method::Symbol=:sum`: method of calculating cross-correlation:
-      + `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ (std(s1) × std(s2))`
-      + `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`, `biased` value is ignored
-      + `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
+- `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
+- `demean::Bool=true`: demean signal before computing cross-correlation
+- `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ (std(s1) × std(s2))`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`, `biased` value is ignored
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
-  - `xc::Array{Float64, 3}`
+- `xc::Array{Float64, 3}`
 """
 function xcor(
         s1::AbstractVector,
@@ -91,19 +91,19 @@ Calculate cross-correlation.
 
 # Arguments
 
-  - `s1::AbstractMatrix`
-  - `s2::AbstractMatrix`
-  - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
-  - `demean::Bool=true`: demean signal before computing cross-correlation
-  - `biased::Bool=true`: calculate biased or unbiased cross-correlation
-  - `method::Symbol=:sum`: method of calculating cross-correlation:
-      + `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
-      + `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
-      + `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
+- `s1::AbstractMatrix`
+- `s2::AbstractMatrix`
+- `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
+- `demean::Bool=true`: demean signal before computing cross-correlation
+- `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
-  - `xc::Array{Float64, 3}`
+- `xc::Array{Float64, 3}`
 """
 function xcor(
         s1::AbstractMatrix,
@@ -135,19 +135,19 @@ Calculate cross-correlation.
 
 # Arguments
 
-  - `s1::AbstractArray`
-  - `s2::AbstractArray`
-  - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
-  - `demean::Bool=true`: demean signal before computing cross-correlation
-  - `biased::Bool=true`: calculate biased or unbiased cross-correlation
-  - `method::Symbol=:sum`: method of calculating cross-correlation:
-      + `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
-      + `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
-      + `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
+- `s1::AbstractArray`
+- `s2::AbstractArray`
+- `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
+- `demean::Bool=true`: demean signal before computing cross-correlation
+- `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
-  - `xc::Array{Float64, 3}`
+- `xc::Array{Float64, 3}`
 """
 function xcor(
         s1::AbstractArray,
@@ -186,26 +186,26 @@ Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
-  - `l::Real=1`: lags range is `-l:l`
-  - `demean::Bool=true`: demean signal before computing cross-correlation
-  - `biased::Bool=true`: calculate biased or unbiased cross-correlation
-  - `method::Symbol=:sum`: method of calculating cross-correlation:
-      + `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
-      + `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
-      + `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `l::Real=1`: lags range is `-l:l`
+- `demean::Bool=true`: demean signal before computing cross-correlation
+- `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `xc::Array{Float64, 3}`: cross-correlation
-  - `l::Vector{Float64}`: lags [s]
+- `xc::Array{Float64, 3}`: cross-correlation
+- `l::Vector{Float64}`: lags [s]
 """
 function xcor(
         obj1::NeuroAnalyzer.NEURO,

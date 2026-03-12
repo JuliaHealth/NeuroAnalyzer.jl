@@ -11,19 +11,19 @@ Calculate `n` first Independent Components using FastICA algorithm.
 
 # Arguments
 
-  - `s::AbstractMatrix`
-  - `n::Int64`: number of ICs
-  - `iter::Int64=100`: maximum number of iterations per each tolerance value (`[0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]`)
-  - `f::Symbol=:tanh`: neg-entropy functor:
-      + `:tanh`
-      + `:gaus`
+- `s::AbstractMatrix`
+- `n::Int64`: number of ICs
+- `iter::Int64=100`: maximum number of iterations per each tolerance value (`[0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]`)
+- `f::Symbol=:tanh`: neg-entropy functor:
+    - `:tanh`
+    - `:gaus`
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n) (W * data), components are sorted by decreasing variance
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
+- `ic::Matrix{Float64}`: components IC(1)..IC(n) (W * data), components are sorted by decreasing variance
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
 """
 function ica_decompose(
         s::AbstractMatrix; n::Int64, iter::Int64 = 100, f::Symbol = :tanh
@@ -98,21 +98,21 @@ Perform independent component analysis (ICA) using FastICA algorithm.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `n::Int64=length(ch)`: number of ICs, default is the number of channels
-  - `iter::Int64=100`: maximum number of iterations per each tolerance value (`[0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]`); hence 100 iterations will produce 900 steps
-  - `f::Symbol=:tanh`: neg-entropy functor:
-      + `:tanh`
-      + `:gaus`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `n::Int64=length(ch)`: number of ICs, default is the number of channels
+- `iter::Int64=100`: maximum number of iterations per each tolerance value (`[0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]`); hence 100 iterations will produce 900 steps
+- `f::Symbol=:tanh`: neg-entropy functor:
+    - `:tanh`
+    - `:gaus`
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n) (W * data), components are sorted by decreasing variance
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
-  - `ic_var::Vector{Float64}`: variance of components
+- `ic::Matrix{Float64}`: components IC(1)..IC(n) (W * data), components are sorted by decreasing variance
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
+- `ic_var::Vector{Float64}`: variance of components
 """
 function ica_decompose(
         obj::NeuroAnalyzer.NEURO;
@@ -157,14 +157,14 @@ Reconstruct signal using ICA components.
 
 # Arguments
 
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n)
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-  - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
-  - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
+- `ic::Matrix{Float64}`: components IC(1)..IC(n)
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
+- `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
 # Returns
 
-  - `s_new::Matrix{Float64}`: reconstructed signal
+- `s_new::Matrix{Float64}`: reconstructed signal
 """
 function ica_reconstruct(;
         ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}, keep::Bool = false
@@ -200,16 +200,16 @@ Reconstruct signals using ICA components.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
-  - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n)
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-  - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
+- `ic::Matrix{Float64}`: components IC(1)..IC(n)
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
+- `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function ica_reconstruct(
         obj::NeuroAnalyzer.NEURO;
@@ -242,16 +242,16 @@ Reconstruct signals using ICA components.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
-  - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n)
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-  - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
+- `ic::Matrix{Float64}`: components IC(1)..IC(n)
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
+- `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function ica_reconstruct!(
         obj::NeuroAnalyzer.NEURO;
@@ -277,15 +277,15 @@ Remove ICA components from the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
-  - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n)
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
+- `ic::Matrix{Float64}`: components IC(1)..IC(n)
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function ica_remove(
         obj::NeuroAnalyzer.NEURO;
@@ -323,15 +323,15 @@ Remove ICA components from the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
-  - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
-  - `ic::Matrix{Float64}`: components IC(1)..IC(n)
-  - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
+- `ic::Matrix{Float64}`: components IC(1)..IC(n)
+- `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function ica_remove!(
         obj::NeuroAnalyzer.NEURO;

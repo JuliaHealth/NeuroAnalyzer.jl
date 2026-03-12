@@ -164,7 +164,7 @@ Plot histogram.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 - `x::Union{Nothing, Real}=nothing`: value to plot against the histogram
 - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
 - `bins::Int64=15`: histogram bins: number of bins
@@ -274,7 +274,7 @@ Bar plot.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 - `xlabels::Vector{String}`: x-ticks labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -344,7 +344,7 @@ Line plot.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 - `xlabels::Vector{String}`: x-ticks labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -1289,19 +1289,19 @@ Topographical plot of external ICA components.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=axes(ic_idx, 1)`: component(s) to plot, default is all components
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
 - `imethod::Symbol=:sh`: interpolation method:
-  - `:sh`: Shepard
-  - `:mq`: Multiquadratic
-  - `:imq`: InverseMultiquadratic
-  - `:tp`: ThinPlate
-  - `:nn`: NearestNeighbour
-  - `:ga`: Gaussian
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: number of contour levels to plot
 - `electrodes::Bools=true`: plot electrodes over topo plot
@@ -1356,7 +1356,7 @@ Confidence interval plot.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`: signal vector: signal
 - `s_l::AbstractVector`: CI lower bound
 - `s_u::AbstractVector`: CI upper bound
 - `t::AbstractVector`: time points
@@ -1445,12 +1445,12 @@ Plot heatmap.
 - `cb_title::String=""`: colorbar title
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-  - `:eq`: draw region is values are equal to threshold
-  - `:neq`: draw region is values are not equal to threshold
-  - `:geq`: draw region is values are ≥ to threshold
-  - `:leq`: draw region is values are ≤ to threshold
-  - `:g`: draw region is values are > to threshold
-  - `:l`: draw region is values are < to threshold
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
 
 # Returns
 
@@ -1524,13 +1524,13 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 
 # Arguments
 
-  - `imf::Matrix{Float64}`: IMFs
-  - `n::Int64=size(imf, 1) - 1`: number of IMFs to plot
-  - `t::AbstractVector`: time points
+- `imf::Matrix{Float64}`: IMFs
+- `n::Int64=size(imf, 1) - 1`: number of IMFs to plot
+- `t::AbstractVector`: time points
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_imf(
         imf::Matrix{Float64};

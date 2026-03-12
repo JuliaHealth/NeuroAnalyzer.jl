@@ -7,13 +7,13 @@ Perform convolution in the frequency domain.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `kernel::AbstractVector`
-  - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+- `s::AbstractVector`: signal vector
+- `kernel::AbstractVector`
+- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 
 # Returns
 
-  - `s_new::Vector{ComplexF64}`: convoluted signal
+- `s_new::Vector{ComplexF64}`: convoluted signal
 """
 function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool = true)::Vector{ComplexF64}
 
@@ -34,13 +34,13 @@ Perform convolution in the frequency domain.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `kernel::AbstractVector`: convolution kernel
-  - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+- `s::AbstractArray`
+- `kernel::AbstractVector`: convolution kernel
+- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 
 # Returns
 
-  - `s_new::Array{ComplexF64, 3}`: convoluted signal
+- `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
 function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool = true)::Array{ComplexF64, 3}
 
@@ -72,14 +72,14 @@ Perform convolution in the frequency domain.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `kernel::AbstractVector`: convolution kernel
-  - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `kernel::AbstractVector`: convolution kernel
+- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 
 # Returns
 
-  - `s_new::Array{ComplexF64, 3}`: convoluted signal
+- `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
 function fconv(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector, norm::Bool = true

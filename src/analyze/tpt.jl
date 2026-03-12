@@ -8,11 +8,11 @@ Detect pinches in TPT recording.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `p_idx::Vector{Int64}`: index of pinches locations
+- `p_idx::Vector{Int64}`: index of pinches locations
 """
 function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 
@@ -35,17 +35,17 @@ Analyze pinches in TPT recording.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `n::Int64`: number of pinches
-  - `t_mean::Float64`: mean interval between pinches [ms]
-  - `t_median::Float64`: median interval between pinches [ms]
-  - `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent pinches [ms]
-  - `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent pinches [ms]
+- `n::Int64`: number of pinches
+- `t_mean::Float64`: mean interval between pinches [ms]
+- `t_median::Float64`: median interval between pinches [ms]
+- `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent pinches [ms]
+- `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent pinches [ms]
 
 # Note
 

@@ -8,11 +8,11 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-  - `s::AbstractVector`
+- `s::AbstractVector`: signal vector
 
 # Returns
 
-  - `s_new::AbstractVector`
+- `s_new::AbstractVector`
 """
 function derivative(s::AbstractVector)::AbstractVector
 
@@ -33,11 +33,11 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-  - `s::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
-  - `s_new::Array{Float64, 3}`
+- `s_new::Array{Float64, 3}`
 """
 function derivative(s::AbstractArray)::Array{Float64, 3}
 
@@ -63,12 +63,12 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
@@ -88,12 +88,12 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

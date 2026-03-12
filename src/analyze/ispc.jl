@@ -16,7 +16,7 @@ ISPC angle = angle( mean( exp(i·Δφ) ) ) (preferred phase difference)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ispcv::Float64`: ISPC value (phase-locking magnitude)
 - `ispca::Float64`: ISPC angle (preferred phase difference)
@@ -75,12 +75,12 @@ ISPC angle = angle( mean( exp(i·Δφ) ) ) (preferred phase difference)
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ispcv::Array{Float64, 3}`: ISPC value matrices, shape `(channels, channels, epochs)`
 - `ispca::Array{Float64, 3}`: ISPC angle matrices, shape `(channels, channels, epochs)`
@@ -134,8 +134,8 @@ Calculate ISPC (Inter-Site Phase Clustering) between channel-matched pairs.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
@@ -143,7 +143,7 @@ Calculate ISPC (Inter-Site Phase Clustering) between channel-matched pairs.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ispcv::Matrix{Float64}`: ISPC value, shape `(channels, epochs)`
 - `ispca::Matrix{Float64}`: ISPC angle, shape `(channels, epochs)`

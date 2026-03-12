@@ -11,8 +11,8 @@ Calculate the mean difference and its bootstrap p-value for two signal matrices.
 
 # Arguments
 
-- `s1::AbstractMatrix`: signal matrix (channels × samples)
-- `s2::AbstractMatrix`: signal matrix (channels × samples)
+- `s1::AbstractMatrix`: signal matrix (channels, samples)
+- `s2::AbstractMatrix`: signal matrix (channels, samples)
 - `n::Int64=3`: number of bootstrap iterations per channel
 - `method::Symbol=:absdiff`: test statistic:
     - `:absdiff`: maximum absolute difference between mean waveforms
@@ -20,7 +20,7 @@ Calculate the mean difference and its bootstrap p-value for two signal matrices.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `st::Vector{Float64}`: bootstrap distribution of the test statistic
 - `sts::Float64`: observed test statistic
@@ -104,8 +104,8 @@ Calculate the mean difference and its bootstrap p-value for each epoch.
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels × samples × epochs)
-- `s2::AbstractArray`: signal array (channels × samples × epochs)
+- `s1::AbstractArray`: signal array (channels, samples, epochs)
+- `s2::AbstractArray`: signal array (channels, samples, epochs)
 - `n::Int64=3`: number of bootstrap iterations per channel
 - `method::Symbol=:absdiff`: test statistic:
     - `:absdiff`: maximum absolute difference
@@ -113,7 +113,7 @@ Calculate the mean difference and its bootstrap p-value for each epoch.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `st::Matrix{Float64}`: bootstrap distributions, shape `(epochs, channels*n)`
 - `sts::Vector{Float64}`: observed statistics per epoch
@@ -133,7 +133,7 @@ function mdiff(
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     @assert n >= 1 "n must be ≥ 1."
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
     _chk3d(s2)
 
@@ -170,7 +170,7 @@ Calculate the mean difference and its bootstrap p-value for two objects.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2:NeuroAnalyzer.NEURO`
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
@@ -183,7 +183,7 @@ Calculate the mean difference and its bootstrap p-value for two objects.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `st::Matrix{Float64}`: bootstrap distributions, shape `(epochs, channels*n)`
 - `sts::Vector{Float64}`: observed statistics per epoch

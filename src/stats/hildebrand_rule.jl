@@ -9,12 +9,12 @@ If H < 0.2 then the vector `x` is symmetric.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `verbose::Bool=true`: print detailed output
+- `x::AbstractVector`
+- `verbose::Bool=true`: print detailed output
 
 # Returns
 
-  - `h::Float64`
+- `h::Float64`
 """
 function hildebrand_rule(x::AbstractVector; verbose::Bool = true)::Float64
 

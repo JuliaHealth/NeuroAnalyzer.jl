@@ -187,20 +187,20 @@ Detect bad channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
-  - `:flat`: flat channel(s)
-  - `:rmse`: RMSE vs average channel outside of 95% CI
-  - `:rmsd`: RMSD
-  - `:euclid`: Euclidean distance
-  - `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
-  - `:p2p`: mark bad channels based on peak-to-peak amplitude; good for detecting transient artifacts
-  - `:tkeo`: mark bad channels based on z-score TKEO value outside of 95% CI
-  - `:kurt`: mark bad channels based on z-scores of kurtosis values
-  - `:z`: mark bad channels based on their z-score of amplitude
-  - `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp channels in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
-  - `:amp`: mark bad channels based on their amplitude
+- `:flat`: flat channel(s)
+- `:rmse`: RMSE vs average channel outside of 95% CI
+- `:rmsd`: RMSD
+- `:euclid`: Euclidean distance
+- `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
+- `:p2p`: mark bad channels based on peak-to-peak amplitude; good for detecting transient artifacts
+- `:tkeo`: mark bad channels based on z-score TKEO value outside of 95% CI
+- `:kurt`: mark bad channels based on z-scores of kurtosis values
+- `:z`: mark bad channels based on their z-score of amplitude
+- `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp channels in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
+- `:amp`: mark bad channels based on their amplitude
 - `w::Int64=sr(obj)`: window width in samples (signal is averaged within `w`-width window), default is 1 second
 - `flat_tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 - `flat_fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
@@ -214,7 +214,7 @@ Detect bad channels.
 
 # Returns
 
-  - `bc::Vector{Bool}`: vector of bad channels
+- `bc::Vector{Bool}`: vector of bad channels
 """
 function channel_reject(
     obj::NeuroAnalyzer.NEURO;
@@ -445,34 +445,34 @@ Detect bad channels and update the `:bad_channel` field in the OBJ header.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
-      + `:flat`: flat channel(s)
-      + `:rmse`: RMSE vs average channel outside of 95% CI
-      + `:rmsd`: RMSD
-      + `:euclid`: Euclidean distance
-      + `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
-      + `:p2p`: mark bad channels based on peak-to-peak amplitude; good for detecting transient artifacts
-      + `:tkeo`: mark bad channels based on z-score TKEO value outside of 95% CI
-      + `:kurt`: mark bad channels based on z-scores of kurtosis values
-      + `:z`: mark bad channels based on their z-score of amplitude
-      + `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp channels in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
-      + `:amp`: mark bad channels based on their amplitude
-  - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window), default is 1 second
-  - `flat_tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
-  - `flat_fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
-  - `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking a channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326); also threshold for `:z` method: percentage of channel length per epoch for marking a channel as bad
-  - `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
-  - `z::Real=3`: threshold number of z-scores
-  - `ransac_r::Float64=0.8`: threshold (0.0 to 1.0) correlation between channels
-  - `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
-  - `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
-  - `amp_t::Real=400.0`: two-sided rejection amplitude threshold (maximum > +amp_t or minimum < -amp_t)
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
+    - `:flat`: flat channel(s)
+    - `:rmse`: RMSE vs average channel outside of 95% CI
+    - `:rmsd`: RMSD
+    - `:euclid`: Euclidean distance
+    - `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
+    - `:p2p`: mark bad channels based on peak-to-peak amplitude; good for detecting transient artifacts
+    - `:tkeo`: mark bad channels based on z-score TKEO value outside of 95% CI
+    - `:kurt`: mark bad channels based on z-scores of kurtosis values
+    - `:z`: mark bad channels based on their z-score of amplitude
+    - `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp channels in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
+    - `:amp`: mark bad channels based on their amplitude
+- `w::Int64=10`: window width in samples (signal is averaged within `w`-width window), default is 1 second
+- `flat_tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
+- `flat_fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
+- `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking a channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326); also threshold for `:z` method: percentage of channel length per epoch for marking a channel as bad
+- `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
+- `z::Real=3`: threshold number of z-scores
+- `ransac_r::Float64=0.8`: threshold (0.0 to 1.0) correlation between channels
+- `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
+- `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
+- `amp_t::Real=400.0`: two-sided rejection amplitude threshold (maximum > +amp_t or minimum < -amp_t)
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function channel_reject!(
         obj::NeuroAnalyzer.NEURO;
@@ -522,35 +522,35 @@ Detect bad epochs.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
-      + `:flat`: flat channel(s)
-      + `:rmse`: RMSE vs average channel outside of 95% CI
-      + `:rmsd`: RMSD
-      + `:euclid`: Euclidean distance
-      + `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
-      + `:p2p`: mark bad epoch based on peak-to-peak amplitude; good for detecting transient artifacts
-      + `:tkeo`: mark bad epoch based on z-score TKEO value outside of 95% CI
-      + `:kurt`: mark bad epoch based on z-scores of kurtosis values
-      + `:z`: mark bad epoch based on their z-score of amplitude
-      + `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp epoch in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
-      + `:amp`: mark bad epoch based on their amplitude
-  - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window), default is 1 second
-  - `flat_tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
-  - `flat_fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
-  - `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking a channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326); also threshold for `:z` method: percentage of channel length per epoch for marking a channel as bad
-  - `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
-  - `z::Real=3`: threshold number of z-scores
-  - `ransac_r::Float64=0.8`: threshold (0.0 to 1.0) correlation between channels
-  - `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
-  - `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
-  - `amp_t::Real=400.0`: two-sided rejection amplitude threshold (maximum > +amp_t or minimum < -amp_t)
-  - `nbad::Int64=1`: minimum number of bad channels to mark the epoch as bad
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
+    - `:flat`: flat channel(s)
+    - `:rmse`: RMSE vs average channel outside of 95% CI
+    - `:rmsd`: RMSD
+    - `:euclid`: Euclidean distance
+    - `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
+    - `:p2p`: mark bad epoch based on peak-to-peak amplitude; good for detecting transient artifacts
+    - `:tkeo`: mark bad epoch based on z-score TKEO value outside of 95% CI
+    - `:kurt`: mark bad epoch based on z-scores of kurtosis values
+    - `:z`: mark bad epoch based on their z-score of amplitude
+    - `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp epoch in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
+    - `:amp`: mark bad epoch based on their amplitude
+- `w::Int64=10`: window width in samples (signal is averaged within `w`-width window), default is 1 second
+- `flat_tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
+- `flat_fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
+- `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking a channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326); also threshold for `:z` method: percentage of channel length per epoch for marking a channel as bad
+- `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
+- `z::Real=3`: threshold number of z-scores
+- `ransac_r::Float64=0.8`: threshold (0.0 to 1.0) correlation between channels
+- `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
+- `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
+- `amp_t::Real=400.0`: two-sided rejection amplitude threshold (maximum > +amp_t or minimum < -amp_t)
+- `nbad::Int64=1`: minimum number of bad channels to mark the epoch as bad
 
 # Returns
 
-  - `be::Vector{Int64}`: bad epochs numbers
+- `be::Vector{Int64}`: bad epochs numbers
 """
 function epoch_reject(
         obj::NeuroAnalyzer.NEURO;

@@ -7,14 +7,14 @@ Calculate Phase Slope Index (PSI).
 
 # Arguments
 
-  - `s1::AbstractVector`
-  - `s2::AbstractVector`
-  - `fs::Int64`: sampling rate
-  - `flim::Tuple{Real, Real}=(1, fs / 2 - 1))`: frequency bounds
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
+- `fs::Int64`: sampling rate
+- `flim::Tuple{Real, Real}=(1, fs / 2 - 1))`: frequency bounds
 
 # Returns
 
-  - `pv::Tuple{Float64, Float64}`: PSI value (signal1 -> signal2, signal2 -> signal1)
+- `pv::Tuple{Float64, Float64}`: PSI value (signal1 -> signal2, signal2 -> signal1)
 
 # Reference
 
@@ -58,17 +58,17 @@ Calculate Phase Slope Index (PSI).
 
 # Arguments
 
-  - `obj1::NeuroAnalyzer.NEURO`
-  - `obj2::NeuroAnalyzer.NEURO`
-  - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
-  - `flim::Tuple{Real, Real}=(1, sr(obj1) / 2 - 1))`: frequency bounds
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `flim::Tuple{Real, Real}=(1, sr(obj1) / 2 - 1))`: frequency bounds
 
 # Returns
 
-  - `pv::Matrix{Float64}`: PSI value
+- `pv::Matrix{Float64}`: PSI value
 """
 function psi(
         obj1::NeuroAnalyzer.NEURO,
@@ -119,13 +119,13 @@ Calculate Phase Slope Index (PSI).
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `flim::Tuple{Real, Real}=(1, sr(obj) / 2 - 1))`: frequency bounds
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `flim::Tuple{Real, Real}=(1, sr(obj) / 2 - 1))`: frequency bounds
 
 # Returns
 
-  - `pv::Array{Tuple{Float64, Float64}, 3}`: PSI value
+- `pv::Array{Tuple{Float64, Float64}, 3}`: PSI value
 """
 function psi(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real} = (1, sr(obj) / 2 - 1)

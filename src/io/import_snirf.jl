@@ -7,12 +7,12 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
-  - `n::Int64=0`: subject number to extract in case of multi-subject file
+- `file_name::String`: name of the file to load
+- `n::Int64=0`: subject number to extract in case of multi-subject file
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Reference
 

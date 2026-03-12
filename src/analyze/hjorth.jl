@@ -19,7 +19,7 @@ where s' = derivative(s).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `h_act::Float64`: activity
 - `h_mob::Float64`: mobility
@@ -47,11 +47,11 @@ where s' = derivative(s).
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `h_act::Matrix{Float64}`: activity, shape `(channels, epochs)`
 - `h_mob::Matrix{Float64}`: mobility, shape `(channels, epochs)`
@@ -59,7 +59,7 @@ Named tuple containing:
 """
 function hjorth(s::AbstractArray)::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -96,12 +96,12 @@ where s' = derivative(s).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `h_act::Matrix{Float64}`: activity, shape `(channels, epochs)`
 - `h_mob::Matrix{Float64}`: mobility, shape `(channels, epochs)`

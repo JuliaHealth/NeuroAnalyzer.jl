@@ -7,12 +7,12 @@ Load EDF exported from Alice 4 Polysomnography System and return `NeuroAnalyzer.
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
-  - `detect_type::Bool=true`: detect channel type based on its label
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Notes
 

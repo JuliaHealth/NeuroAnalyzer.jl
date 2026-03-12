@@ -9,12 +9,12 @@ Pad row(s) with zeros. Works with 1-, 2- and 3-dimensional arrays.
 
 # Arguments
 
-  - `x::Union{AbstractVector, AbstractArray}`
-  - `n::Int64`: number of zeros to append
+- `x::Union{AbstractVector, AbstractArray}`
+- `n::Int64`: number of zeros to append
 
 # Returns
 
-  - `pad0::Union{AbstractVector, AbstractArray}`
+- `pad0::Union{AbstractVector, AbstractArray}`
 """
 function pad0(
         x::Union{AbstractVector, AbstractArray}, n::Int64
@@ -40,11 +40,11 @@ Pad row(s) with zeros to the nearest power of 2 length. Works with 1-, 2- and 3-
 
 # Arguments
 
-  - `x::Union{AbstractVector, AbstractArray}`
+- `x::Union{AbstractVector, AbstractArray}`
 
 # Returns
 
-  - `pad2::Union{AbstractVector, AbstractArray}`
+- `pad2::Union{AbstractVector, AbstractArray}`
 """
 function pad2(
         x::Union{AbstractVector, AbstractArray}
@@ -69,15 +69,15 @@ Pad row(s) with mean value(s). Works with 1-, 2- and 3-dimensional arrays.
 
 # Arguments
 
-  - `x::Union{AbstractVector, AbstractArray}`
-  - `n::Int64`: padding length (number of values to add)
-  - `mode::Symbol=:row`: how the mean is calculated:
-      + `:all`: mean of all rows
-      + `:row`: separate mean per each row
+- `x::Union{AbstractVector, AbstractArray}`
+- `n::Int64`: padding length (number of values to add)
+- `mode::Symbol=:row`: how the mean is calculated:
+    - `:all`: mean of all rows
+    - `:row`: separate mean per each row
 
 # Returns
 
-  - `padm::Union{AbstractVector, AbstractArray}`
+- `padm::Union{AbstractVector, AbstractArray}`
 """
 function padm(
         x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol = :all

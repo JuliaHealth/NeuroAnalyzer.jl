@@ -26,20 +26,20 @@ This is a meta-function that triggers appropriate `import_*()` function. File fo
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
-  - `detect_type::Bool=true`: detect channel type based on channel label
-  - `type::Union{Nothing, Symbol}=nothing`: type of imported data (required for FieldTrip files)
-      + `:eeg`: EEG
-      + `:meg`: MEG
-      + `:nirs`: fNIRS
-      + `:events`: events
-  - `n::Int64=0`: subject number to extract in case of multi-subject file (required for SNIRF files)
-  - `sampling_rate::Union{Nothing, Int64}=nothing`: NPY file contains only signal data, therefore its sampling rate must be provided upon importing
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on channel label
+- `type::Union{Nothing, Symbol}=nothing`: type of imported data (required for FieldTrip files)
+    - `:eeg`: EEG
+    - `:meg`: MEG
+    - `:nirs`: fNIRS
+    - `:events`: events
+- `n::Int64=0`: subject number to extract in case of multi-subject file (required for SNIRF files)
+- `sampling_rate::Union{Nothing, Int64}=nothing`: NPY file contains only signal data, therefore its sampling rate must be provided upon importing
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
-  - `markers::DataFrame` - for events
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object - for EEG, MEG, fNIRS data
+- `markers::DataFrame` - for events
 """
 function import_recording(
         file_name::String;

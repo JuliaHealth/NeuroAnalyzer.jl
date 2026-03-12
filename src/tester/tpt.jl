@@ -8,12 +8,12 @@ Perform Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 ac
 
 # Arguments
 
-  - `duration::Int64=20`: recording duration in seconds
-  - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
+- `duration::Int64=20`: recording duration in seconds
+- `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
@@ -151,12 +151,12 @@ Perform Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 ac
 
 # Arguments
 
-  - `duration::Int64=20`: recording duration in seconds
-  - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
+- `duration::Int64=20`: recording duration in seconds
+- `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 

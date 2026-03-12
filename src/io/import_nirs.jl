@@ -7,11 +7,11 @@ Load NIRS file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Reference
 

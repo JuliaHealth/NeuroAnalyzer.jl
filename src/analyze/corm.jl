@@ -38,7 +38,7 @@ Calculate corelation matrix of channels × time points matrix.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels × samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 - `norm::Bool=false`: normalize correlation matrix
 
 # Returns
@@ -65,7 +65,7 @@ Calculate correlation matrix for each epoch of a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `norm::Bool=false`: normalize correlation matrix
 
 # Returns
@@ -74,7 +74,7 @@ Calculate correlation matrix for each epoch of a 3-D signal array.
 """
 function corm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -101,7 +101,7 @@ Calculate correlation matrix.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}: channel name(s)
 - `norm::Bool=true`: normalize matrix
 

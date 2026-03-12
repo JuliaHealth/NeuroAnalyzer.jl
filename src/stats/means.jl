@@ -13,11 +13,11 @@ Calculate mean of the proportion.
 
 # Arguments
 
-  - `p::Float64`: proportion
+- `p::Float64`: proportion
 
-  - `n::Int64`: number of observations
+- `n::Int64`: number of observations
 
-  - `m::Float64`
+- `m::Float64`
 """
 function meanp(p::Float64, n::Int64)::Float64
 
@@ -37,12 +37,12 @@ Calculate mean of categorical data.
 
 # Arguments
 
-  - `g::Vector{Int64}`: group (e.g. [0, 1, 2, 3])
-  - `x::Vector{Int64}`: amount of subject per group (e.g. [2, 8, 27, 45])
+- `g::Vector{Int64}`: group (e.g. [0, 1, 2, 3])
+- `x::Vector{Int64}`: amount of subject per group (e.g. [2, 8, 27, 45])
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function meanc(g::Vector{Int64}, x::Vector{Int64})::Float64
 
@@ -63,11 +63,11 @@ Calculate geometric mean.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function meang(x::AbstractVector)::Float64
 
@@ -88,11 +88,11 @@ Calculate harmonic mean.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function meanh(x::AbstractVector)::Float64
 
@@ -111,12 +111,12 @@ Calculate weighted mean.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `w::AbstractVector`: weights
+- `x::AbstractVector`
+- `w::AbstractVector`: weights
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function meanw(x::AbstractVector, w::AbstractVector)::Float64
 
@@ -136,12 +136,12 @@ Calculate circular mean.
 
 # Arguments
 
-  - `x::AbstractVector`: angles
-  - `rad::Bool=false`: angles are provided in radians (`rad=true`) or degrees (`rad=false`)
+- `x::AbstractVector`: angles
+- `rad::Bool=false`: angles are provided in radians (`rad=true`) or degrees (`rad=false`)
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function meancirc(x::AbstractVector; rad::Bool = false)::Float64
 
@@ -162,12 +162,12 @@ Calculate trimmed mean.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `n::Float64=0.1`: percentage of extreme values to trim from both ends
+- `x::AbstractVector`
+- `n::Float64=0.1`: percentage of extreme values to trim from both ends
 
 # Returns
 
-  - `m::Float64`
+- `m::Float64`
 """
 function meant(x::AbstractVector; n::Float64 = 0.1)::Float64
 

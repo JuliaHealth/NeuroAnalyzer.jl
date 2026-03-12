@@ -7,28 +7,28 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 # Arguments
 
-  - `locs::DataFrame`: columns: labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-  - `opt_pairs::Matrix{Int64}`: pairs of source and detector
-  - `src_n::Int64`: number of sources
-  - `det_n::Int64`: number of detectors
-  - `src_labels::Bool=false`: plot source labels
-  - `det_labels::Bool=false`: plot detector labels
-  - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
-  - `head::Bool=true`: draw head
-  - `head_labels::Bool=false`: plot head labels
-  - `mono::Bool=false`: use color or gray palette
-  - `grid::Bool=false`: draw grid, useful for locating positions
-  - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-  - `plane::Symbol=:xy`: which plane to plot:
-      + `:xy`: horizontal (top)
-      + `:xz`: coronary (front)
-      + `:yz`: sagittal (side)
-  - `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channels info
+- `locs::DataFrame`: columns: labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `opt_pairs::Matrix{Int64}`: pairs of source and detector
+- `src_n::Int64`: number of sources
+- `det_n::Int64`: number of detectors
+- `src_labels::Bool=false`: plot source labels
+- `det_labels::Bool=false`: plot detector labels
+- `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
+- `head::Bool=true`: draw head
+- `head_labels::Bool=false`: plot head labels
+- `mono::Bool=false`: use color or gray palette
+- `grid::Bool=false`: draw grid, useful for locating positions
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `plane::Symbol=:xy`: which plane to plot:
+    - `:xy`: horizontal (top)
+    - `:xz`: coronary (front)
+    - `:yz`: sagittal (side)
+- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channels info
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_locs_nirs(
         locs::DataFrame,

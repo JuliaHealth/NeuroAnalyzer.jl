@@ -8,35 +8,35 @@ Plot single-channel spectrogram.
 
 # Arguments
 
-  - `st::Vector{Float64}`: time
-  - `sf::Vector{<:Real}`: frequencies
-  - `sp::Matrix{Float64}`: powers
-  - `db::Bool=true`: whether powers are normalized to dB
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `units::String=""`
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `cb::Bool=true`: plot color bar
-  - `cb_title::String=""`: color bar label
-  - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-      + `:in`: draw region is values are in the threshold values, including threshold boundaries
-      + `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `st::Vector{Float64}`: time
+- `sf::Vector{<:Real}`: frequencies
+- `sp::Matrix{Float64}`: powers
+- `db::Bool=true`: whether powers are normalized to dB
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `units::String=""`
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar label
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_spectrogram(
         st::Vector{Float64},
@@ -141,35 +141,35 @@ Plot multiple-channel spectrogram.
 
 # Arguments
 
-  - `sf::Vector{<:Real}`: frequencies
-  - `sp::Matrix{Float64}`: powers
-  - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-  - `db::Bool=true`: whether powers are normalized to dB
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `units::String=""`
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `cb::Bool=true`: plot color bar
-  - `cb_title::String=""`: color bar label
-  - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-      + `:in`: draw region is values are in the threshold values, including threshold boundaries
-      + `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `sf::Vector{<:Real}`: frequencies
+- `sp::Matrix{Float64}`: powers
+- `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
+- `db::Bool=true`: whether powers are normalized to dB
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `units::String=""`
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar label
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_spectrogram(
         sf::Vector{<:Real},
@@ -274,28 +274,28 @@ Plot topographical map of spectrograms.
 
 # Arguments
 
-  - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-  - `st::Vector{Float64}`: time
-  - `sf::Vector{Float64}`: frequencies
-  - `sp::Array{Float64, 3}`: powers
-  - `db::Bool=true`: whether powers are normalized to dB
-  - `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit
-  - `xlabel::String=""`: x-axis label
-  - `ylabel::String=""`: y-axis label
-  - `title::String=""`: plot title
-  - `units::String=""`
-  - `cb::Bool=true`: plot color bar
-  - `cb_title::String=""`: color bar label
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `mono::Bool=false`: unused, for compatibility only
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
-  - `head::Bool=true`: plot head shape
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `st::Vector{Float64}`: time
+- `sf::Vector{Float64}`: frequencies
+- `sp::Array{Float64, 3}`: powers
+- `db::Bool=true`: whether powers are normalized to dB
+- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `units::String=""`
+- `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar label
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `mono::Bool=false`: unused, for compatibility only
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_spectrogram_topo(
         locs::DataFrame,
@@ -509,54 +509,54 @@ Plots spectrogram.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-  - `ep::Int64=0`: epoch to display
-  - `ch::Union{String, Vector{String}, Regex}=datatype(obj)`: channel name or list of channel names
-  - `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
-  - `method::Symbol=:stft`: spectrogram method:
-      + `:stft`: short-time Fourier
-      + `:mt`: multi-tapered periodogram
-      + `:mw`: Morlet wavelet convolution
-      + `:gh`: Gaussian and Hilbert transform
-      + `:cwt`: continuous wavelet transformation
-      + `:hht`: Hilbert-Huang transform
-  - `nt::Int64=7`: number of Slepian tapers
-  - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-  - `w::Bool=true`: if true, apply Hanning window
-  - `gw::Real=10`: Gaussian width in Hz
-  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-  - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-  - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-  - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
-  - `xlabel::String="default"`: x-axis label
-  - `ylabel::String="default"`: y-axis label
-  - `title::String="default"`: plot title
-  - `mono::Bool=false`: use color or gray palette
-  - `markers::Bool`: draw markers if available
-  - `smooth::Bool=false`: smooth the image using Gaussian blur
-  - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-  - `cb::Bool=true`: plot color bar
-  - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
-  - `threshold_type::Symbol=:neq`: rule for thresholding:
-      + `:eq`: draw region is values are equal to threshold
-      + `:neq`: draw region is values are not equal to threshold
-      + `:geq`: draw region is values are ≥ to threshold
-      + `:leq`: draw region is values are ≤ to threshold
-      + `:g`: draw region is values are > to threshold
-      + `:l`: draw region is values are < to threshold
-      + `:in`: draw region is values are in the threshold values, including threshold boundaries
-      + `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
-  - `type::Symbol=:normal`:
-      + `:normal`
-      + `:topo`
-  - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
-  - `head::Bool=true`: plot head shape
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `ep::Int64=0`: epoch to display
+- `ch::Union{String, Vector{String}, Regex}=datatype(obj)`: channel name or list of channel names
+- `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
+- `method::Symbol=:stft`: spectrogram method:
+    - `:stft`: short-time Fourier
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+    - `:hht`: Hilbert-Huang transform
+- `nt::Int64=7`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `w::Bool=true`: if true, apply Hanning window
+- `gw::Real=10`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `markers::Bool`: draw markers if available
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `cb::Bool=true`: plot color bar
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `type::Symbol=:normal`:
+    - `:normal`
+    - `:topo`
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 
 # Returns
 
-  - `p::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function plot_spectrogram(
         obj::NeuroAnalyzer.NEURO;

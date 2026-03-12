@@ -16,11 +16,11 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -31,7 +31,7 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `mbp::Float64`: mean band power
 - `maxfrq::Float64`: frequency of maximum band power
@@ -101,15 +101,15 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -120,7 +120,7 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `mbp::Matrix{Float64}`: mean band power, shape `(channels, epochs)`
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power, shape `(channels, epochs)`
@@ -141,7 +141,7 @@ function band_mpower(
     demean::Bool = true,
 )::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -193,15 +193,15 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -212,7 +212,7 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `mbp::Matrix{Float64}`: mean band power, shape `(channels, epochs)`
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power, shape `(channels, epochs)`

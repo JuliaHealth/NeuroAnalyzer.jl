@@ -33,8 +33,8 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels × samples × epochs)
-- `s2::AbstractArray`: signal array (channels × samples × epochs)
+- `s1::AbstractArray`: signal array (channels, samples, epochs)
+- `s2::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
@@ -44,7 +44,7 @@ function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float6
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
     _chk3d(s2)
 
@@ -78,7 +78,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
@@ -86,7 +86,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 """
 function mutual_information(s::AbstractArray)::Array{Float64, 3}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
     _chk3d(s)
 
@@ -130,7 +130,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
@@ -157,8 +157,8 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)

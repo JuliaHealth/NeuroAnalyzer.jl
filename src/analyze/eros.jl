@@ -20,14 +20,14 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `method::Symbol=:stft`: spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -40,7 +40,7 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `s::Array{Float64, 3}`: spectrogram(s)
 - `f::Vector{Float64}`: frequencies

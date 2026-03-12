@@ -12,7 +12,7 @@ Detect the positive and negative peak of each channel's ERP/ERF/MEP.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
@@ -47,7 +47,7 @@ Calculate amplitude at a given time point.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `t::Real`: time in seconds
 
 # Returns
@@ -106,7 +106,7 @@ Calculate mean amplitude over a time segment.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
@@ -165,7 +165,7 @@ Calculate maximum amplitude over a time segment.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
@@ -224,7 +224,7 @@ Calculate minimum amplitude over a time segment.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
@@ -283,7 +283,7 @@ Compute area under curve of an ERP/ERF/MEP (epoch 1).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `seg::Tuple{Real, Real}=(obj.epoch_time[1], obj.epoch_time[end])`: time segment in seconds
 - `type::Symbol=:all`: which part of the signal to integrate:

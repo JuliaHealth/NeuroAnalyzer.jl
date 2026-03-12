@@ -10,13 +10,13 @@ Remove segment from the signal.
 
 # Arguments
 
-  - `v::AbstractVector`
-  - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-  - `keep::Bool=false`: if true, keep the segment
+- `v::AbstractVector`
+- `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
-  - `trim::Vector{Float64}`
+- `trim::Vector{Float64}`
 """
 function trim(
         v::AbstractVector; seg::Tuple{Int64, Int64}, keep::Bool = false
@@ -39,13 +39,13 @@ Remove segment from the signal.
 
 # Arguments
 
-  - `m::AbstractMatrix`
-  - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-  - `keep::Bool=false`: if true, keep the segment
+- `m::AbstractMatrix`
+- `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
-  - `trim::Matrix{Float64}`
+- `trim::Matrix{Float64}`
 """
 function trim(
         m::AbstractMatrix; seg::Tuple{Int64, Int64}, keep::Bool = false
@@ -68,13 +68,13 @@ Remove segment from the signal.
 
 # Arguments
 
-  - `a::AbstractArray`
-  - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-  - `keep::Bool=false`: if true, keep the segment
+- `a::AbstractArray`
+- `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
-  - `trim::Array{Float64, 3}`
+- `trim::Array{Float64, 3}`
 """
 function trim(
         a::AbstractArray; seg::Tuple{Int64, Int64}, keep::Bool = false
@@ -98,14 +98,14 @@ Trim signal by removing parts of the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
-  - `keep::Bool=false`: if true, keep the segment
-  - `remove_epochs::Bool=false`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
+- `keep::Bool=false`: if true, keep the segment
+- `remove_epochs::Bool=false`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function trim(
         obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = false
@@ -159,13 +159,13 @@ Trim signal by removing parts of the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
-  - `keep::Bool=false`: if true, keep the segment
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function trim!(
         obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = false
@@ -191,12 +191,12 @@ Crop signal by removing parts of the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `seg::Tuple{Real, Real}`: segment to be cropped (from, to) in seconds
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `seg::Tuple{Real, Real}`: segment to be cropped (from, to) in seconds
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function crop(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::NeuroAnalyzer.NEURO
 
@@ -215,12 +215,12 @@ Crop signal by removing parts of the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `seg::Tuple{Real, Real}`: segment to be cropped (from, to) in seconds
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `seg::Tuple{Real, Real}`: segment to be cropped (from, to) in seconds
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
 

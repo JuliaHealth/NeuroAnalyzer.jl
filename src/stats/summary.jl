@@ -7,24 +7,24 @@ Return summary statistics.
 
 # Arguments
 
-  - `x::AbstractVector`
-  - `g::String=""`: group name
+- `x::AbstractVector`
+- `g::String=""`: group name
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `n::Int64`: number of observations
-  - `ms::Int64`: missings
-  - `mm::Float64`: mean
-  - `v::Float64`: variance
-  - `s::Float64`: standard deviation
-  - `min::Float64`: minimum
-  - `q1::Float64`: 1st quartile
-  - `md::Float64`: median
-  - `q3::Float64`: 3rd quartile
-  - `max::Float64`: maximum
-  - `mo::Float64`: mode
+- `n::Int64`: number of observations
+- `ms::Int64`: missings
+- `mm::Float64`: mean
+- `v::Float64`: variance
+- `s::Float64`: standard deviation
+- `min::Float64`: minimum
+- `q1::Float64`: 1st quartile
+- `md::Float64`: median
+- `q3::Float64`: 3rd quartile
+- `max::Float64`: maximum
+- `mo::Float64`: mode
 """
 function summary(
         x::AbstractVector; g::String = ""
@@ -82,26 +82,26 @@ Return summary statistics.
 
 # Arguments
 
-  - `x::AbstractMatrix`
-  - `g::Vector{String}`: group names
-  - `d::Int64`: round to `d` digits
+- `x::AbstractMatrix`
+- `g::Vector{String}`: group names
+- `d::Int64`: round to `d` digits
 
 # Returns
 
 `- df::DataFrame` containing:
 
-  - `:group`: group name
-  - `:n`: number of observations
-  - `:missing`: missings
-  - `:m`: mean
-  - `:v`: variance
-  - `:s`: standard deviation
-  - `:min`: minimum
-  - `:Q1`: 1st quartile
-  - `:median`: median
-  - `:Q3`: 3rd quartile
-  - `:max`: maximum
-  - `:mode`: mode
+- `:group`: group name
+- `:n`: number of observations
+- `:missing`: missings
+- `:m`: mean
+- `:v`: variance
+- `:s`: standard deviation
+- `:min`: minimum
+- `:Q1`: 1st quartile
+- `:median`: median
+- `:Q3`: 3rd quartile
+- `:max`: maximum
+- `:mode`: mode
 """
 function summary(x::AbstractMatrix; g::Vector{String}, d::Int64 = 3)::DataFrame
 
@@ -155,26 +155,26 @@ Return summary statistics.
 
 # Arguments
 
-  - `x::AbstractMatrix`
-  - `g::Vector{String}`: group names
-  - `d::Int64`: round to `d` digits
+- `x::AbstractMatrix`
+- `g::Vector{String}`: group names
+- `d::Int64`: round to `d` digits
 
 # Returns
 
 `- df::DataFrame` containing:
 
-  - `:group`: group name
-  - `:n`: number of observations
-  - `:missing`: missings
-  - `:m`: mean
-  - `:v`: variance
-  - `:s`: standard deviation
-  - `:min`: minimum
-  - `:Q1`: 1st quartile
-  - `:median`: median
-  - `:Q3`: 3rd quartile
-  - `:max`: maximum
-  - `:mode`: mode
+- `:group`: group name
+- `:n`: number of observations
+- `:missing`: missings
+- `:m`: mean
+- `:v`: variance
+- `:s`: standard deviation
+- `:min`: minimum
+- `:Q1`: 1st quartile
+- `:median`: median
+- `:Q3`: 3rd quartile
+- `:max`: maximum
+- `:mode`: mode
 """
 function summary(x::AbstractArray...; g::Vector{String}, d::Int64 = 3)::DataFrame
 

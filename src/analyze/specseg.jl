@@ -9,20 +9,20 @@ Return spectrogram segment.
 
 # Arguments
 
-  - `sp::Matrix{Float64}`: spectrogram powers
-  - `sf::Vector{Float64}`: spectrogram frequencies
-  - `st::Vector{Float64}`: spectrogram time
-  - `t::Tuple{Real, Real}`: time bounds
-  - `f::Tuple{Real, Real}`: frequency bounds
+- `sp::Matrix{Float64}`: spectrogram powers
+- `sf::Vector{Float64}`: spectrogram frequencies
+- `st::Vector{Float64}`: spectrogram time
+- `t::Tuple{Real, Real}`: time bounds
+- `f::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `segp::Matrix{Float64}`: powers
-  - `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
-  - `tidx::Tuple{Real, Real}`: time indices
-  - `fidx::Tuple{Real, Real}`: frequency indices
+- `segp::Matrix{Float64}`: powers
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
+- `tidx::Tuple{Real, Real}`: time indices
+- `fidx::Tuple{Real, Real}`: frequency indices
 """
 function spec_seg(
         sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real}
@@ -52,21 +52,21 @@ Return spectrogram segment.
 
 # Arguments
 
-  - `sp::AbstractArray`: spectrogram powers
-  - `sf::AbstractVector`: spectrogram frequencies
-  - `st::AbstractVector`: spectrogram time
-  - `ch::Int64`: channel
-  - `t::Tuple{Real, Real}`: time bounds
-  - `f::Tuple{Real, Real}`: frequency bounds
+- `sp::AbstractArray`: spectrogram powers
+- `sf::AbstractVector`: spectrogram frequencies
+- `st::AbstractVector`: spectrogram time
+- `ch::Int64`: channel
+- `t::Tuple{Real, Real}`: time bounds
+- `f::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `segp::Array{Float64, 3}`: segment of powers
-  - `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
-  - `tidx::Tuple{Real, Real}`: time indices
-  - `fidx::Tuple{Real, Real}`: frequency indices
+- `segp::Array{Float64, 3}`: segment of powers
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
+- `tidx::Tuple{Real, Real}`: time indices
+- `fidx::Tuple{Real, Real}`: frequency indices
 """
 function spec_seg(
         sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real}
@@ -96,16 +96,16 @@ Trim power spectrum or spectrogram array to a range of frequencies.
 
 # Arguments
 
-  - `p::AbstractArray`: powers
-  - `f::AbstractVector`: frequencies
-  - `spec_flim::Tuple{Real, Real}`: frequency bounds
+- `p::AbstractArray`: powers
+- `f::AbstractVector`: frequencies
+- `spec_flim::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
-  - `f::Vector{Float64}`: frequencies
+- `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function spec_flim(
         p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real}
@@ -138,16 +138,16 @@ Trim spectrogram array to a range of time points.
 
 # Arguments
 
-  - `p::AbstractArray`: powers
-  - `t::AbstractVector`: time points
-  - `seg::Tuple{Real, Real}`: time segment
+- `p::AbstractArray`: powers
+- `t::AbstractVector`: time points
+- `seg::Tuple{Real, Real}`: time segment
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `p::Array{Float64, 4}`: powers
-  - `t::Vector{Float64}`: time points
+- `p::Array{Float64, 4}`: powers
+- `t::Vector{Float64}`: time points
 """
 function spec_tlim(
         p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real}

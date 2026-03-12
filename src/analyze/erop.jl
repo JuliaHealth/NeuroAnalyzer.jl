@@ -20,15 +20,15 @@ The two-column layout allows direct comparison between the "evoked" power (colum
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name
 - `method::Symbol=:welch`: power spectrum method:
-  - `:welch`: Welch's periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:fft`: Fast Fourier transform
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
+- `:welch`: Welch's periodogram
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:fft`: Fast Fourier transform
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -40,7 +40,7 @@ The two-column layout allows direct comparison between the "evoked" power (colum
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `p::Matrix{Float64}`: powers, shape `(frequencies, 1)` or `(frequencies, 2)`
 - `f::Vector{Float64}`: frequencies

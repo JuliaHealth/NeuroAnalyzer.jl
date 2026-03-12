@@ -13,7 +13,7 @@ Computes the instantaneous phase of the cross-power spectrum between two signals
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Vector{Float64}`: cross-power spectrum phase in radians
 - `f::Vector{Float64}`: cross-power spectrum frequencies
@@ -45,19 +45,19 @@ Computes the instantaneous phase of the cross-power spectrum between all channel
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `fs::Int64`: sampling rate
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians), shape `(channels, channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -112,13 +112,13 @@ Calculate cross-phases between paired channels of two arrays.
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels × samples × epochs)
-- `s2::AbstractArray`: signal array (channels × samples × epochs)
+- `s1::AbstractArray`: signal array (channels, samples, epochs)
+- `s2::AbstractArray`: signal array (channels, samples, epochs)
 - `fs::Int64`: sampling rate
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Array{Float64, 3}`: cross-power spectrum phase in radians, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
@@ -129,7 +129,7 @@ function cph(
     fs::Int64,
 )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
     _chk3d(s2)
@@ -168,12 +168,12 @@ Calculate cross-phases between all channel pairs.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Array{Float64, 4}`: cross-power spectrum phase in radians, shape `(channels, channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
@@ -199,8 +199,8 @@ Calculate cross-phases between paired channels of two objects.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
@@ -208,7 +208,7 @@ Calculate cross-phases between paired channels of two objects.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ph::Array{Float64, 3}`: cross-power spectrum phase in radians, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies

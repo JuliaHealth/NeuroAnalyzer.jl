@@ -7,16 +7,16 @@ Calculate D'Agostino-Pearson Omnibus Test for normality.
 
 # Arguments
 
-  - `x::AbstractVector`
+- `x::AbstractVector`
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `zs::Float64`: skewness test
-  - `zk::Float64`: kurtosis test
-  - `d::Float64`: test statistic
-  - `p::Float64`: p value
+- `zs::Float64`: skewness test
+- `zk::Float64`: kurtosis test
+- `d::Float64`: test statistic
+- `p::Float64`: p value
 """
 function dap(x::AbstractVector)::@NamedTuple{zs::Float64, zk::Float64, d::Float64, p::Float64}
 

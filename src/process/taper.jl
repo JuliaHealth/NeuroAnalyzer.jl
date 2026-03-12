@@ -8,12 +8,12 @@ Taper the signal.
 
 # Arguments
 
-  - `s::AbstractVector`
-  - `t::Vector{<:Real}`
+- `s::AbstractVector`: signal vector
+- `t::Vector{<:Real}`
 
 # Returns
 
-  - `s_new::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
 function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
 
@@ -30,12 +30,12 @@ Taper the signal.
 
 # Arguments
 
-  - `s::AbstractArray`
-  - `t::Vector{<:Real}`
+- `s::AbstractArray`
+- `t::Vector{<:Real}`
 
 # Returns
 
-  - `s_new::Array{Float64, 3}`
+- `s_new::Array{Float64, 3}`
 """
 function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
 
@@ -62,13 +62,13 @@ Taper the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `t::Vector{<:Real}`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `t::Vector{<:Real}`
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function taper(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real}
@@ -90,13 +90,13 @@ Taper the signal.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-  - `t::Vector{<:Real}`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `t::Vector{<:Real}`
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::Nothing
 

@@ -7,15 +7,15 @@ Test normal distribution of residuals.
 
 # Arguments
 
-  - `x::AbstractVector`: data values
-  - `g::Vector{Int64}`: group(s) to which each data value belongs
+- `x::AbstractVector`: data values
+- `g::Vector{Int64}`: group(s) to which each data value belongs
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `adt_p::Vector{Float64}`: p values for k-sample Anderson–Darling test vs normal distribution
-  - `ks_p::Vector{Float64}`: p values for one-sample exact Kolmogorov–Smirnov test vs normal distribution
+- `adt_p::Vector{Float64}`: p values for k-sample Anderson–Darling test vs normal distribution
+- `ks_p::Vector{Float64}`: p values for one-sample exact Kolmogorov–Smirnov test vs normal distribution
 
 # Notes
 

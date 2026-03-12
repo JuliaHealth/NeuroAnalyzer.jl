@@ -8,22 +8,22 @@ Edit electrode.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel name
-  - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
-  - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
-  - `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
-  - `theta::Union{Real, Nothing}=nothing`: polar angle
-  - `radius::Union{Real, Nothing}=nothing`: polar radius
-  - `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  - `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
-  - `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
-  - `name::String=""`: channel name
-  - `type::String=""`: channel type
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel name
+- `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+- `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+- `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+- `theta::Union{Real, Nothing}=nothing`: polar angle
+- `radius::Union{Real, Nothing}=nothing`: polar radius
+- `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+- `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `name::String=""`: channel name
+- `type::String=""`: channel type
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_locs(
         obj::NeuroAnalyzer.NEURO;
@@ -74,22 +74,22 @@ Edit electrode.
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
-  - `ch::String`: channel number or name
-  - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
-  - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
-  - `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
-  - `theta::Union{Real, Nothing}=nothing`: polar angle
-  - `radius::Union{Real, Nothing}=nothing`: polar radius
-  - `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  - `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
-  - `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
-  - `name::String=""`: channel name
-  - `type::String=""`: channel type
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel number or name
+- `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+- `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+- `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+- `theta::Union{Real, Nothing}=nothing`: polar angle
+- `radius::Union{Real, Nothing}=nothing`: polar radius
+- `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+- `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `name::String=""`: channel name
+- `type::String=""`: channel type
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function edit_locs!(
         obj::NeuroAnalyzer.NEURO;

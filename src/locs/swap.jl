@@ -8,14 +8,14 @@ Swap channel locations x and y axes.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `obj_new::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function locs_swapxy(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
@@ -54,14 +54,14 @@ Swap channel locations x and y axes.
 
 # Arguments
 
-  - `locs::DataFrame`
-  - `polar::Bool=true`: modify polar coordinates
-  - `cart::Bool=true`: modify Cartesian coordinates
-  - `spherical::Bool=true`: modify spherical coordinates
+- `locs::DataFrame`
+- `polar::Bool=true`: modify polar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function locs_swapxy!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 

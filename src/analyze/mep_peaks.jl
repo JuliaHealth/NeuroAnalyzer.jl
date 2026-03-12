@@ -7,7 +7,7 @@ Detect a pair of positive and negative peaks of MEP.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 

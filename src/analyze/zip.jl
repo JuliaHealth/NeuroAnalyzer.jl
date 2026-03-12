@@ -7,11 +7,11 @@ Calculate zip ratio for the object data (ratio of zip-compressed to uncompressed
 
 # Arguments
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 
 # Returns
 
-  - `zip_ratio::Array{Float64, 3}`
+- `zip_ratio::Array{Float64, 3}`
 
 # Notes
 

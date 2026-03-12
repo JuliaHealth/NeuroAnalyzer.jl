@@ -7,11 +7,11 @@ Edit montage file in the OS editor.
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-  - `Nothing`
+- `Nothing`
 """
 function edit_montage(file_name::String)::Nothing
 

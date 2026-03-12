@@ -14,8 +14,8 @@ Computes the partial auto-correlation function (PACF) of a signal over symmetric
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: symmetric lag range is `−l:l`
 - `demean::Bool=true`: demean signal before computing PACF
 - `method::Symbol=:yw`
-  - `:yw`: Yule-Walker equations
-  - `:reg`: successive regression models
+- `:yw`: Yule-Walker equations
+- `:reg`: successive regression models
 
 # Returns
 
@@ -66,8 +66,8 @@ Calculate partial auto-correlation function (PACF) for each epoch of a matrix ov
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: symmetric lag range is `−l:l`
 - `demean::Bool=true`: demean signal before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:
-  - `:yw`: Yule-Walker equations
-  - `:reg`: successive regression models
+- `:yw`: Yule-Walker equations
+- `:reg`: successive regression models
 
 # Returns
 
@@ -104,12 +104,12 @@ Calculate partial auto-correlation function (PACF) for a 3-D signal array over l
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: symmetric lag range is `−l:l`
 - `demean::Bool=true`: demean signal before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:
-  - `:yw`: Yule-Walker equations
-  - `:reg`: successive regression models
+- `:yw`: Yule-Walker equations
+- `:reg`: successive regression models
 
 # Returns
 
@@ -122,7 +122,7 @@ function pacor(
     method::Symbol = :yw,
 )::Array{Float64, 3}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
 
@@ -157,17 +157,17 @@ For ERP objects, epoch 1 is the trial-averaged waveform and is prepended to the 
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `l::Real=1`: lag limit in seconds; lags vector is `−l:1/sr(obj):l`
 - `demean::Bool=true`: demean signal before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:
-  - `:yw`: Yule-Walker equations
-  - `:reg`: successive regression models
+- `:yw`: Yule-Walker equations
+- `:reg`: successive regression models
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pac::Array{Float64, 3}`: partial auto-correlations
 - `l::Vector{Float64}`: lag values in seconds

@@ -12,14 +12,14 @@ Each channel/channel pair must be in a separate line
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
+- `file_name::String`: name of the file to load
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
-  - `ref_list::Vector{String}`: list of channel pairs
-  - `ref_name::String`: name of the montage
+- `ref_list::Vector{String}`: list of channel pairs
+- `ref_name::String`: name of the montage
 """
 function import_montage(
         file_name::String

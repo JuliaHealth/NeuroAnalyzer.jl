@@ -34,7 +34,7 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels × samples × epochs)
+- `s::AbstractArray`: signal array (channels, samples, epochs)
 
 # Returns
 
@@ -48,7 +48,7 @@ The Higuchi FD estimates the fractal dimension directly from the time series by 
 """
 function hfd(s::AbstractArray)::Matrix{Float64}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of channels
@@ -76,7 +76,7 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns

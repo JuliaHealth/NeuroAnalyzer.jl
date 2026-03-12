@@ -10,12 +10,12 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+- `s1::AbstractVector`: signal vector
+- `s2::AbstractVector`: signal vector
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -26,7 +26,7 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pxy::Vector{ComplexF64}`: cross-power spectrum
 - `f::Vector{Float64}`: frequencies
@@ -161,12 +161,12 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels × samples × epochs)
-- `s2::AbstractArray`: signal array (channels × samples × epochs)
+- `s1::AbstractArray`: signal array (channels, samples, epochs)
+- `s2::AbstractArray`: signal array (channels, samples, epochs)
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -177,7 +177,7 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pxy::Array{ComplexF64, 3}`: cross-power spectrum, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies
@@ -195,7 +195,7 @@ function cpsd(
     w::Bool = true,
 )::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
 
-    # validate that the input is a proper 3-D array (channels × samples × epochs)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
     _chk3d(s2)
@@ -253,16 +253,16 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+- `obj1::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
 - `method::Symbol=:mt`: method used to calculate CPSD:
-  - `:mt`: multi-tapered cross-power spectra
-  - `:fft`: fast Fourier transformation
-  - `:stft`: short-time Fourier transformation
+    - `:mt`: multi-tapered cross-power spectra
+    - `:fft`: fast Fourier transformation
+    - `:stft`: short-time Fourier transformation
 - `flim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
@@ -272,7 +272,7 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `pxy::Array{ComplexF64, 3}`: cross-power spectrum, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies

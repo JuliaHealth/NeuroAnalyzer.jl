@@ -158,13 +158,13 @@ Calculate temporal envelope.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `e::Array{Float64, 3}`: temporal envelope, shape `(channels, samples, epochs)`
 - `t::Vector{Float64}`: time points
@@ -205,14 +205,14 @@ Calculate temporal envelope: mean and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: mean temporal envelope
 - `eu::Matrix{Float64}`: 95% CI upper bound
@@ -300,14 +300,14 @@ Calculate temporal envelope: median and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: median over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: median temporal envelope
 - `eu::Matrix{Float64}`: 95% CI upper bound
@@ -394,15 +394,15 @@ Calculate power spectrum (in dB) envelope.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -412,7 +412,7 @@ Calculate power spectrum (in dB) envelope.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `e::Array{Float64, 3}`: power spectrum envelope, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies
@@ -489,16 +489,16 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -508,7 +508,7 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: mean power envelope
 - `eu::Matrix{Float64}`: 95% CI upper bound
@@ -619,16 +619,16 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD method:
-  - `:welch`: Welch's periodogram
-  - `:fft`: fast Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:stft`: short-time Fourier transform
-  - `:mw`: Morlet wavelet convolution
+- `:welch`: Welch's periodogram
+- `:fft`: fast Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:stft`: short-time Fourier transform
+- `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -638,7 +638,7 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: median power envelope
 - `eu::Matrix{Float64}`: 95% CI upper bound
@@ -758,16 +758,16 @@ Calculate spectral envelope (dominant frequency over time).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
@@ -780,7 +780,7 @@ Calculate spectral envelope (dominant frequency over time).
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `e::Array{Float64, 3}`: spectral envelope, shape `(channels, samples, epochs)`
 - `t::Vector{Float64}`: spectrogram time
@@ -943,17 +943,17 @@ Calculate spectral envelope: mean and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
@@ -966,7 +966,7 @@ Calculate spectral envelope: mean and 95% CI.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: spectral envelope: mean
 - `eu::Matrix{Float64}`: spectral envelope: 95% CI upper bound
@@ -1099,17 +1099,17 @@ Calculate spectral envelope: median and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: median over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-  - `:stft`: short-time Fourier transform
-  - `:mt`: multi-tapered periodogram
-  - `:mw`: Morlet wavelet convolution
-  - `:gh`: Gaussian and Hilbert transform
-  - `:cwt`: continuous wavelet transformation
+- `:stft`: short-time Fourier transform
+- `:mt`: multi-tapered periodogram
+- `:mw`: Morlet wavelet convolution
+- `:gh`: Gaussian and Hilbert transform
+- `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
@@ -1122,7 +1122,7 @@ Calculate spectral envelope: median and 95% CI.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: median spectral envelope
 - `eu::Matrix{Float64}`: 95% CI upper bound
@@ -1255,13 +1255,13 @@ Calculate Hilbert spectrum amplitude envelope.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `e::Array{Float64, 3}`: Hilbert amplitude envelope, shape `(channels, samples, epochs)`
 - `t::Vector{Float64}`: time points
@@ -1307,14 +1307,14 @@ Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: mean Hilbert envelope
 - `eu::Matrix{Float64}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
@@ -1402,14 +1402,14 @@ Calculate Hilbert spectrum amplitude envelope of `obj`: median and 95% CI.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: median over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `em::Matrix{Float64}`: Hilbert spectrum amplitude envelope: median
 - `eu::Matrix{Float64}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
@@ -1492,7 +1492,7 @@ Calculate envelope correlation.
 
 # Returns
 
-Named tuple containing:
+Named tuple:
 
 - `ec::Vector{Float64}`: envelope correlation coefficient
 - `p::Vector{Float64}`: p-value

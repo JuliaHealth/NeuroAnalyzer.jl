@@ -7,12 +7,12 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 
 # Arguments
 
-  - `file_name::String`: name of the file to load
-  - `sampling_rate::Int64`: NPY file contains only signal data, therefore its sampling rate must be provided upon importing
+- `file_name::String`: name of the file to load
+- `sampling_rate::Int64`: NPY file contains only signal data, therefore its sampling rate must be provided upon importing
 
 # Returns
 
-  - `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 """
 function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEURO
 
