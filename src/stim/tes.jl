@@ -6,175 +6,264 @@ export tes_protocol
 """
     tdcs_dose(; <keyword arguments>)
 
-Calculate `charge`, `current_density` and `charge_ density` for tDCS stimulation.
+Calculate charge, current density, and charge density for tDCS stimulation.
 
 # Arguments
 
-- `current::Real`: stimulation current [mA]
-- `pad_area::Real`: electrode pad area [cm²]
-- `duration::Int64`: stimulation duration [s]
+- `current::Real`: stimulation current in mA; must be > 0
+- `pad_area::Real`: electrode pad area in cm²; must be > 0
+- `duration::Int64`: stimulation duration in seconds; must be > 0
 
 # Returns
 
 Named tuple:
 
-- `charge::Float64`: charge [C]
-- `current_density::Float64`: current density [A/m²]
-- `charge_density::Float64`: delivered charge density [kC/m²]
+- `charge::Float64`: total delivered charge in C
+- `current_density::Float64`: current density in A/m²
+- `charge_density::Float64`: delivered charge density in kC/m²
+
+# Throws
+
+- `ArgumentError`: if `current`, `pad_area`, or `duration` are ≤ 0
 
 # References
 
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
+
+# See also
+
+[`tacs_dose`](@ref), [`tpcs_dose`](@ref), [`tes_protocol`](@ref)
 """
 function tdcs_dose(;
-        current::Real, pad_area::Real, duration::Int64
-    )::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
+    current::Real,
+    pad_area::Real,
+    duration::Int64
+)::@NamedTuple{
+    charge::Float64,
+    current_density::Float64,
+    charge_density::Float64
+}
 
-    charge = (current / 1_000) * duration
-    current_density = (current / 1_000) / (pad_area / 1_000)
-    charge_density = (charge / 1_000) / (pad_area / 1_000)
+    @assert current  > 0 "current must be > 0."
+    @assert pad_area > 0 "pad_area must be > 0."
+    @assert duration > 0 "duration must be > 0."
 
-    return (charge = charge, current_density = current_density, charge_density = charge_density)
+    # Unit conversions:
+    #   current:   mA → A    (÷ 1_000)
+    #   pad_area:  cm² → m²  (÷ 10_000)   was: ÷ 1_000 (wrong)
+    #   charge:    C  → kC   (÷ 1_000)
+    i_A = current  / 1_000
+    a_m2 = pad_area / 10_000
 
+    # [A × s = C]
+    charge = i_A * duration
+    # [A/m²]
+    current_density = i_A / a_m2
+    # [kC/m²]
+    charge_density  = (charge / 1_000) / a_m2
+
+    return (charge=charge, current_density=current_density, charge_density=charge_density)
 end
 
 """
     tacs_dose(; <keyword arguments>)
 
-Calculate `charge`, `current_density` and `charge_ density` for tACS stimulation.
+Calculate charge, current density, and charge density for tACS stimulation.
+
+The effective current is computed by integrating one cycle of the sinusoidal waveform (including the DC offset) over a 1 ms grid using Simpson's rule, then scaling by the number of cycles.
 
 # Arguments
 
-- `current::Real`: stimulation current (peak to peak) [mA]
-- `pad_area::Real`: electrode pad area [cm²]
-- `duration::Real`: stimulation duration [s]
-- `offset::Real`: current offset [μA]
-- `frequency::Real`: sinus frequency [Hz]
-- `phase::Real`: phase shift [degree]
+- `current::Real`: peak-to-peak stimulation current in mA; must be > 0
+- `pad_area::Real`: electrode pad area in cm²; must be > 0
+- `duration::Real`: stimulation duration in seconds; must be > 0
+- `offset::Real`: DC current offset in μA
+- `frequency::Real`: sinusoidal frequency in Hz; must be > 0
+- `phase::Real`: phase shift in degrees
 
 # Returns
 
 Named tuple:
 
-- `charge::Float64`: charge [C]
-- `current_density::Float64`: current density [A/m²]
-- `charge_density::Float64`: delivered charge density [kC/m²]
+- `charge::Float64`: total delivered charge in C
+- `current_density::Float64`: current density in A/m²
+- `charge_density::Float64`: delivered charge density in kC/m²
+
+# Throws
+
+- `ArgumentError`: if `current`, `pad_area`, `duration`, or `frequency` are ≤ 0
+
+# See also
+
+[`tdcs_dose`](@ref), [`tpcs_dose`](@ref), [`tes_protocol`](@ref)
 """
 function tacs_dose(;
-        current::Real, pad_area::Real, duration::Int64, offset::Real, frequency::Real, phase::Real
-    )::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
+    current::Real,
+    pad_area::Real,
+    duration::Int64,
+    offset::Real,
+    frequency::Real,
+    phase::Real
+)::@NamedTuple{
+    charge::Float64,
+    current_density::Float64,
+    charge_density::Float64
+}
 
-    # calculate sine current along one cycle
+    @assert current > 0 "current must be > 0."
+    @assert pad_area > 0 "pad_area must be > 0."
+    @assert duration > 0 "duration must be > 0."
+    @assert frequency > 0 "frequency must be > 0."
+
+    # integrate the rectified sinusoid over one cycle to get the effective current
     t = collect(0:0.001:1)
-    current = abs.(generate_sine(frequency, t, current, phase) .+ offset)
-    current = simpson(current, t)
+    i_cycle = abs.(generate_sine(frequency, t, current, phase) .+ offset)
+    # effective mA over one cycle
+    eff_current = simpson(i_cycle, t)
 
     cycles = frequency * duration
     _info("Number of cycles: $cycles")
-    _info("Effective current: $current")
+    _info("Effective current: $eff_current mA")
 
-    charge = (current / 1_000) * duration
-    current_density = (current / 1_000) / (pad_area / 1_000)
-    charge_density = (charge / 1_000) / (pad_area / 1_000)
+    # unit conversions: mA → A (÷ 1_000), cm² → m² (÷ 10_000)
+    i_A  = eff_current / 1_000
+    a_m2 = pad_area / 10_000
 
-    return (charge = charge, current_density = current_density, charge_density = charge_density)
+    charge = i_A * duration
+    current_density = i_A / a_m2
+    charge_density = (charge / 1_000) / a_m2
 
+    return (charge=charge, current_density=current_density, charge_density=charge_density)
 end
 
 """
     tpcs_dose(; <keyword arguments>)
 
-Calculate `charge`, `current_density` and `charge_ density` for tPCS stimulation.
+Calculate charge, current density, and charge density for tPCS stimulation.
+
+The effective current is computed as `current × (pw / isi)`, i.e. scaled by the duty cycle.
 
 # Arguments
 
-- `current::Real`: stimulation current (peak to peak) [mA]
-- `pad_area::Real`: electrode pad area [cm²]
-- `duration::Real`: stimulation duration [s]
-- `pw::Real`: pulse width [ms]
-- `isi::Real`: interstimulus interval [ms]
+# Arguments
+- `current::Real`: peak-to-peak stimulation current in mA; must be > 0
+- `pad_area::Real`: electrode pad area in cm²; must be > 0
+- `duration::Real`: stimulation duration in seconds; must be > 0
+- `pw::Real`: pulse width in ms; must be > 0 and < `isi`
+- `isi::Real`: inter-stimulus interval in ms; must be > `pw`
 
 # Returns
 
 Named tuple:
 
-- `charge::Float64`: charge [C]
-- `current_density::Float64`: current density [A/m²]
-- `charge_density::Float64`: delivered charge density [kC/m²]
+- `charge::Float64`: total delivered charge in C
+- `current_density::Float64`: current density in A/m²
+- `charge_density::Float64`: delivered charge density in kC/m²
+
+# Throws
+
+- `ArgumentError`: if `current`, `pad_area`, `duration`, or `pw` are ≤ 0, or if `isi ≤ pw`
+
+# See also
+
+[`tdcs_dose`](@ref), [`tacs_dose`](@ref), [`tes_protocol`](@ref)
 """
 function tpcs_dose(;
-        current::Real, pad_area::Real, duration::Real, pw::Real, isi::Real
-    )::@NamedTuple{charge::Float64, current_density::Float64, charge_density::Float64}
+    current::Real,
+    pad_area::Real,
+    duration::Real,
+    pw::Real,
+    isi::Real
+)::@NamedTuple{
+    charge::Float64,
+    current_density::Float64,
+    charge_density::Float64}
 
+    @assert current > 0 "current must be > 0."
+    @assert pad_area > 0 "pad_area must be > 0."
+    @assert duration > 0 "duration must be > 0."
+    @assert pw > 0 "pw must be > 0."
     @assert isi > pw "isi must be > pw."
 
-    # convert to seconds
-    pw = pw / 1000
-    isi = isi / 1000
+    # convert pulse timings from ms → s
+    pw_s  = pw  / 1_000
+    isi_s = isi / 1_000
 
-    cycles = duration / isi
-
-    # calculate pulse wave current
-    current = current * (pw / isi)
+    cycles = duration / isi_s
+    # duty-cycle–weighted effective current [mA]
+    eff_current = current * (pw_s / isi_s)
     _info("Number of cycles: $cycles")
-    _info("Effective current: $current")
+    _info("Effective current: $eff_current mA")
 
-    charge = (current / 1_000) * duration
-    current_density = (current / 1_000) / (pad_area / 1_000)
-    charge_density = (charge / 1_000) / (pad_area / 1_000)
+    # unit conversions: mA → A (÷ 1_000), cm² → m² (÷ 10_000)
+    i_A = eff_current / 1_000
+    a_m2 = pad_area / 10_000
 
-    return (charge = charge, current_density = current_density, charge_density = charge_density)
+    charge = i_A * duration
+    current_density = i_A / a_m2
+    charge_density = (charge / 1_000) / a_m2
 
+    return (charge=charge, current_density=current_density, charge_density=charge_density)
 end
 
 """
     tes_protocol(; <keyword arguments>)
 
-Create TES (tDCS/tACS/tRNS/tPCS) protocol.
+Create a TES (tDCS/tACS/tRNS/tPCS) stimulation protocol dictionary.
 
 # Arguments
 
-- `type::Symbol`: stimulation type (`:tDCS`, `:tACS`, `:tRNS`, `:tPCS`)
-- `hd::Bool`: high-density electrodes
-- `current::Real`: stimulation current [mA]
-- `frequency::Real=0`: stimulation frequency [mA]
-- `anode_size::Tuple{Int64, Int64}`: anode dimensions [mm]
-- `cathode_size::Tuple{Int64, Int64}`: cathode dimensions [mm]
-- `anode_loc::Symbol`: anode location (according to 10-20 Positioning System)
-- `cathode_loc::Symbol`: cathode location (according to 10-20 Positioning System)
-- `duration::Real`: stimulation duration [s]
-- `ramp_in::Real`: stimulation duration [s]
-- `ramp_out::Real`: stimulation duration [s]
-- `sham::Bool`: protocol includes sham stimulations
+- `type::Symbol`: stimulation type; one of `:tDCS`, `:tACS`, `:tRNS`, `:tPCS`
+- `hd::Bool`: if `true`, use high-density electrodes
+- `current::Real`: stimulation current in mA; must be > 0
+- `frequency::Real=0`: stimulation frequency in Hz; must be > 0 for `:tACS` and `:tRNS`
+- `anode_size::Tuple{Int64, Int64}`: anode dimensions `(width, height)` in mm; both values must be > 0
+- `cathode_size::Tuple{Int64, Int64}`: cathode dimensions `(width, height)` in mm; both values must be > 0
+- `anode_loc::Symbol`: anode location (10-20 Positioning System label)
+- `cathode_loc::Symbol`: cathode location (10-20 Positioning System label)
+- `duration::Real`: stimulation duration in seconds; must be > 0
+- `ramp_in::Real`: ramp-in duration in seconds; must be ≥ 0
+- `ramp_out::Real`: ramp-out duration in seconds; must be ≥ 0
+- `sham::Bool`: if `true`, the protocol includes sham stimulation
 
 # Returns
 
-- `protocol::Dict`
+- `Dict`: protocol dictionary with all stimulation parameters
+
+# Throws
+
+- `ArgumentError`: if any argument fails its validation check
+
+# See also
+
+[`tdcs_dose`](@ref), [`tacs_dose`](@ref), [`tpcs_dose`](@ref)
 """
 function tes_protocol(;
-        type::Symbol,
-        hd::Bool,
-        current::Real,
-        frequency::Real = 0,
-        anode_size::Tuple{Int64, Int64},
-        cathode_size::Tuple{Int64, Int64},
-        anode_loc::Symbol,
-        cathode_loc::Symbol,
-        duration::Real,
-        ramp_in::Real,
-        ramp_out::Real,
-        sham::Bool,
-    )::Dict
+    type::Symbol,
+    hd::Bool,
+    current::Real,
+    frequency::Real = 0,
+    anode_size::Tuple{Int64, Int64},
+    cathode_size::Tuple{Int64, Int64},
+    anode_loc::Symbol,
+    cathode_loc::Symbol,
+    duration::Real,
+    ramp_in::Real,
+    ramp_out::Real,
+    sham::Bool,
+)::Dict
 
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
     @assert current > 0 "current must be > 0 mA."
     if type === :tACS || type === :tRNS
-        @assert frequency > 0 "frequency must be > 0 mA."
+        @assert frequency > 0 "frequency must be > 0 Hz."   # was: "mA" (wrong unit)
     end
-    (anode_size[1] <= 0 || anode_size[2] <= 0) && @error "anode dimensions > 0 mm."
-    (cathode_size[1] <= 0 || cathode_size[2] <= 0) && @error "anode dimensions > 0 mm."
+    @assert anode_size[1] > 0 "anode_size width must be > 0 mm."
+    @assert anode_size[2] > 0 "anode_size height must be > 0 mm."
+    @assert cathode_size[1] > 0 "cathode_size width must be > 0 mm."
+    @assert cathode_size[2] > 0 "cathode_size height must be > 0 mm."
     @assert duration > 0 "duration must be > 0 s."
-    @assert ramp_in >= 0 "ramp_in must be ≥ 0 s."
+    @assert ramp_in  >= 0 "ramp_in must be ≥ 0 s."
     @assert ramp_out >= 0 "ramp_out must be ≥ 0 s."
 
     protocol = Dict(
@@ -182,7 +271,7 @@ function tes_protocol(;
         :hd => hd,
         :current => current,
         :frequency => frequency,
-        :cathode_size => cathode_size,
+        :anode_size => anode_size
         :cathode_size => cathode_size,
         :anode_loc => anode_loc,
         :cathode_loc => cathode_loc,
