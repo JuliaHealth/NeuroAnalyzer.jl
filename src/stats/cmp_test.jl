@@ -3,166 +3,198 @@ export cmp_test
 """
     cmp_test(seg1, seg2; <keyword arguments>)
 
-Compare two vectors. Jarque–Bera is used first to test normality of distribution, next variances are tested using F-test. Finally, paired or non-paired t-test or non-parametric test (Wilcoxon signed rank for paired data; Mann-Whitney U test for non-paired data) is applied. Permutation-based testing is also
+Compare two vectors using an automatically selected or explicitly requested statistical test.
+
+Test selection (when `type = :auto`):
+
+1. Jarque–Bera test is applied to the pooled data to assess normality.
+2. If normal: variances are compared with an F-test; an equal- or unequal-variance t-test (or a paired one-sample t-test) is used.
+3. If non-normal: Wilcoxon signed-rank test (paired) or Mann–Whitney U test (unpaired) is used.
 
 # Arguments
 
-- `s1::AbstractVector`: signal vector
-- `s2::AbstractVector`: signal vector
-- `paired::Bool`
-- `alpha::Float64=0.05`: confidence level
-- `type::Symbol=:auto`
-    - `:auto`: choose test automatically
-    - `:perm`: permutation-based
-    - `:p`: parametric
-    - `:np`: non-parametric
-- `exact::Bool=false`: if true, use exact Wilcoxon test
-- `nperm::Int64=1000`: number of permutation for `:perm` method
-- `verbose::Bool=true`: print detailed output
+- `s1::AbstractVector`: first signal vector
+- `s2::AbstractVector`: second signal vector; must have the same length as `s1` when `paired = true`
+- `paired::Bool`" if `true`, treat the vectors as paired observations"
+- `alpha::Float64=0.05`: significance level; must be in `(0, 1)`
+- `type::Symbol=:auto`: test selection strategy:
+    - `:auto`: choose automatically based on normality and variance tests
+    - `:perm`: permutation-based test
+    - `:p`: force parametric test
+    - `:np`: force non-parametric test
+- `exact::Bool=false`: if `true`, use the exact Wilcoxon signed-rank test (only applies when `type ∈ {:auto, :np}` and `paired = true`)
+- `nperm::Int64=1000`: number of permutations for `type = :perm`; must be ≥ 1
+- `verbose::Bool=true`: if `true`, print test selection and result details
 
 # Returns
 
-For permutation-based test, Named tuple:
+Permutation test (`type = :perm`), named tuple:
 
-- `t::Tuple{perm_diff::Vector{Float64}, obs_diff::Float64}`: test result (permutation difference, observed difference)
-- `p1::Float64`: one-tiled p value
-- `p2::Float64`: two-tiled p value
+- `t::NamedTuple{perm_diff, obs_diff}`: permutation null distribution and observed difference
+- `p1::Float64`: one-tailed p-value
+- `p2::Float64`: two-tailed p-value (`2 × p1`, clamped to 1.0)
 
-Otherwise, Named tuple:
+All other tests, named tuple:
 
-- `t::Union{OneSampleTTest, EqualVarianceTTest, UnequalVarianceTTest, ExactSignedRankTest, ApproximateSignedRankTest, ExactMannWhitneyUTest, ApproximateMannWhitneyUTest}`: statistical test
-- `ts::Tuple{Float64, String}`: test statistic value and name
-- `tc::Tuple{Float64, Float64}`: test statistic confidence interval
+- `t`: the HypothesisTests.jl test object
+- `ts::Tuple{Float64, String}`: test statistic value and its name
+- `tc`: confidence interval of the test statistic (tuple or scalar NaN for non-parametric)
 - `df::Float64`: degrees of freedom
-- `p::Float64`: p value
+- `p::Float64`: two-tailed p-value (clamped to `eps()` if below machine epsilon)
+
+# Throws
+
+- `ArgumentError`: if `type` is invalid, `alpha ∉ (0, 1)`, `nperm < 1`, or `paired = true` with unequal-length vectors
 """
 function cmp_test(
-        s1::AbstractVector,
-        s2::AbstractVector;
-        paired::Bool,
-        alpha::Float64 = 0.05,
-        type::Symbol = :auto,
-        exact::Bool = false,
-        nperm::Int64 = 1000,
-        verbose::Bool = true,
-    )::Union{
-        @NamedTuple{t::OneSampleTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
-        @NamedTuple{
-            t::EqualVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64,
-        },
-        @NamedTuple{
-            t::UnequalVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64,
-        },
-        @NamedTuple{t::ExactSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-        @NamedTuple{
-            t::ApproximateSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64,
-        },
-        @NamedTuple{t::ExactMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-        @NamedTuple{
-            t::ApproximateMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64,
-        },
-        @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64}
-    }
+    s1::AbstractVector,
+    s2::AbstractVector;
+    paired::Bool,
+    alpha::Float64 = 0.05,
+    type::Symbol = :auto,
+    exact::Bool = false,
+    nperm::Int64 = 1000,
+    verbose::Bool = true,
+)::Union{
+    @NamedTuple{t::OneSampleTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
+    @NamedTuple{t::EqualVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
+    @NamedTuple{t::UnequalVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
+    @NamedTuple{t::ExactSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
+    @NamedTuple{t::ApproximateSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
+    @NamedTuple{t::ExactMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
+    @NamedTuple{t::ApproximateMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
+    @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64},
+}
 
     _check_var(type, [:auto, :perm, :p, :np], "type")
-    paired && @assert length(s1) == length(s2) "For paired test both vectors must have the same size."
-    @assert alpha < 1.0 "alpha must be < 1.0."
-    @assert alpha > 0.0 "alpha must be > 0.0."
-    @assert nperm > 0 "nperm must be > 0."
+    @assert alpha > 0.0  "alpha must be > 0."
+    @assert alpha < 1.0  "alpha must be < 1."
+    @assert nperm >= 1   "nperm must be ≥ 1."
+    paired && @assert length(s1) == length(s2) "Paired test requires equal-length vectors."
 
-    # ks = ApproximateTwoSampleKSTest(s1, s2)
+    # --- normality test (Jarque–Bera on pooled data) ---
     jb = JarqueBeraTest([s1; s2])
-    pjb = round(pvalue(jb), digits = 3)
-    jb = round(jb.JB, digits = 3)
-    if pjb < 0.05
-        (verbose && println("Distribution: non-normal (Jarque-Bera test: JB=$jb, p=$pjb)"))
-    else
-        (verbose && println("Distribution: normal (Jarque-Bera test: JB=$jb, p=$pjb)"))
+    pjb = round(pvalue(jb), digits=3)
+    jb_stat = round(jb.JB, digits=3)
+    if verbose
+        dist_label = pjb < alpha ? "non-normal" : "normal"
+        println("Distribution: $dist_label (Jarque-Bera test: JB=$jb_stat, p=$pjb)")
     end
+
     if type !== :perm
-        if (pjb >= alpha && type === :auto) || type === :p
+
+        # --- parametric or non-parametric branch ---
+        use_parametric = (pjb >= alpha && type === :auto) || type === :p
+
+        if use_parametric
+
+            # parametric branch
             if paired
-                verbose && println("Using one sample T-test (paired data)")
-                t = OneSampleTTest(s1, s2)
+
+                verbose && println("Using one-sample T-test (paired data)")
+                t  = OneSampleTTest(s1, s2)
+
             else
+
                 pf = pvalue(VarianceFTest(s1, s2))
                 if pf >= alpha
-                    verbose && println("Using equal variance two samples T-test")
+                    verbose && println("Using equal-variance two-sample T-test")
                     t = EqualVarianceTTest(s1, s2)
                 else
-                    verbose && println("Using unequal variance two samples T-test")
+                    verbose && println("Using unequal-variance two-sample T-test (Welch)")
                     t = UnequalVarianceTTest(s1, s2)
                 end
+
             end
             df = t.df
             ts = t.t
-            tc = confint(t; level = (1 - alpha))
+            tc = confint(t; level=(1 - alpha))
             tn = "t"
-        elseif (pjb < alpha && type === :auto) || type === :np
+
+        else
+
+            # non-parametric branch
             if paired
+
                 if exact
-                    verbose && println("Using exact signed rank (Wilcoxon) test (paired data)")
+                    verbose && println("Using exact Wilcoxon signed-rank test (paired data)")
                     t = ExactSignedRankTest(s1, s2)
                 else
-                    verbose && println("Using signed rank (Wilcoxon) test (paired data)")
+                    verbose && println("Using approximate Wilcoxon signed-rank test (paired data)")
                     t = SignedRankTest(s1, s2)
                 end
                 ts = t.W
                 df = t.n - 1
                 tn = "W"
+
             else
+
                 verbose && println("Using Mann-Whitney U test")
-                t = MannWhitneyUTest(s1, s2)
+                t  = MannWhitneyUTest(s1, s2)
                 ts = t.U
                 df = length(s1) + length(s2) - 2
                 tn = "U"
+
             end
             tc = NaN
+
         end
-    else
-        # combine groups
-        g = [s1; s2]
-        n1 = length(s1)
-        n2 = length(s2)
-        g_idx = [repeat([0], n1); repeat([1], n2)]
-        # permute signals
-        p = randperm(n1 + n2)
-        g = g[p]
-        g_idx = g_idx[p]
-        verbose && println("Group 1 mean: $(round(mean(s1), digits = 3))")
-        verbose && println("Group 2 mean: $(round(mean(s2), digits = 3))")
-        perm_diff = zeros(nperm)
 
-        # initialize progress bar
-        progbar = Progress(nperm, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
-
-        @inbounds for idx in 1:nperm
-            f_idx = randperm(n1 + n2)
-            f_idx[f_idx .< n1 + 1] .= 0
-            f_idx[f_idx .> 0] .= 1
-            perm_diff[idx] = mean(g[f_idx .== 0]) - mean(g[f_idx .== 1])
-
-            # update progress bar
-            progress_bar && next!(progbar)
-        end
-        observed_difference = mean(g[g_idx .== 0]) - mean(g[g_idx .== 1])
-        observed_difference = round(observed_difference, digits = 3)
-    end
-
-    if type !== :perm
         p = pvalue(t)
         p < eps() && (p = eps())
-        return (t = t, ts = (round(ts, digits = 3), tn), tc = round.(tc, digits = 3), df = round(df, digits = 3), p = p)
+        return (
+            t = t,
+            ts = (round(ts, digits=3), tn),
+            tc = round.(tc, digits=3),
+            df = round(df, digits=3),
+            p = p
+        )
+
     else
-        if pjb < alpha
-            verbose && println("H0 has non-normal distribution; p value for JB-test: $pjb")
-            p_one_tailed = sum(perm_diff .> observed_difference) / nperm
-        else
-            z = (observed_difference - mean(perm_diff)) / std(perm_diff)
-            z = round(z, digits = 3)
-            p_one_tailed = 1 - cdf(Distributions.Normal(), abs(z))
+
+        # --- permutation test branch ---
+        n1 = length(s1)
+        n2 = length(s2)
+        g  = [s1; s2]
+
+        verbose && println("Group 1 mean: $(round(mean(s1), digits=3))")
+        verbose && println("Group 2 mean: $(round(mean(s2), digits=3))")
+
+        # observed difference (group 1 − group 2)
+        observed_diff = round(mean(s1) - mean(s2), digits=3)
+
+        # build null distribution by repeatedly shuffling group labels
+        perm_diff = zeros(nperm)
+        progbar   = Progress(nperm, dt=1, barlen=20, color=:white, enabled=progress_bar)
+
+        @inbounds for idx in 1:nperm
+            # random label assignment: first n1 positions → group 0, rest → group 1
+            shuffle_idx = randperm(n1 + n2)
+            perm_diff[idx] = mean(g[shuffle_idx[1:n1]]) - mean(g[shuffle_idx[(n1 + 1):end]])
+            progress_bar && next!(progbar)
         end
-        return (t = (perm_diff = perm_diff, obs_diff = observed_difference), p1 = p_one_tailed, p2 = (p_one_tailed / 2))
+
+        # one-tailed p-value: proportion of permuted differences ≥ observed
+        if pjb < alpha
+            # non-normal: use empirical proportion directly
+            verbose && println("H0 distribution is non-normal (Jarque-Bera p=$pjb); using empirical p-value.")
+            p1 = sum(perm_diff .>= observed_diff) / nperm
+        else
+            # normal null: standardise and use Z-score
+            z  = round((observed_diff - mean(perm_diff)) / std(perm_diff), digits=3)
+            verbose && println("Permutation Z-score: $z")
+            p1 = 1 - cdf(Distributions.Normal(), abs(z))
+        end
+
+        # two-tailed p-value = 2 × one-tailed, clamped to 1.0
+        p2 = min(1.0, 2 * p1)
+
+        return (
+            t  = (perm_diff=perm_diff, obs_diff=observed_diff),
+            p1 = p1,
+            p2 = p2,
+        )
+
     end
 
 end

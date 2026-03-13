@@ -9,68 +9,78 @@ export civ
 """
     cl2z(ci; <keyword arguments>)
 
-Convert confidence level to z score.
+Convert a confidence level to the corresponding Z-score.
 
 # Arguments
 
-- `cl::Float64`: confidence level
-- `twotailed::Bool=true`: one- or two-tailed probability
+- `cl::Float64`: confidence level; must be in `(0, 1)`
+- `twotailed::Bool=true`: if `true`, returns the Z-score for a two-tailed interval, i.e. `z` such that `P(−z ≤ X ≤ z) = cl`; if `false`, returns the Z-score for a one-tailed interval, i.e. `z` such that `P(X ≤ z) = cl`
 
 # Returns
 
-- `z::Float64`
+- `Float64`: critical Z-score
+
+# Throws
+
+- `ArgumentError`: if `cl ∉ (0, 1)`
 
 # Notes
 
-The confidence interval is (-z, +z) if `twotailed=true`; otherwise it is (-∞, -z) on the left and (z, +∞) on the right.
+- Two-tailed (`twotailed=true`): the CI is `(−z, +z)`
+- One-tailed (`twotailed=false`): the CI is `(−∞, z)` (upper bound) or equivalently `(−z, +∞)` (lower bound) depending on direction
+
+# See also
+
+[`cim`](@ref), [`cip`](@ref), [`cir`](@ref)
 """
 function cl2z(cl::Float64; twotailed::Bool = true)::Float64
 
     _bin(cl, (0.0, 1.0), "cl")
-
     d = Distributions.Normal(0, 1)
-    if twotailed
-        z = quantile(d, 1 - ((1 - cl) / 2))
-    else
-        z = quantile(d, cl)
-    end
 
-    return z
+    return twotailed ? quantile(d, 1 - (1 - cl) / 2) : quantile(d, cl)
 
 end
 
 """
     cim(x; <keyword arguments>)
 
-Calculate confidence interval for the mean.
+Calculate the confidence interval for the mean.
 
 # Arguments
 
-- `x::AbstractVector`
-- `cl::Float64=0.95`: confidence level
-- `d::Symbol=:t`: distribution used for critical value calculation (`:z` or `:t`)
-- `twotailed::Bool=true`: interval type, use `twotailed=false` to calculate lower and upper bound separately (both will be returned)
+- `x::AbstractVector`: data vector; must contain at least 2 elements
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
+- `d::Symbol=:t`: istribution used for the critical value; `:t` (Student's t, recommended for small samples) or `:z` (standard normal)
+- `twotailed::Bool=true`: if `true`, compute a two-sided interval
 
 # Returns
 
-- `cim::Tuple{Float64, Float64}`: lower and upper bound
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+
+# Throws
+
+- `ArgumentError`: if `cl ∉ (0, 1)`, `d ∉ {:t, :z}`, or `length(x) < 2`
+
+# See also
+
+[`cimd`](@ref), [`cis`](@ref), [`civ`](@ref)
 """
 function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::Bool = true)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
     _check_var(d, [:t, :z], "d")
+    @assert length(x) >= 2 "x must contain at least 2 elements."
 
-    n = length(x)
-    m = mean(x)
+    n  = length(x)
+    m  = mean(x)
+    s  = sem(x)
     df = n - 1
-    s = sem(x)
 
-    if d === :t
-        tc = crit_t(df, 1 - cl; twotailed = twotailed)
-        e = tc * s
+    e = if d === :t
+        crit_t(df, 1 - cl; twotailed=twotailed) * s
     else
-        zc = crit_z(1 - cl; twotailed = twotailed)
-        e = zc * s
+        crit_z(1 - cl; twotailed=twotailed) * s
     end
 
     return (m - e, m + e)
@@ -80,141 +90,195 @@ end
 """
     cimd(x; <keyword arguments>)
 
-Calculate confidence interval for the median.
+Calculate the confidence interval for the median of a 1-D vector.
+
+Uses the order-statistic method: the CI bounds are `x[j]` and `x[k]` where `j` and `k` are quantile-derived indices from the sorted data.
 
 # Arguments
 
-- `x::AbstractVector`
-- `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`: data vector; must contain enough elements so that the derived indices `j` and `k` fall within `[1, n]`
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
 
-- `cimd::Tuple{Float64, Float64}`
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+
+# Throws
+- `ArgumentError`: if `cl ∉ (0, 1)` or the sample is too small for the requested confidence level
+
+# See also
+
+[`cim`](@ref), [`cimd(::AbstractArray)`](@ref)
 """
 function cimd(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
 
-    x_new = sort(x)
-    n = length(x)
-    q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
-    z = cl2z(cl)
-    j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
-    k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
+    x_sorted = sort(x)
+    n  = length(x)
+    # median quantile
+    q  = 0.5
+    z  = cl2z(cl)
+    # half-width of the index interval
+    hw = z * sqrt(n * q * (1 - q))
 
-    return (x_new[j], x_new[k])
+    # clamp to avoid index < 1
+    j  = max(1, ceil(Int64, n * q - hw))
+    # clamp to avoid index > n
+    k  = min(n, ceil(Int64, n * q + hw))
+
+    return (x_sorted[j], x_sorted[k])
 
 end
 
 """
     cimd(x; <keyword arguments>)
 
-Calculate confidence interval for the median.
+Calculate the confidence interval for the median of a multi-dimensional array.
+
+Column medians are computed, sorted, and the order-statistic CI method is applied across columns.
 
 # Arguments
 
-- `x::AbstractArray`
-- `cl::Float64=0.95`: confidence level
+- `x::AbstractArray`: data array; medians are taken along `dims=1` (across rows per column); must have at least 2 columns
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
 
-- `cimd::Tuple{Float64, Float64}`
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+
+# Throws
+
+- `ArgumentError`: if `cl ∉ (0, 1)` or `size(x, 2) < 2`
+
+# See also
+
+[`cimd(::AbstractVector)`](@ref)
 """
 function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
+    @assert size(x, 2) >= 2 "x must have at least 2 columns."
 
-    x_new = sort(vec(median(x; dims = 1)))
+    x_sorted = sort(vec(median(x; dims=1)))
     n = size(x, 2)
-    q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
+    # the quantile of interest; for a median, we will use q = 0.5
+    q = 0.5
     z = cl2z(cl)
-    j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
-    k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
+    hw = z * sqrt(n * q * (1 - q))
 
-    return (x_new[j], x_new[k])
+    j = max(1, ceil(Int64, n * q - hw))
+    k = min(n, ceil(Int64, n * q + hw))
 
+    return (x_sorted[j], x_sorted[k])
 end
 
 """
     cip(p, n; <keyword arguments>)
 
-Calculate confidence interval for the proportion.
+Calculate the confidence interval for a proportion using the normal approximation (Wald interval).
 
 # Arguments
 
-- `p::Float64`: proportion
-- `n::Int64`: sample size
-- `cl::Float64=0.95`: confidence level
+- `p::Float64`: sample proportion; must be in `[0, 1]`
+- `n::Int64`: sample size; must be ≥ 1
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
 
-- `cip::Tuple{Float64, Float64}`
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+
+# Throws
+- `ArgumentError`: if `p ∉ [0, 1]`, `n < 1`, or `cl ∉ (0, 1)`
+
+# See also
+
+[`cim`](@ref), [`cir`](@ref)
 """
 function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
+    _in(p, (0.0, 1.0), "p")
+    @assert n >= 1 "n must be ≥ 1."
 
-    z = cl2z(cl)
-    ci_l = (p - z * sqrt((p * (1 - p)) / n))
-    ci_u = (p + z * sqrt((p * (1 - p)) / n))
-
-    return (ci_l, ci_u)
+    z= cl2z(cl)
+    hw= z * sqrt((p * (1 - p)) / n)
+    return (p - hw, p + hw)
 
 end
 
 """
     cir(x, y; <keyword arguments>)
 
-Calculate confidence interval for the correlation coefficient.
+Calculate the confidence interval for a Pearson correlation coefficient computed from two vectors, using Fisher's Z transformation.
 
 # Arguments
 
-- `x::AbstractVector`
-- `y::AbstractVector`
-- `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`: first data vector; must have the same length as `y` and length > 3
+- `y::AbstractVector`: second data vector
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
 
-- `cir::Tuple{Float64, Float64}`
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+
+# Throws
+
+- `ArgumentError`: if lengths differ, `length(x) ≤ 3`, or `cl ∉ (0, 1)`
+
+# See also
+
+[`cir(; r, n, cl)`](@ref), [`cim`](@ref)
 """
 function cir(x::AbstractVector, y::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
-    @assert length(x) == length(y) "Lengths of x and y must be equal."
-    @assert length(x) > 3 "Lengths of x and y must be > 3."
+    @assert length(x) == length(y) "x and y must have the same length."
+    @assert length(x) > 3 "length(x) must be > 3 for Fisher's Z transform."
 
-    n = length(x)
-    r = cor(x, y)
-
-    return cir(; r = r, n = n, cl = cl)
+    return cir(; r=cor(x, y), n=length(x), cl=cl)
 
 end
 
 """
     cir(; <keyword arguments>)
 
-Calculate confidence interval for the correlation coefficient.
+Calculate the confidence interval for a Pearson correlation coefficient using Fisher's Z transformation.
+
+Transforms `r` to `z = arctanh(r)`, applies the normal CI, then back-transforms with `tanh`.
 
 # Arguments
 
-- `r::Float64`: correlation coefficient
-- `n::Int64`: number of observations
-- `cl::Float64=0.95`: confidence level
+- `r::Float64`: Pearson correlation coefficient; must be in `(−1, 1)`
+- `n::Int64`: number of observations; must be > 3
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
 
-- `cir::Tuple{Float64, Float64}`
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)` in correlation units
+
+# Throws
+
+- `ArgumentError`: if `r ∉ (−1, 1)`, `n ≤ 3`, or `cl ∉ (0, 1)`
+
+# See also
+
+[`cir(::AbstractVector, ::AbstractVector)`](@ref)
 """
 function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
     _in(r, (-1.0, 1.0), "r")
-    @assert n > 0 "n must be > 0."
+    @assert n > 3 "n must be > 3 for Fisher's Z transform."
 
-    z_r = 1 / sqrt(n - 3)
+    # standard error of Fisher's Z
+    se = 1 / sqrt(n - 3)
+    # Fisher Z transform: arctanh(r)
     z_score = rfz(r)
-    ci_l = tanh(z_score - (z_r * cl2z(cl)))
-    ci_u = tanh(z_score + (z_r * cl2z(cl)))
+    z_crit  = cl2z(cl)
+
+    ci_l = tanh(z_score - z_crit * se)
+    ci_u = tanh(z_score + z_crit * se)
 
     return (ci_l, ci_u)
 
@@ -223,59 +287,81 @@ end
 """
     cis(x; <keyword arguments>)
 
-Calculate confidence interval for the standard deviation.
+Calculate the confidence interval for the standard deviation using the chi-squared distribution.
 
 # Arguments
 
-- `x::AbstractVector`
-- `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`: data vector; must contain at least 2 elements
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
 
-- `cis::Tuple{Float64, Float64}`: lower and upper bound
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+
+# Throws
+
+- `ArgumentError`: if `cl ∉ (0, 1)` or `length(x) < 2`
+
+# See also
+
+[`civ`](@ref), [`cim`](@ref)
 """
 function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
+    @assert length(x) >= 2 "x must contain at least 2 elements."
 
     α = 1 - cl
     s = std(x)
     n = length(x)
     df = n - 1
 
-    chi1_crit = crit_chi(df, 1 - α / 2)
-    chi2_crit = crit_chi(df, α / 2)
+    # upper chi² critical value (lower SD bound)
+    chi_l = crit_chi(df, 1 - α / 2)
+    # lower chi² critical value (upper SD bound)
+    chi_u = crit_chi(df, α / 2)
 
-    return (sqrt(((n - 1) * s^2) / chi1_crit), sqrt(((n - 1) * s^2) / chi2_crit))
+    return (sqrt((df * s^2) / chi_l), sqrt((df * s^2) / chi_u))
 
 end
 
 """
     civ(x; <keyword arguments>)
 
-Calculate confidence interval for the variance.
+Calculate the confidence interval for the variance using the chi-squared distribution.
 
 # Arguments
 
-- `x::AbstractVector`
-- `cl::Float64=0.95`: confidence level
+- `x::AbstractVector`: data vector; must contain at least 2 elements
+- `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
 
-- `civ::Tuple{Float64, Float64}`: lower and upper bound
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+
+# Throws
+
+- `ArgumentError`: if `cl ∉ (0, 1)` or `length(x) < 2`
+
+# See also
+
+[`cis`](@ref), [`cim`](@ref)
 """
 function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
+    @assert length(x) >= 2 "x must contain at least 2 elements."
 
     α = 1 - cl
     v = var(x)
     n = length(x)
     df = n - 1
 
-    chi1_crit = crit_chi(df, 1 - α / 2)
-    chi2_crit = crit_chi(df, α / 2)
+    # upper chi² critical value (lower variance bound)
+    chi_l = crit_chi(df, 1 - α / 2)
+    # lower chi² critical value (upper variance bound)
+    chi_u = crit_chi(df, α / 2)
 
-    return (((n - 1) * v) / chi1_crit, ((n - 1) * v) / chi2_crit)
+    return ((df * v) / chi_l, (df * v) / chi_u)
 
 end

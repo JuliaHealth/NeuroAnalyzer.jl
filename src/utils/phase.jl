@@ -26,6 +26,7 @@ For the unwrapped phase (suitable for differentiating to obtain instantaneous fr
 function phases(s::AbstractVector)::Vector{Float64}
 
     @assert length(s) > 0 "s must not be empty."
+
     # DSP.hilbert() returns the analytic signal z = s + i·H(s)
     # Base.angle(z) = atan(imag(z), real(z)) gives the wrapped instantaneous phase
     return Base.angle.(DSP.hilbert(s))
