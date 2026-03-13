@@ -6,77 +6,106 @@ export stdp
 """
     efs(x1, x2)
 
-Calculate effect sizes.
+Calculate effect size measures for two independent samples.
 
 # Arguments
 
-- `x1::AbstractVector`
-- `x2::AbstractVector`
+- `x1::AbstractVector`: first sample; must contain ≥ 2 elements with non-zero SD
+- `x2::AbstractVector`: second sample; must contain ≥ 2 elements with non-zero SD
 
 # Returns
 
 Named tuple:
 
-- `d::Float64`: Cohen's d
-- `g::Float64`: Hedges g, uses maximum likelihood estimator by Hedges and Olkin
-- `Δ::Float64`: Glass' Δ
+- `d::Float64`: Cohen's d (pooled SD denominator, unbiased for equal n)
+- `g::Float64`: Hedges' g (maximum-likelihood pooled SD; less biased for small n)
+- `Δ::Float64`: Glass' Δ (uses SD of `x2` as the denominator; preferred when groups have different variances)
+
+# Throws
+
+- `ArgumentError`: if either vector has fewer than 2 elements or zero SD
+
+# See also
+
+[`stdp`](@ref), [`efs_p1g`](@ref), [`efs_p2g`](@ref)
 """
 function efs(x1::AbstractVector, x2::AbstractVector)::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
 
-    @assert std(x1) != 0 "std(x1) must not be equal 0."
-    @assert std(x2) != 0 "std(x2) must not be equal 0."
+    @assert length(x1) >= 2 "x1 must contain at least 2 elements."
+    @assert length(x2) >= 2 "x2 must contain at least 2 elements."
+    @assert std(x1) != 0 "std(x1) must not be zero."
+    @assert std(x2) != 0 "std(x2) must not be zero."
 
-    d = (mean(x1) - mean(x2)) / stdp(x1, x2; type = :cohen)
-    g = (mean(x1) - mean(x2)) / stdp(x1, x2; type = :hedges)
-    Δ = (mean(x1) - mean(x2)) / std(x2)
+    Δm = mean(x1) - mean(x2)
 
-    return (d = d, g = g, Δ = Δ)
+    d  = Δm / stdp(x1, x2; type=:cohen)
+    g  = Δm / stdp(x1, x2; type=:hedges)
+    Δ  = Δm / std(x2)
+
+    return (d=d, g=g, Δ=Δ)
 
 end
 
 """
     efs_p1g(p)
 
-Calculate Cohen's h effect size for one proportion.
+Calculate Cohen's h arcsine transformation for a single proportion.
+
+Computes the arcsine-transformed proportion `φ = 2 × arcsin(√p)`, which stabilizes the variance of a binomial proportion.
 
 # Arguments
 
-- `p::Float64`: proportion
+- `p::Float64`: proportion; must be in `[0, 1]`
 
 # Returns
 
-- `h::Float64`
+- `Float64`: transformed value `φ = 2 × arcsin(√p)`
+
+# Throws
+
+- `ArgumentError`: if `p ∉ [0, 1]`
+
+# See also
+
+[`efs_p2g`](@ref), [`efs`](@ref)
 """
 function efs_p1g(p::Float64)::Float64
 
     _in(p, (0.0, 1.0), "p")
 
-    h = 2 * asin(sqrt(p))
-
-    return h
+    return 2 * asin(sqrt(p))
 
 end
 
 """
     efs_p2g(p1, p2; nd)
 
-Calculate Cohen's h effect size for two proportions `p1` and `p2`.
+Calculate Cohen's h effect size for two independent proportions.
+
+Computed as `h = 2arcsin(√p1) − 2arcsin(√p2)`. The two proportions are **independent** and do not need to sum to 1.
 
 # Arguments
 
-- `p1::Float64`: 1st proportion, e.g. 0.7
-- `p2::Float64`: 2nd proportion, e.g. 0.3
-- `nd::Bool=false`: if true, calculate non-directional h value
+- `p1::Float64`: first proportion; must be in `[0, 1]`
+- `p2::Float64`: second proportion; must be in `[0, 1]`
+- `nd::Bool=false`: if `true`, return `|h|` (non-directional effect size)
 
 # Returns
 
-- `h::Float64`
+- `Float64`: Cohen's h (signed, or absolute if `nd=true`)
+
+# Throws
+
+- `ArgumentError`: if `p1 ∉ [0, 1]` or `p2 ∉ [0, 1]`
+
+# See also
+
+[`efs_p1g`](@ref), [`efs`](@ref)
 """
 function efs_p2g(p1::Float64, p2::Float64; nd::Bool = false)::Float64
 
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    @assert p1 + p2 == 1.0 "p1 and p1 must add to 1.0."
 
     h = 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
 
@@ -87,72 +116,87 @@ end
 """
     stdp(x1, x2; <keyword arguments>)
 
-Calculate pooled standard deviation.
+Calculate the pooled standard deviation from two sample vectors.
 
 # Arguments
-
-- `x1::AbstractVector`
-- `x2::AbstractVector`
-- `type::Symbol=:cohen`: use Cohen's equation (`:cohen`) or maximum likelihood estimator by Hedges and Olkin (`:hedges`)
+- `x1::AbstractVector`: first sample; must contain ≥ 2 elements
+- `x2::AbstractVector`: second sample; must contain ≥ 2 elements
+- `type::Symbol=:cohen`: pooling method:
+    - `:cohen`: `√(((n1−1)s1² + (n2−1)s2²) / (n1+n2−2))`; requires `n1+n2 > 2`
+    - `:hedges`: `√(((n1−1)s1² + (n2−1)s2²) / (n1+n2))` (MLE; slightly biased downward)
 
 # Returns
 
-- `sp::Float64`
+- `Float64`: pooled standard deviation
+
+# Throws
+
+- `ArgumentError`: if either vector has fewer than 2 elements, `type` is invalid, or `type = :cohen` with `n1 + n2 ≤ 2`
+
+# See also
+
+[`stdp(::Real, ::Real, ::Int64, ::Int64)`](@ref), [`stdp(::Real, ::Real)`](@ref), [`efs`](@ref)
 """
 function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol = :cohen)::Float64
 
     @assert length(x1) > 0 "Length of x1 cannot be 0."
-    @assert length(x2) > 0 "Length of x2 cannot be 0."
+    @assert length(x1) >= 2 "x1 must contain at least 2 elements."
+    @assert length(x2) >= 2 "x2 must contain at least 2 elements."
     _check_var(type, [:cohen, :hedges], "type")
-    type === :cohen &&
-        (@assert length(x1) + length(x2) > 2 "For :cohen equation length of x1 + length of x2 must be > 2.")
 
-    s1 = std(x1)
-    s2 = std(x2)
-    n1 = length(x1)
-    n2 = length(x2)
+    n1, n2 = length(x1), length(x2)
+    s1, s2 = std(x1), std(x2)
 
     if type === :cohen
-        sp = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2 - 2))
-    else
-        sp = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2))
+        @assert n1 + n2 > 2 "For :cohen, n1 + n2 must be > 2."
+        return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2 - 2))
+    elseif type === :hedges
+        return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2))
     end
-
-    return sp
 
 end
 
 """
     stdp(s1, s2, n1, n2; <keyword arguments>)
 
-Calculate pooled standard deviation when number of subjects in groups are different.
+Calculate the pooled standard deviation from summary statistics when group sizes differ.
 
 # Arguments
 
-- `s1::Real`
-- `s2::Real`
-- `n1::Int64`
-- `n2::Int64`
-- `type::Symbol=:cohen`: use Cohen's equation (`:cohen`) or maximum likelihood estimator by Hedges and Olkin (`:hedges`)
+- `s1::Real`: standard deviation of group 1; must be ≥ 0
+- `s2::Real`: standard deviation of group 2; must be ≥ 0
+- `n1::Int64`: sample size of group 1; must be ≥ 2
+- `n2::Int64`: sample size of group 2; must be ≥ 2
+- `type::Symbol=:cohen`: pooling method:
+    - `:cohen`: `√(((n1−1)s1² + (n2−1)s2²) / (n1+n2−2))`; requires `n1+n2 > 2`
+    - `:hedges`: `√(((n1−1)s1² + (n2−1)s2²) / (n1+n2))` (MLE; slightly biased downward)
 
 # Returns
 
-- `ps::Float64`
+- `Float64`: pooled standard deviation
+
+# Throws
+
+- `ArgumentError`: if `s1 < 0`, `s2 < 0`, `n1 < 2`, `n2 < 2`, `type` is invalid, or `:cohen` with `n1 + n2 ≤ 2`
+
+# See also
+
+[`stdp(::AbstractVector, ::AbstractVector)`](@ref), [`stdp(::Real, ::Real)`](@ref)
 """
 function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol = :cohen)::Float64
 
-    @assert n1 > 0 "n1 must be > 0."
-    @assert n2 > 0 "n2 must be > 0."
+    @assert s1 >= 0 "s1 must be ≥ 0."
+    @assert s2 >= 0 "s2 must be ≥ 0."
+    @assert n1 >= 2 "n1 must be ≥ 2."
+    @assert n2 >= 2 "n2 must be ≥ 2."
     _check_var(type, [:cohen, :hedges], "type")
-    type === :cohen && (@assert n1 + n2 > 2 "For :cohen equation n1 + n2 must be > 2.")
 
     if type === :cohen
-        ps = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2 - 2))
-    else
-        ps = sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2)) / (n1 + n2))
+        @assert n1 + n2 > 2 "For :cohen, n1 + n2 must be > 2."
+        return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2 - 2))
+    elseif type === :hedges
+        return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2))
     end
-
-    return ps
 
 end
 
@@ -160,21 +204,32 @@ end
 """
     stdp(s1, s2)
 
-Calculate pooled standard deviation when number of subjects in groups are equal.
+Calculate the pooled standard deviation when both groups have equal size.
+
+Computed as `√((s1² + s2²) / 2)`.
 
 # Arguments
 
-- `s1::Real`
-- `s2::Real`
+- `s1::Real`: standard deviation of group 1; must be ≥ 0
+- `s2::Real`: standard deviation of group 2; must be ≥ 0
 
 # Returns
 
-- `ps::Float64`
+- `Float64`: pooled standard deviation
+
+# Throws
+
+- `ArgumentError`: if `s1 < 0` or `s2 < 0`
+
+# See also
+
+[`stdp(::AbstractVector, ::AbstractVector)`](@ref), [`stdp(::Real, ::Real, ::Int64, ::Int64)`](@ref)
 """
 function stdp(s1::Real, s2::Real)::Float64
 
-    ps = sqrt((s1^2 + s2^2) / 2)
+    @assert s1 >= 0 "s1 must be ≥ 0."
+    @assert s2 >= 0 "s2 must be ≥ 0."
 
-    return ps
+    return sqrt((s1^2 + s2^2) / 2)
 
 end
