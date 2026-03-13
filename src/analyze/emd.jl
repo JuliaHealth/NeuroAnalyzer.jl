@@ -135,6 +135,7 @@ function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real = 0.
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad")[1] : get_channel(obj, ch = ch, exclude = "")[1]
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     _check_epochs(obj, ep)
 

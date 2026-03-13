@@ -40,7 +40,7 @@ function artrem_cwd(
     _check_tuple(fseg, (f[1], f[end]), "fseg")
 
     # perform continuous wavelet transformation
-    s_new = cwd(s; wt = wt)
+    s_new = cwd(s, wt = wt)
 
     # locate artifact
     f_idx1 = vsearch(fseg[1], f)
@@ -92,13 +92,20 @@ function artrem_cwd(
 
     ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)
     _log_off()
-    obj_new.data[ch, :, ep] = @views artrem_cwd(
-        obj.data[ch, :, ep], obj.epoch_time, fs = sr(obj), wt = wt, tseg = tseg, fseg = fseg, type = type
+    obj_new.data[ch, :, ep] = artrem_cwd(
+        @view(obj.data[ch, :, ep]),
+        obj.epoch_time,
+        fs = sr(obj),
+        wt = wt,
+        tseg = tseg,
+        fseg = fseg,
+        type = type
     )
     _log_on()
     push!(obj_new.history, "artrem_cwd(OBJ, ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)")

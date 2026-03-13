@@ -272,7 +272,8 @@ function trtm(
     _check_epochs(obj, ep)
     ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
-    return Matrix(obj.data[ch[1], :, ep]')
+    return Matrix(obj.data[ch, :, ep]')
 
 end

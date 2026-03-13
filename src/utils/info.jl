@@ -537,6 +537,7 @@ function channel_info(
 
     ch = get_channel(obj, ch=ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     rec = obj.header.recording
     local chi::String

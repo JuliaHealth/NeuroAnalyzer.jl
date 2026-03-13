@@ -301,6 +301,7 @@ function channel2marker(
 
     ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     stim_ch = get_channel(obj, type = "mrk")
 

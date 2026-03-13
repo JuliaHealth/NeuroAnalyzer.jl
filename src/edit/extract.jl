@@ -23,6 +23,7 @@ function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3
 
     ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     d = reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
 

@@ -42,9 +42,10 @@ function edit_locs(
 
     ch = get_channel(obj_new; ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
-    
+    ch = ch[1]
+
     obj_new = deepcopy(obj)
-    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])[1]
+    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
 
     @assert length(loc_idx) > 0 "$(labels(obj)[ch]) not found in obj.locs labels."
 

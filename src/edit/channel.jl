@@ -102,10 +102,11 @@ function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
     ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     cht = obj.header.recording[:channel_type][ch]
 
-    return cht[1]
+    return cht
 
 end
 
@@ -135,6 +136,7 @@ function set_channel_type(
 
     ch = get_channel(ch, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -258,6 +260,7 @@ function edit_channel(
     @assert value !== nothing "value cannot be empty."
     ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     _check_var(field, [:channel_type, :label], "field")
 
@@ -325,6 +328,7 @@ function replace_channel(
 
     ch = get_channel(obj, ch = ch)
     @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    ch = ch[1]
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = s
