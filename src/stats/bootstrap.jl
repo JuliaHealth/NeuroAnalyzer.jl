@@ -148,6 +148,7 @@ function bootstrap_stat(
     progbar = Progress(n1, dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for idx1 in 1:n1
+
         # draw n2 epochs with replacement and average to one trace
         s_tmp = zeros(tp_n, n2)
         for idx2 in 1:n2
@@ -164,6 +165,7 @@ function bootstrap_stat(
         end
 
         progress_bar && next!(progbar)
+
     end
 
     return out
