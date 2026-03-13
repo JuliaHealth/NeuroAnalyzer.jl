@@ -75,7 +75,7 @@ function band_power(
     dx = frq[2] - frq[1]
 
     # integrate
-    bp = simpson(@view(pow[f1_idx:f2_idx]), @view(frq[f1_idx:f2_idx]), dx = dx)
+    bp = Simpson.simpson(@view(pow[f1_idx:f2_idx]), @view(frq[f1_idx:f2_idx]), dx = dx)
 
     return bp
 
