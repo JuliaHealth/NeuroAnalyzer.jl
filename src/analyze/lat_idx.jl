@@ -34,7 +34,7 @@ Hemisphere channels are detected automatically via `channel_pick()`.
 
 # Returns
 
-- `lidx::Float64`: lateralization index (positive = right-dominant)
+- `Float64`: lateralization index (positive = right-dominant)
 """
 function lat_idx(
     obj::NeuroAnalyzer.NEURO;
@@ -68,7 +68,7 @@ function lat_idx(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
 
     _log_off()
@@ -103,13 +103,6 @@ function lat_idx(
     p_left  = vec(mean(p_left,  dims = 1))
     p_right = vec(mean(p_right, dims = 1))
 
-    # average across epochs
-    size(p_left, 3) > 1 && (p_left = mean(p_left, dims = 3))
-    size(p_right, 3) > 1 && (p_right = mean(p_right, dims = 3))
-    # average across channels
-    p_left = mean(p_left, dims = 1)
-    p_right = mean(p_right, dims = 1)
-
     # extract power at the requested frequency or frequency range
     if frq isa Real
         frq_idx = vsearch(frq, f)
@@ -123,8 +116,6 @@ function lat_idx(
         p_right_val = mean(@view(p_right[frq_idx1:frq_idx2]))
     end
 
-    lidx = log(p_right / p_left)
-
-    return lidx
+    return log(p_left_val / p_right_val)
 
 end
