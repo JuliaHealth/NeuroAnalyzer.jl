@@ -92,10 +92,10 @@ function plot_locs3d(
 
     # prepare plot
     GLMakie.activate!(title = "plot_locs3d()")
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
 
     ax = GLMakie.Axis3(
-        p[1, 1];
+        fig[1, 1];
         xlabel = "X",
         ylabel = "Y",
         zlabel = "Z",
@@ -191,7 +191,7 @@ function plot_locs3d(
         end
     end
 
-    on(events(p).keyboardbutton) do event
+    on(events(fig).keyboardbutton) do event
         if event.action == Keyboard.press
             new_pov = (0, 0)
             event.key == Keyboard.home && (new_pov = (20, 45))
@@ -203,7 +203,7 @@ function plot_locs3d(
             if event.key == Keyboard.s
                 save_dialog("Pick an image file", nothing, ["*.png"]) do file_name
                     if file_name != ""
-                        GLMakie.save(file_name, p.scene)
+                        GLMakie.save(file_name, fig.scene)
                         @info("Image saved as $file_name")
                     end
                 end
@@ -215,9 +215,9 @@ function plot_locs3d(
         end
     end
 
-    gui && wait(display(p))
+    gui && wait(display(fig))
 
-    return p
+    return fig
 
 end
 
@@ -272,7 +272,7 @@ function plot_locs3d(
         sch = _find_bylabel(locs, sch)
     end
 
-    p = plot_locs3d(
+    fig = plot_locs3d(
         locs;
         ch = ch,
         sch = sch,
@@ -286,6 +286,6 @@ function plot_locs3d(
         gui = gui,
     )
 
-    return p
+    return fig
 
 end

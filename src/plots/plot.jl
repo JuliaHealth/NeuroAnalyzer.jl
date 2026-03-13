@@ -43,7 +43,7 @@ Plot signal.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot(
         obj::NeuroAnalyzer.NEURO;
@@ -81,7 +81,7 @@ function plot(
     n_epochs > nepochs(obj) && (n_epochs = nepochs(obj))
 
     if datatype(obj) in ["erp", "erf"]
-        p = plot_erp(
+        fig = plot_erp(
             obj,
             ch = ch,
             tm = tm,
@@ -104,7 +104,7 @@ function plot(
             gui = gui,
         )
     elseif datatype(obj) == "mep"
-        p = plot_mep(
+        fig = plot_mep(
             obj,
             ch = ch,
             xlabel = xlabel,
@@ -126,7 +126,7 @@ function plot(
         )
     else
         if nepochs(obj) == 1
-            p = plot_cont(
+            fig = plot_cont(
                 obj,
                 ch = ch,
                 seg = seg,
@@ -146,7 +146,7 @@ function plot(
                 gui = gui,
             )
         else
-            p = plot_ep(
+            fig = plot_ep(
                 obj,
                 ch = ch,
                 ep = ep,
@@ -168,7 +168,7 @@ function plot(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -196,7 +196,7 @@ Plot signal.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot(
         obj1::NeuroAnalyzer.NEURO,
@@ -217,7 +217,7 @@ function plot(
     @assert datatype(obj2) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
     @assert nepochs(obj1) == 1 "This function works for continuous EEG and MEG objects."
 
-    p = plot_cont(
+    fig = plot_cont(
         obj1,
         obj2;
         ch = ch,
@@ -232,7 +232,7 @@ function plot(
         gui = gui,
     )
 
-    return p
+    return fig
 
 end
 
@@ -253,7 +253,7 @@ Plot continuous signal.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot(
         t::AbstractVector, s::AbstractVector; xlabel::String = "Time [s]", ylabel::String = "Amplitude", title::String = ""
@@ -264,9 +264,9 @@ function plot(
     # prepare plot
     GLMakie.activate!(title = "plot()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -295,6 +295,6 @@ function plot(
 
     GLMakie.lines!(ax, t, s, color = :black)
 
-    return p
+    return fig
 
 end

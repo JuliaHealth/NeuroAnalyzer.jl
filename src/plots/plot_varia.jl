@@ -39,7 +39,7 @@ Plot matrix.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_matrix(
     m::Matrix{<:Real};
@@ -65,9 +65,9 @@ function plot_matrix(
     # prepare plot
     GLMakie.activate!(title = "plot_matrix()")
     plot_size = (800, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -93,10 +93,10 @@ function plot_matrix(
 
     hm = GLMakie.heatmap!(m'; colormap = pal)
     if cb
-        Colorbar(p[1, 2], hm; label = cb_title, labelsize = 16)
+        Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
     end
 
-    return p
+    return fig
 
 end
 
@@ -115,7 +115,7 @@ Plot cross/auto-covariance/correlation.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_xac(
     m::AbstractVector,
@@ -128,9 +128,9 @@ function plot_xac(
     # prepare plot
     GLMakie.activate!(title = "plot_xac()")
     plot_size = (800, 300)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -153,7 +153,7 @@ function plot_xac(
 
     GLMakie.lines!(lags, m; linewidth = 1, color = :black)
 
-    return p
+    return fig
 
 end
 
@@ -177,7 +177,7 @@ Plot histogram.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_histogram(
     s::AbstractVector,
@@ -222,9 +222,9 @@ function plot_histogram(
     # prepare plot
     GLMakie.activate!(title = "plot_histogram()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -245,7 +245,7 @@ function plot_histogram(
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
-    GLMakie.hist!(s; bins = bins, colormap = pal, strokecolor = :black, color = :grey, alpha = 0.5)
+    GLMakie.hist!(s, bins = bins, colormap = pal, strokecolor = :black, color = :grey, alpha = 0.5)
 
     draw_mean && (GLMakie.vlines!(round(mean(s), digits = 2); linestyle = :dot, color = :black, label = "mean"))
     draw_median && (GLMakie.vlines!(round(median(s), digits = 2); linestyle = :dash, color = :grey, label = "median"))
@@ -263,7 +263,7 @@ function plot_histogram(
 
     (draw_median || draw_mean || !isnoting(x)) && axislegend(; position = :rt)
 
-    return p
+    return fig
 
 end
 
@@ -283,7 +283,7 @@ Bar plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_bar(
     s::AbstractVector;
@@ -308,9 +308,9 @@ function plot_bar(
     # prepare plot
     GLMakie.activate!(title = "plot_bar()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -333,7 +333,7 @@ function plot_bar(
 
     GLMakie.barplot!(s; color = color, colormap = pal)
 
-    return p
+    return fig
 
 end
 
@@ -352,7 +352,7 @@ Line plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_line(
     s::AbstractVector;
@@ -373,9 +373,9 @@ function plot_line(
     # prepare plot
     GLMakie.activate!(title = "plot_line()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -398,7 +398,7 @@ function plot_line(
 
     GLMakie.lines!(eachindex(xlabels), s; color = :black)
 
-    return p
+    return fig
 
 end
 
@@ -419,7 +419,7 @@ Line plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_line(
     s::AbstractArray;
@@ -446,9 +446,9 @@ function plot_line(
     # prepare plot
     GLMakie.activate!(title = "plot_line()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -483,7 +483,7 @@ function plot_line(
 
     axislegend(; position = :rt)
 
-    return p
+    return fig
 
 end
 
@@ -503,7 +503,7 @@ Box plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_box(
     s::AbstractArray;
@@ -529,9 +529,9 @@ function plot_box(
     # prepare plot
     GLMakie.activate!(title = "plot_box()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -554,7 +554,7 @@ function plot_box(
 
     GLMakie.boxplot!(repeat(eachindex(xlabels), size(s, 2)), s[:], color = color, colormap = pal)
 
-    return p
+    return fig
 
 end
 
@@ -574,7 +574,7 @@ Violin plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_violin(
     s::AbstractArray;
@@ -600,9 +600,9 @@ function plot_violin(
     # prepare plot
     GLMakie.activate!(title = "plot_violin()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -632,7 +632,7 @@ function plot_violin(
         color = color,
     )
 
-    return p
+    return fig
 
 end
 
@@ -652,7 +652,7 @@ Dots plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_dots(
     s::AbstractArray;
@@ -676,9 +676,9 @@ function plot_dots(
     # prepare plot
     GLMakie.activate!(title = "plot_dots()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -710,7 +710,7 @@ function plot_dots(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -730,7 +730,7 @@ Plot paired data.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_paired(
     s::AbstractArray;
@@ -753,9 +753,9 @@ function plot_paired(
     # prepare plot
     GLMakie.activate!(title = "plot_paired()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -801,7 +801,7 @@ function plot_paired(
         GLMakie.lines!(eachindex(xlabels), s[:, idx], color = :black, linewidth = 0.5)
     end
 
-    return p
+    return fig
 
 end
 
@@ -820,7 +820,7 @@ Polar plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_polar(
     s::Union{AbstractVector, AbstractMatrix};
@@ -839,9 +839,9 @@ function plot_polar(
     # prepare plot
     GLMakie.activate!(title = "plot_polar()")
     plot_size = (800, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.PolarAxis(
-        p[1, 1],
+        fig[1, 1],
         title = title,
         thetazoomlock = true,
         rzoomlock = true,
@@ -865,7 +865,7 @@ function plot_polar(
         GLMakie.lines!([0, m[1]], [0, m[2]], linewidth = 2, color = mono ? :darkgray : :red)
     end
 
-    return p
+    return fig
 
 end
 
@@ -894,7 +894,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_eros(
     sp::AbstractArray,
@@ -967,9 +967,9 @@ function plot_eros(
         # prepare plot
         GLMakie.activate!(title = "plot_eros()")
         plot_size = (900, 450)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis(
-            p[1, 1],
+            fig[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -996,13 +996,13 @@ function plot_eros(
 
         hm = GLMakie.heatmap!(ax, st, sf, sp[:, :, 1]'; colormap = pal)
         if cb
-            Colorbar(p[1, 2], hm; label = cb_title, labelsize = 16)
+            Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
         end
 
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                GLMakie.vlines!(p[1, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
+                GLMakie.vlines!(fig[1, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
             end
         end
     else
@@ -1011,9 +1011,9 @@ function plot_eros(
         # prepare plot
         GLMakie.activate!(title = "plot_eros()")
         plot_size = (1200, 800)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax1 = GLMakie.Axis(
-            p[1, 1],
+            fig[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1041,7 +1041,7 @@ function plot_eros(
         hm1 = GLMakie.heatmap!(ax1, st, sf, sp[:, :, 1]'; colormap = pal)
 
         if cb
-            Colorbar(p[1, 2], hm1; label = cb_title, labelsize = 16)
+            Colorbar(fig[1, 2], hm1; label = cb_title, labelsize = 16)
         end
 
         # plot 0 v-line
@@ -1050,7 +1050,7 @@ function plot_eros(
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                GLMakie.vlines!(p[1, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
+                GLMakie.vlines!(fig[1, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
             end
         end
 
@@ -1058,7 +1058,7 @@ function plot_eros(
             xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs"
         )
         ax2 = GLMakie.Axis(
-            p[2, 1],
+            fig[2, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1086,7 +1086,7 @@ function plot_eros(
         hm2 = GLMakie.heatmap!(ax2, st, sf, sp[:, :, 2]'; colormap = pal)
 
         if cb
-            Colorbar(p[2, 2], hm2; label = cb_title, labelsize = 16)
+            Colorbar(fig[2, 2], hm2; label = cb_title, labelsize = 16)
         end
 
         # plot 0 v-line
@@ -1095,24 +1095,24 @@ function plot_eros(
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                GLMakie.vlines!(p[2, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
+                GLMakie.vlines!(fig[2, 1], [st[tm[tm_idx]]], color = :black, linewidth = 1)
             end
         end
 
     end
 
-    return p
+    return fig
 
 end
 
 """
-    plot_erop(p, f; <keyword arguments>)
+    plot_erop(fig, f; <keyword arguments>)
 
 Plot ERO (Event-Related Oscillations) power-spectrum.
 
 # Arguments
 
-- `p::AbstractArray`: ERO powers
+- `fig::AbstractArray`: ERO powers
 - `f::AbstractVector`: ERO frequencies
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `xlabel::String="default"`
@@ -1125,7 +1125,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_erop(
     sp::AbstractArray,
@@ -1170,9 +1170,9 @@ function plot_erop(
         # prepare plot
         GLMakie.activate!(title = "plot_erop()")
         plot_size = (900, 450)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis(
-            p[1, 1],
+            fig[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1212,9 +1212,9 @@ function plot_erop(
         # prepare plot
         GLMakie.activate!(title = "plot_erop()")
         plot_size = (1200, 800)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax1 = GLMakie.Axis(
-            p[1, 1],
+            fig[1, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1251,7 +1251,7 @@ function plot_erop(
         end
 
         ax2 = GLMakie.Axis(
-            p[2, 1],
+            fig[2, 1],
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -1278,7 +1278,7 @@ function plot_erop(
         Makie.lines!(ax2, sf, sp[:, 2], color = :black)
     end
 
-    return p
+    return fig
 
 end
 
@@ -1309,7 +1309,7 @@ Topographical plot of external ICA components.
 
 # Returns
 
-- `p::GLMakie.figure`
+- `GLMakie.figure`
 """
 function plot_icatopo(
     obj::NeuroAnalyzer.NEURO;
@@ -1343,9 +1343,9 @@ function plot_icatopo(
         push!(p_topo, p_tmp)
     end
 
-    p = plot_compose(p_topo, layout = (1, length(ic_idx)))
+    fig = plot_compose(p_topo, layout = (1, length(ic_idx)))
 
-    return p
+    return fig
 
 end
 
@@ -1367,7 +1367,7 @@ Confidence interval plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_ci(
     s::AbstractVector,
@@ -1391,9 +1391,9 @@ function plot_ci(
     # prepare plot
     GLMakie.activate!(title = "plot_ci()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -1423,7 +1423,7 @@ function plot_ci(
     # draw signal
     Makie.lines!(t, s; color = :black, linewidth = 2)
 
-    return p
+    return fig
 
 end
 
@@ -1454,7 +1454,7 @@ Plot heatmap.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_heatmap(
     m::AbstractMatrix;
@@ -1478,9 +1478,9 @@ function plot_heatmap(
     # prepare plot
     GLMakie.activate!(title = "plot_heatmap()")
     plot_size = (800, 500)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -1503,7 +1503,7 @@ function plot_heatmap(
 
     hm = GLMakie.heatmap!(x, y, m'; colormap = pal)
     if cb
-        Colorbar(p[1, 2], hm; label = cb_title, labelsize = 16)
+        Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
     end
 
     if !isnothing(threshold)
@@ -1513,7 +1513,7 @@ function plot_heatmap(
         GLMakie.contour!(ax, x, y, reg'; levels = 1, color = :black, linewidth = 2)
     end
 
-    return p
+    return fig
 
 end
 
@@ -1530,7 +1530,7 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_imf(
         imf::Matrix{Float64};
@@ -1552,7 +1552,7 @@ function plot_imf(
     # prepare plot
     GLMakie.activate!(title = "plot_imf()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
 
     nr = ceil(Int64, (n + 1) / 2)
 
@@ -1563,7 +1563,7 @@ function plot_imf(
         for idx2 in 1:2
             if idx <= n + 1
                 ax = GLMakie.Axis(
-                    p[idx1, idx2],
+                    fig[idx1, idx2],
                     xlabel = "Time [s]",
                     ylabel = "",
                     title = idx == n + 1 ? "Residual" : "IMF: $idx",
@@ -1596,7 +1596,7 @@ function plot_imf(
 
     if cidx == 1
         ax = GLMakie.Axis(
-            p[nr, 1:2],
+            fig[nr, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Reconstructed signal",
@@ -1615,7 +1615,7 @@ function plot_imf(
         )
     else
         ax = GLMakie.Axis(
-            p[nr + 1, 1:2],
+            fig[nr + 1, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Reconstructed signal",
@@ -1641,7 +1641,7 @@ function plot_imf(
 
     GLMakie.lines!(ax, t, s_restored; color = :black)
 
-    return p
+    return fig
 
 end
 
@@ -1660,7 +1660,7 @@ Plot instantaneous frequencies.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_fi(
     fi::Vector{Float64},
@@ -1677,9 +1677,9 @@ function plot_fi(
     # prepare plot
     GLMakie.activate!(title = "plot_fi()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xl,
         ylabel = yl,
         title = tt,
@@ -1705,7 +1705,7 @@ function plot_fi(
     # plot frequencies
     GLMakie.lines!(st, fi; linewidth = 1, color = :black)
 
-    return p
+    return fig
 
 end
 
@@ -1726,7 +1726,7 @@ Plot phases.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_phase(
     ph::Vector{Float64},
@@ -1747,9 +1747,9 @@ function plot_phase(
     # prepare plot
     GLMakie.activate!(title = "plot_phase()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xl,
         ylabel = yl,
         title = tt,
@@ -1778,7 +1778,7 @@ function plot_phase(
         GLMakie.stem!(sf, ph, markersize = 10, color = :black)
     end
 
-    return p
+    return fig
 
 end
 
@@ -1789,7 +1789,7 @@ Polar pole-zero map.
 
 # Arguments
 
-- `p::Vector{Complex{Float64}}`: vector of poles
+- `fig::Vector{Complex{Float64}}`: vector of poles
 - `z::Vector{Complex{Float64}}`: vector of zeros
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
@@ -1799,7 +1799,7 @@ Polar pole-zero map.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_polezero(
     pol::Vector{Complex{Float64}},
@@ -1811,9 +1811,9 @@ function plot_polezero(
     # prepare plot
     GLMakie.activate!(title = "plot_polezero()")
     plot_size = (600, 600)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = "Real",
         ylabel = "Imag",
         aspect = 1,
@@ -1838,7 +1838,7 @@ function plot_polezero(
     )
     GLMakie.arc!(Point2f(0), 1, -pi, pi; linestyle = :dot, linewidth = 0.5, color = :black)
 
-    return p
+    return fig
 
 end
 
@@ -1856,7 +1856,7 @@ Plot discrete wavelet decomposition coefficients.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_dwc(
     dc::Matrix{Float64};
@@ -1875,7 +1875,7 @@ function plot_dwc(
     # prepare plot
     GLMakie.activate!(title = "plot_dwc()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
 
     nr = ceil(Int64, (n + 1) / 2)
 
@@ -1886,7 +1886,7 @@ function plot_dwc(
         for idx2 in 1:2
             if idx < n + 2
                 ax = GLMakie.Axis(
-                    p[idx1, idx2],
+                    fig[idx1, idx2],
                     xlabel = "Time [s]",
                     ylabel = "",
                     title = "Coefficient #$(idx - 1)",
@@ -1919,7 +1919,7 @@ function plot_dwc(
 
     if cidx == 1
         ax = GLMakie.Axis(
-            p[nr, 1:2],
+            fig[nr, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Original signal",
@@ -1946,7 +1946,7 @@ function plot_dwc(
         GLMakie.lines!(ax, t, dc[1, :], color = :black)
     else
         ax = GLMakie.Axis(
-            p[nr + 1, 1:2],
+            fig[nr + 1, 1:2],
             xlabel = "Time [s]",
             ylabel = "",
             title = "Original signal",
@@ -1973,6 +1973,6 @@ function plot_dwc(
         GLMakie.lines!(ax, t, dc[1, :], color = :black)
     end
 
-    return p
+    return fig
 
 end

@@ -22,7 +22,7 @@ Plot ERP/ERF (single channel).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_erp(
         t::Union{AbstractVector, AbstractRange},
@@ -39,9 +39,9 @@ function plot_erp(
     # prepare plot
     GLMakie.activate!(title = "plot_erp()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -83,7 +83,7 @@ function plot_erp(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -110,7 +110,7 @@ Plot ERP/ERF (multi-channel).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_erp(
         t::Union{AbstractVector, AbstractRange},
@@ -135,9 +135,9 @@ function plot_erp(
     # prepare plot
     GLMakie.activate!(title = "plot_erp()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -210,7 +210,7 @@ function plot_erp(
 
     (leg && ch_n < 30) && axislegend(position = :rt, colormap = pal)
 
-    return p
+    return fig
 
 end
 
@@ -237,7 +237,7 @@ Plot topographical map ERPs.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_erp_topo(
         locs::DataFrame,
@@ -324,12 +324,12 @@ function plot_erp_topo(
 
     # prepare plot
     GLMakie.activate!(title = "plot_erp()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
@@ -395,7 +395,7 @@ function plot_erp_topo(
         push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
         push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
     end
-    on(events(p).mousebutton) do event
+    on(events(fig).mousebutton) do event
         if event.button == Mouse.left
             if event.action == Mouse.press
                 ax_x = mouseposition(ax)[1]
@@ -413,7 +413,7 @@ function plot_erp_topo(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -440,7 +440,7 @@ Plot EPRs stacked by channels or by epochs.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_erp_stack(
         t::AbstractVector,
@@ -473,9 +473,9 @@ function plot_erp_stack(
     # prepare plot
     GLMakie.activate!(title = "plot_erp()")
     plot_size = size(s, 1) <= 64 ? (900, 600) : (900, 900)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -517,10 +517,10 @@ function plot_erp_stack(
 
     # draw colorbar
     if cb
-        Colorbar(p[1, 2], hm, label = cb_title, labelsize = 16)
+        Colorbar(fig[1, 2], hm, label = cb_title, labelsize = 16)
     end
 
-    return p
+    return fig
 
 end
 
@@ -542,7 +542,7 @@ Plot Global Field Power.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_gfp(
         t::Union{AbstractVector, AbstractRange},
@@ -559,9 +559,9 @@ function plot_gfp(
     # prepare plot
     GLMakie.activate!(title = "plot_gfp()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -603,7 +603,7 @@ function plot_gfp(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -643,7 +643,7 @@ Plot ERP/ERF.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_erp(
         obj::NeuroAnalyzer.NEURO;
@@ -716,7 +716,7 @@ function plot_erp(
                 end
             end
 
-            p = plot_erp_stack(
+            fig = plot_erp_stack(
                 t,
                 s;
                 rt = rt,
@@ -735,7 +735,7 @@ function plot_erp(
             xl, yl, tt = _set_defaults(
                 xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude, $(clabels[1]), avgₑ: $ep_n"
             )
-            p = plot_erp(t, s, xlabel = xl, ylabel = yl, title = tt, rt = rt, yrev = yrev, zl = zl, mono = mono)
+            fig = plot_erp(t, s, xlabel = xl, ylabel = yl, title = tt, rt = rt, yrev = yrev, zl = zl, mono = mono)
 
         end
 
@@ -750,7 +750,7 @@ function plot_erp(
             "Amplitude [$units]",
             "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n",
         )
-        p = plot_erp(
+        fig = plot_erp(
             t,
             s;
             xlabel = xl,
@@ -772,7 +772,7 @@ function plot_erp(
         xl, yl, tt = _set_defaults(
             xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n"
         )
-        p = plot_erp_stack(
+        fig = plot_erp_stack(
             t,
             s;
             rt = rt,
@@ -799,7 +799,7 @@ function plot_erp(
             "GFP [$units]",
             "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n",
         )
-        p = plot_gfp(t, g, xlabel = xl, ylabel = yl, title = tt, rt = rt, zl = zl, mono = mono)
+        fig = plot_gfp(t, g, xlabel = xl, ylabel = yl, title = tt, rt = rt, zl = zl, mono = mono)
 
     elseif type === :topo
 
@@ -813,7 +813,7 @@ function plot_erp(
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        p = plot_erp_topo(
+        fig = plot_erp_topo(
             locs,
             t,
             s;
@@ -834,7 +834,7 @@ function plot_erp(
             @assert tm[idx] / 1000 >= t[1] "tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
             @assert tm[idx] / 1000 <= t[end] "tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
             tm[idx] = vsearch(tm[idx] / 1000, t)
-            GLMakie.vlines!(p[1, 1], t[tm[idx]], linewidth = 0.5, color = :black)
+            GLMakie.vlines!(fig[1, 1], t[tm[idx]], linewidth = 0.5, color = :black)
         end
     end
 
@@ -843,7 +843,7 @@ function plot_erp(
         if length(ch) == 1 && type === :normal
             pp = erp_peaks(obj)
             GLMakie.scatter!(
-                p[1, 1],
+                fig[1, 1],
                 t[pp[ch, 1]][1],
                 obj.data[ch, pp[ch, 1], 1][1];
                 marker = :xcross,
@@ -851,7 +851,7 @@ function plot_erp(
                 markersize = 15,
             )
             GLMakie.scatter!(
-                p[1, 1],
+                fig[1, 1],
                 t[pp[ch, 2]][1],
                 obj.data[ch, pp[ch, 2], 1][1];
                 marker = :xcross,
@@ -868,10 +868,10 @@ function plot_erp(
             obj_tmp.data = mep_tmp
             pp = erp_peaks(obj_tmp)
             GLMakie.scatter!(
-                p[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]]; marker = :xcross, color = mono ? :black : :red, markersize = 15
+                fig[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]]; marker = :xcross, color = mono ? :black : :red, markersize = 15
             )
             GLMakie.scatter!(
-                p[1, 1],
+                fig[1, 1],
                 t[pp[1, 2]],
                 mep_tmp[pp[1, 2]];
                 marker = :xcross,
@@ -885,6 +885,6 @@ function plot_erp(
         end
     end
 
-    return p
+    return fig
 
 end

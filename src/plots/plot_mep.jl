@@ -19,7 +19,7 @@ Plot MEP (single channel).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_mep(
         t::Union{AbstractVector, AbstractRange},
@@ -35,9 +35,9 @@ function plot_mep(
     # prepare plot
     GLMakie.activate!(title = "plot_mep()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -72,7 +72,7 @@ function plot_mep(
     # plot MEP
     GLMakie.lines!(ax, t, s; color = :black, linewidth = 1)
 
-    return p
+    return fig
 
 end
 
@@ -98,7 +98,7 @@ Plot MEP (multi-channel).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_mep(
         t::Union{AbstractVector, AbstractRange},
@@ -122,9 +122,9 @@ function plot_mep(
     # prepare plot
     GLMakie.activate!(title = "plot_mep()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -195,7 +195,7 @@ function plot_mep(
 
     (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
 
-    return p
+    return fig
 
 end
 
@@ -221,7 +221,7 @@ Plot MEPs stacked by channels or by epochs.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_mep_stack(
         t::AbstractVector,
@@ -249,9 +249,9 @@ function plot_mep_stack(
     # prepare plot
     GLMakie.activate!(title = "plot_mep()")
     plot_size = size(s, 1) <= 64 ? (1200, 800) : (1200, 1200)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -284,10 +284,10 @@ function plot_mep_stack(
 
     # draw colorbar
     if cb
-        Colorbar(p[1, 2], hm; label = cb_title, labelsize = 16)
+        Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
     end
 
-    return p
+    return fig
 
 end
 
@@ -321,7 +321,7 @@ Plot MEP.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `fig::Plots.Plot{Plots.GRBackend}`
 """
 function plot_mep(
         obj::NeuroAnalyzer.NEURO;
@@ -372,12 +372,12 @@ function plot_mep(
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude, channel: $(clabels[1])"
         )
-        p = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt, mono = mono, yrev = yrev, zl = zl)
+        fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt, mono = mono, yrev = yrev, zl = zl)
     elseif type === :normal
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude, $(length(ch)) channels"
         )
-        p = plot_mep(
+        fig = plot_mep(
             t,
             s;
             xlabel = xl,
@@ -394,7 +394,7 @@ function plot_mep(
     elseif type === :stack
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "MEP amplitude, $(length(ch)) channels")
         cb_title == "default" && (cb_title = "Amplitude [$units]")
-        p = plot_mep_stack(
+        fig = plot_mep_stack(
             t,
             s;
             xlabel = xl,
@@ -415,7 +415,7 @@ function plot_mep(
         if length(ch) == 1
             pp = erp_peaks(obj)
             GLMakie.scatter!(
-                p[1, 1],
+                fig[1, 1],
                 t[pp[ch, 1]][1],
                 obj.data[ch, pp[ch, 1], 1][1];
                 marker = :xcross,
@@ -423,7 +423,7 @@ function plot_mep(
                 markersize = 15,
             )
             GLMakie.scatter!(
-                p[1, 1],
+                fig[1, 1],
                 t[pp[ch, 2]][1],
                 obj.data[ch, pp[ch, 2], 1][1];
                 marker = :xcross,
@@ -440,10 +440,10 @@ function plot_mep(
             obj_tmp.data = mep_tmp
             pp = erp_peaks(obj_tmp)
             GLMakie.scatter!(
-                p[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]]; marker = :xcross, color = mono ? :black : :red, markersize = 15
+                fig[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]]; marker = :xcross, color = mono ? :black : :red, markersize = 15
             )
             GLMakie.scatter!(
-                p[1, 1],
+                fig[1, 1],
                 t[pp[1, 2]],
                 mep_tmp[pp[1, 2]];
                 marker = :xcross,
@@ -457,6 +457,6 @@ function plot_mep(
         end
     end
 
-    return p
+    return fig
 
 end

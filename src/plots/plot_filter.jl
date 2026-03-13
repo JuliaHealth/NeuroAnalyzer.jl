@@ -34,7 +34,7 @@ Plot filter response.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(;
@@ -150,11 +150,11 @@ function plot_filter(;
     # prepare plot
     GLMakie.activate!(title = "plot_filter()")
     plot_size = gui ? (1200, 900) : (1200, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
 
     # prepare sliders
     if gui
-        grid = p[4, 1] = GridLayout()
+        grid = fig[4, 1] = GridLayout()
 
         if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
 
@@ -758,7 +758,7 @@ function plot_filter(;
         end
 
         ax1 = GLMakie.Axis(
-            p[1, 1];
+            fig[1, 1];
             xlabel = "Frequency [Hz]",
             ylabel = "Magnitude [dB]",
             title = title,
@@ -795,7 +795,7 @@ function plot_filter(;
         f = @lift(round.($phresp[2] .* fs / 2 / pi, digits = 1))
 
         ax2 = GLMakie.Axis(
-            p[2, 1];
+            fig[2, 1];
             xlabel = "Frequency [Hz]",
             ylabel = "Phase [rad]",
             title = "Phase response",
@@ -830,7 +830,7 @@ function plot_filter(;
         tau = @lift(-derivative(rad2deg.($phresp[1])))
 
         ax3 = GLMakie.Axis(
-            p[3, 1];
+            fig[3, 1];
             xlabel = "Frequency [Hz]",
             ylabel = "Group delay [samples]",
             title = "Group delay",
@@ -878,7 +878,7 @@ function plot_filter(;
         end
 
         ax1 = GLMakie.Axis(
-            p[1, 1];
+            fig[1, 1];
             xlabel = "Frequency [Hz]",
             ylabel = "Magnitude [dB]",
             title = title,
@@ -917,7 +917,7 @@ function plot_filter(;
         f = f .* fs / 2 / pi
 
         ax2 = GLMakie.Axis(
-            p[2, 1];
+            fig[2, 1];
             xlabel = "Frequency [Hz]",
             ylabel = "Phase\n[deg]",
             title = "Phase response",
@@ -952,7 +952,7 @@ function plot_filter(;
         tau = @lift(-derivative(rad2deg.(-atan.(imag($fresp), real($fresp)))))
 
         ax3 = GLMakie.Axis(
-            p[3, 1];
+            fig[3, 1];
             xlabel = "Frequency [Hz]",
             ylabel = "Group delay\n[samples]",
             title = "Group delay",
@@ -1171,12 +1171,12 @@ function plot_filter(;
     end
 
     if gui
-        wait(display(p))
+        wait(display(fig))
         NeuroAnalyzer.verbose = v
         return flt[]
     else
         NeuroAnalyzer.verbose = v
-        return p
+        return fig
     end
 
 end
@@ -1216,7 +1216,7 @@ Plot filter response.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(
@@ -1249,6 +1249,6 @@ function plot_filter(
         gui = gui,
     )
 
-    return p
+    return fig
 
 end

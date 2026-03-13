@@ -28,7 +28,7 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_locs_nirs(
         locs::DataFrame,
@@ -122,13 +122,13 @@ function plot_locs_nirs(
 
     # prepare plot
     GLMakie.activate!(title = "plot_locs_nirs()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = 0,
     )
     if grid
         ax = GLMakie.Axis(
-            p[1, 1];
+            fig[1, 1];
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -151,7 +151,7 @@ function plot_locs_nirs(
         )
     else
         ax = GLMakie.Axis(
-            p[1, 1];
+            fig[1, 1];
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -315,6 +315,6 @@ function plot_locs_nirs(
         end
     end
 
-    return p
+    return fig
 
 end

@@ -36,7 +36,7 @@ Plot single-channel spectrogram.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_spectrogram(
         st::Vector{Float64},
@@ -87,9 +87,9 @@ function plot_spectrogram(
     # prepare plot
     GLMakie.activate!(title = "plot_spectrogram()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -127,10 +127,10 @@ function plot_spectrogram(
 
     # draw colorbar
     if cb
-        Colorbar(p[1, 2], hm, label = cb_title, labelsize = 16)
+        Colorbar(fig[1, 2], hm, label = cb_title, labelsize = 16)
     end
 
-    return p
+    return fig
 
 end
 
@@ -169,7 +169,7 @@ Plot multiple-channel spectrogram.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_spectrogram(
         sf::Vector{<:Real},
@@ -219,9 +219,9 @@ function plot_spectrogram(
     # prepare plot
     GLMakie.activate!(title = "plot_spectrogram()")
     plot_size = (1200, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -259,10 +259,10 @@ function plot_spectrogram(
 
     # draw colorbar
     if cb
-        Colorbar(p[1, 2], hm, label = cb_title, labelsize = 16)
+        Colorbar(fig[1, 2], hm, label = cb_title, labelsize = 16)
     end
 
-    return p
+    return fig
 
 end
 
@@ -295,7 +295,7 @@ Plot topographical map of spectrograms.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_spectrogram_topo(
         locs::DataFrame,
@@ -409,12 +409,12 @@ function plot_spectrogram_topo(
 
     # prepare plot
     GLMakie.activate!(title = "plot_spectrogram()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
@@ -480,7 +480,7 @@ function plot_spectrogram_topo(
         push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
         push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
     end
-    on(events(p).mousebutton) do event
+    on(events(fig).mousebutton) do event
         if event.button == Mouse.left
             if event.action == Mouse.press
                 ax_x = mouseposition(ax)[1]
@@ -498,7 +498,7 @@ function plot_spectrogram_topo(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -556,38 +556,38 @@ Plots spectrogram.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_spectrogram(
-        obj::NeuroAnalyzer.NEURO;
-        seg::Tuple{Real, Real} = (0, 10),
-        ep::Int64 = 0,
-        ch::Union{String, Vector{String}, Regex} = datatype(obj),
-        db::Bool = true,
-        method::Symbol = :stft,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        gw::Real = 10,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        frq::Symbol = :lin,
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-        markers::Bool = true,
-        smooth::Bool = false,
-        n::Int64 = 3,
-        cb::Bool = true,
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-        type::Symbol = :normal,
-        cart::Bool = false,
-        head::Bool = true,
-    )::GLMakie.Figure where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real} = (0, 10),
+    ep::Int64 = 0,
+    ch::Union{String, Vector{String}, Regex} = datatype(obj),
+    db::Bool = true,
+    method::Symbol = :stft,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    gw::Real = 10,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    frq::Symbol = :lin,
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    markers::Bool = true,
+    smooth::Bool = false,
+    n::Int64 = 3,
+    cb::Bool = true,
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+    type::Symbol = :normal,
+    cart::Bool = false,
+    head::Bool = true,
+)::GLMakie.Figure where {T <: CWT}
 
     _check_var(type, [:normal, :topo], "type")
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
@@ -763,7 +763,7 @@ function plot_spectrogram(
     if length(ch) == 1 && type === :normal
         xlabel == "default" && (xlabel = "Time [s]")
         ylabel == "default" && (ylabel = "Frequency [Hz]")
-        p = plot_spectrogram(
+        fig = plot_spectrogram(
             st,
             sf,
             sp;
@@ -785,7 +785,7 @@ function plot_spectrogram(
     elseif length(ch) > 1 && type === :normal
         ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        p = plot_spectrogram(
+        fig = plot_spectrogram(
             sf,
             sp;
             clabels = clabels,
@@ -814,7 +814,7 @@ function plot_spectrogram(
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
-        p = plot_spectrogram_topo(
+        fig = plot_spectrogram_topo(
             locs,
             st,
             sf,
@@ -842,10 +842,10 @@ function plot_spectrogram(
         markers_desc = obj.markers[!, :value]
         for idx in eachindex(markers_pos)
             if _in(markers_pos[idx], (obj.time_pts[1], obj.time_pts[end]))
-                GLMakie.vlines!(p[1, 1], markers_pos[idx], linestyle = :dash, linewidth = 1, color = :black)
+                GLMakie.vlines!(fig[1, 1], markers_pos[idx], linestyle = :dash, linewidth = 1, color = :black)
                 if length(ch) > 1
                     GLMakie.textlabel!(
-                        p[1, 1],
+                        fig[1, 1],
                         (markers_pos[idx] + 0.07, ch_n > 20 ? 20.4 : ch_n + 0.4),
                         text = "$(markers_id[idx]) / $(markers_desc[idx])",
                         text_align = (:left, :center),
@@ -854,7 +854,7 @@ function plot_spectrogram(
                     )
                 else
                     GLMakie.textlabel!(
-                        p[1, 1],
+                        fig[1, 1],
                         (markers_pos[idx] + 0.07, 0.97 * minimum(obj.data[ch, :, :])),
                         text = "$(markers_id[idx]) / $(markers_desc[idx])",
                         text_align = (:left, :center),
@@ -866,6 +866,6 @@ function plot_spectrogram(
         end
     end
 
-    return p
+    return fig
 
 end

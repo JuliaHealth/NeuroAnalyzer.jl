@@ -14,7 +14,7 @@ Convert Plots.Plot to CairoSurfaceBase.
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+- `Cairo.CairoSurfaceBase{UInt32}`
 """
 function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UInt32}
 
@@ -33,25 +33,25 @@ function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UIn
 end
 
 """
-    plot2canvas(p)
+    plot2canvas(fig)
 
 Convert Plots.Plot to CairoSurfaceBase.
 
 # Arguments
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+- `Cairo.CairoSurfaceBase{UInt32}`
 """
-function plot2canvas(p::GLMakie.Figure)::Cairo.CairoSurfaceBase{UInt32}
+function plot2canvas(fig::GLMakie.Figure)::Cairo.CairoSurfaceBase{UInt32}
 
-    p_size = size(p.scene)
+    p_size = size(fig.scene)
     c = CairoRGBSurface(p_size[1], p_size[2])
     cr = CairoContext(c)
     fname = tempname() * ".png"
-    GLMakie.save(fname, p)
+    GLMakie.save(fname, fig)
     img = read_from_png(fname)
     rm(fname)
     Cairo.set_source_surface(cr, img, 0, 0)
@@ -73,9 +73,12 @@ Resize CairoSurfaceBase by a factor.
 
 # Returns
 
-- `c_new::Cairo.CairoSurfaceBase{UInt32}`
+- `Cairo.CairoSurfaceBase{UInt32}`
 """
-function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)::Cairo.CairoSurfaceBase{UInt32}
+function resize_canvas(
+    c::Cairo.CairoSurfaceBase{UInt32};
+    r::Real
+)::Cairo.CairoSurfaceBase{UInt32}
 
     c_new = CairoRGBSurface(ceil(Int64, c.width * r) - 1, round(Int64, c.height * r) - 1)
     cr = CairoContext(c_new)
@@ -105,8 +108,9 @@ Resize CairoSurfaceBase to make space for another canvas
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function add_topmargin_canvas(
-        c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}
-    )::Cairo.CairoSurfaceBase{UInt32}
+    c1::Cairo.CairoSurfaceBase{UInt32},
+    c2::Cairo.CairoSurfaceBase{UInt32}
+)::Cairo.CairoSurfaceBase{UInt32}
 
     c = CairoRGBSurface(c1.width, c1.height + c2.height)
     cr = CairoContext(c)

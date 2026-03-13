@@ -3,37 +3,37 @@ export plot_empty
 export add_pl
 
 """
-    plot_compose(p; <keyword arguments>)
+    plot_compose(vfig; <keyword arguments>)
 
-Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is `(2, 2)`: 2 × 2 plots
+Compose a complex plot of various plots contained in vector `vfig` using layout `layout`. Layout scheme is `(2, 2)`: 2 × 2 plots
 
 # Arguments
 
-- `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
+- `vfig::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
 - `layout::Tuple{Int64, Int64}`: layout, number of rows × number of columns
 
 # Returns
 
 - `pc::GLMakie.Figure`
 """
-function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::GLMakie.Figure
+function plot_compose(vfig::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::GLMakie.Figure
 
-    @assert layout[1] * layout[2] >= length(p) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(p)))."
+    @assert layout[1] * layout[2] >= length(vfig) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(vfig)))."
 
     plot_size = (0, 0)
-    for idx in eachindex(p)
-        size(p[idx].scene) > plot_size && (plot_size = size(p[idx].scene))
+    for idx in eachindex(vfig)
+        size(vfig[idx].scene) > plot_size && (plot_size = size(vfig[idx].scene))
     end
-    for idx in eachindex(p)
-        size(p[idx].scene) != plot_size &&
+    for idx in eachindex(vfig)
+        size(vfig[idx].scene) != plot_size &&
             _warn("For best results all plots should have the size of $(plot_size[1])×$(plot_size[2]).")
     end
 
     plot_size = (plot_size[1] * layout[2], plot_size[2] * layout[1])
 
-    if length(p) < layout[1] * layout[2]
-        for _ in 1:((layout[1] * layout[2]) - length(p))
-            push!(p, plot_empty())
+    if length(vfig) < layout[1] * layout[2]
+        for _ in 1:((layout[1] * layout[2]) - length(vfig))
+            push!(vfig, plot_empty())
         end
     end
 
@@ -45,7 +45,7 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::G
     for idx1 in 1:layout[1]
         for idx2 in 1:layout[2]
             fname = tempname() * ".png"
-            GLMakie.save(fname, p[p_idx])
+            GLMakie.save(fname, vfig[p_idx])
             pp = FileIO.load(fname)
             rm(fname)
             ax = GLMakie.Axis(
@@ -76,18 +76,18 @@ Return an empty plot, useful for filling matrices of plots.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_empty()::GLMakie.Figure
 
-    p = GLMakie.Figure()
+    fig = GLMakie.Figure()
 
-    return p
+    return fig
 
 end
 
 """
-    add_pl(p, pl; <keyword arguments>)
+    add_pl(fig, pl; <keyword arguments>)
 
 Add locations to a plot. Locations are placed in the top right corner.
 
@@ -98,9 +98,9 @@ Add locations to a plot. Locations are placed in the top right corner.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
-function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
+function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
 
     io = IOBuffer()
     show(io, MIME"image/png"(), pl)
@@ -112,13 +112,13 @@ function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
     transparent_pp[transparent_pp .== RGBA(0.998, 0.998, 0.998, 1.0)] .= RGBA(0.998, 0.998, 0.998, 0.0)
 
     # top right corner
-    ax = contents(p[1, 1])[1]
+    ax = contents(fig[1, 1])[1]
     # ax = ax.targetlimits[].origin .+ ax.targetlimits[].widths
     pos_x = (ax.targetlimits[].origin .+ ax.targetlimits[].widths)[1]
     pos_y = ax.targetlimits[].origin[2]
 
     GLMakie.scatter!(
-        p[1, 1],
+        fig[1, 1],
         pos_x,
         pos_y;
         marker_offset = size(transparent_pp) ./ -2,
@@ -127,6 +127,6 @@ function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
         markerspace = :pixel,
     )
 
-    return p
+    return fig
 
 end

@@ -11,7 +11,7 @@ Plot dipole in 2D.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 
 # Notes
 
@@ -34,9 +34,9 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     # prepare plot
     GLMakie.activate!(title = "plot_dipole_2d()")
     plot_size = (1200, 400)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax_xy = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         aspect = DataAspect(),
         xzoomlock = true,
         yzoomlock = true,
@@ -52,7 +52,7 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     GLMakie.ylims!(ax_xy, -1.2, 1.2)
 
     ax_yz = GLMakie.Axis(
-        p[1, 2];
+        fig[1, 2];
         aspect = DataAspect(),
         xzoomlock = true,
         yzoomlock = true,
@@ -68,7 +68,7 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     GLMakie.ylims!(ax_yz, -1.2, 1.2)
 
     ax_xz = GLMakie.Axis(
-        p[1, 3];
+        fig[1, 3];
         aspect = DataAspect(),
         xzoomlock = true,
         yzoomlock = true,
@@ -130,6 +130,6 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     GLMakie.lines!(ax_yz, [pos[2], pos[2] + mag[2]], [pos[3], pos[3] + mag[3]]; color = :red)
     GLMakie.lines!(ax_xz, [pos[1], pos[1] + mag[1]], [pos[3], pos[3] + mag[3]]; color = :red)
 
-    return p
+    return fig
 
 end

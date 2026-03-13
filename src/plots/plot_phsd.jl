@@ -19,7 +19,7 @@ Plot PHSD (phase spectral density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_phsd(
         f::Vector{Float64},
@@ -43,9 +43,9 @@ function plot_phsd(
     # prepare plot
     GLMakie.activate!(title = "plot_phsd()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -72,7 +72,7 @@ function plot_phsd(
     # draw powers
     Makie.lines!(f, ph; linewidth = 2, color = :black)
 
-    return p
+    return fig
 
 end
 
@@ -98,7 +98,7 @@ Plot multi-channel PHSD (phase spectral density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_phsd(
         f::Vector{Float64},
@@ -131,9 +131,9 @@ function plot_phsd(
     # prepare plot
     GLMakie.activate!(title = "plot_phsd()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -192,7 +192,7 @@ function plot_phsd(
 
     end
 
-    return p
+    return fig
 
 end
 
@@ -218,7 +218,7 @@ Plot 3-d PHSD (phase phectral density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_phsd_3d(
         f::Vector{Float64},
@@ -262,9 +262,9 @@ function plot_phsd_3d(
     GLMakie.activate!(title = "plot_phsd()")
     if variant === :w
         plot_size = (900, 450)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            p[1, 1];
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -306,9 +306,9 @@ function plot_phsd_3d(
         f1 = vsearch(flim[1], f)
         f2 = vsearch(flim[2], f)
         plot_size = (900, 450)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            p[1, 1];
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -337,7 +337,7 @@ function plot_phsd_3d(
         Makie.surface!(f[f1:f2], eachindex(clabels), ph[:, f1:f2]'; colormap = pal)
     end
 
-    return p
+    return fig
 
 end
 
@@ -361,7 +361,7 @@ Plot topographical map of PHSDs (phase spectral density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_phsd_topo(
         locs::DataFrame,
@@ -453,12 +453,12 @@ function plot_phsd_topo(
 
     # prepare plot
     GLMakie.activate!(title = "plot_phsd()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
@@ -518,7 +518,7 @@ function plot_phsd_topo(
         push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
         push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
     end
-    on(events(p).mousebutton) do event
+    on(events(fig).mousebutton) do event
         if event.button == Mouse.left
             if event.action == Mouse.press
                 ax_x = mouseposition(ax)[1]
@@ -536,7 +536,7 @@ function plot_phsd_topo(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -571,7 +571,7 @@ Plot PHSD (phase spectral density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_phsd(
         obj::NeuroAnalyzer.NEURO;
@@ -636,9 +636,9 @@ function plot_phsd(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Phase [rad]")
         if length(ch) == 1
-            p = plot_phsd(sf, sp; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
+            fig = plot_phsd(sf, sp; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
         else
-            p = plot_phsd(
+            fig = plot_phsd(
                 sf,
                 sp;
                 xlabel = xlabel,
@@ -659,7 +659,7 @@ function plot_phsd(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
-        p = plot_phsd_3d(
+        fig = plot_phsd_3d(
             sf,
             sp;
             clabels = clabels,
@@ -682,7 +682,7 @@ function plot_phsd(
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
-        p = plot_phsd_topo(
+        fig = plot_phsd_topo(
             locs,
             sf,
             sp;
@@ -696,6 +696,6 @@ function plot_phsd(
         )
     end
 
-    return p
+    return fig
 
 end

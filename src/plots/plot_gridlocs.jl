@@ -11,7 +11,7 @@ Plot a simplified plot of 10-20 EEG channels on a grid.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
 
@@ -20,9 +20,9 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     # prepare plot
     GLMakie.activate!(title = "plot_gridlocs()")
     plot_size = (800, 800)
-    p = GLMakie.Figure(size = plot_size, figure_padding = 0)
+    fig = GLMakie.Figure(size = plot_size, figure_padding = 0)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         aspect = 1,
         xlabel = "",
         ylabel = "",
@@ -112,6 +112,6 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
         )
     end
 
-    return p
+    return fig
 
 end

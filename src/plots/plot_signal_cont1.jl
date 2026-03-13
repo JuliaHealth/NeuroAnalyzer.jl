@@ -38,7 +38,7 @@ Plot continuous signal.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_cont(
         obj::NeuroAnalyzer.NEURO;
@@ -174,12 +174,12 @@ function plot_cont(
         plot_size = (1200, 650)
     end
     GLMakie.activate!(title = "plot()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = (10, 20, 10, 10), # L R B T
     )
     ax1 = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = "",
         ylabel = yl,
         title = tt,
@@ -363,7 +363,7 @@ function plot_cont(
 
         # time bar
         ax2 = GLMakie.Axis(
-            p[2, 1];
+            fig[2, 1];
             xlabel = xl,
             ylabel = "",
             title = "",
@@ -399,7 +399,7 @@ function plot_cont(
         # channel bar
         if type === :normal
             ax3 = GLMakie.Axis(
-                p[1, 2];
+                fig[1, 2];
                 xlabel = "",
                 ylabel = "",
                 title = "",
@@ -439,7 +439,7 @@ function plot_cont(
         GLMakie.vlines!(ax1, vmarker2; color = (:blue, 0.8), linewidth = 1)
         GLMakie.band!(ax1, marker_range, 0.5, ch_n + 0.5; color = (:blue, 0.1))
 
-        on(events(p).mousebutton) do event
+        on(events(fig).mousebutton) do event
             ax1_x = mouseposition(ax1)[1]
             ax1_y = mouseposition(ax1)[2]
             ax2_x = mouseposition(ax2)[1]
@@ -538,7 +538,7 @@ function plot_cont(
             end
         end
 
-        on(events(p).keyboardbutton) do event
+        on(events(fig).keyboardbutton) do event
             update_ax2 = false
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
@@ -548,7 +548,7 @@ function plot_cont(
                         if !isnan(vmarker1[]) && !isnan(vmarker2[])
 
                             trim!(obj, seg = (marker_range[][1], marker_range[][2]))
-                            screen = display(p)
+                            screen = display(fig)
                             close(screen)
                             NeuroAnalyzer.plot(
                                 obj,
@@ -592,14 +592,14 @@ function plot_cont(
                         end
                     end
 
-                    if ispressed(p, Keyboard.page_down)
+                    if ispressed(fig, Keyboard.page_down)
                         if ch_n > 1 && nch[] > 1
                             nch[] -= 1
                             update_ax3 = true
                         end
                     end
 
-                    if ispressed(p, Keyboard.page_up)
+                    if ispressed(fig, Keyboard.page_up)
                         if ch_n > 1 && nch[] < ch_n && ch1[] + (nch[] - 1) < ch_n
                             nch[] += 1
                             update_ax3 = true
@@ -625,7 +625,7 @@ function plot_cont(
                     end
                 end
 
-                if ispressed(p, Keyboard.left_shift & Keyboard.left)
+                if ispressed(fig, Keyboard.left_shift & Keyboard.left)
                     if seg_pos[] >= 9
                         seg_pos[] -= 9
                         update_ax2 = true
@@ -639,7 +639,7 @@ function plot_cont(
                     end
                 end
 
-                if ispressed(p, Keyboard.left_shift & Keyboard.right)
+                if ispressed(fig, Keyboard.left_shift & Keyboard.right)
                     if seg_pos[] <= t[end] - seg_len - (seg_len - 1)
                         seg_pos[] += (seg_len - 1)
                         update_ax2 = true
@@ -656,13 +656,13 @@ function plot_cont(
             end
         end
 
-        type === :normal && colsize!(p.layout, 2, GLMakie.Fixed(20))
-        rowsize!(p.layout, 2, GLMakie.Fixed(20))
+        type === :normal && colsize!(fig.layout, 2, GLMakie.Fixed(20))
+        rowsize!(fig.layout, 2, GLMakie.Fixed(20))
 
-        wait(display(p))
+        wait(display(fig))
 
     end
 
-    return p
+    return fig
 
 end

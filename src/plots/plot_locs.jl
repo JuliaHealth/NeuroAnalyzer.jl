@@ -35,7 +35,7 @@ Preview channel locations.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_locs(
         locs::DataFrame;
@@ -142,13 +142,13 @@ function plot_locs(
 
     # prepare plot
     GLMakie.activate!(title = "plot_locs()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = grid ? (10, 10, 10, 10) : (0, 0, 0, 0),
     ) # L R B T
     if grid
         ax = GLMakie.Axis(
-            p[1, 1];
+            fig[1, 1];
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -169,7 +169,7 @@ function plot_locs(
         )
     else
         ax = GLMakie.Axis(
-            p[1, 1];
+            fig[1, 1];
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -1068,7 +1068,7 @@ function plot_locs(
     if gui
         println()
 
-        on(events(p).mousebutton) do event
+        on(events(fig).mousebutton) do event
             if event.button == Mouse.left
                 if event.action == Mouse.press
                     ax_x = mouseposition(ax)[1]
@@ -1087,11 +1087,11 @@ function plot_locs(
             end
         end
 
-        wait(display(p))
+        wait(display(fig))
 
     end
 
-    return p
+    return fig
 
 end
 
@@ -1175,7 +1175,7 @@ function plot_locs(
     end
 
     if datatype(obj) in ["eeg", "meg", "csd", "erp", "erf"]
-        p = plot_locs(
+        fig = plot_locs(
             locs;
             ch = ch,
             sch = sch,
@@ -1198,7 +1198,7 @@ function plot_locs(
         opt_pairs = obj.header.recording[:optode_pairs]
         src_n = length(source_labels(obj))
         det_n = length(detector_labels(obj))
-        p = plot_locs_nirs(
+        fig = plot_locs_nirs(
             obj.locs,
             opt_pairs,
             src_n,
@@ -1228,6 +1228,6 @@ function plot_locs(
         _warn("For $(datatype(obj)) object type locs are not available.")
     end
 
-    return p
+    return fig
 
 end

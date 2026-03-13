@@ -18,7 +18,7 @@ Plot coherence.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_coherence(
         coh::Vector{Float64},
@@ -45,9 +45,9 @@ function plot_coherence(
     # prepare plot
     GLMakie.activate!(title = "plot_coherence()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -73,7 +73,7 @@ function plot_coherence(
     _info("Minimum coherence $(round(coh[min_coh[2]], digits = 3)) at $(round(min_coh[1], digits = 2)) Hz")
     _info("Maximum coherence $(round(coh[max_coh[2]], digits = 3)) at $(round(max_coh[1], digits = 2)) Hz")
 
-    return p
+    return fig
 
 end
 
@@ -99,7 +99,7 @@ Plot multi-channel coherence.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_coherence(
         coh::Matrix{Float64},
@@ -132,9 +132,9 @@ function plot_coherence(
     # prepare plot
     GLMakie.activate!(title = "plot_coherence()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -181,6 +181,6 @@ function plot_coherence(
 
     end
 
-    return p
+    return fig
 
 end

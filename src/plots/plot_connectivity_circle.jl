@@ -23,7 +23,7 @@ Plot connectivity circle.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_connectivity_circle(
         m::AbstractMatrix;
@@ -51,9 +51,9 @@ function plot_connectivity_circle(
     # prepare plot
     GLMakie.activate!(title = "plot_connectivity_circle()")
     plot_size = (800, 800)
-    p = GLMakie.Figure(size = plot_size, figure_padding = 0)
+    fig = GLMakie.Figure(size = plot_size, figure_padding = 0)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
@@ -137,6 +137,6 @@ function plot_connectivity_circle(
         end
     end
 
-    return p
+    return fig
 
 end

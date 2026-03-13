@@ -2,21 +2,17 @@
 
 [![DOI: 10.5281/zenodo.7372648](images/doi.png)](https://doi.org/10.5281/zenodo.7372648) [![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) [![docs-badge](https://img.shields.io/badge/documentation-blue.svg)](https://neuroanalyzer.org/docs/) [![tuts-badge](https://img.shields.io/badge/tutorials-blue.svg)](https://neuroanalyzer.org#tutorials) [![license-badge](https://img.shields.io/badge/licence-BSD_2C-blue.svg)](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/main/LICENSE) [![JOSS-status](https://joss.theoj.org/papers/cefb2c86708619ddd786b49ce47c98df/status.svg)](https://joss.theoj.org/papers/cefb2c86708619ddd786b49ce47c98df)
 
-NeuroAnalyzer is a [Julia](https://julialang.org) toolbox for analyzing neurophysiological data. Currently it covers importing, editing, processing, visualizing, and analyzing EEG, MEP and EDA data. Preliminary functionality is also available for MEG, NIRS, ECoG, SEEG and iEEG recordings.
+NeuroAnalyzer is a high-performance [Julia](https://julialang.org) toolbox for exploring, visualizing, and analyzing neurophysiological data - including EEG, MEG, ECoG, SEEG, iEEG, NIRS, MEP, and EDA recordings.
 
-Various methods for modeling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS/TUS/INS) will also be implemented (NeuroStim submodule). Another submodule, NeuroTester, will allow designing and running psychological studies. Certain neurophysiological data can be recorded using NeuroRecorder submodule.
+The toolbox provides both high-level and low-level functions, along with interactive GUI components for exploratory work. Individual functions can be chained into reproducible analysis pipelines - Julia scripts that capture every step of your workflow. Combined with Julia's computational performance and native support for distributed computing, this makes NeuroAnalyzer especially well-suited for processing large neurophysiological datasets across computing clusters.
 
-NeuroAnalyzer contains a set of separate (high- and low-level) functions. Some interactive graphical user interface (GUI) functions are also available. NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This, combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of neurophysiological data.
-
-NeuroAnalyzer is a collaborative, non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
-
-Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
+NeuroAnalyzer is a free, non-commercial, collaborative project built for researchers in neuroscience, neurology, and psychiatry.
 
 NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org).
 
 You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags/neuroanalyzer).
 
-Note: this toolbox is under active development and is subject to change without prior notice.
+Note: this toolbox is under active development and its API is subject to changes.
 
 ## Quickstart
 
@@ -28,7 +24,7 @@ using NeuroAnalyzer
 
 ## Documentation
 
-Documentation is available at [https://neuroanalyzer.org/docs](https://neuroanalyzer.org/docs)
+Complete [API reference](https://neuroanalyzer.org/docs) is available.
 
 Changelog and commit details are available at [https://neuroanalyzer.org/changelog.html](https://neuroanalyzer.org/changelog.html).
 
@@ -38,11 +34,11 @@ NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org#tutorials](h
 
 ## Requirements
 
-See [https://neuroanalyzer.org/requirements.html](https://neuroanalyzer.org/requirements.html) for more details.
+See [Requirements](https://neuroanalyzer.org/requirements.html) for more details.
 
 ## What's next
 
-This [roadmap](https://neuroanalyzer.org/roadmap.html) of the future developments of NeuroAnalyzer is neither complete, nor in any particular order.
+This [roadmap](roadmap.html) gives an overview of where NeuroAnalyzer is headed. It is not exhaustive, and the order of items does not reflect implementation priority.
 
 ## Performance
 
@@ -63,7 +59,22 @@ If you would like to support the project financially, we have the Liberapay acco
 
 ## How to Cite
 
-If you use this toolbox, please acknowledge us by citing our [paper](https://neuroanalyzer.org#how-to-cite).
+If NeuroAnalyzer contributed to your research, please cite the [JOSS article →](https://doi.org/10.21105/joss.07734):
+
+```{bibtex}
+@article{Wysokiński_2025,
+    doi = {10.21105/joss.07734},
+    url = {https://doi.org/10.21105/joss.07734},
+    year = {2025},
+    publisher = {The Open Journal},
+    volume = {10},
+    number = {107},
+    pages = {7734},
+    author = {Adam Wysokiński},
+    title = {NeuroAnalyzer: Julia toolbox for analyzing neurophysiological data},
+    journal = {Journal of Open Source Software}
+}
+```
 
 ## Contributing
 
@@ -74,7 +85,7 @@ You are very welcome to raise issues and start pull requests. Bugs, suggestions 
 If you notice any bugs, such as crashing code, incorrect results or speed issues, please raise a Codeberg/GitHub issue. Before filing an issue please:
 
 - check that there are no similar existing issues already
-- check that your versions are up to date
+- check that your version is up to date
 
 If you want to report a bug, include your version and system information, and all relevant information. If possible, condense your bug into the shortest example possible that the maintainers can replicate, a so called "minimal working example" or MWE.
 

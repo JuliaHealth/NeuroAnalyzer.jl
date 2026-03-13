@@ -3,15 +3,15 @@ export plot_psd_3d
 export plot_psd_topo
 
 """
-    plot_psd(sf, sp; <keyword arguments>)
+    plot_psd(f, p; <keyword arguments>)
 
 Plot PSD (power spectrum density).
 
 # Arguments
 
-- `sf::Vector{Float64}`: frequencies
-- `sp::Vector{Float64}`: powers
-- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limits
+- `f::Vector{Float64}`: frequencies
+- `p::Vector{Float64}`: powers
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -19,36 +19,36 @@ Plot PSD (power spectrum density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_psd(
-        sf::Vector{Float64},
-        sp::Vector{Float64};
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        frq::Symbol = :lin,
-    )::GLMakie.Figure
+    f::Vector{Float64},
+    p::Vector{Float64};
+    flim::Tuple{Real, Real} = (f[1], f[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    frq::Symbol = :lin,
+)::GLMakie.Figure
 
-    @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
+    @assert length(p) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, extrema(sf), "flim")
+    _check_tuple(flim, extrema(f), "flim")
 
     if frq === :log && flim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        flim = (sf[2], flim[2])
+        _warn("Lower frequency bound truncated to $(f[2]) Hz.")
+        flim = (f[2], flim[2])
     end
 
-    f1 = vsearch(flim[1], sf)
-    f2 = vsearch(flim[2], sf)
+    f1 = vsearch(flim[1], f)
+    f2 = vsearch(flim[2], f)
 
     # prepare plot
     GLMakie.activate!(title = "plot_psd()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -73,26 +73,26 @@ function plot_psd(
 
     # draw powers
     Makie.lines!(ax,
-                 sf[f1:f2],
-                 sp[f1:f2],
+                 f[f1:f2],
+                 p[f1:f2],
                  linewidth = 2,
                  color = :black)
 
-    return p
+    return fig
 
 end
 
 """
-    plot_psd(sf, sp; <keyword arguments>)
+    plot_psd(f, p; <keyword arguments>)
 
 Plot multi-channel PSD (power spectrum density).
 
 # Arguments
 
-- `sf::Vector{Float64}`: frequencies
-- `sp::Matrix{Float64}`: powers
-- `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limits
+- `f::Vector{Float64}`: frequencies
+- `p::Matrix{Float64}`: powers
+- `clabels::Vector{String}=string.(1:size(p, 1))`: channel labels
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -104,13 +104,13 @@ Plot multi-channel PSD (power spectrum density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_psd(
-        sf::Vector{Float64},
-        sp::Matrix{Float64};
-        clabels::Vector{String} = string.(1:size(sp, 1)),
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        f::Vector{Float64},
+        p::Matrix{Float64};
+        clabels::Vector{String} = string.(1:size(p, 1)),
+        flim::Tuple{Real, Real} = (f[1], f[end]),
         xlabel::String = "",
         ylabel::String = "",
         title::String = "",
@@ -121,28 +121,28 @@ function plot_psd(
         leg::Bool = true,
     )::GLMakie.Figure
 
-    ch_n = size(sp, 1)
+    ch_n = size(p, 1)
 
-    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
+    @assert size(p, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, extrema(sf), "flim")
+    _check_tuple(flim, extrema(f), "flim")
 
     pal = mono ? :grays : :darktest
 
-    f1 = vsearch(flim[1], sf)
-    f2 = vsearch(flim[2], sf)
+    f1 = vsearch(flim[1], f)
+    f2 = vsearch(flim[2], f)
 
     # get mean and 95%CI
     if ci95
-        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(sp[f1:f2])
+        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(p[f1:f2])
     end
 
     # prepare plot
     GLMakie.activate!(title = "plot_psd()")
     plot_size = (900, 450)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1],
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -168,17 +168,17 @@ function plot_psd(
 
     if ci95
         # draw 95% CI
-        Makie.band!(ax, sf[f1:f2], s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
+        Makie.band!(ax, f[f1:f2], s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
 
         # draw mean
-        Makie.lines!(ax, sf[f1:f2], s_m; color = :black, linewidth = 2)
+        Makie.lines!(ax, f[f1:f2], s_m; color = :black, linewidth = 2)
     else
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx in 1:ch_n
             Makie.lines!(
                 ax,
-                sf[f1:f2],
-                sp[idx, f1:f2];
+                f[f1:f2],
+                p[idx, f1:f2];
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -189,10 +189,10 @@ function plot_psd(
 
         # draw averaged channels
         if avg
-            s = mean(sp[f1:f2], dims = 1)[:]
+            s = mean(p[f1:f2], dims = 1)[:]
             Makie.lines!(
                 ax,
-                sf[f1:f2],
+                f[f1:f2],
                 s,
                 colormap = pal,
                 linewidth = 4,
@@ -204,22 +204,22 @@ function plot_psd(
 
     end
 
-    return p
+    return fig
 
 end
 
 """
-    plot_psd_3d(sf, sp; <keyword arguments>)
+    plot_psd_3d(f, p; <keyword arguments>)
 
 Plot 3-d PSD (power spectrum density).
 
 # Arguments
 
-- `sf::Vector{Float64}`: frequencies
-- `sp::Array{Float64, 3}`: powers
-- `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
+- `f::Vector{Float64}`: frequencies
+- `p::Array{Float64, 3}`: powers
+- `clabels::Vector{String}=string.(1:size(p, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
-- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limits
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `zlabel::String=""`: y-axis label
@@ -230,14 +230,14 @@ Plot 3-d PSD (power spectrum density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_psd_3d(
-        sf::Vector{Float64},
-        sp::Matrix{Float64};
-        clabels::Vector{String} = string.(1:size(sp, 1)),
+        f::Vector{Float64},
+        p::Matrix{Float64};
+        clabels::Vector{String} = string.(1:size(p, 1)),
         db::Bool = true,
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        flim::Tuple{Real, Real} = (f[1], f[end]),
         xlabel::String = "",
         ylabel::String = "",
         zlabel::String = "",
@@ -248,18 +248,18 @@ function plot_psd_3d(
     )::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
-    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
+    @assert size(p, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, extrema(sf), "flim")
+    _check_tuple(flim, extrema(f), "flim")
 
-    ch_n = size(sp, 1)
+    ch_n = size(p, 1)
 
     pal = mono ? :grays : :darktest
 
     if frq === :log && flim[1] == 0
         _warn("Currently log scale is not supported by Makie.")
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        flim = (sf[2], flim[2])
+        _warn("Lower frequency bound truncated to $(f[2]) Hz.")
+        flim = (f[2], flim[2])
     end
 
     if ch_n > 64
@@ -274,9 +274,9 @@ function plot_psd_3d(
     GLMakie.activate!(title = "plot_psd()")
     if variant === :w
         plot_size = (900, 450)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            p[1, 1];
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -306,9 +306,9 @@ function plot_psd_3d(
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx in 1:ch_n
             Makie.lines!(
-                sf,
-                ones(length(sf)) .* idx,
-                sp[idx, :];
+                f,
+                ones(length(f)) .* idx,
+                p[idx, :];
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
@@ -316,12 +316,12 @@ function plot_psd_3d(
             )
         end
     else
-        f1 = vsearch(flim[1], sf)
-        f2 = vsearch(flim[2], sf)
+        f1 = vsearch(flim[1], f)
+        f2 = vsearch(flim[2], f)
         plot_size = (900, 450)
-        p = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            p[1, 1];
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -348,24 +348,24 @@ function plot_psd_3d(
 
         # plot powers
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        Makie.surface!(sf[f1:f2], eachindex(clabels), sp[:, f1:f2]'; colormap = pal)
+        Makie.surface!(f[f1:f2], eachindex(clabels), p[:, f1:f2]'; colormap = pal)
     end
 
-    return p
+    return fig
 
 end
 
 """
-    plot_psd_topo(locs, sf, sp; <keyword arguments>)
+    plot_psd_topo(locs, f, p; <keyword arguments>)
 
 Plot topographical map of PSDs (power spectrum density).
 
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `sf::Vector{Float64}`: frequencies
-- `sp::Matrix{Float64}`: powers
-- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limits
+- `f::Vector{Float64}`: frequencies
+- `p::Matrix{Float64}`: powers
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -375,13 +375,13 @@ Plot topographical map of PSDs (power spectrum density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_psd_topo(
         locs::DataFrame,
-        sf::Vector{Float64},
-        sp::Matrix{Float64};
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
+        f::Vector{Float64},
+        p::Matrix{Float64};
+        flim::Tuple{Real, Real} = (f[1], f[end]),
         title::String = "",
         xlabel::String = "",
         ylabel::String = "",
@@ -390,24 +390,24 @@ function plot_psd_topo(
         head::Bool = true,
     )::GLMakie.Figure
 
-    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
+    @assert size(p, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(flim, extrema(sf), "flim")
+    _check_tuple(flim, extrema(f), "flim")
 
     if frq === :log && flim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        flim = (sf[2], flim[2])
+        _warn("Lower frequency bound truncated to $(f[2]) Hz.")
+        flim = (f[2], flim[2])
     end
 
     pos = collect(1:DataFrames.nrow(locs))
 
     # plot parameters
-    if size(sp, 1) <= 64
+    if size(p, 1) <= 64
         plot_size = (1000, 1000)
         marker_size = (150, 75)
         xl = 1.2
         yl = 1.2
-    elseif _in(size(sp, 1), (64, 100))
+    elseif _in(size(p, 1), (64, 100))
         plot_size = (1200, 1200)
         marker_size = (110, 55)
         xl = 1.5
@@ -434,13 +434,13 @@ function plot_psd_topo(
     # prepare PSD plots
     pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
-    for idx in axes(sp, 1)
-        pp = GLMakie.Figure(
+    for idx in axes(p, 1)
+        pfig = GLMakie.Figure(
             size = marker_size,
             figure_padding = 0,
         )
         ax = GLMakie.Axis(
-            pp[1, 1];
+            pp[1, 1],
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -452,11 +452,11 @@ function plot_psd_topo(
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot powers
-        GLMakie.lines!(ax, sf, sp[idx, :]; linewidth = 1, color = :black)
+        GLMakie.lines!(ax, f, p[idx, :]; linewidth = 1, color = :black)
         push!(pp_vec, pp)
         pp_full = plot_psd(
-            sf,
-            sp[idx, :];
+            f,
+            p[idx, :];
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,
@@ -468,12 +468,12 @@ function plot_psd_topo(
 
     # prepare plot
     GLMakie.activate!(title = "plot_psd()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
@@ -526,7 +526,7 @@ function plot_psd_topo(
         GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth = 3, color = :black)
     end
 
-    for idx in axes(sp, 1)
+    for idx in axes(p, 1)
         io = IOBuffer()
         show(io, MIME"image/png"(), pp_vec[idx])
         pp = FileIO.load(io)
@@ -557,7 +557,7 @@ function plot_psd_topo(
         end
     end
 
-    return p
+    return fig
 
 end
 
@@ -608,37 +608,37 @@ Plot PSD (power spectrum density).
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_psd(
-        obj::NeuroAnalyzer.NEURO;
-        seg::Tuple{Real, Real} = (0, 10),
-        ep::Int64 = 0,
-        ch::Union{String, Vector{String}, Regex} = datatype(obj),
-        db::Bool = true,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        ref::Symbol = :abs,
-        demean::Bool = true,
-        frq::Symbol = :lin,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        zlabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-        type::Symbol = :normal,
-        cart::Bool = false,
-        head::Bool = true,
-        leg::Bool = true,
-        avg::Bool = false,
-        ci95::Bool = false,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real} = (0, 10),
+    ep::Int64 = 0,
+    ch::Union{String, Vector{String}, Regex} = datatype(obj),
+    db::Bool = true,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    ref::Symbol = :abs,
+    demean::Bool = true,
+    frq::Symbol = :lin,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    zlabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    type::Symbol = :normal,
+    cart::Bool = false,
+    head::Bool = true,
+    leg::Bool = true,
+    avg::Bool = false,
+    ci95::Bool = false,
+)::GLMakie.Figure
 
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -700,7 +700,7 @@ function plot_psd(
     # calculate PSD
     if ref === :abs
         if method === :welch
-            sp, sf = psd(
+            p, f = psd(
                         signal,
                         fs = fs,
                         db = db,
@@ -716,7 +716,7 @@ function plot_psd(
                 title == "default" && (title = "Absolute PSD (Welch's periodogram)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :fft
-            sp, sf = psd(
+            p, f = psd(
                         signal,
                         fs = fs,
                         db = db,
@@ -730,7 +730,7 @@ function plot_psd(
                 title == "default" && (title = "Absolute PSD (fast Fourier transform)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :stft
-            sp, sf = psd(
+            p, f = psd(
                         signal,
                         fs = fs,
                         db = db,
@@ -747,7 +747,7 @@ function plot_psd(
                     (title = "Absolute PSD (short-time Fourier transform)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mt
-            sp, sf = psd(
+            p, f = psd(
                         signal,
                         fs = fs,
                         db = db,
@@ -764,7 +764,7 @@ function plot_psd(
                 title == "default" && (title = "Absolute PSD (multi-taper)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mw
-            sp, sf = psd(
+            p, f = psd(
                         signal,
                         fs = fs,
                         db = db,
@@ -779,7 +779,7 @@ function plot_psd(
                 title == "default" && (title = "Absolute PSD (Morlet wavelet convolution)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :gh
-            sp, sf = psd(
+            p, f = psd(
                         signal,
                         fs = fs,
                         db = db,
@@ -797,7 +797,7 @@ function plot_psd(
         end
     elseif ref === :total
         if method === :welch
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -814,7 +814,7 @@ function plot_psd(
                     (title = "PSD (Welch's periodogram) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :fft
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -829,7 +829,7 @@ function plot_psd(
                     (title = "PSD (fast Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :stft
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -847,7 +847,7 @@ function plot_psd(
                     (title = "PSD (short-time Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mt
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -864,7 +864,7 @@ function plot_psd(
                 title == "default" && (title = "PSD (multi-taper) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mw
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -880,7 +880,7 @@ function plot_psd(
                     (title = "PSD (Morlet wavelet convolution) relative to total power\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :gh
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -899,7 +899,7 @@ function plot_psd(
         end
     else
         if method === :welch
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -920,7 +920,7 @@ function plot_psd(
                 )
             end
         elseif method === :fft
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -939,7 +939,7 @@ function plot_psd(
                 )
             end
         elseif method === :stft
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -960,7 +960,7 @@ function plot_psd(
                 )
             end
         elseif method === :mt
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -981,7 +981,7 @@ function plot_psd(
                 )
             end
         elseif method === :mw
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -1001,7 +1001,7 @@ function plot_psd(
                 )
             end
         elseif method === :gh
-            sp, sf = psd_rel(
+            p, f = psd_rel(
                         signal,
                         fs = fs,
                         db = db,
@@ -1031,11 +1031,11 @@ function plot_psd(
             ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         if length(ch) == 1
-            p = plot_psd(sf, sp; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
+            p = plot_psd(f, p; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
         else
             p = plot_psd(
-                sf,
-                sp,
+                f,
+                p,
                 xlabel = xlabel,
                 ylabel = "",
                 clabels = clabels,
@@ -1054,8 +1054,8 @@ function plot_psd(
         zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         ch_t = obj.header.recording[:channel_type]
         p = plot_psd_3d(
-            sf,
-            sp,
+            f,
+            p,
             clabels = clabels,
             xlabel = xlabel,
             ylabel = ylabel,
@@ -1075,11 +1075,11 @@ function plot_psd(
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
+        ndims(p) == 1 && (p = reshape(p, 1, length(p)))
         p = plot_psd_topo(
             locs,
-            sf,
-            sp,
+            f,
+            p,
             xlabel = xlabel,
             ylabel = ylabel,
             title = title,
@@ -1090,6 +1090,6 @@ function plot_psd(
         )
     end
 
-    return p
+    return fig
 
 end

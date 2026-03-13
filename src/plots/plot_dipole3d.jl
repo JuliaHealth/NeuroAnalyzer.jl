@@ -12,7 +12,7 @@ Plot dipole in 3D.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 
 # Notes
 
@@ -59,11 +59,11 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)
     # prepare plot
     GLMakie.activate!(title = "plot_dipole_3d()")
     plot_size = (800, 800)
-    p = Figure(
+    fig = Figure(
         backgroundcolor = :black,
         size = plot_size,
     )
-    ax = Axis3(p[1, 1])
+    ax = Axis3(fig[1, 1])
     hidedecorations!(ax)
 
     GLMakie.mesh!(ax, brain_top_mesh, color = brain_top_texture, shading = NoShading)
@@ -82,6 +82,6 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)
         GLMakie.lines!(ax, [x, x], [y, 1.2], [z, z], linestyle = :dash, color = :red)
     end
 
-    return p
+    return fig
 
 end

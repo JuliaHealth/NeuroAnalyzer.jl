@@ -42,7 +42,7 @@ Plot topographical view.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_topo(
         s::AbstractVector;
@@ -184,12 +184,12 @@ function plot_topo(
 
     # prepare plot
     GLMakie.activate!(title = "plot_topo()")
-    p = GLMakie.Figure(
+    fig = GLMakie.Figure(
         size = plot_size,
         figure_padding = ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0), # L R B T
     )
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         aspect = 1,
         xlabel = "",
         ylabel = "",
@@ -327,7 +327,7 @@ function plot_topo(
     # draw colorbar
     if cb
         GLMakie.Colorbar(
-            p[1, 2],
+            fig[1, 2],
             hm;
             label = cb_title,
             labelsize = font_size - 4,
@@ -336,13 +336,13 @@ function plot_topo(
             width = ps === :l ? 25 : 10,
             tellheight = false,
         )
-        rowsize!(p.layout, 1, ax.scene.viewport[].widths[2])
-        colgap!(p.layout, 10)
+        rowsize!(fig.layout, 1, ax.scene.viewport[].widths[2])
+        colgap!(fig.layout, 10)
     end
 
-    resize_to_layout!(p)
+    resize_to_layout!(fig)
 
-    return p
+    return fig
 
 end
 
@@ -394,32 +394,32 @@ Topographical plot.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_topo(
-        obj::NeuroAnalyzer.NEURO;
-        data::Union{Nothing, AbstractArray} = nothing,
-        ch::Union{String, Vector{String}, Regex},
-        sch::Union{Nothing, String, Vector{String}, Regex} = nothing,
-        tpos::Union{Nothing, Real, AbstractVector} = nothing,
-        title::String = "default",
-        mono::Bool = false,
-        cb::Bool = true,
-        cb_title::String = "default",
-        amethod::Symbol = :mean,
-        imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
-        contours::Int64 = 0,
-        electrodes::Bool = true,
-        ps::Symbol = :l,
-        head::Bool = true,
-        cart::Bool = false,
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-        threshold_method::Symbol = :reg,
-        nr::Int64 = 1,
-        nc::Int64 = 0,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    data::Union{Nothing, AbstractArray} = nothing,
+    ch::Union{String, Vector{String}, Regex},
+    sch::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    tpos::Union{Nothing, Real, AbstractVector} = nothing,
+    title::String = "default",
+    mono::Bool = false,
+    cb::Bool = true,
+    cb_title::String = "default",
+    amethod::Symbol = :mean,
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+    contours::Int64 = 0,
+    electrodes::Bool = true,
+    ps::Symbol = :l,
+    head::Bool = true,
+    cart::Bool = false,
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+    threshold_method::Symbol = :reg,
+    nr::Int64 = 1,
+    nc::Int64 = 0,
+)::GLMakie.Figure
 
     # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one shared colorbar
     if length(tpos) > 1
@@ -499,7 +499,7 @@ function plot_topo(
 
     cb_title == "default" && (cb_title = "[A.U.]")
 
-    p = plot_topo(
+    fig = plot_topo(
         data;
         locs = locs,
         ch = collect(1:DataFrames.nrow(locs)),
@@ -520,6 +520,6 @@ function plot_topo(
         threshold_method = threshold_method,
     )
 
-    return p
+    return fig
 
 end

@@ -14,7 +14,7 @@ Plot 2-dimensional electric field.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64}, d::Int64 = 2)::GLMakie.Figure
 
@@ -49,9 +49,9 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
     # prepare plot
     GLMakie.activate!(title = "plot_efield()")
     plot_size = (800, 800)
-    p = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        p[1, 1];
+        fig[1, 1];
         aspect = DataAspect(),
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
@@ -78,6 +78,6 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
         )
     end
 
-    return p
+    return fig
 
 end
