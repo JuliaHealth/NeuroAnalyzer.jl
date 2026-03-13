@@ -894,17 +894,17 @@ ph, f = phsd(e10, ch="all")
 @test size(ph) == (24, 1281, 10)
 @test length(f) == 1281
 
-@info "Test: band_asymmetry()"
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:welch) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:fft) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:mt) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:stft) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:mw) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:gh) == (ba = 0.0, ba_norm = 0.0)
+@info "Test: asy_idx()"
+@test asy_idx(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:welch) == (asi = 0.0, nasi = 0.0)
+@test asy_idx(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:fft) == (asi = 0.0, nasi = 0.0)
+@test asy_idx(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:mt) == (asi = 0.0, nasi = 0.0)
+@test asy_idx(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:stft) == (asi = 0.0, nasi = 0.0)
+@test asy_idx(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:mw) == (asi = 0.0, nasi = 0.0)
+@test asy_idx(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:gh) == (asi = 0.0, nasi = 0.0)
 
-@info "Test: symmetry()"
-@test symmetry(v) == 19.0
-@test symmetry(e10, ch="Fp1") == [852.3333333333334 1279.0 852.3333333333334 852.3333333333334 1279.0 852.3333333333334 639.0 852.3333333333334 1279.0 1279.0]
+@info "Test: sym_idx()"
+@test sym_idx(v) == 19.0
+@test sym_idx(e10, ch="Fp1") == [852.3333333333334 1279.0 852.3333333333334 852.3333333333334 1279.0 852.3333333333334 639.0 852.3333333333334 1279.0 1279.0]
 
 @info "Test: lat_idx()"
 @test lat_idx(e10) isa Float64

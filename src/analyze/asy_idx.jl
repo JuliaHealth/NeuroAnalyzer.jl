@@ -1,12 +1,12 @@
-export band_asymmetry
+export asy_idx
 
 """
-    band_asymmetry(obj; <keyword arguments>)
+    asy_idx(obj; <keyword arguments>)
 
 Computes the log-ratio and normalized difference of mean band power between two sets of channels (typically left vs right hemisphere):
 
-- `ba = ln(mean_power(ch1)) - ln(mean_power(ch2))`: positive when ch1 has more power than ch2
-- `nba = (mean_power(ch1) - mean_power(ch2)) / (mean_power(ch1) + mean_power(ch2))`: bounded on (-1, 1), analogous to a contrast ratio
+- `asi = log(mean_power(ch1)) - log(mean_power(ch2))`: positive when ch1 has more power than ch2
+- `nasi = (mean_power(ch1) - mean_power(ch2)) / (mean_power(ch1) + mean_power(ch2))`: bounded on (-1, 1), analogous to a contrast ratio
 
 # Arguments
 
@@ -33,10 +33,10 @@ Computes the log-ratio and normalized difference of mean band power between two 
 
 Named tuple:
 
-- `ba::Float64`: log band asymmetry
-- `nba::Float64`: normalized band asymmetry
+- `asi::Float64`: log band asymmetry
+- `nasi::Float64`: normalized band asymmetry
 """
-function band_asymmetry(
+function asy_idx(
     obj::NeuroAnalyzer.NEURO;
     ch1::Union{String, Vector{String}, Regex},
     ch2::Union{String, Vector{String}, Regex},
@@ -49,7 +49,7 @@ function band_asymmetry(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true,
-)::@NamedTuple{ba::Float64, nba::Float64}
+)::@NamedTuple{asi::Float64, nasi::Float64}
 
     # resolve channel names to integer indices
     ch1 = get_channel(obj, ch = ch1)
@@ -80,11 +80,11 @@ function band_asymmetry(
     m2 = mean(bp2)
 
     # log asymmetry
-    ba = log(m1) - log(m2)
+    asi = log(m1) - log(m2)
 
     # normalized asymmetry
-    nba = (m1 - m2) / (m1 + m2)
+    nasi = (m1 - m2) / (m1 + m2)
 
-    return (ba = ba, nba = nba)
+    return (asi = asi, nasi = nasi)
 
 end

@@ -41,7 +41,7 @@ Calculate summed similarity using an exponential decay model between two signals
 
 # Returns
 
-- `ss::Matrix{Float64}`: signal symmetry
+- `ss::Matrix{Float64}`: summed similarity
 
 # Notes
 
@@ -71,7 +71,7 @@ end
 """
     sumsim(obj; <keyword arguments>)
 
-Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
+Calculate summed similarity using an exponential decay model between two signals.
 
 # Arguments
 
@@ -85,7 +85,7 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 
 # Returns
 
-- `ss::Matrix{Float64}`: signal symmetry
+- `ss::Matrix{Float64}`: summed similarity
 
 # Notes
 
