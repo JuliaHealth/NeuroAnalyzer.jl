@@ -57,7 +57,7 @@ The test statistic is: `z = (atanh(r1) − atanh(r2)) / √(1/(n1 − 3) + 1/(n2
 
 # Returns
 
-- `Float64`: z-score for the difference `r1 − r2`
+- `Float64`: Z-score for the difference `r1 − r2`
 
 # Throws
 

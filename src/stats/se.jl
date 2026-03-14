@@ -11,263 +11,363 @@ export sek
 """
     sem(x)
 
-Calculate standard error of the mean.
+Calculate the standard error of the mean.
+
+Computed as `std(x) / √n`.
 
 # Arguments
 
-- `x::AbstractVector`
+- `x::AbstractVector`: input vector; must contain at least 2 elements
 
 # Returns
 
-- `s::Float64`
+- `Float64`: standard error of the mean
+
+# Throws
+
+- `ArgumentError`: if `length(x) < 2`
+
+# See also
+
+[`semd`](@ref), [`sem_diff`](@ref)
 """
 function sem(x::AbstractVector)::Float64
 
-    s = std(x) / sqrt(length(x))
+    @assert length(x) >= 2 "x must contain at least 2 elements."
 
-    return s
+    return std(x) / sqrt(length(x))
 
 end
 
 """
     semd(x)
 
-Calculate standard error of the median.
+Calculate the standard error of the median.
+
+Approximated as `1.253 × std(x) / √n` (valid for large normal samples).
 
 # Arguments
 
-- `x::AbstractVector`
+- `x::AbstractVector`: input vector; must contain at least 2 elements
 
 # Returns
 
-- `s::Float64`
+- `Float64`: standard error of the median
+
+# Throws
+
+- `ArgumentError`: if `length(x) < 2`
+
+# See also
+
+[`sem`](@ref)
 """
 function semd(x::AbstractVector)::Float64
 
-    s = 1.253 * std(x) / sqrt(length(x))
+    @assert length(x) >= 2 "x must contain at least 2 elements."
 
-    return s
+    return 1.253 * std(x) / sqrt(length(x))
 
 end
 
 """
     sep(p, n)
 
-Calculate standard error of the proportion.
+Calculate the standard error of a proportion.
+
+Computed as `√(p(1 − p) / n)`.
 
 # Arguments
-
-- `p::Float64`: proportion
-- `n::Int64`: number of observations
+- `p::Float64`: proportion; must be in `[0, 1]`
+- `n::Int64`: number of observations; must be ≥ 1
 
 # Returns
 
-- `s::Float64`
+- `Float64`: standard error of the proportion
+
+# Throws
+
+- `ArgumentError`: if `p ∉ [0, 1]` or `n < 1`
+
+# See also
+
+[`sep_diff`](@ref)
 """
 function sep(p::Float64, n::Int64)::Float64
 
-    @assert n > 0 "n must be > 0."
     _in(p, (0.0, 1.0), "p")
+    @assert n >= 1 "n must be ≥ 1."
 
-    s = sqrt((p * (1 - p)) / n)
-
-    return s
+    return sqrt((p * (1 - p)) / n)
 
 end
 
 """
     sen(n)
 
-Calculate standard error of the number.
+Calculate the standard error of a count (`√n`).
 
 # Arguments
 
-- `n::Int64`: number of observations
+- `n::Int64`: number of observations; must be ≥ 1
 
 # Returns
 
-- `s::Float64`
+- `Float64`: √n.
+
+# Throws
+
+- `ArgumentError`: if `n < 1`
+
+# See also
+
+[`sen_diff`](@ref)
 """
 function sen(n::Int64)::Float64
 
-    @assert n > 0 "n must be > 0."
+    @assert n >= 1 "n must be ≥ 1."
 
-    s = sqrt(n)
-
-    return s
+    return sqrt(n)
 
 end
 
 """
     sem_diff(x, y)
 
-Calculate SEM (standard error of the mean) of difference between two means.
+Calculate the standard error of the difference between two means.
+
+For equal-length vectors: `√(SEM(x)² + SEM(y)²)`.
+
+For unequal-length vectors: pooled SD × `√(1/n1 + 1/n2)`.
 
 # Arguments
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+- `x::AbstractVector`: first sample; must contain at least 2 elements
+- `y::AbstractVector`: second sample; must contain at least 2 elements
 
 # Returns
 
-- `sd::Float64`
+- `Float64`: standard error of the mean difference
+
+# Throws
+
+- `ArgumentError`: if either vector has fewer than 2 elements
+
+# See also
+
+[`sem`](@ref), [`sep_diff`](@ref)
 """
 function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
 
-    if length(x) == length(y)
-        sd = sqrt(sem(x)^2 + sem(y)^2)
-    else
-        sd = stdp(x, y) * sqrt(1 / legth(x) + 1 / length(y))
-    end
+    @assert length(x) >= 2 "x must contain at least 2 elements."
+    @assert length(y) >= 2 "y must contain at least 2 elements."
 
-    return sd
+    if length(x) == length(y)
+        return sqrt(sem(x)^2 + sem(y)^2)
+    else
+        return stdp(x, y) * sqrt(1 / length(x) + 1 / length(y))
+    end
 
 end
 
 """
     sep_diff(p1, p2, n1, n2)
 
-Calculate standard error of the difference of two proportions.
+Calculate the standard error of the difference between two proportions.
+
+Computed as `√(p1(1−p1)/n1 + p2(1−p2)/n2)`.
 
 # Arguments
-
-- `p1::Float64`: proportion 1
-- `p2::Float64`: proportion 1
-- `n1::Int64`: number of observations in group 1
-- `n2::Int64`: number of observations in group 2
+- `p1::Float64`: proportion of group 1; must be in `[0, 1]`
+- `p2::Float64`: proportion of group 2; must be in `[0, 1]`
+- `n1::Int64`: group 1 sample size; must be ≥ 1
+- `n2::Int64`: group 2 sample size; must be ≥ 1
 
 # Returns
 
-- `s::Float64`
-"""
-function sep_diff(p1::Float64, p2::Float64, n1::Int64, n2::Int64)::Float64
+- `Float64`: standard error of the difference in proportions
 
-    @assert n1 > 0 "n1 must be > 0."
-    @assert n2 > 0 "n2 must be > 0."
+# Throws
+
+- `ArgumentError`: if proportions out of range or `n1`/`n2` < 1
+
+# See also
+
+[`sep`](@ref), [`sem_diff`](@ref)
+"""
+function sep_diff(
+    p1::Float64,
+    p2::Float64,
+    n1::Int64,
+    n2::Int64
+)::Float64
+
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
+    @assert n1 >= 1 "n1 must be ≥ 1."
+    @assert n2 >= 1 "n2 must be ≥ 1."
 
-    s = sqrt(((p1 * (1 - p1)) / n1) + ((p2 * (1 - p2)) / n2))
-
-    return s
+    return sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)
 
 end
 
 """
     sen_diff(n1, n2)
 
-Calculate standard error of the difference between two numbers.
+Calculate the standard error of the difference between two counts.
+
+Computed as `√(n1 + n2)`.
 
 # Arguments
 
-- `n1::Int64`: number of observations in group 1
-- `n2::Int64`: number of observations in group 2
+- `n1::Int64`: group 1 count; must be ≥ 1
+- `n2::Int64`: group 2 count; must be ≥ 1
 
 # Returns
 
-- `s::Float64`
+- `Float64`: `√(n1 + n2)`
+
+# Throws
+
+- `ArgumentError`: if `n1 < 1` or `n2 < 1`
+
+# See also
+
+[`sen`](@ref)
 """
 function sen_diff(n1::Int64, n2::Int64)::Float64
 
-    @assert n1 > 0 "n1 must be > 0."
-    @assert n2 > 0 "n2 must be > 0."
+    @assert n1 >= 1 "n1 must be ≥ 1."
+    @assert n2 >= 1 "n2 must be ≥ 1."
 
-    s = sqrt(n1 + n2)
-
-    return s
+    return sqrt(n1 + n2)
 
 end
 
 """
     ses(x)
 
-Calculate standard error of the skewness.
+Calculate the standard error of skewness.
+
+Computed as `√(6n(n−1) / ((n−2)(n+1)(n+3)))`.
+
+Requires `n ≥ 3` so that the denominator is non-zero.
 
 # Arguments
 
-- `x::AbstractVector`
+- `x::AbstractVector`: input vector; must contain at least 3 elements
 
 # Returns
 
-- `s::Float64`
+- `Float64`: standard error of skewness
+
+# Throws
+
+- `ArgumentError`: if `length(x) < 3`
+
+# See also
+
+[`sek`](@ref)
 """
 function ses(x::AbstractVector)::Float64
 
     n = length(x)
-    @assert n > 0 "x length must be > 0."
+    @assert n >= 3 "x must contain at least 3 elements."
 
-    s = sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
-
-    return s
+    return sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
 
 end
 
 """
     ses(n)
 
-Calculate standard error of the skewness.
+Calculate the standard error of skewness for a sample of size `n`.
 
 # Arguments
 
-- `n::Int64`: number of observations
+- `n::Int64`: sample size; must be ≥ 3
 
 # Returns
 
-- `s::Float64`
+- `Float64`: standard error of skewness
+
+# Throws
+
+- `ArgumentError`: if `n < 3`
+
+# See also
+
+[`sek`](@ref)
 """
 function ses(n::Int64)::Float64
 
-    @assert n > 0 "n must be > 0."
+    @assert n >= 3 "n must be ≥ 3."
 
-    s = sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
-
-    return s
+    return sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
 
 end
 
 """
     sek(x)
 
-Calculate standard error of the kurtosis.
+Calculate the standard error of kurtosis.
+
+Computed as `2 × (n−1) × √(6n / ((n−2)(n−3)(n+3)(n+5)))`.
+
+Requires `n ≥ 4` so that the `(n−3)` term in the denominator is non-zero.
 
 # Arguments
 
-- `x::AbstractVector`
+- `x::AbstractVector`: input vector; must contain at least 4 elements.
 
 # Returns
 
-- `s::Float64`
+- `Float64`: standard error of kurtosis
+
+# Throws
+
+- `ArgumentError`: if `length(x) < 4`
+
+# See also
+
+[`ses`](@ref)
 """
 function sek(x::AbstractVector)::Float64
 
     n = length(x)
-    @assert n > 0 "x length must be > 0."
+    @assert n >= 4 "x must contain at least 4 elements."
 
-    s = 2 * (n - 1) * sqrt((6 * n) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)))
-
-    return s
+    return 2 * (n - 1) * sqrt((6 * n) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)))
 
 end
 
 """
-    ses(n)
+    sek(n)
 
-Calculate standard error of the skewness.
+Calculate the standard error of kurtosis for a sample of size `n`.
+
+Computed as `2 × (n−1) × √(6n / ((n−2)(n−3)(n+3)(n+5)))`.
 
 # Arguments
 
-- `n::Int64`: number of observations
+- `n::Int64`: sample size; must be ≥ 4
 
 # Returns
 
-- `s::Float64`
+- `Float64`: standard error of kurtosis
+
+# Throws
+
+- `ArgumentError`: if `n < 4`
+
+# See also
+
+[`ses`](@ref)
 """
 function sek(n::Int64)::Float64
 
-    @assert n > 0 "n must be > 0."
+    @assert n >= 4 "n must be ≥ 4."
 
-    s = sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
-
-    return s
+    return 2 * (n - 1) * sqrt((6 * n) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)))
 
 end

@@ -5,7 +5,7 @@ export crit_chi
 """
     crit_z(alpha; <keyword arguments>)
 
-Calculate the critical z-score for a given significance level.
+Calculate the critical Z-score for a given significance level.
 
 # Arguments
 
@@ -14,7 +14,7 @@ Calculate the critical z-score for a given significance level.
 
 # Returns
 
-- `Float64`: critical z-score (always positive; the rejection region is symmetric around zero)
+- `Float64`: critical Z-score (always positive; the rejection region is symmetric around zero)
 
 # Throws
 

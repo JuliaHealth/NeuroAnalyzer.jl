@@ -4,53 +4,71 @@ export dranks
 """
     prank(x)
 
-Calculate percentile ranks.
+Calculate percentile ranks for each element of `x`.
+
+The percentile rank of element `xᵢ` is the proportion of values in `x` that are strictly less than `xᵢ`, expressed as a value in `[0, 1)`: `PR(xᵢ) = count(x .< xᵢ) / length(x)`
+
+Ties receive the same rank. Results are returned in the original element order.
 
 # Arguments
 
-- `x::AbstractVector`: the vector to analyze
+- `x::AbstractVector`: input vector; must not be empty
 
 # Returns
 
-- `p::Vector{Float64}`: percentile ranks
+- `Vector{Float64}`: percentile ranks ∈ `[0, 1)`, in the same order as `x`
+
+# Throws
+
+- `ArgumentError`: if `x` is empty
+
+# See also
+[`dranks`](@ref)
 """
 function prank(x::AbstractVector)::Vector{Float64}
 
-    xorder = sortperm(x)
-    x = sort(x)
-    p = zeros(length(x))
+    @assert length(x) > 0 "x must not be empty."
+    n = length(x)
 
-    for idx in eachindex(x)
-        percentile = length(x[x .< x[idx]]) / length(x) * 100
-        p[idx] = percentile / (100 * (length(x) + 1))
-    end
-
-    return p[xorder]
+    return [count(<(xi), x) / n for xi in x]
 
 end
 
 """
     dranks(x, nbins)
 
-Calculate ranks scaled in 0..nbins.
+Scale tied ranks into discrete bins `1 … nbins`.
+
+Tied ranks are computed with `StatsBase.tiedrank`, normalised to `(0, 1]`, then mapped to integers in `[1, nbins]` via `ceil`.
 
 # Arguments
 
-- `x::AbstractArray`: some continuous variable, such as reaction time (the time it takes to indicate the response)
-- `nbins::Int64`: number of bins, default is Sturges' formula (`nbins = 1 + log2(length(x)))`)
+- `x::AbstractArray`: input array of continuous values; must not be empty
+- `nbins::Int64`: number of bins; defaults to Sturges' formula `ceil(Int64, 1 + log2(length(x)))`; must be ≥ 1
 
 # Returns
 
-- `sr::Array{Int64}`
+- `Array{Int64}`: rank-bin indices ∈ `[1, nbins]`, same shape as `x`
+
+# Throws
+
+- `ArgumentError`: if `x` is empty or `nbins < 1`
+
+# See also
+
+[`prank`](@ref)
 """
-function dranks(x::AbstractArray, nbins::Int64 = round(Int64, 1 + log2(length(x))))::Array{Int64}
+function dranks(
+    x::AbstractArray,
+    nbins::Int64=ceil(Int64, 1 + log2(length(x))),
+)::Array{Int64}
 
-    # scale ranks in 0..1
-    r = tiedrank(x) ./ length(x)
+    @assert length(x) > 0 "x must not be empty."
+    @assert nbins >= 1 "nbins must be ≥ 1."
 
-    # scale ranks in 0..nbins
-    sr = ceil.(Int64, r .* nbins)
+    # normalise tied ranks to (0, 1], then bin into 1..nbins
+    r  = tiedrank(x) ./ length(x)
 
-    return sr
+    return ceil.(Int64, r .* nbins)
 
 end

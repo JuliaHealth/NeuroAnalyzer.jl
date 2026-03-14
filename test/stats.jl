@@ -302,9 +302,6 @@ y = ones(10) .+ 0.5
 @info "Test: op()"
 @test op([1, 2, 3], [0.5, 2, 1]) == [0.5 2.0 1.0; 1.0 4.0 2.0; 1.5 6.0 3.0]
 
-@info "Test: angle()"
-@test NeuroAnalyzer.angle([1.0+1.0im, 2.0+2.0im]) == [0.7853981633974483, 0.7853981633974483]
-
 @info "Test: rmna()"
 @test NeuroAnalyzer.rmna([1, NaN, 2.0, missing]) == [1.0, 2.0]
 

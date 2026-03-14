@@ -3,7 +3,7 @@ export zscore
 """
     zscore(x)
 
-Calculate z-scores for each value of the vector `x`.
+Calculate Z-scores for each value of the vector `x`.
 
 # Arguments
 
@@ -26,7 +26,7 @@ end
 """
     zscore(x, m, sd)
 
-Calculate z-score for `x`.
+Calculate Z-score for `x`.
 
 # Arguments
 

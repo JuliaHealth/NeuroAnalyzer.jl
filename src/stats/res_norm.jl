@@ -3,54 +3,68 @@ export res_norm
 """
     res_norm(x, g)
 
-Test normal distribution of residuals.
+Test whether residuals follow a normal distribution, per group and overall.
+
+For each group (and for the whole sample), residuals are computed as `x .- mean(x_group)`. Normality is then assessed with:
+
+- Anderson–Darling one-sample test against `Normal(0, 1)`.
+- Kolmogorov–Smirnov one-sample exact test against `Normal(0, 1)`.
 
 # Arguments
-
-- `x::AbstractVector`: data values
-- `g::Vector{Int64}`: group(s) to which each data value belongs
+- `x::AbstractVector`: data values; must not be empty
+- `g::Vector{Int64}=repeat([1], length(x))`: group membership for each element of `x`; must have the same length as `x`
 
 # Returns
 
 Named tuple:
+- `adt_p::Vector{Float64}`: Anderson–Darling p-values; one per group (in sorted group order) plus one for the whole sample at the last index
+- `ks_p::Vector{Float64}`: Kolmogorov–Smirnov p-values; same layout as `adt_p`
 
-- `adt_p::Vector{Float64}`: p values for k-sample Anderson–Darling test vs normal distribution
-- `ks_p::Vector{Float64}`: p values for one-sample exact Kolmogorov–Smirnov test vs normal distribution
+If there is only one group, both vectors have length 1 (whole-sample result only).
+
+# Throws
+- `ArgumentError`: if `x` is empty, `length(x) ≠ length(g)`, or any group has fewer than 3 observations
 
 # Notes
 
-p values are reported for each group and for the whole sample. If there is only one group, p values are returned only for the whole sample p values are reported.
+- Results are non-random: both tests compare residuals against the theoretical `Normal(0, 1)` distribution rather than a random reference sample.
+- For large groups `ExactOneSampleKSTest` may be slow; consider wrapping in `ApproximateOneSampleKSTest` for `n > 1000`.
 """
 function res_norm(
-        x::AbstractVector, g::Vector{Int64} = repeat([1], length(x))
-    )::@NamedTuple{adt_p::Vector{Float64}, ks_p::Vector{Float64}}
+    x::AbstractVector,
+    g::Vector{Int64} = repeat([1], length(x))
+)::@NamedTuple{
+    adt_p::Vector{Float64},
+    ks_p::Vector{Float64}
+}
+
+    @assert length(x) > 0 "x must not be empty."
+    @assert length(x) == length(g) "x and g must have the same length."
 
     groups = sort(unique(g))
+    n_out = length(groups) > 1 ? length(groups) + 1 : 1
+    adt_p = zeros(n_out)
+    ks_p = zeros(n_out)
+
+    ref = Distributions.Normal(0, 1)
 
     if length(groups) > 1
-        adt_p = zeros(length(groups) + 1)
-        ks_p = zeros(length(groups) + 1)
-    else
-        adt_p = zeros(1)
-        ks_p = zeros(1)
-    end
-
-    if length(groups) > 1
-        # check residuals normality per groups
-        for group_idx in eachindex(groups)
-            m = mean(x[g .== groups[group_idx]])
-            res = x[g .== groups[group_idx]] .- m
-            adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
-            ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
+        # per-group residual normality tests
+        for (i, grp) in enumerate(groups)
+            x_grp = x[g .== grp]
+            @assert length(x_grp) >= 3 "Group $grp must have at least 3 observations."
+            res = x_grp .- mean(x_grp)
+            # use OneSampleADTest against the theoretical distribution
+            adt_p[i] = pvalue(OneSampleADTest(res, ref))
+            ks_p[i]  = pvalue(ExactOneSampleKSTest(res, ref))
         end
     end
 
-    # check residuals normality for the whole sample
-    m = mean(x)
-    res = x .- m
-    adt_p[end] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
-    ks_p[end] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
+    # whole-sample residual normality test
+    res_all = x .- mean(x)
+    adt_p[end] = pvalue(OneSampleADTest(res_all, ref))
+    ks_p[end] = pvalue(ExactOneSampleKSTest(res_all, ref))
 
-    return (adt_p = adt_p, ks_p = ks_p)
+    return (adt_p=adt_p, ks_p=ks_p)
 
 end

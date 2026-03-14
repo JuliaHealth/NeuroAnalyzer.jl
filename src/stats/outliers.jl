@@ -25,7 +25,7 @@ Detect outliers in a vector using a selected method.
 - `x::AbstractVector`: input vector; must contain at least 7 elements when using `method = :g`
 - `method::Symbol=:iqr`: detection method:
     - `:iqr`: interquartile range (flags values outside `Q1 − 1.5×IQR` and `Q3 + 1.5×IQR`)
-    - `:z`: z-score (flags values with `|z| > 3`)
+    - `:z`: Z-score (flags values with `|z| > 3`)
     - `:g`: iterative Grubbs test applied to both tails
 
 # Returns

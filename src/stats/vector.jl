@@ -1,37 +1,30 @@
 export op
-export angle
 
 """
     op(x, y)
 
-Calculate outer product of two vectors.
+Calculate the outer product of two vectors.
+
+Computed as `x × yᵀ`, producing a matrix of shape `(length(x) × length(y))`.
 
 # Arguments
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+- `x::AbstractVector`: left vector; must not be empty
+- `y::AbstractVector`: right vector; must not be empty
 
 # Returns
 
-- `op::AbstractMatrix`
+- `Matrix`: outer product matrix of shape `(length(x), length(y))`
+
+# Throws
+
+- `ArgumentError`: If either vector is empty.
 """
 function op(x::AbstractVector, y::AbstractVector)::AbstractMatrix
+
+    @assert length(x) > 0 "x must not be empty."
+    @assert length(y) > 0 "y must not be empty."
+
     return x * y'
-end
 
-"""
-    angle(x)
-
-Return the phase angles (in radians) of a vector with complex elements.
-
-# Arguments
-
-- `x::Vector{ComplexF64}`
-
-# Returns
-
-- `angle::Vector{Float64}`
-"""
-function angle(x::Vector{ComplexF64})::Vector{Float64}
-    return atan.(imag.(x), real.(x))
 end
