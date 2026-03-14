@@ -22,8 +22,8 @@ Resample to `new_sr` sampling frequency.
 """
 function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float64}
 
-    @assert old_sr >= 1 "old_sr must be ≥ 1."
-    @assert new_sr >= 1 "new_sr must be ≥ 1."
+    !(old_sr >= 1) && throw(ArgumentError("old_sr must be ≥ 1."))
+    !(new_sr >= 1) && throw(ArgumentError("new_sr must be ≥ 1."))
 
     new_sr == old_sr && return (s)
 
@@ -53,7 +53,7 @@ Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64, 3}
 
     _chk3d(s)
-    @assert new_sr >= 1 "new_sr must be ≥ 1."
+    !(new_sr >= 1) && throw(ArgumentError("new_sr must be ≥ 1."))
 
     ch_n, _, ep_n = size(s)
 
@@ -88,7 +88,7 @@ Resample (up- or down-sample).
 """
 function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
-    @assert new_sr >= 1 "new_sr must be ≥ 1."
+    !(new_sr >= 1) && throw(ArgumentError("new_sr must be ≥ 1."))
 
     if new_sr > sr(obj)
         return upsample(obj, new_sr = new_sr)

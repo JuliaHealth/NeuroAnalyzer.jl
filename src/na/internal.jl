@@ -88,7 +88,7 @@ function _wip()::Nothing
 end
 
 function _load_functions(f::String)
-    @assert isdir("src/$f") "Directory src/$f does not exist."
+    !(isdir("src/$f")) && throw(ArgumentError("Directory src/$f does not exist."))
     files = readdir("src/$f")
     if length(files) > 0
         _info("Loading sub-module: $f")

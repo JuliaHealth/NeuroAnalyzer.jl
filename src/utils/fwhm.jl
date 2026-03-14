@@ -30,7 +30,7 @@ Calculate the indices of the full-width at half-maximum (FWHM) points of a Gauss
 """
 function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
 
-    @assert length(s) >= 2 "s must contain at least 2 elements."
+    !(length(s) >= 2) && throw(ArgumentError("s must contain at least 2 elements."))
 
     # normalize to [0, 1] so the half-maximum level is always 0.5
     s = normalize_n(s)

@@ -37,7 +37,7 @@ Named tuple:
 """
 function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
 
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     return (k1=sqrt(n), k2=1 + 3.222 * log10(n))
 
@@ -67,7 +67,7 @@ Calculate the slope of the line passing through two points.
 """
 function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
-    @assert p2[1] != p1[1] "p2[1] and p1[1] must not be equal (vertical line has no slope)."
+    !(p2[1] != p1[1]) && throw(ArgumentError("p2[1] and p1[1] must not be equal (vertical line has no slope)."))
 
     return (p2[2] - p1[2]) / (p2[1] - p1[1])
 
@@ -175,7 +175,7 @@ Calculate the proportion of elements in a statistic distribution that are greate
 function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float64
 
     _check_var(type, [:g, :l], "type")
-    @assert length(stat_dist) > 0 "stat_dist must not be empty."
+    !(length(stat_dist) > 0) && throw(ArgumentError("stat_dist must not be empty."))
 
     if type === :g
         return count(>(v), stat_dist) / length(stat_dist)
@@ -211,8 +211,8 @@ Each permutation randomly selects a split point and rotates the vector (moves th
 """
 function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
 
-    @assert n >= 1 "n must be ≥ 1."
-    @assert length(s) >= 2 "s must contain at least 2 elements."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(length(s) >= 2) && throw(ArgumentError("s must contain at least 2 elements."))
 
     # pre-allocate output
     s_new = zeros(n, length(s))
@@ -252,9 +252,9 @@ Each permutation randomly selects a split point along the second axis and rotate
 """
 function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
 
-    @assert n >= 1 "n must be ≥ 1."
-    @assert 2 <= ndims(s) <= 3 "permute() only supports 2- and 3-dimensional arrays."
-    @assert size(s, 2) >= 2 "Second dimension of s must be ≥ 2."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(2 <= ndims(s) <= 3) && throw(ArgumentError("permute() only supports 2- and 3-dimensional arrays."))
+    !(size(s, 2) >= 2) && throw(ArgumentError("Second dimension of s must be ≥ 2."))
 
     ncols = size(s, 2)
 
@@ -345,7 +345,7 @@ Computed as `Σ(xᵢ − x̄)²`.
 """
 function sumsq(x::AbstractVector)::Float64
 
-    @assert length(x) >= 2 "x must contain at least 2 elements."
+    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
     m = mean(x)
 
     return sum((x .- m) .^ 2)
@@ -397,7 +397,7 @@ Calculate the degrees of freedom for a vector (`length(x) − 1`).
 """
 function df(x::AbstractVector)::Int64
 
-    @assert length(x) >= 1 "x must not be empty."
+    !(length(x) >= 1) && throw(ArgumentError("x must not be empty."))
 
     return length(x) - 1
 
@@ -422,7 +422,7 @@ Center a vector by subtracting its mean.
 """
 function center(x::AbstractVector)::Vector{Float64}
 
-    @assert length(x) >= 1 "x must not be empty."
+    !(length(x) >= 1) && throw(ArgumentError("x must not be empty."))
 
     return x .- mean(x)
 

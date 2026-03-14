@@ -16,7 +16,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 """
 function derivative(s::AbstractVector)::AbstractVector
 
-    @assert length(s) > 2 "Signal length must be > 2."
+    !(length(s) > 2) && throw(ArgumentError("Signal length must be > 2."))
 
     dv = diff(s) / 2       # half the derivative
     s_new = [dv[1]; dv]     # copies first element

@@ -33,7 +33,7 @@ Calculate upper cubic-spline envelope from local maxima.
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
 
-    @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
+    !(length(s) == length(x)) && throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
 
     e = zeros(length(s))
 
@@ -74,7 +74,7 @@ Calculate lower cubic-spline envelope from local minima.
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
 
-    @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
+    !(length(s) == length(x)) && throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
 
     e = zeros(length(s))
 
@@ -229,12 +229,12 @@ function tenv_mean(
 }
 
     if dims == 1
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     tenv_data = tenv(obj, ch = ch, d = d)
@@ -324,12 +324,12 @@ function tenv_median(
 }
 
     if dims == 1
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     tenv_data = tenv(obj, ch = ch, d = d)
@@ -535,12 +535,12 @@ function penv_mean(
 }
 
     if dims == 1
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     penv_data = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen,
@@ -665,12 +665,12 @@ function penv_median(
 }
 
     if dims == 1
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     penv_data = penv(obj,
@@ -997,12 +997,12 @@ function senv_mean(
 } where {T <: CWT}
 
     if dims == 1
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     env_data = senv(
@@ -1153,12 +1153,12 @@ function senv_median(
 } where {T <: CWT}
 
     if dims == 1
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     senv_data = senv(obj,
@@ -1331,12 +1331,12 @@ function henv_mean(
     }
 
     if dims == 1
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     henv_data = henv(obj, ch = ch, d = d)
@@ -1426,12 +1426,12 @@ function henv_median(
 }
 
     if dims == 1
-        @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
+        !(nchannels(obj) >= 1) && throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
+        !(nepochs(obj) >= 1) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
-        @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
+        !(nchannels(obj) >= 1) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        !(nepochs(obj) >= 1) && throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     s_a, t = henv(obj, ch = ch, d = d)
@@ -1499,7 +1499,7 @@ Named tuple:
 """
 function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
 
-    @assert size(env1) == size(env2) "Both envelopes must have the same size."
+    !(size(env1) == size(env2)) && throw(ArgumentError("Both envelopes must have the same size."))
 
     ep_n = size(env1, 3)
     ec = zeros(ep_n)

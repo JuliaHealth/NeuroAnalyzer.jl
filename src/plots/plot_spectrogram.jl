@@ -58,9 +58,9 @@ function plot_spectrogram(
         threshold_type::Symbol = :neq,
     )::GLMakie.Figure
 
-    @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
-    @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
-    @assert n > 0 "n must be ≥ 1."
+    !(size(sp, 2) == length(st)) && throw(ArgumentError("Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."))
+    !(size(sp, 1) == length(sf)) && throw(ArgumentError("Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."))
+    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -191,9 +191,9 @@ function plot_spectrogram(
         threshold_type::Symbol = :neq,
     )::GLMakie.Figure
 
-    @assert size(sp, 1) == length(clabels) "Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."
-    @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."
-    @assert n > 0 "n must be ≥ 1."
+    !(size(sp, 1) == length(clabels)) && throw(ArgumentError("Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."))
+    !(size(sp, 2) == length(sf)) && throw(ArgumentError("Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."))
+    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -318,10 +318,10 @@ function plot_spectrogram_topo(
         head::Bool = true,
     )::GLMakie.Figure
 
-    @assert size(sp, 3) == DataFrames.nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."
-    @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
-    @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
-    @assert n > 0 "n must be ≥ 1."
+    !(size(sp, 3) == DataFrames.nrow(locs)) && throw(ArgumentError("Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."))
+    !(size(sp, 2) == length(st)) && throw(ArgumentError("Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."))
+    !(size(sp, 1) == length(sf)) && throw(ArgumentError("Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."))
+    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -591,21 +591,21 @@ function plot_spectrogram(
 
     _check_var(type, [:normal, :topo], "type")
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
-    @assert n > 0 "n must be ≥ 1."
+    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     if method === :cwt
         if type === :normal
-            @assert length(ch) == 1 "For :cwt method only one channel must be selected."
+            !(length(ch) == 1) && throw(ArgumentError("For :cwt method only one channel must be selected."))
         end
     end
     if type === :topo
-        @assert method !== :hht "For :hht method topographical map is not available."
+        !(method !== :hht) && throw(ArgumentError("For :hht method topographical map is not available."))
     end
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
-        @assert ep == 0 "For continuous object, ep must not be specified."
+        !(ep == 0) && throw(ArgumentError("For continuous object, ep must not be specified."))
         if obj.time_pts[end] < 10 && seg == (0, 10)
             seg = (0, obj.time_pts[end])
         else
@@ -615,7 +615,7 @@ function plot_spectrogram(
         signal = @views obj.data[ch, seg[1]:seg[2], 1]
         t = obj.time_pts[seg[1]:seg[2]]
     else
-        @assert ep != 0 "For epoched object, ep must be specified."
+        !(ep != 0) && throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
         signal = @views obj.data[ch, :, ep]
@@ -808,7 +808,7 @@ function plot_spectrogram(
         xlabel == "default" && (xlabel = "Time [s]")
         ylabel == "default" && (ylabel = "Frequency [Hz]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
+        !(length(unique(obj.header.recording[:channel_type][ch])) == 1) && throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)

@@ -39,16 +39,16 @@ function plot_cont(
         gui::Bool = true,
     )::GLMakie.Figure
 
-    @assert size(obj1) == size(obj2) "Size of OBJ1 and OBJ2 must equal."
-    @assert sr(obj1) == sr(obj2) "Sampling rate of OBJ1 and OBJ2 must equal."
-    @assert labels(obj1) == labels(obj2) "Labels of OBJ1 and OBJ2 must equal."
-    @assert obj1.header.recording[:channel_type] == obj2.header.recording[:channel_type] "Channel types of OBJ1 and OBJ2 must equal."
-    @assert obj1.header.recording[:unit] == obj2.header.recording[:unit] "Channel units of OBJ1 and OBJ2 must equal."
+    !(size(obj1) == size(obj2)) && throw(ArgumentError("Size of OBJ1 and OBJ2 must equal."))
+    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("Sampling rate of OBJ1 and OBJ2 must equal."))
+    !(labels(obj1) == labels(obj2)) && throw(ArgumentError("Labels of OBJ1 and OBJ2 must equal."))
+    !(obj1.header.recording[:channel_type] == obj2.header.recording[:channel_type]) && throw(ArgumentError("Channel types of OBJ1 and OBJ2 must equal."))
+    !(obj1.header.recording[:unit] == obj2.header.recording[:unit]) && throw(ArgumentError("Channel units of OBJ1 and OBJ2 must equal."))
 
-    @assert res >= 1 "res must be ≥ 1."
+    !(res >= 1) && throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
-    @assert n_channels >= 1 "n_channels must be ≥ 1."
-    @assert n_channels <= nchannels(obj1) "n_channels must be ≤ $(nchannels(obj1))."
+    !(n_channels >= 1) && throw(ArgumentError("n_channels must be ≥ 1."))
+    !(n_channels <= nchannels(obj1)) && throw(ArgumentError("n_channels must be ≤ $(nchannels(obj1))."))
 
     if signal_len(obj1) <= seg[2] * sr(obj1)
         seg = (obj1.time_pts[1], obj1.time_pts[end])

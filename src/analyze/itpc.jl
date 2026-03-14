@@ -45,9 +45,9 @@ function itpc(
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
-    @assert t >= 1 "t must be ≥ 1."
-    @assert t <= size(s, 2) "t must be ≤ $(size(s, 2))."
-    @assert size(s, 1) == 1 "s must have 1 channel."
+    !(t >= 1) && throw(ArgumentError("t must be ≥ 1."))
+    !(t <= size(s, 2)) && throw(ArgumentError("t must be ≤ $(size(s, 2))."))
+    !(size(s, 1) == 1) && throw(ArgumentError("s must have 1 channel."))
 
     # number of epochs
     ep_n = size(s, 3)
@@ -55,7 +55,7 @@ function itpc(
     isnothing(w) && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    @assert length(w) == ep_n "Length of w ($(length(w))) and number of epochs ($ep_n) must be equal."
+    !(length(w) == ep_n) && throw(ArgumentError("Length of w ($(length(w))) and number of epochs ($ep_n) must be equal."))
 
     # compute instantaneous phase for every epoch
     s_phase = zeros(size(s, 2), ep_n)
@@ -117,7 +117,7 @@ function itpc(
 
     # number of epochs
     ep_n = nepochs(obj)
-    @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
+    !(ep_n >= 2) && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -189,7 +189,7 @@ function itpc_spec(
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    @assert size(s, 1) == 1 "s must have 1 channel."
+    !(size(s, 1) == 1) && throw(ArgumentError("s must have 1 channel."))
 
     # number of epochs
     ep_n = size(s, 3)
@@ -197,7 +197,7 @@ function itpc_spec(
     w === nothing && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    @assert length(w) == ep_n "Length of w ($(length(w))) and number of epochs ($ep_n) must be equal."
+    !(length(w) == ep_n) && throw(ArgumentError("Length of w ($(length(w))) and number of epochs ($ep_n) must be equal."))
 
     # pre-allocate outputs
     itpcph = zeros(size(s, 2), ep_n)
@@ -264,11 +264,11 @@ function itpc_spec(
 
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
-    @assert nfrq >= 2 "nfrq must be ≥ 2."
+    !(nfrq >= 2) && throw(ArgumentError("nfrq must be ≥ 2."))
 
     # build frequency vector; log scale requires a strictly positive lower bound
     if frq === :log
-        @assert flim[1] > 0 "For :log scale, lower flim bound must be > 0 Hz."
+        !(flim[1] > 0) && throw(ArgumentError("For :log scale, lower flim bound must be > 0 Hz."))
         f = round.(logspace(flim[1], flim[2], nfrq), digits = 3)
     else
         f = linspace(flim[1], flim[2], nfrq)
@@ -283,7 +283,7 @@ function itpc_spec(
     ep_n = nepochs(obj)
     # epoch length
     ep_len = epoch_len(obj)
-    @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
+    !(ep_n >= 2) && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     # pre-allocate outputs
     itpcs = zeros(nfrq, ep_len)

@@ -136,7 +136,7 @@ function _create_recording_meg(;
     ssp_channels::Vector{Bool},
     ssp_data::Matrix{Float64},
 )::Dict
-    # normalise time separator (MEG files sometimes use '.' instead of ':')
+    # normalize time separator (MEG files sometimes use '.' instead of ':')
     recording_time = replace(recording_time, '.' => ':')
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
@@ -274,7 +274,7 @@ function _create_recording_mep(;
         :stimulation_sample    => stimulation_sample,
         :markers_pos           => markers_pos,
         :markers_neg           => markers_neg,
-        # Note: MEP does not use :epoch_id (intentional — MEP data is not epoched)
+        # note: MEP does not use :epoch_id (intentional — MEP data is not epoched)
     ))
     return d
 end

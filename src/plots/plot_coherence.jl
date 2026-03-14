@@ -31,7 +31,7 @@ function plot_coherence(
         mono::Bool = false,
     )::GLMakie.Figure
 
-    @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
+    !(length(coh) == length(f)) && throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -118,7 +118,7 @@ function plot_coherence(
 
     ch_n = size(coh, 1)
 
-    @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
+    !(size(coh, 2) == length(f)) && throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 

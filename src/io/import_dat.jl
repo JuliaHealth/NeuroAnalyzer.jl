@@ -15,8 +15,8 @@ Load Neuroscan DAT file.
 """
 function import_dat(file_name)::DataFrame
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".dat" "This is not DAT file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".dat") && throw(ArgumentError("This is not DAT file."))
 
     dat = CSV.read(
         file_name,

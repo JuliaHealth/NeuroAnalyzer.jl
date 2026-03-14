@@ -30,8 +30,8 @@ function ica_decompose(
     )::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}}
 
     _check_var(f, [:tanh, :gaus], "f")
-    @assert n >= 1 "n must be ≥ 1."
-    @assert n <= size(s, 1) "n must be ≤ $(size(s, 1))."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(n <= size(s, 1)) && throw(ArgumentError("n must be ≤ $(size(s, 1))."))
 
     f === :tanh && (f = MultivariateStats.Tanh(1.0))
     f === :gaus && (f = MultivariateStats.Gaus())
@@ -122,7 +122,7 @@ function ica_decompose(
         f::Symbol = :tanh,
     )::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_var::Vector{Float64}}
 
-    @assert nepochs(obj) == 1 "ica_decompose() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("ica_decompose() must be applied to continuous object."))
 
     ch = get_channel(obj, ch = ch)
 
@@ -171,15 +171,15 @@ function ica_reconstruct(;
     )::Matrix{Float64}
 
     typeof(ic_idx) <: AbstractRange && (ic_idx = collect(ic_idx))
-    @assert size(ic, 1) == size(ic_mw, 2) "ic and ic_mw dimensions do not match (ic: $(size(ic)), ic_mw: $(size(ic_mw)))."
+    !(size(ic, 1) == size(ic_mw, 2)) && throw(ArgumentError("ic and ic_mw dimensions do not match (ic: $(size(ic)), ic_mw: $(size(ic_mw)))."))
 
     if typeof(ic_idx) == Vector{Int64}
         sort!(ic_idx)
         for idx in ic_idx
-            @assert !(idx < 1 || idx > size(ic_mw, 2)) "ic_idx must be in [1, $(size(ic_mw, 2))]."
+            !(!(idx < 1 || idx > size(ic_mw, 2))) && throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
         end
     else
-        @assert !(ic_idx < 1 || ic_idx > size(ic_mw, 2)) "ic_idx must be in [1, $(size(ic_mw, 2))]."
+        !(!(ic_idx < 1 || ic_idx > size(ic_mw, 2))) && throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
     end
 
     !keep && (ic_idx = setdiff(axes(ic_mw, 2), ic_idx))
@@ -220,7 +220,7 @@ function ica_reconstruct(
         keep::Bool = false,
     )::NeuroAnalyzer.NEURO
 
-    @assert nepochs(obj) == 1 "ica_reconstruct() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("ica_reconstruct() must be applied to continuous object."))
 
     ch = get_channel(obj, ch = ch)
 
@@ -295,7 +295,7 @@ function ica_remove(
         ic_mw::Matrix{Float64},
     )::NeuroAnalyzer.NEURO
 
-    @assert nepochs(obj) == 1 "ica_remove() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("ica_remove() must be applied to continuous object."))
 
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 && (ch = ch[1])

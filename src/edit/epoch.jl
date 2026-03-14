@@ -28,7 +28,7 @@ function epoch(
         ep_len::Union{Real, Nothing} = nothing,
     )::NeuroAnalyzer.NEURO
 
-    @assert nepochs(obj) == 1 "epoch() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("epoch() must be applied to continuous object."))
 
     obj_new = deepcopy(obj)
 
@@ -41,8 +41,8 @@ function epoch(
 
     if marker != ""
         # split by markers
-        @assert _has_markers(obj) "OBJ does not contain markers."
-        @assert !isnothing(ep_len) "ep_len must be specified."
+        !(_has_markers(obj)) && throw(ArgumentError("OBJ does not contain markers."))
+        !(!isnothing(ep_len)) && throw(ArgumentError("ep_len must be specified."))
         _check_markers(obj, marker)
 
         # get marker positions
@@ -58,7 +58,7 @@ function epoch(
             end
         end
 
-        @assert offset + ep_len >= maximum(mrk_len) "offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."
+        !(offset + ep_len >= maximum(mrk_len)) && throw(ArgumentError("offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."))
 
         # split into epochs
         epochs, obj_new.markers = _make_epochs_bymarkers(
@@ -73,7 +73,7 @@ function epoch(
 
     else
         if !isnothing(ep_len)
-            @assert ep_len <= signal_len(obj) / sr(obj) "ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)))."
+            !(ep_len <= signal_len(obj) / sr(obj)) && throw(ArgumentError("ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)))."))
             ep_len = round(Int64, ep_len * sr(obj))
         end
         # split by ep_len
@@ -212,8 +212,8 @@ function subepoch(
     obj_new = deepcopy(obj)
     ep_time = obj.epoch_time
 
-    @assert ep_start >= ep_time[1] "ep_start must be ≥ $(ep_time[1])."
-    @assert ep_end <= ep_time[end] "ep_end must be ≤ $(ep_time[end])."
+    !(ep_start >= ep_time[1]) && throw(ArgumentError("ep_start must be ≥ $(ep_time[1])."))
+    !(ep_end <= ep_time[end]) && throw(ArgumentError("ep_end must be ≤ $(ep_time[end])."))
 
     ep_start_idx = vsearch(ep_start, ep_time)
     ep_end_idx = vsearch(ep_end, ep_time)

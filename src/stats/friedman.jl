@@ -39,8 +39,8 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
     n = size(m, 1)
         # number of groups (treatments)
     k = size(m, 2)
-    @assert k >= 2 "m must have at least 2 groups (columns)."
-    @assert n >= 2 "m must have at least 2 observations (rows)."
+    !(k >= 2) && throw(ArgumentError("m must have at least 2 groups (columns)."))
+    !(n >= 2) && throw(ArgumentError("m must have at least 2 observations (rows)."))
 
     # accumulate rank sums per observation across groups
     rs = zeros(Float64, n)

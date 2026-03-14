@@ -96,7 +96,7 @@ function erp_gfp(
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    @assert length(ch) > 1 "More than 1 channel must be selected."
+    !(length(ch) > 1) && throw(ArgumentError("More than 1 channel must be selected."))
 
     s = @view obj.data[ch, :, 1]
 

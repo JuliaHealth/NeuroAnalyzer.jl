@@ -15,8 +15,8 @@ Load Extensible Data Format (XDF) and return `NeuroAnalyzer.NEURO` object.
 """
 function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".xdf" "This is not XDF file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".xdf") && throw(ArgumentError("This is not XDF file."))
 
     streams = nothing
     try
@@ -31,7 +31,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     for s_idx in s_names
         n_ch += streams[s_idx]["nchannels"]
     end
-    @assert n_ch > 0 "No channels data found in the $file_name."
+    !(n_ch > 0) && throw(ArgumentError("No channels data found in the $file_name."))
 
     stream_nchannels = zeros(length(s_names))
     stream_name = repeat([""], length(s_names))
@@ -58,7 +58,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     # find EEG stream
     eeg_idx = findall(n -> n == "EEG", stream_type)
     other_idx = findall(n -> n != "EEG", stream_type)
-    @assert length(eeg_idx) > 0 "EEG streams not found in the $file_name."
+    !(length(eeg_idx) > 0) && throw(ArgumentError("EEG streams not found in the $file_name."))
     @assert length(eeg_idx) == 1 _info(
         "Importing files with > 1 EEG streams is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
     )

@@ -34,7 +34,7 @@ Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function aff_mni2tal(pts::Vector{<:Number})::Vector{Float64}
 
-    @assert length(pts) == 3 "pts must contain exactly 3 coordinates (x, y, z)."
+    !(length(pts) == 3) && throw(ArgumentError("pts must contain exactly 3 coordinates (x, y, z)."))
 
     x′ = 0.88  * pts[1] - 0.8
     y′ = 0.97  * pts[2] - 3.32
@@ -76,7 +76,7 @@ Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function aff_tal2mni(pts::Vector{<:Number})::Vector{Float64}
 
-    @assert length(pts) == 3 "pts must contain exactly 3 coordinates (x, y, z)."
+    !(length(pts) == 3) && throw(ArgumentError("pts must contain exactly 3 coordinates (x, y, z)."))
     x′ = (pts[1] + 0.8)  / 0.88
     y′ = (pts[2] + 3.32) / 0.97
     # yeuse y′ to avoid repeating the y inversion inline
@@ -116,7 +116,7 @@ Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function mni2tal(pts::Vector{<:Number})::Vector{Float64}
 
-    @assert length(pts) == 3 "pts must contain exactly 3 coordinates (x, y, z)."
+    !(length(pts) == 3) && throw(ArgumentError("pts must contain exactly 3 coordinates (x, y, z)."))
 
     # x scaling is identical in both branches
     x′ = 0.99 * pts[1]
@@ -172,7 +172,7 @@ Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function tal2mni(pts::Vector{<:Number})::Vector{Float64}
 
-    @assert length(pts) == 3 "pts must contain exactly 3 coordinates (x, y, z)."
+    !(length(pts) == 3) && throw(ArgumentError("pts must contain exactly 3 coordinates (x, y, z)."))
 
     # x scaling is identical in both branches (inverse of 0.99)
     x′ = pts[1] / 0.99

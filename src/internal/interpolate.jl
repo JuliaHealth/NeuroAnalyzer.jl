@@ -8,6 +8,8 @@ function _interpolate2d(
     )::Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}
     # `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 
+    !(length(loc_x) == length(loc_y)) && throw(ArgumentError("length of loc_x and length of loc_y must be the same."))
+
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     max_x = ceil(maximum(abs.(loc_x)), digits = 1)

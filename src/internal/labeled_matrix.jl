@@ -13,6 +13,6 @@ function _dict2labeled_matrix(d::Dict; rev::Bool = true)::Tuple{Vector{String}, 
 end
 
 function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})::Dict
-    @assert length(l) == length(v) "Length of labels and values do not match."
+    !(length(l) == length(v)) && throw(ArgumentError("Length of labels and values do not match."))
     return Dict(zip(l, v))
 end

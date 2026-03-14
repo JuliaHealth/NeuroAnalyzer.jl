@@ -17,7 +17,7 @@ Taper the signal.
 """
 function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
 
-    @assert length(t) == length(s) "Taper and signal lengths must be equal."
+    !(length(t) == length(s)) && throw(ArgumentError("Taper and signal lengths must be equal."))
 
     return s .* t
 

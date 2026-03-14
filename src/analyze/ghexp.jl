@@ -36,7 +36,7 @@ function ghexp(
     q_range::_QRange = nothing,
 )::Matrix{Float64}
 
-    @assert tau_range[end] < length(s) "End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."
+    !(tau_range[end] < length(s)) && throw(ArgumentError("End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."))
 
     if isnothing(q_range)
         ghe = hurst_exponent(s, tau_range)

@@ -79,7 +79,7 @@ Computes `1000 / t`, rounded to 2 decimal places.
 """
 function t2f(t::Real)::Float64
 
-    @assert t > 0 "t must be > 0."
+    !(t > 0) && throw(ArgumentError("t must be > 0."))
 
     return round(1000 / t, digits = 2)
 
@@ -110,7 +110,7 @@ Computes `1000 / f`, rounded to 2 decimal places.
 """
 function f2t(f::Real)::Float64
 
-    @assert f > 0 "f must be > 0."
+    !(f > 0) && throw(ArgumentError("f must be > 0."))
 
     return round(1000 / f, digits = 2)
 
@@ -145,7 +145,7 @@ function freqs(
         t::Union{AbstractVector, AbstractRange}; nf::Bool = false
     )::Tuple{Vector{Float64}, Float64}
 
-    @assert length(t) >= 2 "t must contain at least 2 elements."
+    !(length(t) >= 2) && throw(ArgumentError("t must contain at least 2 elements."))
     
     # materialize ranges so indexing is always valid
     t = collect(t)
@@ -192,7 +192,7 @@ function freqs(
     nf::Bool = false
 )::Tuple{Vector{Float64}, Float64}
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     # Nyquist frequency
     nqf = fs / 2
     # frequency vector
@@ -234,7 +234,7 @@ function freqs(
     nf::Bool = false
 )::Tuple{Vector{Float64}, Float64}
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 
     # Nyquist frequency
     nqf = fs / 2

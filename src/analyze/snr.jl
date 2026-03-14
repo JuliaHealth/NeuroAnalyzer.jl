@@ -94,7 +94,7 @@ function snr(
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
+    !(ep_n >= 2) && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     f, _ = freqs(t)
     sp = @views NeuroAnalyzer.ftransform(s[1, :, 1])

@@ -54,8 +54,8 @@ function linreg(
     lf::Vector{Float64},
 }
 
-    @assert length(x) == length(y) "x and y must have the same length."
-    @assert length(x) >= 3 "x and y must contain at least 3 elements."
+    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
+    !(length(x) >= 3) && throw(ArgumentError("x and y must contain at least 3 elements."))
 
     df = DataFrame(:x => x, :y => y)
     lr = GLM.lm(@formula(y ~ x), df)
@@ -115,7 +115,7 @@ function infcrit(
     k = length(GLM.coef(m)) - 1
     # number of observations
     n = length(GLM.predict(m))
-    @assert n > k + 1 "Model has too few observations relative to parameters (n must be > k + 1)."
+    !(n > k + 1) && throw(ArgumentError("Model has too few observations relative to parameters (n must be > k + 1)."))
 
     R2 = GLM.r2(m)
     R2adj = 1 - (1 - R2) * ((n - 1) / (n - k - 1))

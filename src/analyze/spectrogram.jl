@@ -42,11 +42,11 @@ function spectrogram(
 )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     _check_var(method, [:stft, :mt], "method")
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
-    @assert wlen >= 1 "wlen must be ≥ 1."
-    @assert woverlap < wlen "woverlap must be < $(wlen)."
-    @assert woverlap >= 0 "woverlap must be ≥ 0."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(wlen <= length(s)) && throw(ArgumentError("wlen must be ≤ $(length(s))."))
+    !(wlen >= 1) && throw(ArgumentError("wlen must be ≥ 1."))
+    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < $(wlen)."))
+    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
 
     if method === :stft
 
@@ -388,17 +388,17 @@ function mwspectrogram(
     t::Vector{Float64}
 }
 
-    @assert fs >= 1 "fs must be > 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be > 1."))
 
     pad > 0 && (s = pad0(s, pad))
 
     win = w ? hanning(length(s)) : ones(length(s))
 
     if ncyc isa Int64
-        @assert ncyc >= 1 "ncyc must be >= 1."
+        !(ncyc >= 1) && throw(ArgumentError("ncyc must be >= 1."))
     else
-        @assert ncyc[1] >= 1 "ncyc[1] must be >= 1."
-        @assert ncyc[2] >= 1 "ncyc[2] must be >= 1."
+        !(ncyc[1] >= 1) && throw(ArgumentError("ncyc[1] must be >= 1."))
+        !(ncyc[2] >= 1) && throw(ArgumentError("ncyc[2] must be >= 1."))
     end
 
     flim = (0, fs / 2)
@@ -530,7 +530,7 @@ function ghtspectrogram(
     t::Vector{Float64}
 }
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 
     flim = (0, fs / 2)
     nfrq = _tlength(flim)
@@ -657,7 +657,7 @@ function cwtspectrogram(
     t::Vector{Float64}
 } where {T <: CWT}
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 
     m = abs.(ContinuousWavelets.cwt(s, wt)')
 
@@ -752,7 +752,7 @@ function hhtspectrogram(
     t::Vector{Float64}
 }
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 
     # pre-allocate outputs
     imf_p = Vector{Vector{Float64}}()

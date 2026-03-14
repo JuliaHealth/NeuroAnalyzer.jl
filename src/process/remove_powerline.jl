@@ -34,11 +34,11 @@ function remove_powerline(
         q::Real = 0.1,
     )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
-    @assert nepochs(obj) == 1 "remove_powerline() must be applied to continuous object."
-    @assert pl_frq >= 0 "pl_freq must be ≥ 0."
-    @assert pl_frq <= sr(obj) / 2 "pl_freq must be ≤ $(sr(obj) / 2)."
-    @assert q >= 0.01 "q must be ≥ 0.01."
-    @assert q < 5 "q must be < 5."
+    !(nepochs(obj) == 1) && throw(ArgumentError("remove_powerline() must be applied to continuous object."))
+    !(pl_frq >= 0) && throw(ArgumentError("pl_freq must be ≥ 0."))
+    !(pl_frq <= sr(obj) / 2) && throw(ArgumentError("pl_freq must be ≤ $(sr(obj) / 2)."))
+    !(q >= 0.01) && throw(ArgumentError("q must be ≥ 0.01."))
+    !(q < 5) && throw(ArgumentError("q must be < 5."))
 
     ch = get_channel(obj, ch = ch)
     clabels = labels(obj)
@@ -71,10 +71,10 @@ function remove_powerline(
             p_tmp = p[f_pl]
             f_tmp = f[f_pl]
             peaks, _ = findpeaks1d(p_tmp, prominence = pr)
-            @assert length(peaks) > 0 "No power line noise peak detected, check pl_frq value (perhaps the signal has already been filtered?)."
+            !(length(peaks) > 0) && throw(ArgumentError("No power line noise peak detected, check pl_frq value (perhaps the signal has already been filtered?)."))
             pl_amp = vsearch(maximum(p_tmp[peaks]), p_tmp)
             pl_frq_detected = f_tmp[vsearch(pl_amp, p_tmp)]
-            @assert !(pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) "Channel $(clabels[ch_idx]): power line noise peak detected at $pl_frq_detected, check pl_frq value."
+            !(!(pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d)) && throw(ArgumentError("Channel $(clabels[ch_idx]): power line noise peak detected at $pl_frq_detected, check pl_frq value."))
             # pl_wdth = peakwidths1d(p_tmp, peaks)[1][vsearch(pl_amp, peaks)]
 
             v = zeros(length(bw_values))

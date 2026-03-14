@@ -116,7 +116,7 @@ Sort epochs.
 function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, ["erp", "erf"])
-    @assert length(s) == nepochs(obj) - 1 "Length of the sorting vector must be equal to $(nepochs(obj) - 1)."
+    !(length(s) == nepochs(obj) - 1) && throw(ArgumentError("Length of the sorting vector must be equal to $(nepochs(obj) - 1)."))
 
     obj_new = deepcopy(obj)
     obj_new.data[:, :, 2:end] = obj.data[:, :, s]

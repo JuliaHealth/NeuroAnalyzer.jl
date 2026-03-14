@@ -27,9 +27,9 @@ Computed as `σ / μ`, where `σ = std(x)` and `μ = mean(x)`. Expresses the sta
 """
 function cvm(x::AbstractVector)::Float64
 
-    @assert length(x) >= 2 "x must contain at least 2 elements."
+    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
     m = mean(x)
-    @assert m != 0 "mean(x) must not be zero (division by zero)."
+    !(m != 0) && throw(ArgumentError("mean(x) must not be zero (division by zero)."))
 
     return std(x) / m
 
@@ -60,9 +60,9 @@ Uses the robust formula `(Q3 − Q1) / 2 / median(x)`, where `Q1` and `Q3` are t
 """
 function cvmd(x::AbstractVector)::Float64
 
-    @assert length(x) >= 2 "x must contain at least 2 elements."
+    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
     md = median(x)
-    @assert md != 0 "median(x) must not be zero (division by zero)."
+    !(md != 0) && throw(ArgumentError("median(x) must not be zero (division by zero)."))
 
     return (quantile(x, 0.75) - quantile(x, 0.25)) / 2 / md
 
@@ -93,9 +93,9 @@ Computed as `σ² / μ`, where `σ² = var(x)` and `μ = mean(x)`. The Fano fact
 """
 function fano(x::AbstractVector)::Float64
 
-    @assert length(x) >= 2 "x must contain at least 2 elements."
+    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
     m = mean(x)
-    @assert m != 0 "mean(x) must not be zero (division by zero)."
+    !(m != 0) && throw(ArgumentError("mean(x) must not be zero (division by zero)."))
 
     return var(x) / m
 

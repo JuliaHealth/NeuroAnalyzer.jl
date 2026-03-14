@@ -30,7 +30,7 @@ function play(
 
     _check_epochs(obj, ep)
     ch = get_channel(obj, ch=ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
     _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
 

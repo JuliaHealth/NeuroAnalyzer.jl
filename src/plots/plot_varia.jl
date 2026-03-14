@@ -54,10 +54,10 @@ function plot_matrix(
     mono::Bool = false,
 )::GLMakie.Figure
 
-    @assert size(m, 1) == size(m, 2) "Matrix must be square."
-    @assert length(xlabels) == length(ylabels) "Lengths of xlabels ($(length(xlabels))) and ylabels ($(length(ylabels))) must be equal."
-    @assert length(xlabels) == size(m, 1) "Length of xlabels ($(length(xlabels))) and matrix size $(size(m)) must be equal."
-    @assert length(ylabels) == size(m, 2) "Length of ylabels ($(length(xlabels))) and matrix size $(size(m)) must be equal."
+    !(size(m, 1) == size(m, 2)) && throw(ArgumentError("Matrix must be square."))
+    !(length(xlabels) == length(ylabels)) && throw(ArgumentError("Lengths of xlabels ($(length(xlabels))) and ylabels ($(length(ylabels))) must be equal."))
+    !(length(xlabels) == size(m, 1)) && throw(ArgumentError("Length of xlabels ($(length(xlabels))) and matrix size $(size(m)) must be equal."))
+    !(length(ylabels) == size(m, 2)) && throw(ArgumentError("Length of ylabels ($(length(xlabels))) and matrix size $(size(m)) must be equal."))
 
     n = size(m, 1)
     pal = mono ? :grays : :bluesreds
@@ -294,7 +294,7 @@ function plot_bar(
     mono::Bool = false,
 )::GLMakie.Figure
 
-    @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
+    !(length(s) == length(xlabels)) && throw(ArgumentError("Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."))
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
@@ -362,7 +362,7 @@ function plot_line(
     title::String = ""
 )::GLMakie.Figure
 
-    @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
+    !(length(s) == length(xlabels)) && throw(ArgumentError("Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."))
 
     yl = if minimum(s) > 0
         (0, ceil(Int64, round(maximum(s) * 1.5, digits = 1)))
@@ -432,8 +432,8 @@ function plot_line(
 )::GLMakie.Figure
 
     _chk2d(s)
-    @assert size(s, 1) == length(rlabels) "Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal."
-    @assert size(s, 2) == length(xlabels) "Number of s columns ($(size(s, 2))) and length of xlabels ($(length(xlabels))) must be equal."
+    !(size(s, 1) == length(rlabels)) && throw(ArgumentError("Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal."))
+    !(size(s, 2) == length(xlabels)) && throw(ArgumentError("Number of s columns ($(size(s, 2))) and length of xlabels ($(length(xlabels))) must be equal."))
 
     pal = mono ? :grays : :darktest
 
@@ -515,7 +515,7 @@ function plot_box(
 )::GLMakie.Figure
 
     _chk2d(s)
-    @assert size(s, 1) == length(xlabels) "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
+    !(size(s, 1) == length(xlabels)) && throw(ArgumentError("Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."))
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
@@ -586,7 +586,7 @@ function plot_violin(
 )::GLMakie.Figure
 
     _chk2d(s)
-    @assert size(s, 1) == length(xlabels) "Number of s columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
+    !(size(s, 1) == length(xlabels)) && throw(ArgumentError("Number of s columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."))
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
@@ -663,7 +663,7 @@ function plot_dots(
     mono::Bool = false,
 )::GLMakie.Figure
 
-    @assert size(s, 1) == length(xlabels) "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
+    !(size(s, 1) == length(xlabels)) && throw(ArgumentError("Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."))
 
     pal = mono ? :grays : :darktest
 
@@ -741,7 +741,7 @@ function plot_paired(
     mono::Bool = false,
 )::GLMakie.Figure
 
-    @assert size(s, 1) == length(xlabels) "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
+    !(size(s, 1) == length(xlabels)) && throw(ArgumentError("Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."))
 
     pal = mono ? :grays : :darktest
     yl = if minimum(s) > 0
@@ -831,8 +831,8 @@ function plot_polar(
 )::GLMakie.Figure
 
     size(s, 1) == 2 && (s = s')
-    @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
-    ndims(s) > 1 && @assert size(s, 2) == 2 "signal must have exactly 2 columns: phases and lengths."
+    !(length(m) == 2) && throw(ArgumentError("m must have exactly 2 values: phases and lengths."))
+    ndims(s) > 1 && !(size(s, 2) == 2) && throw(ArgumentError("signal must have exactly 2 columns: phases and lengths."))
 
     pal = mono ? :grays : :darktest
 
@@ -914,11 +914,11 @@ function plot_eros(
     n::Int64 = 3,
 )::GLMakie.Figure
 
-    @assert size(sp, 1) == length(sf) "Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal."
-    @assert size(sp, 2) == length(st) "Length of st ($(length(st))) and number of spectrogram columns ($(size(sp, 2))) must be equal."
-    @assert ndims(sp) == 3 "sp must have 3 dimensions."
-    @assert size(sp, 3) <= 2 "sp must contain ≤ 2 epochs."
-    @assert n > 0 "n must be ≥ 1."
+    !(size(sp, 1) == length(sf)) && throw(ArgumentError("Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal."))
+    !(size(sp, 2) == length(st)) && throw(ArgumentError("Length of st ($(length(st))) and number of spectrogram columns ($(size(sp, 2))) must be equal."))
+    !(ndims(sp) == 3) && throw(ArgumentError("sp must have 3 dimensions."))
+    !(size(sp, 3) <= 2) && throw(ArgumentError("sp must contain ≤ 2 epochs."))
+    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -950,8 +950,8 @@ function plot_eros(
     if tm != 0
         if length(tm) > 1
             for tm_idx in eachindex(tm)
-                @assert tm[tm_idx] / 1000 >= st[1] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(st[1]):$(st[end]))."
-                @assert tm[tm_idx] / 1000 <= st[end] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(st[1]):$(st[end]))."
+                !(tm[tm_idx] / 1000 >= st[1]) && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(st[1]):$(st[end]))."))
+                !(tm[tm_idx] / 1000 <= st[end]) && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(st[1]):$(st[end]))."))
                 tm[tm_idx] = vsearch(tm[tm_idx] / 1000, st)
             end
         else
@@ -1142,9 +1142,9 @@ function plot_erop(
 
     _in(flim[1], (sf[1], sf[end]), "flim")
     _in(flim[2], (sf[1], sf[end]), "flim")
-    @assert size(sp, 1) == length(sf) "Length of sf ($(length(sf))) and number of powers rows ($(size(sp, 1)))) must be equal."
-    @assert ndims(sp) == 2 "sp must have 2 dimensions."
-    @assert size(sp, 2) <= 2 "sp must contain ≤ 2 epochs."
+    !(size(sp, 1) == length(sf)) && throw(ArgumentError("Length of sf ($(length(sf))) and number of powers rows ($(size(sp, 1)))) must be equal."))
+    !(ndims(sp) == 2) && throw(ArgumentError("sp must have 2 dimensions."))
+    !(size(sp, 2) <= 2) && throw(ArgumentError("sp must contain ≤ 2 epochs."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -1325,10 +1325,10 @@ function plot_icatopo(
     ps::Symbol = :l,
 )::GLMakie.Figure
 
-    p_topo = GLMakie.Figure[]
+    fig_topo = GLMakie.Figure[]
     for idx in eachindex(ic_idx)
         obj_tmp = ica_reconstruct(obj, ch = ch, ic = ic, ic_mw = ic_mw, ic_idx = idx, keep = true)
-        p_tmp = plot_topo(
+        fig_tmp = plot_topo(
             obj_tmp;
             ch = ch,
             tpos = tpos,
@@ -1340,10 +1340,10 @@ function plot_icatopo(
             ps = ps,
             cb = true,
         )
-        push!(p_topo, p_tmp)
+        push!(fig_topo, fig_tmp)
     end
 
-    fig = plot_compose(p_topo, layout = (1, length(ic_idx)))
+    fig = plot_compose(fig_topo, layout = (1, length(ic_idx)))
 
     return fig
 
@@ -1380,7 +1380,7 @@ function plot_ci(
     mono::Bool = false,
 )::GLMakie.Figure
 
-    @assert length(s) == length(s_l) == length(s_u) "All input signals must be of the same length."
+    !(length(s) == length(s_l) == length(s_u)) && throw(ArgumentError("All input signals must be of the same length."))
 
     pal = mono ? :grays : :darktest
 
@@ -1470,8 +1470,8 @@ function plot_heatmap(
     threshold_type::Symbol = :neq,
 )::GLMakie.Figure
 
-    @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) must be equal."
-    @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) must be equal."
+    !(size(m, 1) == length(y)) && throw(ArgumentError("Number of m rows ($(size(m, 1))) and y length ($(length(y))) must be equal."))
+    !(size(m, 2) == length(x)) && throw(ArgumentError("Number of m columns ($(size(m, 2))) and x length ($(length(x))) must be equal."))
 
     pal = mono ? :grays : :bluesreds
 
@@ -1538,9 +1538,9 @@ function plot_imf(
         t::AbstractVector
     )::GLMakie.Figure
 
-    @assert n > 0 "n must be ≥ 1."
-    @assert n + 1 <= size(imf, 1) "n must be ≤ $(size(imf, 1) - 1)."
-    @assert size(imf, 2) == length(t) "Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal."
+    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
+    !(n + 1 <= size(imf, 1)) && throw(ArgumentError("n must be ≤ $(size(imf, 1) - 1)."))
+    !(size(imf, 2) == length(t)) && throw(ArgumentError("Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal."))
 
     s_restored = sum(imf; dims = 1)[:]
     imf = vcat(imf, s_restored')
@@ -1670,7 +1670,7 @@ function plot_fi(
     title::String = "default",
 )::GLMakie.Figure
 
-    @assert length(fi) == length(st) "Length of frequencies ($(length(fi))) and time points ($(length(st))) must be equal."
+    !(length(fi) == length(st)) && throw(ArgumentError("Length of frequencies ($(length(fi))) and time points ($(length(st))) must be equal."))
 
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Frequency [Hz]", "")
 
@@ -1740,7 +1740,7 @@ function plot_phase(
 
     _check_var(unit, [:rad, :deg], "unit")
     _check_var(type, [:line, :stem], "type")
-    @assert length(ph) == length(sf) "Length of phases ($(length(fi))) and frequencies ($(length(st))) must be equal."
+    !(length(ph) == length(sf)) && throw(ArgumentError("Length of phases ($(length(fi))) and frequencies ($(length(st))) must be equal."))
 
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", unit === :rad ? "Phase [rad]" : "Phase [°]", "")
 
@@ -1864,9 +1864,9 @@ function plot_dwc(
     t::AbstractVector
 )::GLMakie.Figure
 
-    @assert n > 1 "n must be > 1."
-    @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."
-    @assert size(dc, 2) == length(t) "Length of t $(size(dc, 2)) and number of dc columns ($(size(m, 2))) must be equal."
+    !(n > 1) && throw(ArgumentError("n must be > 1."))
+    !(n <= size(dc, 1) - 1) && throw(ArgumentError("n must be ≤ $(size(dc, 1) - 1)."))
+    !(size(dc, 2) == length(t)) && throw(ArgumentError("Length of t $(size(dc, 2)) and number of dc columns ($(size(m, 2))) must be equal."))
 
     ylim = (floor(minimum(dc), digits = 0), ceil(maximum(dc), digits = 1))
     ylim = _tuple_max(ylim)

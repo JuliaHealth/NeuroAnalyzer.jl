@@ -37,7 +37,7 @@ function msci95(
 }
 
     _check_var(method, [:normal, :boot], "method")
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     if method === :normal
 
@@ -115,7 +115,7 @@ function msci95(
 }
 
     _check_var(method, [:normal, :boot], "method")
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     if method === :normal
 
@@ -241,7 +241,7 @@ function msci95(
     sl::Float64
 }
 
-    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
+    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
 
     sm = mean(s1) - mean(s2)
     s1_se = std(s1) / sqrt(length(s1))
@@ -282,7 +282,7 @@ function msci95(
         s1::AbstractArray, s2::AbstractArray
     )::@NamedTuple{sm::Matrix{Float64}, se::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
 
     # number of channels
     ch_n = size(s1, 1)
@@ -391,7 +391,7 @@ function msci95(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
+    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -399,8 +399,8 @@ function msci95(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
+    !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     msci_data = NeuroAnalyzer.msci95(
         @view(obj1.data[ch1, :, ep1]),

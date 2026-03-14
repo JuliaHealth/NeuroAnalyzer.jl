@@ -166,8 +166,8 @@ function acor(
 )::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
 
     # validate lag bounds: must be non-negative and within the signal length
-    @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
-    @assert l >= 0 "l must be ≥ 0."
+    !(l <= size(obj, 2)) && throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
+    !(l >= 0) && throw(ArgumentError("l must be ≥ 0."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")

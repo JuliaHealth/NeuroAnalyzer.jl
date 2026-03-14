@@ -24,8 +24,8 @@ function efield2d(
         q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64}
     )::@NamedTuple{qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}}
 
-    @assert length(qx) == length(q) "Length of qx and number of charges must be equal."
-    @assert length(qx) == length(q) "Length of qy and number of charges must be equal."
+    !(length(qx) == length(q)) && throw(ArgumentError("Length of qx and number of charges must be equal."))
+    !(length(qx) == length(q)) && throw(ArgumentError("Length of qy and number of charges must be equal."))
 
     m = 100
     n = 100

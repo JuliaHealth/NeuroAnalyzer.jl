@@ -62,10 +62,10 @@ function plot_ep(
         gui::Bool = true,
     )::GLMakie.Figure
 
-    @assert res >= 1 "res must be ≥ 1."
+    !(res >= 1) && throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
-    @assert n_channels >= 1 "n_channels must be ≥ 1."
-    @assert n_channels <= nchannels(obj) "n_channels must be ≤ $(nchannels(obj))."
+    !(n_channels >= 1) && throw(ArgumentError("n_channels must be ≥ 1."))
+    !(n_channels <= nchannels(obj)) && throw(ArgumentError("n_channels must be ≤ $(nchannels(obj))."))
     _check_var(type, [:normal, :butterfly], "type")
     !_has_markers(obj) && (markers = false)
 
@@ -74,7 +74,7 @@ function plot_ep(
     _check_epochs(obj, ep)
     ep_len = epoch_duration(obj)
     ep_n = Observable(nepochs(obj))
-    @assert ep_n[] > 1 "Use plot_cont() for continuous object."
+    !(ep_n[] > 1) && throw(ArgumentError("Use plot_cont() for continuous object."))
     seg = (0, n_epochs * ep_len)
     epmarkers = [(idx - 1) * (epoch_len(obj) / sr(obj)) for idx in 1:ep_n[]]
     ep_selected = zeros(Bool, ep_n[])

@@ -42,7 +42,7 @@ function sef(
         demean::Bool = true,
     )::Float64
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(f, (0, fs / 2), "f")
 
     pw, pf = psd(s,

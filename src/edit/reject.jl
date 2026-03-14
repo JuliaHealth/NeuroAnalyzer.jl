@@ -77,7 +77,7 @@ end
 
 function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector{Bool}
 
-    @assert w < size(s, 2) "w must be < $(size(s, 2))."
+    !(w < size(s, 2)) && throw(ArgumentError("w must be < $(size(s, 2))."))
 
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
@@ -235,10 +235,10 @@ function channel_reject(
     amp_t::Real = 400.0,
 )::Vector{Bool}
 
-    @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
-    @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]."
-    @assert !(ransac_r < 0 || ransac_r > 1) "ransac_r must in [0.0, 1.0]."
-    @assert !(ransac_tr < 0 || ransac_tr > 1) "ransac_tr must in [0.0, 1.0]."
+    !(!(p < 0 || p > 1)) && throw(ArgumentError("p must in [0.0, 1.0]."))
+    !(!(tc < 0 || tc > 1)) && throw(ArgumentError("tc must in [0.0, 1.0]."))
+    !(!(ransac_r < 0 || ransac_r > 1)) && throw(ArgumentError("ransac_r must in [0.0, 1.0]."))
+    !(!(ransac_tr < 0 || ransac_tr > 1)) && throw(ArgumentError("ransac_tr must in [0.0, 1.0]."))
 
     typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
@@ -255,15 +255,15 @@ function channel_reject(
     ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
 
-    :rmse in method && @assert ch_n > 1 ":rmse method requires > 1 channel."
-    :rmsd in method && @assert ch_n > 1 ":rmsd method requires > 1 channel."
-    :euclid in method && @assert ch_n > 1 ":euclid method requires > 1 channel."
+    :rmse in method && !(ch_n > 1) && throw(ArgumentError(":rmse method requires > 1 channel."))
+    :rmsd in method && !(ch_n > 1) && throw(ArgumentError(":rmsd method requires > 1 channel."))
+    :euclid in method && !(ch_n > 1) && throw(ArgumentError(":euclid method requires > 1 channel."))
 
     bc = zeros(Bool, nchannels(obj))
 
     if :flat in method
 
-        @assert w < ep_len "w must be < $ep_len."
+        !(w < ep_len) && throw(ArgumentError("w must be < $ep_len."))
         _info("Using :flat method")
         bad_chs = zeros(Bool, ch_n, ep_n)
         n_samples = size(obj.data, 2)
@@ -356,7 +356,7 @@ function channel_reject(
     if :kurt in method
 
         _info("Using :kurt method")
-        @assert z > 0 "z must be > 0."
+        !(z > 0) && throw(ArgumentError("z must be > 0."))
         k = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
@@ -370,7 +370,7 @@ function channel_reject(
     if :z in method
 
         _info("Using :z method")
-        @assert z > 0 "z must be > 0."
+        !(z > 0) && throw(ArgumentError("z must be > 0."))
 
         # by global-channel threshold
         k = zeros(ch_n, ep_n)
@@ -402,7 +402,7 @@ function channel_reject(
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
-        @assert length(setdiff(ch_list, chs)) == 0 "ch must contain only signal channels."
+        !(length(setdiff(ch_list, chs)) == 0) && throw(ArgumentError("ch must contain only signal channels."))
         chs = intersect(obj.locs[!, :label], ch_list)
         locs = Base.filter(:label => in(chs), obj.locs)
 
@@ -572,12 +572,12 @@ function epoch_reject(
         nbad::Int64 = 1,
     )::Vector{Int64}
 
-    @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
-    @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]."
-    @assert !(ransac_r < 0 || ransac_r > 1) "ransac_r must in [0.0, 1.0]."
-    @assert !(ransac_tr < 0 || ransac_tr > 1) "ransac_tr must in [0.0, 1.0]."
-    @assert nbad >= 1 "nbad must be ≥ 1."
-    @assert nbad <= size(obj, 1) "nbad must be ≤ $(size(obj, 1))."
+    !(!(p < 0 || p > 1)) && throw(ArgumentError("p must in [0.0, 1.0]."))
+    !(!(tc < 0 || tc > 1)) && throw(ArgumentError("tc must in [0.0, 1.0]."))
+    !(!(ransac_r < 0 || ransac_r > 1)) && throw(ArgumentError("ransac_r must in [0.0, 1.0]."))
+    !(!(ransac_tr < 0 || ransac_tr > 1)) && throw(ArgumentError("ransac_tr must in [0.0, 1.0]."))
+    !(nbad >= 1) && throw(ArgumentError("nbad must be ≥ 1."))
+    !(nbad <= size(obj, 1)) && throw(ArgumentError("nbad must be ≤ $(size(obj, 1))."))
     typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
         _check_var(
@@ -592,16 +592,16 @@ function epoch_reject(
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
-    :rmse in method && @assert ch_n > 1 ":rmse method requires > 1 channel."
-    :rmsd in method && @assert ch_n > 1 ":rmsd method requires > 1 channel."
-    :euclid in method && @assert ch_n > 1 ":euclid method requires > 1 channel."
+    :rmse in method && !(ch_n > 1) && throw(ArgumentError(":rmse method requires > 1 channel."))
+    :rmsd in method && !(ch_n > 1) && throw(ArgumentError(":rmsd method requires > 1 channel."))
+    :euclid in method && !(ch_n > 1) && throw(ArgumentError(":euclid method requires > 1 channel."))
 
     bc = zeros(Bool, nchannels(obj))
     be = Int64[]
 
     if :flat in method
 
-        @assert w < size(s, 2) "w must be < $(size(s, 2))."
+        !(w < size(s, 2)) && throw(ArgumentError("w must be < $(size(s, 2))."))
         _info("Using :flat method")
         bad_chs = zeros(Bool, ch_n, ep_n)
         n_samples = size(obj.data, 2)
@@ -706,7 +706,7 @@ function epoch_reject(
     if :kurt in method
 
         _info("Using :kurt method")
-        @assert z > 0 "z must be > 0."
+        !(z > 0) && throw(ArgumentError("z must be > 0."))
         k = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
@@ -723,7 +723,7 @@ function epoch_reject(
     if :z in method
 
         _info("Using :z method")
-        @assert z > 0 "z must be > 0."
+        !(z > 0) && throw(ArgumentError("z must be > 0."))
 
         # by global-channel threshold
         k = zeros(ch_n, ep_n)
@@ -759,7 +759,7 @@ function epoch_reject(
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
-        @assert length(setdiff(ch_list, chs)) == 0 "ch must contain only signal channels."
+        !(length(setdiff(ch_list, chs)) == 0) && throw(ArgumentError("ch must contain only signal channels."))
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
 

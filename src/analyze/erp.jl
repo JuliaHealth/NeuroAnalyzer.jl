@@ -58,8 +58,8 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
     if datatype(obj) in ["erp", "erf", "mep"]
 
-        @assert t >= obj.epoch_time[1] "t must be ≥ $(obj.epoch_time[1])."
-        @assert t <= obj.epoch_time[end] "t must be ≤ $(obj.epoch_time[end])."
+        !(t >= obj.epoch_time[1]) && throw(ArgumentError("t must be ≥ $(obj.epoch_time[1])."))
+        !(t <= obj.epoch_time[end]) && throw(ArgumentError("t must be ≤ $(obj.epoch_time[end])."))
 
         t_idx = vsearch(t, obj.epoch_time)
 
@@ -78,8 +78,8 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
     else
 
-        @assert t >= obj.time_pts[1] "t must be ≥ $(obj.time_pts[1])."
-        @assert t <= obj.time_pts[end] "t must be ≤ $(obj.time_pts[end])."
+        !(t >= obj.time_pts[1]) && throw(ArgumentError("t must be ≥ $(obj.time_pts[1])."))
+        !(t <= obj.time_pts[end]) && throw(ArgumentError("t must be ≤ $(obj.time_pts[end])."))
 
         t_idx = vsearch(t, obj.time_pts)
 
@@ -327,13 +327,13 @@ function erp_auc(
         elseif type === :pos
 
             mask = s .> 0
-            @assert any(mask) "No positive values in channel $(ch[ch_idx]) segment, cannot compute AUC."
+            !(any(mask)) && throw(ArgumentError("No positive values in channel $(ch[ch_idx]) segment, cannot compute AUC."))
             auc[ch_idx] = simpson(s[mask], t[mask], dx = dx)
 
         elseif type === :neg
 
             mask = s .< 0
-            @assert any(mask) "No negative values in channel $(ch[ch_idx]) segment, cannot compute AUC."
+            !(any(mask)) && throw(ArgumentError("No negative values in channel $(ch[ch_idx]) segment, cannot compute AUC."))
             auc[ch_idx] = simpson(s[mask], t[mask], dx = dx)
 
         end

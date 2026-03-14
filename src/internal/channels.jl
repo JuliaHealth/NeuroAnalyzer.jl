@@ -91,7 +91,7 @@ function _ch_idx(
     _check_channels(cl, l)
     ch = Int64[]
     for label in l
-        @assert label in cl "$label does not match signal labels."
+        !(label in cl) && throw(ArgumentError("$label does not match signal labels."))
         push!(ch, findfirst(isequal(label), cl))
     end
     return unique(ch)
@@ -168,7 +168,7 @@ function _ch_idx(
 
     ch = Int64[]
     for label in l
-        @assert label in cl "$label does not match signal labels."
+        !(label in cl) && throw(ArgumentError("$label does not match signal labels."))
         push!(ch, findfirst(isequal(label), cl))
     end
     return unique(ch)

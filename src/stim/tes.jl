@@ -44,9 +44,9 @@ function tdcs_dose(;
     charge_density::Float64
 }
 
-    @assert current  > 0 "current must be > 0."
-    @assert pad_area > 0 "pad_area must be > 0."
-    @assert duration > 0 "duration must be > 0."
+    !(current  > 0) && throw(ArgumentError("current must be > 0."))
+    !(pad_area > 0) && throw(ArgumentError("pad_area must be > 0."))
+    !(duration > 0) && throw(ArgumentError("duration must be > 0."))
 
     # Unit conversions:
     #   current:   mA → A    (÷ 1_000)
@@ -110,10 +110,10 @@ function tacs_dose(;
     charge_density::Float64
 }
 
-    @assert current > 0 "current must be > 0."
-    @assert pad_area > 0 "pad_area must be > 0."
-    @assert duration > 0 "duration must be > 0."
-    @assert frequency > 0 "frequency must be > 0."
+    !(current > 0) && throw(ArgumentError("current must be > 0."))
+    !(pad_area > 0) && throw(ArgumentError("pad_area must be > 0."))
+    !(duration > 0) && throw(ArgumentError("duration must be > 0."))
+    !(frequency > 0) && throw(ArgumentError("frequency must be > 0."))
 
     # integrate the rectified sinusoid over one cycle to get the effective current
     t = collect(0:0.001:1)
@@ -179,11 +179,11 @@ function tpcs_dose(;
     current_density::Float64,
     charge_density::Float64}
 
-    @assert current > 0 "current must be > 0."
-    @assert pad_area > 0 "pad_area must be > 0."
-    @assert duration > 0 "duration must be > 0."
-    @assert pw > 0 "pw must be > 0."
-    @assert isi > pw "isi must be > pw."
+    !(current > 0) && throw(ArgumentError("current must be > 0."))
+    !(pad_area > 0) && throw(ArgumentError("pad_area must be > 0."))
+    !(duration > 0) && throw(ArgumentError("duration must be > 0."))
+    !(pw > 0) && throw(ArgumentError("pw must be > 0."))
+    !(isi > pw) && throw(ArgumentError("isi must be > pw."))
 
     # convert pulse timings from ms → s
     pw_s  = pw  / 1_000
@@ -254,17 +254,17 @@ function tes_protocol(;
 )::Dict
 
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
-    @assert current > 0 "current must be > 0 mA."
+    !(current > 0) && throw(ArgumentError("current must be > 0 mA."))
     if type === :tACS || type === :tRNS
-        @assert frequency > 0 "frequency must be > 0 Hz."   # was: "mA" (wrong unit)
+        !(frequency > 0) && throw(ArgumentError("frequency must be > 0 Hz."))
     end
-    @assert anode_size[1] > 0 "anode_size width must be > 0 mm."
-    @assert anode_size[2] > 0 "anode_size height must be > 0 mm."
-    @assert cathode_size[1] > 0 "cathode_size width must be > 0 mm."
-    @assert cathode_size[2] > 0 "cathode_size height must be > 0 mm."
-    @assert duration > 0 "duration must be > 0 s."
-    @assert ramp_in  >= 0 "ramp_in must be ≥ 0 s."
-    @assert ramp_out >= 0 "ramp_out must be ≥ 0 s."
+    !(anode_size[1] > 0) && throw(ArgumentError("anode_size width must be > 0 mm."))
+    !(anode_size[2] > 0) && throw(ArgumentError("anode_size height must be > 0 mm."))
+    !(cathode_size[1] > 0) && throw(ArgumentError("cathode_size width must be > 0 mm."))
+    !(cathode_size[2] > 0) && throw(ArgumentError("cathode_size height must be > 0 mm."))
+    !(duration > 0) && throw(ArgumentError("duration must be > 0 s."))
+    !(ramp_in  >= 0) && throw(ArgumentError("ramp_in must be ≥ 0 s."))
+    !(ramp_out >= 0) && throw(ArgumentError("ramp_out must be ≥ 0 s."))
 
     protocol = Dict(
         :type => type,

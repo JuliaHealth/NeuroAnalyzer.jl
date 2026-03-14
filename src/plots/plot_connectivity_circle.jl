@@ -33,9 +33,9 @@ function plot_connectivity_circle(
         threshold_type::Symbol = :neq,
     )::GLMakie.Figure
 
-    @assert size(m, 1) == length(clabels) "Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."
-    @assert size(m, 1) >= 2 "m must contain data for ≥ 2 channels."
-    @assert size(m, 1) == size(m, 2) "m must be a square matrix."
+    !(size(m, 1) == length(clabels)) && throw(ArgumentError("Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."))
+    !(size(m, 1) >= 2) && throw(ArgumentError("m must contain data for ≥ 2 channels."))
+    !(size(m, 1) == size(m, 2)) && throw(ArgumentError("m must be a square matrix."))
 
     t = linspace(pi, -pi, size(m, 1) + 1)
     pos_x = zeros(size(m, 1))
@@ -80,9 +80,9 @@ function plot_connectivity_circle(
         for idx2 in (idx1 + 1):s
             if !isnothing(threshold)
                 if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-                    @assert length(threshold) == 1 "threshold must contain a single value."
+                    !(length(threshold) == 1) && throw(ArgumentError("threshold must contain a single value."))
                 else
-                    @assert length(threshold) == 2 "threshold must contain two values."
+                    !(length(threshold) == 2) && throw(ArgumentError("threshold must contain two values."))
                     _check_tuple(threshold, extrema(m), "threshold")
                 end
                 (threshold_type === :eq && m[idx1, idx2] != threshold) && break

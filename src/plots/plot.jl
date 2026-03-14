@@ -213,9 +213,9 @@ function plot(
         gui::Bool = true,
     )::GLMakie.Figure
 
-    @assert datatype(obj1) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
-    @assert datatype(obj2) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
-    @assert nepochs(obj1) == 1 "This function works for continuous EEG and MEG objects."
+    !(datatype(obj1) in ["eeg", "meg"]) && throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    !(datatype(obj2) in ["eeg", "meg"]) && throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    !(nepochs(obj1) == 1) && throw(ArgumentError("This function works for continuous EEG and MEG objects."))
 
     fig = plot_cont(
         obj1,
@@ -259,7 +259,7 @@ function plot(
         t::AbstractVector, s::AbstractVector; xlabel::String = "Time [s]", ylabel::String = "Amplitude", title::String = ""
     )::GLMakie.Figure
 
-    @assert length(t) == length(s) "Length of s must equal length of t."
+    !(length(t) == length(s)) && throw(ArgumentError("Length of s must equal length of t."))
 
     # prepare plot
     GLMakie.activate!(title = "plot()")

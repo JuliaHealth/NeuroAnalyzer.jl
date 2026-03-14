@@ -257,7 +257,7 @@ function plot_locs3d(
         gui::Bool = true,
     )::GLMakie.Figure
 
-    @assert datatype(obj) in ["eeg"] "Currently plot_locs3d() works for EEG objects only."
+    !(datatype(obj) in ["eeg"]) && throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
 
     ch = get_channel(obj, ch = ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])

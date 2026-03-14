@@ -49,7 +49,7 @@ function import_recording(
         n::Int64 = 0,
     )::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
 
     splitext(file_name)[2] == ".edf" &&
         return import_edf(file_name, detect_type = detect_type)

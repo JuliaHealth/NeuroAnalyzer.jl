@@ -109,7 +109,7 @@ Derived probabilities:
 """
 function t2p(t::Real; df::Real, twotailed::Bool = false)::Float64
 
-    @assert df > 0 "df must be > 0."
+    !(df > 0) && throw(ArgumentError("df must be > 0."))
     d = Distributions.TDist(df)
     if twotailed
         return 2 * ccdf(d, abs(t))
@@ -147,8 +147,8 @@ To obtain the left-tailed probability `P(χ² < chi)` use `1 - chi2p(chi; df=df)
 """
 function chi2p(chi::Real; df::Real)::Float64
 
-    @assert chi >= 0 "chi must be ≥ 0."
-    @assert df > 0 "df must be > 0."
+    !(chi >= 0) && throw(ArgumentError("chi must be ≥ 0."))
+    !(df > 0) && throw(ArgumentError("df must be > 0."))
 
     return ccdf(Distributions.Chisq(df), chi)
 
@@ -185,9 +185,9 @@ To obtain the left-tailed probability `P(F < f)` use `1 - f2p(f; df1=df1, df2=df
 function f2p(f::Real; df1::Real, df2::Real)::Float64
 
     # negative F silently returns > 1
-    @assert f   >= 0 "f must be ≥ 0."
-    @assert df1  > 0 "df1 must be > 0."
-    @assert df2  > 0 "df2 must be > 0."
+    !(f   >= 0) && throw(ArgumentError("f must be ≥ 0."))
+    !(df1  > 0) && throw(ArgumentError("df1 must be > 0."))
+    !(df2  > 0) && throw(ArgumentError("df2 must be > 0."))
 
     return ccdf(Distributions.FDist(df1, df2), f)
 
@@ -221,7 +221,7 @@ Equivalent to `Φ⁻¹(x)` where `Φ` is the standard normal CDF.
 function norminv(x::Real)::Float64
 
     # norminv(0) = -Inf, norminv(1) = Inf
-    @assert 0 < x < 1 "x must be in (0, 1)."
+    !(0 < x < 1) && throw(ArgumentError("x must be in (0, 1)."))
 
     return quantile(Distributions.Normal(), x)
 
@@ -252,8 +252,8 @@ Computed as `o = p / (1 − p)`.
 """
 function p2o(p::Real)::Float64
 
-    @assert p >= 0 "p must be ≥ 0."
-    @assert p <  1 "p must be < 1 (odds undefined at p = 1)."
+    !(p >= 0) && throw(ArgumentError("p must be ≥ 0."))
+    !(p <  1) && throw(ArgumentError("p must be < 1 (odds undefined at p = 1)."))
 
     return p / (1 - p)
 
@@ -285,7 +285,7 @@ Computed as `p = o / (1 + o)`.
 function o2p(o::Real)::Float64
 
     # negative odds produce p > 1
-    @assert o >= 0 "o must be ≥ 0."
+    !(o >= 0) && throw(ArgumentError("o must be ≥ 0."))
 
     return o / (1 + o)
 

@@ -12,7 +12,7 @@ end
 
 function _check_ch_locs(ch::Union{Int64, Vector{Int64}}, objl::Vector{String}, locsl::Vector{String})::Nothing
     for idx in ch
-        @assert objl[idx] in locsl "Channel $(objl[idx]) does not have a location."
+        !(objl[idx] in locsl) && throw(ArgumentError("Channel $(objl[idx]) does not have a location."))
     end
     return nothing
 end
@@ -159,7 +159,7 @@ function _locs_round!(obj::NeuroAnalyzer.NEURO)::Nothing
 end
 
 function _has_locs(obj::NeuroAnalyzer.NEURO)::Nothing
-    @assert DataFrames.nrow(obj.locs) > 0 "Electrode locations not available, use load_locs() or add_locs() first."
+    !(DataFrames.nrow(obj.locs) > 0) && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     return nothing
 end
 

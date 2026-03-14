@@ -17,10 +17,10 @@ Join two NeuroAnalyzer objects. Each `obj2` epoch are horizontally concatenated 
 """
 function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
-    @assert datatype(obj1) == obj1.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
-    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-    @assert nchannels(obj1) == nchannels(obj2) "OBJ1 and OBJ2 must have the same number of channels."
-    @assert nepochs(obj1) == nepochs(obj2) "OBJ1 and OBJ2 must have the same number of epochs."
+    !(datatype(obj1) == obj1.header.recording[:data_type]) && throw(ArgumentError("OBJ1 and OBJ2 must have the same data type."))
+    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    !(nchannels(obj1) == nchannels(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same number of channels."))
+    !(nepochs(obj1) == nepochs(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same number of epochs."))
 
     obj_new = deepcopy(obj1)
 

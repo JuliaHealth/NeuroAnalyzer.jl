@@ -173,7 +173,7 @@ function add_to_canvas(
 
     if file_name != ""
         ext = lowercase(splitext(file_name)[2])
-        @assert ext == ".png" "Filename extension must be .png"
+        !(ext == ".png") && throw(ArgumentError("Filename extension must be .png"))
         isfile(file_name) && _warn("File $file_name will be overwritten.")
         Cairo.write_to_png(c, file_name)
     end

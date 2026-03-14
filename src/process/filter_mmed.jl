@@ -25,7 +25,7 @@ function filter_mmed(
     _in(k, (1, length(s)), "k")
 
     # check weighting window
-    @assert length(ww) == (2 * k + 1) "ww length must be 2 × k + 1 ($(2 * k + 1))."
+    !(length(ww) == (2 * k + 1)) && throw(ArgumentError("ww length must be 2 × k + 1 ($(2 * k + 1))."))
 
     s_filtered = zeros(length(s))
 

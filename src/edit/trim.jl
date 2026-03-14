@@ -111,7 +111,7 @@ function trim(
         obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = false
     )::NeuroAnalyzer.NEURO
 
-    @assert nepochs(obj) == 1 "trim() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("trim() must be applied to continuous object."))
     _check_segment(obj, seg)
 
     s_idx = vsearch(seg[1], obj.time_pts)
@@ -171,7 +171,7 @@ function trim!(
         obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = false
     )::Nothing
 
-    @assert nepochs(obj) == 1 "trim!() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("trim!() must be applied to continuous object."))
 
     obj_new = trim(obj, seg = seg, keep = keep)
     obj.data = obj_new.data
@@ -200,7 +200,7 @@ Crop signal by removing parts of the signal.
 """
 function crop(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::NeuroAnalyzer.NEURO
 
-    @assert nepochs(obj) == 1 "crop() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("crop() must be applied to continuous object."))
 
     obj_new = trim(obj, seg = seg, keep = true)
 
@@ -224,7 +224,7 @@ Crop signal by removing parts of the signal.
 """
 function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
 
-    @assert nepochs(obj) == 1 "crop!() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("crop!() must be applied to continuous object."))
 
     obj_new = trim(obj, seg = seg, keep = true)
     obj.data = obj_new.data

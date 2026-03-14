@@ -33,7 +33,7 @@ function artrem_cwd(
         type::Symbol = :nd,
     ) where {T <: CWT}
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 
     f = cwtfrq(s; fs = fs, wt = wt)
     _check_tuple(tseg, (t[1], t[end]), "tseg")
@@ -91,7 +91,7 @@ function artrem_cwd(
     ) where {T <: CWT}
 
     ch = get_channel(obj, ch = ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     _check_epochs(obj, ep)

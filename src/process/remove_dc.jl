@@ -18,8 +18,8 @@ Remove mean value (DC offset).
 function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Vector{Float64}
 
     if isa(n, Int64)
-        @assert n >= 0 "n must be ≥ 0."
-        @assert n <= length(s) "n must be ≤ $(length(s))."
+        !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
+        !(n <= length(s)) && throw(ArgumentError("n must be ≤ $(length(s))."))
 
         s_new = n == 0 ? s .- mean(s) : s .- mean(s[1:n])
     else

@@ -31,10 +31,10 @@ function import_ft(
     data_type = String(type)
     locs = _initialize_locs()
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
     dataset = matread(file_name)
 
-    @assert length(keys(dataset)) == 1 "Files containing > 1 dataset are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+    !(length(keys(dataset)) == 1) && throw(ArgumentError("Files containing > 1 dataset are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
     _info("Reading object: $(string.(keys(dataset))[1])")
     dataset = dataset[string.(keys(dataset))[1]]
 
@@ -43,25 +43,25 @@ function import_ft(
     if data_type == "events"
 
         f = "type"
-        @assert f in keys(dataset) "Dataset does not contain $f field."
+        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
         id = dataset[f][:]
         f = "duration"
-        @assert f in keys(dataset) "Dataset does not contain $f field."
+        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
         duration = dataset[f][:]
         for idx in axes(duration, 1)
             size(duration[idx]) == (0, 0) && (duration[idx] = 0.0)
         end
         f = "offset"
-        @assert f in keys(dataset) "Dataset does not contain $f field."
+        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
         offset = dataset[f][:]
         for idx in axes(offset, 1)
             size(offset[idx]) == (0, 0) && (offset[idx] = 0.0)
         end
         f = "sample"
-        @assert f in keys(dataset) "Dataset does not contain $f field."
+        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
         start = dataset[f][:]
         f = "value"
-        @assert f in keys(dataset) "Dataset does not contain $f field."
+        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
         value = dataset["value"][:]
 
         # find and remove empty records
@@ -87,13 +87,13 @@ function import_ft(
 
     else
 
-        @assert "cfg" in keys(dataset) "Dataset does not contain cfg field."
+        !("cfg" in keys(dataset)) && throw(ArgumentError("Dataset does not contain cfg field."))
         cfg = dataset["cfg"]
-        @assert "hdr" in keys(dataset) "Dataset does not contain hdr field."
+        !("hdr" in keys(dataset)) && throw(ArgumentError("Dataset does not contain hdr field."))
         hdr = dataset["hdr"]
-        @assert "fsample" in keys(dataset) "Dataset does not contain fsample field."
+        !("fsample" in keys(dataset)) && throw(ArgumentError("Dataset does not contain fsample field."))
         sampling_rate = round(Int64, dataset["fsample"])
-        @assert "nChans" in keys(hdr) "Dataset header does not contain nChans field."
+        !("nChans" in keys(hdr)) && throw(ArgumentError("Dataset header does not contain nChans field."))
         ch_n = Int64(hdr["nChans"])
 
         # get channel labels, types and units
@@ -134,7 +134,7 @@ function import_ft(
         ch_type = replace.(ch_type, "digital trigger" => "mrk")
         ch_type = replace.(ch_type, "unknown" => "other")
 
-        @assert "trial" in keys(dataset) "Dataset does not contain trial field."
+        !("trial" in keys(dataset)) && throw(ArgumentError("Dataset does not contain trial field."))
         ep_n = "trial" in keys(dataset) ? size(dataset["trial"], 2) : 1
         ep_len = size(dataset["trial"][1], 2)
         data = zeros(ch_n, ep_len, ep_n)
@@ -242,8 +242,8 @@ function import_ft(
 
             clabels = _clean_meg_labels(clabels)
 
-            @assert "grad" in keys(dataset) "Dataset does not contain grad field."
-            @assert "chantype" in keys(dataset["grad"]) "Dataset does not contain chantype field."
+            !("grad" in keys(dataset)) && throw(ArgumentError("Dataset does not contain grad field."))
+            !("chantype" in keys(dataset["grad"])) && throw(ArgumentError("Dataset does not contain chantype field."))
             meg_channels = occursin.(r"meg", lowercase.(clabels))[:]
             coil_type = repeat([""], ch_n)
             mag_idx = occursin.(r".*mag.*", lowercase.(ch_type))
@@ -427,7 +427,7 @@ function import_ft(
             clabels = replace.(clabels, " [" => " ")
             clabels = replace.(clabels, "nm]" => "")
 
-            @assert "opto" in keys(dataset) "Dataset does not contain opto field."
+            !("opto" in keys(dataset)) && throw(ArgumentError("Dataset does not contain opto field."))
             opto = dataset["opto"]
             wavelengths = opto["wavelength"][:]
             wavelength_index = Int64[]

@@ -52,9 +52,9 @@ function size_c2g(;
 
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
-    @assert s1 > 0 "s1 must be > 0."
-    @assert r  >= 1 "r must be ≥ 1."
-    @assert m1 != m2 "m1 and m2 must differ (zero effect size)."
+    !(s1 > 0) && throw(ArgumentError("s1 must be > 0."))
+    !(r  >= 1) && throw(ArgumentError("r must be ≥ 1."))
+    !(m1 != m2) && throw(ArgumentError("m1 and m2 must differ (zero effect size)."))
 
     beta  = 1 - power
     delta = abs(m2 - m1)
@@ -103,8 +103,8 @@ function size_c1g(;
 
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
-    @assert s > 0 "s must be > 0."
-    @assert m != xbar "m and xbar must differ."
+    !(s > 0) && throw(ArgumentError("s must be > 0."))
+    !(m != xbar) && throw(ArgumentError("m and xbar must differ."))
 
     if iter
         powers = [power_c1g(m=m, s=s, xbar=xbar, n=n, alpha=alpha) for n in 2:10_000]
@@ -157,8 +157,8 @@ function size_p2g(;
     _in(power, (0, 1.0), "power")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    @assert p1 != p2 "p1 and p2 must differ."
-    @assert r >= 1 "r must be ≥ 1."
+    !(p1 != p2) && throw(ArgumentError("p1 and p2 must differ."))
+    !(r >= 1) && throw(ArgumentError("r must be ≥ 1."))
 
     beta = 1 - power
     delta = abs(p2 - p1)
@@ -213,7 +213,7 @@ function size_p1g(;
     _in(power, (0, 1.0), "power")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    @assert p1 != p2 "p1 and p2 must differ."
+    !(p1 != p2) && throw(ArgumentError("p1 and p2 must differ."))
 
     beta = 1 - power
     q0 = 1 - p1
@@ -264,10 +264,10 @@ function power_c2g(;
 )::Float64
 
     _in(alpha, (0, 1.0), "alpha")
-    @assert s1 > 0 "s1 must be > 0."
-    @assert s2 > 0 "s2 must be > 0."
-    @assert n1 >= 1 "n1 must be ≥ 1."
-    @assert n2 >= 1 "n2 must be ≥ 1."
+    !(s1 > 0) && throw(ArgumentError("s1 must be > 0."))
+    !(s2 > 0) && throw(ArgumentError("s2 must be > 0."))
+    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
+    !(n2 >= 1) && throw(ArgumentError("n2 must be ≥ 1."))
 
     delta = abs(m2 - m1)
     z = -cl2z(1 - alpha) + delta / sqrt(s1^2/n1 + s2^2/n2)
@@ -310,8 +310,8 @@ function power_c1g(;
 )::Float64
 
     _in(alpha, (0, 1.0), "alpha")
-    @assert s > 0  "s must be > 0."
-    @assert n >= 2 "n must be ≥ 2."
+    !(s > 0 ) && throw(ArgumentError("s must be > 0."))
+    !(n >= 2) && throw(ArgumentError("n must be ≥ 2."))
 
     t_crit  = crit_t(n - 1, alpha)
     t_stat  = (xbar - m) / (s / sqrt(n))
@@ -359,8 +359,8 @@ function power_p2g(;
     _in(alpha, (0, 1.0), "alpha")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    @assert n1 >= 1 "n1 must be ≥ 1."
-    @assert n2 >= 1 "n2 must be ≥ 1."
+    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
+    !(n2 >= 1) && throw(ArgumentError("n2 must be ≥ 1."))
 
     delta = abs(p2 - p1)
     q1 = 1 - p1
@@ -412,7 +412,7 @@ function power_p1g(;
     _in(alpha, (0, 1.0), "alpha")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    @assert n1 >= 1 "n1 must be ≥ 1."
+    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
 
     q0 = 1 - p2
     q1 = 1 - p1
@@ -459,7 +459,7 @@ function size_c1diff(;
 )::Int64
 
     _in(power, (0, 1.0), "power")
-    @assert s2 != 0 "s2 must not be zero."
+    !(s2 != 0) && throw(ArgumentError("s2 must not be zero."))
 
     sdiff_values = [
         0.1, 0.2, 0.3, 0.4, 0.5,
@@ -611,8 +611,8 @@ function mde(;
 
     _in(alpha, (0, 1.0), "alpha")
     _in(beta, (0, 1.0), "beta")
-    @assert n >= 1 "n must be ≥ 1."
-    @assert s >  0 "s must be > 0."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(s >  0) && throw(ArgumentError("s must be > 0."))
 
     z_alpha = crit_z(alpha)
     z_beta = cl2z(1 - beta)
@@ -697,8 +697,8 @@ function size_m(;
 )::Int64
 
     _in(alpha, (0, 1.0), "alpha")
-    @assert sigma > 0 "sigma must be > 0."
-    @assert E > 0 "E must be > 0."
+    !(sigma > 0) && throw(ArgumentError("sigma must be > 0."))
+    !(E > 0) && throw(ArgumentError("E must be > 0."))
 
     return ceil(Int64, (crit_z(alpha / 2; twotailed=false) * sigma / E)^2)
 

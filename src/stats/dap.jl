@@ -36,7 +36,7 @@ D'Agostino RB, Belanger A, D'Agostino RB Jr. A suggestion for using powerful and
 """
 function dap(x::AbstractVector)::@NamedTuple{zs::Float64, zk::Float64, d::Float64, p::Float64}
 
-    @assert length(x) >= 8 "x must contain at least 8 elements."
+    !(length(x) >= 8) && throw(ArgumentError("x must contain at least 8 elements."))
     length(x) < 20 && _info("DAP test is unreliable for length(x) < 20; got $(length(x)).")
 
     # standardize skewness and kurtosis by their respective standard errors

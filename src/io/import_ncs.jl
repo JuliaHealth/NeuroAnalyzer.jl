@@ -15,8 +15,8 @@ Load Neuralinx Continuously Sampled Channels (CSC) and return `NeuroAnalyzer.NEU
 """
 function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".ncs" "This is not NCS file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".ncs") && throw(ArgumentError("This is not NCS file."))
 
     fid = nothing
     try

@@ -20,8 +20,8 @@ function save(
         obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
     )::Nothing
 
-    @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
-    @assert lowercase(splitext(file_name)[2]) == ".hdf" "Filename extension must be .hdf"
+    !(!(isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    !(lowercase(splitext(file_name)[2]) == ".hdf") && throw(ArgumentError("Filename extension must be .hdf"))
 
     obj.header.recording[:file_name] = file_name
 
@@ -52,7 +52,7 @@ Load `NeuroAnalyzer.NEURO` object from `file_name` file (HDF5-based).
 """
 function load(file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
 
     obj = JLD2.load_object(file_name)
 

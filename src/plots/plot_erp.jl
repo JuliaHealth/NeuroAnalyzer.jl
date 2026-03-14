@@ -255,7 +255,7 @@ function plot_erp_topo(
         mono::Bool = false,
     )::GLMakie.Figure
 
-    @assert size(s, 2) == length(t) "Signal length must equal time length."
+    !(size(s, 2) == length(t)) && throw(ArgumentError("Signal length must equal time length."))
 
     pal = mono ? :grays : :darktest
 
@@ -458,10 +458,10 @@ function plot_erp_stack(
         mono::Bool = false,
     )::GLMakie.Figure
 
-    @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."
+    !(length(t) == size(s, 2)) && throw(ArgumentError("Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."))
 
     if !isnothing(rt)
-        @assert length(rt) == size(s, 1) "Length of the rt vector must equal number of ERP epochs ($(size(s, 1)))."
+        !(length(rt) == size(s, 1)) && throw(ArgumentError("Length of the rt vector must equal number of ERP epochs ($(size(s, 1)))."))
     end
 
     pal = mono ? :grays : :darktest
@@ -674,9 +674,9 @@ function plot_erp(
 
     # check channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
+    !(!(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1)) && throw(ArgumentError("All channels must be of the same type."))
     length(ch) > 1 && (eavg = false)
-    type === :gfp && @assert length(ch) > 1 "More than 1 channel must be selected."
+    type === :gfp && !(length(ch) > 1) && throw(ArgumentError("More than 1 channel must be selected."))
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])
@@ -808,7 +808,7 @@ function plot_erp(
             xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude, avgₑ: $ep_n"
         )
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
+        !(length(unique(obj.header.recording[:channel_type][ch])) == 1) && throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
@@ -831,8 +831,8 @@ function plot_erp(
     # draw time markers
     if !isnothing(tm)
         for idx in eachindex(tm)
-            @assert tm[idx] / 1000 >= t[1] "tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
-            @assert tm[idx] / 1000 <= t[end] "tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
+            !(tm[idx] / 1000 >= t[1]) && throw(ArgumentError("tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            !(tm[idx] / 1000 <= t[end]) && throw(ArgumentError("tm value ($(tm[idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
             tm[idx] = vsearch(tm[idx] / 1000, t)
             GLMakie.vlines!(fig[1, 1], t[tm[idx]], linewidth = 0.5, color = :black)
         end

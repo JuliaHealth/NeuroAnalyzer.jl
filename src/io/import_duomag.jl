@@ -15,8 +15,8 @@ Load DuoMAG TMS MEP recording file (.ascii or .m) and return `NeuroAnalyzer.NEUR
 """
 function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert (splitext(file_name)[2] == ".ascii" || splitext(file_name)[2] == ".m") "This is not DuoMAG file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !((splitext(file_name)[2] == ".ascii" || splitext(file_name)[2] == ".m")) && throw(ArgumentError("This is not DuoMAG file."))
 
     f = nothing
 

@@ -27,7 +27,7 @@ For `n > 20` the result is approximate and a diagnostic warning is issued.
 """
 function pred_int(n::Int64)::Float64
 
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     # exact lookup table for n = 1 … 19 (index = n)
     # n = 1: undefined → NaN; n = 2: 15.56; … ; n = 19: 2.10

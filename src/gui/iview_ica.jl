@@ -33,10 +33,10 @@ function iview_ica(
     cl = labels(obj)
     ch_idx = 1
 
-    @assert size(ic_mw, 1) == length(chn) "ICA weighting matrix size does not match number of OBJ channels."
-    @assert size(ic_mw, 2) == size(ic, 1) "ICA weighting matrix size does not match number of ICA components."
-    @assert size(ic, 2) == signal_len(obj) "ICA components length does not match OBJ signal length."
-    @assert size(ic_mw, 1) >= length(ch) "ICA weighting matrix size does not match number of selected channels."
+    !(size(ic_mw, 1) == length(chn)) && throw(ArgumentError("ICA weighting matrix size does not match number of OBJ channels."))
+    !(size(ic_mw, 2) == size(ic, 1)) && throw(ArgumentError("ICA weighting matrix size does not match number of ICA components."))
+    !(size(ic, 2) == signal_len(obj)) && throw(ArgumentError("ICA components length does not match OBJ signal length."))
+    !(size(ic_mw, 1) >= length(ch)) && throw(ArgumentError("ICA weighting matrix size does not match number of selected channels."))
 
     obj_new = deepcopy(obj)
     obj_edited = false

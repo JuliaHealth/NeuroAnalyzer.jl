@@ -35,7 +35,7 @@ function jaccsim(x::AbstractVector, y::AbstractVector)::Float64
 
     i = length(intersect(x, y))
     u = length(x) + length(y) - i # |x ∪ y|
-    @assert u > 0 "Union of x and y is empty; Jaccard similarity is undefined."
+    !(u > 0) && throw(ArgumentError("Union of x and y is empty; Jaccard similarity is undefined."))
 
     return i / u
 
@@ -79,7 +79,7 @@ function sdi(x::AbstractVector, y::AbstractVector)::Float64
 
     a = length(x)
     b = length(y)
-    @assert a + b > 0 "x and y must not both be empty (denominator is zero)."
+    !(a + b > 0) && throw(ArgumentError("x and y must not both be empty (denominator is zero)."))
     c = length(intersect(x, y))
 
     return round(2c / (a + b), digits=2)

@@ -24,7 +24,7 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 """
 function l1(a1::AbstractArray, a2::AbstractArray)::Float64
 
-    @assert size(a1) == size(a2) "a1 and a2 must have the same size."
+    !(size(a1) == size(a2)) && throw(ArgumentError("a1 and a2 must have the same size."))
 
     return sum(abs.(a1 .- a2))
 
@@ -50,7 +50,7 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 """
 function l2(a1::AbstractArray, a2::AbstractArray)::Float64
 
-    @assert size(a1) == size(a2) "a1 and a2 must have the same size."
+    !(size(a1) == size(a2)) && throw(ArgumentError("a1 and a2 must have the same size."))
 
     return euclidean(a1, a2)
 
@@ -86,10 +86,10 @@ function perm_cmp(
     perm_n::Int64 = 1000
 )::@NamedTuple{zmap::Matrix{Float64}, bm::BitMatrix}
 
-    @assert size(a1) == size(a2) "Both arrays must have the same size"
-    @assert perm_n > 0 "perm_n must be > 0."
-    @assert p >= 0 "p must be ≥ 0."
-    @assert p <= 1 "p must be ≤ 1."
+    !(size(a1) == size(a2)) && throw(ArgumentError("Both arrays must have the same size"))
+    !(perm_n > 0) && throw(ArgumentError("perm_n must be > 0."))
+    !(p >= 0) && throw(ArgumentError("p must be ≥ 0."))
+    !(p <= 1) && throw(ArgumentError("p must be ≤ 1."))
 
     # real observed difference (a2 − a1), averaged across epochs
     spec_diff = dropdims(mean(a2, dims = 3) .- mean(a1, dims = 3); dims = 3)
@@ -177,8 +177,8 @@ function areduce(
     a::AbstractArray, f::AbstractVector; n::Float64 = 0.5
 )::Tuple{AbstractArray, AbstractVector}
 
-    @assert ndims(a) <= 3 "areduce() only works for 2- and 3-dimensional arrays."
-    @assert size(a, 2) == length(f) "size(a, 2) ($(size(a, 2))) must equal length(f) ($(length(f)))."
+    !(ndims(a) <= 3) && throw(ArgumentError("areduce() only works for 2- and 3-dimensional arrays."))
+    !(size(a, 2) == length(f)) && throw(ArgumentError("size(a, 2) ($(size(a, 2))) must equal length(f) ($(length(f)))."))
 
     # build the reduced frequency grid from the rounded min/max frequencies
     f1 = round(f[vsearch(round(f[1]), f)])

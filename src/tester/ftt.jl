@@ -36,7 +36,7 @@ function iftt(
         tap_d_int::Vector{Vector{Float64}},
     }
 
-    @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
+    !(!(port_name != "" && gpio == -1)) && throw(ArgumentError("If serial port is used, GPIO must be specified."))
 
     sp = nothing
     if port_name != ""
@@ -490,7 +490,7 @@ function ftt(
         tap_d_int::Vector{Vector{Float64}},
     }
 
-    @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
+    !(!(port_name != "" && gpio == -1)) && throw(ArgumentError("If serial port is used, GPIO must be specified."))
 
     sp = nothing
 

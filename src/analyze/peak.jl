@@ -42,7 +42,7 @@ function peak_frq(
         demean::Bool = true,
     )::Float64
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
@@ -244,7 +244,7 @@ function peak_amp(
     demean::Bool = true,
 )::Float64
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
@@ -441,7 +441,7 @@ function peak_pow(
         demean::Bool = true,
     )::Float64
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
@@ -509,7 +509,7 @@ function peak_pow(
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    @assert size(s, 1) == 1 "s must have 1 channel."
+    !(size(s, 1) == 1) && throw(ArgumentError("s must have 1 channel."))
 
     # number of channels
     ch_n = size(s, 1)

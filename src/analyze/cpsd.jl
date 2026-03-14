@@ -47,12 +47,12 @@ function cpsd(
     # check arguments
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
-    @assert nt >= 1 "nt must be ≥ 1."
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert wlen <= length(s1) "wlen must be ≤ $(length(s1))."
-    @assert wlen >= 2 "wlen must be ≥ 2."
-    @assert woverlap < wlen "woverlap must be < $(wlen)."
-    @assert woverlap >= 0 "woverlap must be ≥ 0."
+    !(nt >= 1) && throw(ArgumentError("nt must be ≥ 1."))
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(wlen <= length(s1)) && throw(ArgumentError("wlen must be ≤ $(length(s1))."))
+    !(wlen >= 2) && throw(ArgumentError("wlen must be ≥ 2."))
+    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < $(wlen)."))
+    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     n_samples = length(s1)
@@ -196,7 +196,7 @@ function cpsd(
 )::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
     _chk3d(s2)
 
@@ -294,12 +294,12 @@ function cpsd(
 )::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
 
     # validate objects
-    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
+    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
+    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -307,8 +307,8 @@ function cpsd(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
+    !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     cpsd_data = cpsd(
         @view(obj1.data[ch1, :, ep1]),

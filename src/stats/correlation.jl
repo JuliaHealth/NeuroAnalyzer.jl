@@ -75,8 +75,8 @@ function r1r2_zscore(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)::Float64
 
     _in(r1, (-1.0, 1.0), "r1")
     _in(r2, (-1.0, 1.0), "r2")
-    @assert n1 > 3 "n1 must be > 3 (required for Fisher's Z standard error)."  # was: > 0
-    @assert n2 > 3 "n2 must be > 3 (required for Fisher's Z standard error)."  # was: > 0
+    !(n1 > 3) && throw(ArgumentError("n1 must be > 3 (required for Fisher's Z standard error)."))  # was: > 0
+    !(n2 > 3) && throw(ArgumentError("n2 must be > 3 (required for Fisher's Z standard error)."))  # was: > 0
 
     # Fisher z-transform both coefficients, then standardize the difference
     z = (rfz(r1) - rfz(r2)) / sqrt(1 / (n1 - 3) + 1 / (n2 - 3))
@@ -126,8 +126,8 @@ function cor_test(
     p::Float64,
 }
 
-    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
-    @assert length(s1) > 3 "length(s1) must be > 3 (required for confidence interval)."
+    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
+    !(length(s1) > 3) && throw(ArgumentError("length(s1) must be > 3 (required for confidence interval)."))
 
     t  = CorrelationTest(s1, s2)
     p  = pvalue(t)

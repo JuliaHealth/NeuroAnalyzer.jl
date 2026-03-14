@@ -69,9 +69,9 @@ Rows are appended to the bottom and columns to the right as needed. At least one
 function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
 
     # Tuple comparison in Julia is lexicographic, not element-wise; check each dimension independently to avoid a silent false-positive assertion.
-    @assert r >= size(m, 1) "r ($r) must be ≥ size(m, 1) ($(size(m, 1)))."
-    @assert c >= size(m, 2) "c ($c) must be ≥ size(m, 2) ($(size(m, 2)))."
-    @assert r > size(m, 1) || c > size(m, 2) "At least one of r, c must exceed the current size."
+    !(r >= size(m, 1)) && throw(ArgumentError("r ($r) must be ≥ size(m, 1) ($(size(m, 1)))."))
+    !(c >= size(m, 2)) && throw(ArgumentError("c ($c) must be ≥ size(m, 2) ($(size(m, 2)))."))
+    !(r > size(m, 1) || c > size(m, 2)) && throw(ArgumentError("At least one of r, c must exceed the current size."))
 
     mr, mc = size(m)
     # append zero rows to the bottom
@@ -113,7 +113,7 @@ Return the sorting permutation indices of a matrix column-wise or row-wise.
 """
 function m_sortperm(m::AbstractMatrix; rev::Bool = false, dims::Int64 = 1)::AbstractMatrix
 
-    @assert dims in (1, 2) "dims must be 1 or 2."
+    !(dims in (1, 2)) && throw(ArgumentError("dims must be 1 or 2."))
 
     idx = zeros(Int64, size(m))
     if dims == 1
@@ -163,7 +163,7 @@ function m_sort(
     dims::Int64 = 1
 )::AbstractMatrix
 
-    @assert dims in [1, 2] "dims must be 1 or 2."
+    !(dims in [1, 2]) && throw(ArgumentError("dims must be 1 or 2."))
 
     # copy to avoid mutating the caller's index vector
     perm = rev ? reverse(m_idx) : copy(m_idx)
@@ -204,7 +204,7 @@ Normalize an array by the number of columns minus one (`size(m, 2) - 1`).
 """
 function m_norm(m::AbstractArray)::AbstractArray
 
-    @assert size(m, 2) >= 2 "m must have at least 2 columns (size(m, 2) - 1 would be zero)."
+    !(size(m, 2) >= 2) && throw(ArgumentError("m must have at least 2 columns (size(m, 2) - 1 would be zero)."))
     return m ./ (size(m, 2) - 1)
 
 end
@@ -232,9 +232,9 @@ The vector is divided into `⌊length(x) / wlen⌋` non-overlapping segments of 
 """
 function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatrix
 
-    @assert wlen >= 1 "wlen must be ≥ 1."
-    @assert woverlap >= 0 "woverlap must be ≥ 0."
-    @assert woverlap < wlen "woverlap must be < wlen ($wlen)."  # was: < length(x)
+    !(wlen >= 1) && throw(ArgumentError("wlen must be ≥ 1."))
+    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
+    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < wlen ($wlen)."))  # was: < length(x)
 
     (wlen == 1 && woverlap == 0) && return reshape(x, length(x), :)
 
@@ -269,7 +269,7 @@ Reshape a 3-D array of shape `(1, samples, epochs)` into a `(epochs, samples)` m
 """
 function arr2mat(x::AbstractArray)::AbstractMatrix
 
-    @assert size(x, 1) == 1 "First dimension of x must be 1; got $(size(x, 1))."
+    !(size(x, 1) == 1) && throw(ArgumentError("First dimension of x must be 1; got $(size(x, 1))."))
     # equivalent to squeezing the singleton first dimension and transposing:
     # dropdims then permute, or simply index and collect row-by-row.
     return reshape(permutedims(x[1, :, :]), size(x, 3), size(x, 2))

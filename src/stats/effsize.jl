@@ -31,10 +31,10 @@ Named tuple:
 """
 function efs(x1::AbstractVector, x2::AbstractVector)::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
 
-    @assert length(x1) >= 2 "x1 must contain at least 2 elements."
-    @assert length(x2) >= 2 "x2 must contain at least 2 elements."
-    @assert std(x1) != 0 "std(x1) must not be zero."
-    @assert std(x2) != 0 "std(x2) must not be zero."
+    !(length(x1) >= 2) && throw(ArgumentError("x1 must contain at least 2 elements."))
+    !(length(x2) >= 2) && throw(ArgumentError("x2 must contain at least 2 elements."))
+    !(std(x1) != 0) && throw(ArgumentError("std(x1) must not be zero."))
+    !(std(x2) != 0) && throw(ArgumentError("std(x2) must not be zero."))
 
     Δm = mean(x1) - mean(x2)
 
@@ -139,16 +139,16 @@ Calculate the pooled standard deviation from two sample vectors.
 """
 function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol = :cohen)::Float64
 
-    @assert length(x1) > 0 "Length of x1 cannot be 0."
-    @assert length(x1) >= 2 "x1 must contain at least 2 elements."
-    @assert length(x2) >= 2 "x2 must contain at least 2 elements."
+    !(length(x1) > 0) && throw(ArgumentError("Length of x1 cannot be 0."))
+    !(length(x1) >= 2) && throw(ArgumentError("x1 must contain at least 2 elements."))
+    !(length(x2) >= 2) && throw(ArgumentError("x2 must contain at least 2 elements."))
     _check_var(type, [:cohen, :hedges], "type")
 
     n1, n2 = length(x1), length(x2)
     s1, s2 = std(x1), std(x2)
 
     if type === :cohen
-        @assert n1 + n2 > 2 "For :cohen, n1 + n2 must be > 2."
+        !(n1 + n2 > 2) && throw(ArgumentError("For :cohen, n1 + n2 must be > 2."))
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2 - 2))
     elseif type === :hedges
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2))
@@ -185,14 +185,14 @@ Calculate the pooled standard deviation from summary statistics when group sizes
 """
 function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol = :cohen)::Float64
 
-    @assert s1 >= 0 "s1 must be ≥ 0."
-    @assert s2 >= 0 "s2 must be ≥ 0."
-    @assert n1 >= 2 "n1 must be ≥ 2."
-    @assert n2 >= 2 "n2 must be ≥ 2."
+    !(s1 >= 0) && throw(ArgumentError("s1 must be ≥ 0."))
+    !(s2 >= 0) && throw(ArgumentError("s2 must be ≥ 0."))
+    !(n1 >= 2) && throw(ArgumentError("n1 must be ≥ 2."))
+    !(n2 >= 2) && throw(ArgumentError("n2 must be ≥ 2."))
     _check_var(type, [:cohen, :hedges], "type")
 
     if type === :cohen
-        @assert n1 + n2 > 2 "For :cohen, n1 + n2 must be > 2."
+        !(n1 + n2 > 2) && throw(ArgumentError("For :cohen, n1 + n2 must be > 2."))
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2 - 2))
     elseif type === :hedges
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2))
@@ -227,8 +227,8 @@ Computed as `√((s1² + s2²) / 2)`.
 """
 function stdp(s1::Real, s2::Real)::Float64
 
-    @assert s1 >= 0 "s1 must be ≥ 0."
-    @assert s2 >= 0 "s2 must be ≥ 0."
+    !(s1 >= 0) && throw(ArgumentError("s1 must be ≥ 0."))
+    !(s2 >= 0) && throw(ArgumentError("s2 must be ≥ 0."))
 
     return sqrt((s1^2 + s2^2) / 2)
 

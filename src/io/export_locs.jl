@@ -19,7 +19,7 @@ function export_locs(
         obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
     )::Nothing
 
-    @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
+    !(!(isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
     channels = _find_bylabel(obj.locs, obj.locs[!, :label])
     clabels = obj.locs[!, :label]
@@ -91,7 +91,7 @@ Export channel locations, format is based on `file_name` extension (.ced, .locs,
 """
 function export_locs(locs::DataFrame; file_name::String, overwrite::Bool = false)::Nothing
 
-    @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
+    !(!(isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
     channels = _find_bylabel(obj.locs, obj.locs[!, :label])
     clabels = locs[!, :label]

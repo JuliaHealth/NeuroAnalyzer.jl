@@ -41,13 +41,13 @@ function edit_locs(
     )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj_new; ch = ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     obj_new = deepcopy(obj)
     loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
 
-    @assert length(loc_idx) > 0 "$(labels(obj)[ch]) not found in obj.locs labels."
+    !(length(loc_idx) > 0) && throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
 
     name != "" && rename_channel!(obj_new; ch = labels(obj)[ch], name = name)
     type != "" && channel_type!(obj_new; ch = labels(obj)[ch], type = type)

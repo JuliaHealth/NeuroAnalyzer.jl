@@ -26,12 +26,12 @@ function lrinterpolate_channel(
 
     ch = get_channel(obj, ch = ch)[1]
     channels = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
-    @assert length(channels) > 1 "signal must contain > 1 signal channel."
-    @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
-    @assert nepochs(obj) > 1 "Training the model requires the signal to have > 1 epoch."
+    !(length(channels) > 1) && throw(ArgumentError("signal must contain > 1 signal channel."))
+    !(ch in channels) && throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    !(nepochs(obj) > 1) && throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
 
     _check_epochs(obj, ep_ref)
-    @assert !(ep in ep_ref) "ep must not be in ep_rep."
+    !(!(ep in ep_ref)) && throw(ArgumentError("ep must not be in ep_rep."))
 
     signal_src = @views obj.data[:, :, ep]
     ch_ref = setdiff(channels, ch)

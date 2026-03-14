@@ -53,12 +53,12 @@ function psd(
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
-    @assert nt >= 1 "nt must be ≥ 1."
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
-    @assert wlen >= 2 "wlen must be ≥ 2."
-    @assert woverlap < wlen "woverlap must be < $(wlen)."
-    @assert woverlap >= 0 "woverlap must be ≥ 0."
+    !(nt >= 1) && throw(ArgumentError("nt must be ≥ 1."))
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(wlen <= length(s)) && throw(ArgumentError("wlen must be ≤ $(length(s))."))
+    !(wlen >= 2) && throw(ArgumentError("wlen must be ≥ 2."))
+    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < $(wlen)."))
+    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
 
     n = length(s)
 
@@ -400,8 +400,8 @@ function mwpsd(
     demean::Bool = true,
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert pad >= 0 "pad must be ≥ 0."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(pad >= 0) && throw(ArgumentError("pad must be ≥ 0."))
 
     demean && (s = remove_dc(s))
     pad > 0 && (s = pad0(s, pad))
@@ -413,11 +413,11 @@ function mwpsd(
     f = linspace(flim[1], flim[2], nfrq)
 
     if ncyc isa Int64
-        @assert ncyc >= 1 "ncyc must be >= 1"
+        !(ncyc >= 1) && throw(ArgumentError("ncyc must be >= 1"))
         ncyc = repeat([ncyc], nfrq)
     else
-        @assert ncyc[1] >= 1 "ncyc[1] must be >= 1"
-        @assert ncyc[2] >= 1 "ncyc[2] must be >= 1"
+        !(ncyc[1] >= 1) && throw(ArgumentError("ncyc[1] must be >= 1"))
+        !(ncyc[2] >= 1) && throw(ArgumentError("ncyc[2] must be >= 1"))
         ncyc = round.(Int64, logspace(ncyc[1], ncyc[2], nfrq))
     end
 
@@ -464,7 +464,7 @@ function ghpsd(
     demean::Bool = true,
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 
     demean && (s = remove_dc(s))
     flim = (0, fs / 2)

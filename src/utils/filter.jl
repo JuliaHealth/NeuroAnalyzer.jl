@@ -29,9 +29,9 @@ The formula is: `n = round((a × fs) / (22 × bw))`, where 22 is the Harris empi
 """
 function fir_order_bw(; bw::Real, a::Real = 60, fs::Int64)::Int64
 
-    @assert bw > 0 "bw must be > 0."
-    @assert a > 0 "a must be > 0."
-    @assert fs > 0 "fs must be > 0."
+    !(bw > 0) && throw(ArgumentError("bw must be > 0."))
+    !(a > 0) && throw(ArgumentError("a must be > 0."))
+    !(fs > 0) && throw(ArgumentError("fs must be > 0."))
 
     return round(Int64, (a * fs) / (22 * bw))
 
@@ -94,8 +94,8 @@ The rule of thumb is that the filter should span 4–5 full cycles of the lowest
 """
 function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
 
-    @assert fs > 0 "fs must be > 0."
-    @assert f  > 0 "f must be > 0."
+    !(fs > 0) && throw(ArgumentError("fs must be > 0."))
+    !(f  > 0) && throw(ArgumentError("f must be > 0."))
 
     # samples per one full cycle of the lowest frequency of interest
     cycle_samples = t2s(1 / f, fs)
@@ -183,8 +183,8 @@ function iir_order(;
         fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype"
     )
     _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-    @assert bw > 0 "bw must be > 0."
-    @assert fs > 0 "fs must be > 0."
+    !(bw > 0) && throw(ArgumentError("bw must be > 0."))
+    !(fs > 0) && throw(ArgumentError("fs must be > 0."))
 
     # nyquist frequency; used to normalise cutoff edges to [0, 1]
     nqf = fs / 2
@@ -196,19 +196,19 @@ function iir_order(;
     # compute normalized pass-band (wp) and stop-band (ws) edges
     # the transition band is centered on `cutoff`; half-width = bw/2.
     if ftype === :lp
-        @assert length(cutoff) == 1 "cutoff must specify exactly one frequency for :lp."
+        !(length(cutoff) == 1) && throw(ArgumentError("cutoff must specify exactly one frequency for :lp."))
         wp = (cutoff[1] - bw / 2) / nqf  # pass edge (below cutoff)
         ws = (cutoff[1] + bw / 2) / nqf  # stop edge (above cutoff)
     elseif ftype === :hp
-        @assert length(cutoff) == 1 "cutoff must specify exactly one frequency for :hp."
+        !(length(cutoff) == 1) && throw(ArgumentError("cutoff must specify exactly one frequency for :hp."))
         ws = (cutoff[1] - bw / 2) / nqf  # stop edge (below cutoff)
         wp = (cutoff[1] + bw / 2) / nqf  # pass edge (above cutoff)
     elseif ftype === :bp
-        @assert length(cutoff) == 2 "cutoff must specify exactly two frequencies for :bp."
+        !(length(cutoff) == 2) && throw(ArgumentError("cutoff must specify exactly two frequencies for :bp."))
         wp = ((cutoff[1] + bw / 2) / nqf, (cutoff[2] - bw / 2) / nqf)  # inner pass edges
         ws = ((cutoff[1] - bw / 2) / nqf, (cutoff[2] + bw / 2) / nqf)  # outer stop edges
     elseif ftype === :bs
-        @assert length(cutoff) == 2 "cutoff must specify exactly two frequencies for :bs."
+        !(length(cutoff) == 2) && throw(ArgumentError("cutoff must specify exactly two frequencies for :bs."))
         ws = ((cutoff[1] + bw / 2) / nqf, (cutoff[2] - bw / 2) / nqf)  # inner stop edges
         wp = ((cutoff[1] - bw / 2) / nqf, (cutoff[2] + bw / 2) / nqf)  # outer pass edges
     end

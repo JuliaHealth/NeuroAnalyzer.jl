@@ -70,7 +70,7 @@ function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::B
 
     _bin(cl, (0.0, 1.0), "cl")
     _check_var(d, [:t, :z], "d")
-    @assert length(x) >= 2 "x must contain at least 2 elements."
+    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
 
     n  = length(x)
     m  = mean(x)
@@ -158,7 +158,7 @@ Column medians are computed, sorted, and the order-statistic CI method is applie
 function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
-    @assert size(x, 2) >= 2 "x must have at least 2 columns."
+    !(size(x, 2) >= 2) && throw(ArgumentError("x must have at least 2 columns."))
 
     x_sorted = sort(vec(median(x; dims=1)))
     n = size(x, 2)
@@ -199,7 +199,7 @@ function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
     _in(p, (0.0, 1.0), "p")
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     z= cl2z(cl)
     hw= z * sqrt((p * (1 - p)) / n)
@@ -233,8 +233,8 @@ Calculate the confidence interval for a Pearson correlation coefficient computed
 function cir(x::AbstractVector, y::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
-    @assert length(x) == length(y) "x and y must have the same length."
-    @assert length(x) > 3 "length(x) must be > 3 for Fisher's Z transform."
+    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
+    !(length(x) > 3) && throw(ArgumentError("length(x) must be > 3 for Fisher's Z transform."))
 
     return cir(; r=cor(x, y), n=length(x), cl=cl)
 
@@ -269,7 +269,7 @@ function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64
 
     _bin(cl, (0.0, 1.0), "cl")
     _in(r, (-1.0, 1.0), "r")
-    @assert n > 3 "n must be > 3 for Fisher's Z transform."
+    !(n > 3) && throw(ArgumentError("n must be > 3 for Fisher's Z transform."))
 
     # standard error of Fisher's Z
     se = 1 / sqrt(n - 3)
@@ -309,7 +309,7 @@ Calculate the confidence interval for the standard deviation using the chi-squar
 function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
-    @assert length(x) >= 2 "x must contain at least 2 elements."
+    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
 
     α = 1 - cl
     s = std(x)
@@ -350,7 +350,7 @@ Calculate the confidence interval for the variance using the chi-squared distrib
 function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
     _bin(cl, (0.0, 1.0), "cl")
-    @assert length(x) >= 2 "x must contain at least 2 elements."
+    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
 
     α = 1 - cl
     v = var(x)

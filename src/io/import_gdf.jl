@@ -28,8 +28,8 @@ Load GDF file and return `NeuroAnalyzer.NEURO` object.
 """
 function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".gdf" "This is not GDF file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".gdf") && throw(ArgumentError("This is not GDF file."))
 
     file_type = ""
 
@@ -44,7 +44,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     readbytes!(fid, header, 256)
     file_type = String(Char.(header[1:3]))
     file_type_ver = parse(Float64, String(Char.(header[5:8])))
-    @assert file_type == "GDF" "File $file_name is not GDF file."
+    !(file_type == "GDF") && throw(ArgumentError("File $file_name is not GDF file."))
 
     (file_type_ver == 1.25 || file_type_ver == 2.2) ||
         _warn("GDF versions other than 1.25 and 2.20 may not be supported correctly.")
@@ -149,7 +149,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             Float32, header[225:236]
         )
         data_records = reinterpret(Int64, header[237:244])[1]
-        @assert data_records != -1 "Number of data records cannot be -1."
+        !(data_records != -1) && throw(ArgumentError("Number of data records cannot be -1."))
         sampling_rate = Int64(
             reinterpret(Int32, header[245:252])[2] ÷
                 reinterpret(Int32, header[245:252])[1],
@@ -468,7 +468,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             readbytes!(fid, etp, filesize(file_name))
             etp_mode = reinterpret(Int8, etp[1])[1]
             deleteat!(etp, 1)
-            @assert (etp_mode == 1 || etp_mode == 3) "ETP mode must be 1 or 3, found $etp_mode."
+            !((etp_mode == 1 || etp_mode == 3)) && throw(ArgumentError("ETP mode must be 1 or 3, found $etp_mode."))
             b1 = Int32(etp[1]) << 8
             b2 = Int32(etp[2]) << 16
             b3 = -Int32(-etp[3]) << 24
@@ -535,7 +535,7 @@ function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             readbytes!(fid, etp, filesize(file_name))
             etp_mode = reinterpret(Int8, etp[1])[1]
             deleteat!(etp, 1)
-            @assert (etp_mode == 1 || etp_mode == 3) "ETP mode must be 1 or 3, found $etp_mode."
+            !((etp_mode == 1 || etp_mode == 3)) && throw(ArgumentError("ETP mode must be 1 or 3, found $etp_mode."))
             b1 = Int32(etp[1]) << 8
             b2 = Int32(etp[2]) << 16
             b3 = -Int32(-etp[3]) << 24

@@ -19,8 +19,8 @@ Load NIRS file and return `NeuroAnalyzer.NEURO` object.
 """
 function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".nirs" "This is not NIRS file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".nirs") && throw(ArgumentError("This is not NIRS file."))
 
     nirs = nothing
     try
@@ -31,8 +31,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
 
     file_type = "NIRS"
 
-    @assert "d" in keys(nirs) "File $file_name is not NIRS file."
-    @assert "t" in keys(nirs) "File $file_name is not NIRS file."
+    !("d" in keys(nirs)) && throw(ArgumentError("File $file_name is not NIRS file."))
+    !("t" in keys(nirs)) && throw(ArgumentError("File $file_name is not NIRS file."))
 
     # time points
     time_pts = nirs["t"][:]

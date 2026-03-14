@@ -31,7 +31,7 @@ function plot_phsd(
         frq::Symbol = :lin,
     )::GLMakie.Figure
 
-    @assert length(ph) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(length(ph) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -117,7 +117,7 @@ function plot_phsd(
 
     ch_n = size(ph, 1)
 
-    @assert size(ph, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(size(ph, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -236,7 +236,7 @@ function plot_phsd_3d(
     )::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
-    @assert size(ph, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(size(ph, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -376,7 +376,7 @@ function plot_phsd_topo(
         head::Bool = true,
     )::GLMakie.Figure
 
-    @assert size(ph, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(size(ph, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -600,7 +600,7 @@ function plot_phsd(
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
-        @assert ep == 0 "For continuous object, ep must not be specified."
+        !(ep == 0) && throw(ArgumentError("For continuous object, ep must not be specified."))
         if obj.time_pts[end] < 10 && seg == (0, 10)
             seg = (0, obj.time_pts[end])
         else
@@ -611,7 +611,7 @@ function plot_phsd(
         t = obj.time_pts[seg[1]:seg[2]]
         _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
-        @assert ep != 0 "For epoched object, ep must be specified."
+        !(ep != 0) && throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
         signal = @views obj.data[ch, :, ep]
@@ -655,7 +655,7 @@ function plot_phsd(
         end
     elseif type === :w3d || type === :s3d
         ch_t = obj.header.recording[:channel_type]
-        @assert ndims(sp) >= 2 "For type=:$type plot the signal must contain ≥ 2 channels."
+        !(ndims(sp) >= 2) && throw(ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
@@ -676,7 +676,7 @@ function plot_phsd(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Phase [rad]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
+        !(length(unique(obj.header.recording[:channel_type][ch])) == 1) && throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)

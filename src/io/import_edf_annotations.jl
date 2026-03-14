@@ -15,8 +15,8 @@ Load annotations from EDF+ file and return `markers` DataFrame. This function is
 """
 function import_edf_annotations(file_name::String)::DataFrame
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".edf" "This is not EDF file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".edf") && throw(ArgumentError("This is not EDF file."))
 
     file_type = ""
 
@@ -33,7 +33,7 @@ function import_edf_annotations(file_name::String)::DataFrame
 
     file_type = parse(Int, strip(header[1:8]))
     file_type == 0 && (file_type = "EDF")
-    @assert file_type == "EDF" "File $file_name is not EDF file."
+    !(file_type == "EDF") && throw(ArgumentError("File $file_name is not EDF file."))
 
     patient = strip(header[9:88])
     recording = strip(header[89:168])
@@ -44,11 +44,11 @@ function import_edf_annotations(file_name::String)::DataFrame
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
-    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+    !(reserved != "EDF+D") && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration = parse(Float64, strip(header[245:252]))
-    @assert data_records_duration == 0 "This file is a regular $file_type file, use import_edf()."
+    !(data_records_duration == 0) && throw(ArgumentError("This file is a regular $file_type file, use import_edf()."))
     ch_n = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)

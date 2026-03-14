@@ -20,8 +20,8 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 """
 function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".snirf" "This is not SNIRF file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".snirf") && throw(ArgumentError("This is not SNIRF file."))
 
     nirs = nothing
     try
@@ -43,9 +43,9 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     # check for multi-subject recordings
     n_id = "nirs"
     n != 0 &&
-        @assert !any(occursin.("nirs$n", keys(nirs))) "No data for subject $n found in the recording."
+        !(!any(occursin.("nirs$n", keys(nirs)))) && throw(ArgumentError("No data for subject $n found in the recording."))
     if any(occursin.("nirs1", keys(nirs)))
-        @assert n != 0 "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."
+        !(n != 0) && throw(ArgumentError("This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."))
         n_id = "nirs$n"
     end
 

@@ -45,8 +45,8 @@ function bootstrap_ci(
 }
 
     _bin(cl, (0.0, 1.0), "cl")
-    @assert n1 > 0 "n1 must be > 0."
-    @assert n2 > 0 "n2 must be > 0."
+    !(n1 > 0) && throw(ArgumentError("n1 must be > 0."))
+    !(n2 > 0) && throw(ArgumentError("n2 must be > 0."))
 
     tp_n = size(s, 1) # number of time points
     ep_n = size(s, 2) # number of epochs
@@ -126,8 +126,8 @@ function bootstrap_stat(
     f::String
 )::AbstractVector
 
-    @assert n1 > 0 "n1 must be > 0."
-    @assert n2 > 0 "n2 must be > 0."
+    !(n1 > 0) && throw(ArgumentError("n1 must be > 0."))
+    !(n2 > 0) && throw(ArgumentError("n2 must be > 0."))
 
     tp_n = size(s, 1)
     ep_n = size(s, 2)

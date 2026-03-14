@@ -287,8 +287,8 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
-    @assert "A1" in labels(obj) "OBJ does not contain A1 channel."
-    @assert "A2" in labels(obj) "OBJ does not contain A2 channel."
+    !("A1" in labels(obj)) && throw(ArgumentError("OBJ does not contain A1 channel."))
+    !("A2" in labels(obj)) && throw(ArgumentError("OBJ does not contain A2 channel."))
 
     # keep signal channels
     ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
@@ -444,8 +444,8 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
-    @assert "M1" in labels(obj) "OBJ does not contain M1 channel."
-    @assert "M2" in labels(obj) "OBJ does not contain M2 channel."
+    !("M1" in labels(obj)) && throw(ArgumentError("OBJ does not contain M1 channel."))
+    !("M2" in labels(obj)) && throw(ArgumentError("OBJ does not contain M2 channel."))
 
     # keep signal channels
     ch = get_channel(obj, ch = get_channel(obj, type = "eeg"))
@@ -612,8 +612,8 @@ function reference_plap(
     s = @views obj.data[ch, :, :]
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    @assert nn >= 1 "nn must be ≥ 1"
-    @assert nn < ch_n - 1 "nn must be < $(ch_n - 1)"
+    !(nn >= 1) && throw(ArgumentError("nn must be ≥ 1"))
+    !(nn < ch_n - 1) && throw(ArgumentError("nn must be < $(ch_n - 1)"))
 
     loc_x = locs[!, :loc_x]
     loc_y = locs[!, :loc_y]
@@ -737,8 +737,8 @@ function reference_slap(
     s = @views obj.data[ch, :, :]
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    @assert nn >= 1 "nn must be ≥ 1"
-    @assert nn < ch_n - 1 "nn must be < $(ch_n - 1)"
+    !(nn >= 1) && throw(ArgumentError("nn must be ≥ 1"))
+    !(nn < ch_n - 1) && throw(ArgumentError("nn must be < $(ch_n - 1)"))
 
     loc_x = locs[!, :loc_x]
     loc_y = locs[!, :loc_y]
@@ -896,10 +896,10 @@ function reference_custom(
     for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]
             m = match(r"(.*)-(.+)", ref_list[ref_idx])
-            @assert m[1] in labels(obj)[ch] "Label $(m[1]) does not match OBJ labels."
-            @assert m[2] in labels(obj)[ch] "Label $(m[2]) does not match OBJ labels."
+            !(m[1] in labels(obj)[ch]) && throw(ArgumentError("Label $(m[1]) does not match OBJ labels."))
+            !(m[2] in labels(obj)[ch]) && throw(ArgumentError("Label $(m[2]) does not match OBJ labels."))
         else
-            @assert ref_list[ref_idx] in labels(obj)[ch] "Label $(ref_list[ref_idx]) does not match OBJ labels."
+            !(ref_list[ref_idx] in labels(obj)[ch]) && throw(ArgumentError("Label $(ref_list[ref_idx]) does not match OBJ labels."))
         end
     end
 

@@ -68,7 +68,7 @@ function get_channel(
         end
     else
         _check_datatype(obj, ["nirs"])
-        @assert wl in obj.header.recording[:wavelengths] "OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."
+        !(wl in obj.header.recording[:wavelengths]) && throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
         wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
         for ch_idx in eachindex(obj.header.recording[:wavelength_index])
             obj.header.recording[:wavelength_index][ch_idx] == wl_idx &&
@@ -101,7 +101,7 @@ Get channel type.
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
     ch = get_channel(obj, ch = ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     cht = obj.header.recording[:channel_type][ch]
@@ -135,7 +135,7 @@ function set_channel_type(
     _check_var(type, string.(channel_types), "type")
 
     ch = get_channel(ch, ch = ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     # create new dataset
@@ -196,7 +196,7 @@ function rename_channel(
     # create new dataset
     obj_new = deepcopy(obj)
     clabels = obj_new.header.recording[:label]
-    @assert !(name in clabels) "Channel $name already exist."
+    !(!(name in clabels)) && throw(ArgumentError("Channel $name already exist."))
 
     ch = get_channel(obj, ch = ch)[1]
     obj_new.header.recording[:label][ch] = name
@@ -257,9 +257,9 @@ function edit_channel(
         obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String
     )::NeuroAnalyzer.NEURO
 
-    @assert value !== nothing "value cannot be empty."
+    !(value !== nothing) && throw(ArgumentError("value cannot be empty."))
     ch = get_channel(obj, ch = ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     _check_var(field, [:channel_type, :label], "field")
@@ -321,13 +321,13 @@ function replace_channel(
     )::NeuroAnalyzer.NEURO
 
     _chk3d(s)
-    @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."
+    !(size(s) == (1, epoch_len(obj), nepochs(obj))) && throw(ArgumentError("signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."))
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
         "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
     )
 
     ch = get_channel(obj, ch = ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     obj_new = deepcopy(obj)
@@ -383,7 +383,7 @@ Add channel labels.
 """
 function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnalyzer.NEURO
 
-    @assert length(clabels) == nchannels(obj) "clabels length must be $(nchannels(obj))."
+    !(length(clabels) == nchannels(obj)) && throw(ArgumentError("clabels length must be $(nchannels(obj))."))
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:label] = clabels
@@ -443,15 +443,15 @@ function add_channel(
 )::NeuroAnalyzer.NEURO
 
     if length(obj.data) > 0
-        @assert signal_len(obj) == size(data, 2) "Epoch length of the new data ($(size(data, 2))) and the object data ($(signal_len(obj)))must be equal."
-        @assert nepochs(obj) == size(data, 3) "Number of epochs of the new data ($(size(data, 3))) and the object data ($(nepochs(obj))) must be equal."
+        !(signal_len(obj) == size(data, 2)) && throw(ArgumentError("Epoch length of the new data ($(size(data, 2))) and the object data ($(signal_len(obj)))must be equal."))
+        !(nepochs(obj) == size(data, 3)) && throw(ArgumentError("Number of epochs of the new data ($(size(data, 3))) and the object data ($(nepochs(obj))) must be equal."))
     end
-    @assert length(label) == size(data, 1) "Number of labels ($(length(label))) and number of data channels ($(size(data, 1))) must be equal."
-    @assert length(type) == size(data, 1) "Number of channel types ($(length(type))) and number of data channels ($(size(data, 1))) must be equal."
-    @assert length(unit) == size(data, 1) "Number of channel units ($(length(unit))) and number of data channels ($(size(data, 1))) must be equal."
+    !(length(label) == size(data, 1)) && throw(ArgumentError("Number of labels ($(length(label))) and number of data channels ($(size(data, 1))) must be equal."))
+    !(length(type) == size(data, 1)) && throw(ArgumentError("Number of channel types ($(length(type))) and number of data channels ($(size(data, 1))) must be equal."))
+    !(length(unit) == size(data, 1)) && throw(ArgumentError("Number of channel units ($(length(unit))) and number of data channels ($(size(data, 1))) must be equal."))
 
     for idx in eachindex(type)
-        @assert type[idx] in channel_types "Unknown channel type $(type[idx])."
+        !(type[idx] in channel_types) && throw(ArgumentError("Unknown channel type $(type[idx])."))
     end
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(

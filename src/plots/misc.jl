@@ -18,7 +18,7 @@ Compose a complex plot of various plots contained in vector `vfig` using layout 
 """
 function plot_compose(vfig::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::GLMakie.Figure
 
-    @assert layout[1] * layout[2] >= length(vfig) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(vfig)))."
+    !(layout[1] * layout[2] >= length(vfig)) && throw(ArgumentError("Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(vfig)))."))
 
     plot_size = (0, 0)
     for idx in eachindex(vfig)

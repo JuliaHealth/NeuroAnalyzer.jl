@@ -33,7 +33,7 @@ function export_csv(
         overwrite::Bool = false,
     )::Nothing
 
-    @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
+    !(!(isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
     # DATA
     # unsplit epochs
@@ -50,7 +50,7 @@ function export_csv(
     # HEADER
     if header
         file_name = replace(file_name, ".csv" => "_header.txt")
-        @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
+        !(!(isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
         for (key, value) in obj.header.subject
             println(f, key, ": ", value)
@@ -67,21 +67,21 @@ function export_csv(
     # EPOCH TIME POINST
     if epoch_time
         file_name = replace(file_name, ".csv" => "_epoch_time.csv")
-        @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
+        !(!(isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, obj.epoch_time)
     end
 
     # MARKERS
     if markers && DataFrames.nrow(obj.markers) > 0
         file_name = replace(file_name, ".csv" => "_markers.csv")
-        @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
+        !(!(isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, obj.markers)
     end
 
     # LOCS
     if locs && DataFrames.nrow(obj.locs) > 0
         file_name = replace(file_name, ".csv" => "_locs.csv")
-        @assert (isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
+        !((isfile(file_name) && !overwrite)) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, obj.locs)
     end
 

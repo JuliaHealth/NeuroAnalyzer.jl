@@ -36,7 +36,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
 
     for file_idx in eachindex(file_name)
 
-        @assert isfile(file_name[file_idx]) "File $(file_name[file_idx]) cannot be loaded."
+        !(isfile(file_name[file_idx])) && throw(ArgumentError("File $(file_name[file_idx]) cannot be loaded."))
 
         # load data
         img = Gray.(FileIO.load(file_name[file_idx]))

@@ -32,7 +32,7 @@ function xcor(
 
     _check_var(method, [:sum, :cor, :stat], "method")
 
-    @assert length(s1) == length(s2) "Both signals must have the same length."
+    !(length(s1) == length(s2)) && throw(ArgumentError("Both signals must have the same length."))
 
     xc = zeros(l + 1)
     xc_neg = zeros(l + 1)
@@ -114,7 +114,7 @@ function xcor(
         method::Symbol = :sum,
     )::Array{Float64, 3}
 
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
 
     ep_n = size(s1, 2)
     xc = zeros(1, length((-l):l), ep_n)
@@ -158,7 +158,7 @@ function xcor(
         method::Symbol = :sum,
     )::Array{Float64, 3}
 
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
     _chk3d(s2)
 
@@ -220,10 +220,10 @@ function xcor(
         method::Symbol = :sum,
     )::@NamedTuple{xc::Array{Float64, 3}, l::Vector{Float64}}
 
-    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
-    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
+    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+    !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
@@ -232,8 +232,8 @@ function xcor(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
-    @assert l >= 0 "l must be ≥ 0."
+    !(l <= size(obj1, 2)) && throw(ArgumentError("l must be ≤ $(size(obj1, 2))."))
+    !(l >= 0) && throw(ArgumentError("l must be ≥ 0."))
 
     if datatype(obj1) == "erp" && datatype(obj2) == "erp"
         xc = @views xcor(

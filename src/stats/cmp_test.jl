@@ -67,10 +67,10 @@ function cmp_test(
 }
 
     _check_var(type, [:auto, :perm, :p, :np], "type")
-    @assert alpha > 0.0  "alpha must be > 0."
-    @assert alpha < 1.0  "alpha must be < 1."
-    @assert nperm >= 1   "nperm must be ≥ 1."
-    paired && @assert length(s1) == length(s2) "Paired test requires equal-length vectors."
+    !(alpha > 0.0 ) && throw(ArgumentError("alpha must be > 0."))
+    !(alpha < 1.0 ) && throw(ArgumentError("alpha must be < 1."))
+    !(nperm >= 1  ) && throw(ArgumentError("nperm must be ≥ 1."))
+    paired && !(length(s1) == length(s2)) && throw(ArgumentError("Paired test requires equal-length vectors."))
 
     # --- normality test (Jarque–Bera on pooled data) ---
     jb = JarqueBeraTest([s1; s2])

@@ -38,8 +38,8 @@ function res_norm(
     ks_p::Vector{Float64}
 }
 
-    @assert length(x) > 0 "x must not be empty."
-    @assert length(x) == length(g) "x and g must have the same length."
+    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    !(length(x) == length(g)) && throw(ArgumentError("x and g must have the same length."))
 
     groups = sort(unique(g))
     n_out = length(groups) > 1 ? length(groups) + 1 : 1
@@ -52,7 +52,7 @@ function res_norm(
         # per-group residual normality tests
         for (i, grp) in enumerate(groups)
             x_grp = x[g .== grp]
-            @assert length(x_grp) >= 3 "Group $grp must have at least 3 observations."
+            !(length(x_grp) >= 3) && throw(ArgumentError("Group $grp must have at least 3 observations."))
             res = x_grp .- mean(x_grp)
             # use OneSampleADTest against the theoretical distribution
             adt_p[i] = pvalue(OneSampleADTest(res, ref))

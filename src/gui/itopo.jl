@@ -17,7 +17,7 @@ Interactive topographical map of continuous signal.
 """
 function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    @assert nepochs(obj) == 1 "For epoched object itopo_ep() must be used."
+    !(nepochs(obj) == 1) && throw(ArgumentError("For epoched object itopo_ep() must be used."))
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
@@ -358,7 +358,7 @@ Interactive topographical map of epoched signal.
 """
 function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    @assert nepochs(obj) > 1 "For continuous object itopo() must be used."
+    !(nepochs(obj) > 1) && throw(ArgumentError("For continuous object itopo() must be used."))
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 

@@ -43,7 +43,7 @@ Calculate covariance matrix of two signals.
 """
 function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
 
-    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
+    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
 
     # compute the 2×2 channels-vs-channels covariance matrix
     # hcat → n×2; cor → 2×2

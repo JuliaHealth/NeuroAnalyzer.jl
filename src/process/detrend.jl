@@ -29,8 +29,8 @@ function detrend(
     )::Vector{Float64}
 
     _check_var(type, [:ls, :linear, :mean, :constant, :poly, :loess, :hp], "type")
-    @assert f > 0 "f must be > 0."
-    @assert order >= 1 "order must be ≥ 1."
+    !(f > 0) && throw(ArgumentError("f must be > 0."))
+    !(order >= 1) && throw(ArgumentError("order must be ≥ 1."))
 
     if type === :loess
         t = collect(1.0:1:length(s))

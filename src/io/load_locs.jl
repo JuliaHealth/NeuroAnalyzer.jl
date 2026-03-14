@@ -43,8 +43,8 @@ Channel locations:
 """
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert length(obj.header.recording[:label]) > 0 "OBJ does not contain labels, use add_label() first."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(length(obj.header.recording[:label]) > 0) && throw(ArgumentError("OBJ does not contain labels, use add_label() first."))
 
     _info(
         "Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org"

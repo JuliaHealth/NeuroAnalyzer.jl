@@ -28,7 +28,7 @@ function delete_channel(
     ch = get_channel(obj, ch = ch)
     length(ch) == 0 && (return obj)
     length(ch) > 1 && (ch = sort!(ch, rev = true))
-    @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
+    !(length(ch) < ch_n) && throw(ArgumentError("Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."))
     obj_new = deepcopy(obj)
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
@@ -140,7 +140,7 @@ function keep_channel(
     ch_n = nchannels(obj)
     length(get_channel(obj, ch = ch)) == ch_n && (return obj)
     chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch = ch))]
-    @assert length(chs_to_remove) < ch_n "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."
+    !(length(chs_to_remove) < ch_n) && throw(ArgumentError("Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."))
 
     obj_new = delete_channel(obj, ch = chs_to_remove)
 

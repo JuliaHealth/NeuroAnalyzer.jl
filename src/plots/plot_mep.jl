@@ -238,7 +238,7 @@ function plot_mep_stack(
         mono::Bool = false,
     )::GLMakie.Figure
 
-    @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."
+    !(length(t) == size(s, 2)) && throw(ArgumentError("Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."))
 
     pal = mono ? :grays : :darktest
 
@@ -349,7 +349,7 @@ function plot_mep(
 
     # check channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
+    !(!(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1)) && throw(ArgumentError("All channels must be of the same type."))
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])

@@ -29,7 +29,7 @@ function remove_pops(
         @NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}
     }
 
-    @assert length(s) >= 2 * r + 1 "s length must be ≥ $(2 * r + 1)."
+    !(length(s) >= 2 * r + 1) && throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
 
     s_m = mean(s)
     s .-= s_m
@@ -237,7 +237,7 @@ function remove_pops(
         Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
     }
 
-    @assert nepochs(obj) == 1 "pop() must be applied to continuous object."
+    !(nepochs(obj) == 1) && throw(ArgumentError("pop() must be applied to continuous object."))
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
@@ -249,7 +249,7 @@ function remove_pops(
     r_seg = Vector{Int64}()
 
     window *= sr(obj)
-    @assert window <= signal_len(obj) "window must be ≤ $(signal_len(obj) / sr(obj))."
+    !(window <= signal_len(obj)) && throw(ArgumentError("window must be ≤ $(signal_len(obj) / sr(obj))."))
     ch_n = size(s, 1)
 
     @inbounds for ch_idx in 1:ch_n

@@ -41,11 +41,11 @@ function locs_details(
     phi_sph::Float64,
 }
 
-    @assert length(get_channel(obj, ch=ch)) == 1 "ch must resolve to exactly one channel."
+    !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
 
     ch = intersect(obj.locs[!, :label], [ch])
     locs = Base.filter(:label => in(ch), obj.locs)
-    @assert DataFrames.nrow(locs) == 1 "Channel has no location details."
+    !(DataFrames.nrow(locs) == 1) && throw(ArgumentError("Channel has no location details."))
 
     l = obj.locs[1, :label]
     x = obj.locs[1, :loc_x]

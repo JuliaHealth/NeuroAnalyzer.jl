@@ -48,7 +48,7 @@ function generate_window(
 )::Vector{Float64}
 
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     even && mod(n, 2) != 0 && (n += 1)
     t = range(0, 1, n)
@@ -299,9 +299,9 @@ function generate_morlet(
     complex::Bool = false
 )::Union{Vector{Float64}, Vector{ComplexF64}}
 
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert ncyc >= 1 "ncyc must be ≥ 1."
-    @assert t > 0 "t must be > 0."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(ncyc >= 1) && throw(ArgumentError("ncyc must be ≥ 1."))
+    !(t > 0) && throw(ArgumentError("t must be > 0."))
 
     tvec = (-t):(1 / fs):t
     sin_wave = @. exp(im * 2 * pi * f * tvec)
@@ -345,9 +345,9 @@ function generate_gaussian(
     a::Real = 1.0
 )::Vector{Float64}
 
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert ncyc >= 1 "ncyc must be ≥ 1."
-    @assert t > 0 "t must be > 0."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(ncyc >= 1) && throw(ArgumentError("ncyc must be ≥ 1."))
+    !(t > 0) && throw(ArgumentError("t must be > 0."))
 
     tvec = (-t):(1 / fs):t
     # Gaussian SD: wider for more cycles
@@ -390,7 +390,7 @@ function generate_noise(
 )::Vector{Float64}
 
     _check_var(type, [:whiten, :whiteu, :pink], "type")
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     if type === :whiten
         s = randn(n)
@@ -435,7 +435,7 @@ The cumulative sum introduces temporal autocorrelation, producing a Brownian-mot
 """
 function generate_signal(n::Int64, a::Real = 1.0)::Vector{Float64}
 
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     s = cumsum(randn(n))
     return normalize_minmax(s) .* a
@@ -479,9 +479,9 @@ function generate_morlet_fwhm(
     h::Float64 = 0.25
 )::Vector{ComplexF64}
 
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert t > 0 "t must be > 0."
-    @assert h > 0 "h must be > 0."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(t > 0) && throw(ArgumentError("t must be > 0."))
+    !(h > 0) && throw(ArgumentError("h must be > 0."))
 
     tvec = (-t):(1 / fs):t
     return @. exp(2 * 1im * π * f * tvec) * exp((-4 * log(2) * tvec^2) / h^2)

@@ -26,9 +26,9 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64 = 4, n::Int64 = 8, lambda::Float
 
     _check_datatype(obj, "eeg")
     _has_locs(obj)
-    @assert !(m < 2 || m > 10) "m must be in [2, 10]."
-    @assert n >= 1 "n must be ≥ 1."
-    @assert lambda > 0 "lambda must be > 0."
+    !(!(m < 2 || m > 10)) && throw(ArgumentError("m must be in [2, 10]."))
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(lambda > 0) && throw(ArgumentError("lambda must be > 0."))
 
     ch = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
     locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
@@ -125,8 +125,8 @@ Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp poten
 """
 function gh(locs::DataFrame; m::Int64 = 4, n::Int64 = 8)::@NamedTuple{G::Matrix{Float64}, H::Matrix{Float64}}
 
-    @assert !(m < 2 || m > 10) "m must be in [2, 10]."
-    @assert n >= 1 "n must be ≥ 1."
+    !(!(m < 2 || m > 10)) && throw(ArgumentError("m must be in [2, 10]."))
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     ch_n = DataFrames.nrow(locs)
 

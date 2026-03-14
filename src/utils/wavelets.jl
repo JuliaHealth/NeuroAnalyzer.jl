@@ -18,6 +18,7 @@ The first frequency bin is set to `0.0` Hz because `getMeanFreq` returns a non-p
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places), length determined by the number of wavelet scales
 
 # Throws
+
 - `ArgumentError`: if `fs < 1`
 
 # See also
@@ -30,7 +31,7 @@ function cwtfrq(
     wt::T = wavelet(Morlet(2π), β = 2)
 ) where {T <: CWT}
 
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 
     f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs), digits=2)
     # lowest scale returns a non-physical frequency; replace with DC (0 Hz)

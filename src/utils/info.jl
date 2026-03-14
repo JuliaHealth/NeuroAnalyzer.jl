@@ -83,7 +83,7 @@ Return the number of channels of a given type.
 function nchannels(obj::NeuroAnalyzer.NEURO; type::String = "all")::Int64
 
     _check_var(type, channel_types, "type")
-    @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel types."
+    !(length(obj.header.recording[:channel_type]) != 0) && throw(ArgumentError("OBJ has no defined channel types."))
 
     if type == "all"
         return size(obj.data, 1)
@@ -226,7 +226,7 @@ Return channel labels.
 """
 function labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
-    @assert length(obj.header.recording[:label]) > 0 "OBJ has no channel labels."
+    !(length(obj.header.recording[:label]) > 0) && throw(ArgumentError("OBJ has no channel labels."))
     return obj.header.recording[:label]
 
 end
@@ -251,7 +251,7 @@ Return optode labels (NIRS objects only).
 function optode_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
     _check_datatype(obj, "nirs")
-    @assert length(obj.header.recording[:optode_labels]) > 0 "OBJ has no optode labels."
+    !(length(obj.header.recording[:optode_labels]) > 0) && throw(ArgumentError("OBJ has no optode labels."))
     return obj.header.recording[:optode_labels]
 
 end
@@ -276,7 +276,7 @@ Return source labels (NIRS objects only).
 function source_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
     _check_datatype(obj, "nirs")
-    @assert length(obj.header.recording[:src_labels]) > 0 "OBJ has no source labels."
+    !(length(obj.header.recording[:src_labels]) > 0) && throw(ArgumentError("OBJ has no source labels."))
     return obj.header.recording[:src_labels]
 
 end
@@ -301,7 +301,7 @@ Return detector labels (NIRS objects only).
 function detector_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
     _check_datatype(obj, "nirs")
-    @assert length(obj.header.recording[:det_labels]) > 0 "OBJ has no detector labels."
+    !(length(obj.header.recording[:det_labels]) > 0) && throw(ArgumentError("OBJ has no detector labels."))
     return obj.header.recording[:det_labels]
 
 end
@@ -325,7 +325,7 @@ Return channel type strings.
 """
 function chtypes(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
-    @assert length(obj.header.recording[:channel_type]) > 0 "OBJ has no channel types."
+    !(length(obj.header.recording[:channel_type]) > 0) && throw(ArgumentError("OBJ has no channel types."))
     return obj.header.recording[:channel_type]
 
 end
@@ -536,7 +536,7 @@ function channel_info(
 )::Union{Nothing, String}
 
     ch = get_channel(obj, ch=ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     rec = obj.header.recording
@@ -606,7 +606,7 @@ function channel_pick(
 )::Vector{String}
 
     _check_datatype(obj, "eeg")
-    @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
+    !(length(labels(obj)) != 0) && throw(ArgumentError("OBJ does not contain channel labels."))
 
     valid = [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o]
 
@@ -710,7 +710,7 @@ Return channel names belonging to a predefined spatial cluster.
 """
 function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
 
-    @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
+    !(length(labels(obj)) != 0) && throw(ArgumentError("OBJ does not contain channel labels."))
     _check_var(cluster, [:f1, :f2, :t1, :t2, :c1, :c2, :p1, :p2, :o], "cluster")
 
     clabels = labels(obj)
@@ -983,7 +983,7 @@ Return the size of the object data array along dimension `d`.
 """
 function Base.size(obj::NeuroAnalyzer.NEURO, d::Int64)::Int64
 
-    @assert d in 1:ndims(obj.data) "d must be in [1, $(ndims(obj.data))]."
+    !(d in 1:ndims(obj.data)) && throw(ArgumentError("d must be in [1, $(ndims(obj.data))]."))
     return size(obj.data, d)
 
 end

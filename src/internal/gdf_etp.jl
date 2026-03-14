@@ -1,227 +1,253 @@
+# ---------------------------------------------------------------------------
+# GDF event type code lookup table.
+# Key: (high_byte, low_byte) → event description string.
+# Built once at module load; used by _gdf_etp for O(1) lookup.
+# Source: GDF standard v2.x event type codes.
+# ---------------------------------------------------------------------------
+const _GDF_ETP_TABLE = Dict{Tuple{UInt8, UInt8}, String}(
+
+    # --- 0x01: EEG artifacts, calibration, and brain events ---
+    (0x01, 0x01) => "artifact:EOG (blinks)",
+    (0x01, 0x02) => "artifact:ECG",
+    (0x01, 0x03) => "artifact:EMG/Muscle",
+    (0x01, 0x04) => "artifact:Movement",
+    (0x01, 0x05) => "artifact:Failing Electrode",
+    (0x01, 0x06) => "artifact:Sweat",
+    (0x01, 0x07) => "artifact:50/60 Hz mains interference",
+    (0x01, 0x08) => "artifact:breathing",
+    (0x01, 0x09) => "artifact:pulse",
+    (0x01, 0x0a) => "artifact:EOG (slow)",
+    (0x01, 0x0f) => "calibration",
+    (0x01, 0x11) => "EEG:Sleep spindles",
+    (0x01, 0x12) => "EEG:K-complexes",
+    (0x01, 0x13) => "EEG:Saw-tooth waves",
+    (0x01, 0x14) => "EEG:Idling EEG - eyes open",
+    (0x01, 0x15) => "EEG:Idling EEG - eyes closed",
+    (0x01, 0x16) => "EEG:spike",
+    (0x01, 0x17) => "EEG:seizure",
+    (0x01, 0x18) => "EEG:Electrographic seizure",
+    (0x01, 0x19) => "EEG:Clinical seizure",
+    (0x01, 0x1a) => "EEG:Subclinical seizure",
+    (0x01, 0x1b) => "EEG:Stimulating for seizure",
+    (0x01, 0x21) => "VEP:visual EP",
+    (0x01, 0x22) => "AEP:auditory EP",
+    (0x01, 0x23) => "SEP:somato-sensory EP",
+    (0x01, 0x2f) => "TMS:transcranial magnetic stimulation",
+    (0x01, 0x31) => "SSVEP",
+    (0x01, 0x32) => "SSAEP",
+    (0x01, 0x33) => "SSSEP",
+    (0x01, 0x40) => "response code 0",
+    (0x01, 0x41) => "response code 1",
+    (0x01, 0x42) => "response code 2",
+    (0x01, 0x43) => "response code 3",
+    (0x01, 0x44) => "Go, or response code 4",
+    (0x01, 0x45) => "NoGo, or response code 5",
+
+    # --- 0x02: Neural spike / synaptic events ---
+    (0x02, 0x01) => "Spike, action potential (fiducial point)",
+    (0x02, 0x02) => "Burst",
+    (0x02, 0x03) => "maximum slope time",
+    (0x02, 0x04) => "peak time of spike",
+    (0x02, 0x11) => "EPSP",
+    (0x02, 0x12) => "IPSP",
+    (0x02, 0x13) => "EPSC",
+    (0x02, 0x14) => "IPSC",
+
+    # --- 0x03: BCI / motor-imagery trial events ---
+    # Note: 0x031b–0x037f are reserved for ASCII characters #27–#127
+    (0x03, 0x00) => "Start of Trial",
+    (0x03, 0x01) => "class1, Left hand",
+    (0x03, 0x02) => "class2, Right hand",
+    (0x03, 0x03) => "class3, Foot, towards Right",
+    (0x03, 0x04) => "class4, Tongue",
+    (0x03, 0x05) => "class5",
+    (0x03, 0x06) => "class6, towards Down",
+    (0x03, 0x07) => "class7",
+    (0x03, 0x08) => "class8",
+    (0x03, 0x09) => "class9, towards Left",
+    (0x03, 0x0a) => "class10",
+    (0x03, 0x0b) => "class11",
+    (0x03, 0x0c) => "class12, towards Up",
+    (0x03, 0x0d) => "Feedback (continuous)",
+    (0x03, 0x0e) => "Feedback (discrete)",
+    (0x03, 0x0f) => "cue unknown/undefined",
+    (0x03, 0x11) => "Beep",
+    (0x03, 0x12) => "Cross on screen",
+    (0x03, 0x13) => "Flashing light",
+    (0x03, 0x81) => "target hit, task successful, correct classification",
+    (0x03, 0x82) => "target missed, task not reached, incorrect classification",
+    (0x03, 0xff) => "Rejection of whole trial",
+
+    # --- 0x04: Sleep / respiratory / ocular / movement events ---
+    (0x04, 0x01) => "OAHE",
+    (0x04, 0x02) => "RERA",
+    (0x04, 0x03) => "CAHE",
+    (0x04, 0x04) => "CS Breathing",
+    (0x04, 0x05) => "Hypoventilation",
+    (0x04, 0x06) => "Apnea",
+    (0x04, 0x07) => "Obstructive apnea",
+    (0x04, 0x08) => "Central apnea",
+    (0x04, 0x09) => "Mixed apnea",
+    (0x04, 0x0a) => "Hypopnea",
+    (0x04, 0x0b) => "Periodic Breathing",
+    (0x04, 0x0c) => "Limb movement",
+    (0x04, 0x0d) => "PLMS",
+    (0x04, 0x0e) => "time of maximum inspiration",
+    (0x04, 0x0f) => "Start of inspiration",
+    (0x04, 0x10) => "Sleep stage Wake",
+    (0x04, 0x11) => "Sleep stage 1",
+    (0x04, 0x12) => "Sleep stage 2",
+    (0x04, 0x13) => "Sleep stage 3",
+    (0x04, 0x14) => "Sleep stage 4",
+    (0x04, 0x15) => "Sleep stage REM",
+    (0x04, 0x16) => "Sleep stage ?",
+    (0x04, 0x17) => "Movement time",
+    (0x04, 0x18) => "Bruxism",
+    (0x04, 0x19) => "RBD",
+    (0x04, 0x1a) => "RMD",
+    (0x04, 0x1b) => "Sleep stage N",
+    (0x04, 0x1c) => "Sleep stage N1",
+    (0x04, 0x1d) => "Sleep stage N2",
+    (0x04, 0x1e) => "Sleep stage N3",
+    (0x04, 0x20) => "Lights on",
+    (0x04, 0x21) => "Lights off",
+    (0x04, 0x31) => "eyes left",
+    (0x04, 0x32) => "eyes right",
+    (0x04, 0x33) => "eyes up",
+    (0x04, 0x34) => "eyes down",
+    (0x04, 0x35) => "horizontal eye movement",
+    (0x04, 0x36) => "vertical eye movement",
+    (0x04, 0x37) => "eye rotation (clockwise)",
+    (0x04, 0x38) => "eye rotation (counterclockwise)",
+    (0x04, 0x39) => "eye blinks",
+    (0x04, 0x41) => "left hand movement",
+    (0x04, 0x42) => "right hand movement",
+    (0x04, 0x43) => "head movement",
+    (0x04, 0x44) => "tongue movement",
+    (0x04, 0x45) => "swallowing",
+    (0x04, 0x46) => "biting, chewing, teeth grinding",
+    (0x04, 0x47) => "foot movement",
+    (0x04, 0x48) => "foot (right) movement",
+    (0x04, 0x49) => "arm movement",
+    (0x04, 0x4a) => "arm (right) movement",
+
+    # --- 0x05: ECG fiducial points and exercise test events ---
+    (0x05, 0x01) => "ECG:Fiducial point of QRS complex",
+    (0x05, 0x02) => "ECG:P-wave onset",
+    (0x05, 0x03) => "ECG:P-wave end",
+    (0x05, 0x04) => "ECG:Q-wave onset",
+    (0x05, 0x05) => "ECG:Q-wave peak",
+    (0x05, 0x06) => "ECG:R-point",
+    (0x05, 0x07) => "ECG:S-wave onset",
+    (0x05, 0x08) => "ECG:S-wave end",
+    (0x05, 0x09) => "ECG:T-wave onset",
+    (0x05, 0x0a) => "ECG:T-wave end",
+    (0x05, 0x0b) => "ECG:U-wave onset",
+    (0x05, 0x0c) => "ECG:U-wave end",
+    (0x05, 0x80) => "exercise test: start",
+    (0x05, 0x81) => "25 Watt",
+    (0x05, 0x82) => "50 Watt",
+    (0x05, 0x83) => "75 Watt",
+    (0x05, 0x84) => "100 Watt",
+    (0x05, 0x85) => "125 Watt",
+    (0x05, 0x86) => "150 Watt",
+    (0x05, 0x87) => "175 Watt",
+    (0x05, 0x88) => "200 Watt",
+    (0x05, 0x89) => "225 Watt",
+    (0x05, 0x8a) => "250 Watt",
+    (0x05, 0x8b) => "275 Watt",
+    (0x05, 0x8c) => "300 Watt",
+    (0x05, 0x8d) => "325 Watt",
+    (0x05, 0x8e) => "350 Watt",
+    (0x05, 0x8f) => "exercise test: end",
+
+    # --- 0x00: Generic condition codes ---
+    (0x00, 0x00) => "empty event",
+    (0x00, 0x01) => "condition 1",
+    (0x00, 0x02) => "condition 2",
+    (0x00, 0x03) => "condition 3",
+    (0x00, 0x04) => "condition 4",
+    (0x00, 0x05) => "condition 5",
+    (0x00, 0x06) => "condition 6",
+    (0x00, 0x07) => "condition 7",
+    (0x00, 0x08) => "condition 8",
+    (0x00, 0x09) => "condition 9",
+    (0x00, 0x0a) => "condition 10",
+    (0x00, 0x0b) => "condition 11",
+    (0x00, 0x0c) => "condition 12",
+    (0x00, 0x0d) => "condition 13",
+    (0x00, 0x0e) => "condition 14",
+    (0x00, 0x0f) => "condition 15",
+    (0x00, 0x10) => "condition 16",
+    (0x00, 0x11) => "condition 17",
+    (0x00, 0x12) => "condition 18",
+    (0x00, 0x13) => "condition 19",
+    (0x00, 0x14) => "condition 20",
+    (0x00, 0x15) => "condition 21",
+    (0x00, 0x16) => "condition 22",
+    (0x00, 0x17) => "condition 23",
+    (0x00, 0x18) => "condition 24",
+    (0x00, 0x19) => "condition 25",
+    (0x00, 0x1a) => "condition 26",
+    (0x00, 0x20) => "condition 32",
+    (0x00, 0x2f) => "condition 47",
+    (0x00, 0x30) => "condition 48",
+    (0x00, 0x31) => "condition 49",
+    (0x00, 0x32) => "condition 50",
+    (0x00, 0x33) => "condition 51",
+    (0x00, 0x34) => "condition 52",
+    (0x00, 0x35) => "condition 53",
+    (0x00, 0x36) => "condition 54",
+    (0x00, 0x37) => "condition 55",
+    (0x00, 0x38) => "condition 56",
+    (0x00, 0x39) => "condition 57",
+    (0x00, 0x3a) => "condition 58",
+    (0x00, 0x3b) => "condition 59",
+    (0x00, 0x3c) => "condition 60",
+    (0x00, 0x3d) => "condition 61",
+    (0x00, 0x3e) => "condition 62",
+    (0x00, 0x3f) => "condition 63",
+    (0x00, 0x40) => "condition 64",
+    (0x00, 0x41) => "condition 65",
+    (0x00, 0x42) => "condition 66",
+    (0x00, 0x46) => "condition 70",
+    (0x00, 0x51) => "condition 81",
+    (0x00, 0x52) => "condition 82",
+    (0x00, 0x53) => "condition 83",
+    (0x00, 0x5b) => "condition 91",
+    (0x00, 0x5c) => "condition 92",
+    (0x00, 0x5d) => "condition 93",
+    (0x00, 0x60) => "condition 96",
+    (0x00, 0x63) => "condition 99",
+    (0x00, 0x80) => "condition 128",
+    (0x00, 0x81) => "condition 129",
+    (0x00, 0x82) => "condition 130",
+    (0x00, 0x84) => "condition 131",
+    (0x00, 0x85) => "condition 132",
+    (0x00, 0x86) => "condition 133",
+    (0x00, 0x87) => "condition 134",
+    (0x00, 0xa6) => "condition 166",
+    (0x00, 0xa7) => "condition 167",
+    (0x00, 0xa8) => "condition 168",
+    (0x00, 0xa9) => "condition 169",
+
+    # --- 0x7f: Segment / sampling control ---
+    (0x7f, 0xfe) => "start of a new segment (after a break)",
+    (0x7f, 0xff) => "non-equidistant sampling value",
+)
+
+"""
+    _gdf_etp(etp)
+
+Decode a 2-byte GDF event type code into a human-readable description.
+
+Looks up the `(high_byte, low_byte)` pair in `_GDF_ETP_TABLE`. Returns an "unknown code" string for unrecognized codes.
+
+# Arguments
+
+- `etp::Vector{UInt8}`: 2-byte event type code vector; `etp[1]` is the high byte (category), `etp[2]` is the low byte (specific event)
+"""
 function _gdf_etp(etp::Vector{UInt8})::String
-    event = "unknown code ($(etp[1])$(etp[2]))"
-    if etp[1] == 0x01
-        etp[2] == 0x01 && (event = "artifact:EOG (blinks)")
-        etp[2] == 0x02 && (event = "artifact:ECG")
-        etp[2] == 0x03 && (event = "artifact:EMG/Muscle")
-        etp[2] == 0x04 && (event = "artifact:Movement")
-        etp[2] == 0x05 && (event = "artifact:Failing Electrode")
-        etp[2] == 0x06 && (event = "artifact:Sweat")
-        etp[2] == 0x07 && (event = "artifact:50/60 Hz mains interference")
-        etp[2] == 0x08 && (event = "artifact:breathing")
-        etp[2] == 0x09 && (event = "artifact:pulse")
-        etp[2] == 0x0a && (event = "artifact:EOG (slow)")
-        etp[2] == 0x0f && (event = "calibration")
-        etp[2] == 0x11 && (event = "EEG:Sleep spindles")
-        etp[2] == 0x12 && (event = "EEG:K-complexes")
-        etp[2] == 0x13 && (event = "EEG:Saw-tooth waves")
-        etp[2] == 0x14 && (event = "EEG:Idling EEG - eyes open")
-        etp[2] == 0x15 && (event = "EEG:Idling EEG - eyes closed")
-        etp[2] == 0x16 && (event = "EEG:spike")
-        etp[2] == 0x17 && (event = "EEG:seizure")
-        etp[2] == 0x18 && (event = "EEG:Electrographic seizure")
-        etp[2] == 0x19 && (event = "EEG:Clinical seizure")
-        etp[2] == 0x1a && (event = "EEG:Subclinical seizure")
-        etp[2] == 0x1b && (event = "EEG:Stimulating for seizure")
-        etp[2] == 0x21 && (event = "VEP:visual EP")
-        etp[2] == 0x22 && (event = "AEP:auditory EP")
-        etp[2] == 0x23 && (event = "SEP:somato-sensory EP")
-        etp[2] == 0x2F && (event = "TMS:transcranial magnetic stimulation")
-        etp[2] == 0x31 && (event = "SSVEP")
-        etp[2] == 0x32 && (event = "SSAEP")
-        etp[2] == 0x33 && (event = "SSSEP")
-        etp[2] == 0x40 && (event = "response code 0")
-        etp[2] == 0x41 && (event = "response code 1")
-        etp[2] == 0x42 && (event = "response code 2")
-        etp[2] == 0x43 && (event = "response code 3")
-        etp[2] == 0x44 && (event = "Go, or response code 4")
-        etp[2] == 0x45 && (event = "NoGo, or response code 5")
-    elseif etp[1] == 0x02
-        etp[2] == 0x01 && (event = "Spike, action potential (fiducial point)")
-        etp[2] == 0x02 && (event = "Burst")
-        etp[2] == 0x03 && (event = "maximum slope time")
-        etp[2] == 0x04 && (event = "peak time of spike")
-        etp[2] == 0x11 && (event = "EPSP")
-        etp[2] == 0x12 && (event = "IPSP")
-        etp[2] == 0x13 && (event = "EPSC")
-        etp[2] == 0x14 && (event = "IPSC")
-    elseif etp[1] == 0x03
-        etp[2] == 0x00 && (event = "Start of Trial")
-        etp[2] == 0x01 && (event = "class1, Left hand")
-        etp[2] == 0x02 && (event = "class2, Right hand")
-        etp[2] == 0x03 && (event = "class3, Foot, towards Right")
-        etp[2] == 0x04 && (event = "class4, Tongue")
-        etp[2] == 0x05 && (event = "class5")
-        etp[2] == 0x06 && (event = "class6, towards Down")
-        etp[2] == 0x07 && (event = "class7")
-        etp[2] == 0x08 && (event = "class8")
-        etp[2] == 0x09 && (event = "class9, towards Left")
-        etp[2] == 0x0A && (event = "class10")
-        etp[2] == 0x0B && (event = "class11")
-        etp[2] == 0x0C && (event = "class12, towards Up")
-        etp[2] == 0x0D && (event = "Feedback (continuous)")
-        etp[2] == 0x0E && (event = "Feedback (discrete)")
-        etp[2] == 0x0F && (event = "cue unknown/undefined")
-        etp[2] == 0x11 && (event = "Beep")
-        etp[2] == 0x12 && (event = "Cross on screen")
-        etp[2] == 0x13 && (event = "Flashing light")
-        #0x031b - 0x037f reserved for ASCII characters #27-#127
-        etp[2] == 0xff && (event = "Rejection of whole trial")
-        etp[2] == 0x81 && (event = "target hit, task successful, correct classification")
-        etp[2] == 0x82 && (event = "target missed, task not reached, incorrect classification")
-    elseif etp[1] == 0x04
-        etp[2] == 0x01 && (event = "OAHE")
-        etp[2] == 0x02 && (event = "RERA")
-        etp[2] == 0x03 && (event = "CAHE")
-        etp[2] == 0x04 && (event = "CS Breathing")
-        etp[2] == 0x05 && (event = "Hypoventilation")
-        etp[2] == 0x06 && (event = "Apnea")
-        etp[2] == 0x07 && (event = "Obstructive apnea")
-        etp[2] == 0x08 && (event = "Central apnea")
-        etp[2] == 0x09 && (event = "Mixed apnea")
-        etp[2] == 0x0A && (event = "Hypopnea")
-        etp[2] == 0x0B && (event = "Periodic Breathing")
-        etp[2] == 0x0C && (event = "Limb movement")
-        etp[2] == 0x0D && (event = "PLMS")
-        etp[2] == 0x0E && (event = "(time of) maximum inspiration")
-        etp[2] == 0x0F && (event = "Start of inspiration")
-        etp[2] == 0x10 && (event = "Sleep stage Wake")
-        etp[2] == 0x11 && (event = "Sleep stage 1")
-        etp[2] == 0x12 && (event = "Sleep stage 2")
-        etp[2] == 0x13 && (event = "Sleep stage 3")
-        etp[2] == 0x14 && (event = "Sleep stage 4")
-        etp[2] == 0x15 && (event = "Sleep stage REM")
-        etp[2] == 0x16 && (event = "Sleep stage ?")
-        etp[2] == 0x17 && (event = "Movement time")
-        etp[2] == 0x18 && (event = "Bruxism")
-        etp[2] == 0x19 && (event = "RBD")
-        etp[2] == 0x1A && (event = "RMD")
-        etp[2] == 0x1B && (event = "Sleep stage N")
-        etp[2] == 0x1C && (event = "Sleep stage N1")
-        etp[2] == 0x1D && (event = "Sleep stage N2")
-        etp[2] == 0x1E && (event = "Sleep stage N3")
-        etp[2] == 0x20 && (event = "Lights on ")
-        etp[2] == 0x20 && (event = "Lights off")
-        etp[2] == 0x31 && (event = "eyes left")
-        etp[2] == 0x32 && (event = "eyes right")
-        etp[2] == 0x33 && (event = "eyes up")
-        etp[2] == 0x34 && (event = "eyes down")
-        etp[2] == 0x35 && (event = "horizontal eye movement")
-        etp[2] == 0x36 && (event = "vertical eye movement")
-        etp[2] == 0x37 && (event = "eye rotation (clockwise)")
-        etp[2] == 0x38 && (event = "eye rotation (counterclockwise)")
-        etp[2] == 0x39 && (event = "eye blinks")
-        etp[2] == 0x41 && (event = "left hand movement")
-        etp[2] == 0x42 && (event = "right hand movement")
-        etp[2] == 0x43 && (event = "head movement")
-        etp[2] == 0x44 && (event = "tongue movement")
-        etp[2] == 0x45 && (event = "swallowing")
-        etp[2] == 0x46 && (event = "biting, chewing, teeth grinding")
-        etp[2] == 0x47 && (event = "foot movement")
-        etp[2] == 0x48 && (event = "foot (right) movement")
-        etp[2] == 0x49 && (event = "arm movement")
-        etp[2] == 0x4a && (event = "arm (right) movement")
-    elseif etp[1] == 0x05
-        etp[2] == 0x01 && (event = "ECG:Fiducial point of QRS complex")
-        etp[2] == 0x02 && (event = "ECG:P-wave-onset")
-        etp[2] == 0x02 && (event = "ECG:P-wave-end")
-        etp[2] == 0x03 && (event = "ECG:Q-wave-onset")
-        etp[2] == 0x03 && (event = "ECG:Q-wave-peak")
-        etp[2] == 0x04 && (event = "ECG:R-point")
-        etp[2] == 0x05 && (event = "ECG:S-wave-onset")
-        etp[2] == 0x05 && (event = "ECG:S-wave-end")
-        etp[2] == 0x06 && (event = "ECG:T-wave-onset")
-        etp[2] == 0x06 && (event = "ECG:T-wave-end")
-        etp[2] == 0x07 && (event = "ECG:U-wave-onset")
-        etp[2] == 0x07 && (event = "ECG:U-wave-end")
-        etp[2] == 0x80 && (event = "start")
-        etp[2] == 0x81 && (event = "25 Watt")
-        etp[2] == 0x82 && (event = "50 Watt")
-        etp[2] == 0x83 && (event = "75 Watt")
-        etp[2] == 0x84 && (event = "100 Watt")
-        etp[2] == 0x85 && (event = "125 Watt")
-        etp[2] == 0x86 && (event = "150 Watt")
-        etp[2] == 0x87 && (event = "175 Watt")
-        etp[2] == 0x88 && (event = "200 Watt")
-        etp[2] == 0x89 && (event = "225 Watt")
-        etp[2] == 0x8a && (event = "250 Watt")
-        etp[2] == 0x8b && (event = "275 Watt")
-        etp[2] == 0x8c && (event = "300 Watt")
-        etp[2] == 0x8d && (event = "325 Watt")
-        etp[2] == 0x8e && (event = "350 Watt")
-        etp[2] == 0x80 && (event = "end")
-    elseif etp[1] == 0x00
-        etp[2] == 0x00 && (event = "empty event")
-        etp[2] == 0x01 && (event = "condition 1")
-        etp[2] == 0x02 && (event = "condition 2")
-        etp[2] == 0x03 && (event = "condition 3")
-        etp[2] == 0x04 && (event = "condition 4")
-        etp[2] == 0x05 && (event = "condition 5")
-        etp[2] == 0x06 && (event = "condition 6")
-        etp[2] == 0x07 && (event = "condition 7")
-        etp[2] == 0x08 && (event = "condition 8")
-        etp[2] == 0x09 && (event = "condition 9")
-        etp[2] == 0x0a && (event = "condition 10")
-        etp[2] == 0x0b && (event = "condition 11")
-        etp[2] == 0x0c && (event = "condition 12")
-        etp[2] == 0x0d && (event = "condition 13")
-        etp[2] == 0x0e && (event = "condition 14")
-        etp[2] == 0x0f && (event = "condition 15")
-        etp[2] == 0x10 && (event = "condition 16")
-        etp[2] == 0x11 && (event = "condition 17")
-        etp[2] == 0x12 && (event = "condition 18")
-        etp[2] == 0x13 && (event = "condition 19")
-        etp[2] == 0x14 && (event = "condition 20")
-        etp[2] == 0x15 && (event = "condition 21")
-        etp[2] == 0x16 && (event = "condition 22")
-        etp[2] == 0x17 && (event = "condition 23")
-        etp[2] == 0x18 && (event = "condition 24")
-        etp[2] == 0x19 && (event = "condition 25")
-        etp[2] == 0x1a && (event = "condition 26")
-        etp[2] == 0x20 && (event = "condition 32")
-        etp[2] == 0x2f && (event = "condition 47")
-        etp[2] == 0x30 && (event = "condition 48")
-        etp[2] == 0x31 && (event = "condition 49")
-        etp[2] == 0x32 && (event = "condition 50")
-        etp[2] == 0x33 && (event = "condition 51")
-        etp[2] == 0x34 && (event = "condition 52")
-        etp[2] == 0x35 && (event = "condition 53")
-        etp[2] == 0x36 && (event = "condition 54")
-        etp[2] == 0x37 && (event = "condition 55")
-        etp[2] == 0x38 && (event = "condition 56")
-        etp[2] == 0x39 && (event = "condition 57")
-        etp[2] == 0x3a && (event = "condition 58")
-        etp[2] == 0x3b && (event = "condition 59")
-        etp[2] == 0x3c && (event = "condition 60")
-        etp[2] == 0x3d && (event = "condition 61")
-        etp[2] == 0x3e && (event = "condition 62")
-        etp[2] == 0x3f && (event = "condition 63")
-        etp[2] == 0x40 && (event = "condition 64")
-        etp[2] == 0x41 && (event = "condition 65")
-        etp[2] == 0x42 && (event = "condition 66")
-        etp[2] == 0x46 && (event = "condition 70")
-        etp[2] == 0x51 && (event = "condition 81")
-        etp[2] == 0x52 && (event = "condition 82")
-        etp[2] == 0x53 && (event = "condition 83")
-        etp[2] == 0x5b && (event = "condition 91")
-        etp[2] == 0x5c && (event = "condition 92")
-        etp[2] == 0x5d && (event = "condition 93")
-        etp[2] == 0x60 && (event = "condition 96")
-        etp[2] == 0x63 && (event = "condition 99")
-        etp[2] == 0x80 && (event = "condition 128")
-        etp[2] == 0x81 && (event = "condition 129")
-        etp[2] == 0x82 && (event = "condition 130")
-        etp[2] == 0x84 && (event = "condition 131")
-        etp[2] == 0x85 && (event = "condition 132")
-        etp[2] == 0x86 && (event = "condition 133")
-        etp[2] == 0x87 && (event = "condition 134")
-        etp[2] == 0xa6 && (event = "condition 166")
-        etp[2] == 0xa7 && (event = "condition 167")
-        etp[2] == 0xa8 && (event = "condition 168")
-        etp[2] == 0xa9 && (event = "condition 169")
-    elseif etp[1] == 0x7f
-        etp[2] == 0xfe && (event = "start of a new segment (after a break)")
-        etp[2] == 0xff && (event = "non-equidistant sampling value")
-    end
-    return event
+    !(length(etp) >= 2) && throw(ArgumentError("etp must contain at least 2 bytes."))
+    return get(_GDF_ETP_TABLE, (etp[1], etp[2]), "unknown code ($(etp[1]) $(etp[2]))")
 end

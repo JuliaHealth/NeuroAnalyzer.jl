@@ -25,7 +25,7 @@ Show markers.
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
 
-    @assert _has_markers(obj) "OBJ has no markers."
+    !(_has_markers(obj)) && throw(ArgumentError("OBJ has no markers."))
 
     println(
         rpad("n", 5) *
@@ -66,11 +66,11 @@ Delete marker.
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
 
-    @assert _has_markers(obj) "OBJ has no markers."
+    !(_has_markers(obj)) && throw(ArgumentError("OBJ has no markers."))
 
     obj_new = deepcopy(obj)
     nn = DataFrames.nrow(obj_new.markers)
-    @assert !(n < 1 || n > nn) "n must be in [1, $nn]."
+    !(!(n < 1 || n > nn)) && throw(ArgumentError("n must be in [1, $nn]."))
     deleteat!(obj_new.markers, n)
     push!(obj_new.history, "delete_marker(OBJ, n=$n)")
 
@@ -129,10 +129,10 @@ function add_marker(
         ch::Int64 = 0,
     )::NeuroAnalyzer.NEURO
 
-    @assert start >= 0 "start must be ≥ 0."
-    @assert len > 0 "len must be > 0."
-    @assert start < obj.time_pts[end] "start must be < $(obj.time_pts[end])."
-    @assert start + len <= obj.time_pts[end] "start + len must be ≤ $(obj.time_pts[end])."
+    !(start >= 0) && throw(ArgumentError("start must be ≥ 0."))
+    !(len > 0) && throw(ArgumentError("len must be > 0."))
+    !(start < obj.time_pts[end]) && throw(ArgumentError("start must be < $(obj.time_pts[end])."))
+    !(start + len <= obj.time_pts[end]) && throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
 
     obj_new = deepcopy(obj)
     append!(
@@ -213,14 +213,14 @@ function edit_marker(
         ch::Int64 = 0,
     )::NeuroAnalyzer.NEURO
 
-    @assert _has_markers(obj) "OBJ has no markers."
-    @assert start > 0 "start must be > 0."
-    @assert len > 0 "len must be > 0."
-    @assert start < signal_len(obj) / sr(obj) "start must be < $(signal_len(obj) / sr(obj))."
-    @assert start + len <= signal_len(obj) / sr(obj) "start + len must be ≤ $(signal_len(obj) / sr(obj))."
+    !(_has_markers(obj)) && throw(ArgumentError("OBJ has no markers."))
+    !(start > 0) && throw(ArgumentError("start must be > 0."))
+    !(len > 0) && throw(ArgumentError("len must be > 0."))
+    !(start < signal_len(obj) / sr(obj)) && throw(ArgumentError("start must be < $(signal_len(obj) / sr(obj))."))
+    !(start + len <= signal_len(obj) / sr(obj)) && throw(ArgumentError("start + len must be ≤ $(signal_len(obj) / sr(obj))."))
 
     nn = size(obj.markers, 1)
-    @assert !(n < 1 || n > nn) "n must be in [1, $nn]."
+    !(!(n < 1 || n > nn)) && throw(ArgumentError("n must be in [1, $nn]."))
     obj_new = deepcopy(obj)
     obj_new.markers[n, :] = Dict(
         :id => id, :start => start, :length => len, :value => value, :channel => ch
@@ -300,18 +300,18 @@ function channel2marker(
 )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     stim_ch = get_channel(obj, type = "mrk")
 
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]
-    @assert length(unique(ev_ch)) > 1 "Channel $ch does not contain events."
+    !(length(unique(ev_ch)) > 1) && throw(ArgumentError("Channel $ch does not contain events."))
 
     # extract events
     ev_v = unique(ev_ch)
-    @assert v in ev_v "Event channel does not contain value $v."
+    !(v in ev_v) && throw(ArgumentError("Event channel does not contain value $v."))
     _info("Event channel contains values: $ev_v")
 
     ev_start = getindex.(findall(ev_ch .== v), 1)
@@ -421,7 +421,7 @@ Add markers.
 function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
-    @assert names(markers) == ["id", "start", "length", "value", "channel"] "Markers column names are incorrect."
+    !(names(markers) == ["id", "start", "length", "value", "channel"]) && throw(ArgumentError("Markers column names are incorrect."))
     obj_new.markers = markers
 
     return nothing
@@ -444,7 +444,7 @@ Add markers.
 """
 function add_markers!(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::Nothing
 
-    @assert names(markers) == ["id", "start", "length", "value", "channel"] "Markers column names are incorrect."
+    !(names(markers) == ["id", "start", "length", "value", "channel"]) && throw(ArgumentError("Markers column names are incorrect."))
     obj.markers = markers
 
     return nothing

@@ -76,7 +76,7 @@ function spec_seg(
 
     _check_tuple(t, (st[1], st[end]), "t")
     _check_tuple(f, (sf[1], sf[end]), "f")
-    @assert ch in axes(sp, 3) "ch must be in [1, $(size(sp, 3))]."
+    !(ch in axes(sp, 3)) && throw(ArgumentError("ch must be in [1, $(size(sp, 3))]."))
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)
@@ -111,7 +111,7 @@ function spec_flim(
         p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real}
     )::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
 
-    @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
+    !(ndims(p) in [3, 4]) && throw(ArgumentError("Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."))
 
     _check_tuple(flim, (f[1], f[end]), "flim")
 

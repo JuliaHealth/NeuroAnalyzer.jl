@@ -50,8 +50,8 @@ function ba(
     s_d::Float64
 }
 
-    @assert length(x) > 0 "x must not be empty."
-    @assert length(x) == length(y) "x and y must have the same length."
+    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
     _in(la, (0, 1), "la")
 
     # two-tailed Z-score for the requested confidence level

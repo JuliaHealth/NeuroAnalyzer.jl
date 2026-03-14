@@ -29,9 +29,9 @@ end
 function _serial_open(
         port_name::String = "/dev/ttyACM0"; baudrate::Int64 = 115200, m = LibSerialPort.SP_MODE_READ
     )::SerialPort
-    @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
+    !(port_name in LibSerialPort.get_port_list()) && throw(ArgumentError("$port_name does not exist."))
     if Sys.isunix()
-        @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
+        !("dialout" in split(readchomp(`groups`), ' ')) && throw(ArgumentError("User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."))
     end
     sp = nothing
     try
@@ -76,10 +76,10 @@ function _serial_recorder(
     # `n`: number of records per block
     # `t`: recording time in seconds; if t > 0, blocks ignored and calculated based on recorded data
 
-    @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
+    !(port_name in LibSerialPort.get_port_list()) && throw(ArgumentError("$port_name does not exist."))
 
     if Sys.isunix()
-        @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
+        !("dialout" in split(readchomp(`groups`), ' ')) && throw(ArgumentError("User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."))
     end
 
     sp = nothing
@@ -90,7 +90,7 @@ function _serial_recorder(
         error("Serial port $port_name cannot be opened.")
     end
 
-    @assert isopen(sp) "Serial port $port_name is not open."
+    !(isopen(sp)) && throw(ArgumentError("Serial port $port_name is not open."))
 
     tp = Float64[]
     tmp_data = String[]

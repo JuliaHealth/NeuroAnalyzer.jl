@@ -61,7 +61,7 @@ function eros(
     wt::T = wavelet(Morlet(2π), β = 2),
 )::@NamedTuple{s::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
-    @assert length(get_channel(obj, ch=ch)) == 1 "ch must resolve to exactly one channel."
+    !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel
     _log_off()

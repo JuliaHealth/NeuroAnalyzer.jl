@@ -42,11 +42,11 @@ https://finnstats.com/index.php/2022/09/06/assess-performance-of-the-classificat
 """
 function mcc(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::Float64
 
-    @assert tp >= 0 "tp must be ≥ 0."
-    @assert tn >= 0 "tn must be ≥ 0."
-    @assert fp >= 0 "fp must be ≥ 0."
-    @assert fn >= 0 "fn must be ≥ 0."
-    @assert tp + tn + fp + fn > 0 "Total count (tp + tn + fp + fn) must be > 0."
+    !(tp >= 0) && throw(ArgumentError("tp must be ≥ 0."))
+    !(tn >= 0) && throw(ArgumentError("tn must be ≥ 0."))
+    !(fp >= 0) && throw(ArgumentError("fp must be ≥ 0."))
+    !(fn >= 0) && throw(ArgumentError("fn must be ≥ 0."))
+    !(tp + tn + fp + fn > 0) && throw(ArgumentError("Total count (tp + tn + fp + fn) must be > 0."))
 
     denom = sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
 
@@ -91,12 +91,12 @@ https://www.statology.org/what-is-a-good-f1-score/
 """
 function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
 
-    @assert tp >= 0 "tp must be ≥ 0."
-    @assert tn >= 0 "tn must be ≥ 0."
-    @assert fp >= 0 "fp must be ≥ 0."
-    @assert fn >= 0 "fn must be ≥ 0."
-    @assert tp + fp > 0 "tp + fp must be > 0 (precision is undefined when no positives are predicted)."
-    @assert tp + fn > 0 "tp + fn must be > 0 (recall is undefined when there are no actual positives)."
+    !(tp >= 0) && throw(ArgumentError("tp must be ≥ 0."))
+    !(tn >= 0) && throw(ArgumentError("tn must be ≥ 0."))
+    !(fp >= 0) && throw(ArgumentError("fp must be ≥ 0."))
+    !(fn >= 0) && throw(ArgumentError("fn must be ≥ 0."))
+    !(tp + fp > 0) && throw(ArgumentError("tp + fp must be > 0 (precision is undefined when no positives are predicted)."))
+    !(tp + fn > 0) && throw(ArgumentError("tp + fn must be > 0 (recall is undefined when there are no actual positives)."))
 
     prec = tp / (tp + fp)
     rec  = tp / (tp + fn)
@@ -144,12 +144,12 @@ https://www.statology.org/misclassification-rate/
 """
 function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Float64, acc::Float64}
 
-    @assert tp >= 0 "tp must be ≥ 0."
-    @assert tn >= 0 "tn must be ≥ 0."
-    @assert fp >= 0 "fp must be ≥ 0."
-    @assert fn >= 0 "fn must be ≥ 0."
+    !(tp >= 0) && throw(ArgumentError("tp must be ≥ 0."))
+    !(tn >= 0) && throw(ArgumentError("tn must be ≥ 0."))
+    !(fp >= 0) && throw(ArgumentError("fp must be ≥ 0."))
+    !(fn >= 0) && throw(ArgumentError("fn must be ≥ 0."))
     n = tp + tn + fp + fn
-    @assert n > 0 "tp + tn + fp + fn must be > 0."
+    !(n > 0) && throw(ArgumentError("tp + tn + fp + fn must be > 0."))
 
     mr  = (fp + fn) / n
     return (mr=mr, acc=1 - mr)

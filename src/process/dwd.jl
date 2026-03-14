@@ -25,7 +25,7 @@ function dwd(
 
     _check_var(type, [:sdwt, :acdwt], "type")
 
-    @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
+    !(l <= maxtransformlevels(s)) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(s))."))
 
     if type === :sdwt
         dc = swpd(s, wt, l)
@@ -63,7 +63,7 @@ function dwd(
 
     ch_n, ep_len, ep_n = size(s)
 
-    @assert (ch_n * (1 + sum(2 .^ (1:l))) * ep_len * ep_n) / 1048576 < _fmem() "Not enough memory."
+    !((ch_n * (1 + sum(2 .^ (1:l))) * ep_len * ep_n) / 1048576 < _fmem()) && throw(ArgumentError("Not enough memory."))
     dc = zeros(ch_n, (1 + sum(2 .^ (1:l))), ep_len, ep_n)
 
     _log_off()

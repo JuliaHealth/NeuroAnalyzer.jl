@@ -161,7 +161,7 @@ Perform Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 ac
 function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name; baudrate = 19200)
-    @assert !isnothing(sp) "Serial port $port_name is not available"
+    !(!isnothing(sp)) && throw(ArgumentError("Serial port $port_name is not available"))
 
     println("NeuroTester: TPT")
     println("================")

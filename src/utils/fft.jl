@@ -29,7 +29,7 @@ Appends `n` zeros to `x` before computing the FFT. When `n = 0` the input is tra
 """
 function fft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    @assert n >= 0 "n must be ≥ 0."
+    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
 
     # when n == 0, skip pad0() to avoid an unnecessary copy.
     return n == 0 ? fft(x) : fft(pad0(x, n))
@@ -62,8 +62,8 @@ If a signal of length `L` was zero-padded by `n` samples before the forward FFT,
 """
 function ifft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    @assert n >= 0 "n must be ≥ 0."
-    @assert n < length(x)  "n must be < length(x); got n=$n, length(x)=$(length(x))."
+    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
+    !(n < length(x) ) && throw(ArgumentError("n must be < length(x); got n=$n, length(x)=$(length(x))."))
 
     # when n == 0 no trimming is needed; return the full IFFT directly
     n == 0 && return ifft(x)
@@ -160,7 +160,7 @@ Appends `n` zeros to `x` before computing `rfft`, returning only the positive-fr
 """
 function rfft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    @assert n >= 0 "n must be ≥ 0."
+    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
 
     # when n == 0, skip pad0() to avoid an unnecessary copy
     return n == 0 ? rfft(x) : rfft(pad0(x, n))

@@ -34,8 +34,8 @@ function plinterpolate_channel(
     )::NeuroAnalyzer.NEURO
 
     channels = get_channel(obj, type = datatype(obj))
-    @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
-    @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
+    !(length(channels) > 1) && throw(ArgumentError("OBJ must contain > 1 signal channel."))
+    !(ch in channels) && throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj)
@@ -161,7 +161,7 @@ function plinterpolate(
         ifactor::Int64 = 100,
     )::@NamedTuple{int_s::Matrix{Float64}, int_x::Vector{Float64}, int_y::Vector{Float64}}
 
-    @assert ch in axes(s, 1) "ch must be in [1, $(size(s, 1))"
+    !(ch in axes(s, 1)) && throw(ArgumentError("ch must be in [1, $(size(s, 1))"))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     locs = locs[ch, :]

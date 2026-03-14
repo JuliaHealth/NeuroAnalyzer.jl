@@ -28,8 +28,8 @@ function pca_decompose(
     }
 
     _chk3d(s)
-    @assert n >= 1 "n must be ≥ 1."
-    @assert n <= size(s, 1) "n must be ≤ $(size(s, 1))."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(n <= size(s, 1)) && throw(ArgumentError("n must be ≤ $(size(s, 1))."))
 
     ep_n = size(s, 3)
 

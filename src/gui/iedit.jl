@@ -16,9 +16,9 @@ Interactive edit signal channels properties and locations.
 """
 function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
-    @assert datatype(obj) in ["eeg", "meg"] "Currently this function only works for EEG or MEG objects."
+    !(datatype(obj) in ["eeg", "meg"]) && throw(ArgumentError("Currently this function only works for EEG or MEG objects."))
     ch = get_channel(obj, ch = ch)
-    @assert length(ch) == 1 "ch must be a single channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must be a single channel."))
     current_channel = ch[1]
 
     datatype(obj) == "eeg" && (scaling_ratio = 0.7)

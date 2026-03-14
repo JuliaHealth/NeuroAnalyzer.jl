@@ -70,10 +70,10 @@ function plot_topo(
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(threshold_method, [:reg, :loc], "threshold_method")
-    @assert contours >= 0 "contours must be ≥ 0."
+    !(contours >= 0) && throw(ArgumentError("contours must be ≥ 0."))
     if !isnothing(sch)
-        @assert length(intersect(ch, sch)) == length(sch) "Some sch channels were not found in ch."
-        @assert isnothing(threshold) "Both sch and threshold cannot be specified."
+        !(length(intersect(ch, sch)) == length(sch)) && throw(ArgumentError("Some sch channels were not found in ch."))
+        !(isnothing(threshold)) && throw(ArgumentError("Both sch and threshold cannot be specified."))
     end
 
     ch_n = length(ch)
@@ -124,9 +124,9 @@ function plot_topo(
     if !isnothing(threshold)
         if threshold_method === :loc
             if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-                @assert length(threshold) == 1 "threshold must contain a single value."
+                !(length(threshold) == 1) && throw(ArgumentError("threshold must contain a single value."))
             else
-                @assert length(threshold) == 2 "threshold must contain two values."
+                !(length(threshold) == 2) && throw(ArgumentError("threshold must contain two values."))
                 _check_tuple(threshold, extrema(s_norm), "threshold")
             end
             s_norm = normalize(s, method = nmethod)
@@ -434,7 +434,7 @@ function plot_topo(
         tpos = collect(tpos)[1]
     end
 
-    @assert contours >= 0 "contours must be ≥ 0."
+    !(contours >= 0) && throw(ArgumentError("contours must be ≥ 0."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
     _check_var(
@@ -465,12 +465,12 @@ function plot_topo(
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     if !isnothing(sch)
         if isa(sch, String)
-            @assert length(intersect(ch, get_channel(obj, ch = sch))) == 1 "sch channel was not found in ch."
+            !(length(intersect(ch, get_channel(obj, ch = sch))) == 1) && throw(ArgumentError("sch channel was not found in ch."))
         else
-            @assert length(intersect(ch, get_channel(obj, ch = sch))) == length(sch) "Some sch channels were not found in ch."
+            !(length(intersect(ch, get_channel(obj, ch = sch))) == length(sch)) && throw(ArgumentError("Some sch channels were not found in ch."))
         end
     end
-    @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
+    !(length(ch) >= 2) && throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
@@ -478,9 +478,9 @@ function plot_topo(
 
     # prepare data or time position
     if isnothing(data)
-        @assert !isnothing(tpos) "Either tpos or data must be provided."
-        @assert tpos >= obj.time_pts[1] "tpos must be ≥ $(obj.time_pts[1])"
-        @assert tpos <= obj.time_pts[end] "tpos must be ≤ $(obj.time_pts[end])"
+        !(!isnothing(tpos)) && throw(ArgumentError("Either tpos or data must be provided."))
+        !(tpos >= obj.time_pts[1]) && throw(ArgumentError("tpos must be ≥ $(obj.time_pts[1])"))
+        !(tpos <= obj.time_pts[end]) && throw(ArgumentError("tpos must be ≤ $(obj.time_pts[end])"))
         tpos = vsearch(tpos, obj.time_pts)
         if nepochs(obj) == 1
             data = obj.data[ch, tpos, 1]
@@ -493,7 +493,7 @@ function plot_topo(
         if ndims(data) == 2
             data = amethod === :mean ? mean(data; dims = 2)[:] : median(data, dims = 2)[:]
         end
-        @assert length(data) == length(ch) "Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."
+        !(length(data) == length(ch)) && throw(ArgumentError("Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."))
         title == "default" && (title = "")
     end
 

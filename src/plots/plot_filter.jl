@@ -53,7 +53,7 @@ function plot_filter(;
     )::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     _check_tuple(flim, (0, fs / 2), "flim")
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     v = NeuroAnalyzer.verbose
     NeuroAnalyzer.verbose = false
 
@@ -68,19 +68,19 @@ function plot_filter(;
         "fprototype"
     )
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-    @assert fs >= 1 "fs must be ≥ 1."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     if fprototype === :fir
-        @assert !(isnothing(order) && isnothing(w)) "Either order or w must be specified."
+        !(!(isnothing(order) && isnothing(w))) && throw(ArgumentError("Either order or w must be specified."))
         if !isnothing(w)
-            ftype in [:hp, :bp, :bs] && @assert mod(length(w), 2) != 0 "Length of w must be odd."
-            @assert length(w) >= 1 "Length of w must be ≥ 1."
+            ftype in [:hp, :bp, :bs] && !(mod(length(w), 2) != 0) && throw(ArgumentError("Length of w must be odd."))
+            !(length(w) >= 1) && throw(ArgumentError("Length of w must be ≥ 1."))
         elseif !isnothing(order)
-            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
+            ftype in [:hp, :bp, :bs] && !(mod(order, 2) != 0) && throw(ArgumentError("order must be odd."))
         end
     end
     if fprototype in [:firls, :remez, :iirnotch]
-        @assert !isnothing(bw) "bw must be specified."
-        @assert bw > 0 "bw must be > 0."
+        !(!isnothing(bw)) && throw(ArgumentError("bw must be specified."))
+        !(bw > 0) && throw(ArgumentError("bw must be > 0."))
         if length(cutoff) == 1
             if bw >= cutoff
                 bw = cutoff - 0.1
@@ -96,13 +96,13 @@ function plot_filter(;
     if fprototype === :firls
         if ftype in [:bp, :bs]
             if !isnothing(w)
-                @assert length(w) == 6 "Length of w must be 6."
+                !(length(w) == 6) && throw(ArgumentError("Length of w must be 6."))
             else
                 w = ones(6)
             end
         elseif ftype in [:lp, :hp]
             if !isnothing(w)
-                @assert length(w) == 4 "Length of w must be 4."
+                !(length(w) == 4) && throw(ArgumentError("Length of w must be 4."))
             else
                 w = ones(4)
             end
@@ -119,21 +119,21 @@ function plot_filter(;
         end
     end
     if fprototype in [:firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        @assert !isnothing(order) "order must be specified."
-        @assert !isnothing(ftype) "ftype must be specified."
+        !(!isnothing(order)) && throw(ArgumentError("order must be specified."))
+        !(!isnothing(ftype)) && throw(ArgumentError("ftype must be specified."))
     end
     if fprototype === :iirnotch
         !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
         !isnothing(order) && _info("For :iirnotch filter order is ignored")
-        @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
+        !(length(cutoff) == 1) && throw(ArgumentError("For :iirnotch filter cutoff must contain only one frequency."))
     end
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        ftype in [:lp, :hp] && @assert length(cutoff) == 1 "For :$(ftype) filter, cutoff must specify only one frequency."
-        ftype in [:bp, :bs] && @assert length(cutoff) == 2 "For :$(ftype) filter, cutoff must specify two frequencies."
+        ftype in [:lp, :hp] && !(length(cutoff) == 1) && throw(ArgumentError("For :$(ftype) filter, cutoff must specify only one frequency."))
+        ftype in [:bp, :bs] && !(length(cutoff) == 2) && throw(ArgumentError("For :$(ftype) filter, cutoff must specify two frequencies."))
     end
     if length(cutoff) == 1
-        @assert cutoff > 0 "cutoff must be > 0 Hz."
-        @assert cutoff < nqf "cutoff must be < $nqf Hz."
+        !(cutoff > 0) && throw(ArgumentError("cutoff must be > 0 Hz."))
+        !(cutoff < nqf) && throw(ArgumentError("cutoff must be < $nqf Hz."))
     else
         _check_tuple(cutoff, (0, nqf), "cutoff")
     end
@@ -144,7 +144,7 @@ function plot_filter(;
     order = Observable(order)
     fprototype in [:chebyshev1, :elliptic] && (!isnothing(rp) && (rp = Observable(float(rp))))
     fprototype in [:chebyshev2, :elliptic] && !isnothing(rs) && (rs = Observable(float(rs)))
-    fprototype in [:firls, :remez, :iirnotch] && @assert !isnothing(bw) "bw must be specified."
+    fprototype in [:firls, :remez, :iirnotch] && !(!isnothing(bw)) && throw(ArgumentError("bw must be specified."))
     !isnothing(bw) && (bw = Observable(float(bw)))
 
     # prepare plot

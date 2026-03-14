@@ -17,7 +17,7 @@ Calculate the variance across channels at each time point of an ERP/ERF object (
 """
 function topo_var(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Vector{Float64}
 
-    @assert datatype(obj) in ["erp", "erf"] "topo_var() should be applied for ERP or ERF object only."
+    !(datatype(obj) in ["erp", "erf"]) && throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
     
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -54,7 +54,7 @@ Named tuple:
 """
 function diss(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
 
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
 
     # number of channels
     ch_n = size(s1, 1)
@@ -105,16 +105,16 @@ function diss(
     ch2::Union{String, Vector{String}, Regex},
 )::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
 
-    @assert datatype(obj1) in ["erp", "erf"] "diss() must be applied to ERP or ERF object only."
-    @assert datatype(obj2) in ["erp", "erf"] "diss() must be applied to ERP or ERF object only."
+    !(datatype(obj1) in ["erp", "erf"]) && throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
+    !(datatype(obj2) in ["erp", "erf"]) && throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
 
-    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
+    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."
+    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     diss_data = diss(
         @view(obj1.data[ch1, :, 1]),

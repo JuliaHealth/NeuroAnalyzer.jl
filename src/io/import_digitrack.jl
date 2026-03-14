@@ -18,7 +18,7 @@ function import_digitrack(
         file_name::String; detect_type::Bool = true
     )::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
 
     fid = nothing
     try
@@ -27,7 +27,7 @@ function import_digitrack(
         @error "File $file_name cannot be loaded."
     end
     buffer = readline(fid)
-    @assert occursin.("Start time ", buffer) "File $file_name is not Digitrack file."
+    !(occursin.("Start time ", buffer)) && throw(ArgumentError("File $file_name is not Digitrack file."))
 
     file_type = "Digitrack"
 

@@ -32,7 +32,7 @@ function locs_center(
         (cl = findfirst(lowercase.(locs[!, :label]) .== "cz"))
     findfirst(lowercase.(locs[!, :label]) .== "pz") !== nothing &&
         (cl = findfirst(lowercase.(locs[!, :label]) .== "pz"))
-    @assert cl !== nothing "Central line channels could not be find."
+    !(cl !== nothing) && throw(ArgumentError("Central line channels could not be find."))
     x_offset = locs[cl, :loc_x]
 
     cl = nothing

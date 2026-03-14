@@ -40,8 +40,8 @@ Calculate mean stationarity. Signal is split into `window`-long windows and aver
 """
 function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
 
-    @assert window >= 1 "window must be ≥ 1."
-    @assert window <= length(s) "window must be ≤ $(length(s))."
+    !(window >= 1) && throw(ArgumentError("window must be ≥ 1."))
+    !(window <= length(s)) && throw(ArgumentError("window must be ≤ $(length(s))."))
 
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
@@ -68,8 +68,8 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 """
 function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
 
-    @assert window >= 1 "window must be ≥ 1."
-    @assert window <= length(s) "window must be ≤ $(length(s))."
+    !(window >= 1) && throw(ArgumentError("window must be ≥ 1."))
+    !(window <= length(s)) && throw(ArgumentError("window must be ≤ $(length(s))."))
 
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
@@ -106,8 +106,8 @@ function stationarity(
     )::Union{Matrix{Float64}, Array{Float64, 3}}
 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
-    @assert window >= 1 "window must be ≥ 1."
-    @assert window <= epoch_len(obj) "window must be ≤ $(epoch_len(obj))."
+    !(window >= 1) && throw(ArgumentError("window must be ≥ 1."))
+    !(window <= epoch_len(obj)) && throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
@@ -153,7 +153,7 @@ function stationarity(
 
     if method === :cov
 
-        @assert ch_n >= 2 "For :cov method, number of channels must be ≥ 2."
+        !(ch_n >= 2) && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
 
         # number of time windows per epoch
         window_n = epoch_len(obj)

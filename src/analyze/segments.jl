@@ -75,14 +75,14 @@ function seg_extract(
     r2 = rc[3]
     c2 = rc[4]
 
-    @assert r1 > 0 "r1 must be > 0."
-    @assert r2 > 0 "r2 must be > 0."
-    @assert c1 > 0 "c1 must be > 0."
-    @assert c2 > 0 "c2 must be > 0."
-    @assert r1 <= size(m, 1) "r1 must be ≤ $(size(m, 1))."
-    @assert c1 <= size(m, 2) "r2 must be ≤ $(size(m, 2))."
-    @assert r2 <= size(m, 1) "c1 must be ≤ $(size(m, 1))."
-    @assert c2 <= size(m, 2) "c2 must be ≤ $(size(m, 2))."
+    !(r1 > 0) && throw(ArgumentError("r1 must be > 0."))
+    !(r2 > 0) && throw(ArgumentError("r2 must be > 0."))
+    !(c1 > 0) && throw(ArgumentError("c1 must be > 0."))
+    !(c2 > 0) && throw(ArgumentError("c2 must be > 0."))
+    !(r1 <= size(m, 1)) && throw(ArgumentError("r1 must be ≤ $(size(m, 1))."))
+    !(c1 <= size(m, 2)) && throw(ArgumentError("r2 must be ≤ $(size(m, 2))."))
+    !(r2 <= size(m, 1)) && throw(ArgumentError("c1 must be ≤ $(size(m, 1))."))
+    !(c2 <= size(m, 2)) && throw(ArgumentError("c2 must be ≤ $(size(m, 2))."))
 
     if !c
         seg = !v ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
@@ -135,9 +135,9 @@ function seg_extract(
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
 
     if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-        @assert length(threshold) == 1 "threshold must contain a single value."
+        !(length(threshold) == 1) && throw(ArgumentError("threshold must contain a single value."))
     else
-        @assert length(threshold) == 2 "threshold must contain two values."
+        !(length(threshold) == 2) && throw(ArgumentError("threshold must contain two values."))
         _check_tuple(threshold, extrema(m), "threshold")
     end
 

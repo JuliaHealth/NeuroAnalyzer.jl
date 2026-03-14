@@ -59,7 +59,7 @@ function erop(
     demean::Bool = true,
 )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
-    @assert length(get_channel(obj, ch=ch)) == 1 "ch must resolve to exactly one channel."
+    !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel
     _log_off()

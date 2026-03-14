@@ -104,7 +104,7 @@ Calculate Root Mean Square Error (RMSE).
 """
 function rmse(s1::AbstractVector, s2::AbstractVector)::Float64
 
-    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
+    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
 
     # r = sum(s1 .* s2) ./ (sqrt(sum(s1.^2)) .* sqrt(sum(s2.^2)))
     r = sqrt(mean((s2 .- s1) .^ 2))
@@ -129,7 +129,7 @@ Calculate Root Mean Square Error (RMSE).
 """
 function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
     _chk3d(s2)
 
@@ -175,12 +175,12 @@ function rmse(
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
     )::Matrix{Float64}
 
-    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
+    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
+    !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)

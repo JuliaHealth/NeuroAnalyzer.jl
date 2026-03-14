@@ -28,9 +28,9 @@ function denoise_cwd(
         s::AbstractVector; fs::Int64, wt::T = wavelet(Morlet(2π), β = 2), nf::Real, w::Int64 = 5, type::Symbol = :nd
     )::Vector{Float64} where {T <: CWT}
 
-    @assert fs >= 1 "fs must be ≥ 1."
-    @assert nf >= 1 "nf must be ≥ 1."
-    @assert nf <= fs / 2 "nf must be ≤ $(fs / 2)."
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    !(nf >= 1) && throw(ArgumentError("nf must be ≥ 1."))
+    !(nf <= fs / 2) && throw(ArgumentError("nf must be ≤ $(fs / 2)."))
 
     # perform continuous wavelet transformation
     s_new = cwd(s; wt = wt)
@@ -207,7 +207,7 @@ function denoise_dwd(
 
     _check_var(smooth, [:regular, :undersmooth], "smooth")
 
-    @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
+    !(l <= maxtransformlevels(s)) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(s))."))
     l == 0 && (l = maxtransformlevels(s))
 
     if isdyadic(length(s))

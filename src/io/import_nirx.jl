@@ -19,8 +19,8 @@ Load NIRX file and return `NeuroAnalyzer.NEURO` object.
 """
 function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".hdr" "This is not NIRX .hdr file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".hdr") && throw(ArgumentError("This is not NIRX .hdr file."))
 
     hdr = nothing
     try
@@ -28,7 +28,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     catch
         @error "File $file_name cannot be loaded."
     end
-    @assert hdr[1] == "[GeneralInfo]" "File $file_name is not NIRX file."
+    !(hdr[1] == "[GeneralInfo]") && throw(ArgumentError("File $file_name is not NIRX file."))
 
     file_type = "NIRX"
 

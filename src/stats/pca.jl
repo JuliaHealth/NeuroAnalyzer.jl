@@ -66,9 +66,9 @@ function pcacomp(
     pc_model::MultivariateStats.PCA{Float64},
 }
 
-    @assert size(m, 1) >= 2 "m must have at least 2 observations (rows)."
-    @assert n >= 1 "n must be ≥ 1."
-    @assert n <= size(m, 2) "n must be ≤ $(size(m, 2))."
+    !(size(m, 1) >= 2) && throw(ArgumentError("m must have at least 2 observations (rows)."))
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(n <= size(m, 2)) && throw(ArgumentError("n must be ≤ $(size(m, 2))."))
 
     # work on a copy so the caller's matrix is not modified in-place
     m = copy(m)
@@ -145,12 +145,12 @@ function pcacomp(
     pc_model::MultivariateStats.PCA{Float64},
 }
 
-    @assert length(vars) >= 2 "vars must contain at least 2 variable names."
-    @assert n >= 1 "n must be ≥ 1."
-    @assert n <= length(vars) "n must be ≤ $(length(vars))."
+    !(length(vars) >= 2) && throw(ArgumentError("vars must contain at least 2 variable names."))
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(n <= length(vars)) && throw(ArgumentError("n must be ≤ $(length(vars))."))
 
     for v in vars
-        @assert string(v) in names(df) "Variable '$v' not found in df."
+        !(string(v) in names(df)) && throw(ArgumentError("Variable '$v' not found in df."))
     end
 
     return pcacomp(Float64.(Matrix(df[!, vars])); n=n, zstd=zstd)
@@ -317,9 +317,9 @@ function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real):
     if type === :var
         _in(value, (0, 1), "value")
     else
-        @assert value > 0 "For :eig, value must be > 0."
+        !(value > 0) && throw(ArgumentError("For :eig, value must be > 0."))
     end
-    @assert size(m, 1) >= 2 "m must have at least 2 observations (rows)."
+    !(size(m, 1) >= 2) && throw(ArgumentError("m must have at least 2 observations (rows)."))
 
     # work on a copy to avoid mutating the caller's matrix
     m = copy(m)

@@ -238,12 +238,12 @@ function plot_locs(
     # draw connections
     if connections != [0 0; 0 0]
         sch = ""
-        @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
+        !(size(connections, 1) == length(ch)) && throw(ArgumentError("Length of channel and number of connections rows must be equal."))
         _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
         if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-            @assert length(threshold) == 1 "threshold must contain a single value."
+            !(length(threshold) == 1) && throw(ArgumentError("threshold must contain a single value."))
         else
-            @assert length(threshold) == 2 "threshold must contain two values."
+            !(length(threshold) == 2) && throw(ArgumentError("threshold must contain two values."))
             _check_tuple(threshold, extrema(connections), "threshold")
         end
         m_tmp = normalize_n(abs.(connections))
@@ -1021,8 +1021,8 @@ function plot_locs(
     if typeof(weights) <: Vector
         label_offset_x = 0.0
         label_offset_y = 0.07
-        @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
-        @assert length(weights) >= 1 "weights must contain at least one value."
+        !(length(weights) <= length(ch)) && throw(ArgumentError("Number of weights must be ≤ number of channels to plot ($(length(ch)))."))
+        !(length(weights) >= 1) && throw(ArgumentError("weights must contain at least one value."))
         for idx in eachindex(locs[ch, :label])
             if idx in ch
                 if mono
@@ -1157,7 +1157,7 @@ function plot_locs(
         gui::Bool = true,
     )::Union{GLMakie.Figure, Nothing}
 
-    @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
+    !(datatype(obj) != "ecog") && throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
 
     ch_info = String[]
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")

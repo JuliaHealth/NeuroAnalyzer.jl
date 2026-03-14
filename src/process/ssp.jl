@@ -25,8 +25,8 @@ function generate_ssp_projectors(
 
     _check_datatype(obj, "meg")
 
-    @assert :ssp_data in keys(obj.header.recording) "OBJ does not contain SSP projections."
-    @assert size(obj.header.recording[:ssp_data], 1) > 0 "OBJ does not contain SSP projections."
+    !(:ssp_data in keys(obj.header.recording)) && throw(ArgumentError("OBJ does not contain SSP projections."))
+    !(size(obj.header.recording[:ssp_data], 1) > 0) && throw(ArgumentError("OBJ does not contain SSP projections."))
 
     # by default use all available projections
     if proj == 0
@@ -34,10 +34,10 @@ function generate_ssp_projectors(
     end
 
     if isa(proj, Int64)
-        @assert proj >= 1 && proj <= size(obj.header.recording[:ssp_data], 1) "proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."
+        !(proj >= 1 && proj <= size(obj.header.recording[:ssp_data], 1)) && throw(ArgumentError("proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."))
     else
         proj = sort(proj)
-        @assert proj[1] >= 1 && proj[end] <= size(obj.header.recording[:ssp_data], 1) "proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."
+        !(proj[1] >= 1 && proj[end] <= size(obj.header.recording[:ssp_data], 1)) && throw(ArgumentError("proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."))
     end
 
     # extract projections

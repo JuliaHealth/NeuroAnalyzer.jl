@@ -31,7 +31,7 @@ function plot_psd(
     frq::Symbol = :lin,
 )::GLMakie.Figure
 
-    @assert length(p) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(length(p) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -123,7 +123,7 @@ function plot_psd(
 
     ch_n = size(p, 1)
 
-    @assert size(p, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(size(p, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -248,7 +248,7 @@ function plot_psd_3d(
     )::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
-    @assert size(p, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(size(p, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -390,7 +390,7 @@ function plot_psd_topo(
         head::Bool = true,
     )::GLMakie.Figure
 
-    @assert size(p, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
+    !(size(p, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -432,15 +432,15 @@ function plot_psd_topo(
     end
 
     # prepare PSD plots
-    pp_vec = GLMakie.Figure[]
-    pp_full_vec = GLMakie.Figure[]
+    fig_vec = GLMakie.Figure[]
+    fig_full_vec = GLMakie.Figure[]
     for idx in axes(p, 1)
-        pfig = GLMakie.Figure(
+        fig = GLMakie.Figure(
             size = marker_size,
             figure_padding = 0,
         )
         ax = GLMakie.Axis(
-            pp[1, 1],
+            fig[1, 1],
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -453,8 +453,8 @@ function plot_psd_topo(
         ax.titlesize = 8
         # plot powers
         GLMakie.lines!(ax, f, p[idx, :]; linewidth = 1, color = :black)
-        push!(pp_vec, pp)
-        pp_full = plot_psd(
+        push!(fig_vec, fig)
+        fig_full = plot_psd(
             f,
             p[idx, :];
             xlabel = xlabel,
@@ -463,7 +463,7 @@ function plot_psd_topo(
             flim = flim,
             frq = frq,
         )
-        push!(pp_full_vec, pp_full)
+        push!(fig_full_vec, fig_full)
     end
 
     # prepare plot
@@ -528,7 +528,7 @@ function plot_psd_topo(
 
     for idx in axes(p, 1)
         io = IOBuffer()
-        show(io, MIME"image/png"(), pp_vec[idx])
+        show(io, MIME"image/png"(), fig_vec[idx])
         pp = FileIO.load(io)
         GLMakie.scatter!(loc_x[idx], loc_y[idx]; marker = pp, markersize = marker_size, markerspace = :pixel)
     end
@@ -549,7 +549,7 @@ function plot_psd_topo(
                             ax_x <= loc_x_range[idx][2] &&
                             ax_y >= loc_y_range[idx][1] &&
                             ax_y <= loc_y_range[idx][2]
-                        display(GLMakie.Screen(), pp_full_vec[idx])
+                        display(GLMakie.Screen(), fig_full_vec[idx])
                         break
                     end
                 end
@@ -669,7 +669,7 @@ function plot_psd(
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
-        @assert ep == 0 "For continuous object, ep must not be specified."
+        !(ep == 0) && throw(ArgumentError("For continuous object, ep must not be specified."))
         if obj.time_pts[end] < 10 && seg == (0, 10)
             seg = (0, obj.time_pts[end])
         else
@@ -680,7 +680,7 @@ function plot_psd(
         t = obj.time_pts[seg[1]:seg[2]]
         _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
-        @assert ep != 0 "For epoched object, ep must be specified."
+        !(ep != 0) && throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
         signal = @views obj.data[ch, :, ep]
@@ -1031,9 +1031,9 @@ function plot_psd(
             ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         if length(ch) == 1
-            p = plot_psd(f, p; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
+            fig = plot_psd(f, p; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
         else
-            p = plot_psd(
+            fig = plot_psd(
                 f,
                 p,
                 xlabel = xlabel,
@@ -1053,7 +1053,7 @@ function plot_psd(
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         ch_t = obj.header.recording[:channel_type]
-        p = plot_psd_3d(
+        return plot_psd_3d(
             f,
             p,
             clabels = clabels,
@@ -1070,13 +1070,13 @@ function plot_psd(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
+        !(length(unique(obj.header.recording[:channel_type][ch])) == 1) && throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         ndims(p) == 1 && (p = reshape(p, 1, length(p)))
-        p = plot_psd_topo(
+        fig = plot_psd_topo(
             locs,
             f,
             p,

@@ -22,8 +22,8 @@ function od2conc(
         ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
     )::NeuroAnalyzer.NEURO
 
-    @assert length(get_channel(obj, type = "nirs_od")) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
-    @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
+    !(length(get_channel(obj, type = "nirs_od")) > 0) && throw(ArgumentError("OBJ does not contain NIRS OD channels, use intensity2od() first."))
+    !(length(ppf) == length(obj.header.recording[:wavelengths])) && throw(ArgumentError("ppf length does not correspond to the number of wavelengths."))
 
     _check_datatype(obj, "nirs")
     _check_channels(get_channel(obj, type = "nirs_od"), ch)

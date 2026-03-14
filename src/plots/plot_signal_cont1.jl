@@ -60,10 +60,10 @@ function plot_cont(
         gui::Bool = true,
     )::GLMakie.Figure
 
-    @assert res >= 1 "res must be ≥ 1."
+    !(res >= 1) && throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
-    @assert n_channels >= 1 "n_channels must be ≥ 1."
-    @assert n_channels <= nchannels(obj) "n_channels must be ≤ $(nchannels(obj))."
+    !(n_channels >= 1) && throw(ArgumentError("n_channels must be ≥ 1."))
+    !(n_channels <= nchannels(obj)) && throw(ArgumentError("n_channels must be ≤ $(nchannels(obj))."))
     _check_var(type, [:normal, :butterfly], "type")
     !_has_markers(obj) && (markers = false)
 

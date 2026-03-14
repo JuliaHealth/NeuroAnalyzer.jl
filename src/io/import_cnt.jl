@@ -25,8 +25,8 @@ function import_cnt(
 
     _check_var(data_format, [:i32, :i16], "data_format")
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".cnt" "This is not CNT file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".cnt") && throw(ArgumentError("This is not CNT file."))
 
     fid = nothing
     try

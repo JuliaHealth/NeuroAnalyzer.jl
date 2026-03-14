@@ -28,7 +28,7 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 """
 function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{Float64}
 
-    @assert epsilon > 0 "epsilon must be > 0."
+    !(epsilon > 0) && throw(ArgumentError("epsilon must be > 0."))
 
     # work on a mutable copy so the caller's signal is not modified
     s_tmp = copy(s)
@@ -134,7 +134,7 @@ function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real = 0.
 
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad")[1] : get_channel(obj, ch = ch, exclude = "")[1]
-    @assert length(ch) == 1 "ch must resolve to exactly one channel."
+    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     _check_epochs(obj, ep)

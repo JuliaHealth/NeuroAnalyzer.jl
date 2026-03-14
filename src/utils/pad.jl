@@ -29,8 +29,8 @@ function pad0(
     n::Int64
 )::Union{AbstractVector, AbstractArray}
 
-    @assert n >= 0 "n must be ≥ 0."
-    @assert ndims(x) <= 3 "pad0() supports only 1-, 2-, or 3-dimensional arrays."
+    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
+    !(ndims(x) <= 3) && throw(ArgumentError("pad0() supports only 1-, 2-, or 3-dimensional arrays."))
 
     # fast path: nothing to append
     n == 0 && return x
@@ -70,7 +70,7 @@ function pad2(
     x::Union{AbstractVector, AbstractArray}
 )::Union{AbstractVector, AbstractArray}
 
-    @assert ndims(x) <= 3 "pad2() supports only 1-, 2-, or 3-dimensional arrays."
+    !(ndims(x) <= 3) && throw(ArgumentError("pad2() supports only 1-, 2-, or 3-dimensional arrays."))
 
     if ndims(x) == 1
         n = nextpow2(length(x)) - length(x)
@@ -118,8 +118,8 @@ function padm(
 )::Union{AbstractVector, AbstractArray}
 
     _check_var(mode, [:all, :row], "mode")
-    @assert n >= 0 "n must be ≥ 0."
-    @assert ndims(x) <= 3 "padm() supports only 1-, 2-, or 3-dimensional arrays."
+    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
+    !(ndims(x) <= 3) && throw(ArgumentError("padm() supports only 1-, 2-, or 3-dimensional arrays."))
 
     # fast path: nothing to append
     n == 0 && return x

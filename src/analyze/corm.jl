@@ -17,7 +17,7 @@ Computes the channel × channel Pearson correlation matrix.
 """
 function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
 
-    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
+    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
 
     # compute the 2×2 channels-vs-channels correlation matrix
     # hcat → n×2; cor → 2×2

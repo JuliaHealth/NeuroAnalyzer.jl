@@ -124,7 +124,7 @@ function pacor(
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    @assert size(s, 1) == 1 "s must have 1 channel."
+    !(size(s, 1) == 1) && throw(ArgumentError("s must have 1 channel."))
 
     # number of channels
     ch_n = size(s, 1)
@@ -180,7 +180,7 @@ function pacor(
     method::Symbol = :yw,
 )::@NamedTuple{pac::Array{Float64, 3}, l::Vector{Float64}}
 
-    @assert !(method === :yw && l <= 1) "For method=:yw, l must be > 1."
+    !(!(method === :yw && l <= 1)) && throw(ArgumentError("For method=:yw, l must be > 1."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -188,8 +188,8 @@ function pacor(
     # convert l from seconds to samples for the inner call
     l_samp = round(Int64, l * sr(obj))
 
-    @assert l_samp <= size(obj, 2) "l must be <= $(size(obj, 2) / sr(obj)) s."
-    @assert l_samp >= 0 "l must be >= 0."
+    !(l_samp <= size(obj, 2)) && throw(ArgumentError("l must be <= $(size(obj, 2) / sr(obj)) s."))
+    !(l_samp >= 0) && throw(ArgumentError("l must be >= 0."))
 
     if datatype(obj) == "erp"
         pac = pacor(

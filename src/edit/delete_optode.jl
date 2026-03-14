@@ -24,8 +24,8 @@ function delete_optode(
     typeof(opt) <: AbstractRange && (opt = collect(opt))
     opt_n = length(obj.header.recording[:optode_labels])
     length(opt) > 1 && (opt = sort!(opt, rev = true))
-    @assert length(opt) < opt_n "Number of optodes to delete ($(length(opt))) must be smaller than number of all optodes ($opt_n)."
-    @assert opt in 1:opt_n "Opt must be in [1, $opt_n]."
+    !(length(opt) < opt_n) && throw(ArgumentError("Number of optodes to delete ($(length(opt))) must be smaller than number of all optodes ($opt_n)."))
+    !(opt in 1:opt_n) && throw(ArgumentError("Opt must be in [1, $opt_n]."))
 
     obj_new = deepcopy(obj)
 

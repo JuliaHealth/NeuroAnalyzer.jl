@@ -43,8 +43,8 @@ function load_fiff(
     catch
         error("File $file_name first tag cannot be read.")
     end
-    @assert tag_kind == _find_fiff_tag("file_id") "File $file_name is not a FIFF file."
-    @assert tag_size == 20 "File $file_name is not a FIFF file."
+    !(tag_kind == _find_fiff_tag("file_id")) && throw(ArgumentError("File $file_name is not a FIFF file."))
+    !(tag_size == 20) && throw(ArgumentError("File $file_name is not a FIFF file."))
 
     buf, fiff_blocks = _create_fiff_block(fid)
 
@@ -612,7 +612,7 @@ Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and
 """
 function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
 
     fiff, _, _ = load_fiff(file_name)
 

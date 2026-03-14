@@ -22,8 +22,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _wip()
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert lowercase(splitext(file_name)[2]) == ".nwb" "This is not NWB file."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    !(lowercase(splitext(file_name)[2]) == ".nwb") && throw(ArgumentError("This is not NWB file."))
 
     file_type = "NWB"
 
@@ -54,7 +54,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
         exp_notes = "Instructions" in k ? header["Instructions"] : ""
         "RecordingType" in k &&
-            @assert header["RecordingType"] == "continuous" "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+            !(header["RecordingType"] == "continuous") && throw(ArgumentError("Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
 
         # what if the files contains mixed recordings (e.g. EEG + SEEG)
         if "EEGChannelCount" in k && header["EEGChannelCount"] > 0
@@ -218,7 +218,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         )
     end
 
-    @assert isfile(file_json) "$file_json not found."
+    !(isfile(file_json)) && throw(ArgumentError("$file_json not found."))
     f = open(file_json, "r")
     s = read(f, String)
     close(f)

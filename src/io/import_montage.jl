@@ -25,13 +25,13 @@ function import_montage(
         file_name::String
     )::@NamedTuple{ref_list::Vector{String}, ref_name::String}
 
-    @assert isfile(file_name) "File $file_name cannot be loaded."
+    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
 
     f = open(file_name, "r")
     montage_file = readlines(f)
     close(f)
 
-    @assert length(montage_file) >= 2 "File does not contain proper montage structure."
+    !(length(montage_file) >= 2) && throw(ArgumentError("File does not contain proper montage structure."))
     ref_name = montage_file[1]
     ref_list = montage_file[2:end]
 

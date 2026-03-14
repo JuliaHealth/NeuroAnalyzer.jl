@@ -29,9 +29,9 @@ Uses the binomial probability mass function: `P(X = r) = C(n, r) × pʳ × (1 �
 function binom_prob(p::Float64, r::Int64, n::Int64)::Float64
 
     _in(p, (0.0, 1.0), "p")
-    @assert n >= 1 "n must be ≥ 1."
-    @assert r >= 0 "r must be ≥ 0."
-    @assert r <= n "r must be ≤ n."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    !(r >= 0) && throw(ArgumentError("r must be ≥ 0."))
+    !(r <= n) && throw(ArgumentError("r must be ≤ n."))
 
     return binomial(n, r) * (p ^ r) * (1 - p) ^ (n - r)
 
@@ -82,7 +82,7 @@ function binom_test(
 }
 
     _in(p, (0.0, 1.0), "p")
-    @assert n >= 1 "n must be ≥ 1."
+    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
 
     x1 = round(Int64, p * n)
     x0 = n - x1
@@ -157,7 +157,7 @@ function binom_test(
 }
 
     n = length(x)
-    @assert n > 0 "x must not be empty."
+    !(n > 0) && throw(ArgumentError("x must not be empty."))
     n1 = count(identity, x)
 
     return binom_test(n1 / n, n; verbose=verbose)
@@ -211,7 +211,7 @@ function binom_test(
     p::Float64
 }
 
-    @assert n >= 1  "n must be ≥ 1."
+    !(n >= 1 ) && throw(ArgumentError("n must be ≥ 1."))
     _in(x, (0, n), 'x')
 
     return binom_test(x / n, n; verbose=verbose)
