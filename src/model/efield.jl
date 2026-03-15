@@ -7,7 +7,7 @@ Create model of 2-dimensional electric field.
 
 # Arguments
 
-- `q::Vector{Int64}`: charges values, qy::Vector{Int64}::String`: anode location
+- `q::Vector{Int64}`: charges values
 - `qx::Vector{Int64}`: charges X positions (1 to 100)
 - `qy::Vector{Int64}`: charges Y positions (1 to 100)
 
@@ -21,8 +21,15 @@ Named tuple:
 - `ey::Matrix{Float64}`: electric field Y axis vector
 """
 function efield2d(
-        q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64}
-    )::@NamedTuple{qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}}
+    q::Vector{Int64},
+    qx::Vector{Int64},
+    qy::Vector{Int64}
+)::@NamedTuple{
+    qq::Vector{Vector{Float64}},
+    norm_e::Matrix{Float64},
+    ex::Matrix{Float64},
+    ey::Matrix{Float64}
+}
 
     !(length(qx) == length(q)) && throw(ArgumentError("Length of qx and number of charges must be equal."))
     !(length(qx) == length(q)) && throw(ArgumentError("Length of qy and number of charges must be equal."))

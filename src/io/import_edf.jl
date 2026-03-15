@@ -16,15 +16,15 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Notes
 
-  - sampling_rate = n.samples ÷ data.record.duration
-  - gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
-  - value = (value - digital minimum ) × gain + physical minimum
+- sampling_rate = n.samples ÷ data.record.duration
+- gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
+- value = (value - digital minimum ) × gain + physical minimum
 
 # References
 
- 1. Kemp B, Varri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992; 82(5): 391–3
- 2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003; 114: 1755–61
- 3. https://www.edfplus.info/specs/
+1. Kemp B, Varri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992; 82(5): 391–3
+2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003; 114: 1755–61
+3. https://www.edfplus.info/specs/
 """
 function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
@@ -337,8 +337,8 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     _initialize_locs!(obj)
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

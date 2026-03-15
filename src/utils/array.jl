@@ -61,23 +61,21 @@ end
 
 Compare two 3-dimensional arrays using a permutation-based statistic.
 
-Randomly shuffles the combined pool of epochs `perm_n` times, splits each shuffle into two equal halves, and builds a null distribution of difference maps. The real difference map is then Z-scored against this null distribution
-and thresholded at the Z-value corresponding to `p`.
+Randomly shuffles the combined pool of epochs `perm_n` times, splits each shuffle into two equal halves, and builds a null distribution of difference maps. The real difference map is then Z-scored against this null distribution and thresholded at the Z-value corresponding to `p`.
 
 # Arguments
 
 - `a1::Array{<:Real, 3}`: first array (e.g. spectrogram), shape (freq, time, epochs)
 - `a2::Array{<:Real, 3}`: second array; must match `a1` in size.
-- `p::Float64=0.05`: two-tailed p-value threshold (must be in `(0, 1)`).
-- `perm_n::Int64=1000`: number of permutations (must be > 0).
+- `p::Float64=0.05`: two-tailed p-value threshold (must be in `(0, 1)`)
+- `perm_n::Int64=1000`: number of permutations (must be > 0)
 
 # Returns
 
 Named tuple:
 
 - `zmap::Matrix{Float64}`: Z-scored difference map `(a2 mean − a1 mean)` normalized by the permutation null distribution
-- `bm::BitMatrix`: Boolean mask where `true` indicates a **statistically significant**
-  position (`|z| ≥ zval`)
+- `bm::BitMatrix`: Boolean mask where `true` indicates a **statistically significant** position (`|z| ≥ zval`)
 """
 function perm_cmp(
     a1::Array{<:Real, 3},

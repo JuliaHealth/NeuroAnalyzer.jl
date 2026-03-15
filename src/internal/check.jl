@@ -130,7 +130,7 @@ end
 """Assert that the time segment `[from, to]` lies within `obj`'s time axis."""
 function _check_segment(obj::NeuroAnalyzer.NEURO, from::Real, to::Real)::Nothing
     t0, t1 = obj.time_pts[1], obj.time_pts[end]
-    !(to > from) && throw(ArgumentError("Segment end ($to) must be > segment start ($from)."))
+    !(to >= from) && throw(ArgumentError("Segment end ($to) must be ≥ than segment start ($from)."))
     !(from >= t0) && throw(ArgumentError("Segment start must be ≥ $t0."))
     !(to <= t1) && throw(ArgumentError("Segment end must be ≤ $t1."))
     return nothing
@@ -139,7 +139,7 @@ end
 """Assert that the sample-index segment `[from, to]` is valid for `signal`."""
 function _check_segment(signal::AbstractVector, from::Real, to::Real)::Nothing
     n = length(signal)
-    !(from >= 1) && throw(ArgumentError("Segment start must be ≥ 1."))   # was: > 0 — same for integers, clearer
+    !(from >= 1) && throw(ArgumentError("Segment start must be ≥ 1."))
     !(to >= 1) && throw(ArgumentError("Segment end must be ≥ 1."))
     !(to >= from) && throw(ArgumentError("Segment end ($to) must be ≥ segment start ($from)."))
     !(from <= n) && throw(ArgumentError("Segment start must be ≤ $n."))

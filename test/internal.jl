@@ -7,12 +7,15 @@ using Random
 @info "Initializing"
 
 Random.seed!(123)
+
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 eeg.data = rand(-100:0.01:100, nchannels(eeg), sr(eeg) * 100, nepochs(eeg))
 eeg.time_pts = eeg.time_pts[1:(sr(eeg) * 100)]
 eeg.epoch_time = eeg.time_pts[1:(sr(eeg) * 100)]
 
 locs = import_locs(joinpath(testfiles_path, "locs.ced"))
+
+add_locs!(eeg, locs=locs)
 
 e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
@@ -23,8 +26,9 @@ v2 = [6, 5, 4, 3, 2]
 m = [1 2 3; 4 5 6]
 m1 = [1 2 3; 4 5 6]
 m2 = [7 6 5; 4 3 2]
-a1 = ones(2, 3, 2)
-a2 = zeros(2, 3, 2)
+a = rand(2, 3, 4)
+a1 = ones(2, 3, 4)
+a2 = zeros(2, 3, 4)
 
 ##
 ## Channel Operations
@@ -39,6 +43,8 @@ a2 = zeros(2, 3, 2)
 @test_throws ArgumentError NeuroAnalyzer._check_channels(e10, "InvalidChannel")
 
 @test NeuroAnalyzer._ch_units(e10, "Pz") == "μV"
+@test_throws ArgumentError NeuroAnalyzer._ch_units(e10, "PZ")
+
 @test NeuroAnalyzer._ch_rename("nirs_hbo") == "NIRS HbO concentration"
 
 @test NeuroAnalyzer._set_channel_types(["fp1", "stim"]) == ["eeg", "mrk"]
@@ -68,6 +74,11 @@ a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_len=100)
 @test NeuroAnalyzer._s2epoch(e10, 256, 512) == 1
 @test NeuroAnalyzer._s2epoch(e10, 3256, 3512) == 2
 @test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
+
+@test NeuroAnalyzer._select_epochs(e10, 1) == 1
+
+@test NeuroAnalyzer._s2epoch(e10, 1, 256) == 1
+@test NeuroAnalyzer._epoch2s(e10, 1) == (1, 2560)
 
 ##
 ## Data Operations
@@ -108,7 +119,10 @@ s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10))
 @test length(y) == 100
 @test_throws ArgumentError NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(11))
 
+@test NeuroAnalyzer._tlength((1, 1)) == 1
+@test_throws ArgumentError NeuroAnalyzer._tlength((1, 0))
 @test NeuroAnalyzer._tlength((1, 10)) == 10
+@test NeuroAnalyzer._tlength((1, 10.5)) == 10
 
 @test NeuroAnalyzer._s2i("1, 2, 3") == [1, 2, 3]
 @test NeuroAnalyzer._i2s([1, 2, 3]) == "1, 2, 3"
@@ -197,6 +211,9 @@ locs = NeuroAnalyzer._locs_round(locs)
 
 @test NeuroAnalyzer._def_ylabel("eeg", "μV") == "Amplitude [μV]"
 
+@test NeuroAnalyzer._convert_t(1.0, 2.0) == (1.0, "1.0 s", 2.0, "2.0 s")
+@test NeuroAnalyzer._convert_t(0.22, 11.0) == (0.22, "220.0 ms", 11.0, "11.0 s")
+
 ##
 ## Miscellaneous Operations
 ##
@@ -213,22 +230,20 @@ lmt = NeuroAnalyzer._labeled_matrix2dict(["a"], [[1.0]])
 df1, df2 = NeuroAnalyzer._split(DataFrame(:a=>1:10))
 @test nrow(df1) == 8
 @test nrow(df2) == 2
-@test NeuroAnalyzer._select_epochs(e10, 1) == 1
-@test NeuroAnalyzer._convert_t(1.0, 2.0) == (1.0, "1.0 s", 2.0, "2.0 s")
-@test NeuroAnalyzer._s2epoch(e10, 1, 256) == 1
-@test NeuroAnalyzer._epoch2s(e10, 1) == (1, 2560)
+
 @test NeuroAnalyzer._copy_lt2ut([1 0 0; 1 1 0; 1 1 1]) == ones(3, 3)
 
 t, et = NeuroAnalyzer._get_t(e10)
 @test length(t) == 25600
 @test length(et) == 2560
-
 @test NeuroAnalyzer._get_t(1, 10, 10) == [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-@test NeuroAnalyzer._convert_t(0.22, 11.0) == (0.22, "220.0 ms", 11.0, "11.0 s")
+
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
+
 @test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
 
 @test NeuroAnalyzer._midxy(1, 1, 4, 4) == (2.5, 2.5)
+
 @test length(NeuroAnalyzer._split(1:55, wlen=32, woverlap=8)) == 4
 @test length(NeuroAnalyzer._fsplit(1:55, wlen=32, woverlap=8)) == 3
 
