@@ -211,6 +211,8 @@ function spectrogram(
     ep_n = nepochs(obj)
     # sampling rate
     fs = sr(obj)
+    # time points
+    t = obj.epoch_time
 
     # pilot call to determine output dimensions
     if method === :stft
@@ -255,7 +257,7 @@ function spectrogram(
             fs = fs,
             db = db,
             gw = gw,
-            w = w,
+            w = w
         )
         f = spec_data.f
         p_tmp = spec_data.p
@@ -267,15 +269,12 @@ function spectrogram(
         # cwtspectrogram returns field .m not .p
         p_tmp = spec_data.m
     elseif method === :hht
-        # discard residual IMF (last row from emd).
-        imf_data = emd(obj.data[1, :, 1], obj.epoch_time)[1:(end - 1), :]
-        spec_data = NeuroAnalyzer.hhtspectrogram(imf_data, fs = fs, db = db)
+        spec_data = NeuroAnalyzer.hhtspectrogram(@view(obj.data[1, :, 1]), t, fs = fs, db = db)
         f = spec_data.f
         p_tmp = spec_data.p
     end
 
     # pre-allocate outputs
-    t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
     p = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
@@ -284,11 +283,11 @@ function spectrogram(
     # calculate over channels and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_local, ep_idx = idx[1], idx[2]
-        ch_data = ch[ch_local]   # resolve local index to actual channel number
+        ch_idx = ch[ch_local]   # resolve local index to actual channel number
 
         if method === :stft
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.spectrogram(
-                @view(obj.data[ch_data, :, ep_idx]),
+                @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
                 db = db,
                 method = :stft,
@@ -298,7 +297,7 @@ function spectrogram(
             ).p
         elseif method === :mt
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.spectrogram(
-                @view(obj.data[ch_data, :, ep_idx]),
+                @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
                 db = db,
                 method = :mt,
@@ -309,7 +308,7 @@ function spectrogram(
             ).p
         elseif method === :mw
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.mwspectrogram(
-                @view(obj.data[ch_data, :, ep_idx]),
+                @view(obj.data[ch_idx, :, ep_idx]),
                 pad = pad,
                 fs = fs,
                 db = db,
@@ -318,7 +317,7 @@ function spectrogram(
             ).p
         elseif method === :gh
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.ghtspectrogram(
-                @view(obj.data[ch_data, :, ep_idx]),
+                @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
                 db = db,
                 gw = gw,
@@ -328,14 +327,17 @@ function spectrogram(
             _log_off()
             # cwtspectrogram returns field .m (magnitudes) rather than .p.
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.cwtspectrogram(
-                @view(obj.data[ch_data, :, ep_idx]),
+                @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
                 wt = wt
             ).m
             _log_on()
         elseif method === :hht
-            imf = emd(obj.data[ch_data, :, ep_idx], obj.epoch_time)[1:(end - 1), :]
-            p[:, :, ch_local, ep_idx] = NeuroAnalyzer.hhtspectrogram(imf, fs = fs, db = db).p
+            # hhtspectrogram requires time points for EMD
+            p[:, :, ch_local, ep_idx] = NeuroAnalyzer.hhtspectrogram(@view(obj.data[ch_idx, :, ep_idx]),
+                                                                     t,
+                                                                     fs = fs,
+                                                                     db = db).p
         end
 
         progress_bar && next!(progbar)
@@ -721,7 +723,7 @@ function cwtspectrogram(
 end
 
 """
-    hhtspectrogram(s; <keyword arguments>)
+    hhtspectrogram(s, t; <keyword arguments>)
 
 Calculate spectrogram using Hilbert-Huang transform.
 
@@ -730,7 +732,8 @@ Calculate spectrogram using Hilbert-Huang transform.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix
+- `s::AbstractVector`: signal vector
+- `t::AbstractVector`: time points (required for EMD)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 
@@ -743,7 +746,83 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function hhtspectrogram(
-    s::AbstractMatrix;
+    s::AbstractVector,
+    t::AbstractVector;
+    fs::Int64,
+    db::Bool = true
+)::@NamedTuple{
+    p::Matrix{Float64},
+    f::Vector{Float64},
+    t::Vector{Float64}
+}
+
+    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+
+    # pre-allocate outputs
+    imf_p = Vector{Vector{Float64}}()
+    imf_fi = Vector{Vector{Float64}}()
+
+    # perform EMD
+    imfs = emd(s, t)
+    imfs_n = size(imfs, 1)
+    # last IMF is a residual, ignore it
+    for idx2 in 1:(imfs_n - 1)
+        # get instantaneous frequencies of IMF
+        push!(imf_fi, frqinst(imfs[idx2, :]) .* fs)
+        # perform Hilbert transform and get instantaneous powers of IMF
+        push!(imf_p, htransform(imfs[idx2, :]).p)
+    end
+
+    # project IMF powers onto the frequency grid using instantaneous frequency
+
+    f = collect(0:0.5:fs ÷ 2) # frequency range of interest (Hz)
+    p = zeros(length(f), length(t))
+
+    # interpolate each IMF's frequency and power onto the grid
+    @inbounds for (pow, freq) in zip(imf_p, imf_fi)
+        for idx_t in eachindex(t)
+            # find the closest frequency bin
+            f_idx = argmin(abs.(f .- freq[idx_t]))
+            if 1 ≤ f_idx ≤ length(f)
+                p[f_idx, idx_t] += pow[idx_t] # add power
+            end
+        end
+    end
+
+    db && (p = pow2db.(p))
+    p[p .== -Inf] .= -eps()
+
+    return (p = p, f = f, t = t)
+
+end
+
+
+"""
+    hhtspectrogram(s; <keyword arguments>)
+
+Calculate spectrogram using Hilbert-Huang transform.
+
+1. Empirical Mode Decomposition (EMD) – Decomposes the signal into Intrinsic Mode Functions (IMFs).
+2. Hilbert Spectral Analysis (HSA) – Applies the Hilbert transform to each IMF to extract instantaneous frequency and powers, producing a spectrogram-like representation.
+
+# Arguments
+
+- `s::AbstractMatrix`: signal matrix
+- `t::AbstractVector`: time points (required for EMD)
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
+- `db::Bool=true`: normalize powers to dB
+
+# Returns
+
+Named tuple:
+
+- `p::Matrix{Float64}`: powers (frequencies × time points)
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time points
+"""
+function hhtspectrogram(
+    s::AbstractMatrix,
+    t::AbstractVector;
     fs::Int64,
     db::Bool = true
 )::@NamedTuple{
@@ -760,7 +839,7 @@ function hhtspectrogram(
 
     # perform EMD
     @inbounds for idx1 in axes(s, 1)
-        imfs = emd(s[idx1, :])
+        imfs = emd(s[idx1, :], t)
         imfs_n = size(imfs, 1)
         # last IMF is a residual, ignore it
         for idx2 in 1:(imfs_n - 1)
@@ -774,7 +853,7 @@ function hhtspectrogram(
     # project IMF powers onto the frequency grid using instantaneous frequency
 
     f = collect(0:0.5:fs ÷ 2) # frequency range of interest (Hz)
-    p = zeros(length(frq), length(t))
+    p = zeros(length(f), length(t))
 
     # interpolate each IMF's frequency and power onto the grid
     @inbounds for (pow, freq) in zip(imf_p, imf_fi)
