@@ -28,11 +28,11 @@ function mep_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
     @inbounds Threads.@threads :dynamic for ch_idx in 1:ch_n
 
         p[ch_idx, :] = [
-            argmax(@view(obj.data[ch_idx, ss[idx]:end, 1])),
-            argmin(@view(obj.data[ch_idx, ss[idx]:end, 1]))
+            argmax(@view(obj.data[ch_idx, ss[ch_idx]:end, 1])),
+            argmin(@view(obj.data[ch_idx, ss[ch_idx]:end, 1]))
         ]
 
-        p[ch_idx, :] .+= ss[idx]
+        p[ch_idx, :] .+= ss[ch_idx]
 
     end
 
