@@ -38,8 +38,8 @@ function xcov(
     xc_neg = zeros(l + 1)
 
     if demean
-        s1_tmp = delmean(s1)
-        s2_tmp = delmean(s2)
+        s1_tmp = remove_dc(s1)
+        s2_tmp = remove_dc(s2)
     else
         s1_tmp = s1
         s2_tmp = s2

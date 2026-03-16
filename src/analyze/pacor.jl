@@ -38,7 +38,7 @@ function pacor(
     method === :reg && (method = :regression)
     method === :yw && (method = :yulewalker)
 
-    s_tmp = demean ? delmean(s) : s
+    s_tmp = demean ? remove_dc(s) : s
 
     # positive and negative lags computed separately (reverse trick for negative)
     pac = pacf(s_tmp, collect(0:l), method = method)
