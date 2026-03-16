@@ -925,17 +925,6 @@ function _get_blocks(b::Matrix{Int64})::Tuple{Vector{Vector{Int64}}, Vector{Int6
     return bidx, btypes
 end
 
-function _get_blocks(b::Matrix{Int64})::Tuple{Vector{Vector{Int64}}, Vector{Int64}}
-    levels = unique(b[:, 5])
-    bidx = Vector{Int64}[]
-    [push!(bidx, findall(isequal(levels[idx]), b[:, 5])) for idx in eachindex(levels)]
-    btmp = Int64[]
-    [push!(btmp, length(bidx[idx])) for idx in eachindex(bidx)]
-    btypes = Int64[]
-    [push!(btypes, unique(b[:, 6][bidx[idx][:]])[1]) for idx in eachindex(btmp)]
-    return bidx, btypes
-end
-
 function _pack_fiff_blocks(fiff_object::Vector{Any}, block::String, fields::Vector{String})::Dict
     block_mask = [fiff_object[i][3] for i in eachindex(fiff_object)] .== block
     block_obj  = fiff_object[block_mask]
