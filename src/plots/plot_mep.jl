@@ -22,15 +22,15 @@ Plot MEP (single channel).
 - `GLMakie.Figure`
 """
 function plot_mep(
-        t::Union{AbstractVector, AbstractRange},
-        s::AbstractVector;
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        zl::Bool = true,
-        yrev::Bool = false,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::Union{AbstractVector, AbstractRange},
+    s::AbstractVector;
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    zl::Bool = true,
+    yrev::Bool = false,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # prepare plot
     GLMakie.activate!(title = "plot_mep()")
@@ -305,7 +305,7 @@ Plot MEP.
 - `title::String="default"`: plot title
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="default"`: color bar title
-- `peaks::Bool=true`: draw peaks
+- `peaks::Symbol=:detect`: method for drawing peaks (`:detect`, `:embed`, `:off`)
 - `leg::Bool=true`: if true, add legend with channel labels
 - `type::Symbol=:normal`: multi-channel plot type:
     - `:normal`: butterfly or mean and ±95% CI
@@ -324,28 +324,29 @@ Plot MEP.
 - `fig::Plots.Plot{Plots.GRBackend}`
 """
 function plot_mep(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        cb::Bool = true,
-        cb_title::String = "default",
-        peaks::Bool = true,
-        leg::Bool = true,
-        type::Symbol = :normal,
-        yrev::Bool = false,
-        avg::Bool = true,
-        ci95::Bool = false,
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        zl::Bool = true,
-        mono::Bool = false,
-        gui::Bool = false,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    cb::Bool = true,
+    cb_title::String = "default",
+    peaks::Symbol=:detect,
+    leg::Bool = true,
+    type::Symbol = :normal,
+    yrev::Bool = false,
+    avg::Bool = true,
+    ci95::Bool = false,
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    zl::Bool = true,
+    mono::Bool = false,
+    gui::Bool = false,
+)::GLMakie.Figure
 
     _check_datatype(obj, "mep")
     _check_var(type, [:normal, :stack], "type")
+    _check_var(peaks, [:detect, :embed, :off], "peaks")
 
     # check channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -411,9 +412,13 @@ function plot_mep(
     end
 
     # draw peaks
-    if peaks
+    if peaks !== :off
         if length(ch) == 1
-            pp = erp_peaks(obj)
+            if peaks === :detect
+                pp = mep_peaks(obj)
+            elseif peaks === :embed
+                pp = hcat(obj.header.recording[:markers_pos], obj.header.recording[:markers_neg])
+            end
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[ch, 1]][1],
@@ -438,9 +443,14 @@ function plot_mep(
             mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)[:, :, :]
             obj_tmp = keep_channel(obj, ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
-            pp = erp_peaks(obj_tmp)
+            pp = mep_peaks(obj_tmp)
             GLMakie.scatter!(
-                fig[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]]; marker = :xcross, color = mono ? :black : :red, markersize = 15
+                fig[1, 1],
+                t[pp[1, 1]],
+                mep_tmp[pp[1, 1]],
+                 marker = :xcross,
+                 color = mono ? :black : :red,
+                 markersize = 15
             )
             GLMakie.scatter!(
                 fig[1, 1],
