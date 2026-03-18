@@ -160,7 +160,12 @@ Named tuple:
 function htransform(
     s::AbstractVector;
     db::Bool = false,
-)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+)::@NamedTuple{
+    c::Vector{ComplexF64},
+    a::Vector{Float64},
+    p::Vector{Float64},
+    ph::Vector{Float64}
+}
 
     # compute the analytic signal via the Hilbert transform
     ht = DSP.hilbert(s)
@@ -201,7 +206,12 @@ Named tuple:
 function htransform(
     s::AbstractArray;
     db::Bool = false,
-)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+)::@NamedTuple{
+    c::Array{ComplexF64, 3},
+    a::Array{Float64, 3},
+    p::Array{Float64, 3},
+    ph::Array{Float64, 3}
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
