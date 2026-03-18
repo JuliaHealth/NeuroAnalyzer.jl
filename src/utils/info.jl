@@ -921,7 +921,7 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
 
     else
 
-        println("< $(uppercase(rec[:data_type])), " *
+        println("< $(uppercase(obj.header.recording[:data_type])), " *
                 "$(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) " *
                 "($(signal_len(obj) / sr(obj)) s) >")
         hdr = rpad("ch", 4) * rpad("label", 16) * rpad("type", 12) * rpad("unit", 8) *
@@ -933,9 +933,9 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
             println(
                 rpad(string(idx), 4) *
                 rpad(labels(obj)[idx], 16) *
-                rpad(uppercase(rec[:channel_type][idx]), 12) *
-                rpad(rec[:unit][idx], 8) *
-                join(rpad.(string.(d[:, idx]), 10)),
+                rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
+                rpad(obj.header.recording[:unit][idx], 8) *
+                Base.join(rpad.(string.(d[:, idx]), 10)),
             )
         end
 
