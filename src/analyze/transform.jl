@@ -83,10 +83,10 @@ Calculate Fourier transform (FFT / rFFT)
 
 Named tuple:
 
-- `c::Array{ComplexF64, 3}`: Fourier coefficients, shape (channels, samples, epochs)
-- `a::Array{Float64, 3}`: amplitudes, shape (channels, samples, epochs)
-- `p::Array{Float64, 3}`: powers, shape (channels, samples, epochs)
-- `ph::Array{Float64, 3}`: phases in radians, shape (channels, samples, epochs)
+- `c::Array{ComplexF64, 3}`: Fourier coefficients, shape `(channels, samples, epochs)`
+- `a::Array{Float64, 3}`: amplitudes, shape `(channels, samples, epochs)`
+- `p::Array{Float64, 3}`: powers, shape `(channels, samples, epochs)`
+- `ph::Array{Float64, 3}`: phases in radians, shape `(channels, samples, epochs)`
 """
 function ftransform(
     s::AbstractArray;
@@ -375,7 +375,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Returns
 
-- `ha::Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
+- `ha::Vector{ComplexF64}`: complex analytic signal, shape `(channels, samples, epochs)`
 """
 function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
 
@@ -415,7 +415,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Returns
 
-- `ha::Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
+- `ha::Vector{ComplexF64}`: complex analytic signal, shape `(channels, samples, epochs)`
 """
 function hanalytic(
     obj::NeuroAnalyzer.NEURO;

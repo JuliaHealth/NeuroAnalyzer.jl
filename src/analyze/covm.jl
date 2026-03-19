@@ -68,7 +68,7 @@ Calculate covariance matrix of a matrix.
 
 # Returns
 
-- `cm::Matrix{Float64}`: covariance matrix, shape (channels × channels)
+- `cm::Matrix{Float64}`: covariance matrix, shape `(channels, channels)`
 """
 function covm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
 
@@ -95,7 +95,7 @@ Calculate covariance matrix of an array.
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix, shape (channels, channels, epochs)
+- `cm::Array{Float64, 3}`: covariance matrix, shape `(channels, channels, epochs)`
 """
 function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
@@ -132,7 +132,7 @@ Calculate covariance matrix between all channel pairs within a single object.
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix, shape (channels, channels, epochs)
+- `cm::Array{Float64, 3}`: covariance matrix, shape `(channels, channels, epochs)`
 """
 function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false)::Array{Float64, 3}
 

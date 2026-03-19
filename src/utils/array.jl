@@ -65,7 +65,7 @@ Randomly shuffles the combined pool of epochs `perm_n` times, splits each shuffl
 
 # Arguments
 
-- `a1::Array{<:Real, 3}`: first array (e.g. spectrogram), shape (freq, time, epochs)
+- `a1::Array{<:Real, 3}`: first array (e.g. spectrogram), shape `(freq, time, epochs)`
 - `a2::Array{<:Real, 3}`: second array; must match `a1` in size.
 - `p::Float64=0.05`: two-tailed p-value threshold (must be in `(0, 1)`)
 - `perm_n::Int64=1000`: number of permutations (must be > 0)
@@ -134,11 +134,11 @@ Average a 3-dimensional signal array across the trial (third) dimension.
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
 
 # Returns
 
-- `s_new::AbstractArray`: mean across epochs, shape (channels, samples, 1)
+- `s_new::AbstractArray`: mean across epochs, shape `(channels, samples, 1)`
 """
 function tavg(s::AbstractArray)::AbstractArray
 
@@ -158,7 +158,7 @@ Useful for downsampling a frequency axis (and its associated data) when the numb
 
 # Arguments
 
-- `a::AbstractArray`: 2- or 3-dimensional data array whose second axis corresponds to `f`, shape (channels, frequencies) or (channels, frequencies, epochs)
+- `a::AbstractArray`: 2- or 3-dimensional data array whose second axis corresponds to `f`, shape `(channels, frequencies)` or `(channels, frequencies, epochs)`
 - `f::AbstractVector`: frequency (or index) vector; `length(f)` must equal `size(a, 2)`
 - `n::Float64=0.5`: step size between retained values (in the same units as `f`); smaller values retain more points; larger values reduce more aggressively
 

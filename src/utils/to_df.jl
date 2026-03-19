@@ -26,7 +26,7 @@ Each row corresponds to one time point across all epochs (epochs are concatenate
 function to_df(obj::NeuroAnalyzer.NEURO)::DataFrame
 
     # reshape (channels × samples × epochs) → (channels × total_samples),
-    # then transpose to (total_samples × channels) for row-per-timepoint layout
+    # then transpose to (total_samples × channels) for row-per-time-point layout
     data_matrix = reshape(obj.data, nchannels(obj), :)'
     df = DataFrame(hcat(obj.time_pts, data_matrix), :auto)
     DataFrames.rename!(df, vcat(:time, Symbol.(labels(obj))))

@@ -86,11 +86,11 @@ Calculate signal entropy descriptors:
 
 Named tuple:
 
-- `ent::Matrix{Float64}`: entropy in bits, shape (channels, epochs)
-- `shent::Matrix{Float64}`: Shanon entropy, shape (channels, epochs)
-- `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
-- `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
-- `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
+- `ent::Matrix{Float64}`: entropy in bits, shape `(channels, epochs)`
+- `shent::Matrix{Float64}`: Shanon entropy, shape `(channels, epochs)`
+- `leent::Matrix{Float64}`: log energy entropy, shape `(channels, epochs)`
+- `sent::Matrix{Float64}`: sample entropy, shape `(channels, epochs)`
+- `nsent::Matrix{Float64}`: normalized sample entropy, shape `(channels, epochs)`
 """
 function entropy(
     s::AbstractArray
@@ -147,11 +147,11 @@ Calculate signal entropy descriptors:
 
 Named tuple:
 
-- `ent::Matrix{Float64}`: entropy in bits, shape (channels, epochs)
-- `shent::Matrix{Float64}`: Shanon entropy, shape (channels, epochs)
-- `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
-- `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
-- `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
+- `ent::Matrix{Float64}`: entropy in bits, shape `(channels, epochs)`
+- `shent::Matrix{Float64}`: Shanon entropy, shape `(channels, epochs)`
+- `leent::Matrix{Float64}`: log energy entropy, shape `(channels, epochs)`
+- `sent::Matrix{Float64}`: sample entropy, shape `(channels, epochs)`
+- `nsent::Matrix{Float64}`: normalized sample entropy, shape `(channels, epochs)`
 """
 function entropy(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
@@ -206,7 +206,7 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 # Returns
 
-- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
+- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape `(channel, epochs)`
 """
 function negentropy(s::AbstractArray)::Matrix{Float64}
 
@@ -247,7 +247,7 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 # Returns
 
-- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
+- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape `(channel, epochs)`
 """
 function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 

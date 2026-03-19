@@ -100,7 +100,7 @@ Calculate spectrogram for each channel of a matrix.
 
 Named tuple:
 
-- `p::Array{Float64, 3}`: powers, shape (freq, time, channels)
+- `p::Array{Float64, 3}`: powers, shape `(freq, time, channels)`
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
@@ -693,7 +693,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT) for each chan
 
 Named tuple:
 
-- `m::Array{Float64, 3}`: magnitudes, shape (time points, frequencies, channels)
+- `m::Array{Float64, 3}`: magnitudes, shape `(time points, frequencies, channels)`
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """

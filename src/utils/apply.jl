@@ -17,7 +17,7 @@ Example: `f = "cumsum(obj)"` or `f = "obj .^ 2"`.
 
 # Returns
 
-- `out::Array{Float64, 3}`: result array, shape (channels, epoch length, epochs)
+- `out::Array{Float64, 3}`: result array, shape `(channels, epoch length, epochs)`
 
 # Throws
 

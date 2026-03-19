@@ -7,47 +7,57 @@ export filter!
 """
     filter_create(; <keyword arguments>)
 
-Create FIR or IIR filter.
+Create a FIR or IIR filter object.
 
 # Arguments
 
 - `fprototype::Symbol`: filter prototype:
-    - `:fir`: FIR filter
+    - `:fir`: FIR filter (window method)
     - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
-    - `:butterworth`: IIR filter
-    - `:chebyshev1` IIR filter
-    - `:chebyshev2` IIR filter
-    - `:elliptic` IIR filter
+    - `:remez`: Remez (Parks-McClellan) FIR filter
+    - `:butterworth`: Butterworth IIR filter
+    - `:chebyshev1`: Chebyshev type-I IIR filter
+    - `:chebyshev2`: Chebyshev type-II IIR filter
+    - `:elliptic`: elliptic IIR filter
     - `:iirnotch`: second-order IIR notch filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `fs::Int64`: signal sampling rate
+- `cutoff::Union{Real, Tuple{Real, Real}}`: cutoff frequency/ies in Hz; scalar for `:lp`/`:hp`; 2-tuple for `:bp`/`:bs`
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `order::Union{Nothing, Int64}=nothing`: filter order
-- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `rp::Union{Nothing, Real}=nothing`: pass-band ripple in dB (default 0.5 dB)
+- `rs::Union{Nothing, Real}=nothing`: stop-band attenuation in dB (default 20 dB)
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz (required for `:firls`, `:remez`, `:iirnotch`)
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` (default: Hamming) or weight vector for `:firls`
 
 # Returns
 
-- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
+- `Vector{Float64}`: FIR filter coefficients (for `:fir`, `:firls`, `:remez`)
+- `ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}`: IIR filter in zero-pole-gain form (for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic`)
+- `Biquad{:z, Float64}`: second-order biquad filter (for `:iirnotch`)
+
+# Throws
+
+- `ArgumentError`: if any required argument is missing or invalid
+
+# See also
+
+[`filter_apply`](@ref), [`filter`](@ref)
 """
 function filter_create(;
-        fprototype::Symbol,
-        ftype::Union{Nothing, Symbol} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        fs::Int64,
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-    )::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+    fprototype::Symbol,
+    ftype::Union{Nothing, Symbol} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    fs::Int64,
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     nqf = div(fs, 2)
@@ -60,49 +70,59 @@ function filter_create(;
         "fprototype"
     )
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+
+    # --- :fir parameter validation ---
     if fprototype === :fir
-        !(!(isnothing(order) && isnothing(w))) && throw(ArgumentError("Either order or w must be specified."))
+        isnothing(bw) && throw(ArgumentError("bw must be specified for $fprototype."))
         if !isnothing(w)
-            ftype in [:hp, :bp, :bs] && !(mod(length(w), 2) != 0) && throw(ArgumentError("Length of w must be odd."))
-            !(length(w) >= 1) && throw(ArgumentError("Length of w must be ≥ 1."))
+            ftype in (:hp, :bp, :bs) && mod(length(w), 2) == 0 &&
+                throw(ArgumentError("Length of w must be odd for :hp/:bp/:bs filters."))
+            length(w) >= 1 || throw(ArgumentError("Length of w must be ≥ 1."))
             order = length(w)
         elseif !isnothing(order)
-            ftype in [:hp, :bp, :bs] && !(mod(order, 2) != 0) && throw(ArgumentError("order must be odd."))
+            ftype in (:hp, :bp, :bs) && mod(order, 2) == 0 &&
+                throw(ArgumentError("order must be odd for :hp/:bp/:bs filters."))
             w = DSP.hamming(order)
         end
-        !(length(w) == order) && throw(ArgumentError("Length of w ($(length(w))) and order ($order) must be equal."))
+        length(w) == order || throw(ArgumentError("Length of w ($(length(w))) must equal order ($order)."))
     end
+
+    # --- :firls / :remez / :iirnotch bw validation ---
     if fprototype in [:firls, :remez, :iirnotch]
-        !(!isnothing(bw)) && throw(ArgumentError("bw must be specified."))
-        !(bw > 0) && throw(ArgumentError("bw must be > 0."))
-        !(bw <= 10) && throw(ArgumentError("bw must be ≤ 10."))
+        isnothing(bw) && throw(ArgumentError("bw must be specified for $fprototype."))
+        bw > 0  || throw(ArgumentError("bw must be > 0."))
+        bw <= 10 || throw(ArgumentError("bw must be ≤ 10."))
         if length(cutoff) == 1
             if bw >= cutoff
-                bw = round(cutoff - 0.1, digits = 1)
+                bw = round(cutoff - 0.1, digits=1)
                 _info("bw truncated to $bw Hz")
             end
         else
             if bw >= cutoff[2]
-                bw = round(cutoff[2] - 0.1, digits = 1)
+                bw = round(cutoff[2] - 0.1, digits=1)
                 _info("bw truncated to $bw Hz")
             end
         end
     end
+
+    # --- :firls weight vector defaults ---
     if fprototype === :firls
         if ftype in [:bp, :bs]
             if !isnothing(w)
-                !(length(w) == 6) && throw(ArgumentError("Length of w must be 6."))
+                !(length(w) == 6) && throw(ArgumentError("Length of w must be 6 for :bp/:bs filter."))
             else
                 w = ones(6)
             end
         elseif ftype in [:lp, :hp]
             if !isnothing(w)
-                !(length(w) == 4) && throw(ArgumentError("Length of w must be 4."))
+                !(length(w) == 4) && throw(ArgumentError("Length of w must be 4 for :lp/:hp filter."))
             else
                 w = ones(4)
             end
         end
     end
+
+    # --- ripple defaults for equiripple IIR prototypes ---
     if fprototype in [:chebyshev1, :chebyshev2, :elliptic]
         if isnothing(rp)
             rp = 0.5
@@ -113,22 +133,33 @@ function filter_create(;
             _info("rs set at $rs Hz.")
         end
     end
+
+    # --- order and ftype required for these prototypes ---
     if fprototype in [:firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        !(!isnothing(order)) && throw(ArgumentError("order must be specified."))
-        !(!isnothing(ftype)) && throw(ArgumentError("ftype must be specified."))
+        isnothing(order) && throw(ArgumentError("order must be specified for $fprototype."))
+        isnothing(ftype) && throw(ArgumentError("ftype must be specified for $fprototype."))
     end
+
+    # --- :iirnotch specifics ---
     if fprototype === :iirnotch
         !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
         !isnothing(order) && _info("For :iirnotch filter order is ignored")
-        !(length(cutoff) == 1) && throw(ArgumentError("For :iirnotch filter cutoff must contain only one frequency."))
+        length(cutoff) == 1 || throw(ArgumentError("cutoff must be a scalar for :iirnotch."))
     end
-    if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        ftype in [:lp, :hp] && !(length(cutoff) == 1) && throw(ArgumentError("For :$(ftype) filter, cutoff must specify only one frequency."))
-        ftype in [:bp, :bs] && !(length(cutoff) == 2) && throw(ArgumentError("For :$(ftype) filter, cutoff must specify only one frequency."))
+
+    # --- cutoff arity check ---
+    if fprototype in (:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic)
+        if ftype in (:lp, :hp)
+            length(cutoff) == 1 || throw(ArgumentError("For :$ftype, cutoff must be a scalar."))
+        elseif ftype in (:bp, :bs)
+            length(cutoff) == 2 || throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
+        end
     end
+
+    # --- cutoff value checks and normalisation ---
     if length(cutoff) == 1
-        !(cutoff > 0) && throw(ArgumentError("cutoff must be > 0 Hz."))
-        !(cutoff < nqf) && throw(ArgumentError("cutoff must be < $nqf Hz."))
+        cutoff > 0   || throw(ArgumentError("cutoff must be > 0 Hz."))
+        cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz (Nyquist)."))
     else
         if cutoff[1] == cutoff[2]
             cutoff = (cutoff[1], cutoff[1] + 0.1)
@@ -137,213 +168,117 @@ function filter_create(;
         end
     end
 
-    ## FIR filters
+    # -----------------------------------------------------------------------
+    # FIR filters
+    # -----------------------------------------------------------------------
 
     if fprototype === :fir
+        responsetype = if ftype === :lp; Lowpass(cutoff)
+                       elseif ftype === :hp; Highpass(cutoff)
+                       elseif ftype === :bp; Bandpass(cutoff[1], cutoff[2])
+                       elseif ftype === :bs; Bandstop(cutoff[1], cutoff[2])
+                       end
+        _info("Creating $(uppercase(string(ftype))) FIR filter ($(order) taps)")
+        return digitalfilter(responsetype, FIRWindow(w); fs=fs)
+    end
 
-        if ftype === :lp
-            responsetype = Lowpass(cutoff)
-        elseif ftype === :hp
-            responsetype = Highpass(cutoff)
-        elseif ftype === :bp
-            responsetype = Bandpass(cutoff[1], cutoff[2])
-        elseif ftype === :bs
-            responsetype = Bandstop(cutoff[1], cutoff[2])
-        end
-
-        prototype = FIRWindow(w)
-
-        if ftype in [:lp, :hp]
-            ftype === :lp && _info("Creating LP filter:")
-            ftype === :hp && _info("Creating HP filter:")
-            _info(" Number of taps: $order")
-        elseif ftype === :bp
-            _info("Creating BP filter:")
-            _info(" Number of taps: $order")
-        elseif ftype === :bs
-            _info("Creating BS filter:")
-            _info(" Number of taps: $order")
-        end
-
-        flt = digitalfilter(responsetype, prototype, fs = fs)
-
-        return flt
-
-    elseif fprototype === :firls
-
+    if fprototype === :firls
         if ftype === :bp
-
-            f1_stop = cutoff[1] - (bw / 2)
-            f1_pass = cutoff[1] + (bw / 2)
-            f2_pass = cutoff[2] - (bw / 2)
-            f2_stop = cutoff[2] + (bw / 2)
+            f1_stop, f1_pass = cutoff[1] - bw/2, cutoff[1] + bw/2
+            f2_pass, f2_stop = cutoff[2] - bw/2, cutoff[2] + bw/2
             flt_shape = [0, 0, 1, 1, 0, 0]
-            flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, nqf]
-
+            flt_frq   = [0, f1_stop, f1_pass, f2_pass, f2_stop, nqf]
+            _info("Creating BP firls filter ($order taps, bw=$bw Hz)")
+            _info(" Bands: stop=[$0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
         elseif ftype === :bs
-
-            f1_pass = cutoff[1] - (bw / 2)
-            f1_stop = cutoff[1] + (bw / 2)
-            f2_stop = cutoff[2] - (bw / 2)
-            f2_pass = cutoff[2] + (bw / 2)
+            f1_pass, f1_stop = cutoff[1] - bw/2, cutoff[1] + bw/2
+            f2_stop, f2_pass = cutoff[2] - bw/2, cutoff[2] + bw/2
             flt_shape = [1, 1, 0, 0, 1, 1]
-            flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, nqf]
-
+            flt_frq   = [0, f1_pass, f1_stop, f2_stop, f2_pass, nqf]
+            _info("Creating BS firls filter ($order taps, bw=$bw Hz)")
         elseif ftype === :lp
-
-            f_pass = cutoff[1] - (bw / 2)
-            f_stop = cutoff[1] + (bw / 2)
+            f_pass, f_stop = cutoff - bw/2, cutoff + bw/2
             flt_shape = [1, 1, 0, 0]
-            flt_frq = [0, f_pass, f_stop, nqf]
-
+            flt_frq   = [0, f_pass, f_stop, nqf]
+            _info("Creating LP firls filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
         elseif ftype === :hp
-
-            f_pass = cutoff[1] + (bw / 2)
-            f_stop = cutoff[1] - (bw / 2)
+            f_stop, f_pass = cutoff - bw/2, cutoff + bw/2
             flt_shape = [0, 0, 1, 1]
-            flt_frq = [0, f_stop, f_pass, nqf]
-
+            flt_frq   = [0, f_stop, f_pass, nqf]
+            _info("Creating HP firls filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
         end
+        return FIRLSFilterDesign.firls_design(order - 1, flt_frq, flt_shape, w, true; fs=fs)
+    end
 
-        if ftype in [:lp, :hp]
-            ftype === :lp && _info("Creating LP filter:")
-            ftype === :hp && _info("Creating HP filter:")
-            _info(" Number of taps: $order")
-            _info(" Transition band width: $bw Hz")
-            _info(" F_pass: $f_pass Hz")
-            _info(" F_stop: $f_stop Hz")
-        elseif ftype === :bp
-            _info("Creating BP filter:")
-            _info(" Number of taps: $order")
-            _info(" Transition band width: $bw Hz")
-            _info(" F1_stop: $f1_stop Hz")
-            _info(" F1_pass: $f1_pass Hz")
-            _info(" F2_pass: $f2_pass Hz")
-            _info(" F2_stop: $f2_stop Hz")
-        elseif ftype === :bs
-            _info("Creating BS filter:")
-            _info(" Number of taps: $order")
-            _info(" Transition band width: $bw Hz")
-            _info(" F1_pass: $f1_pass Hz")
-            _info(" F1_stop: $f1_stop Hz")
-            _info(" F2_stop: $f2_stop Hz")
-            _info(" F2_pass: $f2_pass Hz")
-        end
-
-        flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true, fs = fs)
-
-        return flt
-
-    elseif fprototype === :remez
-
+    if fprototype === :remez
         if ftype === :bp
-            f1_stop = cutoff[1] - (bw / 2)
-            f1_pass = cutoff[1] + (bw / 2)
-            f2_pass = cutoff[2] - (bw / 2)
-            f2_stop = cutoff[2] + (bw / 2)
+            f1_stop, f1_pass = cutoff[1] - bw/2, cutoff[1] + bw/2
+            f2_pass, f2_stop = cutoff[2] - bw/2, cutoff[2] + bw/2
             w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, nqf) => 0]
         elseif ftype === :bs
-            f1_pass = cutoff[1] - (bw / 2)
-            f1_stop = cutoff[1] + (bw / 2)
-            f2_stop = cutoff[2] - (bw / 2)
-            f2_pass = cutoff[2] + (bw / 2)
+            f1_pass, f1_stop = cutoff[1] - bw/2, cutoff[1] + bw/2
+            f2_stop, f2_pass = cutoff[2] - bw/2, cutoff[2] + bw/2
             w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, nqf) => 1]
         elseif ftype === :lp
-            f_pass = cutoff[1] - (bw / 2)
-            f_stop = cutoff[1] + (bw / 2)
+            f_pass, f_stop = cutoff - bw/2, cutoff + bw/2
             w = [(0, f_pass) => 1, (f_stop, nqf) => 0]
         elseif ftype === :hp
-            f_pass = cutoff[1] + (bw / 2)
-            f_stop = cutoff[1] - (bw / 2)
+            f_stop, f_pass = cutoff - bw/2, cutoff + bw/2
             w = [(0, f_stop) => 0, (f_pass, nqf) => 1]
         end
-
-        if ftype in [:lp, :hp]
-            ftype === :lp && _info("Creating LP filter:")
-            ftype === :hp && _info("Creating HP filter:")
-            _info(" Number of taps: $order")
-            _info(" Transition band width: $bw Hz")
-            _info(" F_pass: $f_pass Hz")
-            _info(" F_stop: $f_stop Hz")
-        elseif ftype === :bp
-            _info("Creating BP filter:")
-            _info(" Number of taps: $order")
-            _info(" Transition band width: $bw Hz")
-            _info(" F1_stop: $f1_stop Hz")
-            _info(" F1_pass: $f1_pass Hz")
-            _info(" F2_pass: $f2_pass Hz")
-            _info(" F2_stop: $f2_stop Hz")
-        elseif ftype === :bs
-            _info("Creating BS filter:")
-            _info(" Number of taps: $order")
-            _info(" Transition band width: $bw Hz")
-            _info(" F1_pass: $f1_pass Hz")
-            _info(" F1_stop: $f1_stop Hz")
-            _info(" F2_stop: $f2_stop Hz")
-            _info(" F2_pass: $f2_pass Hz")
-        end
-
-        flt = remez(order, w, Hz = fs, maxiter = 100)
-
-        return flt
-
+        _info("Creating $(uppercase(string(ftype))) Remez filter ($order taps, bw=$bw Hz)")
+        return remez(order, w; Hz=fs, maxiter=100)
     end
 
-    ## IIR filters
+    # -----------------------------------------------------------------------
+    # IIR filters
+    # -----------------------------------------------------------------------
 
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-
-        if ftype === :lp
-            responsetype = Lowpass(cutoff)
-        elseif ftype === :hp
-            responsetype = Highpass(cutoff)
-        elseif ftype === :bp
-            responsetype = Bandpass(cutoff[1], cutoff[2])
-        elseif ftype === :bs
-            responsetype = Bandstop(cutoff[1], cutoff[2])
-        end
-
-        if fprototype === :butterworth
-            prototype = Butterworth(order)
-        elseif fprototype === :chebyshev1
-            prototype = Chebyshev1(order, rp)
-        elseif fprototype === :chebyshev2
-            prototype = Chebyshev2(order, rs)
-        elseif fprototype === :elliptic
-            prototype = Elliptic(order, rp, rs)
-        end
-
-        flt = digitalfilter(responsetype, prototype, fs = fs)
-
-        return flt
-
-    elseif fprototype === :iirnotch
-
-        flt = iirnotch(cutoff[1], bw, fs = fs)
-
-        return flt
-
+    if fprototype in (:butterworth, :chebyshev1, :chebyshev2, :elliptic)
+        responsetype = if ftype === :lp; Lowpass(cutoff)
+                       elseif ftype === :hp; Highpass(cutoff)
+                       elseif ftype === :bp; Bandpass(cutoff[1], cutoff[2])
+                       elseif ftype === :bs; Bandstop(cutoff[1], cutoff[2])
+                       end
+        prototype = if fprototype === :butterworth; Butterworth(order)
+                    elseif fprototype === :chebyshev1; Chebyshev1(order, rp)
+                    elseif fprototype === :chebyshev2; Chebyshev2(order, rs)
+                    elseif fprototype === :elliptic; Elliptic(order, rp, rs)
+                    end
+        _info("Creating $(uppercase(string(ftype))) $(fprototype) filter (order=$order)")
+        return digitalfilter(responsetype, prototype; fs=fs)
     end
+
+    if fprototype === :iirnotch
+        _info("Creating IIR notch filter (cutoff=$(cutoff[1]) Hz, bw=$bw Hz)")
+        return iirnotch(cutoff[1], bw; fs=fs)
+    end
+
+    throw(ArgumentError("Unhandled fprototype: $fprototype"))
 
 end
 
 """
     filter_apply(s; <keyword arguments>)
 
-Apply IIR or FIR filter.
+Apply a pre-designed IIR or FIR filter to a signal vector.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter object returned by [`filter_create`](@ref)
 - `dir:Symbol=:twopass`: filtering direction:
-    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-    - `:onepass`: single pass
-    - `:reverse`: one pass, reverse direction
+    - `:twopass`: forward pass followed by reverse pass (zero phase distortion; effective filter order is doubled)
+    - `:onepass`: single forward pass (introduces phase delay)
+    - `:reverse`: single reverse pass
 
 # Returns
 
-- `s_new::Vector{Float64}`
+- `Vector{Float64}`: filtered signal of the same length as `s`
+
+# See also
+
+[`filter_create`](@ref), [`filter_apply(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_apply(
         s::AbstractVector;
@@ -353,62 +288,78 @@ function filter_apply(
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
-    dir === :onepass && (return filt(flt, s))
-    dir === :twopass && (return filtfilt(flt, s))
-    return dir === :reverse && (return filt(flt, reverse(s)))
+    if dir === :onepass
+        return filt(flt, s)
+    elseif dir === :twopass
+        return filtfilt(flt, s)
+    elseif dir === :reverse
+        return filt(flt, reverse(s))
+    end
 
 end
 
 """
     filter_apply(obj; <keyword arguments>)
 
-Apply IIR or FIR filter.
+Apply a pre-designed filter to selected channels of a NEURO object.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}`
-- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter object returned by [`filter_create`](@ref)
 - `dir:Symbol=:twopass`: filtering direction:
-    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-    - `:onepass`: single pass
-    - `:reverse`: one pass, reverse direction
+    - `:twopass`: forward pass followed by reverse pass (zero phase distortion; effective filter order is doubled)
+    - `:onepass`: single forward pass (introduces phase delay)
+    - `:reverse`: single reverse pass
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object with filtered data
+
+# Notes
+- For best results apply to a continuous (single-epoch) signal. A warning is issued when `nepochs(obj) > 1`.
+- Taper the signal before filtering to reduce edge artifacts.
+
+# See also
+
+[`filter_create`](@ref), [`filter_apply!`](@ref), [`filter`](@ref)
 """
 function filter_apply(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
-        dir::Symbol = :twopass,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
+    dir::Symbol = :twopass,
+)::NeuroAnalyzer.NEURO
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+    # number of channels
+    ch_n = length(ch)
+    # number of epochs
     ep_n = nepochs(obj)
 
-    ep_n > 1 && _warn("filter() should be applied to a continuous signal.")
-    _info("Signal should be tapered prior to filtering to reduce edge artifacts")
-    dir === :twopass && _info("Filter is applied twice, the effective filter order is doubled")
+    ep_n > 1 && _warn("filter_apply() should preferably be used on a continuous signal.")
+    _info("Taper the signal before filtering to reduce edge artifacts.")
+    dir === :twopass && _info("Two-pass filtering: effective order is doubled.")
 
     obj_new = deepcopy(obj)
 
     # initialize progress bar
     progbar = Progress(ep_n * length(ch), dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in eachindex(ch)
-            obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(
-                obj.data[ch[ch_idx], :, ep_idx],
-                flt = flt,
-                dir = dir,
-            )
-            # update progress bar
-            progress_bar && next!(progbar)
-        end
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(
+            obj.data[ch[ch_idx], :, ep_idx],
+            flt = flt,
+            dir = dir,
+        )
+        # update progress bar
+        progress_bar && next!(progbar)
     end
 
     push!(obj_new.history, "filter_apply(OBJ, ch=$ch, dir=$dir)")
@@ -420,21 +371,28 @@ end
 """
     filter_apply!(obj; <keyword arguments>)
 
-Apply IIR or FIR filter.
+Apply a pre-designed filter in-place to selected channels of a NEURO object.
+
+Mutates `obj.data` and `obj.history` directly. Delegates to [`filter_apply`](@ref) and copies the result back.
+
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}`
-- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter object returned by [`filter_create`](@ref)
 - `dir:Symbol=:twopass`: filtering direction:
-    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-    - `:onepass`: single pass
-    - `:reverse`: one pass, reverse direction
+    - `:twopass`: forward pass followed by reverse pass (zero phase distortion; effective filter order is doubled)
+    - `:onepass`: single forward pass (introduces phase delay)
+    - `:reverse`: single reverse pass
 
 # Returns
 
 - `Nothing`
+
+# See also
+
+[`filter_apply`](@ref), [`filter!`](@ref)
 """
 function filter_apply!(
         obj::NeuroAnalyzer.NEURO;
@@ -444,7 +402,6 @@ function filter_apply!(
     )::Nothing
 
     obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
-
     obj.data = obj_new.data
     obj.history = obj_new.history
 
@@ -455,59 +412,64 @@ end
 """
     filter(obj; <keyword arguments>)
 
-Apply filtering.
+Design and apply a digital filter to selected channels of a NEURO object in a single call.
+
+Combines [`filter_create`](@ref) and [`filter_apply`](@ref). When `preview=true`, the filter frequency response is plotted without modifying the signal.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `fprototype::Symbol`: filter prototype:
-    - `:fir`: FIR filter
+    - `:fir`: FIR filter (window method)
     - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
-    - `:butterworth`: IIR filter
-    - `:chebyshev1` IIR filter
-    - `:chebyshev2` IIR filter
-    - `:elliptic` IIR filter
+    - `:remez`: Remez (Parks-McClellan) FIR filter
+    - `:butterworth`: Butterworth IIR filter
+    - `:chebyshev1`: Chebyshev type-I IIR filter
+    - `:chebyshev2`: Chebyshev type-II IIR filter
+    - `:elliptic`: elliptic IIR filter
     - `:iirnotch`: second-order IIR notch filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `fs::Int64`: signal sampling rate
+- `cutoff::Union{Real, Tuple{Real, Real}}`: cutoff frequency/ies in Hz; scalar for `:lp`/`:hp`; 2-tuple for `:bp`/`:bs`
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `order::Union{Nothing, Int64}=nothing`: filter order
-- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `rp::Union{Nothing, Real}=nothing`: pass-band ripple in dB (default 0.5 dB)
+- `rs::Union{Nothing, Real}=nothing`: stop-band attenuation in dB (default 20 dB)
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz (required for `:firls`, `:remez`, `:iirnotch`)
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` (default: Hamming) or weight vector for `:firls`
 - `dir:Symbol=:twopass`: filtering direction:
-    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-    - `:onepass`: single pass
-    - `:reverse`: one pass, reverse direction
-- `preview::Bool=false`: plot filter response
+    - `:twopass`: forward pass followed by reverse pass (zero phase distortion; effective filter order is doubled)
+    - `:onepass`: single forward pass (introduces phase delay)
+    - `:reverse`: single reverse pass
+- `preview::Bool=false`: if `true`, plot the filter frequency response and return the figure without filtering the signal
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: filtered object (when `preview=false`)
+- `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
 
-If `preview=true`, it will return `GLMakie.Figure`.
+# See also
+
+[`filter!`](@ref), [`filter_create`](@ref), [`filter_apply`](@ref)
 """
 function filter(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        fprototype::Symbol,
-        ftype::Union{Nothing, Symbol} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-        dir::Symbol = :twopass,
-        preview::Bool = false,
-    )::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    fprototype::Symbol,
+    ftype::Union{Nothing, Symbol} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    dir::Symbol = :twopass,
+    preview::Bool = false,
+)::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
@@ -546,59 +508,64 @@ end
 """
     filter!(obj; <keyword arguments>)
 
-Apply filtering.
+Design and apply a digital filter in-place to selected channels of a NEURO object.
+
+Mutates `obj.data` and `obj.history`. When `preview=true`, the filter frequency response is plotted and returned without modifying the signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `fprototype::Symbol`: filter prototype:
-    - `:fir`: FIR filter
+    - `:fir`: FIR filter (window method)
     - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
-    - `:butterworth`: IIR filter
-    - `:chebyshev1` IIR filter
-    - `:chebyshev2` IIR filter
-    - `:elliptic` IIR filter
+    - `:remez`: Remez (Parks-McClellan) FIR filter
+    - `:butterworth`: Butterworth IIR filter
+    - `:chebyshev1`: Chebyshev type-I IIR filter
+    - `:chebyshev2`: Chebyshev type-II IIR filter
+    - `:elliptic`: elliptic IIR filter
     - `:iirnotch`: second-order IIR notch filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `fs::Int64`: signal sampling rate
+- `cutoff::Union{Real, Tuple{Real, Real}}`: cutoff frequency/ies in Hz; scalar for `:lp`/`:hp`; 2-tuple for `:bp`/`:bs`
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `order::Union{Nothing, Int64}=nothing`: filter order
-- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `rp::Union{Nothing, Real}=nothing`: pass-band ripple in dB (default 0.5 dB)
+- `rs::Union{Nothing, Real}=nothing`: stop-band attenuation in dB (default 20 dB)
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz (required for `:firls`, `:remez`, `:iirnotch`)
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` (default: Hamming) or weight vector for `:firls`
 - `dir:Symbol=:twopass`: filtering direction:
-    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-    - `:onepass`: single pass
-    - `:reverse`: one pass, reverse direction
-- `preview::Bool=false`: plot filter response
+    - `:twopass`: forward pass followed by reverse pass (zero phase distortion; effective filter order is doubled)
+    - `:onepass`: single forward pass (introduces phase delay)
+    - `:reverse`: single reverse pass
+- `preview::Bool=false`: if `true`, plot the filter frequency response and return the figure without filtering the signal
 
 # Returns
 
-- `Nothing`
+- `Nothing` when `preview=false`
+- `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
 
-If `preview=true`, it will return `GLMakie.Figure`.
+# See also
+
+[`filter`](@ref), [`filter_apply!`](@ref)
 """
 function filter!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        fprototype::Symbol,
-        ftype::Union{Symbol, Nothing} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-        dir::Symbol = :twopass,
-        preview::Bool = false,
-    )::Union{Nothing, GLMakie.Figure}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    fprototype::Symbol,
+    ftype::Union{Symbol, Nothing} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    dir::Symbol = :twopass,
+    preview::Bool = false,
+)::Union{Nothing, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
