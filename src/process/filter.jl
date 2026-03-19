@@ -63,7 +63,6 @@ function filter_create(;
     nqf = div(fs, 2)
 
     # check parameters
-
     _check_var(
         fprototype,
         [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch],
@@ -90,7 +89,7 @@ function filter_create(;
     # --- :firls / :remez / :iirnotch bw validation ---
     if fprototype in [:firls, :remez, :iirnotch]
         isnothing(bw) && throw(ArgumentError("bw must be specified for $fprototype."))
-        bw > 0  || throw(ArgumentError("bw must be > 0."))
+        bw > 0 || throw(ArgumentError("bw must be > 0."))
         bw <= 10 || throw(ArgumentError("bw must be ≤ 10."))
         if length(cutoff) == 1
             if bw >= cutoff
@@ -156,7 +155,7 @@ function filter_create(;
         end
     end
 
-    # --- cutoff value checks and normalisation ---
+    # --- cutoff value checks and normalization ---
     if length(cutoff) == 1
         cutoff > 0   || throw(ArgumentError("cutoff must be > 0 Hz."))
         cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz (Nyquist)."))
@@ -187,25 +186,26 @@ function filter_create(;
             f1_stop, f1_pass = cutoff[1] - bw/2, cutoff[1] + bw/2
             f2_pass, f2_stop = cutoff[2] - bw/2, cutoff[2] + bw/2
             flt_shape = [0, 0, 1, 1, 0, 0]
-            flt_frq   = [0, f1_stop, f1_pass, f2_pass, f2_stop, nqf]
-            _info("Creating BP firls filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: stop=[$0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
+            flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, nqf]
+            _info("Creating BP FIRLS filter ($order taps, bw=$bw Hz)")
+            _info(" Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
         elseif ftype === :bs
             f1_pass, f1_stop = cutoff[1] - bw/2, cutoff[1] + bw/2
             f2_stop, f2_pass = cutoff[2] - bw/2, cutoff[2] + bw/2
             flt_shape = [1, 1, 0, 0, 1, 1]
-            flt_frq   = [0, f1_pass, f1_stop, f2_stop, f2_pass, nqf]
-            _info("Creating BS firls filter ($order taps, bw=$bw Hz)")
+            flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, nqf]
+            _info("Creating BS FIRLS filter ($order taps, bw=$bw Hz)")
+            _info(" Bands: stop=[0,$f1_pass], pass=[$f1_stop,$f2_stop], stop=[$f2_pass,$nqf]")
         elseif ftype === :lp
             f_pass, f_stop = cutoff - bw/2, cutoff + bw/2
             flt_shape = [1, 1, 0, 0]
             flt_frq   = [0, f_pass, f_stop, nqf]
-            _info("Creating LP firls filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
+            _info("Creating LP FIRLS filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
         elseif ftype === :hp
             f_stop, f_pass = cutoff - bw/2, cutoff + bw/2
             flt_shape = [0, 0, 1, 1]
             flt_frq   = [0, f_stop, f_pass, nqf]
-            _info("Creating HP firls filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
+            _info("Creating HP FIRLS filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
         end
         return FIRLSFilterDesign.firls_design(order - 1, flt_frq, flt_shape, w, true; fs=fs)
     end
@@ -215,16 +215,22 @@ function filter_create(;
             f1_stop, f1_pass = cutoff[1] - bw/2, cutoff[1] + bw/2
             f2_pass, f2_stop = cutoff[2] - bw/2, cutoff[2] + bw/2
             w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, nqf) => 0]
+            _info("Creating BP Remez filter ($order taps, bw=$bw Hz)")
+            _info(" Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
         elseif ftype === :bs
             f1_pass, f1_stop = cutoff[1] - bw/2, cutoff[1] + bw/2
             f2_stop, f2_pass = cutoff[2] - bw/2, cutoff[2] + bw/2
             w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, nqf) => 1]
+            _info("Creating BS Remez filter ($order taps, bw=$bw Hz)")
+            _info(" Bands: stop=[0,$f1_pass], pass=[$f1_stop,$f2_stop], stop=[$f2_pass,$nqf]")
         elseif ftype === :lp
             f_pass, f_stop = cutoff - bw/2, cutoff + bw/2
             w = [(0, f_pass) => 1, (f_stop, nqf) => 0]
+            _info("Creating LP Remez filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
         elseif ftype === :hp
             f_stop, f_pass = cutoff - bw/2, cutoff + bw/2
             w = [(0, f_stop) => 0, (f_pass, nqf) => 1]
+            _info("Creating HP Remez filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
         end
         _info("Creating $(uppercase(string(ftype))) Remez filter ($order taps, bw=$bw Hz)")
         return remez(order, w; Hz=fs, maxiter=100)
@@ -253,8 +259,6 @@ function filter_create(;
         _info("Creating IIR notch filter (cutoff=$(cutoff[1]) Hz, bw=$bw Hz)")
         return iirnotch(cutoff[1], bw; fs=fs)
     end
-
-    throw(ArgumentError("Unhandled fprototype: $fprototype"))
 
 end
 
@@ -373,7 +377,7 @@ end
 
 Apply a pre-designed filter in-place to selected channels of a NEURO object.
 
-Mutates `obj.data` and `obj.history` directly. Delegates to [`filter_apply`](@ref) and copies the result back.
+Delegates to [`filter_apply`](@ref) and copies the result back.
 
 
 # Arguments
@@ -510,7 +514,7 @@ end
 
 Design and apply a digital filter in-place to selected channels of a NEURO object.
 
-Mutates `obj.data` and `obj.history`. When `preview=true`, the filter frequency response is plotted and returned without modifying the signal.
+When `preview=true`, the filter frequency response is plotted and returned without modifying the signal.
 
 # Arguments
 
