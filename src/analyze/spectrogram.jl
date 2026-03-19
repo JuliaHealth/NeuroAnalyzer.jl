@@ -130,7 +130,7 @@ function spectrogram(
     t = spec_data.t
 
     # pre-allocate output
-    @inbounds Threads.@threads :dynamic for ch_idx in axes(s, 1)
+    @inbounds Threads.@threads :static for ch_idx in axes(s, 1)
         p[:, :, ch_idx] = NeuroAnalyzer.spectrogram(
             @view(s[ch_idx, :]),
             fs = fs,
@@ -281,7 +281,7 @@ function spectrogram(
     progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channels and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_local, ep_idx = idx[1], idx[2]
         ch_idx = ch[ch_local]   # resolve local index to actual channel number
 
@@ -478,7 +478,7 @@ function mwspectrogram(
     p  = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
 
-    Threads.@threads :dynamic for ch_idx in axes(s, 1)
+    Threads.@threads :static for ch_idx in axes(s, 1)
         @inbounds begin
             mwspec_data = mwspectrogram(
                 @view(s[ch_idx, :]),
@@ -614,7 +614,7 @@ function ghtspectrogram(
     ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
 
     # calculate over channels
-    @inbounds Threads.@threads :dynamic for ch_idx in axes(s, 1)
+    @inbounds Threads.@threads :static for ch_idx in axes(s, 1)
         ght_data = ghtspectrogram(
             @view(s[ch_idx, :]),
             fs = fs,
@@ -714,7 +714,7 @@ function cwtspectrogram(
 
     # pre-allocate output
     m = zeros(length(f), length(t), size(s, 1))
-    @inbounds Threads.@threads :dynamic for ch_idx in axes(s, 1)
+    @inbounds Threads.@threads :static for ch_idx in axes(s, 1)
         m[:, :, ch_idx] = cwtspectrogram(@view(s[ch_idx, :]), fs = fs, wt = wt).m
     end
 

@@ -54,7 +54,7 @@ function dirinrg(s::AbstractArray)::Matrix{Float64}
     dn = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         dn[ch_idx, ep_idx] = dirinrg(@view(s[ch_idx, :, ep_idx]))
     end

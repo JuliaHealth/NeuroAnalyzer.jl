@@ -120,7 +120,7 @@ function ftransform(
     p = zeros(Float64, ch_n, length(fft_tmp.p), ep_n)
     ph = zeros(Float64, ch_n, length(fft_tmp.ph), ep_n)
 
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ftransform_data = ftransform(
             @view(s[ch_idx, :, ep_idx]),
@@ -230,7 +230,7 @@ function htransform(
     ph = similar(s, Float64)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         htransform_data = htransform(
             @view(s[ch_idx, :, ep_idx]),
@@ -393,7 +393,7 @@ function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
     ha = zeros(ComplexF64, ch_n, ep_len, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ha[ch_idx, :, ep_idx] = DSP.hilbert(@view(s[ch_idx, :, ep_idx]))
     end

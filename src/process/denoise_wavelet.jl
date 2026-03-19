@@ -6,15 +6,17 @@ export denoise_dwd!
 """
     denoise_cwd(s; <keyword arguments>)
 
-Perform denoising using continuous wavelet decomposition (CWD).
+Perform denoising by zeroing a frequency band in the continuous wavelet domain.
+
+Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, then reconstructs the signal via the inverse CWD.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency in Hz (must be ≥ 1 and ≤ `fs/2`)
-- `w::Int64=5`: width (in Hz) of the area surrounding the noise frequency; the area will be [`nf - w`, `nf + w`]
+- `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
+- `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
     - `:pd`: PenroseDelta (default; generally most accurate)
     - `:nd`: NaiveDelta
@@ -22,11 +24,15 @@ Perform denoising using continuous wavelet decomposition (CWD).
 
 # Returns
 
-- `Vector{Float64}`: denoised signal
+- `Vector{Float64}`: denoised signal of the same length as `s`
 
 # Throws
 
 - `ArgumentError`: if `fs < 1`, `nf < 1`, or `nf > fs/2`
+
+# See also
+
+[`denoise_cwd(::AbstractArray)`](@ref), [`denoise_cwd(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function denoise_cwd(
     s::AbstractVector;
@@ -49,24 +55,22 @@ function denoise_cwd(
     s_cwd[f_idx1:f_idx2, :] .= 0
 
     # reconstruct signal
-    s_new = vec(icwd(s_cwd, wt = wt, type = type))
-
-    return s_new
+    return vec(icwd(s_cwd, wt = wt, type = type))
 
 end
 
 """
     denoise_cwd(s; <keyword arguments>)
 
-Perform denoising using continuous wavelet decomposition (CWD).
+Perform denoising by zeroing a frequency band in the continuous wavelet domain.
 
 # Arguments
 
 - `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency in Hz (must be ≥ 1 and ≤ `fs/2`)
-- `w::Int64=5`: width (in Hz) of the area surrounding the noise frequency; the area will be [`nf - w`, `nf + w`]
+- `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
+- `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
     - `:pd`: PenroseDelta (default; generally most accurate)
     - `:nd`: NaiveDelta
@@ -115,7 +119,7 @@ function denoise_cwd(
     progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] = denoise_cwd(@view(
             s[ch_idx, :, ep_idx]), fs = fs, wt = wt, nf = nf, w = w, type = type
@@ -133,15 +137,15 @@ end
 """
     denoise_cwd(obj; <keyword arguments>)
 
-Perform denoising using continuous wavelet decomposition (CWD).
+Perform denoising by zeroing a frequency band in the continuous wavelet domain on selected channels of a NEURO object.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency in Hz (must be ≥ 1 and ≤ `fs/2`)
-- `w::Int64=5`: width (in Hz) of the area surrounding the noise frequency; the area will be [`nf - w`, `nf + w`]
+- `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
+- `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
     - `:pd`: PenroseDelta (default; generally most accurate)
     - `:nd`: NaiveDelta
@@ -149,7 +153,11 @@ Perform denoising using continuous wavelet decomposition (CWD).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: new object with denoised channels
+
+# See also
+
+[`denoise_cwd!`](@ref), [`denoise_cwd(::AbstractArray)`](@ref)
 """
 function denoise_cwd(
     obj::NeuroAnalyzer.NEURO;
@@ -160,9 +168,18 @@ function denoise_cwd(
     type::Symbol = :nd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = @views denoise_cwd(obj.data[ch, :, :], fs = sr(obj), wt = wt, nf = nf, w = w, type = type)
+    obj_new.data[ch, :, :] = denoise_cwd(
+        @view(obj.data[ch, :, :]),
+        fs = sr(obj),
+        wt = wt,
+        nf = nf,
+        w = w,
+        type = type
+    )
     push!(obj_new.history, "denoise_cwd(OBJ, ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
 
     return obj_new
@@ -172,15 +189,15 @@ end
 """
     denoise_cwd!(obj; <keyword arguments>)
 
-Perform denoising using continuous wavelet decomposition (CWD).
+Perform denoising by zeroing a frequency band in the continuous wavelet domain in-place on selected channels of a NEURO object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency in Hz
-- `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
+- `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
+- `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
     - `:pd`: PenroseDelta (default; generally most accurate)
     - `:nd`: NaiveDelta
@@ -189,6 +206,9 @@ Perform denoising using continuous wavelet decomposition (CWD).
 # Returns
 
 - `Nothing`
+
+# See also
+[`denoise_cwd`](@ref)
 """
 function denoise_cwd!(
     obj::NeuroAnalyzer.NEURO;
@@ -215,11 +235,11 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 
 - `s::AbstractVector`: signal vector
 - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
-- `l::Int64=0`: number of levels, default maximum number of levels available or total transformation, must be ≤ `maxtransformlevels(s)`
+- `l::Int64=0`: decomposition level; `0` uses the maximum available level (`maxtransformlevels(s)`); must be ≤ `maxtransformlevels(s)`
 - `dnt<:DNF=RelErrorShrink(SoftTH())`: denoise type, see WaveletsExt.jl documentation for detailed description of available denoising functions
-- `smooth::Symbol=:regular`: the smoothing method:
-    - `:regular`: smoothing thresholds all given coefficients
-    - `:undersmooth`: smoothing does not threshold the lowest frequency subspace node of the wavelet transform
+- `smooth::Symbol=:regular`: smoothing method:
+    - `:regular`: threshold all coefficients
+    - `:undersmooth`: do not threshold the lowest-frequency subspace
 
 # Returns
 
@@ -228,6 +248,10 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 # Throws
 
 - `ArgumentError`: if `l > maxtransformlevels(s)` or `smooth` is invalid
+
+# See also
+
+[`denoise_dwd(::AbstractArray)`](@ref), [`denoise_dwd(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function denoise_dwd(
     s::AbstractVector;
@@ -255,17 +279,17 @@ end
 """
     denoise_dwd(s; <keyword arguments>)
 
-Perform denoising using discrete wavelet decomposition (DWD).
+Perform threshold denoising using discrete wavelet decomposition (DWD).
 
 # Arguments
 
-- `s::AbstractArray`
-- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`; see Wavelets.jl documentation for the list of available wavelets
+- `l::Int64=0`: decomposition level; `0` uses the maximum available level (`maxtransformlevels(s)`); must be ≤ `maxtransformlevels(s)`
 - `dnt<:DNF=RelErrorShrink(SoftTH())`: denoise type, see WaveletsExt.jl documentation for detailed description of available denoising functions
-- `smooth::Symbol=:regular`: the smoothing method:
-    - `:regular`: smoothing thresholds all given coefficients
-    - `:undersmooth`: smoothing does not threshold the lowest frequency subspace node of the wavelet transform
+- `smooth::Symbol=:regular`: smoothing method:
+    - `:regular`: threshold all coefficients
+    - `:undersmooth`: do not threshold the lowest-frequency subspace
 
 # Returns
 
@@ -297,7 +321,7 @@ function denoise_dwd(
     s_new = similar(s, Float64)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] = denoise_dwd(
             @view(s[ch_idx, :, ep_idx]),
@@ -315,22 +339,26 @@ end
 """
     denoise_dwd(obj; <keyword arguments>)
 
-Perform denoising using discrete wavelet decomposition (DWD).
+Perform denoising using discrete wavelet decomposition (DWD) on selected channels of a NEURO object.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`; see Wavelets.jl documentation for the list of available wavelets
+- `l::Int64=0`: decomposition level; `0` uses the maximum available level (`maxtransformlevels(s)`); must be ≤ `maxtransformlevels(s)`
 - `dnt<:DNF=RelErrorShrink(SoftTH())`: denoise type, see WaveletsExt.jl documentation for detailed description of available denoising functions
-- `smooth::Symbol=:regular`: the smoothing method:
-    - `:regular`: smoothing thresholds all given coefficients
-    - `:undersmooth`: smoothing does not threshold the lowest frequency subspace node of the wavelet transform
+- `smooth::Symbol=:regular`: smoothing method:
+    - `:regular`: threshold all coefficients
+    - `:undersmooth`: do not threshold the lowest-frequency subspace
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: new object with denoised channels
+
+# See also
+
+[`denoise_dwd!`](@ref), [`denoise_dwd(::AbstractArray)`](@ref)
 """
 function denoise_dwd(
     obj::NeuroAnalyzer.NEURO;
@@ -358,13 +386,13 @@ end
 """
     denoise_dwd!(obj; <keyword arguments>)
 
-Perform denoising using discrete wavelet decomposition (DWD).
+Perform denoising using discrete wavelet decomposition (DWD) in-place on selected channels of a NEURO object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`; see Wavelets.jl documentation for the list of available wavelets
 - `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
 - `dnt<:DNF=RelErrorShrink(SoftTH())`: denoise type, see WaveletsExt.jl documentation for detailed description of available denoising functions
 - `smooth::Symbol=:regular`: the smoothing method:
@@ -374,6 +402,10 @@ Perform denoising using discrete wavelet decomposition (DWD).
 # Returns
 
 - `Nothing`
+
+# See also
+
+[`denoise_dwd`](@ref)
 """
 function denoise_dwd!(
     obj::NeuroAnalyzer.NEURO;

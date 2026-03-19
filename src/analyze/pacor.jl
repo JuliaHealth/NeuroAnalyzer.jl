@@ -135,7 +135,7 @@ function pacor(
     pac = zeros(ch_n, length((-l):l), ep_n)
 
     # calculate over channels and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         pac[ch_idx, :, ep_idx] = vec(pacor(@view(s[ch_idx, :, ep_idx]),
                                            l = l, demean = demean, method = method))

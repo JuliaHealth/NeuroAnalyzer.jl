@@ -189,7 +189,7 @@ function tenv(
     e = zeros(ch_n, epoch_len(obj), ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         e[ch_idx, :, ep_idx] = env_up(@view(obj.data[ch[ch_idx], :, ep_idx]), t, d = d)
     end
@@ -460,7 +460,7 @@ function penv(
     e = zeros(ch_n, length(pw), ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         psd_data = psd(
             @view(obj.data[ch[ch_idx], :, ep_idx]),
@@ -873,7 +873,7 @@ function senv(
     # pre-allocate output
     e = zeros(ch_n, length(st), ep_n)
 
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         # compute spectrogram for this channel/epoch
         local sp_loc, sf_loc
@@ -1291,7 +1291,7 @@ function henv(
     t = obj.epoch_time
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         e[ch_idx, :, ep_idx] = env_up(@view(hamp[ch_idx, :, ep_idx]), t, d = d)
     end

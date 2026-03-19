@@ -72,7 +72,7 @@ function frqinst(s::AbstractArray)::Array{Float64, 3}
     f = similar(s, Float64)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         f[ch_idx, :, ep_idx] = frqinst(@view(s[ch_idx, :, ep_idx]))
     end

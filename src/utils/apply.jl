@@ -57,7 +57,7 @@ function apply(
         ch_n * ep_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar
     )
     # compute over channels and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         f_tmp = replace(f, "obj" => "$(obj.data[ch[ch_idx], :, ep_idx])")
         try

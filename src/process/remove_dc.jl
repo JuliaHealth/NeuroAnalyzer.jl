@@ -51,7 +51,7 @@ function remove_dc(s::AbstractMatrix, n::Union{Int64, Tuple{Int64, Int64}} = 0):
     ch_n = size(s, 1)
 
     s_new = similar(s, Float64)
-    Threads.@threads :dynamic for ch_idx in 1:ch_n
+    Threads.@threads :static for ch_idx in 1:ch_n
         s_new[ch_idx, :] = @views remove_dc(s[ch_idx, :], n)
     end
 
@@ -81,7 +81,7 @@ function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}} = 0)::
 
     s_new = similar(s, Float64)
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views remove_dc(s[ch_idx, :, ep_idx], n)
         end
     end

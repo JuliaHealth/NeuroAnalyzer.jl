@@ -102,7 +102,7 @@ function amp(
     es = zeros(ch_n, ep_n)
     rmsq = zeros(ch_n, ep_n)
 
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         amp_data = amp(@view(s[ch_idx, :, ep_idx]))
         p[ch_idx, ep_idx] = amp_data.p

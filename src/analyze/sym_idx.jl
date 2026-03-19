@@ -43,7 +43,7 @@ function sym_idx(s::AbstractArray)::Matrix{Float64}
     sym = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             sym[ch_idx, ep_idx] = @views sym_idx(s[ch_idx, :, ep_idx])
         end
     end

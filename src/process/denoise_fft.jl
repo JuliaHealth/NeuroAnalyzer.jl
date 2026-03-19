@@ -4,24 +4,30 @@ export denoise_fft!
 """
     denoise_fft(s; <keyword arguments>)
 
-Perform FFT-based denoising.
+Perform FFT-based denoising on a signal vector.
+
+Computes the FFT, zeros all frequency components whose power exceeds the threshold `t`, then reconstructs the signal via the inverse FFT. This keeps low-power (signal) components and suppresses high-power artifact components.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `pad::Int64=0`: number of zeros to append before filtering; must be ≥ 0
-- `t::Real=0`: power spectral density (PSD) threshold for keeping frequency components; if `t=0`, the mean signal power is used as the threshold
+- `pad::Int64=0`: number of zeros to append before FFT; must be ≥ 0
+- `t::Real=0`: power spectral density threshold; components with power > `t` are zeroed; if `t = 0`, the mean power across all frequency bins is used
 
 # Returns
 
 Named tuple:
 
-- `s::Vector{Float64}`: denoised signal
-- `f_idx::BitVector`: boolean index of frequency components that were zeroed
+- `s::Vector{Float64}`: denoised signal of the same length as the input
+- `f_idx::BitVector`: boolean mask; `true` at each frequency index that was zeroed
 
 # Throws
 
 - `ArgumentError`: if `pad < 0`
+
+# See also
+
+[`denoise_fft(::AbstractArray)`](@ref), [`denoise_fft(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function denoise_fft(
     s::AbstractVector;
@@ -52,13 +58,13 @@ end
 """
     denoise_fft(s; <keyword arguments>)
 
-Perform FFT-based denoising on a 3D signal array.
+Perform FFT-based denoising on every channel × epoch slice of a 3-D signal array.
 
 # Arguments
 
 - `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
-- `pad::Int64=0`: number of zeros to append before filtering; must be ≥ 0
-- `t::Real=0`: power spectral density (PSD) threshold for keeping frequency components; if `t=0`, the mean signal power is used as the threshold
+- `pad::Int64=0`: number of zeros to append before FFT; must be ≥ 0
+- `t::Real=0`: power spectral density threshold; components with power > `t` are zeroed; if `t = 0`, the mean power across all frequency bins is used
 
 # Returns
 
@@ -105,12 +111,16 @@ Perform FFT-based denoising on selected channels of a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `pad::Int64=0`: number of zeros to append before filtering; must be ≥ 0
-- `t::Real=0`: power spectral density (PSD) threshold for keeping frequency components; if `t=0`, the mean signal power is used as the threshold
+- `pad::Int64=0`: number of zeros to append before FFT; must be ≥ 0
+- `t::Real=0`: power spectral density threshold; components with power > `t` are zeroed; if `t = 0`, the mean power across all frequency bins is used
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: denoised NEURO object
+- `NeuroAnalyzer.NEURO`: new object with denoised channels
+
+# See also
+
+[`denoise_fft!`](@ref), [`denoise_fft(::AbstractArray)`](@ref)
 """
 function denoise_fft(
     obj::NeuroAnalyzer.NEURO;
@@ -139,12 +149,16 @@ Perform FFT-based denoising in-place on selected channels of a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `pad::Int64=0`: number of zeros to append before filtering; must be ≥ 0
-- `t::Real=0`: power spectral density (PSD) threshold for keeping frequency components; if `t=0`, the mean signal power is used as the threshold
+- `pad::Int64=0`: number of zeros to append before FFT; must be ≥ 0
+- `t::Real=0`: power spectral density threshold; components with power > `t` are zeroed; if `t = 0`, the mean power across all frequency bins is used
 
 # Returns
 
 - `Nothing`
+
+# See also
+
+[`denoise_fft`](@ref)
 """
 function denoise_fft!(
     obj::NeuroAnalyzer.NEURO;

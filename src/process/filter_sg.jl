@@ -78,7 +78,7 @@ function filter_sg(
     s_filtered = similar(s, Float64)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_filtered[ch_idx, :, ep_idx] = filter_sg(@view(s[ch_idx, :, ep_idx]); order=order, window=window)
     end

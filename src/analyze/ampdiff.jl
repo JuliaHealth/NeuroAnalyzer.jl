@@ -32,7 +32,7 @@ function ampdiff(
     ep_n = size(s, 3)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ref_ch = setdiff(ch, ch_idx)
         amp_ref = dropdims(mean(@view(s[ref_ch, :, ep_idx]), dims = 1), dims = 1)

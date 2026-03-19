@@ -118,7 +118,7 @@ function entropy(
     nsent = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         entropy_data = entropy(@view(s[ch_idx, :, ep_idx]))
         ent[ch_idx, ep_idx]   = entropy_data.ent
@@ -225,7 +225,7 @@ function negentropy(s::AbstractArray)::Matrix{Float64}
     progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ne[ch_idx, ep_idx] = negentropy(@view(s[ch_idx, :, ep_idx]))
         progress_bar && next!(progbar)

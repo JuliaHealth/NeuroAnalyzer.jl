@@ -283,7 +283,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
     progbar = Progress(ch_n * ep_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         noise_frq[ch_idx, ep_idx] = detect_powerline(@view(obj.data[ch_idx, :, ep_idx]); fs=sr(obj))
 

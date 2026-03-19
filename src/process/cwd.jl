@@ -66,7 +66,7 @@ function cwd(s::AbstractArray; wt::T = wavelet(Morlet(2π), β = 2))::Array{Floa
     ct = zeros(ch_n, n_scales, ep_len, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ct[ch_idx, :, :, ep_idx] = cwd(@view(s[ch_idx, :, ep_idx]), wt=wt)
     end
@@ -127,7 +127,7 @@ Reconstructs the original signal from a CWT coefficient matrix produced by [`cwd
 
 # Returns
 
-- `Vector{Float64}`: Reconstructed signal.
+- `Vector{Float64}`: reconstructed signal
 
 # Throws
 

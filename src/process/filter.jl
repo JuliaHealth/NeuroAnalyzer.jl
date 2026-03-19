@@ -355,7 +355,7 @@ function filter_apply(
     progbar = Progress(ep_n * length(ch), dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(
             obj.data[ch[ch_idx], :, ep_idx],
