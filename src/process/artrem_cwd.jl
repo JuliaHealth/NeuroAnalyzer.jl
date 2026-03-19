@@ -134,9 +134,7 @@ end
 """
     artrem_cwd!(obj; <keyword arguments>)
 
-Remove an artefact from one channel and one epoch of a NEURO object in-place using continuous wavelet decomposition (CWD).
-
-Mutates `obj.data` and `obj.history`. Delegates to [`artrem_cwd`](@ref) and copies the result back.
+Remove an artifact from one channel and one epoch of a NEURO object in-place using continuous wavelet decomposition (CWD).
 
 # Arguments
 

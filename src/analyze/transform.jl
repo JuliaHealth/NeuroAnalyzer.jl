@@ -75,7 +75,7 @@ Calculate Fourier transform (FFT / rFFT)
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `pad::Int64`: number of zeros to append
+- `pad::Int64=0`: number of zeros to append
 - `db::Bool=false`: normalize powers to dB
 - `nf::Bool=false`: if true, return Fourier coefficients for negative and positive frequencies, otherwise return Fourier coefficients for positive frequencies only
 
@@ -225,9 +225,9 @@ function htransform(
 
     # pre-allocate outputs
     c = zeros(ComplexF64, ch_n, ep_len, ep_n)
-    a = similar(s)
-    p = similar(s)
-    ph = similar(s)
+    a = similar(s, Float64)
+    p = similar(s, Float64)
+    ph = similar(s, Float64)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
@@ -371,7 +371,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 # Arguments
 
 - `s::AbstractArray`: signal array (channels, samples, epochs)
-- `pad::Int64`: number of zeros to append
+- `pad::Int64=0`: number of zeros to append
 
 # Returns
 

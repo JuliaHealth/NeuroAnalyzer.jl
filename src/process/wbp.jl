@@ -9,7 +9,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `pad::Int64`: number of zeros to append
+- `pad::Int64=0`: number of zeros to append
 - `frq::Real`: filter frequency
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Int64=6`: Morlet wavelet cycles
@@ -42,7 +42,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
 - `s::AbstractArray`
-- `pad::Int64`: pad the `signal` with `pad` zeros
+- `pad::Int64=0`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Int64=6`: Morlet wavelet cycles
@@ -57,7 +57,7 @@ function wbp(s::AbstractArray; pad::Int64 = 0, frq::Real, fs::Int64, ncyc::Int64
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    s_new = similar(s)
+    s_new = similar(s, Float64)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :dynamic for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views wbp(s[ch_idx, :, ep_idx], pad = pad, frq = frq, fs = fs, ncyc = ncyc)
@@ -77,7 +77,7 @@ Perform wavelet band-pass filtering.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `pad::Int64`: pad the `signal` with `pad` zeros
+- `pad::Int64=0`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: Morlet wavelet cycles
 
@@ -107,7 +107,7 @@ Perform wavelet band-pass filtering.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `pad::Int64`: pad the `signal` with `pad` zeros
+- `pad::Int64=0`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: Morlet wavelet cycles
 

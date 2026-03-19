@@ -27,23 +27,10 @@ x = rand(epoch_len(e10))
 e10_tmp = add_signal(e10, ch="Fp1", s=x)
 e10_tmp.data[1, :, 1] == e10.data[1, :, 1] + x
 
-@info "Test: average()"
-@test average(a1) == ones(1, 3, 2)
-@test average(a1, a2) == 0.5 .* ones(2, 1, 2)
-e10_tmp = average(e10, ch="Fp1")
-@test size(e10_tmp) == (1, 2560, 10)
-e10_tmp = average(e10, e10)
-@test size(e10_tmp) == size(e10)
-
 @info "Test: cbp()"
 @test length(cbp(rand(100), fs=10, frq=4)) == 100
 e10_tmp = cbp(e10, ch="all", frq=4)
 @test size(e10_tmp) == size(e10)
-
-@info "Test: ch_zero()"
-e10_tmp = ch_zero(e10)
-@test e10_tmp.data[1, 1, 1] == 0
-@test e10_tmp.data[1, end, 1] == 0
 
 @info "Test: cwd()"
 s = rand(100)

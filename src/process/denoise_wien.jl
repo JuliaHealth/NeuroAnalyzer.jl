@@ -16,16 +16,24 @@ Perform Wiener deconvolution denoising.
 """
 function denoise_wien(s::AbstractArray)::AbstractArray
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    ch_n, _, ep_n = size(s)
-    s_new = similar(s)
 
-    @inbounds for ep_idx in 1:ep_n
+    # number of channels
+    ch_n = size(s, 1)
+    # number of epochs
+    ep_n = size(s, 3)
+
+    # pre-allocate output
+    s_new = similar(s, Float64)
+
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
         s_m = @views mean(s[:, :, ep_idx], dims = 1)'[:, 1]
         m = mean(s_m)
         noise = rand(Float64, size(s_m)) .* m
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views wiener(s[ch_idx, :, ep_idx], s_m, noise)
+        for ch_idx in 1:ch_n
+            s_new[ch_idx, :, ep_idx] = wiener(@view(s[ch_idx, :, ep_idx]), s_m, noise)
         end
     end
 

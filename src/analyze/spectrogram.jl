@@ -42,11 +42,11 @@ function spectrogram(
 )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     _check_var(method, [:stft, :mt], "method")
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(wlen <= length(s)) && throw(ArgumentError("wlen must be ≤ $(length(s))."))
-    !(wlen >= 1) && throw(ArgumentError("wlen must be ≥ 1."))
-    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < $(wlen)."))
-    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    wlen <= length(s) || throw(ArgumentError("wlen must be ≤ $(length(s))."))
+    wlen >= 1 || throw(ArgumentError("wlen must be ≥ 1."))
+    woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
+    woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
 
     if method === :stft
 
@@ -359,7 +359,7 @@ Calculate spectrogram using Morlet wavelet convolution.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `pad::Int64`: number of zeros to append
+- `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
@@ -443,7 +443,7 @@ Calculate Morlet wavelet spectrogram for each channel of a matrix.
 # Arguments
 
 - `s::AbstractMatrix`: signal matrix (channels, samples)
-- `pad::Int64`: number of zeros to append
+- `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`

@@ -120,7 +120,7 @@ function filter_mavg(
     ep_n = size(s, 3)
 
     # pre-allocate output
-    s_filtered = similar(s)
+    s_filtered = similar(s, Float64)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))

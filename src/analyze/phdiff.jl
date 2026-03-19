@@ -73,8 +73,9 @@ function phdiff(
     end
     ep_n = size(s, 3)
 
+    # pre-allocate output
     if h
-        phd = similar(s)
+        phd = similar(s, Float64)
     else
         phd = zeros(ch_n, ep_len, ep_n)
     end

@@ -53,7 +53,9 @@ Each column (time point) is divided by the GFP value at that time, so that the r
 function erp_gfp_norm(s::AbstractMatrix)::Matrix{Float64}
 
     g = erp_gfp(s)
-    gn = similar(s)
+
+    # pre-allocate output
+    gn = similar(s, Float64)
 
     # divide each channel row by the GFP vector element-wise
     # g' broadcasts across rows (channels)

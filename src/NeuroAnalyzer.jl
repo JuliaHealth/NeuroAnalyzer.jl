@@ -376,10 +376,9 @@ module NeuroAnalyzer
 
     # process
     include("process/add_signal.jl")
-    include("process/average.jl")
+    include("process/artrem_cwd.jl")
     include("process/bpsplit.jl")
     include("process/cbp.jl")
-    include("process/ch_zero.jl")
     include("process/csd.jl")
     include("process/cwd.jl")
     include("process/denoise_fft.jl")
@@ -409,7 +408,6 @@ module NeuroAnalyzer
     include("process/pca.jl")
     include("process/plinterpolate.jl")
     include("process/reference.jl")
-    include("process/artrem_cwd.jl")
     include("process/remove_dc.jl")
     include("process/remove_pops.jl")
     include("process/remove_powerline.jl")

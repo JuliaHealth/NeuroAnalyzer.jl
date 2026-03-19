@@ -65,7 +65,9 @@ function tkeo(s::AbstractArray, t::AbstractVector = collect(1:length(s)); method
 
     _chk3d(s)
 
-    tk = similar(s)
+    # pre-allocate output
+    tk = similar(s, Float64)
+
     @inbounds for ep_idx in axes(s, 3)
         Threads.@threads :dynamic for ch_idx in axes(s, 1)
             tk[ch_idx, :, ep_idx] = @views tkeo(s[ch_idx, :, ep_idx], t, method = method)

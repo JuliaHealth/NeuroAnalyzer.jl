@@ -110,7 +110,7 @@ function detrend(
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    s_new = similar(s)
+    s_new = similar(s, Float64)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :dynamic for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views detrend(

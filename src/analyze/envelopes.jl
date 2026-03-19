@@ -1285,7 +1285,7 @@ function henv(
     ep_n = size(hamp, 3)
 
     # pre-allocate output
-    e = similar(hamp)
+    e = similar(hamp, Float64)
 
     # epoch time points
     t = obj.epoch_time

@@ -24,7 +24,7 @@ function ampdiff(
     _check_channels(s, ch)
 
     # pre-allocate output
-    ad = similar(s)
+    ad = similar(s, Float64)
 
     # number of channels
     ch_n = size(s, 1)

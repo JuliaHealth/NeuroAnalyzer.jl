@@ -121,7 +121,7 @@ function pca_reconstruct(
     )::Array{Float64, 3}
 
     _chk3d(s)
-    s_new = similar(s)
+    s_new = similar(s, Float64)
     ep_n = size(s, 3)
 
     @inbounds for ep_idx in 1:ep_n
