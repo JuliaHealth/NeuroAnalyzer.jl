@@ -634,7 +634,8 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         cal = v[5]
         coil_type[ch] = _find_fiff_coiltype(v[6])
         units[ch] = v[19]
-        unit_mul = 10^v[20]
+        unit_mul = 1
+        v[20] != "none" && (unit_mul = 10^v[20])
         clabels[ch] = uppercase(v[3]) * " " * string(v[2])
         @views data[ch, :, 1] .*= (range * cal * unit_mul)
     end
