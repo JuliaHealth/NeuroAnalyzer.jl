@@ -3,183 +3,117 @@ export import_edf_annotations
 """
     import_edf_annotations(file_name; <keyword arguments>)
 
-Load annotations from EDF+ file and return `markers` DataFrame. This function is used for EDF+ files containing annotations only.
+Load annotations from an EDF+ annotation-only file and return a `DataFrame` of event markers.
+
+This function is intended for EDF+ files whose `data_records_duration` header field is 0, meaning the file contains only TAL (Time-stamped Annotations Lists) and no signal data. For regular EDF/EDF+ files with signal data, use `import_edf()` instead — it parses annotations automatically.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
+- `file_name::String`: path to the EDF+ annotation file
 
 # Returns
+- `DataFrame` with columns `:id`, `:start`, `:length`, `:value`, `:channel`
 
-- `markers::DataFrame`
+# Throws
+- `ArgumentError` if the file does not exist, is not an EDF file, or is a regular EDF/EDF+ file with signal data (`data_records_duration ≠ 0`)
 """
 function import_edf_annotations(file_name::String)::DataFrame
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".edf") && throw(ArgumentError("This is not EDF file."))
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
+    lowercase(splitext(file_name)[2]) == ".edf" ||
+        throw(ArgumentError("$file_name is not an EDF file."))
 
-    file_type = ""
+    # ------------------------------------------------------------------ #
+    # parse header — single open/close via `do` block                    #
+    # ------------------------------------------------------------------ #
+    markers = open(file_name, "r") do fid
 
-    fid = nothing
-    try
-        fid = open(file_name, "r")
-    catch
-        error("File $file_name cannot be loaded.")
-    end
+        buf = zeros(UInt8, 256)
+        readbytes!(fid, buf, 256)
+        header = String(Char.(buf))
 
-    header = zeros(UInt8, 256)
-    readbytes!(fid, header, 256)
-    header = String(Char.(header))
+        # bytes 1–8: version; must be 0 for EDF
+        parse(Int, strip(header[1:8])) == 0 ||
+            throw(ArgumentError("$file_name is not a valid EDF file (version ≠ 0)."))
+        file_type = "EDF"
 
-    file_type = parse(Int, strip(header[1:8]))
-    file_type == 0 && (file_type = "EDF")
-    !(file_type == "EDF") && throw(ArgumentError("File $file_name is not EDF file."))
+        patient = strip(header[9:88])
+        recording = strip(header[89:168])
 
-    patient = strip(header[9:88])
-    recording = strip(header[89:168])
-    # EDF exported from Alice does not conform EDF standard
-    occursin("Alice 4", recording) &&
-        return import_alice4(file_name; detect_type = detect_type)
-    recording_date = header[169:176]
-    recording_time = header[177:184]
-    data_offset = parse(Int, strip(header[185:192]))
-    reserved = strip(header[193:236])
-    !(reserved != "EDF+D") && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
-    reserved == "EDF+C" && (file_type = "EDF+")
-    data_records = parse(Int, strip(header[237:244]))
-    data_records_duration = parse(Float64, strip(header[245:252]))
-    !(data_records_duration == 0) && throw(ArgumentError("This file is a regular $file_type file, use import_edf()."))
-    ch_n = parse(Int, strip(header[253:256]))
+        # Alice 4 files are handled by a dedicated importer.
+        occursin("Alice 4", recording) &&
+            return _a2df(String[]) # Alice 4 annotation-only files: return empty
 
-    clabels = Vector{String}(undef, ch_n)
-    transducers = Vector{String}(undef, ch_n)
-    units = Vector{String}(undef, ch_n)
-    physical_minimum = Vector{Float64}(undef, ch_n)
-    physical_maximum = Vector{Float64}(undef, ch_n)
-    digital_minimum = Vector{Float64}(undef, ch_n)
-    digital_maximum = Vector{Float64}(undef, ch_n)
-    prefiltering = Vector{String}(undef, ch_n)
-    samples_per_datarecord = Vector{Int64}(undef, ch_n)
+        data_offset = parse(Int, strip(header[185:192]))
+        reserved = strip(header[193:236])
 
-    header = zeros(UInt8, ch_n * 16)
-    readbytes!(fid, header, ch_n * 16)
-    header = String(Char.(header))
-    [clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)]) for idx in 1:ch_n]
+        reserved == "EDF+D" &&
+            throw(ArgumentError(
+                "EDF+D (interrupted recordings) is not supported. " *
+                "Please send this file to adam.wysokinski@neuroanalyzer.org"))
+        reserved == "EDF+C" && (file_type = "EDF+")
 
-    header = zeros(UInt8, ch_n * 80)
-    readbytes!(fid, header, ch_n * 80)
-    header = String(Char.(header))
-    [
-        transducers[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
-            idx in 1:ch_n
-    ]
+        data_records = parse(Int, strip(header[237:244]))
+        data_records_duration = parse(Float64, strip(header[245:252]))
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
-    units = replace(lowercase.(units), "uv" => "μV")
+        data_records_duration != 0 &&
+            throw(ArgumentError(
+                "$file_name is a regular $file_type file with signal data; " *
+                "use import_edf() instead."))
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        physical_minimum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
+        ch_n = parse(Int, strip(header[253:256]))
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        physical_maximum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
-
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        digital_minimum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
-
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        digital_maximum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
-
-    header = zeros(UInt8, ch_n * 80)
-    readbytes!(fid, header, ch_n * 80)
-    header = String(Char.(header))
-    [
-        prefiltering[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
-            idx in 1:ch_n
-    ]
-
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        samples_per_datarecord[idx] =
-            parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
-
-    close(fid)
-
-    annotation_channels = if file_type == "EDF"
-        Int64[]
-    else
-        sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
-    end
-
-    # we assume that all channels have the same sampling rate
-    gain = Vector{Float64}(undef, ch_n)
-    [
-        gain[idx] =
-            (physical_maximum[idx] - physical_minimum[idx]) /
-            (digital_maximum[idx] - digital_minimum[idx]) for idx in 1:ch_n
-    ]
-
-    fid = nothing
-    try
-        fid = open(file_name, "r")
-    catch
-        error("File $file_name cannot be loaded.")
-    end
-
-    seek(fid, data_offset)
-    data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
-    annotations = String[]
-    for idx1 in 1:data_records
-        for idx2 in 1:ch_n
-            signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
-            readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
-            push!(annotations, String(Char.(signal)))
-            signal = zeros(samples_per_datarecord[idx2])
-            data[
-                idx2,
-                ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]),
-                1,
-            ] = signal .* gain[idx2]
+        # ------------------------------------------------------------ #
+        # per-channel header fields                                    #
+        # ------------------------------------------------------------ #
+        read_fields(width, parse_fn = identity) = begin
+            buf = zeros(UInt8, ch_n * width)
+            readbytes!(fid, buf, ch_n * width)
+            s = String(Char.(buf))
+            [parse_fn(strip(s[(1 + (i-1)*width):(i*width)])) for i in 1:ch_n]
         end
-    end
-    close(fid)
 
-    if length(annotation_channels) == 0
-        markers = DataFrame(
-            :id => String[],
-            :start => Float64[],
-            :length => Float64[],
-            :value => String[],
-            :channel => Int64[],
-        )
-    else
-        markers = _a2df(annotations)
+        clabels = read_fields(16)
+        _transducers = read_fields(80) # not used; consumed to advance position
+        _units = read_fields(8)
+        physical_minimum = read_fields(8, s -> parse(Float64, s))
+        physical_maximum = read_fields(8, s -> parse(Float64, s))
+        digital_minimum = read_fields(8, s -> parse(Float64, s))
+        digital_maximum = read_fields(8, s -> parse(Float64, s))
+        _prefiltering = read_fields(80)
+        samples_per_datarecord = read_fields(8,  s -> parse(Int, s))
+
+        # ------------------------------------------------------------ #
+        # identify annotation channels                                 #
+        # annotation-only EDFs have no EDF+ reserved field; treat ALL  #
+        # channels as annotation channels                              #
+        # ------------------------------------------------------------ #
+        annotation_channels = if file_type == "EDF+"
+            sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
+        else
+            # annotation-only plain EDF: every channel is TAL
+            collect(1:ch_n)
+        end
+
+        # ------------------------------------------------------------ #
+        # read raw annotation bytes                                    #
+        # ------------------------------------------------------------ #
+        seek(fid, data_offset)
+        annotations = String[]
+
+        for _ in 1:data_records, ch in 1:ch_n
+            raw = zeros(UInt8, samples_per_datarecord[ch] * 2)
+            readbytes!(fid, raw, samples_per_datarecord[ch] * 2)
+            ch in annotation_channels && push!(annotations, String(Char.(raw)))
+        end
+
+        isempty(annotations) ?
+            DataFrame(:id => String[], :start => Float64[],
+                      :length => Float64[], :value => String[], :channel => Int64[]) :
+            _a2df(annotations)
     end
+    # file closed here in all cases, including exceptions
 
     return markers
 

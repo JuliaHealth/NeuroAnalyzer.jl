@@ -12,7 +12,7 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
 
 # References
 

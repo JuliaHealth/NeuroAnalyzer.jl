@@ -3,268 +3,240 @@ export import_edf
 """
     import_edf(file_name; <keyword arguments>)
 
-Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
+Load an EDF or EDF+ file and return a `NeuroAnalyzer.NEURO` object.
+
+Annotation-only channels (EDF+ TAL) are automatically detected, parsed into event markers, and then removed from the signal data. When channels have mixed sampling rates they are upsampled to the highest rate using Fourier resampling.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+- `file_name::String`: path to the EDF/EDF+ file to load
+- `detect_type::Bool=true`: infer channel type from channel label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
 
 # Notes
 
-- sampling_rate = n.samples ÷ data.record.duration
-- gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
-- value = (value - digital minimum ) × gain + physical minimum
+- `sampling_rate = samples_per_datarecord ÷ data_record_duration`
+- `gain = (physical_max - physical_min) / (digital_max - digital_min)`
+- `value = (raw_value - digital_min) × gain + physical_min`
 
 # References
-
-1. Kemp B, Varri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992; 82(5): 391–3
-2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003; 114: 1755–61
+1. Kemp B et al. A simple format for exchange of digitized polygraphic recordings. *EEG Clin Neurophysiol*. 1992;82(5):391-3.
+2. Kemp B, Olivan J. European data format 'plus' (EDF+). *Clin Neurophysiol*. 2003;114:1755-61.
 3. https://www.edfplus.info/specs/
 """
 function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".edf") && throw(ArgumentError("This is not EDF file."))
+    # ------------------------------------------------------------------ #
+    # validate file                                                      #
+    # ------------------------------------------------------------------ #
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
+    lowercase(splitext(file_name)[2]) == ".edf" ||
+        throw(ArgumentError("$file_name is not an EDF file (wrong extension)."))
 
-    file_type = ""
+    # ------------------------------------------------------------------ #
+    # parse fixed-length global header (256 bytes)                       #
+    # ------------------------------------------------------------------ #
+    # all header reads share a single open/close via the `do` block
+    imported_object = open(file_name, "r") do fid
 
-    fid = nothing
-    try
-        fid = open(file_name, "r")
-    catch
-        error("File $file_name cannot be loaded.")
-    end
+        buf = zeros(UInt8, 256)
+        readbytes!(fid, buf, 256)
+        hdr = String(Char.(buf))
 
-    header = zeros(UInt8, 256)
-    readbytes!(fid, header, 256)
-    header = String(Char.(header))
+        # byte 1-8: version. EDF = "0", EDF+ adds a reserved field
+        file_type_raw = strip(hdr[1:8])
+        parse(Int, file_type_raw) == 0 ||
+            throw(ArgumentError("$file_name is not a valid EDF file (version field ≠ 0)."))
 
-    file_type = parse(Int, strip(header[1:8]))
-    file_type == 0 && (file_type = "EDF")
-    !(file_type == "EDF") && throw(ArgumentError("File $file_name is not EDF file."))
+        patient = strip(hdr[9:88])
+        recording = strip(hdr[89:168])
 
-    patient = strip(header[9:88])
-    recording = strip(header[89:168])
-    # EDF exported from Alice does not conform EDF standard
-    occursin("Alice 4", recording) &&
-        return import_alice4(file_name; detect_type = detect_type)
-    recording_date = header[169:176]
-    recording_time = header[177:184]
-    data_offset = parse(Int, strip(header[185:192]))
-    reserved = strip(header[193:236])
-    !(reserved != "EDF+D") && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
-    reserved == "EDF+C" && (file_type = "EDF+")
-    data_records = parse(Int, strip(header[237:244]))
-    data_records_duration = parse(Float64, strip(header[245:252]))
-    !(data_records_duration > 0) && throw(ArgumentError("This file contains only annotations, use import_edf_annotations()."))
-    ch_n = parse(Int, strip(header[253:256]))
+        # special-case: Alice 4 EDF files do not conform to the standard
+        occursin("Alice 4", recording) &&
+            return import_alice4(file_name; detect_type)
 
-    clabels = Vector{String}(undef, ch_n)
-    transducers = Vector{String}(undef, ch_n)
-    units = Vector{String}(undef, ch_n)
-    physical_minimum = Vector{Float64}(undef, ch_n)
-    physical_maximum = Vector{Float64}(undef, ch_n)
-    digital_minimum = Vector{Float64}(undef, ch_n)
-    digital_maximum = Vector{Float64}(undef, ch_n)
-    prefiltering = Vector{String}(undef, ch_n)
-    samples_per_datarecord = Vector{Int64}(undef, ch_n)
+        recording_date = hdr[169:176]
+        recording_time = hdr[177:184]
+        data_offset = parse(Int, strip(hdr[185:192]))
+        reserved = strip(hdr[193:236])
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 16)
-    header = String(Char.(header))
-    [clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)]) for idx in 1:ch_n]
+        reserved == "EDF+D" &&
+            throw(ArgumentError(
+                "EDF+D (interrupted recordings) is not supported yet. " *
+                "Please send this file to adam.wysokinski@neuroanalyzer.org"))
+        file_type = reserved == "EDF+C" ? "EDF+" : "EDF"
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 80)
-    header = String(Char.(header))
-    [
-        transducers[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
-            idx in 1:ch_n
-    ]
+        data_records = parse(Int, strip(hdr[237:244]))
+        data_records_duration = parse(Float64, strip(hdr[245:252]))
+        data_records_duration > 0 ||
+            throw(ArgumentError(
+                "This file contains only annotations; use import_edf_annotations()."))
+        ch_n = parse(Int, strip(hdr[253:256]))
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
-    units = replace(lowercase.(units), "uv" => "μV")
+        # ------------------------------------------------------------ #
+        # parse per-channel header fields                              #
+        # each field is a fixed-width record repeated ch_n times.      #
+        # ------------------------------------------------------------ #
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        physical_minimum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
+        # helper: read `ch_n` fixed-width fields of `width` bytes each.
+        read_fields(width) = begin
+            buf = UInt8[]
+            readbytes!(fid, buf, ch_n * width)
+            s = String(Char.(buf))
+            [strip(s[(1 + (i-1)*width):(i*width)]) for i in 1:ch_n]
+        end
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        physical_maximum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
+        clabels = read_fields(16)
+        transducers = read_fields(80)
+        units = read_fields(8)
+        units = replace(lowercase.(units), "uv" => "μV")
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        digital_minimum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
+        physical_minimum = parse.(Float64, read_fields(8))
+        physical_maximum = parse.(Float64, read_fields(8))
+        digital_minimum  = parse.(Float64, read_fields(8))
+        digital_maximum  = parse.(Float64, read_fields(8))
+        prefiltering = read_fields(80)
+        samples_per_datarecord = parse.(Int, read_fields(8))
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        digital_maximum[idx] =
-            parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
+        # ------------------------------------------------------------ #
+        # resolve channel types and annotation channels                #
+        # ------------------------------------------------------------ #
+        clabels = _clean_labels(string.(clabels))
+        ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
+        units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 80)
-    header = String(Char.(header))
-    [
-        prefiltering[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for
-            idx in 1:ch_n
-    ]
+        annotation_channels = if file_type == "EDF"
+            Int64[]
+        else
+            sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
+        end
+        # FIX: `markers_channel` was computed but never used - removed
 
-    header = UInt8[]
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
-    [
-        samples_per_datarecord[idx] =
-            parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n
-    ]
+        # ------------------------------------------------------------ #
+        # determine sampling rate(s)                                   #
+        # ------------------------------------------------------------ #
+        signal_chs = setdiff(1:ch_n, annotation_channels)
 
-    close(fid)
+        if length(unique(samples_per_datarecord[signal_chs])) == 1
+            first_sig = signal_chs[1]
+            sampling_rate = round(Int64,
+                samples_per_datarecord[first_sig] / data_records_duration)
+        else
+            sampling_rate = round.(Int64,
+                samples_per_datarecord[signal_chs] ./ data_records_duration)
+        end
 
-    clabels = _clean_labels(clabels)
-    ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+        gain = @. (physical_maximum - physical_minimum) /
+                  (digital_maximum  - digital_minimum)
 
-    if file_type == "EDF"
-        annotation_channels = Int64[]
-        markers_channel = []
-    else
-        annotation_channels = sort(
-            getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1)
-        )
-        markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
-    end
-
-    # ignore annotations channels
-    if length(unique(samples_per_datarecord[setdiff(1:ch_n, annotation_channels)])) == 1
-        sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
-    else
-        sampling_rate = round.(
-            Int64,
-            samples_per_datarecord[setdiff(1:ch_n, annotation_channels)] /
-                data_records_duration,
-        )
-    end
-
-    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-
-    fid = nothing
-    try
-        fid = open(file_name, "r")
-    catch
-        error("File $file_name cannot be loaded.")
-    end
-
-    if sampling_rate isa Int64
+        # ------------------------------------------------------------ #
+        # read signal data                                             #
+        # ------------------------------------------------------------ #
         seek(fid, data_offset)
-        data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
         annotations = String[]
 
-        @inbounds for idx1 in 1:data_records
-            for idx2 in 1:ch_n
-                signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
-                readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
-                if idx2 in annotation_channels
-                    push!(annotations, String(Char.(signal)))
-                    data[idx2, ((idx1 - 1) * samples_per_datarecord[1] + 1):(idx1 * samples_per_datarecord[1]), 1] = zeros(
-                        samples_per_datarecord[1]
-                    )
+        data = if sampling_rate isa Int64
+            # uniform sampling rate across all signal channels
+            d = zeros(ch_n, samples_per_datarecord[signal_chs[1]] * data_records, 1)
+
+            @inbounds for rec in 1:data_records, ch in 1:ch_n
+                raw = UInt8[]
+                readbytes!(fid, raw, samples_per_datarecord[ch] * 2)
+                if ch in annotation_channels
+                    push!(annotations, String(Char.(raw)))
+                    # leave annotation channel rows as zeros.
                 else
-                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = reinterpret(
-                        Int16, signal
-                    )
+                    col_start = (rec - 1) * samples_per_datarecord[ch] + 1
+                    col_end = rec * samples_per_datarecord[ch]
+                    d[ch, col_start:col_end, 1] = reinterpret(Int16, raw)
                 end
             end
+
+            # apply gain to all channels (annotation rows stay 0)
+            d .*= gain
+            d
+
+        else
+            # mixed sampling rates — read entire data block at once,
+            # then process channel by channel, upsampling to the maximum rate
+            max_rate    = maximum(sampling_rate)
+            max_spdr    = maximum(samples_per_datarecord[signal_chs])
+
+            raw_all = UInt8[]
+            readbytes!(fid, raw_all, filesize(file_name) - data_offset; all = true)
+
+            data_records = length(raw_all) ÷ 2 ÷ sum(samples_per_datarecord)
+
+            d = zeros(ch_n, data_records * max_rate)
+            # byte cursor into raw_all
+            pos = 1
+
+            @inbounds for rec in 1:data_records, ch in 1:ch_n
+                n_bytes = samples_per_datarecord[ch] * 2
+                chunk = raw_all[pos:(pos + n_bytes - 1)]
+                pos  += n_bytes
+
+                col_start = (rec - 1) * max_spdr + 1
+                col_end   =  rec      * max_spdr
+
+                if ch in annotation_channels
+                    push!(annotations, String(Char.(chunk)))
+                    # leave rows as zeros   
+                else
+                    tmp = Float64.(reinterpret(Int16, chunk))
+                    if sampling_rate[findfirst(==(ch), signal_chs)] != max_rate
+                        tmp = FourierTools.resample(tmp, max_rate)
+                    end
+                    d[ch, col_start:col_end] = tmp
+                end
+            end
+
+            d .*= gain
+            _info("Channels upsampled to $max_rate Hz")
+            sampling_rate = max_rate
+            d
         end
-
-        data .*= gain
-
-        close(fid)
-    else
-        # ignore annotations channels
-        max_sampling_rate = maximum(sampling_rate[setdiff(1:ch_n, annotation_channels)])
-        max_samples_per_datarecord = maximum(
-            samples_per_datarecord[setdiff(1:ch_n, annotation_channels)]
+        # return a named tuple to avoid wide argument lists
+        (;
+            patient, recording, recording_date, recording_time, data_offset, reserved,
+            file_type, data_records, data_records_duration, ch_n, clabels, transducers,
+            units, physical_minimum, physical_maximum, digital_minimum, digital_maximum,
+            prefiltering, samples_per_datarecord, ch_type, annotation_channels,
+            sampling_rate, gain, annotations, data
         )
-
-        fid = nothing
-        try
-            fid = open(file_name, "r")
-        catch
-            error("File $file_name cannot be loaded.")
-        end
-
-        seek(fid, data_offset)
-        data_size = filesize(file_name) - data_offset
-        signal = UInt8[]
-        readbytes!(fid, signal, data_size; all = true)
-        data_records = length(signal) ÷ 2 ÷ sum(sampling_rate)
-        data = zeros(ch_n, data_records * max_sampling_rate)
-        data_segment = max_samples_per_datarecord
-        annotations = String[]
-
-        @inbounds for idx1 in 1:data_records
-            for idx2 in 1:ch_n
-                tmp = signal[1:(samples_per_datarecord[idx2] * 2)]
-                deleteat!(signal, 1:(samples_per_datarecord[idx2] * 2))
-                if idx2 in annotation_channels
-                    push!(annotations, String(Char.(tmp)))
-                    tmp = zeros(data_segment)
-                else
-                    tmp = Float64.(reinterpret(Int16, tmp))
-                    sampling_rate[idx2] != max_sampling_rate &&
-                        (tmp = FourierTools.resample(tmp, max_sampling_rate))
-                end
-                data[idx2, ((idx1 - 1) * data_segment + 1):(idx1 * data_segment)] = tmp
-            end
-        end
-
-        data .*= gain
-
-        _info("Channels upsampled to $max_sampling_rate Hz")
-        sampling_rate = max_sampling_rate
-
-        close(fid)
     end
+    # file closed here in all cases (including exceptions)
 
-    # convert nV/mV to μV
+    # unpack named tuple
+    (; patient, recording, recording_date, recording_time, file_type, ch_n, clabels,
+       transducers, units, prefiltering, ch_type, annotation_channels, sampling_rate,
+       gain, annotations, data) = imported_object
+    # reuse binding
+
+    # ------------------------------------------------------------------ #
+    # unit conversion: nV / mV → μV                                      #
+    # ------------------------------------------------------------------ #
     @inbounds for idx in 1:ch_n
         units[idx] == "" && (units[idx] = "μV")
-        if ch_type[idx] == "eeg"
-            if lowercase(units[idx]) == "mv"
-                units[idx] = "μV"
-                data[idx, :] .*= 1000
-            elseif lowercase(units[idx]) == "nv"
-                units[idx] = "μV"
-                data[idx, :] ./= 1000
-            end
+        ch_type[idx] == "eeg" || continue
+        if lowercase(units[idx]) == "mv"
+            units[idx] = "μV"
+            data[idx, :] .*= 1000
+        elseif lowercase(units[idx]) == "nv"
+            units[idx] = "μV"
+            data[idx, :] ./= 1000
         end
     end
 
-    if length(annotation_channels) == 0
-        markers = DataFrame(
+    # ------------------------------------------------------------------ #
+    # parse annotations / strip annotation channels from signal data     #
+    # ------------------------------------------------------------------ #
+    markers = if isempty(annotation_channels)
+        DataFrame(
             :id => String[],
             :start => Float64[],
             :length => Float64[],
@@ -272,75 +244,76 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :channel => Int64[],
         )
     else
-        markers = _a2df(annotations)
+        m = _a2df(annotations)
+        # remove annotation channels from every per-channel vector / array
         deleteat!(ch_type, annotation_channels)
         deleteat!(transducers, annotation_channels)
         deleteat!(units, annotation_channels)
         deleteat!(prefiltering, annotation_channels)
         deleteat!(clabels, annotation_channels)
-        data = data[setdiff(collect(1:ch_n), annotation_channels), :, :]
+        data = data[setdiff(1:ch_n, annotation_channels), :, :]
         ch_n -= length(annotation_channels)
+        m
     end
 
-    time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
-        digits = 4,
-    )
+    # ------------------------------------------------------------------ #
+    # build time axes                                                    #
+    # ------------------------------------------------------------------ #
+    n_samples = size(data, 2) * size(data, 3)
+    time_pts  = round.(
+        range(0; step = 1/sampling_rate, length = n_samples);
+        digits = 4)
     epoch_time = round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-        digits = 4,
-    )
+        range(0; step = 1/sampling_rate, length = size(data, 2));
+        digits = 4)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
-
-    data_type = "eeg"
+    # ------------------------------------------------------------------ #
+    # assemble NEURO object                                               #
+    # ------------------------------------------------------------------ #
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     s = _create_subject(
-        id = "",
-        first_name = "",
-        middle_name = "",
+        id = "", first_name = "", middle_name = "",
         last_name = string(patient),
-        head_circumference = -1,
+        head_circumference  = -1,
         handedness = "",
         weight = -1,
         height = -1,
     )
     r = _create_recording_eeg(
-        data_type = data_type,
+        data_type = "eeg",
         file_name = file_name,
         file_size_mb = file_size_mb,
         file_type = file_type,
         recording = string(recording),
         recording_date = recording_date,
+        # replace dots with colons (Alice 4 / non-conforming EDF writers
+        # sometimes use '.' as a time separator instead of ':').
         recording_time = replace(recording_time, '.' => ':'),
         recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
-        reference = _detect_montage(clabels, ch_type, data_type),
+        reference = _detect_montage(clabels, ch_type, "eeg"),
         clabels = clabels,
-        transducers = transducers,
+        transducers = string.(transducers),
         units = units,
-        prefiltering = prefiltering,
-        line_frequency = 50,
+        prefiltering = string.(prefiltering),
+        line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
         gain = gain,
         bad_channels = zeros(Bool, size(data, 1)),
     )
     e = _create_experiment(name = "", notes = "", design = "")
-
     hdr = _create_header(subject = s, recording = r, experiment = e)
 
-    history = String[]
-
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
+    obj  = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
-    _info(
-        "Imported: " *
+
+    _info("Imported: " *
         uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
-    )
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end]; digits=2)) s)")
 
     return obj
-
 end

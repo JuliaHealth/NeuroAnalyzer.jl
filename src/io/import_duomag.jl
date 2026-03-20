@@ -3,206 +3,228 @@ export import_duomag
 """
     import_duomag(file_name)
 
-Load DuoMAG TMS MEP recording file (.ascii or .m) and return `NeuroAnalyzer.NEURO` object.
+Load a DuoMAG TMS MEP recording file (`.ascii` or `.m`) and return a
+`NeuroAnalyzer.NEURO` object.
+
+Both file formats carry metadata (subject, recording info, stimulation parameters), per-channel MEP signals, and positive/negative peak markers. Signal data are baseline-corrected, stimulation artifacts suppressed, and
+amplitudes scaled to μV on import.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
+- `file_name::String`: path to the `.ascii` or `.m` file
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
+
+# Throws
+- `ArgumentError` if the file does not exist or has an unsupported extension
 """
 function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
-    !((splitext(file_name)[2] == ".ascii" || splitext(file_name)[2] == ".m")) && throw(ArgumentError("This is not DuoMAG file."))
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
 
-    f = nothing
+    # extract extension once - used in every branch below.
+    ext = splitext(file_name)[2]
+    ext in (".ascii", ".m") ||
+        throw(ArgumentError("$file_name is not a DuoMAG file (expected .ascii or .m)."))
 
-    if splitext(file_name)[2] == ".ascii"
-        try
-            f = open(file_name, "r")
-        catch
-            error("File $file_name cannot be opened!")
+    # ------------------------------------------------------------------ #
+    # parse format-specific header and signal data                       #
+    # both branches use open(...) do to guarantee close on exception     #
+    # ------------------------------------------------------------------ #
+
+    if ext == ".ascii"
+        sw_version, subject, subject_id, record_id, record_created,
+        sampling_interval, sampling_interval_unit,
+        sensitivity, sensitivity_unit,
+        signal_count, samples_count,
+        stim_sample, stim_intens, coil_type,
+        markers_pos, markers_neg,
+        mep_signal = open(file_name, "r") do f
+
+            readline(f) # software name (unused)
+            readline(f) # blank
+            sw_version = split(strip(readline(f)), '=')[2]
+            subject = split(strip(readline(f)), '=')[2]
+            subject_id = split(strip(readline(f)), '=')[2]
+            record_id = split(strip(readline(f)), '=')[2]
+            record_created = split(strip(readline(f)), '=')[2]
+            readline(f) # method (unused)
+            readline(f)
+            readline(f) # marker latency unit (unused)
+            sampling_interval = parse(Int, split(strip(readline(f)), '=')[2])
+            sampling_interval_unit = replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
+            sensitivity = parse(Float64,
+                replace(split(strip(readline(f)), '=')[2], ',' => '.'))
+            sensitivity_unit = replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
+            signal_count = parse(Int, split(strip(readline(f)), '=')[2])
+            readline(f) # reserved field
+            readline(f) # reserved field
+            samples_count = parse.(Int, split(strip(readline(f)), ' ')[2:end])
+            stim_sample = parse.(Int, split(strip(readline(f)), ' ')[2:end])
+            stim_intens = parse.(Int, split(strip(readline(f)), ' ')[2:end])
+            coil_type = split(strip(readline(f)), ' ')[2:end]
+            readline(f)
+
+            # positive and negative peak marker positions (ms, may be "N/A")
+            parse_marker_line(l) = begin
+                raw = replace.(split(strip(l), ' ')[2:end], ',' => '.')
+                parse.(Float64, replace.(raw, "N/A" => "0"))
+            end
+            markers_pos = parse_marker_line(readline(f))
+            markers_neg = parse_marker_line(readline(f))
+            readline(f)
+
+            # signal matrix: rows = samples, columns = signals
+            mep_signal = zeros(samples_count[1], signal_count)
+            for idx in axes(mep_signal, 1)
+                mep_signal[idx, :] = parse.(Float64,
+                    replace.(split(strip(readline(f)), ' '), ',' => '.'))
+            end
+
+            sw_version, subject, subject_id, record_id, record_created,
+            sampling_interval, sampling_interval_unit,
+            sensitivity, sensitivity_unit,
+            signal_count, samples_count,
+            stim_sample, stim_intens, coil_type,
+            markers_pos, markers_neg, mep_signal
         end
-        _ = readline(f)
-        # sw_name = split(strip(readline(f)), '=')[2]
-        _ = readline(f)
-        sw_version = split(strip(readline(f)), '=')[2]
-        subject = split(strip(readline(f)), '=')[2]
-        subject_id = split(strip(readline(f)), '=')[2]
-        record_id = split(strip(readline(f)), '=')[2]
-        record_created = split(strip(readline(f)), '=')[2]
-        _ = readline(f)
-        # method = split(strip(readline(f)), '=')[2]
-        _ = readline(f)
-        _ = readline(f)
-        # marker_latency_unit = split(strip(readline(f)), '=')[2]
-        _ = readline(f)
-        sampling_interval = parse(Int, (split(strip(readline(f)), '=')[2]))
-        sampling_interval_unit = split(strip(readline(f)), '=')[2]
-        sampling_interval_unit = replace(sampling_interval_unit, "\xb5" => "μ")
-        sensitivity = parse(
-            Float64, replace(split(strip(readline(f)), '=')[2], ',' => '.')
-        )
-        sensitivity_unit = split(strip(readline(f)), '=')[2]
-        sensitivity_unit = replace(sensitivity_unit, "\xb5" => "μ")
-        signal_count = parse(Int, split(strip(readline(f)), '=')[2])
-        _ = parse.(Int, split(strip(readline(f)), ' ')[2:end])
-        _ = parse.(Int, split(strip(readline(f)), ' ')[2:end])
-        samples_count = parse.(Int, split(strip(readline(f)), ' ')[2:end])
-        stim_sample = parse.(Int, split(strip(readline(f)), ' ')[2:end])
-        stim_intens = parse.(Int, split(strip(readline(f)), ' ')[2:end])
-        coil_type = split(strip(readline(f)), ' ')[2:end]
-        _ = readline(f)
-        markers_pos = replace.(split(strip(readline(f)), ' ')[2:end], ',' => '.')
-        markers_pos = replace.(markers_pos, "N/A" => "0")
-        markers_pos = parse.(Float64, markers_pos)
-        markers_neg = replace.(split(strip(readline(f)), ' ')[2:end], ',' => '.')
-        markers_neg = replace.(markers_neg, "N/A" => "0")
-        markers_neg = parse.(Float64, markers_neg)
-        _ = readline(f)
+        # file closed here
 
-        # data matrix: signals × samples
-        mep_signal = zeros((samples_count[1], signal_count))
-        [
-            mep_signal[idx, :] =
-                parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')) for
-                idx in axes(mep_signal)[1]
-        ]
+    elseif ext == ".m"
+        sw_version, subject, subject_id, record_id, record_created,
+        sampling_interval, sampling_interval_unit,
+        sensitivity, sensitivity_unit,
+        signal_count, samples_count,
+        stim_sample, stim_intens, coil_type,
+        markers_pos, markers_neg,
+        mep_signal = open(file_name, "r") do f
 
-        close(f)
-    elseif splitext(file_name)[2] == ".m"
-        try
-            f = open(file_name, "r")
-        catch
-            error("File $file_name cannot be opened!")
+            readline(f)
+            record_info = readline(f)
+            readline(f)
+            signals_info = readline(f)
+            readline(f)
+            stimulations_info = readline(f)
+            readline(f)
+            signals_data = readline(f)
+            readline(f)
+            markers_raw = readline(f)
+
+            # -------------------------------------------------------- #
+            # helper: strip MATLAB struct wrapper and split on comma   #
+            # -------------------------------------------------------- #
+            parse_struct(s, prefix) = begin
+                s = replace(s, prefix => "", ");" => "", "\xb5" => "μ",
+                              "'" => "", "{" => "", "}" => "", ";" => " ")
+                split(s, ',')
+            end
+
+            ri = parse_struct(record_info, "RecordInfo = struct(")
+            record_id = ri[2]
+            subject = ri[4]
+            subject_id = ri[6]
+            record_created = ri[8]
+            sw_version = ri[10]
+            signal_count = parse(Int64, ri[16])
+            samples_count = [parse(Int64, ri[18])]
+            sampling_interval = parse(Int64, ri[20])
+            sampling_interval_unit = ri[22]
+
+            si = parse_struct(signals_info, "SignalsInfo = struct(")
+            popfirst!(si)
+            popfirst!(si)
+            sensitivity = parse(Float64, split(si[2], ' ')[1])
+            sensitivity_unit = split(si[2], ' ')[2]
+
+            sti = parse_struct(stimulations_info, "StimulationInfo = struct(")
+            popfirst!(sti); popfirst!(sti)
+            stim_intens = Int64[]
+            coil_type = String[]
+            for idx in 2:2:(2 * signal_count)
+                push!(stim_intens, parse(Int64, split(sti[idx], ' ')[1]))
+                push!(coil_type, split(sti[idx], ' ')[2])
+            end
+
+            sd = replace(signals_data, "SignalsData = [" => "", "];" => "")
+            sd_rows = split(sd, ';')
+            mep_signal = zeros(length(sd_rows), length(split(sd_rows[1], ' ')))
+            for idx in eachindex(sd_rows)
+                mep_signal[idx, :] = parse.(Float64, split(sd_rows[idx], ' '))
+            end
+
+            mk = parse_struct(markers_raw, "Markers = struct(")
+            popfirst!(mk)
+            popfirst!(mk)
+
+            stim_sample = zeros(Int64, signal_count)
+            markers_neg = zeros(Int64, signal_count) # negative (A-) peak
+            markers_pos = zeros(Int64, signal_count) # positive (A+) peak
+
+            for idx in 2:2:length(mk)
+                tmp = split(mk[idx], ' ')
+                length(tmp) < 3 && continue
+                stim_number = parse(Int64, tmp[3])
+                tmp[1] == "Stim" && (stim_sample[stim_number] = parse(Int64, tmp[2]))
+                tmp[1] == "A+" && (markers_pos[stim_number] = parse(Int64, tmp[2]))
+                tmp[1] == "A-" && (markers_neg[stim_number] = parse(Int64, tmp[2]))
+            end
+
+            sw_version, subject, subject_id, record_id, record_created,
+            sampling_interval, sampling_interval_unit,
+            sensitivity, sensitivity_unit,
+            signal_count, samples_count,
+            stim_sample, stim_intens, coil_type,
+            markers_pos, markers_neg, mep_signal
         end
+        # file closed here
 
-        _ = readline(f)
-        record_info = readline(f)
-        _ = readline(f)
-        signals_info = readline(f)
-        _ = readline(f)
-        stimulations_info = readline(f)
-        _ = readline(f)
-        signals_data = readline(f)
-        _ = readline(f)
-        markers = readline(f)
-        close(f)
-
-        record_info = replace(record_info, "RecordInfo = struct(" => "")
-        record_info = replace(record_info, ");" => "")
-        record_info = replace(record_info, "\xb5" => "μ")
-        record_info = replace(record_info, "'" => "")
-        record_info = replace(record_info, "{" => "")
-        record_info = replace(record_info, "}" => "")
-        record_info = split(record_info, ',')
-        record_id = record_info[2]
-        subject = record_info[4]
-        subject_id = record_info[6]
-        record_created = record_info[8]
-        sw_version = record_info[10]
-        signal_count = parse(Int64, record_info[16])
-        samples_count = parse(Int64, record_info[18])
-        sampling_interval = parse(Int64, record_info[20])
-        sampling_interval_unit = record_info[22]
-
-        signals_info = replace(signals_info, "SignalsInfo = struct(" => "")
-        signals_info = replace(signals_info, ");" => "")
-        signals_info = replace(signals_info, "\xb5" => "μ")
-        signals_info = replace(signals_info, "'" => "")
-        signals_info = replace(signals_info, "{" => "")
-        signals_info = replace(signals_info, "}" => "")
-        signals_info = replace(signals_info, ";" => " ")
-        signals_info = split(signals_info, ',')
-        popfirst!(signals_info)
-        popfirst!(signals_info)
-        sensitivity = parse(Float64, split(signals_info[2], ' ')[1])
-        sensitivity_unit = split(signals_info[2], ' ')[2]
-
-        stimulations_info = replace(stimulations_info, "StimulationInfo = struct(" => "")
-        stimulations_info = replace(stimulations_info, ");" => "")
-        stimulations_info = replace(stimulations_info, "\xb5" => "μ")
-        stimulations_info = replace(stimulations_info, "'" => "")
-        stimulations_info = replace(stimulations_info, "{" => "")
-        stimulations_info = replace(stimulations_info, "}" => "")
-        stimulations_info = replace(stimulations_info, ";" => " ")
-        stimulations_info = split(stimulations_info, ',')
-        popfirst!(stimulations_info)
-        popfirst!(stimulations_info)
-        stim_intens = Int64[]
-        coil_type = String[]
-        for idx in 2:2:(2 * signal_count)
-            push!(stim_intens, parse(Int64, split(stimulations_info[idx], ' ')[1]))
-            push!(coil_type, split(stimulations_info[idx], ' ')[2])
-        end
-
-        signals_data = replace(signals_data, "SignalsData = [" => "")
-        signals_data = replace(signals_data, "];" => "")
-        signals_data = split(signals_data, ';')
-        mep_signal = zeros(length(signals_data), length(split(signals_data[1], ' ')))
-        for idx in eachindex(signals_data)
-            mep_signal[idx, :] = parse.(Float64, split(signals_data[idx], ' '))
-        end
-
-        markers = replace(markers, "Markers = struct(" => "")
-        markers = replace(markers, ");" => "")
-        markers = replace(markers, "\xb5" => "μ")
-        markers = replace(markers, "'" => "")
-        markers = replace(markers, "{" => "")
-        markers = replace(markers, "}" => "")
-        markers = replace(markers, ";" => " ")
-        markers = split(markers, ',')
-        popfirst!(markers)
-        popfirst!(markers)
-        replace.(markers, '{' => "")
-        replace.(markers, '}' => "")
-
-        stim_sample = zeros(Int64, signal_count)
-        markers_neg = zeros(Int64, signal_count)
-        markers_pos = zeros(Int64, signal_count)
-        for idx in 2:2:length(markers)
-            tmp = split(markers[idx], ' ')
-            stim_number = parse(Int64, tmp[3])
-            tmp[1] == "Stim" && (stim_sample[stim_number] = parse(Int64, tmp[2]))
-            tmp[1] == "A-" && (markers_pos[stim_number] = parse(Int64, tmp[2]))
-            tmp[1] == "A+" && (markers_neg[stim_number] = parse(Int64, tmp[2]))
-        end
     end
 
+    # ------------------------------------------------------------------ #
+    # signal processing: transpose, invert polarity, suppress artifact,  #
+    # remove DC, apply sensitivity gain                                  #
+    # ------------------------------------------------------------------ #
     data = zeros(size(mep_signal, 2), size(mep_signal, 1), 1)
     for idx in axes(data, 1)
         data[idx, :, 1] = @views -mep_signal[:, idx]
-        # reduce stimulation amplitude
-        data[idx, (stim_sample[1] - 10):(stim_sample[1] + 10), 1] .*= 0.05
-        # remove DC offset
+        # suppress stimulation artefact (±10 samples around stim sample)
+        data[idx, (stim_sample[idx] - 10):(stim_sample[idx] + 10), 1] .*= 0.05
+        # remove DC offset relative to pre-stim baseline
         data[idx, :] = remove_dc(data[idx, :], stim_sample[idx] - 10)
     end
     data .*= sensitivity
 
-    ch_n = signal_count
-    clabels = repeat(["MEP"], ch_n)
-    for idx in 1:ch_n
-        clabels[idx] *= string(idx)
-    end
+    # ------------------------------------------------------------------ #
+    # unit conversion to μV                                              #
+    # ------------------------------------------------------------------ #
+    sensitivity_unit == "mV" && (data .*= 1e3)
+    sensitivity_unit == "V"  && (data .*= 1e6)
 
-    # convert to mV
-    sensitivity_unit == "mV" && (data ./= 10^3)
-    sensitivity_unit == "V" && (data .*= 10^3)
-
-    sampling_interval_unit == "μs" && (sampling_interval *= 10^-6)
-    sampling_interval_unit == "ms" && (sampling_interval *= 10^-3)
+    # sampling interval to sampling rate
+    sampling_interval_unit == "μs" && (sampling_interval *= 1e-6)
+    sampling_interval_unit == "ms" && (sampling_interval *= 1e-3)
     sampling_rate = round(Int64, 1 / sampling_interval)
 
-    time_pts = collect(
-        0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-    )[1:(end - 1)]
-    time_pts = round.(time_pts .- time_pts[stim_sample[1]], digits = 4)
+    # ------------------------------------------------------------------ #
+    # channel labels                                                      #
+    # ------------------------------------------------------------------ #
+    ch_n    = signal_count
+    clabels = ["MEP$idx" for idx in 1:ch_n]
+
+    # ------------------------------------------------------------------ #
+    # time axis - zero-aligned to the stimulation sample                  #
+    # ------------------------------------------------------------------ #
+    n_samples  = size(data, 2) * size(data, 3)
+    time_pts   = round.(
+        range(0; step = 1/sampling_rate, length = n_samples) .- (stim_sample[1] / sampling_rate);
+        digits = 4)
     epoch_time = time_pts
 
-    if splitext(file_name)[2] == ".ascii"
+    # convert .ascii marker positions (ms) to sample indices
+    if ext == ".ascii"
         for idx in eachindex(markers_pos)
             markers_pos[idx] = vsearch(markers_pos[idx] / 1000, time_pts)
             markers_pos[idx] == stim_sample[1] && (markers_pos[idx] = 0)
@@ -213,7 +235,10 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         markers_neg = Int64.(markers_neg)
     end
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
+    # ------------------------------------------------------------------ #
+    # assemble NEURO object                                               #
+    # ------------------------------------------------------------------ #
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     s = _create_subject(
         id = string(subject_id),
@@ -223,8 +248,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
-    )
+        height = -1)
     r = _create_recording_mep(
         data_type = "mep",
         file_name = file_name,
@@ -244,29 +268,24 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         stimulation_sample = stim_sample,
         markers_pos = markers_pos,
         markers_neg = markers_neg,
-        bad_channels = zeros(Bool, size(data, 1)),
-    )
-    e = _create_experiment(name = "", notes = "", design = "")
-
+        bad_channels = zeros(Bool, size(data, 1)))
+    e   = _create_experiment(name = "", notes = "", design = "")
     hdr = _create_header(subject = s, recording = r, experiment = e)
 
-    history = String[]
-
-    markers = DataFrame(
+    markers_df = DataFrame(
         :id => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
-    )
+        :channel => Int64[])
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
-    _info(
-        "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
-    )
+    obj  = NeuroAnalyzer.NEURO(hdr, String[], markers_df, locs, time_pts, epoch_time, data)
+
+    _info("Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end]; digits=2)) s)")
 
     return obj
 

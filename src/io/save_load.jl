@@ -48,7 +48,7 @@ Load `NeuroAnalyzer.NEURO` object from `file_name` file (HDF5-based).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
 """
 function load(file_name::String)::NeuroAnalyzer.NEURO
 

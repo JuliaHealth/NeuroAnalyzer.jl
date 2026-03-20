@@ -3,52 +3,76 @@ export import_csv
 """
     import_csv(file_name; <keyword arguments>)
 
-Load CSV file (e.g. exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
+Load a CSV (or gzip-compressed CSV) file and return a `NeuroAnalyzer.NEURO` object.
+
+The file layout (time × channels or channels × time) is detected automatically from the type of the first column:
+
+- **Time × channels**: first column is numeric (time axis); remaining columns are channels labelled by their header row.
+- **Channels × time**: first column is a string (channel names); remaining column headers are parsed as time points.
+
+Sampling rate is inferred from the step between the first two time points.
+
+Gzip-compressed files (`.csv.gz`) are decompressed automatically by `CSV.jl`.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+- `file_name::String`: path to the `.csv` or `.csv.gz` file
+- `detect_type::Bool=true`: infer channel type from channel label
 
 # Returns
+- `NeuroAnalyzer.NEURO`
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-
-# Notes
-
-CSV first row or first column must contain channel names.
-Shape of data array will be detected automatically. Sampling rate will be detected.
-If file is gzip-ed, it will be uncompressed automatically while reading.
+# Throws
+- `ArgumentError` if the file does not exist
 """
 function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
 
     file_type = "CSV"
+    df = CSV.read(file_name; stringtype = String, DataFrame)
 
-    df = CSV.read(file_name, stringtype = String, DataFrame)
-
-    if df[:, 1] isa Vector{Float64}
-        # time by channels
-        time_pts = df[!, 1]
-        data = Array(df[:, 2:end])'
+    # ------------------------------------------------------------------ #
+    # detect layout and extract time axis + signal matrix                 #
+    # ------------------------------------------------------------------ #
+    if eltype(df[:, 1]) <: Real
+        # layout: rows = time points, columns = channels
+        # first column is the time axis; remaining columns are channels
+        time_pts_raw = Float64.(df[!, 1])
+        data = Matrix(df[:, 2:end])' # → (ch_n × n_samples)
         ch_n = DataFrames.ncol(df) - 1
-        clabels_tmp = String.(names(df)[2:end])
+        clabels_tmp  = String.(names(df)[2:end])
     else
-        # channels by time
-        time_pts = parse.(Float64, names(df)[2:end])
-        data = Array(df[!, 2:end])
+        # layout: rows = channels, columns = time points
+        # first column holds channel names; remaining column headers are time
+        time_pts_raw = parse.(Float64, names(df)[2:end])
+        data = Matrix(df[!, 2:end]) # → (ch_n × n_samples)
         ch_n = DataFrames.nrow(df)
-        clabels_tmp = String.(df[:, 1])
+        clabels_tmp = string.(df[:, 1])
     end
-    data = Array(reshape(data, size(data, 1), size(data, 2), 1))
 
+    # add epoch dimension.
+    data = reshape(data, ch_n, size(data, 2), 1)
+
+    # ------------------------------------------------------------------ #
+    # sampling rate                                                      #
+    # ------------------------------------------------------------------ #
+    sampling_rate = round(Int64, 1 / (time_pts_raw[2] - time_pts_raw[1]))
+
+    # ------------------------------------------------------------------ #
+    # Reconstruct a canonical time axis starting at 0                    #
+    # ------------------------------------------------------------------ #
+    n_samples = size(data, 2) * size(data, 3)
+    t0 = time_pts_raw[1]
+    time_pts = round.(range(t0; step = 1/sampling_rate, length = n_samples);  digits = 4)
+    epoch_time = round.(range(t0; step = 1/sampling_rate, length = size(data,2)); digits = 4)
+
+    # ------------------------------------------------------------------ #
+    # channel metadata                                                   #
+    # ------------------------------------------------------------------ #
     clabels = _clean_labels(clabels_tmp)
-    if detect_type
-        ch_type = _set_channel_types(clabels, "eeg")
-    else
-        ch_type = repeat(["eeg"], ch_n)
-    end
+    ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     markers = DataFrame(
@@ -56,44 +80,18 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
-    )
+        :channel => Int64[])
 
-    sampling_rate = round(Int64, 1 / time_pts[2] * 1000)
-    gain = ones(ch_n)
-    markers = DataFrame(
-        :id => String[],
-        :start => Float64[],
-        :length => Float64[],
-        :value => String[],
-        :channel => Int64[],
-    )
-
-    time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
-        digits = 4,
-    )
-    epoch_time = round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-        digits = 4,
-    )
-
-    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
-
-    data_type = "eeg"
+    # ------------------------------------------------------------------ #
+    # assemble NEURO object                                               #
+    # ------------------------------------------------------------------ #
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     s = _create_subject(
-        id = "",
-        first_name = "",
-        middle_name = "",
-        last_name = "",
-        head_circumference = -1,
-        handedness = "",
-        weight = -1,
-        height = -1,
-    )
+        id = "", first_name = "", middle_name = "", last_name = "",
+        head_circumference = -1, handedness = "", weight = -1, height = -1)
     r = _create_recording_eeg(
-        data_type = data_type,
+        data_type = "eeg",
         file_name = file_name,
         file_size_mb = file_size_mb,
         file_type = file_type,
@@ -103,31 +101,26 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
-        reference = _detect_montage(clabels, ch_type, data_type),
+        reference = _detect_montage(clabels, ch_type, "eeg"),
         clabels = clabels,
         transducers = repeat([""], ch_n),
         units = units,
         prefiltering = repeat([""], ch_n),
-        line_frequency = 50,
+        line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
-        gain = gain,
-        bad_channels = zeros(Bool, size(data, 1)),
-    )
-    e = _create_experiment(name = "", notes = "", design = "")
-
+        gain = ones(ch_n),
+        bad_channels = zeros(Bool, size(data, 1)))
+    e   = _create_experiment(name = "", notes = "", design = "")
     hdr = _create_header(subject = s, recording = r, experiment = e)
 
-    history = String[]
-
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
+    obj  = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
 
-    _info(
-        "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
-    )
+    _info("Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end]; digits=2)) s)")
 
     return obj
 

@@ -11,7 +11,7 @@ Load NIRX file and return `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
 
 # References
 

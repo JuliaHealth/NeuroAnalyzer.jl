@@ -12,7 +12,7 @@ Load EEG data from Neurodata Without Borders (NWB) file and return `NeuroAnalyze
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
 
 # References
 

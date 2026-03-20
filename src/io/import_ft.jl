@@ -3,536 +3,450 @@ export import_ft
 """
     import_ft(file_name; <keyword arguments>)
 
-Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
+Load a FieldTrip MATLAB (`.mat`) file and return a `NeuroAnalyzer.NEURO` object or a markers `DataFrame`.
+
+FieldTrip stores EEG, MEG, fNIRS data and event tables in separate `.mat` files. The `type` argument selects which data type to import. Markers are always stored separately in FieldTrip and must be imported with `type = :events`, then added with `add_markers()`.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `type::Symbol`: type of imported data
-    - `:eeg`: EEG
-    - `:meg`: MEG
-    - `:nirs`: fNIRS
-    - `:events`: events
-- `detect_type::Bool=false`: detect channel type based on its label
+- `file_name::String`: path to the `.mat` file
+- `type::Symbol`: data type to import; one of `:eeg`, `:meg`, `:nirs`, `:events`
+- `detect_type::Bool=false`: infer channel type from channel label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object - for EEG, MEG, fNIRS data
-- `markers::DataFrame` - for events
+- `NeuroAnalyzer.NEURO` for EEG, MEG, and fNIRS data
+- `DataFrame` for event tables
+
+# Throws
+
+- `ArgumentError` if the file does not exist, the dataset is malformed, or required fields are missing
 """
 function import_ft(
-        file_name::String; type::Symbol, detect_type::Bool = false
-    )::Union{NeuroAnalyzer.NEURO, DataFrame}
-
-    _wip()
+    file_name::String;
+    type::Symbol,
+    detect_type::Bool = false
+)::Union{NeuroAnalyzer.NEURO, DataFrame}
 
     _check_var(type, [:eeg, :meg, :nirs, :events], "type")
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
+
     file_type = "FT"
     data_type = String(type)
-    locs = _initialize_locs()
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
     dataset = matread(file_name)
 
-    !(length(keys(dataset)) == 1) && throw(ArgumentError("Files containing > 1 dataset are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
+    length(keys(dataset)) == 1 ||
+        throw(ArgumentError(
+            "Files with > 1 dataset are not supported; " *
+            "please send this file to adam.wysokinski@neuroanalyzer.org"))
     _info("Reading object: $(string.(keys(dataset))[1])")
     dataset = dataset[string.(keys(dataset))[1]]
 
-    # TO DO: add detecting data type
-
+    # ------------------------------------------------------------------ #
+    # events branch                                                       #
+    # ------------------------------------------------------------------ #
     if data_type == "events"
 
-        f = "type"
-        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
-        id = dataset[f][:]
-        f = "duration"
-        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
-        duration = dataset[f][:]
-        for idx in axes(duration, 1)
-            size(duration[idx]) == (0, 0) && (duration[idx] = 0.0)
+        for f in ("type", "duration", "offset", "sample", "value")
+            f in keys(dataset) ||
+                throw(ArgumentError("Dataset does not contain '$f' field."))
         end
-        f = "offset"
-        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
-        offset = dataset[f][:]
-        for idx in axes(offset, 1)
-            size(offset[idx]) == (0, 0) && (offset[idx] = 0.0)
-        end
-        f = "sample"
-        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
-        start = dataset[f][:]
-        f = "value"
-        !(f in keys(dataset)) && throw(ArgumentError("Dataset does not contain $f field."))
-        value = dataset["value"][:]
 
-        # find and remove empty records
-        value_idx = findall(x -> length(x) != 0, value)
-        id = id[value_idx]
-        duration = duration[value_idx]
-        offset = offset[value_idx]
-        start = start[value_idx]
-        value = value[value_idx]
+        id       = dataset["type"][:]
+        duration = dataset["duration"][:]
+        offset   = dataset["offset"][:]
+        start    = dataset["sample"][:]
+        value    = dataset["value"][:]
+
+        # replace empty MATLAB cells (0×0 matrices) with 0.0
+        for idx in eachindex(duration)
+            size(duration[idx]) == (0, 0) && (duration[idx] = 0.0)
+            size(offset[idx])   == (0, 0) && (offset[idx]   = 0.0)
+        end
+
+        # remove records with empty value fields
+        keep     = findall(x -> length(x) != 0, value)
+        id = id[keep]
+        duration = duration[keep]
+        offset = offset[keep]
+        start = start[keep]
+        value = value[keep]
 
         markers = DataFrame(
-            :id => string.(id),
-            :start => Float64.(start),
-            :length => Float64.(duration),
-            :value => strip.(string.(value)),
-            :channel => zeros(Int64, length(id)),
-        )
-        _info(
-            "Imported: $(DataFrames.nrow(markers)) events; events start and length are in samples, use `markers_s2t()` to convert to seconds",
-        )
-
+            :id      => string.(id),
+            :start   => Float64.(start),
+            :length  => Float64.(duration),
+            :value   => strip.(string.(value)),
+            :channel => zeros(Int64, length(id)))
+        _info("Imported: $(DataFrames.nrow(markers)) events; " *
+              "start and length are in samples — use `markers_s2t()` to convert.")
         return markers
 
-    else
-
-        !("cfg" in keys(dataset)) && throw(ArgumentError("Dataset does not contain cfg field."))
-        cfg = dataset["cfg"]
-        !("hdr" in keys(dataset)) && throw(ArgumentError("Dataset does not contain hdr field."))
-        hdr = dataset["hdr"]
-        !("fsample" in keys(dataset)) && throw(ArgumentError("Dataset does not contain fsample field."))
-        sampling_rate = round(Int64, dataset["fsample"])
-        !("nChans" in keys(hdr)) && throw(ArgumentError("Dataset header does not contain nChans field."))
-        ch_n = Int64(hdr["nChans"])
-
-        # get channel labels, types and units
-        if length(hdr["label"][:]) > 0 && length(vec(hdr["label"])) == ch_n
-            clabels = string.(strip.(string.(hdr["label"])))[:]
-        else
-            clabels = String[]
-            for idx in 1:ch_n
-                push!(clabels, "ch_$idx")
-            end
-        end
-
-        if detect_type
-            ch_type = _set_channel_types(clabels)
-            if "chanunit" in keys(hdr)
-                units = strip.(string.(hdr["chanunit"][:]))
-                units = replace.(units, "uV" => "μV")
-            else
-                units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
-            end
-        else
-            if "chantype" in keys(hdr)
-                ch_type = string.(hdr["chantype"][:])
-            else
-                ch_type = repeat([data_type], ch_n)
-            end
-            if "chanunit" in keys(hdr)
-                units = string.(hdr["chanunit"][:])
-                units = replace.(units, "uV" => "μV")
-            else
-                units = repeat(["μV"], ch_n)
-            end
-        end
-        ch_type = replace.(ch_type, "nirs" => "nirs_od")
-        ch_type = replace.(ch_type, "aux" => "other")
-        ch_type = replace.(ch_type, "stimulus" => "mrk")
-        ch_type = replace.(ch_type, "analog trigger" => "mrk")
-        ch_type = replace.(ch_type, "digital trigger" => "mrk")
-        ch_type = replace.(ch_type, "unknown" => "other")
-
-        !("trial" in keys(dataset)) && throw(ArgumentError("Dataset does not contain trial field."))
-        ep_n = "trial" in keys(dataset) ? size(dataset["trial"], 2) : 1
-        ep_len = size(dataset["trial"][1], 2)
-        data = zeros(ch_n, ep_len, ep_n)
-        for idx in 1:ep_n
-            data[:, :, idx] = dataset["trial"][idx]
-        end
-
-        if "time" in keys(dataset)
-            if ep_n == 1
-                epoch_time = dataset["time"][1][:]
-                sign(epoch_time[1]) == 1.0 && (epoch_time .-= (epoch_time[1]))
-                time_pts = dataset["time"][1][:]
-                if sign(time_pts[1]) == 1.0
-                    time_pts .-= (time_pts[1])
-                else
-                    time_pts .+= abs(time_pts[1])
-                end
-                epoch_time = round.(epoch_time, digits = 4)
-                time_pts = round.(time_pts, digits = 4)
-            else
-                epoch_time = round.(dataset["time"][1][:], digits = 4)
-                time_pts = round.(
-                    collect(
-                        0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
-                    )[1:(end - 1)];
-                    digits = 4,
-                )
-            end
-        else
-            epoch_time = round.(
-                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-                digits = 4,
-            )
-            time_pts = round.(
-                collect(
-                    0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-                )[1:(end - 1)];
-                digits = 4,
-            )
-        end
-
-        _info(
-            "FieldTrip markers are stored separately and must be imported using `import_ft(file_name, type=:events)` and added manually using `add_markers()`",
-        )
-        markers = DataFrame(
-            :id => String[],
-            :start => Float64[],
-            :length => Float64[],
-            :value => String[],
-            :channel => Int64[],
-        )
-
-        if data_type == "eeg"
-
-            clabels = _clean_eeg_labels(clabels)
-
-            # TO DO: get referencing
-            if "reref" in keys(dataset["cfg"]) && dataset["cfg"]["reref"] != "no"
-                _info(
-                    "Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
-                )
-            else
-                ref = _detect_montage(clabels, ch_type, data_type)
-            end
-
-            # convert data to standard units
-            @inbounds for ch_idx in 1:ch_n
-                if units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
-                    @views data[ch_idx, :, 1] .*= 10^6
-                    units[ch_idx] = "μV"
-                end
-            end
-
-            r = _create_recording_eeg(
-                data_type = data_type,
-                file_name = file_name,
-                file_size_mb = round(filesize(file_name) / 1024^2, digits = 2),
-                file_type = file_type,
-                recording = "RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
-                recording_date = "",
-                recording_time = "",
-                recording_notes = "",
-                channel_type = ch_type,
-                channel_order = _sort_channels(ch_type),
-                reference = ref,
-                clabels = clabels,
-                transducers = if "Transducer" in keys(hdr["orig"])
-                    string.(strip.(hdr["orig"]["Transducer"]))
-                else
-                    repeat([""], ch_n)
-                end,
-                units = units,
-                prefiltering = if "PreFilt" in keys(hdr["orig"])
-                    string.(strip.(hdr["orig"]["PreFilt"]))
-                else
-                    repeat([""], ch_n)
-                end,
-                line_frequency = 50,
-                sampling_rate = sampling_rate,
-                gain = ones(ch_n),
-                bad_channels = zeros(Bool, size(data, 1)),
-            )
-
-        elseif data_type == "meg"
-
-            clabels = _clean_meg_labels(clabels)
-
-            !("grad" in keys(dataset)) && throw(ArgumentError("Dataset does not contain grad field."))
-            !("chantype" in keys(dataset["grad"])) && throw(ArgumentError("Dataset does not contain chantype field."))
-            meg_channels = occursin.(r"meg", lowercase.(clabels))[:]
-            coil_type = repeat([""], ch_n)
-            mag_idx = occursin.(r".*mag.*", lowercase.(ch_type))
-            coil_type[mag_idx] .= "mag"
-            grad_idx = occursin.(r".*grad.*", lowercase.(ch_type))
-            coil_type[grad_idx] .= "grad"
-            pgrad_idx = occursin.(r".*planar.*", lowercase.(ch_type))
-            coil_type[pgrad_idx] .= "pgrad"
-            agrad_idx =
-                occursin.(r".*axial.*", lowercase.(ch_type)) .||
-                occursin.(r".*ctf.*", lowercase.(ch_type))
-            coil_type[agrad_idx] .= "agrad"
-            grad_idx .+= pgrad_idx
-            grad_idx .+= agrad_idx
-            magnetometers = collect(1:length(ch_type))[mag_idx]
-            gradiometers = collect(1:length(ch_type))[grad_idx]
-            ch_type[magnetometers] .= "mag"
-            ch_type[gradiometers] .= "grad"
-
-            # Internal Active Shielding (IAS)
-            ch_type[occursin.("ias", lowercase.(clabels))] .= "other"
-            ch_type[occursin.("sti", lowercase.(clabels))] .= "mrk"
-            ch_type[occursin.("sys", lowercase.(clabels))] .= "other"
-
-            # convert data to standard units
-            @inbounds for ch_idx in 1:ch_n
-                if units[ch_idx] == "T"
-                    @views data[ch_idx, :, 1] .*= 10^15
-                    units[ch_idx] = "fT"
-                elseif units[ch_idx] == "T/m"
-                    @views data[ch_idx, :, 1] .*= (10^15 / 100)
-                    units[ch_idx] = "fT/cm"
-                elseif units[ch_idx] == "T/cm"
-                    @views data[ch_idx, :, 1] .*= 10^15
-                    units[ch_idx] = "fT/cm"
-                elseif units[ch_idx] == "V" &&
-                        ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
-                    @views data[ch_idx, :, 1] .*= 10^6
-                    units[ch_idx] = "μV"
-                end
-            end
-
-            if "chanpos" in keys(dataset["grad"])
-                meg_labels = @. clabels[ch_type == "meg" || ch_type == "mag" || ch_type == "grad"]
-                x = dataset["grad"]["chanpos"][:, 1]
-                y = dataset["grad"]["chanpos"][:, 2]
-                z = dataset["grad"]["chanpos"][:, 3]
-                meg_locs = DataFrame(
-                    :label => meg_labels,
-                    :loc_radius => zeros(length(meg_labels)),
-                    :loc_theta => zeros(length(meg_labels)),
-                    :loc_x => x,
-                    :loc_y => y,
-                    :loc_z => z,
-                    :loc_radius_sph => zeros(length(meg_labels)),
-                    :loc_theta_sph => zeros(length(meg_labels)),
-                    :loc_phi_sph => zeros(length(meg_labels)),
-                )
-                locs_normalize!(meg_locs)
-                locs_cart2sph!(meg_locs)
-                locs_sph2pol!(meg_locs)
-                locs_scale!(meg_locs; r = 1.5)
-            else
-                locs = import_locs_csv(
-                    joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv")
-                )
-            end
-
-            # EEG
-            if "elec" in keys(dataset)
-                eeg_labels = @. clabels[ch_type == "eeg"]
-                x = dataset["elec"]["chanpos"][:, 1]
-                y = dataset["elec"]["chanpos"][:, 2]
-                z = dataset["elec"]["chanpos"][:, 3]
-                eeg_locs = DataFrame(
-                    :label => eeg_labels,
-                    :loc_radius => zeros(length(eeg_labels)),
-                    :loc_theta => zeros(length(eeg_labels)),
-                    :loc_x => x,
-                    :loc_y => y,
-                    :loc_z => z,
-                    :loc_radius_sph => zeros(length(eeg_labels)),
-                    :loc_theta_sph => zeros(length(eeg_labels)),
-                    :loc_phi_sph => zeros(length(eeg_labels)),
-                )
-                locs_normalize!(eeg_locs)
-                locs_cart2sph!(eeg_locs)
-                locs_sph2pol!(eeg_locs)
-                locs_scale!(eeg_locs; r = 1.5)
-                global locs = vcat(meg_locs, eeg_locs)
-            end
-
-            # TO DO: get referencing
-            if "reref" in keys(dataset["cfg"]) && dataset["cfg"]["reref"] != "no"
-                _info(
-                    "Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
-                )
-            else
-                ref = _detect_montage(clabels, ch_type, data_type)
-            end
-
-            # projections
-            ssp_labels = String[]
-            ssp_channels = Bool[]
-            ssp_data = Matrix{Float64}(undef, 0, 0)
-            if "projs" in keys(hdr["orig"])
-                projs = hdr["orig"]["projs"]
-                if length(projs["desc"]) != 0
-                    ssp_labels = string.(projs["desc"][:])
-                    ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])
-                    ssp_channels_tmp = _clean_meg_labels(ssp_channels_tmp)
-                    ssp_channels = zeros(Bool, ch_n)
-                    ssp_sorting_idx = Int64[]
-                    for idx in eachindex(ssp_channels_tmp)
-                        push!(
-                            ssp_sorting_idx,
-                            findfirst(isequal(ssp_channels_tmp[idx]), clabels),
-                        )
-                    end
-                    ssp_channels[ssp_sorting_idx] .= true
-                    ssp_sorting_idx = Int64[]
-                    for idx in eachindex(ssp_channels_tmp)
-                        push!(
-                            ssp_sorting_idx,
-                            findfirst(
-                                isequal(ssp_channels_tmp[idx]), clabels[ssp_channels]
-                            ),
-                        )
-                    end
-                    ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])
-                    @inbounds for idx in axes(ssp_data, 1)
-                        ssp_data[idx, :] = projs["data"][idx]["data"][:]
-                    end
-                end
-            end
-
-            lp = if "lowpass" in keys(hdr["orig"])
-                string(round(hdr["orig"]["lowpass"][1], digits = 1))
-            else
-                "?"
-            end
-            hp = if "highpass" in keys(hdr["orig"])
-                string(round(hdr["orig"]["highpass"][1], digits = 1))
-            else
-                "?"
-            end
-
-            r = _create_recording_meg(
-                data_type = data_type,
-                file_name = file_name,
-                file_size_mb = round(filesize(file_name) / 1024^2, digits = 2),
-                file_type = "FT",
-                recording = if "dataformat" in keys(dataset["cfg"])
-                    string(dataset["cfg"]["dataformat"])
-                else
-                    ""
-                end,
-                recording_date = "",
-                recording_time = "",
-                recording_notes = "",
-                channel_type = ch_type,
-                channel_order = _sort_channels(ch_type),
-                reference = "",
-                clabels = clabels,
-                units = units,
-                prefiltering = repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
-                line_frequency = 50,
-                sampling_rate = sampling_rate,
-                magnetometers = magnetometers,
-                gradiometers = gradiometers,
-                coil_type = coil_type,
-                bad_channels = zeros(Bool, size(data, 1)),
-                ssp_labels = ssp_labels,
-                ssp_channels = ssp_channels,
-                ssp_data = ssp_data,
-            )
-
-        elseif data_type == "nirs"
-
-            clabels = replace.(clabels, ".0" => "")
-            clabels = replace.(clabels, " [" => " ")
-            clabels = replace.(clabels, "nm]" => "")
-
-            !("opto" in keys(dataset)) && throw(ArgumentError("Dataset does not contain opto field."))
-            opto = dataset["opto"]
-            wavelengths = opto["wavelength"][:]
-            wavelength_index = Int64[]
-            for idx1 in eachindex(ch_type)
-                if ch_type[idx1] == "nirs"
-                    for idx2 in eachindex(wavelengths)
-                        occursin(
-                            string(round(Int64, wavelengths[idx2])), clabels[idx1]
-                        ) && push!(wavelength_index, idx2)
-                    end
-                end
-            end
-
-            nirs_channels_idx = ch_type .== "nirs_od"
-            nirs_channels = count(nirs_channels_idx)
-            # source and detector names
-            source_index = opto["optotype"] .== "transmitter"
-            detector_index = opto["optotype"] .== "receiver"
-            src_labels = string.(opto["optolabel"][:][source_index])
-            det_labels = string.(opto["optolabel"][:][detector_index])
-            opt_labels = string.(opto["optolabel"][:])
-
-            # collect opotode pairs = channels
-            opt_pairs = zeros(Int64, nirs_channels, 2)
-            pairs = opto["label"][:]
-            for idx in eachindex(pairs)
-                # TO DO: use opto.optolabel to match labels in pairs
-                p = match(r"(.+)-(.+) (.*)", pairs[idx])
-                if !isnothing(p)
-                    opt_pairs[idx, 1] = findfirst(isequal(p[1]), src_labels)
-                    opt_pairs[idx, 2] = findfirst(isequal(p[2]), det_labels)
-                end
-            end
-
-            # optode locations
-            x = opto["optopos"][:, 1]
-            y = opto["optopos"][:, 2]
-            z = opto["optopos"][:, 3]
-            global locs = DataFrame(
-                :label => opt_labels,
-                :loc_radius => zeros(length(opt_labels)),
-                :loc_theta => zeros(length(opt_labels)),
-                :loc_x => x,
-                :loc_y => y,
-                :loc_z => z,
-                :loc_radius_sph => zeros(length(opt_labels)),
-                :loc_theta_sph => zeros(length(opt_labels)),
-                :loc_phi_sph => zeros(length(opt_labels)),
-            )
-            locs_normalize!(locs)
-            locs_cart2sph!(locs)
-            locs_cart2pol!(locs)
-
-            r = _create_recording_nirs(
-                data_type = data_type,
-                file_name = file_name,
-                file_size_mb = round(filesize(file_name) / 1024^2, digits = 2),
-                file_type = file_type,
-                recording = "",
-                recording_date = "",
-                recording_time = "",
-                recording_notes = "",
-                wavelengths = wavelengths,
-                wavelength_index = wavelength_index,
-                optode_pairs = opt_pairs,
-                channel_type = ch_type,
-                channel_order = _sort_channels(ch_type),
-                clabels = clabels,
-                units = units,
-                src_labels = src_labels,
-                det_labels = det_labels,
-                opt_labels = opt_labels,
-                sampling_rate = sampling_rate,
-                bad_channels = zeros(Bool, size(data, 1)),
-            )
-        end
-
-        s = _create_subject(
-            id = "",
-            first_name = "",
-            middle_name = "",
-            last_name = "",
-            head_circumference = -1,
-            handedness = "",
-            weight = -1,
-            height = -1,
-        )
-        e = _create_experiment(name = "", notes = "", design = "")
-
-        hdr = _create_header(subject = s, recording = r, experiment = e)
-
-        history = [""]
-
-        obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
-
-        data_type == "eeg" && _initialize_locs!(obj)
-
-        _info(
-            "Imported: " *
-                uppercase(obj.header.recording[:data_type]) *
-                " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
-        )
-
-        return obj
-
     end
+
+    # ------------------------------------------------------------------ #
+    # signal branches (EEG / MEG / NIRS)                                 #
+    # ------------------------------------------------------------------ #
+    "cfg" in keys(dataset) ||
+        throw(ArgumentError("Dataset does not contain 'cfg' field."))
+    "hdr" in keys(dataset) ||
+        throw(ArgumentError("Dataset does not contain 'hdr' field."))
+    "fsample" in keys(dataset) ||
+        throw(ArgumentError("Dataset does not contain 'fsample' field."))
+    "nChans" in keys(dataset["hdr"]) ||
+        throw(ArgumentError("Dataset header does not contain 'nChans' field."))
+
+    cfg = dataset["cfg"]
+    hdr = dataset["hdr"]
+    sampling_rate = round(Int64, dataset["fsample"])
+    ch_n = Int64(hdr["nChans"])
+
+    # ------------------------------------------------------------------ #
+    # channel labels, types, units                                       #
+    # ------------------------------------------------------------------ #
+    clabels = if length(hdr["label"][:]) > 0 && length(vec(hdr["label"])) == ch_n
+        string.(strip.(string.(hdr["label"])))[:]
+    else
+        ["ch_$idx" for idx in 1:ch_n]
+    end
+
+    ch_type, units = if detect_type
+        # FIX: original omitted the required second argument to _set_channel_types
+        ct = _set_channel_types(clabels, data_type)
+        u  = "chanunit" in keys(hdr) ?
+            replace.(strip.(string.(hdr["chanunit"][:])), "uV" => "μV") :
+            [_ch_units(ct[i]) for i in 1:ch_n]
+        ct, u
+    else
+        ct = "chantype" in keys(hdr) ?
+            string.(hdr["chantype"][:]) : repeat([data_type], ch_n)
+        u  = "chanunit" in keys(hdr) ?
+            replace.(string.(hdr["chanunit"][:]), "uV" => "μV") :
+            repeat(["μV"], ch_n)
+        ct, u
+    end
+
+    # normalize channel-type labels to NeuroAnalyzer conventions
+    ch_type = replace.(ch_type,
+        "nirs" => "nirs_od",
+        "aux" => "other",
+        "stimulus" => "mrk",
+        "analog trigger" => "mrk",
+        "digital trigger" => "mrk",
+        "unknown" => "other")
+
+    # ------------------------------------------------------------------ #
+    # signal data (trials)                                                #
+    # ------------------------------------------------------------------ #
+    "trial" in keys(dataset) ||
+        throw(ArgumentError("Dataset does not contain 'trial' field."))
+    ep_n   = size(dataset["trial"], 2)
+    ep_len = size(dataset["trial"][1], 2)
+    data   = zeros(ch_n, ep_len, ep_n)
+    for idx in 1:ep_n
+        data[:, :, idx] = dataset["trial"][idx]
+    end
+
+    # ------------------------------------------------------------------ #
+    # time axes                                                            #
+    # ------------------------------------------------------------------ #
+    if "time" in keys(dataset)
+        if ep_n == 1
+            raw_t = Float64.(dataset["time"][1][:])
+            epoch_time = round.(raw_t .- raw_t[1]; digits = 4)
+            time_pts = epoch_time
+        else
+            epoch_time = round.(Float64.(dataset["time"][1][:]); digits = 4)
+            time_pts = round.(range(0, step = 1/sampling_rate,
+                                    length = size(data,2)*size(data,3)); digits = 4)
+        end
+    else
+        epoch_time = round.(range(0, step = 1/sampling_rate, length = size(data,2)); digits = 4)
+        time_pts   = round.(range(0, step = 1/sampling_rate,
+                                   length = size(data,2)*size(data,3)); digits = 4)
+    end
+
+    _info("FieldTrip markers are stored separately; import with " *
+          "`import_ft(file_name, type=:events)` and add with `add_markers()`.")
+    markers = DataFrame(
+        :id => String[], :start => Float64[],
+        :length => Float64[], :value => String[], :channel => Int64[])
+
+    locs = _initialize_locs()
+
+    r = nothing # will be assigned in each branch below
+
+    if data_type == "eeg"
+
+        clabels = _clean_eeg_labels(clabels)
+
+        ref = if "reref" in keys(cfg) && cfg["reref"] != "no"
+            _info("Embedded referencing is not supported; " *
+                  "please send this file to adam.wysokinski@neuroanalyzer.org")
+            "" # safe fallback
+        else
+            _detect_montage(clabels, ch_type, data_type)
+        end
+
+        @inbounds for ch_idx in 1:ch_n
+            if units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg", "emg", "eog", "ref")
+                @views data[ch_idx, :, 1] .*= 1e6
+                units[ch_idx] = "μV"
+            end
+        end
+
+        r = _create_recording_eeg(
+            data_type = data_type,
+            file_name = file_name,
+            file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
+            file_type = file_type,
+            recording = "RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
+            recording_date = "", recording_time = "", recording_notes = "",
+            channel_type = ch_type,
+            channel_order = _sort_channels(ch_type),
+            reference = ref,
+            clabels = clabels,
+            transducers = "Transducer" in keys(hdr["orig"]) ?
+                                string.(strip.(hdr["orig"]["Transducer"])) :
+                                repeat([""], ch_n),
+            units = units,
+            prefiltering = "PreFilt" in keys(hdr["orig"]) ?
+                                string.(strip.(hdr["orig"]["PreFilt"])) :
+                                repeat([""], ch_n),
+            line_frequency = 50, # TODO: make this a keyword argument
+            sampling_rate = sampling_rate,
+            gain = ones(ch_n),
+            bad_channels = zeros(Bool, size(data, 1)))
+
+    elseif data_type == "meg"
+
+        clabels = _clean_meg_labels(clabels)
+
+        "grad" in keys(dataset) ||
+            throw(ArgumentError("Dataset does not contain 'grad' field."))
+        "chantype" in keys(dataset["grad"]) ||
+            throw(ArgumentError("grad does not contain 'chantype' field."))
+
+        coil_type = repeat([""], ch_n)
+        mag_idx = occursin.(r".*mag.*", lowercase.(ch_type))
+        grad_idx  = occursin.(r".*grad.*", lowercase.(ch_type))
+        pgrad_idx = occursin.(r".*planar.*", lowercase.(ch_type))
+        agrad_idx = occursin.(r".*axial.*", lowercase.(ch_type)) .|
+                    occursin.(r".*ctf.*", lowercase.(ch_type))
+
+        combined_grad_idx = grad_idx .| pgrad_idx .| agrad_idx
+        coil_type[mag_idx] .= "mag"
+        coil_type[pgrad_idx] .= "pgrad"
+        coil_type[agrad_idx] .= "agrad"
+        coil_type[grad_idx .& .!pgrad_idx .& .!agrad_idx] .= "grad"
+
+        magnetometers = findall(mag_idx)
+        gradiometers = findall(combined_grad_idx)
+        ch_type[magnetometers] .= "mag"
+        ch_type[gradiometers] .= "grad"
+        ch_type[occursin.("ias", lowercase.(clabels))] .= "other"
+        ch_type[occursin.("sti", lowercase.(clabels))] .= "mrk"
+        ch_type[occursin.("sys", lowercase.(clabels))] .= "other"
+
+        @inbounds for ch_idx in 1:ch_n
+            if units[ch_idx] == "T"
+                @views data[ch_idx,:,1] .*= 1e15
+                units[ch_idx] = "fT"
+            elseif units[ch_idx] == "T/m"
+                @views data[ch_idx,:,1] .*= (1e15/100)
+                units[ch_idx] = "fT/cm"
+            elseif units[ch_idx] == "T/cm"
+                @views data[ch_idx,:,1] .*= 1e15
+                units[ch_idx] = "fT/cm"
+            elseif units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg","emg","eog","ref")
+                @views data[ch_idx,:,1] .*= 1e6
+                units[ch_idx] = "μV"
+            end
+        end
+
+        if "chanpos" in keys(dataset["grad"])
+            sig_mask = ch_type .∈ Ref(["meg", "mag", "grad"])
+            meg_labels = clabels[sig_mask]
+            pos = dataset["grad"]["chanpos"]
+            meg_locs = DataFrame(
+                :label => meg_labels,
+                :loc_radius => zeros(length(meg_labels)),
+                :loc_theta => zeros(length(meg_labels)),
+                :loc_x => pos[:, 1],
+                :loc_y => pos[:, 2],
+                :loc_z => pos[:, 3],
+                :loc_radius_sph => zeros(length(meg_labels)),
+                :loc_theta_sph => zeros(length(meg_labels)),
+                :loc_phi_sph => zeros(length(meg_labels)))
+            locs_normalize!(meg_locs); locs_cart2sph!(meg_locs); locs_sph2pol!(meg_locs)
+            locs_scale!(meg_locs; r = 1.5)
+            locs = meg_locs
+        else
+            locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+        end
+
+        if "elec" in keys(dataset)
+            eeg_mask = ch_type .== "eeg"
+            eeg_labels = clabels[eeg_mask]
+            epos = dataset["elec"]["chanpos"]
+            eeg_locs = DataFrame(
+                :label => eeg_labels,
+                :loc_radius => zeros(length(eeg_labels)),
+                :loc_theta => zeros(length(eeg_labels)),
+                :loc_x => epos[:, 1],
+                :loc_y => epos[:, 2],
+                :loc_z => epos[:, 3],
+                :loc_radius_sph => zeros(length(eeg_labels)),
+                :loc_theta_sph => zeros(length(eeg_labels)),
+                :loc_phi_sph => zeros(length(eeg_labels)))
+            locs_normalize!(eeg_locs); locs_cart2sph!(eeg_locs); locs_sph2pol!(eeg_locs)
+            locs_scale!(eeg_locs; r = 1.5)
+            locs = vcat(locs, eeg_locs)
+        end
+
+        ref = if "reref" in keys(cfg) && cfg["reref"] != "no"
+            _info("Embedded referencing is not supported; " *
+                  "please send this file to adam.wysokinski@neuroanalyzer.org")
+            ""
+        else
+            _detect_montage(clabels, ch_type, data_type)
+        end
+
+        # SSP projectors
+        ssp_labels = String[]
+        ssp_channels = zeros(Bool, ch_n)
+        ssp_data = Matrix{Float64}(undef, 0, 0)
+        if "projs" in keys(hdr["orig"])
+            projs = hdr["orig"]["projs"]
+            if length(projs["desc"]) != 0
+                ssp_labels = string.(projs["desc"][:])
+                ssp_ch_names = _clean_meg_labels(string.(projs["data"][1]["col_names"][:]))
+                ssp_sort_idx = [findfirst(isequal(l), clabels) for l in ssp_ch_names]
+                ssp_channels[Base.filter(!isnothing, ssp_sort_idx)] .= true
+                ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])
+                for idx in axes(ssp_data, 1)
+                    ssp_data[idx, :] = projs["data"][idx]["data"][:]
+                end
+            end
+        end
+
+        lp = "lowpass" in keys(hdr["orig"]) ?
+                string(round(hdr["orig"]["lowpass"][1];  digits=1)) : "?"
+        hp = "highpass" in keys(hdr["orig"]) ?
+                string(round(hdr["orig"]["highpass"][1]; digits=1)) : "?"
+
+        r = _create_recording_meg(
+            data_type = data_type,
+            file_name = file_name,
+            file_size_mb = round(filesize(file_name) / 1024^2; digits=2),
+            file_type = "FT",
+            recording = "dataformat" in keys(cfg) ? string(cfg["dataformat"]) : "",
+            recording_date = "", recording_time = "", recording_notes = "",
+            channel_type = ch_type,
+            channel_order = _sort_channels(ch_type),
+            reference = ref,
+            clabels = clabels,
+            units = units,
+            prefiltering = repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
+            line_frequency = 50, # TODO: make this a keyword argument
+            sampling_rate = sampling_rate,
+            magnetometers = magnetometers,
+            gradiometers = gradiometers,
+            coil_type = coil_type,
+            bad_channels = zeros(Bool, size(data,1)),
+            ssp_labels = ssp_labels,
+            ssp_channels = ssp_channels,
+            ssp_data = ssp_data)
+
+    elseif data_type == "nirs"
+
+        clabels = replace.(clabels, ".0" => "", " [" => " ", "nm]" => "")
+
+        "opto" in keys(dataset) ||
+            throw(ArgumentError("Dataset does not contain 'opto' field."))
+        opto = dataset["opto"]
+        wavelengths = opto["wavelength"][:]
+
+        wavelength_index = Int64[]
+        for idx1 in eachindex(ch_type), idx2 in eachindex(wavelengths)
+            if ch_type[idx1] == "nirs" &&
+               occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1])
+                push!(wavelength_index, idx2)
+            end
+        end
+
+        nirs_count = count(ch_type .== "nirs_od")
+        src_mask = opto["optotype"] .== "transmitter"
+        det_mask = opto["optotype"] .== "receiver"
+        src_labels = string.(opto["optolabel"][:][src_mask])
+        det_labels = string.(opto["optolabel"][:][det_mask])
+        opt_labels = string.(opto["optolabel"][:])
+
+        opt_pairs = zeros(Int64, nirs_count, 2)
+        for (idx, pair) in enumerate(opto["label"][:])
+            p = match(r"(.+)-(.+) (.*)", pair)
+            if !isnothing(p)
+                opt_pairs[idx, 1] = findfirst(isequal(p[1]), src_labels)
+                opt_pairs[idx, 2] = findfirst(isequal(p[2]), det_labels)
+            end
+        end
+
+        pos  = opto["optopos"]
+        locs = DataFrame(
+            :label => opt_labels,
+            :loc_radius => zeros(length(opt_labels)),
+            :loc_theta => zeros(length(opt_labels)),
+            :loc_x => pos[:, 1],
+            :loc_y => pos[:, 2],
+            :loc_z => pos[:, 3],
+            :loc_radius_sph => zeros(length(opt_labels)),
+            :loc_theta_sph => zeros(length(opt_labels)),
+            :loc_phi_sph => zeros(length(opt_labels))
+        )
+        locs_normalize!(locs); locs_cart2sph!(locs); locs_cart2pol!(locs)
+
+        r = _create_recording_nirs(
+            data_type = data_type,
+            file_name = file_name,
+            file_size_mb = round(filesize(file_name) / 1024^2; digits=2),
+            file_type = file_type,
+            recording = "", recording_date = "", recording_time = "",
+            recording_notes = "",
+            wavelengths = wavelengths,
+            wavelength_index = wavelength_index,
+            optode_pairs = opt_pairs,
+            channel_type = ch_type,
+            channel_order = _sort_channels(ch_type),
+            clabels = clabels,
+            units = units,
+            src_labels = src_labels,
+            det_labels = det_labels,
+            opt_labels = opt_labels,
+            sampling_rate = sampling_rate,
+            bad_channels = zeros(Bool, size(data, 1)))
+    end
+
+    s   = _create_subject(id = "",
+                          first_name = "",
+                          middle_name = "",
+                          last_name = "",
+                          head_circumference = -1,
+                          handedness = "",
+                          weight = -1,
+                          height = -1)
+    e   = _create_experiment(name = "", notes = "", design = "")
+    hdr = _create_header(subject = s, recording = r, experiment = e)
+
+    obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
+    data_type == "eeg" && _initialize_locs!(obj)
+
+    _info("Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end]; digits=2)) s)")
+
+    return obj
 
 end

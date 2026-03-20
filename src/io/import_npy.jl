@@ -12,7 +12,7 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
 """
 function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEURO
 

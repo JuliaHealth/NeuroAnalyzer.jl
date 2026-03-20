@@ -12,7 +12,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `NeuroAnalyzer.NEURO`
 
 # References
 
@@ -79,7 +79,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         end
     end
     # dataset["chaninfo"]
-    clabels = _clean_labels(clabels)
+    clabels = _clean_labels(string.(clabels))
     if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
         units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]

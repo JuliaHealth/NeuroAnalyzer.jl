@@ -3,82 +3,94 @@ export import_recording
 """
     import_recording(file_name; <keyword arguments>)
 
-Load recording file and return `NeuroAnalyzer.NEURO` object. Supported formats:
+Load a recording file and return a `NeuroAnalyzer.NEURO` object.
 
-  - EDF/EDF+
-  - BDF/BDF+
-  - GDF
-  - BrainVision
-  - CSV or CSV.GZ
-  - VHDR or AHDR (BrainVision)
-  - SET (EEGLAB dataset)
-  - NPY (MNE)
-  - XDF (Extensible Data Format)
-  - NWB (Neurodata Without Borders)
-  - NCS (Neuralinx Continuously Sampled Channels (CSC))
-  - FIFF (Neuromag)
-  - MAT (FieldTrip)
-  - SNIRF
-  - NIRS
-  - ASCII or M (DuoMAG TMS MEP)
+This is a meta-function: it detects the file format from the extension and delegates to the appropriate `import_*()` function. The signal data type (EEG, MEG, fNIRS, …) is auto-detected where possible and stored in `obj.header.recording[:data_type]`.
 
-This is a meta-function that triggers appropriate `import_*()` function. File format is detected based on file extension (.edf|.bdf|.gdf|.vhdr|.ahdr|.csv|.csv.gz|.set|.npy|.xdf|.nwb|.ncs|.fif|.fiff|.mat|.snirf|.nirs|.ascii|.m). Signal data type (e.g. EEG or MEG is auto-detected, if possible) and stored in the `obj.header.recording[:data_type]` field.
+Supported formats and their extensions:
+
+|             Format             |    Extension(s)   |
+| ------------------------------ | ----------------- |
+| EDF / EDF+                     | `.edf`            |
+| BDF / BDF+                     | `.bdf`            |
+| GDF                            | `.gdf`            |
+| BrainVision                    | `.vhdr`, `.ahdr`  |
+| CSV (plain or gzip-compressed) | `.csv`, `.csv.gz` |
+| EEGLAB dataset                 | `.set`            |
+| MNE NumPy array                | `.npy`            |
+| Extensible Data Format         | `.xdf`            |
+| Neurodata Without Borders      | `.nwb`            |
+| Neuralynx CSC                  | `.ncs`            |
+| Neuromag FIFF                  | `.fif`, `.fiff`   |
+| FieldTrip MATLAB               | `.mat`            |
+| SNIRF                          | `.snirf`          |
+| NIRS                           | `.nirs`           |
+| DuoMAG TMS MEP                 | `.ascii`, `.m`    |
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on channel label
-- `type::Union{Nothing, Symbol}=nothing`: type of imported data (required for FieldTrip files)
-    - `:eeg`: EEG
-    - `:meg`: MEG
-    - `:nirs`: fNIRS
-    - `:events`: events
-- `n::Int64=0`: subject number to extract in case of multi-subject file (required for SNIRF files)
-- `sampling_rate::Union{Nothing, Int64}=nothing`: NPY file contains only signal data, therefore its sampling rate must be provided upon importing
+- `detect_type::Bool=true`: infer channel type from channel label
+- `type::Union{Nothing, Symbol}=nothing`: data type for FieldTrip (`.mat`) files, where auto-detection is not possible; one of `:eeg`, `:meg`, `:nirs`, `:events`
+- `sampling_rate::Union{Nothing, Int64}=nothing`: sampling rate for `.npy` files, which store only raw signal data with no embedded metadata
+- `n::Int64=0`: subject index to extract from multi-subject SNIRF files
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object - for EEG, MEG, fNIRS data
-- `markers::DataFrame` - for events
+- `NeuroAnalyzer.NEURO`: for EEG, MEG, and fNIRS data
+- `DataFrame`: when `type = :events` (FieldTrip `.mat` files)
+
+# Throws
+
+- `ArgumentError` if `file_name` does not exist
+- `ArgumentError` if the file extension is not recognized
 """
 function import_recording(
-        file_name::String;
-        detect_type::Bool = true,
-        type::Union{Nothing, Symbol} = nothing,
-        sampling_rate::Union{Nothing, Int64} = nothing,
-        n::Int64 = 0,
-    )::NeuroAnalyzer.NEURO
+    file_name::String;
+    detect_type::Bool = true,
+    type::Union{Nothing, Symbol} = nothing,
+    sampling_rate::Union{Nothing, Int64} = nothing,
+    n::Int64 = 0,
+)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
 
-    splitext(file_name)[2] == ".edf" &&
-        return import_edf(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".bdf" &&
-        return import_bdf(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".gdf" &&
-        return import_gdf(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".vhdr" &&
-        return import_bv(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".ahdr" &&
-        return import_bv(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".csv" &&
-        return import_csv(file_name, detect_type = detect_type)
-    (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") &&
-        return import_csv(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".set" &&
-        return import_set(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".npy" &&
-        return import_npy(file_name, sampling_rate = sampling_rate)
-    splitext(file_name)[2] == ".xdf" && return import_xdf(file_name)
-    splitext(file_name)[2] == ".nwb" &&
-        return import_nwb(file_name, detect_type = detect_type)
-    splitext(file_name)[2] == ".ncs" && return import_ncs(file_name)
-    splitext(file_name)[2] == ".fif" && return import_fiff(file_name)
-    splitext(file_name)[2] == ".fiff" && return import_fiff(file_name)
-    splitext(file_name)[2] == ".mat" && return import_ft(file_name, type = type)
-    splitext(file_name)[2] == ".snirf" && return import_snirf(file_name, n = n)
-    splitext(file_name)[2] == ".nirs" && return import_nirs(file_name)
-    splitext(file_name)[2] == ".ascii" && return import_duomag(file_name)
-    return splitext(file_name)[2] == ".m" && return import_duomag(file_name)
+    ext = lowercase(splitext(file_name)[2])
+
+    # special case: double extension .csv.gz
+    if ext == ".gz"
+        inner_ext = lowercase(splitext(splitext(file_name)[1])[2])
+        inner_ext == ".csv" && return import_csv(file_name, detect_type)
+        throw(ArgumentError(
+            "Unsupported compressed format \"$inner_ext.gz\" in $file_name."))
+    end
+
+    # dispatch table - each branch returns immediately on a match
+    ext == ".edf" && return import_edf(file_name, detect_type)
+    ext == ".bdf" && return import_bdf(file_name, detect_type)
+    ext == ".gdf" && return import_gdf(file_name, detect_type)
+    # .vhdr and .ahdr are both BrainVision header formats
+    ext in (".vhdr", ".ahdr") && return import_bv(file_name, detect_type)
+    ext == ".csv" && return import_csv(file_name, detect_type)
+    ext == ".set" && return import_set(file_name, detect_type)
+    # .npy stores raw signal data only - sampling rate must be supplied
+    ext == ".npy" && return import_npy(file_name; sampling_rate)
+    ext == ".xdf" && return import_xdf(file_name)
+    ext == ".nwb" && return import_nwb(file_name, detect_type)
+    ext == ".ncs" && return import_ncs(file_name)
+    # .fif and .fiff are both valid FIFF extensions
+    ext in (".fif", ".fiff") && return import_fiff(file_name)
+    # .mat requires explicit type hint - auto-detection is not possible
+    ext == ".mat" && return import_ft(file_name; type)
+    ext == ".snirf" && return import_snirf(file_name; n)
+    ext == ".nirs" && return import_nirs(file_name)
+    # .ascii and .m are both DuoMAG TMS MEP formats
+    ext in (".ascii", ".m") && return import_duomag(file_name)
+
+    throw(ArgumentError(
+        "Unsupported file format \"$ext\" in $file_name. " *
+        "Supported extensions: .edf, .bdf, .gdf, .vhdr, .ahdr, .csv, .csv.gz, " *
+        ".set, .npy, .xdf, .nwb, .ncs, .fif, .fiff, .mat, .snirf, .nirs, .ascii, .m"))
 
 end
