@@ -5,21 +5,42 @@ export fconv
 
 Perform convolution in the frequency domain.
 
+Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1` before the FFT so the result is equivalent to linear (non-circular) convolution.
+
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `kernel::AbstractVector`
-- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+- `kernel::AbstractVector`: convolution kernel (must be non-empty)
+- `norm::Bool=true`: normalize the kernel FFT by its maximum magnitude to keep post-convolution amplitudes on the same scale as the input
 
 # Returns
 
-- `s_new::Vector{ComplexF64}`: convoluted signal
+- `Vector{ComplexF64}`: convolved signal (same length as `s`)
+
+# Throws
+
+- `ArgumentError` if `kernel` is empty
 """
-function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool = true)::Vector{ComplexF64}
+function fconv(
+    s::AbstractVector;
+    kernel::AbstractVector,
+    norm::Bool = true
+)::Vector{ComplexF64}
+
+    isempty(kernel) &&
+        throw(ArgumentError("kernel must be non-empty."))
 
     s_fft = fft0(s, length(kernel) - 1)
     kernel_fft = fft0(kernel, length(s) - 1)
-    norm && (kernel_fft ./= cmax(kernel_fft))
+
+    if norm
+        km = cmax(kernel_fft)
+        # guard against a zero kernel (all elements zero → cmax = 0)
+        iszero(km) && throw(ArgumentError(
+            "kernel is all-zero; convolution would produce NaN output."))
+        kernel_fft ./= km
+    end
+
     s_conv = ifft0(s_fft .* kernel_fft)
     s_new = _remove_kernel(s_conv, kernel)
 
@@ -32,33 +53,50 @@ end
 
 Perform convolution in the frequency domain.
 
-# Arguments
+Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1` before the FFT so the result is equivalent to linear (non-circular) convolution.
 
-- `s::AbstractArray`
-- `kernel::AbstractVector`: convolution kernel
-- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+# Arguments
+- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `kernel::AbstractVector`: convolution kernel (must be non-empty)
+- `norm::Bool=true`: normalize the kernel FFT by its maximum magnitude to keep post-convolution amplitudes on the same scale as the input
 
 # Returns
+- `Array{ComplexF64, 3}`: convolved signal, same shape as `s`
 
-- `s_new::Array{ComplexF64, 3}`: convoluted signal
+# Throws
+
+- `ArgumentError` if `s` is not 3-dimensional or `kernel` is empty
 """
-function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool = true)::Array{ComplexF64, 3}
+function fconv(
+    s::AbstractArray;
+    kernel::AbstractVector,
+    norm::Bool = true
+)::Array{ComplexF64, 3}
 
+    isempty(kernel) &&
+        throw(ArgumentError("kernel must be non-empty."))
+
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
+    _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     s_new = zeros(ComplexF64, size(s))
 
     # initialize progress bar
     progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel = kernel, norm = norm)
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s_new[ch_idx, :, ep_idx] = fconv(@view(s[ch_idx, :, ep_idx]) kernel = kernel, norm = norm)
 
-            # update progress bar
-            progress_bar && next!(progbar)
-        end
+        # update progress bar
+        progress_bar && next!(progbar)
     end
 
     return s_new
@@ -68,27 +106,30 @@ end
 """
     fconv(obj; <keyword arguments>)
 
-Perform convolution in the frequency domain.
+Perform convolution in the frequency domain on selected channels of a `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `kernel::AbstractVector`: convolution kernel
-- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+- `kernel::AbstractVector`: convolution kernel (must be non-empty)
+- `norm::Bool=true`: normalize the kernel FFT by its maximum magnitude to keep post-convolution amplitudes on the same scale as the input
 
 # Returns
 
-- `s_new::Array{ComplexF64, 3}`: convoluted signal
+- `Array{ComplexF64, 3}`: convolved signal for the selected channels
 """
 function fconv(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector, norm::Bool = true
-    )::Array{ComplexF64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    kernel::AbstractVector,
+    norm::Bool = true
+)::Array{ComplexF64, 3}
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
-    s_new = @views fconv(obj.data[ch, :, :], kernel = kernel, norm = norm)
     _info("Group delay: $(_group_delay(kernel)) samples")
-
-    return s_new
+    
+    return fconv(@view(obj.data[ch, :, :]), kernel = kernel, norm = norm)
 
 end
