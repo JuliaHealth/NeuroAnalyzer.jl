@@ -17,9 +17,9 @@ The ECG channel is located automatically from the `channel_type` field of `obj.h
 Named tuple:
 
 - `nn_seg::Vector{Float64}`: NN (normal-to-normal) interval durations [ms]
-- `r_idx::Vector{Float64}`: sample indices of detected R-peaks
+- `r_idx::Vector{Int64}`: sample indices of detected R-peaks
 """
-function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Float64}}
+function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Int64}}
 
     !("ecg" in obj.header.recording[:channel_type]) && throw(ArgumentError("OBJ does not contain ECG channel."))
 
@@ -40,7 +40,7 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float6
 
     _info("Detected NN segments: $(length(nn_seg))")
 
-    return (nn_seg = nn_seg, r_idx = r_idx)
+    return (nn_seg = nn_seg, r_idx = Int.(r_idx))
 
 end
 
