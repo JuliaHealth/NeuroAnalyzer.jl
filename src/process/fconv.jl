@@ -93,7 +93,7 @@ function fconv(
     # calculate over channel and epochs
     @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = fconv(@view(s[ch_idx, :, ep_idx]) kernel = kernel, norm = norm)
+        s_new[ch_idx, :, ep_idx] = fconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel, norm = norm)
 
         # update progress bar
         progress_bar && next!(progbar)

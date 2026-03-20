@@ -212,13 +212,13 @@ Reconstruct signals using ICA components.
 - `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function ica_reconstruct(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-        keep::Bool = false,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    keep::Bool = false,
+)::NeuroAnalyzer.NEURO
 
     !(nepochs(obj) == 1) && throw(ArgumentError("ica_reconstruct() must be applied to continuous object."))
 
