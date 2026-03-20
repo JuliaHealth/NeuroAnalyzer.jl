@@ -215,12 +215,12 @@ module NeuroAnalyzer
     @info "NeuroAnalyzer v$(NeuroAnalyzer.VER)"
     @info "NeuroAnalyzer path: $(NeuroAnalyzer.PATH)"
     @info "Preferences:"
-    @info "   Progress bar: $progress_bar"
-    @info "        Verbose: $verbose"
-    @info "   Exclude bads: $exclude_bads"
-    @info "         Colors: $colors"
+    @info " Progress bar: $progress_bar"
+    @info "      Verbose: $verbose"
+    @info " Exclude bads: $exclude_bads"
+    @info "       Colors: $colors"
     @info "System info:"
-    @info "    Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
+    @info "  Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
 
     # set package options
 
