@@ -8,7 +8,7 @@ Calculate a virtual channel using formula `f`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `f::String`: channel calculation formula, e.g. `"cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the OBJ object
+- `f::String`: channel calculation formula, e.g. `"cz / mean(Fp1 + Fp2)"`; all standard Julia math operators are available, channel labels must be the same as of the OBJ object
 
 # Returns
 
@@ -19,9 +19,10 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
     # number of epochs
     ep_n = nepochs(obj)
 
-    # use lowercase everywhere
-    f = lowercase(f)
-    clabels = lowercase.(labels(obj))
+    # channel labels
+    clabels = labels(obj)
+
+    # pre-allocate output
     vc = zeros(1, epoch_len(obj), ep_n)
 
     # ── step 1: find referenced channels once, outside the loop ──────────────────
@@ -29,7 +30,7 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
     active_idx = [i for i in eachindex(clabels) if occursin(clabels[i], f)]
 
     # ── step 2: replace channel label strings with numbered variable names ────────
-    # e.g. "fp1 + fp2" → "_x1 + _x2"
+    # e.g. "Fp1 + Fp2" → "_x1 + _x2"
     # this avoids embedding array data as a string entirely
     f_var = f
     for (k, ch_idx) in enumerate(active_idx)
