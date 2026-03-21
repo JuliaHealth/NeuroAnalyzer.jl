@@ -46,7 +46,7 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
         throw(ArgumentError("Formula is incorrect, check channel labels and operators."))
     end
 
-    # ── Step 4: parallel loop - no eval, no parsing, no string alloc per epoch ───
+    # ── step 4: parallel loop - no eval, no parsing, no string alloc per epoch ───
     # @view avoids copying channel slices; ntuple builds a type-stable argument list.
     Threads.@threads :static for ep_idx in 1:ep_n
         args = ntuple(k -> @view(obj.data[active_idx[k], :, ep_idx]), length(active_idx))
