@@ -42,7 +42,7 @@ function apply(
     # use the first selected channel (not hardcoded index 1) for a representative result
     # this also validates the formula before entering the main loop
     f_tmp = replace(f, "obj" => "$(obj.data[ch[1], :, 1])")
-    local out_tmp
+    global out_tmp
     try
         out_tmp = eval(Meta.parse(f_tmp))
     catch err
@@ -50,7 +50,7 @@ function apply(
     end
 
     # pre-allocate output
-    out = zeros(eltype(out_tmp), ch_n, out_len, ep_n)
+    out = zeros(eltype(out_tmp), ch_n, length(out_tmp), ep_n)
 
     # initialize progress bar
     progbar = Progress(
