@@ -12,14 +12,14 @@ Calculate a virtual channel using formula `f`.
 
 # Returns
 
-- `vc::Array{Float64, 3}`: single channel × time × epochs
+- `vc::Array{Float64, 3}`: shape `(single channel, time, epochs)`
 """
 function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
 
     # number of epochs
     ep_n = nepochs(obj)
 
-    # use lowercase verywhere
+    # use lowercase everywhere
     f = lowercase(f)
     clabels = lowercase.(labels(obj))
     vc = zeros(1, epoch_len(obj), ep_n)
@@ -50,7 +50,7 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
     # @view avoids copying channel slices; ntuple builds a type-stable argument list.
     Threads.@threads :static for ep_idx in 1:ep_n
         args = ntuple(k -> @view(obj.data[active_idx[k], :, ep_idx]), length(active_idx))
-        @inbounds vc[1, :, ep_idx] = f_func(args...)
+        @inbounds vc[1, :, ep_idx] = Base.invokelatest(f_func, args...)
     end
 
     return vc
