@@ -35,7 +35,9 @@ Convert a confidence level to the corresponding Z-score.
 """
 function cl2z(cl::Float64; twotailed::Bool = true)::Float64
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
+
     d = Distributions.Normal(0, 1)
 
     return twotailed ? quantile(d, 1 - (1 - cl) / 2) : quantile(d, cl)
@@ -68,13 +70,14 @@ Calculate the confidence interval for the mean.
 """
 function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::Bool = true)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
     _check_var(d, [:t, :z], "d")
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
-    n  = length(x)
-    m  = mean(x)
-    s  = sem(x)
+    n = length(x)
+    m = mean(x)
+    s = sem(x)
     df = n - 1
 
     e = if d === :t
@@ -112,6 +115,7 @@ Uses the order-statistic method: the CI bounds are `x[j]` and `x[k]` where `j` a
 """
 function cimd(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
 
     x_sorted = sort(x)
@@ -157,8 +161,9 @@ Column medians are computed, sorted, and the order-statistic CI method is applie
 """
 function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
-    !(size(x, 2) >= 2) && throw(ArgumentError("x must have at least 2 columns."))
+    size(x, 2) >= 2 || throw(ArgumentError("x must have at least 2 columns."))
 
     x_sorted = sort(vec(median(x; dims=1)))
     n = size(x, 2)
@@ -189,6 +194,7 @@ Calculate the confidence interval for a proportion using the normal approximatio
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 
 # Throws
+
 - `ArgumentError`: if `p ∉ [0, 1]`, `n < 1`, or `cl ∉ (0, 1)`
 
 # See also
@@ -197,12 +203,14 @@ Calculate the confidence interval for a proportion using the normal approximatio
 """
 function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
     _in(p, (0.0, 1.0), "p")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     z= cl2z(cl)
     hw= z * sqrt((p * (1 - p)) / n)
+
     return (p - hw, p + hw)
 
 end
@@ -232,9 +240,10 @@ Calculate the confidence interval for a Pearson correlation coefficient computed
 """
 function cir(x::AbstractVector, y::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
-    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
-    !(length(x) > 3) && throw(ArgumentError("length(x) must be > 3 for Fisher's Z transform."))
+    length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
+    length(x) > 3 || throw(ArgumentError("length(x) must be > 3 for Fisher's Z transform."))
 
     return cir(; r=cor(x, y), n=length(x), cl=cl)
 
@@ -267,9 +276,10 @@ Transforms `r` to `z = arctanh(r)`, applies the normal CI, then back-transforms 
 """
 function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
     _in(r, (-1.0, 1.0), "r")
-    !(n > 3) && throw(ArgumentError("n must be > 3 for Fisher's Z transform."))
+    n > 3 || throw(ArgumentError("n must be > 3 for Fisher's Z transform."))
 
     # standard error of Fisher's Z
     se = 1 / sqrt(n - 3)
@@ -277,10 +287,10 @@ function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64
     z_score = rfz(r)
     z_crit  = cl2z(cl)
 
-    ci_l = tanh(z_score - z_crit * se)
-    ci_u = tanh(z_score + z_crit * se)
+    ll = tanh(z_score - z_crit * se)
+    ul = tanh(z_score + z_crit * se)
 
-    return (ci_l, ci_u)
+    return (ll, ul)
 
 end
 
@@ -308,8 +318,9 @@ Calculate the confidence interval for the standard deviation using the chi-squar
 """
 function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
     α = 1 - cl
     s = std(x)
@@ -349,8 +360,9 @@ Calculate the confidence interval for the variance using the chi-squared distrib
 """
 function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
     α = 1 - cl
     v = var(x)

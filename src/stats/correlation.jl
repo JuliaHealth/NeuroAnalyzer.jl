@@ -32,7 +32,9 @@ Applies `z = atanh(r)`. Because `atanh(±1)` is infinite, the boundary values `r
 """
 function rfz(r::Float64)::Float64
 
+    # validate
     _in(r, (-1.0, 1.0), "r")
+
     # clamp boundary values to avoid ±Inf from atanh(±1)
     r == 1.0  && return atanh(1.0 - eps())
     r == -1.0 && return atanh(-1.0 + eps())
@@ -73,10 +75,11 @@ Both samples must have `n > 3` for the Fisher Z standard error `1/√(n − 3)` 
 """
 function r1r2_zscore(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)::Float64
 
+    # validate
     _in(r1, (-1.0, 1.0), "r1")
     _in(r2, (-1.0, 1.0), "r2")
-    !(n1 > 3) && throw(ArgumentError("n1 must be > 3 (required for Fisher's Z standard error)."))  # was: > 0
-    !(n2 > 3) && throw(ArgumentError("n2 must be > 3 (required for Fisher's Z standard error)."))  # was: > 0
+    n1 > 3 || throw(ArgumentError("n1 must be > 3 (required for Fisher's Z standard error)."))
+    n2 > 3 || throw(ArgumentError("n2 must be > 3 (required for Fisher's Z standard error)."))
 
     # Fisher z-transform both coefficients, then standardize the difference
     z = (rfz(r1) - rfz(r2)) / sqrt(1 / (n1 - 3) + 1 / (n2 - 3))
@@ -126,11 +129,12 @@ function cor_test(
     p::Float64,
 }
 
-    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
-    !(length(s1) > 3) && throw(ArgumentError("length(s1) must be > 3 (required for confidence interval)."))
+    # validate
+    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
+    length(s1) > 3 || throw(ArgumentError("length(s1) must be > 3 (required for confidence interval)."))
 
-    t  = CorrelationTest(s1, s2)
-    p  = pvalue(t)
+    t = CorrelationTest(s1, s2)
+    p = pvalue(t)
     p < eps() && (p = eps())
     df = length(s1) + length(s2) - 2
 

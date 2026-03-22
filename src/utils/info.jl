@@ -31,15 +31,15 @@ function _band_table(band::Symbol, nqf::Float64)::Union{Tuple{Float64, Float64},
     band === :theta        && return (4.0,  8.0)
     band === :alpha        && return (8.0, 13.0)
     band === :alpha_lower  && return (8.0, 10.5)
-    band === :alpha_higher && return (10.5,13.0)
-    band === :beta         && return (14.0,30.0)
-    band === :beta_lower   && return (14.0,25.0)
-    band === :beta_higher  && return (25.0,30.0)
-    band === :gamma        && return (30.0,150.0)
+    band === :alpha_higher && return (10.5, 13.0)
+    band === :beta         && return (14.0, 30.0)
+    band === :beta_lower   && return (14.0, 25.0)
+    band === :beta_higher  && return (25.0, 30.0)
+    band === :gamma        && return (30.0, 150.0)
     band === :gamma_1      && return (30.0, 40.0)
     band === :gamma_2      && return (40.0, 50.0)
     band === :gamma_lower  && return (30.0, 80.0)
-    band === :gamma_higher && return (80.0,150.0)
+    band === :gamma_higher && return (80.0, 150.0)
 end
 
 

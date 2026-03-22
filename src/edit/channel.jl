@@ -479,7 +479,7 @@ function add_channel(
         ]
         obj_new.header.recording[:bad_channel] = [
             obj_new.header.recording[:bad_channel];
-            zeros(Bool, length(data))
+            zeros(Bool, size(data, 1))
         ]
     else
         obj_new.data = data
@@ -487,7 +487,7 @@ function add_channel(
         obj_new.header.recording[:channel_type] = string.(type)
         obj_new.header.recording[:unit] = unit
         obj_new.header.recording[:channel_order] = collect(1:size(data, 1))
-        obj_new.header.recording[:bad_channel] = zeros(Bool, length(data))
+        obj_new.header.recording[:bad_channel] = zeros(Bool, size(data, 1))
     end
 
     push!(obj_new.history, "add_channel(OBJ, data, label=$label, type=$type, unit=$unit)")

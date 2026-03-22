@@ -23,14 +23,16 @@ so a factor of `10⁻³` is applied to convert the raw product to mC.
 - `Float64`: total charge in mC
 
 # Throws
+
 - `ArgumentError`: if any argument is ≤ 0
 """
 function ect_charge(; pw::Real, pint::Real, pf::Real, duration::Real)::Float64
 
-    !(pw > 0) && throw(ArgumentError("pw must be > 0."))
-    !(pint > 0) && throw(ArgumentError("pint must be > 0."))
-    !(pf > 0) && throw(ArgumentError("pf must be > 0."))
-    !(duration > 0) && throw(ArgumentError("duration must be > 0."))
+    # validate
+    pw > 0 || throw(ArgumentError("pw must be > 0."))
+    pint > 0 || throw(ArgumentError("pint must be > 0."))
+    pf > 0 || throw(ArgumentError("pf must be > 0."))
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
 
     # unit conversion: ms × mA × Hz × s → mC requires a factor of 10⁻³
     return pw * pint * pf * duration * 1e-3

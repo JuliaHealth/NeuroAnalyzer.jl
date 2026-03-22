@@ -95,7 +95,7 @@ function epoch(
     obj_new.header.recording[:epoch_id] = epoch_id
 
     # bad channels
-    obj_new.header.recording[:bad_channel] = zeros(Bool, length(epochs))
+    obj_new.header.recording[:bad_channel] = zeros(Bool, size(obj_new.data, 1))
 
     # update time
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)

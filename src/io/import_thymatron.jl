@@ -164,7 +164,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         line_frequency = 50,
         sampling_rate = sampling_rate,
         gain = ones(ch_n),
-        bad_channels = zeros(Bool, size(data, 1)),
+        bad_channels = zeros(Bool, ch_n)
     )
     e = _create_experiment(name = "", notes = "", design = "")
 

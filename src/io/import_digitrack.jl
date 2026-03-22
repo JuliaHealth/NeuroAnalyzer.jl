@@ -137,7 +137,8 @@ function import_digitrack(
         line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
         gain = ones(ch_n),
-        bad_channels = zeros(Bool, size(data, 1)))
+        bad_channels = zeros(Bool, ch_n)
+    )
     e   = _create_experiment(name = "", notes = "", design = "")
     hdr = _create_header(subject = s, recording = r, experiment = e)
 

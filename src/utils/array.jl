@@ -141,7 +141,7 @@ function perm_cmp(
     # build binary significance mask: true = |z| ≥ threshold (significant)
     bm = BitMatrix(abs.(zmap) .>= zval)
 
-    return (zmap=zmap, bm=bm)
+    return (; zmap, bm)
 
 end
 

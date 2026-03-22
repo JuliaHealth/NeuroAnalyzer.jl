@@ -278,7 +278,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         line_frequency = 50,
         sampling_rate = sampling_rate,
         gain = gain,
-        bad_channels = zeros(Bool, size(data, 1)),
+        bad_channels = zeros(Bool, ch_n)
     )
     e = _create_experiment(name = exp_name, notes = exp_notes, design = exp_design)
 

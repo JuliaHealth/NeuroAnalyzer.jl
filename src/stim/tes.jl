@@ -44,9 +44,10 @@ function tdcs_dose(;
     charge_density::Float64
 }
 
-    !(current  > 0) && throw(ArgumentError("current must be > 0."))
-    !(pad_area > 0) && throw(ArgumentError("pad_area must be > 0."))
-    !(duration > 0) && throw(ArgumentError("duration must be > 0."))
+    # validate
+    current  > 0 || throw(ArgumentError("current must be > 0."))
+    pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
 
     # Unit conversions:
     #   current:   mA → A    (÷ 1_000)
@@ -62,7 +63,7 @@ function tdcs_dose(;
     # [kC/m²]
     charge_density  = (charge / 1_000) / a_m2
 
-    return (charge=charge, current_density=current_density, charge_density=charge_density)
+    return (; charge, current_density, charge_density)
 end
 
 """
@@ -133,7 +134,7 @@ function tacs_dose(;
     current_density = i_A / a_m2
     charge_density = (charge / 1_000) / a_m2
 
-    return (charge=charge, current_density=current_density, charge_density=charge_density)
+    return (; charge, current_density, charge_density)
 end
 
 """
@@ -203,7 +204,7 @@ function tpcs_dose(;
     current_density = i_A / a_m2
     charge_density = (charge / 1_000) / a_m2
 
-    return (charge=charge, current_density=current_density, charge_density=charge_density)
+    return (; charge, current_density, charge_density)
 end
 
 """
@@ -253,18 +254,19 @@ function tes_protocol(;
     sham::Bool
 )::Dict
 
+    # validate
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
-    !(current > 0) && throw(ArgumentError("current must be > 0 mA."))
+    current > 0 || throw(ArgumentError("current must be > 0 mA."))
     if type === :tACS || type === :tRNS
-        !(frequency > 0) && throw(ArgumentError("frequency must be > 0 Hz."))
+        frequency > 0 || throw(ArgumentError("frequency must be > 0 Hz."))
     end
-    !(anode_size[1] > 0) && throw(ArgumentError("anode_size width must be > 0 mm."))
-    !(anode_size[2] > 0) && throw(ArgumentError("anode_size height must be > 0 mm."))
-    !(cathode_size[1] > 0) && throw(ArgumentError("cathode_size width must be > 0 mm."))
-    !(cathode_size[2] > 0) && throw(ArgumentError("cathode_size height must be > 0 mm."))
-    !(duration > 0) && throw(ArgumentError("duration must be > 0 s."))
-    !(ramp_in  >= 0) && throw(ArgumentError("ramp_in must be ≥ 0 s."))
-    !(ramp_out >= 0) && throw(ArgumentError("ramp_out must be ≥ 0 s."))
+    anode_size[1] > 0 || throw(ArgumentError("anode_size width must be > 0 mm."))
+    anode_size[2] > 0 || throw(ArgumentError("anode_size height must be > 0 mm."))
+    cathode_size[1] > 0 || throw(ArgumentError("cathode_size width must be > 0 mm."))
+    cathode_size[2] > 0 || throw(ArgumentError("cathode_size height must be > 0 mm."))
+    duration > 0 || throw(ArgumentError("duration must be > 0 s."))
+    ramp_in  >= 0 || throw(ArgumentError("ramp_in must be ≥ 0 s."))
+    ramp_out >= 0 || throw(ArgumentError("ramp_out must be ≥ 0 s."))
 
     protocol = Dict(
         :type => type,

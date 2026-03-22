@@ -218,7 +218,8 @@ function import_ft(
             line_frequency = 50, # TODO: make this a keyword argument
             sampling_rate = sampling_rate,
             gain = ones(ch_n),
-            bad_channels = zeros(Bool, size(data, 1)))
+            bad_channels = zeros(Bool, ch_n)
+        )
 
     elseif data_type == "meg"
 
@@ -355,7 +356,7 @@ function import_ft(
             magnetometers = magnetometers,
             gradiometers = gradiometers,
             coil_type = coil_type,
-            bad_channels = zeros(Bool, size(data,1)),
+            bad_channels = zeros(Bool, ch_n),
             ssp_labels = ssp_labels,
             ssp_channels = ssp_channels,
             ssp_data = ssp_data)
@@ -425,7 +426,8 @@ function import_ft(
             det_labels = det_labels,
             opt_labels = opt_labels,
             sampling_rate = sampling_rate,
-            bad_channels = zeros(Bool, size(data, 1)))
+            bad_channels = zeros(Bool, ch_n)
+        )
     end
 
     s   = _create_subject(id = "",

@@ -46,36 +46,36 @@ Plot signal.
 - `GLMakie.Figure`
 """
 function plot(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = "all",
-        ep::Int64 = 1,
-        seg::Tuple{Real, Real} = (0, 10),
-        tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
-        rt::Union{Nothing, Real, AbstractVector} = nothing,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        markers::Bool = true,
-        scale::Bool = true,
-        group_ch::Bool = true,
-        type::Symbol = :normal,
-        avg::Bool = true,
-        ci95::Bool = false,
-        n_channels::Int64 = 20,
-        n_epochs::Int64 = 5,
-        cb::Bool = true,
-        cb_title::String = "default",
-        peaks::Bool = true,
-        leg::Bool = true,
-        yrev::Bool = false,
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        zl::Bool = true,
-        mono::Bool = false,
-        res::Int64 = 1,
-        snap::Bool = true,
-        gui::Bool = true
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    ep::Int64 = 1,
+    seg::Tuple{Real, Real} = (0, 10),
+    tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
+    rt::Union{Nothing, Real, AbstractVector} = nothing,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    markers::Bool = true,
+    scale::Bool = true,
+    group_ch::Bool = true,
+    type::Symbol = :normal,
+    avg::Bool = true,
+    ci95::Bool = false,
+    n_channels::Int64 = 20,
+    n_epochs::Int64 = 5,
+    cb::Bool = true,
+    cb_title::String = "default",
+    peaks::Bool = true,
+    leg::Bool = true,
+    yrev::Bool = false,
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    zl::Bool = true,
+    mono::Bool = false,
+    res::Int64 = 1,
+    snap::Bool = true,
+    gui::Bool = true
+)::GLMakie.Figure
 
     n_channels > nchannels(obj) && (n_channels = nchannels(obj))
     n_epochs > nepochs(obj) && (n_epochs = nepochs(obj))
@@ -101,7 +101,7 @@ function plot(
             ks = ks,
             zl = zl,
             mono = mono,
-            gui = gui,
+            gui = gui
         )
     elseif datatype(obj) == "mep"
         fig = plot_mep(
@@ -122,7 +122,7 @@ function plot(
             ks = ks,
             zl = zl,
             mono = mono,
-            gui = gui,
+            gui = gui
         )
     else
         if nepochs(obj) == 1
@@ -143,7 +143,7 @@ function plot(
                 mono = mono,
                 res = res,
                 snap = snap,
-                gui = gui,
+                gui = gui
             )
         else
             fig = plot_ep(
@@ -163,7 +163,7 @@ function plot(
                 n_epochs = n_epochs,
                 mono = mono,
                 res = res,
-                gui = gui,
+                gui = gui
             )
         end
     end
@@ -199,23 +199,24 @@ Plot signal.
 - `GLMakie.Figure`
 """
 function plot(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = "all",
-        seg::Tuple{Real, Real} = (0, 10),
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        scale::Bool = true,
-        group_ch::Bool = true,
-        n_channels::Int64 = 20,
-        res::Int64 = 1,
-        gui::Bool = true
-    )::GLMakie.Figure
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    seg::Tuple{Real, Real} = (0, 10),
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    scale::Bool = true,
+    group_ch::Bool = true,
+    n_channels::Int64 = 20,
+    res::Int64 = 1,
+    gui::Bool = true
+)::GLMakie.Figure
 
-    !(datatype(obj1) in ["eeg", "meg"]) && throw(ArgumentError("This function works for continuous EEG and MEG objects."))
-    !(datatype(obj2) in ["eeg", "meg"]) && throw(ArgumentError("This function works for continuous EEG and MEG objects."))
-    !(nepochs(obj1) == 1) && throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    # validate
+    datatype(obj1) in ["eeg", "meg"] || throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    datatype(obj2) in ["eeg", "meg"] || throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    nepochs(obj1) == 1 || throw(ArgumentError("This function works for continuous EEG and MEG objects."))
 
     fig = plot_cont(
         obj1,
@@ -256,17 +257,22 @@ Plot continuous signal.
 - `GLMakie.Figure`
 """
 function plot(
-        t::AbstractVector, s::AbstractVector; xlabel::String = "Time [s]", ylabel::String = "Amplitude", title::String = ""
-    )::GLMakie.Figure
+    t::AbstractVector,
+    s::AbstractVector;
+    xlabel::String = "Time [s]",
+    ylabel::String = "Amplitude",
+    title::String = ""
+)::GLMakie.Figure
 
-    !(length(t) == length(s)) && throw(ArgumentError("Length of s must equal length of t."))
+    # validate
+    length(t) == length(s) || throw(ArgumentError("Length of s must equal length of t."))
 
     # prepare plot
     GLMakie.activate!(title = "plot()")
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -280,7 +286,7 @@ function plot(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     if minimum(s) == 0
         GLMakie.ylims!(ax, 0, extrema(s)[2] * 1.1)
@@ -293,7 +299,12 @@ function plot(
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    GLMakie.lines!(ax, t, s, color = :black)
+    GLMakie.lines!(
+        ax,
+        t,
+        s,
+        color = :black
+    )
 
     return fig
 

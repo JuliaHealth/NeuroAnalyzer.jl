@@ -21,9 +21,9 @@ Algorithm:
 
 Named tuple:
 
-- `s_avg::Vector{Float64}`: bootstrap grand mean (averaged across all `n1` resamples)
-- `s_ci_l::Vector{Float64}`: lower CI bound at each time point
-- `s_ci_h::Vector{Float64}`: upper CI bound at each time point
+- `gm::Vector{Float64}`: bootstrap grand mean (averaged across all `n1` resamples)
+- `ll::Vector{Float64}`: lower CI bound at each time point
+- `ul::Vector{Float64}`: upper CI bound at each time point
 
 # Throws
 
@@ -39,17 +39,20 @@ function bootstrap_ci(
     n2::Int64 = 1000,
     cl::Float64 = 0.95
 )::@NamedTuple{
-    s_avg::Vector{Float64},
-    s_ci_l::Vector{Float64},
-    s_ci_h::Vector{Float64}
+    gm::Vector{Float64},
+    ll::Vector{Float64},
+    ul::Vector{Float64}
 }
 
+    # validate
     _bin(cl, (0.0, 1.0), "cl")
-    !(n1 > 0) && throw(ArgumentError("n1 must be > 0."))
-    !(n2 > 0) && throw(ArgumentError("n2 must be > 0."))
+    n1 > 0 || throw(ArgumentError("n1 must be > 0."))
+    n2 > 0 || throw(ArgumentError("n2 must be > 0."))
 
-    tp_n = size(s, 1) # number of time points
-    ep_n = size(s, 2) # number of epochs
+    # number of time points
+    tp_n = size(s, 1)
+    # number of epochs
+    ep_n = size(s, 2)
 
     # stage 1: build n1 bootstrap mean traces of shape (n1 × tp_n)
     progbar = Progress(n1, dt=1, barlen=20, color=:white, enabled=progress_bar)
@@ -69,8 +72,8 @@ function bootstrap_ci(
     end
 
     # stage 2: derive CI bounds from the empirical quantiles of the bootstrap distribution
-    s_ci_l = zeros(tp_n)
-    s_ci_h = zeros(tp_n)
+    ll = zeros(tp_n)
+    ul = zeros(tp_n)
     # lower tail probability
     ci_l = (1.0 - cl) / 2
     # upper tail probability
@@ -82,13 +85,13 @@ function bootstrap_ci(
 
     @inbounds for tp in axes(s_boot, 2)
         tpt = sort(@view s_boot[:, tp])
-        s_ci_l[tp] = tpt[ci_l_idx]
-        s_ci_h[tp] = tpt[ci_h_idx]
+        ll[tp] = tpt[ci_l_idx]
+        ul[tp] = tpt[ci_h_idx]
     end
 
-    s_avg = vec(mean(s_boot, dims=1))
+    gm = vec(mean(s_boot, dims=1))
 
-    return (s_avg=s_avg, s_ci_l=s_ci_l, s_ci_h=s_ci_h)
+    return (; gm, ll, ul)
 
 end
 
@@ -126,10 +129,13 @@ function bootstrap_stat(
     f::String
 )::AbstractVector
 
-    !(n1 > 0) && throw(ArgumentError("n1 must be > 0."))
-    !(n2 > 0) && throw(ArgumentError("n2 must be > 0."))
+    # validate
+    n1 > 0 || throw(ArgumentError("n1 must be > 0."))
+    n2 > 0 || throw(ArgumentError("n2 must be > 0."))
 
+    # number of time points
     tp_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 2)
 
     # dry run on the first epoch to infer the output element type and validate f
@@ -141,8 +147,8 @@ function bootstrap_stat(
         throw(ArgumentError("Formula dry-run failed. Check expression `f`. Error: $err"))
     end
 
-    out     = zeros(typeof(out_tmp), n1)
-    s_boot  = zeros(n1, tp_n)
+    out = zeros(typeof(out_tmp), n1)
+    s_boot = zeros(n1, tp_n)
 
     # initialize progress bar
     progbar = Progress(n1, dt=1, barlen=20, color=:white, enabled=progress_bar)

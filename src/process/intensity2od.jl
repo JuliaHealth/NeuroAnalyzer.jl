@@ -38,10 +38,12 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 - `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function intensity2od(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int")
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int")
+)::NeuroAnalyzer.NEURO
 
-    !(length(get_channel(obj, type = "nirs_int")) > 0) && throw(ArgumentError("OBJ does not contain NIRS intensity channels."))
+    # validate
+    length(get_channel(obj, type = "nirs_int")) > 0 || throw(ArgumentError("OBJ does not contain NIRS intensity channels."))
 
     ch = get_channel(obj, ch = ch)
     _check_datatype(obj, "nirs")
@@ -52,16 +54,18 @@ function intensity2od(
     # add channels
     obj_new.data = vcat(
         obj.data[ch, :, :],
-        reshape(intensity2od(obj.data[ch, :, :]), length(ch), epoch_len(obj), nepochs(obj)),
+        reshape(intensity2od(@view(obj.data[ch, :, :])), length(ch), epoch_len(obj), nepochs(obj)),
         obj.data[setdiff(collect(axes(obj.data, 1)), ch), :, :],
     )
 
     # update header
     obj_new.header.recording[:wavelength_index] = vcat(
-        obj.header.recording[:wavelength_index][ch], obj.header.recording[:wavelength_index][ch]
+        obj.header.recording[:wavelength_index][ch],
+        obj.header.recording[:wavelength_index][ch]
     )
     obj_new.header.recording[:optode_pairs] = vcat(
-        obj.header.recording[:optode_pairs][ch, :], obj.header.recording[:optode_pairs][ch, :]
+        obj.header.recording[:optode_pairs][ch, :],
+        obj.header.recording[:optode_pairs][ch, :]
     )
     obj_new.header.recording[:channel_type] = vcat(
         obj.header.recording[:channel_type][ch],
@@ -78,11 +82,7 @@ function intensity2od(
         obj.header.recording[:unit][ch],
         obj.header.recording[:unit][setdiff(collect(axes(obj.data, 1)), ch)],
     )
-    obj_new.header.recording[:bad_channel] = vcat(
-        obj.header.recording[:bad_channel][ch],
-        obj.header.recording[:bad_channel][ch],
-        obj.header.recording[:bad_channel][setdiff(collect(axes(obj.data, 1)), ch)],
-    )
+    obj_new.header.recording[:bad_channel] = zeros(Bool, size(obj_new.data, 1))
 
     push!(obj_new.history, "intensity2od(OBJ, ch=$ch)")
 
@@ -105,8 +105,9 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 - `Nothing`
 """
 function intensity2od!(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int")
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int")
+)::Nothing
 
     obj_new = intensity2od(obj, ch = ch)
     obj.data = obj_new.data

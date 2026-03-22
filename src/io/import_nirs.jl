@@ -77,8 +77,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     # signal data (intensity, raw)                                       #
     # ------------------------------------------------------------------ #
-    data     = Matrix(nirs["d"]')          # (ch_n × n_samples)
-    ch_type  = repeat(["nirs_int"], ch_n)
+    data = Matrix(nirs["d"]') # (ch_n × n_samples)
+    ch_type = repeat(["nirs_int"], ch_n)
     data_unit = repeat(["V"], ch_n)
 
     # ------------------------------------------------------------------ #
@@ -116,7 +116,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     # ------------------------------------------------------------------ #
-    # auxiliary channels                                                  #
+    # auxiliary channels                                                 #
     # ------------------------------------------------------------------ #
     aux = Matrix(nirs["aux"]')
     if length(aux) > 0
@@ -131,7 +131,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
     # ------------------------------------------------------------------ #
-    # pptode locations                                                   #
+    # optode locations                                                   #
     # SrcPos/DetPos are (n × 3) in the file; transpose to (3 × n)        #
     # ------------------------------------------------------------------ #
     src_pos = Matrix(probes["SrcPos"]') # 3 × n_src
@@ -194,8 +194,9 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         det_labels = det_labels,
         opt_labels = opt_labels,
         sampling_rate = sampling_rate,
-        bad_channels = zeros(Bool, size(data, 1)))
-    e   = _create_experiment(name = "", notes = "", design = "")
+        bad_channels = zeros(Bool, size(data, 1))
+    )
+    e = _create_experiment(name = "", notes = "", design = "")
     hdr = _create_header(subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)

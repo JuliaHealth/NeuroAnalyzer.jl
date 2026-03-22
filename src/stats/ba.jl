@@ -17,9 +17,9 @@ Computes the mean difference and the upper and lower limits of agreement (LoA), 
 
 Named tuple:
 
-- `m::Float64`: mean of the differences `x − y`
-- `s_u::Float64`: upper limit of agreement (`m + z × SD`)
-- `s_d::Float64`: lower limit of agreement (`m − z × SD`)
+- `md::Float64`: mean of the differences `x − y`
+- `ll::Float64`: lower limit of agreement (`md − z × SD`)
+- `ul::Float64`: upper limit of agreement (`md + z × SD`)
 
 # Throws
 
@@ -33,7 +33,7 @@ To produce a Bland-Altman plot:
 means = (x .+ y) ./ 2
 diffs = x .- y
 scatter(means, diffs)
-hline!([m, s_u, s_d])
+hline!([md, ul, ll])
 ```
 
 # See also
@@ -45,25 +45,26 @@ function ba(
     y::AbstractVector;
     la::Float64 = 0.95
 )::@NamedTuple{
-    m::Float64,
-    s_u::Float64,
-    s_d::Float64
+    md::Float64,
+    ul::Float64,
+    ll::Float64
 }
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
     _in(la, (0, 1), "la")
 
     # two-tailed Z-score for the requested confidence level
     z = p2z(1 - la; twotailed=true)
 
     d = x .- y
-    m = mean(d)
+    md = mean(d)
     sd = std(d)
 
-    s_u = z * sd
-    s_d = -z * sd
+    ul = z * sd
+    ll = -z * sd
 
-    return (m=m, s_u=s_u, s_d=s_d)
+    return (; md, ll, ul)
 
 end

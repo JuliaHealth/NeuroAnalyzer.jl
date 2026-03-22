@@ -235,10 +235,11 @@ function channel_reject(
     amp_t::Real = 400.0
 )::Vector{Bool}
 
-    !(!(p < 0 || p > 1)) && throw(ArgumentError("p must in [0.0, 1.0]."))
-    !(!(tc < 0 || tc > 1)) && throw(ArgumentError("tc must in [0.0, 1.0]."))
-    !(!(ransac_r < 0 || ransac_r > 1)) && throw(ArgumentError("ransac_r must in [0.0, 1.0]."))
-    !(!(ransac_tr < 0 || ransac_tr > 1)) && throw(ArgumentError("ransac_tr must in [0.0, 1.0]."))
+    # validate
+    _in(p, (0, 1), "p")
+    _in(tc, (0, 1), "p")
+    _in(ransac_r, (0, 1), "p")
+    _in(ransac_tr, (0, 1), "p")
 
     typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
@@ -263,9 +264,10 @@ function channel_reject(
 
     if :flat in method
 
-        !(w < ep_len) && throw(ArgumentError("w must be < $ep_len."))
+        # validate
+        w < ep_len || throw(ArgumentError("w must be < $ep_len."))
         _info("Using :flat method")
-        bad_chs = zeros(Bool, ch_n, ep_n)
+        bad_chs = zeros(Bool, ch_n)
         n_samples = size(obj.data, 2)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
@@ -356,7 +358,9 @@ function channel_reject(
     if :kurt in method
 
         _info("Using :kurt method")
-        !(z > 0) && throw(ArgumentError("z must be > 0."))
+        # validate
+        z > 0 || throw(ArgumentError("z must be > 0."))
+
         k = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
@@ -365,12 +369,14 @@ function channel_reject(
         k = normalize_zscore(k)
         bad_idx = abs.(k) .> z
         bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2))
+
     end
 
     if :z in method
 
         _info("Using :z method")
-        !(z > 0) && throw(ArgumentError("z must be > 0."))
+        # validate
+        z > 0 || throw(ArgumentError("z must be > 0."))
 
         # by global-channel threshold
         k = zeros(ch_n, ep_n)
@@ -402,7 +408,7 @@ function channel_reject(
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
-        !(length(setdiff(ch_list, chs)) == 0) && throw(ArgumentError("ch must contain only signal channels."))
+        length(setdiff(ch_list, chs)) == 0 || throw(ArgumentError("ch must contain only signal channels."))
         chs = intersect(obj.locs[!, :label], ch_list)
         locs = Base.filter(:label => in(chs), obj.locs)
 
@@ -572,10 +578,11 @@ function epoch_reject(
     nbad::Int64 = 1
 )::Vector{Int64}
 
-    !(!(p < 0 || p > 1)) && throw(ArgumentError("p must in [0.0, 1.0]."))
-    !(!(tc < 0 || tc > 1)) && throw(ArgumentError("tc must in [0.0, 1.0]."))
-    !(!(ransac_r < 0 || ransac_r > 1)) && throw(ArgumentError("ransac_r must in [0.0, 1.0]."))
-    !(!(ransac_tr < 0 || ransac_tr > 1)) && throw(ArgumentError("ransac_tr must in [0.0, 1.0]."))
+    # validate
+    _in(p, (0, 1), "p")
+    _in(tc, (0, 1), "p")
+    _in(ransac_r, (0, 1), "p")
+    _in(ransac_tr, (0, 1), "p")
     nbad >= 1 ||  throw(ArgumentError("nbad must be ≥ 1."))
     nbad <= size(obj, 1) || throw(ArgumentError("nbad must be ≤ $(size(obj, 1))."))
     typeof(method) != Vector{Symbol} && (method = [method])
@@ -601,7 +608,8 @@ function epoch_reject(
 
     if :flat in method
 
-        !(w < size(s, 2)) && throw(ArgumentError("w must be < $(size(s, 2))."))
+        # validate
+        w < size(s, 2) || throw(ArgumentError("w must be < $(size(s, 2))."))
         _info("Using :flat method")
         bad_chs = zeros(Bool, ch_n, ep_n)
         n_samples = size(obj.data, 2)
@@ -648,7 +656,7 @@ function epoch_reject(
             bad_mat[:, ep_idx] = @views detect_euclid(obj.data[ch, :, ep_idx])
         end
 
-        # reductions are serial but vectorised — no loop needed
+        # reductions are serial but vectorized — no loop needed
         bc[ch] = bc[ch] .|| vec(any(bad_mat, dims = 2))
         append!(be, findall(vec(sum(bad_mat, dims = 1)) .>= nbad))
 
@@ -663,7 +671,7 @@ function epoch_reject(
         # variance outliers
         o = reshape(outlier_detect(vec(s_v), method = :iqr), ch_n, ep_n)
 
-        # parallelise only the expensive per-epoch variance computation
+        # parallelize only the expensive per-epoch variance computation
         s_mv_mat = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             # each thread writes to its own column — no overlap, no race condition
@@ -673,7 +681,7 @@ function epoch_reject(
         # flatten variance results in epoch order
         s_mv = vcat(s_mv, vec(s_mv_mat))
 
-        # vectorised reductions — no loop needed
+        # vectorized reductions — no loop needed
         bc[ch] = bc[ch] .|| vec(any(o, dims = 2))
         append!(be, findall(vec(sum(o, dims = 1)) .>= nbad))
 
@@ -706,7 +714,9 @@ function epoch_reject(
     if :kurt in method
 
         _info("Using :kurt method")
-        !(z > 0) && throw(ArgumentError("z must be > 0."))
+        # validate
+        z > 0 || throw(ArgumentError("z must be > 0."))
+
         k = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
@@ -723,7 +733,8 @@ function epoch_reject(
     if :z in method
 
         _info("Using :z method")
-        !(z > 0) && throw(ArgumentError("z must be > 0."))
+        # validate
+        z > 0 || throw(ArgumentError("z must be > 0."))
 
         # by global-channel threshold
         k = zeros(ch_n, ep_n)
@@ -759,7 +770,7 @@ function epoch_reject(
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
-        !(length(setdiff(ch_list, chs)) == 0) && throw(ArgumentError("ch must contain only signal channels."))
+        length(setdiff(ch_list, chs)) == 0 || throw(ArgumentError("ch must contain only signal channels."))
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
 
