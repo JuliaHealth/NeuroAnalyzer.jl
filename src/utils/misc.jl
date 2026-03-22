@@ -35,7 +35,9 @@ Thin wrapper around `Base.range` that always materialises the result as a `Vecto
 """
 function linspace(start::Real, stop::Real, n::Int64)::Vector{Float64}
 
+    # validate
     n >= 2 || throw(ArgumentError("n must be ≥ 2."))
+
     return collect(range(start, stop, n))
 
 end
@@ -66,9 +68,11 @@ Requires `start > 0` and `stop > 0` (logarithmic spacing is undefined for non-po
 """
 function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
+    # validate
     n >= 2 || throw(ArgumentError("n must be ≥ 2."))
     start > 0 || throw(ArgumentError("start must be > 0."))
     stop > 0 || throw(ArgumentError("stop must be > 0."))
+
     return Float64.(logrange(start, stop, n))
 
 end
@@ -163,6 +167,7 @@ Compute the cumulative sum of a 3-dimensional array along the sample (second) ax
 """
 function cums(s::Array{<:Real, 3})::Array{Float64, 3}
 
+    # number of channels and epochs
     ch_n, _, ep_n = size(s)
 
     # pre-allocate output
@@ -236,6 +241,7 @@ function ntapers(obj::NeuroAnalyzer.NEURO; df::Real)::Int64
 
     # validate that df lies within (0, Nyquist)
     _bin(df, (0, sr(obj) / 2))
+
     # epoch duration in seconds
     n = epoch_len(obj) / sr(obj)
     nt = round(Int64, df * n) - 1
@@ -270,7 +276,10 @@ function trtm(
     ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj))
 )::Matrix{Float64}
 
+    # validate
     _check_epochs(obj, ep)
+
+    # resolve channel names to indices
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]

@@ -13,7 +13,7 @@ For the unwrapped phase (suitable for differentiating to obtain instantaneous fr
 
 # Returns
 
-- `Vector{Float64}`: instantaneous phase in radians ∈ (−π, π].
+- `Vector{Float64}`: instantaneous phase in radians ∈ (−π, π]
 
 # Throws
 
@@ -25,7 +25,8 @@ For the unwrapped phase (suitable for differentiating to obtain instantaneous fr
 """
 function phases(s::AbstractVector)::Vector{Float64}
 
-    !(length(s) > 0) && throw(ArgumentError("s must not be empty."))
+    # validate
+    length(s) > 0 || throw(ArgumentError("s must not be empty."))
 
     # DSP.hilbert() returns the analytic signal z = s + i·H(s)
     # Base.angle(z) = atan(imag(z), real(z)) gives the wrapped instantaneous phase

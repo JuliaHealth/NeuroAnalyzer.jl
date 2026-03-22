@@ -68,7 +68,9 @@ function vsearch(
     Tuple{Int64, Real}
 }
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+
     d, idx = findmin(abs.(x .- y))
 
     return acc ? (idx, d) : idx
@@ -108,8 +110,9 @@ function vsearch(
     Tuple{AbstractVector, AbstractVector}
 }
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(length(y) <= length(x)) && throw(ArgumentError("length(y) must be ≤ length(x)."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    length(y) <= length(x) || throw(ArgumentError("length(y) must be ≤ length(x)."))
 
     idx = Vector{Int64}(undef, length(y))
     d = Vector{Float64}(undef, length(y))
@@ -141,9 +144,10 @@ Split a vector into contiguous pieces of equal length `n`.
 """
 function vsplit(x::AbstractVector, n::Int64 = 1)::Vector{AbstractVector}
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
-    !(length(x) % n == 0) && throw(ArgumentError("length(x) must be a multiple of n."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
+    length(x) % n == 0 || throw(ArgumentError("length(x) must be a multiple of n."))
 
     n_pieces = length(x) ÷ n
 
@@ -177,9 +181,10 @@ Find the minimum value of `x` and return the corresponding value from `y` at tha
 """
 function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(length(y) > 0) && throw(ArgumentError("y must not be empty."))
-    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    length(y) > 0 || throw(ArgumentError("y must not be empty."))
+    length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
 
     idx = vsearch(minimum(x), x)
 
@@ -212,9 +217,10 @@ Find the maximum value of `x` and return the corresponding value from `y` at tha
 """
 function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(length(y) > 0) && throw(ArgumentError("y must not be empty."))
-    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    length(y) > 0 || throw(ArgumentError("y must not be empty."))
+    length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
 
     idx = vsearch(maximum(x), x)
 
@@ -254,9 +260,10 @@ function vreduce(
     n::Float64 = 0.5
 )::Tuple{AbstractVector, AbstractVector}
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(length(f) > 0) && throw(ArgumentError("f must not be empty."))
-    !(length(x) == length(f)) && throw(ArgumentError("x and f must have the same length."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    length(f) > 0 || throw(ArgumentError("f must not be empty."))
+    length(x) == length(f) || throw(ArgumentError("x and f must have the same length."))
 
     # build the reduced frequency grid from rounded min/max frequencies
     f1 = round(f[vsearch(round(f[1]), f)])

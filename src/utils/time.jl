@@ -30,8 +30,10 @@ Sample numbering starts at 1: `t = 0` maps to sample 1, and any positive time is
 """
 function t2s(t::Real, fs::Int64)::Int64
 
-    !(t  >= 0) && throw(ArgumentError("t must be ≥ 0."))
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    t  >= 0 || throw(ArgumentError("t must be ≥ 0."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+
     return t == 0 ? 1 : ceil(Int64, t * fs)
 
 end
@@ -62,8 +64,9 @@ Sample numbering starts at 1: sample 1 maps to `t = 0.0`. Passing `s = 0` is inv
 """
 function s2t(s::Real, fs::Int64)::Float64
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(s >= 0) && throw(ArgumentError("s must be ≥ 0."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    s >= 0 || throw(ArgumentError("s must be ≥ 0."))
     if s == 0
         _warn("Sample number 0 is invalid; clamped to 1.")
         s = 1
@@ -145,7 +148,8 @@ Return a copy of a markers DataFrame with `:start` and `:length` columns convert
 """
 function markers_s2t(m::DataFrame; fs::Int64)::DataFrame
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     m_new = deepcopy(m)
     m_new[!, :start]  = s2t.(m[!, :start],  fs)
     m_new[!, :length] = s2t.(m[!, :length], fs)
@@ -178,7 +182,9 @@ Convert `:start` and `:length` columns of a markers DataFrame from sample number
 """
 function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+
     m[!, :start]  = s2t.(m[!, :start],  fs)
     m[!, :length] = s2t.(m[!, :length], fs)
 
@@ -229,6 +235,7 @@ Convert `:start` and `:length` columns of the object's markers DataFrame from sa
 function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
 
     markers_s2t!(obj.markers; fs=sr(obj))
+
     return nothing
 
 end
@@ -257,7 +264,10 @@ Return the time segment in seconds corresponding to a single epoch index.
 """
 function e2t(obj::NeuroAnalyzer.NEURO, ep::Int64)::Tuple{Real, Real}
 
+    # validate
     _check_epochs(obj, ep)
+
+    # epoch length
     el = epoch_len(obj)
     # first sample of this epoch
     es = (ep - 1) * el + 1
@@ -292,7 +302,10 @@ Return the time segment in seconds spanning a contiguous range of epoch indices.
 """
 function e2t(obj::NeuroAnalyzer.NEURO, ep::AbstractVector)::Tuple{Real, Real}
 
+    # validate
     _check_epochs(obj, ep)
+
+    # epoch length
     el = epoch_len(obj)
     # first sample of the first epoch
     es = (ep[1]   - 1) * el + 1

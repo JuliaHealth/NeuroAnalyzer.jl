@@ -29,8 +29,9 @@ function pad0(
     n::Int64
 )::Union{AbstractVector, AbstractArray}
 
-    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
-    !(ndims(x) <= 3) && throw(ArgumentError("pad0() supports only 1-, 2-, or 3-dimensional arrays."))
+    # validate
+    n >= 0 || throw(ArgumentError("n must be ≥ 0."))
+    ndims(x) <= 3 || throw(ArgumentError("pad0() supports only 1-, 2-, or 3-dimensional arrays."))
 
     # fast path: nothing to append
     n == 0 && return x
@@ -56,7 +57,7 @@ Pad an array with zeros along its second axis to the next power-of-2 length. Wor
 
 # Returns
 
-- `Union{AbstractVector, AbstractArray}`: padded array whose second dimension (or length, for 1-D) is a power of 2.
+- `Union{AbstractVector, AbstractArray}`: padded array whose second dimension (or length, for 1-D) is a power of 2
 
 # Throws
 
@@ -70,7 +71,8 @@ function pad2(
     x::Union{AbstractVector, AbstractArray}
 )::Union{AbstractVector, AbstractArray}
 
-    !(ndims(x) <= 3) && throw(ArgumentError("pad2() supports only 1-, 2-, or 3-dimensional arrays."))
+    # validate
+    ndims(x) <= 3 || throw(ArgumentError("pad2() supports only 1-, 2-, or 3-dimensional arrays."))
 
     if ndims(x) == 1
         n = nextpow2(length(x)) - length(x)
@@ -117,9 +119,10 @@ function padm(
     mode::Symbol = :all
 )::Union{AbstractVector, AbstractArray}
 
+    # validate
     _check_var(mode, [:all, :row], "mode")
-    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
-    !(ndims(x) <= 3) && throw(ArgumentError("padm() supports only 1-, 2-, or 3-dimensional arrays."))
+    n >= 0 || throw(ArgumentError("n must be ≥ 0."))
+    ndims(x) <= 3 || throw(ArgumentError("padm() supports only 1-, 2-, or 3-dimensional arrays."))
 
     # fast path: nothing to append
     n == 0 && return x

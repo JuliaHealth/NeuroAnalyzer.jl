@@ -31,10 +31,13 @@ function cwtfrq(
     wt::T = wavelet(Morlet(2π), β = 2)
 ) where {T <: CWT}
 
-    # validation
+    # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
+    _log_off()
     f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs), digits=2)
+    _log_on()
+
     # lowest scale returns a non-physical frequency; replace with DC (0 Hz)
     f[1] = 0.0
 
@@ -73,6 +76,7 @@ function cwtfrq(
     wt::T = wavelet(Morlet(2π), β = 2)
 ) where {T <: CWT}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # all epochs/channels share the same length → any single slice is representative
@@ -104,10 +108,6 @@ function cwtfrq(
     wt::T=wavelet(Morlet(2π), β=2)
 ) where {T <: CWT}
 
-    _log_off()
-    f = @views cwtfrq(obj.data[1, :, 1], fs = sr(obj), wt = wt)
-    _log_on()
-
-    return f
+    return cwtfrq(@view(obj.data[1, :, 1]), fs = sr(obj), wt = wt)
 
 end

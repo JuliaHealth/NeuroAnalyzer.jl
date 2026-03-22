@@ -29,9 +29,10 @@ The formula is: `n = round((a × fs) / (22 × bw))`, where 22 is the Harris empi
 """
 function fir_order_bw(; bw::Real, a::Real = 60, fs::Int64)::Int64
 
-    !(bw > 0) && throw(ArgumentError("bw must be > 0."))
-    !(a > 0) && throw(ArgumentError("a must be > 0."))
-    !(fs > 0) && throw(ArgumentError("fs must be > 0."))
+    # validate
+    bw > 0 || throw(ArgumentError("bw must be > 0."))
+    a > 0 || throw(ArgumentError("a must be > 0."))
+    fs > 0 || throw(ArgumentError("fs must be > 0."))
 
     return round(Int64, (a * fs) / (22 * bw))
 
@@ -82,11 +83,11 @@ The rule of thumb is that the filter should span 4–5 full cycles of the lowest
 
 # Returns
 
-- `Tuple{Int64, Int64}`: `(lower_order, upper_order)` recommended filter order range
+- `Tuple{Int64, Int64}`: recommended filter order range (lower_order, upper_order)
 
 # Throws
 
-- `ArgumentError`: if `fs ≤ 0` or `f ≤ 0`.
+- `ArgumentError`: if `fs ≤ 0` or `f ≤ 0`
 
 # See also
 
@@ -94,8 +95,9 @@ The rule of thumb is that the filter should span 4–5 full cycles of the lowest
 """
 function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
 
-    !(fs > 0) && throw(ArgumentError("fs must be > 0."))
-    !(f  > 0) && throw(ArgumentError("f must be > 0."))
+    # validate
+    fs > 0 || throw(ArgumentError("fs must be > 0."))
+    f > 0 || throw(ArgumentError("f must be > 0."))
 
     # samples per one full cycle of the lowest frequency of interest
     cycle_samples = t2s(1 / f, fs)
@@ -115,7 +117,7 @@ Convenience wrapper that reads the sampling rate from `obj`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `f::Real`: lower frequency bound of the analysed range in Hz; must be > 0
+- `f::Real`: lower frequency bound of the analyzed range in Hz; must be > 0
 
 # Returns
 
@@ -163,7 +165,7 @@ The order is estimated via the appropriate `DSP.jl` design function (`buttord`, 
 
 # Throws
 
-- `ArgumentError`: if `fprototype` or `ftype` is invalid, `bw ≤ 0`, `fs ≤ 0`, or `cutoff` has wrong length for the chosen `ftype`.
+- `ArgumentError`: if `fprototype` or `ftype` is invalid, `bw ≤ 0`, `fs ≤ 0`, or `cutoff` has wrong length for the chosen `ftype`
 
 # See also
 
@@ -179,12 +181,13 @@ function iir_order(;
     fs::Int64
 )::Int64
 
+    # validate
     _check_var(
         fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype"
     )
     _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-    !(bw > 0) && throw(ArgumentError("bw must be > 0."))
-    !(fs > 0) && throw(ArgumentError("fs must be > 0."))
+    bw > 0 || throw(ArgumentError("bw must be > 0."))
+    fs > 0 || throw(ArgumentError("fs must be > 0."))
 
     # nyquist frequency; used to normalise cutoff edges to [0, 1]
     nqf = fs / 2
@@ -278,7 +281,7 @@ function iir_order(
         bw = bw,
         rp = rp,
         rs = rs,
-        fs = sr(obj),
+        fs = sr(obj)
     )
 
 end

@@ -41,7 +41,7 @@ function ica_decompose(
     ic_mw::Matrix{Float64}
 }
 
-    # validation
+    # validate
     _check_var(f, [:tanh, :gaus], "f")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     n <= size(s, 1) || throw(ArgumentError("n must be ≤ number of channels."))
@@ -139,7 +139,7 @@ function ica_decompose(
     ic_var::Vector{Float64}
 }
 
-    # validation
+    # validate
     nepochs(obj) == 1 || throw(ArgumentError("ica_decompose() must be applied to continuous object."))
     signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
@@ -207,7 +207,7 @@ function ica_reconstruct(;
     keep::Bool = false
 )::Matrix{Float64}
 
-    # validation
+    # validate
     typeof(ic_idx) <: AbstractRange && (ic_idx = collect(ic_idx))
     size(ic, 1) == size(ic_mw, 2) || throw(ArgumentError("Dimension mismatch between ic ($(size(ic)))and ic_mw ($size(ic_mw)))."))
 
@@ -256,7 +256,7 @@ function ica_reconstruct(
     keep::Bool = false
 )::NeuroAnalyzer.NEURO
 
-    # validation
+    # validate
     nepochs(obj) == 1 || throw(ArgumentError("ica_reconstruct() must be applied to continuous object."))
 
     # resolve channel names to integer indices
@@ -345,7 +345,7 @@ function ica_remove(
     ic_mw::Matrix{Float64}
 )::NeuroAnalyzer.NEURO
 
-    # validation
+    # validate
     nepochs(obj) == 1 || throw(ArgumentError("ica_remove() must be applied to continuous object."))
 
     # resolve channel names to integer indices

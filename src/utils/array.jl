@@ -20,11 +20,16 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 
 # Returns
 
-- `l1::Float64`: L1 distance between `a1` and `a2`
+- `Float64`: L1 distance between `a1` and `a2`
+
+# Throws
+
+- `ArgumentError`: if `size(a1) ≠ size(a2)`
 """
 function l1(a1::AbstractArray, a2::AbstractArray)::Float64
 
-    !(size(a1) == size(a2)) && throw(ArgumentError("a1 and a2 must have the same size."))
+    # validate
+    size(a1) == size(a2) || throw(ArgumentError("a1 and a2 must have the same size."))
 
     return sum(abs.(a1 .- a2))
 
@@ -46,11 +51,16 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 
 # Returns
 
-- `l2::Float64`: L2 distance between `a1` and `a2`.
+- `Float64`: L2 distance between `a1` and `a2`.
+
+# Throws
+
+- `ArgumentError`: if `size(a1) ≠ size(a2)`
 """
 function l2(a1::AbstractArray, a2::AbstractArray)::Float64
 
-    !(size(a1) == size(a2)) && throw(ArgumentError("a1 and a2 must have the same size."))
+    # validate
+    size(a1) == size(a2) || throw(ArgumentError("a1 and a2 must have the same size."))
 
     return euclidean(a1, a2)
 
@@ -76,18 +86,26 @@ Named tuple:
 
 - `zmap::Matrix{Float64}`: Z-scored difference map `(a2 mean − a1 mean)` normalized by the permutation null distribution
 - `bm::BitMatrix`: Boolean mask where `true` indicates a **statistically significant** position (`|z| ≥ zval`)
+
+# Throws
+
+- `ArgumentError`: if `size(a1) ≠ size(a2)`, `perm_n ≤ 0`, or `p ∉ [0, 1]`
 """
 function perm_cmp(
     a1::Array{<:Real, 3},
     a2::Array{<:Real, 3};
     p::Float64 = 0.05,
     perm_n::Int64 = 1000
-)::@NamedTuple{zmap::Matrix{Float64}, bm::BitMatrix}
+)::@NamedTuple{
+    zmap::Matrix{Float64},
+    bm::BitMatrix
+}
 
-    !(size(a1) == size(a2)) && throw(ArgumentError("Both arrays must have the same size"))
-    !(perm_n > 0) && throw(ArgumentError("perm_n must be > 0."))
-    !(p >= 0) && throw(ArgumentError("p must be ≥ 0."))
-    !(p <= 1) && throw(ArgumentError("p must be ≤ 1."))
+    # validate
+    size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
+    perm_n > 0 || throw(ArgumentError("perm_n must be > 0."))
+    p >= 0 || throw(ArgumentError("p must be ≥ 0."))
+    p <= 1 || throw(ArgumentError("p must be ≤ 1."))
 
     # real observed difference (a2 − a1), averaged across epochs
     spec_diff = dropdims(mean(a2, dims = 3) .- mean(a1, dims = 3); dims = 3)
@@ -138,7 +156,7 @@ Average a 3-dimensional signal array across the trial (third) dimension.
 
 # Returns
 
-- `s_new::AbstractArray`: mean across epochs, shape `(channels, samples, 1)`
+- `AbstractArray`: mean across epochs, shape `(channels, samples, 1)`
 """
 function tavg(s::AbstractArray)::AbstractArray
 
@@ -164,45 +182,48 @@ Useful for downsampling a frequency axis (and its associated data) when the numb
 
 # Returns
 
-- `a_new::Array{eltype(a), ndims(a)}`: deduced data array
-- `f_new::Vector{eltype(f)}`: reduced frequency vector
+- `Array{eltype(a), ndims(a)}`: deduced data array
+- `Vector{eltype(f)}`: reduced frequency vector
 
 # Throws
 
 - `ArgumentError`: if `ndims(a) ∉ {2, 3}` or `size(a, 2) ≠ length(f)`
 """
 function areduce(
-    a::AbstractArray, f::AbstractVector; n::Float64 = 0.5
+    a::AbstractArray,
+    f::AbstractVector;
+    n::Float64 = 0.5
 )::Tuple{AbstractArray, AbstractVector}
 
-    !(ndims(a) <= 3) && throw(ArgumentError("areduce() only works for 2- and 3-dimensional arrays."))
-    !(size(a, 2) == length(f)) && throw(ArgumentError("size(a, 2) ($(size(a, 2))) must equal length(f) ($(length(f)))."))
+    # validate
+    ndims(a) <= 3 || throw(ArgumentError("areduce() only works for 2- and 3-dimensional arrays."))
+    size(a, 2) == length(f) || throw(ArgumentError("size(a, 2) ($(size(a, 2))) must equal length(f) ($(length(f)))."))
 
     # build the reduced frequency grid from the rounded min/max frequencies
     f1 = round(f[vsearch(round(f[1]), f)])
     f2 = round(f[vsearch(round(f[end]), f)])
-    f_new = collect(f1:n:f2)
+    frq_vec = collect(f1:n:f2)
 
     if ndims(a) == 2
         # allocate with matching element type to avoid silent precision loss
-        a_new = zeros(eltype(a), size(a, 1), length(f_new))
+        arr_new = zeros(eltype(a), size(a, 1), length(frq_vec))
         @inbounds for ch_idx in axes(a, 1)
-            for (idx, freq) in enumerate(f_new)
-                a_new[ch_idx, idx] = a[ch_idx, vsearch(freq, f)]
+            for (idx, freq) in enumerate(frq_vec)
+                arr_new[ch_idx, idx] = a[ch_idx, vsearch(freq, f)]
             end
         end
     else
         # allocate with matching element type to avoid silent precision loss
-        a_new = zeros(eltype(a), size(a, 1), length(f_new), size(a, 3))
+        arr_new = zeros(eltype(a), size(a, 1), length(frq_vec), size(a, 3))
         @inbounds for ep_idx in axes(a, 3)
             for ch_idx in axes(a, 1)
-                for (idx, freq) in enumerate(f_new)
-                    a_new[ch_idx, idx, ep_idx] = a[ch_idx, vsearch(freq, f), ep_idx]
+                for (idx, freq) in enumerate(frq_vec)
+                    arr_new[ch_idx, idx, ep_idx] = a[ch_idx, vsearch(freq, f), ep_idx]
                 end
             end
         end
     end
 
-    return a_new, f_new
+    return arr_new, frq_vec
 
 end

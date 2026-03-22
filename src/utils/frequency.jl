@@ -67,7 +67,7 @@ Computes `1000 / t`, rounded to 2 decimal places.
 
 # Returns
 
-- `f::Float64`: frequency in Hz
+- `Float64`: frequency in Hz
 
 # Throws
 
@@ -79,7 +79,8 @@ Computes `1000 / t`, rounded to 2 decimal places.
 """
 function t2f(t::Real)::Float64
 
-    !(t > 0) && throw(ArgumentError("t must be > 0."))
+    # validate
+    t > 0 || throw(ArgumentError("t must be > 0."))
 
     return round(1000 / t, digits = 2)
 
@@ -110,7 +111,8 @@ Computes `1000 / f`, rounded to 2 decimal places.
 """
 function f2t(f::Real)::Float64
 
-    !(f > 0) && throw(ArgumentError("f must be > 0."))
+    # validate
+    f > 0 || throw(ArgumentError("f must be > 0."))
 
     return round(1000 / f, digits = 2)
 
@@ -130,22 +132,24 @@ The sampling rate is inferred as `1 / (t[2] - t[1])`.
 
 # Returns
 
-- `hz::Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
-- `nqf::Float64`: Nyquist frequency in Hz
+- `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
+- `Float64`: Nyquist frequency in Hz
 
 # Throws
+
 - `ArgumentError`: if `length(t) < 2`
 
 # See also
 
-[`freqs(::AbstractVector, ::Int64)`](@ref),
-[`freqs(::Int64, ::Int64)`](@ref)
+[`freqs(::AbstractVector, ::Int64)`](@ref), [`freqs(::Int64, ::Int64)`](@ref)
 """
 function freqs(
-        t::Union{AbstractVector, AbstractRange}; nf::Bool = false
-    )::Tuple{Vector{Float64}, Float64}
+    t::Union{AbstractVector, AbstractRange};
+    nf::Bool = false
+)::Tuple{Vector{Float64}, Float64}
 
-    !(length(t) >= 2) && throw(ArgumentError("t must contain at least 2 elements."))
+    # validate
+    length(t) >= 2 || throw(ArgumentError("t must contain at least 2 elements."))
     
     # materialize ranges so indexing is always valid
     t = collect(t)
@@ -176,15 +180,15 @@ Return the frequency vector and Nyquist frequency for a signal vector.
 
 # Returns
 
-- `hz::Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
-- `nqf::Float64`: Nyquist frequency in Hz
+- `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
+- `Float64`: Nyquist frequency in Hz
 
 # Throws
+
 - `ArgumentError`: if `fs < 1`
 
 # See also
-[`freqs(::Union{AbstractVector, AbstractRange})`](@ref),
-[`freqs(::Int64, ::Int64)`](@ref)
+[`freqs(::Union{AbstractVector, AbstractRange})`](@ref), [freqs(::Int64, ::Int64)`](@ref)
 """
 function freqs(
     s::AbstractVector,
@@ -192,7 +196,9 @@ function freqs(
     nf::Bool = false
 )::Tuple{Vector{Float64}, Float64}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+
     # Nyquist frequency
     nqf = fs / 2
     # frequency vector
@@ -216,17 +222,16 @@ Return the frequency vector and Nyquist frequency for a signal of `n` samples.
 
 # Returns
 
-- `hz::Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
-- `nqf::Float64`: Nyquist frequency in Hz
+- `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
+- `Float64`: Nyquist frequency in Hz
 
 # Throws
 
-- `ArgumentError`: if `n < 1` or `fs < 1`.
+- `ArgumentError`: if `n < 1` or `fs < 1`
 
 # See also
 
-[`freqs(::Union{AbstractVector, AbstractRange})`](@ref),
-[`freqs(::AbstractVector, ::Int64)`](@ref)
+[`freqs(::Union{AbstractVector, AbstractRange})`](@ref), [`freqs(::AbstractVector, ::Int64)`](@ref)
 """
 function freqs(
     n::Int64,
@@ -234,7 +239,8 @@ function freqs(
     nf::Bool = false
 )::Tuple{Vector{Float64}, Float64}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     # Nyquist frequency
     nqf = fs / 2
@@ -260,10 +266,8 @@ Uses the first channel and first epoch of `obj` to infer signal length, and read
 
 # Returns
 
-Named tuple:
-
-- `hz::Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
-- `nqf::Float64`: Nyquist frequency in Hz
+- `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
+- `Float64`: Nyquist frequency in Hz
 
 # See also
 
@@ -271,13 +275,8 @@ Named tuple:
 """
 function freqs(
     obj::NeuroAnalyzer.NEURO; nf::Bool = false
-)::@NamedTuple{
-    hz::Vector{Float64},
-    nqf::Float64
-}
+)::Tuple{Vector{Float64}, Float64}
 
-    hz, nqf = freqs(obj.data[1, :, 1], sr(obj); nf = nf)
-
-    return (hz = hz, nqf = nqf)
+    return freqs(obj.data[1, :, 1], sr(obj); nf = nf)
 
 end

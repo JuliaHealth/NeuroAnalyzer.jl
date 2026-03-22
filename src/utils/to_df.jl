@@ -13,7 +13,7 @@ Each row corresponds to one time point across all epochs (epochs are concatenate
 
 # Returns
 
-- `DataFrame`: Table with `signal_len(obj)` rows and `nchannels(obj) + 1` columns (`[:time, ch1, ch2, …]`).
+- `DataFrame`: table with `signal_len(obj)` rows and `nchannels(obj) + 1` columns (`[:time, ch1, ch2, …]`)
 
 # Notes
 

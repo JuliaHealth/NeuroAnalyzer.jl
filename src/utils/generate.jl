@@ -32,7 +32,7 @@ Return an `n`-point symmetric window of the given type.
 
 # Returns
 
-- `w::Vector{Float64}`: generated window of length `n` (or `n + 1` if `even=true` and `n` was odd)
+- `Vector{Float64}`: generated window of length `n` (or `n + 1` if `even=true` and `n` was odd)
 
 # Throws
 - `ArgumentError`: if `n < 1` or `type` is not a recognised symbol
@@ -47,8 +47,9 @@ function generate_window(
     even::Bool = false
 )::Vector{Float64}
 
+    # validate
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 && throw(ArgumentError("n must be ≥ 1."))
 
     even && mod(n, 2) != 0 && (n += 1)
     t = range(0, 1, n)
@@ -56,36 +57,36 @@ function generate_window(
     if type === :hann
 
         # Standard Hann window: 0.5 × (1 − cos(2πt))
-        w = @. 0.5 * (1 - cos(2 * pi * t))
+        return @. 0.5 * (1 - cos(2 * pi * t))
 
     elseif type === :bh
 
         # Blackman-Harris 4-term window
-        w = @. 0.35875 - 0.48829 * cos(2 * pi * t) + 0.14128 * cos(4 * pi * t) -
+        return @. 0.35875 - 0.48829 * cos(2 * pi * t) + 0.14128 * cos(4 * pi * t) -
             0.01168 * cos(6 * pi * t)
 
     elseif type === :bohman
 
         # Bohman window (product of triangle and sinc)
-        w = @. (1 - abs(t * 2 - 1)) * cos(pi * abs(t * 2 - 1)) +
+        return @. (1 - abs(t * 2 - 1)) * cos(pi * abs(t * 2 - 1)) +
             (1 / pi) * sin(pi * abs(t * 2 - 1))
 
     elseif type === :flat
 
         # Flat-top 5-term window (minimises amplitude error)
-        w = @. 0.21557 - 0.41663 * cos(2 * pi * t) + 0.27726 * cos(4 * pi * t) -
+        return @. 0.21557 - 0.41663 * cos(2 * pi * t) + 0.27726 * cos(4 * pi * t) -
             0.08357 * cos(6 * pi * t) + 0.00694 * cos(8 * pi * t)
 
     elseif type === :bn
 
         # Blackman-Nuttall 4-term window
-        w = @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) -
+        return @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) -
             0.0106411 * cos(6 * pi * t)
 
     elseif type === :nutall
 
         # Nuttall 4-term window
-        w = @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) -
+        return @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) -
             0.012604 * cos(6 * pi * t)
 
     elseif type === :triangle
@@ -97,6 +98,7 @@ function generate_window(
         end
         w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
         w .= w ./ maximum(w)
+        return w
 
     elseif type === :exp
 
@@ -115,10 +117,9 @@ function generate_window(
             w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
             w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
         end
+        return w
 
     end
-
-    return w
 
 end
 
@@ -203,7 +204,7 @@ Computes `a × exp(i × 2πft)`.
 
 # Returns
 
-- cs::Vector{ComplexF64}`: complex exponential sampled at the points in `t`
+- `Vector{ComplexF64}`: complex exponential sampled at the points in `t`
 
 # See also
 
@@ -285,7 +286,7 @@ The wavelet is the product of a complex (or real) sine wave at frequency `f` and
 
 # Throws
 
-- `ArgumentError`: if `fs < 1`, `ncyc < 1`, or `t ≤ 0`.
+- `ArgumentError`: if `fs < 1`, `ncyc < 1`, or `t ≤ 0`
 
 # See also
 
@@ -299,9 +300,10 @@ function generate_morlet(
     complex::Bool = false
 )::Union{Vector{Float64}, Vector{ComplexF64}}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(ncyc >= 1) && throw(ArgumentError("ncyc must be ≥ 1."))
-    !(t > 0) && throw(ArgumentError("t must be > 0."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    ncyc >= 1 || throw(ArgumentError("ncyc must be ≥ 1."))
+    t > 0 || throw(ArgumentError("t must be > 0."))
 
     tvec = (-t):(1 / fs):t
     sin_wave = @. exp(im * 2 * pi * f * tvec)
@@ -345,13 +347,16 @@ function generate_gaussian(
     a::Real = 1.0
 )::Vector{Float64}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(ncyc >= 1) && throw(ArgumentError("ncyc must be ≥ 1."))
-    !(t > 0) && throw(ArgumentError("t must be > 0."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    ncyc >= 1 || throw(ArgumentError("ncyc must be ≥ 1."))
+    t > 0 || throw(ArgumentError("t must be > 0."))
 
+    # time points
     tvec = (-t):(1 / fs):t
     # Gaussian SD: wider for more cycles
     s = ncyc / (2 * pi * f)
+
     return @. a * exp(-0.5 * (tvec / s)^2)
 
 end
@@ -377,7 +382,7 @@ The raw noise is normalized to `[−1, 1]` and then scaled by `a`.
 - `Vector{Float64}`: noise signal of length `n`
 
 # Throws
-- `ArgumentError`: if `n < 1` or `type` is not a recognised symbol
+- `ArgumentError`: if `n < 1` or `type` is not a recognized symbol
 
 # See also
 
@@ -389,8 +394,9 @@ function generate_noise(
     type::Symbol = :whiten
 )::Vector{Float64}
 
+    # validate
     _check_var(type, [:whiten, :whiteu, :pink], "type")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     if type === :whiten
         s = randn(n)
@@ -435,9 +441,11 @@ The cumulative sum introduces temporal autocorrelation, producing a Brownian-mot
 """
 function generate_signal(n::Int64, a::Real = 1.0)::Vector{Float64}
 
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    # validate
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     s = cumsum(randn(n))
+
     return normalize_minmax(s) .* a
 
 end
@@ -479,11 +487,14 @@ function generate_morlet_fwhm(
     h::Float64 = 0.25
 )::Vector{ComplexF64}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(t > 0) && throw(ArgumentError("t must be > 0."))
-    !(h > 0) && throw(ArgumentError("h must be > 0."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    t > 0 || throw(ArgumentError("t must be > 0."))
+    h > 0 || throw(ArgumentError("h must be > 0."))
 
+    # time points
     tvec = (-t):(1 / fs):t
+
     return @. exp(2 * 1im * π * f * tvec) * exp((-4 * log(2) * tvec^2) / h^2)
 
 end

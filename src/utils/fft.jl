@@ -19,17 +19,18 @@ Appends `n` zeros to `x` before computing the FFT. When `n = 0` the input is tra
 
 # Returns
 
-- `fft0::Vector{ComplexF64}`: two-sided Fourier coefficients of length `L + n`.
+- `Vector{ComplexF64}`: two-sided Fourier coefficients of length `L + n`.
 
 # Throws
-- `ArgumentError`: If `n < 0`.
+- `ArgumentError`: if `n < 0`
 
 # See also
 [`fft2`](@ref), [`rfft0`](@ref)
 """
 function fft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
+    # validate
+    n >= 0 || throw(ArgumentError("n must be ≥ 0."))
 
     # when n == 0, skip pad0() to avoid an unnecessary copy.
     return n == 0 ? fft(x) : fft(pad0(x, n))
@@ -50,7 +51,7 @@ If a signal of length `L` was zero-padded by `n` samples before the forward FFT,
 
 # Returns
 
-- `ifft0::Vector{ComplexF64}`: reconstructed signal of length `length(x) - n`
+- `Vector{ComplexF64}`: reconstructed signal of length `length(x) - n`
 
 # Throws
 
@@ -62,8 +63,9 @@ If a signal of length `L` was zero-padded by `n` samples before the forward FFT,
 """
 function ifft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
-    !(n < length(x) ) && throw(ArgumentError("n must be < length(x); got n=$n, length(x)=$(length(x))."))
+    # validate
+    n >= 0 || throw(ArgumentError("n must be ≥ 0."))
+    n < length(x) || throw(ArgumentError("n must be < length(x); got n=$n, length(x)=$(length(x))."))
 
     # when n == 0 no trimming is needed; return the full IFFT directly
     n == 0 && return ifft(x)
@@ -86,7 +88,7 @@ Zero-padding to a power-of-2 length maximizes FFT efficiency (radix-2 algorithm)
 
 # Returns
 
-- `fft2::Vector{ComplexF64}`: two-sided Fourier coefficients of length `nextpow2(L)`
+- `Vector{ComplexF64}`: two-sided Fourier coefficients of length `nextpow2(L)`
 
 # See also
 
@@ -114,7 +116,7 @@ Thin wrapper around `Base.nextpow(2, x)` with an explicit positivity guard.
 
 # Returns
 
-- `nextpow2::Int64`: smallest integer `p` such that `p = 2^k ≥ x` for some `k ≥ 0`
+- `Int64`: smallest integer `p` such that `p = 2^k ≥ x` for some `k ≥ 0`
 
 # Throws
 
@@ -148,7 +150,7 @@ Appends `n` zeros to `x` before computing `rfft`, returning only the positive-fr
 
 # Returns
 
-- `rfft0::Vector{ComplexF64}`: one-sided Fourier coefficients of length `(L + n) ÷ 2 + 1`
+- `Vector{ComplexF64}`: one-sided Fourier coefficients of length `(L + n) ÷ 2 + 1`
 
 # Throws
 
@@ -160,7 +162,8 @@ Appends `n` zeros to `x` before computing `rfft`, returning only the positive-fr
 """
 function rfft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
+    # validate
+    n >= 0 || throw(ArgumentError("n must be ≥ 0."))
 
     # when n == 0, skip pad0() to avoid an unnecessary copy
     return n == 0 ? rfft(x) : rfft(pad0(x, n))
@@ -180,7 +183,7 @@ Zero-padding to a power-of-2 length maximizes FFT efficiency (radix-2 algorithm)
 
 # Returns
 
-- `rfft2::Vector{ComplexF64}`: one-sided Fourier coefficients of length `nextpow2(L) ÷ 2 + 1`
+- `Vector{ComplexF64}`: one-sided Fourier coefficients of length `nextpow2(L) ÷ 2 + 1`
 
 # See also
 

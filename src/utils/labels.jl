@@ -24,7 +24,8 @@ Generate all ordered pairwise label combinations from a single label vector.
 """
 function paired_labels(l::Vector{String}; unq::Bool = true)::Vector{String}
 
-    !(length(l) > 0) && throw(ArgumentError("l must not be empty."))
+    #  validate
+    length(l) > 0 || throw(ArgumentError("l must not be empty."))
 
     if unq
         # exclude diagonal (self-pairs): n × (n − 1) ordered pairs
@@ -59,8 +60,9 @@ Generate element-wise paired labels from two label vectors of equal length.
 """
 function paired_labels(l1::Vector{String}, l2::Vector{String})::Vector{String}
 
-    !(length(l1) > 0) && throw(ArgumentError("l1 must not be empty."))
-    !(length(l1) == length(l2)) && throw(ArgumentError("l1 and l2 must have the same length."))
+    # validate
+    length(l1) > 0 || throw(ArgumentError("l1 must not be empty."))
+    length(l1) == length(l2) || throw(ArgumentError("l1 and l2 must have the same length."))
 
     return l1 .* "-" .* l2
 

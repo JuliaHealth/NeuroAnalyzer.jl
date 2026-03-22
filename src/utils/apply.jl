@@ -13,16 +13,16 @@ Example: `f = "cumsum(obj)"` or `f = "obj .^ 2"`.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `f::String`: Julia expression to evaluate, using `obj` as the signal placeholder. 
+- `f::String`: Julia expression to evaluate, using `obj` as the signal placeholder
 
 # Returns
 
-- `out::Array{Float64, 3}`: result array, shape `(channels, epoch length, epochs)`
+- `Array{Float64, 3}`: result array, shape (channels, epoch length, epochs)
 
 # Throws
 
-- `ArgumentError`: If the formula `f` produces an error on the dry-run evaluation.
-- `ErrorException`: If the formula `f` fails for any channel/epoch combination.
+- `ArgumentError`: if the formula `f` produces an error on the dry-run evaluation
+- `ErrorException`: if the formula `f` fails for any channel/epoch combination
 """
 function apply(
     obj::NeuroAnalyzer.NEURO;
@@ -50,7 +50,7 @@ function apply(
     end
 
     # pre-allocate output
-    out = zeros(eltype(out_tmp), ch_n, length(out_tmp), ep_n)
+    result = zeros(eltype(out_tmp), ch_n, length(out_tmp), ep_n)
 
     # initialize progress bar
     progbar = Progress(
@@ -61,7 +61,7 @@ function apply(
         ch_idx, ep_idx = idx[1], idx[2]
         f_tmp = replace(f, "obj" => "$(obj.data[ch[ch_idx], :, ep_idx])")
         try
-            out[ch_idx, :, ep_idx] = eval(Meta.parse(f_tmp))
+            result[ch_idx, :, ep_idx] = eval(Meta.parse(f_tmp))
         catch err
             throw(ArgumentError("Formula failed. Check expression `f`. Error: $err"))
         end
@@ -69,6 +69,6 @@ function apply(
         progress_bar && next!(progbar)
     end
 
-    return out
+    return result
 
 end

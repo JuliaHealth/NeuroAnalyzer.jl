@@ -19,6 +19,7 @@ The signal is normalised to `[−1, 1]` and scaled to `[−1000, +1000]` before 
 - `Nothing`
 
 # Throws
+
 - `ArgumentError`: if `ep` is out of range, `ch` does not resolve to exactly one channel, or `seg` boundaries fall outside the epoch time axis
 """
 function play(
@@ -28,17 +29,19 @@ function play(
     ep::Int64
 )::Nothing
 
+    # resolve channel names to indices
     _check_epochs(obj, ep)
     ch = get_channel(obj, ch=ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
+    # validate
     _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
 
     # map time values to nearest sample indices on the epoch time axis
     s1 = vsearch(seg[1], obj.epoch_time)
     s2 = vsearch(seg[2], obj.epoch_time)
 
-    # extract the signal slice and normalise to [−1000, +1000] for audio output
+    # extract the signal slice and normalize to [−1000, +1000] for audio output
     s = normalize_minmax(@view obj.data[ch, s1:s2, ep]) .* 1000
     wavplay(s, sr(obj))
 

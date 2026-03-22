@@ -21,7 +21,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 """
 function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
 
-    # validation
+    # validate
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous amplitude envelopes via Hilbert transform
@@ -168,7 +168,7 @@ Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequenc
 """
 function escor(s1::AbstractVector, s2::AbstractVector)::Float64
 
-    # validation
+    # validate
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous amplitude envelope via Hilbert transform
