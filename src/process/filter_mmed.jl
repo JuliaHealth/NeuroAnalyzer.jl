@@ -90,7 +90,7 @@ Apply a weighted moving median filter to every channel × epoch slice of a 3-D s
 
 # Arguments
 
-- `s::AbstractArray`: 3-D signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: 3-D signal array, shape (channels, samples, epochs)
 - `k::Int64=8`: half-window length; full window is `2k + 1` samples; for a desired normalized cutoff `F = f/fs`, choose
   `k = round(Int, sqrt(0.196202 + F^2) / F)`; must satisfy `1 ≤ k < length(s)`
 - `t::Real=0`: threshold multiplier (≥ 0). `t = 0` filters all samples

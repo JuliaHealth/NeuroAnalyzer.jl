@@ -178,7 +178,7 @@ function psd(
 
     p = zeros(size(s, 1), length(f))
 
-    @inbounds Threads.@threads :dynamic for ch_idx in axes(s, 1)
+    @inbounds Threads.@threads :static for ch_idx in axes(s, 1)
         p[ch_idx, :] = psd(
             @view(s[ch_idx, :]),
             fs = fs,
@@ -271,7 +271,7 @@ function psd(
     p = zeros(ch_n, length(f), ep_n)
 
     # calculate over channels and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         p[ch_idx, :, ep_idx] = psd(
             @view(s[ch_idx, :, ep_idx]),

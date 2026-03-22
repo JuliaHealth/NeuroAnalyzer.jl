@@ -78,7 +78,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 in 1:ch_idx1
             # @view avoids copying the (samples,) slices per thread.
@@ -92,7 +92,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     end
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((length(f), ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((length(f), ep_n))
         f_idx, ep_idx = idx[1], idx[2]
         for ch_idx1 in 1:(ch_n - 1)
             for ch_idx2 in (ch_idx1 + 1):ch_n
@@ -148,7 +148,7 @@ function cph(
     ph = zeros(ch_n, ch_n, length(f), ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ph[ch_idx, :, ep_idx] = cph(
             @view(s1[ch_idx, :, ep_idx]),

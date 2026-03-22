@@ -50,7 +50,7 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 # Returns
 
-- `f::Array{Float64, 3}`: instantaneous frequencies in cycles per sample (multiply by the sampling rate to obtain Hz), shape `(channels, samples, epochs)`
+- `f::Array{Float64, 3}`: instantaneous frequencies in cycles per sample (multiply by the sampling rate to obtain Hz), shape (channels, samples, epochs)
 
 # Notes
 
@@ -99,7 +99,7 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 # Returns
 
-- `f::Array{Float64, 3}`: instantaneous frequencies in Hz, shape `(channels, samples, epochs)`
+- `f::Array{Float64, 3}`: instantaneous frequencies in Hz, shape (channels, samples, epochs)
 
 # Notes
 

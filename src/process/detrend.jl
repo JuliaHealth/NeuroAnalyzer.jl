@@ -98,7 +98,7 @@ Remove a trend.
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `type::Symbol=:linear`: detrending method:
     - `:linear`: subtract a 1st-order polynomial (linear trend); equivalent to `:poly` with `order=1`
     - `:ls`: subtract a linear least-squares fit using an efficient closed-form solution

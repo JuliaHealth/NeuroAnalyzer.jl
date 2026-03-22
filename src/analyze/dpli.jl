@@ -96,10 +96,10 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 Named tuple:
 
 - `pv::Matrix{Float64}`: dPLI values, shape `(channels, epochs)`
-- `sd::Array{Float64, 3}`: signal difference, shape `(channels, samples, epochs)`
-- `phd::Array{Float64, 3}`: phase difference, shape `(channels, samples, epochs)`
-- `s1ph::Array{Float64, 3}`: signal 1 instantaneous phase, shape `(channels, samples, epochs)`
-- `s2ph::Array{Float64, 3}`: signal 2 instantaneous phase, shape `(channels, samples, epochs)`
+- `sd::Array{Float64, 3}`: signal difference, shape (channels, samples, epochs)
+- `phd::Array{Float64, 3}`: phase difference, shape (channels, samples, epochs)
+- `s1ph::Array{Float64, 3}`: signal 1 instantaneous phase, shape (channels, samples, epochs)
+- `s2ph::Array{Float64, 3}`: signal 2 instantaneous phase, shape (channels, samples, epochs)
 """
 function dpli(
     obj1::NeuroAnalyzer.NEURO,
@@ -145,7 +145,7 @@ function dpli(
     s2ph = zeros(ch_n, ep_len, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         dpli_data = dpli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
@@ -196,7 +196,7 @@ function dpli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     pv = zeros(ch_n, ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 in 1:ch_idx1
             pv[ch_idx1, ch_idx2, ep_idx] = dpli(

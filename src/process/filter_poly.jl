@@ -88,7 +88,7 @@ Apply a piecewise polynomial filter to every channel × epoch slice of a 3-D sig
 
 # Arguments
 
-- `s::AbstractArray`: 3-D signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: 3-D signal array, shape (channels, samples, epochs)
 - `order::Int64=8`: polynomial degree; must be ≥ 2 and < `window`
 - `window::Int64=10`: window length in samples; must satisfy `1 ≤ window ≤ size(s, 2)`
 

@@ -62,7 +62,7 @@ Perform FFT-based denoising on every channel × epoch slice of a 3-D signal arra
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `pad::Int64=0`: number of zeros to append before FFT; must be ≥ 0
 - `t::Real=0`: power spectral density threshold; components with power > `t` are zeroed; if `t = 0`, the mean power across all frequency bins is used
 
@@ -92,7 +92,7 @@ function denoise_fft(
     s_new = similar(s, Float64)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         dfft_data = denoise_fft(@view(s[ch_idx, :, ep_idx]), pad = pad, t = t)
         s_new[ch_idx, :, ep_idx] = dfft_data.s

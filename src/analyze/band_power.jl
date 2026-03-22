@@ -136,7 +136,7 @@ function band_power(
     bp = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         bp[ch_idx, ep_idx] = band_power(
             @view(s[ch_idx, :, ep_idx]),

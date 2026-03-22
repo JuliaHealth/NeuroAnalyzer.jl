@@ -55,7 +55,7 @@ For the boundary samples the one-sided half-difference is used so that the outpu
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 

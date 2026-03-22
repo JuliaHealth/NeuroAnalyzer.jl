@@ -25,8 +25,15 @@ Named tuple:
  1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function plv(
-        s1::AbstractVector, s2::AbstractVector
-    )::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
+    s1::AbstractVector,
+    s2::AbstractVector
+)::@NamedTuple{
+    pv::Float64,
+    sd::Vector{Float64},
+    phd::Vector{Float64},
+    s1ph::Vector{Float64},
+    s2ph::Vector{Float64}
+}
 
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
@@ -46,7 +53,7 @@ function plv(
     # PLV
     pv = abs(mean(cphd))
 
-    return (pv = pv, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)
+    return (; pv, sd, phd, s1ph, s2ph)
 
 end
 
@@ -114,7 +121,7 @@ function plv(
         end
     end
 
-    return (pv = pv, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)
+    return (; pv, sd, phd, s1ph, s2ph)
 
 end
 

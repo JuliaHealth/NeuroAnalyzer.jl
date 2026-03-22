@@ -82,7 +82,7 @@ The first (largest) eigenvector defines the spatial filter that maximally distin
 
 Named tuple:
 
-- `sged::Array{Float64, 3}`: GED output, shape `(channels, samples, epochs)`
+- `sged::Array{Float64, 3}`: GED output, shape (channels, samples, epochs)
 - `ress::Matrix{Float64}`: RESS spatial filter, shape `(channels, epochs)`
 - `ress_norm::Matrix{Float64}`: RESS normalized to −1..1, shape `(channels, epochs)`
 """
@@ -125,7 +125,7 @@ function ged(
     ress = zeros(ch_n, ep_n)
     ress_norm = zeros(ch_n, ep_n)
 
-    @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
         ged_data = ged(
             @view(obj1.data[ch1, :, ep1[ep_idx]]),
             @view(obj2.data[ch2, :, ep2[ep_idx]]),

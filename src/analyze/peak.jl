@@ -124,7 +124,7 @@ function peak_frq(
     pf = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         pf[ch_idx, ep_idx] = peak_frq(
             @view(s[ch_idx, :, ep_idx]),
@@ -322,7 +322,7 @@ function peak_amp(
     pa = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         pa[ch_idx, ep_idx] = peak_amp(
             @view(s[ch_idx, :, ep_idx]),
@@ -520,7 +520,7 @@ function peak_pow(
     pp = zeros(ch_n, ep_n)
 
     # compute over channels and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         pp[ch_idx, ep_idx] = peak_pow(
             @view(s[ch_idx, :, ep_idx]),

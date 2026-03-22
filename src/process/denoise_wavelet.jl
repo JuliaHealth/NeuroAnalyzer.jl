@@ -66,7 +66,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain.
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
@@ -283,7 +283,7 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`; see Wavelets.jl documentation for the list of available wavelets
 - `l::Int64=0`: decomposition level; `0` uses the maximum available level (`maxtransformlevels(s)`); must be ≤ `maxtransformlevels(s)`
 - `dnt<:DNF=RelErrorShrink(SoftTH())`: denoise type, see WaveletsExt.jl documentation for detailed description of available denoising functions

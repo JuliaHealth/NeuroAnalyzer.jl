@@ -10,7 +10,7 @@ For each epoch, the cross-channel mean signal is used as the reference, and a no
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`.
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs).
 
 # Returns
 

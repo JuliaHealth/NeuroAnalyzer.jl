@@ -53,7 +53,7 @@ function reference_ce(
     obj_new = deepcopy(obj)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
 
         s_ch  = sig_ch_idx[ch_idx]
@@ -184,7 +184,7 @@ function reference_avg(
     dst = copy(src)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
 
         chs2exclude = copy(fpo_idx)
@@ -579,7 +579,7 @@ function _laplacian_reference(
     s_ref = zeros(ch_n, size(s, 2), ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ref_chs = @view s[nn_idx[ch_idx, :], :, ep_idx]
 

@@ -117,7 +117,7 @@ function acor(
     ac = zeros(ch_n, length((-l):l), ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ac[ch_idx, :, ep_idx] = acor(
             @view(s[ch_idx, :, ep_idx]),

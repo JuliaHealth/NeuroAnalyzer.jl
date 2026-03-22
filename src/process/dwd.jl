@@ -59,7 +59,7 @@ Returns the decomposition coefficient matrix. Each row corresponds to one subspa
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet; see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
     - `:sdwt`: stationary discrete wavelet transform

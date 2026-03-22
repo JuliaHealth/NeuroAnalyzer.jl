@@ -21,6 +21,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 """
 function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
 
+    # validation
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous amplitude envelopes via Hilbert transform
@@ -86,7 +87,7 @@ function aecor(
     aec = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         aec[ch_idx, ep_idx] = aecor(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
@@ -129,7 +130,7 @@ function aecor(
     aec = zeros(ch_n, ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 in 1:ch_idx1
             aec[ch_idx1, ch_idx2, ep_idx] = aecor(
@@ -167,6 +168,7 @@ Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequenc
 """
 function escor(s1::AbstractVector, s2::AbstractVector)::Float64
 
+    # validation
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous amplitude envelope via Hilbert transform
@@ -231,7 +233,7 @@ function escor(
     esc = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         esc[ch_idx, ep_idx] = @views escor(
             obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
@@ -273,7 +275,8 @@ function escor(
     # pre-allocate output
     esc = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    # calculate over channels and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 in 1:ch_idx1
             esc[ch_idx1, ch_idx2, ep_idx] = escor(

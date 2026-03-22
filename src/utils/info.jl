@@ -955,7 +955,7 @@ Return the size of the object data array.
 
 # Returns
 
-- `Tuple{Int64, Int64, Int64}`: `(channels, samples, epochs)`.
+- `Tuple{Int64, Int64, Int64}`: (channels, samples, epochs).
 """
 function Base.size(obj::NeuroAnalyzer.NEURO)::Tuple{Int64, Int64, Int64}
 

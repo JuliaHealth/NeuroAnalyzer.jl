@@ -106,7 +106,7 @@ function ispc(
     ispcv = zeros(ch_n, ch_n, ep_n)
     ispca = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
         for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1 - 1
                 ispc_data = ispc(
@@ -147,10 +147,10 @@ Named tuple:
 
 - `ispcv::Matrix{Float64}`: ISPC value, shape `(channels, epochs)`
 - `ispca::Matrix{Float64}`: ISPC angle, shape `(channels, epochs)`
-- `sd::Array{Float64, 3}`: signal difference (s1 - s2), shape `(channels, samples, epochs)`
-- `phd::Array{Float64, 3}`: phase difference (s1 - s2), shape `(channels, samples, epochs)`
-- `s1ph::Array{Float64, 3}`: signal 1 phases, shape `(channels, samples, epochs)`
-- `s2ph::Array{Float64, 3}`: signal 2 phases, shape `(channels, samples, epochs)`
+- `sd::Array{Float64, 3}`: signal difference (s1 - s2), shape (channels, samples, epochs)
+- `phd::Array{Float64, 3}`: phase difference (s1 - s2), shape (channels, samples, epochs)
+- `s1ph::Array{Float64, 3}`: signal 1 phases, shape (channels, samples, epochs)
+- `s2ph::Array{Float64, 3}`: signal 2 phases, shape (channels, samples, epochs)
 """
 function ispc(
     obj1::NeuroAnalyzer.NEURO,
@@ -195,7 +195,7 @@ function ispc(
     s1ph = zeros(ch_n, epoch_len(obj1), ep_n)
     s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         ispc_data = ispc(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),

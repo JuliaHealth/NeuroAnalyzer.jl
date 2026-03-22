@@ -155,7 +155,7 @@ Compute the cumulative sum of a 3-dimensional array along the sample (second) ax
 
 # Arguments
 
-- `s::Array{<:Real, 3}`: input array of shape `(channels, samples, epochs)`
+- `s::Array{<:Real, 3}`: input array of shape (channels, samples, epochs)
 
 # Returns
 
@@ -170,7 +170,7 @@ function cums(s::Array{<:Real, 3})::Array{Float64, 3}
     csa = similar(signal, Float64)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         csa[ch_idx, :, ep_idx] = cumsum(@view(csa[ch_idx, :, ep_idx]))
     end

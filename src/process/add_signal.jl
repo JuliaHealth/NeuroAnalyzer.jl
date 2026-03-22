@@ -76,7 +76,7 @@ function add_signal(
     obj_new = deepcopy(obj)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         obj_new.data[ch[ch_idx], :, ep_idx] =
             add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)

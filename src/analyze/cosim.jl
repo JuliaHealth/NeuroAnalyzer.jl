@@ -87,7 +87,7 @@ function cosim(
     cs = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         cs[ch_idx, ep_idx] = cosim(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
@@ -127,7 +127,7 @@ function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     cs = zeros(ch_n, ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 in 1:ch_idx1
             cs[ch_idx1, ch_idx2, ep_idx] = cosim(

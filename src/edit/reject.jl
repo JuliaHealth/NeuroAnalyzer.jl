@@ -267,7 +267,7 @@ function channel_reject(
         _info("Using :flat method")
         bad_chs = zeros(Bool, ch_n, ep_n)
         n_samples = size(obj.data, 2)
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             sm = [mean(@view obj.data[ch_idx, idx_w:(idx_w + w), ep_idx]) for idx_w in 1:w:(n_samples - w)]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
@@ -358,7 +358,7 @@ function channel_reject(
         _info("Using :kurt method")
         !(z > 0) && throw(ArgumentError("z must be > 0."))
         k = zeros(ch_n, ep_n)
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
         end
@@ -376,7 +376,7 @@ function channel_reject(
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> z
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
@@ -387,7 +387,7 @@ function channel_reject(
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> (z + 1)
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
@@ -605,7 +605,7 @@ function epoch_reject(
         _info("Using :flat method")
         bad_chs = zeros(Bool, ch_n, ep_n)
         n_samples = size(obj.data, 2)
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             sm = [mean(@view obj.data[ch_idx, idx_w:(idx_w + w), ep_idx]) for idx_w in 1:w:(n_samples - w)]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
@@ -643,7 +643,7 @@ function epoch_reject(
         _info("Using :euclid method")
 
         bad_mat = zeros(Bool, length(ch), ep_n)
-        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+        @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             # each thread writes to its own column — no overlap, no race
             bad_mat[:, ep_idx] = @views detect_euclid(obj.data[ch, :, ep_idx])
         end
@@ -665,7 +665,7 @@ function epoch_reject(
 
         # parallelise only the expensive per-epoch variance computation
         s_mv_mat = zeros(ch_n, ep_n)
-        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+        @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             # each thread writes to its own column — no overlap, no race condition
             s_mv_mat[:, ep_idx] = @views vec(var(obj.data[ch, :, ep_idx], dims = 2))
         end
@@ -682,7 +682,7 @@ function epoch_reject(
     if :p2p in method
 
         _info("Using :p2p method")
-        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+        @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w = w, p = p)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
@@ -708,7 +708,7 @@ function epoch_reject(
         _info("Using :kurt method")
         !(z > 0) && throw(ArgumentError("z must be > 0."))
         k = zeros(ch_n, ep_n)
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
         end
@@ -729,7 +729,7 @@ function epoch_reject(
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> z
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
@@ -742,7 +742,7 @@ function epoch_reject(
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> (z + 1)
-        @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end

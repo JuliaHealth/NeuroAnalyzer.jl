@@ -156,7 +156,7 @@ function band_mpower(
     maxba = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         mpower_data = band_mpower(
             @view(s[ch_idx, :, ep_idx]),

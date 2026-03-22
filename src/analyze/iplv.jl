@@ -80,10 +80,10 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 Named tuple:
 
 - `ipl::Matrix{Float64}`: IPLV value, shape `(channels, epochs)`
-- `sd::Array{Float64, 3}`: signal difference (s1 - s2), shape `(channels, samples, epochs)`
-- `phd::Array{Float64, 3}`: phase difference (s1 - s2), shape `(channels, samples, epochs)`
-- `s1ph::Array{Float64, 3}`: signal 1 phases, shape `(channels, samples, epochs)`
-- `s2ph::Array{Float64, 3}`: signal 2 phases, shape `(channels, samples, epochs)`
+- `sd::Array{Float64, 3}`: signal difference (s1 - s2), shape (channels, samples, epochs)
+- `phd::Array{Float64, 3}`: phase difference (s1 - s2), shape (channels, samples, epochs)
+- `s1ph::Array{Float64, 3}`: signal 1 phases, shape (channels, samples, epochs)
+- `s2ph::Array{Float64, 3}`: signal 2 phases, shape (channels, samples, epochs)
 
 # References
 
@@ -131,7 +131,7 @@ function iplv(
     s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads :dynamic for idx in CartesianIndices((ch_n, ep_n))
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         iplv_data = iplv(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
@@ -187,7 +187,7 @@ function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     # compute lower triangle (ch_idx2 < ch_idx1); diagonal is zero by definition
     # the outer loop is parallelized over epochs
     # the inner two loops over channel pairs are not nested @threads (no nesting issue here)
-    @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
         for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1 - 1
                 ipl[ch_idx1, ch_idx2, ep_idx] = iplv(

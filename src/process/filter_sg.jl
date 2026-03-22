@@ -48,7 +48,7 @@ Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal ar
 
 # Arguments
 
-- `s::AbstractArray`: 3-D signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: 3-D signal array, shape (channels, samples, epochs)
 - `order::Int64=6`: polynomial degree; must satisfy `2 ≤ order < window`
 - `window::Int64=11`: filter window length (number of coefficients); must be odd and satisfy `1 ≤ window ≤ size(s, 2)`
 

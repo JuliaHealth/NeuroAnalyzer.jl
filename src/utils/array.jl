@@ -134,7 +134,7 @@ Average a 3-dimensional signal array across the trial (third) dimension.
 
 # Arguments
 
-- `s::AbstractArray`: signal array, shape `(channels, samples, epochs)`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
