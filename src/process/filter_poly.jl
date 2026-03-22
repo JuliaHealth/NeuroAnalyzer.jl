@@ -84,7 +84,7 @@ end
 """
     filter_poly(s; <keyword arguments>)
 
-Apply a piecewise polynomial filter to every channel × epoch slice of a 3-D signal array. Delegates to [`filter_poly(::AbstractVector)`](@ref).
+Apply a piecewise polynomial filter to every channel × epoch slice of a 3-D signal array.
 
 # Arguments
 
@@ -176,7 +176,7 @@ end
 """
     filter_poly!(obj; <keyword arguments>)
 
-Apply a piecewise polynomial filter in-place to selected channels of a NEURO object. Delegates to [`filter_poly`](@ref) and copies the result back.
+Apply a piecewise polynomial filter in-place to selected channels of a NEURO object.
 
 # Arguments
 

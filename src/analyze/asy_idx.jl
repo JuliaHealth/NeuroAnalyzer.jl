@@ -48,7 +48,7 @@ function asy_idx(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{asi::Float64, nasi::Float64}
 
     # resolve channel names to integer indices

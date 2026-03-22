@@ -36,7 +36,7 @@ function plot_cont(
         group_ch::Bool = true,
         n_channels::Int64 = 20,
         res::Int64 = 1,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     !(size(obj1) == size(obj2)) && throw(ArgumentError("Size of OBJ1 and OBJ2 must equal."))

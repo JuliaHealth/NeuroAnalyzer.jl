@@ -45,18 +45,18 @@ function coherence(
     nt::Int64 = 7,
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{coh::Vector{ComplexF64}, imcoh::Vector{Float64}, msc::Vector{Float64}, f::Vector{Float64}}
 
     # check parameters
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
-    !(nt >= 1) && throw(ArgumentError("nt must be ≥ 1."))
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(wlen <= length(s1)) && throw(ArgumentError("wlen must be ≤ $(length(s1))."))
-    !(wlen >= 2) && throw(ArgumentError("wlen must be ≥ 2."))
-    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < $(wlen)."))
-    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
+    !nt >= 1 || throw(ArgumentError("nt must be ≥ 1."))
+    !fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    !wlen <= length(s1) || throw(ArgumentError("wlen must be ≤ $(length(s1))."))
+    !wlen >= 2 || throw(ArgumentError("wlen must be ≥ 2."))
+    !woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
+    !woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # shared kwargs for all three cpsd calls — defined once to keep them in sync
@@ -67,7 +67,7 @@ function coherence(
         w = w,
         demean = demean,
         method = method,
-        flim = flim,
+        flim = flim
     )
 
     # compute the three cross-power spectra needed for coherence
@@ -134,8 +134,13 @@ function coherence(
     nt::Int64 = 7,
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
+    w::Bool = true
+)::@NamedTuple{
+    coh::Array{ComplexF64, 3},
+    imcoh::Array{Float64, 3},
+    msc::Array{Float64, 3},
+    f::Vector{Float64}
+}
 
     # validate shape
     !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
@@ -158,7 +163,7 @@ function coherence(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w,
+        w = w
     )
     f = coh_data.f
 
@@ -180,14 +185,14 @@ function coherence(
             nt = nt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w,
+            w = w
         )
         coh[ch_idx, :, ep_idx] = coh_data.coh
         imcoh[ch_idx, :, ep_idx] = coh_data.imcoh
         msc[ch_idx, :, ep_idx] = coh_data.msc
     end
 
-    return (coh = coh, imcoh = imcoh, msc = msc, f = f)
+    return (; coh, imcoh, msc, f)
 end
 
 """
@@ -240,8 +245,13 @@ function coherence(
     nt::Int64 = 7,
     wlen::Int64 = sr(obj1),
     woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true,
-)::@NamedTuple{coh::Array{ComplexF64, 3}, imcoh::Array{Float64, 3}, msc::Array{Float64, 3}, f::Vector{Float64}}
+    w::Bool = true
+)::@NamedTuple{
+    coh::Array{ComplexF64, 3},
+    imcoh::Array{Float64, 3},
+    msc::Array{Float64, 3},
+    f::Vector{Float64}
+}
 
     # validate objects
     !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
@@ -249,7 +259,7 @@ function coherence(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -257,8 +267,8 @@ function coherence(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     coh_data = coherence(
         @view(obj1.data[ch1, :, ep1]),
@@ -270,7 +280,7 @@ function coherence(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w,
+        w = w
     )
 
     return coh_data

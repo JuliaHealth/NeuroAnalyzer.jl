@@ -126,7 +126,7 @@ function add_marker(
         start::Real,
         len::Real = 1.0,
         value::String,
-        ch::Int64 = 0,
+        ch::Int64 = 0
     )::NeuroAnalyzer.NEURO
 
     !(start >= 0) && throw(ArgumentError("start must be ≥ 0."))
@@ -173,7 +173,7 @@ function add_marker!(
         start::Real,
         len::Real = 1.0,
         value::String,
-        ch::Int64 = 0,
+        ch::Int64 = 0
     )::Nothing
 
     obj_new = add_marker(obj, id = id, start = start, len = len, value = value, ch = ch)
@@ -210,7 +210,7 @@ function edit_marker(
         start::Real,
         len::Real = 1.0,
         value::String,
-        ch::Int64 = 0,
+        ch::Int64 = 0
     )::NeuroAnalyzer.NEURO
 
     !(_has_markers(obj)) && throw(ArgumentError("OBJ has no markers."))
@@ -261,7 +261,7 @@ function edit_marker!(
         start::Real,
         len::Real = 1.0,
         value::String,
-        ch::Int64 = 0,
+        ch::Int64 = 0
     )::Nothing
 
     obj_new = edit_marker(
@@ -296,7 +296,7 @@ function channel2marker(
     ch::String,
     v::Real = 1.0,
     id::String = "",
-    value::String = "",
+    value::String = ""
 )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
@@ -393,7 +393,7 @@ function channel2marker!(
         ch::String,
         v::Real = 1.0,
         id::String = "",
-        value::String = "",
+        value::String = ""
     )::Nothing
 
     obj_new = channel2marker(obj, ch = ch, v = v, id = id, value = value)

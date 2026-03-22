@@ -21,7 +21,7 @@ Delete channel(s).
 function delete_channel(
         obj::NeuroAnalyzer.NEURO;
         ch::Union{String, Vector{String}, Regex},
-        del_opt::Bool = false,
+        del_opt::Bool = false
     )::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
@@ -105,7 +105,7 @@ Delete channels.
 function delete_channel!(
         obj::NeuroAnalyzer.NEURO;
         ch::Union{String, Vector{String}, Regex},
-        del_opt::Bool = false,
+        del_opt::Bool = false
     )::Nothing
 
     length(get_channel(obj, ch = ch)) == 0 && (return nothing)

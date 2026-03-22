@@ -62,7 +62,7 @@ function plot_topo(
         cart::Bool = false,
         threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
         threshold_type::Symbol = :neq,
-        threshold_method::Symbol = :reg,
+        threshold_method::Symbol = :reg
     )::GLMakie.Figure
 
     pal = mono ? :grays : :bluesreds
@@ -418,7 +418,7 @@ function plot_topo(
     threshold_type::Symbol = :neq,
     threshold_method::Symbol = :reg,
     nr::Int64 = 1,
-    nc::Int64 = 0,
+    nc::Int64 = 0
 )::GLMakie.Figure
 
     # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one shared colorbar

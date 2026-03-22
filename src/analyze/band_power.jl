@@ -44,7 +44,7 @@ function band_power(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::Float64
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
@@ -121,7 +121,7 @@ function band_power(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean = demean,
+    demean = demean
 )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -149,7 +149,7 @@ function band_power(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean,
+            demean = demean
         )
     end
 
@@ -187,36 +187,36 @@ Calculate absolute band power between two frequencies.
 - `bp::Matrix{Float64}`: band power, shape `(channels, epochs)`
 """
 function band_power(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        flim::Tuple{Real, Real},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )::Matrix{Float64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     _log_off()
     power_data = band_power(
-                    @view(obj.data[ch, :, :]),
-                    fs = sr(obj),
-                    flim = flim,
-                    method = method,
-                    nt = nt,
-                    wlen = wlen,
-                    woverlap = woverlap,
-                    w = w,
-                    ncyc = ncyc,
-                    gw = gw,
-                    demean = demean,
-                )
+        @view(obj.data[ch, :, :]),
+        fs = sr(obj),
+        flim = flim,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+        demean = demean
+    )
     _log_on()
 
     return power_data

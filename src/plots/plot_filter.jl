@@ -49,7 +49,7 @@ function plot_filter(;
         w::Union{Nothing, AbstractVector} = nothing,
         flim::Tuple{Real, Real} = (0, fs / 2),
         mono::Bool = false,
-        gui::Bool = true,
+        gui::Bool = true
     )::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -1231,7 +1231,7 @@ function plot_filter(
         w::Union{Nothing, AbstractVector} = nothing,
         flim::Tuple{Real, Real} = (0, sr(obj) / 2),
         mono::Bool = false,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     return plot_filter(;

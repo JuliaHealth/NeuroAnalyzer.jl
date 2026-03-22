@@ -27,12 +27,12 @@ function xcor(
         l::Int64 = round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))),
         demean::Bool = true,
         biased::Bool = true,
-        method::Symbol = :sum,
+        method::Symbol = :sum
     )::Array{Float64, 3}
 
     _check_var(method, [:sum, :cor, :stat], "method")
 
-    !(length(s1) == length(s2)) && throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     xc = zeros(l + 1)
     xc_neg = zeros(l + 1)
@@ -111,7 +111,7 @@ function xcor(
         l::Int64 = round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))),
         demean::Bool = true,
         biased::Bool = true,
-        method::Symbol = :sum,
+        method::Symbol = :sum
     )::Array{Float64, 3}
 
     !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
@@ -155,7 +155,7 @@ function xcor(
         l::Int64 = round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))),
         demean::Bool = true,
         biased::Bool = true,
-        method::Symbol = :sum,
+        method::Symbol = :sum
     )::Array{Float64, 3}
 
     !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
@@ -217,13 +217,13 @@ function xcor(
         l::Real = 1,
         demean::Bool = true,
         biased::Bool = true,
-        method::Symbol = :sum,
+        method::Symbol = :sum
     )::@NamedTuple{xc::Array{Float64, 3}, l::Vector{Float64}}
 
     !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
     !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
     !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")

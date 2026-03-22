@@ -15,7 +15,7 @@ function _common_recording_fields(;
     clabels::Vector{String},
     units::Vector{String},
     sampling_rate::Int64,
-    bad_channels::Vector{Bool},
+    bad_channels::Vector{Bool}
 )::Dict
     return Dict(
         :data_type        => data_type,
@@ -47,7 +47,7 @@ function _create_subject(;
     handedness::String,
     head_circumference::Real,
     weight::Real,
-    height::Real,
+    height::Real
 )::Dict
     return Dict(
         :id                 => id,
@@ -84,7 +84,7 @@ function _create_recording_eeg_like(;
     line_frequency::Real,
     sampling_rate::Int64,
     gain::Vector{Float64},
-    bad_channels::Vector{Bool},
+    bad_channels::Vector{Bool}
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
@@ -134,7 +134,7 @@ function _create_recording_meg(;
     bad_channels::Vector{Bool},
     ssp_labels::Vector{String},
     ssp_channels::Vector{Bool},
-    ssp_data::Matrix{Float64},
+    ssp_data::Matrix{Float64}
 )::Dict
     # normalize time separator (MEG files sometimes use '.' instead of ':')
     recording_time = replace(recording_time, '.' => ':')
@@ -182,7 +182,7 @@ function _create_recording_nirs(;
     det_labels::Vector{String},
     opt_labels::Vector{String},
     sampling_rate::Int64,
-    bad_channels::Vector{Bool},
+    bad_channels::Vector{Bool}
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
@@ -220,7 +220,7 @@ function _create_recording_prefiltered(;
     units::Vector{String},
     prefiltering::Vector{String},
     sampling_rate::Int64,
-    bad_channels::Vector{Bool},
+    bad_channels::Vector{Bool}
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
@@ -261,7 +261,7 @@ function _create_recording_mep(;
     stimulation_sample::Vector{Int64},
     markers_pos::Vector{Int64},
     markers_neg::Vector{Int64},
-    bad_channels::Vector{Bool},
+    bad_channels::Vector{Bool}
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,

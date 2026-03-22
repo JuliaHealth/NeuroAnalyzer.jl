@@ -45,7 +45,7 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     ref_pw = if flim === nothing
@@ -142,7 +142,7 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     ch_n = size(s, 1)
@@ -230,7 +230,7 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
@@ -321,7 +321,7 @@ function psd_rel(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")

@@ -74,7 +74,7 @@ function plot(
         mono::Bool = false,
         res::Int64 = 1,
         snap::Bool = true,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     n_channels > nchannels(obj) && (n_channels = nchannels(obj))
@@ -210,7 +210,7 @@ function plot(
         group_ch::Bool = true,
         n_channels::Int64 = 20,
         res::Int64 = 1,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     !(datatype(obj1) in ["eeg", "meg"]) && throw(ArgumentError("This function works for continuous EEG and MEG objects."))

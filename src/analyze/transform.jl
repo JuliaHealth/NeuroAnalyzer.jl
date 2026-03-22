@@ -32,7 +32,7 @@ function ftransform(
     s::AbstractVector;
     pad::Int64 = 0,
     db::Bool = false,
-    nf::Bool = false,
+    nf::Bool = false
 )::@NamedTuple{
     c::Vector{ComplexF64},
     a::Vector{Float64},
@@ -92,7 +92,7 @@ function ftransform(
     s::AbstractArray;
     pad::Int64 = 0,
     db::Bool = false,
-    nf::Bool = false,
+    nf::Bool = false
 )::@NamedTuple{
     c::Array{ComplexF64, 3},
     a::Array{Float64, 3},
@@ -159,7 +159,7 @@ Named tuple:
 """
 function htransform(
     s::AbstractVector;
-    db::Bool = false,
+    db::Bool = false
 )::@NamedTuple{
     c::Vector{ComplexF64},
     a::Vector{Float64},
@@ -205,7 +205,7 @@ Named tuple:
 """
 function htransform(
     s::AbstractArray;
-    db::Bool = false,
+    db::Bool = false
 )::@NamedTuple{
     c::Array{ComplexF64, 3},
     a::Array{Float64, 3},
@@ -273,7 +273,7 @@ function transform(
     pad::Int64 = 0,
     h::Bool = false,
     db::Bool = false,
-    nf::Bool = false,
+    nf::Bool = false
 )::@NamedTuple{
     c::Array{ComplexF64, 3},
     a::Array{Float64, 3},
@@ -321,7 +321,7 @@ function transform(
     pad::Int64 = 0,
     h::Bool = false,
     db::Bool = false,
-    nf::Bool = false,
+    nf::Bool = false
 )::@NamedTuple{
     c::Array{ComplexF64, 3},
     a::Array{Float64, 3},

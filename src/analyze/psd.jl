@@ -49,7 +49,7 @@ function psd(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
@@ -158,7 +158,7 @@ function psd(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool=true,
+    demean::Bool=true
 )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     # pilot call to determine output frequency vector length
@@ -337,7 +337,7 @@ function psd(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
@@ -397,7 +397,7 @@ function mwpsd(
     fs::Int64,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     w::Bool = true,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
@@ -461,7 +461,7 @@ function ghpsd(
     db::Bool = true,
     gw::Real = 5,
     w::Bool = true,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))

@@ -35,7 +35,7 @@ Thin wrapper around `Base.range` that always materialises the result as a `Vecto
 """
 function linspace(start::Real, stop::Real, n::Int64)::Vector{Float64}
 
-    !(n >= 2) && throw(ArgumentError("n must be ≥ 2."))
+    n >= 2 || throw(ArgumentError("n must be ≥ 2."))
     return collect(range(start, stop, n))
 
 end
@@ -66,9 +66,9 @@ Requires `start > 0` and `stop > 0` (logarithmic spacing is undefined for non-po
 """
 function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
-    !(n >= 2) && throw(ArgumentError("n must be ≥ 2."))
-    !(start > 0) && throw(ArgumentError("start must be > 0."))
-    !(stop > 0) && throw(ArgumentError("stop must be > 0."))
+    n >= 2 || throw(ArgumentError("n must be ≥ 2."))
+    start > 0 || throw(ArgumentError("start must be > 0."))
+    stop > 0 || throw(ArgumentError("stop must be > 0."))
     return Float64.(logrange(start, stop, n))
 
 end
@@ -197,7 +197,7 @@ Computes the Euclidean distance from every element of `m` to `p` and returns the
 """
 function f_nearest(
     m::Matrix{Tuple{Float64, Float64}},
-    p::Tuple{Float64, Float64},
+    p::Tuple{Float64, Float64}
 )::Tuple{Int64, Int64}
 
     d = zeros(size(m))
@@ -236,7 +236,8 @@ function ntapers(obj::NeuroAnalyzer.NEURO; df::Real)::Int64
 
     # validate that df lies within (0, Nyquist)
     _bin(df, (0, sr(obj) / 2))
-    n = epoch_len(obj) / sr(obj) # epoch duration in seconds
+    # epoch duration in seconds
+    n = epoch_len(obj) / sr(obj)
     nt = round(Int64, df * n) - 1
 
     # guard: the formula can yield 0 or negative for very coarse resolution
@@ -266,12 +267,12 @@ Return a single channel's signal in trials × time format.
 function trtm(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
-    ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
+    ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj))
 )::Matrix{Float64}
 
     _check_epochs(obj, ep)
     ch = get_channel(obj, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     return Matrix(obj.data[ch, :, ep]')

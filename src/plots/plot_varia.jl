@@ -51,7 +51,7 @@ function plot_matrix(
     cb::Bool = true,
     cb_title::String = "",
     xrot::Int64 = 90,
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     !(size(m, 1) == size(m, 2)) && throw(ArgumentError("Matrix must be square."))
@@ -189,7 +189,7 @@ function plot_histogram(
     title::String = "",
     draw_mean::Bool = true,
     draw_median::Bool = true,
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     _check_var(type, [:hist, :kd], "type")
@@ -291,7 +291,7 @@ function plot_bar(
     xlabel::String = "",
     ylabel::String = "",
     title::String = "",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     !(length(s) == length(xlabels)) && throw(ArgumentError("Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."))
@@ -428,7 +428,7 @@ function plot_line(
     xlabel::String = "",
     ylabel::String = "",
     title::String = "",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     _chk2d(s)
@@ -511,7 +511,7 @@ function plot_box(
     xlabel::String = "",
     ylabel::String = "",
     title::String = "",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     _chk2d(s)
@@ -582,7 +582,7 @@ function plot_violin(
     xlabel::String = "",
     ylabel::String = "",
     title::String = "",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     _chk2d(s)
@@ -660,7 +660,7 @@ function plot_dots(
     xlabel::String = "",
     ylabel::String = "",
     title::String = "",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     !(size(s, 1) == length(xlabels)) && throw(ArgumentError("Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."))
@@ -738,7 +738,7 @@ function plot_paired(
     xlabel::String = "",
     ylabel::String = "",
     title::String = "",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     !(size(s, 1) == length(xlabels)) && throw(ArgumentError("Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."))
@@ -827,7 +827,7 @@ function plot_polar(
     m::Tuple{Real, Real} = (0, 0),
     title::String = "",
     mono::Bool = false,
-    ticks::Bool = true,
+    ticks::Bool = true
 )::GLMakie.Figure
 
     size(s, 1) == 2 && (s = s')
@@ -911,7 +911,7 @@ function plot_eros(
     mono::Bool = false,
     units::String = "μV",
     smooth::Bool = false,
-    n::Int64 = 3,
+    n::Int64 = 3
 )::GLMakie.Figure
 
     !(size(sp, 1) == length(sf)) && throw(ArgumentError("Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal."))
@@ -1137,7 +1137,7 @@ function plot_erop(
     flim::Tuple{Real, Real} = (sf[1], sf[end]),
     frq::Symbol = :lin,
     units::String = "μV",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     _in(flim[1], (sf[1], sf[end]), "flim")
@@ -1322,7 +1322,7 @@ function plot_icatopo(
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
     electrodes::Bool = true,
-    ps::Symbol = :l,
+    ps::Symbol = :l
 )::GLMakie.Figure
 
     fig_topo = GLMakie.Figure[]
@@ -1377,7 +1377,7 @@ function plot_ci(
     xlabel::String = "",
     ylabel::String = "",
     title::String = "",
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     !(length(s) == length(s_l) == length(s_u)) && throw(ArgumentError("All input signals must be of the same length."))
@@ -1467,7 +1467,7 @@ function plot_heatmap(
     cb::Bool = true,
     cb_title::String = "",
     threshold::Union{Nothing, Real} = nothing,
-    threshold_type::Symbol = :neq,
+    threshold_type::Symbol = :neq
 )::GLMakie.Figure
 
     !(size(m, 1) == length(y)) && throw(ArgumentError("Number of m rows ($(size(m, 1))) and y length ($(length(y))) must be equal."))
@@ -1667,7 +1667,7 @@ function plot_fi(
     st::Vector{Float64};
     xlabel::String = "default",
     ylabel::String = "default",
-    title::String = "default",
+    title::String = "default"
 )::GLMakie.Figure
 
     !(length(fi) == length(st)) && throw(ArgumentError("Length of frequencies ($(length(fi))) and time points ($(length(st))) must be equal."))
@@ -1735,7 +1735,7 @@ function plot_phase(
     type::Symbol = :line,
     xlabel::String = "default",
     ylabel::String = "default",
-    title::String = "default",
+    title::String = "default"
 )::GLMakie.Figure
 
     _check_var(unit, [:rad, :deg], "unit")

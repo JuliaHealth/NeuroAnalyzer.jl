@@ -427,7 +427,7 @@ function penv(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{e::Array{Float64, 3}, f::Vector{Float64}}
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -526,7 +526,7 @@ function penv_mean(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
     eu::Matrix{Float64},
@@ -656,7 +656,7 @@ function penv_median(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
     eu::Matrix{Float64},
@@ -799,7 +799,7 @@ function senv(
     wt::T = wavelet(Morlet(2π), β = 2),
     wlen::Int64 = sr(obj),
     woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{e::Array{Float64, 3}, t::Vector{Float64}} where {T <: CWT}
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -988,7 +988,7 @@ function senv_mean(
     wt::T = wavelet(Morlet(2π), β = 2),
     wlen::Int64 = sr(obj),
     woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
     eu::Matrix{Float64},
@@ -1144,7 +1144,7 @@ function senv_median(
     wt::T = wavelet(Morlet(2π), β = 2),
     wlen::Int64 = sr(obj),
     woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
     eu::Matrix{Float64},

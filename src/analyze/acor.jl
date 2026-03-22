@@ -25,7 +25,7 @@ function acor(
     l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
     demean::Bool = true,
     biased::Bool = true,
-    method::Symbol = :sum,
+    method::Symbol = :sum
 )::Vector{Float64}
 
     # reject any method symbol not in the supported set
@@ -40,7 +40,7 @@ function acor(
             l = l,
             demean = demean,
             biased = biased,
-            method = :sum,
+            method = :sum
         )
         # normalize by variance to bring values onto [-1, 1] scale
         ac = round.(ac ./ Statistics.var(s), digits = 3)
@@ -54,7 +54,7 @@ function acor(
             l = l,
             demean = demean,
             biased = biased,
-            method = :cov,
+            method = :cov
         )
         # normalize by variance to bring values onto [-1, 1] scale
         ac = round.(ac ./ Statistics.var(s), digits = 3)
@@ -66,7 +66,7 @@ function acor(
         ac = StatsBase.autocor(
             s,
             0:l,
-            demean = demean,
+            demean = demean
         )
         ac = round.(ac, digits = 3)
         ac = vcat(reverse(ac), ac[2:end])
@@ -102,7 +102,7 @@ function acor(
     l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
     demean::Bool = true,
     biased::Bool = true,
-    method::Symbol = :sum,
+    method::Symbol = :sum
 )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -124,7 +124,7 @@ function acor(
             l = l,
             demean = demean,
             biased = biased,
-            method = method,
+            method = method
         )
     end
 
@@ -162,7 +162,7 @@ function acor(
     l::Int64=round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2)))),
     demean::Bool = true,
     biased::Bool = true,
-    method::Symbol = :sum,
+    method::Symbol = :sum
 )::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
 
     # validate lag bounds: must be non-negative and within the signal length
@@ -182,7 +182,7 @@ function acor(
             l = l,
             demean = demean,
             biased = biased,
-            method = method,
+            method = method
         )
         ac = cat(mean(ac, dims = 3), ac, dims = 3)
 
@@ -193,13 +193,15 @@ function acor(
             l = l,
             demean = demean,
             biased = biased,
-            method = method,
+            method = method
         )
 
     end
 
     # convert integer lag indices (-l … l) to physical time in seconds using
     # the object's sampling rate
-    return (ac = ac, l = collect((-l):l) .* 1 / sr(obj))
+    l = collect((-l):l) .* 1 / sr(obj)
+
+    return (; ac, l)
 
 end

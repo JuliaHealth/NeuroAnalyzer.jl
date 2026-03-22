@@ -54,7 +54,7 @@ function plot_locs(
         threshold_type::Symbol = :neq,
         weights::Union{Bool, Vector{<:Real}} = true,
         ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     _check_var(ps, [:l, :m, :s], "ps")
@@ -1154,7 +1154,7 @@ function plot_locs(
         threshold::Real = 0,
         threshold_type::Symbol = :neq,
         weights::Union{Bool, Vector{<:Real}} = true,
-        gui::Bool = true,
+        gui::Bool = true
     )::Union{GLMakie.Figure, Nothing}
 
     !(datatype(obj) != "ecog") && throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))

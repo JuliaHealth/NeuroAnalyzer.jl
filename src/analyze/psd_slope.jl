@@ -46,7 +46,7 @@ function psd_slope(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )::@NamedTuple{lf::Vector{Float64}, ls::Float64, pf::Vector{Float64}}
 
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -121,7 +121,7 @@ function psd_slope(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
 
     _chk3d(s)
@@ -215,7 +215,7 @@ function psd_slope(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")

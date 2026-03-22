@@ -33,7 +33,7 @@ function dwd(
     s::AbstractVector;
     wt::T=wavelet(WT.haar),
     type::Symbol,
-    l::Int64=maxtransformlevels(s),
+    l::Int64=maxtransformlevels(s)
 )::Matrix{Float64} where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
@@ -145,7 +145,7 @@ function dwd(
     ch::Union{String, Vector{String}, Regex},
     wt::T = wavelet(WT.haar),
     type::Symbol,
-    l::Int64 = 0,
+    l::Int64 = 0
 )::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     if l == 0
@@ -192,7 +192,7 @@ function idwd(
     dc::Matrix{Float64};
     wt::T = wavelet(WT.haar),
     type::Symbol,
-    c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
+    c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1)
 )::Vector{Float64} where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")

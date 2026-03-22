@@ -59,7 +59,7 @@ function plot_ep(
         n_channels::Int64 = 20,
         n_epochs::Int64 = 5,
         res::Int64 = 1,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     !(res >= 1) && throw(ArgumentError("res must be ≥ 1."))

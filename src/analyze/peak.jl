@@ -39,7 +39,7 @@ function peak_frq(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
+        demean::Bool = true
     )::Float64
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
@@ -108,7 +108,7 @@ function peak_frq(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::Matrix{Float64}
 
 
@@ -180,7 +180,7 @@ function peak_frq(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -241,7 +241,7 @@ function peak_amp(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::Float64
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
@@ -307,7 +307,7 @@ function peak_amp(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -378,7 +378,7 @@ function peak_amp(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -438,7 +438,7 @@ function peak_pow(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
+        demean::Bool = true
     )::Float64
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
@@ -504,7 +504,7 @@ function peak_pow(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -576,7 +576,7 @@ function peak_pow(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true,
+    demean::Bool = true
 )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels

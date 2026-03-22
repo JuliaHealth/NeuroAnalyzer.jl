@@ -45,7 +45,7 @@ function amp(
     es = sum(abs2, s)
     rmsq = rms(s)
 
-    return (p = p, r = r, p2p = p2p, semi_p2p = semi_p2p, msa = msa, rmsa = rmsa, es = es, rmsq = rmsq)
+    return (; p, r, p2p, semi_p2p, msa, rmsa, es, rmsq)
 
 end
 
@@ -115,7 +115,7 @@ function amp(
         rmsq[ch_idx, ep_idx] = amp_data.rmsq
     end
 
-    return (p = p, r = r, p2p = p2p, semi_p2p = semi_p2p, msa = msa, rmsa = rmsa, es = es, rmsq = rmsq)
+    return (; p, r, p2p, semi_p2p, msa, rmsa, es, rmsq)
 
 end
 

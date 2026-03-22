@@ -57,7 +57,7 @@ function plot_cont(
         n_channels::Int64 = 20,
         res::Int64 = 1,
         snap::Bool = true,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     !(res >= 1) && throw(ArgumentError("res must be ≥ 1."))

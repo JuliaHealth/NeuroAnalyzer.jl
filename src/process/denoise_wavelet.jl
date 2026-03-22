@@ -165,7 +165,7 @@ function denoise_cwd(
     wt::T = wavelet(Morlet(2π), β = 2),
     nf::Real,
     w::Int64 = 5,
-    type::Symbol = :nd,
+    type::Symbol = :nd
 )::NeuroAnalyzer.NEURO where {T <: CWT}
 
     # resolve channel names to integer indices
@@ -215,7 +215,7 @@ function denoise_cwd!(
     ch::Union{String, Vector{String}, Regex},
     wt::T = wavelet(Morlet(2π), β = 2),
     nf::Real,
-    type::Symbol = :nd,
+    type::Symbol = :nd
 )::Nothing where {T <: CWT}
 
     obj_new = denoise_cwd(obj, ch = ch, wt = wt, nf = nf, type = type)
@@ -258,7 +258,7 @@ function denoise_dwd(
     wt::T1 = wavelet(WT.haar),
     l::Int64 = 0,
     dnt::T2 = RelErrorShrink(SoftTH()),
-    smooth::Symbol = :regular,
+    smooth::Symbol = :regular
 )::Vector{Float64} where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
     _check_var(smooth, [:regular, :undersmooth], "smooth")
@@ -306,7 +306,7 @@ function denoise_dwd(
     wt::T1 = wavelet(WT.haar),
     l::Int64 = 0,
     dnt::T2 = RelErrorShrink(SoftTH()),
-    smooth::Symbol = :regular,
+    smooth::Symbol = :regular
 )::Array{Float64, 3} where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -366,7 +366,7 @@ function denoise_dwd(
     wt::T1 = wavelet(WT.haar),
     l::Int64 = 0,
     dnt::T2 = RelErrorShrink(SoftTH()),
-    smooth::Symbol = :regular,
+    smooth::Symbol = :regular
 )::NeuroAnalyzer.NEURO where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
     if l == 0
@@ -413,7 +413,7 @@ function denoise_dwd!(
     wt::T1 = wavelet(WT.haar),
     l::Int64 = 0,
     dnt::T2 = RelErrorShrink(SoftTH()),
-    smooth::Symbol = :regular,
+    smooth::Symbol = :regular
 )::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
     obj_new = denoise_dwd(obj, ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)

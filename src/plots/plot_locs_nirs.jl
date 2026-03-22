@@ -45,7 +45,7 @@ function plot_locs_nirs(
         ps::Symbol = :l,
         cart::Bool = false,
         plane::Symbol = :xy,
-        ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
+        ch_info::Vector{String} = string.(1:DataFrames.nrow(locs))
     )::GLMakie.Figure
 
     # TO DO: plot channel numbers

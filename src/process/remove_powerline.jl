@@ -36,7 +36,7 @@ function remove_powerline(
     method::Symbol = :iir,
     pr::Real = 2.0,
     d::Real = 5.0,
-    q::Real = 0.1,
+    q::Real = 0.1
 )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
     nepochs(obj) == 1 || throw(ArgumentError("remove_powerline() requires a continuous (1-epoch) object."))
@@ -169,7 +169,7 @@ end
 """
     remove_powerline!(obj; <keyword arguments>)
 
-Remove power line noise in-place. Delegates to [`remove_powerline`](@ref).
+Remove power line noise in-place.
 
 # Arguments
 
@@ -196,18 +196,18 @@ function remove_powerline!(
     method::Symbol = :iir,
     pr::Real = 2.0,
     d::Real = 5.0,
-    q::Real = 0.1,
+    q::Real = 0.1
 )::DataFrame
 
     obj_new, df = remove_powerline(
-                      obj,
-                      ch = ch,
-                      pl_frq = pl_frq,
-                      method = method,
-                      pr = pr,
-                      d = d,
-                      q = q
-                  )
+        obj,
+        ch = ch,
+        pl_frq = pl_frq,
+        method = method,
+        pr = pr,
+        d = d,
+        q = q
+    )
     obj.data = obj_new.data
     obj.history = obj_new.history
 

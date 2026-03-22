@@ -1,6 +1,6 @@
 function _make_epochs(
     s::AbstractMatrix;
-    ep_len::Int64,
+    ep_len::Int64
 )::Array{Float64, 3}
     !(ep_len >= 1) && throw(ArgumentError("ep_len must be ≥ 1."))
     !(ep_len <= size(s, 2)) && throw(ArgumentError("ep_len must be ≤ $(size(s, 2))."))
@@ -14,7 +14,7 @@ end
 
 function _make_epochs(
     s::AbstractArray;
-    ep_len::Int64,
+    ep_len::Int64
 )::Array{Float64, 3}
     _chk3d(s)
     !(ep_len >= 1           ) && throw(ArgumentError("ep_len must be ≥ 1."))
@@ -36,7 +36,7 @@ function _make_epochs_bymarkers(
     marker_start::Vector{Int64},
     offset::Int64,
     ep_len::Int64,
-    fs::Int64,
+    fs::Int64
 )::Tuple{Array{Float64, 3}, DataFrame}
 
     _chk3d(s)

@@ -250,7 +250,7 @@ function tes_protocol(;
     duration::Real,
     ramp_in::Real,
     ramp_out::Real,
-    sham::Bool,
+    sham::Bool
 )::Dict
 
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")

@@ -56,7 +56,7 @@ function erop(
     db::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))

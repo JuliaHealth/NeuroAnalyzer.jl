@@ -33,7 +33,7 @@ Two modes:
 function ghexp(
     s::AbstractVector;
     tau_range::UnitRange{Int64},
-    q_range::_QRange = nothing,
+    q_range::_QRange = nothing
 )::Matrix{Float64}
 
     !(tau_range[end] < length(s)) && throw(ArgumentError("End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."))
@@ -66,7 +66,7 @@ Calculate the Generalised Hurst Exponents (GHEs).
 function ghexp(
     s::AbstractArray;
     tau_range::UnitRange{Int64},
-    q_range::_QRange = nothing,
+    q_range::_QRange = nothing
 )::Array{Float64, 4}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -115,7 +115,7 @@ function ghexp(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     tau_range::UnitRange{Int64},
-    q_range::_QRange = nothing,
+    q_range::_QRange = nothing
 )::Array{Float64, 4}
 
     # resolve channel names to integer indices, optionally skipping bad channels

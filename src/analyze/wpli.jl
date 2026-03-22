@@ -25,7 +25,7 @@ function wpli(
         s1::AbstractVector, s2::AbstractVector; debiased::Bool = false
     )::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
 
-    !(length(s1) == length(s2)) && throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # CPSD
     n = length(s1)
@@ -83,7 +83,7 @@ function wpli(
         ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-        debiased::Bool = false,
+        debiased::Bool = false
     )::@NamedTuple{
         pv::Matrix{Float64}, sd::Array{Float64, 3}, phd::Array{Float64, 3}, s1ph::Array{Float64, 3}, s2ph::Array{Float64, 3},
     }
@@ -95,7 +95,7 @@ function wpli(
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])

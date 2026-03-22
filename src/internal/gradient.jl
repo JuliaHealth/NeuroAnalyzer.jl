@@ -1,6 +1,6 @@
 function _gradient(
     x::Union{AbstractVector, AbstractMatrix, AbstractArray};
-    rev::Bool=false,
+    rev::Bool=false
 )::Tuple{
     Union{
         Vector{Interpolations.SVector{1, Float64}},

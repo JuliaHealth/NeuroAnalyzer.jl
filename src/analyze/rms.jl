@@ -74,7 +74,7 @@ Calculate Root Mean Square (RMS).
 function rms(
         obj::NeuroAnalyzer.NEURO;
         ch::Union{String, Vector{String}, Regex},
-        ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
+        ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj))
     )::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -172,7 +172,7 @@ function rmse(
         ch1::Union{String, Vector{String}, Regex},
         ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
     )::Matrix{Float64}
 
     !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
@@ -180,7 +180,7 @@ function rmse(
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)

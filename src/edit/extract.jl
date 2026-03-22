@@ -111,7 +111,7 @@ function extract_data(
         ch::Union{String, Vector{String}, Regex},
         ep::Union{Int64, Vector{Int64}, AbstractRange} = 1:nepochs(obj),
         time::Bool = false,
-        etime::Bool = false,
+        etime::Bool = false
     )::Union{
         Array{Float64, 3},
         Tuple{Array{Float64, 3}, Vector{Float64}},

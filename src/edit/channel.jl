@@ -35,7 +35,7 @@ function get_channel(
         ch::Union{String, Vector{String}, Regex} = "",
         type::Union{String, Vector{String}} = "all",
         wl::Real = 0,
-        exclude::Union{String, Vector{String}, Regex} = "",
+        exclude::Union{String, Vector{String}, Regex} = ""
     )::Union{Vector{String}, Vector{Int64}}
 
     # return physical channel numbers
@@ -439,7 +439,7 @@ function add_channel(
     data::Array{<:Number, 3},
     label::Union{String, Vector{String}},
     type::Union{String, Vector{String}},
-    unit::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}}
 )::NeuroAnalyzer.NEURO
 
     if length(obj.data) > 0
@@ -479,7 +479,7 @@ function add_channel(
         ]
         obj_new.header.recording[:bad_channel] = [
             obj_new.header.recording[:bad_channel];
-            zeros(Bool, size(data, 1))
+            zeros(Bool, length(data))
         ]
     else
         obj_new.data = data
@@ -487,7 +487,7 @@ function add_channel(
         obj_new.header.recording[:channel_type] = string.(type)
         obj_new.header.recording[:unit] = unit
         obj_new.header.recording[:channel_order] = collect(1:size(data, 1))
-        obj_new.header.recording[:bad_channel] = zeros(Bool, size(data, 1))
+        obj_new.header.recording[:bad_channel] = zeros(Bool, length(data))
     end
 
     push!(obj_new.history, "add_channel(OBJ, data, label=$label, type=$type, unit=$unit)")
@@ -517,7 +517,7 @@ function add_channel!(
         data::Array{<:Number, 3},
         label::Union{String, Vector{String}},
         type::Union{String, Vector{String}},
-        unit::Union{String, Vector{String}},
+        unit::Union{String, Vector{String}}
     )::Nothing
 
     obj_new = add_channel(obj, data = data, label = label, type = type, unit = unit)

@@ -176,7 +176,7 @@ function iir_order(;
     bw::Real,
     rp::Union{Nothing, Real} = nothing,
     rs::Union{Nothing, Real} = nothing,
-    fs::Int64,
+    fs::Int64
 )::Int64
 
     _check_var(
@@ -268,7 +268,7 @@ function iir_order(
     cutoff::Union{Real, Tuple{Real, Real}},
     bw::Real,
     rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing
 )::Int64
 
     return iir_order(

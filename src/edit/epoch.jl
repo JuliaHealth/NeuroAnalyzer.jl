@@ -25,7 +25,7 @@ function epoch(
         obj::NeuroAnalyzer.NEURO;
         marker::String = "",
         offset::Real = 0,
-        ep_len::Union{Real, Nothing} = nothing,
+        ep_len::Union{Real, Nothing} = nothing
     )::NeuroAnalyzer.NEURO
 
     !(nepochs(obj) == 1) && throw(ArgumentError("epoch() must be applied to continuous object."))
@@ -95,7 +95,7 @@ function epoch(
     obj_new.header.recording[:epoch_id] = epoch_id
 
     # bad channels
-    obj_new.header.recording[:bad_channel] = zeros(Bool, size(epochs, 1))
+    obj_new.header.recording[:bad_channel] = zeros(Bool, length(epochs))
 
     # update time
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
@@ -127,7 +127,7 @@ function epoch!(
         obj::NeuroAnalyzer.NEURO;
         marker::String = "",
         offset::Real = 0,
-        ep_len::Union{Real, Nothing} = nothing,
+        ep_len::Union{Real, Nothing} = nothing
     )::Nothing
 
     obj_new = epoch(obj, marker = marker, offset = offset, ep_len = ep_len)

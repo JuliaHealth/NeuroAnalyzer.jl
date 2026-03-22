@@ -86,7 +86,7 @@ end
 """
     filter_mmed(s; <keyword arguments>)
 
-Apply a weighted moving median filter to every channel × epoch slice of a 3-D signal array. Delegates to [`filter_mavg(::AbstractVector)`](@ref).
+Apply a weighted moving median filter to every channel × epoch slice of a 3-D signal array.
 
 # Arguments
 
@@ -158,11 +158,11 @@ function filter_mmed(
     ch::Union{String, Vector{String}, Regex},
     k::Int64 = 8,
     t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1),
+    ww::AbstractVector = ones(2 * k + 1)
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch=ch)
+    ch = get_channel(obj, ch=ch)
 
     wlen = 2 * k + 1
     _info("Window length: $wlen samples")
@@ -172,6 +172,7 @@ function filter_mmed(
         @view(obj.data[ch, :, :]), k=k, t=t, ww=ww
     )
     push!(obj_new.history, "filter_mmed(OBJ, ch=$ch, k=$k, t=$t, ww=$ww)")
+
     return obj_new
 
 end
@@ -179,7 +180,7 @@ end
 """
     filter_mmed!(obj; <keyword arguments>)
 
-Apply a weighted moving median filter in-place to selected channels of a NEURO object. Delegates to [`filter_mavg`](@ref) and copies the result back.
+Apply a weighted moving median filter in-place to selected channels of a NEURO object
 
 # Arguments
 
@@ -203,7 +204,7 @@ function filter_mmed!(
     ch::Union{String, Vector{String}, Regex},
     k::Int64 = 8,
     t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1),
+    ww::AbstractVector = ones(2 * k + 1)
 )::Nothing
 
     obj_new = filter_mmed(obj, ch = ch, k = k, t = t, ww = ww)

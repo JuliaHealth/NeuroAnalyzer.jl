@@ -159,8 +159,6 @@ end
 
 Filter selected channels of a NEURO object in-place using a Gaussian kernel in the frequency domain.
 
-Mutates `obj.data` and `obj.history`. Delegates to [`filter_g`](@ref) and copies the result back.
-
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place

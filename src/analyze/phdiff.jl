@@ -58,7 +58,7 @@ function phdiff(
         ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
         avg::Symbol = :phase,
         pad::Int64 = 0,
-        h::Bool = false,
+        h::Bool = false
     )::Array{Float64, 3}
 
     _chk3d(s)
@@ -143,7 +143,7 @@ function phdiff(
         ch::Union{String, Vector{String}, Regex},
         avg::Symbol = :phase,
         pad::Int64 = 0,
-        h::Bool = false,
+        h::Bool = false
     )::Array{Float64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")

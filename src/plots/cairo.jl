@@ -150,7 +150,7 @@ function add_to_canvas(
         y::Int64,
         title::String = "",
         view::Bool = true,
-        file_name::String = "",
+        file_name::String = ""
     )::Cairo.CairoSurfaceBase{UInt32}
 
     c = CairoRGBSurface(c1.width, c1.height)

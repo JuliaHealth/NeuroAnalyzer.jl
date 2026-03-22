@@ -29,7 +29,7 @@ function pacor(
     s::AbstractVector;
     l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
     demean::Bool = true,
-    method::Symbol = :yw,
+    method::Symbol = :yw
 )::Array{Float64, 3}
 
     _check_var(method, [:reg, :yw], "method")
@@ -77,7 +77,7 @@ function pacor(
     s::AbstractMatrix;
     l::Int64 = round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))),
     demean::Bool = true,
-    method::Symbol = :yw,
+    method::Symbol = :yw
 )::Array{Float64, 3}
 
     # number of epochs
@@ -119,7 +119,7 @@ function pacor(
     s::AbstractArray;
     l::Int64 = round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))),
     demean::Bool = true,
-    method::Symbol = :yw,
+    method::Symbol = :yw
 )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -177,7 +177,7 @@ function pacor(
     ch::Union{String, Vector{String}, Regex},
     l::Real = 1,
     demean::Bool = true,
-    method::Symbol = :yw,
+    method::Symbol = :yw
 )::@NamedTuple{pac::Array{Float64, 3}, l::Vector{Float64}}
 
     !(!(method === :yw && l <= 1)) && throw(ArgumentError("For method=:yw, l must be > 1."))

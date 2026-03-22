@@ -50,7 +50,7 @@ function import_recording(
     detect_type::Bool = true,
     type::Union{Nothing, Symbol} = nothing,
     sampling_rate::Union{Nothing, Int64} = nothing,
-    n::Int64 = 0,
+    n::Int64 = 0
 )::NeuroAnalyzer.NEURO
 
     isfile(file_name) ||

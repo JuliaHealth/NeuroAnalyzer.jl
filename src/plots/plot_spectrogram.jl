@@ -55,7 +55,7 @@ function plot_spectrogram(
         cb::Bool = true,
         cb_title::String = "",
         threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
+        threshold_type::Symbol = :neq
     )::GLMakie.Figure
 
     !(size(sp, 2) == length(st)) && throw(ArgumentError("Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."))
@@ -188,7 +188,7 @@ function plot_spectrogram(
         cb::Bool = true,
         cb_title::String = "",
         threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
+        threshold_type::Symbol = :neq
     )::GLMakie.Figure
 
     !(size(sp, 1) == length(clabels)) && throw(ArgumentError("Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."))
@@ -315,7 +315,7 @@ function plot_spectrogram_topo(
         mono::Bool = true,
         frq::Symbol = :lin,
         cart::Bool = false,
-        head::Bool = true,
+        head::Bool = true
     )::GLMakie.Figure
 
     !(size(sp, 3) == DataFrames.nrow(locs)) && throw(ArgumentError("Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."))
@@ -586,7 +586,7 @@ function plot_spectrogram(
     threshold_type::Symbol = :neq,
     type::Symbol = :normal,
     cart::Bool = false,
-    head::Bool = true,
+    head::Bool = true
 )::GLMakie.Figure where {T <: CWT}
 
     _check_var(type, [:normal, :topo], "type")

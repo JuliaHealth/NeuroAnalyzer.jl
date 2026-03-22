@@ -148,7 +148,7 @@ function reference_avg(
     exclude_current::Bool = false,
     average::Bool = true,
     med::Bool = false,
-    weighted::Bool = false,
+    weighted::Bool = false
 )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
@@ -265,7 +265,7 @@ function reference_avg!(
     exclude_current::Bool = false,
     average::Bool = true,
     med::Bool = false,
-    weighted::Bool = false,
+    weighted::Bool = false
 )::Nothing
 
     obj_new = reference_avg(
@@ -564,7 +564,7 @@ function _laplacian_reference(
     med::Bool,
     loc_x::Vector{Float64},
     loc_y::Vector{Float64},
-    loc_z::Union{Nothing, Vector{Float64}}=nothing,
+    loc_z::Union{Nothing, Vector{Float64}}=nothing
 )::Matrix{Float64}
 
     ch = get_channel(obj; ch=get_channel(obj; type="eeg"))
@@ -839,7 +839,7 @@ function reference_custom(
         "F3-C3","C3-P3","P3-O1","Fp2-F8","F8-T4","T4-T6","T6-O2",
         "Fp2-F4","F4-C4","C4-P4","P4-O2"
     ],
-    ref_name::String = "longitudinal-BIP",
+    ref_name::String = "longitudinal-BIP"
 )::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
@@ -928,7 +928,7 @@ function reference_custom!(
         "F3-C3","C3-P3","P3-O1","Fp2-F8","Fp2-F4","F8-T4","T4-T6","T6-O2",
         "F4-C4","C4-P4","P4-O2",
     ],
-    ref_name::String="longitudinal-BIP",
+    ref_name::String="longitudinal-BIP"
 )::Nothing
 
     obj_new = reference_custom(obj, ref_list = ref_list, ref_name = ref_name)

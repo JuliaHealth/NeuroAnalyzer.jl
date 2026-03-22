@@ -25,7 +25,7 @@ function acov(
     l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
     demean::Bool = true,
     biased::Bool = true,
-    method::Symbol = :sum,
+    method::Symbol = :sum
 )::Vector{Float64}
 
     # reject any method symbol not in the supported set
@@ -54,10 +54,10 @@ function acov(
         corrected = !biased
         @inbounds for idx in 0:l
             ac[idx + 1] = cov(
-                            @view(s[1:(end - idx)]),
-                            @view(s[(1 + idx):end]),
-                            corrected = corrected,
-                        )
+                @view(s[1:(end - idx)]),
+                @view(s[(1 + idx):end]),
+                corrected = corrected,
+            )
         end
 
     elseif method === :stat
@@ -65,10 +65,10 @@ function acov(
         # delegate entirely to StatsBase.autocor, which handles normalization internally
         # the `biased` keyword is intentionally ignored here
         ac = StatsBase.autocov(
-                            s,
-                            0:l,
-                            demean = demean,
-                        )
+            s,
+            0:l,
+            demean = demean
+        )
 
     end
 
@@ -104,7 +104,7 @@ function acov(
     l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
     demean::Bool = true,
     biased::Bool = true,
-    method::Symbol = :sum,
+    method::Symbol = :sum
 )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -165,7 +165,7 @@ function acov(
     l::Int64=round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2)))),
     demean::Bool = true,
     biased::Bool = true,
-    method::Symbol = :sum,
+    method::Symbol = :sum
 )::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
 
     # validate lag bounds: must be non-negative and within the signal length
@@ -185,7 +185,7 @@ function acov(
             l = l,
             demean = demean,
             biased = biased,
-            method = method,
+            method = method
         )
         ac = cat(mean(ac, dims = 3), ac, dims = 3)
 
@@ -195,10 +195,14 @@ function acov(
             l = l,
             demean = demean,
             biased = biased,
-            method = method,
+            method = method
         )
     end
 
-    return (ac = ac, l = collect((-l):l) .* 1 / sr(obj))
+    # convert integer lag indices (-l … l) to physical time in seconds using
+    # the object's sampling rate
+    l = collect((-l):l) .* 1 / sr(obj)
+
+    return (; ac, l)
 
 end

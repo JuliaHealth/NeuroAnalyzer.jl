@@ -56,8 +56,12 @@ function filter_create(;
     rp::Union{Nothing, Real} = nothing,
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing,
-)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+    w::Union{Nothing, AbstractVector} = nothing
+)::Union{
+    Vector{Float64},
+    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+    Biquad{:z, Float64}
+}
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     nqf = div(fs, 2)
@@ -285,10 +289,14 @@ Apply a pre-designed IIR or FIR filter to a signal vector.
 [`filter_create`](@ref), [`filter_apply(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_apply(
-        s::AbstractVector;
-        flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
-        dir::Symbol = :twopass,
-    )::Vector{Float64}
+    s::AbstractVector;
+    flt::Union{
+        Vector{Float64},
+        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+        Biquad{:z, Float64}
+    },
+    dir::Symbol = :twopass
+)::Vector{Float64}
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
@@ -332,8 +340,12 @@ Apply a pre-designed filter to selected channels of a NEURO object.
 function filter_apply(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
-    dir::Symbol = :twopass,
+    flt::Union{
+        Vector{Float64},
+        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+        Biquad{:z, Float64}
+    },
+    dir::Symbol = :twopass
 )::NeuroAnalyzer.NEURO
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
@@ -360,7 +372,7 @@ function filter_apply(
         obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(
             obj.data[ch[ch_idx], :, ep_idx],
             flt = flt,
-            dir = dir,
+            dir = dir
         )
         # update progress bar
         progress_bar && next!(progbar)
@@ -399,11 +411,14 @@ Delegates to [`filter_apply`](@ref) and copies the result back.
 [`filter_apply`](@ref), [`filter!`](@ref)
 """
 function filter_apply!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}},
-        dir::Symbol = :twopass,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flt::Union{
+        Vector{Float64},
+        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+        Biquad{:z, Float64}},
+    dir::Symbol = :twopass
+)::Nothing
 
     obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
     obj.data = obj_new.data
@@ -472,13 +487,16 @@ function filter(
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
     dir::Symbol = :twopass,
-    preview::Bool = false,
-)::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
+    preview::Bool = false
+)::Union{
+    NeuroAnalyzer.NEURO,
+    GLMakie.Figure
+}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        p = plot_filter(
+        return plot_filter(
             fs = sr(obj),
             fprototype = fprototype,
             ftype = ftype,
@@ -487,9 +505,8 @@ function filter(
             rp = rp,
             rs = rs,
             bw = bw,
-            w = w,
+            w = w
         )
-        return p
     else
         flt = filter_create(
             fprototype = fprototype,
@@ -500,7 +517,7 @@ function filter(
             rp = rp,
             rs = rs,
             bw = bw,
-            w = w,
+            w = w
         )
         obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
 
@@ -568,13 +585,16 @@ function filter!(
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
     dir::Symbol = :twopass,
-    preview::Bool = false,
-)::Union{Nothing, GLMakie.Figure}
+    preview::Bool = false
+)::Union{
+    Nothing,
+    GLMakie.Figure
+}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        p = plot_filter(
+        return plot_filter(
             fs = sr(obj),
             fprototype = fprototype,
             ftype = ftype,
@@ -583,9 +603,8 @@ function filter!(
             rp = rp,
             rs = rs,
             bw = bw,
-            w = w,
+            w = w
         )
-        return p
     end
 
     obj_new = NeuroAnalyzer.filter(
@@ -599,7 +618,7 @@ function filter!(
         rs = rs,
         bw = bw,
         dir = dir,
-        w = w,
+        w = w
     )
 
     obj.data = obj_new.data

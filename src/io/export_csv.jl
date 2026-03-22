@@ -44,7 +44,7 @@ function export_csv(
     markers::Bool = false,
     locs::Bool = false,
     history::Bool = false,
-    overwrite::Bool = false,
+    overwrite::Bool = false
 )::Nothing
 
     # internal guard: throw if the file already exists and overwriting is not permitted

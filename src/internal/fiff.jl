@@ -851,7 +851,7 @@ end
 
 function _get_fiff_block_type(
     fid::IOStream,
-    tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64},
+    tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64}
 )::Vector{Int32}
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])

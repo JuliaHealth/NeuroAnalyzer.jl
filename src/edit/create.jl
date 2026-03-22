@@ -341,7 +341,7 @@ function create_data(
     obj_new.header.recording[:unit] = repeat([_ch_units(type)], size(data, 1))
     obj_new.header.recording[:sampling_rate] = fs
     obj_new.header.recording[:channel_type] = repeat([type], size(data, 1))
-    obj_new.header.recording[:bad_channel] = zeros(Bool, size(data, 1))
+    obj_new.header.recording[:bad_channel] = zeros(Bool, length(data))
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     push!(obj_new.history, "create_data(OBJ, data, fs=$fs)")
 

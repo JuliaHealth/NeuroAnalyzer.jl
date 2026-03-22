@@ -58,7 +58,7 @@ function eros(
     db::Bool = true,
     gw::Real = 5,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π), β = 2)
 )::@NamedTuple{s::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
     !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))

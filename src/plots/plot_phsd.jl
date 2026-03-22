@@ -28,7 +28,7 @@ function plot_phsd(
         xlabel::String = "",
         ylabel::String = "",
         title::String = "",
-        frq::Symbol = :lin,
+        frq::Symbol = :lin
     )::GLMakie.Figure
 
     !(length(ph) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
@@ -112,7 +112,7 @@ function plot_phsd(
         frq::Symbol = :lin,
         avg::Bool = false,
         ci95::Bool = false,
-        leg::Bool = true,
+        leg::Bool = true
     )::GLMakie.Figure
 
     ch_n = size(ph, 1)
@@ -232,7 +232,7 @@ function plot_phsd_3d(
         title::String = "",
         mono::Bool = false,
         frq::Symbol = :lin,
-        variant::Symbol,
+        variant::Symbol
     )::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
@@ -373,7 +373,7 @@ function plot_phsd_topo(
         title::String = "",
         frq::Symbol = :lin,
         cart::Bool = false,
-        head::Bool = true,
+        head::Bool = true
     )::GLMakie.Figure
 
     !(size(ph, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
@@ -590,7 +590,7 @@ function plot_phsd(
         head::Bool = true,
         leg::Bool = true,
         avg::Bool = false,
-        ci95::Bool = false,
+        ci95::Bool = false
     )::GLMakie.Figure
 
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")

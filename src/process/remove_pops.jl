@@ -22,12 +22,14 @@ Named tuple:
 - `r_seg::Int64`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops(
-        s::AbstractVector; r::Int64 = 20, repair::Bool = true
-    )::Union{
-        Nothing,
-        @NamedTuple{s::Vector{Float64}, pop_loc::Int64, l_seg::Int64, r_seg::Int64},
-        @NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}
-    }
+    s::AbstractVector;
+    r::Int64 = 20,
+    repair::Bool = true
+)::Union{
+    Nothing,
+    @NamedTuple{s::Vector{Float64}, pop_loc::Int64, l_seg::Int64, r_seg::Int64},
+    @NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}
+}
 
     !(length(s) >= 2 * r + 1) && throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
 
@@ -227,15 +229,15 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        repair::Bool = true,
-        window::Real = 10.0,
-        r::Int64 = sr(obj) ÷ 2,
-    )::Union{
-        Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
-        Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    repair::Bool = true,
+    window::Real = 10.0,
+    r::Int64 = sr(obj) ÷ 2
+)::Union{
+    Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
+    Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
+}
 
     !(nepochs(obj) == 1) && throw(ArgumentError("pop() must be applied to continuous object."))
 
@@ -298,12 +300,16 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        repair::Bool = true,
-        window::Real = 10.0,
-        r::Int64 = sr(obj) ÷ 2,
-    )::Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    repair::Bool = true,
+    window::Real = 10.0,
+    r::Int64 = sr(obj) ÷ 2
+)::Tuple{
+    Vector{Vector{Int64}},
+    Vector{Int64},
+    Vector{Int64}
+}
 
     obj_new, pop_loc, l_seg, r_seg = remove_pops(obj, ch = ch, repair = true, window = window, r = r)
     if repair

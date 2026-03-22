@@ -49,7 +49,7 @@ function band_mpower(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
@@ -67,7 +67,7 @@ function band_mpower(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
 
     # find the PSD bin indices that bound the requested frequency band
@@ -86,7 +86,7 @@ function band_mpower(
     # amplitude at peak: square root of power
     maxba = sqrt(maxbp)
 
-    return (mbp = mbp, maxfrq = maxfrq, maxbp = maxbp, maxba = maxba)
+    return (; mbp, maxfrq, maxbp, maxba)
 end
 
 """
@@ -138,7 +138,7 @@ function band_mpower(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -169,7 +169,7 @@ function band_mpower(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean,
+            demean = demean
         )
         mbp[ch_idx, ep_idx] = mpower_data.mbp
         maxfrq[ch_idx, ep_idx] = mpower_data.maxfrq
@@ -177,7 +177,7 @@ function band_mpower(
         maxba[ch_idx, ep_idx] = mpower_data.maxba
     end
 
-    return (mbp = mbp, maxfrq = maxfrq, maxbp = maxbp, maxba = maxba)
+    return (; mbp, maxfrq, maxbp, maxba)
 
 end
 
@@ -230,7 +230,7 @@ function band_mpower(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -248,7 +248,7 @@ function band_mpower(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
 
     _log_on()

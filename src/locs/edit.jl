@@ -37,7 +37,7 @@ function edit_locs(
         radius_sph::Union{Real, Nothing} = nothing,
         phi_sph::Union{Real, Nothing} = nothing,
         name::String = "",
-        type::String = "",
+        type::String = ""
     )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj_new; ch = ch)
@@ -106,7 +106,7 @@ function edit_locs!(
     radius_sph::Union{Real, Nothing} = nothing,
     phi_sph::Union{Real, Nothing} = nothing,
     name::String = "",
-    type::String = "",
+    type::String = ""
 )::Nothing
 
     obj_new = edit_locs(

@@ -34,7 +34,7 @@ function plot_locs3d(
         cam::Tuple{Real, Real} = (20, 45),
         mesh_type::Symbol = :disabled,
         mesh_alpha::Float64 = 0.95,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
@@ -254,7 +254,7 @@ function plot_locs3d(
         cam::Tuple{Real, Real} = (20, 45),
         mesh_type::Symbol = :disabled,
         mesh_alpha::Float64 = 0.95,
-        gui::Bool = true,
+        gui::Bool = true
     )::GLMakie.Figure
 
     !(datatype(obj) in ["eeg"]) && throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))

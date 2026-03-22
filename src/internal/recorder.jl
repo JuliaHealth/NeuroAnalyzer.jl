@@ -70,7 +70,7 @@ function _serial_recorder(
         m = LibSerialPort.SP_MODE_READ,
         blocks::Int64 = 256,
         n::Int64 = 1,
-        t::Real = 0,
+        t::Real = 0
     )::DataFrame
     # `blocks`: number of data blocks to record
     # `n`: number of records per block

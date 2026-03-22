@@ -187,7 +187,7 @@ function detrend(
     type::Symbol = :linear,
     offset::Real = 0,
     order::Int64 = 1,
-    f::Float64 = 1.0,
+    f::Float64 = 1.0
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
@@ -237,7 +237,7 @@ function detrend!(
         type::Symbol = :linear,
         offset::Real = 0,
         order::Int64 = 1,
-        f::Float64 = 1.0,
+        f::Float64 = 1.0
     )::Nothing
 
     obj_new = detrend(obj, ch = ch, type = type, offset = offset, order = order, f = f)

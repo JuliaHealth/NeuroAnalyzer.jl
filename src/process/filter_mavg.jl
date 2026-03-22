@@ -86,7 +86,7 @@ end
 """
     filter_mavg(s; <keyword arguments>)
 
-Apply a weighted moving average filter to every channel × epoch slice of a 3-D signal array. Delegates to [`filter_mavg(::AbstractVector)`](@ref).
+Apply a weighted moving average filter to every channel × epoch slice of a 3-D signal array.
 
 # Arguments
 
@@ -159,11 +159,11 @@ function filter_mavg(
     ch::Union{String, Vector{String}, Regex},
     k::Int64 = 8,
     t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1),
+    ww::AbstractVector = ones(2 * k + 1)
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch=ch)
+    ch = get_channel(obj, ch=ch)
     # sampling rate
     fs = sr(obj)
     wlen = 2 * k + 1
@@ -186,7 +186,7 @@ end
 """
     filter_mavg!(obj; <keyword arguments>)
 
-Apply a weighted moving average filter in-place to selected channels of a NEURO object. Delegates to [`filter_mavg`](@ref) and copies the result back.
+Apply a weighted moving average filter in-place to selected channels of a NEURO object.
 
 # Arguments
 
@@ -210,7 +210,7 @@ function filter_mavg!(
     ch::Union{String, Vector{String}, Regex},
     k::Int64 = 8,
     t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1),
+    ww::AbstractVector = ones(2 * k + 1)
 )::Nothing
 
     obj_new = filter_mavg(obj, ch=ch, k=k, t=t, ww=ww)

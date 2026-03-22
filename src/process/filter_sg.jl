@@ -44,7 +44,7 @@ end
 """
     filter_sg(s; <keyword arguments>)
 
-Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal array. Delegates to [`filter_sg(::AbstractVector)`](@ref).
+Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal array.
 
 # Arguments
 
@@ -126,7 +126,7 @@ end
 """
     filter_sg!(obj; <keyword arguments>)
 
-Apply a Savitzky-Golay filter in-place to selected channels of a NEURO object. Delegates to [`filter_sg`](@ref) and copies the result back.
+Apply a Savitzky-Golay filter in-place to selected channels of a NEURO object.
 
 # Arguments
 

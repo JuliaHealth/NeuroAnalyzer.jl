@@ -105,7 +105,7 @@ end
 """
     csd!(obj; <keyword arguments>)
 
-Transform EEG data using the CSD transformation in-place. Delegates to [`csd`](@ref) and copies the result back.
+Transform EEG data using the CSD transformation in-place.
 
 # Arguments
 

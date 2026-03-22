@@ -39,7 +39,7 @@ function sef(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
+        demean::Bool = true
     )::Float64
 
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
@@ -120,7 +120,7 @@ function sef(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
+        demean::Bool = true
     )::Matrix{Float64}
 
     _chk3d(s)
@@ -188,7 +188,7 @@ function sef(
         woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
+        demean::Bool = true
     )::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")

@@ -54,7 +54,7 @@ function cmp_test(
     type::Symbol = :auto,
     exact::Bool = false,
     nperm::Int64 = 1000,
-    verbose::Bool = true,
+    verbose::Bool = true
 )::Union{
     @NamedTuple{t::OneSampleTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
     @NamedTuple{t::EqualVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},

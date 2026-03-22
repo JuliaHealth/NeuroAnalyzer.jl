@@ -5,7 +5,7 @@ function _refresh_ica_can_set(
         ica_can_set::Vector{Gtk4.GtkCanvas},
         ic_idx::Vector{Int64},
         time1::Float64,
-        time2::Float64,
+        time2::Float64
     )::Nothing
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx

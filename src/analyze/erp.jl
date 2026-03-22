@@ -299,7 +299,7 @@ function erp_auc(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
-    type::Symbol = :all,
+    type::Symbol = :all
 )::Vector{Float64}
 
     _check_datatype(obj, ["erp", "erf", "mep"])

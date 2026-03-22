@@ -152,7 +152,7 @@ function pca_reconstruct(
         obj::NeuroAnalyzer.NEURO;
         ch::Union{String, Vector{String}, Regex},
         pc::Array{Float64, 3},
-        pc_model::MultivariateStats.PCA{Float64},
+        pc_model::MultivariateStats.PCA{Float64}
     )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
@@ -186,7 +186,7 @@ function pca_reconstruct!(
         obj::NeuroAnalyzer.NEURO;
         ch::Union{String, Vector{String}, Regex},
         pc::Array{Float64, 3},
-        pc_model::MultivariateStats.PCA{Float64},
+        pc_model::MultivariateStats.PCA{Float64}
     )::Nothing
 
     obj_new = pca_reconstruct(obj, ch = ch, pc = pc, pc_model = pc_model)

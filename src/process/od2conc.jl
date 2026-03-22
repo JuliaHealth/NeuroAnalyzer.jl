@@ -6,24 +6,27 @@ export od2conc!
 
 Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
+`ppf` parameter is the partial path length factors for each wavelength. This is a vector of factors per wavelength. Typical value is ~6 for each wavelength if the absorption change is uniform over the volume of tissue measured. To approximate the partial volume effect of a small localized absorption change within an adult human head, this value could be as small as 0.1. Convention is becoming to set `ppf=1` and to not divide by the source-detector separation such that the resultant "concentration" is in units of Molar mm (or Molar cm if those are the spatial units). This is becoming wide spread in the literature but there is no fixed citation. Use a value of 1 to choose this option.
+
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_od"))`: list of channels, default is NIRS intensity channels
-- `ppf::Vector{Real}=ones(length(obj.header.recording[:wavelengths]))`: Partial path length factors for each wavelength. This is a vector of factors per wavelength. Typical value is ~6 for each wavelength if the absorption change is uniform over the volume of tissue measured. To approximate the partial volume effect of a small localized absorption change within an adult human head, this value could be as small as 0.1. Convention is becoming to set `ppf=1` and to not divide by the source-detector separation such that the resultant "concentration" is in units of Molar mm (or Molar cm if those are the spatial units). This is becoming wide spread in the literature but there is no fixed citation. Use a value of 1 to choose this option.
+- `ppf::Vector{Real}=ones(length(obj.header.recording[:wavelengths]))`: partial path length factors for each wavelength
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
 """
 function od2conc(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
-        ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+    ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths]))
+)::NeuroAnalyzer.NEURO
 
-    !(length(get_channel(obj, type = "nirs_od")) > 0) && throw(ArgumentError("OBJ does not contain NIRS OD channels, use intensity2od() first."))
-    !(length(ppf) == length(obj.header.recording[:wavelengths])) && throw(ArgumentError("ppf length does not correspond to the number of wavelengths."))
+    length(get_channel(obj, type = "nirs_od")) > 0 || throw(ArgumentError("OBJ does not contain NIRS OD channels, use intensity2od() first."))
+    length(ppf) == length(obj.header.recording[:wavelengths]) || throw(ArgumentError("ppf length does not correspond to the number of wavelengths."))
 
     _check_datatype(obj, "nirs")
     _check_channels(get_channel(obj, type = "nirs_od"), ch)
@@ -104,7 +107,7 @@ function od2conc(
     obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0" => "")
     obj_new.header.recording[:bad_channel] = [
         obj_new.header.recording[:bad_channel];
-        zeros(Bool, size(obj_new.data, 1))
+        zeros(Bool, length(obj_new.data))
     ]
 
     #=
@@ -125,21 +128,23 @@ end
 
 Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
+`ppf` parameter is the partial path length factors for each wavelength. This is a vector of factors per wavelength. Typical value is ~6 for each wavelength if the absorption change is uniform over the volume of tissue measured. To approximate the partial volume effect of a small localized absorption change within an adult human head, this value could be as small as 0.1. Convention is becoming to set `ppf=1` and to not divide by the source-detector separation such that the resultant "concentration" is in units of Molar mm (or Molar cm if those are the spatial units). This is becoming wide spread in the literature but there is no fixed citation. Use a value of 1 to choose this option.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_od"))`: list of channels, default is NIRS intensity channels
-- `ppf::Vector{Real}=ones(length(obj.header.recording[:wavelengths]))`: Partial path length factors for each wavelength. This is a vector of factors per wavelength. Typical value is ~6 for each wavelength if the absorption change is uniform over the volume of tissue measured. To approximate the partial volume effect of a small localized absorption change within an adult human head, this value could be as small as 0.1. Convention is becoming to set `ppf=1` and to not divide by the source-detector separation such that the resultant "concentration" is in units of Molar mm (or Molar cm if those are the spatial units). This is becoming wide spread in the literature but there is no fixed citation. Use a value of 1 to choose this option.
+- `ppf::Vector{Real}=ones(length(obj.header.recording[:wavelengths]))`: partial path length factors for each wavelength
 
 # Returns
 
 - `Nothing`
 """
 function od2conc!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
-        ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+    ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths]))
+)::Nothing
 
     obj_new = od2conc(obj, ch = ch, ppf = ppf)
     obj.data = obj_new.data

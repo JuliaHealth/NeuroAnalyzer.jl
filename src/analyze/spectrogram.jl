@@ -38,7 +38,7 @@ function spectrogram(
     nt::Int64 = 7,
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     _check_var(method, [:stft, :mt], "method")
@@ -112,7 +112,7 @@ function spectrogram(
     nt::Int64 = 7,
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
 
     # pilot call to determine output frequency vector length
@@ -193,7 +193,7 @@ function spectrogram(
     wt::T = wavelet(Morlet(2π), β = 2),
     wlen::Int64 = sr(obj),
     woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{
     p::Array{Float64, 4},
     f::Vector{Float64},
@@ -381,7 +381,7 @@ function mwspectrogram(
     db::Bool = true,
     fs::Int64,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    w::Bool = true,
+    w::Bool = true
 )::@NamedTuple{
     cs::Matrix{ComplexF64},
     p::Matrix{Float64},
@@ -465,7 +465,7 @@ function mwspectrogram(
         db::Bool = true,
         fs::Int64,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        w::Bool = true,
+        w::Bool = true
     )::@NamedTuple{
         cs::Array{ComplexF64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64},
     }

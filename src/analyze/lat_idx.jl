@@ -46,7 +46,7 @@ function lat_idx(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )::Float64
 
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])

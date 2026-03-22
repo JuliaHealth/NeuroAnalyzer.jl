@@ -23,7 +23,7 @@ function mlinterpolate_channel(
         ch::String,
         ep::Int64,
         ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-        model::T,
+        model::T
     )::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
 
     channels = get_channel(obj, type = datatype(obj))
@@ -87,7 +87,7 @@ function mlinterpolate_channel!(
         ch::String,
         ep::Int64,
         ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-        model::T,
+        model::T
     )::Nothing where {T <: MLJ.Model}
 
     obj_new = mlinterpolate_channel(obj, ch = ch, ep = ep, ep_ref = ep_ref, model = model)

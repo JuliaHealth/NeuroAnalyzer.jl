@@ -4,7 +4,7 @@ function _interpolate2d(
         loc_y::Vector{Float64},
         ifactor::Int64 = 100,
         imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
+        nmethod::Symbol = :minmax
     )::Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}
     # `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 

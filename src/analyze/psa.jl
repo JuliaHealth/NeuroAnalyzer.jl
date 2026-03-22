@@ -16,7 +16,7 @@ Calculate Phase Synchronization Analysis.
 """
 function psa(s1::AbstractVector, s2::AbstractVector)::Float64
 
-    !(length(s1) == length(s2)) && throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # get instatenous phases
     _, _, _, s1ph = htransform(s1)
@@ -52,7 +52,7 @@ function psa(
         ch1::Union{String, Vector{String}, Regex},
         ch2::Union{String, Vector{String}, Regex},
         ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
     )::Matrix{Float64}
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
@@ -62,7 +62,7 @@ function psa(
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    !(epoch_len(obj1) == epoch_len(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])

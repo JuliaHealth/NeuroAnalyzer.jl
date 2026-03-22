@@ -112,7 +112,7 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 """
 function derivative(
     obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
+    ch::Union{String, Vector{String}, Regex}
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices

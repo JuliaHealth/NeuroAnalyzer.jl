@@ -33,7 +33,7 @@ function plot_erp(
         title::String = "",
         yrev::Bool = false,
         zl::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     # prepare plot
@@ -125,7 +125,7 @@ function plot_erp(
         ci95::Bool = false,
         leg::Bool = true,
         zl::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
@@ -252,7 +252,7 @@ function plot_erp_topo(
         cart::Bool = false,
         head::Bool = true,
         zl::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     !(size(s, 2) == length(t)) && throw(ArgumentError("Signal length must equal time length."))
@@ -455,7 +455,7 @@ function plot_erp_stack(
         smooth::Bool = false,
         ks::Int64 = 3,
         zl::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     !(length(t) == size(s, 2)) && throw(ArgumentError("Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."))
@@ -553,7 +553,7 @@ function plot_gfp(
         title::String = "",
         yrev::Bool = false,
         zl::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     # prepare plot
@@ -666,7 +666,7 @@ function plot_erp(
         sort_epochs::Bool = false,
         zl::Bool = true,
         mono::Bool = false,
-        gui::Bool = false,
+        gui::Bool = false
     )::GLMakie.Figure
 
     _check_datatype(obj, ["erp", "erf"])

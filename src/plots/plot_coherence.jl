@@ -28,7 +28,7 @@ function plot_coherence(
         ylabel::String = "Coherence",
         title::String = "",
         frq::Symbol = :lin,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     !(length(coh) == length(f)) && throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
@@ -113,7 +113,7 @@ function plot_coherence(
         avg::Bool = false,
         ci95::Bool = false,
         leg::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     ch_n = size(coh, 1)

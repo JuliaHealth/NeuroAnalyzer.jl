@@ -55,7 +55,7 @@ function _check_tuple(
     t::Tuple{Real, Real},
     r::Tuple{Real, Real},
     name::Union{Nothing, String}=nothing,
-    type::Symbol=:in,
+    type::Symbol=:in
 )::Nothing
     _check_var(type, [:in, :bin], "type")
     label = isnothing(name) ? "Tuple" : name

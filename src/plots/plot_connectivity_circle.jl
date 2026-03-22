@@ -30,7 +30,7 @@ function plot_connectivity_circle(
         clabels = Vector{String},
         title::String = "",
         threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
+        threshold_type::Symbol = :neq
     )::GLMakie.Figure
 
     !(size(m, 1) == length(clabels)) && throw(ArgumentError("Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."))

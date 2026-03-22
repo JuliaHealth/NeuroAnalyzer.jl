@@ -29,7 +29,7 @@ function plot_mep(
     title::String = "",
     zl::Bool = true,
     yrev::Bool = false,
-    mono::Bool = false,
+    mono::Bool = false
 )::GLMakie.Figure
 
     # prepare plot
@@ -112,7 +112,7 @@ function plot_mep(
         ci95::Bool = false,
         leg::Bool = true,
         zl::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
@@ -235,7 +235,7 @@ function plot_mep_stack(
         smooth::Bool = false,
         ks::Int64 = 3,
         zl::Bool = true,
-        mono::Bool = false,
+        mono::Bool = false
     )::GLMakie.Figure
 
     !(length(t) == size(s, 2)) && throw(ArgumentError("Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."))
@@ -341,7 +341,7 @@ function plot_mep(
     ks::Int64 = 3,
     zl::Bool = true,
     mono::Bool = false,
-    gui::Bool = false,
+    gui::Bool = false
 )::GLMakie.Figure
 
     _check_datatype(obj, "mep")

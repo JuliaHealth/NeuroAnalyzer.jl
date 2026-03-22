@@ -30,7 +30,7 @@ function plinterpolate_channel(
         ch::String,
         ep::Union{Int64, Vector{Int64}, AbstractRange},
         imethod::Symbol = :sh,
-        ifactor::Int64 = 100,
+        ifactor::Int64 = 100
     )::NeuroAnalyzer.NEURO
 
     channels = get_channel(obj, type = datatype(obj))
@@ -111,7 +111,7 @@ function plinterpolate_channel!(
         ch::String,
         ep::Union{Int64, Vector{Int64}, AbstractRange},
         imethod::Symbol = :shepard,
-        ifactor::Int64 = 100,
+        ifactor::Int64 = 100
     )::Nothing
 
     obj_new = plinterpolate_channel(obj; ch = ch, ep = ep, imethod = imethod, ifactor = ifactor)
@@ -158,7 +158,7 @@ function plinterpolate(
         imethod::Symbol = :sh,
         nmethod::Symbol = :minmax,
         cart::Bool = false,
-        ifactor::Int64 = 100,
+        ifactor::Int64 = 100
     )::@NamedTuple{int_s::Matrix{Float64}, int_x::Vector{Float64}, int_y::Vector{Float64}}
 
     !(ch in axes(s, 1)) && throw(ArgumentError("ch must be in [1, $(size(s, 1))"))

@@ -39,7 +39,7 @@ function artrem_cwd(
     wt::T = wavelet(Morlet(2π), β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
+    type::Symbol = :nd
 )::Vector{Float64} where {T <: CWT}
 
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))   # was: !(fs >= 1) && throw(...)
@@ -103,7 +103,7 @@ function artrem_cwd(
     wt::T = wavelet(Morlet(2π), β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
+    type::Symbol = :nd
 )::NeuroAnalyzer.NEURO where {T <: CWT}
 
     # resolve channel names to integer indices
@@ -167,7 +167,7 @@ function artrem_cwd!(
     wt::T = wavelet(Morlet(2π), β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
+    type::Symbol = :nd
 )::Nothing where {T <: CWT}
 
     obj_new = artrem_cwd(obj, ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
