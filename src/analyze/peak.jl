@@ -78,7 +78,7 @@ Calculate peak frequency within a frequency band.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
@@ -277,7 +277,7 @@ Calculate amplitude at peak frequency within a frequency band.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
@@ -474,7 +474,7 @@ Calculate power at peak frequency within a frequency band.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:

@@ -19,7 +19,7 @@ Split into epochs. Return signal that is split either by markers (if specified) 
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function epoch(
         obj::NeuroAnalyzer.NEURO;
@@ -153,7 +153,7 @@ Edit epochs time start.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)::NeuroAnalyzer.NEURO
 
@@ -203,7 +203,7 @@ Extract sub-epochs with a reduced time range.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function subepoch(
         obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real

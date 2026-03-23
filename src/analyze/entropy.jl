@@ -80,17 +80,17 @@ Calculate signal entropy descriptors:
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
 Named tuple:
 
-- `ent::Matrix{Float64}`: entropy in bits, shape `(channels, epochs)`
-- `shent::Matrix{Float64}`: Shanon entropy, shape `(channels, epochs)`
-- `leent::Matrix{Float64}`: log energy entropy, shape `(channels, epochs)`
-- `sent::Matrix{Float64}`: sample entropy, shape `(channels, epochs)`
-- `nsent::Matrix{Float64}`: normalized sample entropy, shape `(channels, epochs)`
+- `ent::Matrix{Float64}`: entropy in bits, shape (channels, epochs)
+- `shent::Matrix{Float64}`: Shanon entropy, shape (channels, epochs)
+- `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
+- `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
+- `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
 """
 function entropy(
     s::AbstractArray
@@ -147,23 +147,27 @@ Calculate signal entropy descriptors:
 
 Named tuple:
 
-- `ent::Matrix{Float64}`: entropy in bits, shape `(channels, epochs)`
-- `shent::Matrix{Float64}`: Shanon entropy, shape `(channels, epochs)`
-- `leent::Matrix{Float64}`: log energy entropy, shape `(channels, epochs)`
-- `sent::Matrix{Float64}`: sample entropy, shape `(channels, epochs)`
-- `nsent::Matrix{Float64}`: normalized sample entropy, shape `(channels, epochs)`
+- `ent::Matrix{Float64}`: entropy in bits, shape (channels, epochs)
+- `shent::Matrix{Float64}`: Shanon entropy, shape (channels, epochs)
+- `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
+- `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
+- `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
 """
 function entropy(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-    )::@NamedTuple{
-        ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}
+)::@NamedTuple{
+    ent::Matrix{Float64},
+    shent::Matrix{Float64},
+    leent::Matrix{Float64},
+    sent::Matrix{Float64},
+    nsent::Matrix{Float64}
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    entropy_data = entropy(@view(obj.data[ch, :, :]))
 
-    return entropy_data
+    return entropy(@view(obj.data[ch, :, :]))
 
 end
 
@@ -178,7 +182,7 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 # Returns
 
-- `ne::Float64`: negentropy (≥ 0; equals 0 for a Gaussian signal)
+- `Float64`: negentropy (≥ 0; equals 0 for a Gaussian signal)
 """
 function negentropy(signal::AbstractVector)::Float64
 
@@ -189,9 +193,7 @@ function negentropy(signal::AbstractVector)::Float64
     # ℯ is the built-in mathematical constant (more readable than exp(1)).
     gaussian_h = 0.5 * log(2 * π * ℯ * var(s))
 
-    ne = gaussian_h - entropy(s).ent
-
-    return ne
+    return gaussian_h - entropy(s).ent
 
 end
 
@@ -202,11 +204,11 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
-- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape `(channel, epochs)`
+- `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(s::AbstractArray)::Matrix{Float64}
 
@@ -247,15 +249,13 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 # Returns
 
-- `ne::Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape `(channel, epochs)`
+- `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    ne = negentropy(@view(obj.data[ch, :, :]))
-
-    return ne
+    return negentropy(@view(obj.data[ch, :, :]))
 
 end

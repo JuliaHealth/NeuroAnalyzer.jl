@@ -13,7 +13,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 # Returns
 
-- `aec::Float64`: AEC value
+- `Float64`: AEC value
 
 # References
 
@@ -31,9 +31,7 @@ function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
     e2 = ht2.a
 
     # AEC is the Pearson correlation of the two amplitude envelopes
-    aec = cor(e1, e2)
-
-    return aec
+    return cor(e1, e2)
 
 end
 
@@ -53,7 +51,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 # Returns
 
-- `aec::Matrix{Float64}`: AEC value, shape `(channels, epochs)`
+- `Matrix{Float64}`: AEC value, shape `(channels, epochs)`
 """
 function aecor(
     obj1::NeuroAnalyzer.NEURO,
@@ -111,7 +109,7 @@ Calculate Amplitude Envelope Correlation (AEC).
 
 # Returns
 
-- `aec::Array{Float64, 3}`: AEC value, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: AEC value, shape `(channels, channels, epochs)`
 """
 function aecor(
     obj::NeuroAnalyzer.NEURO;
@@ -142,9 +140,7 @@ function aecor(
 
     # mirror the lower triangle to the upper triangle to produce the full
     # symmetric matrix
-    aec = _copy_lt2ut(aec)
-
-    return aec
+    return _copy_lt2ut(aec)
 
 end
 
@@ -160,7 +156,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 # Returns
 
-- `esc::Float64`: ESC value
+- `Float64`: ESC value
 
 # References
 
@@ -177,9 +173,7 @@ function escor(s1::AbstractVector, s2::AbstractVector)::Float64
     e2 = ht2.a
 
     # ESC: correlation of the raw s1 signal against s2's amplitude envelope
-    esc = cor(s1, e2)
-
-    return esc
+    return cor(s1, e2)
 
 end
 
@@ -199,7 +193,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 # Returns
 
-- `esc::Matrix{Float64}`: ESC value, shape `(channels, epochs)`
+- `Matrix{Float64}`: ESC value, shape `(channels, epochs)`
 """
 function escor(
     obj1::NeuroAnalyzer.NEURO,
@@ -257,7 +251,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 # Returns
 
-- `esc::Array{Float64, 3}`: ESC value, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: ESC value, shape `(channels, channels, epochs)`
 """
 function escor(
     obj::NeuroAnalyzer.NEURO;
@@ -287,8 +281,6 @@ function escor(
     end
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
-    esc = _copy_lt2ut(esc)
-
-    return esc
+    return _copy_lt2ut(esc)
 
 end

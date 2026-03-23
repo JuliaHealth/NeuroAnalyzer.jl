@@ -337,9 +337,9 @@ Re-reference EEG channels to auricular electrodes (A1, A2). Only EEG-type channe
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must contain A1 and A2 channels; must be of type `"eeg"`
 - `type::Symbol=:l`: reference type:
-    - `:l`: linked — average of A1 and A2
-    - `:i`: ipsilateral — A1 for left channels, A2 for right channels
-    - `:c`: contralateral — A2 for left channels, A1 for right channels
+    - `:l`: linked - average of A1 and A2
+    - `:i`: ipsilateral - A1 for left channels, A2 for right channels
+    - `:c`: contralateral - A2 for left channels, A1 for right channels
 - `med::Bool=false`: use median instead of mean
 
 # Returns
@@ -415,9 +415,9 @@ Re-reference EEG channels to auricular electrodes in-place. Only EEG-type channe
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must contain A1 and A2 channels; must be of type `"eeg"`; modified in-place
 - `type::Symbol=:l`: reference type:
-    - `:l`: linked — average of A1 and A2
-    - `:i`: ipsilateral — A1 for left channels, A2 for right channels
-    - `:c`: contralateral — A2 for left channels, A1 for right channels
+    - `:l`: linked - average of A1 and A2
+    - `:i`: ipsilateral - A1 for left channels, A2 for right channels
+    - `:c`: contralateral - A2 for left channels, A1 for right channels
 - `med::Bool=false`: use median instead of mean
 
 # Returns
@@ -453,9 +453,9 @@ Re-reference EEG channels to mastoid electrodes (M1, M2). Only EEG-type channels
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must contain M1 and M2 channels; must be of type `"eeg"`; modified in-place
 - `type::Symbol=:l`: reference type:
-    - `:l`: linked — average of M1 and M2
-    - `:i`: ipsilateral — M1 for left channels, M2 for right channels
-    - `:c`: contralateral — M2 for left channels, M1 for right channels
+    - `:l`: linked - average of M1 and M2
+    - `:i`: ipsilateral - M1 for left channels, M2 for right channels
+    - `:c`: contralateral - M2 for left channels, M1 for right channels
 - `med::Bool=false`: use median instead of mean
 
 # Returns
@@ -527,9 +527,9 @@ Re-reference EEG channels to mastoid electrodes in-place. Only EEG-type channels
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must contain M1 and M2 channels; must be of type `"eeg"`; modified in-place
 - `type::Symbol=:l`: reference type:
-    - `:l`: linked — average of M1 and M2
-    - `:i`: ipsilateral — M1 for left channels, M2 for right channels
-    - `:c`: contralateral — M2 for left channels, M1 for right channels
+    - `:l`: linked - average of M1 and M2
+    - `:i`: ipsilateral - M1 for left channels, M2 for right channels
+    - `:c`: contralateral - M2 for left channels, M1 for right channels
 - `med::Bool=false`: use median instead of mean
 
 # Returns
@@ -884,7 +884,7 @@ function reference_custom(
     rec[:transducers]  = vcat(fill(obj.header.recording[:transducers][1],  length(ref_list)), rec[:transducers])
     rec[:gain] = vcat(fill(obj.header.recording[:gain][1],         length(ref_list)), rec[:gain])
     _info("Bad channels matrix will be reset.")
-    rec[:bad_channel]  = falses(size(obj_new.data, 1))   # was: zeros — Bool is more appropriate
+    rec[:bad_channel]  = falses(size(obj_new.data, 1))   # was: zeros - Bool is more appropriate
 
     # TODO: update obj_new.locs for the new montage channels
 

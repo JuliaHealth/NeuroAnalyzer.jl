@@ -69,7 +69,7 @@ Apply SSP projectors from embedded projections.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0)::NeuroAnalyzer.NEURO
 

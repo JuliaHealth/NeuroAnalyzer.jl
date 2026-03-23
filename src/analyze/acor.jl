@@ -18,7 +18,7 @@ Calculate auto-correlation.
 
 # Returns
 
-- `ac::Vector{Float64}`: auto-correlation of length `2l + 1`
+- `Vector{Float64}`: auto-correlation of length `2l + 1`
 """
 function acor(
     s::AbstractVector;
@@ -35,7 +35,7 @@ function acor(
 
         # compute raw autocovariance via element-wise products, then divide by
         # the signal variance to obtain a correlation-scale (unitless) result
-        ac = acov(
+        autocor = acov(
             s,
             l = l,
             demean = demean,
@@ -43,13 +43,13 @@ function acor(
             method = :sum
         )
         # normalize by variance to bring values onto [-1, 1] scale
-        ac = round.(ac ./ Statistics.var(s), digits = 3)
+        autocor = round.(autocor ./ Statistics.var(s), digits = 3)
 
     elseif method === :cor
 
         # similar to :sum but uses a covariance-based approach internally;
         # the final normalization step is the same
-        ac = acov(
+        autocor = acov(
             s,
             l = l,
             demean = demean,
@@ -57,23 +57,23 @@ function acor(
             method = :cov
         )
         # normalize by variance to bring values onto [-1, 1] scale
-        ac = round.(ac ./ Statistics.var(s), digits = 3)
+        autocor = round.(autocor ./ Statistics.var(s), digits = 3)
 
     elseif method === :stat
 
         # delegate entirely to StatsBase.autocor, which handles normalization internally
         # the `biased` keyword is intentionally ignored here
-        ac = StatsBase.autocor(
+        autocor = StatsBase.autocor(
             s,
             0:l,
             demean = demean
         )
-        ac = round.(ac, digits = 3)
-        ac = vcat(reverse(ac), ac[2:end])
+        autocor = round.(autocor, digits = 3)
+        autocor = vcat(reverse(autocor), autocor[2:end])
 
     end
 
-    return ac
+    return autocor
 
 end
 
@@ -84,7 +84,7 @@ Calculate auto-correlation.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2))))`: range of lags is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -95,7 +95,7 @@ Calculate auto-correlation.
 
 # Returns
 
-- `ac::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
+- `Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
 """
 function acor(
     s::AbstractArray;
@@ -114,12 +114,12 @@ function acor(
     ep_n = size(s, 3)
 
     # pre-allocate output
-    ac = zeros(ch_n, length((-l):l), ep_n)
+    autocor = zeros(ch_n, length((-l):l), ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ac[ch_idx, :, ep_idx] = acor(
+        autocor[ch_idx, :, ep_idx] = acor(
             @view(s[ch_idx, :, ep_idx]),
             l = l,
             demean = demean,
@@ -128,7 +128,7 @@ function acor(
         )
     end
 
-    return ac
+    return autocor
 
 end
 
@@ -153,7 +153,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 
 Named tuple:
 
-- `ac::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
+- `autocor_m::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
 - `l::Vector{Float64}`: lags in seconds
 """
 function acor(
@@ -163,11 +163,14 @@ function acor(
     demean::Bool = true,
     biased::Bool = true,
     method::Symbol = :sum
-)::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
+)::@NamedTuple{
+    autocor::Array{Float64, 3},
+    lags::Vector{Float64}
+}
 
     # validate lag bounds: must be non-negative and within the signal length
-    !(l <= size(obj, 2)) && throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
-    !(l >= 0) && throw(ArgumentError("l must be ≥ 0."))
+    l <= size(obj, 2) || throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
+    l >= 0 || throw(ArgumentError("l must be ≥ 0."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -177,18 +180,18 @@ function acor(
         # epoch 1 is the pre-computed average; epochs 2:end are individual trials
         # compute per-trial auto-correlations first, then prepend the mean across
         # trials as epoch 1 of the output (preserving the ERP convention)
-        ac = acor(
+        autocor = acor(
             @view(obj.data[ch, :, 2:end]),
             l = l,
             demean = demean,
             biased = biased,
             method = method
         )
-        ac = cat(mean(ac, dims = 3), ac, dims = 3)
+        autocor = cat(mean(autocor, dims = 3), autocor, dims = 3)
 
     else
 
-        ac = acor(
+        autocor = acor(
             @view(obj.data[ch, :, :]),
             l = l,
             demean = demean,
@@ -200,8 +203,8 @@ function acor(
 
     # convert integer lag indices (-l … l) to physical time in seconds using
     # the object's sampling rate
-    l = collect((-l):l) .* 1 / sr(obj)
+    lags = collect((-l):l) .* 1 / sr(obj)
 
-    return (; ac, l)
+    return (; autocor, lags)
 
 end

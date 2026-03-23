@@ -35,7 +35,7 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function intensity2od(
     obj::NeuroAnalyzer.NEURO;

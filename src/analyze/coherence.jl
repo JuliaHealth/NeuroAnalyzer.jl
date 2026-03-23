@@ -7,7 +7,7 @@ Calculate coherence, imaginary part of coherence and magnitude-squared coherence
 
 For two signals `s1`, `s2` and their cross-power spectra:
 - coh = S12 / √(S11 · S22) (complex coherence)
-- imcoh = Im(coh) (imaginary part — insensitive to zero-lag volume conduction)
+- imcoh = Im(coh) (imaginary part - insensitive to zero-lag volume conduction)
 - msc = |coh|² (magnitude-squared coherence ∈ [0,1])
 
 # Arguments
@@ -46,20 +46,25 @@ function coherence(
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.90),
     w::Bool = true
-)::@NamedTuple{coh::Vector{ComplexF64}, imcoh::Vector{Float64}, msc::Vector{Float64}, f::Vector{Float64}}
+)::@NamedTuple{
+    coh::Vector{ComplexF64},
+    imcoh::Vector{Float64},
+    msc::Vector{Float64},
+    f::Vector{Float64}
+}
 
-    # check parameters
+    # validate
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
-    !nt >= 1 || throw(ArgumentError("nt must be ≥ 1."))
-    !fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
-    !wlen <= length(s1) || throw(ArgumentError("wlen must be ≤ $(length(s1))."))
-    !wlen >= 2 || throw(ArgumentError("wlen must be ≥ 2."))
-    !woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
-    !woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
+    nt >= 1 || throw(ArgumentError("nt must be ≥ 1."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    wlen <= length(s1) || throw(ArgumentError("wlen must be ≤ $(length(s1))."))
+    wlen >= 2 || throw(ArgumentError("wlen must be ≥ 2."))
+    woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
+    woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    # shared kwargs for all three cpsd calls — defined once to keep them in sync
+    # shared kwargs for all three cpsd calls - defined once to keep them in sync
     cpsd_kwargs = (
         fs = fs,
         wlen = wlen,
@@ -87,7 +92,7 @@ function coherence(
     # magnitude-squared coherence: real-valued, bounded on [0, 1].
     msc = abs2.(coh)
 
-    return (coh = coh, imcoh = imcoh, msc = msc, f = f)
+    return (; coh, imcoh, msc, f)
 
 end
 
@@ -98,7 +103,7 @@ Calculate coherence, imaginary part of coherence and magnitude-squared coherence
 
 For two signals `s1`, `s2` and their cross-power spectra:
 - coh = S12 / √(S11 · S22) (complex coherence)
-- imcoh = Im(coh) (imaginary part — insensitive to zero-lag volume conduction)
+- imcoh = Im(coh) (imaginary part - insensitive to zero-lag volume conduction)
 - msc = |coh|² (magnitude-squared coherence ∈ [0,1])
 
 # Arguments
@@ -142,10 +147,11 @@ function coherence(
     f::Vector{Float64}
 }
 
-    # validate shape
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
     _chk3d(s2)
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
     # number of channels
     ch_n = size(s1, 1)
@@ -202,7 +208,7 @@ Calculate coherence, imaginary part of coherence and magnitude-squared coherence
 
 For two signals `s1`, `s2` and their cross-power spectra:
 - coh = S12 / √(S11 · S22) (complex coherence)
-- imcoh = Im(coh) (imaginary part — insensitive to zero-lag volume conduction)
+- imcoh = Im(coh) (imaginary part - insensitive to zero-lag volume conduction)
 - msc = |coh|² (magnitude-squared coherence ∈ [0,1])
 
 # Arguments
@@ -253,13 +259,13 @@ function coherence(
     f::Vector{Float64}
 }
 
-    # validate objects
-    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    # validate
+    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -267,10 +273,10 @@ function coherence(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    coh_data = coherence(
+    return coherence(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
         method = method,
@@ -282,7 +288,5 @@ function coherence(
         woverlap = woverlap,
         w = w
     )
-
-    return coh_data
 
 end

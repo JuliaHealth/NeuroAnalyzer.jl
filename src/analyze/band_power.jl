@@ -31,7 +31,7 @@ Calculate the absolute power in a frequency band by:
 
 # Returns
 
-- `bp::Float64`: band power
+- `Float64`: band power
 """
 function band_power(
     s::AbstractVector;
@@ -47,7 +47,8 @@ function band_power(
     demean::Bool = true
 )::Float64
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # compute the power spectral density over the full frequency range
@@ -88,7 +89,7 @@ Calculate absolute band power between two frequencies.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
@@ -108,7 +109,7 @@ Calculate absolute band power between two frequencies.
 
 # Returns
 
-- `bp::Matrix{Float64}`: band power, shape `(channels, epochs)`
+- `Matrix{Float64}`: band power, shape (channels, epochs)
 """
 function band_power(
     s::AbstractArray;
@@ -135,6 +136,8 @@ function band_power(
     # pre-allocate output
     bp = zeros(ch_n, ep_n)
 
+    _log_off()
+
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
@@ -152,6 +155,8 @@ function band_power(
             demean = demean
         )
     end
+
+    _log_on()
 
     return bp
 
@@ -184,7 +189,7 @@ Calculate absolute band power between two frequencies.
 
 # Returns
 
-- `bp::Matrix{Float64}`: band power, shape `(channels, epochs)`
+- `Matrix{Float64}`: band power, shape (channels, epochs)
 """
 function band_power(
     obj::NeuroAnalyzer.NEURO;
@@ -203,8 +208,7 @@ function band_power(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    _log_off()
-    power_data = band_power(
+    return band_power(
         @view(obj.data[ch, :, :]),
         fs = sr(obj),
         flim = flim,
@@ -217,8 +221,5 @@ function band_power(
         gw = gw,
         demean = demean
     )
-    _log_on()
-
-    return power_data
 
 end

@@ -16,7 +16,7 @@ Interpolate channel using a machine-learning model.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function mlinterpolate_channel(
         obj::NeuroAnalyzer.NEURO;
@@ -80,7 +80,7 @@ Interpolate channel using linear regression.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function mlinterpolate_channel!(
         obj::NeuroAnalyzer.NEURO;

@@ -19,7 +19,7 @@ Removes format prefixes (EEG, EDF, BDF), normalizes duplicate-label patterns (EO
 - `Vector{String}`: cleaned labels (same length, same order)
 """
 function _clean_labels(clabels::Vector{String})::Vector{String}
-    # string is immutable in Julia — shallow copy is sufficient
+    # string is immutable in Julia - shallow copy is sufficient
     l = copy(clabels)
 
     # remove EEG prefix (case-insensitive, with any trailing whitespace)
@@ -63,7 +63,7 @@ Ensures a single space between each modality prefix (MEG, EEG, EOG, EMG) and its
 - `Vector{String}`: cleaned labels (same length, same order)
 """
 function _clean_meg_labels(clabels::Vector{String})::Vector{String}
-    # string is immutable in Julia — shallow copy is sufficient
+    # string is immutable in Julia - shallow copy is sufficient
     l = copy(clabels)
 
     # ensure one space after each modality prefix and strip ALL leading zeros
@@ -94,10 +94,10 @@ Removes the "EEG " prefix, normalises duplicate-label patterns, and strips ALL l
 - `Vector{String}`: cleaned labels (same length, same order)
 """
 function _clean_eeg_labels(clabels::Vector{String})::Vector{String}
-    # string is immutable in Julia — shallow copy is sufficient
+    # string is immutable in Julia - shallow copy is sufficient
     l = copy(clabels)
 
-    # remove "EEG " prefix (with trailing space) — a plain label like "EEG Fp1" becomes "Fp1"
+    # remove "EEG " prefix (with trailing space) - a plain label like "EEG Fp1" becomes "Fp1"
     l = replace.(l, "EEG " => "")
 
     # normalise duplicate-label patterns

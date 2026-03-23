@@ -62,7 +62,7 @@ Delete marker.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
 
@@ -118,7 +118,7 @@ Add marker.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_marker(
         obj::NeuroAnalyzer.NEURO;
@@ -201,7 +201,7 @@ Edit marker.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_marker(
         obj::NeuroAnalyzer.NEURO;
@@ -289,7 +289,7 @@ Convert event channel to markers.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function channel2marker(
     obj::NeuroAnalyzer.NEURO;
@@ -416,7 +416,7 @@ Add markers.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyzer.NEURO
 

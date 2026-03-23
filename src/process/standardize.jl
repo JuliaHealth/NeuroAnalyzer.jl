@@ -44,7 +44,7 @@ Standardize channels.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(

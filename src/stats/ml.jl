@@ -26,7 +26,7 @@ MCC’s value ranges from -1 to 1, depending on:
 
 # Returns
 
-- `Float64`: MCC ∈ [−1, 1]; returns `0.0` when the denominator is zero (degenerate classifier — all predictions in one class)
+- `Float64`: MCC ∈ [−1, 1]; returns `0.0` when the denominator is zero (degenerate classifier - all predictions in one class)
 
 # Throws
 

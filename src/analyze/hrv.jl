@@ -62,8 +62,8 @@ Named tuple:
 - `mdnn::Float64`: median NN interval [ms]
 - `vnn::Float64`: variance of NN intervals [ms²]
 - `sdnn::Float64`: standard deviation of NN intervals [ms]
-- `rmssd::Float64`: root mean square of successive differences between adjacent NN intervals [ms] — √(mean(diff(NN)²))
-- `sdsd::Float64`: standard deviation of successive differences between adjacent NN intervals [ms] — std(diff(NN))
+- `rmssd::Float64`: root mean square of successive differences between adjacent NN intervals [ms] - √(mean(diff(NN)²))
+- `sdsd::Float64`: standard deviation of successive differences between adjacent NN intervals [ms] - std(diff(NN))
 - `nn50::Int64`: number of pairs of successive NNs differing by > 50 ms
 - `pnn50::Float64`: proportion of NN50 to total number of NN intervals
 - `nn20::Int64`: number of pairs of successive NNs differing by > 20 ms

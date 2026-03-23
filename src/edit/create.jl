@@ -15,7 +15,7 @@ Create an empty `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_object(; data_type::String)::NeuroAnalyzer.NEURO
 
@@ -268,7 +268,7 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
 
@@ -323,7 +323,7 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_data(
         obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String

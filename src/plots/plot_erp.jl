@@ -173,7 +173,10 @@ function plot_erp(
     if ci95
         avg = false
         leg = false
-        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s)
+        msci95_data = NeuroAnalyzer.msci95(s)
+        s_m = msci95_data.sm
+        s_u = msci95_data.ul
+        s_l = msci95_data.ll
         # draw 95% CI
         Makie.band!(ax, t, s_u, s_l, alpha = 0.25, color = :grey, strokewidth = 0.5)
 

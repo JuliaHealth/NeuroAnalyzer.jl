@@ -15,7 +15,7 @@ Interpolate channel using linear regression.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function lrinterpolate_channel(
         obj::NeuroAnalyzer.NEURO;

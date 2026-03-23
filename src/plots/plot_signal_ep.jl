@@ -230,7 +230,10 @@ function plot_ep(
     else
         if ci95
             for idx in eachindex(ctypes_uni)
-                s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s[][ctypes .== ctypes_uni[idx], :])
+                msci95_data = NeuroAnalyzer.msci95(s[][ctypes .== ctypes_uni[idx], :])
+                s_m = msci95_data.sm
+                s_u = msci95_data.ul
+                s_l = msci95_data.ll
                 # draw 95% CI
                 Makie.band!(
                     ax1, t[][1:res:end], s_u[1:res:end], s_l[1:res:end]; alpha = 0.25, color = :grey, strokewidth = 0.5

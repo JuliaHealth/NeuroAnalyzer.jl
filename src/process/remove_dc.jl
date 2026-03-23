@@ -13,22 +13,27 @@ Remove mean value (DC offset).
 
 # Returns
 
-- `s_new::Vector{Float64}`
+- `Vector{Float64}`
 """
-function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Vector{Float64}
+function remove_dc(
+    s::AbstractVector,
+    n::Union{Int64, Tuple{Int64, Int64}} = 0
+)::Vector{Float64}
 
     if isa(n, Int64)
-        !(n >= 0) && throw(ArgumentError("n must be ≥ 0."))
-        !(n <= length(s)) && throw(ArgumentError("n must be ≤ $(length(s))."))
 
-        s_new = n == 0 ? s .- mean(s) : s .- mean(s[1:n])
+        n >= 0 || throw(ArgumentError("n must be ≥ 0."))
+        n <= length(s) || throw(ArgumentError("n must be ≤ $(length(s))."))
+
+        return n == 0 ? s .- mean(s) : s .- mean(s[1:n])
+
     else
+
         n != (0, 0) && _check_tuple(n, (1, length(s)), "n")
 
-        s_new = n == (0, 0) ? s .- mean(s) : s .- mean(s[n[1]:n[2]])
-    end
+        return n == (0, 0) ? s .- mean(s) : s .- mean(s[n[1]:n[2]])
 
-    return s_new
+    end
 
 end
 
@@ -39,23 +44,26 @@ Remove mean value (DC offset).
 
 # Arguments
 
-- `s::AbstractMatrix`
+- `s::AbstractMatrix`: signal matrix, shape (channels, samples)
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
-- `s::Matrix{Float64}`
+- `Matrix{Float64}`
 """
-function remove_dc(s::AbstractMatrix, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Matrix{Float64}
+function remove_dc(
+    s::AbstractMatrix,
+    n::Union{Int64, Tuple{Int64, Int64}} = 0
+)::Matrix{Float64}
 
     ch_n = size(s, 1)
 
-    s_new = similar(s, Float64)
+    result = similar(s, Float64)
     Threads.@threads :static for ch_idx in 1:ch_n
-        s_new[ch_idx, :] = @views remove_dc(s[ch_idx, :], n)
+        result[ch_idx, :] = @views remove_dc(s[ch_idx, :], n)
     end
 
-    return s_new
+    return result
 
 end
 
@@ -66,12 +74,12 @@ Remove mean value (DC offset).
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
-- `s::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Array{Float64, 3}
 
@@ -79,14 +87,14 @@ function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}} = 0)::
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    s_new = similar(s, Float64)
+    result = similar(s, Float64)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :static for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views remove_dc(s[ch_idx, :, ep_idx], n)
+            result[ch_idx, :, ep_idx] = @views remove_dc(s[ch_idx, :, ep_idx], n)
         end
     end
 
-    return s_new
+    return result
 
 end
 
@@ -103,16 +111,18 @@ Remove mean value (DC offset).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function remove_dc(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Union{Int64, Tuple{Int64, Int64}} = 0
+)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
-    push!(obj_new.history, "remove_dc(OBJ, ch=$ch, n=$n)")
+    push!(result.history, "remove_dc(OBJ, ch=$ch, n=$n)")
 
     return obj_new
 
@@ -134,8 +144,10 @@ Remove mean value (DC offset).
 - `Nothing`
 """
 function remove_dc!(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Union{Int64, Tuple{Int64, Int64}} = 0
+)::Nothing
 
     obj_new = remove_dc(obj, ch = ch, n = n)
     obj.data = obj_new.data

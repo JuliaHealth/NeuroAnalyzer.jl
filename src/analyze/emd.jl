@@ -24,11 +24,16 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 
 # Returns
 
-- `imf::Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row; returns an empty `0×0` matrix if no IMFs found
+- `Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row; returns an empty `0×0` matrix if no IMFs found
 """
-function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{Float64}
+function emd(
+    s::AbstractVector,
+    x::AbstractVector;
+    epsilon::Real = 0.3
+)::Matrix{Float64}
 
-    !(epsilon > 0) && throw(ArgumentError("epsilon must be > 0."))
+    # validate
+    epsilon > 0 || throw(ArgumentError("epsilon must be > 0."))
 
     # work on a mutable copy so the caller's signal is not modified
     s_tmp = copy(s)
@@ -41,7 +46,7 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{
 
     while sd > epsilon
 
-        # cubic spline interpolation can fail at exact zeros — nudge them.
+        # cubic spline interpolation can fail at exact zeros - nudge them.
         s_tmp[s_tmp .== 0] .= eps()
 
         # compute upper and lower envelopes from local maxima/minima
@@ -128,13 +133,18 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 
 # Returns
 
-- `imf::Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row
+- `Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row
 """
-function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real = 0.3)::Matrix{Float64}
+function emd(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    epsilon::Real = 0.3
+)::Matrix{Float64}
 
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad")[1] : get_channel(obj, ch = ch, exclude = "")[1]
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     _check_epochs(obj, ep)

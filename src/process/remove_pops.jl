@@ -223,7 +223,7 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object: returned if `repair=true`
+- `NeuroAnalyzer.NEURO`: output NEURO object: returned if `repair=true`
 - `pop_loc::Vector{Vector{Int64}}`: location of pops: channel, epoch and sample number in the signal
 - `l_seg::Vector{Int64}`: length of segment before the pop that starts when signal crosses 0
 - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0

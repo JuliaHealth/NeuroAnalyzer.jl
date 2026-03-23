@@ -17,7 +17,7 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 # Returns
 
-- `f::Vector{Float64}`: instantaneous frequencies in cycles per sample (multiply by the sampling rate to obtain Hz)
+- `Vector{Float64}`: instantaneous frequencies in cycles per sample (multiply by the sampling rate to obtain Hz)
 
 # Notes
 
@@ -27,9 +27,8 @@ function frqinst(s::AbstractVector)::Vector{Float64}
 
     h = htransform(s)
     ph = h.ph
-    f = NeuroAnalyzer.derivative(DSP.unwrap(ph)) / (2 * π)
 
-    return f
+    return NeuroAnalyzer.derivative(DSP.unwrap(ph)) / (2 * π)
 
 end
 
@@ -46,11 +45,11 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
-- `f::Array{Float64, 3}`: instantaneous frequencies in cycles per sample (multiply by the sampling rate to obtain Hz), shape (channels, samples, epochs)
+- `Array{Float64, 3}`: instantaneous frequencies in cycles per sample (multiply by the sampling rate to obtain Hz), shape (channels, samples, epochs)
 
 # Notes
 
@@ -99,7 +98,7 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 # Returns
 
-- `f::Array{Float64, 3}`: instantaneous frequencies in Hz, shape (channels, samples, epochs)
+- `Array{Float64, 3}`: instantaneous frequencies in Hz, shape (channels, samples, epochs)
 
 # Notes
 
@@ -110,8 +109,6 @@ function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    f = frqinst(@view(obj.data[ch, :, :])) .* sr(obj)
-
-    return f
+    return frqinst(@view(obj.data[ch, :, :])) .* sr(obj)
 
 end

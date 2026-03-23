@@ -19,8 +19,10 @@ Load NIRX file and return `NeuroAnalyzer.NEURO` object.
 """
 function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".hdr") && throw(ArgumentError("This is not NIRX .hdr file."))
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
+    lowercase(splitext(file_name)[2]) == ".hdr" ||
+        throw(ArgumentError("$file_name is not a NIRXfile."))
 
     hdr = nothing
     try
@@ -28,7 +30,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     catch
         @error "File $file_name cannot be loaded."
     end
-    !(hdr[1] == "[GeneralInfo]") && throw(ArgumentError("File $file_name is not NIRX file."))
+    hdr[1] == "[GeneralInfo]" || throw(ArgumentError("File $file_name is not NIRX file."))
 
     file_type = "NIRX"
 
@@ -384,7 +386,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_nirs(
         data_type = "nirs",
@@ -406,7 +408,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         det_labels = string.(det_labels),
         opt_labels = opt_labels,
         sampling_rate = sampling_rate,
-        bad_channels = zeros(Bool, size(data, 1)),
+        bad_channels = zeros(Bool, size(data, 1))
     )
     e = _create_experiment(
         name = string(study_type1),

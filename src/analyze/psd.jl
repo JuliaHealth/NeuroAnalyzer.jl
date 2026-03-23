@@ -205,7 +205,7 @@ Calculate Power Spectral Density for a 3-D signal array. Default method is Welch
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: PSD method:

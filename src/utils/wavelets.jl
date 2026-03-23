@@ -54,7 +54,7 @@ Delegates to the vector method using the first channel and first epoch `s[1, :, 
 
 # Arguments
 
-- `s::AbstractArray`: 3-dimensional signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see the [ContinuousWavelets.jl documentation](https://github.com/dsweber2/ContinuousWavelets.jl) for the full list of available wavelets
 

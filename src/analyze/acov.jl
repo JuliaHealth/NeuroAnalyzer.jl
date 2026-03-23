@@ -18,7 +18,7 @@ Calculate auto-covariance.
 
 # Returns
 
-- `ac::Vector{Float64}`: auto-covariance of length `2l + 1`
+- `Vector{Float64}`: auto-covariance of length `2l + 1`
 """
 function acov(
     s::AbstractVector;
@@ -32,7 +32,7 @@ function acov(
     _check_var(method, [:sum, :cov, :stat], "method")
 
     # pre-allocate output for lags 0 … l (negative lags added later)
-    ac = zeros(l + 1)
+    autocov = zeros(l + 1)
 
     if method === :sum
 
@@ -43,8 +43,8 @@ function acov(
         denom = biased ? (idx -> n) : (idx -> n - idx)
         @inbounds for idx in 0:l
             # dot avoids allocating the intermediate product array
-            ac[idx + 1] = dot(@view(s[1:(end - idx)]),
-                              @view(s[(1 + idx):end])) / denom(idx)
+            autocov[idx + 1] = dot(@view(s[1:(end - idx)]),
+                                     @view(s[(1 + idx):end])) / denom(idx)
         end
 
     elseif method === :cov
@@ -53,7 +53,7 @@ function acov(
         demean && (s = remove_dc(s))
         corrected = !biased
         @inbounds for idx in 0:l
-            ac[idx + 1] = cov(
+            autocov[idx + 1] = cov(
                 @view(s[1:(end - idx)]),
                 @view(s[(1 + idx):end]),
                 corrected = corrected,
@@ -64,7 +64,7 @@ function acov(
 
         # delegate entirely to StatsBase.autocor, which handles normalization internally
         # the `biased` keyword is intentionally ignored here
-        ac = StatsBase.autocov(
+        autocov = StatsBase.autocov(
             s,
             0:l,
             demean = demean
@@ -72,10 +72,10 @@ function acov(
 
     end
 
-    ac = round.(ac, digits = 3)
-    ac = vcat(reverse(ac), ac[2:end])
+    autocov = round.(autocov, digits = 3)
+    autocov = vcat(reverse(autocov), autocov[2:end])
 
-    return ac
+    return autocov
 
 end
 
@@ -86,7 +86,7 @@ Calculate auto-covariance.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2))))`: range of lags is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-covariance
 - `biased::Bool=true`: calculate biased or unbiased auto-covariance
@@ -97,7 +97,7 @@ Calculate auto-covariance.
 
 # Returns
 
-- `ac::Array{Float64, 3}`: auto-covariances, shape `(channels, 2l+1, epochs)`
+- `Array{Float64, 3}`: auto-covariances, shape `(channels, 2l+1, epochs)`
 """
 function acov(
     s::AbstractArray;
@@ -117,12 +117,12 @@ function acov(
     ep_n = size(s, 3)
 
     # pre-allocate output
-    ac = zeros(ch_n, length((-l):l), ep_n)
+    autocov = zeros(ch_n, length((-l):l), ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ac[ch_idx, :, ep_idx] = acov(
+        autocov[ch_idx, :, ep_idx] = acov(
             @view(s[ch_idx, :, ep_idx]),
             l = l,
             demean = demean,
@@ -131,7 +131,7 @@ function acov(
         )
     end
 
-    return ac
+    return autocov
 
 end
 
@@ -156,8 +156,8 @@ Calculate auto-covariance. For ERP return trial-averaged auto-covariance.
 
 Named tuple:
 
-- `ac::Array{Float64, 3}`: auto-covariances of, shape `(channels, 2l+1, epochs)`
-- `l::Vector{Float64}`: lags in seconds
+- `autocov::Array{Float64, 3}`: auto-covariances of, shape `(channels, 2l+1, epochs)`
+- `lags::Vector{Float64}`: lags in seconds
 """
 function acov(
     obj::NeuroAnalyzer.NEURO;
@@ -166,11 +166,14 @@ function acov(
     demean::Bool = true,
     biased::Bool = true,
     method::Symbol = :sum
-)::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
+)::@NamedTuple{
+    autocov::Array{Float64, 3},
+    lags::Vector{Float64}
+}
 
     # validate lag bounds: must be non-negative and within the signal length
-    !(l <= size(obj, 2)) && throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
-    !(l >= 0) && throw(ArgumentError("l must be ≥ 0."))
+    l <= size(obj, 2) || throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
+    l >= 0 || throw(ArgumentError("l must be ≥ 0."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -180,17 +183,17 @@ function acov(
         # epoch 1 is the pre-computed average; epochs 2:end are individual trials
         # compute per-trial auto-correlations first, then prepend the mean across
         # trials as epoch 1 of the output (preserving the ERP convention)
-        ac = acov(
+        autocov = acov(
             @view(obj.data[ch, :, 2:end]),
             l = l,
             demean = demean,
             biased = biased,
             method = method
         )
-        ac = cat(mean(ac, dims = 3), ac, dims = 3)
+        autocov = cat(mean(autocov, dims = 3), autocov, dims = 3)
 
     else
-        ac = acov(
+        autocov = acov(
             @view(obj.data[ch, :, :]),
             l = l,
             demean = demean,
@@ -201,8 +204,8 @@ function acov(
 
     # convert integer lag indices (-l … l) to physical time in seconds using
     # the object's sampling rate
-    l = collect((-l):l) .* 1 / sr(obj)
+    lags = collect((-l):l) .* 1 / sr(obj)
 
-    return (; ac, l)
+    return (; autocov, lags)
 
 end

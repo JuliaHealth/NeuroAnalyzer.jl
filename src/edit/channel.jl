@@ -123,7 +123,7 @@ Set channel type.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function set_channel_type(
     obj::NeuroAnalyzer.NEURO;
@@ -187,7 +187,7 @@ Rename channel.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function rename_channel(
         obj::NeuroAnalyzer.NEURO; ch::String, name::String
@@ -251,7 +251,7 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_channel(
         obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String
@@ -314,7 +314,7 @@ Replace channel.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function replace_channel(
         obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray
@@ -379,7 +379,7 @@ Add channel labels.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnalyzer.NEURO
 
@@ -432,7 +432,7 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_channel(
     obj::NeuroAnalyzer.NEURO;

@@ -29,11 +29,12 @@ Calculate upper cubic-spline envelope from local maxima.
 
 # Returns
 
-- `e::Vector{Float64}`: upper envelope (zeros if fewer than 2 peaks found)
+- `Vector{Float64}`: upper envelope (zeros if fewer than 2 peaks found)
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
 
-    !(length(s) == length(x)) && throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
+    # validate
+    length(s) == length(x) || throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
 
     e = zeros(length(s))
 
@@ -70,11 +71,12 @@ Calculate lower cubic-spline envelope from local minima.
 
 # Returns
 
-- `e::Vector{Float64}`: lower envelope (zeros if fewer than 2 troughs found)
+- `Vector{Float64}`: lower envelope (zeros if fewer than 2 troughs found)
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
 
-    !(length(s) == length(x)) && throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
+    # validate
+    length(s) == length(x) || throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
 
     e = zeros(length(s))
 
@@ -110,7 +112,7 @@ Calculate upper amplitude envelope using the Hilbert transform.
 
 # Returns
 
-- `e::Vector{Float64}`: instantaneous amplitude (upper envelope)
+- `Vector{Float64}`: instantaneous amplitude (upper envelope)
 
 # Notes
 
@@ -119,9 +121,7 @@ The Hilbert transform works best for narrowband signals (energy concentrated aro
 function henv_up(s::AbstractVector)::Vector{Float64}
 
     h = htransform(s)
-    e = h.a
-
-    return e
+    return h.a
 
 end
 
@@ -136,7 +136,7 @@ Calculate lower amplitude envelope using the Hilbert transform.
 
 # Returns
 
-- `e::Vector{Float64}`: negative instantaneous amplitude (lower envelope)
+- `Vector{Float64}`: negative instantaneous amplitude (lower envelope)
 
 # Notes
 
@@ -145,9 +145,7 @@ The Hilbert transform works best for narrowband signals (energy concentrated aro
 function henv_lo(s::AbstractVector)::Vector{Float64}
 
     h = htransform(-s)
-    e = h.a
-
-    return -e
+    return h.a
 
 end
 
@@ -173,7 +171,10 @@ function tenv(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     d::Int64 = 32
-)::@NamedTuple{e::Array{Float64, 3}, t::Vector{Float64}}
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    t::Vector{Float64}
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -194,7 +195,7 @@ function tenv(
         e[ch_idx, :, ep_idx] = env_up(@view(obj.data[ch[ch_idx], :, ep_idx]), t, d = d)
     end
 
-    return (e = e, t = t)
+    return (; e, t)
 
 end
 
@@ -228,13 +229,14 @@ function tenv_mean(
     t::Vector{Float64},
 }
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     tenv_data = tenv(obj, ch = ch, d = d)
@@ -289,7 +291,7 @@ function tenv_mean(
 
     end
 
-    return (em = em, eu = eu, el = el, t = t)
+    return (; em, eu, el, t)
 
 end
 
@@ -323,13 +325,14 @@ function tenv_median(
     t::Vector{Float64},
 }
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     tenv_data = tenv(obj, ch = ch, d = d)
@@ -383,7 +386,7 @@ function tenv_median(
 
     end
 
-    return (em = em, eu = eu, el = el, t = t)
+    return (; em, eu, el, t)
 
 end
 
@@ -534,13 +537,14 @@ function penv_mean(
     f::Vector{Float64},
 }
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     penv_data = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen,
@@ -608,7 +612,7 @@ function penv_mean(
 
     end
 
-    return (em = em, eu = eu, el = el, f = f)
+    return (; em, eu, el, f)
 
 end
 
@@ -661,16 +665,17 @@ function penv_median(
     em::Matrix{Float64},
     eu::Matrix{Float64},
     el::Matrix{Float64},
-    f::Vector{Float64},
+    f::Vector{Float64}
 }
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     penv_data = penv(obj,
@@ -747,7 +752,7 @@ function penv_median(
 
     end
 
-    return (em = em, eu = eu, el = el, f = f)
+    return (; em, eu, el, f)
 
 end
 
@@ -800,7 +805,10 @@ function senv(
     wlen::Int64 = sr(obj),
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true
-)::@NamedTuple{e::Array{Float64, 3}, t::Vector{Float64}} where {T <: CWT}
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    t::Vector{Float64}
+} where {T <: CWT}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -833,7 +841,7 @@ function senv(
             nt = nt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w,
+            w = w
         )
         sp = spec_data.p
     elseif method === :mw
@@ -843,7 +851,7 @@ function senv(
             fs = fs,
             db = db,
             ncyc = ncyc,
-            w = w,
+            w = w
         )
         sp = spec_data.p
     elseif method === :gh
@@ -852,7 +860,7 @@ function senv(
             fs = fs,
             db = db,
             gw = gw,
-            w = w,
+            w = w
         )
         sp = spec_data.p
     elseif method === :cwt
@@ -860,7 +868,7 @@ function senv(
         spec_data = NeuroAnalyzer.cwtspectrogram(
             @view(obj.data[ch[1], :, 1]),
             wt = wt,
-            fs = fs,
+            fs = fs
         )
         _log_on()
         sp = spec_data.m
@@ -879,39 +887,58 @@ function senv(
         local sp_loc, sf_loc
         if method === :stft
             spec_data = NeuroAnalyzer.spectrogram(
-                @view(obj.data[ch[ch_idx], :, ep_idx]), fs = fs, db = db,
-                method = :stft, wlen = wlen, woverlap = woverlap, w = w,
+                @view(obj.data[ch[ch_idx], :, ep_idx]),
+                fs = fs,
+                db = db,
+                method = :stft,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
         elseif method === :mt
             spec_data = NeuroAnalyzer.spectrogram(
-                @view(obj.data[ch[ch_idx], :, ep_idx]), fs = fs, db = db,
-                method = :mt, nt = nt, wlen = wlen, woverlap = woverlap, w = w,
+                @view(obj.data[ch[ch_idx], :, ep_idx]),
+                fs = fs,
+                db = db,
+                method = :mt,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
         elseif method === :mw
             spec_data = NeuroAnalyzer.mwspectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
-                pad = pad, fs = fs, db = db, ncyc = ncyc, w = w,
+                pad = pad,
+                fs = fs,
+                db = db,
+                ncyc = ncyc,
+                w = w
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
         elseif method === :gh
             spec_data = NeuroAnalyzer.ghtspectrogram(
-                @view(obj.data[ch[ch_idx], :, ep_idx]), fs = fs, db = db, gw = gw, w = w,
+                @view(obj.data[ch[ch_idx], :, ep_idx]),
+                fs = fs,
+                db = db,
+                gw = gw,
+                w = w
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
         elseif method === :cwt
-            _log_off()
             spec_data = NeuroAnalyzer.cwtspectrogram(
-                @view(obj.data[ch[ch_idx], :, ep_idx]), wt = wt, fs = fs,
+                @view(obj.data[ch[ch_idx], :, ep_idx]),
+                wt = wt,
+                fs = fs
             )
             sp_loc = spec_data.m
             sp_loc = spec_data.f
-            _log_on()
         end
 
         # optionally zero out powers above the threshold, then reverse so the
@@ -993,16 +1020,17 @@ function senv_mean(
     em::Matrix{Float64},
     eu::Matrix{Float64},
     el::Matrix{Float64},
-    t::Vector{Float64},
+    t::Vector{Float64}
 } where {T <: CWT}
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     env_data = senv(
@@ -1022,7 +1050,7 @@ function senv_mean(
         w = w,
     )
     sp = env_data.e
-    st = env_data.t
+    t = env_data.t
 
     # number of channels
     ch_n = size(pw, 1)
@@ -1034,13 +1062,13 @@ function senv_mean(
         # mean over channels at each time point, per epoch
 
         # pre-allocate outputs
-        em = zeros(length(st), ep_n)
-        eu = zeros(length(st), ep_n)
-        el = zeros(length(st), ep_n)
+        em = zeros(length(t), ep_n)
+        eu = zeros(length(t), ep_n)
+        el = zeros(length(t), ep_n)
 
         @inbounds for ep_idx in 1:ep_n
             em[:, ep_idx] = dropdims(mean(@view(sp[:, :, ep_idx]), dims = 1), dims = 1)
-            ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(st))
+            ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
             eu[:, ep_idx] = em[:, ep_idx] .+ ci
             el[:, ep_idx] = em[:, ep_idx] .- ci
         end
@@ -1050,13 +1078,13 @@ function senv_mean(
         # mean over epochs at each time point, per channel
 
         # pre-allocate outputs
-        em = zeros(length(st), ch_n)
-        eu = zeros(length(st), ch_n)
-        el = zeros(length(st), ch_n)
+        em = zeros(length(t), ch_n)
+        eu = zeros(length(t), ch_n)
+        el = zeros(length(t), ch_n)
 
         @inbounds for ch_idx in 1:ch_n
             em[:, ch_idx] = dropdims(mean(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
-            ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(st))
+            ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
             eu[:, ch_idx] = em[:, ch_idx] .+ ci
             el[:, ch_idx] = em[:, ch_idx] .- ci
         end
@@ -1088,7 +1116,7 @@ function senv_mean(
 
     end
 
-    return (em = em, eu = eu, el = el, t = st)
+    return (; em, eu, el, t)
 
 end
 
@@ -1149,16 +1177,17 @@ function senv_median(
     em::Matrix{Float64},
     eu::Matrix{Float64},
     el::Matrix{Float64},
-    t::Vector{Float64},
+    t::Vector{Float64}
 } where {T <: CWT}
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     senv_data = senv(obj,
@@ -1177,7 +1206,7 @@ function senv_median(
         w = w
     )
     sp = senv_data.e
-    st = senv_data.t
+    t = senv_data.t
 
     # number of channels
     ch_n = size(pw, 1)
@@ -1189,29 +1218,30 @@ function senv_median(
         # median over epochs at each time point, per channel
 
         # pre-allocate outputs
-        em = zeros(length(st), ep_n)
-        eu = zeros(length(st), ep_n)
-        el = zeros(length(st), ep_n)
+        em = zeros(length(t), ep_n)
+        eu = zeros(length(t), ep_n)
+        el = zeros(length(t), ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            em[:, ep_idx] = @views median(sp[:, :, ep_idx], dims = 1)
-            for m_idx in eachindex(st)
+            em[:, ep_idx] = median(@view(sp[:, :, ep_idx]), dims = 1)
+            for m_idx in eachindex(t)
                 eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(sp[:, m_idx, ep_idx])
             end
         end
+
     elseif dims == 2
 
         # median over epochs at each time point, per channel
 
         # pre-allocate outputs
-        em = zeros(length(st), ch_n)
-        eu = zeros(length(st), ch_n)
-        el = zeros(length(st), ch_n)
+        em = zeros(length(t), ch_n)
+        eu = zeros(length(t), ch_n)
+        el = zeros(length(t), ch_n)
 
         @inbounds for ch_idx in 1:ch_n
             em[:, ch_idx] = dropdims(median(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
-            for m_idx in eachindex(st)
-                # BUG FIX: was `cimd(sp[ch_idx, :, :])` — passed the entire
+            for m_idx in eachindex(t)
+                # BUG FIX: was `cimd(sp[ch_idx, :, :])` - passed the entire
                 # (time, epochs) matrix instead of the epoch vector at m_idx.
                 eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(sp[ch_idx, m_idx, :]))
             end
@@ -1244,7 +1274,7 @@ function senv_median(
 
     end
 
-    return (em = em, eu = eu, el = el, t = st)
+    return (; em, eu, el, t)
 
 end
 
@@ -1270,7 +1300,10 @@ function henv(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     d::Int64 = 32
-)::@NamedTuple{e::Array{Float64, 3}, t::Vector{Float64}}
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    t::Vector{Float64}
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -1296,7 +1329,7 @@ function henv(
         e[ch_idx, :, ep_idx] = env_up(@view(hamp[ch_idx, :, ep_idx]), t, d = d)
     end
 
-    return (e = e, t = t)
+    return (; e, t)
 
 end
 
@@ -1322,21 +1355,24 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function henv_mean(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64 = 32
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        eu::Matrix{Float64},
-        el::Matrix{Float64},
-        t::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64, d::Int64 = 32
+)::@NamedTuple{
+    em::Matrix{Float64},
+    eu::Matrix{Float64},
+    el::Matrix{Float64},
+    t::Vector{Float64}
+}
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 2) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 2) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
     henv_data = henv(obj, ch = ch, d = d)
@@ -1379,7 +1415,7 @@ function henv_mean(
             el[:, ch_idx] = em[:, ch_idx] .- ci
         end
 
-    else
+    elseif dims == 3
 
         # mean over channels and epochs: first average over channels (dims=1),
         # then average the result over epochs (dims=2 of the intermediate matrix)
@@ -1391,7 +1427,7 @@ function henv_mean(
 
     end
 
-    return (em = em, eu = eu, el = el, t = t)
+    return (; em, eu, el, t)
 
 end
 
@@ -1422,24 +1458,30 @@ function henv_median(
     em::Matrix{Float64},
     eu::Matrix{Float64},
     el::Matrix{Float64},
-    t::Vector{Float64},
+    t::Vector{Float64}
 }
 
+    # validate
     if dims == 1
-        !(nchannels(obj) >= 1) && throw(ArgumentError("Number of channels must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
     elseif dims == 2
-        !(nepochs(obj) >= 1) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     elseif dims == 3
-        !(nchannels(obj) >= 1) && throw(ArgumentError("Number of channels must be ≥ 2."))
-        !(nepochs(obj) >= 1) && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
+        nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    s_a, t = henv(obj, ch = ch, d = d)
+    henv_data = henv(obj, ch = ch, d = d)
+    s_a = henv_data.a
+    t = henv_data.t
 
+    # number of channels
     ch_n = size(s_a, 1)
+    # number of epochs
     ep_n = size(s_a, 3)
 
     if dims == 1
+
         # median over channels
 
         em = zeros(length(t), ep_n)
@@ -1452,7 +1494,9 @@ function henv_median(
                 eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(s_a[:, m_idx, ep_idx])
             end
         end
+
     elseif dims == 2
+
         # median over epochs
 
         em = zeros(length(t), ch_n)
@@ -1465,19 +1509,25 @@ function henv_median(
                 eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(s_a[ch_idx, m_idx, :])
             end
         end
-    else
+
+    elseif dims == 3
+
         # median over channels and epochs
 
-        em, eu, el, _ = henv_median(obj, ch = ch, dims = 1, d = d)
+        henv_median_data = henv_median(obj, ch = ch, dims = 1, d = d)
+        em = henv_median_data.em
+        eu = henv_median_data.eu
+        el = henv_median_data.el
         em = median(em, dims = 2)
         eu = median(eu, dims = 2)
         el = median(el, dims = 2)
         em = reshape(em, size(em, 1))
         eu = reshape(eu, size(eu, 1))
         el = reshape(el, size(el, 1))
+
     end
 
-    return (em = em, eu = eu, el = el, t = t)
+    return (; em, eu, el, t)
 end
 
 """
@@ -1499,9 +1549,13 @@ Named tuple:
 """
 function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
 
-    !(size(env1) == size(env2)) && throw(ArgumentError("Both envelopes must have the same size."))
+    # validate
+    size(env1) == size(env2) || throw(ArgumentError("Both envelopes must have the same size."))
 
+    # number of epochs
     ep_n = size(env1, 3)
+
+    # pre-allocate outputs
     ec = zeros(ep_n)
     p = zeros(ep_n)
 
@@ -1512,6 +1566,6 @@ function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{
         @inbounds p[ep_idx] = pvalue(ctest)
     end
 
-    return (ec = ec, p = p)
+    return (; ec, p)
 
 end

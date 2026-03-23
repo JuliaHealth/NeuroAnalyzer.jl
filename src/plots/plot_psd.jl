@@ -134,7 +134,10 @@ function plot_psd(
 
     # get mean and 95%CI
     if ci95
-        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(p[f1:f2])
+        msci95_data = NeuroAnalyzer.msci95(p[f1:f2])
+        s_m = msci95_data.sm
+        s_u = msci95_data.ul
+        s_l = msci95_data.ll
     end
 
     # prepare plot

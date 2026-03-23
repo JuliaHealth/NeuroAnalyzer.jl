@@ -49,15 +49,17 @@ function lat_idx(
     demean::Bool = true
 )::Float64
 
+    # validate
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
 
-    !(length(channel_pick(obj, pick = :l)) > 0) && throw(ArgumentError("Could not detect left hemisphere channels, check OBJ labels."))
-    !(length(channel_pick(obj, pick = :r)) > 0) && throw(ArgumentError("Could not detect right hemisphere channels, check OBJ labels."))
+    length(channel_pick(obj, pick = :l)) > 0 || throw(ArgumentError("Could not detect left hemisphere channels, check OBJ labels."))
+    length(channel_pick(obj, pick = :r)) > 0 || throw(ArgumentError("Could not detect right hemisphere channels, check OBJ labels."))
 
+    # get channel indices for left and right picks
     ch_l = get_channel(obj, ch = channel_pick(obj, pick = :l))
     ch_r = get_channel(obj, ch = channel_pick(obj, pick = :r))
 
-    # shared PSD keyword arguments — avoids repeating them four times
+    # shared PSD keyword arguments - avoids repeating them four times
     psd_kwargs = (
         fs = sr(obj),
         db = false,
@@ -99,7 +101,7 @@ function lat_idx(
         p_left  = dropdims(p_left,  dims = 3)
         p_right = dropdims(p_right, dims = 3)
     end
-    # now (ch, freq) — average over channels to get (freq,)
+    # now (ch, freq) - average over channels to get (freq,)
     p_left  = vec(mean(p_left,  dims = 1))
     p_right = vec(mean(p_right, dims = 1))
 

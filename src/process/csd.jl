@@ -67,7 +67,7 @@ function csd(
     Gs = G + I(ch_n) * lambda
     Gs_inv  = inv(Gs)
 
-    # row sums of the inverse and their total — used for the zero-mean constraint
+    # row sums of the inverse and their total - used for the zero-mean constraint
     Gs_rs = vec(sum(Gs_inv; dims=2))
     Gs_inv_sum = sum(Gs_rs)
 
@@ -197,7 +197,7 @@ function gh(locs::DataFrame; m::Int64 = 4, n::Int64 = 8)::@NamedTuple{G::Matrix{
 
     # --- cosine distances between all electrode pairs ---
     cosdist = zeros(ch_n, ch_n)
-    # thread over rows; each thread writes to a unique row — no contention
+    # thread over rows; each thread writes to a unique row - no contention
     Threads.@threads :static for i in 1:ch_n
         @inbounds for j in 1:ch_n
             cosdist[i, j] = 1 - ((x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2) / 2

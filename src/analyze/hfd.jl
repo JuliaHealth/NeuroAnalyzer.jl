@@ -11,7 +11,7 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Returns
 
-- `hd::Float64`: the Higuchi fractal dimension
+- `Float64`: the Higuchi fractal dimension
 
 # Notes
 
@@ -21,9 +21,7 @@ The Higuchi FD estimates the fractal dimension directly from the time series by 
 """
 function hfd(s::AbstractVector)::Float64
 
-    hd = higuchi_dim(s)
-
-    return hd
+    return higuchi_dim(s)
 
 end
 
@@ -34,11 +32,11 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
-- `hd::Matrix{Float64}`: the Higuchi fractal dimension, shape `(channels, epochs)`
+- `Matrix{Float64}`: the Higuchi fractal dimension, shape `(channels, epochs)`
 
 # Notes
 
@@ -81,7 +79,7 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Returns
 
-- `hd::Matrix{Float64}`
+- `Matrix{Float64}`
 
 # Notes
 
@@ -94,8 +92,6 @@ function hfd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    hd = hfd(@view(obj.data[ch, :, :]))
-
-    return hd
+    return hfd(@view(obj.data[ch, :, :]))
 
 end

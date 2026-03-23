@@ -12,7 +12,7 @@ Finds peaks in an auto-/cross-correlation or covariance vector, converts their l
 
 # Returns
 
-- `frq::Vector{Float64}`: frequencies (Hz) dominating in the auto-/cross-correlation/covariance, sorted in ascending order
+- `Vector{Float64}`: frequencies (Hz) dominating in the auto-/cross-correlation/covariance, sorted in ascending order
 """
 function axc2frq(c::AbstractVector, l::AbstractVector)::Vector{Float64}
 

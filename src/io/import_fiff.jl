@@ -112,7 +112,7 @@ function load_fiff(
             # coord_trans: rotation (3×3 Float32), translation (3 Float32),
             # inverse rotation (3×3 Float32), inverse translation (3 Float32).
             # FIX: original used _i16f64 (reads 2-byte Int16) for all fields
-            # here — these are 4-byte Float32; must use _f32f64.
+            # here - these are 4-byte Float32; must use _f32f64.
             from = @views _i32i64(buf_tmp[1:4])
             to   = @views _i32i64(buf_tmp[5:8])
             rot  = zeros(3, 3)

@@ -28,7 +28,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         throw(ArgumentError("File $file_name cannot be loaded."))
 
     # ------------------------------------------------------------------ #
-    # parse header — all reads share one open/close via the `do` block.  #
+    # parse header - all reads share one open/close via the `do` block.  #
     # ------------------------------------------------------------------ #
     imported_object = open(file_name, "r") do fid
 
@@ -98,7 +98,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         else
             sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
         end
-        # FIX: `markers_channel` was computed but never used — removed.
+        # FIX: `markers_channel` was computed but never used - removed.
 
         # ------------------------------------------------------------ #
         # sampling rate                                                 #
@@ -143,7 +143,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
             d
 
         else
-            # Mixed rates — read the full data block, then unpack per channel.
+            # Mixed rates - read the full data block, then unpack per channel.
             max_rate = maximum(sampling_rate)
 
             raw_all = zeros(UInt8, filesize(file_name) - data_offset)

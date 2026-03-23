@@ -7,7 +7,7 @@ const _QRange = Union{
         Float64,
         Base.TwicePrecision{Float64},
         Base.TwicePrecision{Float64},
-        Int64,
+        Int64
     },
 }
 
@@ -28,7 +28,7 @@ Two modes:
 
 # Returns
 
-- `ghe::Matrix{Float64}`: shape `(1, 2)` when `q_range=nothing`, otherwise `(length(q_range), 2)` — columns are (exponent, goodness-of-fit)
+- `ghe::Matrix{Float64}`: shape `(1, 2)` when `q_range=nothing`, otherwise `(length(q_range), 2)` - columns are (exponent, goodness-of-fit)
 """
 function ghexp(
     s::AbstractVector;
@@ -36,7 +36,8 @@ function ghexp(
     q_range::_QRange = nothing
 )::Matrix{Float64}
 
-    !(tau_range[end] < length(s)) && throw(ArgumentError("End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."))
+    # validate
+    tau_range[end] < length(s) || throw(ArgumentError("End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."))
 
     if isnothing(q_range)
         ghe = hurst_exponent(s, tau_range)
@@ -55,13 +56,13 @@ Calculate the Generalised Hurst Exponents (GHEs).
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `tau_range::UnitRange{Int64}`: lag range over which the q-th moment of absolute increments is estimated
 - `q_range::Union{Nothing, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}}=nothing`: moments at which GHEs are estimated; if `nothing`, the standard Hurst exponent is returned
 
 # Returns
 
-- `ghe::Array{Float64, 4}`: shape `(channels, q, 2, epochs)` where `q` is 1 when `q_range=nothing`, otherwise `length(q_range)`
+- `Array{Float64, 4}`: shape (channels, q, 2, epochs) where `q` is 1 when `q_range=nothing`, otherwise `length(q_range)`
 """
 function ghexp(
     s::AbstractArray;
@@ -109,7 +110,7 @@ Calculate the Generalised Hurst Exponents (GHEs).
 
 # Returns
 
-- `ghe::Array{Float64, 4}`: shape `(channels, q, 2, epochs)`
+- `Array{Float64, 4}`: shape `(channels, q, 2, epochs)`
 """
 function ghexp(
     obj::NeuroAnalyzer.NEURO;
@@ -121,8 +122,6 @@ function ghexp(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    ghe = ghexp(@view(obj.data[ch, :, :]), tau_range = tau_range, q_range = q_range)
-
-    return ghe
+    return ghexp(@view(obj.data[ch, :, :]), tau_range = tau_range, q_range = q_range)
 
 end

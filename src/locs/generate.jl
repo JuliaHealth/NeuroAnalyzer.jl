@@ -572,7 +572,7 @@ Generate spherical coordinates according to 10/5 system.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function locs_generate(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 

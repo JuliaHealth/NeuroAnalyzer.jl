@@ -102,7 +102,7 @@ function _create_recording_eeg_like(;
     return d
 end
 
-# public thin wrappers — callers use the modality-specific name; all three delegate to the shared implementation above.
+# public thin wrappers - callers use the modality-specific name; all three delegate to the shared implementation above.
 _create_recording_eeg(; kwargs...) = _create_recording_eeg_like(; kwargs...)
 _create_recording_seeg(; kwargs...) = _create_recording_eeg_like(; kwargs...)
 _create_recording_ecog(; kwargs...) = _create_recording_eeg_like(; kwargs...)
@@ -274,7 +274,7 @@ function _create_recording_mep(;
         :stimulation_sample    => stimulation_sample,
         :markers_pos           => markers_pos,
         :markers_neg           => markers_neg,
-        # note: MEP does not use :epoch_id (intentional — MEP data is not epoched)
+        # note: MEP does not use :epoch_id (intentional - MEP data is not epoched)
     ))
     return d
 end

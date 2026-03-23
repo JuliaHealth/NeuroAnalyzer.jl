@@ -146,7 +146,7 @@ Reconstruct signal using PCA components (`pc` and `pca`).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function pca_reconstruct(
         obj::NeuroAnalyzer.NEURO;

@@ -22,8 +22,8 @@ Named tuple:
 
 - `sm::Float64`: mean
 - `se::Float64`: standard error
-- `su::Float64`: upper 95% CI
-- `sl::Float64`: lower 95% CI
+- `ll::Float64`: lower 95% CI
+- `ul::Float64`: upper 95% CI
 """
 function msci95(
     s::AbstractVector;
@@ -32,19 +32,20 @@ function msci95(
 )::@NamedTuple{
     sm::Float64,
     se::Float64,
-    su::Float64,
-    sl::Float64
+    ll::Float64,
+    ul::Float64
 }
 
+    # validate
     _check_var(method, [:normal, :boot], "method")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     if method === :normal
 
         sm = mean(s)
         se = std(s) / sqrt(length(s))
-        su = sm + 1.96 * se
-        sl = sm - 1.96 * se
+        ul = sm + 1.96 * se
+        ll = sm - 1.96 * se
 
     else
 
@@ -64,17 +65,12 @@ function msci95(
         se = std(s_tmp1) / sqrt(n_boot)
 
         ssorted = sort(s_tmp1)
-        sl = ssorted[round(Int, 0.025 * n_boot)]
-        su = ssorted[round(Int, 0.975 * n_boot)]
+        ll = ssorted[round(Int, 0.025 * n_boot)]
+        ul = ssorted[round(Int, 0.975 * n_boot)]
 
     end
 
-    return (
-        sm = sm,
-        se = se,
-        su = su,
-        sl = sl
-    )
+    return (; sm, se, ll, ul)
 
 end
 
@@ -90,7 +86,7 @@ Two methods:
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix (channels/trials × samples)
+- `s::AbstractMatrix`: signal matrix (channels/trials, samples)
 - `n::Int64=3`: bootstrap resampling factor
 - `method::Symbol=:normal`: `:normal` (analytical) or `:boot` (bootstrap)
 
@@ -100,8 +96,8 @@ Named tuple:
 
 - `sm::Vector{Float64}`: column-wise mean
 - `se::Vector{Float64}`: column-wise standard error
-- `su::Vector{Float64}`: upper 95% CI per sample
-- `sl::Vector{Float64}`: lower 95% CI per sample
+- `ll::Vector{Float64}`: lower 95% CI per sample
+- `ul::Vector{Float64}`: upper 95% CI per sample
 """
 function msci95(
     s::AbstractMatrix;
@@ -110,21 +106,22 @@ function msci95(
 )::@NamedTuple{
     sm::Vector{Float64},
     se::Vector{Float64},
-    su::Vector{Float64},
-    sl::Vector{Float64}
+    ll::Vector{Float64},
+    ul::Vector{Float64}
 }
 
+    # validate
     _check_var(method, [:normal, :boot], "method")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     if method === :normal
 
         sm = dropdims(mean(s, dims = 1), dims = 1)
         se = dropdims(std(s,  dims = 1), dims = 1) ./ sqrt(size(s, 1))
-        su = sm .+ 1.96 .* se
-        sl = sm .- 1.96 .* se
+        ul = sm .+ 1.96 .* se
+        ll = sm .- 1.96 .* se
 
-    else
+    elseif method === :boot
 
         n_boot = size(s, 1) * n
         s_tmp1 = zeros(n_boot, size(s, 2))
@@ -141,17 +138,12 @@ function msci95(
         sm = dropdims(mean(s_tmp1, dims = 1), dims = 1)
         se = dropdims(std(s_tmp1,  dims = 1), dims = 1) ./ sqrt(n_boot)
         ssorted = sort(s_tmp1, dims = 1)
-        sl = ssorted[round(Int, 0.025 * n_boot), :]
-        su = ssorted[round(Int, 0.975 * n_boot), :]
+        ll = ssorted[round(Int, 0.025 * n_boot), :]
+        ul = ssorted[round(Int, 0.975 * n_boot), :]
 
     end
 
-    return (
-        sm = vec(sm),
-        se = vec(se),
-        su = vec(su),
-        sl = vec(sl)
-    )
+    return (; sm, se, ll, ul)
 
 end
 
@@ -162,7 +154,7 @@ Calculate mean, standard error and 95% CI.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `n::Int64=3`: bootstrap resampling factor
 - `method::Symbol=:normal`: `:normal` (analytical) or `:boot` (bootstrap)
 
@@ -170,10 +162,10 @@ Calculate mean, standard error and 95% CI.
 
 Named tuple:
 
-- `sm::Matrix{Float64}`: mean, shape `(epochs, samples)`
-- `se::Matrix{Float64}`: standard error, shape `(epochs, samples)`
-- `su::Matrix{Float64}`: upper 95% CI, shape `(epochs, samples)`
-- `sl::Matrix{Float64}`: lower 95% CI, shape `(epochs, samples)`
+- `sm::Matrix{Float64}`: mean, shape (epochs, samples)
+- `se::Matrix{Float64}`: standard error, shape (epochs, samples)
+- `ll::Matrix{Float64}`: lower 95% CI, shape (epochs, samples)
+- `ul::Matrix{Float64}`: upper 95% CI, shape (epochs, samples)
 """
 function msci95(
     s::AbstractArray;
@@ -182,8 +174,8 @@ function msci95(
 )::@NamedTuple{
     sm::Matrix{Float64},
     se::Matrix{Float64},
-    su::Matrix{Float64},
-    sl::Matrix{Float64}
+    ll::Matrix{Float64},
+    ul::Matrix{Float64}
 }
 
     _check_var(method, [:normal, :boot], "method")
@@ -196,19 +188,19 @@ function msci95(
     # pre-allocate outputs
     sm = zeros(ep_n, ep_len)
     se = zeros(ep_n, ep_len)
-    su = zeros(ep_n, ep_len)
-    sl = zeros(ep_n, ep_len)
+    ul = zeros(ep_n, ep_len)
+    ll = zeros(ep_n, ep_len)
 
     # calculate over epochs
     @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             msci_data = msci95(@view(s[:, :, ep_idx]), n = n, method = method)
             sm[ep_idx, :] = msci_data.sm
             se[ep_idx, :] = msci_data.se
-            su[ep_idx, :] = msci_data.su
-            sl[ep_idx, :] = msci_data.sl
+            ul[ep_idx, :] = msci_data.ul
+            ll[ep_idx, :] = msci_data.ll
     end
 
-    return (sm = sm, se = se, su = su, sl = sl)
+    return (; sm, se, ll, ul)
 
 end
 
@@ -228,8 +220,8 @@ Named tuple:
 
 - `sm::Float64`: mean
 - `se::Float64`: pooled standard error
-- `su::Float64`: upper 95% CI
-- `sl::Float64`: lower 95% CI
+- `ll::Float64`: lower 95% CI
+- `ul::Float64`: upper 95% CI
 """
 function msci95(
     s1::AbstractVector,
@@ -237,25 +229,21 @@ function msci95(
 )::@NamedTuple{
     sm::Float64,
     se::Float64,
-    su::Float64,
-    sl::Float64
+    ll::Float64,
+    ul::Float64
 }
 
-    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
+    # validate
+    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
     sm = mean(s1) - mean(s2)
     s1_se = std(s1) / sqrt(length(s1))
     s2_se = std(s2) / sqrt(length(s2))
     ss = sqrt(s1_se^2 + s2_se^2)
-    su = sm + 1.96 * ss
-    sl = sm - 1.96 * ss
+    ul = sm + 1.96 * ss
+    ll = sm - 1.96 * ss
 
-    return (
-        sm = sm,
-        se = se,
-        su = su,
-        sl = sl
-    )
+    return (; sm, se, ll, ul)
 
 end
 
@@ -266,23 +254,30 @@ Calculate mean difference, standard error and 95% CI per channel and epoch.
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels, samples, epochs)
-- `s2::AbstractArray`: signal array (channels, samples, epochs)
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
 Named tuple:
 
-- `sm::Matrix{Float64}`: mean difference, shape `(channels, epochs)`
-- `se::Matrix{Float64}`: pooled SE, shape `(channels, epochs)`
-- `su::Matrix{Float64}`: upper 95% CI, shape `(channels, epochs)`
-- `sl::Matrix{Float64}`: lower 95% CI, shape `(channels, epochs)`
+- `sm::Matrix{Float64}`: mean difference, shape (channels, epochs)
+- `se::Matrix{Float64}`: pooled SE, shape (channels, epochs)
+- `ll::Matrix{Float64}`: lower 95% CI, shape (channels, epochs)
+- `ul::Matrix{Float64}`: upper 95% CI, shape (channels, epochs)
 """
 function msci95(
-        s1::AbstractArray, s2::AbstractArray
-    )::@NamedTuple{sm::Matrix{Float64}, se::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+    s1::AbstractArray,
+    s2::AbstractArray
+)::@NamedTuple{
+    sm::Matrix{Float64},
+    se::Matrix{Float64},
+    ll::Matrix{Float64},
+    ul::Matrix{Float64}
+}
 
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
     # number of channels
     ch_n = size(s1, 1)
@@ -292,8 +287,8 @@ function msci95(
     # pre-allocate outputs
     sm = zeros(ch_n, ep_n)
     se = zeros(ch_n, ep_n)
-    su = zeros(ch_n, ep_n)
-    sl = zeros(ch_n, ep_n)
+    ul = zeros(ch_n, ep_n)
+    ll = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -304,16 +299,11 @@ function msci95(
         )
         sm[ch_idx, ep_idx] = result.sm
         ss[ch_idx, ep_idx] = result.ss
-        su[ch_idx, ep_idx] = result.su
-        sl[ch_idx, ep_idx] = result.sl
+        ul[ch_idx, ep_idx] = result.ul
+        ll[ch_idx, ep_idx] = result.ll
     end
 
-    return (
-        sm = sm,
-        se = se,
-        su = su,
-        sl = sl
-    )
+    return (; sm, se, ll, ul)
 
 end
 
@@ -335,19 +325,25 @@ Named tuple:
 
 - `sm::Matrix{Float64}`: mean
 - `se::Matrix{Float64}`: standard error
-- `su::Matrix{Float64}`: upper 95% CI
-- `sl::Matrix{Float64}`: lower 95% CI
+- `ll::Matrix{Float64}`: lower 95% CI
+- `ul::Matrix{Float64}`: upper 95% CI
 """
 function msci95(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64 = 3, method::Symbol = :normal
-    )::@NamedTuple{sm::Matrix{Float64}, se::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Int64 = 3,
+    method::Symbol = :normal
+)::@NamedTuple{
+    sm::Matrix{Float64},
+    se::Matrix{Float64},
+    ul::Matrix{Float64},
+    ll::Matrix{Float64}
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    msci_data = NeuroAnalyzer.msci95(@view(obj.data[ch, :, :]), n = n, method = method)
-
-    return msci_data
+    return NeuroAnalyzer.msci95(@view(obj.data[ch, :, :]), n = n, method = method)
 
 end
 
@@ -369,10 +365,10 @@ Calculate mean difference, standard ERROR and 95% CI between two objects.
 
 Named tuple:
 
-- `sm::Matrix{Float64}`: mean difference, shape `(channels, epochs)`
-- `se::Matrix{Float64}`: pooled SE, shape `(channels, epochs)`
-- `su::Matrix{Float64}`: upper 95% CI bound, shape `(channels, epochs)`
-- `sl::Matrix{Float64}`: lower 95% CI bound, shape `(channels, epochs)`
+- `sm::Matrix{Float64}`: mean difference, shape (channels, epochs)
+- `se::Matrix{Float64}`: pooled SE, shape (channels, epochs)
+- `ll::Matrix{Float64}`: lower 95% CI bound, shape (channels, epochs)
+- `ul::Matrix{Float64}`: upper 95% CI bound, shape (channels, epochs)
 """
 function msci95(
     obj1::NeuroAnalyzer.NEURO,
@@ -384,14 +380,14 @@ function msci95(
 )::@NamedTuple{
     sm::Matrix{Float64},
     se::Matrix{Float64},
-    su::Matrix{Float64},
-    sl::Matrix{Float64}
+    ll::Matrix{Float64},
+    ul::Matrix{Float64}
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -402,11 +398,9 @@ function msci95(
     (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
     (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    msci_data = NeuroAnalyzer.msci95(
+    return NeuroAnalyzer.msci95(
         @view(obj1.data[ch1, :, ep1]),
-        @view(obj2.data[ch2, :, ep2]),
+        @view(obj2.data[ch2, :, ep2])
     )
-
-    return msci_data
 
 end

@@ -65,7 +65,7 @@ Filter a 3-dimensional signal array using a Gaussian kernel in the frequency dom
 
 # Arguments
 
-- `s::AbstractArray`: 3-D signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `pad::Int64=0`: number of zeros to append; must be ≥ 0
 - `f::Real`: center frequency of the Gaussian kernel in Hz; must be ≥ 0 and < `fs/2`

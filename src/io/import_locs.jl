@@ -358,7 +358,7 @@ function import_locs_sfp(file_name::String)::DataFrame
                             ignorerepeated = true, stringtype = String, DataFrame)
     end
     size(locs_raw, 2) == 4 ||
-        throw(ArgumentError("$file_name could not be parsed — check delimiters."))
+        throw(ArgumentError("$file_name could not be parsed - check delimiters."))
 
     DataFrames.rename!(locs_raw, [:label, :x, :y, :z])
     clabels = string.(lstrip.(locs_raw[!, "label"]))

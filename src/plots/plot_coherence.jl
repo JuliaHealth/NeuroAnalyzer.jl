@@ -126,7 +126,10 @@ function plot_coherence(
 
     # get mean and 95%CI
     if ci95
-        coh_m, _, coh_u, coh_l = NeuroAnalyzer.msci95(coh)
+        msci95_data = NeuroAnalyzer.msci95(coh)
+        coh_m = msci95_data.sm
+        coh_u = msci95_data.ul
+        coh_l = msci95_data.ll
     end
 
     # prepare plot

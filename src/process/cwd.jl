@@ -39,7 +39,7 @@ Applies [`cwd(::AbstractVector)`](@ref) to every channel × epoch slice in paral
 
 # Arguments
 
-- `s::AbstractArray`: 3-D signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns

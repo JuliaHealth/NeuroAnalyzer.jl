@@ -50,9 +50,15 @@ function band_mpower(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true
-)::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
+)::@NamedTuple{
+    mbp::Float64,
+    maxfrq::Float64,
+    maxbp::Float64,
+    maxba::Float64
+}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # compute the power spectral density over the full frequency range
@@ -101,7 +107,7 @@ Calculate mean and peak band power. For a given frequency band, computes four de
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD method:
@@ -139,7 +145,12 @@ function band_mpower(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true
-)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+)::@NamedTuple{
+    mbp::Matrix{Float64},
+    maxfrq::Matrix{Float64},
+    maxbp::Matrix{Float64},
+    maxba::Matrix{Float64}
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -154,6 +165,8 @@ function band_mpower(
     maxfrq = zeros(ch_n, ep_n)
     maxbp = zeros(ch_n, ep_n)
     maxba = zeros(ch_n, ep_n)
+
+    _log_off()
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -176,6 +189,8 @@ function band_mpower(
         maxbp[ch_idx, ep_idx] = mpower_data.maxbp
         maxba[ch_idx, ep_idx] = mpower_data.maxba
     end
+
+    _log_off()
 
     return (; mbp, maxfrq, maxbp, maxba)
 
@@ -231,13 +246,17 @@ function band_mpower(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true
-)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+)::@NamedTuple{
+    mbp::Matrix{Float64},
+    maxfrq::Matrix{Float64},
+    maxbp::Matrix{Float64},
+    maxba::Matrix{Float64}
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    _log_off()
-    mpower_data = band_mpower(
+    return band_mpower(
         @view(obj.data[ch, :, :]),
         fs = sr(obj),
         flim = flim,
@@ -250,9 +269,5 @@ function band_mpower(
         gw = gw,
         demean = demean
     )
-
-    _log_on()
-
-    return mpower_data
 
 end

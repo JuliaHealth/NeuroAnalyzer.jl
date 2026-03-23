@@ -161,7 +161,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             d
 
         else
-            # mixed sampling rates — read entire data block at once,
+            # mixed sampling rates - read entire data block at once,
             # then process channel by channel, upsampling to the maximum rate
             max_rate    = maximum(sampling_rate)
             max_spdr    = maximum(samples_per_datarecord[signal_chs])

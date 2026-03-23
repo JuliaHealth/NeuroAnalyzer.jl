@@ -23,7 +23,7 @@ Interpolate channel using planar interpolation.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function plinterpolate_channel(
         obj::NeuroAnalyzer.NEURO;

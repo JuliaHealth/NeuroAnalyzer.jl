@@ -12,7 +12,7 @@ Calculate non-phase-locked signal.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 

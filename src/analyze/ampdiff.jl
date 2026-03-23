@@ -7,12 +7,12 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `ch::Union{Int64, Vector{Int64}}=size(s, 1)`: indices of reference channels; default is all channels, for each analyzed channel, that channel itself is excluded from the reference mean
 
 # Returns
 
-- `ad::Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
+- `Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
 """
 function ampdiff(
     s::AbstractArray;
@@ -24,7 +24,7 @@ function ampdiff(
     _check_channels(s, ch)
 
     # pre-allocate output
-    ad = similar(s, Float64)
+    amp_diff = similar(s, Float64)
 
     # number of channels
     ch_n = size(s, 1)
@@ -36,10 +36,10 @@ function ampdiff(
         ch_idx, ep_idx = idx[1], idx[2]
         ref_ch = setdiff(ch, ch_idx)
         amp_ref = dropdims(mean(@view(s[ref_ch, :, ep_idx]), dims = 1), dims = 1)
-        ad[ch_idx, :, ep_idx] .= @view(s[ch_idx, :, ep_idx]) .- amp_ref
+        amp_diff[ch_idx, :, ep_idx] .= @view(s[ch_idx, :, ep_idx]) .- amp_ref
     end
 
-    return ad
+    return amp_diff
 
 end
 
@@ -55,15 +55,16 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 
 # Returns
 
-- `ad::Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
+- `Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
 """
-function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function ampdiff(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    ad = ampdiff(@view(obj.data[ch, :, :]), ch = _c(length(ch)))
-
-    return ad
+    return ampdiff(@view(obj.data[ch, :, :]), ch = _c(length(ch)))
 
 end

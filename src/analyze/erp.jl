@@ -16,7 +16,7 @@ Detect the positive and negative peak of each channel's ERP/ERF/MEP.
 
 # Returns
 
-- `p::Matrix{Int64}`: : shape `(channels, 2)` — column 1 is the positive peak sample index, column 2 is the negative peak sample index
+- `p::Matrix{Int64}`: : shape `(channels, 2)` - column 1 is the positive peak sample index, column 2 is the negative peak sample index
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 

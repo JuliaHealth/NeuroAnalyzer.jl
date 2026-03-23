@@ -37,9 +37,10 @@ function mdiff(
     p::Float64
 }
 
+    # validate
     _check_var(method, [:absdiff, :diff2int], "method")
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     # calculate means over channels
     s1_mean = vec(mean(s1, dims = 1))
@@ -93,7 +94,7 @@ function mdiff(
     p = count(x -> x > sts, st) / n_boot
     p > 1.0 && (p = 1.0)
 
-    return (st = st, sts = sts, p = p)
+    return (; st, sts, p)
 
 end
 
@@ -104,8 +105,8 @@ Calculate the mean difference and its bootstrap p-value for each epoch.
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels, samples, epochs)
-- `s2::AbstractArray`: signal array (channels, samples, epochs)
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `n::Int64=3`: number of bootstrap iterations per channel
 - `method::Symbol=:absdiff`: test statistic:
     - `:absdiff`: maximum absolute difference
@@ -130,8 +131,9 @@ function mdiff(
     p::Vector{Float64}
 }
 
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
@@ -160,7 +162,7 @@ function mdiff(
         p[ep_idx] = mdriff_data.p
     end
 
-    return (st = st, sts = sts, p = p)
+    return (; st, sts, p)
 end
 
 """
@@ -218,13 +220,11 @@ function mdiff(
     (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
     (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    mdiff_data = NeuroAnalyzer.mdiff(
+    return NeuroAnalyzer.mdiff(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
         n = n,
-        method = method,
+        method = method
     )
-
-    return mdiff_data
 
 end

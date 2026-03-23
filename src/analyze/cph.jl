@@ -18,10 +18,18 @@ Named tuple:
 - `ph::Vector{Float64}`: cross-power spectrum phase in radians
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(s1::AbstractVector, s2::AbstractVector; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
+function cph(
+    s1::AbstractVector,
+    s2::AbstractVector;
+    fs::Int64
+)::@NamedTuple{
+    ph::Vector{Float64},
+    f::Vector{Float64}
+}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
     # stack signals as rows and compute the multi-taper cross-power spectrum
     # mt_cross_power_spectra returns a complex-valued (channels × channels × freq) object
@@ -34,7 +42,7 @@ function cph(s1::AbstractVector, s2::AbstractVector; fs::Int64)::@NamedTuple{ph:
     # get the vector of frequencies
     f = Vector(ps.freq)
 
-    return (ph = ph, f = f)
+    return (; ph, f)
 
 end
 
@@ -45,17 +53,23 @@ Computes the instantaneous phase of the cross-power spectrum between all channel
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
 
 Named tuple:
 
-- `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians), shape `(channels, channels, frequencies, epochs)`
+- `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians), shape (channels, channels, frequencies, epochs)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
+function cph(
+    s::AbstractArray;
+    fs::Int64
+)::@NamedTuple{
+    ph::Array{Float64, 4},
+    f::Vector{Float64}
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -65,7 +79,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     # number of epochs
     ep_n = size(s, 3)
 
-    # pilot call to determine the frequency vector length — uses the first
+    # pilot call to determine the frequency vector length - uses the first
     # channel pair
     # f is independent of signal values.
     cph_data = cph(@view(s[1, :, 1]), @view(s[1, :, 1]), fs = fs)
@@ -101,7 +115,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
         end
     end
 
-    return (ph = ph, f = f)
+    return (; ph, f)
 
 end
 
@@ -112,8 +126,8 @@ Calculate cross-phases between paired channels of two arrays.
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels, samples, epochs)
-- `s2::AbstractArray`: signal array (channels, samples, epochs)
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
@@ -127,10 +141,13 @@ function cph(
     s1::AbstractArray,
     s2::AbstractArray;
     fs::Int64
-)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
+)::@NamedTuple{
+    ph::Array{Float64, 3},
+    f::Vector{Float64}
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
     _chk3d(s2)
 
@@ -139,7 +156,7 @@ function cph(
     # number of epochs
     ep_n = size(s1, 3)
 
-    # pilot call to determine the frequency vector length — uses the first channel pair
+    # pilot call to determine the frequency vector length - uses the first channel pair
     # f is independent of signal values.
     cph_data = cph(@view(s1[1, :, 1]), @view(s2[1, :, 1]), fs = fs)
     f = cph_data.f
@@ -157,7 +174,7 @@ function cph(
         ).ph
     end
 
-    return (ph = ph, f = f)
+    return (; ph, f)
 
 end
 
@@ -181,14 +198,15 @@ Named tuple:
 function cph(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
+)::@NamedTuple{
+    ph::Array{Float64, 4},
+    f::Vector{Float64}
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    cph_data = cph(@view(obj.data[ch, :, :]), fs = sr(obj))
-
-    return cph_data
+    return cph(@view(obj.data[ch, :, :]), fs = sr(obj))
 
 end
 
@@ -222,13 +240,13 @@ function cph(
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
 )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
-    # validate objects
-    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    # validate
+    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -236,15 +254,13 @@ function cph(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    cph_data = cph(
+    return cph(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
-        fs = sr(obj1),
+        fs = sr(obj1)
     )
-
-    return cph_data
 
 end

@@ -66,7 +66,7 @@ function filter_poly(
     half = window ÷ 4
     @inbounds for junction in window:window:(window * (window_n - 1))
         j1 = max(1, junction - half)
-        j2 = min(length(s), junction + half - 1)   # was: no bounds check — could exceed signal length
+        j2 = min(length(s), junction + half - 1)   # was: no bounds check - could exceed signal length
         s_tmp = s_filtered[j1:j2]
         t = collect(1.0:length(s_tmp))
         model = Loess.loess(t, Vector{Float64}(s_tmp); span=1.0)

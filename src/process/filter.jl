@@ -327,7 +327,7 @@ Apply a pre-designed filter to selected channels of a NEURO object.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object with filtered data
+- `NeuroAnalyzer.NEURO`: output NEURO object with filtered data
 
 # Notes
 - For best results apply to a continuous (single-epoch) signal. A warning is issued when `nepochs(obj) > 1`.

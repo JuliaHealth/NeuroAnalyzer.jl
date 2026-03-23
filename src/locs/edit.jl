@@ -23,7 +23,7 @@ Edit electrode.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_locs(
         obj::NeuroAnalyzer.NEURO;

@@ -13,15 +13,13 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 
 # Returns
 
-- `dn::Float64`: Dirichlet energy
+- `Float64`: Dirichlet energy
 """
 function dirinrg(s::AbstractVector)::Float64
 
     # sum(abs2, diff(s)) = Σ(Δs)²
     # equivalent to norm(diff(s), 2)^2 but avoids the sqrt in norm() immediately followed by squaring it back
-    dn = sum(abs2, diff(s))
-
-    return dn
+    return sum(abs2, diff(s))
 
 end
 
@@ -34,7 +32,7 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
@@ -84,8 +82,6 @@ function dirinrg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    dn = dirinrg(@view(obj.data[ch, :, :]))
-
-    return dn
+    return dirinrg(@view(obj.data[ch, :, :]))
 
 end

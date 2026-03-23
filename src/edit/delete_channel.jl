@@ -16,7 +16,7 @@ Delete channel(s).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_channel(
         obj::NeuroAnalyzer.NEURO;
@@ -131,7 +131,7 @@ Keep channels.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function keep_channel(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}

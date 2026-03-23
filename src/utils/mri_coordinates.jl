@@ -146,12 +146,12 @@ Convert Talairach coordinates to MNI coordinates using the inverse non-linear Br
 
 This is the analytical inverse of [`mni2tal`](@ref). The transform is piecewise-linear in z, with the branching threshold applied to the Talairach z coordinate:
 
-z ≥ 0 — inverse of the upper matrix `[[0.9688, 0.046], [−0.0485, 0.9189]]` (det ≈ 0.8925):
+z ≥ 0 - inverse of the upper matrix `[[0.9688, 0.046], [−0.0485, 0.9189]]` (det ≈ 0.8925):
 - `x = x′ / 0.99`
 - `y = (0.9189 y′ − 0.046  z′) / det`
 - `z = (0.0485 y′ + 0.9688 z′) / det`
 
-z < 0 — inverse of the lower matrix `[[0.9688, 0.042], [−0.0485, 0.839]]` (det ≈ 0.8151):
+z < 0 - inverse of the lower matrix `[[0.9688, 0.042], [−0.0485, 0.839]]` (det ≈ 0.8151):
 - `x = x′ / 0.99`
 - `y = (0.839  y′ − 0.042  z′) / det`
 - `z = (0.0485 y′ + 0.9688 z′) / det`

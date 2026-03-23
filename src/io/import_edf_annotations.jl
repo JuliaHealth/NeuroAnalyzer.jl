@@ -5,7 +5,7 @@ export import_edf_annotations
 
 Load annotations from an EDF+ annotation-only file and return a `DataFrame` of event markers.
 
-This function is intended for EDF+ files whose `data_records_duration` header field is 0, meaning the file contains only TAL (Time-stamped Annotations Lists) and no signal data. For regular EDF/EDF+ files with signal data, use `import_edf()` instead — it parses annotations automatically.
+This function is intended for EDF+ files whose `data_records_duration` header field is 0, meaning the file contains only TAL (Time-stamped Annotations Lists) and no signal data. For regular EDF/EDF+ files with signal data, use `import_edf()` instead - it parses annotations automatically.
 
 # Arguments
 
@@ -25,7 +25,7 @@ function import_edf_annotations(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not an EDF file."))
 
     # ------------------------------------------------------------------ #
-    # parse header — single open/close via `do` block                    #
+    # parse header - single open/close via `do` block                    #
     # ------------------------------------------------------------------ #
     markers = open(file_name, "r") do fid
 

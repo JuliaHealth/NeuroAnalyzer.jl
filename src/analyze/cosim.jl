@@ -18,16 +18,15 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
 # Returns
 
-- `cs::Float64`: cosine similarity value ∈ [-1, 1]
+- `Float64`: cosine similarity value ∈ [-1, 1]
 """
 function cosim(s1::AbstractVector, s2::AbstractVector)::Float64
 
+    # validate
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # CS = (s1 · s2) / (‖s1‖ · ‖s2‖)
-    cs = dot(s1, s2) / (norm(s1) * norm(s2))
-
-    return cs
+    return dot(s1, s2) / (norm(s1) * norm(s2))
 
 end
 
@@ -53,7 +52,7 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
 # Returns
 
-- `cs::Matrix{Float64}`: cosine similarity values, shape `(channels, epochs)`
+- `Matrix{Float64}`: cosine similarity values, shape (channels, epochs)
 """
 function cosim(
     obj1::NeuroAnalyzer.NEURO,
@@ -102,7 +101,13 @@ end
 """
     cosim(obj; <keyword arguments>)
 
-Measures the cosine of the angle between all channel pairs within one object.
+Measures the cosine of the angle between two signal vectors:
+
+CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
+
+- CS = 1 → identical direction (perfectly similar)
+- CS = 0 → orthogonal (no similarity)
+- CS = -1 → opposite direction
 
 # Arguments
 
@@ -111,7 +116,7 @@ Measures the cosine of the angle between all channel pairs within one object.
 
 # Returns
 
-- `cs::Array{Float64, 3}`: cosine similarity values, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: cosine similarity values, shape (channels, channels, epochs)
 """
 function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
@@ -137,10 +142,7 @@ function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         end
     end
 
-    # mirror the lower triangle to the upper triangle
-    # to produce the full symmetric similarity matrix
-    cs = _copy_lt2ut(cs)
-
-    return cs
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+    return _copy_lt2ut(cs)
 
 end

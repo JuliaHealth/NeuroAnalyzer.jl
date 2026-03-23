@@ -14,13 +14,11 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Returns
 
-- `mi::Float64`: mutual information
+- `Float64`: mutual information
 """
 function mutual_information(s1::AbstractVector, s2::AbstractVector)::Float64
 
-    mi = InformationMeasures.get_mutual_information(s1, s2)
-
-    return mi
+    return InformationMeasures.get_mutual_information(s1, s2)
 
 end
 
@@ -33,16 +31,17 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels, samples, epochs)
-- `s2::AbstractArray`: signal array (channels, samples, epochs)
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
-- `mi::Matrix{Float64}`: MI matrix, shape `(channels, epochs)`
+- `Matrix{Float64}`: mutual information matrix, shape `(channels, epochs)`
 """
 function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
@@ -78,11 +77,11 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
-- `mi::Array{Float64, 3}`: symmetric MI matrix, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: symmetric mutual information matrix, shape `(channels, channels, epochs)`
 """
 function mutual_information(s::AbstractArray)::Array{Float64, 3}
 
@@ -135,7 +134,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Returns
 
-- `mi::Array{Float64, 3}`: symmetric MI matrix, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: symmetric mutual information matrix, shape `(channels, channels, epochs)`
 """
 function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
@@ -166,7 +165,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 # Returns
 
-- `m::Matrix{Float64}`: MI matrix, shape `(channels, epochs)`
+- `Matrix{Float64}`: mutual information matrix, shape `(channels, epochs)`
 """
 function mutual_information(
     obj1::NeuroAnalyzer.NEURO,

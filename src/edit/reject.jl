@@ -652,11 +652,11 @@ function epoch_reject(
 
         bad_mat = zeros(Bool, length(ch), ep_n)
         @inbounds Threads.@threads :static for ep_idx in 1:ep_n
-            # each thread writes to its own column — no overlap, no race
+            # each thread writes to its own column - no overlap, no race
             bad_mat[:, ep_idx] = @views detect_euclid(obj.data[ch, :, ep_idx])
         end
 
-        # reductions are serial but vectorized — no loop needed
+        # reductions are serial but vectorized - no loop needed
         bc[ch] = bc[ch] .|| vec(any(bad_mat, dims = 2))
         append!(be, findall(vec(sum(bad_mat, dims = 1)) .>= nbad))
 
@@ -674,14 +674,14 @@ function epoch_reject(
         # parallelize only the expensive per-epoch variance computation
         s_mv_mat = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for ep_idx in 1:ep_n
-            # each thread writes to its own column — no overlap, no race condition
+            # each thread writes to its own column - no overlap, no race condition
             s_mv_mat[:, ep_idx] = @views vec(var(obj.data[ch, :, ep_idx], dims = 2))
         end
 
         # flatten variance results in epoch order
         s_mv = vcat(s_mv, vec(s_mv_mat))
 
-        # vectorized reductions — no loop needed
+        # vectorized reductions - no loop needed
         bc[ch] = bc[ch] .|| vec(any(o, dims = 2))
         append!(be, findall(vec(sum(o, dims = 1)) .>= nbad))
 

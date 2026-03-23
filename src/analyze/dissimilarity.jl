@@ -13,18 +13,20 @@ Calculate the variance across channels at each time point of an ERP/ERF object (
 
 # Returns
 
-- `tv::Vector{Float64}`: topographical variance
+- `Vector{Float64}`: topographical variance
 """
-function topo_var(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Vector{Float64}
+function topo_var(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}
+)::Vector{Float64}
 
-    !(datatype(obj) in ["erp", "erf"]) && throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
+    # validate
+    datatype(obj) in ["erp", "erf"] || throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
     
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    tv = dropdims(var(@view(obj.data[ch, :, 1]), dims = 1), dims = 1)
-
-    return tv
+    return dropdims(var(@view(obj.data[ch, :, 1]), dims = 1), dims = 1)
 
 end
 
@@ -52,9 +54,16 @@ Named tuple:
 - `gd::Vector{Float64}`: global dissimilarity ∈ [0, 2], one value per time point
 - `sc::Vector{Float64}`: spatial correlation ∈ [-1, 1], one value per time point
 """
-function diss(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
+function diss(
+    s1::AbstractMatrix,
+    s2::AbstractMatrix
+)::@NamedTuple{
+    gd::Vector{Float64},
+    sc::Vector{Float64}
+}
 
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
     # number of channels
     ch_n = size(s1, 1)
@@ -76,7 +85,7 @@ function diss(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{gd::Vector{Fl
         sc[idx] = 0.5 * (2 - gd[idx]^2)
     end
 
-    return (gd = gd, sc = sc)
+    return (; gd, sc)
 
 end
 
@@ -103,24 +112,26 @@ function diss(
     obj2::NeuroAnalyzer.NEURO;
     ch1::Union{String, Vector{String}, Regex},
     ch2::Union{String, Vector{String}, Regex}
-)::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
+)::@NamedTuple{
+    gd::Vector{Float64},
+    sc::Vector{Float64}
+}
 
-    !(datatype(obj1) in ["erp", "erf"]) && throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
-    !(datatype(obj2) in ["erp", "erf"]) && throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
+    # validate
+    datatype(obj1) in ["erp", "erf"] || throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
+    datatype(obj2) in ["erp", "erf"] || throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
 
-    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
     (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
-    diss_data = diss(
+    return diss(
         @view(obj1.data[ch1, :, 1]),
         @view(obj2.data[ch2, :, 1])
     )
-
-    return diss_data
 
 end

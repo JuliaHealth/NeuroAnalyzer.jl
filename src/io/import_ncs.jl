@@ -119,7 +119,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         :length => Float64[], :value => String[], :channel => Int64[])
 
     # -------------------------------------------------------------------- #
-    # time axes (6-digit precision — NCS timestamps are microsecond-based) #
+    # time axes (6-digit precision - NCS timestamps are microsecond-based) #
     # -------------------------------------------------------------------- #
     n_samples  = size(data, 2) * size(data, 3)
     time_pts   = round.(range(0; step = 1/sampling_rate, length = n_samples);  digits = 6)

@@ -28,7 +28,7 @@ Named tuple:
 
 # References
 
- 1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
+1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
 function dpli(
     s1::AbstractVector,
@@ -41,6 +41,7 @@ function dpli(
     s2ph::Vector{Float64}
 }
 
+    # validate
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # extract instantaneous phase via Hilbert transform
@@ -64,10 +65,10 @@ function dpli(
     r3 = count(x ->  x == 0,      phd)
 
     # dPLI: fraction of time s1 leads s2, with ties counting as 0.5
-    # r2 cancels out of the numerator — only r1 and the tie-break matter
+    # r2 cancels out of the numerator - only r1 and the tie-break matter
     pv = (r1 + 0.5 * r3) / length(s1)
 
-    return (pv = pv, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)
+    return (; pv, sd, phd, s1ph, s2ph)
 
 end
 
@@ -95,11 +96,15 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 Named tuple:
 
-- `pv::Matrix{Float64}`: dPLI values, shape `(channels, epochs)`
+- `pv::Matrix{Float64}`: dPLI values, shape (channels, epochs)
 - `sd::Array{Float64, 3}`: signal difference, shape (channels, samples, epochs)
 - `phd::Array{Float64, 3}`: phase difference, shape (channels, samples, epochs)
 - `s1ph::Array{Float64, 3}`: signal 1 instantaneous phase, shape (channels, samples, epochs)
 - `s2ph::Array{Float64, 3}`: signal 2 instantaneous phase, shape (channels, samples, epochs)
+
+# References
+
+1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
 function dpli(
     obj1::NeuroAnalyzer.NEURO,
@@ -113,7 +118,7 @@ function dpli(
     sd::Array{Float64, 3},
     phd::Array{Float64, 3},
     s1ph::Array{Float64, 3},
-    s2ph::Array{Float64, 3},
+    s2ph::Array{Float64, 3}
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -138,9 +143,9 @@ function dpli(
     ep_len  = epoch_len(obj1)
 
     # pre-allocate outputs
-    pv   = zeros(ch_n, ep_n)
-    sd   = zeros(ch_n, ep_len, ep_n)
-    phd  = zeros(ch_n, ep_len, ep_n)
+    pv = zeros(ch_n, ep_n)
+    sd = zeros(ch_n, ep_len, ep_n)
+    phd = zeros(ch_n, ep_len, ep_n)
     s1ph = zeros(ch_n, ep_len, ep_n)
     s2ph = zeros(ch_n, ep_len, ep_n)
 
@@ -158,7 +163,7 @@ function dpli(
         s2ph[ch_idx, :, ep_idx] = dpli_data.s2ph
     end
 
-    return (pv = pv, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)
+    return (; pv, sd, phd, s1ph, s2ph)
 
 end
 
@@ -180,7 +185,11 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 # Returns
 
-- `pv::Array{Float64, 3}`: dPLI values, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: dPLI values, shape (channels, channels, epochs)
+
+# References
+
+1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
 function dpli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
@@ -206,9 +215,7 @@ function dpli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
         end
     end
 
-    # mirror lower triangle to upper triangle
-    pv = _copy_lt2ut(pv)
-
-    return pv
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+    return _copy_lt2ut(pv)
 
 end

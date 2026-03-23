@@ -74,7 +74,7 @@ Calculate Fourier transform (FFT / rFFT)
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=false`: normalize powers to dB
 - `nf::Bool=false`: if true, return Fourier coefficients for negative and positive frequencies, otherwise return Fourier coefficients for positive frequencies only
@@ -191,7 +191,7 @@ Calculate Hilbert transform (analytic signal).
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `db::Bool=false`: normalize powers to dB
 
 # Returns
@@ -253,7 +253,7 @@ Calculate Fourier or Hilbert transformation.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `pad::Int64=0`: (FFT only) number of zeros to append
 - `h::Bool=false`: if true, use Hilbert transform instead of FFT
 - `db::Bool=false`: normalize powers to dB
@@ -370,7 +370,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `pad::Int64=0`: number of zeros to append
 
 # Returns

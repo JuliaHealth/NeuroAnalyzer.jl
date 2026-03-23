@@ -13,11 +13,12 @@ Computes the channel × channel Pearson correlation matrix.
 
 # Returns
 
-- `cm::Matrix{Float64}`: 2×2 correlation matrix
+- `Matrix{Float64}`: 2×2 correlation matrix
 """
 function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
 
-    !(length(s1) == length(s2)) && throw(ArgumentError("s1 and s2 must have the same length."))
+    # validate
+    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
     # compute the 2×2 channels-vs-channels correlation matrix
     # hcat → n×2; cor → 2×2
@@ -29,7 +30,6 @@ function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matri
     return cm
 
 end
-
 
 """
     corm(s; <keyword arguments>)
@@ -43,7 +43,7 @@ Calculate corelation matrix of channels × time points matrix.
 
 # Returns
 
-- `cm::Matrix{Float64}`: correlation matrix (channels × channels)
+- `Matrix{Float64}`: correlation matrix, shape (channels × channels)
 """
 function corm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
 
@@ -65,12 +65,12 @@ Calculate correlation matrix for each epoch of a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `norm::Bool=false`: normalize correlation matrix
 
 # Returns
 
-- `cm::Array{Float64, 3}`: correlation matrix for each epoch, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: correlation matrix for each epoch, shape (channels, channels, epochs)
 """
 function corm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
@@ -107,15 +107,13 @@ Calculate correlation matrix.
 
 # Returns
 
-- `cm::Array{Float64, 3}`: correlation matrix for each epoch, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: correlation matrix for each epoch, shape (channels, channels, epochs)
 """
 function corm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    cm = corm(@view(obj.data[ch, :, :]), norm = norm)
-
-    return cm
+    return corm(@view(obj.data[ch, :, :]), norm = norm)
 
 end

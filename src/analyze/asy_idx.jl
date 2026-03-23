@@ -49,13 +49,16 @@ function asy_idx(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true
-)::@NamedTuple{asi::Float64, nasi::Float64}
+)::@NamedTuple{
+    asi::Float64,
+    nasi::Float64
+}
 
     # resolve channel names to integer indices
     ch1 = get_channel(obj, ch = ch1)
     ch2 = get_channel(obj, ch = ch2)
 
-    # shared keyword arguments for both band_power calls — defined once to
+    # shared keyword arguments for both band_power calls - defined once to
     # avoid duplicating the argument list and to keep the two calls in sync
     bp_kwargs = (
         fs = sr(obj),
@@ -85,6 +88,6 @@ function asy_idx(
     # normalized asymmetry
     nasi = (m1 - m2) / (m1 + m2)
 
-    return (asi = asi, nasi = nasi)
+    return (; asi, nasi)
 
 end

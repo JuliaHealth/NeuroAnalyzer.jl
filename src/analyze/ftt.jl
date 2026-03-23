@@ -64,7 +64,7 @@ function ftt_analyze(
     # successive differences of the ITI vector (difference-of-differences)
     sd = diff(t_iti)
 
-    # sum(abs2, x) = Σ xᵢ² — avoids allocating x .^ 2 array.
+    # sum(abs2, x) = Σ xᵢ² - avoids allocating x .^ 2 array.
     t_rmssd = round(sqrt(sum(abs2, sd) / length(sd)), digits = 1)
     t_sdsd  = round(std(sd),                          digits = 1)
 

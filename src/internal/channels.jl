@@ -98,7 +98,7 @@ function _ch_idx(
 end
 
 # ---------------------------------------------------------------------------
-# NIRS channel type list — defined once to avoid repetition
+# NIRS channel type list - defined once to avoid repetition
 # ---------------------------------------------------------------------------
 const _NIRS_TYPES = [
     "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp",

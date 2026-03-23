@@ -104,7 +104,7 @@ Calculate partial auto-correlation function (PACF) for a 3-D signal array over l
 
 # Arguments
 
-- `s::AbstractArray`: signal array (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: symmetric lag range is `−l:l`
 - `demean::Bool=true`: demean signal before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:

@@ -11,10 +11,11 @@ Detect a pair of positive and negative peaks of MEP.
 
 # Returns
 
-- `p::Matrix{Int64}`: peaks, shape `(channels, positive peak position, negative peak position)`
+- `p::Matrix{Int64}`: peaks, shape (channels, positive peak position, negative peak position)
 """
 function mep_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
+    # validate
     _check_datatype(obj, "mep")
 
     # number of channels

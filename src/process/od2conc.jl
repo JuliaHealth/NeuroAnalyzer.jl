@@ -17,7 +17,7 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function od2conc(
     obj::NeuroAnalyzer.NEURO;

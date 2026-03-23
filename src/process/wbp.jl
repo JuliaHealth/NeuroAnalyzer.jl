@@ -83,7 +83,7 @@ Perform wavelet band-pass filtering.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function wbp(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real, ncyc::Int64 = 6

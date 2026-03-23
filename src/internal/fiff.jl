@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
 # byte-reinterpretation helpers
-# ntoh() operates on a scalar — the broadcast dot was unnecessary
+# ntoh() operates on a scalar - the broadcast dot was unnecessary
 # ---------------------------------------------------------------------------
 _i16i64(x)::Int64   = Int64(ntoh(reinterpret(Int16,   x)[1]))
 _i32i64(x)::Int64   = Int64(ntoh(reinterpret(Int32,   x)[1]))
@@ -115,7 +115,7 @@ fiff_units = Dict(
         "Wb",       # weber
         "T",        # tesla
         "H",        # henry
-        "°C",       # degree Celsius — was: "C" (duplicate of coulomb at id=108)
+        "°C",       # degree Celsius - was: "C" (duplicate of coulomb at id=108)
         "lm",       # lumen
         "lx",       # lux
         "T/m",      # tesla per metre
@@ -124,8 +124,8 @@ fiff_units = Dict(
 )
 
 # FIFF value-multiplier (SI prefix) lookup table.
-# :id    — the integer exponent stored in the FIFF file (power of 10).
-# :multiplier — short text identifier used in the FIFF specification.
+# :id    - the integer exponent stored in the FIFF file (power of 10).
+# :multiplier - short text identifier used in the FIFF specification.
 fiff_multipliers = Dict(
     :id => [18, 15, 12, 9, 6, 3, 2, 1, 0, -1, -2, -3, -6, -9, -12, -15, -18],
     :multiplier => [
@@ -770,7 +770,7 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})::Union{Vector{Float64}, Mat
             end
             reverse!(dim)
 
-            # --- parse non-zero count (nz) — two sequential reads are intentional ---
+            # --- parse non-zero count (nz) - two sequential reads are intentional ---
             tmp = buf[1:(end - length(dims_buf) - 4)]
             nz  = _i32i32(tmp[(end - 3):end])
             tmp = buf[1:(end - length(dims_buf) - 8)]
@@ -824,7 +824,7 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})::Union{Vector{Float64}, Mat
 
             end
 
-        elseif mc_mask == 0x00200000   # sparse, row-compressed (CRS) — not yet implemented
+        elseif mc_mask == 0x00200000   # sparse, row-compressed (CRS) - not yet implemented
 
             _warn("sparse row-compressed matrix is not implemented; please send this file to adam.wysokinski@neuroanalyzer.org")
             return Float64[]

@@ -81,7 +81,7 @@ function import_ft(
             :value   => strip.(string.(value)),
             :channel => zeros(Int64, length(id)))
         _info("Imported: $(DataFrames.nrow(markers)) events; " *
-              "start and length are in samples — use `markers_s2t()` to convert.")
+              "start and length are in samples - use `markers_s2t()` to convert.")
         return markers
 
     end

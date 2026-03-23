@@ -40,7 +40,7 @@ function _make_epochs_bymarkers(
 )::Tuple{Array{Float64, 3}, DataFrame}
 
     _chk3d(s)
-    !(offset >= 0) && throw(ArgumentError("offset must be ≥ 0."))  # was: ≥ 1 — offset=0 is valid (epoch starts at marker)
+    !(offset >= 0) && throw(ArgumentError("offset must be ≥ 0."))  # was: ≥ 1 - offset=0 is valid (epoch starts at marker)
     !(ep_len >= 1) && throw(ArgumentError("ep_len must be ≥ 1."))
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
 

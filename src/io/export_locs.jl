@@ -10,16 +10,15 @@ The output format is determined automatically from `file_name`'s extension:
 | Extension |                   Format                   |
 | --------- | ------------------------------------------ |
 | `.csv`    | Full locations table (all columns)         |
-| `.ced`    | EEGLAB CED — tab-separated with header     |
-| `.locs`   | EEGLAB .locs — tab-separated, no header    |
-| `.tsv`    | BIDS-style TSV — tab-separated with header |
+| `.ced`    | EEGLAB CED - tab-separated with header     |
+| `.locs`   | EEGLAB .locs - tab-separated, no header    |
+| `.tsv`    | BIDS-style TSV - tab-separated with header |
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `file_name::String`: output file path; extension determines the format
 - `overwrite::Bool=false`: allow overwriting an existing file; throws `ArgumentError` otherwise
-
 
 # Returns
 
@@ -57,9 +56,9 @@ The output format is determined automatically from `file_name`'s extension:
 
 | Extension |                   Format                   |
 | --------- | ------------------------------------------ |
-| `.ced`    | EEGLAB CED — tab-separated with header     |
-| `.locs`   | EEGLAB .locs — tab-separated, no header    |
-| `.tsv`    | BIDS-style TSV — tab-separated with header |
+| `.ced`    | EEGLAB CED - tab-separated with header     |
+| `.locs`   | EEGLAB .locs - tab-separated, no header    |
+| `.tsv`    | BIDS-style TSV - tab-separated with header |
 
 # Arguments
 

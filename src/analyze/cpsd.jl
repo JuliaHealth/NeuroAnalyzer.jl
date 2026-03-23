@@ -4,6 +4,7 @@ export cpsd
     cpsd(s1, s2; <keyword arguments>)
 
 Calculate the complex cross power spectral density (CPSD) between two signals via one of three estimators:
+
 - `:mt` – multi-taper (DSP.mt_cross_power_spectra)
 - `:fft` – single-window FFT
 - `:stft` – segmented FFT averaged over overlapping windows
@@ -42,17 +43,20 @@ function cpsd(
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.90),
     w::Bool = true
-)::@NamedTuple{pxy::Vector{ComplexF64}, f::Vector{Float64}}
+)::@NamedTuple{
+    pxy::Vector{ComplexF64},
+    f::Vector{Float64}
+}
 
-    # check arguments
+    # validate
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
-    !(nt >= 1) && throw(ArgumentError("nt must be ≥ 1."))
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(wlen <= length(s1)) && throw(ArgumentError("wlen must be ≤ $(length(s1))."))
-    !(wlen >= 2) && throw(ArgumentError("wlen must be ≥ 2."))
-    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < $(wlen)."))
-    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
+    nt >= 1 || throw(ArgumentError("nt must be ≥ 1."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    wlen <= length(s1) || throw(ArgumentError("wlen must be ≤ $(length(s1))."))
+    wlen >= 2 || throw(ArgumentError("wlen must be ≥ 2."))
+    woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
+    woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     n_samples = length(s1)
@@ -147,7 +151,7 @@ function cpsd(
 
     end
 
-    return (pxy = pxy, f = f)
+    return (; pxy, f)
 
 end
 
@@ -155,14 +159,15 @@ end
     cpsd(s1, s2; <keyword arguments>)
 
 Calculate the complex cross power spectral density (CPSD) between two signals via one of three estimators:
+
 - `:mt` – multi-taper (DSP.mt_cross_power_spectra)
 - `:fft` – single-window FFT
 - `:stft` – segmented FFT averaged over overlapping windows
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels, samples, epochs)
-- `s2::AbstractArray`: signal array (channels, samples, epochs)
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
@@ -193,12 +198,16 @@ function cpsd(
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.90),
     w::Bool = true
-)::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
+)::@NamedTuple{
+    pxy::Array{ComplexF64, 3},
+    f::Vector{Float64}
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
     _chk3d(s2)
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
     # number of channels
     ch_n = size(s1, 1)
@@ -240,13 +249,14 @@ function cpsd(
         )
     end
 
-    return (pxy = pxy, f = f)
+    return (; pxy, f)
 end
 
 """
     cpsd(obj1, obj2; <keyword arguments>)
 
 Calculate the complex cross power spectral density (CPSD) between paired channels of two objects via one of three estimators:
+
 - `:mt` – multi-taper (DSP.mt_cross_power_spectra)
 - `:fft` – single-window FFT
 - `:stft` – segmented FFT averaged over overlapping windows
@@ -291,15 +301,18 @@ function cpsd(
     wlen::Int64 = sr(obj1),
     woverlap::Int64 = round(Int64, wlen * 0.90),
     w::Bool = true
-)::@NamedTuple{pxy::Array{ComplexF64, 3}, f::Vector{Float64}}
+)::@NamedTuple{
+    pxy::Array{ComplexF64, 3},
+    f::Vector{Float64}
+}
 
-    # validate objects
-    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    # validate
+    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -307,10 +320,10 @@ function cpsd(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    cpsd_data = cpsd(
+    return cpsd(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
         method = method,
@@ -320,9 +333,7 @@ function cpsd(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w,
+        w = w
     )
-
-    return cpsd_data
 
 end
