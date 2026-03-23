@@ -14,13 +14,11 @@ Computes amplitude descriptors.
 Named tuple:
 
 - `peak_amp::Float64`: peak amplitude (`max(|s|)`)
-- `rms_amp::Float64`: RMS amplitude (`peak_amp / √2`; exact only for a pure sinusoid)
+- `rms_amp::Float64`: RMS amplitude (`√mean(s²)`)
 - `p2p_amp::Float64`: peak-to-peak amplitude (`max(s) - min(s)`)
-- `semi_p2p_amp::Float64`: half of the peak-to-peak amplitude
+- `semi_p2p_amp::Float64`: half of the peak-to-peak amplitude (`p2p/2`)
 - `ms_amp::Float64`: mean square amplitude (`mean(s²)`)
-- `rms_amp::Float64`: root mean square amplitude (`p2p_amp / √2`; exact only for a pure sinusoid)
 - `te_signal::Float64`: total signal energy (`Σ s²`)
-- `rmsq_signal::Float64`: root mean square (`√mean(s²)`)
 """
 function amp(
     s::AbstractVector
@@ -30,22 +28,18 @@ function amp(
     p2p_amp::Float64,
     semi_p2p_amp::Float64,
     ms_amp::Float64,
-    rms_amp::Float64,
-    te_signal::Float64,
-    rmsq_signal::Float64
+    te_signal::Float64
 }
 
     peak_amp = maximum(abs, s)
-    rms_amp = peak_amp / sqrt(2)
+    rms_amp = rms(s)
     s_min, s_max = extrema(s)
     p2p_amp = s_max - s_min
     semi_p2p_amp = p2p_amp / 2
     ms_amp = sum(abs2, s) / length(s)
-    rms_amp = p2p_amp / sqrt(2)
     te_signal = sum(abs2, s)
-    rmsq_signal = rms(s)
 
-    return (; peak_amp, rms_amp, p2p_amp, semi_p2p_amp, ms_amp, rms_amp, te_signal, rmsq_signal)
+    return (; peak_amp, rms_amp, p2p_amp, semi_p2p_amp, ms_amp, te_signal)
 
 end
 
@@ -67,9 +61,7 @@ Named tuple:
 - `p2p_amp::Matrix{Float64}`: peak-to-peak amplitude (`max(s) - min(s)`), shape (channels, epochs)
 - `semi_p2p_amp::Matrix{Float64}`: half of the peak-to-peak amplitude, shape (channels, epochs)
 - `ms_amp::Matrix{Float64}`: mean square amplitude (`mean(s²)`), shape (channels, epochs)
-- `rms_amp::Matrix{Float64}`: root mean square amplitude (`p2p_amp / √2`; exact only for a pure sinusoid), shape (channels, epochs)
 - `te_signal::Matrix{Float64}`: total signal energy (`Σ s²`), shape (channels, epochs)
-- `rmsq_signal::Matrix{Float64}`: root mean square (`√mean(s²)`), shape (channels, epochs)
 """
 function amp(
     s::AbstractArray
@@ -79,9 +71,7 @@ function amp(
     p2p_amp::Matrix{Float64},
     semi_p2p_amp::Matrix{Float64},
     ms_amp::Matrix{Float64},
-    rms_amp::Matrix{Float64},
-    te_signal::Matrix{Float64},
-    rmsq_signal::Matrix{Float64},
+    te_signal::Matrix{Float64}
 }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -98,9 +88,7 @@ function amp(
     p2p_amp = zeros(ch_n, ep_n)
     semi_p2p_amp = zeros(ch_n, ep_n)
     ms_amp = zeros(ch_n, ep_n)
-    rms_amp = zeros(ch_n, ep_n)
     te_signal = zeros(ch_n, ep_n)
-    rmsq_signal = zeros(ch_n, ep_n)
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
@@ -110,12 +98,10 @@ function amp(
         p2p_amp[ch_idx, ep_idx] = amp_data.p2p_amp
         semi_p2p_amp[ch_idx, ep_idx] = amp_data.semi_p2p_amp
         ms_amp[ch_idx, ep_idx] = amp_data.ms_amp
-        rms_amp[ch_idx, ep_idx] = amp_data.rms_amp
-        nrg[ch_idx, ep_idx] = amp_data.te_signal
-        rmsq_signal[ch_idx, ep_idx] = amp_data.rmsq_signal
+        te_signal[ch_idx, ep_idx] = amp_data.te_signal
     end
 
-    return (; peak_amp, rms_amp, p2p_amp, semi_p2p_amp, ms_amp, rms_amp, te_signal, rmsq_signal)
+    return (; peak_amp, rms_amp, p2p_amp, semi_p2p_amp, ms_amp, te_signal)
 
 end
 
@@ -138,9 +124,7 @@ Named tuple:
 - `p2p_amp::Matrix{Float64}`: peak-to-peak amplitude (`max(s) - min(s)`), shape (channels, epochs)
 - `semi_p2p_amp::Matrix{Float64}`: half of the peak-to-peak amplitude, shape (channels, epochs)
 - `ms_amp::Matrix{Float64}`: mean square amplitude (`mean(s²)`), shape (channels, epochs)
-- `rms_amp::Matrix{Float64}`: root mean square amplitude (`p2p_amp / √2`; exact only for a pure sinusoid), shape (channels, epochs)
 - `te_signal::Matrix{Float64}`: total signal energy (`Σ s²`), shape (channels, epochs)
-- `rmsq_signal::Matrix{Float64}`: root mean square (`√mean(s²)`), shape (channels, epochs)
 """
 function amp(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
@@ -150,9 +134,7 @@ function amp(
     p2p_amp::Matrix{Float64},
     semi_p2p_amp::Matrix{Float64},
     ms_amp::Matrix{Float64},
-    rms_amp::Matrix{Float64},
-    te_signal::Matrix{Float64},
-    rmsq_signal::Matrix{Float64},
+    te_signal::Matrix{Float64}
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels

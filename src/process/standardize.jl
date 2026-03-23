@@ -12,8 +12,8 @@ Standardize channels.
 
 # Returns
 
-- `s_new::Array{Float64, 3}`:
-- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+- `Array{Float64, 3}`:
+- `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(
     s::AbstractArray
@@ -47,7 +47,7 @@ Standardize channels.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
-- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+- `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(
     obj::NeuroAnalyzer.NEURO;
@@ -75,7 +75,7 @@ Standardize channels.
 
 # Returns
 
-- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+- `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize!(obj::NeuroAnalyzer.NEURO)::Vector{ZScoreTransform{Float64, Vector{Float64}}}
 

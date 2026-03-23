@@ -133,6 +133,7 @@ module NeuroAnalyzer
     using Jacobi
     using JLD2
     using JSON
+    using KernelDensity
     using LibSerialPort
     using LinearAlgebra
     using LinRegOutliers
@@ -157,6 +158,7 @@ module NeuroAnalyzer
     using StatsModels
     using StatsPlots
     using TimeZones
+    using Trapz
     using TOML
     using WAV
     using Wavelets

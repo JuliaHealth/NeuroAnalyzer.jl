@@ -99,7 +99,7 @@ function entropy(
     shent::Matrix{Float64},
     leent::Matrix{Float64},
     sent::Matrix{Float64},
-    nsent::Matrix{Float64},
+    nsent::Matrix{Float64}
 }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -141,7 +141,7 @@ Calculate signal entropy descriptors:
 - Shannon entropy (Wavelets.coefentropy)
 - log energy entropy (Wavelets.coefentropy)
 - sample entropy (ComplexityMeasures)
-- normalised sample entropy (ComplexityMeasures)
+- normalized sample entropy (ComplexityMeasures)
 
 # Returns
 
@@ -172,28 +172,41 @@ function entropy(
 end
 
 """
-    negentropy(signal)
+    negentropy(s)
 
 Calculate negentropy. Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 
-- `signal::AbstractVector`: signal vector
+- `s::AbstractVector`: signal vector
 
 # Returns
 
 - `Float64`: negentropy (≥ 0; equals 0 for a Gaussian signal)
 """
-function negentropy(signal::AbstractVector)::Float64
+function negentropy(s::AbstractVector)::Float64
 
     # remove DC offset so variance reflects only signal variability
-    s = remove_dc(signal)
+    s = remove_dc(s)
+
+    # normalize the signal by its total energy
+    s = s ./ sum(s.^2)
 
     # Gaussian differential entropy: 0.5·ln(2πe·σ²).
     # ℯ is the built-in mathematical constant (more readable than exp(1)).
     gaussian_h = 0.5 * log(2 * π * ℯ * var(s))
 
-    return gaussian_h - entropy(s).ent
+    # signal differential entropy
+    # estimate the PDF using Kernel Density Estimation (KDE)
+    kde_model = kde(s)
+    points = range(minimum(s), stop=maximum(s), length=1000)
+    pdf_values = pdf(kde_model, points)
+    # calculate differential entropy in bits
+    signal_h = -trapz(points, pdf_values .* log2.(pdf_values .+ eps()))
+
+    return gaussian_h - signal_h
+
+    return gaussian_h - NeuroAnalyzer.entropy(s).ent
 
 end
 
