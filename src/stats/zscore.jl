@@ -25,10 +25,11 @@ Computed as `(xᵢ − mean(x)) / std(x)`.
 """
 function zscore(x::AbstractVector)::Vector{Float64}
 
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    # validate
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     m = mean(x)
     s = std(x)
-    !(s != 0) && throw(ArgumentError("std(x) must not be zero."))
+    s != 0 || throw(ArgumentError("std(x) must not be zero."))
 
     return (x .- m) ./ s
 
@@ -61,7 +62,8 @@ Computed as `(x − m) / sd`.
 """
 function zscore(x::Real, m::Real, sd::Real)::Float64
 
-    !(sd != 0) && throw(ArgumentError("sd must not be zero."))
+    # validate
+    sd != 0 || throw(ArgumentError("sd must not be zero."))
 
     return (x - m) / sd
 

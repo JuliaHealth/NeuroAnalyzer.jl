@@ -37,10 +37,10 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
 
     # number of observations (blocks)
     n = size(m, 1)
-        # number of groups (treatments)
+    n >= 2 || throw(ArgumentError("m must have at least 2 observations (rows)."))
+    # number of groups (treatments)
     k = size(m, 2)
-    !(k >= 2) && throw(ArgumentError("m must have at least 2 groups (columns)."))
-    !(n >= 2) && throw(ArgumentError("m must have at least 2 observations (rows)."))
+    k >= 2 || throw(ArgumentError("m must have at least 2 groups (columns)."))
 
     # accumulate rank sums per observation across groups
     rs = zeros(Float64, n)
@@ -60,6 +60,6 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
     # p-value: Q ~ χ²(k − 1) under H₀
     p = ccdf(Distributions.Chisq(k - 1), q)
 
-    return (q=q, w=w, p=p)
+    return (; q, w, p)
 
 end

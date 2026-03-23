@@ -20,13 +20,17 @@ Named tuple:
 - `U::Matrix{Float64}}`: SVD U orthogonal matrix
 """
 function generate_ssp_projectors(
-        obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0
-    )::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}
+    obj::NeuroAnalyzer.NEURO;
+    proj::Union{Int64, Vector{Int64}} = 0
+)::@NamedTuple{
+    ssp_projectors::Matrix{Float64},
+    U::Matrix{Float64}
+}
 
+    # validate
     _check_datatype(obj, "meg")
-
-    !(:ssp_data in keys(obj.header.recording)) && throw(ArgumentError("OBJ does not contain SSP projections."))
-    !(size(obj.header.recording[:ssp_data], 1) > 0) && throw(ArgumentError("OBJ does not contain SSP projections."))
+    :ssp_data in keys(obj.header.recording) || throw(ArgumentError("OBJ does not contain SSP projections."))
+    size(obj.header.recording[:ssp_data], 1) > 0 || throw(ArgumentError("OBJ does not contain SSP projections."))
 
     # by default use all available projections
     if proj == 0
@@ -34,10 +38,10 @@ function generate_ssp_projectors(
     end
 
     if isa(proj, Int64)
-        !(proj >= 1 && proj <= size(obj.header.recording[:ssp_data], 1)) && throw(ArgumentError("proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."))
+        (proj >= 1 && proj <= size(obj.header.recording[:ssp_data], 1)) || throw(ArgumentError("proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."))
     else
         proj = sort(proj)
-        !(proj[1] >= 1 && proj[end] <= size(obj.header.recording[:ssp_data], 1)) && throw(ArgumentError("proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."))
+        (proj[1] >= 1 && proj[end] <= size(obj.header.recording[:ssp_data], 1)) || throw(ArgumentError("proj must be in [1, $(size(obj.header.recording[:ssp_data], 1))]."))
     end
 
     # extract projections

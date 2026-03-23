@@ -47,7 +47,8 @@ Detect outliers in a vector using a selected method.
 """
 function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
     _check_var(method, [:iqr, :z, :g], "method")
 
     o = zeros(Bool, length(x))
@@ -149,10 +150,11 @@ Grubbs FE. Procedures for detecting outlying observations in samples. Technometr
 """
 function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
 
-    !(length(x) >= 7) && throw(ArgumentError("x must contain at least 7 elements."))
-    !(alpha > 0.0) && throw(ArgumentError("alpha must be > 0."))
-    !(alpha < 1.0) && throw(ArgumentError("alpha must be < 1."))
-    !(t in (-1, 0, 1)) && throw(ArgumentError("t must be -1, 0, or 1."))
+    # validate
+    length(x) >= 7 || throw(ArgumentError("x must contain at least 7 elements."))
+    alpha > 0.0 || throw(ArgumentError("alpha must be > 0."))
+    alpha < 1.0 || throw(ArgumentError("alpha must be < 1."))
+    t in (-1, 0, 1) || throw(ArgumentError("t must be -1, 0, or 1."))
 
     n  = length(x)
     df = n - 2

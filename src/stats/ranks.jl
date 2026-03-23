@@ -27,7 +27,8 @@ Ties receive the same rank. Results are returned in the original element order.
 """
 function prank(x::AbstractVector)::Vector{Float64}
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
     n = length(x)
 
     return [count(<(xi), x) / n for xi in x]
@@ -63,10 +64,11 @@ function dranks(
     nbins::Int64=ceil(Int64, 1 + log2(length(x)))
 )::Array{Int64}
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(nbins >= 1) && throw(ArgumentError("nbins must be ≥ 1."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    nbins >= 1 || throw(ArgumentError("nbins must be ≥ 1."))
 
-    # normalise tied ranks to (0, 1], then bin into 1..nbins
+    # normalize tied ranks to (0, 1], then bin into 1..nbins
     r  = tiedrank(x) ./ length(x)
 
     return ceil.(Int64, r .* nbins)

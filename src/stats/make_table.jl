@@ -27,8 +27,9 @@ The header row is prepended to the data and printed as a single table body with 
 """
 function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
 
-    !(size(header, 1) == 1) && throw(ArgumentError("header must be a single-row matrix."))
-    !(size(header, 2) == size(data, 2)) && throw(ArgumentError("header and data must have the same number of columns."))
+    # validate
+    size(header, 1) == 1 || throw(ArgumentError("header must be a single-row matrix."))
+    size(header, 2) == size(data, 2) || throw(ArgumentError("header and data must have the same number of columns."))
 
     # convert any Integer cells to String to avoid type-display inconsistencies;
     # iterate with CartesianIndices to cover all dimensions safely

@@ -33,7 +33,8 @@ Computed as `std(x) / √n`.
 """
 function sem(x::AbstractVector)::Float64
 
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    # validate
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
     return std(x) / sqrt(length(x))
 
@@ -64,7 +65,8 @@ Approximated as `1.253 × std(x) / √n` (valid for large normal samples).
 """
 function semd(x::AbstractVector)::Float64
 
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    # validate
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
     return 1.253 * std(x) / sqrt(length(x))
 
@@ -95,8 +97,9 @@ Computed as `√(p(1 − p) / n)`.
 """
 function sep(p::Float64, n::Int64)::Float64
 
+    # validate
     _in(p, (0.0, 1.0), "p")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return sqrt((p * (1 - p)) / n)
 
@@ -125,7 +128,8 @@ Calculate the standard error of a count (`√n`).
 """
 function sen(n::Int64)::Float64
 
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    # validate
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return sqrt(n)
 
@@ -159,8 +163,9 @@ For unequal-length vectors: pooled SD × `√(1/n1 + 1/n2)`.
 """
 function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
 
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
-    !(length(y) >= 2) && throw(ArgumentError("y must contain at least 2 elements."))
+    # validate
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
+    length(y) >= 2 || throw(ArgumentError("y must contain at least 2 elements."))
 
     if length(x) == length(y)
         return sqrt(sem(x)^2 + sem(y)^2)
@@ -202,10 +207,11 @@ function sep_diff(
     n2::Int64
 )::Float64
 
+    # validate
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
-    !(n2 >= 1) && throw(ArgumentError("n2 must be ≥ 1."))
+    n1 >= 1 || throw(ArgumentError("n1 must be ≥ 1."))
+    n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
 
     return sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)
 
@@ -237,8 +243,9 @@ Computed as `√(n1 + n2)`.
 """
 function sen_diff(n1::Int64, n2::Int64)::Float64
 
-    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
-    !(n2 >= 1) && throw(ArgumentError("n2 must be ≥ 1."))
+    # validate
+    n1 >= 1 || throw(ArgumentError("n1 must be ≥ 1."))
+    n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
 
     return sqrt(n1 + n2)
 
@@ -271,8 +278,9 @@ Requires `n ≥ 3` so that the denominator is non-zero.
 """
 function ses(x::AbstractVector)::Float64
 
+    # validate
     n = length(x)
-    !(n >= 3) && throw(ArgumentError("x must contain at least 3 elements."))
+    n >= 3 || throw(ArgumentError("x must contain at least 3 elements."))
 
     return sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
 
@@ -301,7 +309,8 @@ Calculate the standard error of skewness for a sample of size `n`.
 """
 function ses(n::Int64)::Float64
 
-    !(n >= 3) && throw(ArgumentError("n must be ≥ 3."))
+    # validate
+    n >= 3 || throw(ArgumentError("n must be ≥ 3."))
 
     return sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
 
@@ -334,8 +343,9 @@ Requires `n ≥ 4` so that the `(n−3)` term in the denominator is non-zero.
 """
 function sek(x::AbstractVector)::Float64
 
+    # validate
     n = length(x)
-    !(n >= 4) && throw(ArgumentError("x must contain at least 4 elements."))
+    n >= 4 || throw(ArgumentError("x must contain at least 4 elements."))
 
     return 2 * (n - 1) * sqrt((6 * n) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)))
 
@@ -366,7 +376,8 @@ Computed as `2 × (n−1) × √(6n / ((n−2)(n−3)(n+3)(n+5)))`.
 """
 function sek(n::Int64)::Float64
 
-    !(n >= 4) && throw(ArgumentError("n must be ≥ 4."))
+    # validate
+    n >= 4 || throw(ArgumentError("n must be ≥ 4."))
 
     return 2 * (n - 1) * sqrt((6 * n) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)))
 

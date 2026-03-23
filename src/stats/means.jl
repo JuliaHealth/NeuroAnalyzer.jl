@@ -32,8 +32,9 @@ Computed as `n × p`.
 """
 function meanp(p::Float64, n::Int64)::Float64
 
+    # validate
     _in(p, (0.0, 1.0), "p")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return n * p
 
@@ -65,9 +66,10 @@ Computed as `Σ(g × x) / Σx`.
 """
 function meanc(g::Vector{Int64}, x::Vector{Int64})::Float64
 
-    !(length(g) > 0) && throw(ArgumentError("g must not be empty."))
-    !(length(g) == length(x)) && throw(ArgumentError("g and x must have the same length."))
-    !(sum(x) > 0) && throw(ArgumentError("sum(x) must be > 0 (division by zero)."))
+    # validate
+    length(g) > 0 || throw(ArgumentError("g must not be empty."))
+    length(g) == length(x) || throw(ArgumentError("g and x must have the same length."))
+    sum(x) > 0 || throw(ArgumentError("sum(x) must be > 0 (division by zero)."))
 
     return sum(g .* x) / sum(x)
 
@@ -98,8 +100,9 @@ Computed as `exp(mean(log.(x)))`, which is numerically stable for large vectors 
 """
 function meang(x::AbstractVector)::Float64
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(all(>(0), x)) && throw(ArgumentError("All elements of x must be > 0."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    all(>(0), x) || throw(ArgumentError("All elements of x must be > 0."))
 
     # use log-sum-exp form for numerical stability (avoids overflow from prod)
     return exp(mean(log.(x)))
@@ -131,8 +134,9 @@ Computed as `n / Σ(1/xᵢ)`. All elements must be non-zero.
 """
 function meanh(x::AbstractVector)::Float64
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(!any(iszero, x)) && throw(ArgumentError("x must not contain zeros."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    any(iszero, x) && throw(ArgumentError("x must not contain zeros."))
 
     return length(x) / sum(1 ./ x)
 
@@ -164,9 +168,10 @@ Computed as `Σ(xᵢ × wᵢ) / Σwᵢ`.
 """
 function meanw(x::AbstractVector, w::AbstractVector)::Float64
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(length(x) == length(w)) && throw(ArgumentError("x and w must have the same length."))
-    !(sum(w) != 0) && throw(ArgumentError("sum(w) must not be zero (division by zero)."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    length(x) == length(w) || throw(ArgumentError("x and w must have the same length."))
+    sum(w) != 0 || throw(ArgumentError("sum(w) must not be zero (division by zero)."))
 
     return sum(x .* w) / sum(w)
 
@@ -198,7 +203,8 @@ Uses the two-argument arctangent of the mean sine and cosine components.
 """
 function meancirc(x::AbstractVector; rad::Bool = false)::Float64
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
     if rad
         return atan(sum(sin.(x)), sum(cos.(x)))
@@ -234,10 +240,11 @@ Sorts `x` and removes the bottom and top `n × 100 %` of values before computing
 """
 function meant(x::AbstractVector; n::Float64 = 0.1)::Float64
 
-    !(n > 0.0 && n < 0.5) && throw(ArgumentError("n must be in (0, 0.5)."))
-    xs  = sort(x)
-    xn  = round(Int64, length(xs) * n)
-    !(xn + 1 <= length(xs) - xn) && throw(ArgumentError("n is too large: no observations remain after trimming."))
+    # validate
+    n > 0.0 && n < 0.5 || throw(ArgumentError("n must be in (0, 0.5)."))
+    xs = sort(x)
+    xn = round(Int64, length(xs) * n)
+    xn + 1 <= length(xs) - xn || throw(ArgumentError("n is too large: no observations remain after trimming."))
 
     return mean(xs[(xn + 1):(end - xn)])
 

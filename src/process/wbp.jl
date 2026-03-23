@@ -18,13 +18,20 @@ Perform wavelet band-pass filtering.
 
 - `Vector{Float64}`
 """
-function wbp(s::AbstractVector; pad::Int64 = 0, frq::Real, fs::Int64, ncyc::Int64 = 6)::Vector{Float64}
+function wbp(
+    s::AbstractVector;
+    pad::Int64 = 0,
+    frq::Real,
+    fs::Int64,
+    ncyc::Int64 = 6
+)::Vector{Float64}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(frq > 0) && throw(ArgumentError("frq must be > 0."))
-    !(ncyc > 0) && throw(ArgumentError("ncyc must be > 0."))
-    !(pad >= 0) && throw(ArgumentError("pad must be ≥ 0."))
-    !(frq <= fs / 2) && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    frq > 0 || throw(ArgumentError("frq must be > 0."))
+    ncyc > 0 || throw(ArgumentError("ncyc must be > 0."))
+    pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
+    frq <= fs / 2 || throw(ArgumentError("frq must be ≤ $(fs / 2)."))
 
     pad > 0 && (s = pad0(s, pad))
 
@@ -51,7 +58,13 @@ Perform wavelet band-pass filtering.
 
 - `s_new::Array{Float64, 3}`
 """
-function wbp(s::AbstractArray; pad::Int64 = 0, frq::Real, fs::Int64, ncyc::Int64 = 6)::Array{Float64, 3}
+function wbp(
+    s::AbstractArray;
+    pad::Int64 = 0,
+    frq::Real,
+    fs::Int64,
+    ncyc::Int64 = 6
+)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -86,8 +99,12 @@ Perform wavelet band-pass filtering.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function wbp(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real, ncyc::Int64 = 6
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    frq::Real,
+    ncyc::Int64 = 6
+)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
@@ -116,8 +133,12 @@ Perform wavelet band-pass filtering.
 - `Nothing`
 """
 function wbp!(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, frq::Real, ncyc::Int64 = 6
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    frq::Real,
+    ncyc::Int64 = 6
+)::Nothing
 
     obj_new = wbp(obj, ch = ch, pad = pad, frq = frq, ncyc = ncyc)
     obj.data = obj_new.data

@@ -126,7 +126,7 @@ function cor_test(
     rc::Tuple{Float64, Float64},
     ts::Tuple{Float64, String},
     df::Int64,
-    p::Float64,
+    p::Float64
 }
 
     # validate
@@ -137,7 +137,10 @@ function cor_test(
     p = pvalue(t)
     p < eps() && (p = eps())
     df = length(s1) + length(s2) - 2
+    r = t.r
+    rc = confint(t)
+    ts = (t.t, "t")
 
-    return (t=t, r=t.r, rc=confint(t), ts=(t.t, "t"), df=df, p=p)
+    return (; t, r, rc, ts, df, p)
 
 end

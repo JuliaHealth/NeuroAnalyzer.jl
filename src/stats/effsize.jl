@@ -19,7 +19,7 @@ Named tuple:
 
 - `d::Float64`: Cohen's d (pooled SD denominator, unbiased for equal n)
 - `g::Float64`: Hedges' g (maximum-likelihood pooled SD; less biased for small n)
-- `Δ::Float64`: Glass' Δ (uses SD of `x2` as the denominator; preferred when groups have different variances)
+- `delta::Float64`: Glass' Δ (uses SD of `x2` as the denominator; preferred when groups have different variances)
 
 # Throws
 
@@ -31,18 +31,19 @@ Named tuple:
 """
 function efs(x1::AbstractVector, x2::AbstractVector)::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
 
-    !(length(x1) >= 2) && throw(ArgumentError("x1 must contain at least 2 elements."))
-    !(length(x2) >= 2) && throw(ArgumentError("x2 must contain at least 2 elements."))
-    !(std(x1) != 0) && throw(ArgumentError("std(x1) must not be zero."))
-    !(std(x2) != 0) && throw(ArgumentError("std(x2) must not be zero."))
+    # validate
+    length(x1) >= 2 || throw(ArgumentError("x1 must contain at least 2 elements."))
+    length(x2) >= 2 || throw(ArgumentError("x2 must contain at least 2 elements."))
+    std(x1) != 0 || throw(ArgumentError("std(x1) must not be zero."))
+    std(x2) != 0 || throw(ArgumentError("std(x2) must not be zero."))
 
     Δm = mean(x1) - mean(x2)
 
     d  = Δm / stdp(x1, x2; type=:cohen)
     g  = Δm / stdp(x1, x2; type=:hedges)
-    Δ  = Δm / std(x2)
+    delta  = Δm / std(x2)
 
-    return (d=d, g=g, Δ=Δ)
+    return (; d, g, delta)
 
 end
 
@@ -139,16 +140,17 @@ Calculate the pooled standard deviation from two sample vectors.
 """
 function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol = :cohen)::Float64
 
-    !(length(x1) > 0) && throw(ArgumentError("Length of x1 cannot be 0."))
-    !(length(x1) >= 2) && throw(ArgumentError("x1 must contain at least 2 elements."))
-    !(length(x2) >= 2) && throw(ArgumentError("x2 must contain at least 2 elements."))
+    # validate
+    length(x1) > 0 || throw(ArgumentError("Length of x1 cannot be 0."))
+    length(x1) >= 2 || throw(ArgumentError("x1 must contain at least 2 elements."))
+    length(x2) >= 2 || throw(ArgumentError("x2 must contain at least 2 elements."))
     _check_var(type, [:cohen, :hedges], "type")
 
     n1, n2 = length(x1), length(x2)
     s1, s2 = std(x1), std(x2)
 
     if type === :cohen
-        !(n1 + n2 > 2) && throw(ArgumentError("For :cohen, n1 + n2 must be > 2."))
+        n1 + n2 > 2 || throw(ArgumentError("For :cohen, n1 + n2 must be > 2."))
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2 - 2))
     elseif type === :hedges
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2))
@@ -185,14 +187,15 @@ Calculate the pooled standard deviation from summary statistics when group sizes
 """
 function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol = :cohen)::Float64
 
-    !(s1 >= 0) && throw(ArgumentError("s1 must be ≥ 0."))
-    !(s2 >= 0) && throw(ArgumentError("s2 must be ≥ 0."))
-    !(n1 >= 2) && throw(ArgumentError("n1 must be ≥ 2."))
-    !(n2 >= 2) && throw(ArgumentError("n2 must be ≥ 2."))
+    # validate
+    s1 >= 0 || throw(ArgumentError("s1 must be ≥ 0."))
+    s2 >= 0 || throw(ArgumentError("s2 must be ≥ 0."))
+    n1 >= 2 || throw(ArgumentError("n1 must be ≥ 2."))
+    n2 >= 2 || throw(ArgumentError("n2 must be ≥ 2."))
     _check_var(type, [:cohen, :hedges], "type")
 
     if type === :cohen
-        !(n1 + n2 > 2) && throw(ArgumentError("For :cohen, n1 + n2 must be > 2."))
+        n1 + n2 > 2 || throw(ArgumentError("For :cohen, n1 + n2 must be > 2."))
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2 - 2))
     elseif type === :hedges
         return sqrt(((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / (n1 + n2))
@@ -227,8 +230,9 @@ Computed as `√((s1² + s2²) / 2)`.
 """
 function stdp(s1::Real, s2::Real)::Float64
 
-    !(s1 >= 0) && throw(ArgumentError("s1 must be ≥ 0."))
-    !(s2 >= 0) && throw(ArgumentError("s2 must be ≥ 0."))
+    # validate
+    s1 >= 0 || throw(ArgumentError("s1 must be ≥ 0."))
+    s2 >= 0 || throw(ArgumentError("s2 must be ≥ 0."))
 
     return sqrt((s1^2 + s2^2) / 2)
 

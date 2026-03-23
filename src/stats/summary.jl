@@ -105,11 +105,13 @@ function summary(
     me::Float64,
     q3::Float64,
     mx::Float64,
-    mo::Float64,
+    mo::Float64
 }
 
+    # remove NaNs
     x_clean = rmna(x)
-    !(length(x_clean) > 0) && throw(ArgumentError("No non-missing observations remain in x."))
+    # validate
+    length(x_clean) > 0 || throw(ArgumentError("No non-missing observations remain in x."))
 
     n  = length(x)
     st = _summary_stats(x_clean, n, 4)   # use 4 d.p. for the scalar method
@@ -165,7 +167,7 @@ function summary(
     d::Int64 = 3
 )::DataFrame
 
-    !(length(g) == size(x, 2)) && throw(ArgumentError("length(g) ($(length(g))) must equal size(x, 2) ($(size(x, 2)))."))
+    length(g) == size(x, 2) || throw(ArgumentError("length(g) ($(length(g))) must equal size(x, 2) ($(size(x, 2)))."))
 
     df = _build_summary_df(g, d) do idx
         rmna(x[:, idx]), length(x[:, idx])
@@ -206,9 +208,9 @@ function summary(
     d::Int64 = 3
 )::DataFrame
 
-    !(length(g) == length(x)) && throw(ArgumentError("Number of group names ($length(g)) must be equal to the number of groups $(size(x, 2))."))
+    length(g) == length(x) || throw(ArgumentError("Number of group names ($length(g)) must be equal to the number of groups $(size(x, 2))."))
 
-    !(length(g) == length(x)) && throw(ArgumentError("length(g) ($(length(g))) must equal the number of arrays ($(length(x)))."))
+    length(g) == length(x) || throw(ArgumentError("length(g) ($(length(g))) must equal the number of arrays ($(length(x)))."))
 
     df = _build_summary_df(g, d) do idx
         rmna(x[idx]), length(x[idx])

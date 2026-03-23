@@ -15,7 +15,9 @@ Standardize channels.
 - `s_new::Array{Float64, 3}`:
 - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
-function standardize(s::AbstractArray)::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
+function standardize(
+    s::AbstractArray
+)::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
     _chk3d(s)
     ep_n = size(s, 3)
@@ -24,8 +26,8 @@ function standardize(s::AbstractArray)::Tuple{Array{Float64, 3}, Vector{ZScoreTr
 
     s_new = similar(s, Float64)
     @inbounds for ep_idx in 1:ep_n
-        @views push!(scaler, StatsBase.fit(ZScoreTransform, s[:, :, ep_idx], dims = 2))
-        @views s_new[:, :, ep_idx] = StatsBase.transform(scaler[ep_idx], s[:, :, ep_idx])
+        push!(scaler, StatsBase.fit(ZScoreTransform, @view(s[:, :, ep_idx]), dims = 2))
+        s_new[:, :, ep_idx] = StatsBase.transform(scaler[ep_idx], @view(s[:, :, ep_idx]))
     end
 
     return s_new, scaler
@@ -48,8 +50,9 @@ Standardize channels.
 - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-    )::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}
+)::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)

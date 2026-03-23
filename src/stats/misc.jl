@@ -37,7 +37,8 @@ Named tuple:
 """
 function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
 
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    # validate
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return (k1=sqrt(n), k2=1 + 3.222 * log10(n))
 
@@ -67,7 +68,8 @@ Calculate the slope of the line passing through two points.
 """
 function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
-    !(p2[1] != p1[1]) && throw(ArgumentError("p2[1] and p1[1] must not be equal (vertical line has no slope)."))
+    # validate
+    p2[1] != p1[1] || throw(ArgumentError("p2[1] and p1[1] must not be equal (vertical line has no slope)."))
 
     return (p2[2] - p1[2]) / (p2[1] - p1[1])
 
@@ -129,6 +131,7 @@ Named tuple:
 """
 function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol = :g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
 
+    # validate
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
 
     x_t = if t_type === :eq
@@ -174,8 +177,9 @@ Calculate the proportion of elements in a statistic distribution that are greate
 """
 function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float64
 
+    # validate
     _check_var(type, [:g, :l], "type")
-    !(length(stat_dist) > 0) && throw(ArgumentError("stat_dist must not be empty."))
+    length(stat_dist) > 0 || throw(ArgumentError("stat_dist must not be empty."))
 
     if type === :g
         return count(>(v), stat_dist) / length(stat_dist)
@@ -199,7 +203,7 @@ Each permutation randomly selects a split point and rotates the vector (moves th
 
 # Returns
 
-- `Matrix{Float64}`: matrix of shape `(n × length(s))`
+- `Matrix{Float64}`: matrix, shape (n, length(s))
 
 # Throws
 
@@ -211,8 +215,9 @@ Each permutation randomly selects a split point and rotates the vector (moves th
 """
 function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
 
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
-    !(length(s) >= 2) && throw(ArgumentError("s must contain at least 2 elements."))
+    # validate
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
+    length(s) >= 2 || throw(ArgumentError("s must contain at least 2 elements."))
 
     # pre-allocate output
     s_new = zeros(n, length(s))
@@ -239,8 +244,8 @@ Each permutation randomly selects a split point along the second axis and rotate
 
 # Returns
 
-- `Array{Float64, 3}`: shape `(n × size(s,1) × size(s,2))` for 2-D input
-- `Array{Float64, 4}`: shape `(n × size(s,1) × size(s,2) × size(s,3))` for 3-D input
+- `Array{Float64, 3}`: shape (n × size(s,1) × size(s,2)) for 2-D input
+- `Array{Float64, 4}`: shape (n × size(s,1) × size(s,2) × size(s,3)) for 3-D input
 
 # Throws
 
@@ -252,13 +257,15 @@ Each permutation randomly selects a split point along the second axis and rotate
 """
 function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
 
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
-    !(2 <= ndims(s) <= 3) && throw(ArgumentError("permute() only supports 2- and 3-dimensional arrays."))
-    !(size(s, 2) >= 2) && throw(ArgumentError("Second dimension of s must be ≥ 2."))
+    # validate
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
+    2 <= ndims(s) <= 3 || throw(ArgumentError("permute() only supports 2- and 3-dimensional arrays."))
+    size(s, 2) >= 2 || throw(ArgumentError("Second dimension of s must be ≥ 2."))
 
     ncols = size(s, 2)
 
     if ndims(s) == 2
+
         nrows = size(s, 1)
         s_new = zeros(n, nrows, ncols)
 
@@ -273,6 +280,7 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
         end
 
     elseif ndims(s) == 3
+
         nrows  = size(s, 1)
         nepochs = size(s, 3)
         s_new  = zeros(n, nrows, ncols, nepochs)
@@ -283,11 +291,12 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
             @inbounds for idx3 in 1:nepochs
                 for idx2 in 1:nrows
                     x = rand(2:ncols)
-                    s_new[idx1, idx2, 1:(ncols - x + 1), idx3]   .= @view s[idx2, x:end, idx3]
+                    s_new[idx1, idx2, 1:(ncols - x + 1), idx3] .= @view s[idx2, x:end, idx3]
                     s_new[idx1, idx2, (ncols - x + 2):end, idx3] .= @view s[idx2, 1:(x - 1), idx3]
                 end
             end
         end
+
     end
 
     return s_new
@@ -315,7 +324,9 @@ Computed as `log(p / (1 − p))`. Returns `−Inf` for `p = 0` and `+Inf` for `p
 """
 function logit(p::Float64)::Float64
 
+    # validate
     _in(p, (0.0, 1.0), "p")
+
     return log(p / (1 - p))
 
 end
@@ -345,7 +356,9 @@ Computed as `Σ(xᵢ − x̄)²`.
 """
 function sumsq(x::AbstractVector)::Float64
 
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    # validate
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
+
     m = mean(x)
 
     return sum((x .- m) .^ 2)
@@ -373,7 +386,6 @@ function rmna(x::AbstractVector)::Vector{Float64}
 
 end
 
-
 """
     df(x)
 
@@ -397,7 +409,8 @@ Calculate the degrees of freedom for a vector (`length(x) − 1`).
 """
 function df(x::AbstractVector)::Int64
 
-    !(length(x) >= 1) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) >= 1 || throw(ArgumentError("x must not be empty."))
 
     return length(x) - 1
 
@@ -422,7 +435,8 @@ Center a vector by subtracting its mean.
 """
 function center(x::AbstractVector)::Vector{Float64}
 
-    !(length(x) >= 1) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) >= 1 || throw(ArgumentError("x must not be empty."))
 
     return x .- mean(x)
 

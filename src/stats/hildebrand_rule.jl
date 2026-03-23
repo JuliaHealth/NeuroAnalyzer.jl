@@ -26,9 +26,10 @@ Computed as `H = (mean(x) − median(x)) / std(x)`. Values of `|H| < 0.2` indica
 """
 function hildebrand_rule(x::AbstractVector; verbose::Bool = true)::Float64
 
-    !(length(x) >= 2) && throw(ArgumentError("x must contain at least 2 elements."))
+    # validate
+    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     s = std(x)
-    !(s != 0) && throw(ArgumentError("std(x) must not be zero."))
+    s != 0 || throw(ArgumentError("std(x) must not be zero."))
 
     h = (mean(x) - median(x)) / s
     abs(h) < 0.2 && _info("H < 0.2: x is approximately symmetric")

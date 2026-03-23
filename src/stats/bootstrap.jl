@@ -147,7 +147,7 @@ function bootstrap_stat(
         throw(ArgumentError("Formula dry-run failed. Check expression `f`. Error: $err"))
     end
 
-    out = zeros(typeof(out_tmp), n1)
+    result = zeros(typeof(out_tmp), n1)
     s_boot = zeros(n1, tp_n)
 
     # initialize progress bar
@@ -174,6 +174,6 @@ function bootstrap_stat(
 
     end
 
-    return out
+    return result
 
 end

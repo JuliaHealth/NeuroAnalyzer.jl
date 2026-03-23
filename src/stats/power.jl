@@ -609,10 +609,11 @@ function mde(;
     verbose::Bool=true
 )::Float64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(beta, (0, 1.0), "beta")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
-    !(s >  0) && throw(ArgumentError("s must be > 0."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
+    s >  0 || throw(ArgumentError("s must be > 0."))
 
     z_alpha = crit_z(alpha)
     z_beta = cl2z(1 - beta)

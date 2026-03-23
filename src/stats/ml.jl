@@ -11,7 +11,7 @@ MCC is a balanced metric that accounts for all four confusion-matrix cells, maki
 
 Computed as: `MCC = (tp × tn − fp × fn) / √((tp+fp)(tp+fn)(tn+fp)(tn+fn))`
 
-MCC’s value ranges from -1 to 1, depending on:
+MCC's value ranges from -1 to 1, depending on:
 
 - A score of -1 denotes a complete discrepancy between expected and actual classes.
 - 0 is equivalent to making an entirely arbitrary guess.
@@ -42,11 +42,12 @@ https://finnstats.com/index.php/2022/09/06/assess-performance-of-the-classificat
 """
 function mcc(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::Float64
 
-    !(tp >= 0) && throw(ArgumentError("tp must be ≥ 0."))
-    !(tn >= 0) && throw(ArgumentError("tn must be ≥ 0."))
-    !(fp >= 0) && throw(ArgumentError("fp must be ≥ 0."))
-    !(fn >= 0) && throw(ArgumentError("fn must be ≥ 0."))
-    !(tp + tn + fp + fn > 0) && throw(ArgumentError("Total count (tp + tn + fp + fn) must be > 0."))
+    # validate
+    tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
+    tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))
+    fp >= 0 || throw(ArgumentError("fp must be ≥ 0."))
+    fn >= 0 || throw(ArgumentError("fn must be ≥ 0."))
+    tp + tn + fp + fn > 0 || throw(ArgumentError("Total count (tp + tn + fp + fn) must be > 0."))
 
     denom = sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
 
@@ -74,9 +75,9 @@ The F1-score is the harmonic mean of precision and recall: `F1 = 2 × (precision
 
 Named tuple:
 
-- `f1::Float64`: F1-score ∈ [0, 1]
-- `p::Float64`: precision `tp / (tp + fp)`
-- `r::Float64`: recall `tp / (tp + fn)`
+- `f1_score::Float64`: F1-score ∈ [0, 1]
+- `prec::Float64`: precision `tp / (tp + fp)`
+- `rec::Float64`: recall `tp / (tp + fn)`
 
 # Throws
 - `ArgumentError`: if any argument is negative, `tp + fp == 0` (undefined precision), or `tp + fn == 0` (undefined recall)
@@ -91,12 +92,13 @@ https://www.statology.org/what-is-a-good-f1-score/
 """
 function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
 
-    !(tp >= 0) && throw(ArgumentError("tp must be ≥ 0."))
-    !(tn >= 0) && throw(ArgumentError("tn must be ≥ 0."))
-    !(fp >= 0) && throw(ArgumentError("fp must be ≥ 0."))
-    !(fn >= 0) && throw(ArgumentError("fn must be ≥ 0."))
-    !(tp + fp > 0) && throw(ArgumentError("tp + fp must be > 0 (precision is undefined when no positives are predicted)."))
-    !(tp + fn > 0) && throw(ArgumentError("tp + fn must be > 0 (recall is undefined when there are no actual positives)."))
+    # validate
+    tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
+    tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))
+    fp >= 0 || throw(ArgumentError("fp must be ≥ 0."))
+    fn >= 0 || throw(ArgumentError("fn must be ≥ 0."))
+    tp + fp > 0 || throw(ArgumentError("tp + fp must be > 0 (precision is undefined when no positives are predicted)."))
+    tp + fn > 0 || throw(ArgumentError("tp + fn must be > 0 (recall is undefined when there are no actual positives)."))
 
     prec = tp / (tp + fp)
     rec  = tp / (tp + fn)
@@ -106,7 +108,7 @@ function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float
     f1_score = (prec + rec) == 0 ? 0.0 : 2 * (prec * rec) / (prec + rec)
 
     # note: `tn` is accepted for API consistency but is not used in F1 calculation
-    return (f1=f1_score, p=prec, r=rec)
+    return (; f1_score, prec, rec)
 
 end
 
@@ -128,8 +130,8 @@ Assess classification model performance using the misclassification rate and acc
 
 Named tuple:
 
-- `mr::Float64`: Misclassification rate ∈ [0, 1].
-- `acc::Float64`: Accuracy ∈ [0, 1].
+- `mr::Float64`: misclassification rate ∈ [0, 1]
+- `acc::Float64`: accuracy ∈ [0, 1]
 
 # Throws
 - `ArgumentError`: if any argument is negative or total count is zero
@@ -144,14 +146,17 @@ https://www.statology.org/misclassification-rate/
 """
 function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Float64, acc::Float64}
 
-    !(tp >= 0) && throw(ArgumentError("tp must be ≥ 0."))
-    !(tn >= 0) && throw(ArgumentError("tn must be ≥ 0."))
-    !(fp >= 0) && throw(ArgumentError("fp must be ≥ 0."))
-    !(fn >= 0) && throw(ArgumentError("fn must be ≥ 0."))
+    # validate
+    tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
+    tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))
+    fp >= 0 || throw(ArgumentError("fp must be ≥ 0."))
+    fn >= 0 || throw(ArgumentError("fn must be ≥ 0."))
     n = tp + tn + fp + fn
-    !(n > 0) && throw(ArgumentError("tp + tn + fp + fn must be > 0."))
+    n > 0 || throw(ArgumentError("tp + tn + fp + fn must be > 0."))
 
     mr  = (fp + fn) / n
-    return (mr=mr, acc=1 - mr)
+    acc = 1 - mr
+
+    return (; mr, acc)
 
 end

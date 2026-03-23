@@ -54,8 +54,9 @@ function linreg(
     lf::Vector{Float64},
 }
 
-    !(length(x) == length(y)) && throw(ArgumentError("x and y must have the same length."))
-    !(length(x) >= 3) && throw(ArgumentError("x and y must contain at least 3 elements."))
+    # validate
+    length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
+    length(x) >= 3 || throw(ArgumentError("x and y must contain at least 3 elements."))
 
     df = DataFrame(:x => x, :y => y)
     lr = GLM.lm(@formula(y ~ x), df)
@@ -64,7 +65,7 @@ function linreg(
     R2, R2adj, aic, bic = infcrit(lr)
     lf = GLM.predict(lr)
 
-    return (lr=lr, c=c, se=se, R2=R2, R2adj=R2adj, aic=aic, bic=bic, lf=lf)
+    return (; lr, c, se, R2, R2adj, aic, bic, lf)
 
 end
 
@@ -115,7 +116,7 @@ function infcrit(
     k = length(GLM.coef(m)) - 1
     # number of observations
     n = length(GLM.predict(m))
-    !(n > k + 1) && throw(ArgumentError("Model has too few observations relative to parameters (n must be > k + 1)."))
+    n > k + 1 || throw(ArgumentError("Model has too few observations relative to parameters (n must be > k + 1)."))
 
     R2 = GLM.r2(m)
     R2adj = 1 - (1 - R2) * ((n - 1) / (n - k - 1))
@@ -127,6 +128,6 @@ function infcrit(
     n / k < 40 && (aic += (2k * (k + 1)) / (n - k - 1))
     bic = k * log(n) - 2L
 
-    return (R2 = R2, R2adj = R2adj, aic = aic, bic = bic)
+    return (; R2, R2adj, aic, bic)
 
 end

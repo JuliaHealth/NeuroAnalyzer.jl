@@ -33,8 +33,9 @@ Computed as `p × (1 − p) / n` (the variance of a binomial proportion estimato
 """
 function varp(p::Float64, n::Int64)::Float64
 
+    # validate
     _in(p, (0.0, 1.0), "p")
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return (p * (1 - p)) / n
 
@@ -98,10 +99,11 @@ Formula: `(Σ(g² × x) − (Σ(g × x))² / Σx) / (Σx − 1)`
 """
 function varc(g::Vector{Int64}, x::Vector{Int64})::Float64
 
-    !(length(g) > 0) && throw(ArgumentError("g must not be empty."))
-    !(length(g) == length(x)) && throw(ArgumentError("g and x must have the same length."))
+    # validate
+    length(g) > 0 || throw(ArgumentError("g must not be empty."))
+    length(g) == length(x) || throw(ArgumentError("g and x must have the same length."))
     n = sum(x)
-    !(n > 1) && throw(ArgumentError("sum(x) must be > 1 (at least two observations needed)."))
+    n > 1 || throw(ArgumentError("sum(x) must be > 1 (at least two observations needed)."))
 
     σ2 = (sum(g .^ 2 .* x) - sum(g .* x)^2 / n) / (n - 1)
 
@@ -160,7 +162,7 @@ Calculate the range of an array (maximum − minimum).
 """
 function rng(x::AbstractArray)::Float64
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
     return Float64(maximum(x) - minimum(x))
 
@@ -185,7 +187,8 @@ Calculate the midrange of an array: `(maximum(x) − minimum(x)) / 2`.
 """
 function mrng(x::AbstractArray)::Float64
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
     return Float64((maximum(x) - minimum(x)) / 2)
 
@@ -216,7 +219,8 @@ Computed as `1 / √n` (the standard error of a proportion at `p = 0.5`).
 """
 function moe(n::Int64)::Float64
 
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
+    # validate
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return 1 / sqrt(n)
 
@@ -247,7 +251,8 @@ Computed as `1 / √length(x)`.
 """
 function moe(x::AbstractArray)::Float64
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
     return 1 / sqrt(length(x))
 
@@ -279,7 +284,7 @@ function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
     x = df[!, var]
     uvals = unique(x)
     k = length(uvals)
-    !(k >= 2) && throw(ArgumentError("var must contain at least 2 distinct values."))
+    k >= 2 || throw(ArgumentError("var must contain at least 2 distinct values."))
 
     n = length(x)
     m = zeros(3, k + 1)

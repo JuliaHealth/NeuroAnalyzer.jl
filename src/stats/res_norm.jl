@@ -38,8 +38,9 @@ function res_norm(
     ks_p::Vector{Float64}
 }
 
-    !(length(x) > 0) && throw(ArgumentError("x must not be empty."))
-    !(length(x) == length(g)) && throw(ArgumentError("x and g must have the same length."))
+    # validate
+    length(x) > 0 || throw(ArgumentError("x must not be empty."))
+    length(x) == length(g) || throw(ArgumentError("x and g must have the same length."))
 
     groups = sort(unique(g))
     n_out = length(groups) > 1 ? length(groups) + 1 : 1
@@ -65,6 +66,6 @@ function res_norm(
     adt_p[end] = pvalue(OneSampleADTest(res_all, ref))
     ks_p[end] = pvalue(ExactOneSampleKSTest(res_all, ref))
 
-    return (adt_p=adt_p, ks_p=ks_p)
+    return (; adt_p, ks_p)
 
 end

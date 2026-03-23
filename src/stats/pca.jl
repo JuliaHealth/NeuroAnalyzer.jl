@@ -63,12 +63,13 @@ function pcacomp(
     pcv::Vector{Float64},
     pcm::Vector{Float64},
     pcp::Matrix{Float64},
-    pc_model::MultivariateStats.PCA{Float64},
+    pc_model::MultivariateStats.PCA{Float64}
 }
 
-    !(size(m, 1) >= 2) && throw(ArgumentError("m must have at least 2 observations (rows)."))
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
-    !(n <= size(m, 2)) && throw(ArgumentError("n must be ≤ $(size(m, 2))."))
+    # validate
+    size(m, 1) >= 2 || throw(ArgumentError("m must have at least 2 observations (rows)."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
+    n <= size(m, 2) || throw(ArgumentError("n must be ≤ $(size(m, 2))."))
 
     # work on a copy so the caller's matrix is not modified in-place
     m = copy(m)
