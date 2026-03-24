@@ -119,7 +119,7 @@ function stationarity(
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads :dynamic for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window = window)
+                s[ch_idx, :, ep_idx] = stationarity_mean(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
             end
         end
         return s
@@ -131,7 +131,7 @@ function stationarity(
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads :dynamic for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = @views stationarity_var(obj.data[ch[ch_idx], :, ep_idx], window = window)
+                s[ch_idx, :, ep_idx] = stationarity_var(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
             end
         end
         return s
@@ -143,7 +143,7 @@ function stationarity(
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads :dynamic for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = @views stationarity_hilbert(obj.data[ch[ch_idx], :, ep_idx])
+                s[ch_idx, :, ep_idx] = stationarity_hilbert(@view(obj.data[ch[ch_idx], :, ep_idx]))
             end
         end
 

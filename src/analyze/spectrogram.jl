@@ -559,7 +559,7 @@ function ghtspectrogram(
     ph = zeros(length(f), length(s))
 
     @inbounds for frq_idx in eachindex(f)
-        swg    = filter_g(sw, fs = fs, f = f[frq_idx], gw = gw)
+        swg = filter_g(sw, fs = fs, f = f[frq_idx], gw = gw)
         h_data = htransform(swg)
         p[frq_idx, :]  = h_data.p
         ph[frq_idx, :] = h_data.ph

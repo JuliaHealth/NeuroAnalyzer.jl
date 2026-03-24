@@ -129,26 +129,26 @@ function _ch_idx(
     # expand "meg" → ["mag", "grad"]
     if any(isequal("meg"), l)
         idx = findfirst(isequal("meg"), l)
-        l = [l[1:(idx - 1)], "mag"; "grad"; l[(idx + 1):end]]
+        l = [l[1:(idx - 1)]; "mag"; "grad"; l[(idx + 1):end]]
     end
 
     # expand "nirs" → all NIRS sub-types
     if any(isequal("nirs"), l)
         idx = findfirst(isequal("nirs"), l)
-        l = [l[1:(idx - 1)], "nirs_int"; _NIRS_TYPES; l[(idx + 1):end]]
+        l = [l[1:(idx - 1)]; "nirs_int"; _NIRS_TYPES; l[(idx + 1):end]]
     end
 
     # expand "sensors" → ["accel", "magfld", "orient", "angvel"]
     if any(isequal("sensors"), l)
         idx = findfirst(isequal("sensors"), l)
-        l = [l[1:(idx - 1)], "accel"; "magfld"; "orient"; "angvel"; l[(idx + 1):end]]
+        l = [l[1:(idx - 1)]; "accel"; "magfld"; "orient"; "angvel"; l[(idx + 1):end]]
     end
 
     # expand "bad" → labels of channels flagged as bad
     if any(isequal("bad"), l)
-        idx  = findfirst(isequal("bad"), l)
+        idx = findfirst(isequal("bad"), l)
         bads = labels(obj)[obj.header.recording[:bad_channel] .== true]
-        l    = [l[1:(idx - 1)], bads; l[(idx + 1):end]]
+        l = [l[1:(idx - 1)]; bads; l[(idx + 1):end]]
     end
 
     length(l) == 0 && return Int64[]
@@ -168,7 +168,7 @@ function _ch_idx(
 
     ch = Int64[]
     for label in l
-        !(label in cl) && throw(ArgumentError("$label does not match signal labels."))
+        label in cl || throw(ArgumentError("$label does not match signal labels."))
         push!(ch, findfirst(isequal(label), cl))
     end
     return unique(ch)
@@ -200,19 +200,19 @@ function _set_channel_types(
     for idx in eachindex(clabels)
         lbl = lowercase(clabels[idx])
 
-        occursin("ecg",  lbl) && (channel_type[idx] = "ecg")
-        occursin("ekg",  lbl) && (channel_type[idx] = "ecg")
-        occursin("eog",  lbl) && (channel_type[idx] = "eog")
+        occursin("ecg", lbl) && (channel_type[idx] = "ecg")
+        occursin("ekg", lbl) && (channel_type[idx] = "ecg")
+        occursin("eog", lbl) && (channel_type[idx] = "eog")
 
         for eog in eog_channels
             lbl == eog && (channel_type[idx] = "eog")
         end
 
-        occursin("emg",  lbl) && (channel_type[idx] = "emg")
-        lbl in ref_channels   && (channel_type[idx] = "ref")
-        occursin("mag",  lbl) && (channel_type[idx] = "mag")
+        occursin("emg", lbl) && (channel_type[idx] = "emg")
+        lbl in ref_channels && (channel_type[idx] = "ref")
+        occursin("mag", lbl) && (channel_type[idx] = "mag")
         occursin("grad", lbl) && (channel_type[idx] = "grad")
-        occursin("meg",  lbl) && (channel_type[idx] = "meg")
+        occursin("meg", lbl) && (channel_type[idx] = "meg")
 
         # EEG channels take priority (e.g. "C3A1" → eeg, not ref)
         lbl in channel_names  && (channel_type[idx] = "eeg")
@@ -222,7 +222,7 @@ function _set_channel_types(
 
         length(lbl) >= 1 && lbl[1] in ('c','f','n','o','p','t','i') && (channel_type[idx] = "eeg")
         length(lbl) >= 2 && lbl[1:2] == "af" && (channel_type[idx] = "eeg")
-        length(lbl) >= 3 && lbl[1]   == 'a'  && (channel_type[idx] = "eeg")
+        length(lbl) >= 3 && lbl[1] == 'a' && (channel_type[idx] = "eeg")
 
         # non-neural / auxiliary channels
         for pattern in ("rr","mic","flw","tho","abd","sao2","sa02","plr","body","ux","ias","sys","aux")

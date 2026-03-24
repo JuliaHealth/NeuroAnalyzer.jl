@@ -115,8 +115,12 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         "HP: $AmpLowCut Hz, LP: $AmpHiCut Hz" : ""
 
     markers = DataFrame(
-        :id => String[], :start => Float64[],
-        :length => Float64[], :value => String[], :channel => Int64[])
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[]
+    )
 
     # -------------------------------------------------------------------- #
     # time axes (6-digit precision - NCS timestamps are microsecond-based) #
@@ -130,14 +134,16 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(id = "",
-                        first_name = "",
-                        middle_name = "",
-                        last_name = "",
-                        head_circumference = -1,
-                        handedness = "",
-                        weight = -1,
-                        height = -1)
+    s = _create_subject(
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = "",
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1
+    )
     r = _create_recording_eeg(
         data_type = "ieeg",
         file_name = file_name,
