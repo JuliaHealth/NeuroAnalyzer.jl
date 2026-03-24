@@ -19,16 +19,21 @@ Delete channel(s).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_channel(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        del_opt::Bool = false
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    del_opt::Bool = false
+)::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch_n = nchannels(obj)
     ch = get_channel(obj, ch = ch)
+
+    # validate
     length(ch) == 0 && (return obj)
     length(ch) > 1 && (ch = sort!(ch, rev = true))
-    !(length(ch) < ch_n) && throw(ArgumentError("Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."))
+    length(ch) < ch_n ||
+        throw(ArgumentError("Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."))
+
     obj_new = deepcopy(obj)
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
@@ -103,12 +108,14 @@ Delete channels.
 - `Nothing`
 """
 function delete_channel!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        del_opt::Bool = false
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    del_opt::Bool = false
+)::Nothing
 
+    # validate
     length(get_channel(obj, ch = ch)) == 0 && (return nothing)
+
     obj_new = delete_channel(obj, ch = ch, del_opt = del_opt)
     obj.header = obj_new.header
     obj.data = obj_new.data
@@ -134,13 +141,18 @@ Keep channels.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function keep_channel(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}
+)::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
+    # resolve channel names to integer indices
     length(get_channel(obj, ch = ch)) == ch_n && (return obj)
     chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch = ch))]
-    !(length(chs_to_remove) < ch_n) && throw(ArgumentError("Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."))
+
+    # validate
+    length(chs_to_remove) < ch_n ||
+        throw(ArgumentError("Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."))
 
     obj_new = delete_channel(obj, ch = chs_to_remove)
 
@@ -163,10 +175,13 @@ Keep channels.
 - `Nothing`
 """
 function keep_channel!(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}
+)::Nothing
 
+    # validate
     length(get_channel(obj, ch = ch)) == nchannels(obj) && (return nothing)
+
     obj_new = keep_channel(obj, ch = ch)
     obj.header = obj_new.header
     obj.data = obj_new.data

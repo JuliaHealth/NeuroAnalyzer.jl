@@ -299,19 +299,21 @@ function channel2marker(
     value::String = ""
 )::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
+    # resolve markers channel
     stim_ch = get_channel(obj, type = "mrk")
 
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]
-    !(length(unique(ev_ch)) > 1) && throw(ArgumentError("Channel $ch does not contain events."))
+    length(unique(ev_ch)) > 1 || throw(ArgumentError("Channel $ch does not contain events."))
 
     # extract events
     ev_v = unique(ev_ch)
-    !(v in ev_v) && throw(ArgumentError("Event channel does not contain value $v."))
+    v in ev_v || throw(ArgumentError("Event channel does not contain value $v."))
     _info("Event channel contains values: $ev_v")
 
     ev_start = getindex.(findall(ev_ch .== v), 1)

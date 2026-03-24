@@ -106,7 +106,9 @@ function wbp(
     ncyc::Int64 = 6
 )::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views wbp(obj.data[ch, :, :], pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
     push!(obj_new.history, "wbp(OBJ, ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")

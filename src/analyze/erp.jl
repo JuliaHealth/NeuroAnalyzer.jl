@@ -20,6 +20,7 @@ Detect the positive and negative peak of each channel's ERP/ERF/MEP.
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
+    # validate
     _check_datatype(obj, ["erp", "erf", "mep"])
 
     # number of channels
@@ -58,9 +59,11 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
     if datatype(obj) in ["erp", "erf", "mep"]
 
-        !(t >= obj.epoch_time[1]) && throw(ArgumentError("t must be ≥ $(obj.epoch_time[1])."))
-        !(t <= obj.epoch_time[end]) && throw(ArgumentError("t must be ≤ $(obj.epoch_time[end])."))
+        # validate
+        t >= obj.epoch_time[1] || throw(ArgumentError("t must be ≥ $(obj.epoch_time[1])."))
+        t <= obj.epoch_time[end] || throw(ArgumentError("t must be ≤ $(obj.epoch_time[end])."))
 
+        # time point index
         t_idx = vsearch(t, obj.epoch_time)
 
         # number of channels
@@ -78,9 +81,11 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
     else
 
-        !(t >= obj.time_pts[1]) && throw(ArgumentError("t must be ≥ $(obj.time_pts[1])."))
-        !(t <= obj.time_pts[end]) && throw(ArgumentError("t must be ≤ $(obj.time_pts[end])."))
+        # validate
+        t >= obj.time_pts[1] || throw(ArgumentError("t must be ≥ $(obj.time_pts[1])."))
+        t <= obj.time_pts[end] || throw(ArgumentError("t must be ≤ $(obj.time_pts[end])."))
 
+        # time point index
         t_idx = vsearch(t, obj.time_pts)
 
         # number of channels
@@ -117,8 +122,10 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 
     if datatype(obj) in ["erp", "erf", "mep"]
 
+        # validate
         _check_tuple(t, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
 
+        # time point indices
         t_idx1 = vsearch(t[1], obj.epoch_time)
         t_idx2 = vsearch(t[2], obj.epoch_time)
 
@@ -137,8 +144,10 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 
     else
 
+        # validate
         _check_tuple(t, (obj.time_pts[1], obj.time_pts[end]), "seg")
 
+        # time point indices
         t_idx1 = vsearch(t[1], obj.time_pts)
         t_idx2 = vsearch(t[2], obj.time_pts)
 
@@ -176,8 +185,10 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 
     if datatype(obj) in ["erp", "erf", "mep"]
 
+        # validate
         _check_tuple(t, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
 
+        # time point indices
         t_idx1 = vsearch(t[1], obj.epoch_time)
         t_idx2 = vsearch(t[2], obj.epoch_time)
 
@@ -196,8 +207,10 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 
     else
 
+        # validate
         _check_tuple(t, (obj.time_pts[1], obj.time_pts[end]), "seg")
 
+        # time point indices
         t_idx1 = vsearch(t[1], obj.time_pts)
         t_idx2 = vsearch(t[2], obj.time_pts)
 
@@ -235,8 +248,10 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 
     if datatype(obj) in ["erp", "erf", "mep"]
 
+        # validate
         _check_tuple(t, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
 
+        # time point indices
         t_idx1 = vsearch(t[1], obj.epoch_time)
         t_idx2 = vsearch(t[2], obj.epoch_time)
 
@@ -255,8 +270,10 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
 
     else
 
+        # validate
         _check_tuple(t, (obj.time_pts[1], obj.time_pts[end]), "seg")
 
+        # time point indices
         t_idx1 = vsearch(t[1], obj.time_pts)
         t_idx2 = vsearch(t[2], obj.time_pts)
 
@@ -302,13 +319,19 @@ function erp_auc(
     type::Symbol = :all
 )::Vector{Float64}
 
+    # validate
     _check_datatype(obj, ["erp", "erf", "mep"])
     _check_var(type, [:all, :pos, :neg], "type")
     _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
+
+    # time point indices
     t1 = vsearch(seg[1], obj.epoch_time)
     t2 = vsearch(seg[2], obj.epoch_time)
+
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # pre-allocate output
     auc = zeros(length(ch))
 
     # time vector and resolution for the selected segment.

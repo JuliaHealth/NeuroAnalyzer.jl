@@ -26,6 +26,7 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float6
     # locate the ECG channel index
     ch = get_channel(obj, type = "ecg")
     _info("ECG channel found: $(ch[1])")
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
     # flatten the ECG channel across all epochs into a single continuous vector

@@ -87,7 +87,9 @@ function tconv(
     kernel::AbstractVector
 )::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
 
     _info("Group delay: $(_group_delay(kernel)) samples")

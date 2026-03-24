@@ -26,20 +26,21 @@ Interpolate channel using planar interpolation.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function plinterpolate_channel(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Union{Int64, Vector{Int64}, AbstractRange},
-        imethod::Symbol = :sh,
-        ifactor::Int64 = 100
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Union{Int64, Vector{Int64}, AbstractRange},
+    imethod::Symbol = :sh,
+    ifactor::Int64 = 100
+)::NeuroAnalyzer.NEURO
 
     channels = get_channel(obj, type = datatype(obj))
-    !(length(channels) > 1) && throw(ArgumentError("OBJ must contain > 1 signal channel."))
-    !(ch in channels) && throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    length(channels) > 1 || throw(ArgumentError("OBJ must contain > 1 signal channel."))
+    ch in channels || throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj)
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)[1]
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])

@@ -250,7 +250,9 @@ function remove_pops(
     # validate
     nepochs(obj) == 1 || throw(ArgumentError("pop() must be applied to continuous object."))
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
 
     s = @view(obj_new.data[ch, :, :])

@@ -21,6 +21,7 @@ Extract channel data.
 """
 function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3}
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
@@ -47,6 +48,7 @@ Extract epoch.
 """
 function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)::NeuroAnalyzer.NEURO
 
+    # validate
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)
@@ -107,18 +109,21 @@ Extract data.
 - `etime::Vector{Float64}`
 """
 function extract_data(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ep::Union{Int64, Vector{Int64}, AbstractRange} = 1:nepochs(obj),
-        time::Bool = false,
-        etime::Bool = false
-    )::Union{
-        Array{Float64, 3},
-        Tuple{Array{Float64, 3}, Vector{Float64}},
-        Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ep::Union{Int64, Vector{Int64}, AbstractRange} = 1:nepochs(obj),
+    time::Bool = false,
+    etime::Bool = false
+)::Union{
+    Array{Float64, 3},
+    Tuple{Array{Float64, 3}, Vector{Float64}},
+    Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}},
+}
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
+    # validate
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 

@@ -106,6 +106,7 @@ function pca_decompose(
     pc_model::MultivariateStats.PCA{Float64}
 }
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
     return pca_decompose(@view(obj.data[ch, :, :]), n = n)
@@ -168,7 +169,9 @@ function pca_reconstruct(
     pc_model::MultivariateStats.PCA{Float64}
 )::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc = pc, pc_model = pc_model)

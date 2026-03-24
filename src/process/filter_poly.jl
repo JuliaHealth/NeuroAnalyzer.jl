@@ -160,7 +160,9 @@ function filter_poly(
     window::Int64 = 10
 )::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_poly(
                                 @view(obj.data[ch, :, :]),

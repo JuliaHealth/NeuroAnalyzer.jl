@@ -100,6 +100,7 @@ Get channel type.
 """
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
@@ -131,9 +132,11 @@ function set_channel_type(
     type::String
 )::NeuroAnalyzer.NEURO
 
+    # validate
     type = lowercase(type)
     _check_var(type, string.(channel_types), "type")
 
+    # resolve channel names to integer indices
     ch = get_channel(ch, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
@@ -190,14 +193,17 @@ Rename channel.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function rename_channel(
-        obj::NeuroAnalyzer.NEURO; ch::String, name::String
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    name::String
+)::NeuroAnalyzer.NEURO
 
     # create new dataset
     obj_new = deepcopy(obj)
     clabels = obj_new.header.recording[:label]
-    !(!(name in clabels)) && throw(ArgumentError("Channel $name already exist."))
+    name in clabels && throw(ArgumentError("Channel $name already exist."))
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)[1]
     obj_new.header.recording[:label][ch] = name
 
@@ -254,10 +260,16 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_channel(
-        obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    field::Symbol,
+    value::String
+)::NeuroAnalyzer.NEURO
 
-    !(value !== nothing) && throw(ArgumentError("value cannot be empty."))
+    # validate
+    isnothing(value) && throw(ArgumentError("value cannot be empty."))
+
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
@@ -290,8 +302,11 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 - `Nothing`
 """
 function edit_channel!(
-        obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    field::Symbol,
+    value::String
+)::Nothing
 
     obj_new = edit_channel(obj, ch = ch, field = field, value = value)
     obj.header = obj_new.header
@@ -317,15 +332,21 @@ Replace channel.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function replace_channel(
-        obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    s::AbstractArray
+)::NeuroAnalyzer.NEURO
 
+    # validate
     _chk3d(s)
-    !(size(s) == (1, epoch_len(obj), nepochs(obj))) && throw(ArgumentError("signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."))
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
-        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
-    )
+    size(s) == (1, epoch_len(obj), nepochs(obj)) ||
+        throw(ArgumentError("signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."))
+    datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,) ||
+        _warn(
+            "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+        )
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
@@ -355,8 +376,10 @@ Replace channel.
 - `Nothing`
 """
 function replace_channel!(
-        obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64, 3}
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    s::Array{Float64, 3}
+)::Nothing
 
     obj_new = replace_channel(obj, ch = ch, s = s)
     obj.header = obj_new.header
@@ -383,7 +406,8 @@ Add channel labels.
 """
 function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnalyzer.NEURO
 
-    !(length(clabels) == nchannels(obj)) && throw(ArgumentError("clabels length must be $(nchannels(obj))."))
+    # validate
+    length(clabels) == nchannels(obj) || throw(ArgumentError("clabels length must be $(nchannels(obj))."))
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:label] = clabels
@@ -442,21 +466,28 @@ function add_channel(
     unit::Union{String, Vector{String}}
 )::NeuroAnalyzer.NEURO
 
+    # validate
     if length(obj.data) > 0
-        !(signal_len(obj) == size(data, 2)) && throw(ArgumentError("Epoch length of the new data ($(size(data, 2))) and the object data ($(signal_len(obj)))must be equal."))
-        !(nepochs(obj) == size(data, 3)) && throw(ArgumentError("Number of epochs of the new data ($(size(data, 3))) and the object data ($(nepochs(obj))) must be equal."))
+        signal_len(obj) == size(data, 2) ||
+            throw(ArgumentError("Epoch length of the new data ($(size(data, 2))) and the object data ($(signal_len(obj)))must be equal."))
+        nepochs(obj) == size(data, 3) ||
+            throw(ArgumentError("Number of epochs of the new data ($(size(data, 3))) and the object data ($(nepochs(obj))) must be equal."))
     end
-    !(length(label) == size(data, 1)) && throw(ArgumentError("Number of labels ($(length(label))) and number of data channels ($(size(data, 1))) must be equal."))
-    !(length(type) == size(data, 1)) && throw(ArgumentError("Number of channel types ($(length(type))) and number of data channels ($(size(data, 1))) must be equal."))
-    !(length(unit) == size(data, 1)) && throw(ArgumentError("Number of channel units ($(length(unit))) and number of data channels ($(size(data, 1))) must be equal."))
+    length(label) == size(data, 1) ||
+        throw(ArgumentError("Number of labels ($(length(label))) and number of data channels ($(size(data, 1))) must be equal."))
+    length(type) == size(data, 1) ||
+        throw(ArgumentError("Number of channel types ($(length(type))) and number of data channels ($(size(data, 1))) must be equal."))
+    length(unit) == size(data, 1) ||
+        throw(ArgumentError("Number of channel units ($(length(unit))) and number of data channels ($(size(data, 1))) must be equal."))
 
     for idx in eachindex(type)
-        !(type[idx] in channel_types) && throw(ArgumentError("Unknown channel type $(type[idx])."))
+        type[idx] in channel_types || throw(ArgumentError("Unknown channel type $(type[idx])."))
     end
 
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
-        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
-    )
+    datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,) ||
+        _warn(
+            "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+        )
 
     obj_new = deepcopy(obj)
     if length(obj.data) > 0
@@ -513,12 +544,12 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 - `Nothing`
 """
 function add_channel!(
-        obj::NeuroAnalyzer.NEURO;
-        data::Array{<:Number, 3},
-        label::Union{String, Vector{String}},
-        type::Union{String, Vector{String}},
-        unit::Union{String, Vector{String}}
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}}
+)::Nothing
 
     obj_new = add_channel(obj, data = data, label = label, type = type, unit = unit)
     obj.data = obj_new.data

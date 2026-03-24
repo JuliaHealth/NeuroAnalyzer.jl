@@ -24,24 +24,26 @@ export plot_locs3d
 - `f::GLMakie.Figure`
 """
 function plot_locs3d(
-        locs::DataFrame;
-        ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
-        sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
-        ch_labels::Bool = true,
-        head_labels::Bool = true,
-        mono::Bool = false,
-        cart::Bool = false,
-        cam::Tuple{Real, Real} = (20, 45),
-        mesh_type::Symbol = :disabled,
-        mesh_alpha::Float64 = 0.95,
-        gui::Bool = true
-    )::GLMakie.Figure
+    locs::DataFrame;
+    ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
+    sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
+    ch_labels::Bool = true,
+    head_labels::Bool = true,
+    mono::Bool = false,
+    cart::Bool = false,
+    cam::Tuple{Real, Real} = (20, 45),
+    mesh_type::Symbol = :disabled,
+    mesh_alpha::Float64 = 0.95,
+    gui::Bool = true
+)::GLMakie.Figure
 
+    # validate
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
 
     msh = nothing
 
+    # load meshes
     if mesh_type !== :disabled
         if mesh_type === :brain
             msh = FileIO.load(joinpath(res_path, "mesh/brain_hires.stl"))
@@ -244,20 +246,20 @@ Preview of channel locations.
 - `GLMakie.Figure`
 """
 function plot_locs3d(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        sch::Union{String, Vector{String}, Regex} = "",
-        ch_labels::Bool = true,
-        head_labels::Bool = false,
-        cart::Bool = false,
-        mono::Bool = false,
-        cam::Tuple{Real, Real} = (20, 45),
-        mesh_type::Symbol = :disabled,
-        mesh_alpha::Float64 = 0.95,
-        gui::Bool = true
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    sch::Union{String, Vector{String}, Regex} = "",
+    ch_labels::Bool = true,
+    head_labels::Bool = false,
+    cart::Bool = false,
+    mono::Bool = false,
+    cam::Tuple{Real, Real} = (20, 45),
+    mesh_type::Symbol = :disabled,
+    mesh_alpha::Float64 = 0.95,
+    gui::Bool = true
+)::GLMakie.Figure
 
-    !(datatype(obj) in ["eeg"]) && throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
+    datatype(obj) in ["eeg"] || throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
 
     ch = get_channel(obj, ch = ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])

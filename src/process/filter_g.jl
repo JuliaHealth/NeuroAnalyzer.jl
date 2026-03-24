@@ -145,7 +145,9 @@ function filter_g(
     gw::Real = 5
 )::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs = sr(obj), pad = pad, f = f, gw = gw)
     push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")

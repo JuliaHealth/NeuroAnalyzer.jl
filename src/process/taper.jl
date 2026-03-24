@@ -75,7 +75,9 @@ function taper(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real}
     )::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = taper(obj.data[ch, :, :]; t = t)
     push!(obj_new.history, "taper(OBJ, ch=$ch), t=$t")

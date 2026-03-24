@@ -18,20 +18,21 @@ Interpolate channel using linear regression.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function lrinterpolate_channel(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep)
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep)
+)::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)[1]
     channels = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
-    !(length(channels) > 1) && throw(ArgumentError("signal must contain > 1 signal channel."))
-    !(ch in channels) && throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
-    !(nepochs(obj) > 1) && throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
+    length(channels) > 1 || throw(ArgumentError("signal must contain > 1 signal channel."))
+    ch in channels || throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    nepochs(obj) > 1 || throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
 
     _check_epochs(obj, ep_ref)
-    !(!(ep in ep_ref)) && throw(ArgumentError("ep must not be in ep_rep."))
+    ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
 
     signal_src = @views obj.data[:, :, ep]
     ch_ref = setdiff(channels, ch)
@@ -85,11 +86,11 @@ Interpolate channel using linear regression.
 - `Nothing`
 """
 function lrinterpolate_channel!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep)
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep)
+)::Nothing
 
     obj_new = lrinterpolate_channel(obj, ch = ch, ep = ep, ep_ref = ep_ref)
     obj.data = obj_new.data

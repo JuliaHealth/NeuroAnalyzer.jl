@@ -241,6 +241,7 @@ function channel_reject(
     _in(ransac_r, (0, 1), "p")
     _in(ransac_tr, (0, 1), "p")
 
+    # validate
     typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
         _check_var(
@@ -250,16 +251,23 @@ function channel_reject(
         )
     end
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     ch_list = labels(obj)[ch]
+
+    # number of channels
     ch_n = length(ch)
+    # number of epochs
     ep_n = nepochs(obj)
+    # epoch length
     ep_len = epoch_len(obj)
 
+    # validate
     :rmse in method && !(ch_n > 1) && throw(ArgumentError(":rmse method requires > 1 channel."))
     :rmsd in method && !(ch_n > 1) && throw(ArgumentError(":rmsd method requires > 1 channel."))
     :euclid in method && !(ch_n > 1) && throw(ArgumentError(":euclid method requires > 1 channel."))
 
+    # pre-allocate output
     bc = zeros(Bool, nchannels(obj))
 
     if :flat in method
@@ -594,15 +602,21 @@ function epoch_reject(
         )
     end
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     ch_list = labels(obj)[ch]
+
+    # number of channels
     ch_n = length(ch)
+    # number of epochs
     ep_n = nepochs(obj)
 
+    # validate
     :rmse in method && !(ch_n > 1) && throw(ArgumentError(":rmse method requires > 1 channel."))
     :rmsd in method && !(ch_n > 1) && throw(ArgumentError(":rmsd method requires > 1 channel."))
     :euclid in method && !(ch_n > 1) && throw(ArgumentError(":euclid method requires > 1 channel."))
 
+    # pre-allocate outputs
     bc = zeros(Bool, nchannels(obj))
     be = Int64[]
 

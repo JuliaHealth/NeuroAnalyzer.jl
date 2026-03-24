@@ -238,9 +238,14 @@ Normalize channel(s).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function normalize(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol,
+    bych::Bool = false,
+    n::Real = 1
+)::NeuroAnalyzer.NEURO
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
@@ -299,8 +304,12 @@ Normalize channel(s).
 - `Nothing`
 """
 function normalize!(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool = false, n::Real = 1
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol,
+    bych::Bool = false,
+    n::Real = 1
+)::Nothing
 
     obj_new = NeuroAnalyzer.normalize(obj, ch = ch, method = method, bych = bych, n = n)
     obj.data = obj_new.data
@@ -352,7 +361,7 @@ end
 """
 function normalize_zscore(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_zscore() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_zscore() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         m = mean(s)
@@ -432,7 +441,7 @@ function normalize_minmax(s::AbstractArray, n::Real = 1; bych::Bool = false)::Ab
     s[s .== -0] .= 0
     length(unique(s)) == 1 && return ones(size(s)) .* n
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_minmax() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_minmax() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         mi, mx = extrema(s)
@@ -502,7 +511,7 @@ Normalize in [0, n], default is [0, +1].
 """
 function normalize_n(s::AbstractArray, n::Real = 1; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_n() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_n() only works for arrays of ≤ 3 dimensions."))
 
     s[s .== -0] .= 0
     if length(unique(s)) == 1
@@ -569,7 +578,7 @@ Normalize using log-transformation.
 """
 function normalize_log(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_log() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_log() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         m = abs(minimum(s))
@@ -638,7 +647,7 @@ Normalize to Gaussian.
 """
 function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_gauss() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_gauss() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         l = length(s) + 1
@@ -701,7 +710,7 @@ Normalize using log10-transformation.
 """
 function normalize_log10(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_log10() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_log10() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         m = 1 + abs(minimum(s))
@@ -807,7 +816,7 @@ Normalize in [-∞, 0].
 """
 function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_neg() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_neg() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         m = maximum(s)
@@ -869,7 +878,7 @@ Normalize in [0, +∞].
 """
 function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_pos() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_pos() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         m = abs(minimum(s))
@@ -938,7 +947,7 @@ Normalize in percentages.
 """
 function normalize_perc(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_perc() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_perc() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         m1 = minimum(s)
@@ -1008,7 +1017,7 @@ Normalize in inverse root (1/sqrt(x)).
 """
 function normalize_invroot(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_invroot() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_invroot() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         idx = findall(x -> isequal(x, 0), s)
@@ -1115,7 +1124,7 @@ end
 """
 function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_mad() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_mad() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         m = median(s)
@@ -1184,7 +1193,7 @@ function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     length(unique(s)) == 1 && return ones(length(s))
 
-    !(ndims(s) <= 3) && throw(ArgumentError("normalize_rank() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 || throw(ArgumentError("normalize_rank() only works for arrays of ≤ 3 dimensions."))
 
     if bych == false
         sn = tiedrank(s)

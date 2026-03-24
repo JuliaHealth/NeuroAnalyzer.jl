@@ -348,6 +348,7 @@ function filter_apply(
     dir::Symbol = :twopass
 )::NeuroAnalyzer.NEURO
 
+    # validate
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
     # resolve channel names to integer indices

@@ -19,25 +19,28 @@ Interpolate channel using a machine-learning model.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function mlinterpolate_channel(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-        model::T
-    )::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    model::T
+)::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
 
+    # resolve channel names to integer indices
     channels = get_channel(obj, type = datatype(obj))
-    !(length(channels) > 1) && throw(ArgumentError("signal must contain > 1 signal channel."))
-    !(ch in channels) && throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
-    !(nepochs(obj) > 1) && throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
+    length(channels) > 1 || throw(ArgumentError("signal must contain > 1 signal channel."))
+    ch in channels || throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    nepochs(obj) > 1 || throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
 
     _check_epochs(obj, ep_ref)
-    !(!(ep in ep_ref)) && throw(ArgumentError("ep must not be in ep_rep."))
+    ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
 
     ch_ref = setdiff(channels, ch)
     signal_ref = deepcopy(obj)
     keep_channel!(signal_ref, ch = labels(obj)[channels])
     signal_ref.data = reshape(signal_ref.data[:, :, ep_ref], size(signal_ref.data[:, :, ep_ref], 1), (size(signal_ref.data[:, :, ep_ref], 2) * size(signal_ref.data[:, :, ep_ref], 3)), 1)
+
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)[1]
 
     # train
@@ -83,12 +86,12 @@ Interpolate channel using linear regression.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function mlinterpolate_channel!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-        model::T
-    )::Nothing where {T <: MLJ.Model}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    model::T
+)::Nothing where {T <: MLJ.Model}
 
     obj_new = mlinterpolate_channel(obj, ch = ch, ep = ep, ep_ref = ep_ref, model = model)
     obj.data = obj_new.data
