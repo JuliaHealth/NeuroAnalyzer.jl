@@ -18,7 +18,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
     !(datatype(obj) in ["eeg", "meg"]) && throw(ArgumentError("Currently this function only works for EEG or MEG objects."))
     ch = get_channel(obj, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must be a single channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must be a single channel."))
     current_channel = ch[1]
 
     datatype(obj) == "eeg" && (scaling_ratio = 0.7)

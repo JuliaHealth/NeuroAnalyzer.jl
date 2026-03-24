@@ -39,7 +39,11 @@ function spectrogram(
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true
-)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+)::@NamedTuple{
+    p::Matrix{Float64},
+    f::Vector{Float64},
+    t::Vector{Float64}
+}
 
     _check_var(method, [:stft, :mt], "method")
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -74,7 +78,7 @@ function spectrogram(
     t = linspace(t[1], t[end - 1], size(p, 2))
     f = linspace(0, fs / 2, size(p, 1))
 
-    return (p = p, f = f, t = t)
+    return (; p, f, t)
 
 end
 
@@ -113,7 +117,10 @@ function spectrogram(
     wlen::Int64 = fs,
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true
-)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
+)::@NamedTuple{
+    p::Array{Float64, 3},
+    f::Vector{Float64},
+    t::Vector{Float64}}
 
     # pilot call to determine output frequency vector length
     spec_data = NeuroAnalyzer.spectrogram(
@@ -143,7 +150,7 @@ function spectrogram(
         ).p
     end
 
-    return (p = p, f = f, t = t)
+    return (; p, f, t)
 
 end
 
@@ -347,7 +354,7 @@ function spectrogram(
     t = round.(t, digits = 3)
     t .+= obj.epoch_time[1]
 
-    return (p = p, f = f, t = t)
+    return (; p, f, t)
 
 end
 
@@ -390,17 +397,18 @@ function mwspectrogram(
     t::Vector{Float64}
 }
 
-    !(fs >= 1) && throw(ArgumentError("fs must be > 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be > 1."))
 
     pad > 0 && (s = pad0(s, pad))
 
     win = w ? hanning(length(s)) : ones(length(s))
 
     if ncyc isa Int64
-        !(ncyc >= 1) && throw(ArgumentError("ncyc must be >= 1."))
+        ncyc >= 1 || throw(ArgumentError("ncyc must be >= 1."))
     else
-        !(ncyc[1] >= 1) && throw(ArgumentError("ncyc[1] must be >= 1."))
-        !(ncyc[2] >= 1) && throw(ArgumentError("ncyc[2] must be >= 1."))
+        ncyc[1] >= 1 || throw(ArgumentError("ncyc[1] must be >= 1."))
+        ncyc[2] >= 1 || throw(ArgumentError("ncyc[2] must be >= 1."))
     end
 
     flim = (0, fs / 2)
@@ -431,7 +439,7 @@ function mwspectrogram(
     t = 0:(1 / fs):(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
 
-    return (cs = cs, p = p, ph = ph, f = f, t = t)
+    return (; cs, p, ph, f, t)
 
 end
 
@@ -460,23 +468,27 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function mwspectrogram(
-        s::AbstractMatrix;
-        pad::Int64 = 0,
-        db::Bool = true,
-        fs::Int64,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        w::Bool = true
-    )::@NamedTuple{
-        cs::Array{ComplexF64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64},
-    }
+    s::AbstractMatrix;
+    pad::Int64 = 0,
+    db::Bool = true,
+    fs::Int64,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    w::Bool = true
+)::@NamedTuple{
+    cs::Array{ComplexF64, 3},
+    p::Array{Float64, 3},
+    ph::Array{Float64, 3},
+    f::Vector{Float64},
+    t::Vector{Float64}
+}
 
     mwspec_data = mwspectrogram(@view(s[1, :]), pad = pad, db = db, fs = fs, ncyc = ncyc, w = w)
-    f_tmp = mwspec_data.f
-    t_tmp = mwspec_data.t
+    f = mwspec_data.f
+    t = mwspec_data.t
 
-    cs = zeros(ComplexF64, length(f_tmp), length(t_tmp), size(s, 1))
-    p  = zeros(length(f_tmp), length(t_tmp), size(s, 1))
-    ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
+    cs = zeros(ComplexF64, length(f), length(t), size(s, 1))
+    p  = zeros(length(f), length(t), size(s, 1))
+    ph = zeros(length(f), length(t), size(s, 1))
 
     Threads.@threads :static for ch_idx in axes(s, 1)
         @inbounds begin
@@ -493,7 +505,7 @@ function mwspectrogram(
         end
     end
 
-    return (cs = cs, p = p, ph = ph, f = f_tmp, t = t_tmp)
+    return (; cs, p, ph, f, t)
 
 end
 
@@ -532,7 +544,8 @@ function ghtspectrogram(
     t::Vector{Float64}
 }
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     flim = (0, fs / 2)
     nfrq = _tlength(flim)
@@ -559,7 +572,7 @@ function ghtspectrogram(
     t = 0:(1 / fs):(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
 
-    return (p = p, ph = ph, f = f, t = t)
+    return (; p, ph, f, t)
 
 end
 
@@ -626,7 +639,7 @@ function ghtspectrogram(
         ph[:, :, ch_idx] = ght_data.ph
     end
 
-    return (p = p, ph = ph, f = f_tmp, t = t_tmp)
+    return (; p, ph, f, t)
 
 end
 
@@ -659,7 +672,8 @@ function cwtspectrogram(
     t::Vector{Float64}
 } where {T <: CWT}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     m = abs.(ContinuousWavelets.cwt(s, wt)')
 
@@ -674,7 +688,7 @@ function cwtspectrogram(
     t = 0:(1 / fs):(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(m, 2))
 
-    return (m = m, f = f, t = t)
+    return (; m, f, t)
 
 end
 
@@ -718,7 +732,7 @@ function cwtspectrogram(
         m[:, :, ch_idx] = cwtspectrogram(@view(s[ch_idx, :]), fs = fs, wt = wt).m
     end
 
-    return (m = m, f = f, t = t)
+    return (; m, f, t)
 
 end
 
@@ -756,7 +770,8 @@ function hhtspectrogram(
     t::Vector{Float64}
 }
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     # pre-allocate outputs
     imf_p = Vector{Vector{Float64}}()
@@ -792,7 +807,7 @@ function hhtspectrogram(
     db && (p = pow2db.(p))
     p[p .== -Inf] .= -eps()
 
-    return (p = p, f = f, t = t)
+    return (; p, f, t)
 
 end
 
@@ -831,7 +846,8 @@ function hhtspectrogram(
     t::Vector{Float64}
 }
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     # pre-allocate outputs
     imf_p = Vector{Vector{Float64}}()
@@ -869,6 +885,6 @@ function hhtspectrogram(
     db && (p = pow2db.(p))
     p[p .== -Inf] .= -eps()
 
-    return (p = p, f = f, t = t)
+    return (; p, f, t)
 
 end

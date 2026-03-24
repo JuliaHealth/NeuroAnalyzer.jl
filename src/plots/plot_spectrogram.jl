@@ -89,7 +89,7 @@ function plot_spectrogram(
     plot_size = (1200, 800)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -221,7 +221,7 @@ function plot_spectrogram(
     plot_size = (1200, 800)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -379,7 +379,7 @@ function plot_spectrogram_topo(
             aspect = nothing,
             title = locs[idx, :label],
             xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
+            yautolimitmargin = (0, 0)
         )
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
@@ -402,7 +402,7 @@ function plot_spectrogram_topo(
             smooth = smooth,
             n = n,
             cb = cb,
-            cb_title = cb_title,
+            cb_title = cb_title
         )
         push!(pp_full_vec, pp_full)
     end
@@ -414,7 +414,7 @@ function plot_spectrogram_topo(
         figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = "",
         ylabel = "",
         title = title,
@@ -596,7 +596,7 @@ function plot_spectrogram(
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     if method === :cwt
         if type === :normal
-            !(length(ch) == 1) && throw(ArgumentError("For :cwt method only one channel must be selected."))
+            length(ch) == 1 || throw(ArgumentError("For :cwt method only one channel must be selected."))
         end
     end
     if type === :topo
@@ -780,7 +780,7 @@ function plot_spectrogram(
             cb = cb,
             cb_title = cb_title,
             threshold = threshold,
-            threshold_type = threshold_type,
+            threshold_type = threshold_type
         )
     elseif length(ch) > 1 && type === :normal
         ylabel == "default" && (ylabel = "")
@@ -802,7 +802,7 @@ function plot_spectrogram(
             cb = cb,
             cb_title = cb_title,
             threshold = threshold,
-            threshold_type = threshold_type,
+            threshold_type = threshold_type
         )
     elseif type === :topo
         xlabel == "default" && (xlabel = "Time [s]")
@@ -831,7 +831,7 @@ function plot_spectrogram(
             n = n,
             cb = cb,
             cb_title = cb_title,
-            head = head,
+            head = head
         )
     end
 

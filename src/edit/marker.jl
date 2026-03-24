@@ -300,7 +300,7 @@ function channel2marker(
 )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     stim_ch = get_channel(obj, type = "mrk")

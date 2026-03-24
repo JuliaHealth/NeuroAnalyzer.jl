@@ -189,7 +189,7 @@ function plot_topo(
         figure_padding = ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0), # L R B T
     )
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         aspect = 1,
         xlabel = "",
         ylabel = "",
@@ -216,7 +216,7 @@ function plot_topo(
             interpolated_y,
             s_interpolated_threshold;
             colorrange = extrema(s_interpolated[.!isnan.(s_interpolated)]),
-            colormap = pal,
+            colormap = pal
         )
     else
         hm = GLMakie.heatmap!(ax, interpolated_x, interpolated_y, s_interpolated, colormap = pal)
@@ -233,7 +233,7 @@ function plot_topo(
             linestyle = :dash,
             levels = contours,
             linewidth = 0.5,
-            color = :black,
+            color = :black
         )
     end
 
@@ -334,7 +334,7 @@ function plot_topo(
             ticklabelsize = font_size - 4,
             height = div(plot_size[2], 2),
             width = ps === :l ? 25 : 10,
-            tellheight = false,
+            tellheight = false
         )
         rowsize!(fig.layout, 1, ax.scene.viewport[].widths[2])
         colgap!(fig.layout, 10)

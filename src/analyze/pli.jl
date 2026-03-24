@@ -15,8 +15,8 @@ Calculate Phase Locking Index (PLI).
 Named tuple:
 
 - `pv::Float64`: PLI value
-- `sd::Vector{Float64}`: signal difference (s2 - s1)
-- `phd::Vector{Float64}`: phase difference (s2 - s1)
+- `sd::Vector{Float64}`: signal difference (s1 - s2)
+- `phd::Vector{Float64}`: phase difference (s1 - s2)
 - `s1ph::Vector{Float64}`: signal 1 phase
 - `s2ph::Vector{Float64}`: signal 2 phase
 
@@ -26,14 +26,24 @@ Named tuple:
  2. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function pli(
-        s1::AbstractVector, s2::AbstractVector
-    )::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
+    s1::AbstractVector,
+    s2::AbstractVector
+)::@NamedTuple{
+    pv::Float64,
+    sd::Vector{Float64},
+    phd::Vector{Float64},
+    s1ph::Vector{Float64},
+    s2ph::Vector{Float64}
+}
 
+    # validate
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # get instatenous phases
-    _, _, _, s1ph = htransform(s1)
-    _, _, _, s2ph = htransform(s2)
+    ht_data1 = htransform(s1)
+    ht_data2 = htransform(s2)
+    s1ph = ht_data1.ph
+    s2ph = ht_data2.ph
 
     # signal difference
     sd = s1 - s2
@@ -44,7 +54,7 @@ function pli(
     # PLI
     pv = abs(mean(sign.(phd)))
 
-    return (pv = pv, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)
+    return (; pv, sd, phd, s1ph, s2ph)
 
 end
 
@@ -67,8 +77,8 @@ Calculate Phase Locking Index (PLI).
 Named tuple:
 
 - `pv::Matrix{Float64}`: PLI value
-- `sd::Array{Float64, 3}`: signal difference (s2 - s1)
-- `phd::Array{Float64, 3}`: phase difference (s2 - s1)
+- `sd::Array{Float64, 3}`: signal difference (s1 - s2)
+- `phd::Array{Float64, 3}`: phase difference (s1 - s2)
 - `s1ph::Array{Float64, 3}`: signal 1 phase
 - `s2ph::Array{Float64, 3}`: signal 2 phase
 """
@@ -84,9 +94,10 @@ function pli(
     sd::Array{Float64, 3},
     phd::Array{Float64, 3},
     s1ph::Array{Float64, 3},
-    s2ph::Array{Float64, 3},
+    s2ph::Array{Float64, 3}
 }
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
@@ -110,9 +121,15 @@ function pli(
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :dynamic for ch_idx in 1:ch_n
-            pv[ch_idx, ep_idx], sd[ch_idx, :, ep_idx], phd[ch_idx, :, ep_idx], s1ph[ch_idx, :, ep_idx], s2ph[ch_idx, :, ep_idx] = @views pli(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
+            pli_data = @views pli(
+                obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
+                obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
             )
+            pv[ch_idx, ep_idx] = pli_data.pv
+            sd[ch_idx, :, ep_idx] = pli_data.sd
+            phd[ch_idx, :, ep_idx] = pli_data.phd
+            s1ph[ch_idx, :, ep_idx] = pli_data.s1ph
+            s2ph[ch_idx, :, ep_idx] = pli_data.s2ph
         end
     end
 
@@ -139,6 +156,7 @@ function pli(
     ch::Union{String, Vector{String}, Regex}
 )::Array{Float64, 3}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
@@ -149,15 +167,15 @@ function pli(
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :dynamic for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views pli(
-                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
+                pli_data = @views pli(
+                    obj.data[ch[ch_idx1], :, ep_idx],
+                    obj.data[ch[ch_idx2], :, ep_idx]
                 )
+                pv[ch_idx1, ch_idx2, ep_idx] = pli_data.pv
             end
         end
     end
 
-    pv = _copy_lt2ut(pv)
-
-    return pv
+    return _copy_lt2ut(pv)
 
 end

@@ -37,7 +37,7 @@ function plot_mep(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -124,7 +124,7 @@ function plot_mep(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -254,7 +254,7 @@ function plot_mep_stack(
     plot_size = size(s, 1) <= 64 ? (1200, 800) : (1200, 1200)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -393,7 +393,7 @@ function plot_mep(
             avg = avg,
             ci95 = ci95,
             leg = leg,
-            zl = zl,
+            zl = zl
         )
     elseif type === :stack
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "MEP amplitude, $(length(ch)) channels")
@@ -410,7 +410,7 @@ function plot_mep(
             mono = mono,
             ks = ks,
             smooth = smooth,
-            zl = zl,
+            zl = zl
         )
     end
 

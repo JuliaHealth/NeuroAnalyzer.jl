@@ -71,24 +71,24 @@ function bpsplit(
     # epoch lengths
     el = epoch_len(obj)
 
-    s  = zeros(length(const_bn), ch_n, el, ep_n)
+    s  = zeros(length(bn), ch_n, el, ep_n)
 
     # pre-allocate output
-    bf = Vector{Tuple{Real, Real}}(undef, length(const_bn))
+    bf = Vector{Tuple{Real, Real}}(undef, length(bn))
 
     # design one filter per band, then apply it to all channels and epochs.
     # the outer band loop is sequential (each band uses a different filter);
     # the inner channel loop is parallelized
-    @inbounds for band_idx in eachindex(const_bn)
-        band_f = band_frq(obj; band=const_bn[band_idx])
+    @inbounds for band_idx in eachindex(bn)
+        band_f = band_frq(obj, band=bn[band_idx])
         bf[band_idx] = band_f
         flt = filter_create(
-            fs=fs,
-            fprototype=:fir,
-            ftype=:bp,
-            cutoff=band_f,
-            order=order,
-            w=w,
+            fs = fs,
+            fprototype = :fir,
+            ftype = :bp,
+            cutoff = band_f,
+            order = order,
+            w = w
         )
 
         # calculate over channel and epochs
@@ -102,6 +102,6 @@ function bpsplit(
 
     end
 
-    return (s=s, bn=const_bn, bf=bf)
+    return (; s, bn, bf)
 
 end

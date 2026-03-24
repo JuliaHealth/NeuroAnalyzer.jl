@@ -47,7 +47,7 @@ function plot_coherence(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -137,7 +137,7 @@ function plot_coherence(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,

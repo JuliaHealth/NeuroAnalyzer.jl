@@ -59,12 +59,15 @@ function eros(
     gw::Real = 5,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     wt::T = wavelet(Morlet(2π), β = 2)
-)::@NamedTuple{s::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+)::@NamedTuple{
+    s::Array{Float64, 3},
+    f::Vector{Float64},
+    t::Vector{Float64}
+} where {T <: CWT}
 
-    !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(get_channel(obj, ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel
-    _log_off()
     spec_data = NeuroAnalyzer.spectrogram(
         obj,
         ch = ch,
@@ -79,7 +82,6 @@ function eros(
         gw = gw,
         wt = wt,
     )
-    _log_on()
     f = spec_data.f
     t = spec_data.t
     # (freq, time, epochs)
@@ -91,6 +93,6 @@ function eros(
         s = mean(s, dims = 3)
     end
 
-    return (s = s, f = f, t = t)
+    return (; s, f, t)
 
 end

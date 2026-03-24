@@ -277,7 +277,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     _info("Imported: " *
         uppercase(obj.header.recording[:data_type]) *
         " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end]; digits=2)) s)")
+        "; $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

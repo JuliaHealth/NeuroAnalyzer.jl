@@ -51,7 +51,7 @@ function linreg(
     R2adj::Float64,
     aic::Float64,
     bic::Float64,
-    lf::Vector{Float64},
+    lf::Vector{Float64}
 }
 
     # validate

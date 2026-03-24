@@ -79,33 +79,32 @@ end
 
 Extracts and builds a named tuple of parameters.
 
-### Arguments
+# Arguments
 
 - `data::AbstractArray`: NxM array for N data points in M channels.
 - `seglen::Integer`: segment length (determines the frequency resolution).
-- `segshift::Integer`: number of bins by which neighboring segments are shifted
-    (e.g. `segshift = seglen / 2` makes overlapping segments).
+- `segshift::Integer`: number of bins by which neighboring segments are shifted (e.g. `segshift = seglen / 2` makes overlapping segments)
 - `eplen::Integer`: length of epochs
 - `freqlist::AbstractArray`: a UnitRange or 2D-Array where each column is a frequency band
 - `method::String`: standard deviation estimation method
-- `subave::Bool`: if `true`, subtract average from CS segments
-    (for continuous data, `subave = false`).
+- `subave::Bool`: if `true`, subtract average from CS segments (for continuous data, `subave = false`).
 - `verbose::Bool`: if `true`, warnings and info logs would be echoed.
 
-### Returns
+# Returns
 
 - `parameters::NamedTuple`: a named tuple of parameters
 """
 function data2para(
-        data::AbstractArray,
-        seglen::Integer,
-        segshift::Integer,
-        eplen::Integer,
-        freqlist::AbstractArray{Int},
-        method::String,
-        subave::Bool,
-        verbose::Bool,
-    )
+    data::AbstractArray,
+    seglen::Integer,
+    segshift::Integer,
+    eplen::Integer,
+    freqlist::AbstractArray{Int},
+    method::String,
+    subave::Bool,
+    verbose::Bool,
+)
+
     # data dimension
     if ndims(data) != 2
         data = squeeze(data)
@@ -173,7 +172,7 @@ function data2para(
         nseg = nseg,
         freqlist = freqlist,
         maxfreq = maxfreq,
-        nfbands = nfbands,
+        nfbands = nfbands
     )
 
     return parameters

@@ -108,7 +108,7 @@ function artrem_cwd(
 
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     _check_epochs(obj, ep)

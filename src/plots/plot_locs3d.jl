@@ -95,7 +95,7 @@ function plot_locs3d(
     fig = GLMakie.Figure(size = plot_size)
 
     ax = GLMakie.Axis3(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = "X",
         ylabel = "Y",
         zlabel = "Z",
@@ -163,7 +163,7 @@ function plot_locs3d(
             loc_z[ch] * 1.15;
             text = locs[ch, :label],
             fontsize = font_size,
-            align = (:center, :center),
+            align = (:center, :center)
         )
         if sch != 0
             GLMakie.text!(

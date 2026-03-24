@@ -143,7 +143,7 @@ function pcacomp(
     pcv::Vector{Float64},
     pcm::Vector{Float64},
     pcp::Matrix{Float64},
-    pc_model::MultivariateStats.PCA{Float64},
+    pc_model::MultivariateStats.PCA{Float64}
 }
 
     !(length(vars) >= 2) && throw(ArgumentError("vars must contain at least 2 variable names."))
@@ -197,7 +197,7 @@ function biplot(
 
     fig  = GLMakie.Figure()
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         aspect = 1,
         title = "Biplot",
         xlabel = "PC1 ($(round(pca.pcv[1], digits=1))%)",
@@ -214,7 +214,7 @@ function biplot(
             (0, 0),
             (pca.pcp[1, idx] * 2, pca.pcp[2, idx] * 2);
             color = cmap[idx],
-            label = string(vars[idx]),
+            label = string(vars[idx])
         )
     end
     axislegend(; position=:rt)
@@ -256,7 +256,7 @@ function screeplot(
 
     fig   = GLMakie.Figure()
     ax1 = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         title = "Scree plot",
         xticks = (1:n_pc, xl),
         ylabel = "% variance explained",

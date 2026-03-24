@@ -174,7 +174,14 @@ Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp poten
 
 [`csd`](@ref)
 """
-function gh(locs::DataFrame; m::Int64 = 4, n::Int64 = 8)::@NamedTuple{G::Matrix{Float64}, H::Matrix{Float64}}
+function gh(
+    locs::DataFrame;
+    m::Int64 = 4,
+    n::Int64 = 8
+)::@NamedTuple{
+    G::Matrix{Float64},
+    H::Matrix{Float64}
+}
 
     (m >= 2 && m <= 10) || throw(ArgumentError("m must be in [2, 10]."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -231,6 +238,6 @@ function gh(locs::DataFrame; m::Int64 = 4, n::Int64 = 8)::@NamedTuple{G::Matrix{
         end
     end
 
-    return (G = G, H = H)
+    return (; G, H)
 
 end

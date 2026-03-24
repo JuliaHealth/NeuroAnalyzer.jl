@@ -441,7 +441,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
             :start => stim_data[1, :],
             :length => stim_data[2, :],
             :value => stim_name,
-            :channel => repeat([0], size(stim_data, 2)),
+            :channel => repeat([0], size(stim_data, 2))
         )
         # generate unique IDs
         value = unique(markers[!, :value])
@@ -455,7 +455,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Int64[]
         )
     end
 

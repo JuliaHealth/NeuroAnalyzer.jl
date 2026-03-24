@@ -41,7 +41,7 @@ function plot_erp(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -137,7 +137,7 @@ function plot_erp(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -306,7 +306,7 @@ function plot_erp_topo(
             title = locs[idx, :label],
             yreversed = yrev,
             xautolimitmargin = (0, 0),
-            yautolimitmargin = (0.1, 0.1),
+            yautolimitmargin = (0.1, 0.1)
         )
         hidedecorations!(ax)
         ax.titlesize = 8
@@ -332,7 +332,7 @@ function plot_erp_topo(
         figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = "",
         ylabel = "",
         title = title,
@@ -478,7 +478,7 @@ function plot_erp_stack(
     plot_size = size(s, 1) <= 64 ? (900, 600) : (900, 900)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -564,7 +564,7 @@ function plot_gfp(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -751,7 +751,7 @@ function plot_erp(
             title,
             "Time [ms]",
             "Amplitude [$units]",
-            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n",
+            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n"
         )
         fig = plot_erp(
             t,
@@ -766,7 +766,7 @@ function plot_erp(
             ci95 = ci95,
             leg = leg,
             zl = zl,
-            mono = mono,
+            mono = mono
         )
 
     elseif type === :stack
@@ -788,7 +788,7 @@ function plot_erp(
             smooth = smooth,
             ks = ks,
             zl = zl,
-            mono = mono,
+            mono = mono
         )
 
     elseif type === :gfp
@@ -800,7 +800,7 @@ function plot_erp(
             title,
             "Time [ms]",
             "GFP [$units]",
-            "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n",
+            "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n"
         )
         fig = plot_gfp(t, g, xlabel = xl, ylabel = yl, title = tt, rt = rt, zl = zl, mono = mono)
 
@@ -827,7 +827,7 @@ function plot_erp(
             rt = rt,
             yrev = yrev,
             mono = mono,
-            zl = zl,
+            zl = zl
         )
     end
 

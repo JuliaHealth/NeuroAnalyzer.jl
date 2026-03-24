@@ -45,7 +45,7 @@ function _interpolate2d(
     @inbounds for idx1 in 1:ifactor
         for idx2 in 1:ifactor
             s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(
-                itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]]
+                itp, [interpolation_m[idx1, idx2][1], interpolation_m[idx1, idx2][2]]
             )[1]
         end
     end

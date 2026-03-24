@@ -79,7 +79,7 @@ function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, Abstr
     isa(ch, Int64) && (ch = [ch])
     n = size(s, 1)
     for ch_idx in ch
-        (1 <= ch_idx <= n) || throw(ArgumentError("ch must be in [1, $n]; got $ch_idx."))
+        (1 <= ch_idx <= n) || throw(ArgumentError("ch must be in [1, $n], got $ch_idx."))
     end
     return nothing
 end
@@ -116,7 +116,7 @@ end
 function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
     n = nepochs(obj)
     for idx in epoch
-        (1 <= idx <= n) || throw(ArgumentError("epoch must be in [1, $n]; got $idx."))
+        (1 <= idx <= n) || throw(ArgumentError("epoch must be in [1, $n], got $idx."))
     end
     return nothing
 end

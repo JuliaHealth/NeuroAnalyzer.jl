@@ -52,8 +52,16 @@ Named tuple:
 Return nothing if no pinches are detected.
 """
 function tpt_analyze(
-        obj::NeuroAnalyzer.NEURO
-    )::Union{@NamedTuple{n::Int64, t_mean::Float64, t_median::Float64, t_rmssd::Float64, t_sdsd::Float64}, Nothing}
+    obj::NeuroAnalyzer.NEURO
+)::Union{@NamedTuple{
+        n::Int64,
+        t_mean::Float64,
+        t_median::Float64,
+        t_rmssd::Float64,
+        t_sdsd::Float64
+    },
+    Nothing
+}
 
     p_idx = tpt_detect(obj)
     t = obj.time_pts[p_idx] .* 1000
@@ -68,7 +76,7 @@ function tpt_analyze(
         t_median = round(median(t_diff), digits = 1)
         t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits = 1)
         t_sdsd = round(std(t_diff), digits = 1)
-        return (n = n, t_mean = t_mean, t_median = t_median, t_rmssd = t_rmssd, t_sdsd = t_sdsd)
+        return (;n, t_mean, t_median, t_rmssd, t_sdsd)
     else
         return nothing
     end

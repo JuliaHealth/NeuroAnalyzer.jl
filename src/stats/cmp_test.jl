@@ -63,7 +63,7 @@ function cmp_test(
     @NamedTuple{t::ApproximateSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
     @NamedTuple{t::ExactMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
     @NamedTuple{t::ApproximateMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-    @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64},
+    @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64}
 }
 
     # validate
@@ -195,7 +195,7 @@ function cmp_test(
         return (
             t  = (perm_diff=perm_diff, obs_diff=observed_diff),
             p1 = p1,
-            p2 = p2,
+            p2 = p2
         )
 
     end

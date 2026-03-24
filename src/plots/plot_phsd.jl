@@ -45,7 +45,7 @@ function plot_phsd(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -136,7 +136,7 @@ function plot_phsd(
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -267,7 +267,7 @@ function plot_phsd_3d(
         plot_size = (900, 450)
         fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            fig[1, 1];
+            fig[1, 1],
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -283,7 +283,7 @@ function plot_phsd_3d(
             aspect = (1, 1, 0.5),
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
-            zautolimitmargin = (0, 0),
+            zautolimitmargin = (0, 0)
         )
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 18
@@ -311,7 +311,7 @@ function plot_phsd_3d(
         plot_size = (900, 450)
         fig = GLMakie.Figure(size = plot_size)
         ax = GLMakie.Axis3(
-            fig[1, 1];
+            fig[1, 1],
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -327,7 +327,7 @@ function plot_phsd_3d(
             aspect = (1, 1, 0.5),
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
-            zautolimitmargin = (0, 0),
+            zautolimitmargin = (0, 0)
         )
         ax.titlesize = 18
         ax.xlabelsize = 18
@@ -425,7 +425,7 @@ function plot_phsd_topo(
         GLMakie.activate!(title = "plot_phsd()")
         pp = GLMakie.Figure(
             size = marker_size,
-            figure_padding = 0,
+            figure_padding = 0
         )
         ax = GLMakie.Axis(
             pp[1, 1];
@@ -434,7 +434,7 @@ function plot_phsd_topo(
             title = locs[idx, :label],
             xscale = frq === :lin ? identity : log,
             xautolimitmargin = (0, 0),
-            yautolimitmargin = (0.1, 0.1),
+            yautolimitmargin = (0.1, 0.1)
         )
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
@@ -449,7 +449,7 @@ function plot_phsd_topo(
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,
             flim = flim,
-            frq = frq,
+            frq = frq
         )
         push!(pp_full_vec, pp_full)
     end
@@ -461,7 +461,7 @@ function plot_phsd_topo(
         figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = "",
         ylabel = "",
         title = title,
@@ -673,7 +673,7 @@ function plot_phsd(
             flim = flim,
             frq = frq,
             mono = mono,
-            variant = type === :w3d ? :w : :s,
+            variant = type === :w3d ? :w : :s
         )
     elseif type === :topo
         xlabel == "default" && (xlabel = "Frequency [Hz]")
@@ -695,7 +695,7 @@ function plot_phsd(
             flim = flim,
             frq = frq,
             cart = cart,
-            head = head,
+            head = head
         )
     end
 

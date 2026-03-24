@@ -73,7 +73,7 @@ function itpc(
     itpca  = DSP.angle(mphasor)
     itpcz = ep_n * itpcv^2
 
-    return (itpcv = itpcv, itpcz = itpcz, itpca = itpca, itpcph = itpcph)
+    return (; itpcv, itpcz, itpca, itpcph)
 
 end
 

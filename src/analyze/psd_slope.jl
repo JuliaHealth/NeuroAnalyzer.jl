@@ -35,23 +35,27 @@ Named tuple:
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
-        s::AbstractVector;
-        fs::Int64,
-        flim::Tuple{Real, Real} = (0, fs / 2),
-        db::Bool = false,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true
-    )::@NamedTuple{lf::Vector{Float64}, ls::Float64, pf::Vector{Float64}}
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real, Real} = (0, fs / 2),
+    db::Bool = false,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true
+)::@NamedTuple{
+    lf::Vector{Float64},
+    ls::Float64,
+    pf::Vector{Float64}
+}
 
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    pw, pf = psd(
+    psd_data = psd(
         s,
         fs = fs,
         db = db,
@@ -64,14 +68,19 @@ function psd_slope(
         gw = gw,
         demean = demean,
     )
+    pw = psd_data.p
+    pf = psd_data.f
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
-    lr = NeuroAnalyzer.linreg(pf[f1_idx:f2_idx], pw[f1_idx:f2_idx])
+    pf = pf[f1_idx:f2_idx]
+    pw = pw[f1_idx:f2_idx]
+
+    lr = NeuroAnalyzer.linreg(pf, pw)
     lf = lr.lf
     ls = lf[2] - lf[1]
 
-    return (lf = lf, ls = ls, pf = pf[f1_idx:f2_idx])
+    return (; lf, ls, pf)
 
 end
 
@@ -110,26 +119,30 @@ Named tuple:
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
-        s::AbstractArray;
-        fs::Int64,
-        flim::Tuple{Real, Real} = (0, fs / 2),
-        db::Bool = false,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true
-    )::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
+    s::AbstractArray;
+    fs::Int64,
+    flim::Tuple{Real, Real} = (0, fs / 2),
+    db::Bool = false,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true
+)::@NamedTuple{
+    lf::Array{Float64, 3},
+    ls::Matrix{Float64},
+    pf::Vector{Float64}
+}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
     lf, ls, pf = psd_slope(
-        s[1, :, 1];
+        s[1, :, 1],
         fs = fs,
         flim = flim,
         db = db,
@@ -140,7 +153,7 @@ function psd_slope(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
 
     lf = zeros(ch_n, length(lf), ep_n)
@@ -165,7 +178,7 @@ function psd_slope(
         end
     end
 
-    return (lf = lf, ls = ls, pf = pf)
+    return (; lf, ls, pf)
 
 end
 
@@ -204,24 +217,29 @@ Named tuple:
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        db::Bool = false,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true
-    )::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    db::Bool = false,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true
+)::@NamedTuple{
+    lf::Array{Float64, 3},
+    ls::Matrix{Float64},
+    pf::Vector{Float64}
+}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    _log_off()
-    lf, ls, pf = psd_slope(
-        obj.data[ch, :, :];
+
+    return psd_slope(
+        @view(obj.data[ch, :, :]),
         fs = sr(obj),
         flim = flim,
         db = db,
@@ -232,10 +250,7 @@ function psd_slope(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
-    _log_on()
-
-    return (lf = lf, ls = ls, pf = pf)
 
 end

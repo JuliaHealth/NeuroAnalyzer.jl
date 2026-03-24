@@ -248,7 +248,7 @@ function detect_powerline(s::AbstractVector; fs::Int64)::Float64
             :signal => s,
             :b0 => ones(n),
             :b1 => sin.(2π * freq .* t),
-            :b2 => cos.(2π * freq .* t),
+            :b2 => cos.(2π * freq .* t)
         )
         lr = GLM.lm(@formula(signal ~ b0 + b1 + b2), df)
         b  = GLM.coef(lr)

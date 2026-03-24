@@ -27,11 +27,20 @@ function remove_pops(
     repair::Bool = true
 )::Union{
     Nothing,
-    @NamedTuple{s::Vector{Float64}, pop_loc::Int64, l_seg::Int64, r_seg::Int64},
-    @NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}
+    @NamedTuple{
+        s::Vector{Float64},
+        pop_loc::Int64,
+        l_seg::Int64,
+        r_seg::Int64
+    },
+    @NamedTuple{
+        pop_loc::Int64,
+        l_seg::Int64,
+        r_seg::Int64
+    }
 }
 
-    !(length(s) >= 2 * r + 1) && throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
+    length(s) >= 2 * r + 1 || throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
 
     s_m = mean(s)
     s .-= s_m
@@ -200,11 +209,10 @@ function remove_pops(
 
     end
 
-    if repair
-        return (s = s, pop_loc = pop_loc, l_seg = l_seg[1], r_seg = r_seg[end])
-    else
-        return (pop_loc = pop_loc, l_seg = l_seg[1], r_seg = r_seg[end])
-    end
+    l_seg = l_seg[1]
+    r_seg = r_seg[end]
+
+    return repair ? (; s, pop_loc, l_seg, r_seg) : (; pop_loc, l_seg, r_seg)
 
 end
 
@@ -236,22 +244,23 @@ function remove_pops(
     r::Int64 = sr(obj) ÷ 2
 )::Union{
     Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
-    Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
+    Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}}
 }
 
-    !(nepochs(obj) == 1) && throw(ArgumentError("pop() must be applied to continuous object."))
+    # validate
+    nepochs(obj) == 1 || throw(ArgumentError("pop() must be applied to continuous object."))
 
     ch = get_channel(obj, ch = ch)
     obj_new = deepcopy(obj)
 
-    s = @views obj_new.data[ch, :, :]
+    s = @view(obj_new.data[ch, :, :])
 
     pop_loc = Vector{Vector{Int64}}()
     l_seg = Vector{Int64}()
     r_seg = Vector{Int64}()
 
     window *= sr(obj)
-    !(window <= signal_len(obj)) && throw(ArgumentError("window must be ≤ $(signal_len(obj) / sr(obj))."))
+    window <= signal_len(obj) || throw(ArgumentError("window must be ≤ $(signal_len(obj) / sr(obj))."))
     ch_n = size(s, 1)
 
     @inbounds for ch_idx in 1:ch_n

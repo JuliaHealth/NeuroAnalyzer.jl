@@ -32,8 +32,11 @@ Named tuple:
 - `ArgumentError` if the file does not exist or does not contain a valid montage structure (at least a name line and one channel entry)
 """
 function import_montage(
-        file_name::String
-    )::@NamedTuple{ref_list::Vector{String}, ref_name::String}
+    file_name::String
+)::@NamedTuple{
+    ref_list::Vector{String},
+    ref_name::String
+}
 
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))

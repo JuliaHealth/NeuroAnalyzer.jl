@@ -51,7 +51,7 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
     plot_size = (800, 800)
     fig = GLMakie.Figure(size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         aspect = DataAspect(),
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),

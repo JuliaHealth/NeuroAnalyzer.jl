@@ -13,14 +13,13 @@ Calculate mean of a segment (e.g. spectrogram).
 
 # Returns
 
-- `sm::Vector{Float64}`: averaged segment
+- `Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)::Vector{Float64}
 
     _chk3d(seg)
-    sm = reshape(mean(mean(seg; dims = 1), dims = 2), size(seg, 3))
 
-    return sm
+    return reshape(mean(mean(seg; dims = 1), dims = 2), size(seg, 3))
 
 end
 
@@ -41,12 +40,18 @@ Named tuple:
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
 """
-function seg_mean(seg1::AbstractArray, seg2::AbstractArray)::@NamedTuple{seg1::Vector{Float64}, seg2::Vector{Float64}}
+function seg_mean(
+    seg1::AbstractArray,
+    seg2::AbstractArray
+)::@NamedTuple{
+    seg1::Vector{Float64},
+    seg2::Vector{Float64}
+}
 
     seg1 = seg_mean(seg1)
     seg2 = seg_mean(seg2)
 
-    return (seg1 = seg1, seg2 = seg2)
+    return (; seg1, seg2)
 
 end
 
@@ -64,29 +69,35 @@ Extract segment from a matrix.
 
 # Returns
 
-- `seg::Union{AbstractMatrix, AbstractVector}`
+- `Union{AbstractMatrix, AbstractVector}`
 """
 function seg_extract(
-        m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool = false, c::Bool = false
-    )::Union{AbstractMatrix, AbstractVector}
+    m::AbstractMatrix,
+    rc::NTuple{4, Int64};
+    v::Bool = false,
+    c::Bool = false
+)::Union{AbstractMatrix, AbstractVector}
 
     r1 = rc[1]
     c1 = rc[2]
     r2 = rc[3]
     c2 = rc[4]
 
-    !(r1 > 0) && throw(ArgumentError("r1 must be > 0."))
-    !(r2 > 0) && throw(ArgumentError("r2 must be > 0."))
-    !(c1 > 0) && throw(ArgumentError("c1 must be > 0."))
-    !(c2 > 0) && throw(ArgumentError("c2 must be > 0."))
-    !(r1 <= size(m, 1)) && throw(ArgumentError("r1 must be ≤ $(size(m, 1))."))
-    !(c1 <= size(m, 2)) && throw(ArgumentError("r2 must be ≤ $(size(m, 2))."))
-    !(r2 <= size(m, 1)) && throw(ArgumentError("c1 must be ≤ $(size(m, 1))."))
-    !(c2 <= size(m, 2)) && throw(ArgumentError("c2 must be ≤ $(size(m, 2))."))
+    r1 > 0 || throw(ArgumentError("r1 must be > 0."))
+    r2 > 0 || throw(ArgumentError("r2 must be > 0."))
+    c1 > 0 || throw(ArgumentError("c1 must be > 0."))
+    c2 > 0 || throw(ArgumentError("c2 must be > 0."))
+    r1 <= size(m, 1) || throw(ArgumentError("r1 must be ≤ $(size(m, 1))."))
+    c1 <= size(m, 2) || throw(ArgumentError("r2 must be ≤ $(size(m, 2))."))
+    r2 <= size(m, 1) || throw(ArgumentError("c1 must be ≤ $(size(m, 1))."))
+    c2 <= size(m, 2) || throw(ArgumentError("c2 must be ≤ $(size(m, 2))."))
 
     if !c
-        seg = !v ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
+
+        return !v ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
+
     else
+
         seg = zeros(Bool, size(m))
         seg_radius = distance((r1, c1), (r2, c2))
         for idx_r in axes(m, 1), idx_c in axes(m, 2)
@@ -95,10 +106,9 @@ function seg_extract(
             end
         end
 
-        seg = m[seg .== true]
-    end
+        return m[seg .== true]
 
-    return seg
+    end
 
 end
 
@@ -129,15 +139,20 @@ Named tuple:
 - `bm::Matrix{Bool}`: map of the segment
 """
 function seg_extract(
-        m::AbstractMatrix; threshold::Union{Real, Tuple{Real, Real}} = 0, threshold_type::Symbol = :neq
-    )::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
+    m::AbstractMatrix;
+    threshold::Union{Real, Tuple{Real, Real}} = 0,
+    threshold_type::Symbol = :neq
+)::@NamedTuple{
+    idx::Vector{CartesianIndex{2}},
+    bm::Matrix{Bool}
+}
 
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
 
     if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-        !(length(threshold) == 1) && throw(ArgumentError("threshold must contain a single value."))
+        length(threshold) == 1 || throw(ArgumentError("threshold must contain a single value."))
     else
-        !(length(threshold) == 2) && throw(ArgumentError("threshold must contain two values."))
+        length(threshold) == 2 || throw(ArgumentError("threshold must contain two values."))
         _check_tuple(threshold, extrema(m), "threshold")
     end
 
@@ -162,7 +177,7 @@ function seg_extract(
     bm = zeros(Bool, size(m))
     bm[idx] .= true
 
-    return (idx = idx, bm = bm)
+    return (; idx, bm)
 
 end
 
@@ -188,14 +203,17 @@ Interactive selection of a matrix area.
 - `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
 function seg_select(
-        m::AbstractMatrix; shape::Symbol = :r, extract::Bool = false, v::Bool = false
-    )::Union{
-        Nothing,
-        <:Real,
-        Tuple{Int64, Int64},
-        Tuple{Int64, Int64, Int64, Int64},
-        Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
-    }
+    m::AbstractMatrix;
+    shape::Symbol = :r,
+    extract::Bool = false,
+    v::Bool = false
+)::Union{
+    Nothing,
+    <:Real,
+    Tuple{Int64, Int64},
+    Tuple{Int64, Int64, Int64, Int64},
+    Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
+}
 
     _check_var(shape, [:r, :p, :c], "shape")
 
@@ -204,7 +222,7 @@ function seg_select(
 
     p = GLMakie.Figure(size = (size_x, size_y))
     ax = GLMakie.Axis(
-        p[1, 1];
+        p[1, 1],
         xlabel = "",
         ylabel = "",
         title = "",

@@ -111,10 +111,10 @@ function tacs_dose(;
     charge_density::Float64
 }
 
-    !(current > 0) && throw(ArgumentError("current must be > 0."))
-    !(pad_area > 0) && throw(ArgumentError("pad_area must be > 0."))
-    !(duration > 0) && throw(ArgumentError("duration must be > 0."))
-    !(frequency > 0) && throw(ArgumentError("frequency must be > 0."))
+    current > 0 || throw(ArgumentError("current must be > 0."))
+    pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
+    frequency > 0 || throw(ArgumentError("frequency must be > 0."))
 
     # integrate the rectified sinusoid over one cycle to get the effective current
     t = collect(0:0.001:1)
@@ -180,11 +180,11 @@ function tpcs_dose(;
     current_density::Float64,
     charge_density::Float64}
 
-    !(current > 0) && throw(ArgumentError("current must be > 0."))
-    !(pad_area > 0) && throw(ArgumentError("pad_area must be > 0."))
-    !(duration > 0) && throw(ArgumentError("duration must be > 0."))
-    !(pw > 0) && throw(ArgumentError("pw must be > 0."))
-    !(isi > pw) && throw(ArgumentError("isi must be > pw."))
+    current > 0 || throw(ArgumentError("current must be > 0."))
+    pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
+    pw > 0 || throw(ArgumentError("pw must be > 0."))
+    isi > pw || throw(ArgumentError("isi must be > pw."))
 
     # convert pulse timings from ms → s
     pw_s  = pw  / 1_000
@@ -205,6 +205,7 @@ function tpcs_dose(;
     charge_density = (charge / 1_000) / a_m2
 
     return (; charge, current_density, charge_density)
+
 end
 
 """
@@ -268,7 +269,7 @@ function tes_protocol(;
     ramp_in  >= 0 || throw(ArgumentError("ramp_in must be ≥ 0 s."))
     ramp_out >= 0 || throw(ArgumentError("ramp_out must be ≥ 0 s."))
 
-    protocol = Dict(
+    return Dict(
         :type => type,
         :hd => hd,
         :current => current,
@@ -282,7 +283,5 @@ function tes_protocol(;
         :ramp_out => ramp_out,
         :sham => sham,
     )
-
-    return protocol
 
 end

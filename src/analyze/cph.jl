@@ -170,7 +170,7 @@ function cph(
         ph[ch_idx, :, ep_idx] = cph(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx]),
-            fs = fs,
+            fs = fs
         ).ph
     end
 

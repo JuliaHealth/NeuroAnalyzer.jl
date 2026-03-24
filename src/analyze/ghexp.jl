@@ -8,7 +8,7 @@ const _QRange = Union{
         Base.TwicePrecision{Float64},
         Base.TwicePrecision{Float64},
         Int64
-    },
+    }
 }
 
 """

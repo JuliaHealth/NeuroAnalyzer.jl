@@ -57,12 +57,15 @@ function erop(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true
-)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+)::@NamedTuple{
+    p::Matrix{Float64},
+    f::Vector{Float64}
+}
 
-    !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    # validate
+    length(get_channel(obj, ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel
-    _log_off()
     psd_data = psd(
         obj,
         ch = ch,
@@ -76,7 +79,6 @@ function erop(
         gw = gw,
         demean = demean,
     )
-    _log_on()
 
     p = psd_data.p[1, :, :]
     f = psd_data.f
@@ -87,6 +89,6 @@ function erop(
         p = mean(p, dims = 2)
     end
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end

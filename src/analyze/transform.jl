@@ -44,25 +44,25 @@ function ftransform(
     n = length(s)
 
     # compute FFT: full spectrum (positive + negative) or one-sided (positive only)
-    ft = nf ? fft0(s, pad) : rfft0(s, pad)
+    c = nf ? fft0(s, pad) : rfft0(s, pad)
 
     # amplitudes: normalize by N; compensate for the removed negative-frequency
     # mirror by doubling all bins except DC (index 1) and Nyquist (index end)
-    a = abs.(ft) ./ n
+    a = abs.(c) ./ n
     !nf && (a[2:(end - 1)] .*= 2)
 
     # powers: same normalization and symmetry compensation.
-    p = abs2.(ft) ./ n
+    p = abs2.(c) ./ n
     !nf && (p[2:(end - 1)] .*= 2)
 
     # convert powers to dB if requested
     db && (p = pow2db.(p))
 
     # zero out near-zero coefficients before computing phase to avoid numerical noise polluting the phase angles
-    ft[abs.(ft) .< eps()] .= 0
-    ph = DSP.angle.(ft)
+    c[abs.(c) .< eps()] .= 0
+    ph = DSP.angle.(c)
 
-    return (c = ft, a = a, p = p, ph = ph)
+    return (; c, a, p, ph)
 
 end
 
@@ -134,7 +134,7 @@ function ftransform(
         ph[ch_idx, :, ep_idx] = ftransform_data.ph
     end
 
-    return (c = c, a = a, p = p, ph = ph)
+    return (; c, a, p, ph)
 
 end
 
@@ -168,19 +168,19 @@ function htransform(
 }
 
     # compute the analytic signal via the Hilbert transform
-    ht = DSP.hilbert(s)
+    c = DSP.hilbert(s)
 
     # instantaneous amplitude (envelope)
-    a = abs.(ht)
+    a = abs.(c)
 
     # instantaneous phase
-    ph = DSP.angle.(ht)
+    ph = DSP.angle.(c)
 
     # instantaneous power
-    p = abs2.(ht)
+    p = abs2.(c)
     db && (p = pow2db.(p))
 
-    return (c = ht, a = a, p = p, ph = ph)
+    return (; c, a, p, ph)
 
 end
 
@@ -242,7 +242,7 @@ function htransform(
         ph[ch_idx, :, ep_idx] = htransform_data.ph
     end
 
-    return (c = c, a = a, p = p, ph = ph)
+    return (; c, a, p, ph)
 
 end
 

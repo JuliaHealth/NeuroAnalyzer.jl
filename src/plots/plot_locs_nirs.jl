@@ -128,7 +128,7 @@ function plot_locs_nirs(
     )
     if grid
         ax = GLMakie.Axis(
-            fig[1, 1];
+            fig[1, 1],
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -147,11 +147,11 @@ function plot_locs_nirs(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
     else
         ax = GLMakie.Axis(
-            fig[1, 1];
+            fig[1, 1],
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -164,7 +164,7 @@ function plot_locs_nirs(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         hidedecorations!(ax; grid = true)
         hidespines!(ax)
@@ -252,7 +252,7 @@ function plot_locs_nirs(
             markersize = marker_size,
             color = mono ? :black : :red,
             strokewidth = sw,
-            strokecolor = :black,
+            strokecolor = :black
         )
     end
 
@@ -273,7 +273,7 @@ function plot_locs_nirs(
             markersize = marker_size,
             color = mono ? :white : :green,
             strokewidth = sw,
-            strokecolor = :black,
+            strokecolor = :black
         )
     end
 

@@ -97,7 +97,7 @@ function od2conc(
                 "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO",
                 "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR",
                 "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbT",
-            ],
+            ]
         )
     end
     obj_new.header.recording[:channel_order] = vcat(

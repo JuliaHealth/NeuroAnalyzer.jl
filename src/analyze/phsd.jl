@@ -25,10 +25,12 @@ function phsd(
     f::Vector{Float64}
 }
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
-    _, _, _, ph = NeuroAnalyzer.ftransform(s)
-    f, _ = freqs(s, fs)
+    ft_data = NeuroAnalyzer.ftransform(s)
+    ph = ft_data.ph
+    f = freqs(s, fs)[1]
 
     return (; ph, f)
 
@@ -60,12 +62,14 @@ function phsd(
 }
 
     ch_n = size(s, 1)
-    _, f = phsd(s[1, :], fs = fs)
+    phsd_data = phsd(s[1, :], fs = fs)
+    f = phsd_data.f
 
     ph = zeros(ch_n, length(f))
 
     @inbounds for ch_idx in 1:ch_n
-        ph[ch_idx, :], _ = phsd(s[ch_idx, :], fs = fs)
+        phsd_data = phsd(@view(s[ch_idx, :]), fs = fs)
+        ph[ch_idx, :] = phsd_data.ph
     end
 
     return (; ph, f)
@@ -101,13 +105,15 @@ function phsd(
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, f = phsd(s[1, :, 1], fs = fs)
+    phsd_data = phsd(s[1, :, 1], fs = fs)
+    f = phsd_data.f
 
     ph = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :dynamic for ch_idx in 1:ch_n
-            ph[ch_idx, :, ep_idx], _ = phsd(s[ch_idx, :, ep_idx], fs = fs)
+            phsd_data = phsd(@view(s[ch_idx, :, ep_idx]), fs = fs)
+            ph[ch_idx, :, ep_idx] = phsd_data.ph
         end
     end
 
@@ -140,9 +146,9 @@ function phsd(
     f::Vector{Float64}
 }
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    ph, f = phsd(obj.data[ch, :, :], fs = sr(obj))
 
-    return (; ph, f)
+    return phsd(@view(obj.data[ch, :, :]), fs = sr(obj))
 
 end

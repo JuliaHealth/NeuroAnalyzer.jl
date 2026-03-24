@@ -606,17 +606,19 @@ function import_locs_txt(file_name::String)::DataFrame
     )
 
     locs_sph2cart!(locs)
-    locs_swapxy!(locs; polar = false, cart = true, spherical = false)
-    locs_rotx!(locs;   a = 90, polar = false, cart = true, spherical = false)
+    locs_swapxy!(locs, polar = false, cart = true, spherical = false)
+    locs_rotx!(locs, a = 90, polar = false, cart = true, spherical = false)
 
     q1 = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .>= 0
-    q2 = locs[!, :loc_x] .< 0  .&& locs[!, :loc_y] .>= 0
-    q3 = locs[!, :loc_x] .< 0  .&& locs[!, :loc_y] .< 0
+    q2 = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .>= 0
+    q3 = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .< 0
     q4 = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .< 0
 
     locs[q1, :loc_x] .= -locs[q1, :loc_x]
-    locs[q2, :loc_x] .= -locs[q2, :loc_x];  locs[q2, :loc_y] .= -locs[q2, :loc_y]
-    locs[q3, :loc_x] .= -locs[q3, :loc_x];  locs[q3, :loc_y] .= -locs[q3, :loc_y]
+    locs[q2, :loc_x] .= -locs[q2, :loc_x]
+    locs[q2, :loc_y] .= -locs[q2, :loc_y]
+    locs[q3, :loc_x] .= -locs[q3, :loc_x]
+    locs[q3, :loc_y] .= -locs[q3, :loc_y]
     locs[q4, :loc_x] .= -locs[q4, :loc_x]
 
     locs_cart2sph!(locs)

@@ -148,7 +148,7 @@ function plot_locs(
     ) # L R B T
     if grid
         ax = GLMakie.Axis(
-            fig[1, 1];
+            fig[1, 1],
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -165,11 +165,11 @@ function plot_locs(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
     else
         ax = GLMakie.Axis(
-            fig[1, 1];
+            fig[1, 1],
             aspect = 1,
             xlabel = "",
             ylabel = "",
@@ -182,7 +182,7 @@ function plot_locs(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         hidedecorations!(ax; grid = true)
         hidespines!(ax)
@@ -1192,7 +1192,7 @@ function plot_locs(
             threshold_type = threshold_type,
             weights = weights,
             ch_info = ch_info,
-            gui = gui,
+            gui = gui
         )
     elseif datatype(obj) == "nirs"
         opt_pairs = obj.header.recording[:optode_pairs]
@@ -1213,7 +1213,7 @@ function plot_locs(
             grid = grid,
             mono = mono,
             plane = plane,
-            ch_info = ch_info,
+            ch_info = ch_info
         )
     elseif datatype(obj) == "ecog"
         _warn("ECOG locs are not supported yet.")

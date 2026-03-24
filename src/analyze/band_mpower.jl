@@ -93,6 +93,7 @@ function band_mpower(
     maxba = sqrt(maxbp)
 
     return (; mbp, maxfrq, maxbp, maxba)
+
 end
 
 """
@@ -166,8 +167,6 @@ function band_mpower(
     maxbp = zeros(ch_n, ep_n)
     maxba = zeros(ch_n, ep_n)
 
-    _log_off()
-
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
@@ -189,8 +188,6 @@ function band_mpower(
         maxbp[ch_idx, ep_idx] = mpower_data.maxbp
         maxba[ch_idx, ep_idx] = mpower_data.maxba
     end
-
-    _log_off()
 
     return (; mbp, maxfrq, maxbp, maxba)
 

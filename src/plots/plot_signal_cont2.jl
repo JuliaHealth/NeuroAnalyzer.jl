@@ -130,7 +130,7 @@ function plot_cont(
         figure_padding = (10, 20, 10, 10), # L R B T
     )
     ax1 = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = "",
         ylabel = yl,
         title = tt,
@@ -217,7 +217,7 @@ function plot_cont(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax2, t[1], t[end])
         GLMakie.ylims!(ax2, 0, 1)
@@ -250,7 +250,7 @@ function plot_cont(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         ch_n > 1 && (GLMakie.ylims!(ax3, ch_n, 1))
         hidedecorations!(ax3)

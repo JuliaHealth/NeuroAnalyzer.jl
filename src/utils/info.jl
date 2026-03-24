@@ -515,7 +515,7 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     if df
         result = DataFrame(
             hcat(obj.time_pts, reshape(obj.data, nchannels(obj), :, 1)[:, :]'),
-            :auto,
+            :auto
         )
         DataFrames.rename!(result, vcat(:time, Symbol.(labels(obj))))
         return result
@@ -932,7 +932,7 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
             :Q1 => d[5, :],
             :median => d[6, :],
             :Q3 => d[7, :],
-            :max => d[8, :],
+            :max => d[8, :]
         )
 
         return df

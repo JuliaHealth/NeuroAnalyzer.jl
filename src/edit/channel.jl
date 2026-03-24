@@ -101,7 +101,7 @@ Get channel type.
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
     ch = get_channel(obj, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     cht = obj.header.recording[:channel_type][ch]
@@ -135,7 +135,7 @@ function set_channel_type(
     _check_var(type, string.(channel_types), "type")
 
     ch = get_channel(ch, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     # create new dataset
@@ -259,7 +259,7 @@ function edit_channel(
 
     !(value !== nothing) && throw(ArgumentError("value cannot be empty."))
     ch = get_channel(obj, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     _check_var(field, [:channel_type, :label], "field")
@@ -327,7 +327,7 @@ function replace_channel(
     )
 
     ch = get_channel(obj, ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     obj_new = deepcopy(obj)
@@ -461,14 +461,14 @@ function add_channel(
     obj_new = deepcopy(obj)
     if length(obj.data) > 0
         obj_new.data = [obj.data; data]
-        obj_new.header.recording[:label] = [obj.header.recording[:label]; label]
+        obj_new.header.recording[:label] = [obj.header.recording[:label], label]
         obj_new.header.recording[:channel_type] = [
-            obj.header.recording[:channel_type];
+            obj.header.recording[:channel_type],
             string.(type)
         ]
-        obj_new.header.recording[:unit] = [obj.header.recording[:unit]; unit]
+        obj_new.header.recording[:unit] = [obj.header.recording[:unit], unit]
         obj_new.header.recording[:channel_order] = [
-            obj_new.header.recording[:channel_order];
+            obj_new.header.recording[:channel_order],
             collect(
                 maximum(obj_new.header.recording[:channel_order]):(
                     maximum(obj_new.header.recording[:channel_order]) + size(
@@ -478,7 +478,7 @@ function add_channel(
             )
         ]
         obj_new.header.recording[:bad_channel] = [
-            obj_new.header.recording[:bad_channel];
+            obj_new.header.recording[:bad_channel],
             zeros(Bool, size(data, 1))
         ]
     else

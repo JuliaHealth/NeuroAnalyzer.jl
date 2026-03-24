@@ -183,7 +183,7 @@ function plot_ep(
         figure_padding = (10, 20, 10, 10), # L R B T
     )
     ax1 = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = "",
         ylabel = yl,
         title = tt,
@@ -363,7 +363,7 @@ function plot_ep(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax2, 0, ep_n[])
         GLMakie.ylims!(ax2, 0, 1)

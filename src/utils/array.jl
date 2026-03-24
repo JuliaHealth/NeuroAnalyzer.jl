@@ -125,15 +125,15 @@ function perm_cmp(
         rand_spec = @view spec_all[:, :, rand_idx]
         # difference between the two random halves → one null sample
         perm_maps[:, :, perm_idx] = @views dropdims(
-            mean(rand_spec[:, :, (half + 1):end]; dims=3) .-
-            mean(rand_spec[:, :, 1:half];         dims=3),
-            dims=3,
+            mean(rand_spec[:, :, (half + 1):end], dims=3) .-
+            mean(rand_spec[:, :, 1:half], dims=3),
+            dims=3
         )
     end
 
     # H0 distribution statistics (mean and SD across permutations)
-    mean_h0 = dropdims(mean(perm_maps; dims=3); dims=3)
-    std_h0  = dropdims(std(perm_maps;  dims=3); dims=3)
+    mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
+    std_h0  = dropdims(std(perm_maps, dims=3), dims=3)
 
     # z-score the real difference map against the null distribution
     zmap = @. (spec_diff - mean_h0) / std_h0

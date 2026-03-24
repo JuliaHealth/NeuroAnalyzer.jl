@@ -38,16 +38,17 @@ function locs_details(
     z::Float64,
     theta_sph::Float64,
     radius_sph::Float64,
-    phi_sph::Float64,
+    phi_sph::Float64
 }
 
-    !(length(get_channel(obj, ch=ch)) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    # validate
+    length(get_channel(obj, ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     ch = intersect(obj.locs[!, :label], [ch])
     locs = Base.filter(:label => in(ch), obj.locs)
-    !(DataFrames.nrow(locs) == 1) && throw(ArgumentError("Channel has no location details."))
+    DataFrames.nrow(locs) == 1 || throw(ArgumentError("Channel has no location details."))
 
-    l = obj.locs[1, :label]
+    label = obj.locs[1, :label]
     x = obj.locs[1, :loc_x]
     y = obj.locs[1, :loc_y]
     z = obj.locs[1, :loc_z]
@@ -58,7 +59,7 @@ function locs_details(
     phi_sph = obj.locs[1, :loc_phi_sph]
 
     if out
-        println("  Label: $l")
+        println("  Label: $label")
         println("  Theta: $theta_pl (polar)")
         println(" Radius: $radius_pl (polar)")
         println("      X: $x (spherical)")
@@ -69,16 +70,6 @@ function locs_details(
         println("    Phi: $phi_sph (spherical)")
     end
 
-    return (
-        label = l,
-        theta_pl = theta_pl,
-        radius_pl = radius_pl,
-        x = x,
-        y = y,
-        z = z,
-        theta_sph = theta_sph,
-        radius_sph = radius_sph,
-        phi_sph = phi_sph,
-    )
+    return (; label, theta_pl, radius_pl, x, y, z, theta_sph, radius_sph, phi_sph)
 
 end

@@ -129,26 +129,26 @@ function _ch_idx(
     # expand "meg" → ["mag", "grad"]
     if any(isequal("meg"), l)
         idx = findfirst(isequal("meg"), l)
-        l = [l[1:(idx - 1)]; "mag"; "grad"; l[(idx + 1):end]]
+        l = [l[1:(idx - 1)], "mag"; "grad"; l[(idx + 1):end]]
     end
 
     # expand "nirs" → all NIRS sub-types
     if any(isequal("nirs"), l)
         idx = findfirst(isequal("nirs"), l)
-        l = [l[1:(idx - 1)]; "nirs_int"; _NIRS_TYPES; l[(idx + 1):end]]
+        l = [l[1:(idx - 1)], "nirs_int"; _NIRS_TYPES; l[(idx + 1):end]]
     end
 
     # expand "sensors" → ["accel", "magfld", "orient", "angvel"]
     if any(isequal("sensors"), l)
         idx = findfirst(isequal("sensors"), l)
-        l = [l[1:(idx - 1)]; "accel"; "magfld"; "orient"; "angvel"; l[(idx + 1):end]]
+        l = [l[1:(idx - 1)], "accel"; "magfld"; "orient"; "angvel"; l[(idx + 1):end]]
     end
 
     # expand "bad" → labels of channels flagged as bad
     if any(isequal("bad"), l)
         idx  = findfirst(isequal("bad"), l)
         bads = labels(obj)[obj.header.recording[:bad_channel] .== true]
-        l    = [l[1:(idx - 1)]; bads; l[(idx + 1):end]]
+        l    = [l[1:(idx - 1)], bads; l[(idx + 1):end]]
     end
 
     length(l) == 0 && return Int64[]

@@ -33,7 +33,7 @@ function ftt_analyze(
         tap_d::Vector{Vector{Float64}},
         taps_int::Vector{Int64},
         tap_t_int::Vector{Vector{Float64}},
-        tap_d_int::Vector{Vector{Float64}},
+        tap_d_int::Vector{Vector{Float64}}
     }
 )::@NamedTuple{
     n::Int64,
@@ -66,8 +66,8 @@ function ftt_analyze(
 
     # sum(abs2, x) = Σ xᵢ² - avoids allocating x .^ 2 array.
     t_rmssd = round(sqrt(sum(abs2, sd) / length(sd)), digits = 1)
-    t_sdsd  = round(std(sd),                          digits = 1)
+    t_sdsd = round(std(sd), digits = 1)
 
-    return (n = n, t_mean = t_mean, t_median = t_median, t_rmssd = t_rmssd, t_sdsd = t_sdsd)
+    return (;n, t_mean, t_median, t_rmssd, t_sdsd)
 
 end

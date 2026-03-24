@@ -155,7 +155,7 @@ function import_ft(
     if "time" in keys(dataset)
         if ep_n == 1
             raw_t = Float64.(dataset["time"][1][:])
-            epoch_time = round.(raw_t .- raw_t[1]; digits = 4)
+            epoch_time = round.(raw_t .- raw_t[1], digits = 4)
             time_pts = epoch_time
         else
             epoch_time = round.(Float64.(dataset["time"][1][:]); digits = 4)
@@ -334,9 +334,9 @@ function import_ft(
         end
 
         lp = "lowpass" in keys(hdr["orig"]) ?
-                string(round(hdr["orig"]["lowpass"][1];  digits=1)) : "?"
+                string(round(hdr["orig"]["lowpass"][1],  digits=1)) : "?"
         hp = "highpass" in keys(hdr["orig"]) ?
-                string(round(hdr["orig"]["highpass"][1]; digits=1)) : "?"
+                string(round(hdr["orig"]["highpass"][1], digits=1)) : "?"
 
         r = _create_recording_meg(
             data_type = data_type,
@@ -447,7 +447,7 @@ function import_ft(
     _info("Imported: " *
         uppercase(obj.header.recording[:data_type]) *
         " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end]; digits=2)) s)")
+        "; $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

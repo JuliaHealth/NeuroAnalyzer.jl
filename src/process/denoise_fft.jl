@@ -50,8 +50,9 @@ function denoise_fft(
     # zero coefficients above threshold
     f_idx = s_pow .> t
     s_fft[f_idx] .= 0
+    s = abs.(ifft0(s_fft, pad))
 
-    return (s = abs.(ifft0(s_fft, pad)), f_idx = f_idx)
+    return (; s, f_idx)
 
 end
 

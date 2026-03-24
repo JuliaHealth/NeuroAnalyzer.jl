@@ -124,7 +124,7 @@ function pacor(
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    !(size(s, 1) == 1) && throw(ArgumentError("s must have 1 channel."))
+    size(s, 1) == 1 || throw(ArgumentError("s must have 1 channel."))
 
     # number of channels
     ch_n = size(s, 1)
@@ -170,7 +170,7 @@ For ERP objects, epoch 1 is the trial-averaged waveform and is prepended to the 
 Named tuple:
 
 - `pac::Array{Float64, 3}`: partial auto-correlations
-- `l::Vector{Float64}`: lag values in seconds
+- `lags::Vector{Float64}`: lag values in seconds
 """
 function pacor(
     obj::NeuroAnalyzer.NEURO;
@@ -178,9 +178,13 @@ function pacor(
     l::Real = 1,
     demean::Bool = true,
     method::Symbol = :yw
-)::@NamedTuple{pac::Array{Float64, 3}, l::Vector{Float64}}
+)::@NamedTuple{
+    pac::Array{Float64, 3},
+    lags::Vector{Float64}
+}
 
-    !(!(method === :yw && l <= 1)) && throw(ArgumentError("For method=:yw, l must be > 1."))
+    # validate
+    (method === :yw && l > 1) || throw(ArgumentError("For method=:yw, l must be > 1."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -188,10 +192,12 @@ function pacor(
     # convert l from seconds to samples for the inner call
     l_samp = round(Int64, l * sr(obj))
 
-    !(l_samp <= size(obj, 2)) && throw(ArgumentError("l must be <= $(size(obj, 2) / sr(obj)) s."))
-    !(l_samp >= 0) && throw(ArgumentError("l must be >= 0."))
+    # validate
+    l_samp <= size(obj, 2) || throw(ArgumentError("l must be <= $(size(obj, 2) / sr(obj)) s."))
+    l_samp >= 0 || throw(ArgumentError("l must be >= 0."))
 
     if datatype(obj) == "erp"
+
         pac = pacor(
             @view(obj.data[ch, :, 2:end]),
             l = l_samp,
@@ -199,18 +205,21 @@ function pacor(
             method = method
         )
         pac = cat(mean(pac, dims = 3), pac, dims = 3)
+
     else
+
         pac = pacor(
             @view(obj.data[ch, :, :]),
             l = l_samp,
             demean = demean,
             method = method
         )
+
     end
 
     # build the symmetric lag vector in seconds
     lags = collect((-l_samp):l_samp) ./ sr(obj)
 
-    return (pac = pac, l = lags)
+    return (; pac, lags)
 
 end

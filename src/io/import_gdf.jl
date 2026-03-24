@@ -107,7 +107,8 @@ function import_gdf(
 
             units = String[]
             for _ in 1:ch_n
-                buf = UInt8[]; readbytes!(fid, buf, 8)
+                buf = UInt8[]
+                readbytes!(fid, buf, 8)
                 push!(units, replace(strip(String(Char.(buf))), '\0' => "", '\x10' => ""))
             end
             units = replace(lowercase.(units), "uv" => "μV")
@@ -145,7 +146,8 @@ function import_gdf(
 
             # obsolete physical units (6 bytes each) - consumed to advance position
             for _ in 1:ch_n
-                buf = UInt8[]; readbytes!(fid, buf, 6)
+                buf = UInt8[]
+                readbytes!(fid, buf, 6)
             end
 
             # active unit codes (2 bytes each, bit-encoded SI prefix + unit)
@@ -222,7 +224,9 @@ function import_gdf(
             gdf_type = read_bin_fields(fid, ch_n, 4, Int32)
 
             # 3D electrode locations
-            loc_x = Float32[]; loc_y = Float32[]; loc_z = Float32[]
+            loc_x = Float32[]
+            loc_y = Float32[]
+            loc_z = Float32[]
             for _ in 1:ch_n
                 buf = UInt8[]
                 readbytes!(fid, buf, 4); push!(loc_x, reinterpret(Float32, buf)[1])
@@ -235,7 +239,8 @@ function import_gdf(
             if file_type_ver >= 2.19
                 imp = zeros(Float64, ch_n)
                 for idx in 1:ch_n
-                    buf = UInt8[]; readbytes!(fid, buf, 20)
+                    buf = UInt8[]
+                    readbytes!(fid, buf, 20)
                     (unit_val[idx] == 4256 || unit_val[idx] == 4288) &&
                         (imp[idx] = reinterpret(Float32, buf[1:4])[1])
                 end
@@ -244,10 +249,12 @@ function import_gdf(
                 # GDF 1.x encodes impedance as a single byte; scale as 2^(byte/8)
                 imp = zeros(Float64, ch_n)
                 for idx in 1:ch_n
-                    buf = UInt8[]; readbytes!(fid, buf, 1)
+                    buf = UInt8[]
+                    readbytes!(fid, buf, 1)
                     imp[idx] = Float64(2^(buf[1] / 8))
                 end
-                buf = UInt8[]; readbytes!(fid, buf, 19 * ch_n) # skip padding
+                buf = UInt8[]
+                readbytes!(fid, buf, 19 * ch_n) # skip padding
             end
         end
 
@@ -289,10 +296,12 @@ function import_gdf(
 
         # skip TLV block if present (GDF 2.1+)
         if file_type_ver >= 2.1 && (etv_hdr - (ch_n + 1)) * 256 > 0
-            tlv_tag = UInt8[]; readbytes!(fid, tlv_tag, 1)
+            tlv_tag = UInt8[]
+            readbytes!(fid, tlv_tag, 1)
             if tlv_tag != [0x00]
                 _warn("TLV not supported; please send this file to adam.wysokinski@neuroanalyzer.org")
-                tlv_len_buf = UInt8[]; readbytes!(fid, tlv_len_buf, 3)
+                tlv_len_buf = UInt8[]
+                readbytes!(fid, tlv_len_buf, 3)
                 b1 = Int32(tlv_len_buf[1]) << 8
                 b2 = Int32(tlv_len_buf[2]) << 16
                 b3 = -Int32(-tlv_len_buf[3]) << 24
@@ -305,13 +314,14 @@ function import_gdf(
 
         # read each channel's raw bytes for all records at once.
         for ch in 1:ch_n
-            n_samp  = Int(samples_per_datarecord[ch]) * data_records
+            n_samp = Int(samples_per_datarecord[ch]) * data_records
             type_id = gdf_type[ch]
             if !haskey(gdf_type_map, type_id)
                 throw(ArgumentError("Unknown GDF data type code $(type_id) for channel $ch."))
             end
-            bps, T  = gdf_type_map[type_id]
-            buf     = UInt8[]; readbytes!(fid, buf, bps * n_samp)
+            bps, T = gdf_type_map[type_id]
+            buf = UInt8[]
+            readbytes!(fid, buf, bps * n_samp)
             ch_signals[ch] = Float64.(reinterpret(T, buf))
         end
     end
@@ -368,8 +378,11 @@ function import_gdf(
                 etp = etp[5:end]
             end
 
-            start = Float64[]; len = Float64[]
-            id = String[];  value = String[]; ch = Int[]
+            start = Float64[]
+            len = Float64[]
+            id = String[]
+            value = String[]
+            ch = Int[]
 
             for _ in 1:etp_number
                 push!(id, "event")

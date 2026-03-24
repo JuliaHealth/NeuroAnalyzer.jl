@@ -5,9 +5,9 @@ function _gradient(
     Union{
         Vector{Interpolations.SVector{1, Float64}},
         Matrix{Interpolations.SVector{2, Float64}},
-        Array{Interpolations.SVector{3, Float64}},
+        Array{Interpolations.SVector{3, Float64}}
     },
-    Union{Vector{Float64}, Matrix{Float64}, Array{Float64, 3}},
+    Union{Vector{Float64}, Matrix{Float64}, Array{Float64, 3}}
 }
     # negate x when rev=true so that gradients point toward the minimum;
     # the sign flip is applied before interpolation to avoid a second allocation.

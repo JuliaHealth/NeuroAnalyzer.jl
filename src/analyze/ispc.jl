@@ -53,14 +53,7 @@ function ispc(
     ispcv = abs(mcphd)
     ispca = DSP.angle(mcphd)
 
-    return (
-        ispcv = ispcv,
-        ispca = ispca,
-        sd = sd,
-        phd = phd,
-        s1ph = s1ph,
-        s2ph = s2ph,
-    )
+    return (; ispcv, ispca, sd, phd, s1ph, s2ph)
 
 end
 
@@ -119,11 +112,11 @@ function ispc(
         end
     end
 
-    # copy lower triangle to upper triangle
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     ispcv = _copy_lt2ut(ispcv)
     ispca = _copy_lt2ut(ispca)
 
-    return (ispcv = ispcv, ispca = ispca)
+    return (; ispcv, ispca)
 
 end
 
@@ -209,13 +202,6 @@ function ispc(
         s2ph[ch_idx, :, ep_idx] = ispc_data.s2ph
     end
 
-    return (
-        ispcv = ispcv,
-        ispca = ispca,
-        sd = sd,
-        phd = phd,
-        s1ph = s1ph,
-        s2ph = s2ph
-    )
+    return (; ispcv, ispca, sd, phd, s1ph, s2ph)
 
 end

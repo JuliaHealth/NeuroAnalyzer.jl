@@ -41,7 +41,7 @@ function edit_locs(
     )::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj_new; ch = ch)
-    !(length(ch) == 1) && throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     obj_new = deepcopy(obj)

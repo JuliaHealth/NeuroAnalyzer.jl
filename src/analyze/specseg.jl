@@ -25,10 +25,17 @@ Named tuple:
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
 function spec_seg(
-        sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real}
-    )::@NamedTuple{
-        segp::Matrix{Float64}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real},
-    }
+    sp::Matrix{Float64},
+    sf::Vector{Float64},
+    st::Vector{Float64};
+    t::Tuple{Real, Real},
+    f::Tuple{Real, Real}
+)::@NamedTuple{
+    segp::Matrix{Float64},
+    segs::Vector{Tuple{Float64, Float64}},
+    tidx::Tuple{Real, Real},
+    fidx::Tuple{Real, Real},
+}
 
     _check_tuple(t, (st[1], st[end]), "t")
     _check_tuple(f, (sf[1], sf[end]), "f")
@@ -40,8 +47,11 @@ function spec_seg(
 
     segp = sp[fidx1:fidx2, tidx1:tidx2]
     segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
+    
+    tidx = (tidx1, tidx2)
+    fidx = (fidx1, fidx2)
 
-    return (segp = segp, segs = segs, tidx = (tidx1, tidx2), fidx = (fidx1, fidx2))
+    return (; segp, segs, tidx, fidx)
 
 end
 
@@ -69,14 +79,21 @@ Named tuple:
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
 function spec_seg(
-        sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real}
-    )::@NamedTuple{
-        segp::Array{Float64, 3}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real},
-    }
+    sp::AbstractArray,
+    sf::AbstractVector,
+    st::AbstractVector;
+    ch::Int64,
+    t::Tuple{Real, Real},
+    f::Tuple{Real, Real}
+)::@NamedTuple{
+    segp::Array{Float64, 3},
+    segs::Vector{Tuple{Float64, Float64}},
+    tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}
+}
 
     _check_tuple(t, (st[1], st[end]), "t")
     _check_tuple(f, (sf[1], sf[end]), "f")
-    !(ch in axes(sp, 3)) && throw(ArgumentError("ch must be in [1, $(size(sp, 3))]."))
+    ch in axes(sp, 3) || throw(ArgumentError("ch must be in [1, $(size(sp, 3))]."))
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)
@@ -85,7 +102,10 @@ function spec_seg(
     segp = sp[fidx1:fidx2, tidx1:tidx2, ch, :]
     segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
 
-    return (segp = segp, segs = segs, tidx = (tidx1, tidx2), fidx = (fidx1, fidx2))
+    tidx = (tidx1, tidx2)
+    fidx = (fidx1, fidx2)
+
+    return (; segp, segs, tidx, fidx)
 
 end
 
@@ -108,26 +128,31 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function spec_flim(
-        p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real}
-    )::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
+    p::AbstractArray,
+    f::AbstractVector;
+    flim::Tuple{Real, Real}
+)::@NamedTuple{
+    p::Union{Array{Float64, 3}, Array{Float64, 4}},
+    f::Vector{Float64}
+}
 
-    !(ndims(p) in [3, 4]) && throw(ArgumentError("Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."))
+    ndims(p) in [3, 4] || throw(ArgumentError("Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."))
 
     _check_tuple(flim, (f[1], f[end]), "flim")
 
     f1_idx = vsearch(flim[1], f)
     f2_idx = vsearch(flim[2], f)
-    f_new = f[f1_idx:f2_idx]
+    f = f[f1_idx:f2_idx]
 
     if ndims(p) == 3
         # power spectrum
-        p_new = p[:, f1_idx:f2_idx, :]
+        p = p[:, f1_idx:f2_idx, :]
     else
         # spectrogram
-        p_new = p[f1_idx:f2_idx, :, :, :]
+        p = p[f1_idx:f2_idx, :, :, :]
     end
 
-    return (p = p_new, f = f_new)
+    return (; p, f)
 
 end
 
@@ -150,17 +175,22 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function spec_tlim(
-        p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real}
-    )::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
+    p::AbstractArray,
+    t::AbstractVector;
+    seg::Tuple{Real, Real}
+)::@NamedTuple{
+    p::Array{Float64, 4},
+    t::Vector{Float64}
+}
 
     _chk4d(p)
     _check_tuple(seg, (t[1], t[end]), "seg")
 
     t1_idx = vsearch(seg[1], t)
     t2_idx = vsearch(seg[2], t)
-    t_new = t[t1_idx:t2_idx]
-    p_new = p[:, t1_idx:t2_idx, :, :]
+    t = t[t1_idx:t2_idx]
+    p = p[:, t1_idx:t2_idx, :, :]
 
-    return (p = p_new, t = t_new)
+    return (; p, t)
 
 end

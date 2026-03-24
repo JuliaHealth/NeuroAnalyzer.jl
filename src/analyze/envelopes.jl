@@ -215,18 +215,21 @@ Calculate temporal envelope: mean and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: mean temporal envelope
-- `eu::Matrix{Float64}`: 95% CI upper bound
+- `em::Matrix{Float64}`: mean temporal envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
+- `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
 """
 function tenv_mean(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64 = 32
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 32
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
-    t::Vector{Float64},
+    eu::Matrix{Float64},
+    t::Vector{Float64}
 }
 
     # validate
@@ -291,7 +294,7 @@ function tenv_mean(
 
     end
 
-    return (; em, eu, el, t)
+    return (; em, el, eu, t)
 
 end
 
@@ -311,18 +314,21 @@ Calculate temporal envelope: median and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: median temporal envelope
-- `eu::Matrix{Float64}`: 95% CI upper bound
+- `em::Matrix{Float64}`: median temporal envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
+- `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
 """
 function tenv_median(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64 = 32
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 32
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
-    t::Vector{Float64},
+    eu::Matrix{Float64},
+    t::Vector{Float64}
 }
 
     # validate
@@ -386,7 +392,7 @@ function tenv_median(
 
     end
 
-    return (; em, eu, el, t)
+    return (; em, el, eu, t)
 
 end
 
@@ -417,7 +423,7 @@ Calculate power spectrum (in dB) envelope.
 
 Named tuple:
 
-- `e::Array{Float64, 3}`: power spectrum envelope, shape `(channels, frequencies, epochs)`
+- `e::Array{Float64, 3}`: power spectrum envelope, shape (channels, frequencies, epochs)
 - `f::Vector{Float64}`: frequencies
 """
 function penv(
@@ -431,7 +437,10 @@ function penv(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true
-)::@NamedTuple{e::Array{Float64, 3}, f::Vector{Float64}}
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    f::Vector{Float64}
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -444,7 +453,6 @@ function penv(
     fs = sr(obj)
 
     # pilot call to determine the frequency vector length
-    _log_off()
     psd_data = psd(
         @view(obj.data[ch[1], :, 1]),
         fs = fs,
@@ -457,7 +465,6 @@ function penv(
         demean = demean,
     )
     f = psd_data.f
-    _log_on()
 
     # pre-allocate output
     e = zeros(ch_n, length(pw), ep_n)
@@ -479,7 +486,6 @@ function penv(
         )
         e[ch_idx, :, ep_idx] = env_up(psd_data.p, f, d = d)
     end
-    _log_on()
 
     return (e = e, f = f)
 
@@ -513,10 +519,10 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: mean power envelope
-- `eu::Matrix{Float64}`: 95% CI upper bound
+- `em::Matrix{Float64}`: mean power envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
-- `f::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
+- `eu::Matrix{Float64}`: 95% CI upper bound
+- `f::Vector{Float64}`: frequencies
 """
 function penv_mean(
     obj::NeuroAnalyzer.NEURO;
@@ -532,9 +538,9 @@ function penv_mean(
     demean::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
-    f::Vector{Float64},
+    eu::Matrix{Float64},
+    f::Vector{Float64}
 }
 
     # validate
@@ -550,7 +556,7 @@ function penv_mean(
     penv_data = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen,
                     woverlap = woverlap, w = w, ncyc = ncyc, demean = demean)
     pw = penv_data.e
-    f  = penv_data.f
+    f = penv_data.f
 
     # number of channels
     ch_n = size(pw, 1)
@@ -612,7 +618,7 @@ function penv_mean(
 
     end
 
-    return (; em, eu, el, f)
+    return (; em, el, eu, f)
 
 end
 
@@ -644,10 +650,10 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: median power envelope
+- `em::Matrix{Float64}`: median power envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
-- `el::Matrix{Float64}`: power spectrum envelope: 95% CI lower bound
-- `f::Vector{Float64}`: 95% CI lower bound
+- `f::Vector{Float64}`: frequencies
 """
 function penv_median(
     obj::NeuroAnalyzer.NEURO;
@@ -663,8 +669,8 @@ function penv_median(
     demean::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
+    eu::Matrix{Float64},
     f::Vector{Float64}
 }
 
@@ -752,7 +758,7 @@ function penv_median(
 
     end
 
-    return (; em, eu, el, f)
+    return (; em, el, eu, f)
 
 end
 
@@ -766,7 +772,7 @@ Calculate spectral envelope (dominant frequency over time).
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
+- `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
 - `:stft`: short-time Fourier transform
 - `:mt`: multi-tapered periodogram
@@ -794,7 +800,7 @@ function senv(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     d::Int64 = 2,
-    t::Union{Real, Nothing} = nothing,
+    threshold::Union{Real, Nothing} = nothing,
     pad::Int64 = 0,
     method::Symbol = :stft,
     db::Bool = true,
@@ -875,11 +881,11 @@ function senv(
     end
 
     # build the spectrogram time axis and align with the epoch start
-    st = linspace(0, (epoch_len(obj) / fs), size(sp, 2))
-    st .+= obj.epoch_time[1]
+    t = linspace(0, (epoch_len(obj) / fs), size(sp, 2))
+    t .+= obj.epoch_time[1]
 
     # pre-allocate output
-    e = zeros(ch_n, length(st), ep_n)
+    e = zeros(ch_n, length(t), ep_n)
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
@@ -943,8 +949,8 @@ function senv(
 
         # optionally zero out powers above the threshold, then reverse so the
         # highest sub-threshold power becomes the "dominant" frequency
-        if t !== nothing
-            sp_loc[sp_loc .> t] .= 0
+        if !isnothing(threshold)
+            sp_loc[sp_loc .> threshold] .= 0
             reverse!(sp_loc)
             reverse!(sf_loc)
         end
@@ -959,7 +965,7 @@ function senv(
         e[ch_idx, :, ep_idx] = env_up(f_idx, st, d = d)
     end
 
-    return (e = e, t = st)
+    return (; e, t)
 
 end
 
@@ -974,7 +980,7 @@ Calculate spectral envelope: mean and 95% CI.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
+- `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
 - `:stft`: short-time Fourier transform
 - `:mt`: multi-tapered periodogram
@@ -995,10 +1001,10 @@ Calculate spectral envelope: mean and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: spectral envelope: mean
-- `eu::Matrix{Float64}`: spectral envelope: 95% CI upper bound
-- `el::Matrix{Float64}`: spectral envelope: 95% CI lower bound
-- `t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
+- `em::Matrix{Float64}`: mean spectral envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `eu::Matrix{Float64}`: 95% CI upper bound
+- `el::Matrix{Float64}`: 95% CI lower bound
+- `t::Vector{Float64}`: time points
 """
 function senv_mean(
     obj::NeuroAnalyzer.NEURO;
@@ -1018,8 +1024,8 @@ function senv_mean(
     w::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
+    eu::Matrix{Float64},
     t::Vector{Float64}
 } where {T <: CWT}
 
@@ -1037,7 +1043,7 @@ function senv_mean(
         obj,
         ch = ch,
         d = d,
-        t = t,
+        threshold = threshold,
         pad = pad,
         method = method,
         db = db,
@@ -1047,7 +1053,7 @@ function senv_mean(
         wt = wt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w,
+        w = w
     )
     sp = env_data.e
     t = env_data.t
@@ -1099,6 +1105,7 @@ function senv_mean(
             ch = ch,
             dims = 1,
             d = d,
+            threshold = threshold,
             pad = pad,
             method = method,
             db = db,
@@ -1108,7 +1115,7 @@ function senv_mean(
             wt = wt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w,
+            w = w
         )
         em = mean(env_data.em, dims = 2)
         eu = mean(env_data.eu, dims = 2)
@@ -1116,7 +1123,7 @@ function senv_mean(
 
     end
 
-    return (; em, eu, el, t)
+    return (; em, el, eu, t)
 
 end
 
@@ -1131,7 +1138,7 @@ Calculate spectral envelope: median and 95% CI.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: median over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `t::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `t` are zeroed before finding the dominant frequency
+- `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
 - `:stft`: short-time Fourier transform
 - `:mt`: multi-tapered periodogram
@@ -1152,17 +1159,17 @@ Calculate spectral envelope: median and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: median spectral envelope
-- `eu::Matrix{Float64}`: 95% CI upper bound
+- `em::Matrix{Float64}`: median spectral envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
-- `t::Vector{Float64}`: spectrogram time points
+- `eu::Matrix{Float64}`: 95% CI upper bound
+- `t::Vector{Float64}`: time points
 """
 function senv_median(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     dims::Int64,
     d::Int64 = 2,
-    t::Union{Real, Nothing} = nothing,
+    threshold::Union{Real, Nothing} = nothing,
     method::Symbol = :stft,
     pad::Int64 = 0,
     db::Bool = true,
@@ -1175,8 +1182,8 @@ function senv_median(
     w::Bool = true
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
+    eu::Matrix{Float64},
     t::Vector{Float64}
 } where {T <: CWT}
 
@@ -1193,11 +1200,11 @@ function senv_median(
     senv_data = senv(obj,
         ch = ch,
         d = d,
-        t = t,
+        threshold = threshold,
         pad = pad,
         method = method,
-        nt = nt,
         db = db,
+        nt = nt,
         gw = gw,
         ncyc = ncyc,
         wt = wt,
@@ -1256,6 +1263,7 @@ function senv_median(
             ch = ch,
             dims = 1,
             d = d,
+            threshold = threshold,
             pad = pad,
             method = method,
             db = db,
@@ -1274,7 +1282,7 @@ function senv_median(
 
     end
 
-    return (; em, eu, el, t)
+    return (; em, el, eu, t)
 
 end
 
@@ -1293,7 +1301,7 @@ Calculate Hilbert spectrum amplitude envelope.
 
 Named tuple:
 
-- `e::Array{Float64, 3}`: Hilbert amplitude envelope, shape (channels, samples, epochs)
+- `e::Array{Float64, 3}`: Hilbert spectrum amplitude envelope, shape (channels, samples, epochs)
 - `t::Vector{Float64}`: time points
 """
 function henv(
@@ -1349,9 +1357,9 @@ Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: mean Hilbert envelope
-- `eu::Matrix{Float64}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
-- `el::Matrix{Float64}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
+- `em::Matrix{Float64}`: mean Hilbert spectrum amplitude envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `el::Matrix{Float64}`: 95% CI lower bound
+- `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
 """
 function henv_mean(
@@ -1427,7 +1435,7 @@ function henv_mean(
 
     end
 
-    return (; em, eu, el, t)
+    return (; em, el, eu, t)
 
 end
 
@@ -1447,17 +1455,20 @@ Calculate Hilbert spectrum amplitude envelope of `obj`: median and 95% CI.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: Hilbert spectrum amplitude envelope: median
-- `eu::Matrix{Float64}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
-- `el::Matrix{Float64}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
+- `em::Matrix{Float64}`: median Hilbert spectrum amplitude envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `eu::Matrix{Float64}`: 95% CI upper bound
+- `el::Matrix{Float64}`: 95% CI lower bound
 - `t::Vector{Float64}`: time points
 """
 function henv_median(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64 = 32
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 32
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
+    eu::Matrix{Float64},
     t::Vector{Float64}
 }
 
@@ -1527,7 +1538,7 @@ function henv_median(
 
     end
 
-    return (; em, eu, el, t)
+    return (; em, el, eu, t)
 end
 
 """

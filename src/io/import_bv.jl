@@ -150,9 +150,9 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         clabels = soft_filt[!, :name]
         units = soft_filt[!, :unit]
         prefiltering = repeat(["LP: "], ch_n) .*
-                       string.(round.(soft_filt[!, :low_cutoff];  digits = 4)) .*
+                       string.(round.(soft_filt[!, :low_cutoff],  digits = 4)) .*
                        repeat([" Hz, HP: "], ch_n) .*
-                       string.(round.(soft_filt[!, :high_cutoff]; digits = 4)) .*
+                       string.(round.(soft_filt[!, :high_cutoff], digits = 4)) .*
                        " Hz"
     end
     clabels = _clean_labels(string.(clabels))
@@ -393,7 +393,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     _info("Imported: " *
         uppercase(obj.header.recording[:data_type]) *
         " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end]; digits=2)) s)")
+        "; $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

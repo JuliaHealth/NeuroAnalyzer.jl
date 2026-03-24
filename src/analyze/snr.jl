@@ -13,7 +13,7 @@ Calculate SNR between two signals
 
 # Returns
 
-- `snr::Float64`: SNR
+- `Float64`: SNR
 """
 function snr(s1::AbstractVector, s2::AbstractVector)::Float64
 
@@ -32,7 +32,7 @@ Calculate mean-based SNR.
 
 # Returns
 
-- `snr::Float64`: SNR
+- `Float64`: SNR
 
 # References
 
@@ -85,8 +85,13 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function snr(
-        s::AbstractArray; t::Vector{Float64}, type::Symbol = :rms
-    )::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
+    s::AbstractArray;
+    t::Vector{Float64},
+    type::Symbol = :rms
+)::@NamedTuple{
+    sn::Matrix{Float64},
+    f::Vector{Float64}
+}
 
     _check_var(type, [:mean, :rms], "type")
     _chk3d(s)
@@ -94,7 +99,7 @@ function snr(
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    !(ep_n >= 2) && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
+    ep_n >= 2 || throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     f, _ = freqs(t)
     sp = @views NeuroAnalyzer.ftransform(s[1, :, 1])
@@ -119,7 +124,7 @@ function snr(
         end
     end
 
-    return (sn = sn, f = f)
+    return (; sn, f)
 
 end
 
@@ -144,12 +149,16 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function snr(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol = :rms
-    )::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    type::Symbol = :rms
+)::@NamedTuple{
+    sn::Matrix{Float64},
+    f::Vector{Float64}
+}
 
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    sn, f = @views snr(obj.data[ch, :, :], t = obj.epoch_time, type = type)
 
-    return (sn = sn, f = f)
+    return snr(@view(obj.data[ch, :, :]), t = obj.epoch_time, type = type)
 
 end

@@ -422,7 +422,9 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     # classify coil types
-    magnetometers = Int64[];  gradiometers = Int64[];  eeg_chs = Int64[]
+    magnetometers = Int64[]
+    gradiometers = Int64[]
+    eeg_chs = Int64[]
     @inbounds for ch_idx in 1:ch_n
         ct = coil_type[ch_idx]
         if ct in ("vv_planar_w", "vv_planar_t1", "vv_planar_t2", "vv_planar_t3")
@@ -524,7 +526,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 
     # subject / recording metadata
     get_field(d, k) = begin v = d[k]; isnothing(v) ? "" : string(v) end
-    get_num(d, k)   = begin v = d[k]; isnothing(v) ? -1  : v         end
+    get_num(d, k) = begin v = d[k]; isnothing(v) ? -1 : v end
     si = fiff[:meas_info][:subject_info]
 
     date = fiff[:meas_info][:meas_date]
@@ -535,9 +537,9 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
          string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date)))
     end
 
-    lp = isnothing(fiff[:meas_info][:lowpass])   ? 0 : round(fiff[:meas_info][:lowpass];   digits=1)
-    hp = isnothing(fiff[:meas_info][:highpass])  ? 0 : round(fiff[:meas_info][:highpass];  digits=1)
-    lf = isnothing(fiff[:meas_info][:line_freq]) ? 0 : round(fiff[:meas_info][:line_freq]; digits=1)
+    lp = isnothing(fiff[:meas_info][:lowpass]) ? 0 : round(fiff[:meas_info][:lowpass], digits=1)
+    hp = isnothing(fiff[:meas_info][:highpass]) ? 0 : round(fiff[:meas_info][:highpass], digits=1)
+    lf = isnothing(fiff[:meas_info][:line_freq]) ? 0 : round(fiff[:meas_info][:line_freq], digits=1)
 
     # ------------------------------------------------------------------ #
     # assemble NEURO object                                              #
@@ -591,7 +593,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     _info("Imported: " *
         uppercase(obj.header.recording[:data_type]) *
         " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end]; digits=2)) s)")
+        "; $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

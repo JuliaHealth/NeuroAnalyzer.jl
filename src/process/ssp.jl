@@ -57,7 +57,7 @@ function generate_ssp_projectors(
     # create projectors
     ssp_projectors = I(count(obj.header.recording[:ssp_channels])) .- (U * U')
 
-    return (ssp_projectors = ssp_projectors, U = U)
+    return (; ssp_projectors, U)
 
 end
 

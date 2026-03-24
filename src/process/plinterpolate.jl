@@ -152,36 +152,41 @@ Named tuple:
 - `int_y::Vector{Float64}`: Y-axis coordinates
 """
 function plinterpolate(
-        s::Matrix{Float64};
-        locs::DataFrame,
-        ch::Int64,
-        imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
-        cart::Bool = false,
-        ifactor::Int64 = 100
-    )::@NamedTuple{int_s::Matrix{Float64}, int_x::Vector{Float64}, int_y::Vector{Float64}}
+    s::Matrix{Float64};
+    locs::DataFrame,
+    ch::Int64,
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+    cart::Bool = false,
+    ifactor::Int64 = 100
+)::@NamedTuple{
+    int_s::Matrix{Float64},
+    int_x::Vector{Float64},
+    int_y::Vector{Float64}
+}
 
-    !(ch in axes(s, 1)) && throw(ArgumentError("ch must be in [1, $(size(s, 1))"))
+    # validate
+    ch in axes(s, 1) || throw(ArgumentError("ch must be in [1, $(size(s, 1))"))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     locs = locs[ch, :]
 
-    if !cart
+    if cart
+        loc_x = locs[ch, :loc_x]
+        loc_y = locs[ch, :loc_y]
+    else
         loc_x = zeros(length(ch))
         loc_y = zeros(length(ch))
         for idx in eachindex(ch)
             loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
-    else
-        loc_x = locs[ch, :loc_x]
-        loc_y = locs[ch, :loc_y]
     end
 
     loc_x = _n2v(loc_x)
     loc_y = _n2v(loc_y)
 
-    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, ifactor, imethod, nmethod)
+    int_s, int_x, int_y = _interpolate2d(s, loc_x, loc_y, ifactor, imethod, nmethod)
 
-    return (int_s = s_interpolated, int_x = interpolated_x, int_y = interpolated_y)
+    return (; int_s, int_x, int_y)
 
 end

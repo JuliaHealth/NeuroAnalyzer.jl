@@ -22,7 +22,7 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     plot_size = (800, 800)
     fig = GLMakie.Figure(size = plot_size, figure_padding = 0)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         aspect = 1,
         xlabel = "",
         ylabel = "",

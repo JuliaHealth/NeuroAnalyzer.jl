@@ -31,8 +31,9 @@ function efield2d(
     ey::Matrix{Float64}
 }
 
-    !(length(qx) == length(q)) && throw(ArgumentError("Length of qx and number of charges must be equal."))
-    !(length(qx) == length(q)) && throw(ArgumentError("Length of qy and number of charges must be equal."))
+    # validate
+    length(qx) == length(q) || throw(ArgumentError("Length of qx and number of charges must be equal."))
+    length(qx) == length(q) || throw(ArgumentError("Length of qy and number of charges must be equal."))
 
     m = 100
     n = 100
@@ -72,6 +73,6 @@ function efield2d(
     ex = ex ./ norm_e
     ey = ey ./ norm_e
 
-    return (qq = qq, norm_e = norm_e, ex = ex, ey = ey)
+    return (; qq, norm_e, ex, ey)
 
 end

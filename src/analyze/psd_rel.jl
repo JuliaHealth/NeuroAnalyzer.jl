@@ -34,19 +34,22 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function psd_rel(
-        s::AbstractVector;
-        fs::Int64,
-        db::Bool = false,
-        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true
-    )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+    s::AbstractVector;
+    fs::Int64,
+    db::Bool = false,
+    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true
+)::@NamedTuple{
+    p::Vector{Float64},
+    f::Vector{Float64}
+}
 
     ref_pw = if flim === nothing
         total_power(
@@ -77,7 +80,7 @@ function psd_rel(
         )
     end
 
-    p, f = psd(
+    psd_data = psd(
         s,
         fs = fs,
         db = db,
@@ -90,10 +93,11 @@ function psd_rel(
         gw = gw,
         demean = demean,
     )
-
+    p = psd_data.p
+    f = psd_data.f
     p = p ./ ref_pw
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end
 
@@ -131,24 +135,27 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function psd_rel(
-        s::AbstractMatrix;
-        fs::Int64,
-        db::Bool = false,
-        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true
-    )::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+    s::AbstractMatrix;
+    fs::Int64,
+    db::Bool = false,
+    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true
+)::@NamedTuple{
+    p::Matrix{Float64},
+    f::Vector{Float64}
+}
 
     ch_n = size(s, 1)
 
-    _, f = psd_rel(
-        s[1, :, 1];
+    f = psd_rel(
+        s[1, :, 1],
         fs = fs,
         db = db,
         flim = flim,
@@ -159,14 +166,14 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
-    )
+        demean = demean
+    ).f
 
     p = zeros(ch_n, length(f))
 
     @inbounds for ch_idx in 1:ch_n
-        p[ch_idx, :], _ = psd_rel(
-            s[ch_idx, :],
+        p[ch_idx, :] = psd_rel(
+            @view(s[ch_idx, :]),
             fs = fs,
             db = db,
             flim = flim,
@@ -177,11 +184,11 @@ function psd_rel(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean,
-        )
+            demean = demean
+        ).p
     end
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end
 
@@ -237,8 +244,8 @@ function psd_rel(
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, f = psd_rel(
-        s[1, :, 1];
+    f = psd_rel(
+        s[1, :, 1],
         fs = fs,
         db = db,
         method = method,
@@ -248,15 +255,15 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
-    )
+        demean = demean
+    ).f
 
     p = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :static for ch_idx in 1:ch_n
-            p[ch_idx, :, ep_idx], _ = psd_rel(
-                s[ch_idx, :, ep_idx],
+            p[ch_idx, :, ep_idx] = psd_rel(
+                @view(s[ch_idx, :, ep_idx]),
                 fs = fs,
                 db = db,
                 flim = flim,
@@ -267,12 +274,12 @@ function psd_rel(
                 w = w,
                 ncyc = ncyc,
                 gw = gw,
-                demean = demean,
-            )
+                demean = demean
+            ).p
         end
     end
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end
 
@@ -324,9 +331,11 @@ function psd_rel(
         demean::Bool = true
     )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    p, f = @views psd_rel(
-        obj.data[ch, :, :],
+
+    return psd_rel(
+        @view(obj.data[ch, :, :]),
         fs = sr(obj),
         flim = flim,
         db = db,
@@ -337,9 +346,7 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
-
-    return (p = p, f = f)
 
 end

@@ -204,7 +204,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     _info("Imported: " *
         uppercase(obj.header.recording[:data_type]) *
         " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end]; digits=2)) s)")
+        "; $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

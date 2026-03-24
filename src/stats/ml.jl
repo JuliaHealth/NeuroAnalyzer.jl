@@ -154,7 +154,7 @@ function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Flo
     n = tp + tn + fp + fn
     n > 0 || throw(ArgumentError("tp + tn + fp + fn must be > 0."))
 
-    mr  = (fp + fn) / n
+    mr = (fp + fn) / n
     acc = 1 - mr
 
     return (; mr, acc)

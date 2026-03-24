@@ -477,7 +477,7 @@ function plot_line(
             label = rlabels[idx],
             color = cmap[idx],
             colormap = pal,
-            colorrange = eachindex(xlabels),
+            colorrange = eachindex(xlabels)
         )
     end
 
@@ -985,7 +985,7 @@ function plot_eros(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.ylims!(ax, flim)
         ax.titlesize = 18
@@ -1029,7 +1029,7 @@ function plot_eros(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.ylims!(ax1, flim)
         ax1.titlesize = 18
@@ -1074,7 +1074,7 @@ function plot_eros(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.ylims!(ax2, flim)
         ax2.titlesize = 18
@@ -1186,7 +1186,7 @@ function plot_erop(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 18
@@ -1228,7 +1228,7 @@ function plot_erop(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax1, flim)
         ax1.titlesize = 18
@@ -1265,7 +1265,7 @@ function plot_erop(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax2, flim)
         ax2.titlesize = 18
@@ -1338,7 +1338,7 @@ function plot_icatopo(
             contours = contours,
             electrodes = electrodes,
             ps = ps,
-            cb = true,
+            cb = true
         )
         push!(fig_topo, fig_tmp)
     end
@@ -1611,7 +1611,7 @@ function plot_imf(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
     else
         ax = GLMakie.Axis(
@@ -1629,7 +1629,7 @@ function plot_imf(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
     end
     GLMakie.ylims!(ax, ylim)
@@ -1934,7 +1934,7 @@ function plot_dwc(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.ylims!(ax, ylim)
         ax.titlesize = 18
@@ -1960,7 +1960,7 @@ function plot_dwc(
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax, _xlims(t))
         GLMakie.ylims!(ax, ylim)

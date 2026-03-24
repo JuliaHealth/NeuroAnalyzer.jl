@@ -731,7 +731,7 @@ function plot_filter(;
             rp = !isnothing(rp) ? $rp : nothing,
             rs = !isnothing(rs) ? $rs : nothing,
             bw = !isnothing(bw) ? $bw : nothing,
-            w = w,
+            w = w
         )
     )
 
@@ -758,7 +758,7 @@ function plot_filter(;
         end
 
         ax1 = GLMakie.Axis(
-            fig[1, 1];
+            fig[1, 1],
             xlabel = "Frequency [Hz]",
             ylabel = "Magnitude [dB]",
             title = title,
@@ -772,7 +772,7 @@ function plot_filter(;
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax1, flim)
         GLMakie.ylims!(ax1, (-100, 20))
@@ -786,7 +786,7 @@ function plot_filter(;
             ax1,
             f,
             H,
-            color = mono ? :black : :blue,
+            color = mono ? :black : :blue
         )
 
         phresp = lift(DSP.phaseresp, flt)
@@ -809,7 +809,7 @@ function plot_filter(;
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax2, flim)
         ax2.titlesize = 18
@@ -823,7 +823,7 @@ function plot_filter(;
             f,
             phi,
             color = mono ? :black : :blue,
-            nan_color = mono ? :black : :blue,
+            nan_color = mono ? :black : :blue
         )
 
         phresp = lift(DSP.phaseresp, flt)
@@ -844,7 +844,7 @@ function plot_filter(;
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax3, flim)
         ax3.titlesize = 18
@@ -857,7 +857,7 @@ function plot_filter(;
             ax3,
             f,
             tau,
-            color = mono ? :black : :blue,
+            color = mono ? :black : :blue
         )
 
     else
@@ -878,7 +878,7 @@ function plot_filter(;
         end
 
         ax1 = GLMakie.Axis(
-            fig[1, 1];
+            fig[1, 1],
             xlabel = "Frequency [Hz]",
             ylabel = "Magnitude [dB]",
             title = title,
@@ -892,7 +892,7 @@ function plot_filter(;
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax1, flim)
         GLMakie.ylims!(ax1, (-100, 20))
@@ -906,7 +906,7 @@ function plot_filter(;
             ax1,
             f,
             H,
-            color = mono ? :black : :blue,
+            color = mono ? :black : :blue
         )
 
         fresp = lift(_fir_response, flt)
@@ -931,7 +931,7 @@ function plot_filter(;
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax2, flim)
         ax2.titlesize = 18
@@ -944,7 +944,7 @@ function plot_filter(;
             ax2,
             f,
             phi,
-            color = mono ? :black : :blue,
+            color = mono ? :black : :blue
         )
 
 
@@ -966,7 +966,7 @@ function plot_filter(;
             xpanlock = true,
             ypanlock = true,
             xrectzoom = false,
-            yrectzoom = false,
+            yrectzoom = false
         )
         GLMakie.xlims!(ax3, flim)
         ax3.titlesize = 18
@@ -979,7 +979,7 @@ function plot_filter(;
             ax3,
             f,
             tau,
-            color = mono ? :black : :blue,
+            color = mono ? :black : :blue
         )
 
     end
@@ -991,21 +991,21 @@ function plot_filter(;
             cutoff,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :red,
+            color = mono ? :black : :red
         )
         GLMakie.vlines!(
             ax2,
             cutoff,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :red,
+            color = mono ? :black : :red
         )
         GLMakie.vlines!(
             ax3,
             cutoff,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :red,
+            color = mono ? :black : :red
         )
 
         if isa(bw, Observable{Float64})
@@ -1076,42 +1076,42 @@ function plot_filter(;
             c1,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :red,
+            color = mono ? :black : :red
         )
         GLMakie.vlines!(
             ax1,
             c2,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :green,
+            color = mono ? :black : :green
         )
         GLMakie.vlines!(
             ax2,
             c1,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :red,
+            color = mono ? :black : :red
         )
         GLMakie.vlines!(
             ax2,
             c2,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :green,
+            color = mono ? :black : :green
         )
         GLMakie.vlines!(
             ax3,
             c1,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :red,
+            color = mono ? :black : :red
         )
         GLMakie.vlines!(
             ax3,
             c2,
             linestyle = :dash,
             linewidth = 1,
-            color = mono ? :black : :green,
+            color = mono ? :black : :green
         )
 
         if isa(bw, Observable{Float64})

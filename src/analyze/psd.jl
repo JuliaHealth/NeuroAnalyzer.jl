@@ -50,15 +50,19 @@ function psd(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true
-)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+)::@NamedTuple{
+    p::Vector{Float64},
+    f::Vector{Float64}
+}
 
+    # validate
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
-    !(nt >= 1) && throw(ArgumentError("nt must be ≥ 1."))
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(wlen <= length(s)) && throw(ArgumentError("wlen must be ≤ $(length(s))."))
-    !(wlen >= 2) && throw(ArgumentError("wlen must be ≥ 2."))
-    !(woverlap < wlen) && throw(ArgumentError("woverlap must be < $(wlen)."))
-    !(woverlap >= 0) && throw(ArgumentError("woverlap must be ≥ 0."))
+    nt >= 1 || throw(ArgumentError("nt must be ≥ 1."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    wlen <= length(s) || throw(ArgumentError("wlen must be ≤ $(length(s))."))
+    wlen >= 2 || throw(ArgumentError("wlen must be ≥ 2."))
+    woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
+    woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
 
     n = length(s)
 
@@ -112,7 +116,7 @@ function psd(
 
     end
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end
 
@@ -144,7 +148,7 @@ Calculate Power Spectral Density for each channel of a matrix. Default method is
 
 Named tuple:
 
-- `p::Matrix{Float64}`: powers, shape `(channels, frequencies)`
+- `p::Matrix{Float64}`: powers, shape (channels, frequencies)
 - `f::Vector{Float64}`: frequencies
 """
 function psd(
@@ -159,7 +163,10 @@ function psd(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool=true
-)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+)::@NamedTuple{
+    p::Matrix{Float64},
+    f::Vector{Float64}
+}
 
     # pilot call to determine output frequency vector length
     f = psd(
@@ -194,7 +201,7 @@ function psd(
         ).p
     end
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end
 
@@ -227,7 +234,7 @@ Calculate Power Spectral Density for a 3-D signal array. Default method is Welch
 
 Named tuple:
 
-- `p::Array{Float64, 3}`: powers
+- `p::Array{Float64, 3}`: powers, shape (channels, frequencies, epochs)
 - `f::Vector{Float64}`: frequencies
 """
 function psd(
@@ -242,7 +249,10 @@ function psd(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true
-)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+)::@NamedTuple{
+    p::Array{Float64, 3},
+    f::Vector{Float64}
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -288,7 +298,7 @@ function psd(
     ).p
     end
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end
 
@@ -322,7 +332,7 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
 
 Named tuple:
 
-- `p::Array{Float64, 3}`: powers, shape `(channels, frequencies, epochs)`
+- `p::Array{Float64, 3}`: powers, shape (channels, frequencies, epochs)
 - `f::Vector{Float64}`: frequencies (trimmed to `flim`)
 """
 function psd(
@@ -338,14 +348,17 @@ function psd(
     gw::Real = 5,
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
     demean::Bool = true
-)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+)::@NamedTuple{
+    p::Array{Float64, 3},
+    f::Vector{Float64}
+}
 
+    # validate
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    _log_off()
     psd_data = psd(@view(obj.data[ch, :, :]),
         fs = sr(obj),
         db = db,
@@ -358,7 +371,6 @@ function psd(
         gw = gw,
         demean = demean
     )
-    _log_on()
 
     # trim output to requested frequency band
     f1 = vsearch(flim[1], psd_data.f)
@@ -398,10 +410,14 @@ function mwpsd(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     w::Bool = true,
     demean::Bool = true
-)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+)::@NamedTuple{
+    p::Vector{Float64},
+    f::Vector{Float64}
+}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
-    !(pad >= 0) && throw(ArgumentError("pad must be ≥ 0."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
 
     demean && (s = remove_dc(s))
     pad > 0 && (s = pad0(s, pad))
@@ -413,11 +429,11 @@ function mwpsd(
     f = linspace(flim[1], flim[2], nfrq)
 
     if ncyc isa Int64
-        !(ncyc >= 1) && throw(ArgumentError("ncyc must be >= 1"))
+        ncyc >= 1 || throw(ArgumentError("ncyc must be >= 1"))
         ncyc = repeat([ncyc], nfrq)
     else
-        !(ncyc[1] >= 1) && throw(ArgumentError("ncyc[1] must be >= 1"))
-        !(ncyc[2] >= 1) && throw(ArgumentError("ncyc[2] must be >= 1"))
+        ncyc[1] >= 1 || throw(ArgumentError("ncyc[1] must be >= 1"))
+        ncyc[2] >= 1 || throw(ArgumentError("ncyc[2] must be >= 1"))
         ncyc = round.(Int64, logspace(ncyc[1], ncyc[2], nfrq))
     end
 
@@ -430,7 +446,7 @@ function mwpsd(
 
     db && (p = pow2db.(p))
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end
 
@@ -464,7 +480,8 @@ function ghpsd(
     demean::Bool = true
 )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     demean && (s = remove_dc(s))
     flim = (0, fs / 2)
@@ -489,6 +506,6 @@ function ghpsd(
 
     db && (p = pow2db.(p))
 
-    return (p = p, f = f)
+    return (; p, f)
 
 end

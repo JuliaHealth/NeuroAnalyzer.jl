@@ -19,16 +19,16 @@ Calculate cross-covariance.
 
 # Returns
 
-- `xc::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function xcov(
-        s1::AbstractVector,
-        s2::AbstractVector;
-        l::Int64 = round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum
-    )::Array{Float64, 3}
+    s1::AbstractVector,
+    s2::AbstractVector;
+    l::Int64 = round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum
+)::Array{Float64, 3}
 
     _check_var(method, [:sum, :cov, :stat], "method")
 
@@ -103,15 +103,15 @@ Calculate cross-covariance.
 - `xc::Array{Float64, 3}`
 """
 function xcov(
-        s1::AbstractMatrix,
-        s2::AbstractMatrix;
-        l::Int64 = round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum
-    )::Array{Float64, 3}
+    s1::AbstractMatrix,
+    s2::AbstractMatrix;
+    l::Int64 = round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum
+)::Array{Float64, 3}
 
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
     ep_n = size(s1, 2)
 
@@ -146,18 +146,18 @@ Calculate cross-covariance.
 
 # Returns
 
-- `xc::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function xcov(
-        s1::AbstractArray,
-        s2::AbstractArray;
-        l::Int64 = round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum
-    )::Array{Float64, 3}
+    s1::AbstractArray,
+    s2::AbstractArray;
+    l::Int64 = round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum
+)::Array{Float64, 3}
 
-    !(size(s1) == size(s2)) && throw(ArgumentError("s1 and s2 must have the same size."))
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
     _chk3d(s2)
 
@@ -204,24 +204,27 @@ Calculate cross-covariance. For ERP return trial-averaged cross-covariance.
 Named tuple:
 
 - `xc::Array{Float64, 3}`: cross-covariance
-- `l::Vector{Float64}`: lags [s]
+- `lags::Vector{Float64}`: lags [s]
 """
 function xcov(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-        l::Real = 1,
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum
-    )::@NamedTuple{xc::Array{Float64, 3}, l::Vector{Float64}}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    l::Real = 1,
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum
+)::@NamedTuple{
+    xc::Array{Float64, 3},
+    lags::Vector{Float64}
+}
 
-    !(sr(obj1) == sr(obj2)) && throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
-    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
-    !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
     (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
@@ -231,8 +234,8 @@ function xcov(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    !(l <= size(obj1, 2)) && throw(ArgumentError("l must be ≤ $(size(obj1, 2))."))
-    !(l >= 0) && throw(ArgumentError("l must be ≥ 0."))
+    l <= size(obj1, 2) || throw(ArgumentError("l must be ≤ $(size(obj1, 2))."))
+    l >= 0 || throw(ArgumentError("l must be ≥ 0."))
 
     if datatype(obj1) == "erp" && datatype(obj2) == "erp"
         xc = @views xcov(
@@ -249,7 +252,8 @@ function xcov(
             obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean, biased = biased, method = method
         )
     end
+    lags = collect((-l):l) .* 1 / sr(obj1)
 
-    return (xc = xc, l = collect((-l):l) .* 1 / sr(obj1))
+    return (; xc, lags)
 
 end

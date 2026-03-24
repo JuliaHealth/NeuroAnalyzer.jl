@@ -33,9 +33,10 @@ function plot_connectivity_circle(
         threshold_type::Symbol = :neq
     )::GLMakie.Figure
 
-    !(size(m, 1) == length(clabels)) && throw(ArgumentError("Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."))
-    !(size(m, 1) >= 2) && throw(ArgumentError("m must contain data for ≥ 2 channels."))
-    !(size(m, 1) == size(m, 2)) && throw(ArgumentError("m must be a square matrix."))
+    # validate
+    size(m, 1) == length(clabels) || throw(ArgumentError("Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."))
+    size(m, 1) >= 2 || throw(ArgumentError("m must contain data for ≥ 2 channels."))
+    size(m, 1) == size(m, 2) || throw(ArgumentError("m must be a square matrix."))
 
     t = linspace(pi, -pi, size(m, 1) + 1)
     pos_x = zeros(size(m, 1))
@@ -53,7 +54,7 @@ function plot_connectivity_circle(
     plot_size = (800, 800)
     fig = GLMakie.Figure(size = plot_size, figure_padding = 0)
     ax = GLMakie.Axis(
-        fig[1, 1];
+        fig[1, 1],
         xlabel = "",
         ylabel = "",
         title = title,
@@ -61,7 +62,7 @@ function plot_connectivity_circle(
         xticksvisible = false,
         yticksvisible = false,
         xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0)
     )
     hidedecorations!(ax)
     GLMakie.xlims!(ax, (-1.5, 1.5))
@@ -110,7 +111,7 @@ function plot_connectivity_circle(
 
     # draw markers
     for idx in axes(m, 1)
-        GLMakie.scatter!(ax, pos_x[idx], pos_y[idx]; color = :black, markersize = 15)
+        GLMakie.scatter!(ax, pos_x[idx], pos_y[idx], color = :black, markersize = 15)
     end
 
     # draw labels
@@ -123,7 +124,7 @@ function plot_connectivity_circle(
                 text = " " * clabels[idx],
                 fontsize = 12,
                 align = (:left, :center),
-                rotation = ang[idx],
+                rotation = ang[idx]
             )
         else
             GLMakie.text!(
@@ -132,7 +133,7 @@ function plot_connectivity_circle(
                 text = " " * clabels[idx],
                 fontsize = 12,
                 align = (:right, :center),
-                rotation = (ang[idx] + pi),
+                rotation = (ang[idx] + pi)
             )
         end
     end

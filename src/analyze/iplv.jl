@@ -29,7 +29,8 @@ Named tuple:
 Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function iplv(
-    s1::AbstractVector, s2::AbstractVector
+    s1::AbstractVector,
+    s2::AbstractVector
 )::@NamedTuple{
     ipl::Float64,
     sd::Vector{Float64},
@@ -38,6 +39,7 @@ function iplv(
     s2ph::Vector{Float64}
 }
 
+    # validate
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous phases via Hilbert transform
@@ -107,7 +109,7 @@ function iplv(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -115,8 +117,8 @@ function iplv(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # number of channels
     ch_n = length(ch1)
@@ -144,7 +146,7 @@ function iplv(
         s2ph[ch_idx, :, ep_idx] = iplv_data.s2ph
     end
 
-    return (ipl = ipl, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)
+    return (; ipl, sd, phd, s1ph, s2ph)
 
 end
 
@@ -198,9 +200,7 @@ function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
         end
     end
 
-    # mirror lower triangle to upper triangle
-    ipl = _copy_lt2ut(ipl)
-
-    return ipl
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+    return _copy_lt2ut(ipl)
 
 end
