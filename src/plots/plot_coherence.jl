@@ -21,15 +21,15 @@ Plot coherence.
 - `GLMakie.Figure`
 """
 function plot_coherence(
-        coh::Vector{Float64},
-        f::Vector{Float64};
-        flim::Tuple{Real, Real} = (f[1], f[end]),
-        xlabel::String = "Frequency [Hz]",
-        ylabel::String = "Coherence",
-        title::String = "",
-        frq::Symbol = :lin,
-        mono::Bool = false
-    )::GLMakie.Figure
+    coh::Vector{Float64},
+    f::Vector{Float64};
+    flim::Tuple{Real, Real} = (f[1], f[end]),
+    xlabel::String = "Frequency [Hz]",
+    ylabel::String = "Coherence",
+    title::String = "",
+    frq::Symbol = :lin,
+    mono::Bool = false
+)::GLMakie.Figure
 
     !(length(coh) == length(f)) && throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
@@ -102,19 +102,19 @@ Plot multi-channel coherence.
 - `GLMakie.Figure`
 """
 function plot_coherence(
-        coh::Matrix{Float64},
-        f::Vector{Float64};
-        clabels::Vector{String} = string.(1:size(coh, 1)),
-        flim::Tuple{Real, Real} = (f[1], f[end]),
-        xlabel::String = "Frequency [Hz]",
-        ylabel::String = "",
-        title::String = "",
-        frq::Symbol = :lin,
-        avg::Bool = false,
-        ci95::Bool = false,
-        leg::Bool = true,
-        mono::Bool = false
-    )::GLMakie.Figure
+    coh::Matrix{Float64},
+    f::Vector{Float64};
+    clabels::Vector{String} = string.(1:size(coh, 1)),
+    flim::Tuple{Real, Real} = (f[1], f[end]),
+    xlabel::String = "Frequency [Hz]",
+    ylabel::String = "",
+    title::String = "",
+    frq::Symbol = :lin,
+    avg::Bool = false,
+    ci95::Bool = false,
+    leg::Bool = true,
+    mono::Bool = false
+)::GLMakie.Figure
 
     ch_n = size(coh, 1)
 

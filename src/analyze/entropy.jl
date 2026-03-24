@@ -10,7 +10,8 @@ Calculate signal entropy descriptors:
 - Shannon entropy (Wavelets.coefentropy)
 - log energy entropy (Wavelets.coefentropy)
 - sample entropy (ComplexityMeasures)
-- normalised sample entropy (ComplexityMeasures)
+- normaliDsed sample entropy (ComplexityMeasures)
+- differential entropy
 
 # Arguments
 
@@ -25,6 +26,7 @@ Named tuple:
 - `leent::Float64`: log energy entropy
 - `sent::Float64`: sample entropy
 - `nsent::Float64`: normalized sample entropy
+- `dsent::Float64`: differential entropy
 
 # Note
 
@@ -38,7 +40,8 @@ function entropy(
     shent::Float64,
     leent::Float64,
     sent::Float64,
-    nsent::Float64
+    nsent::Float64,
+    dent::Float64
 }
 
     n = length(s)
@@ -57,12 +60,21 @@ function entropy(
     # construct SampleEntropy estimator once and reuse for both sent and nsent
     se = SampleEntropy(s)
 
+    # differential entropy
+    # estimate the PDF using Kernel Density Estimation (KDE)
+    kde_model = kde(s)
+    points = range(minimum(s), stop=maximum(s), length=1000)
+    pdf_values = pdf(kde_model, points)
+    # calculate differential entropy in bits
+    dent = -trapz(points, pdf_values .* log2.(pdf_values .+ eps()))
+
     return (
         ent = ent,
         shent = Wavelets.coefentropy(s, ShannonEntropy()),
         leent = Wavelets.coefentropy(s, LogEnergyEntropy()),
         sent = ComplexityMeasures.complexity(se, s),
         nsent = ComplexityMeasures.complexity_normalized(se, s),
+        dent = dent
     )
 
 end
@@ -77,6 +89,7 @@ Calculate signal entropy descriptors:
 - log energy entropy (Wavelets.coefentropy)
 - sample entropy (ComplexityMeasures)
 - normalised sample entropy (ComplexityMeasures)
+- differential entropy
 
 # Arguments
 
@@ -91,6 +104,7 @@ Named tuple:
 - `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
 - `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
 - `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
+- `dent::Matrix{Float64}`: differential entropy, shape (channels, epochs)
 """
 function entropy(
     s::AbstractArray
@@ -99,7 +113,8 @@ function entropy(
     shent::Matrix{Float64},
     leent::Matrix{Float64},
     sent::Matrix{Float64},
-    nsent::Matrix{Float64}
+    nsent::Matrix{Float64},
+    dent::Matrix{Float64}
 }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -116,6 +131,7 @@ function entropy(
     leent = zeros(ch_n, ep_n)
     sent = zeros(ch_n, ep_n)
     nsent = zeros(ch_n, ep_n)
+    dent = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -126,9 +142,10 @@ function entropy(
         leent[ch_idx, ep_idx] = entropy_data.leent
         sent[ch_idx, ep_idx]  = entropy_data.sent
         nsent[ch_idx, ep_idx] = entropy_data.nsent
+        dent[ch_idx, ep_idx] = entropy_data.dent
     end
 
-    return (ent = ent, shent = shent, leent = leent, sent = sent, nsent = nsent)
+    return (; ent, shent, leent, sent, nsent, dent)
 
 end
 
@@ -142,6 +159,7 @@ Calculate signal entropy descriptors:
 - log energy entropy (Wavelets.coefentropy)
 - sample entropy (ComplexityMeasures)
 - normalized sample entropy (ComplexityMeasures)
+- differential entropy
 
 # Returns
 
@@ -152,6 +170,7 @@ Named tuple:
 - `leent::Matrix{Float64}`: log energy entropy, shape (channels, epochs)
 - `sent::Matrix{Float64}`: sample entropy, shape (channels, epochs)
 - `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
+- `dent::Matrix{Float64}`: differential entropy, shape (channels, epochs)
 """
 function entropy(
     obj::NeuroAnalyzer.NEURO;
@@ -161,7 +180,8 @@ function entropy(
     shent::Matrix{Float64},
     leent::Matrix{Float64},
     sent::Matrix{Float64},
-    nsent::Matrix{Float64}
+    nsent::Matrix{Float64},
+    dent::Matrix{Float64}
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -172,58 +192,76 @@ function entropy(
 end
 
 """
-    negentropy(s)
+    negentropy(s; <keyword arguments>)
 
 Calculate negentropy. Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
+- `demean::Bool=true`: if `true` subtract DC before calculating negentropy
+- `norm::Bool=true`: if `true` normalize the signal by its total energy
+- `type::Symbol=:diff`: entropy type used for calculations (`:diff` differential, `:shannon` Shannon, `:sample` sample)
 
 # Returns
 
 - `Float64`: negentropy (≥ 0; equals 0 for a Gaussian signal)
 """
-function negentropy(s::AbstractVector)::Float64
+function negentropy(
+    s::AbstractVector;
+    demean::Bool=true,
+    norm::Bool=true,
+    type::Symbol=:diff
+)::Float64
+
+    # validate
+    _check_var(type, [:diff, :shannon, :sample], "type")
 
     # remove DC offset so variance reflects only signal variability
-    s = remove_dc(s)
+    demean && (s = remove_dc(s))
 
     # normalize the signal by its total energy
-    s = s ./ sum(s.^2)
+    norm && (s ./= sum(s.^2))
 
     # Gaussian differential entropy: 0.5·ln(2πe·σ²).
     # ℯ is the built-in mathematical constant (more readable than exp(1)).
     gaussian_h = 0.5 * log(2 * π * ℯ * var(s))
 
-    # signal differential entropy
-    # estimate the PDF using Kernel Density Estimation (KDE)
-    kde_model = kde(s)
-    points = range(minimum(s), stop=maximum(s), length=1000)
-    pdf_values = pdf(kde_model, points)
-    # calculate differential entropy in bits
-    signal_h = -trapz(points, pdf_values .* log2.(pdf_values .+ eps()))
+    if type === :diff
+        # differential entropy in bits
+        signal_h = NeuroAnalyzer.entropy(s).dent
+    elseif type === :shannon
+        signal_h = NeuroAnalyzer.entropy(s).ent
+    elseif type === :sample
+        signal_h = NeuroAnalyzer.entropy(s).sent
+    end
 
     return gaussian_h - signal_h
-
-    return gaussian_h - NeuroAnalyzer.entropy(s).ent
 
 end
 
 """
-    negentropy(s)
+    negentropy(s; <keyword arguments>)
 
 Calculate negentropy. Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `demean::Bool=true`: if `true` subtract DC before calculating negentropy
+- `norm::Bool=true`: if `true` normalize the signal by its total energy
+- `type::Symbol=:diff`: entropy type used for calculations (`:diff` differential, `:shannon` Shannon, `:sample` sample)
 
 # Returns
 
 - `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
-function negentropy(s::AbstractArray)::Matrix{Float64}
+function negentropy(
+    s::AbstractArray;
+    demean::Bool=true,
+    norm::Bool=true,
+    type::Symbol=:diff
+)::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -236,14 +274,15 @@ function negentropy(s::AbstractArray)::Matrix{Float64}
     # pre-allocate output
     ne = zeros(ch_n, ep_n)
 
-    # initialize progress bar
-    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
-
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ne[ch_idx, ep_idx] = negentropy(@view(s[ch_idx, :, ep_idx]))
-        progress_bar && next!(progbar)
+        ne[ch_idx, ep_idx] = negentropy(
+            @view(s[ch_idx, :, ep_idx]),
+            demean = demean,
+            norm = norm,
+            type = type
+        )
     end
 
     return ne
@@ -259,16 +298,30 @@ Calculate negentropy. Negentropy measures how far a signal's distribution depart
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `demean::Bool=true`: if `true` subtract DC before calculating negentropy
+- `norm::Bool=true`: if `true` normalize the signal by its total energy
+- `type::Symbol=:diff`: entropy type used for calculations (`:diff` differential, `:shannon` Shannon, `:sample` sample)
 
 # Returns
 
 - `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
-function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
+function negentropy(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    demean::Bool=true,
+    norm::Bool=true,
+    type::Symbol=:diff
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    return negentropy(@view(obj.data[ch, :, :]))
+    return negentropy(
+        @view(obj.data[ch, :, :]),
+        demean = demean,
+        norm = norm,
+        type = type
+    )
 
 end
