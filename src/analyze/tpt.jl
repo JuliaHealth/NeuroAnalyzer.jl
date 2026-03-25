@@ -12,7 +12,7 @@ Detect pinches in TPT recording.
 
 # Returns
 
-- `p_idx::Vector{Int64}`: index of pinches locations
+- `Vector{Int64}`: index of pinches locations
 """
 function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 

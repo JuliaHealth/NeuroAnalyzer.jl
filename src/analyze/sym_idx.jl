@@ -11,7 +11,7 @@ Calculate signal symmetry index (ratio of positive to negative amplitudes). Perf
 
 # Returns
 
-- `sym::Float64`: symmetry index
+- `Float64`: symmetry index
 """
 function sym_idx(s::AbstractVector)::Float64
 
@@ -32,7 +32,7 @@ Calculate signal symmetry index (ratio of positive to negative amplitudes). Perf
 
 # Returns
 
-- `sym::Matrix{Float64}`: symmetry index
+- `Matrix{Float64}`: symmetry index
 """
 function sym_idx(s::AbstractArray)::Matrix{Float64}
 
@@ -69,7 +69,7 @@ Calculate signal symmetry index (ratio of positive to negative amplitudes). Perf
 
 # Returns
 
-- `sym::Matrix{Float64}`: symmetry index
+- `Matrix{Float64}`: symmetry index
 """
 function sym_idx(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 

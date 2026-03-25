@@ -13,7 +13,7 @@ Performs convolution in the time domain.
 
 # Returns
 
-- `s_new::Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
+- `Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
 """
 function tconv(
     s::AbstractVector;
@@ -37,7 +37,7 @@ Perform convolution in the time domain.
 
 # Returns
 
-- `s_new::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+- `Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
 function tconv(
     s::AbstractArray;

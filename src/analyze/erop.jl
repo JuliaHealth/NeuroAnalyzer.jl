@@ -77,7 +77,7 @@ function erop(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
 
     p = psd_data.p[1, :, :]

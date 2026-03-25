@@ -203,7 +203,7 @@ function plot_topo(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     hidedecorations!(ax)
     hidespines!(ax)
@@ -458,7 +458,7 @@ function plot_topo(
             :rank,
             :none,
         ],
-        "nmethod",
+        "nmethod"
     )
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -491,8 +491,7 @@ function plot_topo(
     else
         !isnothing(tpos) && _info("If data is provided, tpos is ignored")
         if ndims(data) == 2
-            data = amethod === :mean ? mean(data, dims
- = 2)[:] : median(data, dims = 2)[:]
+            data = amethod === :mean ? mean(data, dims = 2)[:] : median(data, dims = 2)[:]
         end
         length(data) == length(ch) ||
             throw(ArgumentError("Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."))
@@ -519,7 +518,7 @@ function plot_topo(
         cart = cart,
         threshold = threshold,
         threshold_type = threshold_type,
-        threshold_method = threshold_method,
+        threshold_method = threshold_method
     )
 
     return fig

@@ -26,7 +26,7 @@ Calculate total power.
 
 # Returns
 
-- `tp::Float64`: total power
+- `Float64`: total power
 """
 function total_power(
         s::AbstractVector;
@@ -38,7 +38,7 @@ function total_power(
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
-        demean::Bool = true,
+        demean::Bool = true
     )
 
     pw, pf = psd(
@@ -52,7 +52,7 @@ function total_power(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
 
     # dx: frequency resolution
@@ -101,7 +101,7 @@ function total_power(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -127,7 +127,7 @@ function total_power(
                 w = w,
                 ncyc = ncyc,
                 gw = gw,
-                demean = demean,
+                demean = demean
             )
         end
     end
@@ -161,7 +161,7 @@ Calculate total power.
 
 # Returns
 
-- `tp::Matrix{Float64}`: total power
+- `Matrix{Float64}`: total power
 """
 function total_power(
     obj::NeuroAnalyzer.NEURO;
@@ -173,7 +173,7 @@ function total_power(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean::Bool = true,
+    demean::Bool = true
 )
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -189,7 +189,7 @@ function total_power(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
 
 end

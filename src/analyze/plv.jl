@@ -156,7 +156,7 @@ Calculate Phase Locking Value (PLV).
 
 # Returns
 
-- `pv::Array{Float64, 3}`: PLV value
+- `Array{Float64, 3}`: PLV value
 """
 function plv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

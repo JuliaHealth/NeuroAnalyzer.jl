@@ -60,7 +60,7 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
         ypanlock = true,
         xrectzoom = false,
         yrectzoom = false,
-        title = "Side view",
+        title = "Side view"
     )
     hidedecorations!(ax_yz)
     hidespines!(ax_yz)

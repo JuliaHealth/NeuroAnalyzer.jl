@@ -14,7 +14,7 @@ Calculate phase stationarity using Hilbert transformation.
 
 # Returns
 
-- `stph::Vector{Float64}`
+- `Vector{Float64}`
 """
 function stationarity_hilbert(s::AbstractVector)::Vector{Float64}
 
@@ -36,12 +36,13 @@ Calculate mean stationarity. Signal is split into `window`-long windows and aver
 
 # Returns
 
-- `stm::Vector{Float64}`
+- `Vector{Float64}`
 """
 function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
 
-    !(window >= 1) && throw(ArgumentError("window must be ≥ 1."))
-    !(window <= length(s)) && throw(ArgumentError("window must be ≤ $(length(s))."))
+    # validate
+    window >= 1 || throw(ArgumentError("window must be ≥ 1."))
+    window <= length(s) || throw(ArgumentError("window must be ≤ $(length(s))."))
 
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
@@ -64,12 +65,13 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 
 # Returns
 
-- `stv::Vector{Float64}`
+- `Vector{Float64}`
 """
 function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
 
-    !(window >= 1) && throw(ArgumentError("window must be ≥ 1."))
-    !(window <= length(s)) && throw(ArgumentError("window must be ≤ $(length(s))."))
+    # validate
+    window >= 1 || throw(ArgumentError("window must be ≥ 1."))
+    window <= length(s) || throw(ArgumentError("window must be ≤ $(length(s))."))
 
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
@@ -99,11 +101,14 @@ Calculate stationarity.
 
 # Returns
 
-- `s::Union{Matrix{Float64}, Array{Float64, 3}}`
+- `Union{Matrix{Float64}, Array{Float64, 3}}`
 """
 function stationarity(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64 = 10, method::Symbol = :hilbert
-    )::Union{Matrix{Float64}, Array{Float64, 3}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    window::Int64 = 10,
+    method::Symbol = :hilbert
+)::Union{Matrix{Float64}, Array{Float64, 3}}
 
     # validate
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")

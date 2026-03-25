@@ -90,7 +90,7 @@ function cosim(
         ch_idx, ep_idx = idx[1], idx[2]
         cs[ch_idx, ep_idx] = cosim(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
     end
 
@@ -137,7 +137,7 @@ function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         for ch_idx2 in 1:ch_idx1
             cs[ch_idx1, ch_idx2, ep_idx] = cosim(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
             )
         end
     end

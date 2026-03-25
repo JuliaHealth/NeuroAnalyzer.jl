@@ -108,7 +108,7 @@ function plot_spectrogram(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, (st[1], st[end]))
     GLMakie.ylims!(ax, flim)
@@ -238,7 +238,7 @@ function plot_spectrogram(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, flim)
     ax.titlesize = 18
@@ -411,7 +411,7 @@ function plot_spectrogram_topo(
     GLMakie.activate!(title = "plot_spectrogram()")
     fig = GLMakie.Figure(
         size = plot_size,
-        figure_padding = 0,
+        figure_padding = 0
     )
     ax = GLMakie.Axis(
         fig[1, 1],
@@ -426,7 +426,7 @@ function plot_spectrogram_topo(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))

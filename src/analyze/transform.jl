@@ -113,7 +113,7 @@ function ftransform(
         @view(s[1, :, 1]),
         pad = pad,
         db = db,
-        nf = nf,
+        nf = nf
     )
     c = zeros(ComplexF64, ch_n, length(fft_tmp.c), ep_n)
     a = zeros(Float64, ch_n, length(fft_tmp.a), ep_n)
@@ -337,7 +337,7 @@ function transform(
         pad = pad,
         h = h,
         db = db,
-        nf = nf,
+        nf = nf
     )
 
 end
@@ -353,7 +353,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Returns
 
-- `ha::Vector{ComplexF64}`: complex analytic signal
+- `Vector{ComplexF64}`: complex analytic signal
 """
 function hanalytic(s::AbstractVector)::Vector{ComplexF64}
 
@@ -375,7 +375,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Returns
 
-- `ha::Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
+- `Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
 

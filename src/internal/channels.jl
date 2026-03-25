@@ -260,7 +260,7 @@ function _sort_channels(ch_t::Vector{String})::Vector{Int64}
         "nirs_hrf_dvar" => "3", "nirs_hrf_dskew"=> "3", "nirs_hrf_hbo"  => "3",
         "nirs_hrf_hbr"  => "3", "nirs_hrf_hbt"  => "3", "nirs_hrf_bfi"  => "3",
         "nirs_aux"      => "4", "accel"         => "1", "magfld"        => "2",
-        "orient"        => "3", "angvel"        => "4",
+        "orient"        => "3", "angvel"        => "4"
     )
     ch_order = [get(priority, t, "8") for t in ch_t]   # default to "8" for unknowns
     return sortperm(ch_order)

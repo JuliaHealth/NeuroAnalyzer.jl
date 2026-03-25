@@ -15,7 +15,7 @@ GFP is the population standard deviation across all selected channels at each ti
 
 # Returns
 
-- `g::Vector{Float64}`: GFP at each time point (length = number of samples)
+- `Vector{Float64}`: GFP at each time point (length = number of samples)
 
 # Notes
 
@@ -48,7 +48,7 @@ Each column (time point) is divided by the GFP value at that time, so that the r
 
 # Returns
 
-- `gn::Matrix{Float64}`: GFP-normalised signal (channels × samples)
+- `Matrix{Float64}`: GFP-normalised signal (channels × samples)
 """
 function erp_gfp_norm(s::AbstractMatrix)::Matrix{Float64}
 
@@ -80,7 +80,7 @@ GFP is the population standard deviation across all selected channels at each ti
 
 # Returns
 
-- `erp_gfp::Union{Vector{Float64}, Matrix{Float64}}`: GFP values over time (norm=false) or the GFP-normalized signal matrix (norm=true)
+- `Union{Vector{Float64}, Matrix{Float64}}`: GFP values over time (norm=false) or the GFP-normalized signal matrix (norm=true)
 
 # Notes
 

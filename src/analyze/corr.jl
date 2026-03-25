@@ -98,7 +98,7 @@ function corr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
         for ch_idx2 in 1:ch_idx1
             cr[ch_idx1, ch_idx2, ep_idx] = cor(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
             )
         end
     end

@@ -157,7 +157,7 @@ function dpli(
         ch_idx, ep_idx = idx[1], idx[2]
         dpli_data = dpli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
         pv[ch_idx, ep_idx] = dpli_data.pv
         sd[ch_idx, :, ep_idx] = dpli_data.sd
@@ -213,7 +213,7 @@ function dpli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
         for ch_idx2 in 1:ch_idx1
             pv[ch_idx1, ch_idx2, ep_idx] = dpli(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
             ).pv
         end
     end

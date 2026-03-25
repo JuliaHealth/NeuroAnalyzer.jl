@@ -271,8 +271,7 @@ function plot_cont(
             # plot averaged channels
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[ctypes .== ctypes_uni[idx], :], dims
- = 1)[:]
+                    s_avg = mean(s[ctypes .== ctypes_uni[idx], :], dims = 1)[:]
                     GLMakie.lines!(
                         ax1,
                         t,
@@ -420,7 +419,7 @@ function plot_cont(
                 xpanlock = true,
                 ypanlock = true,
                 xrectzoom = false,
-                yrectzoom = false,
+                yrectzoom = false
             )
             ch_n > 1 && (GLMakie.ylims!(ax3, ch_n, 1))
             hidedecorations!(ax3)

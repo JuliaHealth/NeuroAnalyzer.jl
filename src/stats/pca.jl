@@ -111,6 +111,8 @@ Calculate the first `n` principal components from selected columns of a DataFram
 
 # Returns
 
+Named tuple:
+
 - `pc::DataFrame`: PC scores; columns named `PC1 … PCn`
 - `pcv::Vector{Float64}`: percentage of total variance explained by each PC
 - `pcm::Vector{Float64}`: column means of the (possibly standardised) data
@@ -182,7 +184,7 @@ function biplot(
         aspect = 1,
         title = "Biplot",
         xlabel = "PC1 ($(round(pca.pcv[1], digits=1))%)",
-        ylabel = "PC2 ($(round(pca.pcv[2], digits=1))%)",
+        ylabel = "PC2 ($(round(pca.pcv[2], digits=1))%)"
     )
     GLMakie.xlims!(ax, (-4, 4))
     GLMakie.ylims!(ax, (-4, 4))
@@ -238,7 +240,7 @@ function screeplot(
         xticks = (1:n_pc, xl),
         ylabel = "% variance explained",
         xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0)
     )
     GLMakie.xlims!(ax1, (0.5, n_pc + 0.5))
     GLMakie.ylims!(ax1, (0, 100))
@@ -251,7 +253,7 @@ function screeplot(
     ax2 = GLMakie.Axis(
         fig[2, 1],
         xticks = (1:n_pc, xl),
-        ylabel = "Eigenvalues",
+        ylabel = "Eigenvalues"
     )
     GLMakie.xlims!(ax2, (0.5, n_pc + 0.5))
     GLMakie.ylims!(ax2, (0, ceil(maximum(pca.pc_model.prinvars), digits=0)))

@@ -90,7 +90,7 @@ Extracts and builds a named tuple of parameters.
 
 # Returns
 
-- `parameters::NamedTuple`: a named tuple of parameters
+- `NamedTuple`: a named tuple of parameters
 """
 function data2para(
     data::AbstractArray,
@@ -100,7 +100,7 @@ function data2para(
     freqlist::AbstractArray{Int},
     method::String,
     subave::Bool,
-    verbose::Bool,
+    verbose::Bool
 )
 
     # data dimension
@@ -180,7 +180,7 @@ end
 
 Partitioning data into epochs and segments
 
-### Arguments
+# Arguments
 
 - `data::AbstractArray`: NxM array for N data points in M channels.
 - `seglen::Integer`: segment length
@@ -189,15 +189,23 @@ Partitioning data into epochs and segments
 - `nchan::Integer`: number of channels
 - `segshift::Integer`: number of bins by which neighboring segments are shifted.
 
-### Returns
+# Returns
 
-- `epseg::AbstractArray`: partitioned data into shape `(seglen, nep, nseg, nchan)`
+- `AbstractArray`: partitioned data into shape `(seglen, nep, nseg, nchan)`
 
-**Note**: returned Array may have more data entries than input data.
+# Notes
+
+Returned Array may have more data entries than input data.
 """
 function make_eposeg(
-        data::AbstractArray, seglen::Integer, eplen::Integer, nep::Integer, nseg::Integer, nchan::Integer, segshift::Integer
-    )::AbstractArray
+    data::AbstractArray,
+    seglen::Integer,
+    eplen::Integer,
+    nep::Integer,
+    nseg::Integer,
+    nchan::Integer,
+    segshift::Integer
+)::AbstractArray
 
     # preallocation
     epseg = Array{Float64}(undef, seglen, nep, nseg, nchan)
@@ -302,7 +310,7 @@ function cs2cs_(
     nep::Integer,
     segave::Bool,
     subave::Bool,
-    method::String,
+    method::String
 )
     if segave
         if method == "bootstrap"
@@ -387,7 +395,7 @@ function data2psi(
     nboot::Integer = 100,
     detrend::Bool = false,
     window::Function = hanning_fun,
-    verbose::Bool = false,
+    verbose::Bool = false
 )
 
     (data, nsamples, nchan, eplen, nep, method, subave, segshift, nseg, freqlist, maxfreq, nfbands) = data2para(

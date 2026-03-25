@@ -59,7 +59,7 @@ function plot_phsd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, extrema(ph))
@@ -150,7 +150,7 @@ function plot_phsd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, flim)
     if ci95
@@ -180,14 +180,13 @@ function plot_phsd(
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 2,
-                label = clabels[idx],
+                label = clabels[idx]
             )
         end
 
         # draw averaged channels
         if avg
-            s = mean(ph, dims
- = 1)[:]
+            s = mean(ph, dims = 1)[:]
             Makie.lines!(f, s; colormap = pal, linewidth = 4, color = :black)
         end
 
@@ -303,7 +302,7 @@ function plot_phsd_3d(
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
+                colorrange = 1:ch_n
             )
         end
     else
@@ -459,7 +458,7 @@ function plot_phsd_topo(
     GLMakie.activate!(title = "plot_phsd()")
     fig = GLMakie.Figure(
         size = plot_size,
-        figure_padding = 0,
+        figure_padding = 0
     )
     ax = GLMakie.Axis(
         fig[1, 1],
@@ -468,7 +467,7 @@ function plot_phsd_topo(
         title = title,
         aspect = 1,
         xautolimitmargin = (0, 0),
-        yautolimitmargin = (0.1, 0.1),
+        yautolimitmargin = (0.1, 0.1)
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -655,7 +654,7 @@ function plot_phsd(
                 avg = avg,
                 ci95 = ci95,
                 leg = leg,
-                mono = mono,
+                mono = mono
             )
         end
     elseif type === :w3d || type === :s3d

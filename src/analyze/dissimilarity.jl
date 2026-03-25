@@ -21,7 +21,8 @@ function topo_var(
 )::Vector{Float64}
 
     # validate
-    datatype(obj) in ["erp", "erf"] || throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
+    datatype(obj) in ["erp", "erf"] ||
+        throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
     
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -118,10 +119,14 @@ function diss(
 }
 
     # validate
-    datatype(obj1) in ["erp", "erf"] || throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
-    datatype(obj2) in ["erp", "erf"] || throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
-
-    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    datatype(obj1) in ["erp", "erf"] ||
+        throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
+    datatype(obj2) in ["erp", "erf"] ||
+        throw(ArgumentError("diss() must be applied to ERP or ERF object only."))
+    datatype(obj1) == datatype(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same data type."))
+    sr(obj1) == sr(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
     (epoch_len(obj1) == epoch_len(obj2)) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 

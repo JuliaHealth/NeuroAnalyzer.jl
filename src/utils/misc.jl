@@ -74,7 +74,7 @@ Selects the element that maximises `|x|²` (equivalent to maximising `|x|`).
 
 # Returns
 
-- `cmax::ComplexF64`: element of `x` with the largest absolute value
+- `ComplexF64`: element of `x` with the largest absolute value
 """
 function cmax(x::Vector{<:Complex})::ComplexF64
 

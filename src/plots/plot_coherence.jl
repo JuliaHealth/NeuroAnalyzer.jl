@@ -31,7 +31,9 @@ function plot_coherence(
     mono::Bool = false
 )::GLMakie.Figure
 
-    !(length(coh) == length(f)) && throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
+    # validate
+    length(coh) == length(f) ||
+        throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -55,7 +57,7 @@ function plot_coherence(
         xminorticksvisible = true,
         xminorticks = IntervalsBetween(10),
         xscale = frq === :lin ? identity : log,
-        xautolimitmargin = (0, 0),
+        xautolimitmargin = (0, 0)
     )
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
@@ -116,11 +118,14 @@ function plot_coherence(
     mono::Bool = false
 )::GLMakie.Figure
 
-    ch_n = size(coh, 1)
 
-    !(size(coh, 2) == length(f)) && throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
+    # validate
+    size(coh, 2) == length(f) ||
+        throw(ArgumentError("Length of coherence vector must equal length of frequencies vector."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
+
+    ch_n = size(coh, 1)
 
     pal = mono ? :grays : :darktest
 
@@ -144,7 +149,7 @@ function plot_coherence(
         xminorticksvisible = true,
         xminorticks = IntervalsBetween(10),
         xscale = frq === :lin ? identity : log,
-        xautolimitmargin = (0, 0),
+        xautolimitmargin = (0, 0)
     )
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
@@ -170,14 +175,13 @@ function plot_coherence(
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 2,
-                label = clabels[idx],
+                label = clabels[idx]
             )
         end
 
         # draw averaged channels
         if avg
-            coh_avg = mean(coh, dims
- = 1)[:]
+            coh_avg = mean(coh, dims = 1)[:]
             Makie.lines!(f, coh_avg; colormap = pal, linewidth = 4, color = :black)
         end
 

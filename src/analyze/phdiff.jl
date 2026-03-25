@@ -53,7 +53,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 # Returns
 
-- `phd::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function phdiff(
     s::AbstractArray;
@@ -128,7 +128,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 # Returns
 
-- `phd::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function phdiff(
     obj::NeuroAnalyzer.NEURO;

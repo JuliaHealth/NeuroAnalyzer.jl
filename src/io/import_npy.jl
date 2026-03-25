@@ -36,7 +36,7 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Int64[]
     )
 
     time_pts = round.(
@@ -60,7 +60,7 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_eeg(
         data_type = data_type,
@@ -96,7 +96,7 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
     )
 
     return obj

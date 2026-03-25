@@ -53,7 +53,7 @@ fiff_data_type = Dict(
         "ch_info_t", "id_t", "dir_entry_t", "dig_point_t", "ch_pos_t",
         "coord_trans_t",
     ],
-    :size => [1, 1, 2, 4, 4, 8, 8, 2, 4, 8, 1, 1, 8, 2, 2, 2, 8, 16, 80, 20, 16, 20, 52, 80, 80],
+    :size => [1, 1, 2, 4, 4, 8, 8, 2, 4, 8, 1, 1, 8, 2, 2, 2, 8, 16, 80, 20, 16, 20, 52, 80, 80]
 )
 
 # FIFF physical units lookup table.
@@ -120,7 +120,7 @@ fiff_units = Dict(
         "lx",       # lux
         "T/m",      # tesla per metre
         "Am",       # ampere·metre
-    ],
+    ]
 )
 
 # FIFF value-multiplier (SI prefix) lookup table.
@@ -146,7 +146,7 @@ fiff_multipliers = Dict(
         "p",     # 10^-12 pico
         "f",     # 10^-15 femto
         "a",     # 10^-18 atto
-    ],
+    ]
 )
 
 # FIFF tag ID → tag name lookup table.
@@ -302,7 +302,7 @@ fiff_tags = Dict(
 
         # --- Projector item ---
         "xplotter_layout",
-    ],
+    ]
 )
 
 # FIFF block type ID → block name lookup table.
@@ -399,7 +399,7 @@ fiff_blocks = Dict(
         # --- Processing history ---
         "processing_history",  # 900
         "processing_record",   # 901
-    ],
+    ]
 )
 
 # FIFF channel type ID → channel type name lookup table.
@@ -478,7 +478,7 @@ fiff_channel_type = Dict(
         # --- Source modelling ---
         "dipole_wave",
         "goodness_fit",
-    ],
+    ]
 )
 
 # FIFF coil type ID → coil type name lookup table.
@@ -559,7 +559,7 @@ fiff_coil_type = Dict(
 
         # --- CTF gradiometer ---
         "ctf_grad",
-    ],
+    ]
 )
 
 # FIFF gantry type ID → gantry type name lookup table.
@@ -567,7 +567,7 @@ fiff_coil_type = Dict(
 # Sources: MNE-Python fiff/constants.py and the FIFF standard specification.
 fiff_gantry_type = Dict(
     :id         =>  [0,       1,           2     ],
-    :gantry_type => ["fixed", "uni_axial", "free"],
+    :gantry_type => ["fixed", "uni_axial", "free"]
 )
 
 # FIFF data acquisition system ID → system name lookup table.
@@ -575,7 +575,7 @@ fiff_gantry_type = Dict(
 # Sources: MNE-Python fiff/constants.py and the FIFF standard specification.
 fiff_dacq_system = Dict(
     :id         =>  [0,     1,     2,     3,        4     ],
-    :dacq_system => ["dau", "vxi", "rpu", "orion", "triux"],
+    :dacq_system => ["dau", "vxi", "rpu", "orion", "triux"]
 )
 
 # FIFF SSP projection item type ID → item type name lookup table.
@@ -584,7 +584,7 @@ fiff_dacq_system = Dict(
 # Sources: MNE-Python fiff/constants.py and the FIFF standard specification.
 fiff_proj_item = Dict(
     :id        => [0,      1,       2,         3,         4,             5,             10         ],
-    :proj_item => ["none", "field", "dip_fix", "dip_rot", "homog_grad",  "homog_field", "eeg_avref"],
+    :proj_item => ["none", "field", "dip_fix", "dip_rot", "homog_grad",  "homog_field", "eeg_avref"]
 )
 
 # FIFF SSP projection method ID → method name lookup table.
@@ -593,7 +593,7 @@ fiff_proj_item = Dict(
 # Sources: MNE-Python fiff/constants.py and the FIFF standard specification.
 fiff_proj_by = Dict(
     :id      => [0,            1      ],
-    :proj_by => ["complement", "space"],
+    :proj_by => ["complement", "space"]
 )
 
 # FIFF aspect type ID → aspect name lookup table.
@@ -637,7 +637,7 @@ fiff_aspect = Dict(
         "ifii_low",
         "ifii_high",
         "gate",
-    ],
+    ]
 )
 
 # FIFF SSS (Signal Space Separation) job type ID → job name lookup table.
@@ -691,7 +691,7 @@ fiff_sss_job = Dict(
 
         # --- Spatiotemporal SSS ---
         "sss_job_st",
-    ],
+    ]
 )
 
 function _fiff_matrix(fb::Int64, buf::Vector{UInt8})::Union{Vector{Float64}, Matrix{Float64}}

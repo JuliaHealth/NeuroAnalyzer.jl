@@ -38,7 +38,7 @@ function delete_channel(
     obj_new = deepcopy(obj)
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
-        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data."
     )
 
     # update headers

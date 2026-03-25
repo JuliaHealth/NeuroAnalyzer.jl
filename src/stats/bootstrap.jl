@@ -106,7 +106,7 @@ The formula string `f` must reference the current signal trace using the placeho
 
 # Returns
 
-- `Vector`: bootstrap distribution of the statistic; length `n1`
+- `AbstractVector`: bootstrap distribution of the statistic; length `n1`
 """
 function bootstrap_stat(
     s::AbstractMatrix;
@@ -146,8 +146,7 @@ function bootstrap_stat(
         for idx2 in 1:n2
             s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
         end
-        s_boot[idx1, :] = vec(mean(s_tmp, dims
-=2))
+        s_boot[idx1, :] = vec(mean(s_tmp, dims=2))
 
         # evaluate the user formula on this bootstrap mean trace
         f_tmp = replace(f, "obj" => "$(s_boot[idx1, :])")

@@ -31,7 +31,7 @@ function _common_recording_fields(;
         :label            => clabels,
         :unit             => units,
         :sampling_rate    => sampling_rate,
-        :bad_channel      => bad_channels,
+        :bad_channel      => bad_channels
     )
 end
 
@@ -57,7 +57,7 @@ function _create_subject(;
         :handedness         => handedness,
         :head_circumference => head_circumference,
         :weight             => weight,
-        :height             => height,
+        :height             => height
     )
 end
 
@@ -89,7 +89,7 @@ function _create_recording_eeg_like(;
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
-        channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
+        channel_type, channel_order, clabels, units, sampling_rate, bad_channels
     )
     merge!(d, Dict(
         :reference    => reference,
@@ -97,7 +97,7 @@ function _create_recording_eeg_like(;
         :prefiltering => prefiltering,
         :line_frequency => line_frequency,
         :gain         => gain,
-        :epoch_id     => "",
+        :epoch_id     => ""
     ))
     return d
 end
@@ -141,7 +141,7 @@ function _create_recording_meg(;
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
-        channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
+        channel_type, channel_order, clabels, units, sampling_rate, bad_channels
     )
     merge!(d, Dict(
         :reference      => reference,
@@ -153,7 +153,7 @@ function _create_recording_meg(;
         :ssp_labels     => ssp_labels,
         :ssp_channels   => ssp_channels,
         :ssp_data       => ssp_data,
-        :epoch_id       => "",
+        :epoch_id       => ""
     ))
     return d
 end
@@ -187,7 +187,7 @@ function _create_recording_nirs(;
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
-        channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
+        channel_type, channel_order, clabels, units, sampling_rate, bad_channels
     )
     merge!(d, Dict(
         :wavelengths      => wavelengths,
@@ -196,7 +196,7 @@ function _create_recording_nirs(;
         :src_labels       => src_labels,
         :det_labels       => det_labels,
         :optode_labels    => opt_labels,
-        :epoch_id         => "",
+        :epoch_id         => ""
     ))
     return d
 end
@@ -225,11 +225,11 @@ function _create_recording_prefiltered(;
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
-        channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
+        channel_type, channel_order, clabels, units, sampling_rate, bad_channels
     )
     merge!(d, Dict(
         :prefiltering => prefiltering,
-        :epoch_id     => "",
+        :epoch_id     => ""
     ))
     return d
 end
@@ -266,7 +266,7 @@ function _create_recording_mep(;
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
-        channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
+        channel_type, channel_order, clabels, units, sampling_rate, bad_channels
     )
     merge!(d, Dict(
         :stimulation_intensity => stimulation_intensity,

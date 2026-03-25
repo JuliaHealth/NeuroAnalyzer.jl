@@ -78,7 +78,7 @@ function _make_epochs_bymarkers(
         # flatten the epoch dimension of s before slicing (s is 3-D with 1 epoch)
         epochs[:, :, mrk_idx] = reshape(
             s[:, ep_start[mrk_idx]:ep_end[mrk_idx], :],
-            size(s, 1), ep_len,
+            size(s, 1), ep_len
         )
     end
 

@@ -167,7 +167,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         collect(
             0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
         )[1:(end - 1)],
-        digits = 4,
+        digits = 4
     ) .+ t_start
     epoch_time =
         round.(
@@ -206,7 +206,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :start => event_start,
             :length => event_length,
             :value => event_description,
-            :channel => event_channel,
+            :channel => event_channel
         )
     else
         markers = DataFrame(
@@ -214,7 +214,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Int64[]
         )
     end
 
@@ -257,7 +257,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_eeg(
         data_type = data_type,
@@ -293,7 +293,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
     )
 
     return obj

@@ -13,7 +13,7 @@ Calculate summed similarity using an exponential decay model between two signals
 
 # Returns
 
-- `ss::Float64`: summed similarity
+- `Float64`: summed similarity
 
 # Notes
 
@@ -21,7 +21,10 @@ Values of `ss` are in the range [0, 1]; higher value indicates larger similarity
 """
 function sumsim(s1::AbstractVector, s2::AbstractVector; theta::Real)::Float64
 
-    !(length(s1) == length(s2)) && throw(ArgumentError("Lengths of s1 ($(length(s1))) and s2 ($(length(s2))) must be equal."))
+    # validate
+    length(s1) == length(s2) ||
+        throw(ArgumentError("Lengths of s1 ($(length(s1))) and s2 ($(length(s2))) must be equal."))
+
     ss = exp(-theta * sqrt(sum((s1 .- s2) .^ 2)))
 
     return ss
@@ -41,7 +44,7 @@ Calculate summed similarity using an exponential decay model between two signals
 
 # Returns
 
-- `ss::Matrix{Float64}`: summed similarity
+- `Matrix{Float64}`: summed similarity
 
 # Notes
 
@@ -49,7 +52,8 @@ Values of `ss` are in the range [0, 1]; higher value indicates larger similarity
 """
 function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float64}
 
-    !(size(s1) == size(s2)) && throw(ArgumentError("Sizes of s1 ($(size(s1))) and s2 ($(size(s2))) must be equal."))
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("Sizes of s1 ($(size(s1))) and s2 ($(size(s2))) must be equal."))
     _chk3d(s1)
     _chk3d(s2)
 
@@ -85,7 +89,7 @@ Calculate summed similarity using an exponential decay model between two signals
 
 # Returns
 
-- `ss::Matrix{Float64}`: summed similarity
+- `Matrix{Float64}`: summed similarity
 
 # Notes
 

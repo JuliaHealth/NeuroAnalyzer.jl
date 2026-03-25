@@ -100,7 +100,7 @@ Calculate cross-covariance.
 
 # Returns
 
-- `xc::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function xcov(
     s1::AbstractMatrix,
@@ -249,10 +249,9 @@ function xcov(
             l = l,
             demean = demean,
             biased = biased,
-            method = method,
+            method = method
         )
-        xc = cat(mean(xc, dims
- = 3), xc, dims = 3)
+        xc = cat(mean(xc, dims = 3), xc, dims = 3)
     else
         xc = @views xcov(
             obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean, biased = biased, method = method

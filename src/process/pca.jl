@@ -126,7 +126,7 @@ Reconstructs signal using PCA components.
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function pca_reconstruct(
     s::AbstractArray;

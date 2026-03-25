@@ -68,7 +68,8 @@ function get_channel(
         end
     else
         _check_datatype(obj, ["nirs"])
-        !(wl in obj.header.recording[:wavelengths]) && throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
+        wl in obj.header.recording[:wavelengths] ||
+            throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
         wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
         for ch_idx in eachindex(obj.header.recording[:wavelength_index])
             obj.header.recording[:wavelength_index][ch_idx] == wl_idx &&
@@ -78,9 +79,8 @@ function get_channel(
 
     exclude = exclude == "" ? Int64[] : _ch_idx(obj, exclude)
     ch = exclude == [] ? ch : setdiff(ch, labels(obj)[exclude])
-    ch = unique(ch)
 
-    return ch
+    return unique(ch)
 
 end
 
@@ -96,7 +96,7 @@ Get channel type.
 
 # Returns
 
-- `cht::String`
+- `String`
 """
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
@@ -105,9 +105,7 @@ function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
-    cht = obj.header.recording[:channel_type][ch]
-
-    return cht
+    return obj.header.recording[:channel_type][ch]
 
 end
 
@@ -344,7 +342,7 @@ function replace_channel(
         throw(ArgumentError("signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."))
     datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,) ||
         _warn(
-            "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+            "OBJ contains SSP projections data, you should apply them before modifying OBJ data."
         )
 
     # resolve channel names to integer indices
@@ -489,7 +487,7 @@ function add_channel(
 
     datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,) ||
         _warn(
-            "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+            "OBJ contains SSP projections data, you should apply them before modifying OBJ data."
         )
 
     # create new dataset
@@ -510,7 +508,7 @@ function add_channel(
                     maximum(obj_new.header.recording[:channel_order]) + size(
                         data, 1
                     )
-                ),
+                )
             )
         ]
         obj_new.header.recording[:bad_channel] = [

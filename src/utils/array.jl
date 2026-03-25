@@ -96,8 +96,7 @@ function perm_cmp(
     p <= 1 || throw(ArgumentError("p must be ≤ 1."))
 
     # real observed difference (a2 − a1), averaged across epochs
-    spec_diff = dropdims(mean(a2, dims = 3) .- mean(a1, dims = 3), dims
- = 3)
+    spec_diff = dropdims(mean(a2, dims = 3) .- mean(a1, dims = 3), dims = 3)
 
     # z-value threshold corresponding to the two-tailed p-value
     zval = abs(norminvcdf(p))

@@ -70,7 +70,7 @@ function epoch(
             marker_start = round.(Int64, mrk_start * sr(obj)),
             offset = round(Int64, offset * sr(obj)),
             ep_len = round(Int64, ep_len * sr(obj)),
-            fs = sr(obj),
+            fs = sr(obj)
         )
 
     else

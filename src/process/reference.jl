@@ -229,7 +229,7 @@ function reference_avg(
     end
     push!(
         obj_new.history,
-        "reference_avg(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)",
+        "reference_avg(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)"
     )
 
     return obj_new
@@ -268,7 +268,7 @@ function reference_avg!(
         exclude_current = exclude_current,
         average = average,
         med = med,
-        weighted = weighted,
+        weighted = weighted
     )
     obj.data = obj_new.data
     obj.header = obj_new.header
@@ -291,7 +291,7 @@ function _apply_paired_reference!(
     ref_label::Vector{String},
     suffix::String,
     ep_n::Int64,
-    med::Bool,
+    med::Bool
 )
     for ep_idx in 1:ep_n
         ref_ch = med ? vec(median(ref_data[:, :, ep_idx], dims
@@ -312,7 +312,7 @@ function _apply_single_reference!(
     picks::Vector{Int64},
     ref_label::Vector{String},
     suffix::String,
-    ep_n::Int64,
+    ep_n::Int64
 )
     for ep_idx in 1:ep_n
         ref_ch = vec(ref_data[:, :, ep_idx])
@@ -390,7 +390,7 @@ function reference_a(
     obj_new.header.recording[:reference] = Dict(
         :l => "auricular (linked)",
         :i => "auricular (ipsilateral)",
-        :c => "auricular (contralateral)",
+        :c => "auricular (contralateral)"
     )[type]
     push!(obj_new.history, "reference_a(OBJ, type=$type, med=$med)")
 
@@ -495,7 +495,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
     obj_new.header.recording[:reference] = Dict(
         :l => "mastoid (linked)",
         :i => "mastoid (ipsilateral)",
-        :c => "mastoid (contralateral)",
+        :c => "mastoid (contralateral)"
     )[type]
     push!(obj_new.history, "reference_m(OBJ, type=$type, med=$med)")
 

@@ -83,7 +83,7 @@ function plot_matrix(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -143,7 +143,7 @@ function plot_xac(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -237,7 +237,7 @@ function plot_histogram(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, extrema(xticks))
     ax.titlesize = 18
@@ -322,7 +322,7 @@ function plot_bar(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -387,7 +387,7 @@ function plot_line(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -460,7 +460,7 @@ function plot_line(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -543,7 +543,7 @@ function plot_box(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -614,7 +614,7 @@ function plot_violin(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -629,7 +629,7 @@ function plot_violin(
         strokecolor = :black,
         strokewidth = 0.25,
         #colormap=pal,
-        color = color,
+        color = color
     )
 
     return fig
@@ -690,7 +690,7 @@ function plot_dots(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -767,7 +767,7 @@ function plot_paired(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -844,7 +844,7 @@ function plot_polar(
         fig[1, 1],
         title = title,
         thetazoomlock = true,
-        rzoomlock = true,
+        rzoomlock = true
     )
     !ticks && hidespines!(ax)
 
@@ -1408,7 +1408,7 @@ function plot_ci(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yl)
     ax.titlesize = 18
@@ -1493,7 +1493,7 @@ function plot_heatmap(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -1533,17 +1533,18 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 - `GLMakie.Figure`
 """
 function plot_imf(
-        imf::Matrix{Float64};
-        n::Int64 = size(imf, 1) - 1,
-        t::AbstractVector
-    )::GLMakie.Figure
+    imf::Matrix{Float64};
+    n::Int64 = size(imf, 1) - 1,
+    t::AbstractVector
+)::GLMakie.Figure
 
-    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
-    !(n + 1 <= size(imf, 1)) && throw(ArgumentError("n must be ≤ $(size(imf, 1) - 1)."))
-    !(size(imf, 2) == length(t)) && throw(ArgumentError("Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal."))
+    # validate
+    n > 0 || throw(ArgumentError("n must be ≥ 1."))
+    n + 1 <= size(imf, 1) || throw(ArgumentError("n must be ≤ $(size(imf, 1) - 1)."))
+    size(imf, 2) == length(t) ||
+        throw(ArgumentError("Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal."))
 
-    s_restored = sum(imf, dims
- = 1)[:]
+    s_restored = sum(imf, dims = 1)[:]
     imf = vcat(imf, s_restored')
 
     ylim = (floor(minimum(imf), digits = 0), ceil(maximum(imf), digits = 0))
@@ -1694,7 +1695,7 @@ function plot_fi(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, _xlims(st))
     ax.titlesize = 18
@@ -1763,7 +1764,7 @@ function plot_phase(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, _xlims(sf))
     ax.titlesize = 18
@@ -1824,7 +1825,7 @@ function plot_polezero(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.scatter!(ax, real.(pol), imag.(pol), markersize = 15, color = mono ? :black : :blue, marker = :xcross)
     GLMakie.scatter!(
@@ -1835,7 +1836,7 @@ function plot_polezero(
         strokecolor = mono ? :black : :blue,
         strokewidth = 2,
         color = :transparent,
-        marker = :circle,
+        marker = :circle
     )
     GLMakie.arc!(Point2f(0), 1, -pi, pi; linestyle = :dot, linewidth = 0.5, color = :black)
 

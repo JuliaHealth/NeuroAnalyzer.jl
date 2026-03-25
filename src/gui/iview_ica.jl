@@ -70,7 +70,7 @@ function iview_ica(
             imethod = :sh,
             nmethod = :minmax,
             cb = false,
-            large = false,
+            large = false
         )
         cx_tmp = plot2canvas(p_tmp)
         push!(ica_set, cx_tmp)
@@ -104,7 +104,7 @@ function iview_ica(
         Gtk4.default_size(
             win,
             Int64(ica_set[1].width) + round(Int64, p_sig.attr[:size][1] * 0.75) + 20,
-            round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20,
+            round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20
         )
 
         ica_view = GtkScrolledWindow()

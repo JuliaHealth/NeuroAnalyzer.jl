@@ -54,7 +54,7 @@ function _print_summary_table(g::Vector{String}, df::DataFrame)
             "Q3" reshape(df[!, :Q3], 1, :);
             "max" reshape(df[!, :max], 1, :);
             "mode" reshape(df[!, :mode], 1, :);
-        ],
+        ]
     )
 end
 
@@ -122,7 +122,7 @@ function summary(
             "Q3" st.q3;
             "max" st.mx;
             "mode" st.mo;
-        ],
+        ]
     )
 
     return (; ms, m, v, s, mn, q1, me, q3, mx, mo)

@@ -670,7 +670,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 r = entry_scale.value,
                 polar = cb_polar.active,
                 cart = cb_cartesian.active,
-                spherical = cb_spherical.active,
+                spherical = cb_spherical.active
             )
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false

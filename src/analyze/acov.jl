@@ -56,7 +56,7 @@ function acov(
             autocov[idx + 1] = cov(
                 @view(s[1:(end - idx)]),
                 @view(s[(1 + idx):end]),
-                corrected = corrected,
+                corrected = corrected
             )
         end
 

@@ -146,7 +146,7 @@ function plot_cont(
         ypanlock = true,
         xrectzoom = false,
         yrectzoom = false,
-        yticklabelspace = 60.0,
+        yticklabelspace = 60.0
     )
     GLMakie.xlims!(ax1, seg)
     if gui

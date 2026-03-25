@@ -34,7 +34,7 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     hidedecorations!(ax; grid = true)
     hidespines!(ax)
@@ -105,7 +105,7 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
             colorrange = 1:ch_n,
             markersize = 16.0,
             strokewidth = 2,
-            strokecolor = :black,
+            strokecolor = :black
         )
         GLMakie.text!(
             loc_x[idx] + label_offset_x, loc_y[idx] + label_offset_y; text = loc_lab[idx], fontsize = font_size

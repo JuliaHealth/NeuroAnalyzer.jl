@@ -72,7 +72,7 @@ function _a2df(annotations::Vector{String})::DataFrame
             :start => a_start,
             :length => a_length,
             :value => a_event,
-            :channel => zeros(Int64, length(a_event)),
+            :channel => zeros(Int64, length(a_event))
         )
     else
         for idx in eachindex(mrk)
@@ -102,7 +102,7 @@ function _a2df(annotations::Vector{String})::DataFrame
             :start => a_start,
             :length => a_length,
             :value => a_event,
-            :channel => zeros(Int64, length(a_event)),
+            :channel => zeros(Int64, length(a_event))
         )
     end
 end

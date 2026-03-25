@@ -13,7 +13,7 @@ Taper the signal.
 
 # Returns
 
-- `s_new::Vector{Float64}`
+- `Vector{Float64}`
 """
 function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
 
@@ -36,7 +36,7 @@ Taper the signal.
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
 

@@ -83,7 +83,7 @@ module NeuroAnalyzer
         nasion = (0.0, 1.03, -0.2),
         inion = (0.0, -1.03, -0.2),
         lpa = (-1.04, 0.2, -0.2),
-        rpa = (1.04, 0.2, -0.2),
+        rpa = (1.04, 0.2, -0.2)
     )
     begin
         tmp = pwd()
@@ -209,7 +209,7 @@ module NeuroAnalyzer
         progress_bar = progress_bar,
         verbose = verbose,
         exclude_bads = exclude_bads,
-        colors = colors,
+        colors = colors
     )
 
     # show major parameters

@@ -124,6 +124,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 # Returns
 
+Named tuple:
+
 - `coh::Array{ComplexF64, 3}`: coherence, shape `(channels, frequencies, epochs)`
 - `imcoh::Array{Float64, 3}`: imaginary part of coherence, shape `(channels, frequencies, epochs)`
 - `msc::Array{Float64, 3}`: magnitude-squared coherence, shape `(channels, frequencies, epochs)`
@@ -232,6 +234,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `w::Bool=true`: if true, apply Hanning window
 
 # Returns
+
+Named tuple:
 
 - `coh::Array{ComplexF64, 3}`: coherence, shape `(channels, frequencies, epochs)`
 - `imcoh::Array{Float64, 3}`: imaginary part of coherence, shape `(channels, frequencies, epochs)`

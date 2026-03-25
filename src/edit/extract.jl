@@ -2,8 +2,6 @@ export extract_channel
 export extract_epoch
 export extract_epoch!
 export extract_data
-export extract_time
-export extract_eptime
 
 """
     extract_channel(obj; <keyword arguments>)
@@ -17,7 +15,7 @@ Extract channel data.
 
 # Returns
 
-- `d::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3}
 
@@ -26,9 +24,7 @@ function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
-    d = reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
-
-    return d
+    return reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
 
 end
 
@@ -105,9 +101,9 @@ Extract data.
 
 # Returns
 
-- `signal::Array{Float64, 3}`
-- `time::Vector{Float64}`
-- `etime::Vector{Float64}`
+- `Array{Float64, 3}`
+- `Vector{Float64}`
+- `Vector{Float64}`
 """
 function extract_data(
     obj::NeuroAnalyzer.NEURO;
@@ -137,47 +133,5 @@ function extract_data(
     else
         return obj.data[ch, :, ep][:, :, :], obj.time_pts, obj.epoch_time
     end
-
-end
-
-"""
-    extract_time(obj)
-
-Extract time.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-
-# Returns
-
-- `tpts::Vector{Float64}`
-"""
-function extract_time(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
-
-    tpts = obj.time_pts
-
-    return tpts
-
-end
-
-"""
-    extract_eptime(obj)
-
-Extract epochs time.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-
-# Returns
-
-- `et::Vector{Float64}`
-"""
-function extract_eptime(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
-
-    et = obj.epoch_time
-
-    return et
 
 end

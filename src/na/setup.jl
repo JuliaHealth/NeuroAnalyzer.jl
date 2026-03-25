@@ -31,11 +31,11 @@ function na_info()::Nothing
     println("      Exclude bads: $(NeuroAnalyzer.exclude_bads)")
     println("            Colors: $(NeuroAnalyzer.colors)")
     println(
-        "           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]",
+        "           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]"
     )
     println()
     Threads.nthreads() < length(Sys.cpu_info()) || println(
-        "For best performance, environment variable `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))",
+        "For best performance, environment variable `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))"
     )
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
         println("Environment variable `JULIA_COPY_STACKS` is set to 1, multi-threading may not work correctly")

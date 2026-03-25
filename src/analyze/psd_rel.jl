@@ -62,7 +62,7 @@ function psd_rel(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean,
+            demean = demean
         )
     else
         band_power(
@@ -76,7 +76,7 @@ function psd_rel(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean,
+            demean = demean
         )
     end
 
@@ -91,7 +91,7 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
     p = psd_data.p
     f = psd_data.f

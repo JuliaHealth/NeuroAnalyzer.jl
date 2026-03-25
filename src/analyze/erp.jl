@@ -16,7 +16,7 @@ Detect the positive and negative peak of each channel's ERP/ERF/MEP.
 
 # Returns
 
-- `p::Matrix{Int64}`: : shape `(channels, 2)` - column 1 is the positive peak sample index, column 2 is the negative peak sample index
+- `Matrix{Int64}`: shape `(channels, 2)` - column 1 is the positive peak sample index, column 2 is the negative peak sample index
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
@@ -53,7 +53,7 @@ Calculate amplitude at a given time point.
 
 # Returns
 
-- `p::Matrix{Float64}`: amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
+- `Matrix{Float64}`: amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
 """
 function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
@@ -116,7 +116,7 @@ Calculate mean amplitude over a time segment.
 
 # Returns
 
-- `p::Matrix{Float64}`: mean amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
+- `Matrix{Float64}`: mean amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
 """
 function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
@@ -179,7 +179,7 @@ Calculate maximum amplitude over a time segment.
 
 # Returns
 
-- `p::Matrix{Float64}`: maximum amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
+- `Matrix{Float64}`: maximum amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
 """
 function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
@@ -242,7 +242,7 @@ Calculate minimum amplitude over a time segment.
 
 # Returns
 
-- `p::Matrix{Float64}`: minimum amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
+- `Matrix{Float64}`: minimum amplitude for each channel per epoch, shape `(channels, epochs)` or `(channels, 1)` for continuous objects
 """
 function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
@@ -310,7 +310,7 @@ Compute area under curve of an ERP/ERF/MEP (epoch 1).
 
 # Returns
 
-- `auc::Vector{Float64}`
+- `Vector{Float64}`
 """
 function erp_auc(
     obj::NeuroAnalyzer.NEURO;

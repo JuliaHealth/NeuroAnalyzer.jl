@@ -701,7 +701,7 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{Stri
         :c2 => ["Pz",  "P1",  "P2",  "CP1", "CP2", "CPz"],
         :p1 => ["P3",  "P5",  "P7",  "P9",  "CP3", "CP5", "TP7", "TP9"],
         :p2 => ["P4",  "P6",  "P8",  "P10", "CP4", "CP6", "TP8", "TP10"],
-        :o  => ["O1",  "O2",  "POz", "PO3", "PO4", "PO7", "PO8", "PO9", "PO10"],
+        :o  => ["O1",  "O2",  "POz", "PO3", "PO4", "PO7", "PO8", "PO9", "PO10"]
     )
 
     return Base.filter(l -> l in clabels, cluster_map[cluster])
@@ -901,7 +901,7 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
                 rpad(labels(obj)[idx], 16) *
                 rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
                 rpad(obj.header.recording[:unit][idx], 8) *
-                Base.join(rpad.(string.(d[:, idx]), 10)),
+                Base.join(rpad.(string.(d[:, idx]), 10))
             )
         end
 
@@ -946,7 +946,7 @@ Return the size of the object data array along dimension `d`.
 function Base.size(obj::NeuroAnalyzer.NEURO, d::Int64)::Int64
 
     # validate
-    d in 1:3 || throw(ArgumentError("d must be in [1, 3]."))
+    d in [1, 2, 3] || throw(ArgumentError("d must be in [1, 3]."))
 
     return size(obj.data, d)
 

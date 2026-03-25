@@ -136,7 +136,7 @@ function peak_frq(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean,
+            demean = demean
         )
     end
 
@@ -196,7 +196,7 @@ function peak_frq(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean,
+        demean = demean
     )
 
 end
@@ -333,7 +333,7 @@ function peak_amp(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean,
+            demean = demean
         )
     end
 
@@ -393,7 +393,7 @@ function peak_amp(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean,
+        demean = demean
     )
 
 end
@@ -530,7 +530,7 @@ function peak_pow(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean,
+            demean = demean
         )
     end
 
@@ -590,7 +590,7 @@ function peak_pow(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean,
+        demean = demean
     )
 
 end

@@ -140,7 +140,7 @@ function iplv(
         ch_idx, ep_idx = idx[1], idx[2]
         iplv_data = iplv(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
         ipl[ch_idx, ep_idx] = iplv_data.ipl
         sd[ch_idx, :, ep_idx] = iplv_data.sd

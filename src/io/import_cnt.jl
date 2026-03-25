@@ -437,7 +437,7 @@ function import_cnt(
             :start => evt_offset ./ sampling_rate,
             :length => fill(0.0, nevents),
             :value => [isempty(evt_code) ? "" : string(evt_code[i]) for i in 1:nevents],
-            :channel => fill(0, nevents),
+            :channel => fill(0, nevents)
         )
     end
 

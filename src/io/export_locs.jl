@@ -104,7 +104,7 @@ function export_locs(
             Z = z,
             sph_theta = theta_sph,
             sph_phi = phi_sph,
-            sph_radius = radius_sph,
+            sph_radius = radius_sph
         )
         CSV.write(file_name, df, delim = "\t", header = true)
 
@@ -114,7 +114,7 @@ function export_locs(
             Number = channels,
             theta = theta,
             radius = radius,
-            labels = clabels,
+            labels = clabels
         )
         CSV.write(file_name, df, delim = "\t", header = false)
 
@@ -129,7 +129,7 @@ function export_locs(
             radius = radius,
             radius_sph = radius_sph,
             theta_sph = theta_sph,
-            phi_sph = phi_sph,
+            phi_sph = phi_sph
         )
         CSV.write(file_name, df, delim = "\t", header = true)
 

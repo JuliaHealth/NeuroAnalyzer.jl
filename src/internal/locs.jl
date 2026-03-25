@@ -1,7 +1,7 @@
 function _sph_distance_sph(r1::Real, theta1::Real, phi1::Real, r2::Real, theta2::Real, phi2::Real)
     d = sqrt(
         r1^2 + r2^2 - (2 * r1 * r2) * cosd(theta1 - theta2) +
-            (2 * r1 * r2) * sind(theta1) * sind(theta2) * (cosd(phi1 - phi2 - 1)),
+            (2 * r1 * r2) * sind(theta1) * sind(theta2) * (cosd(phi1 - phi2 - 1))
     )
     return d
 end
@@ -72,7 +72,7 @@ function _initialize_locs()::DataFrame
         :loc_z => Float64[],
         :loc_radius_sph => Float64[],
         :loc_theta_sph => Float64[],
-        :loc_phi_sph => Float64[],
+        :loc_phi_sph => Float64[]
     )
 end
 
@@ -81,7 +81,7 @@ function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
         obj,
         ch = get_channel(
             obj; type = ["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg", "nirs_int", "nirs_od", "eog", "ref"]
-        ),
+        )
     )
     obj.locs = DataFrame(
         :label => labels(obj)[locs_ch],
@@ -92,7 +92,7 @@ function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
         :loc_z => zeros(length(locs_ch)),
         :loc_radius_sph => zeros(length(locs_ch)),
         :loc_theta_sph => zeros(length(locs_ch)),
-        :loc_phi_sph => zeros(length(locs_ch)),
+        :loc_phi_sph => zeros(length(locs_ch))
     )
     return nothing
 end
@@ -108,7 +108,7 @@ function _initialize_locs(obj::NeuroAnalyzer.NEURO)::DataFrame
         :loc_z => zeros(length(locs_ch)),
         :loc_radius_sph => zeros(length(locs_ch)),
         :loc_theta_sph => zeros(length(locs_ch)),
-        :loc_phi_sph => zeros(length(locs_ch)),
+        :loc_phi_sph => zeros(length(locs_ch))
     )
 end
 

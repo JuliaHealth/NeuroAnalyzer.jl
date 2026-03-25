@@ -120,7 +120,7 @@ function detect_tkeo(
         for idx in 1:w:length(stkeo)
             count(
                 abs.(z_signal[idx:(idx + w - 1)]) - abs.(z_tkeo[idx:(idx + w - 1)]) .>
-                    cl2z(p),
+                    cl2z(p)
             ) > 1 && (bad_windows += 1)
         end
         # mark channel as bad if there is at least one bad window
@@ -138,7 +138,7 @@ function detect_ransac(
         w::Int64 = 10,
         ransac_r::Float64 = 0.8,
         ransac_tr::Float64 = 0.4,
-        ransac_t::Float64 = 100.0,
+        ransac_t::Float64 = 100.0
     )
 
     ch_n = size(s, 1)
@@ -214,7 +214,7 @@ Detect bad channels.
 
 # Returns
 
-- `bc::Vector{Bool}`: vector of bad channels
+- `Vector{Bool}`: vector of bad channels
 """
 function channel_reject(
     obj::NeuroAnalyzer.NEURO;
@@ -247,7 +247,7 @@ function channel_reject(
         _check_var(
             idx,
             [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp],
-            "method",
+            "method"
         )
     end
 
@@ -434,7 +434,7 @@ function channel_reject(
                 w = w,
                 ransac_t = ransac_t,
                 ransac_r = ransac_r,
-                ransac_tr = ransac_tr,
+                ransac_tr = ransac_tr
             )
             bc[ch] = bc[ch] .|| bad_chs
         end
@@ -567,7 +567,7 @@ Detect bad epochs.
 
 # Returns
 
-- `be::Vector{Int64}`: bad epochs numbers
+- `Vector{Int64}`: bad epochs numbers
 """
 function epoch_reject(
     obj::NeuroAnalyzer.NEURO;
@@ -601,7 +601,7 @@ function epoch_reject(
         _check_var(
             idx,
             [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp],
-            "method",
+            "method"
         )
     end
 
@@ -805,7 +805,7 @@ function epoch_reject(
                 w = w,
                 ransac_t = ransac_t,
                 ransac_r = ransac_r,
-                ransac_tr = ransac_tr,
+                ransac_tr = ransac_tr
             )
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)

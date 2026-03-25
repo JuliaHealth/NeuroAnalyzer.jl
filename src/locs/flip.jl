@@ -19,11 +19,14 @@ Flip channel locations along y axis.
 
 # Returns
 
-- `locs_new::DataFrame`
+- `DataFrame`
 """
 function locs_flipy(
-        locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
-    )::DataFrame
+    locs::DataFrame;
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true
+)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -101,11 +104,14 @@ Flip channel locations along x axis.
 
 # Returns
 
-- `locs_new::DataFrame`
+- `DataFrame`
 """
 function locs_flipx(
-        locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
-    )::DataFrame
+    locs::DataFrame;
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true
+)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -157,8 +163,11 @@ Flip channel locations along x axis.
 - `Nothing`
 """
 function locs_flipx!(
-        locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
-    )::Nothing
+    locs::DataFrame;
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true
+)::Nothing
 
     locs[!, :] = locs_flipx(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
@@ -180,11 +189,14 @@ Flip channel locations along z axis.
 
 # Returns
 
-- `locs_new::DataFrame`
+- `DataFrame`
 """
 function locs_flipz(
-        locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
-    )::DataFrame
+    locs::DataFrame;
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true
+)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -229,8 +241,11 @@ Flip channel locations along z axis.
 - `Nothing`
 """
 function locs_flipz!(
-        locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true
-    )::Nothing
+    locs::DataFrame;
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true
+)::Nothing
 
     locs[!, :] = locs_flipz(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 

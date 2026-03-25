@@ -19,8 +19,7 @@ function seg_mean(seg::AbstractArray)::Vector{Float64}
 
     _chk3d(seg)
 
-    return reshape(mean(mean(seg, dims
- = 1), dims = 2), size(seg, 3))
+    return reshape(mean(mean(seg, dims = 1), dims = 2), size(seg, 3))
 
 end
 
@@ -201,7 +200,7 @@ Interactive selection of a matrix area.
 
 # Returns
 
-- `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
+- `Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
 function seg_select(
     m::AbstractMatrix;
@@ -237,7 +236,7 @@ function seg_select(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     hidedecorations!(ax)
     hm = GLMakie.heatmap!(m[end:-1:1, :]', colormap = :darktest)

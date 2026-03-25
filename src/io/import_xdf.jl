@@ -60,7 +60,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     other_idx = findall(n -> n != "EEG", stream_type)
     !(length(eeg_idx) > 0) && throw(ArgumentError("EEG streams not found in the $file_name."))
     @assert length(eeg_idx) == 1 _info(
-        "Importing files with > 1 EEG streams is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+        "Importing files with > 1 EEG streams is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     )
 
     eeg_idx = eeg_idx[1]
@@ -82,7 +82,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Int64[]
     )
     for idx in other_idx
         length(streams[s_names[idx]]["data"]) == 0 && break
@@ -96,7 +96,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
                     :length => ones(length(time[idx])),
                     :value => repeat(["marker"], length(time[idx])),
                     :channel => zeros(Int64, length(time[idx])),
-                ),
+                )
             )
         end
     end
@@ -116,7 +116,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_eeg(
         data_type = data_type,
@@ -152,7 +152,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
     )
 
     return obj

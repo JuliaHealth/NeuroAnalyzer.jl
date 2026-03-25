@@ -17,7 +17,7 @@ function _refresh_ica_can_set(
             imethod = :sh,
             nmethod = :minmax,
             cb = false,
-            large = false,
+            large = false
         )
         cx_tmp = plot2canvas(p_tmp)
         push!(ica_set, cx_tmp)

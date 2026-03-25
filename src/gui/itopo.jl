@@ -227,7 +227,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
                 large = large,
                 plot_contours = plot_contours,
                 plot_electrodes = plot_electrodes,
-                cart = cart,
+                cart = cart
             )
             ctx = getgc(can)
             if p.attr[:size][1] > 900
@@ -582,7 +582,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                 large = large,
                 plot_contours = plot_contours,
                 plot_electrodes = plot_electrodes,
-                cart = cart,
+                cart = cart
             )
             ctx = getgc(can)
             if p.attr[:size][1] > 900

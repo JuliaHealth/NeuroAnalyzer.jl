@@ -200,8 +200,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
             splitext(file_name)[1] * ".wl1",
             header = false,
             stringtype = String,
-            DataFrame,
-        ),
+            DataFrame
+        )
     )'[
         ch_masks, :,
     ]
@@ -217,10 +217,10 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
                     header = false,
                     stringtype = String,
                     DataFrame,
-                ),
+                )
             )'[
                 ch_masks, :,
-            ],
+            ]
         )
         wavelength_index = vcat(wavelength_index, repeat([idx], ch_n))
         opt_pairs = vcat(opt_pairs, opt_pairs)
@@ -270,7 +270,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
             :start => nothing,
             :length => nothing,
             :value => nothing,
-            :channel => nothing,
+            :channel => nothing
         )
     else
         DataFrame(
@@ -278,7 +278,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
             :start => stim_onset,
             :length => repeat([1], length(stim_id)),
             :value => repeat(["stim"], length(stim_id)),
-            :channel => zeros(Int64, length(stim_id)),
+            :channel => zeros(Int64, length(stim_id))
         )
     end
 
@@ -338,7 +338,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     if src_pos3d === nothing
         if src_pos2d === nothing
             _warn(
-                "The data does not contain 3D nor 2D location information for the optode positions.",
+                "The data does not contain 3D nor 2D location information for the optode positions."
             )
             x = zeros(length(opt_labels))
         else
@@ -371,7 +371,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         :loc_z => z,
         :loc_radius_sph => radius_sph,
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph,
+        :loc_phi_sph => phi_sph
     )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -413,7 +413,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     e = _create_experiment(
         name = string(study_type1),
         notes = string(study_type2),
-        design = string(study_type3),
+        design = string(study_type3)
     )
 
     hdr = _create_header(subject = s, recording = r, experiment = e)
@@ -425,7 +425,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
     )
 
     return obj

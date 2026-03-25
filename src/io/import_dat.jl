@@ -31,7 +31,7 @@ function import_dat(file_name)::DataFrame
         ignorerepeated = true,
         skipto = 21, # 20-line header; data starts at line 21
         header = 0, # no column-header row in the data block
-        DataFrame,
+        DataFrame
     )
 
     expected_cols = [:event, :trial, :response, :type, :correct]

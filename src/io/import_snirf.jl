@@ -176,7 +176,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     end
     data_n -= 1
     data_n > 1 && _warn(
-        "Multiple data SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+        "Multiple data SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     )
 
     d_id = "data1"
@@ -415,7 +415,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     end
     stim_n -= 1
     stim_n > 1 && _warn(
-        "Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+        "Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     )
 
     s_id = "stim1"
@@ -471,7 +471,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     end
     aux_n -= 1
     aux_n > 1 && _warn(
-        "Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+        "Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     )
 
     a_id = "aux$aux_n"
@@ -522,7 +522,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     if src_pos3d === nothing
         if src_pos2d === nothing
             _warn(
-                "The data does not contain 3D nor 2D location information for the optode positions.",
+                "The data does not contain 3D nor 2D location information for the optode positions."
             )
             x = zeros(length(opt_labels))
         else
@@ -570,7 +570,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         :loc_z => z,
         :loc_radius_sph => radius_sph,
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph,
+        :loc_phi_sph => phi_sph
     )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -585,7 +585,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_nirs(
         data_type = "nirs",
@@ -620,7 +620,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
     )
 
     return obj

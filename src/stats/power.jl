@@ -150,7 +150,7 @@ function size_p2g(;
     n1 = ceil(
         Int64,
         (cl2z(1 - alpha) * sqrt(p_dash * q_dash * (1 + 1/r)) +
-         cl2z(1 - beta)  * sqrt(p1 * q1 + p2 * q2 / r))^2 / delta^2,
+         cl2z(1 - beta)  * sqrt(p1 * q1 + p2 * q2 / r))^2 / delta^2
     )
     n2 = n1 * r
 

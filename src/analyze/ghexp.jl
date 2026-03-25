@@ -28,7 +28,7 @@ Two modes:
 
 # Returns
 
-- `ghe::Matrix{Float64}`: shape `(1, 2)` when `q_range=nothing`, otherwise `(length(q_range), 2)` - columns are (exponent, goodness-of-fit)
+- `Matrix{Float64}`: shape `(1, 2)` when `q_range=nothing`, otherwise `(length(q_range), 2)` - columns are (exponent, goodness-of-fit)
 """
 function ghexp(
     s::AbstractVector;
@@ -89,7 +89,7 @@ function ghexp(
         ghe[ch_idx, :, :, ep_idx] = ghexp(
             @view(s[ch_idx, :, ep_idx]),
             tau_range = tau_range,
-            q_range = q_range,
+            q_range = q_range
         )
     end
 

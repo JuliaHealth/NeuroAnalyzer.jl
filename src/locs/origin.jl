@@ -15,7 +15,7 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Returns
 
-- `locs_new::DataFrame`
+- `DataFrame`
 """
 function locs_origin(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::DataFrame
 

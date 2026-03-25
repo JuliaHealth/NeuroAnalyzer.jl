@@ -18,12 +18,13 @@ Resample to `new_sr` sampling frequency.
 
 # Returns
 
-- `s_new::Vector{Float64}`
+- `Vector{Float64}`
 """
 function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float64}
 
-    !(old_sr >= 1) && throw(ArgumentError("old_sr must be ≥ 1."))
-    !(new_sr >= 1) && throw(ArgumentError("new_sr must be ≥ 1."))
+    # validate
+    old_sr >= 1 || throw(ArgumentError("old_sr must be ≥ 1."))
+    new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
 
     new_sr == old_sr && return (s)
 
@@ -48,12 +49,15 @@ Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64, 3}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    !(new_sr >= 1) && throw(ArgumentError("new_sr must be ≥ 1."))
+
+    # validate
+    new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
 
     ch_n, _, ep_n = size(s)
 
@@ -88,7 +92,8 @@ Resample (up- or down-sample).
 """
 function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
-    !(new_sr >= 1) && throw(ArgumentError("new_sr must be ≥ 1."))
+    # validate
+    new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
 
     if new_sr > sr(obj)
         return upsample(obj, new_sr = new_sr)
@@ -144,7 +149,7 @@ Upsample.
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
     new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn(
-        "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.",
+        "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
     )
 
     # create new dataset
@@ -207,7 +212,7 @@ Downsample.
 function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
     new_sr < sr(obj) && _warn(
-        "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(sr(obj) / 2) Hz).",
+        "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(sr(obj) / 2) Hz)."
     )
 
     new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn(

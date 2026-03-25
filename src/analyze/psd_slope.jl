@@ -66,7 +66,7 @@ function psd_slope(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
     pw = psd_data.p
     pf = psd_data.f
@@ -177,7 +177,7 @@ function psd_slope(
                 w = w,
                 ncyc = ncyc,
                 gw = gw,
-                demean = demean,
+                demean = demean
             )
         end
     end

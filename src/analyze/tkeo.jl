@@ -16,7 +16,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 # Returns
 
-- `tk::Vector{Float64}`
+- `Vector{Float64}`
 """
 function tkeo(
     s::AbstractVector,
@@ -63,7 +63,7 @@ Calculate Teager-Kaiser energy-tracking operator
 
 # Returns
 
-- `tk::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function tkeo(
     s::AbstractArray,
@@ -103,7 +103,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 # Returns
 
-- `tk::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function tkeo(
     obj::NeuroAnalyzer.NEURO;

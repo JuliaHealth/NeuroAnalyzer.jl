@@ -249,7 +249,7 @@ function tes_protocol(;
         :duration => duration,
         :ramp_in => ramp_in,
         :ramp_out => ramp_out,
-        :sham => sham,
+        :sham => sham
     )
 
 end

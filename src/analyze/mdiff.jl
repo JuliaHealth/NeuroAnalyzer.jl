@@ -155,7 +155,7 @@ function mdiff(
             @view(s1[:, :, ep_idx]),
             @view(s2[:, :, ep_idx]),
             n = n,
-            method = method,
+            method = method
         )
         st[ep_idx, :] = mdriff_data.st
         sts[ep_idx] = mdriff_data.sts

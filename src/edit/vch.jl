@@ -12,7 +12,7 @@ Calculate a virtual channel using formula `f`.
 
 # Returns
 
-- `vc::Array{Float64, 3}`: shape `(single channel, time, epochs)`
+- `Array{Float64, 3}`: shape (1, time, epochs)
 """
 function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
 

@@ -155,7 +155,7 @@ Calculate Phase Locking Index (PLI).
 
 # Returns
 
-- `pv::Array{Float64, 3}`: PLI value
+- `Array{Float64, 3}`: PLI value
 """
 function pli(
     obj::NeuroAnalyzer.NEURO;

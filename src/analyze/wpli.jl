@@ -151,7 +151,7 @@ Calculate weighted PLI (Phase Locking Index).
 
 # Returns
 
-- `pv::Array{Float64, 3}`: wPLI value
+- `Array{Float64, 3}`: wPLI value
 """
 function wpli(
     obj::NeuroAnalyzer.NEURO;

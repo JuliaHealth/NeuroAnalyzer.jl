@@ -466,7 +466,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
             :start => Float64.(evts[:, 1]) ./ sampling_rate,
             :length => fill(0.0, n_ev),
             :value => string.(evts[:, 3]), # "after" encodes the event code
-            :channel => fill(0, n_ev),
+            :channel => fill(0, n_ev)
         )
     end
 

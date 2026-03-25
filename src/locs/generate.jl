@@ -12,7 +12,7 @@ Generate spherical coordinates according to 10/10 system.
 
 # Returns
 
-- `locs_new::DataFrame`
+- `DataFrame`
 """
 function locs_generate(locs::DataFrame)::DataFrame
 

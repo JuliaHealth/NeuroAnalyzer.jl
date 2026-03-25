@@ -76,7 +76,7 @@ function cpsd(
             demean = demean,
             nfft = nextfastfft(n_samples),
             nw = ((nt + 1) ÷ 2),
-            ntapers = nt,
+            ntapers = nt
         )
         f = DSP.freq(pxy_mt)
         pxy = DSP.power(pxy_mt)
@@ -225,7 +225,7 @@ function cpsd(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w,
+        w = w
     )
     f = cpsd_data.f
     
@@ -245,7 +245,7 @@ function cpsd(
             nt = nt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w,
+            w = w
         )
     end
 

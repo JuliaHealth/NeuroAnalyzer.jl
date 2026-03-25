@@ -128,11 +128,11 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     end
     time_pts = round.(
         collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)],
-        digits = 4,
+        digits = 4
     )
     epoch_time = round.(
         (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
-        digits = 4,
+        digits = 4
     )
 
     s = _create_subject(
@@ -143,7 +143,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_eeg(
         data_type = "eeg",
@@ -177,7 +177,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Int64[]
     )
 
     locs = _initialize_locs()
@@ -186,7 +186,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
     )
 
     return obj

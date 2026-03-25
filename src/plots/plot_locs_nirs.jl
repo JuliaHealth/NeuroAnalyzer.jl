@@ -124,7 +124,7 @@ function plot_locs_nirs(
     GLMakie.activate!(title = "plot_locs_nirs()")
     fig = GLMakie.Figure(
         size = plot_size,
-        figure_padding = 0,
+        figure_padding = 0
     )
     if grid
         ax = GLMakie.Axis(
@@ -242,7 +242,7 @@ function plot_locs_nirs(
                 loc_y[idx] + label_offset_y,
                 text = locs[!, :label][idx],
                 align = (:center, :bottom),
-                fontsize = font_size,
+                fontsize = font_size
             )
         end
     elseif !opt_labels
@@ -263,7 +263,7 @@ function plot_locs_nirs(
                 loc_y[idx] + label_offset_y,
                 text = locs[!, :label][idx],
                 align = (:center, :bottom),
-                fontsize = font_size,
+                fontsize = font_size
             )
         end
     elseif !opt_labels
@@ -284,7 +284,7 @@ function plot_locs_nirs(
                 loc_y[idx] + label_offset_y,
                 text = "S" * string(idx),
                 align = (:center, :bottom),
-                fontsize = font_size,
+                fontsize = font_size
             )
         end
         for idx in 1:det_n
@@ -293,7 +293,7 @@ function plot_locs_nirs(
                 loc_y[idx] + label_offset_y,
                 text = "D" * string(idx),
                 align = (:center, :bottom),
-                fontsize = font_size,
+                fontsize = font_size
             )
         end
     end

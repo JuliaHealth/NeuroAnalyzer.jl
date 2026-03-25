@@ -16,12 +16,15 @@ Remove segment from the signal.
 
 # Returns
 
-- `trim::Vector{Float64}`
+- `Vector{Float64}`
 """
 function trim(
-        v::AbstractVector; seg::Tuple{Int64, Int64}, keep::Bool = false
-    )::Vector{Float64}
+    v::AbstractVector;
+    seg::Tuple{Int64, Int64},
+    keep::Bool = false
+)::Vector{Float64}
 
+    # validate
     _check_segment(v, seg[1], seg[2])
 
     if keep
@@ -45,12 +48,15 @@ Remove segment from the signal.
 
 # Returns
 
-- `trim::Matrix{Float64}`
+- `Matrix{Float64}`
 """
 function trim(
-        m::AbstractMatrix; seg::Tuple{Int64, Int64}, keep::Bool = false
-    )::Matrix{Float64}
+    m::AbstractMatrix;
+    seg::Tuple{Int64, Int64},
+    keep::Bool = false
+)::Matrix{Float64}
 
+    # validate
     _check_segment(m[1, :], seg[1], seg[2])
 
     if keep
@@ -74,13 +80,18 @@ Remove segment from the signal.
 
 # Returns
 
-- `trim::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function trim(
-        a::AbstractArray; seg::Tuple{Int64, Int64}, keep::Bool = false
-    )::Array{Float64, 3}
+    a::AbstractArray;
+    seg::Tuple{Int64, Int64},
+    keep::Bool = false
+)::Array{Float64, 3}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(a)
+
+    # validate
     _check_segment(a[1, :, 1], seg[1], seg[2])
 
     if keep
@@ -121,7 +132,7 @@ function trim(
     seg_tpos = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn(
-        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data."
     )
 
     # create new dataset

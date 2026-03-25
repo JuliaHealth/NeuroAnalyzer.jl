@@ -26,7 +26,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 # Returns
 
-- `sef_frq::Float64`: spectral edge frequency
+- `Float64`: spectral edge frequency
 """
 function sef(
     s::AbstractVector;
@@ -55,7 +55,7 @@ function sef(
                 woverlap = woverlap,
                 w = w,
                 ncyc = ncyc,
-                demean = demean,
+                demean = demean
             )
 
     f1_idx = vsearch(f[1], pf)
@@ -148,7 +148,7 @@ function sef(
                 woverlap = woverlap,
                 w = w,
                 ncyc = ncyc,
-                demean = demean,
+                demean = demean
             )
         end
     end
@@ -182,7 +182,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 # Returns
 
-- `sef_frq::Matrix{Float64}`: spectral edge frequency
+- `Matrix{Float64}`: spectral edge frequency
 """
 function sef(
     obj::NeuroAnalyzer.NEURO;
@@ -212,7 +212,7 @@ function sef(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean,
+        demean = demean
     )
 
 end

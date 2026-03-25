@@ -72,7 +72,7 @@ function normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVect
             :rank,
             :none,
         ],
-        "method",
+        "method"
     )
 
     if method === :zscore
@@ -142,7 +142,7 @@ Normalize.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize(s::AbstractArray, n::Real = 1; bych::Bool = false, method::Symbol)::AbstractArray
 
@@ -165,7 +165,7 @@ function normalize(s::AbstractArray, n::Real = 1; bych::Bool = false, method::Sy
             :sigmoid,
             :none,
         ],
-        "method",
+        "method"
     )
 
     if method === :zscore
@@ -333,7 +333,7 @@ Normalize by z-score.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_zscore(s::AbstractVector)::AbstractVector
 
@@ -360,7 +360,7 @@ end
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_zscore(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -406,7 +406,7 @@ Normalize in [-n, +n]. If all elements are the same, they are normalized to +n.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_minmax(s::AbstractVector, n::Real = 1)::AbstractVector
 
@@ -436,7 +436,7 @@ Normalize in [-n, +n]. If all elements are the same, they are normalized to 1.0.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 
 function normalize_minmax(s::AbstractArray, n::Real = 1; bych::Bool = false)::AbstractArray
@@ -481,7 +481,7 @@ Normalize in [0, n], default is [0, +1].
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_n(s::AbstractVector, n::Real = 1)::AbstractVector
 
@@ -510,7 +510,7 @@ Normalize in [0, n], default is [0, +1].
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_n(s::AbstractArray, n::Real = 1; bych::Bool = false)::AbstractArray
 
@@ -554,7 +554,7 @@ Normalize using log-transformation.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_log(s::AbstractVector)::AbstractVector
 
@@ -577,7 +577,7 @@ Normalize using log-transformation.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_log(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -616,7 +616,7 @@ Normalize to Gaussian.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_gauss(s::AbstractVector)::AbstractVector
 
@@ -646,7 +646,7 @@ Normalize to Gaussian.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -686,7 +686,7 @@ Normalize using log10-transformation.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_log10(s::AbstractVector)::AbstractVector
 
@@ -709,7 +709,7 @@ Normalize using log10-transformation.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_log10(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -749,7 +749,7 @@ Normalize to using -log-transformation.
 
 # Returns
 
-- `sn::Vector{Float64}`
+- `Vector{Float64}`
 """
 function normalize_neglog(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -771,7 +771,7 @@ Normalize using -log10-transformation.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_neglog10(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -792,7 +792,7 @@ Normalize in [-∞, 0].
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_neg(s::AbstractVector)::AbstractVector
 
@@ -815,7 +815,7 @@ Normalize in [-∞, 0].
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -854,7 +854,7 @@ Normalize in [0, +∞].
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_pos(s::AbstractVector)::AbstractVector
 
@@ -877,7 +877,7 @@ Normalize in [0, +∞].
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -916,7 +916,7 @@ Normalize in percentages.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_perc(s::AbstractVector)::AbstractVector
 
@@ -946,7 +946,7 @@ Normalize in percentages.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_perc(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -991,7 +991,7 @@ Normalize in inverse root (1/sqrt(x)).
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_invroot(s::AbstractVector)::AbstractVector
 
@@ -1016,7 +1016,7 @@ Normalize in inverse root (1/sqrt(x)).
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_invroot(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1057,7 +1057,7 @@ Softmax normalize: `exp(x_i) / sum(exp(x))`
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_softmax(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1077,7 +1077,7 @@ Normalize using sigmoid function: `1 / (1 + e^-x_i)`
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_sigmoid(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1096,7 +1096,7 @@ Normalize by MAD.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_mad(s::AbstractVector)::AbstractVector
 
@@ -1123,7 +1123,7 @@ end
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1168,7 +1168,7 @@ Normalize using tiedranks.
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_rank(s::AbstractVector)::AbstractVector
 
@@ -1190,7 +1190,7 @@ Normalize using tiedranks.
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
 
@@ -1230,7 +1230,7 @@ Normalize using Fisher z-transform. Converts uniform distribution into normal di
 
 # Returns
 
-- `sn::AbstractVector`
+- `AbstractVector`
 """
 function normalize_fisher(s::AbstractVector)::AbstractVector
 
@@ -1255,7 +1255,7 @@ Normalize using Fisher z-transform. Converts uniform distribution into normal di
 
 # Returns
 
-- `sn::AbstractArray`
+- `AbstractArray`
 """
 function normalize_fisher(s::AbstractArray; bych::Bool = false)::AbstractArray
 

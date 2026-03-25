@@ -55,7 +55,7 @@ function plot_mep(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -142,7 +142,7 @@ function plot_mep(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -181,7 +181,7 @@ function plot_mep(
                 colorrange = 1:ch_n,
                 linewidth = 1,
                 alpha = avg ? 0.25 : 1.0,
-                label = clabels[idx],
+                label = clabels[idx]
             )
         end
     end
@@ -189,11 +189,9 @@ function plot_mep(
     # plot averaged MEP
     if avg
         if ch_n == 1
-            s = mean(s, dims
- = 2)[:]
+            s = mean(s, dims = 2)[:]
         else
-            s = mean(s, dims
- = 1)[:]
+            s = mean(s, dims = 1)[:]
         end
         GLMakie.lines!(ax, t, s; color = :black, linewidth = 2)
     end
@@ -272,7 +270,7 @@ function plot_mep_stack(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -326,7 +324,7 @@ Plot MEP.
 
 # Returns
 
-- `fig::Plots.Plot{Plots.GRBackend}`
+- `GLMakie.Figure`
 """
 function plot_mep(
     obj::NeuroAnalyzer.NEURO;
@@ -432,7 +430,7 @@ function plot_mep(
                 obj.data[ch, pp[ch, 1], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :red,
-                markersize = 15,
+                markersize = 15
             )
             GLMakie.scatter!(
                 fig[1, 1],
@@ -440,7 +438,7 @@ function plot_mep(
                 obj.data[ch, pp[ch, 2], 1][1];
                 marker = :xcross,
                 color = mono ? :black : :blue,
-                markersize = 15,
+                markersize = 15
             )
             _info("Positive peak time: $(round(t[pp[ch, 1]][1] * 1000, digits = 0)) ms")
             _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1], digits = 2)) $units")
@@ -465,7 +463,7 @@ function plot_mep(
                 mep_tmp[pp[1, 2]],
                 marker = :xcross,
                 color = mono ? :black : :blue,
-                markersize = 15,
+                markersize = 15
             )
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits = 0)) ms")
             _info("Positive peak amplitude: $(round(mep_tmp[pp[1, 1]], digits = 2)) $units")

@@ -26,7 +26,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Int64[]
     )
 
     time_pts = Float64[]
@@ -42,7 +42,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         handedness = "",
         head_circumference = -1,
         weight = -1,
-        height = -1,
+        height = -1
     )
     if data_type == "eeg"
         r = _create_recording_eeg(
@@ -64,7 +64,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             line_frequency = 50,
             sampling_rate = 0,
             bad_channels = [false],
-            gain = Float64[],
+            gain = Float64[]
         )
     elseif data_type == "seeg"
         r = _create_recording_seeg(
@@ -86,7 +86,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             line_frequency = 50,
             sampling_rate = 0,
             bad_channels = [false],
-            gain = Float64[],
+            gain = Float64[]
         )
     elseif data_type == "ecog"
         r = _create_recording_ecog(
@@ -108,7 +108,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             line_frequency = 50,
             sampling_rate = 0,
             bad_channels = [false],
-            gain = Float64[],
+            gain = Float64[]
         )
     elseif data_type == "meg"
         r = _create_recording_eeg(
@@ -130,7 +130,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             line_frequency = 50,
             sampling_rate = 0,
             bad_channels = [false],
-            gain = Float64[],
+            gain = Float64[]
         )
     elseif data_type == "nirs"
         r = _create_recording_nirs(
@@ -153,7 +153,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             det_labels = String[],
             opt_labels = String[],
             sampling_rate = 0,
-            bad_channels = [false],
+            bad_channels = [false]
         )
     elseif data_type == "sensors"
         r = _create_recording_sensors(
@@ -171,7 +171,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             units = String[],
             prefiltering = String[],
             sampling_rate = 0,
-            bad_channels = [false],
+            bad_channels = [false]
         )
     elseif data_type == "mep"
         r = _create_recording_mep(
@@ -193,7 +193,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             stimulation_sample = Int64[],
             markers_pos = Int64[],
             markers_neg = Int64[],
-            bad_channels = [false],
+            bad_channels = [false]
         )
     elseif data_type == "eda"
         r = _create_recording_eda(
@@ -211,7 +211,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             units = String[],
             prefiltering = String[],
             sampling_rate = 0,
-            bad_channels = [false],
+            bad_channels = [false]
         )
     elseif data_type == "tpt"
         r = _create_recording_eda(
@@ -229,7 +229,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             units = String[],
             prefiltering = String[],
             sampling_rate = 0,
-            bad_channels = zeros(Bool, 6),
+            bad_channels = zeros(Bool, 6)
         )
     end
     e = _create_experiment(name = "", notes = "", design = "")
@@ -247,7 +247,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         :loc_z => Float64[],
         :loc_radius_sph => Float64[],
         :loc_theta_sph => Float64[],
-        :loc_phi_sph => Float64[],
+        :loc_phi_sph => Float64[]
     )
 
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, ep_time, data)

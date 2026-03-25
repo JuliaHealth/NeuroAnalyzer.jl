@@ -54,6 +54,7 @@ Applies the inverse of the Brett affine transformation:
 # Returns
 
 - `Vector{Float64}`: MNI `[X, Y, Z]` coordinates
+
 # References
 
 Brett M. https://www.brainmap.org/training/BrettTransform.html
@@ -87,7 +88,8 @@ The transform is piecewise-linear in z:
 
 # Returns
 
-- `t::Vector{Float64}`: Talairach `[X, Y, Z]` coordinates
+- `Vector{Float64}`: Talairach `[X, Y, Z]` coordinates
+
 # References
 
 Brett M. https://www.brainmap.org/training/BrettTransform.html

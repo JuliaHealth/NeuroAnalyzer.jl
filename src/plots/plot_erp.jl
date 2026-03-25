@@ -59,7 +59,7 @@ function plot_erp(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -155,7 +155,7 @@ function plot_erp(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -194,7 +194,7 @@ function plot_erp(
                 colorrange = 1:ch_n,
                 linewidth = 1,
                 alpha = avg ? 0.25 : 1.0,
-                label = clabels[idx],
+                label = clabels[idx]
             )
         end
     end
@@ -329,7 +329,7 @@ function plot_erp_topo(
     GLMakie.activate!(title = "plot_erp()")
     fig = GLMakie.Figure(
         size = plot_size,
-        figure_padding = 0,
+        figure_padding = 0
     )
     ax = GLMakie.Axis(
         fig[1, 1],
@@ -344,7 +344,7 @@ function plot_erp_topo(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -494,7 +494,7 @@ function plot_erp_stack(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -581,7 +581,7 @@ function plot_gfp(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.ylims!(ax, 0, maximum(g) * 1.5)
     ax.titlesize = 18
@@ -731,7 +731,7 @@ function plot_erp(
                 smooth = smooth,
                 ks = ks,
                 zl = zl,
-                mono = mono,
+                mono = mono
             )
 
         elseif type === :normal
@@ -852,7 +852,7 @@ function plot_erp(
                 obj.data[ch, pp[ch, 1], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :red,
-                markersize = 15,
+                markersize = 15
             )
             GLMakie.scatter!(
                 fig[1, 1],
@@ -860,7 +860,7 @@ function plot_erp(
                 obj.data[ch, pp[ch, 2], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :blue,
-                markersize = 15,
+                markersize = 15
             )
             _info("Positive peak time: $(round(t[pp[ch, 1]][1] * 1000, digits = 0)) ms")
             _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1], digits = 2)) $units")
@@ -880,7 +880,7 @@ function plot_erp(
                 mep_tmp[pp[1, 2]],
                 marker = :xcross,
                 color = mono ? :black : :blue,
-                markersize = 15,
+                markersize = 15
             )
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits = 0)) ms")
             _info("Positive peak amplitude: $(round(mep_tmp[pp[1, 1]], digits = 2)) $units")

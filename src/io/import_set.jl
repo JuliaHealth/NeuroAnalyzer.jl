@@ -176,7 +176,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :loc_z => z,
             :loc_radius_sph => radius_sph,
             :loc_theta_sph => theta_sph,
-            :loc_phi_sph => phi_sph,
+            :loc_phi_sph => phi_sph
         )
         for idx in DataFrames.nrow(locs):-1:1
             (
@@ -186,7 +186,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             ) || deleteat!(locs, idx)
         end
         DataFrames.nrow(locs) > 0 && _info(
-            "Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found",
+            "Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found"
         )
         if DataFrames.nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
@@ -202,7 +202,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Int64[]
     )
 
     if "event" in keys(dataset)
@@ -221,7 +221,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
                 :start => start,
                 :length => len,
                 :value => desc,
-                :channel => zeros(Int64, length(start)),
+                :channel => zeros(Int64, length(start))
             )
         end
     end
@@ -252,11 +252,11 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             collect(
                 0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
             )[1:(end - 1)],
-            digits = 4,
+            digits = 4
         )
         epoch_time = round.(
             (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
-            digits = 4,
+            digits = 4
         )
     end
 
@@ -276,7 +276,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_eeg(
         data_type = data_type,
@@ -309,7 +309,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
     )
 
     return obj

@@ -209,7 +209,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             :loc_z => loc_z,
             :loc_radius_sph => loc_radius_sph,
             :loc_theta_sph => loc_theta_sph,
-            :loc_phi_sph => loc_phi_sph,
+            :loc_phi_sph => loc_phi_sph
         )
     end
 
@@ -259,7 +259,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             :start => m_pos ./ sampling_rate,
             :length => round.(m_len ./ sampling_rate),
             :value => m_desc,
-            :channel => m_ch,
+            :channel => m_ch
         )
         if all(==(""), markers[!, :id])
             markers[!, :id] .= "mrk"
@@ -273,7 +273,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             :start => vmrk[!, :sample] ./ sampling_rate,
             :length => round.(vmrk[!, :duration] ./ sampling_rate),
             :value => vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value]),
-            :channel => zeros(Int64, DataFrames.nrow(vmrk)),
+            :channel => zeros(Int64, DataFrames.nrow(vmrk))
         )
     else
         markers = DataFrame(

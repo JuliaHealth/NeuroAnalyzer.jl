@@ -144,7 +144,7 @@ function plot_locs(
     GLMakie.activate!(title = "plot_locs()")
     fig = GLMakie.Figure(
         size = plot_size,
-        figure_padding = grid ? (10, 10, 10, 10) : (0, 0, 0, 0),
+        figure_padding = grid ? (10, 10, 10, 10) : (0, 0, 0, 0)
     ) # L R B T
     if grid
         ax = GLMakie.Axis(

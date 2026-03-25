@@ -51,8 +51,7 @@ function average_epochs(
 
     # prepend the trial average as epoch 1; original epochs follow
     obj_new.data = cat(mean(obj_new.data, dims
- = 3), obj_new.data, dims
- = 3)
+ = 3), obj_new.data, dims = 3)
 
     obj_new.header.recording[:data_type] = datatype(obj) == "eeg" ? "erp" : "erf"
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)

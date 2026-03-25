@@ -140,7 +140,7 @@ function firls_design(
         W::Matrix,
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \,
+        solver::Function = \
     )
     validate_inputs(filter_order, bands_DW, D, W, fs)
     filter_length, M = get_flength_M(filter_order)
@@ -170,7 +170,7 @@ function firls_design(
         W::Union{Vector, Matrix},
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \,
+        solver::Function = \
     )
     return firls_design(
         filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric, fs = fs, solver = solver
@@ -199,7 +199,7 @@ function firls_design(
         W::Vector,
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \,
+        solver::Function = \
     )
     return firls_design(
         filter_order,
@@ -208,7 +208,7 @@ function firls_design(
         knotpoints_to_matrix(W),
         antisymmetric,
         fs = fs,
-        solver = solver,
+        solver = solver
     )
 end
 
@@ -232,7 +232,7 @@ function firls_design(
         D::Union{Vector, Matrix},
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \,
+        solver::Function = \
     )
     D = to_matrix_simple(D)
     validate_inputs(filter_order, bands_DW, D, fs)
@@ -265,7 +265,7 @@ function firls_design(
         knotpoints_to_matrix(D),
         antisymmetric;
         fs = fs,
-        solver = solver,
+        solver = solver
     )
 end
 

@@ -230,7 +230,7 @@ function plot(
         group_ch = group_ch,
         n_channels = n_channels,
         res = res,
-        gui = gui,
+        gui = gui
     )
 
     return fig

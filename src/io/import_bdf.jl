@@ -108,7 +108,7 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         else
             ann = sort(unique(vcat(
                 ch_n,
-                getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1),
+                getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1)
             )))
             ann, getindex.(findall(ch_type .== "mrk"), 1)
         end

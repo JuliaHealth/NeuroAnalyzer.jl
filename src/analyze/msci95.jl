@@ -295,7 +295,7 @@ function msci95(
         ch_idx, ep_idx = idx[1], idx[2]
         result = msci95(
             @view(s1[ch_idx, :, ep_idx]),
-            @view(s2[ch_idx, :, ep_idx]),
+            @view(s2[ch_idx, :, ep_idx])
         )
         sm[ch_idx, ep_idx] = result.sm
         ss[ch_idx, ep_idx] = result.ss

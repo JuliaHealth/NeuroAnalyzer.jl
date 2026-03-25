@@ -129,7 +129,7 @@ function ged(
     @inbounds Threads.@threads :static for ep_idx in 1:ep_n
         ged_data = ged(
             @view(obj1.data[ch1, :, ep1[ep_idx]]),
-            @view(obj2.data[ch2, :, ep2[ep_idx]]),
+            @view(obj2.data[ch2, :, ep2[ep_idx]])
         )
         sged[:, :, ep_idx] = ged_data.sged
         ress[:, ep_idx] = ged_data.ress

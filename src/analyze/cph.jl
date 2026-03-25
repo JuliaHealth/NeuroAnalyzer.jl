@@ -99,7 +99,7 @@ function cph(
             ph[ch_idx1, ch_idx2, :, ep_idx], _ = cph(
                 @view(s[ch_idx1, :, ep_idx]),
                 @view(s[ch_idx2, :, ep_idx]),
-                fs = fs,
+                fs = fs
             )
         end
         progress_bar && next!(progbar)

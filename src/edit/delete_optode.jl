@@ -59,7 +59,7 @@ function delete_optode(
             chs_to_delete = vcat(chs_to_delete, findall(isequal(idx), chp))
             deleteat!(
                 obj_new.header.recording[:src_labels],
-                obj_new.header.recording[:src_labels] .== ol,
+                obj_new.header.recording[:src_labels] .== ol
             )
             chp[chp .== idx] .= 0
             chp[chp .> idx] .-= 1
@@ -69,7 +69,7 @@ function delete_optode(
             chs_to_delete = vcat(chs_to_delete, findall(isequal(idx), chp))
             deleteat!(
                 obj_new.header.recording[:det_labels],
-                obj_new.header.recording[:det_labels] .== ol,
+                obj_new.header.recording[:det_labels] .== ol
             )
             chp[chp .== idx] .= 0
             chp[chp .> idx] .-= 1

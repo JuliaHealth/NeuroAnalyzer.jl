@@ -31,7 +31,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEUR
 
     no_match = setdiff(labels(obj), locs[!, :label])
     length(no_match) > 0 && _warn(
-        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.",
+        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object."
     )
     locs = Base.filter(:label => in(labels(obj)), locs)
 

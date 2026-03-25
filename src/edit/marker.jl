@@ -33,7 +33,7 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
             rpad("start [s]", 12) *
             rpad("length [s]", 12) *
             rpad("value", 24) *
-            rpad("channel", 1),
+            rpad("channel", 1)
     )
 
     for mrk_idx in 1:DataFrames.nrow(obj.markers)
@@ -43,7 +43,7 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
                 rpad(string(round(obj.markers[mrk_idx, :start], digits = 3)), 12) *
                 rpad(string(round(obj.markers[mrk_idx, :length], digits = 3)), 12) *
                 rpad("'" * obj.markers[mrk_idx, :value] * "'", 24) *
-                rpad(string(obj.markers[mrk_idx, :channel]), 1),
+                rpad(string(obj.markers[mrk_idx, :channel]), 1)
         )
     end
 
@@ -142,12 +142,12 @@ function add_marker(
 
     append!(
         obj_new.markers,
-        DataFrame(:id => id, :start => start, :length => len, :value => value, :channel => ch),
+        DataFrame(:id => id, :start => start, :length => len, :value => value, :channel => ch)
     )
     sort!(obj_new.markers, :start)
     push!(
         obj_new.history,
-        "add_marker(OBJ, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+        "add_marker(OBJ, id=$id, start=$start, len=$len, value=$value, ch=$ch)"
     )
 
     return obj_new
@@ -234,7 +234,7 @@ function edit_marker(
     sort!(obj_new.markers, :start)
     push!(
         obj_new.history,
-        "edit_marker(OBJ, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+        "edit_marker(OBJ, id=$id, start=$start, len=$len, value=$value, ch=$ch)"
     )
 
     return obj_new
@@ -370,8 +370,8 @@ function channel2marker(
             :start => (ev_start ./ sr(obj)),
             :length => (ev_len ./ sr(obj)),
             :value => ev_desc,
-            :channel => ev_ch,
-        ),
+            :channel => ev_ch
+        )
     )
     sort!(obj_new.markers, :start)
     push!(obj_new.history, "channel2marker(OBJ, ch=$ch, v=$v, id=$id, value=$value")

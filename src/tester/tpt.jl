@@ -136,7 +136,7 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
         data = tpt_signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],
-        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
+        unit = ["", "", "", "m/s²", "m/s²", "m/s²"]
     )
     create_time!(obj, fs = fs)
 
@@ -209,7 +209,7 @@ function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroA
         if !isnothing(sp_signal)
             m = match(
                 r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)",
-                sp_signal,
+                sp_signal
             )
             if !isnothing(m)
                 if length(m.captures) == 7
@@ -238,7 +238,7 @@ function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroA
         data = tpt_signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],
-        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
+        unit = ["", "", "", "m/s²", "m/s²", "m/s²"]
     )
     create_time!(obj, fs = fs)
 

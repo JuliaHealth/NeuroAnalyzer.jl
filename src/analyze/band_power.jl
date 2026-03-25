@@ -63,7 +63,7 @@ function band_power(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean,
+        demean = demean
     )
     pow = psd_data.p
     frq = psd_data.f

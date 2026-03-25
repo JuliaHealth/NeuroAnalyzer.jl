@@ -12,7 +12,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 # Returns
 
-- `s_new::Vector{Float64}`
+- `Vector{Float64}`
 """
 function normpower(s::AbstractVector)::Vector{Float64}
 
@@ -31,7 +31,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function normpower(s::AbstractArray)::Array{Float64, 3}
 

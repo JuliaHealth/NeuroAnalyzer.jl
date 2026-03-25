@@ -241,7 +241,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Int64[]
         )
     else
         m = _a2df(annotations)
@@ -276,7 +276,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         head_circumference  = -1,
         handedness = "",
         weight = -1,
-        height = -1,
+        height = -1
     )
     r = _create_recording_eeg(
         data_type = "eeg",

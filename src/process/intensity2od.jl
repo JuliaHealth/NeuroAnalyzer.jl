@@ -16,8 +16,7 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 """
 function intensity2od(s::AbstractArray)::AbstractArray
 
-    sm = mean(abs.(s), dims
- = 2)
+    sm = mean(abs.(s), dims = 2)
     od = -log.(abs.(s) ./ (ones(size(s)) .* sm))
 
     return od
@@ -58,7 +57,7 @@ function intensity2od(
     obj_new.data = vcat(
         obj.data[ch, :, :],
         reshape(intensity2od(@view(obj.data[ch, :, :])), length(ch), epoch_len(obj), nepochs(obj)),
-        obj.data[setdiff(collect(axes(obj.data, 1)), ch), :, :],
+        obj.data[setdiff(collect(axes(obj.data, 1)), ch), :, :]
     )
 
     # update header
@@ -73,17 +72,17 @@ function intensity2od(
     obj_new.header.recording[:channel_type] = vcat(
         obj.header.recording[:channel_type][ch],
         repeat(["nirs_od"], length(ch)),
-        obj.header.recording[:channel_type][setdiff(collect(axes(obj.data, 1)), ch)],
+        obj.header.recording[:channel_type][setdiff(collect(axes(obj.data, 1)), ch)]
     )
     obj_new.header.recording[:label] = vcat(
         obj.header.recording[:label][ch],
         obj.header.recording[:label][ch] .* " OD",
-        obj.header.recording[:label][setdiff(collect(axes(obj.data, 1)), ch)],
+        obj.header.recording[:label][setdiff(collect(axes(obj.data, 1)), ch)]
     )
     obj_new.header.recording[:unit] = vcat(
         obj.header.recording[:unit][ch],
         obj.header.recording[:unit][ch],
-        obj.header.recording[:unit][setdiff(collect(axes(obj.data, 1)), ch)],
+        obj.header.recording[:unit][setdiff(collect(axes(obj.data, 1)), ch)]
     )
     obj_new.header.recording[:bad_channel] = zeros(Bool, size(obj_new.data, 1))
 

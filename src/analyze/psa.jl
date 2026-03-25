@@ -12,15 +12,15 @@ Calculate Phase Synchronization Analysis.
 
 # Returns
 
-- `ps::Float64`: PSA value
+- `Float64`: PSA value
 """
 function psa(s1::AbstractVector, s2::AbstractVector)::Float64
 
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
     # get instatenous phases
-    _, _, _, s1ph = htransform(s1)
-    _, _, _, s2ph = htransform(s2)
+    s1ph = htransform(s1).ph
+    s2ph = htransform(s2).ph
 
     ps = mean(cos.(s1ph .- s2ph))
 
@@ -44,7 +44,7 @@ Calculate Phase Synchronization Analysis.
 
 # Returns
 
-- `ps::Matrix{Float64}`: PSA value
+- `Matrix{Float64}`: PSA value
 """
 function psa(
     obj1::NeuroAnalyzer.NEURO,

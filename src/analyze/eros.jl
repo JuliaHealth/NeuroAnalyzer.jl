@@ -81,7 +81,7 @@ function eros(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        wt = wt,
+        wt = wt
     )
     f = spec_data.f
     t = spec_data.t

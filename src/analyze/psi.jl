@@ -14,7 +14,7 @@ Calculate Phase Slope Index (PSI).
 
 # Returns
 
-- `pv::Tuple{Float64, Float64}`: PSI value (signal1 -> signal2, signal2 -> signal1)
+- `Tuple{Float64, Float64}`: PSI value (signal1 -> signal2, signal2 -> signal1)
 
 # References
 
@@ -71,7 +71,7 @@ Calculate Phase Slope Index (PSI).
 
 # Returns
 
-- `pv::Matrix{Float64}`: PSI value
+- `Matrix{Float64}`: PSI value
 """
 function psi(
     obj1::NeuroAnalyzer.NEURO,
@@ -109,7 +109,7 @@ function psi(
                 obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
                 obj2.data[ch2[ch_idx], :, ep2[ep_idx]],
                 fs = sr(obj1),
-                flim = flim,
+                flim = flim
             )
         end
     end

@@ -11,7 +11,7 @@ Calculate zip ratio for the object data (ratio of zip-compressed to uncompressed
 
 # Returns
 
-- `zip_ratio::Array{Float64, 3}`
+- `Array{Float64, 3}`
 
 # Notes
 
@@ -33,7 +33,7 @@ function zipratio(obj::NeuroAnalyzer.NEURO)
         markers = false,
         locs = false,
         history = false,
-        overwrite = true,
+        overwrite = true
     )
 
     zip_cmd = ""

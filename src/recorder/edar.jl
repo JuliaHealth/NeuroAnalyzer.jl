@@ -35,7 +35,7 @@ function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neur
         xlabelfontsize = 8,
         ylabelfontsize = 8,
         xtickfontsize = 8,
-        ytickfontsize = 8,
+        ytickfontsize = 8
     )
 
     function _activate(app)
@@ -92,7 +92,7 @@ function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neur
                 xlabelfontsize = 8,
                 ylabelfontsize = 8,
                 xtickfontsize = 8,
-                ytickfontsize = 8,
+                ytickfontsize = 8
             )
             ctx = getgc(can)
             withenv("GKSwstype" => "100") do

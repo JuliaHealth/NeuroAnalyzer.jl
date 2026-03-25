@@ -15,7 +15,7 @@ Applies `z = atanh(r)`. Because `atanh(±1)` is infinite, the boundary values `r
 
 # Returns
 
-- `z::Float64`: Fisher z-transformed value
+- `Float64`: Fisher z-transformed value
 
 # Notes
 

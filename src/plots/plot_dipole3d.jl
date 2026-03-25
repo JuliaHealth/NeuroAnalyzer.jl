@@ -61,7 +61,7 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)
     plot_size = (800, 800)
     fig = Figure(
         backgroundcolor = :black,
-        size = plot_size,
+        size = plot_size
     )
     ax = Axis3(fig[1, 1])
     hidedecorations!(ax)

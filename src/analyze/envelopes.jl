@@ -462,7 +462,7 @@ function penv(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean,
+        demean = demean
     )
     f = psd_data.f
 
@@ -482,7 +482,7 @@ function penv(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean,
+            demean = demean
         )
         e[ch_idx, :, ep_idx] = env_up(psd_data.p, f, d = d)
     end
@@ -693,7 +693,7 @@ function penv_median(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean,
+        demean = demean
     )
     pw = penv_data.e
     f  = penv_data.f
@@ -835,7 +835,7 @@ function senv(
             method = :stft,
             wlen = wlen,
             woverlap = woverlap,
-            w = w,
+            w = w
         )
         sp = spec_data.p
     elseif method === :mt

@@ -200,7 +200,7 @@ function plot_ep(
         ypanlock = true,
         xrectzoom = false,
         yrectzoom = false,
-        yticklabelspace = 60.0,
+        yticklabelspace = 60.0
     )
     GLMakie.xlims!(ax1, seg)
     if gui
@@ -258,8 +258,7 @@ function plot_ep(
             # plot averaged channels
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[][ctypes .== ctypes_uni[idx], :], dims
- = 1)[:]
+                    s_avg = mean(s[][ctypes .== ctypes_uni[idx], :], dims = 1)[:]
                     GLMakie.lines!(ax1, t[][1:res:end], s_avg[1:res:end]; linewidth = 2, color = :black)
                 end
             end
@@ -340,7 +339,7 @@ function plot_ep(
                 padding = 2,
                 strokewidth = 1,
                 offset = (0, 5),
-                text_rotation = pi / 2,
+                text_rotation = pi / 2
             )
         end
     end
@@ -401,7 +400,7 @@ function plot_ep(
                 xpanlock = true,
                 ypanlock = true,
                 xrectzoom = false,
-                yrectzoom = false,
+                yrectzoom = false
             )
             ch_n > 1 && (GLMakie.ylims!(ax3, ch_n, 1))
             hidedecorations!(ax3)

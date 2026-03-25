@@ -19,7 +19,7 @@ Computes the partial auto-correlation function (PACF) of a signal over symmetric
 
 # Returns
 
-- `pac::Array{Float64, 3}`: shape `(1, 2l+1, 1)`
+- `Array{Float64, 3}`: shape `(1, 2l+1, 1)`
 
 # Notes
 
@@ -71,7 +71,7 @@ Calculate partial auto-correlation function (PACF) for each epoch of a matrix ov
 
 # Returns
 
-- `pac::Array{Float64, 3}`
+- `Array{Float64, 3}`
 """
 function pacor(
     s::AbstractMatrix;
@@ -113,7 +113,7 @@ Calculate partial auto-correlation function (PACF) for a 3-D signal array over l
 
 # Returns
 
-- `pac::Array{Float64, 3}`: shape `(channels, 2l+1, epochs)`
+- `Array{Float64, 3}`: shape `(channels, 2l+1, epochs)`
 """
 function pacor(
     s::AbstractArray;

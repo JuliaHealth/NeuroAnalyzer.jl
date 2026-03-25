@@ -62,7 +62,7 @@ function plot_psd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.autolimits!(ax)
     ax.titlesize = 18
@@ -160,7 +160,7 @@ function plot_psd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.autolimits!(ax)
     ax.titlesize = 18
@@ -473,7 +473,7 @@ function plot_psd_topo(
     GLMakie.activate!(title = "plot_psd()")
     fig = GLMakie.Figure(
         size = plot_size,
-        figure_padding = 0,
+        figure_padding = 0
     )
     ax = GLMakie.Axis(
         fig[1, 1],
@@ -488,7 +488,7 @@ function plot_psd_topo(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false,
+        yrectzoom = false
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -664,7 +664,7 @@ function plot_psd(
             :gamma_lower,
             :gamma_higher,
         ],
-        "ref",
+        "ref"
     )
     _check_var(frq, [:lin, :log], "frq")
 
@@ -1049,7 +1049,7 @@ function plot_psd(
                 avg = avg,
                 ci95 = ci95,
                 leg = leg,
-                mono = mono,
+                mono = mono
             )
         end
     elseif type === :w3d || type === :s3d

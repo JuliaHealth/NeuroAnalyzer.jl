@@ -21,7 +21,7 @@ export plot_locs3d
 
 # Returns
 
-- `f::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_locs3d(
     locs::DataFrame;
@@ -108,7 +108,7 @@ function plot_locs3d(
         yticks = [-1, 0, 1],
         zticks = [-1, 0, 1],
         elevation = deg2rad(cam[1]),
-        azimuth = deg2rad(cam[2]),
+        azimuth = deg2rad(cam[2])
     )
 
     if mesh_type !== :disabled
@@ -153,7 +153,7 @@ function plot_locs3d(
                 markersize = marker_size,
                 color = :gray,
                 strokewidth = 1,
-                strokecolor = :black,
+                strokecolor = :black
             )
         end
     end
@@ -174,7 +174,7 @@ function plot_locs3d(
                 loc_z[sch] * 1.15,
                 text = locs[sch, :label],
                 fontsize = font_size,
-                align = (:center, :center),
+                align = (:center, :center)
             )
         end
     end
@@ -188,7 +188,7 @@ function plot_locs3d(
 ,
                 text = fid_names[idx],
                 fontsize = font_size,
-                align = (:center, :center),
+                align = (:center, :center)
             )
         end
     end
@@ -289,7 +289,7 @@ function plot_locs3d(
         cam = cam,
         mesh_type = mesh_type,
         mesh_alpha = mesh_alpha,
-        gui = gui,
+        gui = gui
     )
 
     return fig

@@ -14,7 +14,7 @@ Create model of TES stimulation.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `Plots.Plot{Plots.GRBackend}`
 
 # Notes
 

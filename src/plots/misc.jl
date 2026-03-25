@@ -14,11 +14,12 @@ Compose a complex plot of various plots contained in vector `vfig` using layout 
 
 # Returns
 
-- `pc::GLMakie.Figure`
+- `GLMakie.Figure`
 """
 function plot_compose(vfig::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::GLMakie.Figure
 
-    !(layout[1] * layout[2] >= length(vfig)) && throw(ArgumentError("Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(vfig)))."))
+    layout[1] * layout[2] >= length(vfig) ||
+        throw(ArgumentError("Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(vfig)))."))
 
     plot_size = (0, 0)
     for idx in eachindex(vfig)
@@ -56,7 +57,7 @@ function plot_compose(vfig::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})
                 xpanlock = true,
                 ypanlock = true,
                 xrectzoom = false,
-                yrectzoom = false,
+                yrectzoom = false
             )
             GLMakie.image!(ax, rotr90(pp))
             hidedecorations!(ax)
@@ -124,7 +125,7 @@ function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
         marker_offset = size(transparent_pp) ./ -2,
         marker = transparent_pp,
         markersize = size(transparent_pp),
-        markerspace = :pixel,
+        markerspace = :pixel
     )
 
     return fig

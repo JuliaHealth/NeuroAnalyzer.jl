@@ -68,19 +68,19 @@ function plot_filter(;
         "fprototype"
     )
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     if fprototype === :fir
-        !(!(isnothing(order) && isnothing(w))) && throw(ArgumentError("Either order or w must be specified."))
+        (isnothing(order) && isnothing(w) && throw(ArgumentError("Either order or w must be specified."))
         if !isnothing(w)
             ftype in [:hp, :bp, :bs] && !(mod(length(w), 2) != 0) && throw(ArgumentError("Length of w must be odd."))
-            !(length(w) >= 1) && throw(ArgumentError("Length of w must be ≥ 1."))
+            length(w) >= 1 || throw(ArgumentError("Length of w must be ≥ 1."))
         elseif !isnothing(order)
-            ftype in [:hp, :bp, :bs] && !(mod(order, 2) != 0) && throw(ArgumentError("order must be odd."))
+            (ftype in [:hp, :bp, :bs] && !(mod(order, 2) != 0) || throw(ArgumentError("order must be odd."))
         end
     end
     if fprototype in [:firls, :remez, :iirnotch]
-        !(!isnothing(bw)) && throw(ArgumentError("bw must be specified."))
-        !(bw > 0) && throw(ArgumentError("bw must be > 0."))
+        isnothing(bw) && throw(ArgumentError("bw must be specified."))
+        bw > 0 || throw(ArgumentError("bw must be > 0."))
         if length(cutoff) == 1
             if bw >= cutoff
                 bw = cutoff - 0.1
@@ -96,13 +96,13 @@ function plot_filter(;
     if fprototype === :firls
         if ftype in [:bp, :bs]
             if !isnothing(w)
-                !(length(w) == 6) && throw(ArgumentError("Length of w must be 6."))
+                length(w) == 6 || throw(ArgumentError("Length of w must be 6."))
             else
                 w = ones(6)
             end
         elseif ftype in [:lp, :hp]
             if !isnothing(w)
-                !(length(w) == 4) && throw(ArgumentError("Length of w must be 4."))
+                length(w) == 4 || throw(ArgumentError("Length of w must be 4."))
             else
                 w = ones(4)
             end
@@ -119,21 +119,23 @@ function plot_filter(;
         end
     end
     if fprototype in [:firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        !(!isnothing(order)) && throw(ArgumentError("order must be specified."))
-        !(!isnothing(ftype)) && throw(ArgumentError("ftype must be specified."))
+        isnothing(order) && throw(ArgumentError("order must be specified."))
+        isnothing(ftype) && throw(ArgumentError("ftype must be specified."))
     end
     if fprototype === :iirnotch
-        !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
-        !isnothing(order) && _info("For :iirnotch filter order is ignored")
-        !(length(cutoff) == 1) && throw(ArgumentError("For :iirnotch filter cutoff must contain only one frequency."))
+        isnothing(ftype) || _info("For :iirnotch filter ftype is ignored")
+        isnothing(order) || _info("For :iirnotch filter order is ignored")
+        length(cutoff) == 1 || throw(ArgumentError("For :iirnotch filter cutoff must contain only one frequency."))
     end
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        ftype in [:lp, :hp] && !(length(cutoff) == 1) && throw(ArgumentError("For :$(ftype) filter, cutoff must specify only one frequency."))
-        ftype in [:bp, :bs] && !(length(cutoff) == 2) && throw(ArgumentError("For :$(ftype) filter, cutoff must specify two frequencies."))
+        (ftype in [:lp, :hp] && length(cutoff) == 1) ||
+            throw(ArgumentError("For :$(ftype) filter, cutoff must specify only one frequency."))
+        (ftype in [:bp, :bs] && length(cutoff) == 2) ||
+            throw(ArgumentError("For :$(ftype) filter, cutoff must specify two frequencies."))
     end
     if length(cutoff) == 1
-        !(cutoff > 0) && throw(ArgumentError("cutoff must be > 0 Hz."))
-        !(cutoff < nqf) && throw(ArgumentError("cutoff must be < $nqf Hz."))
+        cutoff > 0 || throw(ArgumentError("cutoff must be > 0 Hz."))
+        cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz."))
     else
         _check_tuple(cutoff, (0, nqf), "cutoff")
     end
@@ -677,13 +679,13 @@ function plot_filter(;
                 grid[1, 1],
                 "Cutoff [Hz]",
                 fontsize = 15,
-                halign = :right,
+                halign = :right
             )
             sl_cutoff = Slider(
                 grid[1, 2],
                 range = 0.5:0.1:(nqf - 0.1),
                 startvalue = cutoff[],
-                horizontal = true,
+                horizontal = true
             )
             on(sl_cutoff.value) do val
                 cutoff[] = round(val, digits = 1)
@@ -703,13 +705,13 @@ function plot_filter(;
                 grid[2, 1],
                 "Band width [Hz]",
                 fontsize = 15,
-                halign = :right,
+                halign = :right
             )
             sl_bw = Slider(
                 grid[2, 2],
                 range = cutoff[] > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff[] - 0.1)),
                 startvalue = bw[],
-                horizontal = true,
+                horizontal = true
             )
             on(sl_bw.value) do val
                 bw[] = round(val, digits = 1)
@@ -1023,42 +1025,42 @@ function plot_filter(;
                 f_pass,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax2,
                 f_pass,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax3,
                 f_pass,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax1,
                 f_stop,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax2,
                 f_stop,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax3,
                 f_stop,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
         end
 
@@ -1129,42 +1131,42 @@ function plot_filter(;
                 f_pass,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax2,
                 f_pass,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax3,
                 f_pass,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax1,
                 f_stop,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax2,
                 f_stop,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
             GLMakie.vlines!(
                 ax3,
                 f_stop,
                 linestyle = :dash,
                 linewidth = 0.25,
-                color = :black,
+                color = :black
             )
         end
 
@@ -1246,7 +1248,7 @@ function plot_filter(
         w = w,
         flim = flim,
         mono = mono,
-        gui = gui,
+        gui = gui
     )
 
     return fig

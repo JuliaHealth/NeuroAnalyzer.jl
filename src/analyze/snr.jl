@@ -55,7 +55,7 @@ Calculate RMS-based SNR.
 
 # Returns
 
-- `snr2::Float64`: SNR
+- `Float64`: SNR
 """
 function snr2(s::AbstractVector)::Float64
 

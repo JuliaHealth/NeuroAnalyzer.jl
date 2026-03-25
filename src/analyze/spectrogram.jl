@@ -260,7 +260,7 @@ function spectrogram(
             fs = fs,
             db = db,
             ncyc = ncyc,
-            w = w,
+            w = w
         )
         f = spec_data.f
         p_tmp = spec_data.p
