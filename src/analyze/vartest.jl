@@ -75,19 +75,19 @@ Named tuple:
 - `p::Array{Float64, 3}`
 """
 function vartest(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-    )::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
+)::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
 
     length(ch1) == length(ch2) ||
         throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
     length(ep1) == length(ep2) ||
         throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) ||
+    epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels

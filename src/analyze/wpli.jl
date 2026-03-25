@@ -16,8 +16,8 @@ Calculate weighted PLI (Phase Locking Index).
 Named tuple:
 
 - `pv::Float64`: wPLI value
-- `sd::Vector{Float64}`: signal difference (s2 - s1)
-- `phd::Vector{Float64}`: phase difference (s2 - s1)
+- `sd::Vector{Float64}`: signal difference (s1 - s2)
+- `phd::Vector{Float64}`: phase difference (s1 - s2)
 - `s1ph::Vector{Float64}`: signal 1 phase
 - `s2ph::Vector{Float64}`: signal 2 phase
 """
@@ -82,8 +82,8 @@ Calculate weighted PLI (Phase Locking Index).
 Named tuple:
 
 - `pv::Matrix{Float64}`: PLI value
-- `sd::Array{Float64, 3}`: signal difference (s2 - s1)
-- `phd::Array{Float64, 3}`: phase difference (s2 - s1)
+- `sd::Array{Float64, 3}`: signal difference (s1 - s2)
+- `phd::Array{Float64, 3}`: phase difference (s1 - s2)
 - `s1ph::Array{Float64, 3}`: signal 1 phase
 - `s2ph::Array{Float64, 3}`: signal 2 phase
 """
@@ -161,10 +161,10 @@ function wpli(
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    isa(ch, Int64) && (ch = [ch])
 
     ch_n = length(ch)
     ep_n = nepochs(obj)
-    isa(ch, Int64) && (ch = [ch])
 
     pv = zeros(ch_n, ch_n, ep_n)
 

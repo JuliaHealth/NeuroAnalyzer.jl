@@ -127,7 +127,7 @@ function diss(
         throw(ArgumentError("OBJ1 and OBJ2 must have the same data type."))
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
-    (epoch_len(obj1) == epoch_len(obj2)) ||
+    epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels

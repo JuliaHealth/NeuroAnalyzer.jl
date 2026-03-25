@@ -53,7 +53,7 @@ function xcov(
         for idx in 0:l
             # shift s1 forward by idx: align s1[1+idx:end] with s2[1:end-idx]
             xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
-            # normalise: biased divides by n; unbiased by (n − lag) to
+            # normalize: biased divides by n; unbiased by (n − lag) to
             # correct for the reduced number of overlapping samples
             xc[idx + 1] /= biased ? length(s1) : (length(s1) - idx)
         end
@@ -67,25 +67,25 @@ function xcov(
         # which is the # UNBIASED estimator; we must invert: biased → corrected=false
         for idx in 0:l
             xc[idx + 1] = @views cov(
-                s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)]; corrected = !biased
+                s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)], corrected = !biased
             )
         end
         for idx in 0:l
             xc_neg[idx + 1] = @views cov(
-                s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end]; corrected = !biased
+                s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end], corrected = !biased
             )
         end
     elseif method === :stat
         # StatsBase crosscov handles demeaning internally; `biased` is ignored.
-        xc = crosscov(s1, s2, 0:l; demean = demean)
-        xc_neg = crosscov(s2, s1, 0:l; demean = demean)
+        xc = crosscov(s1, s2, 0:l, demean = demean)
+        xc_neg = crosscov(s2, s1, 0:l, demean = demean)
     end
 
     # concatenate negative lags (reversed) with positive lags to produce a 
     # symmetric lag vector from −l to +l. xc_neg[1] is lag 0 (same as xc[1])
     # so drop the duplicate when concatenating
     xc = vcat(reverse(xc_neg), xc[2:end])
-    xc = round.(xc; digits = 3)
+    xc = round.(xc, digits = 3)
 
     # return as (1 × lags × 1) so all xcov methods share a consistent shape
     return reshape(xc, 1, :, 1)
@@ -95,7 +95,7 @@ end
 """
     xcov(s1, s2; <keyword arguments>)
 
-Calculate cross-covariance.
+Calculate cross-covariance for a pair of 2-D arrays.
 
 # Arguments
 
@@ -149,7 +149,7 @@ end
 """
     xcov(s1, s2; <keyword arguments>)
 
-Calculate cross-covariance for a pair of 3-D arrays (channels, samples, epochs).
+Calculate cross-covariance for a pair of 3-D arrays.
 
 # Arguments
 
@@ -260,7 +260,7 @@ function xcov(
         throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
     length(ep1) == length(ep2) ||
         throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) ||
+    epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
