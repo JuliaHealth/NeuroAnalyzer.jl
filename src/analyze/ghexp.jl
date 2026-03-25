@@ -37,12 +37,13 @@ function ghexp(
 )::Matrix{Float64}
 
     # validate
-    tau_range[end] < length(s) || throw(ArgumentError("End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."))
+    tau_range[end] < length(s) ||
+        throw(ArgumentError("End of tau_range ($(tau_range[end])) must be < length of s ($(length(s)))."))
 
     if isnothing(q_range)
-        ghe = hurst_exponent(s, tau_range)
+        ghe = hurst_exponent(Vector(s), tau_range)
     else
-        ghe = generalised_hurst_range(s, tau_range, q_range)
+        ghe = generalised_hurst_range(Vector(s), tau_range, q_range)
     end
 
     return ghe
