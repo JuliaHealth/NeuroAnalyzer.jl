@@ -217,8 +217,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))` epoch number(s)
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))` epoch number(s)
 - `method::Symbol=:mt`: method used to calculate CPSD:

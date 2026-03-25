@@ -9,7 +9,7 @@ Calculate auto-correlation.
 
 - `s::AbstractVector`: signal vector
 - `l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s))))`: range of lags is `-l:l`
-- `demean::Bool=true`: demean signal before computing auto-correlation
+- `demean::Bool=true`: subtract the mean before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
     - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
@@ -86,7 +86,7 @@ Calculate auto-correlation.
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2))))`: range of lags is `-l:l`
-- `demean::Bool=true`: demean signal before computing auto-correlation
+- `demean::Bool=true`: subtract the mean before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
     - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
@@ -95,7 +95,7 @@ Calculate auto-correlation.
 
 # Returns
 
-- `Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
+- `Array{Float64, 3}`: auto-correlations, shape (channels, 2l+1, epochs)
 """
 function acor(
     s::AbstractArray;
@@ -142,7 +142,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `l::Int64=round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2))))`: range of lags is `-l:l`
-- `demean::Bool=true`: demean signal before computing auto-correlation
+- `demean::Bool=true`: subtract the mean before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
     - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
@@ -153,7 +153,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 
 Named tuple:
 
-- `autocor_m::Array{Float64, 3}`: auto-correlations, shape `(channels, 2l+1, epochs)`
+- `autocor_m::Array{Float64, 3}`: auto-correlations, shape (channels, 2l+1, epochs)
 - `l::Vector{Float64}`: lags in seconds
 """
 function acor(

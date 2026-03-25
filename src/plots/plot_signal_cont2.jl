@@ -185,7 +185,7 @@ function plot_cont(
                 GLMakie.poly!(ax1, s_rectangle, color = :red, strokecolor = :red, strokewidth = 2)
                 GLMakie.text!(
                     ax1,
-                    l_pos
+                    l_pos,
                     markerspace = :pixel,
                     text = string(r[][idx2]) * " " * cunits[idx1],
                     fontsize = 10,

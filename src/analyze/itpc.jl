@@ -102,7 +102,7 @@ Named tuple:
 - `itpcv::Vector{Float64}`: ITPC or wITPC value per channel
 - `itpcz::Vector{Float64}`: Rayleigh's ITPC z statistic per channel
 - `itpca::Vector{Float64}`: ITPC angle per channel
-- `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape `(channels, epochs)`
+- `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape (channels, epochs)
 """
 function itpc(
     obj::NeuroAnalyzer.NEURO;
@@ -176,7 +176,7 @@ Named tuple:
 - `itpcv::Vector{Float64}`: ITPC or wITPC value per channel
 - `itpcz::Vector{Float64}`: Rayleigh's ITPC z statistic per channel
 - `itpca::Vector{Float64}`: ITPC angle per channel
-- `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape `(channels, epochs)`
+- `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape (channels, epochs)
 """
 function itpc_spec(
     s::AbstractArray;

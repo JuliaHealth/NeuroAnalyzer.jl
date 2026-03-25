@@ -34,7 +34,7 @@ function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
     end
 
     pretty_table(
-        cat(header, data, dims=1)
+        cat(header, data, dims=1),
         body_hlines = [1],
         cell_alignment = Dict((1, 1) => :l),
         formatters = ft_printf("%1.3f", 2:3),

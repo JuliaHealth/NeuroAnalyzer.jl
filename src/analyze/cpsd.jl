@@ -265,10 +265,10 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation

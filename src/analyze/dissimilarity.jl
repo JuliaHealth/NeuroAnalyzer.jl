@@ -98,8 +98,8 @@ Calculate DISS (global dissimilarity) and spatial correlation. Operates on ERP/E
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object: must be an ERP or ERF object
-- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 
 # Returns
 

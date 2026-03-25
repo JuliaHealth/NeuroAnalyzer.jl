@@ -70,12 +70,12 @@ function plot_filter(;
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     if fprototype === :fir
-        (isnothing(order) && isnothing(w) && throw(ArgumentError("Either order or w must be specified."))
+        (isnothing(order) && isnothing(w)) && throw(ArgumentError("Either order or w must be specified."))
         if !isnothing(w)
-            ftype in [:hp, :bp, :bs] && !(mod(length(w), 2) != 0) && throw(ArgumentError("Length of w must be odd."))
+            (ftype in [:hp, :bp, :bs] && mod(length(w), 2) != 0) || throw(ArgumentError("Length of w must be odd."))
             length(w) >= 1 || throw(ArgumentError("Length of w must be ≥ 1."))
         elseif !isnothing(order)
-            (ftype in [:hp, :bp, :bs] && !(mod(order, 2) != 0) || throw(ArgumentError("order must be odd."))
+            (ftype in [:hp, :bp, :bs] && mod(order, 2) != 0) || throw(ArgumentError("order must be odd."))
         end
     end
     if fprototype in [:firls, :remez, :iirnotch]

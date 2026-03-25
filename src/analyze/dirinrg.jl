@@ -36,7 +36,7 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 
 # Returns
 
-- `Matrix{Float64}`: Dirichlet energy, shape `(channels, epochs)`
+- `Matrix{Float64}`: Dirichlet energy, shape (channels, epochs)
 """
 function dirinrg(s::AbstractArray)::Matrix{Float64}
 
@@ -75,7 +75,7 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 
 # Returns
 
-- `Matrix{Float64}`: Dirichlet energy, shape `(channels, epochs)`
+- `Matrix{Float64}`: Dirichlet energy, shape (channels, epochs)
 """
 function dirinrg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 

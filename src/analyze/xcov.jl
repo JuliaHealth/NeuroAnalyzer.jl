@@ -3,23 +3,23 @@ export xcov
 """
     xcov(s1, s2; <keyword arguments>)
 
-Calculate cross-covariance.
+Calculate cross-covariance between two signal vectors.
 
 # Arguments
 
 - `s1::AbstractVector`: signal vector
-- `s2::AbstractVector`: signal vector
-- `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-covariance
-- `biased::Bool=true`: calculate biased or unbiased cross-covariance
-- `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
-    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
-    - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
+- `s2::AbstractVector`: signal vector (must be the same length as `s1`)
+- `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: maximum lag in samples; lags range is `−l : l`
+- `demean::Bool=true`: subtract the mean before computing cross-covariance
+- `biased::Bool=true`: use biased (÷ n) or unbiased (÷ n−lag) estimator
+- `method::Symbol=:sum`: computation method:
+    - `:sum`: manual lag-shifted dot product
+    - `:cov`: use Julia's `cov()`
+    - `:stat`: use `StatsBase.crosscov()` (`biased` is ignored)
 
 # Returns
 
-- `Array{Float64, 3}`
+- `Array{Float64, 3}`: cross-covariance at lags `−l:l`
 """
 function xcov(
     s1::AbstractVector,
@@ -30,13 +30,12 @@ function xcov(
     method::Symbol = :sum
 )::Array{Float64, 3}
 
+    # validate
     _check_var(method, [:sum, :cov, :stat], "method")
-
     length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
 
-    xc = zeros(l + 1)
-    xc_neg = zeros(l + 1)
-
+    # optionally remove the DC component (mean) from both signals before
+    # computing cross-covariance to eliminate offset bias
     if demean
         s1_tmp = remove_dc(s1)
         s2_tmp = remove_dc(s2)
@@ -45,38 +44,50 @@ function xcov(
         s2_tmp = s2
     end
 
+    # pre-allocate outputs
+    xc = zeros(l + 1)
+    xc_neg = zeros(l + 1)
+
     if method === :sum
+        # ---- positive lags: s1 leads s2 by idx samples ---------------
         for idx in 0:l
+            # shift s1 forward by idx: align s1[1+idx:end] with s2[1:end-idx]
             xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
-            if biased
-                xc[idx + 1] /= length(s1)
-            else
-                xc[idx + 1] /= (length(s1) - idx)
-            end
+            # normalise: biased divides by n; unbiased by (n − lag) to
+            # correct for the reduced number of overlapping samples
+            xc[idx + 1] /= biased ? length(s1) : (length(s1) - idx)
         end
+        # ---- negative lags: s2 leads s1 by idx samples ---------------
         for idx in 0:l
             xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
-            if biased
-                xc_neg[idx + 1] /= length(s1)
-            else
-                xc_neg[idx + 1] /= (length(s1) - idx)
-            end
+            xc_neg[idx + 1] /= biased ? length(s1) : (length(s1) - idx)
         end
     elseif method === :cov
+        # Julia's `cov` uses Bessel's correction (÷ n−1) when `corrected=true`,
+        # which is the # UNBIASED estimator; we must invert: biased → corrected=false
         for idx in 0:l
-            xc[idx + 1] = @views cov(s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)], corrected = biased)
+            xc[idx + 1] = @views cov(
+                s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)]; corrected = !biased
+            )
         end
         for idx in 0:l
-            xc_neg[idx + 1] = @views cov(s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end], corrected = biased)
+            xc_neg[idx + 1] = @views cov(
+                s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end]; corrected = !biased
+            )
         end
     elseif method === :stat
-        xc = crosscov(s1, s2, 0:l, demean = demean)
-        xc_neg = crosscov(s2, s1, 0:l, demean = demean)
+        # StatsBase crosscov handles demeaning internally; `biased` is ignored.
+        xc = crosscov(s1, s2, 0:l; demean = demean)
+        xc_neg = crosscov(s2, s1, 0:l; demean = demean)
     end
 
+    # concatenate negative lags (reversed) with positive lags to produce a 
+    # symmetric lag vector from −l to +l. xc_neg[1] is lag 0 (same as xc[1])
+    # so drop the duplicate when concatenating
     xc = vcat(reverse(xc_neg), xc[2:end])
-    xc = round.(xc, digits = 3)
+    xc = round.(xc; digits = 3)
 
+    # return as (1 × lags × 1) so all xcov methods share a consistent shape
     return reshape(xc, 1, :, 1)
 
 end
@@ -88,38 +99,46 @@ Calculate cross-covariance.
 
 # Arguments
 
-- `s1::AbstractMatrix`
-- `s2::AbstractMatrix`
+- `s1::AbstractMatrix`: signal matrix (channels, epochs)
+- `s2::AbstractMatrix`: signal matrix, same size as `s1`
 - `l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2))))`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-covariance
-- `biased::Bool=true`: calculate biased or unbiased cross-covariance
-- `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
-    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
-    - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
+- `demean::Bool=true`: subtract the mean before computing cross-covariance
+- `biased::Bool=true`: use biased (÷ n) or unbiased (÷ n−lag) estimator
+- `method::Symbol=:sum`: computation method:
+    - `:sum`: manual lag-shifted dot product
+    - `:cov`: use Julia's `cov()`
+    - `:stat`: use `StatsBase.crosscov()` (`biased` is ignored)
 
 # Returns
 
-- `Array{Float64, 3}`
+- `Array{Float64, 3}`: cross-covariance, shape (1, 2l+1, ep_n)
 """
 function xcov(
     s1::AbstractMatrix,
     s2::AbstractMatrix;
-    l::Int64 = round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))),
+    l::Int64 = round(Int64, min(size(s1, 2) - 1, 10 * log10(size(s1, 2)))),
     demean::Bool = true,
     biased::Bool = true,
     method::Symbol = :sum
 )::Array{Float64, 3}
 
+    # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
+    # number of epochs
     ep_n = size(s1, 2)
 
+    # pre-allocate output
     xc = zeros(1, length((-l):l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         xc[1, :, ep_idx] = @views xcov(
-            s1[1, ep_idx], s2[1, ep_idx], l = l, demean = demean, biased = biased, method = method
+            s1[:, ep_idx],
+            s2[:, ep_idx];
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = method
         )
     end
 
@@ -130,23 +149,23 @@ end
 """
     xcov(s1, s2; <keyword arguments>)
 
-Calculate cross-covariance.
+Calculate cross-covariance for a pair of 3-D arrays (channels, samples, epochs).
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::AbstractArray`: signal array (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, same size as `s1`
 - `l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2))))`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-covariance
-- `biased::Bool=true`: calculate biased or unbiased cross-covariance
-- `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
-    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
-    - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
+- `demean::Bool=true`: subtract the mean before computing cross-covariance
+- `biased::Bool=true`: use biased (÷ n) or unbiased (÷ n−lag) estimator
+- `method::Symbol=:sum`: computation method:
+    - `:sum`: manual lag-shifted dot product
+    - `:cov`: use Julia's `cov()`
+    - `:stat`: use `StatsBase.crosscov()` (`biased` is ignored)
 
 # Returns
 
-- `Array{Float64, 3}`
+- `Array{Float64, 3}`: cross-covariance, shape (ch_n, 2l+1, ep_n)
 """
 function xcov(
     s1::AbstractArray,
@@ -157,21 +176,31 @@ function xcov(
     method::Symbol = :sum
 )::Array{Float64, 3}
 
-    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
     _chk3d(s2)
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
+    # number of channels
     ch_n = size(s1, 1)
+    # number of epochs
     ep_n = size(s1, 3)
 
+    # pre-allocate output
     xc = zeros(ch_n, length((-l):l), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            xc[ch_idx, :, ep_idx] = @views xcov(
-                s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], l = l, demean = demean, biased = biased, method = method
-            )
-        end
+    # calculate over channels and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        xc[ch_idx, :, ep_idx] = @views xcov(
+            s1[ch_idx, :, ep_idx],
+            s2[ch_idx, :, ep_idx],
+            l = l,
+            demean = demean,
+            biased = biased,
+            method = method
+        )
     end
 
     return xc
@@ -181,30 +210,32 @@ end
 """
     xcov(obj1, obj2; <keyword arguments>)
 
-Calculate cross-covariance. For ERP return trial-averaged cross-covariance.
+Calculate cross-covariance between selected channels of two NEURO objects.
+
+For ERP/ERF objects the trial-averaged cross-covariance is prepended as epoch 1.
 
 # Arguments
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 - `l::Real=1`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-covariance
-- `biased::Bool=true`: calculate biased or unbiased cross-covariance
-- `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
-    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
-    - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
+- `demean::Bool=true`: subtract the mean before computing cross-covariance
+- `biased::Bool=true`: use biased (÷ n) or unbiased (÷ n−lag) estimator
+- `method::Symbol=:sum`: computation method:
+    - `:sum`: manual lag-shifted dot product
+    - `:cov`: use Julia's `cov()`
+    - `:stat`: use `StatsBase.crosscov()` (`biased` is ignored)
 
 # Returns
 
 Named tuple:
 
 - `xc::Array{Float64, 3}`: cross-covariance
-- `lags::Vector{Float64}`: lags [s]
+- `lags::Vector{Float64}`: lag values in seconds
 """
 function xcov(
     obj1::NeuroAnalyzer.NEURO,
@@ -222,6 +253,7 @@ function xcov(
     lags::Vector{Float64}
 }
 
+    # validate
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
     length(ch1) == length(ch2) ||
@@ -239,8 +271,12 @@ function xcov(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    l <= size(obj1, 2) || throw(ArgumentError("l must be ≤ $(size(obj1, 2))."))
-    l >= 0 || throw(ArgumentError("l must be ≥ 0."))
+    # validate lag bound against the epoch length (both in seconds)
+    max_l = epoch_len(obj1) / sr(obj1)
+    (0 <= l <= max_l) ||
+        throw(ArgumentError("l must be in [0, $max_l] seconds."))
+
+    l_samples = round(Int64, l * sr(obj1))
 
     if datatype(obj1) == "erp" && datatype(obj2) == "erp"
         xc = @views xcov(
@@ -257,7 +293,9 @@ function xcov(
             obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean, biased = biased, method = method
         )
     end
-    lags = collect((-l):l) .* 1 / sr(obj1)
+
+    # convert lag indices back to seconds for the returned lag axis
+    lags = collect((-l_samples):l_samples) ./ sr(obj1)
 
     return (; xc, lags)
 

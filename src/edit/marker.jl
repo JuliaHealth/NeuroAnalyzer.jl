@@ -228,7 +228,9 @@ function edit_marker(
     !(!(n < 1 || n > nn)) && throw(ArgumentError("n must be in [1, $nn]."))
 
     # create new dataset
-    obj_new = deepcopy(obj)    obj_new.markers[n, :] = Dict(
+    obj_new = deepcopy(obj)
+
+    obj_new.markers[n, :] = Dict(
         :id => id, :start => start, :length => len, :value => value, :channel => ch
     )
     sort!(obj_new.markers, :start)
@@ -363,7 +365,9 @@ function channel2marker(
 
 
     # create new dataset
-    obj_new = deepcopy(obj)    append!(
+    obj_new = deepcopy(obj)
+
+    append!(
         obj_new.markers,
         DataFrame(
             :id => ev_id,
@@ -431,7 +435,9 @@ function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyze
 
 
     # create new dataset
-    obj_new = deepcopy(obj)    !(names(markers) == ["id", "start", "length", "value", "channel"]) && throw(ArgumentError("Markers column names are incorrect."))
+    obj_new = deepcopy(obj)
+
+    !(names(markers) == ["id", "start", "length", "value", "channel"]) && throw(ArgumentError("Markers column names are incorrect."))
     obj_new.markers = markers
 
     return nothing

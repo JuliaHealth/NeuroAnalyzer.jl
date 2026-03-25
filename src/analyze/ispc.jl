@@ -129,17 +129,17 @@ Calculate ISPC (Inter-Site Phase Clustering) between channel-matched pairs.
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 
 # Returns
 
 Named tuple:
 
-- `ispcv::Matrix{Float64}`: ISPC value, shape `(channels, epochs)`
-- `ispca::Matrix{Float64}`: ISPC angle, shape `(channels, epochs)`
+- `ispcv::Matrix{Float64}`: ISPC value, shape (channels, epochs)
+- `ispca::Matrix{Float64}`: ISPC angle, shape (channels, epochs)
 - `sd::Array{Float64, 3}`: signal difference (s1 - s2), shape (channels, samples, epochs)
 - `phd::Array{Float64, 3}`: phase difference (s1 - s2), shape (channels, samples, epochs)
 - `s1ph::Array{Float64, 3}`: signal 1 phases, shape (channels, samples, epochs)

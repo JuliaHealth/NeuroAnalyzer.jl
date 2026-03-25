@@ -41,7 +41,9 @@ function add_note(obj::NeuroAnalyzer.NEURO; note::String)::NeuroAnalyzer.NEURO
 
 
     # create new dataset
-    obj_new = deepcopy(obj)    obj_new.header.recording[:recording_notes] = note
+    obj_new = deepcopy(obj)
+
+    obj_new.header.recording[:recording_notes] = note
 
     return obj_new
 

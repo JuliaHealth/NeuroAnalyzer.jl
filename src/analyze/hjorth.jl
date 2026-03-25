@@ -59,9 +59,9 @@ where s' = derivative(s).
 
 Named tuple:
 
-- `h_act::Matrix{Float64}`: activity, shape `(channels, epochs)`
-- `h_mob::Matrix{Float64}`: mobility, shape `(channels, epochs)`
-- `h_comp::Matrix{Float64}`: complexity, shape `(channels, epochs)`
+- `h_act::Matrix{Float64}`: activity, shape (channels, epochs)
+- `h_mob::Matrix{Float64}`: mobility, shape (channels, epochs)
+- `h_comp::Matrix{Float64}`: complexity, shape (channels, epochs)
 """
 function hjorth(
     s::AbstractArray
@@ -115,9 +115,9 @@ where s' = derivative(s).
 
 Named tuple:
 
-- `h_act::Matrix{Float64}`: activity, shape `(channels, epochs)`
-- `h_mob::Matrix{Float64}`: mobility, shape `(channels, epochs)`
-- `h_comp::Matrix{Float64}`: complexity, shape `(channels, epochs)`
+- `h_act::Matrix{Float64}`: activity, shape (channels, epochs)
+- `h_mob::Matrix{Float64}`: mobility, shape (channels, epochs)
+- `h_comp::Matrix{Float64}`: complexity, shape (channels, epochs)
 """
 function hjorth(
     obj::NeuroAnalyzer.NEURO;

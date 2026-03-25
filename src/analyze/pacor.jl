@@ -12,7 +12,7 @@ Computes the partial auto-correlation function (PACF) of a signal over symmetric
 
 - `s::AbstractVector`: signal vector
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: symmetric lag range is `−l:l`
-- `demean::Bool=true`: demean signal before computing PACF
+- `demean::Bool=true`: subtract the mean before computing PACF
 - `method::Symbol=:yw`
 - `:yw`: Yule-Walker equations
 - `:reg`: successive regression models
@@ -64,7 +64,7 @@ Calculate partial auto-correlation function (PACF) for each epoch of a matrix ov
 
 - `s::AbstractMatrix`: signal matrix (samples × epochs)
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: symmetric lag range is `−l:l`
-- `demean::Bool=true`: demean signal before computing PACF
+- `demean::Bool=true`: subtract the mean before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:
 - `:yw`: Yule-Walker equations
 - `:reg`: successive regression models
@@ -106,7 +106,7 @@ Calculate partial auto-correlation function (PACF) for a 3-D signal array over l
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: symmetric lag range is `−l:l`
-- `demean::Bool=true`: demean signal before computing PACF
+- `demean::Bool=true`: subtract the mean before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:
 - `:yw`: Yule-Walker equations
 - `:reg`: successive regression models
@@ -160,7 +160,7 @@ For ERP objects, epoch 1 is the trial-averaged waveform and is prepended to the 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `l::Real=1`: lag limit in seconds; lags vector is `−l:1/sr(obj):l`
-- `demean::Bool=true`: demean signal before computing PACF
+- `demean::Bool=true`: subtract the mean before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:
 - `:yw`: Yule-Walker equations
 - `:reg`: successive regression models

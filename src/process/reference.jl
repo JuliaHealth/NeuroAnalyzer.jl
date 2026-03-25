@@ -215,7 +215,9 @@ function reference_avg(
 
 
     # create new dataset
-    obj_new = deepcopy(obj)    obj_new.data[sig_ch_idx, :, :] = dst
+    obj_new = deepcopy(obj)
+
+    obj_new.data[sig_ch_idx, :, :] = dst
 
     suffix = average ? (weighted ? "-wavg" : "-avg") : (weighted ? "-wsum" : "-sum")
     obj_new.header.recording[:label][sig_ch_idx] .*= suffix
@@ -355,7 +357,9 @@ function reference_a(
     ch = get_channel(obj, ch=get_channel(obj; type="eeg"))
 
     # create new dataset
-    obj_new = deepcopy(obj)    s = obj_new.data[ch, :, :]
+    obj_new = deepcopy(obj)
+
+    s = obj_new.data[ch, :, :]
     a1 = extract_channel(obj, ch="A1")
     a2 = extract_channel(obj, ch="A2")
     ch_n = size(s, 1)
@@ -460,7 +464,9 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
     ch = get_channel(obj; ch=get_channel(obj; type="eeg"))
 
     # create new dataset
-    obj_new = deepcopy(obj)    s = obj_new.data[ch, :, :]
+    obj_new = deepcopy(obj)
+
+    s = obj_new.data[ch, :, :]
     m1 = extract_channel(obj; ch="M1")
     m2 = extract_channel(obj; ch="M2")
     ch_n = size(s, 1)
@@ -638,7 +644,9 @@ function reference_plap(
 
 
     # create new dataset
-    obj_new = deepcopy(obj)    obj_new.data[ch, :, :] = s_ref
+    obj_new = deepcopy(obj)
+
+    obj_new.data[ch, :, :] = s_ref
     suffix = weighted ? "-wplap" : "-plap"
     obj_new.header.recording[:label][ch] .*= suffix
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
@@ -733,7 +741,9 @@ function reference_slap(
 
 
     # create new dataset
-    obj_new = deepcopy(obj)    obj_new.data[ch, :, :] = s_ref
+    obj_new = deepcopy(obj)
+
+    obj_new.data[ch, :, :] = s_ref
     suffix  = weighted ? "-wslap" : "-slap"
     obj_new.header.recording[:label][ch] .*= suffix
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])

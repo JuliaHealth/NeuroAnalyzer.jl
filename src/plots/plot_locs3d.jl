@@ -185,7 +185,6 @@ function plot_locs3d(
             GLMakie.text!(
                 NeuroAnalyzer.fiducial_points[idx][1],
                 NeuroAnalyzer.fiducial_points[idx][2],
-,
                 text = fid_names[idx],
                 fontsize = font_size,
                 align = (:center, :center)

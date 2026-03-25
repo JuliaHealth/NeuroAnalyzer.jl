@@ -10,7 +10,7 @@ Calculate cross-correlation.
 - `s1::AbstractVector`: signal vector
 - `s2::AbstractVector`: signal vector
 - `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-correlation
+- `demean::Bool=true`: subtract the mean before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 - `method::Symbol=:sum`: method of calculating cross-correlation:
     - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ (std(s1) × std(s2))`
@@ -94,7 +94,7 @@ Calculate cross-correlation.
 - `s1::AbstractMatrix`
 - `s2::AbstractMatrix`
 - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-correlation
+- `demean::Bool=true`: subtract the mean before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 - `method::Symbol=:sum`: method of calculating cross-correlation:
     - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
@@ -139,7 +139,7 @@ Calculate cross-correlation.
 - `s1::AbstractArray`
 - `s2::AbstractArray`
 - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-correlation
+- `demean::Bool=true`: subtract the mean before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 - `method::Symbol=:sum`: method of calculating cross-correlation:
     - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
@@ -189,12 +189,12 @@ Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s)
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 - `l::Real=1`: lags range is `-l:l`
-- `demean::Bool=true`: demean signal before computing cross-correlation
+- `demean::Bool=true`: subtract the mean before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 - `method::Symbol=:sum`: method of calculating cross-correlation:
     - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
