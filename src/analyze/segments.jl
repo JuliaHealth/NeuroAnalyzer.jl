@@ -19,7 +19,8 @@ function seg_mean(seg::AbstractArray)::Vector{Float64}
 
     _chk3d(seg)
 
-    return reshape(mean(mean(seg; dims = 1), dims = 2), size(seg, 3))
+    return reshape(mean(mean(seg, dims
+ = 1), dims = 2), size(seg, 3))
 
 end
 

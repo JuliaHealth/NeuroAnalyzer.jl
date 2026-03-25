@@ -33,13 +33,6 @@ Return an `n`-point symmetric window of the given type.
 # Returns
 
 - `Vector{Float64}`: generated window of length `n` (or `n + 1` if `even=true` and `n` was odd)
-
-# Throws
-- `ArgumentError`: if `n < 1` or `type` is not a recognised symbol
-
-# See also
-
-[`generate_sine`](@ref), [`generate_gaussian`](@ref)
 """
 function generate_window(
     type::Symbol,
@@ -140,10 +133,6 @@ Computes `a × sin(2πft + φ)` where `φ = deg2rad(p)`.
 # Returns
 
 - `Vector{Float64}`: sine wave sampled at the points in `t`
-
-# See also
-
-[`generate_cosine`](@ref), [`generate_csine`](@ref)
 """
 function generate_sine(
     f::Real,
@@ -173,10 +162,6 @@ Computes `a × cos(2πft + φ)` where `φ = deg2rad(p)`.
 # Returns
 
 - `Vector{Float64}`: cosine wave sampled at the points in `t`
-
-# See also
-
-[`generate_sine`](@ref), [`generate_csine`](@ref)
 """
 function generate_cosine(
     f::Real,
@@ -205,10 +190,6 @@ Computes `a × exp(i × 2πft)`.
 # Returns
 
 - `Vector{ComplexF64}`: complex exponential sampled at the points in `t`
-
-# See also
-
-[`generate_sine`](@ref), [`generate_cosine`](@ref)
 """
 function generate_csine(
     f::Real,
@@ -237,10 +218,6 @@ Produces either the normalized (`sin(2πf(t−peak)) / (π(t−peak))`) or unnor
 # Returns
 
 - `Vector{Float64}`: sinc function sampled at the points in `t`
-
-# See also
-
-[`generate_sine`](@ref)
 """
 function generate_sinc(
     t::AbstractVector = -2:0.01:2;
@@ -283,14 +260,6 @@ The wavelet is the product of a complex (or real) sine wave at frequency `f` and
 # Returns
 
 - `Union{Vector{Float64}, Vector{ComplexF64}}`: Morlet wavelet of length `length(-t:1/fs:t)`
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`, `ncyc < 1`, or `t ≤ 0`
-
-# See also
-
-[`generate_morlet_fwhm`](@ref), [`generate_gaussian`](@ref)
 """
 function generate_morlet(
     fs::Int64,
@@ -331,13 +300,6 @@ The standard deviation of the Gaussian is `σ = ncyc / (2πf)`. The time axis sp
 # Returns
 
 - `Vector{Float64}`: Gaussian envelope of length `length(-t:1/fs:t)`
-
-# Throws
-- `ArgumentError`: if `fs < 1`, `ncyc < 1`, or `t ≤ 0`
-
-# See also
-
-[`generate_morlet`](@ref), [`generate_morlet_fwhm`](@ref)
 """
 function generate_gaussian(
     fs::Int64,
@@ -380,13 +342,6 @@ The raw noise is normalized to `[−1, 1]` and then scaled by `a`.
 # Returns
 
 - `Vector{Float64}`: noise signal of length `n`
-
-# Throws
-- `ArgumentError`: if `n < 1` or `type` is not a recognized symbol
-
-# See also
-
-[`generate_signal`](@ref)
 """
 function generate_noise(
     n::Int64,
@@ -430,14 +385,6 @@ The cumulative sum introduces temporal autocorrelation, producing a Brownian-mot
 # Returns
 
 - `Vector{Float64}`: random walk signal of length `n`
-
-# Throws
-
-- `ArgumentError`: if `n < 1`
-
-# See also
-
-[`generate_noise`](@ref)
 """
 function generate_signal(n::Int64, a::Real = 1.0)::Vector{Float64}
 
@@ -468,17 +415,9 @@ Uses the FWHM-based Gaussian envelope `exp(−4 ln 2 × t² / h²)` instead of a
 
 - `Vector{ComplexF64}`: complex Morlet wavelet of length `length(-t:1/fs:t)`
 
-# Throws
-
-- `ArgumentError`: if `fs < 1`, `t ≤ 0`, or `h ≤ 0`
-
 # References
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
-
-# See also
-
-[`generate_morlet`](@ref), [`generate_gaussian`](@ref)
 """
 function generate_morlet_fwhm(
     fs::Int64,
@@ -515,10 +454,6 @@ Generate a square wave.
 # Returns
 
 - `Vector{Float64}`: square wave sampled at the points in `t`
-
-# See also
-
-[`generate_triangle`](@ref)
 """
 function generate_square(
     t::AbstractVector,
@@ -547,10 +482,6 @@ Computes `a × |mod(t, 2) − 1|`, which produces a symmetric triangle wave with
 # Returns
 
 - `Vector{Float64}`: triangle wave sampled at the points in `t`
-
-# See also
-
-[`generate_square`](@ref)
 """
 function generate_triangle(
     t::AbstractVector,

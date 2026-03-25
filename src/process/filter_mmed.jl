@@ -20,17 +20,9 @@ Samples within the threshold band `[mean(s) − t×std(s), mean(s) + t×std(s)]`
 
 - `Vector{Float64}`: filtered signal of the same length as `s`
 
-# Throws
-
-- `ArgumentError`: if `k` is out of range or `length(ww) ≠ 2k + 1`
-
 # References
 
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
-
-# See also
-
-[`filter_mmed(::AbstractArray)`](@ref), [`filter_mmed(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_mmed(
     s::AbstractVector;
@@ -99,10 +91,6 @@ Apply a weighted moving median filter to every channel × epoch slice of a 3-D s
 # Returns
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
-
-# See also
-
-[`filter_mmed(::AbstractVector)`](@ref), [`filter_mmed(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_mmed(
     s::AbstractArray;
@@ -148,10 +136,6 @@ Apply a weighted moving median filter to selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
-
-# See also
-
-[`filter_mmed!`](@ref), [`filter_mmed(::AbstractArray)`](@ref)
 """
 function filter_mmed(
     obj::NeuroAnalyzer.NEURO;
@@ -197,10 +181,6 @@ Apply a weighted moving median filter in-place to selected channels of a NEURO o
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`filter_mmed`](@ref)
 """
 function filter_mmed!(
     obj::NeuroAnalyzer.NEURO;

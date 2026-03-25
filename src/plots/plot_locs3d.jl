@@ -125,7 +125,7 @@ function plot_locs3d(
                 GLMakie.scatter!(
                     loc_x[idx],
                     loc_y[idx],
-                    loc_z[idx];
+                    loc_z[idx],
                     markersize = marker_size,
                     color = :gray,
                     strokewidth = 1,
@@ -136,7 +136,7 @@ function plot_locs3d(
                 GLMakie.scatter!(
                     loc_x[idx],
                     loc_y[idx],
-                    loc_z[idx];
+                    loc_z[idx],
                     markersize = marker_size,
                     color = cmap[idx],
                     colormap = pal,
@@ -149,7 +149,7 @@ function plot_locs3d(
             GLMakie.scatter!(
                 loc_x[idx],
                 loc_y[idx],
-                loc_z[idx];
+                loc_z[idx],
                 markersize = marker_size,
                 color = :gray,
                 strokewidth = 1,
@@ -162,7 +162,7 @@ function plot_locs3d(
         GLMakie.text!(
             loc_x[ch] * 1.15,
             loc_y[ch] * 1.15,
-            loc_z[ch] * 1.15;
+            loc_z[ch] * 1.15,
             text = locs[ch, :label],
             fontsize = font_size,
             align = (:center, :center)
@@ -171,7 +171,7 @@ function plot_locs3d(
             GLMakie.text!(
                 loc_x[sch] * 1.15,
                 loc_y[sch] * 1.15,
-                loc_z[sch] * 1.15;
+                loc_z[sch] * 1.15,
                 text = locs[sch, :label],
                 fontsize = font_size,
                 align = (:center, :center),
@@ -185,7 +185,7 @@ function plot_locs3d(
             GLMakie.text!(
                 NeuroAnalyzer.fiducial_points[idx][1],
                 NeuroAnalyzer.fiducial_points[idx][2],
-                NeuroAnalyzer.fiducial_points[idx][3];
+,
                 text = fid_names[idx],
                 fontsize = font_size,
                 align = (:center, :center),

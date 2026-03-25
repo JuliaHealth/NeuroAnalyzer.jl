@@ -239,7 +239,7 @@ function plot_locs_nirs(
         for idx in 1:src_n
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
-                loc_y[idx] + label_offset_y;
+                loc_y[idx] + label_offset_y,
                 text = locs[!, :label][idx],
                 align = (:center, :bottom),
                 fontsize = font_size,
@@ -248,7 +248,7 @@ function plot_locs_nirs(
     elseif !opt_labels
         GLMakie.scatter!(
             loc_x[1:src_n],
-            loc_y[1:src_n];
+            loc_y[1:src_n],
             markersize = marker_size,
             color = mono ? :black : :red,
             strokewidth = sw,
@@ -260,7 +260,7 @@ function plot_locs_nirs(
         for idx in (src_n + 1):(src_n + det_n)
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
-                loc_y[idx] + label_offset_y;
+                loc_y[idx] + label_offset_y,
                 text = locs[!, :label][idx],
                 align = (:center, :bottom),
                 fontsize = font_size,
@@ -269,7 +269,7 @@ function plot_locs_nirs(
     elseif !opt_labels
         GLMakie.scatter!(
             loc_x[(src_n + 1):end],
-            loc_y[(src_n + 1):end];
+            loc_y[(src_n + 1):end],
             markersize = marker_size,
             color = mono ? :white : :green,
             strokewidth = sw,
@@ -281,7 +281,7 @@ function plot_locs_nirs(
         for idx in 1:src_n
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
-                loc_y[idx] + label_offset_y;
+                loc_y[idx] + label_offset_y,
                 text = "S" * string(idx),
                 align = (:center, :bottom),
                 fontsize = font_size,
@@ -290,7 +290,7 @@ function plot_locs_nirs(
         for idx in 1:det_n
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
-                loc_y[idx] + label_offset_y;
+                loc_y[idx] + label_offset_y,
                 text = "D" * string(idx),
                 align = (:center, :bottom),
                 fontsize = font_size,

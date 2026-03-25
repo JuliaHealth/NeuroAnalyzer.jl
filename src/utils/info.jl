@@ -75,10 +75,6 @@ Return the number of channels of a given type.
 # Returns
 
 - `Int64`: number of channels of the requested type
-
-# Throws
-
-- `ArgumentError`: if `type` is not in `channel_types`, or if no channel types are defined in the object.
 """
 function nchannels(obj::NeuroAnalyzer.NEURO; type::String = "all")::Int64
 
@@ -220,10 +216,6 @@ Return channel labels.
 # Returns
 
 - `Vector{String}`: channel label strings
-
-# Throws
-
-- `ArgumentError`: if the object has no channel labels
 """
 function labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -245,10 +237,6 @@ Return optode labels (NIRS objects only).
 # Returns
 
 - `Vector{String}`: optode label strings
-
-# Throws
-
-- `ArgumentError`: if the object is not NIRS, or has no optode labels
 """
 function optode_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -272,10 +260,6 @@ Return source labels (NIRS objects only).
 # Returns
 
 - `Vector{String}`: source label strings
-
-# Throws
-
-- `ArgumentError`: if the object is not NIRS, or has no source labels
 """
 function source_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -299,10 +283,6 @@ Return detector labels (NIRS objects only).
 # Returns
 
 - `Vector{String}`: detector label strings
-
-# Throws
-
-- `ArgumentError`: if the object is not NIRS, or has no source labels
 """
 function detector_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -326,10 +306,6 @@ Return channel type strings.
 # Returns
 
 - `Vector{String}`: channel type strings (one per channel)
-
-# Throws
-
-- `ArgumentError`: if no channel types are defined in the object
 """
 function chtypes(obj::NeuroAnalyzer.NEURO)::Vector{String}
 
@@ -438,10 +414,6 @@ Print object header metadata to stdout.
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`info`](@ref)
 """
 function header(obj::NeuroAnalyzer.NEURO)::Nothing
 
@@ -464,10 +436,6 @@ Print object metadata and channel table. Optionally return data as a DataFrame.
 # Returns
 
 - `Nothing` if `df=false`, or a `DataFrame` if `df=true`.
-
-# See also
-
-[`header`](@ref), [`describe`](@ref)
 """
 function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFrame}
 
@@ -609,10 +577,6 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 # Returns
 
 - `Vector{String}`: channel names matching the pick
-
-# Throws
-
-- `ArgumentError`: if `pick` contains an unrecognised symbol or the object has no channel labels
 """
 function channel_pick(
     obj::NeuroAnalyzer.NEURO;
@@ -718,10 +682,6 @@ Return channel names belonging to a predefined spatial cluster.
 # Returns
 
 - `Vector{String}`: channel names present in the object that belong to the cluster
-
-# Throws
-
-- `ArgumentError`: if `cluster` is not a recognised symbol or the object has no labels.
 """
 function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
 
@@ -803,10 +763,6 @@ When `band = :list`, the available band names are printed to stdout and the func
 # Returns
 
 - `Tuple{Float64, Float64}`: `(low_Hz, high_Hz)` limits, clamped to the Nyquist frequency if necessary
-
-# See also
-
-[`band_frq(::Int64)`](@ref)
 """
 function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)::Tuple{Float64, Float64}
 
@@ -859,10 +815,6 @@ When `band = :list`, the available band names are printed to stdout and the func
 # Returns
 
 - `Tuple{Float64, Float64}`: `(low_Hz, high_Hz)` limits, clamped to the Nyquist frequency if necessary
-
-# See also
-
-[`band_frq(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function band_frq(fs::Int64; band::Symbol)::Tuple{Float64, Float64}
 
@@ -899,10 +851,6 @@ Statistics reported: range, mean, SD, minimum, Q1 (25th percentile), median, Q3 
 # Returns
 
 - `Nothing` when `df=false`, or a `DataFrame` when `df=true`
-
-# See also
-
-[`info`](@ref)
 """
 function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFrame}
 
@@ -994,10 +942,6 @@ Return the size of the object data array along dimension `d`.
 # Returns
 
 - `Int64`: size along dimension `d`
-
-# Throws
-
-- `ArgumentError`: If `d` is out of range.
 """
 function Base.size(obj::NeuroAnalyzer.NEURO, d::Int64)::Int64
 

@@ -10,7 +10,7 @@ function _refresh_ica_can_set(
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
         p_tmp = plot_topo(
-            obj_reconstructed[idx];
+            obj_reconstructed[idx],
             ch = datatype(obj_reconstructed[1]),
             seg = (time1, time2),
             amethod = :mean,

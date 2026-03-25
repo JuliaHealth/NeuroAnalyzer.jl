@@ -27,10 +27,6 @@ Re-reference EEG channels to a common electrode or the average of multiple elect
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with re-referenced EEG channels
-
-# See also
-
-[`reference_ce!`](@ref), [`reference_avg`](@ref)
 """
 function reference_ce(
     obj::NeuroAnalyzer.NEURO;
@@ -67,7 +63,9 @@ function reference_ce(
             @view obj.data[ref_ch_idx[1], :, ep_idx]
         else
             src = @view obj.data[ref_ch_idx, :, ep_idx]
-            med ? vec(median(src; dims=1)) : vec(mean(src; dims=1))
+            med ? vec(median(src, dims
+=1)) : vec(mean(src, dims
+=1))
         end
         obj_new.data[s_ch, :, ep_idx] .-= ref
     end
@@ -101,10 +99,6 @@ Re-reference EEG channels to a common electrode in-place. Only EEG-type channels
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`reference_ce`](@ref), [`reference_avg`](@ref)
 """
 function reference_ce!(
     obj::NeuroAnalyzer.NEURO;
@@ -139,10 +133,6 @@ Re-reference EEG channels to the common average reference (CAR). Only EEG-type c
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with re-referenced EEG channels
-
-# See also
-
-[`reference_avg!`](@ref), [`reference_ce`](@ref)
 """
 function reference_avg(
     obj::NeuroAnalyzer.NEURO;
@@ -204,14 +194,19 @@ function reference_avg(
             w = 1 .- normalize_n(w)
             ref_chs = @view src[ref_rows, :, ep_idx]
             w_sub   = w[ref_rows]
-            ref_ch  = med ? vec(median(w_sub .* ref_chs; dims=1)) :
-                             vec(mean(w_sub  .* ref_chs; dims=1))
+            ref_ch  = med ? vec(median(w_sub .* ref_chs, dims
+=1)) :
+                             vec(mean(w_sub  .* ref_chs, dims
+=1))
         else
             ref_chs = @view src[ref_rows, :, ep_idx]
             ref_ch  = if average
-                med ? vec(median(ref_chs; dims=1)) : vec(mean(ref_chs; dims=1))
+                med ? vec(median(ref_chs, dims
+=1)) : vec(mean(ref_chs, dims
+=1))
             else
-                vec(sum(ref_chs; dims=1))
+                vec(sum(ref_chs, dims
+=1))
             end
         end
 
@@ -257,10 +252,6 @@ Re-reference EEG channels to the common average reference in-place. Only EEG-typ
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`reference_avg`](@ref), [`reference_ce`](@ref)
 """
 function reference_avg!(
     obj::NeuroAnalyzer.NEURO;
@@ -303,7 +294,8 @@ function _apply_paired_reference!(
     med::Bool,
 )
     for ep_idx in 1:ep_n
-        ref_ch = med ? vec(median(ref_data[:, :, ep_idx]; dims=1)) :
+        ref_ch = med ? vec(median(ref_data[:, :, ep_idx], dims
+=1)) :
                        vec(mean(ref_data[:, :, ep_idx];   dims=1))
         # thread over channels for this epoch
         Threads.@threads :dynamic for ch_idx in picks
@@ -348,10 +340,6 @@ Re-reference EEG channels to auricular electrodes (A1, A2). Only EEG-type channe
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new re-referenced object
-
-# See also
-
-[`reference_a!`](@ref), [`reference_m`](@ref)
 """
 function reference_a(
     obj::NeuroAnalyzer.NEURO;
@@ -427,10 +415,6 @@ Re-reference EEG channels to auricular electrodes in-place. Only EEG-type channe
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`reference_a`](@ref), [`reference_m`](@ref)
 """
 function reference_a!(
     obj::NeuroAnalyzer.NEURO;
@@ -465,10 +449,6 @@ Re-reference EEG channels to mastoid electrodes (M1, M2). Only EEG-type channels
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new re-referenced object
-
-# See also
-
-[`reference_m!`](@ref), [`reference_a`](@ref)
 """
 function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = false)::NeuroAnalyzer.NEURO
 
@@ -598,10 +578,14 @@ function _laplacian_reference(
                                        loc_x[ni],     loc_y[ni],     loc_z[ni])
             end
             w       = 1 .- normalize_n(w)
-            ref_ch  = med ? vec(median(w .* ref_chs; dims=1)) :
-                             vec(mean(w  .* ref_chs; dims=1))
+            ref_ch  = med ? vec(median(w .* ref_chs, dims
+=1)) :
+                             vec(mean(w  .* ref_chs, dims
+=1))
         else
-            ref_ch = med ? vec(median(ref_chs; dims=1)) : vec(mean(ref_chs; dims=1))
+            ref_ch = med ? vec(median(ref_chs, dims
+=1)) : vec(mean(ref_chs, dims
+=1))
         end
         @inbounds s_ref[ch_idx, :, ep_idx] = s[ch_idx, :, ep_idx] .- ref_ch
     end
@@ -622,10 +606,6 @@ Re-reference EEG channels using the planar (2-D Euclidean) Laplacian. Only EEG-t
 
 # Returns
 - `NeuroAnalyzer.NEURO`: new re-referenced object
-
-# See also
-
-[`reference_plap!`](@ref), [`reference_slap`](@ref)
 """
 function reference_plap(
     obj::NeuroAnalyzer.NEURO;
@@ -685,10 +665,6 @@ Re-reference EEG channels using the planar Laplacian in-place. Only EEG-type cha
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`reference_plap`](@ref), [`reference_slap`](@ref)
 """
 function reference_plap!(
     obj::NeuroAnalyzer.NEURO;
@@ -723,10 +699,6 @@ Re-reference EEG channels using the spherical Laplacian (great-circle distance).
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new re-referenced object
-
-# See also
-
-[`reference_slap!`](@ref), [`reference_plap`](@ref)
 """
 function reference_slap(
     obj::NeuroAnalyzer.NEURO;
@@ -788,10 +760,6 @@ Re-reference EEG channels using the spherical Laplacian in-place.
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`reference_slap`](@ref), [`reference_plap`](@ref)
 """
 function reference_slap!(
     obj::NeuroAnalyzer.NEURO;

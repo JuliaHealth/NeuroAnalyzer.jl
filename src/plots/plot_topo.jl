@@ -214,7 +214,7 @@ function plot_topo(
             ax,
             interpolated_x,
             interpolated_y,
-            s_interpolated_threshold;
+            s_interpolated_threshold,
             colorrange = extrema(s_interpolated[.!isnan.(s_interpolated)]),
             colormap = pal
         )
@@ -229,7 +229,7 @@ function plot_topo(
             ax,
             interpolated_x,
             interpolated_y,
-            s_interpolated;
+            s_interpolated,
             linestyle = :dash,
             levels = contours,
             linewidth = 0.5,
@@ -290,7 +290,7 @@ function plot_topo(
                     GLMakie.scatter!(
                         ax,
                         loc_x[idx],
-                        loc_y[idx];
+                        loc_y[idx],
                         markersize = marker_size * 2,
                         color = :gray,
                         strokewidth = sw,
@@ -306,7 +306,7 @@ function plot_topo(
                     GLMakie.scatter!(
                         ax,
                         loc_x[idx],
-                        loc_y[idx];
+                        loc_y[idx],
                         markersize = marker_size * 2,
                         color = :gray,
                         strokewidth = sw,
@@ -328,7 +328,7 @@ function plot_topo(
     if cb
         GLMakie.Colorbar(
             fig[1, 2],
-            hm;
+            hm,
             label = cb_title,
             labelsize = font_size - 4,
             ticklabelsize = font_size - 4,
@@ -491,7 +491,8 @@ function plot_topo(
     else
         !isnothing(tpos) && _info("If data is provided, tpos is ignored")
         if ndims(data) == 2
-            data = amethod === :mean ? mean(data; dims = 2)[:] : median(data, dims = 2)[:]
+            data = amethod === :mean ? mean(data, dims
+ = 2)[:] : median(data, dims = 2)[:]
         end
         length(data) == length(ch) ||
             throw(ArgumentError("Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."))

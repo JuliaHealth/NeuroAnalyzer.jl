@@ -217,7 +217,7 @@ function cpsd(
     # pre-compute the frequency vector with a single pilot call on the first channel/epoch pair
     cpsd_data = cpsd(
         @view(s1[1, :, 1]),
-        @view(s2[1, :, 1]);
+        @view(s2[1, :, 1]),
         method = method,
         fs = fs,
         flim = flim,

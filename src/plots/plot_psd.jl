@@ -181,12 +181,12 @@ function plot_psd(
             Makie.lines!(
                 ax,
                 f[f1:f2],
-                p[idx, f1:f2];
+                p[idx, f1:f2],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 2,
-                label = clabels[idx],
+                label = clabels[idx]
             )
         end
 
@@ -199,7 +199,7 @@ function plot_psd(
                 s,
                 colormap = pal,
                 linewidth = 4,
-                color = :black,
+                color = :black
             )
         end
 
@@ -311,11 +311,11 @@ function plot_psd_3d(
             Makie.lines!(
                 f,
                 ones(length(f)) .* idx,
-                p[idx, :];
+                p[idx, :],
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
+                colorrange = 1:ch_n
             )
         end
     else
@@ -459,7 +459,7 @@ function plot_psd_topo(
         push!(fig_vec, fig)
         fig_full = plot_psd(
             f,
-            p[idx, :];
+            p[idx, :],
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,

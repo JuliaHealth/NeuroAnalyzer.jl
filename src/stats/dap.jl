@@ -20,10 +20,6 @@ Named tuple:
 - `d::Float64`: omnibus test statistic `zs² + zk²`; follows `χ²(2)` under H₀
 - `p::Float64`: p-value from the `χ²(2)` survival function
 
-# Throws
-
-- `ArgumentError`: if `length(x) < 8`
-
 # Notes
 
 - The test requires `n ≥ 20` for reliable results; a diagnostic message is printed for smaller samples.

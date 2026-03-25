@@ -795,7 +795,7 @@ function plot_filter(;
         f = @lift(round.($phresp[2] .* fs / 2 / pi, digits = 1))
 
         ax2 = GLMakie.Axis(
-            fig[2, 1];
+            fig[2, 1],
             xlabel = "Frequency [Hz]",
             ylabel = "Phase [rad]",
             title = "Phase response",
@@ -830,7 +830,7 @@ function plot_filter(;
         tau = @lift(-derivative(rad2deg.($phresp[1])))
 
         ax3 = GLMakie.Axis(
-            fig[3, 1];
+            fig[3, 1],
             xlabel = "Frequency [Hz]",
             ylabel = "Group delay [samples]",
             title = "Group delay",
@@ -917,7 +917,7 @@ function plot_filter(;
         f = f .* fs / 2 / pi
 
         ax2 = GLMakie.Axis(
-            fig[2, 1];
+            fig[2, 1],
             xlabel = "Frequency [Hz]",
             ylabel = "Phase\n[deg]",
             title = "Phase response",
@@ -952,7 +952,7 @@ function plot_filter(;
         tau = @lift(-derivative(rad2deg.(-atan.(imag($fresp), real($fresp)))))
 
         ax3 = GLMakie.Axis(
-            fig[3, 1];
+            fig[3, 1],
             xlabel = "Frequency [Hz]",
             ylabel = "Group delay\n[samples]",
             title = "Group delay",

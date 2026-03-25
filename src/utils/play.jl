@@ -17,10 +17,6 @@ The signal is normalised to `[−1, 1]` and scaled to `[−1000, +1000]` before 
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError`: if `ep` is out of range, `ch` does not resolve to exactly one channel, or `seg` boundaries fall outside the epoch time axis
 """
 function play(
     obj::NeuroAnalyzer.NEURO;

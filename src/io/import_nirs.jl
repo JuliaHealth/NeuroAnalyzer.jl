@@ -15,9 +15,6 @@ The NIRS format is a MATLAB `.mat` file containing raw intensity data (`d`), a t
 
 - `NeuroAnalyzer.NEURO`
 
-# Throws
-- `ArgumentError` if the file does not exist, is not a NIRS file, or is missing required fields
-
 # References
 
 1. https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats

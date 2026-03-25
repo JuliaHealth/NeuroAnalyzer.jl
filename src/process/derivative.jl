@@ -17,17 +17,10 @@ For the boundary samples the one-sided half-difference is used so that the outpu
 # Returns
 
 - `Vector{Float64}`: derivative signal of the same length as `s`
-
-# Throws
-
-- `ArgumentError`: if `length(s) ≤ 2`
-
-# See also
-
-[`derivative(::AbstractArray)`](@ref), [`derivative(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function derivative(s::AbstractVector)::AbstractVector
 
+    # validate
     length(s) > 2 || throw(ArgumentError("Signal length must be > 2."))
 
     # half-differences: length n-1
@@ -60,14 +53,6 @@ For the boundary samples the one-sided half-difference is used so that the outpu
 # Returns
 
 - `Array{Float64, 3}`: derivative array of the same shape as `s`
-
-# Throws
-
-- `ArgumentError`: if `s` is not 3-dimensional
-
-# See also
-
-[`derivative(::AbstractVector)`](@ref), [`derivative(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function derivative(s::AbstractArray)::Array{Float64, 3}
 
@@ -105,10 +90,6 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with differentiated channels
-
-# See also
-
-[`derivative!`](@ref), [`derivative(::AbstractArray)`](@ref)
 """
 function derivative(
     obj::NeuroAnalyzer.NEURO;
@@ -141,10 +122,6 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`derivative`](@ref)
 """
 function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

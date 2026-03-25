@@ -41,10 +41,6 @@ All other tests, named tuple:
 - `tc`: confidence interval of the test statistic (tuple or scalar NaN for non-parametric)
 - `df::Float64`: degrees of freedom
 - `p::Float64`: two-tailed p-value (clamped to `eps()` if below machine epsilon)
-
-# Throws
-
-- `ArgumentError`: if `type` is invalid, `alpha ∉ (0, 1)`, `nperm < 1`, or `paired = true` with unequal-length vectors
 """
 function cmp_test(
     s1::AbstractVector,

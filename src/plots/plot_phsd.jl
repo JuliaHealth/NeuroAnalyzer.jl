@@ -175,7 +175,7 @@ function plot_phsd(
         for idx in 1:ch_n
             Makie.lines!(
                 f,
-                ph[idx, :];
+                ph[idx, :],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -186,7 +186,8 @@ function plot_phsd(
 
         # draw averaged channels
         if avg
-            s = mean(ph; dims = 1)[:]
+            s = mean(ph, dims
+ = 1)[:]
             Makie.lines!(f, s; colormap = pal, linewidth = 4, color = :black)
         end
 
@@ -298,7 +299,7 @@ function plot_phsd_3d(
             Makie.lines!(
                 f,
                 ones(length(f)) .* idx,
-                ph[idx, :];
+                ph[idx, :],
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
@@ -428,7 +429,7 @@ function plot_phsd_topo(
             figure_padding = 0
         )
         ax = GLMakie.Axis(
-            pp[1, 1];
+            pp[1, 1],
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -444,7 +445,7 @@ function plot_phsd_topo(
         push!(pp_vec, pp)
         pp_full = plot_phsd(
             f,
-            ph[idx, :];
+            ph[idx, :],
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,

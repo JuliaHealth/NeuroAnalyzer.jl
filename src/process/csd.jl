@@ -24,19 +24,10 @@ The algorithm (Perrin et al. 1989):
 
 - `NeuroAnalyzer.NEURO`: new object with CSD-transformed data, channel types set to `"csd"`, and units set to `"µV/m²"`
 
-# Throws
-
-- `ArgumentError`: if `m ∉ [2, 10]`, `n < 1`, or `lambda ≤ 0`
-
 # References
 
-Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184–187.
-
-Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
-
-# See also
-
-[`csd!`](@ref), [`gh`](@ref)
+1. Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184–187.
+2. Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
 """
 function csd(
     obj::NeuroAnalyzer.NEURO;
@@ -69,7 +60,8 @@ function csd(
     Gs_inv  = inv(Gs)
 
     # row sums of the inverse and their total - used for the zero-mean constraint
-    Gs_rs = vec(sum(Gs_inv; dims=2))
+    Gs_rs = vec(sum(Gs_inv, dims
+=2))
     Gs_inv_sum = sum(Gs_rs)
 
     # create new dataset
@@ -121,19 +113,10 @@ Transform EEG data using the CSD transformation in-place.
 
 - `Nothing`
 
-# Throws
-
-- `ArgumentError`: if `m ∉ [2, 10]`, `n < 1`, or `lambda ≤ 0`
-
 # References
 
-Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184–187.
-
-Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
-
-# See also
-
-[`csd`](@ref)
+1. Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184–187.
+2. Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
 """
 function csd!(
     obj::NeuroAnalyzer.NEURO;
@@ -172,10 +155,6 @@ Named tuple:
 # References
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184–187.
-
-# See also
-
-[`csd`](@ref)
 """
 function gh(
     locs::DataFrame;

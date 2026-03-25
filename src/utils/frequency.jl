@@ -18,10 +18,6 @@ Computes `2π × f`.
 # Returns
 
 - `Float64`: frequency in rad/s
-
-# See also
-
-[`rads2hz`](@ref)
 """
 function hz2rads(f::Real)::Float64
 
@@ -43,10 +39,6 @@ Computes `f / 2π`.
 # Returns
 
 - `Float64`: frequency in Hz
-
-# See also
-
-[`hz2rads`](@ref)
 """
 function rads2hz(f::Real)::Float64
 
@@ -68,14 +60,6 @@ Computes `1000 / t`, rounded to 2 decimal places.
 # Returns
 
 - `Float64`: frequency in Hz
-
-# Throws
-
-- `ArgumentError`: if `t ≤ 0`.
-
-# See also
-
-[`f2t`](@ref)
 """
 function t2f(t::Real)::Float64
 
@@ -100,14 +84,6 @@ Computes `1000 / f`, rounded to 2 decimal places.
 # Returns
 
 - `Float64`: cycle length in ms
-
-# Throws
-
-- `ArgumentError`: if `f ≤ 0`
-
-# See also
-
-[`t2f`](@ref)
 """
 function f2t(f::Real)::Float64
 
@@ -134,14 +110,6 @@ The sampling rate is inferred as `1 / (t[2] - t[1])`.
 
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
-
-# Throws
-
-- `ArgumentError`: if `length(t) < 2`
-
-# See also
-
-[`freqs(::AbstractVector, ::Int64)`](@ref), [`freqs(::Int64, ::Int64)`](@ref)
 """
 function freqs(
     t::Union{AbstractVector, AbstractRange};
@@ -182,13 +150,6 @@ Return the frequency vector and Nyquist frequency for a signal vector.
 
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`
-
-# See also
-[`freqs(::Union{AbstractVector, AbstractRange})`](@ref), [freqs(::Int64, ::Int64)`](@ref)
 """
 function freqs(
     s::AbstractVector,
@@ -224,14 +185,6 @@ Return the frequency vector and Nyquist frequency for a signal of `n` samples.
 
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
-
-# Throws
-
-- `ArgumentError`: if `n < 1` or `fs < 1`
-
-# See also
-
-[`freqs(::Union{AbstractVector, AbstractRange})`](@ref), [`freqs(::AbstractVector, ::Int64)`](@ref)
 """
 function freqs(
     n::Int64,
@@ -268,13 +221,10 @@ Uses the first channel and first epoch of `obj` to infer signal length, and read
 
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
-
-# See also
-
-[`freqs(::AbstractVector, ::Int64)`](@ref)
 """
 function freqs(
-    obj::NeuroAnalyzer.NEURO; nf::Bool = false
+    obj::NeuroAnalyzer.NEURO;
+    nf::Bool = false
 )::Tuple{Vector{Float64}, Float64}
 
     return freqs(obj.data[1, :, 1], sr(obj); nf = nf)

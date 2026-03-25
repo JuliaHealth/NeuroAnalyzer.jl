@@ -16,9 +16,6 @@ Channel locations are read from the `[Coordinates]` section of the header when a
 # Returns
 
 - `NeuroAnalyzer.NEURO`
-
-# Throws
-- `ArgumentError` if the header file, signal file, or marker file cannot be loaded, or if the binary format / data orientation is unsupported
 """
 function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
@@ -270,8 +267,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     elseif isfile(replace(splitext(file_name)[1], "eeg" => "events.tsv"))
         vmrk = CSV.read(
-            replace(splitext(file_name)[1], "eeg" => "events.tsv");
-            stringtype = String, DataFrame)
+            replace(splitext(file_name)[1], "eeg" => "events.tsv"), stringtype = String, DataFrame)
         markers = DataFrame(
             :id => repeat(["mrk"], DataFrames.nrow(vmrk)),
             :start => vmrk[!, :sample] ./ sampling_rate,

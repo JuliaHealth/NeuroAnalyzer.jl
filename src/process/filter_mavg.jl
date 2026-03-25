@@ -20,17 +20,9 @@ Samples within the threshold band `[mean(s) − t×std(s), mean(s) + t×std(s)]`
 
 - `Vector{Float64}`: filtered signal of the same length as `s`
 
-# Throws
-
-- `ArgumentError`: if `k` is out of range or `length(ww) ≠ 2k + 1`
-
 # References
 
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
-
-# See also
-
-[`filter_mavg(::AbstractArray)`](@ref), [`filter_mavg(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_mavg(
     s::AbstractVector;
@@ -99,10 +91,6 @@ Apply a weighted moving average filter to every channel × epoch slice of a 3-D 
 # Returns
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
-
-# See also
-
-[`filter_mavg(::AbstractVector)`](@ref), [`filter_mavg(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_mavg(
     s::AbstractArray;
@@ -149,10 +137,6 @@ Apply a weighted moving average filter to selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
-
-# See also
-
-[`filter_mavg!`](@ref), [`filter_mavg(::AbstractArray)`](@ref)
 """
 function filter_mavg(
     obj::NeuroAnalyzer.NEURO;
@@ -205,10 +189,6 @@ Apply a weighted moving average filter in-place to selected channels of a NEURO 
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`filter_mavg`](@ref)
 """
 function filter_mavg!(
     obj::NeuroAnalyzer.NEURO;

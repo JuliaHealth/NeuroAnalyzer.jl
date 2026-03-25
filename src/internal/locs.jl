@@ -78,7 +78,7 @@ end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
     locs_ch = get_channel(
-        obj;
+        obj,
         ch = get_channel(
             obj; type = ["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg", "nirs_int", "nirs_od", "eog", "ref"]
         ),

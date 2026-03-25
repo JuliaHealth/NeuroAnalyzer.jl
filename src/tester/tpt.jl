@@ -132,7 +132,7 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
 
     obj = create_object(; data_type = "tpt")
     add_channel!(
-        obj;
+        obj,
         data = tpt_signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],
@@ -234,7 +234,7 @@ function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroA
 
     obj = create_object(; data_type = "tpt")
     add_channel!(
-        obj;
+        obj,
         data = tpt_signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],

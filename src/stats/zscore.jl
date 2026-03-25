@@ -14,14 +14,6 @@ Computed as `(xᵢ − mean(x)) / std(x)`.
 # Returns
 
 - `Vector{Float64}`: Z-scores with mean ≈ 0 and SD ≈ 1
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 2` or `std(x) == 0`
-
-# See also
-
-[`zscore(::Real, ::Real, ::Real)`](@ref)
 """
 function zscore(x::AbstractVector)::Vector{Float64}
 
@@ -51,14 +43,6 @@ Computed as `(x − m) / sd`.
 # Returns
 
 - `Float64`: Z-score
-
-# Throws
-
-- `ArgumentError`: if `sd == 0`
-
-# See also
-
-[`zscore(::AbstractVector)`](@ref)
 """
 function zscore(x::Real, m::Real, sd::Real)::Float64
 

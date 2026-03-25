@@ -16,10 +16,6 @@ Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1`
 # Returns
 
 - `Vector{ComplexF64}`: convolved signal (same length as `s`)
-
-# Throws
-
-- `ArgumentError` if `kernel` is empty
 """
 function fconv(
     s::AbstractVector;
@@ -56,16 +52,14 @@ Perform convolution in the frequency domain.
 Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1` before the FFT so the result is equivalent to linear (non-circular) convolution.
 
 # Arguments
+
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `kernel::AbstractVector`: convolution kernel (must be non-empty)
 - `norm::Bool=true`: normalize the kernel FFT by its maximum magnitude to keep post-convolution amplitudes on the same scale as the input
 
 # Returns
+
 - `Array{ComplexF64, 3}`: convolved signal, same shape as `s`
-
-# Throws
-
-- `ArgumentError` if `s` is not 3-dimensional or `kernel` is empty
 """
 function fconv(
     s::AbstractArray;

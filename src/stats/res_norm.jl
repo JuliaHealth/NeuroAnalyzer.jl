@@ -17,13 +17,11 @@ For each group (and for the whole sample), residuals are computed as `x .- mean(
 # Returns
 
 Named tuple:
+
 - `adt_p::Vector{Float64}`: Anderson–Darling p-values; one per group (in sorted group order) plus one for the whole sample at the last index
 - `ks_p::Vector{Float64}`: Kolmogorov–Smirnov p-values; same layout as `adt_p`
 
 If there is only one group, both vectors have length 1 (whole-sample result only).
-
-# Throws
-- `ArgumentError`: if `x` is empty, `length(x) ≠ length(g)`, or any group has fewer than 3 observations
 
 # Notes
 

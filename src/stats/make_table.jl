@@ -16,10 +16,6 @@ The header row is prepended to the data and printed as a single table body with 
 
 - `Nothing`
 
-# Throws
-
-- `ArgumentError`: if `size(header, 1) ≠ 1` or `size(header, 2) ≠ size(data, 2)`
-
 # Notes
 
 - The `formatters = ft_printf("%1.3f", 2:3)` format is hardcoded to columns 2 and 3; callers with a different column count should adjust the source accordingly.
@@ -38,7 +34,7 @@ function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
     end
 
     pretty_table(
-        cat(header, data, dims=1);
+        cat(header, data, dims=1)
         body_hlines = [1],
         cell_alignment = Dict((1, 1) => :l),
         formatters = ft_printf("%1.3f", 2:3),

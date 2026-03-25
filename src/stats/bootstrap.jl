@@ -24,14 +24,6 @@ Named tuple:
 - `gm::Vector{Float64}`: bootstrap grand mean (averaged across all `n1` resamples)
 - `ll::Vector{Float64}`: lower CI bound at each time point
 - `ul::Vector{Float64}`: upper CI bound at each time point
-
-# Throws
-
-- `ArgumentError`: if `cl ∉ (0, 1)`, `n1 < 1`, or `n2 < 1`
-
-# See also
-
-[`bootstrap_stat`](@ref)
 """
 function bootstrap_ci(
     s::AbstractMatrix;
@@ -66,7 +58,8 @@ function bootstrap_ci(
             s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
         end
 
-        s_boot[idx1, :] = vec(mean(s_tmp; dims=2))
+        s_boot[idx1, :] = vec(mean(s_tmp, dims
+=2))
         progress_bar && next!(progbar)
 
     end
@@ -114,13 +107,6 @@ The formula string `f` must reference the current signal trace using the placeho
 # Returns
 
 - `Vector`: bootstrap distribution of the statistic; length `n1`
-
-# Throws
-- `ArgumentError`: if `n1 < 1`, `n2 < 1`, or the formula `f` fails the dry-run evaluation
-
-# See also
-
-[`bootstrap_ci`](@ref)
 """
 function bootstrap_stat(
     s::AbstractMatrix;
@@ -160,7 +146,8 @@ function bootstrap_stat(
         for idx2 in 1:n2
             s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
         end
-        s_boot[idx1, :] = vec(mean(s_tmp; dims=2))
+        s_boot[idx1, :] = vec(mean(s_tmp, dims
+=2))
 
         # evaluate the user formula on this bootstrap mean trace
         f_tmp = replace(f, "obj" => "$(s_boot[idx1, :])")

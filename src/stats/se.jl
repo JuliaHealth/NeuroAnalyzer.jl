@@ -22,14 +22,6 @@ Computed as `std(x) / √n`.
 # Returns
 
 - `Float64`: standard error of the mean
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 2`
-
-# See also
-
-[`semd`](@ref), [`sem_diff`](@ref)
 """
 function sem(x::AbstractVector)::Float64
 
@@ -54,14 +46,6 @@ Approximated as `1.253 × std(x) / √n` (valid for large normal samples).
 # Returns
 
 - `Float64`: standard error of the median
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 2`
-
-# See also
-
-[`sem`](@ref)
 """
 function semd(x::AbstractVector)::Float64
 
@@ -86,14 +70,6 @@ Computed as `√(p(1 − p) / n)`.
 # Returns
 
 - `Float64`: standard error of the proportion
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]` or `n < 1`
-
-# See also
-
-[`sep_diff`](@ref)
 """
 function sep(p::Float64, n::Int64)::Float64
 
@@ -117,14 +93,6 @@ Calculate the standard error of a count (`√n`).
 # Returns
 
 - `Float64`: √n.
-
-# Throws
-
-- `ArgumentError`: if `n < 1`
-
-# See also
-
-[`sen_diff`](@ref)
 """
 function sen(n::Int64)::Float64
 
@@ -152,14 +120,6 @@ For unequal-length vectors: pooled SD × `√(1/n1 + 1/n2)`.
 # Returns
 
 - `Float64`: standard error of the mean difference
-
-# Throws
-
-- `ArgumentError`: if either vector has fewer than 2 elements
-
-# See also
-
-[`sem`](@ref), [`sep_diff`](@ref)
 """
 function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
 
@@ -191,14 +151,6 @@ Computed as `√(p1(1−p1)/n1 + p2(1−p2)/n2)`.
 # Returns
 
 - `Float64`: standard error of the difference in proportions
-
-# Throws
-
-- `ArgumentError`: if proportions out of range or `n1`/`n2` < 1
-
-# See also
-
-[`sep`](@ref), [`sem_diff`](@ref)
 """
 function sep_diff(
     p1::Float64,
@@ -232,14 +184,6 @@ Computed as `√(n1 + n2)`.
 # Returns
 
 - `Float64`: `√(n1 + n2)`
-
-# Throws
-
-- `ArgumentError`: if `n1 < 1` or `n2 < 1`
-
-# See also
-
-[`sen`](@ref)
 """
 function sen_diff(n1::Int64, n2::Int64)::Float64
 
@@ -267,14 +211,6 @@ Requires `n ≥ 3` so that the denominator is non-zero.
 # Returns
 
 - `Float64`: standard error of skewness
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 3`
-
-# See also
-
-[`sek`](@ref)
 """
 function ses(x::AbstractVector)::Float64
 
@@ -298,14 +234,6 @@ Calculate the standard error of skewness for a sample of size `n`.
 # Returns
 
 - `Float64`: standard error of skewness
-
-# Throws
-
-- `ArgumentError`: if `n < 3`
-
-# See also
-
-[`sek`](@ref)
 """
 function ses(n::Int64)::Float64
 
@@ -332,14 +260,6 @@ Requires `n ≥ 4` so that the `(n−3)` term in the denominator is non-zero.
 # Returns
 
 - `Float64`: standard error of kurtosis
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 4`
-
-# See also
-
-[`ses`](@ref)
 """
 function sek(x::AbstractVector)::Float64
 
@@ -365,14 +285,6 @@ Computed as `2 × (n−1) × √(6n / ((n−2)(n−3)(n+3)(n+5)))`.
 # Returns
 
 - `Float64`: standard error of kurtosis
-
-# Throws
-
-- `ArgumentError`: if `n < 4`
-
-# See also
-
-[`ses`](@ref)
 """
 function sek(n::Int64)::Float64
 

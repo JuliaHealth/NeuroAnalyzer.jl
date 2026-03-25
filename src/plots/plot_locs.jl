@@ -669,7 +669,7 @@ function plot_locs(
             if mono
                 GLMakie.scatter!(
                     loc_x[idx],
-                    loc_y[idx];
+                    loc_y[idx],
                     markersize = marker_size,
                     color = :gray,
                     strokewidth = sw,
@@ -679,7 +679,7 @@ function plot_locs(
             else
                 GLMakie.scatter!(
                     loc_x[idx],
-                    loc_y[idx];
+                    loc_y[idx],
                     markersize = marker_size,
                     color = cmap[idx],
                     colormap = pal,
@@ -703,7 +703,7 @@ function plot_locs(
             if idx in ch
                 GLMakie.text!(
                     loc_x[idx] + label_offset_x,
-                    loc_y[idx] + label_offset_y;
+                    loc_y[idx] + label_offset_y,
                     text = locs[!, :label][idx],
                     align = (:center, :bottom),
                     fontsize = font_size,
@@ -716,7 +716,7 @@ function plot_locs(
             if idx in sch
                 GLMakie.text!(
                     loc_x[idx] + label_offset_x,
-                    loc_y[idx] + label_offset_y;
+                    loc_y[idx] + label_offset_y,
                     text = locs[!, :label][idx],
                     align = (:center, :bottom),
                     fontsize = font_size,
@@ -1028,7 +1028,7 @@ function plot_locs(
                 if mono
                     GLMakie.text!(
                         loc_x[idx] + label_offset_x,
-                        loc_y[idx] + label_offset_y;
+                        loc_y[idx] + label_offset_y,
                         text = string(weights[idx]),
                         fontsize = font_size,
                         align = (:center, :top),
@@ -1037,7 +1037,7 @@ function plot_locs(
                     if weights[idx] >= 0
                         GLMakie.text!(
                             loc_x[idx] + label_offset_x,
-                            loc_y[idx] + label_offset_y;
+                            loc_y[idx] + label_offset_y,
                             text = string(weights[idx]),
                             fontsize = font_size,
                             color = :red,
@@ -1046,7 +1046,7 @@ function plot_locs(
                     else
                         GLMakie.text!(
                             loc_x[idx] + label_offset_x,
-                            loc_y[idx] + label_offset_y;
+                            loc_y[idx] + label_offset_y,
                             text = string(weights[idx]),
                             fontsize = font_size,
                             color = :blue,
@@ -1180,7 +1180,7 @@ function plot_locs(
 
     if datatype(obj) in ["eeg", "meg", "csd", "erp", "erf"]
         fig = plot_locs(
-            locs;
+            locs,
             ch = ch,
             sch = sch,
             ch_labels = ch_labels,
@@ -1206,7 +1206,7 @@ function plot_locs(
             obj.locs,
             opt_pairs,
             src_n,
-            det_n;
+            det_n,
             src_labels = src_labels,
             det_labels = det_labels,
             opt_labels = opt_labels,

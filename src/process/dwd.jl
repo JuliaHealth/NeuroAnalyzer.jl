@@ -20,14 +20,6 @@ Returns the decomposition coefficient matrix. Each row corresponds to one subspa
 # Returns
 
 - `Matrix{Float64}`: DWD coefficient matrix of shape `((1 + Σ 2^k for k=1..l), length(s))`
-
-# Throws
-
-- `ArgumentError`: if `type` is invalid or `l > maxtransformlevels(s)`
-
-# See also
-
-[`idwd`](@ref), [`dwd(::AbstractArray)`](@ref)
 """
 function dwd(
     s::AbstractVector;
@@ -69,14 +61,6 @@ Returns the decomposition coefficient matrix. Each row corresponds to one subspa
 # Returns
 
 - `Array{Float64, 4}`: DWD coefficients of shape `(channels, n_nodes, samples, epochs)`
-
-# Throws
-
-- `ArgumentError`: if `s` is not 3-dimensional or memory would be exceeded
-
-# See also
-
-[`dwd(::AbstractVector)`](@ref), [`dwd(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function dwd(
     s::AbstractArray;
@@ -135,10 +119,6 @@ Perform discrete wavelet decomposition on selected channels of a NEURO object.
 # Returns
 
 - `Array{Float64, 4}`: DWD coefficients of shape `(channels, n_nodes, samples, epochs)`
-
-# See also
-
-[`idwd`](@ref), [`dwd(::AbstractArray)`](@ref)
 """
 function dwd(
     obj::NeuroAnalyzer.NEURO;
@@ -179,14 +159,6 @@ Reconstructs a signal from a subset (or all) of the DWD coefficient rows.
 # Returns
 
 - `Vector{Float64}`: reconstructed signal
-
-# Throws
-
-- `ArgumentError`: if `type` is invalid or any index in `c` is out of range
-
-# See also
-
-[`dwd`](@ref)
 """
 function idwd(
     dc::Matrix{Float64};
@@ -211,4 +183,5 @@ function idwd(
     end
 
     return vec(s)
+
 end

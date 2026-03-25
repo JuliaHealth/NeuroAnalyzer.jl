@@ -82,14 +82,6 @@ Named tuple:
 - `q3::Float64`: third quartile (75th percentile)
 - `max::Float64`: maximum
 - `mo::Float64`: mode
-
-# Throws
-
-- `ArgumentError`: if all values are missing/NaN (no data to summarise)
-
-# See also
-
-[`summary(::AbstractMatrix)`](@ref)
 """
 function summary(
     x::AbstractVector;
@@ -152,14 +144,6 @@ Return summary statistics for each column of a matrix, printing a formatted tabl
 
 - `DataFrame`: one row per group with columns `:group`, `:n`, `:missing`, `:mean`, `:var`, `:std`, `:min`, `:Q1`,
   `:median`, `:Q3`, `:max`, `:mode`
-
-# Throws
-
-- `ArgumentError`: if `length(g) ≠ size(x, 2)`
-
-# See also
-
-[`summary(::AbstractVector)`](@ref), [`summary(::AbstractArray...)`](@ref)
 """
 function summary(
     x::AbstractMatrix;
@@ -194,13 +178,6 @@ Return summary statistics for each vector in a varargs list, printing a formatte
 
 - `DataFrame`: one row per group with columns `:group`, `:n`, `:missing`, `:mean`, `:var`, `:std`, `:min`, `:Q1`,
   `:median`, `:Q3`, `:max`, `:mode`
-
-# Throws
-- `ArgumentError`: if `length(g) ≠ length(x)`
-
-# See also
-
-[`summary(::AbstractMatrix)`](@ref)
 """
 function summary(
     x::AbstractArray...;

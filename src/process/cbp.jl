@@ -17,14 +17,6 @@ Generates a sine-wave kernel at `frq` Hz over a ±1 s window and convolves it wi
 # Returns
 
 - `Vector{Float64}`: band-pass filtered signal of the same length as `s` (padding is removed after convolution)
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`, `pad < 0`, `frq ≤ 0`, or `frq > fs/2`
-
-# See also
-
-[`cbp(::NeuroAnalyzer.NEURO)`](@ref), [`tconv`](@ref)
 """
 function cbp(
     s::AbstractVector;
@@ -60,14 +52,6 @@ Perform convolution band-pass filtering on selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
-
-# Throws
-
-- `ArgumentError`: if `frq` or `pad` are out of range
-
-# See also
-
-[`cbp!`](@ref), [`cbp(::AbstractVector)`](@ref)
 """
 function cbp(
     obj::NeuroAnalyzer.NEURO;
@@ -118,14 +102,6 @@ Perform convolution band-pass filtering in-place on selected channels of a NEURO
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError`: if `frq` or `pad` are out of range
-
-# See also
-
-[`cbp`](@ref)
 """
 function cbp!(
     obj::NeuroAnalyzer.NEURO;

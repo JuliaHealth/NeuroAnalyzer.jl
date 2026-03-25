@@ -23,15 +23,12 @@ The output format is determined automatically from `file_name`'s extension:
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError` if `file_name` already exists and `overwrite=false`
-- `ArgumentError` if the file extension is not one of `.csv`, `.ced`, `.locs`, `.tsv`
 """
 function export_locs(
-        obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    file_name::String,
+    overwrite::Bool = false
+)::Nothing
 
     # the .csv branch is only available via the NEURO method (full locs table)
     # all other formats are handled by delegating to the DataFrame method
@@ -69,11 +66,6 @@ The output format is determined automatically from `file_name`'s extension:
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError` if `file_name` already exists and `overwrite=false`
-- `ArgumentError` if the file extension is not one of `.ced`, `.locs`, `.tsv`
 """
 function export_locs(
     locs::DataFrame;

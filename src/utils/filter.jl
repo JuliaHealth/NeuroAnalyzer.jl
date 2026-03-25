@@ -18,14 +18,6 @@ The formula is: `n = round((a × fs) / (22 × bw))`, where 22 is the Harris empi
 # Returns
 
 - `Int64`: estimated FIR filter order
-
-# Throws
-
-- `ArgumentError`: if `bw ≤ 0`, `a ≤ 0`, or `fs ≤ 0`.
-
-# See also
-
-[`fir_order_f`](@ref), [`iir_order`](@ref)
 """
 function fir_order_bw(; bw::Real, a::Real = 60, fs::Int64)::Int64
 
@@ -54,14 +46,6 @@ Convenience wrapper that reads the sampling rate from `obj`.
 # Returns
 
 - `Int64`: estimated FIR filter order
-
-# Throws
-
-- `ArgumentError`: if `bw ≤ 0` or `a ≤ 0`
-
-# See also
-
-[`fir_order_f`](@ref), [`iir_order`](@ref)
 """
 function fir_order_bw(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real = 60)::Int64
 
@@ -84,14 +68,6 @@ The rule of thumb is that the filter should span 4–5 full cycles of the lowest
 # Returns
 
 - `Tuple{Int64, Int64}`: recommended filter order range (lower_order, upper_order)
-
-# Throws
-
-- `ArgumentError`: if `fs ≤ 0` or `f ≤ 0`
-
-# See also
-
-[`fir_order_bw`](@ref)
 """
 function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
 
@@ -162,14 +138,6 @@ The order is estimated via the appropriate `DSP.jl` design function (`buttord`, 
 # Returns
 
 - `order::Int64`: minimum filter order satisfying the specifications
-
-# Throws
-
-- `ArgumentError`: if `fprototype` or `ftype` is invalid, `bw ≤ 0`, `fs ≤ 0`, or `cutoff` has wrong length for the chosen `ftype`
-
-# See also
-
-[`fir_order_bw`](@ref), [`fir_order_f`](@ref)
 """
 function iir_order(;
     fprototype::Symbol,
@@ -259,10 +227,6 @@ Convenience wrapper that reads the sampling rate from `obj`.
 # Returns
 
 - `Int64`: minimum filter order satisfying the specifications
-
-# See also
-
-[`fir_order_bw`](@ref), [`fir_order_f`](@ref)
 """
 function iir_order(
     obj::NeuroAnalyzer.NEURO;

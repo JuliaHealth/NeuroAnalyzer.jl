@@ -373,7 +373,7 @@ function plot_spectrogram_topo(
     for idx in axes(sp, 3)
         pp = GLMakie.Figure(size = marker_size, figure_padding = 0)
         ax = GLMakie.Axis(
-            pp[1, 1];
+            pp[1, 1],
             xlabel = "",
             ylabel = "",
             aspect = nothing,
@@ -390,7 +390,7 @@ function plot_spectrogram_topo(
         pp_full = plot_spectrogram(
             st,
             sf,
-            sp[:, :, idx];
+            sp[:, :, idx],
             db = db,
             frq = frq,
             flim = flim,
@@ -768,7 +768,7 @@ function plot_spectrogram(
         fig = plot_spectrogram(
             st,
             sf,
-            sp;
+            sp,
             db = db,
             frq = frq,
             flim = flim,
@@ -789,7 +789,7 @@ function plot_spectrogram(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         fig = plot_spectrogram(
             sf,
-            sp;
+            sp,
             clabels = clabels,
             db = db,
             frq = frq,
@@ -820,7 +820,7 @@ function plot_spectrogram(
             locs,
             st,
             sf,
-            sp;
+            sp,
             frq = frq,
             flim = flim,
             xlabel = xlabel,

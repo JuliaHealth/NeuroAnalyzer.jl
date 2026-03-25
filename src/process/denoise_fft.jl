@@ -20,14 +20,6 @@ Named tuple:
 
 - `s::Vector{Float64}`: denoised signal of the same length as the input
 - `f_idx::BitVector`: boolean mask; `true` at each frequency index that was zeroed
-
-# Throws
-
-- `ArgumentError`: if `pad < 0`
-
-# See also
-
-[`denoise_fft(::AbstractArray)`](@ref), [`denoise_fft(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function denoise_fft(
     s::AbstractVector;
@@ -70,10 +62,6 @@ Perform FFT-based denoising on every channel × epoch slice of a 3-D signal arra
 # Returns
 
 - `Array{Float64, 3}`: denoised 3D signal array
-
-# Throws
-
-- `ArgumentError`: if `s` is not a 3D array
 """
 function denoise_fft(
     s::AbstractArray;
@@ -118,10 +106,6 @@ Perform FFT-based denoising on selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
-
-# See also
-
-[`denoise_fft!`](@ref), [`denoise_fft(::AbstractArray)`](@ref)
 """
 function denoise_fft(
     obj::NeuroAnalyzer.NEURO;
@@ -158,10 +142,6 @@ Perform FFT-based denoising in-place on selected channels of a NEURO object.
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`denoise_fft`](@ref)
 """
 function denoise_fft!(
     obj::NeuroAnalyzer.NEURO;

@@ -21,10 +21,6 @@ CNT files store a fixed 900-byte global header, a per-channel header block (75 b
 # Notes
 
 Based on `loadcnt.m` by Sean Fitzgibbon and Arnaud Delorme (https://cnl.salk.edu/~arno/cntload/index.html).
-
-# Throws
-
-- `ArgumentError` if the file does not exist or is not a `.cnt` file
 """
 function import_cnt(
     file_name::String;

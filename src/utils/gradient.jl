@@ -18,10 +18,6 @@ Named tuple:
 
 - `grad_vf::Vector{Vector{Float64}}`: vector field of gradients (one gradient vector per element)
 - `grad_mag::Vector{Float64}`: scalar field of gradient magnitudes
-
-# See also
-
-[`gradient(::AbstractMatrix)`](@ref), [`gradient(::AbstractArray)`](@ref)
 """
 function gradient(
     x::AbstractVector;
@@ -59,10 +55,6 @@ Named tuple:
 
 - `grad_vf::Matrix{Vector{Float64}}`: vector field of gradients (one gradient vector per element)
 - `grad_mag::Matrix{Float64}`: scalar field of gradient magnitudes
-
-# See also
-
-[`gradient(::AbstractVector)`](@ref), [`gradient(::AbstractArray)`](@ref)
 """
 function gradient(
     x::AbstractMatrix;
@@ -101,10 +93,6 @@ Named tuple:
 
 - `grad_vf::Array{Vector{Float64}, 3}`: vector field of gradients
 - `grad_mag::Array{Float64, 3}`: scalar field of gradient magnitudes
-
-# See also
-
-[`gradient(::AbstractVector)`](@ref), [`gradient(::AbstractMatrix)`](@ref)
 """
 function gradient(
     x::AbstractArray;

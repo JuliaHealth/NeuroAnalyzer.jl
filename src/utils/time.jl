@@ -19,19 +19,11 @@ Sample numbering starts at 1: `t = 0` maps to sample 1, and any positive time is
 # Returns
 
 - `Int64`: sample number (≥ 1)
-
-# Throws
-
-- `ArgumentError`: if `t < 0` or `fs < 1`
-
-# See also
-
-[`s2t`](@ref)
 """
 function t2s(t::Real, fs::Int64)::Int64
 
     # validate
-    t  >= 0 || throw(ArgumentError("t must be ≥ 0."))
+    t >= 0 || throw(ArgumentError("t must be ≥ 0."))
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     return t == 0 ? 1 : ceil(Int64, t * fs)
@@ -53,14 +45,6 @@ Sample numbering starts at 1: sample 1 maps to `t = 0.0`. Passing `s = 0` is inv
 # Returns
 
 - `Float64`: time in seconds (rounded to 4 decimal places)
-
-# Throws
-
-- `ArgumentError`: if `fs < 1` or `s < 0`
-
-# See also
-
-[`t2s`](@ref)
 """
 function s2t(s::Real, fs::Int64)::Float64
 
@@ -89,10 +73,6 @@ Convert a time in seconds to a sample number using the object's sampling rate.
 # Returns
 
 - `Int64`: sample number (≥ 1)
-
-# See also
-
-[`s2t`](@ref), [`t2s(::Real, ::Int64)`](@ref)
 """
 function t2s(obj::NeuroAnalyzer.NEURO; t::Real)::Int64
 
@@ -113,10 +93,6 @@ Convert a sample number to time in seconds using the object's sampling rate.
 # Returns
 
 - `Float64`: time in seconds
-
-# See also
-
-[`t2s`](@ref), [`s2t(::Real, ::Int64)`](@ref)
 """
 function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)::Float64
 
@@ -137,14 +113,6 @@ Return a copy of a markers DataFrame with `:start` and `:length` columns convert
 # Returns
 
 - `DataFrame`: new DataFrame with `:start` and `:length` expressed in seconds
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`
-
-# See also
-
-[`markers_s2t!`](@ref), [`s2t`](@ref)
 """
 function markers_s2t(m::DataFrame; fs::Int64)::DataFrame
 
@@ -171,14 +139,6 @@ Convert `:start` and `:length` columns of a markers DataFrame from sample number
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`
-
-# See also
-
-[`markers_s2t`](@ref), [`s2t`](@ref)
 """
 function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
 
@@ -204,10 +164,6 @@ Return a copy of the object's markers DataFrame with `:start` and `:length` conv
 # Returns
 
 - `DataFrame`: new DataFrame with `:start` and `:length` expressed in seconds
-
-# See also
-
-[`markers_s2t!`](@ref), [`s2t`](@ref)
 """
 function markers_s2t(obj::NeuroAnalyzer.NEURO)::DataFrame
 
@@ -227,10 +183,6 @@ Convert `:start` and `:length` columns of the object's markers DataFrame from sa
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`markers_s2t`](@ref), [`s2t`](@ref)
 """
 function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
 
@@ -253,14 +205,6 @@ Return the time segment in seconds corresponding to a single epoch index.
 # Returns
 
 - `Tuple{Float64, Float64}`: `(start_time, end_time)` in seconds
-
-# Throws
-
-- `ArgumentError`: if `ep` is out of range
-
-# See also
-
-[`t2s`](@ref), [`s2t`](@ref)
 """
 function e2t(obj::NeuroAnalyzer.NEURO, ep::Int64)::Tuple{Real, Real}
 
@@ -291,14 +235,6 @@ Return the time segment in seconds spanning a contiguous range of epoch indices.
 # Returns
 
 - `Tuple{Float64, Float64}`: `(start_time, end_time)` in seconds
-
-# Throws
-
-- `ArgumentError`: if any index in `ep` is out of range
-
-# See also
-
-[`t2s`](@ref), [`s2t`](@ref)
 """
 function e2t(obj::NeuroAnalyzer.NEURO, ep::AbstractVector)::Tuple{Real, Real}
 

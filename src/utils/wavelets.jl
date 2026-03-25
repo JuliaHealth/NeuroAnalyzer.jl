@@ -16,14 +16,6 @@ The first frequency bin is set to `0.0` Hz because `getMeanFreq` returns a non-p
 # Returns
 
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places), length determined by the number of wavelet scales
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`
-
-# See also
-
-[`cwtfrq(::AbstractArray)`](@ref), [`cwtfrq(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function cwtfrq(
     s::AbstractVector;
@@ -61,14 +53,6 @@ Delegates to the vector method using the first channel and first epoch `s[1, :, 
 # Returns
 
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places)
-
-# Throws
-
-- `ArgumentError`: if `s` is not 3-dimensional or `fs < 1`
-
-# See also
-
-[`cwtfrq(::AbstractVector)`](@ref), [`cwtfrq(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function cwtfrq(
     s::AbstractArray;
@@ -99,9 +83,6 @@ Uses the first channel and first epoch to determine the wavelet frequency grid.
 # Returns
 
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places)
-
-# See also
-[`cwtfrq(::AbstractVector)`](@ref), [`cwtfrq(::AbstractArray)`](@ref)
 """
 function cwtfrq(
     obj::NeuroAnalyzer.NEURO;

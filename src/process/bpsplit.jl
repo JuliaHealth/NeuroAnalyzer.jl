@@ -23,14 +23,6 @@ Named tuple:
 - `s::Array{Float64, 4}`: band-split signal of shape `(n_bands, n_channels, epoch_len, n_epochs)`
 - `bn::Vector{Symbol}`: band name symbols (in the order used in `s`)
 - `bf::Vector{Tuple{Real, Real}}`: frequency limits `(f_low, f_high)` in Hz for each band, in the same order as `bn`
-
-# Throws
-
-- `ArgumentError`: if `order` is even (band-pass FIR requires odd tap count), or if any band frequency exceeds the Nyquist frequency for `obj`
-
-# See also
-
-[`filter_create`](@ref), [`filter_apply`](@ref), [`band_frq`](@ref)
 """
 function bpsplit(
     obj::NeuroAnalyzer.NEURO;
@@ -77,7 +69,7 @@ function bpsplit(
     bf = Vector{Tuple{Real, Real}}(undef, length(bn))
 
     # design one filter per band, then apply it to all channels and epochs.
-    # the outer band loop is sequential (each band uses a different filter);
+    # the outer band loop is sequential (each band uses a different filter)
     # the inner channel loop is parallelized
     @inbounds for band_idx in eachindex(bn)
         band_f = band_frq(obj, band=bn[band_idx])

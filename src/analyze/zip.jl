@@ -25,7 +25,7 @@ function zipratio(obj::NeuroAnalyzer.NEURO)
     zip_name = tmp_name * ".zip"
     tmp_name *= ".csv"
     export_csv(
-        obj;
+        obj,
         file_name = tmp_name,
         names = false,
         header = false,

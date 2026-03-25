@@ -30,10 +30,6 @@ The primary signal data is always written to `file_name`. When the corresponding
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError` if any target file already exists and `overwrite=false`
 """
 function export_csv(
     obj::NeuroAnalyzer.NEURO;

@@ -120,7 +120,7 @@ function plot_connectivity_circle(
         if _bin(ang[idx], (-pi / 2, pi / 2))
             GLMakie.text!(
                 pos_x[idx] * 1.1,
-                pos_y[idx] * 1.1;
+                pos_y[idx] * 1.1,
                 text = " " * clabels[idx],
                 fontsize = 12,
                 align = (:left, :center),
@@ -129,7 +129,7 @@ function plot_connectivity_circle(
         else
             GLMakie.text!(
                 pos_x[idx] * 1.1,
-                pos_y[idx] * 1.1;
+                pos_y[idx] * 1.1,
                 text = " " * clabels[idx],
                 fontsize = 12,
                 align = (:right, :center),

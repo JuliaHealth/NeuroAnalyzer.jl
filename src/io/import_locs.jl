@@ -26,10 +26,6 @@ Supported formats: CED, ELC, LOCS, TSV, SFP, CSD, GEO, MAT, TXT, DAT, ASC, CSV.
 # Returns
 
 - `DataFrame`
-
-# Throws
-
-- `ArgumentError` if the file does not exist or the extension is not recognized
 """
 function import_locs(file_name::String)::DataFrame
 

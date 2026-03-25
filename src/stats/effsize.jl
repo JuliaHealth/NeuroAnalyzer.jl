@@ -20,14 +20,6 @@ Named tuple:
 - `d::Float64`: Cohen's d (pooled SD denominator, unbiased for equal n)
 - `g::Float64`: Hedges' g (maximum-likelihood pooled SD; less biased for small n)
 - `delta::Float64`: Glass' Δ (uses SD of `x2` as the denominator; preferred when groups have different variances)
-
-# Throws
-
-- `ArgumentError`: if either vector has fewer than 2 elements or zero SD
-
-# See also
-
-[`stdp`](@ref), [`efs_p1g`](@ref), [`efs_p2g`](@ref)
 """
 function efs(x1::AbstractVector, x2::AbstractVector)::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
 
@@ -61,14 +53,6 @@ Computes the arcsine-transformed proportion `φ = 2 × arcsin(√p)`, which stab
 # Returns
 
 - `Float64`: transformed value `φ = 2 × arcsin(√p)`
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]`
-
-# See also
-
-[`efs_p2g`](@ref), [`efs`](@ref)
 """
 function efs_p1g(p::Float64)::Float64
 
@@ -94,14 +78,6 @@ Computed as `h = 2arcsin(√p1) − 2arcsin(√p2)`. The two proportions are **i
 # Returns
 
 - `Float64`: Cohen's h (signed, or absolute if `nd=true`)
-
-# Throws
-
-- `ArgumentError`: if `p1 ∉ [0, 1]` or `p2 ∉ [0, 1]`
-
-# See also
-
-[`efs_p1g`](@ref), [`efs`](@ref)
 """
 function efs_p2g(p1::Float64, p2::Float64; nd::Bool = false)::Float64
 
@@ -129,14 +105,6 @@ Calculate the pooled standard deviation from two sample vectors.
 # Returns
 
 - `Float64`: pooled standard deviation
-
-# Throws
-
-- `ArgumentError`: if either vector has fewer than 2 elements, `type` is invalid, or `type = :cohen` with `n1 + n2 ≤ 2`
-
-# See also
-
-[`stdp(::Real, ::Real, ::Int64, ::Int64)`](@ref), [`stdp(::Real, ::Real)`](@ref), [`efs`](@ref)
 """
 function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol = :cohen)::Float64
 
@@ -176,14 +144,6 @@ Calculate the pooled standard deviation from summary statistics when group sizes
 # Returns
 
 - `Float64`: pooled standard deviation
-
-# Throws
-
-- `ArgumentError`: if `s1 < 0`, `s2 < 0`, `n1 < 2`, `n2 < 2`, `type` is invalid, or `:cohen` with `n1 + n2 ≤ 2`
-
-# See also
-
-[`stdp(::AbstractVector, ::AbstractVector)`](@ref), [`stdp(::Real, ::Real)`](@ref)
 """
 function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol = :cohen)::Float64
 
@@ -219,14 +179,6 @@ Computed as `√((s1² + s2²) / 2)`.
 # Returns
 
 - `Float64`: pooled standard deviation
-
-# Throws
-
-- `ArgumentError`: if `s1 < 0` or `s2 < 0`
-
-# See also
-
-[`stdp(::AbstractVector, ::AbstractVector)`](@ref), [`stdp(::Real, ::Real, ::Int64, ::Int64)`](@ref)
 """
 function stdp(s1::Real, s2::Real)::Float64
 

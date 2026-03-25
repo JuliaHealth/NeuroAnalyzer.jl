@@ -16,10 +16,6 @@ Return the recording note stored in the object header.
 # Returns
 
 - `String`: recording note (empty string if no note has been set)
-
-# See also
-
-[`add_note!`](@ref), [`delete_note!`](@ref)
 """
 function view_note(obj::NeuroAnalyzer.NEURO)::String
 
@@ -40,10 +36,6 @@ Return a copy of `obj` with the recording note set to `note`. The original objec
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new NEURO object with the updated recording note
-
-# See also
-
-[`add_note!`](@ref), [`view_note`](@ref), [`delete_note`](@ref)
 """
 function add_note(obj::NeuroAnalyzer.NEURO; note::String)::NeuroAnalyzer.NEURO
 
@@ -68,10 +60,6 @@ Set the recording note in `obj` in-place.
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`add_note`](@ref), [`view_note`](@ref), [`delete_note!`](@ref)
 """
 function add_note!(obj::NeuroAnalyzer.NEURO; note::String)::Nothing
 
@@ -93,10 +81,6 @@ Return a copy of `obj` with the recording note cleared. The original object is n
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new NEURO object with an empty recording note
-
-# See also
-
-[`delete_note!`](@ref), [`view_note`](@ref), [`add_note`](@ref)
 """
 function delete_note(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -120,10 +104,6 @@ Clear the recording note in `obj` in-place.
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`delete_note`](@ref), [`view_note`](@ref), [`add_note!`](@ref)
 """
 function delete_note!(obj::NeuroAnalyzer.NEURO)::Nothing
 

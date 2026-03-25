@@ -21,10 +21,6 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 # Returns
 
 - `Float64`: L1 distance between `a1` and `a2`
-
-# Throws
-
-- `ArgumentError`: if `size(a1) ≠ size(a2)`
 """
 function l1(a1::AbstractArray, a2::AbstractArray)::Float64
 
@@ -52,10 +48,6 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 # Returns
 
 - `Float64`: L2 distance between `a1` and `a2`.
-
-# Throws
-
-- `ArgumentError`: if `size(a1) ≠ size(a2)`
 """
 function l2(a1::AbstractArray, a2::AbstractArray)::Float64
 
@@ -86,10 +78,6 @@ Named tuple:
 
 - `zmap::Matrix{Float64}`: Z-scored difference map `(a2 mean − a1 mean)` normalized by the permutation null distribution
 - `bm::BitMatrix`: Boolean mask where `true` indicates a **statistically significant** position (`|z| ≥ zval`)
-
-# Throws
-
-- `ArgumentError`: if `size(a1) ≠ size(a2)`, `perm_n ≤ 0`, or `p ∉ [0, 1]`
 """
 function perm_cmp(
     a1::Array{<:Real, 3},
@@ -108,7 +96,8 @@ function perm_cmp(
     p <= 1 || throw(ArgumentError("p must be ≤ 1."))
 
     # real observed difference (a2 − a1), averaged across epochs
-    spec_diff = dropdims(mean(a2, dims = 3) .- mean(a1, dims = 3); dims = 3)
+    spec_diff = dropdims(mean(a2, dims = 3) .- mean(a1, dims = 3), dims
+ = 3)
 
     # z-value threshold corresponding to the two-tailed p-value
     zval = abs(norminvcdf(p))
@@ -184,10 +173,6 @@ Useful for downsampling a frequency axis (and its associated data) when the numb
 
 - `Array{eltype(a), ndims(a)}`: deduced data array
 - `Vector{eltype(f)}`: reduced frequency vector
-
-# Throws
-
-- `ArgumentError`: if `ndims(a) ∉ {2, 3}` or `size(a, 2) ≠ length(f)`
 """
 function areduce(
     a::AbstractArray,

@@ -17,14 +17,6 @@ The signal is split into non-overlapping windows. A polynomial of degree `order`
 # Returns
 
 - `Vector{Float64}`: filtered signal of the same length as `s`
-
-# Throws
-
-- `ArgumentError`: if `order < 2`, `order ≥ window`, or `window` is out of range
-
-# See also
-
-[`filter_poly(::AbstractArray)`](@ref), [`filter_poly(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_poly(
     s::AbstractVector;
@@ -97,10 +89,6 @@ Apply a piecewise polynomial filter to every channel × epoch slice of a 3-D sig
 # Returns
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
-
-# See also
-
-[`filter_poly(::AbstractVector)`](@ref), [`filter_poly(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_poly(
     s::AbstractArray;
@@ -148,10 +136,6 @@ Apply a piecewise polynomial filter to selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
-
-# See also
-
-[`filter_poly!`](@ref), [`filter_poly(::AbstractArray)`](@ref)
 """
 function filter_poly(
     obj::NeuroAnalyzer.NEURO;
@@ -192,9 +176,6 @@ Apply a piecewise polynomial filter in-place to selected channels of a NEURO obj
 # Returns
 
 - `Nothing`
-
-# See also
-[`filter_poly`](@ref)
 """
 function filter_poly!(
     obj::NeuroAnalyzer.NEURO;

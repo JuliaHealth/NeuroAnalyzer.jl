@@ -20,10 +20,6 @@ Adds zero columns if the matrix has more rows than columns, or zero rows if it h
 # Returns
 
 - `AbstractMatrix`: square matrix of size `max(r, c) × max(r, c)` with the same element type as `m`.
-
-# See also
-
-[`m_pad0(::AbstractMatrix, ::Int64, ::Int64)`](@ref)
 """
 function m_pad0(m::AbstractMatrix)::AbstractMatrix
 
@@ -57,14 +53,6 @@ Rows are appended to the bottom and columns to the right as needed. At least one
 # Returns
 
 - `AbstractMatrix`: matrix of size `r × c` padded with zeros of the same element type as `m`
-
-# Throws
-
-- `ArgumentError`: if `r < size(m, 1)` or `c < size(m, 2)`
-
-# See also
-
-[`m_pad0(::AbstractMatrix)`](@ref)
 """
 function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
 
@@ -102,14 +90,6 @@ Return the sorting permutation indices of a matrix column-wise or row-wise.
 # Returns
 
 - `Matrix{Int64}`: index matrix of the same size as `m`; each column (or row) contains the permutation that would sort that column (or row)
-
-# Throws
-
-- `ArgumentError`: if `dims ∉ {1, 2}`
-
-# See also
-
-[`m_sort`](@ref)
 """
 function m_sortperm(m::AbstractMatrix; rev::Bool = false, dims::Int64 = 1)::AbstractMatrix
 
@@ -148,14 +128,6 @@ Sort a matrix using a pre-computed permutation index vector.
 # Returns
 
 - `AbstractMatrix`: sorted matrix with the same size and element type as `m`
-
-# Throws
-
-- `ArgumentError`: if `dims ∉ {1, 2}`
-
-# See also
-
-[`m_sortperm`](@ref)
 """
 function m_sort(
     m::AbstractMatrix,
@@ -198,10 +170,6 @@ Normalize an array by the number of columns minus one (`size(m, 2) - 1`).
 # Returns
 
 - `AbstractArray`: array divided element-wise by `size(m, 2) - 1`
-
-# Throws
-
-- `ArgumentError`: if `size(m, 2) < 2` (would cause division by zero)
 """
 function m_norm(m::AbstractArray)::AbstractArray
 
@@ -228,10 +196,6 @@ The vector is divided into `⌊length(x) / wlen⌋` non-overlapping segments of 
 # Returns
 
 - `AbstractMatrix`: matrix of shape (n_segments, wlen)
-
-# Throws
-
-- `ArgumentError`: if `wlen < 1`, `woverlap < 0`, or `woverlap ≥ wlen`
 """
 function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatrix
 
@@ -266,10 +230,6 @@ Reshape a 3-D array of shape `(1, samples, epochs)` into a `(epochs, samples)` m
 # Returns
 
 - `AbstractMatrix`: matrix of shape (size(x, 3), size(x, 2))
-
-# Throws
-
-- `ArgumentError`: if `size(x, 1) ≠ 1`
 """
 function arr2mat(x::AbstractArray)::AbstractMatrix
 

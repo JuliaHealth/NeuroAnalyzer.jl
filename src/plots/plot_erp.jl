@@ -188,7 +188,7 @@ function plot_erp(
             GLMakie.lines!(
                 ax,
                 t,
-                s[idx, :];
+                s[idx, :],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -300,7 +300,7 @@ function plot_erp_topo(
     for idx in axes(s, 1)
         pp = GLMakie.Figure(size = marker_size, figure_padding = 0)
         ax = GLMakie.Axis(
-            pp[1, 1];
+            pp[1, 1],
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -722,7 +722,7 @@ function plot_erp(
 
             fig = plot_erp_stack(
                 t,
-                s;
+                s,
                 rt = rt,
                 xlabel = xl,
                 ylabel = yl,
@@ -756,7 +756,7 @@ function plot_erp(
         )
         fig = plot_erp(
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -778,7 +778,7 @@ function plot_erp(
         )
         fig = plot_erp_stack(
             t,
-            s;
+            s,
             rt = rt,
             xlabel = xl,
             ylabel = yl,
@@ -820,7 +820,7 @@ function plot_erp(
         fig = plot_erp_topo(
             locs,
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -849,7 +849,7 @@ function plot_erp(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[ch, 1]][1],
-                obj.data[ch, pp[ch, 1], 1][1];
+                obj.data[ch, pp[ch, 1], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :red,
                 markersize = 15,
@@ -857,7 +857,7 @@ function plot_erp(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[ch, 2]][1],
-                obj.data[ch, pp[ch, 2], 1][1];
+                obj.data[ch, pp[ch, 2], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :blue,
                 markersize = 15,
@@ -877,7 +877,7 @@ function plot_erp(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[1, 2]],
-                mep_tmp[pp[1, 2]];
+                mep_tmp[pp[1, 2]],
                 marker = :xcross,
                 color = mono ? :black : :blue,
                 markersize = 15,

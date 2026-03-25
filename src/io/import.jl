@@ -39,11 +39,6 @@ Supported formats and their extensions:
 
 - `NeuroAnalyzer.NEURO`: for EEG, MEG, and fNIRS data
 - `DataFrame`: when `type = :events` (FieldTrip `.mat` files)
-
-# Throws
-
-- `ArgumentError` if `file_name` does not exist
-- `ArgumentError` if the file extension is not recognized
 """
 function import_recording(
     file_name::String;

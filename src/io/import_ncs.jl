@@ -15,10 +15,6 @@ NCS files have a fixed 16 KiB text header followed by data blocks of 1044 bytes 
 # Returns
 
 - `NeuroAnalyzer.NEURO`
-
-# Throws
-
-- `ArgumentError` if the file does not exist or is not an NCS file
 """
 function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
 

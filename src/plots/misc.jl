@@ -49,7 +49,7 @@ function plot_compose(vfig::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})
             pp = FileIO.load(fname)
             rm(fname)
             ax = GLMakie.Axis(
-                pc[idx1, idx2];
+                pc[idx1, idx2],
                 aspect = DataAspect(),
                 xzoomlock = true,
                 yzoomlock = true,

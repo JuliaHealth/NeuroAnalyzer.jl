@@ -14,10 +14,6 @@ Iterates over the `:subject`, `:recording`, and `:experiment` sub-dictionaries o
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`header`](@ref), [`info`](@ref)
 """
 function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
 

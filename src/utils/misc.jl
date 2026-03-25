@@ -24,14 +24,6 @@ Thin wrapper around `Base.range` that always materialises the result as a `Vecto
 # Returns
 
 - `Vector{Float64}`: linearly spaced sequence of length `n`
-
-# Throws
-
-- `ArgumentError`: if `n < 2`
-
-# See also
-
-[`logspace`](@ref)
 """
 function linspace(start::Real, stop::Real, n::Int64)::Vector{Float64}
 
@@ -57,14 +49,6 @@ Requires `start > 0` and `stop > 0` (logarithmic spacing is undefined for non-po
 
 # Returns
 - `Vector{Float64}`: logarithmically spaced sequence of length `n`
-
-# Throws
-
-- `ArgumentError`: if `n < 2`, `start ≤ 0`, or `stop ≤ 0`
-
-# See also
-
-[`linspace`](@ref)
 """
 function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
@@ -91,10 +75,6 @@ Selects the element that maximises `|x|²` (equivalent to maximising `|x|`).
 # Returns
 
 - `cmax::ComplexF64`: element of `x` with the largest absolute value
-
-# See also
-
-[`cmin`](@ref), [`cextrema`](@ref)
 """
 function cmax(x::Vector{<:Complex})::ComplexF64
 
@@ -116,10 +96,6 @@ Selects the element that minimises `|x|²` (equivalent to minimising `|x|`).
 # Returns
 
 - `ComplexF64`: element of `x` with the smallest absolute value
-
-# See also
-
-[`cmax`](@ref), [`cextrema`](@ref)
 """
 function cmin(x::Vector{<:Complex})::ComplexF64
 
@@ -141,10 +117,6 @@ Return the elements of a complex vector with the largest and smallest magnitudes
 Tuple containing:
 - `ComplexF64`: element with the largest absolute value (`cmax`)
 - `ComplexF64`: element with the smallest absolute value (`cmin`)
-
-# See also
-
-[`cmax`](@ref), [`cmin`](@ref)
 """
 function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64, ComplexF64}
 
@@ -233,9 +205,6 @@ The formula is `nt = floor(df × T) - 1`, where `T = epoch_len / fs` is the epoc
 # Returns
 
 - `Int64`: recommended number of Slepian tapers (≥ 1)
-
-# Throws
-- `ArgumentError`: if `df` is outside the valid range `(0, fs/2)`
 """
 function ntapers(
     obj::NeuroAnalyzer.NEURO;
@@ -268,10 +237,6 @@ Return a single channel's signal in trials × time format.
 # Returns
 
 - `Matrix{Float64}`: matrix of shape `(n_epochs, epoch_len)`
-
-# Throws
-
-- `ArgumentError`: if `ch` resolves to more than one channel, or if any epoch index in `ep` is out of range
 """
 function trtm(
     obj::NeuroAnalyzer.NEURO;

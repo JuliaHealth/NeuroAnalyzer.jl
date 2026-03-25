@@ -16,10 +16,6 @@ Returns the real part of the CWT coefficient matrix. Each row corresponds to one
 # Returns
 
 - `Matrix{Float64}`: CWT coefficient matrix of shape `(n_scales,  length(s))`
-
-# See also
-
-[`icwd`](@ref), [`cwd(::AbstractArray)`](@ref)
 """
 function cwd(s::AbstractVector; wt::T = wavelet(Morlet(2π), β = 2))::Matrix{Float64} where {T <: CWT}
 
@@ -45,10 +41,6 @@ Applies [`cwd(::AbstractVector)`](@ref) to every channel × epoch slice in paral
 # Returns
 
 - `Array{Float64, 4}`: CWT coefficients of shape `(channels, n_scales, samples, epochs)`
-
-# See also
-
-[`cwd(::AbstractVector)`](@ref), [`cwd(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function cwd(s::AbstractArray; wt::T = wavelet(Morlet(2π), β = 2))::Array{Float64, 4} where {T <: CWT}
 
@@ -91,10 +83,6 @@ Perform continuous wavelet decomposition on selected channels of a NEURO object.
 # Returns
 
 - `Array{Float64, 4}`: CWT coefficients of shape `(channels, n_scales, samples, epochs)`
-
-# See also
-
-[`icwd`](@ref), [`cwd(::AbstractArray)`](@ref)
 """
 function cwd(
     obj::NeuroAnalyzer.NEURO;
@@ -128,14 +116,6 @@ Reconstructs the original signal from a CWT coefficient matrix produced by [`cwd
 # Returns
 
 - `Vector{Float64}`: reconstructed signal
-
-# Throws
-
-- `ArgumentError`: if `type` is not `:pd`, `:nd`, or `:df`
-
-# See also
-
-[`cwd`](@ref)
 """
 function icwd(
     ct::Matrix{Float64};

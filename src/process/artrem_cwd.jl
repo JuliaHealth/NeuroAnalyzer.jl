@@ -24,13 +24,6 @@ The signal is transformed into the time-frequency domain via CWD, the coefficien
 # Returns
 
 - `Vector{Float64}`: artifact-corrected signal of the same length as `s`
-
-# Throws
-- `ArgumentError`: if `fs < 1`, or if `tseg`/`fseg` are outside valid ranges
-
-# See also
-
-[`artrem_cwd(::NeuroAnalyzer.NEURO)`](@ref), [`artrem_cwd!`](@ref)
 """
 function artrem_cwd(
     s::AbstractVector,
@@ -42,6 +35,7 @@ function artrem_cwd(
     type::Symbol = :nd
 )::Vector{Float64} where {T <: CWT}
 
+    # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))   # was: !(fs >= 1) && throw(...)
 
     # compute the wavelet frequency axis, then validate the segment bounds
@@ -87,14 +81,6 @@ Remove an artifact from one channel and one epoch of a NEURO object using contin
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with the artifact removed from the specified channel and epoch
-
-# Throws
-
-- `ArgumentError`: if `ch` does not resolve to exactly one channel, or `ep` is out of range
-
-# See also
-
-[`artrem_cwd!`](@ref), [`artrem_cwd(::AbstractVector, ::AbstractVector)`](@ref)
 """
 function artrem_cwd(
     obj::NeuroAnalyzer.NEURO;
@@ -152,13 +138,6 @@ Remove an artifact from one channel and one epoch of a NEURO object in-place usi
 # Returns
 
 - `Nothing`
-
-# Throws
-- `ArgumentError`: if `ch` does not resolve to exactly one channel, or `ep` is out of range
-
-# See also
-
-[`artrem_cwd`](@ref)
 """
 function artrem_cwd!(
     obj::NeuroAnalyzer.NEURO;

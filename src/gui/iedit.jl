@@ -596,13 +596,22 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
             delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "ref"))
             locs_tmp = obj_tmp.locs
             combo_flip.active == 0 && locs_flipx!(
-                locs_tmp; polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active
+                locs_tmp,
+                polar = cb_polar.active,
+                cart = cb_cartesian.active,
+                spherical = cb_spherical.active
             )
             combo_flip.active == 1 && locs_flipy!(
-                locs_tmp; polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active
+                locs_tmp,
+                polar = cb_polar.active,
+                cart = cb_cartesian.active,
+                spherical = cb_spherical.active
             )
             combo_flip.active == 2 && locs_flipz!(
-                locs_tmp; polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active
+                locs_tmp,
+                polar = cb_polar.active,
+                cart = cb_cartesian.active,
+                spherical = cb_spherical.active
             )
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false
@@ -620,7 +629,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
             ax = Int64(combo_ax_rot.active)
             if ax == 0
                 locs_rotx!(
-                    locs_tmp;
+                    locs_tmp,
                     a = entry_ax_rot_degree.value,
                     polar = cb_polar.active,
                     cart = cb_cartesian.active,
@@ -628,7 +637,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 )
             elseif ax == 1
                 locs_roty!(
-                    locs_tmp;
+                    locs_tmp,
                     a = entry_ax_rot_degree.value,
                     polar = cb_polar.active,
                     cart = cb_cartesian.active,
@@ -636,7 +645,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 )
             elseif ax == 2
                 locs_rotz!(
-                    locs_tmp;
+                    locs_tmp,
                     a = entry_ax_rot_degree.value,
                     polar = cb_polar.active,
                     cart = cb_cartesian.active,
@@ -657,7 +666,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
             delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "eog"))
             locs_tmp = obj_tmp.locs
             locs_scale!(
-                locs_tmp;
+                locs_tmp,
                 r = entry_scale.value,
                 polar = cb_polar.active,
                 cart = cb_cartesian.active,
@@ -677,7 +686,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
             delete_channel!(obj_tmp, ch = get_channel(obj_tmp, type = "eog"))
             locs_tmp = obj_tmp.locs
             locs_normalize!(
-                locs_tmp; polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active
+                locs_tmp, polar = cb_polar.active, cart = cb_cartesian.active, spherical = cb_spherical.active
             )
             locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
             refresh = false

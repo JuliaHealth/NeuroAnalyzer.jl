@@ -27,22 +27,23 @@ Calculate peak frequency within a frequency band.
 
 # Returns
 
-- `pf::Float64`: peak frequency
+- `Float64`: peak frequency
 """
 function peak_frq(
-        s::AbstractVector;
-        fs::Int64,
-        flim::Tuple{Real, Real},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true
-    )::Float64
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    demean::Bool = true
+)::Float64
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
@@ -96,7 +97,7 @@ Calculate peak frequency within a frequency band.
 
 # Returns
 
-- `pf::Matrix{Float64}`: peak frequency, shape (channels, epochs)
+- `Matrix{Float64}`: peak frequency, shape (channels, epochs)
 """
 function peak_frq(
     s::AbstractArray;
@@ -110,7 +111,6 @@ function peak_frq(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true
 )::Matrix{Float64}
-
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -227,7 +227,7 @@ Calculate amplitude at the peak frequency within a frequency band.
 
 # Returns
 
-- `pa::Float64`: amplitude at peak frequency
+- `Float64`: amplitude at peak frequency
 """
 function peak_amp(
     s::AbstractVector;
@@ -242,7 +242,8 @@ function peak_amp(
     demean::Bool = true
 )::Float64
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
@@ -293,7 +294,7 @@ Calculate amplitude at peak frequency within a frequency band.
 
 # Returns
 
-- `pa::Matrix{Float64}`: amplitude at peak frequency, shape (channels, epochs)
+- `Matrix{Float64}`: amplitude at peak frequency, shape (channels, epochs)
 """
 function peak_amp(
     s::AbstractArray;
@@ -422,22 +423,23 @@ Calculate power at the peak frequency within a frequency band.
 
 # Returns
 
-- `pp::Float64`: power at peak frequency
+- `Float64`: power at peak frequency
 """
 function peak_pow(
-        s::AbstractVector;
-        fs::Int64,
-        flim::Tuple{Real, Real},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true
-    )::Float64
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    demean::Bool = true
+)::Float64
 
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(

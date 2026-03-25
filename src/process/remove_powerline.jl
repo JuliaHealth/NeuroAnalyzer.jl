@@ -24,10 +24,6 @@ For each selected channel, an IIR notch filter is optimised by scanning a range 
 
 - `NeuroAnalyzer.NEURO`: new object with power line noise removed
 - `DataFrame`: detected peaks with their optimized notch bandwidths
-
-# Throws
-
-- `ArgumentError`: if the object has more than one epoch, `pl_frq` is out of range, `q` is out of range, or no power line peak is found near `pl_frq`
 """
 function remove_powerline(
     obj::NeuroAnalyzer.NEURO;
@@ -188,10 +184,6 @@ Remove power line noise in-place.
 # Returns
 
 - `DataFrame`: detected peaks with their optimized notch bandwidths
-
-# Throws
-
-- `ArgumentError`: if the object has more than one epoch, `pl_frq` is out of range, `q` is out of range, or no power line peak is found near `pl_frq`
 """
 function remove_powerline!(
     obj::NeuroAnalyzer.NEURO;
@@ -234,13 +226,10 @@ Fits a sine + cosine model at each integer frequency from 1 to `fs÷2` Hz and re
 # Returns
 
 - `Float64`: dominant noise frequency in Hz
-
-# Throws
-
-- `ArgumentError`: if `fs < 2`
 """
 function detect_powerline(s::AbstractVector; fs::Int64)::Float64
 
+    # validate
     fs >= 2 || throw(ArgumentError("fs must be ≥ 2."))
 
     n = length(s)

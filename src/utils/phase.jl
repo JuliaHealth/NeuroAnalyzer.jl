@@ -14,14 +14,6 @@ For the unwrapped phase (suitable for differentiating to obtain instantaneous fr
 # Returns
 
 - `Vector{Float64}`: instantaneous phase in radians ∈ (−π, π]
-
-# Throws
-
-- `ArgumentError`: if `s` is empty
-
-# See also
-
-[`DSP.hilbert`](https://docs.juliadsp.org), [`DSP.unwrap`](https://docs.juliadsp.org)
 """
 function phases(s::AbstractVector)::Vector{Float64}
 

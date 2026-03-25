@@ -15,10 +15,6 @@ Computed as `x × yᵀ`, producing a matrix of shape `(length(x) × length(y))`.
 # Returns
 
 - `Matrix`: outer product matrix of shape `(length(x), length(y))`
-
-# Throws
-
-- `ArgumentError`: If either vector is empty.
 """
 function op(x::AbstractVector, y::AbstractVector)::AbstractMatrix
 
