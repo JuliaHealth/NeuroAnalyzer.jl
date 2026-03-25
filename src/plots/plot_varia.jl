@@ -1329,7 +1329,7 @@ function plot_icatopo(
     for idx in eachindex(ic_idx)
         obj_tmp = ica_reconstruct(obj, ch = ch, ic = ic, ic_mw = ic_mw, ic_idx = idx, keep = true)
         fig_tmp = plot_topo(
-            obj_tmp;
+            obj_tmp,
             ch = ch,
             tpos = tpos,
             title = "IC $idx",
@@ -1542,7 +1542,8 @@ function plot_imf(
     !(n + 1 <= size(imf, 1)) && throw(ArgumentError("n must be ≤ $(size(imf, 1) - 1)."))
     !(size(imf, 2) == length(t)) && throw(ArgumentError("Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal."))
 
-    s_restored = sum(imf; dims = 1)[:]
+    s_restored = sum(imf, dims
+ = 1)[:]
     imf = vcat(imf, s_restored')
 
     ylim = (floor(minimum(imf), digits = 0), ceil(maximum(imf), digits = 0))

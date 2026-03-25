@@ -13,14 +13,6 @@ Generate all ordered pairwise label combinations from a single label vector.
 # Returns
 
 - `Vector{String}`: ordered paired labels
-
-# Throws
-
-- `ArgumentError`: if `l` is empty
-
-# See also
-
-[`paired_labels(::Vector{String}, ::Vector{String})`](@ref)
 """
 function paired_labels(l::Vector{String}; unq::Bool = true)::Vector{String}
 
@@ -50,13 +42,6 @@ Generate element-wise paired labels from two label vectors of equal length.
 # Returns
 
 - `Vector{String}`: element-wise paired labels of length `length(l1)`
-
-# Throws
-- `ArgumentError`: if `l1` and `l2` have different lengths, or if either is empty
-
-# See also
-
-[`paired_labels(::Vector{String})`](@ref)
 """
 function paired_labels(l1::Vector{String}, l2::Vector{String})::Vector{String}
 

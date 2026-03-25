@@ -21,7 +21,8 @@ Named tuple:
 """
 function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Int64}}
 
-    !("ecg" in obj.header.recording[:channel_type]) && throw(ArgumentError("OBJ does not contain ECG channel."))
+    # validate
+    "ecg" in obj.header.recording[:channel_type] || throw(ArgumentError("OBJ does not contain ECG channel."))
 
     # locate the ECG channel index
     ch = get_channel(obj, type = "ecg")

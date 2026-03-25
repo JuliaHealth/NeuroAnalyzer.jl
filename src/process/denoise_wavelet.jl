@@ -25,14 +25,6 @@ Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, th
 # Returns
 
 - `Vector{Float64}`: denoised signal of the same length as `s`
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`, `nf < 1`, or `nf > fs/2`
-
-# See also
-
-[`denoise_cwd(::AbstractArray)`](@ref), [`denoise_cwd(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function denoise_cwd(
     s::AbstractVector;
@@ -43,6 +35,7 @@ function denoise_cwd(
     type::Symbol = :nd
 )::Vector{Float64} where {T <: CWT}
 
+    # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     nf >= 1 || throw(ArgumentError("nf must be ≥ 1."))
     nf <= fs / 2 || throw(ArgumentError("nf must be ≤ $(fs / 2)."))
@@ -79,10 +72,6 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain.
 # Returns
 
 - `Array{Float64, 3}`: denoised signal array
-
-# Throws
-
-- `ArgumentError`: if `s` is not a 3D array or if `fs`, `nf`, or `w` are invalid
 """
 function denoise_cwd(
     s::AbstractArray;
@@ -154,10 +143,6 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain o
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
-
-# See also
-
-[`denoise_cwd!`](@ref), [`denoise_cwd(::AbstractArray)`](@ref)
 """
 function denoise_cwd(
     obj::NeuroAnalyzer.NEURO;
@@ -171,7 +156,9 @@ function denoise_cwd(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = denoise_cwd(
         @view(obj.data[ch, :, :]),
         fs = sr(obj),
@@ -206,9 +193,6 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain i
 # Returns
 
 - `Nothing`
-
-# See also
-[`denoise_cwd`](@ref)
 """
 function denoise_cwd!(
     obj::NeuroAnalyzer.NEURO;
@@ -244,14 +228,6 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 # Returns
 
 - `Vector{Float64}`: denoised signal
-
-# Throws
-
-- `ArgumentError`: if `l > maxtransformlevels(s)` or `smooth` is invalid
-
-# See also
-
-[`denoise_dwd(::AbstractArray)`](@ref), [`denoise_dwd(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function denoise_dwd(
     s::AbstractVector;
@@ -293,13 +269,7 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 
 # Returns
 
-# Returns
-
 - `Array{Float64, 3}`: denoised signal array
-
-# Throws
-
-- `ArgumentError`: if `s` is not a 3D array or if `fs`, `nf`, or `w` are invalid
 """
 function denoise_dwd(
     s::AbstractArray;
@@ -355,10 +325,6 @@ Perform denoising using discrete wavelet decomposition (DWD) on selected channel
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
-
-# See also
-
-[`denoise_dwd!`](@ref), [`denoise_dwd(::AbstractArray)`](@ref)
 """
 function denoise_dwd(
     obj::NeuroAnalyzer.NEURO;
@@ -377,7 +343,9 @@ function denoise_dwd(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = @views denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
     push!(obj_new.history, "denoise_dwd(OBJ, ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))")
 
@@ -404,10 +372,6 @@ Perform denoising using discrete wavelet decomposition (DWD) in-place on selecte
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`denoise_dwd`](@ref)
 """
 function denoise_dwd!(
     obj::NeuroAnalyzer.NEURO;

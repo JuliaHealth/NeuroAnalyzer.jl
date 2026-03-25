@@ -36,11 +36,15 @@ Calculate Root Mean Square (RMS).
 """
 function rms(s::AbstractArray)::Matrix{Float64}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     r = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
@@ -74,6 +78,7 @@ function rms(
     ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj))
 )::Matrix{Float64}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     _check_epochs(obj, ep)
@@ -168,17 +173,21 @@ function rmse(
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
 )::Matrix{Float64}
 
-    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
-
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
+    # validate
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
+    length(ch1) == length(ch2) ||
+        throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+    length(ep1) == length(ep2) ||
+        throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     return @views rmse(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 

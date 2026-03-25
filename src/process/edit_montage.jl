@@ -16,11 +16,6 @@ Open a montage file in the operating-system default text editor.
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError`: if `file_name` does not exist or the `\$EDITOR` variable is not set on Linux
-- `ErrorException`: if the operating system is not Windows, Linux, or macOS
 """
 function edit_montage(file_name::String)::Nothing
 

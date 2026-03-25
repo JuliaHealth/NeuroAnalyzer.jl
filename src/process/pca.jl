@@ -172,10 +172,10 @@ function pca_reconstruct(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc = pc, pc_model = pc_model)
-
     push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch)")
 
     return obj_new

@@ -25,7 +25,9 @@ function vartest(
     p::Array{Float64, 3}
 }
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -43,7 +45,7 @@ function vartest(
         end
     end
 
-    # copy to the other half
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     f = _copy_lt2ut(f)
     p = _copy_lt2ut(p)
 
@@ -81,10 +83,14 @@ function vartest(
         ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
     )::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
 
-    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
-    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ch1) == length(ch2) ||
+        throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+    length(ep1) == length(ep2) ||
+        throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+    (epoch_len(obj1) == epoch_len(obj2)) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
     _check_epochs(obj1, ep1)
@@ -92,8 +98,8 @@ function vartest(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    ep_n = length(ep1)
     ch_n = length(ch1)
+    ep_n = length(ep1)
 
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)

@@ -12,10 +12,8 @@ The DAT format has a 20-line text header followed by space-separated data rows w
 - `file_name::String`: path to the `.dat` file
 
 # Returns
-- `DataFrame`: table with columns `:event`, `:trial`, `:response`, `:type`, `:correct`
 
-# Throws
-- `ArgumentError` if the file does not exist, is not a `.dat` file, or does not contain exactly 5 data columns
+- `DataFrame`: table with columns `:event`, `:trial`, `:response`, `:type`, `:correct`
 """
 function import_dat(file_name)::DataFrame
 

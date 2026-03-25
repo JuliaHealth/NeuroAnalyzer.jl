@@ -247,10 +247,13 @@ function normalize(
 
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     if bych
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads :dynamic for ch_idx in 1:ch_n

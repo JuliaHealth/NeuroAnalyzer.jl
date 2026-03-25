@@ -26,10 +26,6 @@ Named tuple:
 
 - `ref_list::Vector{String}`: list of channel / channel-pair strings
 - `ref_name::String`: name of the montage
-
-# Throws
-
-- `ArgumentError` if the file does not exist or does not contain a valid montage structure (at least a name line and one channel entry)
 """
 function import_montage(
     file_name::String

@@ -272,10 +272,13 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 """
 function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
 
-    !(length(obj.data) > 0) && throw(ArgumentError("OBJ does not contain data."))
-    !(length(obj.time_pts) == 0) && throw(ArgumentError("OBJ already has time points."))
+    # validate
+    length(obj.data) > 0 || throw(ArgumentError("OBJ does not contain data."))
+    length(obj.time_pts) == 0 || throw(ArgumentError("OBJ already has time points."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.header.recording[:sampling_rate] = fs
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     push!(obj_new.history, "create_time(OBJ, fs=$fs)")
@@ -326,14 +329,20 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_data(
-        obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{Float64, 3},
+    fs::Int64,
+    type::String
+)::NeuroAnalyzer.NEURO
 
-    !(length(obj.data) == 0) && throw(ArgumentError("OBJ already contains data."))
-    !(length(obj.time_pts) == 0) && throw(ArgumentError("OBJ already has time points."))
-
+    # validate
+    length(obj.data) == 0 || throw(ArgumentError("OBJ already contains data."))
+    length(obj.time_pts) == 0 || throw(ArgumentError("OBJ already has time points."))
     _check_var(type, channel_types, "type")
+
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data = data
     clabels = repeat(["ch-"], size(data, 1))
     clabels = clabels .* string.(collect(axes(data, 1)))

@@ -65,6 +65,7 @@ function eros(
     t::Vector{Float64}
 } where {T <: CWT}
 
+    # validate
     length(get_channel(obj, ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel

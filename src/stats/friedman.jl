@@ -19,10 +19,6 @@ Named tuple:
 - `w::Float64`: Kendall's coefficient of concordance W ∈ [0, 1]
 - `p::Float64`: p-value from the χ²(k − 1) distribution
 
-# Throws
-
-- `ArgumentError`: if the matrix has fewer than 2 groups or fewer than 2 observations
-
 # Notes
 
 - H₀ (Friedman): all treatment groups have the same distribution

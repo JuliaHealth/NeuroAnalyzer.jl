@@ -181,12 +181,12 @@ function plot_psd(
             Makie.lines!(
                 ax,
                 f[f1:f2],
-                p[idx, f1:f2];
+                p[idx, f1:f2],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 2,
-                label = clabels[idx],
+                label = clabels[idx]
             )
         end
 
@@ -199,7 +199,7 @@ function plot_psd(
                 s,
                 colormap = pal,
                 linewidth = 4,
-                color = :black,
+                color = :black
             )
         end
 
@@ -311,11 +311,11 @@ function plot_psd_3d(
             Makie.lines!(
                 f,
                 ones(length(f)) .* idx,
-                p[idx, :];
+                p[idx, :],
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
+                colorrange = 1:ch_n
             )
         end
     else
@@ -459,7 +459,7 @@ function plot_psd_topo(
         push!(fig_vec, fig)
         fig_full = plot_psd(
             f,
-            p[idx, :];
+            p[idx, :],
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,
@@ -668,11 +668,12 @@ function plot_psd(
     )
     _check_var(frq, [:lin, :log], "frq")
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
-        !(ep == 0) && throw(ArgumentError("For continuous object, ep must not be specified."))
+        ep == 0 || throw(ArgumentError("For continuous object, ep must not be specified."))
         if obj.time_pts[end] < 10 && seg == (0, 10)
             seg = (0, obj.time_pts[end])
         else
@@ -683,7 +684,7 @@ function plot_psd(
         t = obj.time_pts[seg[1]:seg[2]]
         _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
-        !(ep != 0) && throw(ArgumentError("For epoched object, ep must be specified."))
+        ep != 0 || throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
         signal = @views obj.data[ch, :, ep]

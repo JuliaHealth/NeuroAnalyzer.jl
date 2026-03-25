@@ -415,7 +415,10 @@ function channel_reject(
         _info("Using :ransac method")
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
+
+        # resolve channel names to integer indices
         chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
+
         length(setdiff(ch_list, chs)) == 0 || throw(ArgumentError("ch must contain only signal channels."))
         chs = intersect(obj.locs[!, :label], ch_list)
         locs = Base.filter(:label => in(chs), obj.locs)
@@ -783,7 +786,10 @@ function epoch_reject(
         _info("Using :ransac method")
 
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
+
+        # resolve channel names to integer indices
         chs = get_channel(obj, type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
+
         length(setdiff(ch_list, chs)) == 0 || throw(ArgumentError("ch must contain only signal channels."))
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)

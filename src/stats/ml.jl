@@ -28,17 +28,9 @@ MCC's value ranges from -1 to 1, depending on:
 
 - `Float64`: MCC ∈ [−1, 1]; returns `0.0` when the denominator is zero (degenerate classifier - all predictions in one class)
 
-# Throws
-
-- `ArgumentError`: if any argument is negative or the total count is zero
-
 # References
 
 https://finnstats.com/index.php/2022/09/06/assess-performance-of-the-classification-model/
-
-# See also
-
-[`f1`](@ref), [`mscr`](@ref)
 """
 function mcc(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::Float64
 
@@ -79,16 +71,9 @@ Named tuple:
 - `prec::Float64`: precision `tp / (tp + fp)`
 - `rec::Float64`: recall `tp / (tp + fn)`
 
-# Throws
-- `ArgumentError`: if any argument is negative, `tp + fp == 0` (undefined precision), or `tp + fn == 0` (undefined recall)
-
 # References
 
 https://www.statology.org/what-is-a-good-f1-score/
-
-# See also
-
-[`mcc`](@ref), [`mscr`](@ref)
 """
 function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
 
@@ -133,16 +118,9 @@ Named tuple:
 - `mr::Float64`: misclassification rate ∈ [0, 1]
 - `acc::Float64`: accuracy ∈ [0, 1]
 
-# Throws
-- `ArgumentError`: if any argument is negative or total count is zero
-
 # References
 
 https://www.statology.org/misclassification-rate/
-
-# See also
-
-[`mcc`](@ref), [`f1`](@ref)
 """
 function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Float64, acc::Float64}
 

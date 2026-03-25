@@ -19,10 +19,6 @@ Named tuple:
 - `dp::Float64`: sensitivity index d′
 - `rb::Float64`: response bias (negative = liberal, positive = conservative)
 
-# Throws
-
-- `ArgumentError`: if `p1` or `p2` are outside `(0, 1)`
-
 # References
 
 Green DM, Swets JA. Signal Detection Theory and Psychophysics. Wiley; 1966.

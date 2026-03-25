@@ -79,9 +79,10 @@ function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vecto
 
     _check_datatype(obj, "meg")
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
-    # generate
+    # generate projectors
     ssp_projectors, U = generate_ssp_projectors(obj, proj = proj)
 
     # apply

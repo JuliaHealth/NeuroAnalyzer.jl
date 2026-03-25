@@ -47,38 +47,49 @@ function infer_fir_type(is_odd, is_antisymmetric)
 end
 
 function validate_inputs(filter_order, bands_D, D, fs)
-    !(filter_order >= 0) && throw(ArgumentError("Filter order cannot be negative."))
-    !(fs > 0) && throw(ArgumentError("Sampling frequency should be larger than 0 Hz"))
+    filter_order >= 0 || throw(ArgumentError("Filter order cannot be negative."))
+    fs > 0 ||
+        throw(ArgumentError("Sampling frequency should be larger than 0 Hz"))
     return validate_bands_D(bands_D, D, fs)
 end
 function validate_inputs(filter_order, bands_DW, D, W, fs)
-    !(filter_order >= 0) && throw(ArgumentError("Filter order cannot be negative."))
-    !(fs > 0) && throw(ArgumentError("Sampling frequency should be larger than 0 Hz"))
+    filter_order >= 0 ||
+        throw(ArgumentError("Filter order cannot be negative."))
+    fs > 0 ||
+        throw(ArgumentError("Sampling frequency should be larger than 0 Hz"))
     validate_bands_D(bands_DW, D, fs)
     return validate_bands_W(bands_DW, W, fs)
 end
 function validate_inputs(filter_order, bands_D, D, bands_W, W, fs)
-    !(filter_order >= 0) && throw(ArgumentError("Filter order cannot be negative."))
-    !(fs > 0) && throw(ArgumentError("Sampling frequency should be larger than 0 Hz"))
+    filter_order >= 0 ||
+        throw(ArgumentError("Filter order cannot be negative."))
+    fs > 0 ||
+        throw(ArgumentError("Sampling frequency should be larger than 0 Hz"))
     validate_bands_D(bands_D, D, fs)
     return validate_bands_W(bands_W, W, fs)
 end
 
 function validate_bands_D(bands_D, D, fs)
     validate_bands(bands_D, fs)
-    !(size(bands_D, 2) == size(D, 2) == 2) && throw(ArgumentError("Frequency bands and desired response should be N x 2 matrices"))
-    return !(size(bands_D, 1) == size(D, 1)) && throw(ArgumentError("Frequency bands and desired response should be N x 2 matrices"))
+    size(bands_D, 2) == size(D, 2) == 2 ||
+        throw(ArgumentError("Frequency bands and desired response should be N x 2 matrices"))
+    return size(bands_D, 1) == size(D, 1) ||
+        throw(ArgumentError("Frequency bands and desired response should be N x 2 matrices"))
 end
 
 function validate_bands_W(bands_W, W, fs)
     validate_bands(bands_W, fs)
-    !(size(bands_W, 2) == size(W, 2) == 2) && throw(ArgumentError("Frequency band and weight matrix should be N x 2."))
-    return !(size(bands_W, 1) == size(W, 1)) && throw(ArgumentError("Number of frequency bands should match number of weights."))
+    size(bands_W, 2) == size(W, 2) == 2 ||
+        throw(ArgumentError("Frequency band and weight matrix should be N x 2."))
+    return size(bands_W, 1) == size(W, 1) ||
+        throw(ArgumentError("Number of frequency bands should match number of weights."))
 end
 
 function validate_bands(fbands::Matrix{T}, fs) where {T}
-    !(fbands[1] == 0) && throw(ArgumentError("Frequency bands should start at 0."))
-    !(fbands[end] == fs * (1 // 2)) && throw(ArgumentError("Frequency bands should end at fs/2"))
+    fbands[1] == 0 ||
+        throw(ArgumentError("Frequency bands should start at 0."))
+    fbands[end] == fs * (1 // 2) ||
+        throw(ArgumentError("Frequency bands should end at fs/2"))
     return @views !(all((fbands[2:end, 1] .- fbands[1:(end - 1), 2]) .== zero(T))) && throw(ArgumentError("Frequency bands should cover entire [0,fs/2] interval, without gaps or overlaps."))
 end
 
@@ -195,7 +206,7 @@ function firls_design(
         knotpoints_to_matrix(knotpoints_DW),
         knotpoints_to_matrix(D),
         knotpoints_to_matrix(W),
-        antisymmetric;
+        antisymmetric,
         fs = fs,
         solver = solver,
     )

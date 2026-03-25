@@ -2,7 +2,13 @@ module Simpson
 
 export simpson
 
-function basic_simpson(y::AbstractVector, x::Union{AbstractVector, Nothing}=nothing, start::Real=1, stop::Real=length(y)-2, dx::Real=1.0)
+function basic_simpson(
+    y::AbstractVector,
+    x::Union{AbstractVector, Nothing}=nothing,
+    start::Real=1,
+    stop::Real=length(y)-2,
+    dx::Real=1.0
+)
 
     slice0 = start:2:stop
     slice1 = start+1:2:stop+1
@@ -30,6 +36,7 @@ function basic_simpson(y::AbstractVector, x::Union{AbstractVector, Nothing}=noth
     end
 
     return convert(Float64, integral[1])
+
 end
 
 """
@@ -58,24 +65,6 @@ The code is based on SciPy v1.7.1: https://github.com/scipy/scipy/blob/v1.7.1/sc
 # Notes
 
 For an odd number of samples that are equally spaced the result is exact if the function is a polynomial of order 3 or less. If the samples are not equally spaced, then the result is exact only if the function is a polynomial of order 2 or less.
-
-# Examples
-```jldoctest
-julia> x = 0:9
-julia> y = 0:9
-julia> simpson(x, y)
-40.5
-
-julia> y = x .^ 3
-julia> simpson(y, x)
-1642.5
-
-julia> simpson(y, x, even=:first)
-1644.5
-
-julia> simpson(y, x, even=:last)
-1640.5
-```
 """
 function simpson(y::AbstractVector, x::Union{AbstractVector, Nothing}=nothing; dx::Real=1.0, even::Symbol=:avg)
 
@@ -115,6 +104,7 @@ function simpson(y::AbstractVector, x::Union{AbstractVector, Nothing}=nothing; d
     end
 
     return integral
+
 end
 
 end # module

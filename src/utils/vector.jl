@@ -17,10 +17,6 @@ Return the index of the first occurrence of string `y` in vector `x`, or `nothin
 # Returns
 
 - `Union{Int64, Nothing}`: index of the first match, or `nothing` if not found
-
-# See also
-
-[`vsearch(::Real, ::AbstractVector)`](@ref)
 """
 function vsearch(
     y::String,
@@ -50,14 +46,6 @@ Return the index of the element in `x` nearest to scalar `y`.
 
 - `Int64`: index of the nearest element
 - `Tuple{Int64, Real}`: `(index, |y − x[index]|)` when `acc=true`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty
-
-# See also
-
-[`vsearch(::AbstractVector, ::AbstractVector)`](@ref)
 """
 function vsearch(
     y::Real,
@@ -92,14 +80,6 @@ Return the indices of the elements in `x` nearest to each element of `y`.
 
 - `Vector{Int64}`: indices of nearest elements (one per entry of `y`)
 - `Tuple{Vector{Int64}, Vector{Real}}`: `(indices, differences)` when `acc=true`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty or `length(y) > length(x)`
-
-# See also
-
-[`vsearch(::Real, ::AbstractVector)`](@ref)
 """
 function vsearch(
     y::AbstractVector,
@@ -137,10 +117,6 @@ Split a vector into contiguous pieces of equal length `n`.
 # Returns
 
 - `Vector{AbstractVector}`: vector of `length(x) ÷ n` sub-vectors, each of length `n`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty, `n < 1`, or `length(x)` is not a multiple of `n`
 """
 function vsplit(x::AbstractVector, n::Int64 = 1)::Vector{AbstractVector}
 
@@ -170,14 +146,6 @@ Find the minimum value of `x` and return the corresponding value from `y` at tha
 
 - `Real`: `y[idx]` where `idx = argmin(x)`
 - `Int64`: index of the minimum value in `x`
-
-# Throws
-
-- `ArgumentError`: if `x` or `y` is empty, or their lengths differ
-
-# See also
-
-[`maxat`](@ref)
 """
 function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
@@ -206,14 +174,6 @@ Find the maximum value of `x` and return the corresponding value from `y` at tha
 
 - `Real`: `y[idx]` where `idx = argmin(x)`
 - `Int64`: index of the maximum value in `x`
-
-# Throws
-
-- `ArgumentError`: if `x` or `y` is empty, or their lengths differ
-
-# See also
-
-[`minat`](@ref)
 """
 function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
@@ -245,14 +205,6 @@ Useful for downsampling a frequency axis (and its associated data) when the numb
 
 - `AbstractVector`: reduced data values
 - `AbstractVector`: reduced frequency grid
-
-# Throws
-
-- `ArgumentError`: if `x` or `f` is empty, or their lengths differ
-
-# See also
-
-[`vsearch`](@ref)
 """
 function vreduce(
     x::AbstractVector,

@@ -20,10 +20,8 @@ Gzip-compressed files (`.csv.gz`) are decompressed automatically by `CSV.jl`.
 - `detect_type::Bool=true`: infer channel type from channel label
 
 # Returns
-- `NeuroAnalyzer.NEURO`
 
-# Throws
-- `ArgumentError` if the file does not exist
+- `NeuroAnalyzer.NEURO`
 """
 function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 

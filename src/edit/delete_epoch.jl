@@ -18,15 +18,19 @@ Remove epochs.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_epoch(
-        obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange}
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ep::Union{Int64, Vector{Int64}, AbstractRange}
+)::NeuroAnalyzer.NEURO
 
-    !(nepochs(obj) > 1) && throw(ArgumentError("You cannot delete the last epoch."))
+    # validate
+    nepochs(obj) > 1 || throw(ArgumentError("You cannot delete the last epoch."))
     typeof(ep) <: AbstractRange && (ep = collect(ep))
-    !(length(ep) < nepochs(obj)) && throw(ArgumentError("Number of epochs to delete ($(length(ep))) must be smaller than number of all epochs."))
+    length(ep) < nepochs(obj) ||
+        throw(ArgumentError("Number of epochs to delete ($(length(ep))) must be smaller than number of all epochs."))
     length(ep) > 1 && (ep = sort!(ep, rev = true))
     _check_epochs(obj, ep)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # remove epoch

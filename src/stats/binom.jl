@@ -17,14 +17,6 @@ Uses the binomial probability mass function: `P(X = r) = C(n, r) × pʳ × (1 �
 # Returns
 
 - `Float64`: probability of exactly `r` successes
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]`, `r < 0`, `n < 1`, or `r > n`
-
-# See also
-
-[`binom_test`](@ref)
 """
 function binom_prob(p::Float64, r::Int64, n::Int64)::Float64
 
@@ -60,14 +52,6 @@ Named tuple:
 - `ci0::Tuple{Float64, Float64}`: level-0 proportion 95 % CI
 - `ci1::Tuple{Float64, Float64}`: level-1 proportion 95 % CI
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
-
-# Throws
-
-- `ArgumentError`: if `prop ∉ [0, 1]` or `n < 1`
-
-# See also
-
-[`binom_prob`](@ref), [`binom_test(::Vector{Bool})`](@ref), [`binom_test(::Int64, ::Int64)`](@ref)
 """
 function binom_test(
     prop::Float64,
@@ -141,14 +125,6 @@ Named tuple:
 - `ci0::Tuple{Float64, Float64}`: level-0 proportion 95 % CI
 - `ci1::Tuple{Float64, Float64}`: level-1 proportion 95 % CI
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]` or `x` is empty
-
-# See also
-
-[`binom_test(::Float64, ::Int64)`](@ref), [`binom_test(::Int64, ::Int64)`](@ref)
 """
 function binom_test(
     x::Vector{Bool};
@@ -201,14 +177,6 @@ Named tuple:
 - `ci0::Tuple{Float64, Float64}`: level-0 proportion 95 % CI
 - `ci1::Tuple{Float64, Float64}`: level-1 proportion 95 % CI
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
-
-# Throws
-
-- `ArgumentError`: if `x < 0`, `x > n`, or `n < 1`
-
-# See also
-
-[`binom_test(::Float64, ::Int64)`](@ref), [`binom_test(::Vector{Bool})`](@ref)
 """
 function binom_test(
     x::Int64,

@@ -17,10 +17,6 @@ Alice 4 EDF files are non-conforming in two ways that prevent `import_edf` from 
 # Returns
 
 - `NeuroAnalyzer.NEURO`
-
-# Throws
-
-- `ArgumentError` if the file does not exist, is not EDF, or is not an Alice 4 recording
 """
 function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 

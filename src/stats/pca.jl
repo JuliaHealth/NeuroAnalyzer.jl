@@ -45,14 +45,6 @@ Named tuple:
 - `pcm::Vector{Float64}`: column means of the (possibly standardised) data
 - `pcp::Matrix{Float64}`: PC projection (loading) matrix
 - `pc_model::MultivariateStats.PCA{Float64}`: fitted PCA model object
-
-# Throws
-
-- `ArgumentError`: if `n < 1`, `n > size(m, 2)`, or `size(m, 1) < 2`
-
-# See also
-
-[`pcacomp(::DataFrame, ::Union{Vector{String}, Vector{Symbol}})`](@ref), [`npca`](@ref), [`biplot`](@ref), [`screeplot`](@ref)
 """
 function pcacomp(
     m::Matrix{Float64};
@@ -124,14 +116,6 @@ Calculate the first `n` principal components from selected columns of a DataFram
 - `pcm::Vector{Float64}`: column means of the (possibly standardised) data
 - `pcp::Matrix{Float64}`: PC projection (loading) matrix
 - `pc_model::MultivariateStats.PCA{Float64}`: fitted PCA model object
-
-# Throws
-
-- `ArgumentError`: if `vars` has fewer than 2 entries, any name is missing from `df`, or `n` is out of range
-
-# See also
-
-[`pcacomp(::Matrix{Float64})`](@ref), [`biplot`](@ref), [`screeplot`](@ref)
 """
 function pcacomp(
     df::DataFrame,
@@ -146,12 +130,13 @@ function pcacomp(
     pc_model::MultivariateStats.PCA{Float64}
 }
 
-    !(length(vars) >= 2) && throw(ArgumentError("vars must contain at least 2 variable names."))
-    !(n >= 1) && throw(ArgumentError("n must be ≥ 1."))
-    !(n <= length(vars)) && throw(ArgumentError("n must be ≤ $(length(vars))."))
+    # validate
+    length(vars) >= 2 || throw(ArgumentError("vars must contain at least 2 variable names."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
+    n <= length(vars) || throw(ArgumentError("n must be ≤ $(length(vars))."))
 
     for v in vars
-        !(string(v) in names(df)) && throw(ArgumentError("Variable '$v' not found in df."))
+        string(v) in names(df) || throw(ArgumentError("Variable '$v' not found in df."))
     end
 
     return pcacomp(Float64.(Matrix(df[!, vars])); n=n, zstd=zstd)
@@ -175,10 +160,6 @@ Requires at least 2 PCs; returns `nothing` with a warning otherwise.
 # Returns
 
 - `GLMakie.Figure`: biplot figure, or `nothing` if fewer than 2 PCs result
-
-# See also
-
-[`screeplot`](@ref), [`pcacomp`](@ref)
 """
 function biplot(
     df::DataFrame,
@@ -212,7 +193,7 @@ function biplot(
         # scale loading vector by 2 for visibility; pcp is (variables × PCs)
         GLMakie.arrows2d!(
             (0, 0),
-            (pca.pcp[1, idx] * 2, pca.pcp[2, idx] * 2);
+            (pca.pcp[1, idx] * 2, pca.pcp[2, idx] * 2),
             color = cmap[idx],
             label = string(vars[idx])
         )
@@ -238,10 +219,6 @@ Plot a PCA scree plot showing variance explained and eigenvalues per PC.
 # Returns
 
 - `GLMakie.Figure`: two-panel figure (% variance explained + eigenvalues)
-
-# See also
-
-[`biplot`](@ref), [`pcacomp`](@ref), [`npca`](@ref)
 """
 function screeplot(
     df::DataFrame,
@@ -272,7 +249,7 @@ function screeplot(
     end
 
     ax2 = GLMakie.Axis(
-        fig[2, 1];
+        fig[2, 1],
         xticks = (1:n_pc, xl),
         ylabel = "Eigenvalues",
     )
@@ -303,14 +280,6 @@ Calculate the recommended number of principal components (PCs).
 # Returns
 
 - `Int64`: recommended number of PCs (≥ 1)
-
-# Throws
-
-- `ArgumentError`: if `type` is invalid or `value` is out of range
-
-# See also
-
-[`pcacomp`](@ref), [`screeplot`](@ref)
 """
 function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real)::Int64
 
@@ -318,9 +287,9 @@ function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real):
     if type === :var
         _in(value, (0, 1), "value")
     else
-        !(value > 0) && throw(ArgumentError("For :eig, value must be > 0."))
+        value > 0 || throw(ArgumentError("For :eig, value must be > 0."))
     end
-    !(size(m, 1) >= 2) && throw(ArgumentError("m must have at least 2 observations (rows)."))
+    size(m, 1) >= 2 || throw(ArgumentError("m must have at least 2 observations (rows)."))
 
     # work on a copy to avoid mutating the caller's matrix
     m = copy(m)

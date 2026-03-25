@@ -5,8 +5,8 @@ export pacor
 
 Computes the partial auto-correlation function (PACF) of a signal over symmetric lags −l … l using one of two methods:
 
-- `:yw` (Yule-Walker) – fast, no matrix inversion, may need larger l
-- `:reg` (regression) – via successive OLS models, more robust for small l
+- `:yw` (Yule-Walker) - fast, no matrix inversion, may need larger l
+- `:reg` (regression) - via successive OLS models, more robust for small l
 
 # Arguments
 
@@ -57,8 +57,8 @@ end
 
 Calculate partial auto-correlation function (PACF) for each epoch of a matrix over symmetric lags −l … l using one of two methods:
 
-- `:yw` (Yule-Walker) – fast, no matrix inversion, may need larger l
-- `:reg` (regression) – via successive OLS models, more robust for small l
+- `:yw` (Yule-Walker) - fast, no matrix inversion, may need larger l
+- `:reg` (regression) - via successive OLS models, more robust for small l
 
 # Arguments
 
@@ -99,8 +99,8 @@ end
 
 Calculate partial auto-correlation function (PACF) for a 3-D signal array over lags −l … l using one of two methods:
 
-- `:yw` (Yule-Walker) – fast, no matrix inversion, may need larger l
-- `:reg` (regression) – via successive OLS models, more robust for small l
+- `:yw` (Yule-Walker) - fast, no matrix inversion, may need larger l
+- `:reg` (regression) - via successive OLS models, more robust for small l
 
 # Arguments
 
@@ -150,8 +150,8 @@ end
 
 Calculate partial auto-correlation function (PACF) over lags −l … l using one of two methods:
 
-- `:yw` (Yule-Walker) – fast, no matrix inversion, may need larger l
-- `:reg` (regression) – via successive OLS models, more robust for small l
+- `:yw` (Yule-Walker) - fast, no matrix inversion, may need larger l
+- `:reg` (regression) - via successive OLS models, more robust for small l
 
 For ERP objects, epoch 1 is the trial-averaged waveform and is prepended to the per-trial result.
 

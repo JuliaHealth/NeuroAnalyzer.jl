@@ -188,7 +188,7 @@ function plot_erp(
             GLMakie.lines!(
                 ax,
                 t,
-                s[idx, :];
+                s[idx, :],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -300,7 +300,7 @@ function plot_erp_topo(
     for idx in axes(s, 1)
         pp = GLMakie.Figure(size = marker_size, figure_padding = 0)
         ax = GLMakie.Axis(
-            pp[1, 1];
+            pp[1, 1],
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -675,9 +675,10 @@ function plot_erp(
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
-    # check channels
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    !(!(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1)) && throw(ArgumentError("All channels must be of the same type."))
+    (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
+        throw(ArgumentError("All channels must be of the same type."))
     length(ch) > 1 && (eavg = false)
     type === :gfp && !(length(ch) > 1) && throw(ArgumentError("More than 1 channel must be selected."))
 
@@ -721,7 +722,7 @@ function plot_erp(
 
             fig = plot_erp_stack(
                 t,
-                s;
+                s,
                 rt = rt,
                 xlabel = xl,
                 ylabel = yl,
@@ -755,7 +756,7 @@ function plot_erp(
         )
         fig = plot_erp(
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -777,7 +778,7 @@ function plot_erp(
         )
         fig = plot_erp_stack(
             t,
-            s;
+            s,
             rt = rt,
             xlabel = xl,
             ylabel = yl,
@@ -819,7 +820,7 @@ function plot_erp(
         fig = plot_erp_topo(
             locs,
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -848,7 +849,7 @@ function plot_erp(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[ch, 1]][1],
-                obj.data[ch, pp[ch, 1], 1][1];
+                obj.data[ch, pp[ch, 1], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :red,
                 markersize = 15,
@@ -856,7 +857,7 @@ function plot_erp(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[ch, 2]][1],
-                obj.data[ch, pp[ch, 2], 1][1];
+                obj.data[ch, pp[ch, 2], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :blue,
                 markersize = 15,
@@ -876,7 +877,7 @@ function plot_erp(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[1, 2]],
-                mep_tmp[pp[1, 2]];
+                mep_tmp[pp[1, 2]],
                 marker = :xcross,
                 color = mono ? :black : :blue,
                 markersize = 15,

@@ -16,11 +16,19 @@ function _make_epochs(
     s::AbstractArray;
     ep_len::Int64
 )::Array{Float64, 3}
-    _chk3d(s)
-    !(ep_len >= 1           ) && throw(ArgumentError("ep_len must be ≥ 1."))
-    !(ep_len <= size(s, 2)  ) && throw(ArgumentError("ep_len must be ≤ $(size(s, 2))."))
 
-    ch_n    = size(s, 1)
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
+    _chk3d(s)
+
+    # number of channels
+    ch_n = size(s, 1)
+    # number of epochs
+    ep_n = size(s, 3)
+
+    # validate
+    ep_len >= 1 || throw(ArgumentError("ep_len must be ≥ 1."))
+    ep_len <= size(s, 2) || throw(ArgumentError("ep_len must be ≤ $(size(s, 2))."))
+
     n_samp  = size(s, 2) * size(s, 3)
     ep_n    = n_samp ÷ ep_len
 
@@ -39,10 +47,13 @@ function _make_epochs_bymarkers(
     fs::Int64
 )::Tuple{Array{Float64, 3}, DataFrame}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    !(offset >= 0) && throw(ArgumentError("offset must be ≥ 0."))  # was: ≥ 1 - offset=0 is valid (epoch starts at marker)
-    !(ep_len >= 1) && throw(ArgumentError("ep_len must be ≥ 1."))
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+
+    # validate
+    offset >= 0 || throw(ArgumentError("offset must be ≥ 0."))  # was: ≥ 1 - offset=0 is valid (epoch starts at marker)
+    ep_len >= 1 || throw(ArgumentError("ep_len must be ≥ 1."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     sig_len = size(s, 2)
     mrk_n = length(marker_start)

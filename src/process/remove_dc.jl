@@ -122,7 +122,9 @@ function remove_dc(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
     push!(result.history, "remove_dc(OBJ, ch=$ch, n=$n)")
 

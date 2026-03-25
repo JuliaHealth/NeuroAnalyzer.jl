@@ -38,14 +38,6 @@ Create a FIR or IIR filter object.
 - `Vector{Float64}`: FIR filter coefficients (for `:fir`, `:firls`, `:remez`)
 - `ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}`: IIR filter in zero-pole-gain form (for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic`)
 - `Biquad{:z, Float64}`: second-order biquad filter (for `:iirnotch`)
-
-# Throws
-
-- `ArgumentError`: if any required argument is missing or invalid
-
-# See also
-
-[`filter_apply`](@ref), [`filter`](@ref)
 """
 function filter_create(;
     fprototype::Symbol,
@@ -283,10 +275,6 @@ Apply a pre-designed IIR or FIR filter to a signal vector.
 # Returns
 
 - `Vector{Float64}`: filtered signal of the same length as `s`
-
-# See also
-
-[`filter_create`](@ref), [`filter_apply(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_apply(
     s::AbstractVector;
@@ -332,10 +320,6 @@ Apply a pre-designed filter to selected channels of a NEURO object.
 # Notes
 - For best results apply to a continuous (single-epoch) signal. A warning is issued when `nepochs(obj) > 1`.
 - Taper the signal before filtering to reduce edge artifacts.
-
-# See also
-
-[`filter_create`](@ref), [`filter_apply!`](@ref), [`filter`](@ref)
 """
 function filter_apply(
     obj::NeuroAnalyzer.NEURO;
@@ -353,6 +337,7 @@ function filter_apply(
 
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     # number of channels
     ch_n = length(ch)
     # number of epochs
@@ -362,6 +347,7 @@ function filter_apply(
     _info("Taper the signal before filtering to reduce edge artifacts.")
     dir === :twopass && _info("Two-pass filtering: effective order is doubled.")
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # initialize progress bar
@@ -406,10 +392,6 @@ Delegates to [`filter_apply`](@ref) and copies the result back.
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`filter_apply`](@ref), [`filter!`](@ref)
 """
 function filter_apply!(
     obj::NeuroAnalyzer.NEURO;
@@ -471,10 +453,6 @@ Combines [`filter_create`](@ref) and [`filter_apply`](@ref). When `preview=true`
 
 - `NeuroAnalyzer.NEURO`: filtered object (when `preview=false`)
 - `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
-
-# See also
-
-[`filter!`](@ref), [`filter_create`](@ref), [`filter_apply`](@ref)
 """
 function filter(
     obj::NeuroAnalyzer.NEURO;
@@ -569,10 +547,6 @@ When `preview=true`, the filter frequency response is plotted and returned witho
 
 - `Nothing` when `preview=false`
 - `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
-
-# See also
-
-[`filter`](@ref), [`filter_apply!`](@ref)
 """
 function filter!(
     obj::NeuroAnalyzer.NEURO;

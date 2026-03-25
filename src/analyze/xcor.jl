@@ -224,17 +224,22 @@ function xcor(
     lags::Vector{Float64}
 }
 
-    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
-    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
-    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    sr(obj1) == sr(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    length(ch1) == length(ch2) ||
+        throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+    length(ep1) == length(ep2) ||
+        throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+    (epoch_len(obj1) == epoch_len(obj2)) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    _check_epochs(obj1, ep1)
-    _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
+    _check_epochs(obj1, ep1)
+    _check_epochs(obj2, ep2)
 
     l <= size(obj1, 2) || throw(ArgumentError("l must be ≤ $(size(obj1, 2))."))
     l >= 0 || throw(ArgumentError("l must be ≥ 0."))
@@ -248,7 +253,8 @@ function xcor(
             biased = biased,
             method = method,
         )
-        xc = cat(mean(xc; dims = 3), xc, dims = 3)
+        xc = cat(mean(xc, dims
+ = 3), xc, dims = 3)
     else
         xc = @views xcor(
             obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean, biased = biased, method = method

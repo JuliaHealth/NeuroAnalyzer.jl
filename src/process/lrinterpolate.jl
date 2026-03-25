@@ -27,9 +27,12 @@ function lrinterpolate_channel(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)[1]
     channels = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
-    length(channels) > 1 || throw(ArgumentError("signal must contain > 1 signal channel."))
-    ch in channels || throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
-    nepochs(obj) > 1 || throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
+    length(channels) > 1 ||
+        throw(ArgumentError("signal must contain > 1 signal channel."))
+    ch in channels ||
+        throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    nepochs(obj) > 1 ||
+        throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
 
     _check_epochs(obj, ep_ref)
     ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
@@ -59,7 +62,10 @@ function lrinterpolate_channel(
     _info(" MAE: $(round(acc_mae, digits = 3))")
 
     # predict
+
+    # create new dataset
     obj_new = deepcopy(obj)
+
     df = @views DataFrame(hcat(signal_src[ch, :], signal_src[ch_ref, :]'), :auto)
     obj_new.data[ch, :, ep] = GLM.predict(linear_regressor, df)
 

@@ -20,18 +20,10 @@ Convert a confidence level to the corresponding Z-score.
 
 - `Float64`: critical Z-score
 
-# Throws
-
-- `ArgumentError`: if `cl ∉ (0, 1)`
-
 # Notes
 
 - Two-tailed (`twotailed=true`): the CI is `(−z, +z)`
 - One-tailed (`twotailed=false`): the CI is `(−∞, z)` (upper bound) or equivalently `(−z, +∞)` (lower bound) depending on direction
-
-# See also
-
-[`cim`](@ref), [`cip`](@ref), [`cir`](@ref)
 """
 function cl2z(cl::Float64; twotailed::Bool = true)::Float64
 
@@ -59,14 +51,6 @@ Calculate the confidence interval for the mean.
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
-
-# Throws
-
-- `ArgumentError`: if `cl ∉ (0, 1)`, `d ∉ {:t, :z}`, or `length(x) < 2`
-
-# See also
-
-[`cimd`](@ref), [`cis`](@ref), [`civ`](@ref)
 """
 function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::Bool = true)::Tuple{Float64, Float64}
 
@@ -105,13 +89,6 @@ Uses the order-statistic method: the CI bounds are `x[j]` and `x[k]` where `j` a
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
-
-# Throws
-- `ArgumentError`: if `cl ∉ (0, 1)` or the sample is too small for the requested confidence level
-
-# See also
-
-[`cim`](@ref), [`cimd(::AbstractArray)`](@ref)
 """
 function cimd(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -150,14 +127,6 @@ Column medians are computed, sorted, and the order-statistic CI method is applie
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
-
-# Throws
-
-- `ArgumentError`: if `cl ∉ (0, 1)` or `size(x, 2) < 2`
-
-# See also
-
-[`cimd(::AbstractVector)`](@ref)
 """
 function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -165,7 +134,8 @@ function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     _bin(cl, (0.0, 1.0), "cl")
     size(x, 2) >= 2 || throw(ArgumentError("x must have at least 2 columns."))
 
-    x_sorted = sort(vec(median(x; dims=1)))
+    x_sorted = sort(vec(median(x, dims
+=1)))
     n = size(x, 2)
     # the quantile of interest; for a median, we will use q = 0.5
     q = 0.5
@@ -192,14 +162,6 @@ Calculate the confidence interval for a proportion using the normal approximatio
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]`, `n < 1`, or `cl ∉ (0, 1)`
-
-# See also
-
-[`cim`](@ref), [`cir`](@ref)
 """
 function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -229,14 +191,6 @@ Calculate the confidence interval for a Pearson correlation coefficient computed
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
-
-# Throws
-
-- `ArgumentError`: if lengths differ, `length(x) ≤ 3`, or `cl ∉ (0, 1)`
-
-# See also
-
-[`cir(; r, n, cl)`](@ref), [`cim`](@ref)
 """
 function cir(x::AbstractVector, y::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -265,14 +219,6 @@ Transforms `r` to `z = arctanh(r)`, applies the normal CI, then back-transforms 
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)` in correlation units
-
-# Throws
-
-- `ArgumentError`: if `r ∉ (−1, 1)`, `n ≤ 3`, or `cl ∉ (0, 1)`
-
-# See also
-
-[`cir(::AbstractVector, ::AbstractVector)`](@ref)
 """
 function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -307,14 +253,6 @@ Calculate the confidence interval for the standard deviation using the chi-squar
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
-
-# Throws
-
-- `ArgumentError`: if `cl ∉ (0, 1)` or `length(x) < 2`
-
-# See also
-
-[`civ`](@ref), [`cim`](@ref)
 """
 function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 
@@ -349,14 +287,6 @@ Calculate the confidence interval for the variance using the chi-squared distrib
 # Returns
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
-
-# Throws
-
-- `ArgumentError`: if `cl ∉ (0, 1)` or `length(x) < 2`
-
-# See also
-
-[`cis`](@ref), [`cim`](@ref)
 """
 function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
 

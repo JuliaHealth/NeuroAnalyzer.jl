@@ -33,12 +33,19 @@ function iview_ica(
     cl = labels(obj)
     ch_idx = 1
 
-    !(size(ic_mw, 1) == length(chn)) && throw(ArgumentError("ICA weighting matrix size does not match number of OBJ channels."))
-    !(size(ic_mw, 2) == size(ic, 1)) && throw(ArgumentError("ICA weighting matrix size does not match number of ICA components."))
-    !(size(ic, 2) == signal_len(obj)) && throw(ArgumentError("ICA components length does not match OBJ signal length."))
-    !(size(ic_mw, 1) >= length(ch)) && throw(ArgumentError("ICA weighting matrix size does not match number of selected channels."))
+    # validate
+    size(ic_mw, 1) == length(chn) ||
+        throw(ArgumentError("ICA weighting matrix size does not match number of OBJ channels."))
+    size(ic_mw, 2) == size(ic, 1) ||
+        throw(ArgumentError("ICA weighting matrix size does not match number of ICA components."))
+    size(ic, 2) == signal_len(obj) ||
+        throw(ArgumentError("ICA components length does not match OBJ signal length."))
+    size(ic_mw, 1) >= length(ch) ||
+        throw(ArgumentError("ICA weighting matrix size does not match number of selected channels."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_edited = false
 
     ic_remove_idx = zeros(Bool, length(ic_idx))
@@ -56,7 +63,7 @@ function iview_ica(
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
         p_tmp = plot_topo(
-            obj_reconstructed[idx];
+            obj_reconstructed[idx],
             ch = datatype(obj_reconstructed[1]),
             seg = seg,
             amethod = :mean,

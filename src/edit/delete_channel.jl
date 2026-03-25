@@ -25,8 +25,8 @@ function delete_channel(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch_n = nchannels(obj)
     ch = get_channel(obj, ch = ch)
+    ch_n = nchannels(obj)
 
     # validate
     length(ch) == 0 && (return obj)
@@ -34,6 +34,7 @@ function delete_channel(
     length(ch) < ch_n ||
         throw(ArgumentError("Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
@@ -146,6 +147,7 @@ function keep_channel(
 )::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
+
     # resolve channel names to integer indices
     length(get_channel(obj, ch = ch)) == ch_n && (return obj)
     chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch = ch))]

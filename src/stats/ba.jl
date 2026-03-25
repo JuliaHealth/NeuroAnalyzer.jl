@@ -21,10 +21,6 @@ Named tuple:
 - `ll::Float64`: lower limit of agreement (`md − z × SD`)
 - `ul::Float64`: upper limit of agreement (`md + z × SD`)
 
-# Throws
-
-- `ArgumentError`: if `la ∉ (0, 1)`, vectors are empty, or lengths differ
-
 # Notes
 
 To produce a Bland-Altman plot:
@@ -35,10 +31,6 @@ diffs = x .- y
 scatter(means, diffs)
 hline!([md, ul, ll])
 ```
-
-# See also
-
-[`p2z`](@ref)
 """
 function ba(
     x::AbstractVector,
@@ -46,8 +38,8 @@ function ba(
     la::Float64 = 0.95
 )::@NamedTuple{
     md::Float64,
-    ul::Float64,
-    ll::Float64
+    ll::Float64,
+    ul::Float64
 }
 
     # validate
@@ -62,8 +54,8 @@ function ba(
     md = mean(d)
     sd = std(d)
 
-    ul = z * sd
     ll = -z * sd
+    ul = z * sd
 
     return (; md, ll, ul)
 

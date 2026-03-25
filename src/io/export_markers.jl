@@ -16,10 +16,6 @@ If the markers table is empty, a warning is issued and no file is written.
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError` if `file_name` already exists and `overwrite=false`
 """
 function export_markers(
     obj::NeuroAnalyzer.NEURO;

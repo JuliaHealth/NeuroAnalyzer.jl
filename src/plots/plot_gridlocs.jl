@@ -99,7 +99,7 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     for idx in eachindex(loc_x)
         GLMakie.scatter!(
             loc_x[idx],
-            loc_y[idx];
+            loc_y[idx],
             colormap = pal,
             color = cmap[idx],
             colorrange = 1:ch_n,

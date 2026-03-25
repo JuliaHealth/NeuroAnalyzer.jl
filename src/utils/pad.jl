@@ -15,14 +15,6 @@ Append `n` zeros along the second axis (or at the end for 1-D input). Works with
 # Returns
 
 - `Union{AbstractVector, AbstractArray}`: padded array with the same number of dimensions as `x`
-
-# Throws
-
-- `ArgumentError`: if `n < 0` or `ndims(x) > 3`
-
-# See also
-
-[`pad2`](@ref), [`padm`](@ref)
 """
 function pad0(
     x::Union{AbstractVector, AbstractArray},
@@ -41,7 +33,8 @@ function pad0(
         return hcat(x, zeros(eltype(x), size(x, 1), n))
     else
         # cat along dim 2 is safer than hcat for 3-D arrays
-        return cat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)); dims=2)
+        return cat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)), dims
+=2)
     end
 
 end
@@ -58,14 +51,6 @@ Pad an array with zeros along its second axis to the next power-of-2 length. Wor
 # Returns
 
 - `Union{AbstractVector, AbstractArray}`: padded array whose second dimension (or length, for 1-D) is a power of 2
-
-# Throws
-
-- `ArgumentError`: if `ndims(x) > 3`
-
-# See also
-
-[`pad0`](@ref), [`padm`](@ref)
 """
 function pad2(
     x::Union{AbstractVector, AbstractArray}
@@ -83,7 +68,8 @@ function pad2(
     else
         n = nextpow2(size(x, 2)) - size(x, 2)
         # cat along dim 2 is safer than hcat for 3-D arrays
-        return n == 0 ? x : cat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)); dims=2)
+        return n == 0 ? x : cat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)), dims
+=2)
     end
 
 end
@@ -104,14 +90,6 @@ Pad an array with mean values along its second axis (or at the end for 1-D input
 # Returns
 
 - `Union{AbstractVector, AbstractArray}`: padded array with the same number of dimensions as `x`
-
-# Throws
-
-- `ArgumentError`: if `n < 0`, `ndims(x) > 3`, or `mode` is not `:all`/`:row`
-
-# See also
-
-[`pad0`](@ref), [`pad2`](@ref)
 """
 function padm(
     x::Union{AbstractVector, AbstractArray},
@@ -130,12 +108,15 @@ function padm(
         # mode has no effect for 1-D: there is only one "row"
         return vcat(x, fill(mean(x), n))
     elseif ndims(x) == 2
-        m = mode === :all ? mean(x) : mean(x; dims=2)
+        m = mode === :all ? mean(x) : mean(x, dims
+=2)
         return hcat(x, m .* ones(eltype(x), size(x, 1), n))
     else
-        m = mode === :all ? mean(x) : mean(x; dims=2)
+        m = mode === :all ? mean(x) : mean(x, dims
+=2)
         # cat along dim 2 is safer than hcat for 3-D arrays
-        return cat(x, m .* ones(eltype(x), size(x, 1), n, size(x, 3)); dims=2)
+        return cat(x, m .* ones(eltype(x), size(x, 1), n, size(x, 3)), dims
+=2)
     end
 
 end

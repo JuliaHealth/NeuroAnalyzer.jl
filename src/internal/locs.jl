@@ -43,8 +43,9 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Re
 end
 
 function _find_bylabel(
-        locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}}
-    )::Union{Int64, Vector{Int64}}
+    locs::DataFrame,
+    l::Union{String, Vector{String}, Vector{SubString{String}}}
+)::Union{Int64, Vector{Int64}}
     if isa(l, String)
         if !isnothing(findfirst(isequal.(lowercase(l), lowercase.(locs[!, :label]))))
             return findfirst(isequal.(lowercase(l), lowercase.(locs[!, :label])))
@@ -77,7 +78,7 @@ end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
     locs_ch = get_channel(
-        obj;
+        obj,
         ch = get_channel(
             obj; type = ["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg", "nirs_int", "nirs_od", "eog", "ref"]
         ),
@@ -204,6 +205,7 @@ function _locs_norm!(locs::DataFrame)::Nothing
 end
 
 function _locs_norm(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
+    # create new dataset
     obj_new = deepcopy(obj)
     _locs_norm!(obj_new.locs)
     return obj_new

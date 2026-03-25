@@ -669,7 +669,7 @@ function plot_locs(
             if mono
                 GLMakie.scatter!(
                     loc_x[idx],
-                    loc_y[idx];
+                    loc_y[idx],
                     markersize = marker_size,
                     color = :gray,
                     strokewidth = sw,
@@ -679,7 +679,7 @@ function plot_locs(
             else
                 GLMakie.scatter!(
                     loc_x[idx],
-                    loc_y[idx];
+                    loc_y[idx],
                     markersize = marker_size,
                     color = cmap[idx],
                     colormap = pal,
@@ -703,7 +703,7 @@ function plot_locs(
             if idx in ch
                 GLMakie.text!(
                     loc_x[idx] + label_offset_x,
-                    loc_y[idx] + label_offset_y;
+                    loc_y[idx] + label_offset_y,
                     text = locs[!, :label][idx],
                     align = (:center, :bottom),
                     fontsize = font_size,
@@ -716,7 +716,7 @@ function plot_locs(
             if idx in sch
                 GLMakie.text!(
                     loc_x[idx] + label_offset_x,
-                    loc_y[idx] + label_offset_y;
+                    loc_y[idx] + label_offset_y,
                     text = locs[!, :label][idx],
                     align = (:center, :bottom),
                     fontsize = font_size,
@@ -1028,7 +1028,7 @@ function plot_locs(
                 if mono
                     GLMakie.text!(
                         loc_x[idx] + label_offset_x,
-                        loc_y[idx] + label_offset_y;
+                        loc_y[idx] + label_offset_y,
                         text = string(weights[idx]),
                         fontsize = font_size,
                         align = (:center, :top),
@@ -1037,7 +1037,7 @@ function plot_locs(
                     if weights[idx] >= 0
                         GLMakie.text!(
                             loc_x[idx] + label_offset_x,
-                            loc_y[idx] + label_offset_y;
+                            loc_y[idx] + label_offset_y,
                             text = string(weights[idx]),
                             fontsize = font_size,
                             color = :red,
@@ -1046,7 +1046,7 @@ function plot_locs(
                     else
                         GLMakie.text!(
                             loc_x[idx] + label_offset_x,
-                            loc_y[idx] + label_offset_y;
+                            loc_y[idx] + label_offset_y,
                             text = string(weights[idx]),
                             fontsize = font_size,
                             color = :blue,
@@ -1136,31 +1136,34 @@ Preview of channel locations.
 - `Union{GLMakie.Figure, Nothing}`
 """
 function plot_locs(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        sch::Union{String, Vector{String}, Regex} = "",
-        ch_labels::Bool = true,
-        src_labels::Bool = false,
-        det_labels::Bool = false,
-        opt_labels::Bool = false,
-        head::Bool = true,
-        head_labels::Bool = false,
-        mono::Bool = false,
-        grid::Bool = false,
-        ps::Symbol = :l,
-        cart::Bool = false,
-        plane::Symbol = :xy,
-        connections::Matrix{<:Real} = [0 0; 0 0],
-        threshold::Real = 0,
-        threshold_type::Symbol = :neq,
-        weights::Union{Bool, Vector{<:Real}} = true,
-        gui::Bool = true
-    )::Union{GLMakie.Figure, Nothing}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    sch::Union{String, Vector{String}, Regex} = "",
+    ch_labels::Bool = true,
+    src_labels::Bool = false,
+    det_labels::Bool = false,
+    opt_labels::Bool = false,
+    head::Bool = true,
+    head_labels::Bool = false,
+    mono::Bool = false,
+    grid::Bool = false,
+    ps::Symbol = :l,
+    cart::Bool = false,
+    plane::Symbol = :xy,
+    connections::Matrix{<:Real} = [0 0; 0 0],
+    threshold::Real = 0,
+    threshold_type::Symbol = :neq,
+    weights::Union{Bool, Vector{<:Real}} = true,
+    gui::Bool = true
+)::Union{GLMakie.Figure, Nothing}
 
-    !(datatype(obj) != "ecog") && throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
+    # validate
+    datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
+
+    # resolve channel names to integer indices, optionally skipping bad channels
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     ch_info = String[]
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     [push!(ch_info, channel_info(obj, ch = labels(obj)[ch[idx]], pr = false)) for idx in eachindex(ch)]
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
@@ -1169,6 +1172,7 @@ function plot_locs(
     if sch == ""
         sch = 0
     else
+        # resolve channel names to integer indices, optionally skipping bad channels
         sch = exclude_bads ? get_channel(obj, ch = sch, exclude = "bad") : get_channel(obj, ch = sch, exclude = "")
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
@@ -1176,7 +1180,7 @@ function plot_locs(
 
     if datatype(obj) in ["eeg", "meg", "csd", "erp", "erf"]
         fig = plot_locs(
-            locs;
+            locs,
             ch = ch,
             sch = sch,
             ch_labels = ch_labels,
@@ -1202,7 +1206,7 @@ function plot_locs(
             obj.locs,
             opt_pairs,
             src_n,
-            det_n;
+            det_n,
             src_labels = src_labels,
             det_labels = det_labels,
             opt_labels = opt_labels,

@@ -17,10 +17,6 @@ FieldTrip stores EEG, MEG, fNIRS data and event tables in separate `.mat` files.
 
 - `NeuroAnalyzer.NEURO` for EEG, MEG, and fNIRS data
 - `DataFrame` for event tables
-
-# Throws
-
-- `ArgumentError` if the file does not exist, the dataset is malformed, or required fields are missing
 """
 function import_ft(
     file_name::String;
@@ -28,6 +24,7 @@ function import_ft(
     detect_type::Bool = false
 )::Union{NeuroAnalyzer.NEURO, DataFrame}
 
+    # validate
     _check_var(type, [:eeg, :meg, :nirs, :events], "type")
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))

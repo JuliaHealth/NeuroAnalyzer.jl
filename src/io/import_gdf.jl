@@ -16,10 +16,6 @@ Both GDF 1.x and GDF 2.x variants are supported. Channels may have mixed data ty
 
 - `NeuroAnalyzer.NEURO`
 
-# Throws
-
-- `ArgumentError` if the file does not exist, is not a GDF file, or contains unsupported structural features
-
 # Notes
 
 - `sampling_rate = samples_per_datarecord ÷ data_record_duration`

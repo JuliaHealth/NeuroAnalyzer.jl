@@ -127,11 +127,11 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         clabels[idx] *= string(idx)
     end
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)],
         digits = 4,
     )
     epoch_time = round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
         digits = 4,
     )
 

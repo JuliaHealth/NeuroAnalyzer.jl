@@ -24,10 +24,6 @@ Named tuple:
 - `bic::Float64`: Bayesian Information Criterion
 - `lf::Vector{Float64}`: fitted values (use `plot(x, lf)` to visualise)
 
-# Throws
-
-- `ArgumentError`: if `length(x) ≠ length(y)` or `length(x) < 3`
-
 # Notes
 
 To predict at new x-values:
@@ -36,10 +32,6 @@ To predict at new x-values:
 new_x = DataFrame(x = [3.5, 7])
 predict(lr, new_x)
 ```
-
-# See also
-
-[`infcrit`](@ref)
 """
 function linreg(
     x::AbstractVector, y::AbstractVector
@@ -89,19 +81,11 @@ Named tuple:
 - `aic::Float64`: AIC (AICc-corrected when `n / k < 40`)
 - `bic::Float64`: BIC
 
-# Throws
-
-- `ArgumentError`: if the model has fewer observations than parameters (`n ≤ k + 1`)
-
 # Notes
 
 - `k` = number of predictors (coefficients excluding the intercept).
 - AIC = `2k − 2L`; BIC = `k × ln(n) − 2L`, where L = log-likelihood.
 - AICc correction is applied when the sample-to-parameter ratio `n/k < 40`.
-
-# See also
-
-[`linreg`](@ref)
 """
 function infcrit(
     m::T

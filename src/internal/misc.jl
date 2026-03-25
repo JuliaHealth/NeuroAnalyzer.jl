@@ -33,6 +33,9 @@ function _v2s(x::Vector{<:Number})::String
     return s
 end
 
+"""
+Mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+"""
 function _copy_lt2ut(m::AbstractArray)::AbstractArray
     if ndims(m) == 2
         return m + m' - diagm(diag(m))

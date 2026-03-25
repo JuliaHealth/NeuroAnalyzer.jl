@@ -63,13 +63,18 @@ function phdiff(
     h::Bool = false
 )::Array{Float64, 3}
 
-    # validate
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # validate
     _check_var(avg, [:phase, :signal], "avg")
     _check_channels(s, ch)
 
+    # number of channels
     ch_n = size(s, 1)
+    # epoch length
     ep_len = h ? size(s, 2) : div(size(s, 2) + pad, 2) + 1
+    # number of epochs
     ep_n = size(s, 3)
 
     # pre-allocate output

@@ -17,18 +17,10 @@ Applies `z = atanh(r)`. Because `atanh(±1)` is infinite, the boundary values `r
 
 - `z::Float64`: Fisher z-transformed value
 
-# Throws
-
-- `ArgumentError`: if `r ∉ [−1, 1]`
-
 # Notes
 
 - Boundary clamping: `rfz(1.0) ≈ 18.368`, `rfz(-1.0) ≈ -18.368`.
 - For values strictly inside `(−1, 1)` the result equals `atanh(r)` exactly.
-
-# See also
-
-[`r1r2_zscore`](@ref), [`cor_test`](@ref)
 """
 function rfz(r::Float64)::Float64
 
@@ -61,17 +53,9 @@ The test statistic is: `z = (atanh(r1) − atanh(r2)) / √(1/(n1 − 3) + 1/(n2
 
 - `Float64`: Z-score for the difference `r1 − r2`
 
-# Throws
-
-- `ArgumentError`: if `r1` or `r2` are outside `(−1, 1)`, or `n1`/`n2` ≤ 3
-
 # Notes
 
 Both samples must have `n > 3` for the Fisher Z standard error `1/√(n − 3)` to be defined. The original guards (`n > 0`) were insufficient.
-
-# See also
-
-[`rfz`](@ref), [`cor_test`](@ref)
 """
 function r1r2_zscore(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)::Float64
 
@@ -108,14 +92,6 @@ Named tuple:
 - `ts::Tuple{Float64, String}`: t-statistic and label `"t"`
 - `df::Int64`: degrees of freedom (`n1 + n2 − 2`)
 - `p::Float64`: two-tailed p-value (clamped to `eps()` if below machine epsilon)
-
-# Throws
-
-- `ArgumentError`: if `s1` and `s2` have different lengths or `length < 4`
-
-# See also
-
-[`rfz`](@ref), [`r1r2_zscore`](@ref)
 """
 function cor_test(
     s1::AbstractVector,

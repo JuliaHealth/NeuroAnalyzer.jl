@@ -175,7 +175,7 @@ function plot_mep(
             GLMakie.lines!(
                 ax,
                 t,
-                s[idx, :];
+                s[idx, :],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -189,9 +189,11 @@ function plot_mep(
     # plot averaged MEP
     if avg
         if ch_n == 1
-            s = mean(s; dims = 2)[:]
+            s = mean(s, dims
+ = 2)[:]
         else
-            s = mean(s; dims = 1)[:]
+            s = mean(s, dims
+ = 1)[:]
         end
         GLMakie.lines!(ax, t, s; color = :black, linewidth = 2)
     end
@@ -347,13 +349,15 @@ function plot_mep(
     gui::Bool = false
 )::GLMakie.Figure
 
+    # validate
     _check_datatype(obj, "mep")
     _check_var(type, [:normal, :stack], "type")
     _check_var(peaks, [:detect, :embed, :off], "peaks")
 
-    # check channels
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    !(!(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1)) && throw(ArgumentError("All channels must be of the same type."))
+    (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
+        throw(ArgumentError("All channels must be of the same type."))
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])
@@ -383,7 +387,7 @@ function plot_mep(
         )
         fig = plot_mep(
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -400,7 +404,7 @@ function plot_mep(
         cb_title == "default" && (cb_title = "Amplitude [$units]")
         fig = plot_mep_stack(
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -425,7 +429,7 @@ function plot_mep(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[ch, 1]][1],
-                obj.data[ch, pp[ch, 1], 1][1];
+                obj.data[ch, pp[ch, 1], 1][1],
                 marker = :xcross,
                 color = mono ? :black : :red,
                 markersize = 15,
@@ -443,7 +447,7 @@ function plot_mep(
             _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000, digits = 0)) ms")
             _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1], digits = 2)) $units")
         elseif length(ch) > 1 && type === :normal
-            mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)[:, :, :]
+            mep_tmp = mean(obj.data[ch, :, 1], dims = 1)[:, :, :]
             obj_tmp = keep_channel(obj, ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
             pp = mep_peaks(obj_tmp)
@@ -458,7 +462,7 @@ function plot_mep(
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[1, 2]],
-                mep_tmp[pp[1, 2]];
+                mep_tmp[pp[1, 2]],
                 marker = :xcross,
                 color = mono ? :black : :blue,
                 markersize = 15,

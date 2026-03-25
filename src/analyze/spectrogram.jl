@@ -207,6 +207,7 @@ function spectrogram(
     t::Vector{Float64}
 } where {T <: CWT}
 
+    # validate
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -223,6 +224,7 @@ function spectrogram(
 
     # pilot call to determine output dimensions
     if method === :stft
+
         spec_data = NeuroAnalyzer.spectrogram(
             @view(obj.data[1, :, 1]),
             fs = fs,
@@ -234,7 +236,9 @@ function spectrogram(
         )
         f = spec_data.f
         p_tmp = spec_data.p
+
     elseif method === :mt
+
         spec_data = NeuroAnalyzer.spectrogram(
             @view(obj.data[1, :, 1]),
             fs = fs,
@@ -247,7 +251,9 @@ function spectrogram(
         )
         f = spec_data.f
         p_tmp = spec_data.p
+
     elseif method === :mw
+
         spec_data = NeuroAnalyzer.mwspectrogram(
             @view(obj.data[1, :, 1]),
             pad = pad,
@@ -258,7 +264,9 @@ function spectrogram(
         )
         f = spec_data.f
         p_tmp = spec_data.p
+
     elseif method === :gh
+
         spec_data = NeuroAnalyzer.ghtspectrogram(
             @view(obj.data[1, :, 1]),
             fs = fs,
@@ -268,17 +276,20 @@ function spectrogram(
         )
         f = spec_data.f
         p_tmp = spec_data.p
+
     elseif method === :cwt
-        _log_off()
+
         spec_data = NeuroAnalyzer.cwtspectrogram(@view(obj.data[1, :, 1]), fs = fs, wt = wt)
-        _log_on()
         f = spec_data.f
         # cwtspectrogram returns field .m not .p
         p_tmp = spec_data.m
+
     elseif method === :hht
+
         spec_data = NeuroAnalyzer.hhtspectrogram(@view(obj.data[1, :, 1]), t, fs = fs, db = db)
         f = spec_data.f
         p_tmp = spec_data.p
+
     end
 
     # pre-allocate outputs
@@ -293,6 +304,7 @@ function spectrogram(
         ch_idx = ch[ch_local]   # resolve local index to actual channel number
 
         if method === :stft
+
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.spectrogram(
                 @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
@@ -302,7 +314,9 @@ function spectrogram(
                 woverlap = woverlap,
                 w = w
             ).p
+
         elseif method === :mt
+
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.spectrogram(
                 @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
@@ -313,7 +327,9 @@ function spectrogram(
                 woverlap = woverlap,
                 w = w
             ).p
+
         elseif method === :mw
+
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.mwspectrogram(
                 @view(obj.data[ch_idx, :, ep_idx]),
                 pad = pad,
@@ -322,7 +338,9 @@ function spectrogram(
                 ncyc = ncyc,
                 w = w
             ).p
+
         elseif method === :gh
+
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.ghtspectrogram(
                 @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
@@ -330,21 +348,24 @@ function spectrogram(
                 gw = gw,
                 w = w
             ).p
+
         elseif method === :cwt
-            _log_off()
+
             # cwtspectrogram returns field .m (magnitudes) rather than .p.
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.cwtspectrogram(
                 @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
                 wt = wt
             ).m
-            _log_on()
+
         elseif method === :hht
+
             # hhtspectrogram requires time points for EMD
             p[:, :, ch_local, ep_idx] = NeuroAnalyzer.hhtspectrogram(@view(obj.data[ch_idx, :, ep_idx]),
                                                                      t,
                                                                      fs = fs,
                                                                      db = db).p
+
         end
 
         progress_bar && next!(progbar)

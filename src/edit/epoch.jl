@@ -22,14 +22,16 @@ Split into epochs. Return signal that is split either by markers (if specified) 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function epoch(
-        obj::NeuroAnalyzer.NEURO;
-        marker::String = "",
-        offset::Real = 0,
-        ep_len::Union{Real, Nothing} = nothing
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    marker::String = "",
+    offset::Real = 0,
+    ep_len::Union{Real, Nothing} = nothing
+)::NeuroAnalyzer.NEURO
 
-    !(nepochs(obj) == 1) && throw(ArgumentError("epoch() must be applied to continuous object."))
+    # validate
+    nepochs(obj) == 1 || throw(ArgumentError("epoch() must be applied to continuous object."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # create ID for epochs
@@ -41,8 +43,8 @@ function epoch(
 
     if marker != ""
         # split by markers
-        !(_has_markers(obj)) && throw(ArgumentError("OBJ does not contain markers."))
-        !(!isnothing(ep_len)) && throw(ArgumentError("ep_len must be specified."))
+        _has_markers(obj) || throw(ArgumentError("OBJ does not contain markers."))
+        isnothing(ep_len) && throw(ArgumentError("ep_len must be specified."))
         _check_markers(obj, marker)
 
         # get marker positions
@@ -157,9 +159,10 @@ Edit epochs time start.
 """
 function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)::NeuroAnalyzer.NEURO
 
+    # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.epoch_time .+= ts
 
+    obj_new.epoch_time .+= ts
     push!(obj_new.history, "epoch_ts(OBJ, ts=$ts)")
 
     return obj_new
@@ -206,14 +209,19 @@ Extract sub-epochs with a reduced time range.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function subepoch(
-        obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ep_start::Real,
+    ep_end::Real
+)::NeuroAnalyzer.NEURO
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     ep_time = obj.epoch_time
 
-    !(ep_start >= ep_time[1]) && throw(ArgumentError("ep_start must be ≥ $(ep_time[1])."))
-    !(ep_end <= ep_time[end]) && throw(ArgumentError("ep_end must be ≤ $(ep_time[end])."))
+    # validate
+    ep_start >= ep_time[1] || throw(ArgumentError("ep_start must be ≥ $(ep_time[1])."))
+    ep_end <= ep_time[end] || throw(ArgumentError("ep_end must be ≤ $(ep_time[end])."))
 
     ep_start_idx = vsearch(ep_start, ep_time)
     ep_end_idx = vsearch(ep_end, ep_time)

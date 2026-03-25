@@ -22,14 +22,6 @@ Computed as `p × (1 − p) / n` (the variance of a binomial proportion estimato
 # Returns
 
 - `Float64`: variance of the proportion
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]` or `n < 1`
-
-# See also
-
-[`stdp`](@ref), [`varp`](@ref)
 """
 function varp(p::Float64, n::Int64)::Float64
 
@@ -56,14 +48,6 @@ Computed as `√(p × (1 − p) / n)`.
 # Returns
 
 - `Float64`: standard deviation of the proportion
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]` or `n < 1`
-
-# See also
-
-[`varp`](@ref), [`stdc`](@ref)
 """
 function stdp(p::Float64, n::Int64)::Float64
 
@@ -85,17 +69,9 @@ Calculate the variance of categorical data using group labels and counts.
 
 - `Float64`: variance of the categorical variable
 
-# Throws
-
-- `ArgumentError`: if `length(g) ≠ length(x)`, either is empty, or `sum(x) ≤ 1`
-
 # Notes
 
 Formula: `(Σ(g² × x) − (Σ(g × x))² / Σx) / (Σx − 1)`
-
-# See also
-
-[`stdc`](@ref), [`varp`](@ref)
 """
 function varc(g::Vector{Int64}, x::Vector{Int64})::Float64
 
@@ -124,14 +100,6 @@ Calculate the standard deviation of categorical data.
 # Returns
 
 - `Float64`: standard deviation of the categorical variable
-
-# Throws
-
-- `ArgumentError`: if `length(g) ≠ length(x)`, either is empty, or `sum(x) ≤ 1`
-
-# See also
-
-[`varc`](@ref), [`stdp`](@ref)
 """
 function stdc(g::Vector{Int64}, x::Vector{Int64})::Float64
 
@@ -151,14 +119,6 @@ Calculate the range of an array (maximum − minimum).
 # Returns
 
 - `Float64`: range of `x`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty
-
-# See also
-
-[`mrng`](@ref)
 """
 function rng(x::AbstractArray)::Float64
 
@@ -176,14 +136,6 @@ Calculate the midrange of an array: `(maximum(x) − minimum(x)) / 2`.
 # Arguments
 
 - `Float64`: midrange of `x`.
-
-# Throws
-
-- `ArgumentError`: if `x` is empty
-
-# See also
-
-[`rng`](@ref)
 """
 function mrng(x::AbstractArray)::Float64
 
@@ -208,14 +160,6 @@ Computed as `1 / √n` (the standard error of a proportion at `p = 0.5`).
 # Returns
 
 - `Float64`: margin of error
-
-# Throws
-
-- `ArgumentError`: if `n < 1`
-
-# See also
-
-[`moe(::AbstractArray)`](@ref), [`varp`](@ref)
 """
 function moe(n::Int64)::Float64
 
@@ -240,14 +184,6 @@ Computed as `1 / √length(x)`.
 # Returns
 
 - `Float64`: margin of error
-
-# Throws
-
-- `ArgumentError`: if `x` is empty
-
-# See also
-
-[`moe(::Int64)`](@ref), [`varp`](@ref)
 """
 function moe(x::AbstractArray)::Float64
 
@@ -274,10 +210,6 @@ Calculate absolute and relative frequencies for a categorical variable.
     - row 1: absolute frequencies per category, total in last column
     - row 2: relative frequencies as proportions (rounded to 3 d.p.), total = 1.0
     - row 3: relative frequencies as percentages (rounded to 2 d.p.), total = 100.0
-
-# Throws
-
-- `ArgumentError`: if `var` is not a column of `df` or contains fewer than 2 distinct values
 """
 function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
 

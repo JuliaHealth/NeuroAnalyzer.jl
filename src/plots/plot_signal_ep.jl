@@ -247,7 +247,7 @@ function plot_ep(
                 GLMakie.lines!(
                     ax1,
                     t[][1:res:end],
-                    @lift($s[idx, 1:res:end]);
+                    @lift($s[idx, 1:res:end]),
                     color = mono ? :black : cmap[idx],
                     colormap = pal,
                     colorrange = 1:size(s[], 1),
@@ -258,7 +258,8 @@ function plot_ep(
             # plot averaged channels
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[][ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
+                    s_avg = mean(s[][ctypes .== ctypes_uni[idx], :], dims
+ = 1)[:]
                     GLMakie.lines!(ax1, t[][1:res:end], s_avg[1:res:end]; linewidth = 2, color = :black)
                 end
             end
@@ -285,7 +286,7 @@ function plot_ep(
                     GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
                     GLMakie.text!(
                         ax1,
-                        l_pos;
+                        l_pos,
                         markerspace = :pixel,
                         text = string(r[][idx2]) * " " * cunits[idx1],
                         fontsize = 10,
@@ -305,10 +306,10 @@ function plot_ep(
                 l_pos = lift(seg_pos) do seg_pos
                     (seg_pos, idx + 0.5)
                 end
-                GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                GLMakie.poly!(ax1, s_rectangle, color = :red, strokecolor = :red, strokewidth = 2)
                 GLMakie.text!(
                     ax1,
-                    l_pos;
+                    l_pos,
                     text = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
                     markerspace = :pixel,
                     fontsize = 10,
@@ -323,14 +324,14 @@ function plot_ep(
 
     # plot markers if available
     if markers
-        GLMakie.vlines!(ax1, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
+        GLMakie.vlines!(ax1, markers_pos, linestyle = :dash, linewidth = 1, color = :black)
         for idx in eachindex(markers_pos)
             markers_ypos = lift(ch1, nch) do v1, v2
                 (markers_pos[idx], v1 + (v2 - 1) + 0.5)
             end
             GLMakie.textlabel!(
                 ax1,
-                markers_ypos;
+                markers_ypos,
                 text = "$(markers_id[idx]) / $(markers_desc[idx])",
                 text_align = (:left, :center),
                 fontsize = 8,
@@ -349,7 +350,7 @@ function plot_ep(
 
         # time bar
         ax2 = GLMakie.Axis(
-            fig[2, 1];
+            fig[2, 1],
             xlabel = xl,
             ylabel = "",
             title = "",
@@ -368,23 +369,23 @@ function plot_ep(
         GLMakie.xlims!(ax2, 0, ep_n[])
         GLMakie.ylims!(ax2, 0, 1)
         hideydecorations!(ax2)
-        hidexdecorations!(ax2; label = false, ticks = false, ticklabels = false)
+        hidexdecorations!(ax2, label = false, ticks = false, ticklabels = false)
         ax2.xticklabelsize = 12
 
         # epoch markers
-        GLMakie.vlines!(ax2, 1:ep_n[]; linestyle = :dash, linewidth = 1, color = :black)
+        GLMakie.vlines!(ax2, 1:ep_n[], linestyle = :dash, linewidth = 1, color = :black)
 
         # time line marker
         # define a square: Rect(x, y, width, height)
         t_rectangle = lift(seg_pos) do v
             Rect(v, 0, n_epochs, 1)
         end
-        poly!(ax2, t_rectangle; color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.5)
+        poly!(ax2, t_rectangle, color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.5)
 
         # channel bar
         if type === :normal
             ax3 = GLMakie.Axis(
-                fig[1, 2];
+                fig[1, 2],
                 xlabel = "",
                 ylabel = "",
                 title = "",

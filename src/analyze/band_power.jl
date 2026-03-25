@@ -136,8 +136,6 @@ function band_power(
     # pre-allocate output
     bp = zeros(ch_n, ep_n)
 
-    _log_off()
-
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
@@ -155,8 +153,6 @@ function band_power(
             demean = demean
         )
     end
-
-    _log_on()
 
     return bp
 

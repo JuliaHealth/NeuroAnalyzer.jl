@@ -16,14 +16,6 @@ Computed as `σ / μ`, where `σ = std(x)` and `μ = mean(x)`. Expresses the sta
 # Returns
 
 - `Float64`: coefficient of variation (dimensionless ratio)
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 2` or `mean(x) == 0`
-
-# See also
-
-[`cvmd`](@ref), [`fano`](@ref)
 """
 function cvm(x::AbstractVector)::Float64
 
@@ -50,14 +42,6 @@ Uses the robust formula `(Q3 − Q1) / 2 / median(x)`, where `Q1` and `Q3` are t
 # Returns
 
 - `Float64`: robust coefficient of variation (dimensionless ratio)
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 2` or `median(x) == 0`
-
-# See also
-
-[`cvm`](@ref), [`fano`](@ref)
 """
 function cvmd(x::AbstractVector)::Float64
 
@@ -84,14 +68,6 @@ Computed as `σ² / μ`, where `σ² = var(x)` and `μ = mean(x)`. The Fano fact
 # Returns
 
 - `Float64`: Fano factor (units of `x`)
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 2` or `mean(x) == 0`
-
-# See also
-
-[`cvm`](@ref), [`cvmd`](@ref)
 """
 function fano(x::AbstractVector)::Float64
 

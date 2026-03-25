@@ -15,10 +15,6 @@ The Digitrack ASCII format has a 3-line text header followed by one line per cha
 # Returns
 
 - `NeuroAnalyzer.NEURO`
-
-# Throws
-
-- `ArgumentError` if the file does not exist or is not a Digitrack file
 """
 function import_digitrack(
     file_name::String;

@@ -226,22 +226,26 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function psd_rel(
-        s::AbstractArray;
-        fs::Int64,
-        db::Bool = false,
-        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true
-    )::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+    s::AbstractArray;
+    fs::Int64,
+    db::Bool = false,
+    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true
+)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
     f = psd_rel(

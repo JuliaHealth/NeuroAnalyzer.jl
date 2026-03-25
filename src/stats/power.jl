@@ -33,13 +33,6 @@ Named tuple:
 
 - `n1::Int64`: group 1 sample size
 - `n2::Int64`: group 2 sample size
-
-# Throws
-
-- `ArgumentError`: if `s1 ≤ 0`, `r < 1`, `m1 == m2`, or `alpha`/`power` out of range
-
-# See also
-[`power_c2g`](@ref), [`size_c1g`](@ref)
 """
 function size_c2g(;
     m1::Real,
@@ -50,11 +43,12 @@ function size_c2g(;
     power::Float64 = 0.8
 )::@NamedTuple{n1::Int64, n2::Int64}
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
-    !(s1 > 0) && throw(ArgumentError("s1 must be > 0."))
-    !(r  >= 1) && throw(ArgumentError("r must be ≥ 1."))
-    !(m1 != m2) && throw(ArgumentError("m1 and m2 must differ (zero effect size)."))
+    s1 > 0 || throw(ArgumentError("s1 must be > 0."))
+    r  >= 1 || throw(ArgumentError("r must be ≥ 1."))
+    m1 != m2 || throw(ArgumentError("m1 and m2 must differ (zero effect size)."))
 
     beta  = 1 - power
     delta = abs(m2 - m1)
@@ -83,14 +77,6 @@ Calculate the required sample size for a one-group continuous outcome study (gro
 # Returns
 
 - `Int64`: required sample size
-
-# Throws
-
-- `ArgumentError`: if `s ≤ 0`, `m == xbar`, or `alpha`/`power` out of range
-
-# See also
-
-[`power_c1g`](@ref), [`size_c2g`](@ref)
 """
 function size_c1g(;
     m::Real,
@@ -101,10 +87,11 @@ function size_c1g(;
     iter::Bool = false
 )::Int64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
-    !(s > 0) && throw(ArgumentError("s must be > 0."))
-    !(m != xbar) && throw(ArgumentError("m and xbar must differ."))
+    s > 0 || throw(ArgumentError("s must be > 0."))
+    m != xbar || throw(ArgumentError("m and xbar must differ."))
 
     if iter
         powers = [power_c1g(m=m, s=s, xbar=xbar, n=n, alpha=alpha) for n in 2:10_000]
@@ -136,14 +123,6 @@ Named tuple:
 
 - `n1::Int64`: group 1 sample size
 - `n2::Int64`: group 2 sample size
-
-# Throws
-
-- `ArgumentError`: if proportions are out of range or equal, or `r < 1`
-
-# See also
-
-[`power_p2g`](@ref), [`size_p1g`](@ref)
 """
 function size_p2g(;
     p1::Float64,
@@ -153,12 +132,13 @@ function size_p2g(;
     power::Float64 = 0.8
 )::@NamedTuple{n1::Int64, n2::Int64}
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    !(p1 != p2) && throw(ArgumentError("p1 and p2 must differ."))
-    !(r >= 1) && throw(ArgumentError("r must be ≥ 1."))
+    p1 != p2 || throw(ArgumentError("p1 and p2 must differ."))
+    r >= 1 || throw(ArgumentError("r must be ≥ 1."))
 
     beta = 1 - power
     delta = abs(p2 - p1)
@@ -193,14 +173,6 @@ Calculate the required sample size for a one-group proportion study (group vs po
 # Returns
 
 - `Int64`: required sample size
-
-# Throws
-
-- `ArgumentError`: if proportions are out of range or equal
-
-# See also
-
-[`power_p1g`](@ref), [`size_p2g`](@ref)
 """
 function size_p1g(;
     p1::Float64,
@@ -209,11 +181,12 @@ function size_p1g(;
     power::Float64 = 0.8
 )::Int64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    !(p1 != p2) && throw(ArgumentError("p1 and p2 must differ."))
+    p1 != p2 || throw(ArgumentError("p1 and p2 must differ."))
 
     beta = 1 - power
     q0 = 1 - p1
@@ -244,14 +217,6 @@ Calculate study power for a two-group continuous outcome comparison.
 # Returns
 
 - `Float64`: estimated study power
-
-# Throws
-
-- `ArgumentError`: if SDs ≤ 0, sample sizes < 1, or `alpha` out of range
-
-# See also
-
-[`size_c2g`](@ref), [`power_c1g`](@ref)
 """
 function power_c2g(;
     m1::Real,
@@ -263,11 +228,12 @@ function power_c2g(;
     alpha::Float64 = 0.05
 )::Float64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
-    !(s1 > 0) && throw(ArgumentError("s1 must be > 0."))
-    !(s2 > 0) && throw(ArgumentError("s2 must be > 0."))
-    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
-    !(n2 >= 1) && throw(ArgumentError("n2 must be ≥ 1."))
+    s1 > 0 || throw(ArgumentError("s1 must be > 0."))
+    s2 > 0 || throw(ArgumentError("s2 must be > 0."))
+    n1 >= 1 || throw(ArgumentError("n1 must be ≥ 1."))
+    n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
 
     delta = abs(m2 - m1)
     z = -cl2z(1 - alpha) + delta / sqrt(s1^2/n1 + s2^2/n2)
@@ -292,14 +258,6 @@ Calculate study power for a one-group continuous outcome comparison (group vs po
 # Returns
 
 - `Float64`: estimated study power
-
-# Throws
-
-- `ArgumentError`: if `s ≤ 0`, `n < 2`, or `alpha` out of range
-
-# See also
-
-[`size_c1g`](@ref), [`power_c2g`](@ref)
 """
 function power_c1g(;
     m::Real,
@@ -309,9 +267,10 @@ function power_c1g(;
     alpha::Float64=0.05
 )::Float64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
-    !(s > 0 ) && throw(ArgumentError("s must be > 0."))
-    !(n >= 2) && throw(ArgumentError("n must be ≥ 2."))
+    s > 0 || throw(ArgumentError("s must be > 0."))
+    n >= 2 || throw(ArgumentError("n must be ≥ 2."))
 
     t_crit  = crit_t(n - 1, alpha)
     t_stat  = (xbar - m) / (s / sqrt(n))
@@ -339,14 +298,6 @@ Calculate study power for a two-proportion comparison.
 # Returns
 
 - `Float64`: estimated study power
-
-# Throws
-
-- `ArgumentError`: if proportions out of range or sample sizes < 1
-
-# See also
-
-[`size_p2g`](@ref), [`power_p1g`](@ref)
 """
 function power_p2g(;
     p1::Float64,
@@ -356,11 +307,12 @@ function power_p2g(;
     alpha::Float64 = 0.05
 )::Float64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
-    !(n2 >= 1) && throw(ArgumentError("n2 must be ≥ 1."))
+    n1 >= 1 || throw(ArgumentError("n1 must be ≥ 1."))
+    n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
 
     delta = abs(p2 - p1)
     q1 = 1 - p1
@@ -393,14 +345,6 @@ Calculate study power for a one-proportion comparison (group vs population).
 # Returns
 
 - `Float64`: estimated study power
-
-# Throws
-
-- `ArgumentError`: if proportions out of range or `n1 < 1`
-
-# See also
-
-[`size_p1g`](@ref), [`power_p2g`](@ref)
 """
 function power_p1g(;
     p1::Float64,
@@ -409,10 +353,11 @@ function power_p1g(;
     alpha::Float64 = 0.05
 )::Float64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
-    !(n1 >= 1) && throw(ArgumentError("n1 must be ≥ 1."))
+    n1 >= 1 || throw(ArgumentError("n1 must be ≥ 1."))
 
     q0 = 1 - p2
     q1 = 1 - p1
@@ -439,17 +384,9 @@ Calculate required sample size for detecting a difference in variance (study SD 
 
 - `Int64`: required sample size (doubled if `twotailed=true`)
 
-# Throws
-
-- `ArgumentError`: if `s2 == 0` or `power ∉ (0, 1)`
-
 # Notes
 
 Values outside the table range are clamped to the nearest boundary and a warning is issued.
-
-# See also
-
-[`size_p1diff`](@ref), [`mde`](@ref)
 """
 function size_c1diff(;
     s1::Real,
@@ -458,8 +395,9 @@ function size_c1diff(;
     power::Float64 = 0.8
 )::Int64
 
+    # validate
     _in(power, (0, 1.0), "power")
-    !(s2 != 0) && throw(ArgumentError("s2 must not be zero."))
+    s2 != 0 || throw(ArgumentError("s2 must not be zero."))
 
     sdiff_values = [
         0.1, 0.2, 0.3, 0.4, 0.5,
@@ -469,8 +407,8 @@ function size_c1diff(;
     power_values = [0.99, 0.95, 0.9, 0.8]
 
     sdiff = s1 / s2
-    !(sdiff in sdiff_values) && _warn("sdiff=$sdiff not in table; result will be estimated.")
-    !(power in power_values) && _warn("power=$power not in table; result will be estimated.")
+    sdiff in sdiff_values || _warn("sdiff=$sdiff not in table; result will be estimated.")
+    power in power_values || _warn("power=$power not in table; result will be estimated.")
 
     sdiff = clamp(sdiff, 0.1, 1.5)
     power = clamp(power, 0.8, 0.99)
@@ -516,20 +454,17 @@ Calculate required sample size for detecting a difference in proportions (study 
 
 - `Int64`: total required sample size (both groups combined)
 
-# Throws
-
-- `ArgumentError`: if proportions out of range or `power ∉ (0, 1)`
-
 # Notes
 
 Values outside the table range are clamped and a warning is issued.
-
-# See also
-
-[`size_c1diff`](@ref), [`size_p1g`](@ref)
 """
-function size_p1diff(; p1::Float64, p2::Float64, power::Float64 = 0.8)::Int64
+function size_p1diff(;
+    p1::Float64,
+    p2::Float64,
+    power::Float64 = 0.8
+)::Int64
 
+    # validate
     _in(power, (0, 1.0), "power")
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
@@ -592,14 +527,6 @@ Computed as `MDE = (z_α + z_β)² × s² / n`.
 # Returns
 
 - `Float64`: minimum detectable effect size
-
-# Throws
-
-- `ArgumentError`: if `n < 1`, `s ≤ 0`, or `alpha`/`beta` out of range
-
-# See also
-
-[`size_c2g`](@ref), [`size_c1g`](@ref)
 """
 function mde(;
     n::Int64,
@@ -613,7 +540,7 @@ function mde(;
     _in(alpha, (0, 1.0), "alpha")
     _in(beta, (0, 1.0), "beta")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
-    s >  0 || throw(ArgumentError("s must be > 0."))
+    s > 0 || throw(ArgumentError("s must be > 0."))
 
     z_alpha = crit_z(alpha)
     z_beta = cl2z(1 - beta)
@@ -639,14 +566,6 @@ Calculate the required sample size for estimating a proportion within a margin o
 # Returns
 
 - `Int64`: required sample size
-
-# Throws
-
-- `ArgumentError`: if `E` or `alpha` are out of range
-
-# See also
-
-[`size_m`](@ref), [`size_p1g`](@ref)
 """
 function size_p(;
     p::Union{Float64, Nothing} = nothing,
@@ -654,6 +573,7 @@ function size_p(;
     E::Float64
 )::Int64
 
+    # validate
     _in(E, (0, 1.0), "E")
     _in(alpha, (0, 1.0), "alpha")
 
@@ -682,14 +602,6 @@ Calculate the required sample size for estimating a population mean within a mar
 # Returns
 
 - `Int64`: required sample size
-
-# Throws
-
-- `ArgumentError`: if `sigma ≤ 0`, `E ≤ 0`, or `alpha` out of range
-
-# See also
-
-[`size_p`](@ref), [`size_c1g`](@ref)
 """
 function size_m(;
     sigma::Real,
@@ -697,9 +609,10 @@ function size_m(;
     E::Real
 )::Int64
 
+    # validate
     _in(alpha, (0, 1.0), "alpha")
-    !(sigma > 0) && throw(ArgumentError("sigma must be > 0."))
-    !(E > 0) && throw(ArgumentError("E must be > 0."))
+    sigma > 0 || throw(ArgumentError("sigma must be > 0."))
+    E > 0 || throw(ArgumentError("E must be > 0."))
 
     return ceil(Int64, (crit_z(alpha / 2; twotailed=false) * sigma / E)^2)
 

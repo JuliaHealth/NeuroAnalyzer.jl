@@ -112,7 +112,6 @@ function acov(
 
     # number of channels
     ch_n = size(s, 1)
-
     # number of epochs
     ep_n = size(s, 3)
 

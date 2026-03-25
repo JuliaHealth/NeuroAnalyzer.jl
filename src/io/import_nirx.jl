@@ -230,12 +230,12 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     ch_n = size(nirs_int, 1)
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)];
-        digits = 4,
+        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)],
+        digits = 4
     )
     epoch_time = round.(
-        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)];
-        digits = 4,
+        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)],
+        digits = 4
     )
 
     # parse events if .evt is not available

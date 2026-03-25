@@ -12,10 +12,8 @@ This function is intended for EDF+ files whose `data_records_duration` header fi
 - `file_name::String`: path to the EDF+ annotation file
 
 # Returns
-- `DataFrame` with columns `:id`, `:start`, `:length`, `:value`, `:channel`
 
-# Throws
-- `ArgumentError` if the file does not exist, is not an EDF file, or is a regular EDF/EDF+ file with signal data (`data_records_duration ≠ 0`)
+- `DataFrame` with columns `:id`, `:start`, `:length`, `:value`, `:channel`
 """
 function import_edf_annotations(file_name::String)::DataFrame
 

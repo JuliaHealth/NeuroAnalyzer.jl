@@ -16,17 +16,9 @@ For each epoch, the cross-channel mean signal is used as the reference, and a no
 
 - `Array{Float64, 3}`: denoised array of the same shape as `s`
 
-# Throws
-
-- `ArgumentError`: if `s` is not 3-dimensional
-
 # Notes
 
 - The noise estimate is random (`rand`); results are not reproducible unless a random seed is set by the caller
-
-# See also
-
-[`denoise_wien(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function denoise_wien(s::AbstractArray)::AbstractArray
 
@@ -45,7 +37,8 @@ function denoise_wien(s::AbstractArray)::AbstractArray
     # s_m and noise are shared across all channels of the same epoch.
     Threads.@threads :static for ep_idx in 1:ep_n
         # cross-channel mean for this epoch: shape (samples,)
-        s_m = vec(mean(@view(s[:, :, ep_idx]); dims=1))
+        s_m = vec(mean(@view(s[:, :, ep_idx]), dims
+=1))
         m = mean(s_m)
         # Noise estimate: white noise at mean signal power
         noise = rand(Float64, length(s_m)) .* m
@@ -72,10 +65,6 @@ Perform Wiener deconvolution denoising on selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
-
-# See also
-
-[`denoise_wien!`](@ref), [`denoise_wien(::AbstractArray)`](@ref)
 """
 function denoise_wien(
     obj::NeuroAnalyzer.NEURO;
@@ -85,7 +74,9 @@ function denoise_wien(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = denoise_wien(@view(obj.data[ch, :, :]))
     push!(obj_new.history, "denoise_wien(OBJ, ch=$ch)")
 
@@ -106,10 +97,6 @@ Perform Wiener deconvolution denoising in-place on selected channels of a NEURO 
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`denoise_wien`](@ref)
 """
 function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

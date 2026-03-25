@@ -20,14 +20,6 @@ Convert a p-value to the corresponding Z-score.
 # Returns
 
 - `Float64`: Z-score such that `P(Z > z) = p` (one-tailed) or `P(|Z| > z) = p` (two-tailed)
-
-# Throws
-
-- `ArgumentError`: if `p ∉ (0, 1)`
-
-# See also
-
-[`z2p`](@ref), [`p2o`](@ref)
 """
 function p2z(p::Float64 = 0.05; twotailed::Bool = false)::Float64
 
@@ -60,10 +52,6 @@ Derived probabilities:
 - `P(Z < z)` (left-tailed): `1 - z2p(z; twotailed=false)`
 - `P(|Z| < z)`: `1 - z2p(z; twotailed=true)`
 - `P(0 < Z < z)`: `(1 - z2p(z; twotailed=true)) / 2`
-
-# See also
-
-[`p2z`](@ref), [`t2p`](@ref)
 """
 function z2p(z::Real; twotailed::Bool = false)::Float64
 
@@ -92,10 +80,6 @@ Convert a t-score to a p-value using the Student's t-distribution.
 
 - `Float64`: p-value ∈ `(0, 1)`
 
-# Throws
-
-- `ArgumentError`: if `df ≤ 0`
-
 # Notes
 
 Derived probabilities:
@@ -103,10 +87,6 @@ Derived probabilities:
 - `P(T < t)` (left-tailed): `1 - t2p(t; df=df, twotailed=false)`
 - `P(|T| < t)`: `1 - t2p(t; df=df, twotailed=true)`
 - `P(0 < T < t)`: `(1 - t2p(t; df=df, twotailed=true)) / 2`
-
-# See also
-
-[`z2p`](@ref), [`chi2p`](@ref), [`f2p`](@ref)
 """
 function t2p(t::Real; df::Real, twotailed::Bool = false)::Float64
 
@@ -136,17 +116,9 @@ Convert a χ² statistic to a right-tailed p-value `P(χ² > chi)`.
 
 - `Float64`: right-tailed p-value
 
-# Throws
-
-- `ArgumentError`: if `chi < 0` or `df ≤ 0`
-
 # Notes
 
 To obtain the left-tailed probability `P(χ² < chi)` use `1 - chi2p(chi; df=df)`.
-
-# See also
-
-[`t2p`](@ref), [`f2p`](@ref)
 """
 function chi2p(chi::Real; df::Real)::Float64
 
@@ -174,17 +146,9 @@ Convert an F-statistic to a right-tailed p-value `P(F > f)`.
 
 - `Float64`: right-tailed p-value
 
-# Throws
-
-- `ArgumentError`: if `f < 0`, `df1 ≤ 0`, or `df2 ≤ 0`
-
 # Notes
 
 To obtain the left-tailed probability `P(F < f)` use `1 - f2p(f; df1=df1, df2=df2)`.
-
-# See also
-
-[`chi2p`](@ref), [`t2p`](@ref)
 """
 function f2p(f::Real; df1::Real, df2::Real)::Float64
 
@@ -213,14 +177,6 @@ Equivalent to `Φ⁻¹(x)` where `Φ` is the standard normal CDF.
 # Returns
 
 - `Float64`: normal quantile at `x`
-
-# Throws
-
-- `ArgumentError`: if `x ∉ (0, 1)`
-
-# See also
-
-[`p2z`](@ref)
 """
 function norminv(x::Real)::Float64
 
@@ -245,14 +201,6 @@ Computed as `o = p / (1 − p)`.
 # Returns
 
 - `Float64`: odds
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1)`
-
-# See also
-
-[`o2p`](@ref), [`logit`](@ref)
 """
 function p2o(p::Real)::Float64
 
@@ -278,14 +226,6 @@ Computed as `p = o / (1 + o)`.
 # Returns
 
 - `Float64`: probability ∈ `[0, 1)`
-
-# Throws
-
-- `ArgumentError`: if `o < 0`
-
-# See also
-
-[`p2o`](@ref)
 """
 function o2p(o::Real)::Float64
 

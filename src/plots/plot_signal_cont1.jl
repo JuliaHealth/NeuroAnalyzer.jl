@@ -271,7 +271,8 @@ function plot_cont(
             # plot averaged channels
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
+                    s_avg = mean(s[ctypes .== ctypes_uni[idx], :], dims
+ = 1)[:]
                     GLMakie.lines!(
                         ax1,
                         t,

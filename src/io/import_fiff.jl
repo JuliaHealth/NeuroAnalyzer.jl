@@ -16,10 +16,6 @@ Load an Elekta-Neuromag FIFF (Functional Image File Format) file and return the 
 - `Vector{Any}`: FIFF object
 - `Matrix{Int64}`: FIFF blocks
 
-# Throws
-
-- `ArgumentError` if the file cannot be opened or is not a valid FIFF file
-
 # References
 
 1. Elekta Neuromag: Functional Image File Format Description. FIFF v1.3, 2011.
@@ -371,10 +367,6 @@ Load an Elekta-Neuromag FIFF file (MEG or EEG) and return a `NeuroAnalyzer.NEURO
 # Returns
 
 - `NeuroAnalyzer.NEURO`
-
-# Throws
-
-- `ArgumentError` if the file does not exist
 """
 function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 

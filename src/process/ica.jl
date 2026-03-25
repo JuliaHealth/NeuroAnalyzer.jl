@@ -20,16 +20,8 @@ Decompose a signal into Independent Components (ICs) using the FastICA algorithm
 
 Named tuple:
 
-- `ic::Matrix{Float64}`: independent components, shape `(n, samples)`
-- `ic_mw::Matrix{Float64}`: weighting matrix, shape `(channels, n)`
-
-# Throws
-
-- `ArgumentError`: if `n` is not in `[1, size(s, 1)]` or if `f` is invalid
-
-# See also
-
-[`ica_decompose(::NeuroAnalyzer.NEURO)`](@ref)
+- `ic::Matrix{Float64}`: independent components, shape (n, samples)
+- `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
 """
 function ica_decompose(
     s::AbstractMatrix;
@@ -115,17 +107,9 @@ Decompose selected channels of a NEURO object into Independent Components (ICs) 
 
 Named tuple:
 
-- `ic::Matrix{Float64}`: independent components, shape `(n, samples)`
-- `ic_mw::Matrix{Float64}`: weighting matrix, shape `(channels, n)`
+- `ic::Matrix{Float64}`: independent components, shape (n, samples)
+- `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
 - `ic_var::Vector{Float64}`: variance explained by each component
-
-# Throws
-
-- `ArgumentError`: if `obj` is not continuous or if `n` is invalid
-
-# See also
-
-[`ica_decompose(::AbstractMatrix)`](@ref)
 """
 function ica_decompose(
     obj::NeuroAnalyzer.NEURO;
@@ -191,14 +175,6 @@ Reconstruct a signal from independent components.
 
 # Returns
 - `Matrix{Float64}`: reconstructed signal, shape (channels, samples)
-
-# Throws
-
-- `ArgumentError`: if `ic_idx` is out of bounds or if dimensions of `ic` and `ic_mw` do not match
-
-# See also
-
-[`ica_reconstruct(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function ica_reconstruct(;
     ic::Matrix{Float64},
@@ -238,14 +214,6 @@ Reconstruct selected channels of a NEURO object from independent components.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: reconstructed NEURO object
-
-# Throws
-
-- `ArgumentError`: if `obj` is not continuous or if `ic_idx` is invalid
-
-# See also
-
-[`ica_reconstruct(::Matrix{Float64})`](@ref), [`ica_reconstruct!(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function ica_reconstruct(
     obj::NeuroAnalyzer.NEURO;
@@ -264,9 +232,11 @@ function ica_reconstruct(
     length(ch) == 1 && (ch = ch[1])
 
     # reconstruction
-    obj_new = deepcopy(obj)
-    obj_new.data[ch, :, 1] = ica_reconstruct(ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)[ch, :]
 
+    # create new dataset
+    obj_new = deepcopy(obj)
+
+    obj_new.data[ch, :, 1] = ica_reconstruct(ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)[ch, :]
     push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
     return obj_new
@@ -290,10 +260,6 @@ Reconstruct selected channels of a NEURO object in-place from independent compon
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`ica_reconstruct(::Matrix{Float64})`](@ref), [`ica_reconstruct(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function ica_reconstruct!(
     obj::NeuroAnalyzer.NEURO;
@@ -328,14 +294,6 @@ Remove independent components from a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: reconstructed NEURO object
-
-# Throws
-
-- `ArgumentError`: if `obj` is not continuous or if `ic_idx` is invalid
-
-# See also
-
-[`ica_remove!`](@ref)
 """
 function ica_remove(
     obj::NeuroAnalyzer.NEURO;
@@ -356,6 +314,7 @@ function ica_remove(
     # number of IC components
     ic_n = length(ic_idx)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # calculate over components and channels
@@ -394,14 +353,6 @@ Remove independent components from a NEURO object in-place.
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError`: if `obj` is not continuous or if `ic_idx` is invalid
-
-# See also
-
-[`ica_remove`](@ref)
 """
 function ica_remove!(
     obj::NeuroAnalyzer.NEURO;

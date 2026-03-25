@@ -34,6 +34,7 @@ function od2conc(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     ep_len = epoch_len(obj)

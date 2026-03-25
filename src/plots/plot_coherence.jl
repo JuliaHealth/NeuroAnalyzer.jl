@@ -165,7 +165,7 @@ function plot_coherence(
         for idx in 1:ch_n
             Makie.lines!(
                 f,
-                coh[idx, :];
+                coh[idx, :],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -176,7 +176,8 @@ function plot_coherence(
 
         # draw averaged channels
         if avg
-            coh_avg = mean(coh; dims = 1)[:]
+            coh_avg = mean(coh, dims
+ = 1)[:]
             Makie.lines!(f, coh_avg; colormap = pal, linewidth = 4, color = :black)
         end
 

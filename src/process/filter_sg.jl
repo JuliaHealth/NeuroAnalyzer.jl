@@ -17,14 +17,6 @@ Fits a polynomial of degree `order` to successive overlapping windows of `window
 # Returns
 
 - `Vector{Float64}`: filtered signal of the same length as `s`
-
-# Throws
-
-- `ArgumentError`: if `window` is out of range, even, `order < 2`, or `order ≥ window`
-
-# See also
-
-[`filter_sg(::AbstractArray)`](@ref), [`filter_sg(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_sg(
     s::AbstractVector;
@@ -55,10 +47,6 @@ Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal ar
 # Returns
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
-
-# See also
-
-[`filter_sg(::AbstractVector)`](@ref), [`filter_sg(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_sg(
     s::AbstractArray;
@@ -102,10 +90,6 @@ Apply a Savitzky-Golay filter to selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
-
-# See also
-
-[`filter_sg!`](@ref), [`filter_sg(::AbstractArray)`](@ref)
 """
 function filter_sg(
     obj::NeuroAnalyzer.NEURO;
@@ -117,7 +101,9 @@ function filter_sg(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :]; order = order, window = window)
     push!(obj_new.history, "filter_sg(OBJ, ch=$ch, order=$order, window=$window)")
 
@@ -140,9 +126,6 @@ Apply a Savitzky-Golay filter in-place to selected channels of a NEURO object.
 # Returns
 
 - `Nothing`
-
-# See also
-[`filter_sg`](@ref)
 """
 function filter_sg!(
     obj::NeuroAnalyzer.NEURO;

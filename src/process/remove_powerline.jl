@@ -24,10 +24,6 @@ For each selected channel, an IIR notch filter is optimised by scanning a range 
 
 - `NeuroAnalyzer.NEURO`: new object with power line noise removed
 - `DataFrame`: detected peaks with their optimized notch bandwidths
-
-# Throws
-
-- `ArgumentError`: if the object has more than one epoch, `pl_frq` is out of range, `q` is out of range, or no power line peak is found near `pl_frq`
 """
 function remove_powerline(
     obj::NeuroAnalyzer.NEURO;
@@ -39,18 +35,22 @@ function remove_powerline(
     q::Real = 0.1
 )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
+    # validate
     nepochs(obj) == 1 || throw(ArgumentError("remove_powerline() requires a continuous (1-epoch) object."))
     pl_frq >= 0 || throw(ArgumentError("pl_frq must be ≥ 0."))
     pl_frq <= sr(obj)/2 || throw(ArgumentError("pl_frq must be ≤ $(sr(obj)/2) Hz (Nyquist)."))
     q >= 0.01 || throw(ArgumentError("q must be ≥ 0.01."))
     q < 5 || throw(ArgumentError("q must be < 5."))
-
     _check_var(method, [:iir], "method")
 
+    # resolve channel names to integer indices
     ch_idx_vec = get_channel(obj, ch=ch)
     clabels = labels(obj)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
+    # pre-allocate outputs
     pl_best_bw = Float64[]
     pks_frq = Float64[]
     pks_best_bw = Vector{Float64}[]
@@ -184,10 +184,6 @@ Remove power line noise in-place.
 # Returns
 
 - `DataFrame`: detected peaks with their optimized notch bandwidths
-
-# Throws
-
-- `ArgumentError`: if the object has more than one epoch, `pl_frq` is out of range, `q` is out of range, or no power line peak is found near `pl_frq`
 """
 function remove_powerline!(
     obj::NeuroAnalyzer.NEURO;
@@ -230,13 +226,10 @@ Fits a sine + cosine model at each integer frequency from 1 to `fs÷2` Hz and re
 # Returns
 
 - `Float64`: dominant noise frequency in Hz
-
-# Throws
-
-- `ArgumentError`: if `fs < 2`
 """
 function detect_powerline(s::AbstractVector; fs::Int64)::Float64
 
+    # validate
     fs >= 2 || throw(ArgumentError("fs must be ≥ 2."))
 
     n = length(s)

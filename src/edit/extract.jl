@@ -51,6 +51,7 @@ function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)::NeuroAnalyzer.NEURO
     # validate
     _check_epochs(obj, ep)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data = reshape(obj.data[:, :, ep], nchannels(obj), epoch_len(obj), 1)

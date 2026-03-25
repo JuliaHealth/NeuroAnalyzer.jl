@@ -43,8 +43,10 @@ Channel locations:
 """
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
-    !(length(obj.header.recording[:label]) > 0) && throw(ArgumentError("OBJ does not contain labels, use add_label() first."))
+    isfile(file_name) ||
+        throw(ArgumentError("File $file_name cannot be loaded."))
+    length(obj.header.recording[:label]) > 0 ||
+        throw(ArgumentError("OBJ does not contain labels, use add_label() first."))
 
     _info(
         "Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org"
@@ -231,6 +233,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
 
     # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.locs = Base.filter(:label => in(labels(obj)), locs)
 
     _locs_round!(obj_new.locs)

@@ -4,8 +4,6 @@ using Einsum
 using StatsKit
 using FFTW
 
-# Exports
-#---
 export data2psi
 
 """
@@ -160,7 +158,7 @@ function data2para(
     maxfreq = maximum(freqlist)  # max frequency of all frequency bands
     nfbands = size(freqlist, 2)  # number of frequency bands
 
-    parameters = (
+    return (
         data = data,
         nsamples = nsamples,
         nchan = nchannels,
@@ -175,7 +173,6 @@ function data2para(
         nfbands = nfbands
     )
 
-    return parameters
 end
 
 """
@@ -296,17 +293,17 @@ preparing Cross Spectra for Phase Slope by segment averaging and subtraction
 
 ### Returns
 
-- `_cs_::AbstractArray`: segment averaged and subtracted Cross Spectra
+- `AbstractArray`: segment averaged and subtracted Cross Spectra
 """
 function cs2cs_(
-        data::AbstractArray,
-        cs::AbstractArray,
-        fband::AbstractArray,
-        nep::Integer,
-        segave::Bool,
-        subave::Bool,
-        method::String,
-    )
+    data::AbstractArray,
+    cs::AbstractArray,
+    fband::AbstractArray,
+    nep::Integer,
+    segave::Bool,
+    subave::Bool,
+    method::String,
+)
     if segave
         if method == "bootstrap"
             randboot = rand(1:nep, nep)
@@ -375,23 +372,23 @@ Calculates phase slope index (PSI)
 
 # Returns
 
-- `psi::AbstractArray`: Phase Slope Index with shape `(channel, channel, frequency bands)`
-- `psi_std::AbstractArray`: PSI estimated standard deviation with shape `(channel, channel, frequency bands)`
+- `AbstractArray`: Phase Slope Index with shape `(channel, channel, frequency bands)`
+- `AbstractArray`: PSI estimated standard deviation with shape `(channel, channel, frequency bands)`
 """
 function data2psi(
-        data::AbstractArray,
-        seglen::Integer;
-        segshift::Integer = 0,
-        eplen::Integer = 0,
-        freqlist::AbstractArray{Int} = Int[],
-        method::String = "jackknife",
-        subave::Bool = false,
-        segave::Bool = true,
-        nboot::Integer = 100,
-        detrend::Bool = false,
-        window::Function = hanning_fun,
-        verbose::Bool = false,
-    )
+    data::AbstractArray,
+    seglen::Integer;
+    segshift::Integer = 0,
+    eplen::Integer = 0,
+    freqlist::AbstractArray{Int} = Int[],
+    method::String = "jackknife",
+    subave::Bool = false,
+    segave::Bool = true,
+    nboot::Integer = 100,
+    detrend::Bool = false,
+    window::Function = hanning_fun,
+    verbose::Bool = false,
+)
 
     (data, nsamples, nchan, eplen, nep, method, subave, segshift, nseg, freqlist, maxfreq, nfbands) = data2para(
         data, seglen, segshift, eplen, freqlist, method, subave, verbose
@@ -446,6 +443,7 @@ function data2psi(
     psi_std = squeeze(psi_std)
 
     return psi, psi_std
+
 end
 
 end  # module

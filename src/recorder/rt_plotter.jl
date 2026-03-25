@@ -45,7 +45,7 @@ function rt_plotter(; fs::Int64, l::Int64 = 5, duration::Int64 = 20)::Plots.Plot
                 t = (l * seg_idx):(1 / fs):(l * (seg_idx + 1))
                 p = Plots.plot(
                     t,
-                    y;
+                    y,
                     ylims = (-1, 1),
                     xticks = (t[1]:t[end]),
                     legend = false,

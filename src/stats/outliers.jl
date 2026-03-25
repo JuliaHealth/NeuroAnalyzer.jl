@@ -32,18 +32,10 @@ Detect outliers in a vector using a selected method.
 
 - `Vector{Bool}`: boolean mask; `true` at each index identified as an outlier
 
-# Throws
-
-- `ArgumentError`: if `x` is empty, `method` is invalid, or `method = :g` with `length(x) ≤ 6`
-
 # Notes
 
 - The `:g` method iteratively removes the most extreme value while `length(x_tmp) > 6` (Grubbs requires at least 7 observations), checking both the maximum and minimum tails separately.
 - Outlier indices are tracked relative to the **original** vector, so deletion from the working copy does not affect index mapping.
-
-# See also
-
-[`grubbs`](@ref)
 """
 function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
 
@@ -137,16 +129,9 @@ The critical value is derived from the t-distribution with `df = n − 2`.
 
 - `Bool`: `true` if an outlier is detected; `false` otherwise
 
-# Throws
-
-- `ArgumentError`: if `length(x) < 7`, `alpha ∉ (0, 1)`, or `t ∉ {−1, 0, 1}`
-
 # References
+
 Grubbs FE. Procedures for detecting outlying observations in samples. Technometrics. 1969;11(1):1–21.
-
-# See also
-
-[`outlier_detect`](@ref)
 """
 function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
 

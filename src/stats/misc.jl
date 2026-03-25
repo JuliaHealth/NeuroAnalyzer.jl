@@ -30,10 +30,6 @@ Named tuple:
 
 - `k1::Float64`: square-root estimate
 - `k2::Float64`: sturges' extended estimate
-
-# Throws
-
-- `ArgumentError`: if `n < 1`
 """
 function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
 
@@ -57,14 +53,6 @@ Calculate the slope of the line passing through two points.
 # Returns
 
 - `Float64`: slope `(y₂ − y₁) / (x₂ − x₁)`
-
-# Throws
-
-- `ArgumentError`: if `p2[1] == p1[1]` (vertical line; slope undefined)
-
-# See also
-
-[`distance`](@ref)
 """
 function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
@@ -87,10 +75,6 @@ Calculate the Euclidean distance between two points.
 # Returns
 
 - `Float64`: Euclidean distance `√((x₂−x₁)² + (y₂−y₁)²)`
-
-# See also
-
-[`slope`](@ref)
 """
 function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
@@ -120,14 +104,6 @@ Named tuple:
 
 - `x_t::Matrix{Bool}`: boolean mask; `true` where the condition holds
 - `n::Int64`: number of elements satisfying the condition
-
-# Throws
-
-- `ArgumentError`: if `t_type` is not a recognized symbol
-
-# See also
-
-[`cmp_stat`](@ref)
 """
 function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol = :g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
 
@@ -166,14 +142,6 @@ Calculate the proportion of elements in a statistic distribution that are greate
 # Returns
 
 - `Float64`: proportion of elements satisfying the condition
-
-# Throws
-
-- `ArgumentError`: if `stat_dist` is empty or `type ∉ {:g, :l}`
-
-# See also
-
-[`count_thresh`](@ref)
 """
 function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float64
 
@@ -204,14 +172,6 @@ Each permutation randomly selects a split point and rotates the vector (moves th
 # Returns
 
 - `Matrix{Float64}`: matrix, shape (n, length(s))
-
-# Throws
-
-- `ArgumentError`: if `n < 1` or `length(s) < 2`
-
-# See also
-
-[`permute(::AbstractArray, ::Int64)`](@ref)
 """
 function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
 
@@ -246,14 +206,6 @@ Each permutation randomly selects a split point along the second axis and rotate
 
 - `Array{Float64, 3}`: shape (n × size(s,1) × size(s,2)) for 2-D input
 - `Array{Float64, 4}`: shape (n × size(s,1) × size(s,2) × size(s,3)) for 3-D input
-
-# Throws
-
-- `ArgumentError`: if `n < 1`, `ndims(s) ∉ {2, 3}`, or `size(s, 2) < 2`
-
-# See also
-
-[`permute(::AbstractVector, ::Int64)`](@ref)
 """
 function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
 
@@ -317,10 +269,6 @@ Computed as `log(p / (1 − p))`. Returns `−Inf` for `p = 0` and `+Inf` for `p
 # Returns
 
 - `Float64`: log-odds `log(p / (1 − p))`
-
-# Throws
-
-- `ArgumentError`: if `p ∉ [0, 1]`
 """
 function logit(p::Float64)::Float64
 
@@ -345,14 +293,6 @@ Computed as `Σ(xᵢ − x̄)²`.
 # Returns
 
 - `Float64`: sum of squared deviations
-
-# Throws
-
-- `ArgumentError`: if `length(x) < 2`
-
-# See also
-
-[`df`](@ref)
 """
 function sumsq(x::AbstractVector)::Float64
 
@@ -375,6 +315,7 @@ Return a copy of `x` with all `NaN` and `Missing` values removed.
 - `x::AbstractVector`: input vector; may contain `Float64`, `Missing`, or `NaN`
 
 # Returns
+
 - `Vector{Float64}`: filtered vector converted to `Float64`
 """
 function rmna(x::AbstractVector)::Vector{Float64}
@@ -398,14 +339,6 @@ Calculate the degrees of freedom for a vector (`length(x) − 1`).
 # Returns
 
 - `Int64`: degrees of freedom `length(x) − 1`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty
-
-# See also
-
-[`sumsq`](@ref)
 """
 function df(x::AbstractVector)::Int64
 
@@ -428,10 +361,6 @@ Center a vector by subtracting its mean.
 # Returns
 
 - `Vector{Float64}`: mean-centered vector `x .- mean(x)`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty
 """
 function center(x::AbstractVector)::Vector{Float64}
 

@@ -17,10 +17,6 @@ The signal is normalised to `[−1, 1]` and scaled to `[−1000, +1000]` before 
 # Returns
 
 - `Nothing`
-
-# Throws
-
-- `ArgumentError`: if `ep` is out of range, `ch` does not resolve to exactly one channel, or `seg` boundaries fall outside the epoch time axis
 """
 function play(
     obj::NeuroAnalyzer.NEURO;
@@ -29,11 +25,12 @@ function play(
     ep::Int64
 )::Nothing
 
-    # resolve channel names to indices
+    # resolve channel names to integer indices
     _check_epochs(obj, ep)
     ch = get_channel(obj, ch=ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
+
     # validate
     _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
 

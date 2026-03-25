@@ -17,13 +17,6 @@ Ties receive the same rank. Results are returned in the original element order.
 # Returns
 
 - `Vector{Float64}`: percentile ranks ∈ `[0, 1)`, in the same order as `x`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty
-
-# See also
-[`dranks`](@ref)
 """
 function prank(x::AbstractVector)::Vector{Float64}
 
@@ -50,14 +43,6 @@ Tied ranks are computed with `StatsBase.tiedrank`, normalised to `(0, 1]`, then 
 # Returns
 
 - `Array{Int64}`: rank-bin indices ∈ `[1, nbins]`, same shape as `x`
-
-# Throws
-
-- `ArgumentError`: if `x` is empty or `nbins < 1`
-
-# See also
-
-[`prank`](@ref)
 """
 function dranks(
     x::AbstractArray,

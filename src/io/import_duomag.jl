@@ -16,9 +16,6 @@ amplitudes scaled to μV on import.
 # Returns
 
 - `NeuroAnalyzer.NEURO`
-
-# Throws
-- `ArgumentError` if the file does not exist or has an unsupported extension
 """
 function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
@@ -219,8 +216,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     n_samples  = size(data, 2) * size(data, 3)
     time_pts   = round.(
-        range(0; step = 1/sampling_rate, length = n_samples) .- (stim_sample[1] / sampling_rate);
-        digits = 4)
+        range(0, step = 1/sampling_rate, length = n_samples) .- (stim_sample[1] / sampling_rate), digits = 4)
     epoch_time = time_pts
 
     # convert .ascii marker positions (ms) to sample indices

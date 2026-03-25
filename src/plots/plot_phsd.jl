@@ -175,7 +175,7 @@ function plot_phsd(
         for idx in 1:ch_n
             Makie.lines!(
                 f,
-                ph[idx, :];
+                ph[idx, :],
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -186,7 +186,8 @@ function plot_phsd(
 
         # draw averaged channels
         if avg
-            s = mean(ph; dims = 1)[:]
+            s = mean(ph, dims
+ = 1)[:]
             Makie.lines!(f, s; colormap = pal, linewidth = 4, color = :black)
         end
 
@@ -298,7 +299,7 @@ function plot_phsd_3d(
             Makie.lines!(
                 f,
                 ones(length(f)) .* idx,
-                ph[idx, :];
+                ph[idx, :],
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
@@ -428,7 +429,7 @@ function plot_phsd_topo(
             figure_padding = 0
         )
         ax = GLMakie.Axis(
-            pp[1, 1];
+            pp[1, 1],
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -444,7 +445,7 @@ function plot_phsd_topo(
         push!(pp_vec, pp)
         pp_full = plot_phsd(
             f,
-            ph[idx, :];
+            ph[idx, :],
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,
@@ -577,33 +578,34 @@ Plot PHSD (phase spectral density).
 - `GLMakie.Figure`
 """
 function plot_phsd(
-        obj::NeuroAnalyzer.NEURO;
-        seg::Tuple{Real, Real} = (0, 10),
-        ep::Int64 = 0,
-        ch::Union{String, Vector{String}, Regex} = "all",
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        frq::Symbol = :lin,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        zlabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-        type::Symbol = :normal,
-        cart::Bool = false,
-        head::Bool = true,
-        leg::Bool = true,
-        avg::Bool = false,
-        ci95::Bool = false
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real} = (0, 10),
+    ep::Int64 = 0,
+    ch::Union{String, Vector{String}, Regex} = "all",
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    frq::Symbol = :lin,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    zlabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    type::Symbol = :normal,
+    cart::Bool = false,
+    head::Bool = true,
+    leg::Bool = true,
+    avg::Bool = false,
+    ci95::Bool = false
+)::GLMakie.Figure
 
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(frq, [:lin, :log], "frq")
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
-        !(ep == 0) && throw(ArgumentError("For continuous object, ep must not be specified."))
+        ep == 0 || throw(ArgumentError("For continuous object, ep must not be specified."))
         if obj.time_pts[end] < 10 && seg == (0, 10)
             seg = (0, obj.time_pts[end])
         else
@@ -614,7 +616,7 @@ function plot_phsd(
         t = obj.time_pts[seg[1]:seg[2]]
         _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
-        !(ep != 0) && throw(ArgumentError("For epoched object, ep must be specified."))
+        ep != 0 || throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
         signal = @views obj.data[ch, :, ep]
@@ -643,7 +645,7 @@ function plot_phsd(
         else
             fig = plot_phsd(
                 sf,
-                sp;
+                sp,
                 xlabel = xlabel,
                 ylabel = "",
                 clabels = clabels,
@@ -658,13 +660,14 @@ function plot_phsd(
         end
     elseif type === :w3d || type === :s3d
         ch_t = obj.header.recording[:channel_type]
-        !(ndims(sp) >= 2) && throw(ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."))
+        ndims(sp) >= 2 ||
+            throw(ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
         fig = plot_phsd_3d(
             sf,
-            sp;
+            sp,
             clabels = clabels,
             xlabel = xlabel,
             ylabel = ylabel,
@@ -679,7 +682,8 @@ function plot_phsd(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Phase [rad]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        !(length(unique(obj.header.recording[:channel_type][ch])) == 1) && throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
+        length(unique(obj.header.recording[:channel_type][ch])) == 1 ||
+            throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
@@ -688,7 +692,7 @@ function plot_phsd(
         fig = plot_phsd_topo(
             locs,
             sf,
-            sp;
+            sp,
             xlabel = xlabel,
             ylabel = ylabel,
             title = title,

@@ -234,15 +234,15 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             epoch_time = dataset["times"][:]
         else
             epoch_time = round.(
-                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-                digits = 4,
+                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
+                digits = 4
             )
         end
         time_pts = round.(
             collect(
                 0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-            )[1:(end - 1)];
-            digits = 4,
+            )[1:(end - 1)],
+            digits = 4
         )
     else
         # if length(dataset["times"][:]) > 0
@@ -251,11 +251,11 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         time_pts = round.(
             collect(
                 0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-            )[1:(end - 1)];
+            )[1:(end - 1)],
             digits = 4,
         )
         epoch_time = round.(
-            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
             digits = 4,
         )
     end

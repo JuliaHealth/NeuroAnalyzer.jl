@@ -19,9 +19,6 @@ Each row corresponds to one time point across all epochs (epochs are concatenate
 
 - For multi-epoch objects the time column contains `obj.time_pts`, which spans the full concatenated signal, not individual epoch times.
 - Channel columns are named via `labels(obj)`; ensure the object has channel labels assigned before calling this function.
-
-# See also
-[`labels`](@ref), [`signal_len`](@ref)
 """
 function to_df(obj::NeuroAnalyzer.NEURO)::DataFrame
 

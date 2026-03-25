@@ -34,8 +34,10 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEUR
         "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.",
     )
     locs = Base.filter(:label => in(labels(obj)), locs)
+
     # create new dataset
     obj_new = deepcopy(obj)
+
     for idx in 1:DataFrames.nrow(locs)
         lidx = findfirst(isequal(locs[idx, :label]), obj_new.locs[!, :label])
         isa(lidx, Int64) && (obj_new.locs[lidx, :] = locs[idx, :])

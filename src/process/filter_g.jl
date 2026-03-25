@@ -18,14 +18,6 @@ The Gaussian is normalized to unit gain at its peak. Taking the absolute value o
 # Returns
 
 - `Vector{Float64}`: filtered signal of length `length(s)`
-
-# Throws
-
-- `ArgumentError`: if `fs < 1`, `pad < 0`, `f < 0`, `f ≥ fs/2`, or `gw ≤ 0`
-
-# See also
-
-[`filter_g(::AbstractArray)`](@ref), [`filter_g(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_g(
     s::AbstractVector;
@@ -74,14 +66,6 @@ Filter a 3-dimensional signal array using a Gaussian kernel in the frequency dom
 # Returns
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
-
-# Throws
-
-- `ArgumentError`: propagated from [`filter_g(::AbstractVector)`](@ref)
-
-# See also
-
-[`filter_g(::AbstractVector)`](@ref), [`filter_g(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function filter_g(
     s::AbstractArray;
@@ -132,10 +116,6 @@ Filter selected channels of a NEURO object using a Gaussian kernel in the freque
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
-
-# See also
-
-[`filter_g!`](@ref), [`filter_g(::AbstractArray)`](@ref)
 """
 function filter_g(
     obj::NeuroAnalyzer.NEURO;
@@ -148,7 +128,9 @@ function filter_g(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs = sr(obj), pad = pad, f = f, gw = gw)
     push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
 
@@ -172,10 +154,6 @@ Filter selected channels of a NEURO object in-place using a Gaussian kernel in t
 # Returns
 
 - `Nothing`
-
-# See also
-
-[`filter_g`](@ref)
 """
 function filter_g!(
     obj::NeuroAnalyzer.NEURO;

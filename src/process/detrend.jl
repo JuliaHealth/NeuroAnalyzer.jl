@@ -23,14 +23,6 @@ Remove a trend.
 # Returns
 
 - `Vector{Float64}`: detrended signal of the same length as `s`
-
-# Throws
-
-- `ArgumentError`: if `type` is invalid, `f ≤ 0`, or `order < 1`
-
-# See also
-
-[`detrend(::AbstractArray)`](@ref), [`detrend(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function detrend(
     s::AbstractVector;
@@ -113,18 +105,14 @@ Remove a trend.
 # Returns
 
 - `Array{Float64, 3}`: detrended array of the same shape as `s`
-
-# Throws
-
-- `ArgumentError`: if `s` is not 3-dimensional
-
-# See also
-
-[`detrend(::AbstractVector)`](@ref), [`detrend(::NeuroAnalyzer.NEURO)`](@ref)
 """
 function detrend(
-        s::AbstractArray; type::Symbol = :linear, offset::Real = 0, order::Int64 = 1, f::Float64 = 1.0
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    type::Symbol = :linear,
+    offset::Real = 0,
+    order::Int64 = 1,
+    f::Float64 = 1.0
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -176,10 +164,6 @@ Remove a trend from selected channels of a NEURO object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with detrended channels
-
-# See also
-
-[`detrend!`](@ref), [`detrend(::AbstractArray)`](@ref)
 """
 function detrend(
     obj::NeuroAnalyzer.NEURO;
@@ -193,7 +177,9 @@ function detrend(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = detrend(
         @view(obj.data[ch, :, :]),
         type=type,

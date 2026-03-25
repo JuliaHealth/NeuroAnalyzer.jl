@@ -18,11 +18,6 @@ Example: `f = "cumsum(obj)"` or `f = "obj .^ 2"`.
 # Returns
 
 - `Array{Float64, 3}`: result array, shape (channels, epoch length, epochs)
-
-# Throws
-
-- `ArgumentError`: if the formula `f` produces an error on the dry-run evaluation
-- `ErrorException`: if the formula `f` fails for any channel/epoch combination
 """
 function apply(
     obj::NeuroAnalyzer.NEURO;
@@ -30,7 +25,7 @@ function apply(
     f::String
 )::Array{Float64, 3}
 
-    # resolve channel names to indices
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
     # number of channels

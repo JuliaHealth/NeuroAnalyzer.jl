@@ -17,10 +17,6 @@ Returns `NaN` for `n = 1` (prediction interval is undefined for a single observa
 
 - `Float64`: prediction interval multiplier
 
-# Throws
-
-- `ArgumentError`: if `n < 1`
-
 # Notes
 
 For `n > 20` the result is approximate and a diagnostic warning is issued.

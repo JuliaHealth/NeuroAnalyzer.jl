@@ -22,17 +22,9 @@ Named tuple:
 - `current_density::Float64`: current density in A/m²
 - `charge_density::Float64`: delivered charge density in kC/m²
 
-# Throws
-
-- `ArgumentError`: if `current`, `pad_area`, or `duration` are ≤ 0
-
 # References
 
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
-
-# See also
-
-[`tacs_dose`](@ref), [`tpcs_dose`](@ref), [`tes_protocol`](@ref)
 """
 function tdcs_dose(;
     current::Real,
@@ -89,14 +81,6 @@ Named tuple:
 - `charge::Float64`: total delivered charge in C
 - `current_density::Float64`: current density in A/m²
 - `charge_density::Float64`: delivered charge density in kC/m²
-
-# Throws
-
-- `ArgumentError`: if `current`, `pad_area`, `duration`, or `frequency` are ≤ 0
-
-# See also
-
-[`tdcs_dose`](@ref), [`tpcs_dose`](@ref), [`tes_protocol`](@ref)
 """
 function tacs_dose(;
     current::Real,
@@ -160,14 +144,6 @@ Named tuple:
 - `charge::Float64`: total delivered charge in C
 - `current_density::Float64`: current density in A/m²
 - `charge_density::Float64`: delivered charge density in kC/m²
-
-# Throws
-
-- `ArgumentError`: if `current`, `pad_area`, `duration`, or `pw` are ≤ 0, or if `isi ≤ pw`
-
-# See also
-
-[`tdcs_dose`](@ref), [`tacs_dose`](@ref), [`tes_protocol`](@ref)
 """
 function tpcs_dose(;
     current::Real,
@@ -231,14 +207,6 @@ Create a TES (tDCS/tACS/tRNS/tPCS) stimulation protocol dictionary.
 # Returns
 
 - `Dict`: protocol dictionary with all stimulation parameters
-
-# Throws
-
-- `ArgumentError`: if any argument fails its validation check
-
-# See also
-
-[`tdcs_dose`](@ref), [`tacs_dose`](@ref), [`tpcs_dose`](@ref)
 """
 function tes_protocol(;
     type::Symbol,
