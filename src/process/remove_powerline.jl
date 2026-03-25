@@ -39,18 +39,22 @@ function remove_powerline(
     q::Real = 0.1
 )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
+    # validate
     nepochs(obj) == 1 || throw(ArgumentError("remove_powerline() requires a continuous (1-epoch) object."))
     pl_frq >= 0 || throw(ArgumentError("pl_frq must be ≥ 0."))
     pl_frq <= sr(obj)/2 || throw(ArgumentError("pl_frq must be ≤ $(sr(obj)/2) Hz (Nyquist)."))
     q >= 0.01 || throw(ArgumentError("q must be ≥ 0.01."))
     q < 5 || throw(ArgumentError("q must be < 5."))
-
     _check_var(method, [:iir], "method")
 
+    # resolve channel names to integer indices
     ch_idx_vec = get_channel(obj, ch=ch)
     clabels = labels(obj)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
+    # pre-allocate outputs
     pl_best_bw = Float64[]
     pks_frq = Float64[]
     pks_best_bw = Vector{Float64}[]

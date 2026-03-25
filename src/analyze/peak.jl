@@ -96,7 +96,7 @@ Calculate peak frequency within a frequency band.
 
 # Returns
 
-- `pf::Matrix{Float64}`: peak frequency, shape `(channels, epochs)`
+- `pf::Matrix{Float64}`: peak frequency, shape (channels, epochs)
 """
 function peak_frq(
     s::AbstractArray;
@@ -168,7 +168,7 @@ Calculate peak frequency within a frequency band.
 
 # Returns
 
-- `pf::Matrix{Float64}`: peak frequency, shape `(channels, epochs)`
+- `Matrix{Float64}`: peak frequency, shape (channels, epochs)
 """
 function peak_frq(
     obj::NeuroAnalyzer.NEURO;
@@ -186,7 +186,7 @@ function peak_frq(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    pf = peak_frq(
+    return peak_frq(
         @view(obj.data[ch, :, :]),
         fs = sr(obj),
         flim = flim,
@@ -198,8 +198,6 @@ function peak_frq(
         ncyc = ncyc,
         demean = demean,
     )
-
-    return pf
 
 end
 
@@ -295,7 +293,7 @@ Calculate amplitude at peak frequency within a frequency band.
 
 # Returns
 
-- `pa::Matrix{Float64}`: amplitude at peak frequency, shape `(channels, epochs)`
+- `pa::Matrix{Float64}`: amplitude at peak frequency, shape (channels, epochs)
 """
 function peak_amp(
     s::AbstractArray;
@@ -366,7 +364,7 @@ Calculate amplitude at peak frequency within a frequency band.
 
 # Returns
 
-- `pa::Matrix{Float64}`: amplitude at peak frequency, shape `(channels, epochs)`
+- `Matrix{Float64}`: amplitude at peak frequency, shape (channels, epochs)
 """
 function peak_amp(
     obj::NeuroAnalyzer.NEURO;
@@ -384,7 +382,7 @@ function peak_amp(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    pa = peak_amp(
+    return peak_amp(
         @view(obj.data[ch, :, :]),
         fs = sr(obj),
         flim = flim,
@@ -396,8 +394,6 @@ function peak_amp(
         ncyc = ncyc,
         demean = demean,
     )
-
-    return pa
 
 end
 
@@ -492,7 +488,7 @@ Calculate power at peak frequency within a frequency band.
 
 # Returns
 
-- `pp::Matrix{Float64}`: peak power, shape `(channels, epochs)`
+- `pp::Matrix{Float64}`: peak power, shape (channels, epochs)
 """
 function peak_pow(
     s::AbstractArray;
@@ -509,7 +505,7 @@ function peak_pow(
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    !(size(s, 1) == 1) && throw(ArgumentError("s must have 1 channel."))
+    size(s, 1) == 1 || throw(ArgumentError("s must have 1 channel."))
 
     # number of channels
     ch_n = size(s, 1)
@@ -564,7 +560,7 @@ Calculate power at peak frequency within a frequency band.
 
 # Returns
 
-- `pw::Matrix{Float64}`: peak power, shape `(channels, epochs)`
+- `Matrix{Float64}`: peak power, shape (channels, epochs)
 """
 function peak_pow(
     obj::NeuroAnalyzer.NEURO;
@@ -582,7 +578,7 @@ function peak_pow(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    pw = peak_pow(
+    return peak_pow(
         @view(obj.data[ch, :, :]),
         fs = sr(obj),
         flim = flim,
@@ -594,7 +590,5 @@ function peak_pow(
         ncyc = ncyc,
         demean = demean,
     )
-
-    return pw
 
 end

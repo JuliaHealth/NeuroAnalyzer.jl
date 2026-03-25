@@ -353,6 +353,7 @@ function filter_apply(
 
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     # number of channels
     ch_n = length(ch)
     # number of epochs
@@ -362,6 +363,7 @@ function filter_apply(
     _info("Taper the signal before filtering to reduce edge artifacts.")
     dir === :twopass && _info("Two-pass filtering: effective order is doubled.")
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # initialize progress bar

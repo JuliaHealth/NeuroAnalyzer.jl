@@ -163,7 +163,9 @@ function filter_poly(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = filter_poly(
                                 @view(obj.data[ch, :, :]),
                                 order=order,

@@ -113,8 +113,9 @@ function artrem_cwd(
 
     _check_epochs(obj, ep)
 
+    # create new dataset
     obj_new = deepcopy(obj)
-    _log_off()
+
     obj_new.data[ch, :, ep] = artrem_cwd(
         @view(obj.data[ch, :, ep]),
         obj.epoch_time,
@@ -124,7 +125,6 @@ function artrem_cwd(
         fseg = fseg,
         type = type
     )
-    _log_on()
     push!(obj_new.history, "artrem_cwd(OBJ, ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)")
 
     return obj_new

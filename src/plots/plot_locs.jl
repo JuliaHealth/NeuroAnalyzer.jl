@@ -1136,31 +1136,34 @@ Preview of channel locations.
 - `Union{GLMakie.Figure, Nothing}`
 """
 function plot_locs(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        sch::Union{String, Vector{String}, Regex} = "",
-        ch_labels::Bool = true,
-        src_labels::Bool = false,
-        det_labels::Bool = false,
-        opt_labels::Bool = false,
-        head::Bool = true,
-        head_labels::Bool = false,
-        mono::Bool = false,
-        grid::Bool = false,
-        ps::Symbol = :l,
-        cart::Bool = false,
-        plane::Symbol = :xy,
-        connections::Matrix{<:Real} = [0 0; 0 0],
-        threshold::Real = 0,
-        threshold_type::Symbol = :neq,
-        weights::Union{Bool, Vector{<:Real}} = true,
-        gui::Bool = true
-    )::Union{GLMakie.Figure, Nothing}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    sch::Union{String, Vector{String}, Regex} = "",
+    ch_labels::Bool = true,
+    src_labels::Bool = false,
+    det_labels::Bool = false,
+    opt_labels::Bool = false,
+    head::Bool = true,
+    head_labels::Bool = false,
+    mono::Bool = false,
+    grid::Bool = false,
+    ps::Symbol = :l,
+    cart::Bool = false,
+    plane::Symbol = :xy,
+    connections::Matrix{<:Real} = [0 0; 0 0],
+    threshold::Real = 0,
+    threshold_type::Symbol = :neq,
+    weights::Union{Bool, Vector{<:Real}} = true,
+    gui::Bool = true
+)::Union{GLMakie.Figure, Nothing}
 
-    !(datatype(obj) != "ecog") && throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
+    # validate
+    datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
+
+    # resolve channel names to integer indices, optionally skipping bad channels
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     ch_info = String[]
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     [push!(ch_info, channel_info(obj, ch = labels(obj)[ch[idx]], pr = false)) for idx in eachindex(ch)]
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
@@ -1169,6 +1172,7 @@ function plot_locs(
     if sch == ""
         sch = 0
     else
+        # resolve channel names to integer indices, optionally skipping bad channels
         sch = exclude_bads ? get_channel(obj, ch = sch, exclude = "bad") : get_channel(obj, ch = sch, exclude = "")
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)

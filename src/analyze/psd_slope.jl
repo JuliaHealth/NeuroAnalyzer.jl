@@ -137,8 +137,12 @@ function psd_slope(
     pf::Vector{Float64}
 }
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
     lf, ls, pf = psd_slope(

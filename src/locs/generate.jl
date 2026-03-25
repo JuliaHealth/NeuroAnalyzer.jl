@@ -576,11 +576,11 @@ Generate spherical coordinates according to 10/5 system.
 """
 function locs_generate(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     locs = locs_generate(obj.locs)
     obj_new.locs = locs
-
-    # add entry to :history field
     push!(obj_new.history, "locs_generate(OBJ)")
 
     return obj_new

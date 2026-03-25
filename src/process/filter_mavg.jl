@@ -164,21 +164,26 @@ function filter_mavg(
 
     # resolve channel names to integer indices
     ch = get_channel(obj, ch=ch)
+
     # sampling rate
     fs = sr(obj)
-    wlen = 2 * k + 1
 
+    # window length
+    wlen = 2 * k + 1
     _info("Window length: $wlen samples")
     _info("Approximate cutoff: $(round(0.442947 / sqrt(wlen^2 - 1) * fs, digits=2)) Hz")
     for z in 1:4
         _info("Zero $z at: $(round(z * fs / k, digits=2)) Hz")
     end
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = filter_mavg(
         @view(obj.data[ch, :, :]), k=k, t=t, ww=ww
     )
     push!(obj_new.history, "filter_mavg(OBJ, ch=$ch, k=$k, t=$t, ww=$ww)")
+
     return obj_new
 
 end

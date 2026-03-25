@@ -415,7 +415,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
 
 # Returns
 
-- `ha::Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
+- `Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function hanalytic(
     obj::NeuroAnalyzer.NEURO;
@@ -425,8 +425,6 @@ function hanalytic(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    ha = NeuroAnalyzer.hanalytic(@view(obj.data[ch, :, :]))
-
-    return ha
+    return NeuroAnalyzer.hanalytic(@view(obj.data[ch, :, :]))
 
 end

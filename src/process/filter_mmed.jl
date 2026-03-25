@@ -164,10 +164,13 @@ function filter_mmed(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch=ch)
 
+    # window length
     wlen = 2 * k + 1
     _info("Window length: $wlen samples")
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = filter_mmed(
         @view(obj.data[ch, :, :]), k=k, t=t, ww=ww
     )

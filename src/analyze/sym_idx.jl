@@ -36,10 +36,15 @@ Calculate signal symmetry index (ratio of positive to negative amplitudes). Perf
 """
 function sym_idx(s::AbstractArray)::Matrix{Float64}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     sym = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
@@ -68,9 +73,9 @@ Calculate signal symmetry index (ratio of positive to negative amplitudes). Perf
 """
 function sym_idx(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    sym = @views sym_idx(obj.data[ch, :, :])
 
-    return sym
+    return @views sym_idx(obj.data[ch, :, :])
 
 end

@@ -16,17 +16,21 @@ Delete optodes) and channels associated with removed optodes.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_optode(
-        obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    opt::Union{Int64, Vector{Int64}, AbstractRange}
+)::NeuroAnalyzer.NEURO
 
+    # validate
     _check_datatype(obj, "nirs")
 
     typeof(opt) <: AbstractRange && (opt = collect(opt))
     opt_n = length(obj.header.recording[:optode_labels])
     length(opt) > 1 && (opt = sort!(opt, rev = true))
-    !(length(opt) < opt_n) && throw(ArgumentError("Number of optodes to delete ($(length(opt))) must be smaller than number of all optodes ($opt_n)."))
-    !(opt in 1:opt_n) && throw(ArgumentError("Opt must be in [1, $opt_n]."))
+    length(opt) < opt_n ||
+        throw(ArgumentError("Number of optodes to delete ($(length(opt))) must be smaller than number of all optodes ($opt_n)."))
+    opt in 1:opt_n || throw(ArgumentError("Opt must be in [1, $opt_n]."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # remove channel locations

@@ -147,6 +147,7 @@ function emd(
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
+    # validate
     _check_epochs(obj, ep)
 
     imf = emd(@view(obj.data[ch, :, ep]), obj.epoch_time, epsilon = epsilon)

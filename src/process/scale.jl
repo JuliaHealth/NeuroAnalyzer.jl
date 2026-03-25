@@ -21,7 +21,9 @@ function scale(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = @views obj_new.data[ch, :, :] .* factor
     push!(obj_new.history, "scale(OBJ, ch=$ch, factor=$factor)")
 

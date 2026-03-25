@@ -30,6 +30,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
     # TO DO: select channel by clicking its location
     # TO DO: other recording types
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     if nchannels(obj) < 1
@@ -42,6 +43,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:unit]
     ch_labels = labels(obj_new)
+
+    # resolve channel names to integer indices
     ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type = ["mag", "grad", "eeg", "eog", "ref"]))
 
     if DataFrames.nrow(obj_new.locs) > 0

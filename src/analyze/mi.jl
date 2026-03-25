@@ -87,7 +87,6 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    _chk3d(s)
 
     # number of channels
     ch_n = size(s, 1)
@@ -113,10 +112,8 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
         end
     end
 
-    # mirror lower triangle to upper triangle
-    mi = _copy_lt2ut(mi)
-
-    return mi
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+    return _copy_lt2ut(mi)
 
 end
 
@@ -141,9 +138,7 @@ function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{S
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    mi = mutual_information(@view(obj.data[ch, :, :]))
-
-    return mi
+    return mutual_information(@view(obj.data[ch, :, :]))
 
 end
 
@@ -179,7 +174,7 @@ function mutual_information(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -187,14 +182,12 @@ function mutual_information(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    mi = mutual_information(
+    return mutual_information(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]),
     )
-
-    return mi
 
 end

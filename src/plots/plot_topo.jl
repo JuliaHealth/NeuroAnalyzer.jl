@@ -461,7 +461,7 @@ function plot_topo(
         "nmethod",
     )
 
-    # get channels and selected channels
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     if !isnothing(sch)
         if isa(sch, String)
@@ -470,7 +470,7 @@ function plot_topo(
             !(length(intersect(ch, get_channel(obj, ch = sch))) == length(sch)) && throw(ArgumentError("Some sch channels were not found in ch."))
         end
     end
-    !(length(ch) >= 2) && throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
+    length(ch) >= 2 || throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
@@ -478,9 +478,9 @@ function plot_topo(
 
     # prepare data or time position
     if isnothing(data)
-        !(!isnothing(tpos)) && throw(ArgumentError("Either tpos or data must be provided."))
-        !(tpos >= obj.time_pts[1]) && throw(ArgumentError("tpos must be ≥ $(obj.time_pts[1])"))
-        !(tpos <= obj.time_pts[end]) && throw(ArgumentError("tpos must be ≤ $(obj.time_pts[end])"))
+        isnothing(tpos) && throw(ArgumentError("Either tpos or data must be provided."))
+        tpos >= obj.time_pts[1] || throw(ArgumentError("tpos must be ≥ $(obj.time_pts[1])"))
+        tpos <= obj.time_pts[end] || throw(ArgumentError("tpos must be ≤ $(obj.time_pts[end])"))
         tpos = vsearch(tpos, obj.time_pts)
         if nepochs(obj) == 1
             data = obj.data[ch, tpos, 1]
@@ -493,14 +493,15 @@ function plot_topo(
         if ndims(data) == 2
             data = amethod === :mean ? mean(data; dims = 2)[:] : median(data, dims = 2)[:]
         end
-        !(length(data) == length(ch)) && throw(ArgumentError("Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."))
+        length(data) == length(ch) ||
+            throw(ArgumentError("Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."))
         title == "default" && (title = "")
     end
 
     cb_title == "default" && (cb_title = "[A.U.]")
 
     fig = plot_topo(
-        data;
+        data,
         locs = locs,
         ch = collect(1:DataFrames.nrow(locs)),
         sch = sch,

@@ -16,8 +16,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 """
 function normpower(s::AbstractVector)::Vector{Float64}
 
-    _, _, _, _, _, _, _, rms = amp(s)
-    return s .* rms
+    return s .* amp(s).rms_amp
 
 end
 
@@ -36,10 +35,15 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 """
 function normpower(s::AbstractArray)::Array{Float64, 3}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     s_new = similar(s, Float64)
 
     @inbounds for ep_idx in 1:ep_n
@@ -71,7 +75,9 @@ function normpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = normpower(obj.data[ch, :, :])
     push!(obj_new.history, "normpower(OBJ, ch=$ch)")
 

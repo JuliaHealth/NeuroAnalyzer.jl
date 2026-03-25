@@ -28,9 +28,12 @@ function mlinterpolate_channel(
 
     # resolve channel names to integer indices
     channels = get_channel(obj, type = datatype(obj))
-    length(channels) > 1 || throw(ArgumentError("signal must contain > 1 signal channel."))
-    ch in channels || throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
-    nepochs(obj) > 1 || throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
+    length(channels) > 1 ||
+        throw(ArgumentError("signal must contain > 1 signal channel."))
+    ch in channels ||
+        throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    nepochs(obj) > 1 ||
+        throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
 
     _check_epochs(obj, ep_ref)
     ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
@@ -58,7 +61,10 @@ function mlinterpolate_channel(
     _info(" RMSE: $(round(m(yhat, y), digits = 4))")
 
     # predict
+
+    # create new dataset
     obj_new = deepcopy(obj)
+
     x = table(obj.data[ch_ref, :, ep]')
     obj_new.data[ch, :, ep] = MLJ.predict(mach, x)
 

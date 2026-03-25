@@ -1313,9 +1313,10 @@ function henv(
     t::Vector{Float64}
 }
 
+    _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
+
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
     henv_data = htransform(@view(obj.data[ch, :, :]))
     a = henv_data.a

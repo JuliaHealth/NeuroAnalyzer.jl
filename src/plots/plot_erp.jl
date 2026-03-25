@@ -675,9 +675,10 @@ function plot_erp(
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
-    # check channels
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    !(!(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1)) && throw(ArgumentError("All channels must be of the same type."))
+    (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
+        throw(ArgumentError("All channels must be of the same type."))
     length(ch) > 1 && (eavg = false)
     type === :gfp && !(length(ch) > 1) && throw(ArgumentError("More than 1 channel must be selected."))
 

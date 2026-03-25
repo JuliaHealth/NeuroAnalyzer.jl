@@ -38,6 +38,7 @@ function reference_ce(
     med::Bool = false
 )::NeuroAnalyzer.NEURO
 
+    # validate
     _check_datatype(obj, "eeg")
 
     # reference channel indices
@@ -50,6 +51,7 @@ function reference_ce(
     # number of epochs
     ep_n = nepochs(obj)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # calculate over channel and epochs
@@ -216,8 +218,9 @@ function reference_avg(
         @inbounds dst[ch_idx, :, ep_idx] = src[ch_idx, :, ep_idx] .- ref_ch
     end
 
-    obj_new = deepcopy(obj)
-    obj_new.data[sig_ch_idx, :, :] = dst
+
+    # create new dataset
+    obj_new = deepcopy(obj)    obj_new.data[sig_ch_idx, :, :] = dst
 
     suffix = average ? (weighted ? "-wavg" : "-avg") : (weighted ? "-wsum" : "-sum")
     obj_new.header.recording[:label][sig_ch_idx] .*= suffix
@@ -362,8 +365,9 @@ function reference_a(
     "A2" in labels(obj) || throw(ArgumentError("OBJ does not contain A2 channel."))
 
     ch = get_channel(obj, ch=get_channel(obj; type="eeg"))
-    obj_new = deepcopy(obj)
-    s = obj_new.data[ch, :, :]
+
+    # create new dataset
+    obj_new = deepcopy(obj)    s = obj_new.data[ch, :, :]
     a1 = extract_channel(obj, ch="A1")
     a2 = extract_channel(obj, ch="A2")
     ch_n = size(s, 1)
@@ -474,8 +478,9 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol = :l, med::Bool = fa
     "M2" in labels(obj) || throw(ArgumentError("OBJ does not contain M2 channel."))
 
     ch = get_channel(obj; ch=get_channel(obj; type="eeg"))
-    obj_new = deepcopy(obj)
-    s = obj_new.data[ch, :, :]
+
+    # create new dataset
+    obj_new = deepcopy(obj)    s = obj_new.data[ch, :, :]
     m1 = extract_channel(obj; ch="M1")
     m2 = extract_channel(obj; ch="M2")
     ch_n = size(s, 1)
@@ -651,8 +656,9 @@ function reference_plap(
 
     s_ref = _laplacian_reference(obj, d, nn, weighted, med, loc_x, loc_y)
 
-    obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = s_ref
+
+    # create new dataset
+    obj_new = deepcopy(obj)    obj_new.data[ch, :, :] = s_ref
     suffix = weighted ? "-wplap" : "-plap"
     obj_new.header.recording[:label][ch] .*= suffix
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
@@ -753,8 +759,9 @@ function reference_slap(
 
     s_ref   = _laplacian_reference(obj, d, nn, weighted, med, loc_x, loc_y, loc_z)
 
-    obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = s_ref
+
+    # create new dataset
+    obj_new = deepcopy(obj)    obj_new.data[ch, :, :] = s_ref
     suffix  = weighted ? "-wslap" : "-slap"
     obj_new.header.recording[:label][ch] .*= suffix
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])

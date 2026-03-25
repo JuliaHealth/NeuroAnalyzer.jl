@@ -547,7 +547,7 @@ function channel_info(
     pr::Bool = true
 )::Union{Nothing, String}
 
-    # resolve channel names to indices
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch=ch)
     # validate
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))

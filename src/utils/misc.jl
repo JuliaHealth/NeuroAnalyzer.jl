@@ -237,7 +237,10 @@ The formula is `nt = floor(df × T) - 1`, where `T = epoch_len / fs` is the epoc
 # Throws
 - `ArgumentError`: if `df` is outside the valid range `(0, fs/2)`
 """
-function ntapers(obj::NeuroAnalyzer.NEURO; df::Real)::Int64
+function ntapers(
+    obj::NeuroAnalyzer.NEURO;
+    df::Real
+)::Int64
 
     # validate that df lies within (0, Nyquist)
     _bin(df, (0, sr(obj) / 2))
@@ -279,9 +282,10 @@ function trtm(
     # validate
     _check_epochs(obj, ep)
 
-    # resolve channel names to indices
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(ch) == 1 ||
+        throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
     return Matrix(obj.data[ch, :, ep]')

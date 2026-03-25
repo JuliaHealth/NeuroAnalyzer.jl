@@ -93,12 +93,18 @@ function snr(
     f::Vector{Float64}
 }
 
+    # validate
     _check_var(type, [:mean, :rms], "type")
+
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # validate
     ep_n >= 2 || throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     f, _ = freqs(t)
@@ -157,6 +163,7 @@ function snr(
     f::Vector{Float64}
 }
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
     return snr(@view(obj.data[ch, :, :]), t = obj.epoch_time, type = type)

@@ -55,21 +55,27 @@ function psa(
     ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
 )::Matrix{Float64}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
     ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    !(length(ch1) == length(ch2)) && throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+    length(ch1) == length(ch2) ||
+        throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
 
+    # validate
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    !(length(ep1) == length(ep2)) && throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
-    (epoch_len(obj1) == epoch_len(obj2)) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
-
+    length(ep1) == length(ep2) ||
+        throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    ep_n = length(ep1)
+    # number of channels
     ch_n = length(ch1)
+    # number of epochs
+    ep_n = length(ep1)
 
+    # pre-allocate output
     ps = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
@@ -96,17 +102,18 @@ Calculate Phase Synchronization Analysis.
 
 # Returns
 
-- `ps::Array{Float64, 3}`: PSA value
+- `Array{Float64, 3}`: PSA value
 """
 function psa(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex}
 )::Array{Float64, 3}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+
     ch_n = length(ch)
     ep_n = nepochs(obj)
-    isa(ch, Int64) && (ch = [ch])
 
     ps = zeros(ch_n, ch_n, ep_n)
 
@@ -120,8 +127,7 @@ function psa(
         end
     end
 
-    ps = _copy_lt2ut(ps)
-
-    return ps
+    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+    return _copy_lt2ut(ps)
 
 end

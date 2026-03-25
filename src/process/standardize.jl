@@ -57,7 +57,9 @@ function standardize(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
     push!(obj_new.history, "standardize(OBJ)")
 

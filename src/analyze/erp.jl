@@ -328,8 +328,8 @@ function erp_auc(
     t1 = vsearch(seg[1], obj.epoch_time)
     t2 = vsearch(seg[2], obj.epoch_time)
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
+    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad")[1] : get_channel(obj, ch = ch, exclude = "")[1]
 
     # pre-allocate output
     auc = zeros(length(ch))

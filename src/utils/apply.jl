@@ -30,7 +30,7 @@ function apply(
     f::String
 )::Array{Float64, 3}
 
-    # resolve channel names to indices
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
     # number of channels

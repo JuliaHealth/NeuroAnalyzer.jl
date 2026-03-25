@@ -90,8 +90,8 @@ function tconv(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
-
     _info("Group delay: $(_group_delay(kernel)) samples")
 
     if eltype(kernel) == ComplexF64

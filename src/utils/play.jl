@@ -29,11 +29,12 @@ function play(
     ep::Int64
 )::Nothing
 
-    # resolve channel names to indices
+    # resolve channel names to integer indices
     _check_epochs(obj, ep)
     ch = get_channel(obj, ch=ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
+
     # validate
     _check_tuple(seg, (obj.epoch_time[1], obj.epoch_time[end]), "seg")
 

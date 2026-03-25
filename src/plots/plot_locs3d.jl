@@ -259,9 +259,12 @@ function plot_locs3d(
     gui::Bool = true
 )::GLMakie.Figure
 
+    # validate
     datatype(obj) in ["eeg"] || throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
 
+    # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
+
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
@@ -269,13 +272,14 @@ function plot_locs3d(
     if sch == ""
         sch = 0
     else
+        # resolve channel names to integer indices
         sch = get_channel(obj, ch = sch)
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
     end
 
     fig = plot_locs3d(
-        locs;
+        locs,
         ch = ch,
         sch = sch,
         ch_labels = ch_labels,

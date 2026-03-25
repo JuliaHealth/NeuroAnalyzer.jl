@@ -66,11 +66,14 @@ Delete marker.
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
 
-    !(_has_markers(obj)) && throw(ArgumentError("OBJ has no markers."))
+    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     nn = DataFrames.nrow(obj_new.markers)
-    !(!(n < 1 || n > nn)) && throw(ArgumentError("n must be in [1, $nn]."))
+
+    _in(n, (1, nn), "n")
     deleteat!(obj_new.markers, n)
     push!(obj_new.history, "delete_marker(OBJ, n=$n)")
 
@@ -121,20 +124,22 @@ Add marker.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_marker(
-        obj::NeuroAnalyzer.NEURO;
-        id::String,
-        start::Real,
-        len::Real = 1.0,
-        value::String,
-        ch::Int64 = 0
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    id::String,
+    start::Real,
+    len::Real = 1.0,
+    value::String,
+    ch::Int64 = 0
+)::NeuroAnalyzer.NEURO
 
-    !(start >= 0) && throw(ArgumentError("start must be ≥ 0."))
-    !(len > 0) && throw(ArgumentError("len must be > 0."))
-    !(start < obj.time_pts[end]) && throw(ArgumentError("start must be < $(obj.time_pts[end])."))
-    !(start + len <= obj.time_pts[end]) && throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
+    start >= 0 || throw(ArgumentError("start must be ≥ 0."))
+    len > 0 || throw(ArgumentError("len must be > 0."))
+    start < obj.time_pts[end] || throw(ArgumentError("start must be < $(obj.time_pts[end])."))
+    start + len <= obj.time_pts[end] || throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     append!(
         obj_new.markers,
         DataFrame(:id => id, :start => start, :length => len, :value => value, :channel => ch),
@@ -221,8 +226,9 @@ function edit_marker(
 
     nn = size(obj.markers, 1)
     !(!(n < 1 || n > nn)) && throw(ArgumentError("n must be in [1, $nn]."))
-    obj_new = deepcopy(obj)
-    obj_new.markers[n, :] = Dict(
+
+    # create new dataset
+    obj_new = deepcopy(obj)    obj_new.markers[n, :] = Dict(
         :id => id, :start => start, :length => len, :value => value, :channel => ch
     )
     sort!(obj_new.markers, :start)
@@ -355,8 +361,9 @@ function channel2marker(
 
     _info("$(length(ev_start)) events added")
 
-    obj_new = deepcopy(obj)
-    append!(
+
+    # create new dataset
+    obj_new = deepcopy(obj)    append!(
         obj_new.markers,
         DataFrame(
             :id => ev_id,
@@ -422,8 +429,9 @@ Add markers.
 """
 function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyzer.NEURO
 
-    obj_new = deepcopy(obj)
-    !(names(markers) == ["id", "start", "length", "value", "channel"]) && throw(ArgumentError("Markers column names are incorrect."))
+
+    # create new dataset
+    obj_new = deepcopy(obj)    !(names(markers) == ["id", "start", "length", "value", "channel"]) && throw(ArgumentError("Markers column names are incorrect."))
     obj_new.markers = markers
 
     return nothing

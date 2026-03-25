@@ -347,13 +347,15 @@ function plot_mep(
     gui::Bool = false
 )::GLMakie.Figure
 
+    # validate
     _check_datatype(obj, "mep")
     _check_var(type, [:normal, :stack], "type")
     _check_var(peaks, [:detect, :embed, :off], "peaks")
 
-    # check channels
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    !(!(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1)) && throw(ArgumentError("All channels must be of the same type."))
+    (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
+        throw(ArgumentError("All channels must be of the same type."))
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])
@@ -383,7 +385,7 @@ function plot_mep(
         )
         fig = plot_mep(
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -400,7 +402,7 @@ function plot_mep(
         cb_title == "default" && (cb_title = "Amplitude [$units]")
         fig = plot_mep_stack(
             t,
-            s;
+            s,
             xlabel = xl,
             ylabel = yl,
             title = tt,

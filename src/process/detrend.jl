@@ -193,7 +193,9 @@ function detrend(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = detrend(
         @view(obj.data[ch, :, :]),
         type=type,

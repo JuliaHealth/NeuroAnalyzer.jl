@@ -26,28 +26,30 @@ Edit electrode.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_locs(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        x::Union{Real, Nothing} = nothing,
-        y::Union{Real, Nothing} = nothing,
-        z::Union{Real, Nothing} = nothing,
-        theta::Union{Real, Nothing} = nothing,
-        radius::Union{Real, Nothing} = nothing,
-        theta_sph::Union{Real, Nothing} = nothing,
-        radius_sph::Union{Real, Nothing} = nothing,
-        phi_sph::Union{Real, Nothing} = nothing,
-        name::String = "",
-        type::String = ""
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    x::Union{Real, Nothing} = nothing,
+    y::Union{Real, Nothing} = nothing,
+    z::Union{Real, Nothing} = nothing,
+    theta::Union{Real, Nothing} = nothing,
+    radius::Union{Real, Nothing} = nothing,
+    theta_sph::Union{Real, Nothing} = nothing,
+    radius_sph::Union{Real, Nothing} = nothing,
+    phi_sph::Union{Real, Nothing} = nothing,
+    name::String = "",
+    type::String = ""
+)::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj_new; ch = ch)
+    # resolve channel names to integer indices
+    ch = get_channel(obj_new, ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
+    # create new dataset
     obj_new = deepcopy(obj)
-    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
 
-    !(length(loc_idx) > 0) && throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
+    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
+    length(loc_idx) > 0 || throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
 
     name != "" && rename_channel!(obj_new; ch = labels(obj)[ch], name = name)
     type != "" && channel_type!(obj_new; ch = labels(obj)[ch], type = type)

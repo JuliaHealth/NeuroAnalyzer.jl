@@ -50,6 +50,7 @@ function intensity2od(
     _check_datatype(obj, "nirs")
     _check_channels(get_channel(obj, type = "nirs_int"), ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # add channels

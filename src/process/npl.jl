@@ -16,9 +16,12 @@ Calculate non-phase-locked signal.
 """
 function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
-    !(datatype(obj) == "erp") && throw(ArgumentError("OBJ must be ERP."))
+    # validate
+    datatype(obj) == "erp" || throw(ArgumentError("OBJ must be ERP."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     for ep_idx in 2:nepochs(obj_new)
         obj_new.data[:, :, ep_idx] = @views obj_new.data[:, :, ep_idx] - obj_new.data[:, :, 1]
     end

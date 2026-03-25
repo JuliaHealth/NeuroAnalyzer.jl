@@ -133,7 +133,9 @@ function denoise_fft(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = denoise_fft(@view(obj.data[ch, :, :]), pad = pad, t = t)
     push!(obj_new.history, "denoise_fft(OBJ, ch=$ch, pad=$pad, t=$t)")
 

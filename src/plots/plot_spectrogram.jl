@@ -589,10 +589,12 @@ function plot_spectrogram(
     head::Bool = true
 )::GLMakie.Figure where {T <: CWT}
 
+    # validate
     _check_var(type, [:normal, :topo], "type")
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
-    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
+    n > 0 || throw(ArgumentError("n must be ≥ 1."))
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
     if method === :cwt
         if type === :normal
@@ -600,12 +602,12 @@ function plot_spectrogram(
         end
     end
     if type === :topo
-        !(method !== :hht) && throw(ArgumentError("For :hht method topographical map is not available."))
+        method !== :hht || throw(ArgumentError("For :hht method topographical map is not available."))
     end
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
-        !(ep == 0) && throw(ArgumentError("For continuous object, ep must not be specified."))
+        ep == 0 || throw(ArgumentError("For continuous object, ep must not be specified."))
         if obj.time_pts[end] < 10 && seg == (0, 10)
             seg = (0, obj.time_pts[end])
         else
@@ -615,7 +617,7 @@ function plot_spectrogram(
         signal = @views obj.data[ch, seg[1]:seg[2], 1]
         t = obj.time_pts[seg[1]:seg[2]]
     else
-        !(ep != 0) && throw(ArgumentError("For epoched object, ep must be specified."))
+        ep != 0 || throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
         signal = @views obj.data[ch, :, ep]

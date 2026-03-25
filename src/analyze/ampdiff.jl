@@ -1,35 +1,32 @@
 export ampdiff
 
 """
-    ampdiff(s; <keyword arguments>)
+    ampdiff(s)
 
 Calculate amplitude difference to reference mean: amplitude difference between each channel and mean amplitude of reference channels.
 
 # Arguments
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
-- `ch::Union{Int64, Vector{Int64}}=size(s, 1)`: indices of reference channels; default is all channels, for each analyzed channel, that channel itself is excluded from the reference mean
 
 # Returns
 
 - `Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
 """
 function ampdiff(
-    s::AbstractArray;
-    ch::Union{Int64, Vector{Int64}} = _c(size(s, 1))
+    s::AbstractArray
 )::Array{Float64, 3}
 
-    # validate shape and that all requested channel indices are in bounds
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    _check_channels(s, ch)
-
-    # pre-allocate output
-    amp_diff = similar(s, Float64)
 
     # number of channels
     ch_n = size(s, 1)
     # number of epochs
     ep_n = size(s, 3)
+
+    # pre-allocate output
+    amp_diff = similar(s, Float64)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -65,6 +62,6 @@ function ampdiff(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    return ampdiff(@view(obj.data[ch, :, :]), ch = _c(length(ch)))
+    return ampdiff(@view(obj.data[ch, :, :]))
 
 end

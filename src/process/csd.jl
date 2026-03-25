@@ -45,6 +45,7 @@ function csd(
     lambda::Float64 = 10^-5
 )::NeuroAnalyzer.NEURO
 
+    # validate
     _check_datatype(obj, "eeg")
     _has_locs(obj)
     (m >= 2 && m <= 10) || throw(ArgumentError("m must be in [2, 10]."))
@@ -71,7 +72,9 @@ function csd(
     Gs_rs = vec(sum(Gs_inv; dims=2))
     Gs_inv_sum = sum(Gs_rs)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     @inbounds for ep_idx in 1:ep_n
         # data: (ch_n × samples)
         data = @view obj.data[ch, :, ep_idx]

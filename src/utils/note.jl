@@ -47,8 +47,9 @@ Return a copy of `obj` with the recording note set to `note`. The original objec
 """
 function add_note(obj::NeuroAnalyzer.NEURO; note::String)::NeuroAnalyzer.NEURO
 
-    obj_new = deepcopy(obj)
-    obj_new.header.recording[:recording_notes] = note
+
+    # create new dataset
+    obj_new = deepcopy(obj)    obj_new.header.recording[:recording_notes] = note
 
     return obj_new
 
@@ -99,6 +100,7 @@ Return a copy of `obj` with the recording note cleared. The original object is n
 """
 function delete_note(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
+    # create new dataset
     obj_new = deepcopy(obj)
     obj_new.header.recording[:recording_notes] = ""
 

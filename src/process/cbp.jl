@@ -86,6 +86,7 @@ function cbp(
     # sampling rate
     fs = sr(obj)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # calculate over channel and epochs

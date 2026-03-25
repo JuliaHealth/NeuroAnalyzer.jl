@@ -105,11 +105,14 @@ function stationarity(
         obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64 = 10, method::Symbol = :hilbert
     )::Union{Matrix{Float64}, Array{Float64, 3}}
 
+    # validate
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
-    !(window >= 1) && throw(ArgumentError("window must be ≥ 1."))
-    !(window <= epoch_len(obj)) && throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
+    window >= 1 || throw(ArgumentError("window must be ≥ 1."))
+    window <= epoch_len(obj) || throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -123,6 +126,7 @@ function stationarity(
             end
         end
         return s
+
     end
 
     if method === :var
@@ -135,6 +139,7 @@ function stationarity(
             end
         end
         return s
+
     end
 
     if method === :hilbert
@@ -153,7 +158,8 @@ function stationarity(
 
     if method === :cov
 
-        !(ch_n >= 2) && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
+        # validate
+        ch_n >= 2 || throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
 
         # number of time windows per epoch
         window_n = epoch_len(obj)
@@ -185,6 +191,7 @@ function stationarity(
     end
 
     if method === :adf
+
         s = zeros(ch_n, 2, ep_n)
 
         # initialize progress bar

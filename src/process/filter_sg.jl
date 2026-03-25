@@ -117,7 +117,9 @@ function filter_sg(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :]; order = order, window = window)
     push!(obj_new.history, "filter_sg(OBJ, ch=$ch, order=$order, window=$window)")
 

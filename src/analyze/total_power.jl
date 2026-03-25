@@ -89,25 +89,30 @@ Calculate total power.
 
 # Returns
 
-- `tp::Matrix{Float64}`: total power
+- `Matrix{Float64}`: total power
 """
 function total_power(
-        s::AbstractArray;
-        fs::Int64,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )
+    s::AbstractArray;
+    fs::Int64,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     tp = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
@@ -159,22 +164,23 @@ Calculate total power.
 - `tp::Matrix{Float64}`: total power
 """
 function total_power(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    _log_off()
-    tp = @views total_power(
-        obj.data[ch, :, :],
+
+    return @total_power(
+        @view(obj.data[ch, :, :]),
         fs = sr(obj),
         method = method,
         nt = nt,
@@ -185,8 +191,5 @@ function total_power(
         gw = gw,
         demean = demean,
     )
-    _log_on()
-
-    return tp
 
 end

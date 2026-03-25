@@ -147,6 +147,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
         "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.",
     )
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     s_new = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
@@ -213,8 +214,9 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEUR
         "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
     )
 
-    obj_new = deepcopy(obj)
 
+    # create new dataset
+    obj_new = deepcopy(obj)
     s_new = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
 
     obj_new.data = s_new

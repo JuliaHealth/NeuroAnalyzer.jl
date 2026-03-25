@@ -73,6 +73,7 @@ function add_signal(
     # number of epochs
     ep_n = nepochs(obj)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # calculate over channel and epochs

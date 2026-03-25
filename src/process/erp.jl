@@ -24,6 +24,7 @@ function average_epochs(
     blfirst::Bool = false
 )::NeuroAnalyzer.NEURO
 
+    # validate
     _check_datatype(obj, ["eeg", "meg"])
 
     nchannels(obj) > length(get_channel(obj, type = datatype(obj))) &&
@@ -134,9 +135,10 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
         throw(ArgumentError(
             "All values in s must be in 2:$(nepochs(obj)); epoch 1 is the average and cannot be reordered."))
 
+    # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.data[:, :, 2:end] = obj.data[:, :, s]
 
+    obj_new.data[:, :, 2:end] = obj.data[:, :, s]
     _warn("Markers are not sorted when epochs are reordered.")
     push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
 

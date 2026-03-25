@@ -18,7 +18,11 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 - `tk::Vector{Float64}`
 """
-function tkeo(s::AbstractVector, t::AbstractVector = collect(1:length(s)); method::Symbol = :pow)::Vector{Float64}
+function tkeo(
+    s::AbstractVector,
+    t::AbstractVector = collect(1:length(s));
+    method::Symbol = :pow
+)::Vector{Float64}
 
     _check_var(method, [:pow, :der, :amp], "method")
 
@@ -61,8 +65,13 @@ Calculate Teager-Kaiser energy-tracking operator
 
 - `tk::Array{Float64, 3}`
 """
-function tkeo(s::AbstractArray, t::AbstractVector = collect(1:length(s)); method::Symbol = :pow)::Array{Float64, 3}
+function tkeo(
+    s::AbstractArray,
+    t::AbstractVector = collect(1:length(s));
+    method::Symbol = :pow
+)::Array{Float64, 3}
 
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # pre-allocate output
@@ -97,12 +106,14 @@ Calculate Teager-Kaiser energy-tracking operator.
 - `tk::Array{Float64, 3}`
 """
 function tkeo(
-        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol = :pow
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol = :pow
+)::Array{Float64, 3}
 
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
-    tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method = method)
 
-    return tk
+    return @views tkeo(obj.data[ch, :, :], obj.epoch_time, method = method)
 
 end

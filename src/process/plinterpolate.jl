@@ -33,10 +33,14 @@ function plinterpolate_channel(
     ifactor::Int64 = 100
 )::NeuroAnalyzer.NEURO
 
+    # resolve channel type to integer indices
     channels = get_channel(obj, type = datatype(obj))
-    length(channels) > 1 || throw(ArgumentError("OBJ must contain > 1 signal channel."))
-    ch in channels || throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    length(channels) > 1 ||
+        throw(ArgumentError("OBJ must contain > 1 signal channel."))
+    ch in channels ||
+        throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
 
+    # validate
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj)
 
@@ -45,6 +49,7 @@ function plinterpolate_channel(
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 
+    # create new dataset
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)
     delete_channel!(obj_tmp, ch = get_channel(obj_tmp; type = "ref"))

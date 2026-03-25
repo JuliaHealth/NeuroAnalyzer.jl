@@ -85,7 +85,9 @@ function denoise_wien(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = denoise_wien(@view(obj.data[ch, :, :]))
     push!(obj_new.history, "denoise_wien(OBJ, ch=$ch)")
 

@@ -264,9 +264,11 @@ function ica_reconstruct(
     length(ch) == 1 && (ch = ch[1])
 
     # reconstruction
-    obj_new = deepcopy(obj)
-    obj_new.data[ch, :, 1] = ica_reconstruct(ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)[ch, :]
 
+    # create new dataset
+    obj_new = deepcopy(obj)
+
+    obj_new.data[ch, :, 1] = ica_reconstruct(ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)[ch, :]
     push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
     return obj_new
@@ -356,6 +358,7 @@ function ica_remove(
     # number of IC components
     ic_n = length(ic_idx)
 
+    # create new dataset
     obj_new = deepcopy(obj)
 
     # calculate over components and channels

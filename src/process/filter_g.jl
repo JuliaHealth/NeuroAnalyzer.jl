@@ -148,7 +148,9 @@ function filter_g(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs = sr(obj), pad = pad, f = f, gw = gw)
     push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
 

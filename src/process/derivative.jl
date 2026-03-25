@@ -118,7 +118,9 @@ function derivative(
     # resolve channel names to integer indices
     ch = get_channel(obj, ch = ch)
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data[ch, :, :] = derivative(obj.data[ch, :, :])
     push!(obj_new.history, "derivative(OBJ, ch=$ch)")
 

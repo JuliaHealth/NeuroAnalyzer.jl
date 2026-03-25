@@ -108,10 +108,13 @@ Trim signal by removing parts of the signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function trim(
-        obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool = false
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real},
+    keep::Bool = false
+)::NeuroAnalyzer.NEURO
 
-    !(nepochs(obj) == 1) && throw(ArgumentError("trim() must be applied to continuous object."))
+    # validate
+    nepochs(obj) == 1 || throw(ArgumentError("trim() must be applied to continuous object."))
     _check_segment(obj, seg)
 
     s_idx = vsearch(seg[1], obj.time_pts)
@@ -121,7 +124,9 @@ function trim(
         "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
     )
 
+    # create new dataset
     obj_new = deepcopy(obj)
+
     obj_new.data = trim(obj_new.data, seg = seg_tpos, keep = keep)
 
     if keep
