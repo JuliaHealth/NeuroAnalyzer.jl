@@ -3,7 +3,9 @@ export emd
 """
     emd(s, x; <keyword arguments>)
 
-Perform Empirical Mode Decomposition (EMD). Decomposes a signal into Intrinsic Mode Functions (IMFs) by iteratively "sieving" out oscillatory components from fastest to slowest.
+Perform Empirical Mode Decomposition (EMD) for a 1-D signal vector.
+
+Decomposes a signal into Intrinsic Mode Functions (IMFs) by iteratively "sieving" out oscillatory components from fastest to slowest.
 
 Each sieving iteration:
 
@@ -111,7 +113,9 @@ end
 """
     emd(obj; <keyword arguments>)
 
-Perform Empirical Mode Decomposition (EMD). Decomposes a signal into Intrinsic Mode Functions (IMFs) by iteratively "sieving" out oscillatory components from fastest to slowest.
+Perform Empirical Mode Decomposition (EMD) for a NEURO object.
+
+Decomposes a signal into Intrinsic Mode Functions (IMFs) by iteratively "sieving" out oscillatory components from fastest to slowest.
 
 Each sieving iteration:
 

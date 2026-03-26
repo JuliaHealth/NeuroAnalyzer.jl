@@ -4,7 +4,9 @@ export rmse
 """
     rms(s)
 
-Calculate Root Mean Square (RMS).
+alculate Root Mean Square (RMS) of a 1-D signal vector.
+
+RMS = √( mean(s²) ) = norm(s) / √length(s)
 
 # Arguments
 
@@ -12,11 +14,11 @@ Calculate Root Mean Square (RMS).
 
 # Returns
 
-- `Float64`: RMS
+- `Float64`: RMS value
 """
 function rms(s::AbstractVector)::Float64
 
-    # faster way for sqrt(mean(s.^2))
+    # equivalent to sqrt(mean(s.^2)) but avoids an intermediate allocation
     return norm(s) / sqrt(length(s))
 
 end
@@ -24,15 +26,15 @@ end
 """
     rms(s)
 
-Calculate Root Mean Square (RMS).
+Calculate Root Mean Square (RMS) for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
-- `Matrix{Float64}`: RMS
+- `Matrix{Float64}`: RMS values, shape (channels, epochs)
 """
 function rms(s::AbstractArray)::Matrix{Float64}
 
@@ -47,10 +49,9 @@ function rms(s::AbstractArray)::Matrix{Float64}
     # pre-allocate output
     r = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            r[ch_idx, ep_idx] = @views rms(s[ch_idx, :, ep_idx])
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        r[ch_idx, ep_idx] = rms(@view(s[ch_idx, :, ep_idx]))
     end
 
     return r
@@ -60,7 +61,7 @@ end
 """
     rms(obj; <keyword arguments>)
 
-Calculate Root Mean Square (RMS).
+Calculate Root Mean Square (RMS) for a NEURO object.
 
 # Arguments
 
@@ -84,7 +85,7 @@ function rms(
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 
-    return @views rms(obj.data[ch, :, ep])
+    return rms(@view(obj.data[ch, :, ep]))
 
 end
 
@@ -114,12 +115,12 @@ end
 """
     rmse(s1, s2)
 
-Calculate Root Mean Square Error (RMSE).
+Calculate Root Mean Square Error (RMSE) for two 3-D signal arrays.
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
@@ -127,6 +128,7 @@ Calculate Root Mean Square Error (RMSE).
 """
 function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
+    # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
     _chk3d(s2)
@@ -136,10 +138,11 @@ function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
     r = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            r[ch_idx, ep_idx] = @views rmse(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        r[ch_idx, ep_idx] = rmse(
+            @view(s1[ch_idx, :, ep_idx]),
+            @view(s2[ch_idx, :, ep_idx]))
     end
 
     return r
@@ -149,7 +152,7 @@ end
 """
     rmse(obj1, obj2; <keyword arguments>)
 
-Calculate Root Mean Square Error (RMSE).
+Calculate Root Mean Square Error (RMSE) for two NEURO objects.
 
 # Arguments
 
@@ -189,6 +192,6 @@ function rmse(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return @views rmse(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
+    return rmse(@view(obj1.data[ch1, :, ep1]), @view(obj2.data[ch2, :, ep2]))
 
 end

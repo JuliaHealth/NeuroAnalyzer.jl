@@ -60,7 +60,7 @@ function remove_dc(
 
     result = similar(s, Float64)
     Threads.@threads :static for ch_idx in 1:ch_n
-        result[ch_idx, :] = @views remove_dc(s[ch_idx, :], n)
+        result[ch_idx, :] = remove_dc(@view(s[ch_idx, :]), n)
     end
 
     return result
@@ -70,7 +70,7 @@ end
 """
     remove_dc(s, n)
 
-Remove mean value (DC offset).
+Remove mean value (DC offset) for a 3-D signal array.
 
 # Arguments
 
@@ -87,14 +87,14 @@ function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}} = 0)::
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    result = similar(s, Float64)
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            result[ch_idx, :, ep_idx] = @views remove_dc(s[ch_idx, :, ep_idx], n)
-        end
+    s_new = similar(s, Float64)
+
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s_new[ch_idx, :, ep_idx] = remove_dc(@view(s[ch_idx, :, ep_idx]), n)
     end
 
-    return result
+    return s_new
 
 end
 
@@ -125,7 +125,7 @@ function remove_dc(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
+    obj_new.data[ch, :, :] = remove_dc(@view(obj.data[ch, :, :]), n)
     push!(result.history, "remove_dc(OBJ, ch=$ch, n=$n)")
 
     return obj_new

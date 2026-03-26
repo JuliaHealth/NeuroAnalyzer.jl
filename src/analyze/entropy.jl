@@ -4,7 +4,7 @@ export negentropy
 """
     entropy(s)
 
-Calculate signal entropy descriptors:
+Calculate signal entropy descriptors for a 1-D signal vector:
 
 - histogram-based entropy in bits (Freedman-Diaconis binning)
 - Shannon entropy (Wavelets.coefentropy)
@@ -82,7 +82,7 @@ end
 """
     entropy(s)
 
-Calculate signal entropy descriptors:
+Calculate signal entropy descriptors for a 3-D signal array:
 
 - histogram-based entropy in bits (Freedman-Diaconis binning)
 - Shannon entropy (Wavelets.coefentropy)
@@ -194,7 +194,9 @@ end
 """
     negentropy(s; <keyword arguments>)
 
-Calculate negentropy. Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
+Calculate negentropy for a 1-D signal vector.
+
+Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 
@@ -243,7 +245,9 @@ end
 """
     negentropy(s; <keyword arguments>)
 
-Calculate negentropy. Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
+Calculate negentropy for a 3-D signal array.
+
+Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 
@@ -292,7 +296,9 @@ end
 """
     negentropy(obj; <keyword arguments>)
 
-Calculate negentropy. Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
+Calculate negentropy for a NEURO object.
+
+Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 

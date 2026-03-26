@@ -64,7 +64,7 @@ function mdiff(
     # each thread needs its own buffers to avoid races
     # allocate inside the loop per iteration since Threads.@threads
     # does not provide thread-local storage here
-    Threads.@threads :dynamic for idx in 1:n_boot
+    Threads.@threads :static for idx in 1:n_boot
 
         # sample two independent bootstrap groups from the pooled data
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
@@ -101,7 +101,7 @@ end
 """
     mdiff(s1, s2; <keyword arguments>)
 
-Calculate the mean difference and its bootstrap p-value for each epoch.
+Calculate the mean difference and its bootstrap p-value for each epoch of two 3-D signal arrays.
 
 # Arguments
 
@@ -140,9 +140,9 @@ function mdiff(
     _chk3d(s2)
 
     # number of channels
-    ch_n = size(s, 1)
+    ch_n = size(s1, 1)
     # number of epochs
-    ep_n = size(s, 3)
+    ep_n = size(s1, 3)
 
     # pre-allocate outputs
     st = zeros(ep_n, ch_n * n)
@@ -150,16 +150,16 @@ function mdiff(
     p = zeros(ep_n)
 
     # calculate over epochs
-    @inbounds @Threads.threads :dynamic for ep_idx in 1:ep_n
-        mdriff_data = mdiff(
+    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
+        mdiff_data = mdiff(
             @view(s1[:, :, ep_idx]),
             @view(s2[:, :, ep_idx]),
             n = n,
             method = method
         )
-        st[ep_idx, :] = mdriff_data.st
-        sts[ep_idx] = mdriff_data.sts
-        p[ep_idx] = mdriff_data.p
+        st[ep_idx, :] = mdiff_data.st
+        sts[ep_idx] = mdiff_data.sts
+        p[ep_idx] = mdiff_data.p
     end
 
     return (; st, sts, p)
@@ -168,7 +168,7 @@ end
 """
     mdiff(obj1, obj2; <keyword arguments>)
 
-Calculate the mean difference and its bootstrap p-value for two objects.
+Calculate the mean difference and its bootstrap p-value for two NEURO objects.
 
 # Arguments
 

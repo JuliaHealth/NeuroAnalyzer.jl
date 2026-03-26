@@ -50,8 +50,8 @@ function load_fiff(
     fiff_object = Any[]
     @inbounds for block_idx in eachindex(buf)
         tag_type = fiff_blocks[block_idx, 2]
-        tag_dt   = fiff_blocks[block_idx, 3]
-        buf_tmp  = @views buf[block_idx]
+        tag_dt = fiff_blocks[block_idx, 3]
+        buf_tmp = @views buf[block_idx]
         d = nothing
 
         if tag_type in [107, 108]
@@ -74,8 +74,8 @@ function load_fiff(
             # dig_string
             kind  = @views _i32i64(buf_tmp[1:4])
             ident = @views _i32i64(buf_tmp[5:8])
-            np    = @views _i32f64(buf_tmp[9:12])
-            rr    = Float64[]
+            np = @views _i32f64(buf_tmp[9:12])
+            rr = Float64[]
             [push!(rr, @views _f32f64(buf_tmp[idx:(idx+3)])) for idx in 13:4:length(buf_tmp)]
             d = (kind, ident, np, rr)
 
@@ -110,8 +110,8 @@ function load_fiff(
             # FIX: original used _i16f64 (reads 2-byte Int16) for all fields
             # here - these are 4-byte Float32; must use _f32f64.
             from = @views _i32i64(buf_tmp[1:4])
-            to   = @views _i32i64(buf_tmp[5:8])
-            rot  = zeros(3, 3)
+            to = @views _i32i64(buf_tmp[5:8])
+            rot = zeros(3, 3)
             for row in 1:3
                 d_row = Float64[]
                 [push!(d_row, @views _f32f64(buf_tmp[(8 + col):(8 + col + 3)])) for col in 1:4:9]
@@ -132,7 +132,7 @@ function load_fiff(
         elseif tag_type in [300]
             # data_buffer
             df = @views _find_fiff_dt(tag_dt)
-            d  = Float64[]
+            d = Float64[]
             if df == "dau_pack16" || df == "int16"
                 [push!(d, @views _i16f64(buf_tmp[idx:(idx+1)])) for idx in 1:2:length(buf_tmp)]
             elseif df == "int32"
@@ -145,11 +145,11 @@ function load_fiff(
 
         elseif tag_type in [213]
             # dig_point
-            kind  = @views _i32i64(buf_tmp[1:4])
+            kind = @views _i32i64(buf_tmp[1:4])
             ident = @views _i32i64(buf_tmp[5:8])
-            r_1   = @views _f32f64(buf_tmp[9:12])
-            r_2   = @views _f32f64(buf_tmp[13:16])
-            r_3   = @views _f32f64(buf_tmp[17:20])
+            r_1 = @views _f32f64(buf_tmp[9:12])
+            r_2 = @views _f32f64(buf_tmp[13:16])
+            r_3 = @views _f32f64(buf_tmp[17:20])
             d = (kind, ident, r_1, r_2, r_3)
 
         elseif tag_type in [252]
@@ -165,11 +165,11 @@ function load_fiff(
 
         elseif tag_type in [203]
             # ch_info (75-byte record)
-            scan_no   = @views _i32i64(buf_tmp[1:4])
-            log_no    = @views _i32i64(buf_tmp[5:8])
-            kind      = @views _find_fiff_chtype(_i32i64(buf_tmp[9:12]))
+            scan_no = @views _i32i64(buf_tmp[1:4])
+            log_no = @views _i32i64(buf_tmp[5:8])
+            kind = @views _find_fiff_chtype(_i32i64(buf_tmp[9:12]))
             range_val = @views _f32f64(buf_tmp[13:16])
-            cal       = @views _f32f64(buf_tmp[17:20])
+            cal = @views _f32f64(buf_tmp[17:20])
             coil_type = @views _i32i64(buf_tmp[21:24])
             r0_1 = @views _f32f64(buf_tmp[25:28]); r0_2 = @views _f32f64(buf_tmp[29:32])
             r0_3 = @views _f32f64(buf_tmp[33:36])
@@ -179,7 +179,7 @@ function load_fiff(
             ey_3 = @views _f32f64(buf_tmp[57:60])
             ez_1 = @views _f32f64(buf_tmp[61:64]); ez_2 = @views _f32f64(buf_tmp[65:68])
             ez_3 = @views _f32f64(buf_tmp[69:72])
-            unit     = @views _find_fiff_unit(_i32i64(buf_tmp[73:76]))
+            unit = @views _find_fiff_unit(_i32i64(buf_tmp[73:76]))
             unit_mul = @views _find_fiff_mul(_i32i64(buf_tmp[77:80]))
             d = (scan_no, log_no, kind, range_val, cal, coil_type,
                  r0_1, r0_2, r0_3, ex_1, ex_2, ex_3,

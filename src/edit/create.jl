@@ -259,7 +259,7 @@ end
 """
     create_time(obj; <keyword arguments>)
 
-Create time points vector for `NeuroAnalyzer.NEURO` object.
+Create time points vector for NEURO object.
 
 # Arguments
 
@@ -290,7 +290,7 @@ end
 """
     create_time!(obj; <keyword arguments>)
 
-Create time points vector for `NeuroAnalyzer.NEURO` object.
+Create time points vector for NEURO object.
 
 # Arguments
 
@@ -315,7 +315,7 @@ end
 """
     create_data(obj; <keyword arguments>)
 
-Create data, channel labels, types and units and time points for `NeuroAnalyzer.NEURO` object.
+Create data, channel labels, types and units and time points for NEURO object.
 
 # Arguments
 
@@ -361,7 +361,7 @@ end
 """
     create_data!(obj; <keyword arguments>)
 
-Create data, channel labels, types and units and time points for `NeuroAnalyzer.NEURO` object.
+Create data, channel labels, types and units and time points for NEURO object.
 
 # Arguments
 

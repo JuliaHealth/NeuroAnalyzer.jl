@@ -4,15 +4,15 @@ export standardize!
 """
     standardize(s)
 
-Standardize channels.
+Standardize channels of a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
-- `Array{Float64, 3}`:
+- `Array{Float64, 3}`
 - `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(

@@ -55,7 +55,7 @@ end
 """
     denoise_cwd(s; <keyword arguments>)
 
-Perform denoising by zeroing a frequency band in the continuous wavelet domain.
+Perform denoising by zeroing a frequency band in the continuous wavelet domain for a 3-D signal array.
 
 # Arguments
 
@@ -255,7 +255,7 @@ end
 """
     denoise_dwd(s; <keyword arguments>)
 
-Perform threshold denoising using discrete wavelet decomposition (DWD).
+Perform threshold denoising using discrete wavelet decomposition (DWD) for a 3-D signal array.
 
 # Arguments
 

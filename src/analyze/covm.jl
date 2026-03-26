@@ -3,7 +3,9 @@ export covm
 """
     covm(s; <keyword arguments>)
 
-A single channel has no cross-channel covariance; the 1×1 result is simply the signal's own variance.
+A single channel has no cross-channel covariance for a 1-D signal vector.
+
+The 1×1 result is simply the signal's own variance.
 
 # Arguments
 
@@ -87,7 +89,7 @@ end
 """
     covm(s; <keyword arguments>)
 
-Calculate covariance matrix of an array.
+Calculate covariance matrix for a 3-D signal array.
 
 # Arguments
 
@@ -123,7 +125,7 @@ end
 """
     covm(obj; <keyword arguments>)
 
-Calculate covariance matrix between all channel pairs within a single object.
+Calculate covariance matrix between all channel pairs within a NEURO object.
 
 # Arguments
 

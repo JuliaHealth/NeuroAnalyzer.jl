@@ -40,7 +40,7 @@ end
 """
     cwtfrq(s; <keyword arguments>)
 
-Return the mean frequencies of a collection of analytic or real wavelets for a 3-dimensional signal array.
+Return the mean frequencies of a collection of analytic or real wavelets for a 3-D signal array.
 
 Delegates to the vector method using the first channel and first epoch `s[1, :, 1]` to determine the wavelet frequency grid (all channels and epochs share the same grid for a fixed signal length).
 

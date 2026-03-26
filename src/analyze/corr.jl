@@ -67,7 +67,7 @@ end
 """
     corr(obj; <keyword arguments>)
 
-Compute the Pearson correlation between all channel pairs within a single NEURO object.
+Compute the Pearson correlation between all channel pairs within a NEURO object.
 
 # Arguments
 

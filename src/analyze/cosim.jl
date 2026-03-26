@@ -3,7 +3,7 @@ export cosim
 """
     cosim(s1, s2)
 
-Measures the cosine of the angle between two signal vectors:
+Measures the cosine of the angle between two 1-D signal vectors.
 
 CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
@@ -33,7 +33,7 @@ end
 """
     cosim(obj1, obj2; <keyword arguments>)
 
-Measures the cosine of the angle between paired channels across two objects.
+Measures the cosine of the angle between paired channels across two NEURO objects.
 
 CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
@@ -101,7 +101,7 @@ end
 """
     cosim(obj; <keyword arguments>)
 
-Measures the cosine of the angle between two signal vectors:
+Measures the cosine of the angle between channels of a NEURO object.
 
 CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 

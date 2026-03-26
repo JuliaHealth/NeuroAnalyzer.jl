@@ -583,15 +583,15 @@ Plot PSD (power spectrum density).
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `gw::Real=5`: Gaussian width in Hz
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
@@ -680,14 +680,14 @@ function plot_psd(
             _check_segment(obj, seg)
         end
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-        signal = @views obj.data[ch, seg[1]:seg[2], 1]
+        signal = @view(obj.data[ch, seg[1]:seg[2], 1])
         t = obj.time_pts[seg[1]:seg[2]]
         _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
         ep != 0 || throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
-        signal = @views obj.data[ch, :, ep]
+        signal = @view(obj.data[ch, :, ep])
     end
 
     # channel labels

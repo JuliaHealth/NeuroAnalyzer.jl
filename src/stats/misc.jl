@@ -223,29 +223,27 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
 
         # Thread over permutations (outer loop): each idx1 writes to a unique
         # s_new[idx1, :, :] slice → zero contention between threads
-        Threads.@threads :static for idx1 in 1:n
-            @inbounds for idx2 in 1:nrows
-                x = rand(2:ncols)
-                s_new[idx1, idx2, 1:(ncols - x + 1)]   .= @view s[idx2, x:end]
-                s_new[idx1, idx2, (ncols - x + 2):end] .= @view s[idx2, 1:(x - 1)]
-            end
+        @inbounds Threads.@threads :static for idx in CartesianIndices((n, nrows))
+            idx1, idx2 = idx[1], idx[2]
+            x = rand(2:ncols)
+            s_new[idx1, idx2, 1:(ncols - x + 1)] .= @view s[idx2, x:end]
+            s_new[idx1, idx2, (ncols - x + 2):end] .= @view s[idx2, 1:(x - 1)]
         end
 
     elseif ndims(s) == 3
 
         nrows  = size(s, 1)
-        nepochs = size(s, 3)
-        s_new  = zeros(n, nrows, ncols, nepochs)
+        ep_n = size(s, 3)
+        s_new  = zeros(n, nrows, ncols, ep_n)
 
         # Thread over permutations: each idx1 writes to s_new[idx1, :, :, :]
         # the two inner loops are sequential (short; threading would add overhead)
-        Threads.@threads :static for idx1 in 1:n
-            @inbounds for idx3 in 1:nepochs
-                for idx2 in 1:nrows
-                    x = rand(2:ncols)
-                    s_new[idx1, idx2, 1:(ncols - x + 1), idx3] .= @view s[idx2, x:end, idx3]
-                    s_new[idx1, idx2, (ncols - x + 2):end, idx3] .= @view s[idx2, 1:(x - 1), idx3]
-                end
+        @inbounds Threads.@threads :static for idx in CartesianIndices((n, ep_n))
+            idx1, ep_idx = idx[1], idx[2]
+            for idx2 in 1:nrows
+                x = rand(2:ncols)
+                s_new[idx1, idx2, 1:(ncols - x + 1), ep_idx] .= @view s[idx2, x:end, ep_idx]
+                s_new[idx1, idx2, (ncols - x + 2):end, ep_idx] .= @view s[idx2, 1:(x - 1), ep_idx]
             end
         end
 

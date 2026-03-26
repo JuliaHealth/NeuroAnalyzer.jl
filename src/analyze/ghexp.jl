@@ -14,7 +14,7 @@ const _QRange = Union{
 """
     ghexp(s; tau_range, q_range)
 
-Calculate the Generalised Hurst Exponent(s) of a signal by analysing how the q-th moment of the absolute increments |s(t+τ) − s(t)|^q scales with lag τ.
+Calculate the Generalised Hurst Exponent(s) of a 1-D signal vector by analysing how the q-th moment of the absolute increments |s(t+τ) − s(t)|^q scales with lag τ.
 
 Two modes:
 - q_range = nothing → standard Hurst exponent via hurst_exponent(); output shape: (1, 2) → (exponent, goodness-of-fit)
@@ -53,7 +53,7 @@ end
 """
     ghexp(s)
 
-Calculate the Generalised Hurst Exponents (GHEs).
+Calculate the Generalised Hurst Exponents (GHEs) for a 3-D signal array.
 
 # Arguments
 
@@ -100,7 +100,7 @@ end
 """
     ghexp(obj; <keyword arguments>)
 
-Calculate the Generalised Hurst Exponents (GHEs).
+Calculate the Generalised Hurst Exponents (GHEs) for a NEURO object.
 
 # Arguments
 

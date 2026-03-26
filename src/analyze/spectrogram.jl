@@ -7,7 +7,7 @@ export hhtspectrogram
 """
     spectrogram(s; <keyword arguments>)
 
-Calculate spectrogram using STFT or multi-tapered method.
+Calculate spectrogram using STFT or multi-tapered method for a 1-D signal vector.
 
 # Arguments
 
@@ -17,10 +17,10 @@ Calculate spectrogram using STFT or multi-tapered method.
 - `method::Symbol=:stft`: PSD method:
 - `:stft`: short-time Fourier transform
 - `:mt`: multi-tapered periodogram
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -95,10 +95,10 @@ Calculate spectrogram for each channel of a matrix.
 - `method::Symbol=:stft`: PSD method:
     - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -157,7 +157,7 @@ end
 """
     spectrogram(obj; <keyword arguments>)
 
-Calculate spectrogram.
+Calculate spectrogram for a NEURO object.
 
 # Arguments
 
@@ -172,13 +172,13 @@ Calculate spectrogram.
 - `:cwt`: continuous wavelet transformation
 - `:hht`: Hilbert-Huang transform
 - `db::Bool=true`: normalize powers to dB
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `gw::Real=10`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -391,7 +391,7 @@ Calculate spectrogram using Morlet wavelet convolution.
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -449,8 +449,8 @@ function mwspectrogram(
     @inbounds for frq_idx in 1:nfrq
         kernel = generate_morlet(fs, f[frq_idx], 1, ncyc = ncyc[frq_idx], complex = true)
         cs[frq_idx, :] = fconv(s .* win, kernel = kernel, norm = true)
-        @views p[frq_idx, :]  = abs2.(cs[frq_idx, :])
-        @views ph[frq_idx, :] = DSP.angle.(cs[frq_idx, :])
+        p[frq_idx, :]  = abs2.(@view(cs[frq_idx, :]))
+        ph[frq_idx, :] = DSP.angle.(@view(cs[frq_idx, :]))
     end
 
     p[p .== -Inf] .= minimum(p[p .!= -Inf])
@@ -476,7 +476,7 @@ Calculate Morlet wavelet spectrogram for each channel of a matrix.
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -541,7 +541,7 @@ Calculate spectrogram using Gaussian filter and Hilbert transform.
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=10`: Gaussian width in Hz
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -604,11 +604,11 @@ Calculate spectrogram using Gaussian and Hilbert transform for each channel of a
 
 # Arguments
 
-- `s::AbstractArray`: signal matrix (channels, samples)
+- `s::AbstractMatrix`: signal matrix (channels, samples)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=10`: Gaussian width in Hz
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 

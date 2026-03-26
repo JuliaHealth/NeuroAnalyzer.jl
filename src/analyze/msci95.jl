@@ -3,7 +3,7 @@ export msci95
 """
     msci95(s; <keyword arguments>)
 
-Calculate mean, standard error and 95% CI.
+Calculate mean, standard error and 95% CI for a 1-D signal vector.
 
 Two methods:
 
@@ -150,7 +150,7 @@ end
 """
     msci95(s; <keyword arguments>)
 
-Calculate mean, standard error and 95% CI.
+Calculate mean, standard error and 95% CI for a 3-D signal array.
 
 # Arguments
 
@@ -250,7 +250,7 @@ end
 """
     msci95(s1, s2)
 
-Calculate mean difference, standard error and 95% CI per channel and epoch.
+Calculate mean difference, standard error and 95% CI per channel and epoch for a 3-D signal array.
 
 # Arguments
 
@@ -310,7 +310,7 @@ end
 """
     msci95(obj; <keyword arguments>)
 
-Calculate mean, standard error and 95% CI.
+Calculate mean, standard error and 95% CI for a NEURO object.
 
 # Arguments
 
@@ -350,7 +350,7 @@ end
 """
     msci95(obj1, obj2; <keyword arguments>)
 
-Calculate mean difference, standard ERROR and 95% CI between two objects.
+Calculate mean difference, standard ERROR and 95% CI between two  NEURO objects.
 
 # Arguments
 

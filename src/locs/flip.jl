@@ -12,14 +12,14 @@ Flip channel locations along y axis.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_flipy(
     locs::DataFrame;
@@ -71,7 +71,7 @@ Flip channel locations along y axis.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
@@ -97,14 +97,14 @@ Flip channel locations along x axis.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_flipx(
     locs::DataFrame;
@@ -153,7 +153,7 @@ Flip channel locations along x axis.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
@@ -182,14 +182,14 @@ Flip channel locations along z axis.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_flipz(
     locs::DataFrame;
@@ -231,7 +231,7 @@ Flip channel locations along z axis.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates

@@ -6,7 +6,9 @@ _h_mob(s::AbstractVector)::Float64 = sqrt(var(derivative(s)) / var(s))
 """
     hjorth(s)
 
-Calculate Hjorths parameters: three features derived from a signal and its successive derivatives:
+Calculate Hjorths parameters for a 1-D signal vector.
+
+Three features derived from a signal and its successive derivatives:
 
 - Activity - total power of the signal (`var(s)`)
 - Mobility - estimate of the mean frequency (`sqrt(var(s') / var(s))`)
@@ -44,7 +46,9 @@ end
 """
     hjorth(s)
 
-Calculate Hjorths parameters: three features derived from a signal and its successive derivatives:
+Calculate Hjorths parameters for a 3-D signal array.
+
+Three features derived from a signal and its successive derivatives:
 
 - Activity - total power of the signal (`var(s)`)
 - Mobility - estimate of the mean frequency (`sqrt(var(s') / var(s))`)
@@ -99,7 +103,9 @@ end
 """
     hjorth(obj; <keyword arguments>)
 
-Calculate Hjorths parameters: three features derived from a signal and its successive derivatives:
+Calculate Hjorths parameters for a NEURO object.
+
+Three features derived from a signal and its successive derivatives:
 
 - Activity - total power of the signal (`var(s)`)
 - Mobility - estimate of the mean frequency (`sqrt(var(s') / var(s))`)

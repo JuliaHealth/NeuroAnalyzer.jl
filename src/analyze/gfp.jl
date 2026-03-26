@@ -1,6 +1,5 @@
 export erp_gfp
 export erp_gfp_norm
-export erp_gfp
 
 """
     erp_gfp(s)
@@ -70,7 +69,9 @@ end
 
 Calculate GFP (Global Field Power).
 
-GFP is the population standard deviation across all selected channels at each time point. It is zero when all channels agree and maximal when they diverge. GFP peaks may reflect "interesting" brain activity warranting further investigation.
+GFP is the population standard deviation across all selected channels at each time point for a NEURO object.
+
+It is zero when all channels agree and maximal when they diverge. GFP peaks may reflect "interesting" brain activity warranting further investigation.
 
 # Arguments
 

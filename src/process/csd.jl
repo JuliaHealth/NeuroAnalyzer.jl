@@ -172,17 +172,9 @@ function gh(
 
     G = zeros(ch_n, ch_n)
     H = zeros(ch_n, ch_n)
-    cosdist = zeros(ch_n, ch_n)
 
     # normalize electrode coordinates to the unit sphere
     x, y, z = _locs_norm(locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z])
-
-    # compute all cosine distances
-    Threads.@threads :static for i in 1:ch_n
-        @inbounds for j in 1:ch_n
-            cosdist[i, j] = 1 - (((x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2) / 2)
-        end
-    end
 
     # --- cosine distances between all electrode pairs ---
     cosdist = zeros(ch_n, ch_n)

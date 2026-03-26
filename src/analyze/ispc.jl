@@ -3,7 +3,9 @@ export ispc
 """
     ispc(s1, s2)
 
-Calculate ISPC (Inter-Site-Phase Clustering) between two signals. ISPC measures the consistency of the phase difference between two signals across trials (or, here, across time within a single trial):
+Calculate ISPC (Inter-Site-Phase Clustering) for two 1-D signal vectors.
+
+ISPC measures the consistency of the phase difference between two signals across trials (or, here, across time within a single trial):
 
 ISPC value = |mean( exp(i·Δφ) )| (0 = no clustering, 1 = perfect lock)
 
@@ -60,7 +62,9 @@ end
 """
     ispc(obj; <keyword arguments>)
 
-Calculate ISPC (Inter-Site Phase Clustering) for all channel pairs. ISPC measures the consistency of the phase difference between two signals across trials (or, here, across time within a single trial):
+Calculate ISPC (Inter-Site Phase Clustering) for all channel pairs of a NEURO object.
+
+ISPC measures the consistency of the phase difference between two signals across trials (or, here, across time within a single trial):
 
 ISPC value = |mean( exp(i·Δφ) )| (0 = no clustering, 1 = perfect lock)
 
@@ -99,16 +103,17 @@ function ispc(
     ispcv = zeros(ch_n, ch_n, ep_n)
     ispca = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
-        for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1 - 1
-                ispc_data = ispc(
-                    @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                    @view(obj.data[ch[ch_idx2], :, ep_idx])
-                )
-                ispcv[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispcv
-                ispca[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispca
-            end
+
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1 - 1
+            ispc_data = ispc(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
+            )
+            ispcv[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispcv
+            ispca[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispca
         end
     end
 
@@ -123,7 +128,7 @@ end
 """
     ispc(obj1, obj2; <keyword arguments>)
 
-Calculate ISPC (Inter-Site Phase Clustering) between channel-matched pairs.
+Calculate ISPC (Inter-Site Phase Clustering) between channel-matched pairs of two NEURO objects.
 
 # Arguments
 

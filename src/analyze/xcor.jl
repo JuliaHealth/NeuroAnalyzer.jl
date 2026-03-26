@@ -3,7 +3,7 @@ export xcor
 """
     xcor(s1, s2; <keyword arguments>)
 
-Calculate cross-correlation between two signal vectors.
+Calculate cross-correlation between two 1-D signal vectors.
 
 # Arguments
 
@@ -145,12 +145,12 @@ end
 """
     xcor(s1, s2; <keyword arguments>)
 
-Calculate cross-correlation for a pair of 3-D arrays.
+Calculate cross-correlation for two 3-D signal arrays.
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: maximum lag in samples; lags range is `−l : l`
 - `demean::Bool=true`: subtract the mean before computing cross-correlation
 - `biased::Bool=true`: use biased (÷ n) or unbiased (÷ n−lag) estimator

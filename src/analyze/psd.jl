@@ -5,7 +5,9 @@ export ghpsd
 """
     psd(s; <keyword arguments>)
 
-Calculate Power Spectral Density. Default method is Welch's periodogram.
+Calculate Power Spectral Density for a 1-D signal vector.
+
+Default method is Welch's periodogram.
 
 # Arguments
 
@@ -19,13 +21,13 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
     - `:stft`: short-time Fourier transform averaged over segments
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -137,12 +139,12 @@ Calculate Power Spectral Density for each channel of a matrix. Default method is
     - `:stft`: short-time Fourier transform averaged over segments
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -208,7 +210,9 @@ end
 """
     psd(s; <keyword arguments>)
 
-Calculate Power Spectral Density for a 3-D signal array. Default method is Welch's periodogram.
+Calculate Power Spectral Density for a 3-D signal array.
+
+Default method is Welch's periodogram.
 
 # Arguments
 
@@ -222,13 +226,13 @@ Calculate Power Spectral Density for a 3-D signal array. Default method is Welch
     - `:stft`: short-time Fourier transform averaged over segments
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -305,7 +309,9 @@ end
 """
     psd(obj; <keyword arguments>)
 
-Calculate Power Spectral Density. Default method is Welch's periodogram.
+Calculate Power Spectral Density for a NEURO object.
+
+Default method is Welch's periodogram.
 
 # Arguments
 
@@ -319,14 +325,14 @@ Calculate Power Spectral Density. Default method is Welch's periodogram.
     - `:stft`: short-time Fourier transform averaged over segments
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `gw::Real=5`: Gaussian width in Hz
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for output trimming
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -383,7 +389,7 @@ end
 """
     mwpsd(s; <keyword arguments>)
 
-Calculate power spectrum using Morlet wavelet convolution.
+Calculate power spectrum using Morlet wavelet convolution for a 1-D signal vector.
 
 # Arguments
 
@@ -392,8 +398,8 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `w::Bool=true`: if true, apply Hanning window
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `w::Bool=true`: if `true`, apply Hanning window
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -453,16 +459,16 @@ end
 """
     ghpsd(s; <keyword arguments>)
 
-Calculate power spectrum using Gaussian filter and Hilbert transform.
+Calculate power spectrum using Gaussian filter and Hilbert transform for a 1-D signal vector.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
-- `gw::Real=5`: Gaussian width in Hz
-- `w::Bool=true`: if true, apply Hanning window
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `w::Bool=true`: if `true`, apply Hanning window
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 

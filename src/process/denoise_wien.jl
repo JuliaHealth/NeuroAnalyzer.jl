@@ -37,8 +37,7 @@ function denoise_wien(s::AbstractArray)::AbstractArray
     # s_m and noise are shared across all channels of the same epoch.
     Threads.@threads :static for ep_idx in 1:ep_n
         # cross-channel mean for this epoch: shape (samples,)
-        s_m = vec(mean(@view(s[:, :, ep_idx]), dims
-=1))
+        s_m = vec(mean(@view(s[:, :, ep_idx]), dims = 1))
         m = mean(s_m)
         # Noise estimate: white noise at mean signal power
         noise = rand(Float64, length(s_m)) .* m

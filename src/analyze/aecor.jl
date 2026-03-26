@@ -4,7 +4,7 @@ export escor
 """
     aecor(s1, s2)
 
-Calculate Amplitude Envelope Correlation (AEC).
+Calculate Amplitude Envelope Correlation (AEC) for 1-D signal vectors.
 
 # Arguments
 
@@ -38,7 +38,7 @@ end
 """
     aecor(obj1, obj2; <keyword arguments>)
 
-Calculate Amplitude Envelope Correlation (AEC).
+Calculate Amplitude Envelope Correlation (AEC) for two NEURO objects.
 
 # Arguments
 
@@ -103,7 +103,7 @@ end
 """
     aecor(obj; <keyword arguments>)
 
-Calculate Amplitude Envelope Correlation (AEC).
+Calculate Amplitude Envelope Correlation (AEC) for a NEURO object.
 
 # Arguments
 
@@ -182,7 +182,7 @@ end
 """
     escor(obj1, obj2; <keyword arguments>)
 
-Calculate Envelope-to-Signal Correlation (ESC).
+Calculate Envelope-to-Signal Correlation (ESC) for two NEURO objects.
 
 # Arguments
 
@@ -231,9 +231,9 @@ function escor(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        esc[ch_idx, ep_idx] = @views escor(
-            obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
-            obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
+        esc[ch_idx, ep_idx] = escor(
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
     end
 
@@ -244,7 +244,7 @@ end
 """
     escor(obj; <keyword arguments>)
 
-Calculate Envelope-to-Signal Correlation (ESC).
+Calculate Envelope-to-Signal Correlation (ESC) for a NEURO object.
 
 # Arguments
 

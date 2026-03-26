@@ -3,7 +3,7 @@ export cpsd
 """
     cpsd(s1, s2; <keyword arguments>)
 
-Calculate the complex cross power spectral density (CPSD) between two signals via one of three estimators:
+Calculate the complex cross power spectral density (CPSD) between two 1-D signal vectors via one of three estimators:
 
 - `:mt` – multi-taper (DSP.mt_cross_power_spectra)
 - `:fft` – single-window FFT
@@ -20,10 +20,10 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -158,7 +158,7 @@ end
 """
     cpsd(s1, s2; <keyword arguments>)
 
-Calculate the complex cross power spectral density (CPSD) between two signals via one of three estimators:
+Calculate the complex cross power spectral density (CPSD) between two 3-D signal arrays via one of three estimators:
 
 - `:mt` – multi-taper (DSP.mt_cross_power_spectra)
 - `:fft` – single-window FFT
@@ -175,10 +175,10 @@ Calculate the complex cross power spectral density (CPSD) between two signals vi
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -255,7 +255,7 @@ end
 """
     cpsd(obj1, obj2; <keyword arguments>)
 
-Calculate the complex cross power spectral density (CPSD) between paired channels of two objects via one of three estimators:
+Calculate the complex cross power spectral density (CPSD) between paired channels of two NEURO objects via one of three estimators:
 
 - `:mt` – multi-taper (DSP.mt_cross_power_spectra)
 - `:fft` – single-window FFT
@@ -275,10 +275,10 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
     - `:stft`: short-time Fourier transformation
 - `flim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj1)`: window length in samples, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 

@@ -5,11 +5,11 @@ export pca_reconstruct!
 """
     pca_decompose(s, n)
 
-Calculate `n` first Primary Components (PCs).
+Calculate `n` first Primary Components (PCs) for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `n::Int64`: number of PCs
 
 # Returns
@@ -41,7 +41,7 @@ function pca_decompose(
     pc_tmp = []
     n_tmp = n
     @inbounds for ep_idx in 1:ep_n
-        pc_tmp = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim = n, pratio = 1)
+        pc_tmp = MultivariateStats.fit(PCA, @view(s[:, :, ep_idx]), maxoutdim = n, pratio = 1)
         size(pc_tmp)[2] < n_tmp && (n_tmp = size(pc_tmp)[2])
     end
     (n_tmp < n && verbose) && _warn("Only $n_tmp PCs were generated.")
@@ -59,13 +59,13 @@ function pca_decompose(
         # eig_vec = m_sort(eig_vec, eig_val_idx)
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-        pc_model = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim = n, pratio = 1)
+        pc_model = MultivariateStats.fit(PCA, @view(s[:, :, ep_idx]), maxoutdim = n, pratio = 1)
         v = MultivariateStats.principalvars(pc_model) ./ MultivariateStats.var(pc_model) * 100
 
         for idx in 1:n
             pcv[idx, ep_idx] = v[idx]
             # pc[idx, :, ep_idx] = (eig_vec[:, idx] .* s)[idx, :]
-            pc[idx, :, ep_idx] = @views MultivariateStats.predict(pc_model, s[:, :, ep_idx])[idx, :]
+            pc[idx, :, ep_idx] = MultivariateStats.predict(pc_model, @view(s[:, :, ep_idx]))[idx, :]
         end
     end
     
@@ -116,11 +116,11 @@ end
 """
     pca_reconstruct(s, pc, pca)
 
-Reconstructs signal using PCA components.
+Reconstructs signal using PCA components for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `pc::AbstractArray`: IC(1)..IC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 
@@ -139,7 +139,7 @@ function pca_reconstruct(
     ep_n = size(s, 3)
 
     @inbounds for ep_idx in 1:ep_n
-        s_new[:, :, ep_idx] = @views MultivariateStats.reconstruct(pc_model, pc[:, :, ep_idx])
+        s_new[:, :, ep_idx] = MultivariateStats.reconstruct(pc_model, @view(pc[:, :, ep_idx]))
     end
 
     return s_new
@@ -175,7 +175,7 @@ function pca_reconstruct(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc = pc, pc_model = pc_model)
+    obj_new.data[ch, :, :] = pca_reconstruct(@view(obj_new.data[ch, :, :]), pc = pc, pc_model = pc_model)
     push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch)")
 
     return obj_new

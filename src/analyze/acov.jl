@@ -3,7 +3,7 @@ export acov
 """
     acov(s; <keyword arguments>)
 
-Calculate auto-covariance.
+Calculate auto-covariance for a 1-D signal vector.
 
 # Arguments
 
@@ -82,7 +82,7 @@ end
 """
     acov(s; <keyword arguments>)
 
-Calculate auto-covariance.
+Calculate auto-covariance for a 3-D signal array.
 
 # Arguments
 
@@ -137,7 +137,9 @@ end
 """
     acov(obj; <keyword arguments>)
 
-Calculate auto-covariance. For ERP return trial-averaged auto-covariance.
+Calculate auto-covariance for a NEURO object.
+
+For ERP return trial-averaged auto-covariance.
 
 # Arguments
 

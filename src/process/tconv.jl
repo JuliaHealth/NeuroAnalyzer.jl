@@ -28,11 +28,11 @@ end
 """
     tconv(s; <keyword arguments>)
 
-Perform convolution in the time domain.
+Perform convolution in the time domain for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `kernel::AbstractVector`: convolution kernel
 
 # Returns
@@ -53,13 +53,11 @@ function tconv(
     # initialize progress bar
     progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = tconv(s[ch_idx, :, ep_idx], kernel = kernel)
-
-            # update progress bar
-            progress_bar && next!(progbar)
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s_new[ch_idx, :, ep_idx] = tconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel)
+        # update progress bar
+        progress_bar && next!(progbar)
     end
 
     return s_new

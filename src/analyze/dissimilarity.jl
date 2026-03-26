@@ -93,7 +93,9 @@ end
 """
     diss(obj1, obj2; <keyword arguments>)
 
-Calculate DISS (global dissimilarity) and spatial correlation. Operates on ERP/ERF objects only and uses epoch 1 (the trial-averaged waveform).
+Calculate DISS (global dissimilarity) and spatial correlation for two NEURO objects.
+
+Operates on ERP/ERF objects only and uses epoch 1 (the trial-averaged waveform).
 
 # Arguments
 

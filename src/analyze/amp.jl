@@ -3,7 +3,7 @@ export amp
 """
     amp(s)
 
-Computes amplitude descriptors.
+Computes amplitude descriptors for a 1-D signal vector.
 
 # Arguments
 
@@ -46,7 +46,7 @@ end
 """
     amp(s)
 
-Computes amplitude descriptors.
+Computes amplitude descriptors for a 3-D signal array.
 
 # Arguments
 
@@ -108,7 +108,7 @@ end
 """
     amp(obj; <keyword arguments>)
 
-Computes amplitude descriptors.
+Computes amplitude descriptors for a NEURO object.
 
 # Arguments
 

@@ -120,7 +120,7 @@ Normalize.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `n::Real=1`
 - `bych::Bool=false`: if true, normalize each channel separately
 - `method::Symbol`:
@@ -255,15 +255,21 @@ function normalize(
     obj_new = deepcopy(obj)
 
     if bych
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :dynamic for ch_idx in 1:ch_n
-                @views obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(
-                    obj_new.data[ch[ch_idx], :, ep_idx], n, method = method
-                )
-            end
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(
+                @view(obj_new.data[ch[ch_idx], :, ep_idx]),
+                n,
+                method = method
+            )
         end
     else
-        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], n, method = method, bych = false)
+        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(
+            obj_new.data[ch, :, :],
+            n,
+            method = method,
+            bych = false
+        )
     end
 
     push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$method, n=$n)")
@@ -355,7 +361,7 @@ end
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -379,12 +385,12 @@ function normalize_zscore(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_zscore(s[idx, :])
+                sn[idx, :] = normalize_zscore(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_zscore(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_zscore(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -430,7 +436,7 @@ Normalize in [-n, +n]. If all elements are the same, they are normalized to 1.0.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `n::Real=1`
 - `bych::Bool=false`: if true, normalize each channel separately
 
@@ -454,12 +460,12 @@ function normalize_minmax(s::AbstractArray, n::Real = 1; bych::Bool = false)::Ab
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_minmax(s[idx, :], n)
+                sn[idx, :] = normalize_minmax(@view(s[idx, :]), n)
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_minmax(s[idx2, :, idx1], n)
+                    sn[idx2, :, idx1] = normalize_minmax(@view(s[idx2, :, idx1]), n)
                 end
             end
         end
@@ -504,7 +510,7 @@ Normalize in [0, n], default is [0, +1].
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `n::Real=1`
 - `bych::Bool=false`: if true, normalize each channel separately
 
@@ -527,12 +533,12 @@ function normalize_n(s::AbstractArray, n::Real = 1; bych::Bool = false)::Abstrac
         else
             if ndims(s) == 2
                 for idx in axes(s, 1)
-                    sn[idx, :] = @views normalize_n(s[idx, :], n)
+                    sn[idx, :] = normalize_n(@view(s[idx, :]), n)
                 end
             elseif ndims(s) == 3
                 for idx1 in axes(s, 3)
                     for idx2 in axes(s, 1)
-                        sn[idx2, :, idx1] = @views normalize_n(s[idx2, :, idx1], n)
+                        sn[idx2, :, idx1] = normalize_n(@view(s[idx2, :, idx1]), n)
                     end
                 end
             end
@@ -572,7 +578,7 @@ Normalize using log-transformation.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -590,12 +596,12 @@ function normalize_log(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_log(s[idx, :])
+                sn[idx, :] = normalize_log(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_log(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_log(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -641,7 +647,7 @@ Normalize to Gaussian.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -660,12 +666,12 @@ function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_gauss(s[idx, :])
+                sn[idx, :] = normalize_gauss(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_gauss(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_gauss(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -704,7 +710,7 @@ Normalize using log10-transformation.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -722,12 +728,12 @@ function normalize_log10(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_log10(s[idx, :])
+                sn[idx, :] = normalize_log10(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_log10(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_log10(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -744,7 +750,7 @@ Normalize to using -log-transformation.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: ignored
 
 # Returns
@@ -766,7 +772,7 @@ Normalize using -log10-transformation.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: ignored
 
 # Returns
@@ -810,7 +816,7 @@ Normalize in [-∞, 0].
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -828,12 +834,12 @@ function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_neg(s[idx, :])
+                sn[idx, :] = normalize_neg(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_neg(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_neg(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -872,7 +878,7 @@ Normalize in [0, +∞].
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -890,12 +896,12 @@ function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_pos(s[idx, :])
+                sn[idx, :] = normalize_pos(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_pos(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_pos(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -941,7 +947,7 @@ Normalize in percentages.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -965,12 +971,12 @@ function normalize_perc(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_perc(s[idx, :])
+                sn[idx, :] = normalize_perc(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_perc(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_perc(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -1011,7 +1017,7 @@ Normalize in inverse root (1/sqrt(x)).
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -1030,12 +1036,12 @@ function normalize_invroot(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_invroot(s[idx, :])
+                sn[idx, :] = normalize_invroot(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_invroot(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_invroot(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -1052,7 +1058,7 @@ Softmax normalize: `exp(x_i) / sum(exp(x))`
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: ignored
 
 # Returns
@@ -1072,7 +1078,7 @@ Normalize using sigmoid function: `1 / (1 + e^-x_i)`
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: ignored
 
 # Returns
@@ -1118,7 +1124,7 @@ end
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -1142,12 +1148,12 @@ function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_mad(s[idx, :])
+                sn[idx, :] = normalize_mad(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_mad(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_mad(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -1185,7 +1191,7 @@ Normalize using tiedranks.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -1204,12 +1210,12 @@ function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_rank(s[idx, :])
+                sn[idx, :] = normalize_rank(@view(s[idx, :]))
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_rank(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = normalize_rank(@view(s[idx2, :, idx1]))
                 end
             end
         end
@@ -1250,7 +1256,7 @@ Normalize using Fisher z-transform. Converts uniform distribution into normal di
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `bych::Bool=false`: ignored
 
 # Returns

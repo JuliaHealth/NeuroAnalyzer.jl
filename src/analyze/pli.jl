@@ -3,7 +3,7 @@ export pli
 """
     pli(s1, s2)
 
-Calculate Phase Locking Index (PLI).
+Calculate Phase Locking Index (PLI) for two 1-D signal vectors.
 
 # Arguments
 
@@ -61,7 +61,7 @@ end
 """
     pli(obj1, obj2; <keyword arguments>)
 
-Calculate Phase Locking Index (PLI).
+Calculate Phase Locking Index (PLI) for two NEURO objects.
 
 # Arguments
 
@@ -125,18 +125,18 @@ function pli(
     s1ph = zeros(ch_n, epoch_len(obj1), ep_n)
     s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            pli_data = @views pli(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
-                obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
-            )
-            pv[ch_idx, ep_idx] = pli_data.pv
-            sd[ch_idx, :, ep_idx] = pli_data.sd
-            phd[ch_idx, :, ep_idx] = pli_data.phd
-            s1ph[ch_idx, :, ep_idx] = pli_data.s1ph
-            s2ph[ch_idx, :, ep_idx] = pli_data.s2ph
-        end
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        pli_data = pli(
+            @view(viewobj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(viewobj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+        )
+        pv[ch_idx, ep_idx] = pli_data.pv
+        sd[ch_idx, :, ep_idx] = pli_data.sd
+        phd[ch_idx, :, ep_idx] = pli_data.phd
+        s1ph[ch_idx, :, ep_idx] = pli_data.s1ph
+        s2ph[ch_idx, :, ep_idx] = pli_data.s2ph
     end
 
     return (; pv, sd, phd, s1ph, s2ph)
@@ -146,7 +146,7 @@ end
 """
     pli(obj; <keyword arguments>)
 
-Calculate Phase Locking Index (PLI).
+Calculate Phase Locking Index (PLI) for a NEURO object.
 
 # Arguments
 
@@ -173,15 +173,13 @@ function pli(
     # pre-allocate output
     pv = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                pli_data = @views pli(
-                    obj.data[ch[ch_idx1], :, ep_idx],
-                    obj.data[ch[ch_idx2], :, ep_idx]
-                )
-                pv[ch_idx1, ch_idx2, ep_idx] = pli_data.pv
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1
+            pv[ch_idx1, ch_idx2, ep_idx] = pli(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
+            ).pv
         end
     end
 

@@ -193,8 +193,8 @@ function ica_reconstruct(;
     # determine which indices to actually use for reconstruction
     target_idx = keep ? idx_vec : setdiff(1:size(ic_mw, 2), idx_vec)
 
-    # reconstruction: Signal = MixingMatrix[:, target] * Components[target, :]
-    return @views ic_mw[:, target_idx] * ic[target_idx, :]
+    # reconstruction: signal = MixingMatrix[:, target] * Components[target, :]
+    return ic_mw[:, target_idx] * ic[target_idx, :]
 
 end
 

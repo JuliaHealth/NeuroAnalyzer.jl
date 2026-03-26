@@ -3,7 +3,7 @@ export sumsim
 """
     sumsim(s1, s2; theta)
 
-Calculate summed similarity using an exponential decay model between two signals.
+Calculate summed similarity using an exponential decay model between two 1-D signal vectors.
 
 # Arguments
 
@@ -34,12 +34,12 @@ end
 """
     sumsim(s1, s2; theta)
 
-Calculate summed similarity using an exponential decay model between two signals.
+Calculate summed similarity using an exponential decay model between two 3-D signal arrays.
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `theta::Real`: decay parameter
 
 # Returns
@@ -62,10 +62,13 @@ function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float
 
     ss = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            ss[ch_idx, ep_idx] = @views sumsim(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], theta = theta)
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        ss[ch_idx, ep_idx] = sumsim(
+            @view(s1[ch_idx, :, ep_idx]),
+            @view(s2[ch_idx, :, ep_idx]),
+            theta = theta
+        )
     end
 
     return ss
@@ -75,7 +78,7 @@ end
 """
     sumsim(obj; <keyword arguments>)
 
-Calculate summed similarity using an exponential decay model between two signals.
+Calculate summed similarity using an exponential decay model between two NEURO objects.
 
 # Arguments
 

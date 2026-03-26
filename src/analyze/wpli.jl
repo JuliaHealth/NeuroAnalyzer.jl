@@ -3,7 +3,7 @@ export wpli
 """
     wpli(s1, s2; <keyword arguments>)
 
-Calculate weighted PLI (Phase Locking Index).
+Calculate weighted PLI (Phase Locking Index) for two 1-D signal vectors.
 
 # Arguments
 
@@ -65,7 +65,7 @@ end
 """
     wpli(obj1, obj2; <keyword arguments>)
 
-Calculate weighted PLI (Phase Locking Index).
+Calculate weighted PLI (Phase Locking Index) for two NEURO objects.
 
 # Arguments
 
@@ -127,12 +127,18 @@ function wpli(
     s1ph = zeros(ch_n, epoch_len(obj1), ep_n)
     s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            pv[ch_idx, ep_idx], sd[ch_idx, :, ep_idx], phd[ch_idx, :, ep_idx], s1ph[ch_idx, :, ep_idx], s2ph[ch_idx, :, ep_idx] = @views wpli(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]], debiased = debiased
-            )
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        wpli_data = wpli(
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
+            debiased = debiased
+        )
+        pv[ch_idx, ep_idx] = wpli_data.pv
+        sd[ch_idx, :, ep_idx] = wpli_data.sd
+        phd[ch_idx, :, ep_idx] = wpli_data.phd
+        s1ph[ch_idx, :, ep_idx] = wpli_data.s1ph
+        s2ph[ch_idx, :, ep_idx] = wpli_data.s2ph
     end
 
     return (; pv, sd, phd, s1ph, s2ph)
@@ -141,7 +147,7 @@ end
 """
     wpli(obj; <keyword arguments>)
 
-Calculate weighted PLI (Phase Locking Index).
+Calculate weighted PLI (Phase Locking Index) for a NEURO object.
 
 # Arguments
 
@@ -168,13 +174,14 @@ function wpli(
 
     pv = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views wpli(
-                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx], debiased = debiased
-                )
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1
+            pv[ch_idx1, ch_idx2, ep_idx] = wpli(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
+                debiased = debiased
+            ).pv
         end
     end
 

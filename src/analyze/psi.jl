@@ -3,7 +3,7 @@ export psi
 """
     psi(s1, s2; <keyword arguments>)
 
-Calculate Phase Slope Index (PSI).
+Calculate Phase Slope Index (PSI) for two 1-D signal vectors.
 
 # Arguments
 
@@ -57,7 +57,7 @@ end
 """
     psi(obj1, obj2; <keyword arguments>)
 
-Calculate Phase Slope Index (PSI).
+Calculate Phase Slope Index (PSI) for two NEURO objects.
 
 # Arguments
 
@@ -101,17 +101,17 @@ function psi(
     ch_n = length(ch1)
     ep_n = length(ep1)
 
+    # pre-allocate output
     pv = Matrix{Tuple{Float64, Float64}}(undef, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            pv[ch_idx, ep_idx] = @views psi(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
-                obj2.data[ch2[ch_idx], :, ep2[ep_idx]],
-                fs = sr(obj1),
-                flim = flim
-            )
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        pv[ch_idx, ep_idx] = psi(
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
+            fs = sr(obj1),
+            flim = flim
+        )
     end
 
     return pv
@@ -121,7 +121,7 @@ end
 """
     psi(obj; <keyword arguments>)
 
-Calculate Phase Slope Index (PSI).
+Calculate Phase Slope Index (PSI) for a NEURO object.
 
 # Arguments
 
@@ -148,13 +148,14 @@ function psi(
     # pre-allocate output
     pv = Array{Tuple{Float64, Float64}}(undef, ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                pv[ch_idx1, ch_idx2, ep_idx] = @views psi(
-                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx], fs = sr(obj), flim = flim
-                )
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1
+            pv[ch_idx1, ch_idx2, ep_idx] = psi(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
+                fs = sr(obj), flim = flim
+            )
         end
     end
 

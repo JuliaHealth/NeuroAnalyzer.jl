@@ -3,7 +3,7 @@ export psa
 """
     psa(s1, s2)
 
-Calculate Phase Synchronization Analysis.
+Calculate Phase Synchronization Analysis for two 1-D signal vectors.
 
 # Arguments
 
@@ -31,7 +31,7 @@ end
 """
     psa(obj1, obj2; <keyword arguments>)
 
-Calculate Phase Synchronization Analysis.
+Calculate Phase Synchronization Analysis for two NEURO objects.
 
 # Arguments
 
@@ -78,12 +78,13 @@ function psa(
     # pre-allocate output
     ps = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            ps[ch_idx, ep_idx] = @views psa(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
-            )
-        end
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        ps[ch_idx, ep_idx] = psa(
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+        )
     end
 
     return ps
@@ -93,7 +94,7 @@ end
 """
     psa(obj; <keyword arguments>)
 
-Calculate Phase Synchronization Analysis.
+Calculate Phase Synchronization Analysis for a NEURO object.
 
 # Arguments
 
@@ -117,13 +118,13 @@ function psa(
 
     ps = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                ps[ch_idx1, ch_idx2, ep_idx] = @views psa(
-                    obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx]
-                )
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1
+            ps[ch_idx1, ch_idx2, ep_idx] = psa(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
+            )
         end
     end
 

@@ -3,7 +3,7 @@ export zipratio
 """
     zipratio(obj)
 
-Calculate the zip ratio for the object data as a measure of signal complexity.
+Calculate the zip ratio for a NEURO object data as a measure of signal complexity.
 
 The zip ratio is defined as the size of the maximally compressed file (`zip -9`) divided by the size of the raw (uncompressed) CSV export. Lower values indicate lower complexity (higher compressibility).
 

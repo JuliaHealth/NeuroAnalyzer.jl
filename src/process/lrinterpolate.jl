@@ -37,12 +37,12 @@ function lrinterpolate_channel(
     _check_epochs(obj, ep_ref)
     ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
 
-    signal_src = @views obj.data[:, :, ep]
+    signal_src = @view(obj.data[:, :, ep])
     ch_ref = setdiff(channels, ch)
     signal_ref = reshape(obj.data, size(obj.data, 1), (size(obj.data, 2) * size(obj.data, 3)), 1)
 
     # train
-    df = @views DataFrame(hcat(signal_ref[ch, :, 1], signal_ref[ch_ref, :, 1]'), :auto)
+    df = DataFrame(hcat(@view(signal_ref[ch, :, 1]), @view(signal_ref[ch_ref, :, 1])'), :auto)
     train, test = _split(df, 0.8)
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = GLM.lm(fm, train)
@@ -66,7 +66,13 @@ function lrinterpolate_channel(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    df = @views DataFrame(hcat(signal_src[ch, :], signal_src[ch_ref, :]'), :auto)
+    df = DataFrame(
+        hcat(
+            @view(signal_src[ch, :]),
+            @view(signal_src[ch_ref, :])'
+        ),
+        :auto
+    )
     obj_new.data[ch, :, ep] = GLM.predict(linear_regressor, df)
 
     push!(obj_new.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep, ep_ref=$ep_ref)")

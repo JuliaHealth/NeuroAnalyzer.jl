@@ -47,7 +47,7 @@ end
 """
     fconv(s; <keyword arguments>)
 
-Perform convolution in the frequency domain.
+Perform convolution in the frequency domain for a 3-D signal array.
 
 Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1` before the FFT so the result is equivalent to linear (non-circular) convolution.
 

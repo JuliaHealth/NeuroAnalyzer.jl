@@ -3,7 +3,9 @@ export lat_idx
 """
     lat_idx(obj; <keyword arguments>)
 
-Calculate Lateralization Index. LI is the log-ratio of right vs left hemisphere power at a given frequency (or frequency range):
+Calculate Lateralization Index for a NEURO object.
+
+LI is the log-ratio of right vs left hemisphere power at a given frequency (or frequency range):
 
 LI = log( P_right / P_left )
 
@@ -24,13 +26,13 @@ Hemisphere channels are detected automatically via `channel_pick()`.
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 

@@ -86,7 +86,7 @@ end
 """
     detrend(s; <keyword arguments>)
 
-Remove a trend.
+Remove a trend in a 3-D signal array.
 
 # Arguments
 

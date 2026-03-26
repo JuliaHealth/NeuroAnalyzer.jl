@@ -189,7 +189,7 @@ function import_ft(
 
         @inbounds for ch_idx in 1:ch_n
             if units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg", "emg", "eog", "ref")
-                @views data[ch_idx, :, 1] .*= 1e6
+                data[ch_idx, :, 1] .*= 1e6
                 units[ch_idx] = "μV"
             end
         end
@@ -250,16 +250,16 @@ function import_ft(
 
         @inbounds for ch_idx in 1:ch_n
             if units[ch_idx] == "T"
-                @views data[ch_idx,:,1] .*= 1e15
+                data[ch_idx,:,1] .*= 1e15
                 units[ch_idx] = "fT"
             elseif units[ch_idx] == "T/m"
-                @views data[ch_idx,:,1] .*= (1e15/100)
+                data[ch_idx,:,1] .*= (1e15/100)
                 units[ch_idx] = "fT/cm"
             elseif units[ch_idx] == "T/cm"
-                @views data[ch_idx,:,1] .*= 1e15
+                data[ch_idx,:,1] .*= 1e15
                 units[ch_idx] = "fT/cm"
             elseif units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg","emg","eog","ref")
-                @views data[ch_idx,:,1] .*= 1e6
+                data[ch_idx,:,1] .*= 1e6
                 units[ch_idx] = "μV"
             end
         end

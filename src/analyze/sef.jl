@@ -3,7 +3,9 @@ export sef
 """
     sef(s; <keyword arguments>)
 
-Calculate spectral edge frequency (SEF) - the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
+Calculate spectral edge frequency (SEF) for a 1-D signal vector.
+
+SEF is the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
 # Arguments
 
@@ -17,12 +19,12 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -85,11 +87,13 @@ end
 """
     sef(s; <keyword arguments>)
 
-Calculate spectral edge frequency (SEF) - the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
+Calculate spectral edge frequency (SEF) for a 3-D signal array.
+
+SEF is the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `x::Float64=0.95`: threshold
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
@@ -99,12 +103,12 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -135,22 +139,21 @@ function sef(
     # pre-allocate output
     sef_frq = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            sef_frq[ch_idx, ep_idx] = @views sef(
-                s[ch_idx, :, ep_idx],
-                x = x,
-                fs = fs,
-                f = f,
-                method = method,
-                nt = nt,
-                wlen = wlen,
-                woverlap = woverlap,
-                w = w,
-                ncyc = ncyc,
-                demean = demean
-            )
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        sef_frq[ch_idx, ep_idx] = sef(
+            @view(s[ch_idx, :, ep_idx]),
+            x = x,
+            fs = fs,
+            f = f,
+            method = method,
+            nt = nt,
+            wlen = wlen,
+            woverlap = woverlap,
+            w = w,
+            ncyc = ncyc,
+            demean = demean
+        )
     end
 
     return sef_frq
@@ -160,7 +163,9 @@ end
 """
     sef(obj; <keyword arguments>)
 
-Calculate spectral edge frequency (SEF) - the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
+Calculate spectral edge frequency (SEF) for a NEURO object.
+
+SEF is the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
 # Arguments
 
@@ -173,12 +178,12 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 

@@ -3,7 +3,9 @@ export sym_idx
 """
     sym_idx(s)
 
-Calculate signal symmetry index (ratio of positive to negative amplitudes). Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
+Calculate signal symmetry index (ratio of positive to negative amplitudes) for a 1-D signal vector.
+
+Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
 
 # Arguments
 
@@ -24,11 +26,13 @@ end
 """
     sym_idx(s)
 
-Calculate signal symmetry index (ratio of positive to negative amplitudes). Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
+Calculate signal symmetry index (ratio of positive to negative amplitudes) for a 3-D signal array.
+
+Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
@@ -47,10 +51,9 @@ function sym_idx(s::AbstractArray)::Matrix{Float64}
     # pre-allocate output
     sym = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            sym[ch_idx, ep_idx] = @views sym_idx(s[ch_idx, :, ep_idx])
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        sym[ch_idx, ep_idx] = sym_idx(@view(s[ch_idx, :, ep_idx]))
     end
 
     return sym
@@ -76,6 +79,6 @@ function sym_idx(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
 
-    return @views sym_idx(obj.data[ch, :, :])
+    return sym_idx(@view(obj.data[ch, :, :]))
 
 end

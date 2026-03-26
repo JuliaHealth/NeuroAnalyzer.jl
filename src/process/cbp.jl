@@ -76,8 +76,11 @@ function cbp(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        obj_new.data[ch[ch_idx], :, ep_idx] = @views cbp(
-            obj_new.data[ch[ch_idx], :, ep_idx], pad = pad, frq = frq, fs = fs
+        obj_new.data[ch[ch_idx], :, ep_idx] = cbp(
+            @view(obj_new.data[ch[ch_idx], :, ep_idx]),
+            pad = pad,
+            frq = frq,
+            fs = fs
         )
     end
 

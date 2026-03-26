@@ -3,7 +3,9 @@ export dpli
 """
     dpli(s1, s2)
 
-Calculate Directed Phase Lag Index (dPLI). dPLI quantifies the fraction of time that s1 leads s2 in phase: `dPLI = ( {t : 0 < phd[t] < π} + 0.5 · {t : phd[t] = 0} ) / N`
+Calculate Directed Phase Lag Index (dPLI) for two 1-D signal vectors.
+
+dPLI quantifies the fraction of time that s1 leads s2 in phase: `dPLI = ( {t : 0 < phd[t] < π} + 0.5 · {t : phd[t] = 0} ) / N`
 
 where phd = s1_phase − s2_phase ∈ (−π, π].
 
@@ -75,7 +77,9 @@ end
 """
     dpli(obj1, obj2; <keyword arguments>)
 
-Calculate Directed Phase Lag Index (dPLI). dPLI quantifies the fraction of time that s1 leads s2 in phase: `dPLI = ( {t : 0 < phd[t] < π} + 0.5 · {t : phd[t] = 0} ) / N`
+Calculate Directed Phase Lag Index (dPLI) for two NEURO objects.
+
+dPLI quantifies the fraction of time that s1 leads s2 in phase: `dPLI = ( {t : 0 < phd[t] < π} + 0.5 · {t : phd[t] = 0} ) / N`
 
 where phd = s1_phase − s2_phase ∈ (−π, π].
 
@@ -173,7 +177,9 @@ end
 """
     dpli(obj; <keyword arguments>)
 
-Calculate Directed Phase Lag Index (dPLI). dPLI quantifies the fraction of time that s1 leads s2 in phase: `dPLI = ( {t : 0 < phd[t] < π} + 0.5 · {t : phd[t] = 0} ) / N`
+Calculate Directed Phase Lag Index (dPLI) for a NEURO object.
+
+dPLI quantifies the fraction of time that s1 leads s2 in phase: `dPLI = ( {t : 0 < phd[t] < π} + 0.5 · {t : phd[t] = 0} ) / N`
 
 where phd = s1_phase − s2_phase ∈ (−π, π].
 

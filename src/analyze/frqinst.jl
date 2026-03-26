@@ -3,7 +3,7 @@ export frqinst
 """
     frqinst(s)
 
-Estimate the instantaneous frequency of a signal via the Hilbert transform:
+Estimate the instantaneous frequency of a signal via the Hilbert transform for a 1-D signal vector:
 
 1. Compute the analytic signal with htransform().
 2. Extract the instantaneous phase (index 3 of htransform output).

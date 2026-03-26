@@ -24,7 +24,7 @@ function scale(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = @views obj_new.data[ch, :, :] .* factor
+    obj_new.data[ch, :, :] = @view(obj_new.data[ch, :, :]) .* factor
     push!(obj_new.history, "scale(OBJ, ch=$ch, factor=$factor)")
 
     return obj_new

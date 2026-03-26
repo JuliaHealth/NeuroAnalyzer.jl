@@ -521,10 +521,10 @@ Plots spectrogram.
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
     - `:hht`: Hilbert-Huang transform
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `gw::Real=10`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
@@ -614,13 +614,13 @@ function plot_spectrogram(
             _check_segment(obj, seg)
         end
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-        signal = @views obj.data[ch, seg[1]:seg[2], 1]
+        signal = @view(obj.data[ch, seg[1]:seg[2], 1])
         t = obj.time_pts[seg[1]:seg[2]]
     else
         ep != 0 || throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
-        signal = @views obj.data[ch, :, ep]
+        signal = @view(obj.data[ch, :, ep])
     end
 
     # channel labels

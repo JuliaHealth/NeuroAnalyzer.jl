@@ -3,7 +3,9 @@ export hmspectrum
 """
     hmspectrum(obj; <keyword arguments>)
 
-Calculate Hilbert marginal spectrum. The Hilbert marginal spectrum is computed from the Hilbert-Huang Transform (HHT) spectrogram by integrating (summing) the instantaneous power over time for each frequency, independently per epoch. The result is a frequency × epochs power matrix analogous to a classical power spectrum.
+Calculate Hilbert marginal spectrum for a NEURO object.
+
+The Hilbert marginal spectrum is computed from the Hilbert-Huang Transform (HHT) spectrogram by integrating (summing) the instantaneous power over time for each frequency, independently per epoch. The result is a frequency × epochs power matrix analogous to a classical power spectrum.
 
 # Arguments
 

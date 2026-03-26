@@ -3,7 +3,7 @@ export plv
 """
     plv(s1, s2)
 
-Calculate Phase Locking Value (PLV).
+Calculate Phase Locking Value (PLV) for two 1-D signal vectors.
 
 # Arguments
 
@@ -62,7 +62,7 @@ end
 """
     plv(obj1, obj2; <keyword arguments>)
 
-Calculate Phase Locking Value (PLV).
+Calculate Phase Locking Value (PLV) for two NEURO objects.
 
 # Arguments
 
@@ -126,11 +126,12 @@ function plv(
     s1ph = zeros(ch_n, epoch_len(obj1), ep_n)
     s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            plv_data = @views plv(
-                obj1.data[ch1[ch_idx], :, ep1[ep_idx]],
-                obj2.data[ch2[ch_idx], :, ep2[ep_idx]]
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+            plv_data = plv(
+                @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+                @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
             )
             pv[ch_idx, ep_idx] = plv_data.pv
             sd[ch_idx, :, ep_idx] = plv_data.sd
@@ -147,7 +148,7 @@ end
 """
     plv(obj; <keyword arguments>)
 
-Calculate Phase Locking Value (PLV).
+Calculate Phase Locking Value (PLV) for a NEURO object.
 
 # Arguments
 
@@ -167,15 +168,14 @@ function plv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})
 
     pv = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                plv_data = @views plv(
-                    obj.data[ch[ch_idx1], :, ep_idx],
-                    obj.data[ch[ch_idx2], :, ep_idx]
-                )
-                pv[ch_idx1, ch_idx2, ep_idx] = plv_data.pv
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1
+            pv[ch_idx1, ch_idx2, ep_idx] = plv(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
+            ).pv
+        end
         end
     end
 

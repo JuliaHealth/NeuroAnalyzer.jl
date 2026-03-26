@@ -4,7 +4,9 @@ export itpc_spec
 """
     itpc(s; <keyword arguments>)
 
-Calculate ITPC (Inter-Trial Phase Clustering) at sample `t` over epochs. ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
+Calculate ITPC (Inter-Trial Phase Clustering) at sample `t` over epochs for a 3-D signal array.
+
+ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
 
 ITPC value = |mean( w .* exp(i·φ) )| (0 = random, 1 = perfect lock)
 ITPC z = N · ITPC² (Rayleigh statistic)
@@ -14,7 +16,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 # Arguments
 
-- `s::AbstractArray`: one channel over epochs
+- `s::AbstractArray`: single-channel array (1, samples, epochs)
 - `t::Int64`: time point (sample number) at which ITPC is calculated
 - `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
@@ -80,7 +82,9 @@ end
 """
     itpc(obj; <keyword arguments>)
 
-Calculate ITPC (Inter-Trial Phase Clustering) at time `t` over epochs. ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
+Calculate ITPC (Inter-Trial Phase Clustering) at time `t` over epochs for a NEURO object.
+
+ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
 
 ITPC value = |mean( w .* exp(i·φ) )| (0 = random, 1 = perfect lock)
 ITPC z = N · ITPC² (Rayleigh statistic)
@@ -133,7 +137,7 @@ function itpc(
     itpca = zeros(ch_n)
     itpcph = zeros(ch_n, ep_n)
 
-    Threads.@threads :dynamic for ch_idx in 1:ch_n
+    Threads.@threads :static for ch_idx in 1:ch_n
         @inbounds begin
             itpc_data = itpc(
                 reshape(
@@ -156,7 +160,9 @@ end
 """
     itpc_spec(s; <keyword arguments>)
 
-Calculate the ITPC spectrogram (ITPC at every time point). ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
+Calculate the ITPC spectrogram (ITPC at every time point) for a 3-D signal array.
+
+ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
 
 ITPC value = |mean( w .* exp(i·φ) )| (0 = random, 1 = perfect lock)
 ITPC z = N · ITPC² (Rayleigh statistic)
@@ -166,7 +172,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 # Arguments
 
-- `s::AbstractArray`: single-channel array (1 × samples × epochs)
+- `s::AbstractArray`: single-channel array (1, samples, epochs)
 - `w::Union{AbstractVector, Nothing}`: optional per-epoch weights
 
 # Returns
@@ -225,7 +231,9 @@ end
 """
     itpc_spec(obj; <keyword arguments>)
 
-Calculate the ITPC spectrogram (ITPC at each frequency and time point). ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
+Calculate the ITPC spectrogram (ITPC at each frequency and time point) for a NEURO object.
+
+ITPC measures the consistency of the instantaneous phase across epochs at a given time point (or across all time points for the spectrogram variant):
 
 ITPC value = |mean( w .* exp(i·φ) )| (0 = random, 1 = perfect lock)
 ITPC z = N · ITPC² (Rayleigh statistic)
@@ -294,7 +302,7 @@ function itpc_spec(
     # initialize progress bar
     progbar = Progress(nfrq, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    Threads.@threads :dynamic for frq_idx in 1:nfrq
+    Threads.@threads :static for frq_idx in 1:nfrq
 
         # build Morlet wavelet and compute half-kernel offset for trimming
         kernel = generate_morlet(sr(obj), f[frq_idx], 1, ncyc = 10)

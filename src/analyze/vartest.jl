@@ -3,7 +3,7 @@ export vartest
 """
     vartest(obj; <keyword arguments>)
 
-Calculate variance F-test.
+Calculate variance F-test for a NEURO object.
 
 # Arguments
 
@@ -34,14 +34,16 @@ function vartest(
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
-            # create half of the matrix
-            for ch_idx2 in 1:ch_idx1
-                ftest = @views VarianceFTest(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
-                f[ch_idx1, ch_idx2, ep_idx] = ftest.F
-                p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        # create half of the matrix
+        for ch_idx2 in 1:ch_idx1
+            ftest = VarianceFTest(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx])
+            )
+            f[ch_idx1, ch_idx2, ep_idx] = ftest.F
+            p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
         end
     end
 
@@ -56,7 +58,7 @@ end
 """
     vartest(obj1, obj2; <keyword arguments>)
 
-Calculate variance F-test.
+Calculate variance F-test for two NEURO objects.
 
 # Arguments
 
@@ -104,15 +106,15 @@ function vartest(
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_n
-                ftest = @views VarianceFTest(
-                    obj1.data[ch1[ch_idx1], :, ep1[ep_idx]], obj2.data[ch2[ch_idx2], :, ep2[ep_idx]]
-                )
-                f[ch_idx1, ch_idx2, ep_idx] = ftest.F
-                p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_n
+            ftest = VarianceFTest(
+                @view(obj1.data[ch1[ch_idx1], :, ep1[ep_idx]]),
+                @view(obj2.data[ch2[ch_idx2], :, ep2[ep_idx]])
+            )
+            f[ch_idx1, ch_idx2, ep_idx] = ftest.F
+            p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
         end
     end
 

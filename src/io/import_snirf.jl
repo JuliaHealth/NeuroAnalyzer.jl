@@ -20,8 +20,8 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 """
 function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".snirf") && throw(ArgumentError("This is not SNIRF file."))
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    lowercase(splitext(file_name)[2]) == ".snirf" || throw(ArgumentError("This is not SNIRF file."))
 
     nirs = nothing
     try
@@ -43,9 +43,11 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     # check for multi-subject recordings
     n_id = "nirs"
     n != 0 &&
-        !(!any(occursin.("nirs$n", keys(nirs)))) && throw(ArgumentError("No data for subject $n found in the recording."))
+        any(occursin.("nirs$n", keys(nirs))) ||
+            throw(ArgumentError("No data for subject $n found in the recording."))
     if any(occursin.("nirs1", keys(nirs)))
-        !(n != 0) && throw(ArgumentError("This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."))
+        n != 0 ||
+            throw(ArgumentError("This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."))
         n_id = "nirs$n"
     end
 
@@ -213,23 +215,23 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     detector_module_index = Int64[]
 
     for ch_idx in 1:ch_n
-        # Source index for a given channel
+        # source index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/sourceIndex"
         k in keys(nirs) && push!(source_index, Int.(nirs[k][1]))
 
-        # Detector index for a given channel
+        # detector index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/detectorIndex"
         k in keys(nirs) && push!(detector_index, Int.(nirs[k][1]))
 
-        # Wavelength index for a given channel
+        # wavelength index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/wavelengthIndex"
         k in keys(nirs) && push!(wavelength_index, Int.(nirs[k][1]))
 
-        # Actual wavelength for a given channel
+        # actual wavelength for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/wavelengthActual"
         k in keys(nirs) && push!(wavelength_actual, nirs[k][1])
 
-        # Actual emission wavelength for a channel
+        # actual emission wavelength for a channel
         k = "$n_id/$d_id/measurementList$ch_idx/wavelengthEmissionActual"
         k in keys(nirs) && push!(wavelength_emission_actual, nirs[k][1])
 
@@ -248,7 +250,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         k in keys(nirs) && push!(data_unit, nirs[k][1])
         data_unit == String[] && (data_unit = repeat(["V"], ch_n))
 
-        # Data type name for a given channel
+        # data type name for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
         if k in keys(nirs)
             if typeof(nirs[k]) == Vector{String}
@@ -259,7 +261,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         end
         # assume its raw data (intensity) if there is no data type
         data_type_label == String[] && (data_type_label = repeat(["nirs_int"], ch_n))
-        # Change in optical density
+        # change in optical density
         data_type_label = replace(lowercase.(data_type_label), "dod" => "nirs_od")
         data_type_label = replace(lowercase.(data_type_label), "dmean" => "nirs_dmean")
         data_type_label = replace(lowercase.(data_type_label), "dvar" => "nirs_dvar")

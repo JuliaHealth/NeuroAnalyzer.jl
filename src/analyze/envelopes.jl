@@ -19,7 +19,7 @@ export env_cor
 """
     env_up(s, x; <keyword arguments>)
 
-Calculate upper cubic-spline envelope from local maxima.
+Calculate upper cubic-spline envelope from local maxima for a 1-D signal vector.
 
 # Arguments
 
@@ -61,7 +61,7 @@ end
 """
     env_lo(s, x; <keyword arguments>)
 
-Calculate lower cubic-spline envelope from local minima.
+Calculate lower cubic-spline envelope from local minima for a 1-D signal vector.
 
 # Arguments
 
@@ -104,7 +104,7 @@ end
 """
     henv_up(s)
 
-Calculate upper amplitude envelope using the Hilbert transform.
+Calculate upper amplitude envelope using the Hilbert transform for a 1-D signal vector.
 
 # Arguments
 
@@ -128,7 +128,7 @@ end
 """
     henv_lo(s)
 
-Calculate lower amplitude envelope using the Hilbert transform.
+Calculate lower amplitude envelope using the Hilbert transform for a 1-D signal vector.
 
 # Arguments
 
@@ -152,7 +152,7 @@ end
 """
     tenv(obj; <keyword arguments>)
 
-Calculate temporal envelope.
+Calculate temporal envelope for a NEURO object.
 
 # Arguments
 
@@ -202,7 +202,7 @@ end
 """
     tenv_mean(obj; <keyword arguments>)
 
-Calculate temporal envelope: mean and 95% CI.
+Calculate temporal envelope (mean and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -301,7 +301,7 @@ end
 """
     tenv_median(obj; <keyword arguments>)
 
-Calculate temporal envelope: median and 95% CI.
+Calculate temporal envelope (median and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -399,7 +399,7 @@ end
 """
     penv(obj; <keyword arguments>)
 
-Calculate power spectrum (in dB) envelope.
+Calculate power spectrum (in dB) envelope for a NEURO object.
 
 # Arguments
 
@@ -412,12 +412,12 @@ Calculate power spectrum (in dB) envelope.
 - `:mt`: multi-tapered periodogram
 - `:stft`: short-time Fourier transform
 - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -494,7 +494,7 @@ end
 """
     penv_mean(obj; <keyword arguments>)
 
-Calculate power spectrum (in dB) envelope: mean and 95% CI.
+Calculate power spectrum (in dB) envelope (mean and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -508,12 +508,12 @@ Calculate power spectrum (in dB) envelope: mean and 95% CI.
 - `:mt`: multi-tapered periodogram
 - `:stft`: short-time Fourier transform
 - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -625,7 +625,7 @@ end
 """
     penv_median(obj; <keyword arguments>)
 
-Calculate power spectrum (in dB) envelope: median and 95% CI.
+Calculate power spectrum (in dB) envelope (median and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -639,12 +639,12 @@ Calculate power spectrum (in dB) envelope: median and 95% CI.
 - `:mt`: multi-tapered periodogram
 - `:stft`: short-time Fourier transform
 - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -765,7 +765,7 @@ end
 """
     senv(obj; <keyword arguments>)
 
-Calculate spectral envelope (dominant frequency over time).
+Calculate spectral envelope (dominant frequency over time) for a NEURO object.
 
 # Arguments
 
@@ -781,13 +781,13 @@ Calculate spectral envelope (dominant frequency over time).
 - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
-- `nt::Int64=7`: number of Slepian tapers
-- `gw::Real=5`: Gaussian width in Hz
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -972,7 +972,7 @@ end
 """
     senv_mean(obj; <keyword arguments>)
 
-Calculate spectral envelope: mean and 95% CI.
+Calculate spectral envelope (mean and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -989,13 +989,13 @@ Calculate spectral envelope: mean and 95% CI.
 - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
-- `nt::Int64=7`: number of Slepian tapers
-- `gw::Real=5`: Gaussian width in Hz
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -1130,7 +1130,7 @@ end
 """
     senv_median(obj; <keyword arguments>)
 
-Calculate spectral envelope: median and 95% CI.
+Calculate spectral envelope (median and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -1147,13 +1147,13 @@ Calculate spectral envelope: median and 95% CI.
 - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
-- `nt::Int64=7`: number of Slepian tapers
-- `gw::Real=5`: Gaussian width in Hz
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -1289,7 +1289,7 @@ end
 """
     henv(obj; <keyword arguments>)
 
-Calculate Hilbert spectrum amplitude envelope.
+Calculate Hilbert spectrum amplitude envelope for a NEURO object.
 
 # Arguments
 
@@ -1345,7 +1345,7 @@ end
 """
     henv_mean(obj; <keyword arguments>)
 
-Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
+Calculate Hilbert spectrum amplitude envelope (mean and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -1443,7 +1443,7 @@ end
 """
     henv_median(obj; <keyword arguments>)
 
-Calculate Hilbert spectrum amplitude envelope of `obj`: median and 95% CI.
+Calculate Hilbert spectrum amplitude envelope (median and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -1501,7 +1501,7 @@ function henv_median(
         el = zeros(length(t), ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            em[:, ep_idx] = @views median(s_a[:, :, ep_idx], dims = 1)
+            em[:, ep_idx] = median(@view(s_a[:, :, ep_idx]), dims = 1)
             for m_idx in eachindex(t)
                 eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(s_a[:, m_idx, ep_idx])
             end
@@ -1573,7 +1573,7 @@ function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{
 
     # compare envelopes per epochs
     for ep_idx in 1:ep_n
-        ctest = @views CorrelationTest(vec(env1[:, :, ep_idx]), vec(env2[:, :, ep_idx]))
+        ctest = CorrelationTest(vec(env1[:, :, ep_idx]), vec(env2[:, :, ep_idx]))
         @inbounds ec[ep_idx] = ctest.r
         @inbounds p[ep_idx] = pvalue(ctest)
     end

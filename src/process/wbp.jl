@@ -44,11 +44,11 @@ end
 """
     wbp(s; <keyword arguments>)
 
-Perform wavelet band-pass filtering.
+Perform wavelet band-pass filtering for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `pad::Int64=0`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
@@ -74,10 +74,15 @@ function wbp(
 
     s_new = similar(s, Float64)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views wbp(s[ch_idx, :, ep_idx], pad = pad, frq = frq, fs = fs, ncyc = ncyc)
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s_new[ch_idx, :, ep_idx] = wbp(
+            @view(s[ch_idx, :, ep_idx]),
+            pad = pad,
+            frq = frq,
+            fs = fs,
+            ncyc = ncyc
+        )
     end
 
     return s_new
@@ -115,7 +120,7 @@ function wbp(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = @views wbp(obj.data[ch, :, :], pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
+    obj_new.data[ch, :, :] = wbp(@view(obj.data[ch, :, :]), pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
     push!(obj_new.history, "wbp(OBJ, ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
 
     return obj_new

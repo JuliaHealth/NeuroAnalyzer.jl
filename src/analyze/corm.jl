@@ -3,7 +3,7 @@ export corm
 """
     corm(s1, s2; <keyword arguments>)
 
-Computes the channel × channel Pearson correlation matrix.
+Computes the channel × channel Pearson correlation matrix for two 1-D signal vectors.
 
 # Arguments
 
@@ -61,7 +61,7 @@ end
 """
     corm(s; <keyword arguments>)
 
-Calculate correlation matrix for each epoch of a 3-D signal array.
+Calculate correlation matrix for a 3-D signal array.
 
 # Arguments
 
@@ -97,7 +97,7 @@ end
 """
      corm(obj; <keyword arguments>)
 
-Calculate correlation matrix.
+Calculate correlation matrix for a NEURO object.
 
 # Arguments
 

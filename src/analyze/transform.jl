@@ -6,7 +6,7 @@ export hanalytic
 """
     ftransform(s; <keyword arguments>)
 
-Calculate Fourier transform (FFT / rFFT).
+Calculate Fourier transform (FFT / rFFT) for a 1-D signal vector.
 
 # Arguments
 
@@ -70,7 +70,7 @@ end
 """
     ftransform(s; <keyword arguments>)
 
-Calculate Fourier transform (FFT / rFFT)
+Calculate Fourier transform (FFT / rFFT) for a 3-D signal array.
 
 # Arguments
 
@@ -141,7 +141,7 @@ end
 """
     htransform(s; <keyword arguments>)
 
-Calculate Hilbert transform (analytic signal).
+Calculate Hilbert transform (analytic signal) for a 1-D signal vector.
 
 # Arguments
 
@@ -187,7 +187,7 @@ end
 """
     htransform(s; <keyword arguments>)
 
-Calculate Hilbert transform (analytic signal).
+Calculate Hilbert transform (analytic signal) for a 3-D signal array.
 
 # Arguments
 
@@ -249,7 +249,7 @@ end
 """
     transform(s; <keyword arguments>)
 
-Calculate Fourier or Hilbert transformation.
+Calculate Fourier or Hilbert transformation for a 3-D signal array.
 
 # Arguments
 
@@ -296,7 +296,7 @@ end
 """
     transform(obj; <keyword arguments>)
 
-Calculate Fourier/Hilbert transform.
+Calculate Fourier/Hilbert transform for a NEURO object.
 
 # Arguments
 
@@ -345,7 +345,7 @@ end
 """
     hanalytic(s)
 
-Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
+Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation for a 1-D signal vector.
 
 # Arguments
 
@@ -366,7 +366,7 @@ end
 """
     hanalytic(s; <keyword arguments>)
 
-Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
+Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation for a 3-D signal array.
 
 # Arguments
 
@@ -405,7 +405,7 @@ end
 """
     hanalytic(obj; <keyword arguments>)
 
-Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation.
+Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation for a NEURO object.
 
 # Arguments
 

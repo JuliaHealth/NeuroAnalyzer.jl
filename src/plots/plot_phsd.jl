@@ -611,14 +611,14 @@ function plot_phsd(
             _check_segment(obj, seg)
         end
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-        signal = @views obj.data[ch, seg[1]:seg[2], 1]
+        signal = @view(obj.data[ch, seg[1]:seg[2], 1])
         t = obj.time_pts[seg[1]:seg[2]]
         _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
         ep != 0 || throw(ArgumentError("For epoched object, ep must be specified."))
         t = obj.epoch_time
         _check_epochs(obj, ep)
-        signal = @views obj.data[ch, :, ep]
+        signal = @view(obj.data[ch, :, ep])
     end
 
     # channel labels

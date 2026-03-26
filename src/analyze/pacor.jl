@@ -3,7 +3,7 @@ export pacor
 """
     pacor(s; <keyword arguments>)
 
-Computes the partial auto-correlation function (PACF) of a signal over symmetric lags −l … l using one of two methods:
+Computes the partial auto-correlation function (PACF) of a 1-D signal vector over symmetric lags −l … l using one of two methods:
 
 - `:yw` (Yule-Walker) - fast, no matrix inversion, may need larger l
 - `:reg` (regression) - via successive OLS models, more robust for small l
@@ -148,7 +148,7 @@ end
 """
     pacor(obj; <keyword arguments>)
 
-Calculate partial auto-correlation function (PACF) over lags −l … l using one of two methods:
+Calculate partial auto-correlation function (PACF) for a NEURO object over lags −l … l using one of two methods:
 
 - `:yw` (Yule-Walker) - fast, no matrix inversion, may need larger l
 - `:reg` (regression) - via successive OLS models, more robust for small l

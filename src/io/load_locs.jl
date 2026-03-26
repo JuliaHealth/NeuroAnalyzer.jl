@@ -282,11 +282,11 @@ Channel locations:
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `file_name::String`
+- `file_name::String`: name of the file to load
 
 # Return
 
-Nothing
+- `Nothing`
 """
 function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
 

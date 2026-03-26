@@ -3,7 +3,7 @@ export acor
 """
     acor(s; <keyword arguments>)
 
-Calculate auto-correlation.
+Calculate auto-correlation for a 1-D signal vector.
 
 # Arguments
 
@@ -80,7 +80,7 @@ end
 """
     acor(s; <keyword arguments>)
 
-Calculate auto-correlation.
+Calculate auto-correlation for a 3-D signal array.
 
 # Arguments
 
@@ -135,7 +135,9 @@ end
 """
     acor(obj; <keyword arguments>)
 
-Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
+Calculate auto-correlation for a NEURO object.
+
+For ERP return trial-averaged auto-correlation.
 
 # Arguments
 

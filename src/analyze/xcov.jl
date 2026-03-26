@@ -3,7 +3,7 @@ export xcov
 """
     xcov(s1, s2; <keyword arguments>)
 
-Calculate cross-covariance between two signal vectors.
+Calculate cross-covariance between two 1-D signal vectors.
 
 # Arguments
 
@@ -153,8 +153,8 @@ Calculate cross-covariance for a pair of 3-D arrays.
 
 # Arguments
 
-- `s1::AbstractArray`: signal array (channels, samples, epochs)
-- `s2::AbstractArray`: signal array, same size as `s1`
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2))))`: lags range is `-l:l`
 - `demean::Bool=true`: subtract the mean before computing cross-covariance
 - `biased::Bool=true`: use biased (÷ n) or unbiased (÷ n−lag) estimator

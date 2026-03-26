@@ -145,12 +145,12 @@ function m_sort(
     if dims == 1
         # apply permutation to each column
         @inbounds for col in axes(m, 2)
-            m_sorted[:, col] = @views m[:, col][perm]
+            m_sorted[:, col] = @view(m[:, col])[perm]
         end
     else
         # apply permutation to each row
         @inbounds for row in axes(m, 1)
-            m_sorted[row, :] = @views m[row, :][perm]
+            m_sorted[row, :] = @view(m[row, :])[perm]
         end
     end
 

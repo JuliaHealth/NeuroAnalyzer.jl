@@ -27,11 +27,11 @@ end
 """
     taper(s; <keyword arguments>)
 
-Taper the signal.
+Taper a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `t::Vector{<:Real}`
 
 # Returns
@@ -46,10 +46,9 @@ function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
 
     s_new = similar(s, Float64)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views taper(s[ch_idx, :, ep_idx], t = t)
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s_new[ch_idx, :, ep_idx] = taper(@view(s[ch_idx, :, ep_idx]), t = t)
     end
 
     return s_new

@@ -55,7 +55,7 @@ function od2conc(
     dc = zeros(3, ep_len, length(lst), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        dod = @views obj_new.data[ch, :, ep_idx]
+        dod = @view(obj_new.data[ch, :, ep_idx])
 
         for idx in eachindex(lst)
 

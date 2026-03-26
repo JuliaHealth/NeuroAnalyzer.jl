@@ -21,7 +21,7 @@ Electrode locations:
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
@@ -47,7 +47,6 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEUR
     locs_idx = indexin(obj_new.locs[:, :label], labels(obj_new))
     obj_new.locs = obj_new.locs[sortperm(locs_idx), :]
 
-    # add entry to :history field
     push!(obj_new.history, "add_locs(OBJ, locs)")
 
     return obj_new
@@ -74,7 +73,7 @@ Electrode locations:
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 

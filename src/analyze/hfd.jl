@@ -3,7 +3,7 @@ export hfd
 """
     hfd(s)
 
-Calculate the Higuchi fractal dimension (Higuchi, 1988).
+Calculate the Higuchi fractal dimension for a 1-D signal vector.
 
 # Arguments
 
@@ -28,7 +28,7 @@ end
 """
     hfd(s)
 
-Calculate the Higuchi fractal dimension (Higuchi, 1988).
+Calculate the Higuchi fractal dimension for a 3-D signal array.
 
 # Arguments
 
@@ -70,7 +70,7 @@ end
 """
     hfd(obj; <keyword arguments>)
 
-Calculate the Higuchi fractal dimension (Higuchi, 1988).
+Calculate the Higuchi fractal dimension for a NEURO object.
 
 # Arguments
 

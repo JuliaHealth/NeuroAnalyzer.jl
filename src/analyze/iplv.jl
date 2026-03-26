@@ -3,7 +3,9 @@ export iplv
 """
     iplv(s1, s2)
 
-Calculate Imaginary Phase Locking Value (IPLV) for a single channel pair. The IPLV is the absolute imaginary part of the mean complex phase difference:
+Calculate Imaginary Phase Locking Value (IPLV) for two 1-D signal vectors.
+
+The IPLV is the absolute imaginary part of the mean complex phase difference:
 
 IPLV = |Im( mean( exp(i·Δφ) ) )|
 
@@ -62,7 +64,9 @@ end
 """
     iplv(obj1, obj2; <keyword arguments>)
 
-Calculate Imaginary Phase Locking Value (IPLV) between channel-matched pairs. The IPLV is the absolute imaginary part of the mean complex phase difference:
+Calculate Imaginary Phase Locking Value (IPLV) between channel-matched pairs of two NEURO objects.
+
+The IPLV is the absolute imaginary part of the mean complex phase difference:
 
 IPLV = |Im( mean( exp(i·Δφ) ) )|
 
@@ -156,7 +160,9 @@ end
 """
     iplv(obj; <keyword arguments>)
 
-Calculate Imaginary Phase Locking Value (IPLV) for all channel pairs. The IPLV is the absolute imaginary part of the mean complex phase difference:
+Calculate Imaginary Phase Locking Value (IPLV) for all channel pairs of a NEURO object.
+
+The IPLV is the absolute imaginary part of the mean complex phase difference:
 
 IPLV = |Im( mean( exp(i·Δφ) ) )|
 
@@ -192,14 +198,14 @@ function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     # compute lower triangle (ch_idx2 < ch_idx1); diagonal is zero by definition
     # the outer loop is parallelized over epochs
     # the inner two loops over channel pairs are not nested @threads (no nesting issue here)
-    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
-        for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1 - 1
-                ipl[ch_idx1, ch_idx2, ep_idx] = iplv(
-                    @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                    @view(obj.data[ch[ch_idx2], :, ep_idx]),
-                ).ipl
-            end
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1 - 1
+            ipl[ch_idx1, ch_idx2, ep_idx] = iplv(
+                @view(obj.data[ch[ch_idx1], :, ep_idx]),
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
+            ).ipl
         end
     end
 

@@ -3,7 +3,7 @@ export phdiff
 """
     phdiff(s1, s2; <keyword arguments>)
 
-Calculate phase difference between signals.
+Calculate phase difference between two 1-D signal vectors.
 
 # Arguments
 
@@ -39,11 +39,11 @@ end
 """
     phdiff(s; <keyword arguments>)
 
-Calculate phase difference between channels and mean phase of reference `ch`.
+Calculate phase difference between channels and mean phase of reference `ch` for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))`: index of reference channels, default is all  channels except the analyzed one
 - `avg::Symbol=:phase`: method of averaging:
     - `:phase`: phase is calculated for each reference channel separately and then averaged
@@ -79,31 +79,31 @@ function phdiff(
 
     # pre-allocate output
     phd = zeros(ch_n, ep_len, ep_n)
-    
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            if avg === :phase
 
-                ref_channels = setdiff(ch, ch_idx)
-                ph_ref = zeros(length(ref_channels), ep_len)
-                for ref_idx in eachindex(ref_channels)
-                    h_data = h ? NeuroAnalyzer.htransform(@view(s[ref_channels[ref_idx], :, ep_idx])) :
-                                 NeuroAnalyzer.ftransform(@view(s[ref_channels[ref_idx], :, ep_idx]), pad = pad)
-                    ph_ref[ref_idx, :] = h_data.ph
-                end
-                ph_ref = vec(mean(ph_ref, dims = 1))
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        if avg === :phase
 
-                h_data = h ? NeuroAnalyzer.htransform(@view(s[ch[ch_idx], :, ep_idx])) :
-                             NeuroAnalyzer.ftransform(@view(s[ch[ch_idx], :, ep_idx]), pad = pad)
-                phd[ch_idx, :, ep_idx] = h_data.ph - ph_ref
-
-            elseif avg === :signal
-
-                ref_channels = setdiff(ch, ch_idx)
-                signal_m = vec(mean(@view(s[ref_channels, :, ep_idx]), dims = 1))
-                phd[ch_idx, :, ep_idx] = @views phdiff(s[ch[ch_idx], :, ep_idx], signal_m)
-
+            ref_channels = setdiff(ch, ch_idx)
+            ph_ref = zeros(length(ref_channels), ep_len)
+            for ref_idx in eachindex(ref_channels)
+                h_data = h ? NeuroAnalyzer.htransform(@view(s[ref_channels[ref_idx], :, ep_idx])) :
+                             NeuroAnalyzer.ftransform(@view(s[ref_channels[ref_idx], :, ep_idx]), pad = pad)
+                ph_ref[ref_idx, :] = h_data.ph
             end
+            ph_ref = vec(mean(ph_ref, dims = 1))
+
+            h_data = h ? NeuroAnalyzer.htransform(@view(s[ch[ch_idx], :, ep_idx])) :
+                         NeuroAnalyzer.ftransform(@view(s[ch[ch_idx], :, ep_idx]), pad = pad)
+            phd[ch_idx, :, ep_idx] = h_data.ph - ph_ref
+
+        elseif avg === :signal
+
+            ref_channels = setdiff(ch, ch_idx)
+            signal_m = vec(mean(@view(s[ref_channels, :, ep_idx]), dims = 1))
+            phd[ch_idx, :, ep_idx] = phdiff(@view(s[ch[ch_idx], :, ep_idx]), signal_m)
+
         end
     end
 

@@ -4,7 +4,7 @@ export snr2
 """
     snr(s1, s2)
 
-Calculate SNR between two signals
+Calculate SNR between two 1-D signal vectors.
 
 # Arguments
 
@@ -24,7 +24,7 @@ end
 """
     snr(s)
 
-Calculate mean-based SNR.
+Calculate mean-based SNR for a 1-D signal vector.
 
 # Arguments
 
@@ -47,7 +47,7 @@ end
 """
     snr2(s)
 
-Calculate RMS-based SNR.
+Calculate RMS-based SNR for a 1-D signal vector.
 
 # Arguments
 
@@ -67,11 +67,11 @@ end
 """
     snr(s; <keyword arguments>)
 
-Calculate SNR.
+Calculate SNR for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `t::Vector{Float64}`: epoch time
 - `type::Symbol=:rms`: SNR type:
     - `:mean`: mean-based
@@ -113,20 +113,18 @@ function snr(
     sn = zeros(ch_n, length(f))
 
     # create spectrum for each channel
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            _, amp[ch_idx, :, ep_idx], _, _ = @views NeuroAnalyzer.ftransform(s[ch_idx, :, ep_idx])
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        amp[ch_idx, :, ep_idx] = NeuroAnalyzer.ftransform(@view(s[ch_idx, :, ep_idx])).a
     end
 
     # calculate SNR for each channel spectrum
-    @inbounds for f_idx in eachindex(f)
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            if type === :mean
-                sn[ch_idx, f_idx] = @views snr(amp[ch_idx, f_idx, :])
-            else
-                sn[ch_idx, f_idx] = @views snr2(amp[ch_idx, f_idx, :])
-            end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((length(f), ch_n))
+        f_idx, ch_idx = idx[1], idx[2]
+        if type === :mean
+            sn[ch_idx, f_idx] = snr(@view(amp[ch_idx, f_idx, :]))
+        else
+            sn[ch_idx, f_idx] = snr2(@view(amp[ch_idx, f_idx, :]))
         end
     end
 
@@ -137,7 +135,7 @@ end
 """
     snr(obj; <keyword arguments>)
 
-Calculate SNR.
+Calculate SNR for a NEURO object.
 
 # Arguments
 

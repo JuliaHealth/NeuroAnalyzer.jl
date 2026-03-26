@@ -3,7 +3,7 @@ export coherence
 """
     coherence(s1, s2; <keyword arguments>)
 
-Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC).
+Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two 1-D signal vectors.
 
 For two signals `s1`, `s2` and their cross-power spectra:
 - coh = S12 / √(S11 · S22) (complex coherence)
@@ -21,10 +21,10 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -99,7 +99,7 @@ end
 """
     coherence(s1, s2; <keyword arguments>)
 
-Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC).
+Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two 3-D signal arrays.
 
 For two signals `s1`, `s2` and their cross-power spectra:
 - coh = S12 / √(S11 · S22) (complex coherence)
@@ -108,8 +108,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 # Arguments
 
-- `s1::AbstractArray`: signal array
-- `s2::AbstractArray`: signal array
+- `s1::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s2::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
@@ -117,10 +117,10 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 
@@ -206,7 +206,7 @@ end
 """
     coherence(obj1, obj2; <keyword arguments>)
 
-Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC).
+Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two NEURO objects.
 
 For two signals `s1`, `s2` and their cross-power spectra:
 - coh = S12 / √(S11 · S22) (complex coherence)
@@ -228,10 +228,10 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
 

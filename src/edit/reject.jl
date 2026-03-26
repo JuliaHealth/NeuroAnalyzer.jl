@@ -7,10 +7,10 @@ function detect_rmse(s::AbstractMatrix)::Vector{Bool}
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
 
-    ch_m = @views vec(median(s, dims = 1))
+    ch_m = vec(median(s, dims = 1))
     rmse_ch = zeros(ch_n)
     for ch_idx in 1:ch_n
-        rmse_ch[ch_idx] = @views rmse(s[ch_idx, :], ch_m)
+        rmse_ch[ch_idx] = rmse(@view(s[ch_idx, :]), ch_m)
     end
     for ch_idx in 1:ch_n
         bad_chs[ch_idx] =
@@ -27,10 +27,10 @@ function detect_rmsd(s::AbstractMatrix)::Vector{Bool}
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
 
-    ch_m = @views vec(median(s, dims = 1))
+    ch_m = vec(median(s, dims = 1))
     rmsd_ch = zeros(ch_n)
     for ch_idx in 1:ch_n
-        rmsd_ch[ch_idx] = @views Distances.rmsd(s[ch_idx, :], ch_m)
+        rmsd_ch[ch_idx] = Distances.rmsd(@view(s[ch_idx, :]), ch_m)
     end
     for ch_idx in 1:ch_n
         bad_chs[ch_idx] =
@@ -47,10 +47,10 @@ function detect_euclid(s::AbstractMatrix)::Vector{Bool}
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
 
-    ch_m = @views vec(median(s, dims = 1))
+    ch_m = vec(median(s, dims = 1))
     ed_ch = zeros(ch_n)
     for ch_idx in 1:ch_n
-        ed_ch[ch_idx] = @views Distances.euclidean(s[ch_idx, :], ch_m)
+        ed_ch[ch_idx] = Distances.euclidean(@view(s[ch_idx, :]), ch_m)
     end
     for ch_idx in 1:ch_n
         bad_chs[ch_idx] =
@@ -83,14 +83,14 @@ function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector
     bad_chs = zeros(Bool, ch_n)
 
     for ch_idx in 1:ch_n
-        v = @views s[ch_idx, :]
+        v = @view(s[ch_idx, :])
         sm = Vector{Float64}()
         for idx in 1:w:(length(v) - w)
-            @views push!(sm, mean(v[idx:(idx + w)]))
+            push!(sm, mean(@view(v[idx:(idx + w)])))
         end
-        p2p = @views round.(diff(sm), digits = -2)
-        s_m = @views mean(s[ch_idx, :])
-        s_s = @views std(s[ch_idx, :])
+        p2p = round.(diff(sm), digits = -2)
+        s_m = mean(@view(s[ch_idx, :]))
+        s_s = std(@view(s[ch_idx, :]))
         s_u = s_m + quantile.(Distributions.Normal(), p) * s_s
         s_l = s_m - quantile.(Distributions.Normal(), p) * s_s
         p2p_p = zeros(Bool, length(p2p))
@@ -111,7 +111,7 @@ function detect_tkeo(
     bad_chs = zeros(Bool, ch_n)
 
     for ch_idx in 1:ch_n
-        stkeo = @views tkeo(s[ch_idx, :], t, method = tkeo_method)
+        stkeo = tkeo(@view(s[ch_idx, :]), t, method = tkeo_method)
         z_signal = vec(NeuroAnalyzer.zscore(s[ch_idx, :]))
         z_tkeo = vec(NeuroAnalyzer.zscore(stkeo))
         # scan in 10-sample windows
@@ -158,8 +158,8 @@ function detect_ransac(
 
     @inbounds for ch_idx in 1:ch_n
         _, nearest_idx = findmin(d[ch_idx, :])
-        y = @views s[ch_idx, :]
-        x = @views s[nearest_idx, :]
+        y = @view(s[ch_idx, :])
+        x = @view(s[nearest_idx, :])
         df = DataFrame(:y => remove_dc(y), :x => remove_dc(x))
         reg = createRegressionSetting(@formula(y ~ x), df)
         o = ransac(reg, t = ransac_t, k = 128)["outliers"]
@@ -168,8 +168,8 @@ function detect_ransac(
         y = y[idx]
         c = Float64[]
         for w_idx in 1:w:(length(x) - w)
-            xx = @views x[w_idx:(w_idx + w)]
-            yy = @views y[w_idx:(w_idx + w)]
+            xx = @view(x[w_idx:(w_idx + w)])
+            yy = @view(y[w_idx:(w_idx + w)])
             push!(c, cor(xx, yy))
         end
         bad_chs[ch_idx] = sum(c .< ransac_r) / length(c) > ransac_tr
@@ -291,7 +291,7 @@ function channel_reject(
 
         _info("Using :rmse method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_rmse(obj.data[ch, :, ep_idx])
+            bad_chs = detect_rmse(@view(obj.data[ch, :, ep_idx]))
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -301,7 +301,7 @@ function channel_reject(
 
         _info("Using :rmsd method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_rmsd(obj.data[ch, :, ep_idx])
+            bad_chs = detect_rmsd(@view(obj.data[ch, :, ep_idx]))
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -311,7 +311,7 @@ function channel_reject(
 
         _info("Using :euclid method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_euclid(obj.data[ch, :, ep_idx])
+            bad_chs = detect_euclid(@view(obj.data[ch, :, ep_idx]))
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -320,15 +320,15 @@ function channel_reject(
     if :var in method
 
         _info("Using :var method")
-        s_v = @views var(obj.data[ch, :, :], dims = 2)
+        s_v = var(obj.data[ch, :, :], dims = 2)
         # mean variance
-        s_mv = @views vec(mean(s_v, dims = 3))
+        s_mv = vec(mean(s_v, dims = 3))
         # variance outliers
         o = reshape(outlier_detect(vec(s_v), method = :iqr), ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
             bad_chs = zeros(Bool, ch_n)
-            ch_v = @views vec(var(obj.data[ch, :, ep_idx], dims = 2))
+            ch_v = vec(var(@view(obj.data[ch, :, ep_idx]), dims = 2))
             s_mv = vcat(s_mv, ch_v)
             for ch_idx in 1:ch_n
                 #if ch_v[ch_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2] || o[ch_idx, ep_idx]
@@ -345,7 +345,7 @@ function channel_reject(
 
         _info("Using :p2p method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w = w, p = p)
+            bad_chs = detect_p2p(@view(obj.data[ch, :, ep_idx]), w = w, p = p)
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -355,7 +355,7 @@ function channel_reject(
 
         _info("Using :tkeo method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_tkeo(
+            bad_chs = detect_tkeo(
                 obj.data[ch, :, ep_idx], obj.time_pts, tkeo_method = tkeo_method, p = p
             )
             bc[ch] = bc[ch] .|| bad_chs
@@ -372,7 +372,7 @@ function channel_reject(
         k = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
+            k[ch_idx, ep_idx] = kurtosis(@view(obj.data[ch[ch_idx], :, ep_idx]))
         end
         k = normalize_zscore(k)
         bad_idx = abs.(k) .> z
@@ -388,22 +388,22 @@ function channel_reject(
 
         # by global-channel threshold
         k = zeros(ch_n, ep_n)
-        s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
+        s = normalize_zscore(obj.data[ch, :, :], bych = false)
         s = abs.(s) .> z
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+            k[ch_idx, ep_idx] = count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
         bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2))
 
         # by individual-channel threshold
         k = zeros(ch_n, ep_n)
-        s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
+        s = normalize_zscore(@view(obj.data[ch, :, :]), bych = false)
         s = abs.(s) .> (z + 1)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+            k[ch_idx, ep_idx] = count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
         bc[ch] = bc[ch] .|| vec(any(bad_idx, dims = 2))
@@ -427,7 +427,7 @@ function channel_reject(
         loc_y = locs[!, :loc_y]
 
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_ransac(
+            bad_chs = detect_ransac(
                 obj.data[ch, :, ep_idx],
                 loc_x = loc_x,
                 loc_y = loc_y,
@@ -445,7 +445,7 @@ function channel_reject(
 
         _info("Using :amp method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_amp(obj.data[ch, :, ep_idx], amp_t = amp_t)
+            bad_chs = detect_amp(@view(obj.data[ch, :, ep_idx]), amp_t = amp_t)
             bc[ch] = bc[ch] .|| bad_chs
         end
 
@@ -645,7 +645,7 @@ function epoch_reject(
 
         _info("Using :rmse method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_rmse(obj.data[ch, :, ep_idx])
+            bad_chs = detect_rmse(@view(obj.data[ch, :, ep_idx]))
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -656,7 +656,7 @@ function epoch_reject(
 
         _info("Using :rmsd method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_rmsd(obj.data[ch, :, ep_idx])
+            bad_chs = detect_rmsd(@view(obj.data[ch, :, ep_idx]))
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -670,7 +670,7 @@ function epoch_reject(
         bad_mat = zeros(Bool, length(ch), ep_n)
         @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             # each thread writes to its own column - no overlap, no race
-            bad_mat[:, ep_idx] = @views detect_euclid(obj.data[ch, :, ep_idx])
+            bad_mat[:, ep_idx] = detect_euclid(@view(obj.data[ch, :, ep_idx]))
         end
 
         # reductions are serial but vectorized - no loop needed
@@ -682,9 +682,9 @@ function epoch_reject(
     if :var in method
 
         _info("Using :var method")
-        s_v = @views var(obj.data[ch, :, :], dims = 2)
+        s_v = var(@view(obj.data[ch, :, :]), dims = 2)
         # mean variance
-        s_mv = @views vec(mean(s_v, dims = 3))
+        s_mv = vec(mean(s_v, dims = 3))
         # variance outliers
         o = reshape(outlier_detect(vec(s_v), method = :iqr), ch_n, ep_n)
 
@@ -692,7 +692,7 @@ function epoch_reject(
         s_mv_mat = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             # each thread writes to its own column - no overlap, no race condition
-            s_mv_mat[:, ep_idx] = @views vec(var(obj.data[ch, :, ep_idx], dims = 2))
+            s_mv_mat[:, ep_idx] = vec(var(@view(obj.data[ch, :, ep_idx]), dims = 2))
         end
 
         # flatten variance results in epoch order
@@ -708,7 +708,7 @@ function epoch_reject(
 
         _info("Using :p2p method")
         @inbounds Threads.@threads :static for ep_idx in 1:ep_n
-            bad_chs = @views detect_p2p(obj.data[ch, :, ep_idx], w = w, p = p)
+            bad_chs = detect_p2p(@view(obj.data[ch, :, ep_idx]), w = w, p = p)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end
@@ -719,7 +719,7 @@ function epoch_reject(
 
         _info("Using :tkeo method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_tkeo(
+            bad_chs = detect_tkeo(
                 obj.data[ch, :, ep_idx], obj.time_pts, tkeo_method = tkeo_method, p = p
             )
             bc[ch] = bc[ch] .|| bad_chs
@@ -737,7 +737,7 @@ function epoch_reject(
         k = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
+            k[ch_idx, ep_idx] = kurtosis(@view(obj.data[ch[ch_idx], :, ep_idx]))
         end
         k = normalize_zscore(k)
         bad_idx = abs.(k) .> z
@@ -755,11 +755,11 @@ function epoch_reject(
 
         # by global-channel threshold
         k = zeros(ch_n, ep_n)
-        s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
+        s = normalize_zscore(@view(obj.data[ch, :, :]), bych = false)
         s = abs.(s) .> z
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+            k[ch_idx, ep_idx] = count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
         bad_per_epoch = vec(sum(bad_idx, dims = 1)) # bad channel count per epoch
@@ -768,11 +768,11 @@ function epoch_reject(
 
         # by individual-channel threshold
         k = zeros(ch_n, ep_n)
-        s = @views normalize_zscore(obj.data[ch, :, :], bych = false)
+        s = normalize_zscore(@view(obj.data[ch, :, :]), bych = false)
         s = abs.(s) .> (z + 1)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+            k[ch_idx, ep_idx] = count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
         end
         bad_idx = k .> p
         bad_per_epoch = vec(sum(bad_idx, dims = 1)) # bad channel count per epoch
@@ -798,7 +798,7 @@ function epoch_reject(
         loc_y = locs[!, :loc_y]
 
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_ransac(
+            bad_chs = detect_ransac(
                 obj.data[ch, :, ep_idx],
                 loc_x = loc_x,
                 loc_y = loc_y,
@@ -817,7 +817,7 @@ function epoch_reject(
 
         _info("Using :amp method")
         @inbounds for ep_idx in 1:ep_n
-            bad_chs = @views detect_amp(obj.data[ch, :, ep_idx], amp_t = amp_t)
+            bad_chs = detect_amp(@view(obj.data[ch, :, ep_idx]), amp_t = amp_t)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
         end

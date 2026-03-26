@@ -33,8 +33,8 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NE
         ch_idx, ep_idx = idx[1], idx[2]
         s1 = obj_new.data[:, 1:n, ep_idx]
         s2 = obj_new.data[:, end:-1:(end - n + 1), ep_idx]
-        @views s[ch_idx, :, ep_idx] = _reflect(
-            obj.data[ch_idx, :, ep_idx], s1[ch_idx, :], s2[ch_idx, :]
+        s[ch_idx, :, ep_idx] = _reflect(
+            @view(obj.data[ch_idx, :, ep_idx]), @view(s1[ch_idx, :]), @view(s2[ch_idx, :])
         )
     end
 
@@ -101,7 +101,7 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        @views s[ch_idx, :, ep_idx] = _chop(obj.data[ch_idx, :, ep_idx], n)
+        s[ch_idx, :, ep_idx] = _chop(@view(obj.data[ch_idx, :, ep_idx]), n)
     end
 
     obj_new.data = s

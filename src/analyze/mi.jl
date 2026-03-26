@@ -3,7 +3,7 @@ export mutual_information
 """
     mutual_information(s1, s2)
 
-Calculate mutual information between two signals.
+Calculate mutual information between two 1-D signal vectors.
 
 Wraps `InformationMeasures.get_mutual_information()` for mutual information estimation using the maximum likelihood estimator.
 
@@ -25,7 +25,7 @@ end
 """
     mutual_information(s1, s2)
 
-Calculate mutual information between matched channel pairs of two 3-D arrays.
+Calculate mutual information between matched channel pairs of two 3-D signal arrays.
 
 Wraps `InformationMeasures.get_mutual_information()` for mutual information estimation using the maximum likelihood estimator.
 
@@ -71,7 +71,7 @@ end
 """
     mutual_information(s)
 
-Calculate mutual information between all channel pairs.
+Calculate mutual information between all channel pairs of a 3-D signal array.
 
 Wraps `InformationMeasures.get_mutual_information()` for mutual information estimation using the maximum likelihood estimator.
 
@@ -99,17 +99,16 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     mi = zeros(ch_n, ch_n, ep_n)
 
     # calculate over channel and epochs
-    @inbounds Threads.@threads for ep_idx in 1:ep_n
-        for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1 - 1
-                mi[ch_idx1, ch_idx2, ep_idx] = mutual_information(
-                    @view(s[ch_idx1, :, ep_idx]),
-                    @view(s[ch_idx2, :, ep_idx]),
-                )
-            end
-
-            progress_bar && next!(progbar)
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx1, ep_idx = idx[1], idx[2]
+        for ch_idx2 in 1:ch_idx1 - 1
+            mi[ch_idx1, ch_idx2, ep_idx] = mutual_information(
+                @view(s[ch_idx1, :, ep_idx]),
+                @view(s[ch_idx2, :, ep_idx]),
+            )
         end
+        progress_bar && next!(progbar)
     end
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
@@ -120,7 +119,7 @@ end
 """
     mutual_information(obj; <keyword arguments>)
 
-Calculate mutual information between all channel pairs.
+Calculate mutual information between all channel pairs of a NEURO object.
 
 Wraps `InformationMeasures.get_mutual_information()` for mutual information estimation using the maximum likelihood estimator.
 
@@ -145,7 +144,7 @@ end
 """
     mutual_information(obj1, obj2; <keyword arguments>)
 
-Calculate mutual information between matched channel pairs.
+Calculate mutual information between matched channel pairs of two NEURO objects.
 
 Wraps `InformationMeasures.get_mutual_information()` for mutual information estimation using the maximum likelihood estimator.
 

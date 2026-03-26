@@ -71,10 +71,15 @@ function plinterpolate_channel(
     # initialize progress bar
     progbar = Progress(ep_n * ep_len, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    @inbounds for ep_idx in eachindex(ep)
-        Threads.@threads :dynamic for length_idx in 1:ep_len
-            s_tmp, x, y = @views _interpolate2d(
-                obj_tmp.data[chs, length_idx, ep[ep_idx]], locs_x2, locs_y2, ifactor, imethod, :none
+    @inbounds Threads.@threads :dynamic for ep_idx in eachindex(ep)
+        for length_idx in 1:ep_len
+            s_tmp, x, y = _interpolate2d(
+                @view(obj_tmp.data[chs, length_idx, ep[ep_idx]]),
+                locs_x2,
+                locs_y2,
+                ifactor,
+                imethod,
+                :none
             )
             for ch_idx in eachindex(ch)
                 x_idx = vsearch(locs_x1[ch[ch_idx]], x)

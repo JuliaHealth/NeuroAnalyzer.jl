@@ -20,7 +20,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 """
 function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
-    !(isfile(file_name)) && throw(ArgumentError("File $file_name cannot be loaded."))
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     !(lowercase(splitext(file_name)[2]) == ".set") && throw(ArgumentError("This is not SET file."))
 
     file_type = "SET"
@@ -52,7 +52,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         end
         data = zeros(ch_n, samples_per_channel)
         for idx in 1:samples_per_channel
-            data[:, idx] = @views data_tmp[(idx * ch_n - ch_n + 1):(idx * ch_n)]
+            data[:, idx] = @view(data_tmp[(idx * ch_n - ch_n + 1):(idx * ch_n)])
         end
     else
         data = dataset["data"]

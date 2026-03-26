@@ -323,7 +323,7 @@ Replace channel.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 

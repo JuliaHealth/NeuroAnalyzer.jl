@@ -296,9 +296,8 @@ function _apply_paired_reference!(
     med::Bool
 )
     for ep_idx in 1:ep_n
-        ref_ch = med ? vec(median(ref_data[:, :, ep_idx], dims
-=1)) :
-                       vec(mean(ref_data[:, :, ep_idx];   dims=1))
+        ref_ch = med ? vec(median(ref_data[:, :, ep_idx], dims=1)) :
+                       vec(mean(ref_data[:, :, ep_idx], dims=1))
         # thread over channels for this epoch
         Threads.@threads :dynamic for ch_idx in picks
             @inbounds s_ref[ch_idx, :, ep_idx] = s[ch_idx, :, ep_idx] .- ref_ch

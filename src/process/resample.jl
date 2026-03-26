@@ -39,11 +39,11 @@ end
 """
     resample(s; <keyword arguments>)
 
-Resamples all channels and time vector `t` to `new_sr` sampling frequency.
+Resamples all channels and time vector `t` to `new_sr` sampling frequency for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `old_sr::Int64`: old sampling rate
 - `new_sr::Int64`: new sampling rate
 
@@ -64,12 +64,13 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64
     s_new = NeuroAnalyzer.resample(s[1, :, 1], old_sr = old_sr, new_sr = new_sr)
     s_new = zeros(ch_n, length(s_new), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views NeuroAnalyzer.resample(
-                s[ch_idx, :, ep_idx], old_sr = old_sr, new_sr = new_sr
-            )
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s_new[ch_idx, :, ep_idx] = NeuroAnalyzer.resample(
+            @view(s[ch_idx, :, ep_idx]),
+            old_sr = old_sr,
+            new_sr = new_sr
+        )
     end
 
     return s_new
@@ -155,10 +156,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     # create new dataset
     obj_new = deepcopy(obj)
 
-    s_new = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
-
-    obj_new.data = s_new
-
+    obj_new.data = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     obj_new.header.recording[:sampling_rate] = new_sr

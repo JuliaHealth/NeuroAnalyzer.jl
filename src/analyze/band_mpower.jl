@@ -3,7 +3,9 @@ export band_mpower
 """
     band_mpower(s; <keyword arguments>)
 
-Calculate mean and peak band power. For a given frequency band, computes four descriptors:
+Calculate mean and peak band power for a 1-D signal vector.
+
+For a given frequency band, computes four descriptors:
 
 - `mbp` – mean power across the band
 - `maxfrq – frequency of the peak (maximum) power bin within the band
@@ -21,13 +23,13 @@ Calculate mean and peak band power. For a given frequency band, computes four de
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -99,7 +101,9 @@ end
 """
     band_mpower(s; <keyword arguments>)
 
-Calculate mean and peak band power. For a given frequency band, computes four descriptors:
+Calculate mean and peak band power for a 3-D signal array.
+
+For a given frequency band, computes four descriptors:
 
 - `mbp` – mean power across the band
 - `maxfrq – frequency of the peak (maximum) power bin within the band
@@ -117,13 +121,13 @@ Calculate mean and peak band power. For a given frequency band, computes four de
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -196,7 +200,9 @@ end
 """
     band_mpower(obj; <keyword arguments>)
 
-Calculate mean and peak band power. For a given frequency band, computes four descriptors:
+Calculate mean and peak band power for a NEURO object.
+
+For a given frequency band, computes four descriptors:
 
 - `mbp` – mean power across the band
 - `maxfrq – frequency of the peak (maximum) power bin within the band
@@ -214,13 +220,13 @@ Calculate mean and peak band power. For a given frequency band, computes four de
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 

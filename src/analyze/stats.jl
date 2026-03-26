@@ -4,7 +4,7 @@ export channel_stats
 """
     epoch_stats(obj)
 
-Calculate epochs statistics.
+Calculate epochs statistics for a NEURO object.
 
 # Arguments
 
@@ -54,16 +54,16 @@ function epoch_stats(
     e_dev_mean = zeros(ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        e_mean[ep_idx] = @views mean(obj.data[:, :, ep_idx])
-        e_median[ep_idx] = @views median(obj.data[:, :, ep_idx])
-        e_std[ep_idx] = @views std(obj.data[:, :, ep_idx])
-        e_var[ep_idx] = @views var(obj.data[:, :, ep_idx])
-        e_kurt[ep_idx] = @views kurtosis(obj.data[:, :, ep_idx])
-        e_skew[ep_idx] = @views skewness(obj.data[:, :, ep_idx])
-        e_mean_diff[ep_idx] = @views mean(diff(obj.data[:, :, ep_idx], dims = 2))
-        e_median_diff[ep_idx] = @views median(diff(obj.data[:, :, ep_idx], dims = 2))
-        e_max_dif[ep_idx] = @views maximum(obj.data[:, :, ep_idx]) - minimum(obj.data[:, :, ep_idx])
-        e_dev_mean[ep_idx] = @views abs(mean(obj.data[:, :, ep_idx])) - mean(obj.data[:, :, ep_idx])
+        e_mean[ep_idx] = mean(@view(obj.data[:, :, ep_idx]))
+        e_median[ep_idx] = median(@view(obj.data[:, :, ep_idx]))
+        e_std[ep_idx] = std(@view(obj.data[:, :, ep_idx]))
+        e_var[ep_idx] = var(@view(obj.data[:, :, ep_idx]))
+        e_kurt[ep_idx] = kurtosis(@view(obj.data[:, :, ep_idx]))
+        e_skew[ep_idx] = skewness(@view(obj.data[:, :, ep_idx]))
+        e_mean_diff[ep_idx] = mean(diff(@view(obj.data[:, :, ep_idx]), dims = 2))
+        e_median_diff[ep_idx] = median(diff(@view(obj.data[:, :, ep_idx]), dims = 2))
+        e_max_dif[ep_idx] = maximum(@view(obj.data[:, :, ep_idx])) - minimum(@view(obj.data[:, :, ep_idx]))
+        e_dev_mean[ep_idx] = abs(mean(@view(obj.data[:, :, ep_idx]))) - mean(@view(obj.data[:, :, ep_idx]))
     end
 
     return (; e_mean, e_median, e_std, e_var, e_kurt, e_skew, e_mean_diff, e_median_diff, e_max_dif, e_dev_mean)
@@ -73,7 +73,7 @@ end
 """
     channel_stats(obj)
 
-Calculate channels statistics per epoch.
+Calculate channels statistics per epoch for a NEURO object.
 
 # Arguments
 
@@ -123,21 +123,20 @@ function channel_stats(
     c_max_dif = zeros(ch_n, ep_n)
     c_dev_mean = zeros(ch_n, ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            c_mean[ch_idx, ep_idx] = @views mean(obj.data[ch_idx, :, ep_idx])
-            c_median[ch_idx, ep_idx] = @views median(obj.data[ch_idx, :, ep_idx])
-            c_std[ch_idx, ep_idx] = @views std(obj.data[ch_idx, :, ep_idx])
-            c_var[ch_idx, ep_idx] = @views var(obj.data[ch_idx, :, ep_idx])
-            c_kurt[ch_idx, ep_idx] = @views kurtosis(obj.data[ch_idx, :, ep_idx])
-            c_skew[ch_idx, ep_idx] = @views skewness(obj.data[ch_idx, :, ep_idx])
-            c_mean_diff[ch_idx, ep_idx] = @views mean(diff(obj.data[ch_idx, :, ep_idx]))
-            c_median_diff[ch_idx, ep_idx] = @views median(diff(obj.data[ch_idx, :, ep_idx]))
-            c_max_dif[ch_idx, ep_idx] = @views maximum(obj.data[ch_idx, :, ep_idx]) -
-                minimum(obj.data[ch_idx, :, ep_idx])
-            c_dev_mean[ch_idx, ep_idx] = @views abs(mean(obj.data[ch_idx, :, ep_idx])) -
-                mean(obj.data[ch_idx, :, ep_idx])
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        c_mean[ch_idx, ep_idx] = mean(@view(obj.data[ch_idx, :, ep_idx]))
+        c_median[ch_idx, ep_idx] = median(@view(obj.data[ch_idx, :, ep_idx]))
+        c_std[ch_idx, ep_idx] = std(@view(obj.data[ch_idx, :, ep_idx]))
+        c_var[ch_idx, ep_idx] = var(@view(obj.data[ch_idx, :, ep_idx]))
+        c_kurt[ch_idx, ep_idx] = kurtosis(@view(obj.data[ch_idx, :, ep_idx]))
+        c_skew[ch_idx, ep_idx] = skewness(@view(obj.data[ch_idx, :, ep_idx]))
+        c_mean_diff[ch_idx, ep_idx] = mean(diff(@view(obj.data[ch_idx, :, ep_idx])))
+        c_median_diff[ch_idx, ep_idx] = median(diff(@view(obj.data[ch_idx, :, ep_idx])))
+        c_max_dif[ch_idx, ep_idx] = maximum(@view(obj.data[ch_idx, :, ep_idx])) -
+            minimum(@view(obj.data[ch_idx, :, ep_idx]))
+        c_dev_mean[ch_idx, ep_idx] = abs(mean(@view(obj.data[ch_idx, :, ep_idx]))) -
+            mean(obj.data[ch_idx, :, ep_idx])
     end
 
     return (; c_mean, c_median, c_std, c_var, c_kurt, c_skew, c_mean_diff, c_median_diff, c_max_dif, c_dev_mean)

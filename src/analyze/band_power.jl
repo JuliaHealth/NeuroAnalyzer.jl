@@ -21,13 +21,13 @@ Calculate the absolute power in a frequency band by:
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -85,7 +85,7 @@ end
 """
     band_power(s; <keyword arguments>)
 
-Calculate absolute band power between two frequencies.
+Calculate absolute band power between two frequencies for a 3-D signal array.
 
 # Arguments
 
@@ -99,13 +99,13 @@ Calculate absolute band power between two frequencies.
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length in samples, default is 1 second
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 
@@ -161,7 +161,7 @@ end
 """
     band_power(obj; <keyword arguments>)
 
-Calculate absolute band power between two frequencies.
+Calculate absolute band power between two frequencies for a NEURO object.
 
 # Arguments
 
@@ -175,13 +175,13 @@ Calculate absolute band power between two frequencies.
     - `:stft`: short-time Fourier transform averaged over segments
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
-- `w::Bool=true`: if true, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
-- `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool=true`: subtract DC before calculating PSD
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
+- `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
 

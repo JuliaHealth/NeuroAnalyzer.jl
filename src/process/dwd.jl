@@ -47,7 +47,9 @@ end
 
 Perform discrete wavelet decomposition (DWD).
 
-Returns the decomposition coefficient matrix. Each row corresponds to one subspace node; each column corresponds to one time sample.
+Returns the decomposition coefficient matrix for a 3-D signal array.
+
+Each row corresponds to one subspace node; each column corresponds to one time sample.
 
 # Arguments
 

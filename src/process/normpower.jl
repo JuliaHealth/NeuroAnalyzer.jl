@@ -23,11 +23,11 @@ end
 """
     normpower(s)
 
-Return a signal with normalized power (amplitudes divided by the root-mean-squared value of the entire signal).
+Return a signal with normalized power (amplitudes divided by the root-mean-squared value of the entire signal) for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 
 # Returns
 
@@ -46,10 +46,9 @@ function normpower(s::AbstractArray)::Array{Float64, 3}
     # pre-allocate output
     s_new = similar(s, Float64)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views normpower(s[ch_idx, :, ep_idx])
-        end
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s_new[ch_idx, :, ep_idx] = normpower(@view(s[ch_idx, :, ep_idx]))
     end
 
     return s_new

@@ -13,7 +13,7 @@ The Gaussian is normalized to unit gain at its peak. Taking the absolute value o
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `pad::Int64=0`: number of zeros to append before the FFT; must be ≥ 0
 - `f::Real`: center frequency of the Gaussian kernel in Hz; must be ≥ 0 and < `fs/2`
-- `gw::Real=5`: Gaussian width in Hz (full width parameter); must be > 0
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`) (full width parameter); must be > 0
 
 # Returns
 
@@ -53,7 +53,7 @@ end
 """
     filter_g(s; <keyword arguments>)
 
-Filter a 3-dimensional signal array using a Gaussian kernel in the frequency domain. Applies [`filter_g(::AbstractVector)`](@ref) to each channel × epoch slice in parallel.
+Filter a 3-dimensional signal array using a Gaussian kernel in the frequency domain for a 3-D signal array.
 
 # Arguments
 
@@ -61,7 +61,7 @@ Filter a 3-dimensional signal array using a Gaussian kernel in the frequency dom
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `pad::Int64=0`: number of zeros to append; must be ≥ 0
 - `f::Real`: center frequency of the Gaussian kernel in Hz; must be ≥ 0 and < `fs/2`
-- `gw::Real=5`: Gaussian width in Hz (full width parameter); must be > 0
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`) (full width parameter); must be > 0
 
 # Returns
 
@@ -131,7 +131,13 @@ function filter_g(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs = sr(obj), pad = pad, f = f, gw = gw)
+    obj_new.data[ch, :, :] = filter_g(
+        @view(obj.data[ch, :, :]),
+        fs = sr(obj),
+        pad = pad,
+        f = f,
+        gw = gw
+    )
     push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
 
     return obj_new
@@ -149,7 +155,7 @@ Filter selected channels of a NEURO object in-place using a Gaussian kernel in t
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: number of zeros to append; must be ≥ 0
 - `f::Real`: center frequency of the Gaussian kernel in Hz; must be ≥ 0 and < `fs/2`
-- `gw::Real=5`: Gaussian width in Hz (full width parameter); must be > 0
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`) (full width parameter); must be > 0
 
 # Returns
 

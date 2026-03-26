@@ -432,8 +432,10 @@ function plot_line(
 )::GLMakie.Figure
 
     _chk2d(s)
-    !(size(s, 1) == length(rlabels)) && throw(ArgumentError("Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal."))
-    !(size(s, 2) == length(xlabels)) && throw(ArgumentError("Number of s columns ($(size(s, 2))) and length of xlabels ($(length(xlabels))) must be equal."))
+    size(s, 1) == length(rlabels) ||
+        throw(ArgumentError("Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal."))
+    size(s, 2) == length(xlabels) ||
+        throw(ArgumentError("Number of s columns ($(size(s, 2))) and length of xlabels ($(length(xlabels))) must be equal."))
 
     pal = mono ? :grays : :darktest
 
@@ -942,7 +944,7 @@ function plot_eros(
 
     if smooth
         for idx in axes(sp, 3)
-            sp[:, :, idx] = @views imfilter(sp[:, :, idx], Kernel.gaussian(n))
+            sp[:, :, idx] = imfilter(@view(sp[:, :, idx]), Kernel.gaussian(n))
         end
     end
 

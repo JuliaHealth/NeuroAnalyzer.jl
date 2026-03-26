@@ -3,7 +3,7 @@ export phsd
 """
     phsd(s; <keyword arguments>)
 
-Calculate phase spectral density.
+Calculate phase spectral density for a 1-D signal vector.
 
 # Arguments
 
@@ -79,11 +79,11 @@ end
 """
     phsd(s; <keyword arguments>)
 
-Calculate phase spectral density.
+Calculate phase spectral density for a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 
 # Returns
@@ -109,16 +109,15 @@ function phsd(
     # number of epochs
     ep_n = size(s, 3)
 
-    phsd_data = phsd(s[1, :, 1], fs = fs)
-    f = phsd_data.f
+    f = phsd(s[1, :, 1], fs = fs).f
 
     ph = zeros(ch_n, length(f), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :dynamic for ch_idx in 1:ch_n
-            phsd_data = phsd(@view(s[ch_idx, :, ep_idx]), fs = fs)
-            ph[ch_idx, :, ep_idx] = phsd_data.ph
-        end
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        phsd_data = phsd(@view(s[ch_idx, :, ep_idx]), fs = fs)
+        ph[ch_idx, :, ep_idx] = phsd_data.ph
     end
 
     return (; ph, f)
@@ -128,7 +127,7 @@ end
 """
     phsd(obj; <keyword arguments>)
 
-Calculate phase spectral density.
+Calculate phase spectral density for a NEURO object.
 
 # Arguments
 

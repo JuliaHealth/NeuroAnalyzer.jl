@@ -6,7 +6,7 @@ export stationarity_var
 """
     stationarity_hilbert(s)
 
-Calculate phase stationarity using Hilbert transformation.
+Calculate phase stationarity using Hilbert transformation for a 1-D signal vector.
 
 # Arguments
 
@@ -27,7 +27,9 @@ end
 """
     stationarity_mean(s; <keyword arguments>)
 
-Calculate mean stationarity. Signal is split into `window`-long windows and averaged across windows.
+Calculate mean stationarity for a 1-D signal vector.
+
+Signal is split into `window`-long windows and averaged across windows.
 
 # Arguments
 
@@ -56,7 +58,9 @@ end
 """
     stationarity_var(s; <keyword arguments>)
 
-Calculate variance stationarity. Signal is split into `window`-long windows and variance is calculated across windows.
+Calculate variance stationarity for a 1-D signal vector.
+
+Signal is split into `window`-long windows and variance is calculated across windows.
 
 # Arguments
 
@@ -85,7 +89,7 @@ end
 """
     stationarity(obj; <keyword arguments>)
 
-Calculate stationarity.
+Calculate stationarity for a NEURO object.
 
 # Arguments
 
@@ -124,12 +128,11 @@ function stationarity(
     if method === :mean
 
         s = zeros(ch_n, window, ep_n)
-
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :dynamic for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = stationarity_mean(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
-            end
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            s[ch_idx, :, ep_idx] = stationarity_mean(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
         end
+
         return s
 
     end
@@ -137,12 +140,11 @@ function stationarity(
     if method === :var
 
         s = zeros(ch_n, window, ep_n)
-
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :dynamic for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = stationarity_var(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
-            end
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            s[ch_idx, :, ep_idx] = stationarity_var(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
         end
+
         return s
 
     end
@@ -150,11 +152,9 @@ function stationarity(
     if method === :hilbert
 
         s = zeros(ch_n, epoch_len(obj) - 1, ep_n)
-
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :dynamic for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = stationarity_hilbert(@view(obj.data[ch[ch_idx], :, ep_idx]))
-            end
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            s[ch_idx, :, ep_idx] = stationarity_hilbert(@view(obj.data[ch[ch_idx], :, ep_idx]))
         end
 
         return s
@@ -172,11 +172,12 @@ function stationarity(
         s = zeros(1 + length(2:window:window_n), ep_n)
 
         # create covariance matrices per each window
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :dynamic for window_idx in 1:window_n
-                cov_mat[:, :, window_idx, ep_idx] = @views covm(
-                    obj.data[ch, window_idx, ep_idx], obj.data[ch, window_idx, ep_idx]
-                )
+        @inbounds Threads.@threads :static for idx in CartesianIndices((window_n, ep_n))
+            window_idx, ep_idx = idx[1], idx[2]
+            cov_mat[:, :, window_idx, ep_idx] = covm(
+                @view(obj.data[ch, window_idx, ep_idx]),
+                @view(obj.data[ch, window_idx, ep_idx])
+            )
             end
         end
 
@@ -184,8 +185,9 @@ function stationarity(
         @inbounds for ep_idx in 1:ep_n
             w_idx = 1
             Threads.@threads :dynamic for window_idx in 2:window:window_n
-                s[w_idx, ep_idx] = @views euclidean(
-                    cov_mat[:, :, window_idx - 1, ep_idx], cov_mat[:, :, window_idx, ep_idx]
+                s[w_idx, ep_idx] = euclidean(
+                    @view(cov_mat[:, :, window_idx - 1, ep_idx]),
+                    @view(cov_mat[:, :, window_idx, ep_idx])
                 )
                 w_idx += 1
             end
@@ -205,7 +207,7 @@ function stationarity(
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads :dynamic for ch_idx in 1:ch_n
-                adf = @views HypothesisTests.ADFTest(obj.data[ch_idx, :, ep_idx], :none, 1)
+                adf = HypothesisTests.ADFTest(@view(obj.data[ch_idx, :, ep_idx]), :none, 1)
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)

@@ -3,7 +3,7 @@ export cph
 """
     cph(s1, s2; <keyword arguments>)
 
-Computes the instantaneous phase of the cross-power spectrum between two signals using multi-taper estimation.
+Computes the instantaneous phase of the cross-power spectrum between two 1-D signal vectors using multi-taper estimation.
 
 # Arguments
 
@@ -49,7 +49,7 @@ end
 """
     cph(s; <keyword arguments>)
 
-Computes the instantaneous phase of the cross-power spectrum between all channel pairs using multi-taper estimation.
+Computes the instantaneous phase of the cross-power spectrum between all channel pairs of a 3-D signal array using multi-taper estimation.
 
 # Arguments
 
@@ -122,7 +122,7 @@ end
 """
     cph(s1, s2; <keyword arguments>)
 
-Calculate cross-phases between paired channels of two arrays.
+Calculate cross-phases between paired channels of two 3-D signal arrays.
 
 # Arguments
 
@@ -181,7 +181,7 @@ end
 """
     cph(obj; <keyword arguments>)
 
-Calculate cross-phases between all channel pairs.
+Calculate cross-phases between all channel pairs of a NEURO object.
 
 # Arguments
 
@@ -213,7 +213,7 @@ end
 """
     cph(obj1, obj2; <keyword arguments>)
 
-Calculate cross-phases between paired channels of two objects.
+Calculate cross-phases between paired channels of two NEURO objects.
 
 # Arguments
 

@@ -24,13 +24,13 @@ Convert Cartesian coordinates to polar.
 
 # Arguments
 
-- `x::Real`
-- `y::Real`
+- `x::Real`: x coordinate
+- `y::Real`: y coordinate
 
 # Returns
 
-- `Float64`
-- `Float64`
+- `Float64`: planar radius, the distance from the origin to the point
+- `Float64`: planar horizontal angle, the angle in the xy plane with respect to the x axis, in degrees
 """
 function cart2pol(x::Real, y::Real)::Tuple{Float64, Float64}
 
@@ -48,9 +48,9 @@ Convert spherical coordinates to Cartesian.
 
 # Arguments
 
-- `x::Real`
-- `y::Real`
-- `z::Real`
+- `x::Real`: x coordinate
+- `y::Real`: y coordinate
+- `z::Real`: z coordinate
 
 # Returns
 
@@ -84,8 +84,8 @@ Convert polar coordinates to Cartesian.
 
 # Returns
 
-- `Float64`
-- `Float64`
+- `Float64`: x coordinate
+- `Float64`: y coordinate
 """
 function pol2cart(radius::Real, theta::Real)::Tuple{Float64, Float64}
 
@@ -131,9 +131,9 @@ Convert spherical coordinates to Cartesian.
 
 # Returns
 
-- `Float64`
-- `Float64`
-- `Float64`
+- `Float64`: x coordinate
+- `Float64`: y coordinate
+- `Float64`: z coordinate
 """
 function sph2cart(radius::Real, theta::Real, phi::Real)::Tuple{Float64, Float64, Float64}
 
@@ -176,11 +176,11 @@ Convert polar coordinates to Cartesian.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_pol2cart(locs::DataFrame)::DataFrame
 
@@ -209,7 +209,7 @@ Convert polar coordinates to Cartesian.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
@@ -230,11 +230,11 @@ Convert polar coordinates to spherical.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_pol2sph(locs::DataFrame)::DataFrame
 
@@ -263,7 +263,7 @@ Convert polar coordinates to spherical.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
@@ -284,11 +284,11 @@ Convert spherical coordinates to Cartesian.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_sph2cart(locs::DataFrame)::DataFrame
 
@@ -319,7 +319,7 @@ Convert spherical coordinates to Cartesian.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
@@ -340,11 +340,11 @@ Convert spherical coordinates to polar.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_sph2pol(locs::DataFrame)::DataFrame
 
@@ -373,7 +373,7 @@ Convert Cartesian coordinates to polar.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
@@ -394,11 +394,11 @@ Convert Cartesian coordinates to spherical.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_cart2sph(locs::DataFrame)::DataFrame
 
@@ -428,7 +428,7 @@ Convert Cartesian coordinates to spherical.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
@@ -449,11 +449,11 @@ Convert Cartesian coordinates to polar.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 
-- `DataFrame`
+- `DataFrame`: modified channel location data
 """
 function locs_cart2pol(locs::DataFrame)::DataFrame
 
@@ -481,7 +481,7 @@ Convert Cartesian coordinates to polar.
 
 # Arguments
 
-- `locs::DataFrame`
+- `locs::DataFrame`: channel location data
 
 # Returns
 

@@ -110,11 +110,11 @@ function perm_cmp(
     perm_maps = zeros(size(a1, 1), size(a1, 2), perm_n)
     @inbounds for perm_idx in 1:perm_n
         rand_idx  = sample(1:ep_n, ep_n; replace=false)
-        rand_spec = @view spec_all[:, :, rand_idx]
+        rand_spec = @view(spec_all[:, :, rand_idx])
         # difference between the two random halves → one null sample
-        perm_maps[:, :, perm_idx] = @views dropdims(
-            mean(rand_spec[:, :, (half + 1):end], dims=3) .-
-            mean(rand_spec[:, :, 1:half], dims=3),
+        perm_maps[:, :, perm_idx] = dropdims(
+            mean(@view(rand_spec[:, :, (half + 1):end]), dims=3) .-
+            mean(@view(rand_spec[:, :, 1:half]), dims=3),
             dims=3
         )
     end
