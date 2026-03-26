@@ -178,13 +178,12 @@ function stationarity(
                 @view(obj.data[ch, window_idx, ep_idx]),
                 @view(obj.data[ch, window_idx, ep_idx])
             )
-            end
         end
 
         # calculate Euclidean distance between adjacent matrices
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
             w_idx = 1
-            Threads.@threads :dynamic for window_idx in 2:window:window_n
+            for window_idx in 2:window:window_n
                 s[w_idx, ep_idx] = euclidean(
                     @view(cov_mat[:, :, window_idx - 1, ep_idx]),
                     @view(cov_mat[:, :, window_idx, ep_idx])

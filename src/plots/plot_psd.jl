@@ -11,15 +11,15 @@ Plot PSD (power spectrum density).
 
 - `f::Vector{Float64}`: frequencies
 - `p::Vector{Float64}`: powers
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plots
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_psd(
     f::Vector{Float64},
@@ -92,19 +92,19 @@ Plot multi-channel PSD (power spectrum density).
 - `f::Vector{Float64}`: frequencies
 - `p::Matrix{Float64}`: powers
 - `clabels::Vector{String}=string.(1:size(p, 1))`: channel labels
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plots
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-- `avg::Bool=false`: if true, plot averaged PSD
-- `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
-- `leg::Bool=true`: if true, add legend with channel labels
+- `mono::Bool=false`: if `true`, use a monochrome palette
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
+- `avg::Bool=false`: if `true`, plot averaged PSD
+- `ci95::Bool=false`: if `true`, plot mean and ±95% CI of averaged PSDs
+- `leg::Bool=true`: if `true`, add legend with channel labels
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_psd(
         f::Vector{Float64},
@@ -227,13 +227,13 @@ Plot 3-d PSD (power spectrum density).
 - `ylabel::String=""`: y-axis label
 - `zlabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `mono::Bool=false`: if `true`, use a monochrome palette
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_psd_3d(
         f::Vector{Float64},
@@ -372,13 +372,13 @@ Plot topographical map of PSDs (power spectrum density).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_psd_topo(
         locs::DataFrame,
@@ -571,7 +571,7 @@ Plot PSD (power spectrum density).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}=datatype(obj)`: channel name or list of channel names
@@ -592,26 +592,26 @@ Plot PSD (power spectrum density).
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
 - `demean::Bool=true`: subtract DC component before estimating PSD
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `zlabel::String="default"`: z-axis label for 3-d plots
 - `title::String="default"`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `type::Symbol=:normal`: plot type:
     - `:normal` single channel or butterfly for multichannel
     - `:w3d`: 3-d waterfall
     - `:s3d`: 3-d surface
     - `:topo`: topographical
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
-- `leg::Bool=true`: if true, add legend with channel labels
-- `avg::Bool=false`: if true, plot averaged PSD
-- `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
+- `leg::Bool=true`: if `true`, add legend with channel labels
+- `avg::Bool=false`: if `true`, plot averaged PSD
+- `ci95::Bool=false`: if `true`, plot mean and ±95% CI of averaged PSDs
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_psd(
     obj::NeuroAnalyzer.NEURO;

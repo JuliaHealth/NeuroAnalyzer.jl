@@ -12,16 +12,16 @@ export plot_locs3d
 - `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be selected
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or gray palette
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
+- `mono::Bool=false`: if `true`, use a monochrome palette
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use spherical coordinates
 - `cam::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
 - `mesh_type::Symbol=:disabled`: type of mesh to plot (`:disabled`, `:brain` or `:head`)
 - `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
-- `gui::Bool=true`: if true, keep window open and use it interactively
+- `gui::Bool=true`: if `true`, keep window open and use it interactively
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_locs3d(
     locs::DataFrame;
@@ -234,15 +234,15 @@ Preview of channel locations.
 - `sch::Union{String, Vector{String}, Regex}`: which channels should be selected
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=false`: plot head labels
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `cam::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
 - `mesh_type::Symbol=:disabled`: type of mesh to plot (`:disabled`, `:brain` or `:head`)
 - `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
-- `gui::Bool=true`: if true, keep window open and use it interactively
+- `gui::Bool=true`: if `true`, keep window open and use it interactively
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_locs3d(
     obj::NeuroAnalyzer.NEURO;

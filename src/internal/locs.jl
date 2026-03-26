@@ -1,13 +1,68 @@
+
+
+inking
+
+
+
+
+
+
+
+Here are the comprehensively optimized, error-checked, commented, and docstring-enhanced versions of all your location-related helper functions:
+
+1. Distance Functions
+julia
+Copy
+
+"""
+    _sph_distance_sph(r1, theta1, phi1, r2, theta2, phi2)
+
+Calculate spherical distance between two points in spherical coordinates.
+
+# Arguments
+
+- `r1`, `r2`: radial distances from origin
+- `theta1`, `theta2`: polar angles (degrees) from z-axis (0-180°)
+- `phi1`, `phi2`: azimuthal angles (degrees) in x-y plane (0-360°)
+
+# Returns
+
+- `Float64`: distance between points in same units as inputs
+
+# Formula
+
+Uses the spherical law of cosines:
+
+    d = √(r₁² + r₂² - 2·r₁·r₂·[cos(θ₁)cos(θ₂) + sin(θ₁)sin(θ₂)cos(φ₁-φ₂)])
+"""
 function _sph_distance_sph(r1::Real, theta1::Real, phi1::Real, r2::Real, theta2::Real, phi2::Real)
+    # Convert angles to radians for calculation
+    θ1, θ2 = deg2rad(theta1), deg2rad(theta2)
+    φ1, φ2 = deg2rad(phi1), deg2rad(phi2)
+    # Calculate spherical distance using law of cosines
     d = sqrt(
-        r1^2 + r2^2 - (2 * r1 * r2) * cosd(theta1 - theta2) +
-            (2 * r1 * r2) * sind(theta1) * sind(theta2) * (cosd(phi1 - phi2 - 1))
+        r1^2 + r2^2 - 
+        2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2))
     )
     return d
 end
+
+"""
+    _sph_distance_cart(x1, y1, z1, x2, y2, z2)
+
+Calculate Euclidean distance between two points in Cartesian coordinates.
+
+# Arguments
+
+- `x1, y1, z1`: coordinates of first point
+- `x2, y2, z2`: coordinates of second point
+
+# Returns
+
+- `Float64`: Euclidean distance between points
+"""
 function _sph_distance_cart(x1::Real, y1::Real, z1::Real, x2::Real, y2::Real, z2::Real)
-    d = sqrt((x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
-    return d
+    return sqrt((x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
 end
 
 function _check_ch_locs(ch::Union{Int64, Vector{Int64}}, objl::Vector{String}, locsl::Vector{String})::Nothing

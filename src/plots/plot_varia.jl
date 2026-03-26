@@ -35,11 +35,11 @@ Plot matrix.
 - `cb::Bool=true`: draw colorbar
 - `cb_title::String=""`: colorbar title
 - `xrot::Int64=90`: rotate xlabels (in degrees)
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_matrix(
     m::Matrix{<:Real};
@@ -115,7 +115,7 @@ Plot cross/auto-covariance/correlation.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_xac(
     m::AbstractVector,
@@ -173,11 +173,11 @@ Plot histogram.
 - `title::String=""`: plot title
 - `draw_mean::Bool=true`
 - `draw_median::Bool=true`
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_histogram(
     s::AbstractVector,
@@ -279,11 +279,11 @@ Bar plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_bar(
     s::AbstractVector;
@@ -352,7 +352,7 @@ Line plot.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_line(
     s::AbstractVector;
@@ -415,11 +415,11 @@ Line plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_line(
     s::AbstractArray;
@@ -501,11 +501,11 @@ Box plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_box(
     s::AbstractArray;
@@ -572,11 +572,11 @@ Violin plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_violin(
     s::AbstractArray;
@@ -650,11 +650,11 @@ Dots plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_dots(
     s::AbstractArray;
@@ -728,11 +728,11 @@ Plot paired data.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_paired(
     s::AbstractArray;
@@ -817,12 +817,12 @@ Polar plot.
 - `s::Union{AbstractVector, AbstractMatrix}`
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `ticks::Bool=false`: draw x- and y-axis ticks
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_polar(
     s::Union{AbstractVector, AbstractMatrix};
@@ -882,21 +882,21 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `sf::AbstractVector`: ERO frequencies
 - `st::AbstractVector`: ERO time
 - `db::Bool=true`: whether ERO powers are normalized to dB
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plot
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
 - `cb::Bool=true`: draw colorbar
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `units::String="μV"`
-- `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_eros(
     sp::AbstractArray,
@@ -913,14 +913,14 @@ function plot_eros(
     mono::Bool = false,
     units::String = "μV",
     smooth::Bool = false,
-    n::Int64 = 3
+    ks::Int64 = 3
 )::GLMakie.Figure
 
     !(size(sp, 1) == length(sf)) && throw(ArgumentError("Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal."))
     !(size(sp, 2) == length(st)) && throw(ArgumentError("Length of st ($(length(st))) and number of spectrogram columns ($(size(sp, 2))) must be equal."))
     !(ndims(sp) == 3) && throw(ArgumentError("sp must have 3 dimensions."))
     !(size(sp, 3) <= 2) && throw(ArgumentError("sp must contain ≤ 2 epochs."))
-    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
+    !(ks > 0) && throw(ArgumentError("ks must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -944,7 +944,7 @@ function plot_eros(
 
     if smooth
         for idx in axes(sp, 3)
-            sp[:, :, idx] = imfilter(@view(sp[:, :, idx]), Kernel.gaussian(n))
+            sp[:, :, idx] = imfilter(@view(sp[:, :, idx]), Kernel.gaussian(ks))
         end
     end
 
@@ -1120,14 +1120,14 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plot
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `units::String="μV"`
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_erop(
     sp::AbstractArray,
@@ -1291,7 +1291,7 @@ Topographical plot of external ICA components.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
@@ -1311,7 +1311,7 @@ Topographical plot of external ICA components.
 
 # Returns
 
-- `GLMakie.figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_icatopo(
     obj::NeuroAnalyzer.NEURO;
@@ -1365,11 +1365,11 @@ Confidence interval plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_ci(
     s::AbstractVector,
@@ -1442,7 +1442,7 @@ Plot heatmap.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `cb::Bool=true`: draw colorbar
 - `cb_title::String=""`: colorbar title
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
@@ -1456,7 +1456,7 @@ Plot heatmap.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_heatmap(
     m::AbstractMatrix;
@@ -1532,7 +1532,7 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_imf(
     imf::Matrix{Float64};
@@ -1664,7 +1664,7 @@ Plot instantaneous frequencies.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_fi(
     fi::Vector{Float64},
@@ -1730,7 +1730,7 @@ Plot phases.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_phase(
     ph::Vector{Float64},
@@ -1799,11 +1799,11 @@ Polar pole-zero map.
 - `title::String=""`: plot title
 - `ticks::Bool=false`: draw x- and y-axis ticks
 - `ms::Symbol=:circle`: marker shape for drawing complex numbers (`:circle` or `:xcross`)
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_polezero(
     pol::Vector{Complex{Float64}},
@@ -1860,7 +1860,7 @@ Plot discrete wavelet decomposition coefficients.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_dwc(
     dc::Matrix{Float64};

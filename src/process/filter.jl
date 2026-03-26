@@ -25,9 +25,11 @@ Create a FIR or IIR filter object.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: cutoff frequency/ies in Hz; scalar for `:lp`/`:hp`; 2-tuple for `:bp`/`:bs`
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz
+    - for `:lp`/`:hp`: single frequency
+    - for `:bp`/`:bs`: frequency range (f1, f2)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `order::Union{Nothing, Int64}=nothing`: filter order
+- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR)
 - `rp::Union{Nothing, Real}=nothing`: pass-band ripple in dB (default 0.5 dB)
 - `rs::Union{Nothing, Real}=nothing`: stop-band attenuation in dB (default 20 dB)
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz (required for `:firls`, `:remez`, `:iirnotch`)
@@ -436,9 +438,10 @@ Combines [`filter_create`](@ref) and [`filter_apply`](@ref). When `preview=true`
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: cutoff frequency/ies in Hz; scalar for `:lp`/`:hp`; 2-tuple for `:bp`/`:bs`
-- `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `order::Union{Nothing, Int64}=nothing`: filter order
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz
+    - for `:lp`/`:hp`: single frequency
+    - for `:bp`/`:bs`: frequency range (f1, f2)- `fs::Int64`: sampling rate in Hz; must be ≥ 1
+- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR)
 - `rp::Union{Nothing, Real}=nothing`: pass-band ripple in dB (default 0.5 dB)
 - `rs::Union{Nothing, Real}=nothing`: stop-band attenuation in dB (default 20 dB)
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz (required for `:firls`, `:remez`, `:iirnotch`)
@@ -530,9 +533,11 @@ When `preview=true`, the filter frequency response is plotted and returned witho
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: cutoff frequency/ies in Hz; scalar for `:lp`/`:hp`; 2-tuple for `:bp`/`:bs`
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz
+    - for `:lp`/`:hp`: single frequency
+    - for `:bp`/`:bs`: frequency range (f1, f2)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `order::Union{Nothing, Int64}=nothing`: filter order
+- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR)
 - `rp::Union{Nothing, Real}=nothing`: pass-band ripple in dB (default 0.5 dB)
 - `rs::Union{Nothing, Real}=nothing`: stop-band attenuation in dB (default 20 dB)
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz (required for `:firls`, `:remez`, `:iirnotch`)

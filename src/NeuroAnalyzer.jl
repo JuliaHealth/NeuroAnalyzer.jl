@@ -6,7 +6,7 @@ https://neuroanalyzer.org
 
 module NeuroAnalyzer
 
-    !(VERSION >= v"1.11.0") && throw(ArgumentError("NeuroAnalyzer requires Julia 1.11.0 or above."))
+    VERSION >= v"1.11.0" || throw(ArgumentError("NeuroAnalyzer requires Julia 1.11.0 or above."))
 
     # set constants
 

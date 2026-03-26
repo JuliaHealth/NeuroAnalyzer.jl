@@ -3,7 +3,7 @@ export plot_filter
 """
     plot_filter(; <keyword arguments>)
 
-Plot filter response.
+Plot filter response with interactive controls for various filter types.
 
 # Arguments
 
@@ -22,46 +22,65 @@ Plot filter response.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `order::Union{Nothing, Int64}=nothing`: filter order
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz
+    - for `:lp`/`:hp`: single frequency
+    - for `:bp`/`:bs`: frequency range (f1, f2)
+- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR)
 - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
 - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-- `flim::Tuple{Real, Real} = (0, fs / 2)`: frequency limit
-- `mono::Bool=false`: use color or gray palette
-- `gui::Bool=true`: if true, keep window open and use it interactively
+- `flim::Tuple{Real, Real} = (0, fs / 2)`: frequency limits
+- `mono::Bool=false`: if `true`, use a monochrome palette
+- `gui::Bool=true`: if `true`, keep window open and use it interactively
 
 # Returns
 
-- `GLMakie.Figure`
-- `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
+- `GLMakie.Figure`: the plotted figure, if `gui = false`
+- `Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: returns the filter object, if `gui=true`
+
+# Notes
+
+- For IIR filters (`:butterworth`, `:chebyshev1`, etc.), default ripple values are:
+    - Passband ripple (`rp`): 0.5 dB
+    - Stopband attenuation (`rs`): 20 dB
+- For `:elliptic` filters, defaults are 0.5 dB and 40 dB respectively.
+- For FIR filters, window length must be odd.
+- Bandwidth (`bw`) is required for `:firls`, `:remez`, and `:iirnotch` filters.
 """
 function plot_filter(;
-        fs::Int64,
-        fprototype::Symbol,
-        ftype::Union{Nothing, Symbol} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-        flim::Tuple{Real, Real} = (0, fs / 2),
-        mono::Bool = false,
-        gui::Bool = true
-    )::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+    fs::Int64,
+    fprototype::Symbol,
+    ftype::Union{Nothing, Symbol} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    flim::Tuple{Real, Real} = (0, fs / 2),
+    mono::Bool = false,
+    gui::Bool = true
+)::Union{
+    GLMakie.Figure,
+    Vector{Float64},
+    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+    Biquad{:z, Float64}
+}
 
+    # validate
     _check_tuple(flim, (0, fs / 2), "flim")
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+
+    # set verbose to false during calculations
     v = NeuroAnalyzer.verbose
     NeuroAnalyzer.verbose = false
 
+    # Nyquist frequency
     nqf = div(fs, 2)
     nqf > flim[2] && (nqf = flim[2])
 
     # check parameters
-
     _check_var(
         fprototype,
         [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch],
@@ -70,12 +89,16 @@ function plot_filter(;
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     if fprototype === :fir
-        (isnothing(order) && isnothing(w)) && throw(ArgumentError("Either order or w must be specified."))
+        (isnothing(order) && isnothing(w)) &&
+            throw(ArgumentError("Either order or w must be specified."))
         if !isnothing(w)
-            (ftype in [:hp, :bp, :bs] && mod(length(w), 2) != 0) || throw(ArgumentError("Length of w must be odd."))
-            length(w) >= 1 || throw(ArgumentError("Length of w must be ≥ 1."))
+            (ftype in [:hp, :bp, :bs] && mod(length(w), 2) != 0) ||
+                throw(ArgumentError("Length of w must be odd."))
+            length(w) >= 1 ||
+                throw(ArgumentError("Length of w must be ≥ 1."))
         elseif !isnothing(order)
-            (ftype in [:hp, :bp, :bs] && mod(order, 2) != 0) || throw(ArgumentError("order must be odd."))
+            (ftype in [:hp, :bp, :bs] && mod(order, 2) != 0) ||
+                throw(ArgumentError("order must be odd."))
         end
     end
     if fprototype in [:firls, :remez, :iirnotch]
@@ -141,7 +164,6 @@ function plot_filter(;
     end
 
     # create observables
-
     cutoff = Observable(float.(cutoff))
     order = Observable(order)
     fprototype in [:chebyshev1, :elliptic] && (!isnothing(rp) && (rp = Observable(float(rp))))
@@ -1206,19 +1228,21 @@ Plot filter response.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `order::Union{Nothing, Int64}=nothing`: filter order
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz
+    - for `:lp`/`:hp`: single frequency
+    - for `:bp`/`:bs`: frequency range (f1, f2)
+- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR)
 - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2): frequency limit
-- `mono::Bool=false`: use color or gray palette
-- `gui::Bool=true`: if true, keep window open and use it interactively
+- `mono::Bool=false`: if `true`, use a monochrome palette
+- `gui::Bool=true`: if `true`, keep window open and use it interactively
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(

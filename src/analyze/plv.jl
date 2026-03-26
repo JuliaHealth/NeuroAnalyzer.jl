@@ -129,16 +129,15 @@ function plv(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-            plv_data = plv(
-                @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-                @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
-            )
-            pv[ch_idx, ep_idx] = plv_data.pv
-            sd[ch_idx, :, ep_idx] = plv_data.sd
-            phd[ch_idx, :, ep_idx] = plv_data.phd
-            s1ph[ch_idx, :, ep_idx] = plv_data.s1ph
-            s2ph[ch_idx, :, ep_idx] = plv_data.s2ph
-        end
+        plv_data = plv(
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+        )
+        pv[ch_idx, ep_idx] = plv_data.pv
+        sd[ch_idx, :, ep_idx] = plv_data.sd
+        phd[ch_idx, :, ep_idx] = plv_data.phd
+        s1ph[ch_idx, :, ep_idx] = plv_data.s1ph
+        s2ph[ch_idx, :, ep_idx] = plv_data.s2ph
     end
 
     return (; pv, sd, phd, s1ph, s2ph)
@@ -175,7 +174,6 @@ function plv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             ).pv
-        end
         end
     end
 

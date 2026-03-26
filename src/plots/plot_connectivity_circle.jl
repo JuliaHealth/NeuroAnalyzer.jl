@@ -3,27 +3,29 @@ export plot_connectivity_circle
 """
     plot_connectivity_circle(m; <keyword arguments>)
 
-Plot connectivity circle.
+Plot a circular connectivity diagram for a matrix of connectivities.
 
 # Arguments
 
-- `m::AbstractMatrix`: matrix of connectivities (channel vs. channel)
-- `clabels=Vector{String}`: channels labels
+- `m::AbstractMatrix`: connectivity matrix (must be square, channel vs. channel)
+- `clabels=Vector{String}`: channels labels (must match matrix dimensions)
 - `title::String=""`: plot title
-- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+    - if `Real`, use a single threshold value
+    - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-    - `:in`: draw region is values are in the threshold values, including threshold boundaries
-    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_connectivity_circle(
         m::AbstractMatrix;
@@ -34,25 +36,25 @@ function plot_connectivity_circle(
     )::GLMakie.Figure
 
     # validate
-    size(m, 1) == length(clabels) || throw(ArgumentError("Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."))
-    size(m, 1) >= 2 || throw(ArgumentError("m must contain data for ≥ 2 channels."))
-    size(m, 1) == size(m, 2) || throw(ArgumentError("m must be a square matrix."))
+    size(m, 1) == length(clabels) ||
+        throw(ArgumentError("Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) must match."))
+    size(m, 1) >= 2 || throw(ArgumentError("Connectivity matrix must contain data for ≥ 2 channels."))
+    size(m, 1) == size(m, 2) || throw(ArgumentError("Connectivity matrix must be square."))
 
-    t = linspace(pi, -pi, size(m, 1) + 1)
-    pos_x = zeros(size(m, 1))
-    pos_y = zeros(size(m, 1))
-    for idx in axes(m, 1)
-        pos_x[idx] = cos(t[idx])
-        pos_y[idx] = sin(t[idx])
-    end
+    # calculate polar coordinates for each channel
+    t = range(π, -π, length=size(m, 1)+1)
+    pos_x = [cos(t[idx]) for idx in 1:size(m, 1)]
+    pos_y = [sin(t[idx]) for idx in 1:size(m, 1)]
 
-    pos_x = round.(pos_x, digits = 3)
-    pos_y = round.(pos_y, digits = 3)
+    # normalize connectivity matrix for visualization
+    m_norm = normalize_minmax(m)
 
     # prepare plot
     GLMakie.activate!(title = "plot_connectivity_circle()")
     plot_size = (800, 800)
     fig = GLMakie.Figure(size = plot_size, figure_padding = 0)
+
+    # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1],
         xlabel = "",
@@ -65,6 +67,8 @@ function plot_connectivity_circle(
         yautolimitmargin = (0, 0)
     )
     hidedecorations!(ax)
+
+    # set axis limits
     GLMakie.xlims!(ax, (-1.5, 1.5))
     GLMakie.ylims!(ax, (-1.5, 1.5))
     ax.titlesize = 18
@@ -79,11 +83,12 @@ function plot_connectivity_circle(
     s = size(m, 1)
     for idx1 in 1:s
         for idx2 in (idx1 + 1):s
+            # apply thresholding if specified
             if !isnothing(threshold)
                 if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-                    !(length(threshold) == 1) && throw(ArgumentError("threshold must contain a single value."))
+                    length(threshold) == 1 || throw(ArgumentError("threshold must contain a single value."))
                 else
-                    !(length(threshold) == 2) && throw(ArgumentError("threshold must contain two values."))
+                    length(threshold) == 2 || throw(ArgumentError("threshold must contain two values."))
                     _check_tuple(threshold, extrema(m), "threshold")
                 end
                 (threshold_type === :eq && m[idx1, idx2] != threshold) && break
@@ -95,29 +100,47 @@ function plot_connectivity_circle(
                 (threshold_type === :in && (m[idx1, idx2] >= threshold[1] && m[idx1, idx2] <= threshold[2])) && break
                 (threshold_type === :bin && (m[idx1, idx2] > threshold[1] && m[idx1, idx2] < threshold[2])) && break
             end
+
+            # calculate midpoint and curvature
             mid_x = (pos_x[idx1] + pos_x[idx2]) / 2
             mid_y = (pos_y[idx1] + pos_y[idx2]) / 2
-            d = distance((pos_x[idx1], pos_y[idx1]), (pos_x[idx2], pos_y[idx2]))
+            d = sqrt((pos_x[idx2] - pos_x[idx1])^2 + (pos_y[idx2] - pos_y[idx1])^2)
             c = (mid_x * (1 - d * 0.5), mid_y * (1 - d * 0.5))
+
+            # draw curved connection
             px = [pos_x[idx1], c[1], pos_x[idx2]]
             py = [pos_y[idx1], c[2], pos_y[idx2]]
-            x_vals, y_vals = _bernstein_poly(px, py; steps = 50)
+            x_vals, y_vals = _bernstein_poly(px, py; steps=50)
+
             col = :black
             m[idx1, idx2] < 0 && (col = :blue)
             m[idx1, idx2] > 0 && (col = :red)
-            GLMakie.lines!(ax, x_vals, y_vals; color = col, linewidth = 10 * abs(m_norm[idx1, idx2]), alpha = 0.5)
+            GLMakie.lines!(
+                ax,
+                x_vals,
+                y_vals,
+                color = col,
+                linewidth = 10 * abs(m_norm[idx1, idx2]),
+                alpha = 0.5
+            )
         end
     end
 
-    # draw markers
-    for idx in axes(m, 1)
-        GLMakie.scatter!(ax, pos_x[idx], pos_y[idx], color = :black, markersize = 15)
+    # draw channel markers
+    for idx in 1:s
+        GLMakie.scatter!(
+            ax,
+            pos_x[idx],
+            pos_y[idx],
+            color = :black,
+            markersize = 15
+        )
     end
 
-    # draw labels
+    # draw channel labels
     ang = t[1:(end - 1)]
     for idx in axes(clabels, 1)
-        if _bin(ang[idx], (-pi / 2, pi / 2))
+        if _bin(ang[idx], (-π/2, π/2))
             GLMakie.text!(
                 pos_x[idx] * 1.1,
                 pos_y[idx] * 1.1,

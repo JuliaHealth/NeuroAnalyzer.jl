@@ -16,10 +16,10 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
@@ -28,7 +28,7 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_locs_nirs(
         locs::DataFrame,

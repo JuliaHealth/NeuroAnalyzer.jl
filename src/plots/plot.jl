@@ -3,16 +3,16 @@ export plot
 """
     plot(obj; <keyword arguments>)
 
-Plot signal.
+Plot signal from a NEURO object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
 - `ep::Int64=1`: first epoch to display
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points (for ERP/ERF)
-- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot (for ERP/ERF)
+- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) for vertical lines, useful for adding topoplots at these time points (for ERP/ERF)
+- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time(s) for each epoch; if provided, the response time line will be plotted over the `:stack` plot (for ERP/ERF)
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `title::String="default"`: plot title
@@ -28,22 +28,22 @@ Plot signal.
 - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
 - `n_channels::Int64=20`: number of visible channels
 - `n_epochs::Int64=5`: number of visible epochs
-- `cb::Bool=true`: plot color bar (for ERP/ERF/MEP)
+- `cb::Bool=true`: if `true`, plot color bar (for ERP/ERF/MEP)
 - `cb_title::String="default"`: color bar title (for ERP/ERF/MEP)
-- `peaks::Bool=true`: draw peaks (for ERP/ERF/MEP)
-- `leg::Bool=true`: if true, add legend with channel labels (for ERP/ERF/MEP)
-- `yrev::Bool=false`: reverse y-axis (for ERP/ERF/MEP)
-- `smooth::Bool=false`: smooth the image using Gaussian blur (for ERP/ERF/MEP)
+- `peaks::Bool=true`: draw peak markers (for ERP/ERF/MEP)
+- `leg::Bool=true`: if `true`, add legend with channel labels (for ERP/ERF/MEP)
+- `yrev::Bool=false`: if `true`, reverse the y-axis (for ERP/ERF/MEP)
+- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur (for ERP/ERF/MEP)
 - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing) (for ERP/ERF/MEP)
-- `zl::Bool=true`: draw line at t = 0 (for ERP/ERF/MEP)
-- `mono::Bool=false`: use color or gray palette
+- `zl::Bool`: if `true`, draw a dashed line at t = 0 (for ERP/ERF/MEP)
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `res::Int64=1`: resampling factor (draw every res-nth sample)
 - `snap::Bool=true`: snap to grid when placing markers
-- `gui::Bool=true`: if true, keep window open and use it interactively
+- `gui::Bool=true`: if `true`, keep window open and use it interactively
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure: the plotted figure
 """
 function plot(
     obj::NeuroAnalyzer.NEURO;
@@ -77,9 +77,11 @@ function plot(
     gui::Bool = true
 )::GLMakie.Figure
 
+    # validate and clamp n_channels/n_epochs to object dimensions
     n_channels > nchannels(obj) && (n_channels = nchannels(obj))
     n_epochs > nepochs(obj) && (n_epochs = nepochs(obj))
 
+    # dispatch to specialized plot functions based on datatype
     if datatype(obj) in ["erp", "erf"]
         fig = plot_erp(
             obj,
@@ -176,12 +178,12 @@ end
 """
     plot(obj1, obj2; <keyword arguments>)
 
-Plot signal.
+Plot two signals from NEURO objects for comparison.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
-- `obj2::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `obj1::NeuroAnalyzer.NEURO`: first NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: second NEURO object
 - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label
@@ -192,11 +194,11 @@ Plot signal.
 - `n_channels::Int64=20`: number of visible channels
 - `n_epochs::Int64=5`: number of visible epochs
 - `res::Int64=1`: resampling factor (draw every res-nth sample)
-- `gui::Bool=true`: if true, keep window open and use it interactively
+- `gui::Bool=true`: if `true`, keep window open and use it interactively
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot(
     obj1::NeuroAnalyzer.NEURO,
@@ -214,9 +216,14 @@ function plot(
 )::GLMakie.Figure
 
     # validate
-    datatype(obj1) in ["eeg", "meg"] || throw(ArgumentError("This function works for continuous EEG and MEG objects."))
-    datatype(obj2) in ["eeg", "meg"] || throw(ArgumentError("This function works for continuous EEG and MEG objects."))
-    nepochs(obj1) == 1 || throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    datatype(obj1) in ["eeg", "meg"] ||
+        throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    datatype(obj2) in ["eeg", "meg"] ||
+        throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    size(obj1) == size(obj) ||
+        throw(ArgumentError("Both objects must have the same size."))
+    nepochs(obj1) == 1 ||
+        throw(ArgumentError("This function works for continuous EEG and MEG objects."))
 
     fig = plot_cont(
         obj1,
@@ -242,19 +249,19 @@ export plot
 """
     plot(t, s; <keyword arguments>)
 
-Plot continuous signal.
+Plot a continuous signal with time and amplitude axes.
 
 # Arguments
 
-- `t::AbstractVector`: time points
-- `s::AbstractVector`: signal vector: signal data
+- `t::AbstractVector`: time points (must match length of `s`)
+- `s::AbstractVector`: signal data
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude"`: y-axis label
 - `title::String=""`: plot title
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot(
     t::AbstractVector,
@@ -271,6 +278,8 @@ function plot(
     GLMakie.activate!(title = "plot()")
     plot_size = (900, 450)
     fig = GLMakie.Figure(size = plot_size)
+
+    # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1],
         xlabel = xlabel,
@@ -288,17 +297,22 @@ function plot(
         xrectzoom = false,
         yrectzoom = false
     )
+
+    # set axis limits
     if minimum(s) == 0
         GLMakie.ylims!(ax, 0, extrema(s)[2] * 1.1)
     else
         GLMakie.ylims!(ax, extrema(s) .* 1.1)
     end
+
+    # configure axis appearance
     ax.titlesize = 18
     ax.xlabelsize = 12
     ax.ylabelsize = 12
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
+    # plot the signal
     GLMakie.lines!(
         ax,
         t,

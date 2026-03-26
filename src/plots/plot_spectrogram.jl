@@ -12,31 +12,33 @@ Plot single-channel spectrogram.
 - `sf::Vector{<:Real}`: frequencies
 - `sp::Matrix{Float64}`: powers
 - `db::Bool=true`: whether powers are normalized to dB
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `units::String=""`
-- `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-- `cb::Bool=true`: plot color bar
+- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
+- `cb::Bool=true`: if `true`, plot color bar
 - `cb_title::String=""`: color bar label
-- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+    - if `Real`, use a single threshold value
+    - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-    - `:in`: draw region is values are in the threshold values, including threshold boundaries
-    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram(
         st::Vector{Float64},
@@ -51,7 +53,7 @@ function plot_spectrogram(
         mono::Bool = false,
         units::String = "",
         smooth::Bool = false,
-        n::Int64 = 3,
+        ks::Int64 = 3,
         cb::Bool = true,
         cb_title::String = "",
         threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
@@ -60,7 +62,7 @@ function plot_spectrogram(
 
     !(size(sp, 2) == length(st)) && throw(ArgumentError("Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."))
     !(size(sp, 1) == length(sf)) && throw(ArgumentError("Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."))
-    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
+    !(ks > 0) && throw(ArgumentError("ks must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -68,7 +70,7 @@ function plot_spectrogram(
     pal = mono ? :grays : :darktest
 
     if smooth
-        sp = imfilter(sp, Kernel.gaussian(n))
+        sp = imfilter(sp, Kernel.gaussian(ks))
     end
 
     sp = sp'
@@ -145,31 +147,33 @@ Plot multiple-channel spectrogram.
 - `sp::Matrix{Float64}`: powers
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `units::String=""`
-- `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-- `cb::Bool=true`: plot color bar
+- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
+- `cb::Bool=true`: if `true`, plot color bar
 - `cb_title::String=""`: color bar label
-- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+    - if `Real`, use a single threshold value
+    - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-    - `:in`: draw region is values are in the threshold values, including threshold boundaries
-    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram(
         sf::Vector{<:Real},
@@ -184,7 +188,7 @@ function plot_spectrogram(
         mono::Bool = false,
         units::String = "",
         smooth::Bool = false,
-        n::Int64 = 3,
+        ks::Int64 = 3,
         cb::Bool = true,
         cb_title::String = "",
         threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
@@ -193,7 +197,7 @@ function plot_spectrogram(
 
     !(size(sp, 1) == length(clabels)) && throw(ArgumentError("Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."))
     !(size(sp, 2) == length(sf)) && throw(ArgumentError("Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."))
-    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
+    !(ks > 0) && throw(ArgumentError("ks must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -201,7 +205,7 @@ function plot_spectrogram(
     pal = mono ? :grays : :darktest
 
     if smooth
-        sp = imfilter(sp, Kernel.gaussian(n))
+        sp = imfilter(sp, Kernel.gaussian(ks))
     end
 
     # channel labels
@@ -284,18 +288,18 @@ Plot topographical map of spectrograms.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `units::String=""`
-- `cb::Bool=true`: plot color bar
+- `cb::Bool=true`: if `true`, plot color bar
 - `cb_title::String=""`: color bar label
-- `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `mono::Bool=false`: unused, for compatibility only
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram_topo(
         locs::DataFrame,
@@ -311,7 +315,7 @@ function plot_spectrogram_topo(
         cb::Bool = true,
         cb_title::String = "",
         smooth::Bool = false,
-        n::Int64 = 3,
+        ks::Int64 = 3,
         mono::Bool = true,
         frq::Symbol = :lin,
         cart::Bool = false,
@@ -321,7 +325,7 @@ function plot_spectrogram_topo(
     !(size(sp, 3) == DataFrames.nrow(locs)) && throw(ArgumentError("Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."))
     !(size(sp, 2) == length(st)) && throw(ArgumentError("Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."))
     !(size(sp, 1) == length(sf)) && throw(ArgumentError("Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."))
-    !(n > 0) && throw(ArgumentError("n must be ≥ 1."))
+    !(ks > 0) && throw(ArgumentError("ks must be ≥ 1."))
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
@@ -364,7 +368,7 @@ function plot_spectrogram_topo(
     end
 
     if smooth
-        sp = imfilter(sp, Kernel.gaussian(n))
+        sp = imfilter(sp, Kernel.gaussian(ks))
     end
 
     # prepare spectrogram plots
@@ -400,7 +404,7 @@ function plot_spectrogram_topo(
             mono = mono,
             units = units,
             smooth = smooth,
-            n = n,
+            ks = ks,
             cb = cb,
             cb_title = cb_title
         )
@@ -528,35 +532,37 @@ Plots spectrogram.
 - `gw::Real=10`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `title::String="default"`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `markers::Bool`: draw markers if available
-- `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-- `cb::Bool=true`: plot color bar
-- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
+- `cb::Bool=true`: if `true`, plot color bar
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+    - if `Real`, use a single threshold value
+    - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-    - `:in`: draw region is values are in the threshold values, including threshold boundaries
-    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
 - `type::Symbol=:normal`:
     - `:normal`
     - `:topo`
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram(
     obj::NeuroAnalyzer.NEURO;
@@ -580,7 +586,7 @@ function plot_spectrogram(
     mono::Bool = false,
     markers::Bool = true,
     smooth::Bool = false,
-    n::Int64 = 3,
+    ks::Int64 = 3,
     cb::Bool = true,
     threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     threshold_type::Symbol = :neq,
@@ -592,7 +598,7 @@ function plot_spectrogram(
     # validate
     _check_var(type, [:normal, :topo], "type")
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
-    n > 0 || throw(ArgumentError("n must be ≥ 1."))
+    ks > 0 || throw(ArgumentError("ks must be ≥ 1."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
@@ -778,7 +784,7 @@ function plot_spectrogram(
             mono = mono,
             units = units,
             smooth = smooth,
-            n = n,
+            ks = ks,
             cb = cb,
             cb_title = cb_title,
             threshold = threshold,
@@ -800,7 +806,7 @@ function plot_spectrogram(
             mono = mono,
             units = units,
             smooth = smooth,
-            n = n,
+            ks = ks,
             cb = cb,
             cb_title = cb_title,
             threshold = threshold,
@@ -830,7 +836,7 @@ function plot_spectrogram(
             units = units,
             cart = cart,
             smooth = smooth,
-            n = n,
+            ks = ks,
             cb = cb,
             cb_title = cb_title,
             head = head

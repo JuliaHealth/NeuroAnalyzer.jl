@@ -14,7 +14,7 @@ Plot topographical view.
 - `cb::Bool=true`: plot colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -27,22 +27,24 @@ Plot topographical view.
 - `electrodes::Bools=true`: plot electrodes over topo plot
 - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 - `head::Bool=true`: draw head
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+    - if `Real`, use a single threshold value
+    - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-    - `:in`: draw region is values are in the threshold values, including threshold boundaries
-    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
 - `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_topo(
         s::AbstractVector;
@@ -353,13 +355,13 @@ Topographical plot.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object: NeuroAnalyzer NEURO object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: channels × values, will be averaged by channels
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
 - `title::String="default"`: plot title, default is tpos value
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: if `true`, use a monochrome palette
 - `cb::Bool=true`: plot colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
 - `amethod::Symbol=:mean`: averaging method:
@@ -377,24 +379,26 @@ Topographical plot.
 - `electrodes::Bools=true`: plot electrodes over topo plot
 - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 - `head::Bool=true`: draw head
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
+- `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+    - if `Real`, use a single threshold value
+    - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-    - `:in`: draw region is values are in the threshold values, including threshold boundaries
-    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
 - `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 - `nr::Int64=0`: number of rows to place topomaps
 - `nc::Int64=0`: number of columns to place topomaps
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_topo(
     obj::NeuroAnalyzer.NEURO;

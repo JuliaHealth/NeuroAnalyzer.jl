@@ -17,7 +17,7 @@ Empty plots are added automatically when `length(vfig) < layout[1]*layout[2]` so
 
 # Returns
 
-- `GLMakie.Figure`: composite figure
+- `GLMakie.Figure`: the plotted figure: composite figure
 """
 function plot_compose(
     vfig::Vector{GLMakie.Figure};
@@ -96,7 +96,7 @@ Return an empty `GLMakie.Figure`, useful for padding a grid of plots.
 
 # Returns
 
-- `GLMakie.Figure`
+- `GLMakie.Figure`: the plotted figure
 """
 function plot_empty()::GLMakie.Figure
 
@@ -116,7 +116,7 @@ Overlay a locations plot `pl` onto the top-right corner of `fig`, making the whi
 
 # Returns
 
-- `GLMakie.Figure`: `fig` with the locations overlay applied in-place
+- `GLMakie.Figure`: the plotted figure: `fig` with the locations overlay applied in-place
 """
 function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
 
