@@ -16,18 +16,22 @@ Delete optodes) and channels associated with removed optodes.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_optode(
-    obj::NeuroAnalyzer.NEURO;
-    opt::Union{Int64, Vector{Int64}, AbstractRange}
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        opt::Union{Int64, Vector{Int64}, AbstractRange},
+    )::NeuroAnalyzer.NEURO
 
     # validate
     _check_datatype(obj, "nirs")
 
     typeof(opt) <: AbstractRange && (opt = collect(opt))
     opt_n = length(obj.header.recording[:optode_labels])
-    length(opt) > 1 && (opt = sort!(opt, rev = true))
+    length(opt) > 1 && (opt = sort!(opt; rev = true))
     length(opt) < opt_n ||
-        throw(ArgumentError("Number of optodes to delete ($(length(opt))) must be smaller than number of all optodes ($opt_n)."))
+        throw(
+        ArgumentError(
+            "Number of optodes to delete ($(length(opt))) must be smaller than number of all optodes ($opt_n).",
+        ),
+    )
     opt in 1:opt_n || throw(ArgumentError("Opt must be in [1, $opt_n]."))
 
     # create new dataset
@@ -38,7 +42,7 @@ function delete_optode(
         if optode_labels(obj_new)[idx] in obj_new.locs[!, :label]
             if length(_find_bylabel(obj_new.locs, optode_labels(obj)[idx])) == 1
                 deleteat!(
-                    obj_new.locs, _find_bylabel(obj_new.locs, optode_labels(obj)[idx])
+                    obj_new.locs, _find_bylabel(obj_new.locs, optode_labels(obj)[idx]),
                 )
             else
                 deleteat!(
@@ -59,7 +63,7 @@ function delete_optode(
             chs_to_delete = vcat(chs_to_delete, findall(isequal(idx), chp))
             deleteat!(
                 obj_new.header.recording[:src_labels],
-                obj_new.header.recording[:src_labels] .== ol
+                obj_new.header.recording[:src_labels] .== ol,
             )
             chp[chp .== idx] .= 0
             chp[chp .> idx] .-= 1
@@ -69,7 +73,7 @@ function delete_optode(
             chs_to_delete = vcat(chs_to_delete, findall(isequal(idx), chp))
             deleteat!(
                 obj_new.header.recording[:det_labels],
-                obj_new.header.recording[:det_labels] .== ol
+                obj_new.header.recording[:det_labels] .== ol,
             )
             chp[chp .== idx] .= 0
             chp[chp .> idx] .-= 1
@@ -81,10 +85,9 @@ function delete_optode(
 
     chs_to_delete = labels(obj_new)[sort(unique(chs_to_delete))]
     _info("Deleting the following NIRS channels: $chs_to_delete")
-    delete_channel!(obj_new, ch = chs_to_delete, del_opt = true)
+    delete_channel!(obj_new; ch = chs_to_delete, del_opt = true)
 
     return obj_new
-
 end
 
 """
@@ -102,15 +105,13 @@ Delete optopode(s).
 - `Nothing`
 """
 function delete_optode!(
-        obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange}
+        obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange},
     )::Nothing
-
-    obj_new = delete_optode(obj, opt = opt)
+    obj_new = delete_optode(obj; opt = opt)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.locs = obj_new.locs
 
     return nothing
-
 end

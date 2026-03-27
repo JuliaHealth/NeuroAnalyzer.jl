@@ -35,29 +35,28 @@ Named tuple:
 - `n2::Int64`: group 2 sample size
 """
 function size_c2g(;
-    m1::Real,
-    s1::Real,
-    m2::Real,
-    r::Int64 = 1,
-    alpha::Float64 = 0.05,
-    power::Float64 = 0.8
-)::@NamedTuple{n1::Int64, n2::Int64}
+        m1::Real,
+        s1::Real,
+        m2::Real,
+        r::Int64 = 1,
+        alpha::Float64 = 0.05,
+        power::Float64 = 0.8,
+    )::@NamedTuple{n1::Int64, n2::Int64}
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
     s1 > 0 || throw(ArgumentError("s1 must be > 0."))
-    r  >= 1 || throw(ArgumentError("r must be ≥ 1."))
+    r >= 1 || throw(ArgumentError("r must be ≥ 1."))
     m1 != m2 || throw(ArgumentError("m1 and m2 must differ (zero effect size)."))
 
-    beta  = 1 - power
+    beta = 1 - power
     delta = abs(m2 - m1)
     # equal-variance formula: n1 = s1²(1 + 1/r) × (z_α + z_β)² / δ²
-    n1 = ceil(Int64, (s1^2 * (1 + 1/r) * (cl2z(1 - alpha) + cl2z(1 - beta))^2) / delta^2)
+    n1 = ceil(Int64, (s1^2 * (1 + 1 / r) * (cl2z(1 - alpha) + cl2z(1 - beta))^2) / delta^2)
     n2 = n1 * r
 
-    return (n1=n1, n2=n2)
-
+    return (n1 = n1, n2 = n2)
 end
 
 """
@@ -79,13 +78,13 @@ Calculate the required sample size for a one-group continuous outcome study (gro
 - `Int64`: required sample size
 """
 function size_c1g(;
-    m::Real,
-    s::Real,
-    xbar::Real,
-    alpha::Float64 = 0.05,
-    power::Float64 = 0.8,
-    iter::Bool = false
-)::Int64
+        m::Real,
+        s::Real,
+        xbar::Real,
+        alpha::Float64 = 0.05,
+        power::Float64 = 0.8,
+        iter::Bool = false,
+    )::Int64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -94,14 +93,14 @@ function size_c1g(;
     m != xbar || throw(ArgumentError("m and xbar must differ."))
 
     if iter
-        powers = [power_c1g(m=m, s=s, xbar=xbar, n=n, alpha=alpha) for n in 2:10_000]
+        powers =
+            [power_c1g(; m = m, s = s, xbar = xbar, n = n, alpha = alpha) for n in 2:10_000]
         # +1 because search starts at n=2
         return vsearch(power, powers) + 1
     else
         beta = 1 - power
         return ceil(Int64, (s^2 * (cl2z(1 - beta) + cl2z(1 - alpha))^2) / (m - xbar)^2)
     end
-
 end
 
 """
@@ -125,12 +124,12 @@ Named tuple:
 - `n2::Int64`: group 2 sample size
 """
 function size_p2g(;
-    p1::Float64,
-    p2::Float64,
-    r::Int64 = 1,
-    alpha::Float64 = 0.05,
-    power::Float64 = 0.8
-)::@NamedTuple{n1::Int64, n2::Int64}
+        p1::Float64,
+        p2::Float64,
+        r::Int64 = 1,
+        alpha::Float64 = 0.05,
+        power::Float64 = 0.8,
+    )::@NamedTuple{n1::Int64, n2::Int64}
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -149,13 +148,14 @@ function size_p2g(;
 
     n1 = ceil(
         Int64,
-        (cl2z(1 - alpha) * sqrt(p_dash * q_dash * (1 + 1/r)) +
-         cl2z(1 - beta)  * sqrt(p1 * q1 + p2 * q2 / r))^2 / delta^2
+        (
+            cl2z(1 - alpha) * sqrt(p_dash * q_dash * (1 + 1 / r)) +
+                cl2z(1 - beta) * sqrt(p1 * q1 + p2 * q2 / r)
+        )^2 / delta^2,
     )
     n2 = n1 * r
 
-    return (n1=n1, n2=n2)
-
+    return (n1 = n1, n2 = n2)
 end
 
 """
@@ -175,11 +175,11 @@ Calculate the required sample size for a one-group proportion study (group vs po
 - `Int64`: required sample size
 """
 function size_p1g(;
-    p1::Float64,
-    p2::Float64,
-    alpha::Float64 = 0.05,
-    power::Float64 = 0.8
-)::Int64
+        p1::Float64,
+        p2::Float64,
+        alpha::Float64 = 0.05,
+        power::Float64 = 0.8,
+    )::Int64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -192,11 +192,11 @@ function size_p1g(;
     q0 = 1 - p1
     q1 = 1 - p2
 
-    return ceil(Int64,
+    return ceil(
+        Int64,
         (p1 * q0 * (cl2z(1 - alpha) + cl2z(1 - beta) * sqrt((p2 * q1) / (p1 * q0)))^2) /
-        (p2 - p1)^2
+            (p2 - p1)^2,
     )
-
 end
 
 """
@@ -219,14 +219,14 @@ Calculate study power for a two-group continuous outcome comparison.
 - `Float64`: estimated study power
 """
 function power_c2g(;
-    m1::Real,
-    s1::Real,
-    n1::Int64,
-    m2::Real,
-    s2::Real,
-    n2::Int64,
-    alpha::Float64 = 0.05
-)::Float64
+        m1::Real,
+        s1::Real,
+        n1::Int64,
+        m2::Real,
+        s2::Real,
+        n2::Int64,
+        alpha::Float64 = 0.05,
+    )::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -236,10 +236,9 @@ function power_c2g(;
     n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
 
     delta = abs(m2 - m1)
-    z = -cl2z(1 - alpha) + delta / sqrt(s1^2/n1 + s2^2/n2)
+    z = -cl2z(1 - alpha) + delta / sqrt(s1^2 / n1 + s2^2 / n2)
 
     return z2p(abs(z))
-
 end
 
 """
@@ -260,26 +259,25 @@ Calculate study power for a one-group continuous outcome comparison (group vs po
 - `Float64`: estimated study power
 """
 function power_c1g(;
-    m::Real,
-    s::Real,
-    xbar::Real,
-    n::Int64,
-    alpha::Float64=0.05
-)::Float64
+        m::Real,
+        s::Real,
+        xbar::Real,
+        n::Int64,
+        alpha::Float64 = 0.05,
+    )::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
     s > 0 || throw(ArgumentError("s must be > 0."))
     n >= 2 || throw(ArgumentError("n must be ≥ 2."))
 
-    t_crit  = crit_t(n - 1, alpha)
-    t_stat  = (xbar - m) / (s / sqrt(n))
+    t_crit = crit_t(n - 1, alpha)
+    t_stat = (xbar - m) / (s / sqrt(n))
     # two-tailed power: sum of left and right tail probabilities
     power_l = cdf(TDist(n - 1), -t_crit + t_stat)
     power_r = 1 - cdf(TDist(n - 1), t_crit + t_stat)
 
     return power_l + power_r
-
 end
 
 """
@@ -300,12 +298,12 @@ Calculate study power for a two-proportion comparison.
 - `Float64`: estimated study power
 """
 function power_p2g(;
-    p1::Float64,
-    p2::Float64,
-    n1::Int64,
-    n2::Int64,
-    alpha::Float64 = 0.05
-)::Float64
+        p1::Float64,
+        p2::Float64,
+        n1::Int64,
+        n2::Int64,
+        alpha::Float64 = 0.05,
+    )::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -321,13 +319,12 @@ function power_p2g(;
     p_dash = (p1 + r * p2) / (1 + r)
     q_dash = 1 - p_dash
 
-    se_alt = sqrt(p1*q1/n1 + p2*q2/n2)
-    se_null = sqrt(p_dash * q_dash * (1/n1 + 1/n2))
+    se_alt = sqrt(p1 * q1 / n1 + p2 * q2 / n2)
+    se_null = sqrt(p_dash * q_dash * (1 / n1 + 1 / n2))
 
     z = delta / se_alt - cl2z(1 - alpha) * (se_null / se_alt)
 
     return z2p(abs(z))
-
 end
 
 """
@@ -347,11 +344,11 @@ Calculate study power for a one-proportion comparison (group vs population).
 - `Float64`: estimated study power
 """
 function power_p1g(;
-    p1::Float64,
-    p2::Float64,
-    n1::Int64,
-    alpha::Float64 = 0.05
-)::Float64
+        p1::Float64,
+        p2::Float64,
+        n1::Int64,
+        alpha::Float64 = 0.05,
+    )::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -361,11 +358,10 @@ function power_p1g(;
 
     q0 = 1 - p2
     q1 = 1 - p1
-    z  = (sqrt(n1 * (p1 - p2)^2 / (p2 * q0)) - cl2z(1 - alpha)) /
-         sqrt(p1 * q1 / (p2 * q0))
+    z = (sqrt(n1 * (p1 - p2)^2 / (p2 * q0)) - cl2z(1 - alpha)) /
+        sqrt(p1 * q1 / (p2 * q0))
 
     return z2p(abs(z))
-
 end
 
 """
@@ -389,11 +385,11 @@ Calculate required sample size for detecting a difference in variance (study SD 
 Values outside the table range are clamped to the nearest boundary and a warning is issued.
 """
 function size_c1diff(;
-    s1::Real,
-    s2::Real,
-    twotailed::Bool = true,
-    power::Float64 = 0.8
-)::Int64
+        s1::Real,
+        s2::Real,
+        twotailed::Bool = true,
+        power::Float64 = 0.8,
+    )::Int64
 
     # validate
     _in(power, (0, 1.0), "power")
@@ -402,7 +398,7 @@ function size_c1diff(;
     sdiff_values = [
         0.1, 0.2, 0.3, 0.4, 0.5,
         0.6, 0.7, 0.8, 0.9, 1.0,
-        1.1, 1.2, 1.3, 1.4, 1.5
+        1.1, 1.2, 1.3, 1.4, 1.5,
     ]
     power_values = [0.99, 0.95, 0.9, 0.8]
 
@@ -418,25 +414,24 @@ function size_c1diff(;
 
     table = [
         3676 2600 2103 1571;
-         920  651  527  394;
-         410  290  235  176;
-         231  164  133  100;
-         148  105   86   64;
-         104   74   60   45;
-          76   54   44   33;
-          59   42   34   26;
-          47   34   27   21;
-          38   27   22   17;
-          32   23   19   14;
-          27   20   16   12;
-          23   17   14   11;
-          20   15   12    9;
-          18   13   11    8
+        920  651  527  394;
+        410  290  235  176;
+        231  164  133  100;
+        148  105   86   64;
+        104   74   60   45;
+        76   54   44   33;
+        59   42   34   26;
+        47   34   27   21;
+        38   27   22   17;
+        32   23   19   14;
+        27   20   16   12;
+        23   17   14   11;
+        20   15   12    9;
+        18   13   11    8
     ]
 
     n = table[sdiff_idx, power_idx]
     return twotailed ? 2 * n : n
-
 end
 
 """
@@ -459,10 +454,10 @@ Calculate required sample size for detecting a difference in proportions (study 
 Values outside the table range are clamped and a warning is issued.
 """
 function size_p1diff(;
-    p1::Float64,
-    p2::Float64,
-    power::Float64 = 0.8
-)::Int64
+        p1::Float64,
+        p2::Float64,
+        power::Float64 = 0.8,
+    )::Int64
 
     # validate
     _in(power, (0, 1.0), "power")
@@ -470,17 +465,19 @@ function size_p1diff(;
     _in(p2, (0.0, 1.0), "p2")
 
     p_avg = (p1 + p2) / 2
-    sdiff = round((p2 - p1) / sqrt(p_avg * (1 - p_avg)), digits=1)
+    sdiff = round((p2 - p1) / sqrt(p_avg * (1 - p_avg)); digits = 1)
 
     sdiff_values = [
         0.1, 0.2, 0.3, 0.4, 0.5,
         0.6, 0.7, 0.8, 0.9, 1.0,
-        1.1, 1.2, 1.3, 1.4, 1.5
+        1.1, 1.2, 1.3, 1.4, 1.5,
     ]
     power_values = [0.99, 0.95, 0.9, 0.8]
 
-    !(sdiff in sdiff_values) && _warn("sdiff=$sdiff not in table; result will be estimated.")
-    !(power in power_values) && _warn("power=$power not in table; result will be estimated.")
+    !(sdiff in sdiff_values) &&
+        _warn("sdiff=$sdiff not in table; result will be estimated.")
+    !(power in power_values) &&
+        _warn("power=$power not in table; result will be estimated.")
 
     sdiff = clamp(sdiff, 0.1, 1.5)
     power = clamp(power, 0.8, 0.99)
@@ -490,20 +487,20 @@ function size_p1diff(;
 
     table = [
         3676 2600 2103 1571;
-         920  651  527  394;
-         410  290  235  176;
-         231  164  133  100;
-         148  105   86   64;
-         104   74   60   45;
-          76   54   44   33;
-          59   42   34   26;
-          47   34   27   21;
-          38   27   22   17;
-          32   23   19   14;
-          27   20   16   12;
-          23   17   14   11;
-          20   15   12    9;
-          18   13   11    8
+        920  651  527  394;
+        410  290  235  176;
+        231  164  133  100;
+        148  105   86   64;
+        104   74   60   45;
+        76   54   44   33;
+        59   42   34   26;
+        47   34   27   21;
+        38   27   22   17;
+        32   23   19   14;
+        27   20   16   12;
+        23   17   14   11;
+        20   15   12    9;
+        18   13   11    8
     ]
 
     return 2 * table[sdiff_idx, power_idx]
@@ -529,12 +526,12 @@ Computed as `MDE = (z_α + z_β)² × s² / n`.
 - `Float64`: minimum detectable effect size
 """
 function mde(;
-    n::Int64,
-    s::Real,
-    alpha::Float64=0.05,
-    beta::Float64=0.2,
-    verbose::Bool=true
-)::Float64
+        n::Int64,
+        s::Real,
+        alpha::Float64 = 0.05,
+        beta::Float64 = 0.2,
+        verbose::Bool = true,
+    )::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -549,7 +546,6 @@ function mde(;
     verbose && println("z_β = $z_beta")
 
     return (z_alpha + z_beta)^2 * s^2 / n
-
 end
 
 """
@@ -568,16 +564,16 @@ Calculate the required sample size for estimating a proportion within a margin o
 - `Int64`: required sample size
 """
 function size_p(;
-    p::Union{Float64, Nothing} = nothing,
-    alpha::Float64 = 0.05,
-    E::Float64
-)::Int64
+        p::Union{Float64, Nothing} = nothing,
+        alpha::Float64 = 0.05,
+        E::Float64,
+    )::Int64
 
     # validate
     _in(E, (0, 1.0), "E")
     _in(alpha, (0, 1.0), "alpha")
 
-    z = crit_z(alpha / 2; twotailed=false)
+    z = crit_z(alpha / 2; twotailed = false)
     if isnothing(p)
         # conservative: p=0.5 maximizes p(1-p)
         return ceil(Int64, z^2 * 0.25 / E^2)
@@ -585,7 +581,6 @@ function size_p(;
         _in(p, (0.0, 1.0), "p")
         return ceil(Int64, z^2 * p * (1 - p) / E^2)
     end
-
 end
 
 """
@@ -604,16 +599,15 @@ Calculate the required sample size for estimating a population mean within a mar
 - `Int64`: required sample size
 """
 function size_m(;
-    sigma::Real,
-    alpha::Float64 = 0.05,
-    E::Real
-)::Int64
+        sigma::Real,
+        alpha::Float64 = 0.05,
+        E::Real,
+    )::Int64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
     sigma > 0 || throw(ArgumentError("sigma must be > 0."))
     E > 0 || throw(ArgumentError("E must be > 0."))
 
-    return ceil(Int64, (crit_z(alpha / 2; twotailed=false) * sigma / E)^2)
-
+    return ceil(Int64, (crit_z(alpha / 2; twotailed = false) * sigma / E)^2)
 end

@@ -28,5 +28,4 @@ function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
     end
 
     return nothing
-
 end

@@ -22,7 +22,6 @@ Adds zero columns if the matrix has more rows than columns, or zero rows if it h
 - `AbstractMatrix`: square matrix of size `max(r, c) × max(r, c)` with the same element type as `m`.
 """
 function m_pad0(m::AbstractMatrix)::AbstractMatrix
-
     mr, mc = size(m)
 
     if mr > mc
@@ -34,7 +33,6 @@ function m_pad0(m::AbstractMatrix)::AbstractMatrix
     else
         return m
     end
-
 end
 
 """
@@ -59,7 +57,8 @@ function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
     # Tuple comparison in Julia is lexicographic, not element-wise; check each dimension independently to avoid a silent false-positive assertion.
     r >= size(m, 1) || throw(ArgumentError("r ($r) must be ≥ size(m, 1) ($(size(m, 1)))."))
     c >= size(m, 2) || throw(ArgumentError("c ($c) must be ≥ size(m, 2) ($(size(m, 2)))."))
-    (r > size(m, 1) || c > size(m, 2)) || throw(ArgumentError("At least one of r, c must exceed the current size."))
+    (r > size(m, 1) || c > size(m, 2)) ||
+        throw(ArgumentError("At least one of r, c must exceed the current size."))
 
     mr, mc = size(m)
     # append zero rows to the bottom
@@ -72,9 +71,7 @@ function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
     end
 
     return m
-
 end
-
 
 """
     m_sortperm(m; <keyword arguments>)
@@ -100,17 +97,16 @@ function m_sortperm(m::AbstractMatrix; rev::Bool = false, dims::Int64 = 1)::Abst
     if dims == 1
         # compute sort permutation for each column independently
         @inbounds for col in axes(m, 2)
-            idx[:, col] = sortperm(m[:, col]; rev=rev)
+            idx[:, col] = sortperm(m[:, col]; rev = rev)
         end
     else
         # compute sort permutation for each row independently
         @inbounds for row in axes(m, 1)
-            idx[row, :] = sortperm(m[row, :]; rev=rev)'
+            idx[row, :] = sortperm(m[row, :]; rev = rev)'
         end
     end
 
     return idx
-
 end
 
 """
@@ -130,12 +126,11 @@ Sort a matrix using a pre-computed permutation index vector.
 - `AbstractMatrix`: sorted matrix with the same size and element type as `m`
 """
 function m_sort(
-    m::AbstractMatrix,
-    m_idx::Vector{Int64};
-    rev::Bool = false,
-    dims::Int64 = 1
-)::AbstractMatrix
-
+        m::AbstractMatrix,
+        m_idx::Vector{Int64};
+        rev::Bool = false,
+        dims::Int64 = 1,
+    )::AbstractMatrix
     dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
 
     # copy to avoid mutating the caller's index vector
@@ -155,7 +150,6 @@ function m_sort(
     end
 
     return m_sorted
-
 end
 
 """
@@ -174,10 +168,11 @@ Normalize an array by the number of columns minus one (`size(m, 2) - 1`).
 function m_norm(m::AbstractArray)::AbstractArray
 
     # validate
-    size(m, 2) >= 2 || throw(ArgumentError("m must have at least 2 columns (size(m, 2) - 1 would be zero)."))
+    size(m, 2) >= 2 || throw(
+        ArgumentError("m must have at least 2 columns (size(m, 2) - 1 would be zero)."),
+    )
 
     return m ./ (size(m, 2) - 1)
-
 end
 
 """
@@ -207,7 +202,7 @@ function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatri
     (wlen == 1 && woverlap == 0) && return reshape(x, length(x), :)
 
     seg = length(x) ÷ wlen
-    m   = zeros(eltype(x), seg, wlen)
+    m = zeros(eltype(x), seg, wlen)
     m[1, :] = x[1:wlen]
     for idx in 2:seg
         start = (idx - 1) * wlen + 1 - woverlap
@@ -215,7 +210,6 @@ function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatri
     end
 
     return m
-
 end
 
 """
@@ -234,12 +228,12 @@ Reshape a 3-D array of shape `(1, samples, epochs)` into a `(epochs, samples)` m
 function arr2mat(x::AbstractArray)::AbstractMatrix
 
     # validate
-    size(x, 1) == 1 || throw(ArgumentError("First dimension of x must be 1; got $(size(x, 1))."))
+    size(x, 1) == 1 ||
+        throw(ArgumentError("First dimension of x must be 1; got $(size(x, 1))."))
 
     # equivalent to squeezing the singleton first dimension and transposing:
     # dropdims then permute, or simply index and collect row-by-row.
     return reshape(permutedims(x[1, :, :]), size(x, 3), size(x, 2))
-
 end
 
 """
@@ -261,13 +255,12 @@ Returns a pair `(mx, my)` where `mx[i]` repeats the full `x` vector for row `i`,
     - `my`: `m` vectors each filled with the corresponding `y[i]` value
 """
 function meshgrid(
-    x::Vector{Float64},
-    y::Vector{Float64}
-)::Tuple{
-    Vector{Vector{Float64}},
-    Vector{Vector{Float64}}
-}
-
+        x::Vector{Float64},
+        y::Vector{Float64},
+    )::Tuple{
+        Vector{Vector{Float64}},
+        Vector{Vector{Float64}},
+    }
     xn = length(x)
     yn = length(y)
 
@@ -277,5 +270,4 @@ function meshgrid(
     my = [fill(y[i], xn) for i in 1:yn]
 
     return (mx, my)
-
 end

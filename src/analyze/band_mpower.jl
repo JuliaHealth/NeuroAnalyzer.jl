@@ -41,23 +41,23 @@ Named tuple:
 - `maxba::Float64`: amplitude at maximum band frequency
 """
 function band_mpower(
-    s::AbstractVector;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    mbp::Float64,
-    maxfrq::Float64,
-    maxbp::Float64,
-    maxba::Float64
-}
+        s::AbstractVector;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        mbp::Float64,
+        maxfrq::Float64,
+        maxbp::Float64,
+        maxba::Float64,
+    }
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -65,7 +65,7 @@ function band_mpower(
 
     # compute the power spectral density over the full frequency range
     pw, pf = psd(
-        s,
+        s;
         fs = fs,
         db = false,
         method = method,
@@ -75,7 +75,7 @@ function band_mpower(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
 
     # find the PSD bin indices that bound the requested frequency band
@@ -95,7 +95,6 @@ function band_mpower(
     maxba = sqrt(maxbp)
 
     return (; mbp, maxfrq, maxbp, maxba)
-
 end
 
 """
@@ -139,23 +138,23 @@ Named tuple:
 - `maxba::Matrix{Float64}`: amplitude at maximum band frequency, shape (channels, epochs)
 """
 function band_mpower(
-    s::AbstractArray;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    mbp::Matrix{Float64},
-    maxfrq::Matrix{Float64},
-    maxbp::Matrix{Float64},
-    maxba::Matrix{Float64}
-}
+        s::AbstractArray;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        mbp::Matrix{Float64},
+        maxfrq::Matrix{Float64},
+        maxbp::Matrix{Float64},
+        maxba::Matrix{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -185,7 +184,7 @@ function band_mpower(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean
+            demean = demean,
         )
         mbp[ch_idx, ep_idx] = mpower_data.mbp
         maxfrq[ch_idx, ep_idx] = mpower_data.maxfrq
@@ -194,7 +193,6 @@ function band_mpower(
     end
 
     return (; mbp, maxfrq, maxbp, maxba)
-
 end
 
 """
@@ -238,29 +236,31 @@ Named tuple:
 - `maxba::Matrix{Float64}`: amplitude at maximum band frequency, shape (channels, epochs)
 """
 function band_mpower(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    mbp::Matrix{Float64},
-    maxfrq::Matrix{Float64},
-    maxbp::Matrix{Float64},
-    maxba::Matrix{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        mbp::Matrix{Float64},
+        maxfrq::Matrix{Float64},
+        maxbp::Matrix{Float64},
+        maxba::Matrix{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return band_mpower(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
         method = method,
@@ -270,7 +270,6 @@ function band_mpower(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
-
 end

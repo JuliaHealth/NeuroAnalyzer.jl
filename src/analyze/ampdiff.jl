@@ -14,8 +14,8 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 - `Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
 """
 function ampdiff(
-    s::AbstractArray
-)::Array{Float64, 3}
+        s::AbstractArray,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -37,7 +37,6 @@ function ampdiff(
     end
 
     return amp_diff
-
 end
 
 """
@@ -55,13 +54,14 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 - `Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
 """
 function ampdiff(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return ampdiff(@view(obj.data[ch, :, :]))
-
 end

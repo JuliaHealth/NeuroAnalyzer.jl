@@ -18,11 +18,10 @@ Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1`
 - `Vector{ComplexF64}`: convolved signal (same length as `s`)
 """
 function fconv(
-    s::AbstractVector;
-    kernel::AbstractVector,
-    norm::Bool = true
-)::Vector{ComplexF64}
-
+        s::AbstractVector;
+        kernel::AbstractVector,
+        norm::Bool = true,
+    )::Vector{ComplexF64}
     isempty(kernel) &&
         throw(ArgumentError("kernel must be non-empty."))
 
@@ -32,8 +31,11 @@ function fconv(
     if norm
         km = cmax(kernel_fft)
         # guard against a zero kernel (all elements zero → cmax = 0)
-        iszero(km) && throw(ArgumentError(
-            "kernel is all-zero; convolution would produce NaN output."))
+        iszero(km) && throw(
+            ArgumentError(
+                "kernel is all-zero; convolution would produce NaN output."
+            ),
+        )
         kernel_fft ./= km
     end
 
@@ -41,7 +43,6 @@ function fconv(
     s_new = _remove_kernel(s_conv, kernel)
 
     return s_new
-
 end
 
 """
@@ -62,11 +63,10 @@ Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1`
 - `Array{ComplexF64, 3}`: convolved signal, same shape as `s`
 """
 function fconv(
-    s::AbstractArray;
-    kernel::AbstractVector,
-    norm::Bool = true
-)::Array{ComplexF64, 3}
-
+        s::AbstractArray;
+        kernel::AbstractVector,
+        norm::Bool = true,
+    )::Array{ComplexF64, 3}
     isempty(kernel) &&
         throw(ArgumentError("kernel must be non-empty."))
 
@@ -82,19 +82,20 @@ function fconv(
     s_new = zeros(ComplexF64, size(s))
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar =
+        Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = fconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel, norm = norm)
+        s_new[ch_idx, :, ep_idx] =
+            fconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel, norm = norm)
 
         # update progress bar
         progress_bar && next!(progbar)
     end
 
     return s_new
-
 end
 
 """
@@ -114,16 +115,15 @@ Perform convolution in the frequency domain on selected channels of a `NeuroAnal
 - `Array{ComplexF64, 3}`: convolved signal for the selected channels
 """
 function fconv(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    kernel::AbstractVector,
-    norm::Bool = true
-)::Array{ComplexF64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        kernel::AbstractVector,
+        norm::Bool = true,
+    )::Array{ComplexF64, 3}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     _info("Group delay: $(_group_delay(kernel)) samples")
-    
-    return fconv(@view(obj.data[ch, :, :]), kernel = kernel, norm = norm)
 
+    return fconv(@view(obj.data[ch, :, :]); kernel = kernel, norm = norm)
 end

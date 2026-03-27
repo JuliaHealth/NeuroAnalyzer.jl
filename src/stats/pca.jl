@@ -15,13 +15,14 @@ function _zstd_columns!(m::Matrix{Float64})
             m[:, col] .= 0.0
         end
     end
+    return
 end
 
 # ---------------------------------------------------------------------------
 # internal helper: fit a PCA model, dispatching on the zstd flag
 # ---------------------------------------------------------------------------
 function _fit_pca(m::Matrix{Float64}, n::Int64, zstd::Bool)
-    kwargs = zstd ? (maxoutdim=n, pratio=1, mean=0) : (maxoutdim=n, pratio=1)
+    kwargs = zstd ? (maxoutdim = n, pratio = 1, mean = 0) : (maxoutdim = n, pratio = 1)
     return MultivariateStats.fit(PCA, Matrix(m'); kwargs...)
 end
 
@@ -47,16 +48,16 @@ Named tuple:
 - `pc_model::MultivariateStats.PCA{Float64}`: fitted PCA model object
 """
 function pcacomp(
-    m::Matrix{Float64};
-    n::Int64 = size(m, 2),
-    zstd::Bool = true
-)::@NamedTuple{
-    pc::DataFrame,
-    pcv::Vector{Float64},
-    pcm::Vector{Float64},
-    pcp::Matrix{Float64},
-    pc_model::MultivariateStats.PCA{Float64}
-}
+        m::Matrix{Float64};
+        n::Int64 = size(m, 2),
+        zstd::Bool = true,
+    )::@NamedTuple{
+        pc::DataFrame,
+        pcv::Vector{Float64},
+        pcm::Vector{Float64},
+        pcp::Matrix{Float64},
+        pc_model::MultivariateStats.PCA{Float64},
+    }
 
     # validate
     size(m, 1) >= 2 || throw(ArgumentError("m must have at least 2 observations (rows)."))
@@ -78,7 +79,7 @@ function pcacomp(
     end
 
     # dry run to discover the actual number of PCs the solver can produce
-    pc_tmp  = _fit_pca(m, n, zstd)
+    pc_tmp = _fit_pca(m, n, zstd)
     n_actual = size(pc_tmp.proj, 2)
     if n_actual < n
         _warn("Only $n_actual PCs could be computed (requested $n).")
@@ -87,14 +88,20 @@ function pcacomp(
 
     # final fit with the confirmed n
     pc_model = _fit_pca(m, n, zstd)
-    pcv = MultivariateStats.principalvars(pc_model) ./
-          MultivariateStats.var(pc_model) .* 100
+    pcv =
+        MultivariateStats.principalvars(pc_model) ./
+        MultivariateStats.var(pc_model) .* 100
 
     scores = Matrix(MultivariateStats.predict(pc_model, Matrix(m'))')
     pc = DataFrame(scores, ["PC$i" for i in 1:n])
 
-    return (pc=pc, pcv=pcv, pcm=pc_model.mean, pcp=pc_model.proj, pc_model=pc_model)
-
+    return (
+        pc = pc,
+        pcv = pcv,
+        pcm = pc_model.mean,
+        pcp = pc_model.proj,
+        pc_model = pc_model,
+    )
 end
 
 """
@@ -120,20 +127,21 @@ Named tuple:
 - `pc_model::MultivariateStats.PCA{Float64}`: fitted PCA model object
 """
 function pcacomp(
-    df::DataFrame,
-    vars::Union{Vector{String}, Vector{Symbol}};
-    n::Int64 = length(vars),
-    zstd::Bool = true
-)::@NamedTuple{
-    pc::DataFrame,
-    pcv::Vector{Float64},
-    pcm::Vector{Float64},
-    pcp::Matrix{Float64},
-    pc_model::MultivariateStats.PCA{Float64}
-}
+        df::DataFrame,
+        vars::Union{Vector{String}, Vector{Symbol}};
+        n::Int64 = length(vars),
+        zstd::Bool = true,
+    )::@NamedTuple{
+        pc::DataFrame,
+        pcv::Vector{Float64},
+        pcm::Vector{Float64},
+        pcp::Matrix{Float64},
+        pc_model::MultivariateStats.PCA{Float64},
+    }
 
     # validate
-    length(vars) >= 2 || throw(ArgumentError("vars must contain at least 2 variable names."))
+    length(vars) >= 2 ||
+        throw(ArgumentError("vars must contain at least 2 variable names."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     n <= length(vars) || throw(ArgumentError("n must be ≤ $(length(vars))."))
 
@@ -141,8 +149,7 @@ function pcacomp(
         string(v) in names(df) || throw(ArgumentError("Variable '$v' not found in df."))
     end
 
-    return pcacomp(Float64.(Matrix(df[!, vars])); n=n, zstd=zstd)
-
+    return pcacomp(Float64.(Matrix(df[!, vars])); n = n, zstd = zstd)
 end
 
 """
@@ -164,13 +171,12 @@ Requires at least 2 PCs; returns `nothing` with a warning otherwise.
 - `GLMakie.Figure`: biplot figure, or `nothing` if fewer than 2 PCs result
 """
 function biplot(
-    df::DataFrame,
-    vars::Union{Vector{String}, Vector{Symbol}};
-    n::Int64 = length(vars),
-    zstd::Bool = true
-)::Union{Nothing, GLMakie.Figure}
-
-    pca  = pcacomp(df, vars; n=n, zstd=zstd)
+        df::DataFrame,
+        vars::Union{Vector{String}, Vector{Symbol}};
+        n::Int64 = length(vars),
+        zstd::Bool = true,
+    )::Union{Nothing, GLMakie.Figure}
+    pca = pcacomp(df, vars; n = n, zstd = zstd)
     n_pc = length(pca.pc_model.prinvars)
 
     if n_pc < 2
@@ -178,32 +184,31 @@ function biplot(
         return nothing
     end
 
-    fig  = GLMakie.Figure()
+    fig = GLMakie.Figure()
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         aspect = 1,
         title = "Biplot",
-        xlabel = "PC1 ($(round(pca.pcv[1], digits=1))%)",
-        ylabel = "PC2 ($(round(pca.pcv[2], digits=1))%)"
+        xlabel = "PC1 ($(round(pca.pcv[1], digits = 1))%)",
+        ylabel = "PC2 ($(round(pca.pcv[2], digits = 1))%)",
     )
     GLMakie.xlims!(ax, (-4, 4))
     GLMakie.ylims!(ax, (-4, 4))
-    GLMakie.scatter!(ax, pca.pc[:, "PC1"], pca.pc[:, "PC2"]; markersize=10)
+    GLMakie.scatter!(ax, pca.pc[:, "PC1"], pca.pc[:, "PC2"]; markersize = 10)
 
     cmap = GLMakie.resample_cmap(:darktest, n_pc)
     for idx in 1:n_pc
         # scale loading vector by 2 for visibility; pcp is (variables × PCs)
         GLMakie.arrows2d!(
             (0, 0),
-            (pca.pcp[1, idx] * 2, pca.pcp[2, idx] * 2),
+            (pca.pcp[1, idx] * 2, pca.pcp[2, idx] * 2);
             color = cmap[idx],
-            label = string(vars[idx])
+            label = string(vars[idx]),
         )
     end
-    axislegend(; position=:rt)
+    axislegend(; position = :rt)
 
     return fig
-
 end
 
 """
@@ -223,46 +228,44 @@ Plot a PCA scree plot showing variance explained and eigenvalues per PC.
 - `GLMakie.Figure`: two-panel figure (% variance explained + eigenvalues)
 """
 function screeplot(
-    df::DataFrame,
-    vars::Union{Vector{String}, Vector{Symbol}};
-    n::Int64 = length(vars),
-    zstd::Bool = true
-)::GLMakie.Figure
-
-    pca = pcacomp(df, vars; n=n, zstd=zstd)
+        df::DataFrame,
+        vars::Union{Vector{String}, Vector{Symbol}};
+        n::Int64 = length(vars),
+        zstd::Bool = true,
+    )::GLMakie.Figure
+    pca = pcacomp(df, vars; n = n, zstd = zstd)
     n_pc = length(pca.pc_model.prinvars)
     xl = ["PC$i" for i in 1:n_pc]
 
-    fig   = GLMakie.Figure()
+    fig = GLMakie.Figure()
     ax1 = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         title = "Scree plot",
         xticks = (1:n_pc, xl),
         ylabel = "% variance explained",
         xautolimitmargin = (0, 0),
-        yautolimitmargin = (0, 0)
+        yautolimitmargin = (0, 0),
     )
     GLMakie.xlims!(ax1, (0.5, n_pc + 0.5))
     GLMakie.ylims!(ax1, (0, 100))
 
     cmap = GLMakie.resample_cmap(:darktest, n_pc)
     for idx in 1:n_pc
-        GLMakie.barplot!(ax1, idx, pca.pcv[idx]; color=cmap[idx])
+        GLMakie.barplot!(ax1, idx, pca.pcv[idx]; color = cmap[idx])
     end
 
     ax2 = GLMakie.Axis(
-        fig[2, 1],
+        fig[2, 1];
         xticks = (1:n_pc, xl),
-        ylabel = "Eigenvalues"
+        ylabel = "Eigenvalues",
     )
     GLMakie.xlims!(ax2, (0.5, n_pc + 0.5))
-    GLMakie.ylims!(ax2, (0, ceil(maximum(pca.pc_model.prinvars), digits=0)))
-    GLMakie.lines!(ax2, 1:n_pc, pca.pc_model.prinvars; color=:black)
-    GLMakie.scatter!(ax2, 1:n_pc, pca.pc_model.prinvars; markersize=10, color=:black)
-    GLMakie.hlines!(ax2, 1; linestyle=:dash, color=:black)
+    GLMakie.ylims!(ax2, (0, ceil(maximum(pca.pc_model.prinvars); digits = 0)))
+    GLMakie.lines!(ax2, 1:n_pc, pca.pc_model.prinvars; color = :black)
+    GLMakie.scatter!(ax2, 1:n_pc, pca.pc_model.prinvars; markersize = 10, color = :black)
+    GLMakie.hlines!(ax2, 1; linestyle = :dash, color = :black)
 
     return fig
-
 end
 
 """
@@ -284,7 +287,6 @@ Calculate the recommended number of principal components (PCs).
 - `Int64`: recommended number of PCs (≥ 1)
 """
 function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real)::Int64
-
     _check_var(type, [:var, :eig], "type")
     if type === :var
         _in(value, (0, 1), "value")
@@ -300,10 +302,9 @@ function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real):
     pc_model = _fit_pca(m, size(m, 2), zstd)
 
     if type === :var
-
         pcv = cumsum(
             MultivariateStats.principalvars(pc_model) ./
-            MultivariateStats.var(pc_model)
+                MultivariateStats.var(pc_model),
         )
         # return the index of the first cumulative variance that meets the threshold
         idx = findfirst(>=(value), pcv)
@@ -311,9 +312,6 @@ function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real):
         return isnothing(idx) ? length(pcv) : idx
 
     elseif type === :eig
-
         return max(1, count(>(value), pc_model.prinvars))
-
     end
-
 end

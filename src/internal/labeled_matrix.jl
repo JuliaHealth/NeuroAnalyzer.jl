@@ -14,7 +14,10 @@ Convert a dictionary to labeled matrix format (labels and values vectors).
     - vector of labels (strings)
     - vector of values (vectors of Float64)
 """
-function _dict2labeled_matrix(d::Dict; rev::Bool = true)::Tuple{Vector{String}, Vector{Vector{Float64}}}
+function _dict2labeled_matrix(
+        d::Dict;
+        rev::Bool = true,
+    )::Tuple{Vector{String}, Vector{Vector{Float64}}}
     isempty(d) && throw(ArgumentError("Dictionary cannot be empty."))
 
     # extract labels and values
@@ -31,7 +34,6 @@ function _dict2labeled_matrix(d::Dict; rev::Bool = true)::Tuple{Vector{String}, 
     else
         return l, v
     end
-
 end
 
 """
@@ -50,7 +52,8 @@ Convert labeled matrix format (labels and values vectors) back to a dictionary.
 
 """
 function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})::Dict
-    length(l) == length(v) || throw(ArgumentError("Labels and values vectors must have equal lengths."))
+    length(l) == length(v) ||
+        throw(ArgumentError("Labels and values vectors must have equal lengths."))
     isempty(l) && "Input vectors cannot be empty."
     isempty(v) && "Input vectors cannot be empty."
     # convert to dictionary

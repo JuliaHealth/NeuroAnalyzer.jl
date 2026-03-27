@@ -30,8 +30,7 @@ function crit_z(alpha::Float64 = 0.05; twotailed::Bool = true)::Float64
     alpha > 0.0 || throw(ArgumentError("alpha must be > 0."))
     alpha < 1.0 || throw(ArgumentError("alpha must be < 1."))
 
-    return cl2z(1 - alpha; twotailed=twotailed)
-
+    return cl2z(1 - alpha; twotailed = twotailed)
 end
 
 """
@@ -65,8 +64,7 @@ function crit_t(df::Real, alpha::Float64 = 0.05; twotailed::Bool = true)::Float6
     df > 0 || throw(ArgumentError("df must be > 0."))
 
     return twotailed ? quantile(TDist(df), 1 - alpha / 2) :
-                       quantile(TDist(df), 1 - alpha)
-
+        quantile(TDist(df), 1 - alpha)
 end
 
 """
@@ -95,5 +93,4 @@ function crit_chi(df::Real, alpha::Float64 = 0.05)::Float64
     df > 0 || throw(ArgumentError("df must be > 0."))
 
     return quantile(Distributions.Chisq(df), alpha)
-
 end

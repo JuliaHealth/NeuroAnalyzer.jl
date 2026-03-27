@@ -26,7 +26,6 @@ function paired_labels(l::Vector{String}; unq::Bool = true)::Vector{String}
         # include all n² ordered pairs
         return [l[i] * "-" * l[j] for i in eachindex(l) for j in eachindex(l)]
     end
-
 end
 
 """
@@ -50,5 +49,4 @@ function paired_labels(l1::Vector{String}, l2::Vector{String})::Vector{String}
     length(l1) == length(l2) || throw(ArgumentError("l1 and l2 must have the same length."))
 
     return l1 .* "-" .* l2
-
 end

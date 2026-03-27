@@ -29,16 +29,16 @@ Named tuple:
 To obtain the matching frequency vector use `f = freqs(s, fs).f`.
 """
 function ftransform(
-    s::AbstractVector;
-    pad::Int64 = 0,
-    db::Bool = false,
-    nf::Bool = false
-)::@NamedTuple{
-    c::Vector{ComplexF64},
-    a::Vector{Float64},
-    p::Vector{Float64},
-    ph::Vector{Float64}
-}
+        s::AbstractVector;
+        pad::Int64 = 0,
+        db::Bool = false,
+        nf::Bool = false,
+    )::@NamedTuple{
+        c::Vector{ComplexF64},
+        a::Vector{Float64},
+        p::Vector{Float64},
+        ph::Vector{Float64},
+    }
 
     # number of samples
     n = length(s)
@@ -63,9 +63,7 @@ function ftransform(
     ph = DSP.angle.(c)
 
     return (; c, a, p, ph)
-
 end
-
 
 """
     ftransform(s; <keyword arguments>)
@@ -89,16 +87,16 @@ Named tuple:
 - `ph::Array{Float64, 3}`: phases in radians, shape (channels, samples, epochs)
 """
 function ftransform(
-    s::AbstractArray;
-    pad::Int64 = 0,
-    db::Bool = false,
-    nf::Bool = false
-)::@NamedTuple{
-    c::Array{ComplexF64, 3},
-    a::Array{Float64, 3},
-    p::Array{Float64, 3},
-    ph::Array{Float64, 3}
-}
+        s::AbstractArray;
+        pad::Int64 = 0,
+        db::Bool = false,
+        nf::Bool = false,
+    )::@NamedTuple{
+        c::Array{ComplexF64, 3},
+        a::Array{Float64, 3},
+        p::Array{Float64, 3},
+        ph::Array{Float64, 3},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -110,10 +108,10 @@ function ftransform(
 
     # pilot call to determine output length (depends on pad and nf)
     fft_tmp = ftransform(
-        @view(s[1, :, 1]),
+        @view(s[1, :, 1]);
         pad = pad,
         db = db,
-        nf = nf
+        nf = nf,
     )
     c = zeros(ComplexF64, ch_n, length(fft_tmp.c), ep_n)
     a = zeros(Float64, ch_n, length(fft_tmp.a), ep_n)
@@ -128,14 +126,13 @@ function ftransform(
             db = db,
             nf = nf
         )
-        c[ch_idx, :, ep_idx]  = ftransform_data.c
-        a[ch_idx, :, ep_idx]  = ftransform_data.a
-        p[ch_idx, :, ep_idx]  = ftransform_data.p
+        c[ch_idx, :, ep_idx] = ftransform_data.c
+        a[ch_idx, :, ep_idx] = ftransform_data.a
+        p[ch_idx, :, ep_idx] = ftransform_data.p
         ph[ch_idx, :, ep_idx] = ftransform_data.ph
     end
 
     return (; c, a, p, ph)
-
 end
 
 """
@@ -158,14 +155,14 @@ Named tuple:
 - `ph::Vector{Float64}`: instantaneous phases in radians
 """
 function htransform(
-    s::AbstractVector;
-    db::Bool = false
-)::@NamedTuple{
-    c::Vector{ComplexF64},
-    a::Vector{Float64},
-    p::Vector{Float64},
-    ph::Vector{Float64}
-}
+        s::AbstractVector;
+        db::Bool = false,
+    )::@NamedTuple{
+        c::Vector{ComplexF64},
+        a::Vector{Float64},
+        p::Vector{Float64},
+        ph::Vector{Float64},
+    }
 
     # compute the analytic signal via the Hilbert transform
     c = DSP.hilbert(s)
@@ -181,7 +178,6 @@ function htransform(
     db && (p = pow2db.(p))
 
     return (; c, a, p, ph)
-
 end
 
 """
@@ -204,14 +200,14 @@ Named tuple:
 - `ph::Array{Float64, 3}`: phases (in radians)
 """
 function htransform(
-    s::AbstractArray;
-    db::Bool = false
-)::@NamedTuple{
-    c::Array{ComplexF64, 3},
-    a::Array{Float64, 3},
-    p::Array{Float64, 3},
-    ph::Array{Float64, 3}
-}
+        s::AbstractArray;
+        db::Bool = false,
+    )::@NamedTuple{
+        c::Array{ComplexF64, 3},
+        a::Array{Float64, 3},
+        p::Array{Float64, 3},
+        ph::Array{Float64, 3},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -234,7 +230,7 @@ function htransform(
         ch_idx, ep_idx = idx[1], idx[2]
         htransform_data = htransform(
             @view(s[ch_idx, :, ep_idx]),
-            db = db
+            db = db,
         )
         c[ch_idx, :, ep_idx] = htransform_data.c
         a[ch_idx, :, ep_idx] = htransform_data.a
@@ -243,7 +239,6 @@ function htransform(
     end
 
     return (; c, a, p, ph)
-
 end
 
 """
@@ -269,28 +264,29 @@ Named tuple:
 - `ph::Array{Float64, 3}: phases in radians
 """
 function transform(
-    s::AbstractArray;
-    pad::Int64 = 0,
-    h::Bool = false,
-    db::Bool = false,
-    nf::Bool = false
-)::@NamedTuple{
-    c::Array{ComplexF64, 3},
-    a::Array{Float64, 3},
-    p::Array{Float64, 3},
-    ph::Array{Float64, 3}
-}
+        s::AbstractArray;
+        pad::Int64 = 0,
+        h::Bool = false,
+        db::Bool = false,
+        nf::Bool = false,
+    )::@NamedTuple{
+        c::Array{ComplexF64, 3},
+        a::Array{Float64, 3},
+        p::Array{Float64, 3},
+        ph::Array{Float64, 3},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     if h
-        _warn("htransform() uses Hilbert transform, the signal should be narrowband for best results.")
-        return htransform(s, db = db)
+        _warn(
+            "htransform() uses Hilbert transform, the signal should be narrowband for best results.",
+        )
+        return htransform(s; db = db)
     else
-        return ftransform(s, pad = pad, db = db, nf = nf)
+        return ftransform(s; pad = pad, db = db, nf = nf)
     end
-
 end
 
 """
@@ -316,30 +312,31 @@ Named tuple:
 - `ph::Array{Float64, 3}: phases in radians
 """
 function transform(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    h::Bool = false,
-    db::Bool = false,
-    nf::Bool = false
-)::@NamedTuple{
-    c::Array{ComplexF64, 3},
-    a::Array{Float64, 3},
-    p::Array{Float64, 3},
-    ph::Array{Float64, 3}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        h::Bool = false,
+        db::Bool = false,
+        nf::Bool = false,
+    )::@NamedTuple{
+        c::Array{ComplexF64, 3},
+        a::Array{Float64, 3},
+        p::Array{Float64, 3},
+        ph::Array{Float64, 3},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return transform(
-        obj.data[ch, :, :],
+        obj.data[ch, :, :];
         pad = pad,
         h = h,
         db = db,
-        nf = nf
+        nf = nf,
     )
-
 end
 
 """
@@ -356,11 +353,9 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 - `Vector{ComplexF64}`: complex analytic signal
 """
 function hanalytic(s::AbstractVector)::Vector{ComplexF64}
-
     ha = DSP.hilbert(s)
 
     return ha
-
 end
 
 """
@@ -399,7 +394,6 @@ function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
     end
 
     return ha
-
 end
 
 """
@@ -418,13 +412,14 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 - `Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function hanalytic(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::Array{ComplexF64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{ComplexF64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return NeuroAnalyzer.hanalytic(@view(obj.data[ch, :, :]))
-
 end

@@ -33,18 +33,19 @@ Named tuple:
 1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
 function dpli(
-    s1::AbstractVector,
-    s2::AbstractVector
-)::@NamedTuple{
-    pv::Float64,
-    sd::Vector{Float64},
-    phd::Vector{Float64},
-    s1ph::Vector{Float64},
-    s2ph::Vector{Float64}
-}
+        s1::AbstractVector,
+        s2::AbstractVector,
+    )::@NamedTuple{
+        pv::Float64,
+        sd::Vector{Float64},
+        phd::Vector{Float64},
+        s1ph::Vector{Float64},
+        s2ph::Vector{Float64},
+    }
 
     # validate
-    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) ||
+        throw(ArgumentError("Both signals must have the same length."))
 
     # extract instantaneous phase via Hilbert transform
     h1 = htransform(s1)
@@ -62,16 +63,15 @@ function dpli(
     # r1: 0 < phd < π → s1 leads s2
     # r2: −π < phd < 0 → s2 leads s1
     # r3: phd == 0 → instantaneously synchronous (no direction)
-    r1 = count(x ->  0 <  x <  π, phd)
-    r2 = count(x -> -π <  x <  0, phd)   # kept for completeness; cancels in formula
-    r3 = count(x ->  x == 0,      phd)
+    r1 = count(x -> 0 < x < π, phd)
+    r2 = count(x -> -π < x < 0, phd)   # kept for completeness; cancels in formula
+    r3 = count(x -> x == 0, phd)
 
     # dPLI: fraction of time s1 leads s2, with ties counting as 0.5
     # r2 cancels out of the numerator - only r1 and the tie-break matter
     pv = (r1 + 0.5 * r3) / length(s1)
 
     return (; pv, sd, phd, s1ph, s2ph)
-
 end
 
 """
@@ -111,25 +111,33 @@ Named tuple:
 1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
 function dpli(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::@NamedTuple{
-    pv::Matrix{Float64},
-    sd::Array{Float64, 3},
-    phd::Array{Float64, 3},
-    s1ph::Array{Float64, 3},
-    s2ph::Array{Float64, 3}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::@NamedTuple{
+        pv::Matrix{Float64},
+        sd::Array{Float64, 3},
+        phd::Array{Float64, 3},
+        s1ph::Array{Float64, 3},
+        s2ph::Array{Float64, 3},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     (length(ch1) == length(ch2)) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -138,7 +146,11 @@ function dpli(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
     (length(ep1) == length(ep2)) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
@@ -147,7 +159,7 @@ function dpli(
     # number of epochs
     ep_n = length(ep1)
     # epoch length
-    ep_len  = epoch_len(obj1)
+    ep_len = epoch_len(obj1)
 
     # pre-allocate outputs
     pv = zeros(ch_n, ep_n)
@@ -171,7 +183,6 @@ function dpli(
     end
 
     return (; pv, sd, phd, s1ph, s2ph)
-
 end
 
 """
@@ -200,10 +211,15 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
-function dpli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function dpli(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -226,5 +242,4 @@ function dpli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(pv)
-
 end

@@ -19,18 +19,26 @@ Compute the Pearson correlation between paired channels across two NEURO objects
 - `Matrix{Float64}`: correlation coefficients, shape (channels, epochs)
 """
 function corr(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
+    length(ch1) == length(ch2) || throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -39,7 +47,11 @@ function corr(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
     length(ep1) == length(ep2) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
@@ -61,7 +73,6 @@ function corr(
     end
 
     return cr
-
 end
 
 """
@@ -78,10 +89,15 @@ Compute the Pearson correlation between all channel pairs within a NEURO object.
 
 - `Array{Float64, 3}`: correlation coefficient, shape `(channels, channels, epochs)`
 """
-function corr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function corr(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -105,5 +121,4 @@ function corr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(cr)
-
 end

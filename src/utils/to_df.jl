@@ -29,5 +29,4 @@ function to_df(obj::NeuroAnalyzer.NEURO)::DataFrame
     DataFrames.rename!(df, vcat(:time, Symbol.(labels(obj))))
 
     return df
-
 end

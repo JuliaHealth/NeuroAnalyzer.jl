@@ -31,7 +31,6 @@ function linspace(start::Real, stop::Real, n::Int64)::Vector{Float64}
     n >= 2 || throw(ArgumentError("n must be ≥ 2."))
 
     return collect(range(start, stop, n))
-
 end
 
 """
@@ -58,7 +57,6 @@ function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
     stop > 0 || throw(ArgumentError("stop must be > 0."))
 
     return Float64.(logrange(start, stop, n))
-
 end
 
 """
@@ -77,9 +75,7 @@ Selects the element that maximises `|x|²` (equivalent to maximising `|x|`).
 - `ComplexF64`: element of `x` with the largest absolute value
 """
 function cmax(x::Vector{<:Complex})::ComplexF64
-
     return argmax(abs2, x)
-
 end
 
 """
@@ -98,9 +94,7 @@ Selects the element that minimises `|x|²` (equivalent to minimising `|x|`).
 - `ComplexF64`: element of `x` with the smallest absolute value
 """
 function cmin(x::Vector{<:Complex})::ComplexF64
-
     return argmin(abs2, x)
-
 end
 
 """
@@ -119,9 +113,7 @@ Tuple containing:
 - `ComplexF64`: element with the smallest absolute value (`cmin`)
 """
 function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64, ComplexF64}
-
     return (cmax(x), cmin(x))
-
 end
 
 """
@@ -153,7 +145,6 @@ function cums(s::Array{<:Real, 3})::Array{Float64, 3}
     end
 
     return csa
-
 end
 
 """
@@ -173,10 +164,9 @@ Computes the Euclidean distance from every element of `m` to `p` and returns the
 - `Tuple{Int64, Int64}`: `(row, column)` of the nearest position in `m`
 """
 function f_nearest(
-    m::Matrix{Tuple{Float64, Float64}},
-    p::Tuple{Float64, Float64}
-)::Tuple{Int64, Int64}
-
+        m::Matrix{Tuple{Float64, Float64}},
+        p::Tuple{Float64, Float64},
+    )::Tuple{Int64, Int64}
     d = zeros(size(m))
 
     @inbounds for idx1 in axes(m, 1), idx2 in axes(m, 2)
@@ -187,7 +177,6 @@ function f_nearest(
     _, ci = findmin(d)
 
     return (ci[1], ci[2])
-
 end
 
 """
@@ -207,9 +196,9 @@ The formula is `nt = floor(df × T) - 1`, where `T = epoch_len / fs` is the epoc
 - `Int64`: recommended number of Slepian tapers (≥ 1)
 """
 function ntapers(
-    obj::NeuroAnalyzer.NEURO;
-    df::Real
-)::Int64
+        obj::NeuroAnalyzer.NEURO;
+        df::Real,
+    )::Int64
 
     # validate that df lies within (0, Nyquist)
     _bin(df, (0, sr(obj) / 2))
@@ -220,7 +209,6 @@ function ntapers(
 
     # guard: the formula can yield 0 or negative for very coarse resolution
     return max(nt, 1)
-
 end
 
 """
@@ -239,10 +227,10 @@ Return a single channel's signal in trials × time format.
 - `Matrix{Float64}`: matrix of shape `(n_epochs, epoch_len)`
 """
 function trtm(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj))
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
+    )::Matrix{Float64}
 
     # validate
     _check_epochs(obj, ep)
@@ -254,5 +242,4 @@ function trtm(
     ch = ch[1]
 
     return Matrix(obj.data[ch, :, ep]')
-
 end

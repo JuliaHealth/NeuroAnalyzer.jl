@@ -19,19 +19,19 @@ Average EEG/MEG epochs and prepend the average as epoch 1. Non-signal channels a
 - `NeuroAnalyzer.NEURO`
 """
 function average_epochs(
-    obj::NeuroAnalyzer.NEURO;
-    bl::Tuple{Real, Real} = (0, 0),
-    blfirst::Bool = false
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        bl::Tuple{Real, Real} = (0, 0),
+        blfirst::Bool = false,
+    )::NeuroAnalyzer.NEURO
 
     # validate
     _check_datatype(obj, ["eeg", "meg"])
 
-    nchannels(obj) > length(get_channel(obj, type = datatype(obj))) &&
+    nchannels(obj) > length(get_channel(obj; type = datatype(obj))) &&
         _warn("Non-signal channels will be removed.")
 
     obj_new = if datatype(obj) == "eeg"
-        keep_channel(obj; ch = get_channel(obj, type = datatype(obj)))
+        keep_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     else
         keep_channel(obj; ch = ["meg", "mag", "grad"])
     end
@@ -50,8 +50,12 @@ function average_epochs(
     end
 
     # prepend the trial average as epoch 1; original epochs follow
-    obj_new.data = cat(mean(obj_new.data, dims
- = 3), obj_new.data, dims = 3)
+    obj_new.data = cat(
+        mean(
+            obj_new.data; dims
+            = 3
+        ), obj_new.data; dims = 3
+    )
 
     obj_new.header.recording[:data_type] = datatype(obj) == "eeg" ? "erp" : "erf"
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
@@ -75,7 +79,6 @@ function average_epochs(
     push!(obj_new.history, "average_epochs(OBJ, bl=$bl, blfirst=$blfirst)")
 
     return obj_new
-
 end
 
 """
@@ -94,12 +97,11 @@ Average EEG/MEG epochs in-place and prepend the average as epoch 1. Non-signal c
 - `Nothing`
 """
 function average_epochs!(
-    obj::NeuroAnalyzer.NEURO;
-    bl::Tuple{Real, Real} = (0, 0),
-    blfirst::Bool = false
-)::Nothing
-
-    obj_new = average_epochs(obj, bl = bl, blfirst = blfirst)
+        obj::NeuroAnalyzer.NEURO;
+        bl::Tuple{Real, Real} = (0, 0),
+        blfirst::Bool = false,
+    )::Nothing
+    obj_new = average_epochs(obj; bl = bl, blfirst = blfirst)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.header = obj_new.header
@@ -108,7 +110,6 @@ function average_epochs!(
     obj.markers = obj_new.markers
 
     return nothing
-
 end
 
 """
@@ -126,15 +127,20 @@ Sort epochs 2:end of an ERP/ERF object according to a permutation vector. Epoch 
 - `NeuroAnalyzer.NEURO`
 """
 function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.NEURO
-
     _check_datatype(obj, ["erp", "erf"])
     length(s) == nepochs(obj) - 1 ||
-        throw(ArgumentError(
-            "Length of s must be $(nepochs(obj) - 1) (number of non-average epochs)."))
+        throw(
+        ArgumentError(
+            "Length of s must be $(nepochs(obj) - 1) (number of non-average epochs)."
+        ),
+    )
 
     all(i -> 2 <= i <= nepochs(obj), s) ||
-        throw(ArgumentError(
-            "All values in s must be in 2:$(nepochs(obj)); epoch 1 is the average and cannot be reordered."))
+        throw(
+        ArgumentError(
+            "All values in s must be in 2:$(nepochs(obj)); epoch 1 is the average and cannot be reordered.",
+        ),
+    )
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -144,7 +150,6 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
     push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
 
     return obj_new
-
 end
 
 """
@@ -162,12 +167,10 @@ Sort epochs 2:end in-place of an ERP/ERF object according to a permutation vecto
 - `Nothing`
 """
 function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
-
-    obj_new = sort_epochs(obj, s = s)
+    obj_new = sort_epochs(obj; s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
     return nothing
-
 end

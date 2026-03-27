@@ -34,15 +34,15 @@ Named tuple:
 Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
 function itpc(
-    s::AbstractArray;
-    t::Int64,
-    w::Union{AbstractVector, Nothing} = nothing
-)::@NamedTuple{
-    itpcv::Float64,
-    itpcz::Float64,
-    itpca::Float64,
-    itpcph::Vector{Float64}
-}
+        s::AbstractArray;
+        t::Int64,
+        w::Union{AbstractVector, Nothing} = nothing,
+    )::@NamedTuple{
+        itpcv::Float64,
+        itpcz::Float64,
+        itpca::Float64,
+        itpcph::Vector{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -58,7 +58,11 @@ function itpc(
     isnothing(w) && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    length(w) == ep_n || throw(ArgumentError("Length of w ($(length(w))) and number of epochs ($ep_n) must be equal."))
+    length(w) == ep_n || throw(
+        ArgumentError(
+            "Length of w ($(length(w))) and number of epochs ($ep_n) must be equal.",
+        ),
+    )
 
     # compute instantaneous phase for every epoch
     s_phase = zeros(size(s, 2), ep_n)
@@ -71,12 +75,11 @@ function itpc(
     # compute mean weighted complex phasor once; reuse for val, ang, and z_val
     mphasor = mean(Base.cis.(itpcph) .* w)
 
-    itpcv  = abs(mphasor)
-    itpca  = DSP.angle(mphasor)
+    itpcv = abs(mphasor)
+    itpca = DSP.angle(mphasor)
     itpcz = ep_n * itpcv^2
 
     return (; itpcv, itpcz, itpca, itpcph)
-
 end
 
 """
@@ -109,23 +112,25 @@ Named tuple:
 - `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape (channels, epochs)
 """
 function itpc(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    t::Real,
-    w::Union{Vector{<:Real}, Nothing} = nothing
-)::@NamedTuple{
-    itpcv::Vector{Float64},
-    itpcz::Vector{Float64},
-    itpca::Vector{Float64},
-    itpcph::Matrix{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        t::Real,
+        w::Union{Vector{<:Real}, Nothing} = nothing,
+    )::@NamedTuple{
+        itpcv::Vector{Float64},
+        itpcz::Vector{Float64},
+        itpca::Vector{Float64},
+        itpcph::Matrix{Float64},
+    }
 
     # number of epochs
     ep_n = nepochs(obj)
     ep_n >= 2 || throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
     ch_n = length(ch)
 
     # get time point index
@@ -141,10 +146,10 @@ function itpc(
         @inbounds begin
             itpc_data = itpc(
                 reshape(
-                    @view(obj.data[ch[ch_idx], :, :]), 1, size(obj.data, 2), ep_n
+                    @view(obj.data[ch[ch_idx], :, :]), 1, size(obj.data, 2), ep_n,
                 ),
                 t = t_idx,
-                w = w
+                w = w,
             )
             itpcv[ch_idx] = itpc_data.itpcv
             itpcz[ch_idx] = itpc_data.itpcz
@@ -154,7 +159,6 @@ function itpc(
     end
 
     return (; itpcv, itpcz, itpca, itpcph)
-
 end
 
 """
@@ -185,14 +189,14 @@ Named tuple:
 - `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape (channels, epochs)
 """
 function itpc_spec(
-    s::AbstractArray;
-    w::Union{AbstractVector, Nothing} = nothing
-)::@NamedTuple{
-    itpcv::Vector{Float64},
-    itpcz::Vector{Float64},
-    itpca::Vector{Float64},
-    itpcph::Matrix{Float64}
-}
+        s::AbstractArray;
+        w::Union{AbstractVector, Nothing} = nothing,
+    )::@NamedTuple{
+        itpcv::Vector{Float64},
+        itpcz::Vector{Float64},
+        itpca::Vector{Float64},
+        itpcph::Matrix{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -204,7 +208,11 @@ function itpc_spec(
     w === nothing && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    length(w) == ep_n || throw(ArgumentError("Length of w ($(length(w))) and number of epochs ($ep_n) must be equal."))
+    length(w) == ep_n || throw(
+        ArgumentError(
+            "Length of w ($(length(w))) and number of epochs ($ep_n) must be equal.",
+        ),
+    )
 
     # pre-allocate outputs
     itpcph = zeros(size(s, 2), ep_n)
@@ -219,13 +227,12 @@ function itpc_spec(
     for idx in axes(itpcph, 1)
         # hoist the mean phasor so it is computed once per time point, not twice
         mphasor = mean(Base.cis.(@view(itpcph[idx, :])) .* w)
-        itpcv[idx]  = abs(mphasor)
-        itpca[idx]  = DSP.angle(mphasor)
+        itpcv[idx] = abs(mphasor)
+        itpca[idx] = DSP.angle(mphasor)
         itpcz[idx] = ep_n * itpcv[idx]^2
     end
 
     return (; itpcv, itpcz, itpca, itpcph)
-
 end
 
 """
@@ -259,17 +266,17 @@ Named tuple:
 - `f::Vector{Float64}`: frequency vector
 """
 function itpc_spec(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    nfrq::Int64 = _tlength(flim),
-    frq::Symbol = :log,
-    w::Union{Vector{<:Real}, Nothing} = nothing
-)::@NamedTuple{
-    itpcs::Matrix{Float64},
-    itpczs::Matrix{Float64},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        nfrq::Int64 = _tlength(flim),
+        frq::Symbol = :log,
+        w::Union{Vector{<:Real}, Nothing} = nothing,
+    )::@NamedTuple{
+        itpcs::Matrix{Float64},
+        itpczs::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     _check_var(frq, [:log, :lin], "frq")
@@ -278,14 +285,17 @@ function itpc_spec(
 
     # build frequency vector; log scale requires a strictly positive lower bound
     if frq === :log
-        flim[1] > 0 || throw(ArgumentError("For :log scale, lower flim bound must be > 0 Hz."))
-        f = round.(logspace(flim[1], flim[2], nfrq), digits = 3)
+        flim[1] > 0 ||
+            throw(ArgumentError("For :log scale, lower flim bound must be > 0 Hz."))
+        f = round.(logspace(flim[1], flim[2], nfrq); digits = 3)
     else
         f = linspace(flim[1], flim[2], nfrq)
     end
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -300,7 +310,7 @@ function itpc_spec(
     itpczs = zeros(nfrq, ep_len)
 
     # initialize progress bar
-    progbar = Progress(nfrq, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(nfrq; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     Threads.@threads :static for frq_idx in 1:nfrq
 
@@ -313,19 +323,17 @@ function itpc_spec(
         @inbounds for ep_idx in 1:ep_n
             s_conv[1, :, ep_idx] = DSP.conv(
                 @view(obj.data[ch, :, ep_idx]),
-                kernel
+                kernel,
             )[(half_kernel - 1):(end - half_kernel)]
         end
 
         # compute the ITPC spectrogram for the convolved signal
         itpc_data = itpc_spec(s_conv, w = w)
-        itpcs[frq_idx, :]  = itpc_data.itpcv
+        itpcs[frq_idx, :] = itpc_data.itpcv
         itpczs[frq_idx, :] = itpc_data.itpcz
 
         progress_bar && next!(progbar)
-
     end
 
     return (; itpcs, itpczs, f)
-
 end

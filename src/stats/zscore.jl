@@ -24,7 +24,6 @@ function zscore(x::AbstractVector)::Vector{Float64}
     s != 0 || throw(ArgumentError("std(x) must not be zero."))
 
     return (x .- m) ./ s
-
 end
 
 """
@@ -50,5 +49,4 @@ function zscore(x::Real, m::Real, sd::Real)::Float64
     sd != 0 || throw(ArgumentError("sd must not be zero."))
 
     return (x - m) / sd
-
 end

@@ -16,25 +16,20 @@ Remove mean value (DC offset).
 - `Vector{Float64}`
 """
 function remove_dc(
-    s::AbstractVector,
-    n::Union{Int64, Tuple{Int64, Int64}} = 0
-)::Vector{Float64}
-
+        s::AbstractVector,
+        n::Union{Int64, Tuple{Int64, Int64}} = 0,
+    )::Vector{Float64}
     if isa(n, Int64)
-
         n >= 0 || throw(ArgumentError("n must be ≥ 0."))
         n <= length(s) || throw(ArgumentError("n must be ≤ $(length(s))."))
 
         return n == 0 ? s .- mean(s) : s .- mean(s[1:n])
 
     else
-
         n != (0, 0) && _check_tuple(n, (1, length(s)), "n")
 
         return n == (0, 0) ? s .- mean(s) : s .- mean(s[n[1]:n[2]])
-
     end
-
 end
 
 """
@@ -52,10 +47,9 @@ Remove mean value (DC offset).
 - `Matrix{Float64}`
 """
 function remove_dc(
-    s::AbstractMatrix,
-    n::Union{Int64, Tuple{Int64, Int64}} = 0
-)::Matrix{Float64}
-
+        s::AbstractMatrix,
+        n::Union{Int64, Tuple{Int64, Int64}} = 0,
+    )::Matrix{Float64}
     ch_n = size(s, 1)
 
     result = similar(s, Float64)
@@ -64,7 +58,6 @@ function remove_dc(
     end
 
     return result
-
 end
 
 """
@@ -81,8 +74,10 @@ Remove mean value (DC offset) for a 3-D signal array.
 
 - `Array{Float64, 3}`
 """
-function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Array{Float64, 3}
-
+function remove_dc(
+        s::AbstractArray,
+        n::Union{Int64, Tuple{Int64, Int64}} = 0,
+    )::Array{Float64, 3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -95,7 +90,6 @@ function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}} = 0)::
     end
 
     return s_new
-
 end
 
 """
@@ -114,10 +108,10 @@ Remove mean value (DC offset).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function remove_dc(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    n::Union{Int64, Tuple{Int64, Int64}} = 0
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        n::Union{Int64, Tuple{Int64, Int64}} = 0,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -129,7 +123,6 @@ function remove_dc(
     push!(result.history, "remove_dc(obj; ch=$ch, n=$n)")
 
     return obj_new
-
 end
 
 """
@@ -148,15 +141,13 @@ Remove mean value (DC offset).
 - `Nothing`
 """
 function remove_dc!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    n::Union{Int64, Tuple{Int64, Int64}} = 0
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        n::Union{Int64, Tuple{Int64, Int64}} = 0,
+    )::Nothing
     obj_new = remove_dc(obj; ch = ch, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

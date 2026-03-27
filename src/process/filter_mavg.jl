@@ -25,20 +25,21 @@ Samples within the threshold band `[mean(s) − t×std(s), mean(s) + t×std(s)]`
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
 """
 function filter_mavg(
-    s::AbstractVector;
-    k::Int64 = 8,
-    t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1)
-)::Vector{Float64}
+        s::AbstractVector;
+        k::Int64 = 8,
+        t::Real = 0,
+        ww::AbstractVector = ones(2 * k + 1),
+    )::Vector{Float64}
 
     # check k
     _in(k, (1, length(s) - 1), "k")
     # check weighting window
-    length(ww) == 2 * k + 1 || throw(ArgumentError("length(ww) must be 2k + 1 ($(2k + 1))."))
+    length(ww) == 2 * k + 1 ||
+        throw(ArgumentError("length(ww) must be 2k + 1 ($(2k + 1))."))
 
     # cache threshold bounds once
     s_mean = mean(s)
-    s_std  = std(s)
+    s_std = std(s)
     lo = s_mean - t * s_std
     hi = s_mean + t * s_std
 
@@ -72,7 +73,6 @@ function filter_mavg(
     end
 
     return s_filtered
-
 end
 
 """
@@ -93,11 +93,11 @@ Apply a weighted moving average filter to every channel × epoch slice of a 3-D 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_mavg(
-    s::AbstractArray;
-    k::Int64 = 8,
-    t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1)
-)::Array{Float64, 3}
+        s::AbstractArray;
+        k::Int64 = 8,
+        t::Real = 0,
+        ww::AbstractVector = ones(2 * k + 1),
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -113,11 +113,11 @@ function filter_mavg(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_filtered[ch_idx, :, ep_idx] = filter_mavg(@view(s[ch_idx, :, ep_idx]), k=k, t=t, ww=ww)
+        s_filtered[ch_idx, :, ep_idx] =
+            filter_mavg(@view(s[ch_idx, :, ep_idx]), k = k, t = t, ww = ww)
     end
 
     return s_filtered
-
 end
 
 """
@@ -139,15 +139,15 @@ Apply a weighted moving average filter to selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_mavg(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    k::Int64 = 8,
-    t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1)
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        k::Int64 = 8,
+        t::Real = 0,
+        ww::AbstractVector = ones(2 * k + 1),
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch=ch)
+    ch = get_channel(obj; ch = ch)
 
     # sampling rate
     fs = sr(obj)
@@ -155,21 +155,20 @@ function filter_mavg(
     # window length
     wlen = 2 * k + 1
     _info("Window length: $wlen samples")
-    _info("Approximate cutoff: $(round(0.442947 / sqrt(wlen^2 - 1) * fs, digits=2)) Hz")
+    _info("Approximate cutoff: $(round(0.442947 / sqrt(wlen^2 - 1) * fs, digits = 2)) Hz")
     for z in 1:4
-        _info("Zero $z at: $(round(z * fs / k, digits=2)) Hz")
+        _info("Zero $z at: $(round(z * fs / k, digits = 2)) Hz")
     end
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = filter_mavg(
-        @view(obj.data[ch, :, :]), k=k, t=t, ww=ww
+        @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
     )
     push!(obj_new.history, "filter_mavg(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
 
     return obj_new
-
 end
 
 """
@@ -191,17 +190,15 @@ Apply a weighted moving average filter in-place to selected channels of a NEURO 
 - `Nothing`
 """
 function filter_mavg!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    k::Int64 = 8,
-    t::Real = 0,
-    ww::AbstractVector = ones(2 * k + 1)
-)::Nothing
-
-    obj_new = filter_mavg(obj; ch=ch, k=k, t=t, ww=ww)
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        k::Int64 = 8,
+        t::Real = 0,
+        ww::AbstractVector = ones(2 * k + 1),
+    )::Nothing
+    obj_new = filter_mavg(obj; ch = ch, k = k, t = t, ww = ww)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

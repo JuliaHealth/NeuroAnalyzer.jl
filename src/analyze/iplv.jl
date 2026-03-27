@@ -31,18 +31,19 @@ Named tuple:
 Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function iplv(
-    s1::AbstractVector,
-    s2::AbstractVector
-)::@NamedTuple{
-    ipl::Float64,
-    sd::Vector{Float64},
-    phd::Vector{Float64},
-    s1ph::Vector{Float64},
-    s2ph::Vector{Float64}
-}
+        s1::AbstractVector,
+        s2::AbstractVector,
+    )::@NamedTuple{
+        ipl::Float64,
+        sd::Vector{Float64},
+        phd::Vector{Float64},
+        s1ph::Vector{Float64},
+        s2ph::Vector{Float64},
+    }
 
     # validate
-    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) ||
+        throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous phases via Hilbert transform
     h1 = htransform(s1)
@@ -51,14 +52,13 @@ function iplv(
     s2ph = h2.ph
 
     # signal and phase differences
-    sd  = s1 .- s2
+    sd = s1 .- s2
     phd = s1ph .- s2ph
 
     # IPLV
     ipl = abs(imag(mean(Base.cis.(phd)))) # cis.(phd) = exp.(im .* phd)
 
     return (ipl = ipl, sd = sd, phd = phd, s1ph = s1ph, s2ph = s2ph)
-
 end
 
 """
@@ -96,25 +96,33 @@ Named tuple:
 Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function iplv(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::@NamedTuple{
-    ipl::Matrix{Float64},
-    sd::Array{Float64, 3},
-    phd::Array{Float64, 3},
-    s1ph::Array{Float64, 3},
-    s2ph::Array{Float64, 3}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::@NamedTuple{
+        ipl::Matrix{Float64},
+        sd::Array{Float64, 3},
+        phd::Array{Float64, 3},
+        s1ph::Array{Float64, 3},
+        s2ph::Array{Float64, 3},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -123,7 +131,11 @@ function iplv(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
     length(ep1) == length(ep2) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
@@ -148,13 +160,12 @@ function iplv(
         )
         ipl[ch_idx, ep_idx] = iplv_data.ipl
         sd[ch_idx, :, ep_idx] = iplv_data.sd
-        phd[ch_idx, :, ep_idx]  = iplv_data.phd
+        phd[ch_idx, :, ep_idx] = iplv_data.phd
         s1ph[ch_idx, :, ep_idx] = iplv_data.s1ph
         s2ph[ch_idx, :, ep_idx] = iplv_data.s2ph
     end
 
     return (; ipl, sd, phd, s1ph, s2ph)
-
 end
 
 """
@@ -181,10 +192,15 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
-function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function iplv(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -201,7 +217,7 @@ function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 in 1:ch_idx1 - 1
+        for ch_idx2 in 1:(ch_idx1 - 1)
             ipl[ch_idx1, ch_idx2, ep_idx] = iplv(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx]),
@@ -211,5 +227,4 @@ function iplv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(ipl)
-
 end

@@ -25,7 +25,8 @@ function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
 
     # validate
     size(header, 1) == 1 || throw(ArgumentError("header must be a single-row matrix."))
-    size(header, 2) == size(data, 2) || throw(ArgumentError("header and data must have the same number of columns."))
+    size(header, 2) == size(data, 2) ||
+        throw(ArgumentError("header and data must have the same number of columns."))
 
     # convert any Integer cells to String to avoid type-display inconsistencies;
     # iterate with CartesianIndices to cover all dimensions safely
@@ -34,13 +35,12 @@ function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
     end
 
     pretty_table(
-        cat(header, data, dims=1),
+        cat(header, data; dims = 1);
         body_hlines = [1],
         cell_alignment = Dict((1, 1) => :l),
         formatters = ft_printf("%1.3f", 2:3),
-        show_header = false
+        show_header = false,
     )
 
     return nothing
-
 end

@@ -30,24 +30,24 @@ Calculate peak frequency within a frequency band for a 1-D signal vector.
 - `Float64`: peak frequency
 """
 function peak_frq(
-    s::AbstractVector;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Float64
+        s::AbstractVector;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Float64
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
-        s,
+        s;
         fs = fs,
         db = false,
         method = method,
@@ -56,7 +56,7 @@ function peak_frq(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
     pw = psd_data.p
     pf = psd_data.f
@@ -68,8 +68,6 @@ function peak_frq(
     pf = pf[f1_idx + peak_offset - 1]
 
     return pf
-
-
 end
 
 """
@@ -100,17 +98,17 @@ Calculate peak frequency within a frequency band for a 3-D signal array.
 - `Matrix{Float64}`: peak frequency, shape (channels, epochs)
 """
 function peak_frq(
-    s::AbstractArray;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        s::AbstractArray;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -136,12 +134,11 @@ function peak_frq(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean
+            demean = demean,
         )
     end
 
     return pf
-
 end
 
 """
@@ -171,23 +168,25 @@ Calculate peak frequency within a frequency band for a NEURO object.
 - `Matrix{Float64}`: peak frequency, shape (channels, epochs)
 """
 function peak_frq(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return peak_frq(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
         method = method,
@@ -196,11 +195,9 @@ function peak_frq(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
-
 end
-
 
 """
     peak_amp(s; <keyword arguments>)
@@ -230,24 +227,24 @@ Calculate amplitude at the peak frequency within a frequency band.
 - `Float64`: amplitude at peak frequency
 """
 function peak_amp(
-    s::AbstractVector;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Float64
+        s::AbstractVector;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Float64
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
-        s,
+        s;
         fs = fs,
         db = false,
         method = method,
@@ -256,7 +253,7 @@ function peak_amp(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
     pw = psd_data.p
     pf = psd_data.f
@@ -266,7 +263,6 @@ function peak_amp(
 
     # amplitude = √(peak power) in the band
     return sqrt(maximum(@view(pw[f1_idx:f2_idx])))
-
 end
 
 """
@@ -297,17 +293,17 @@ Calculate amplitude at peak frequency within a frequency band for a 3-D signal a
 - `Matrix{Float64}`: amplitude at peak frequency, shape (channels, epochs)
 """
 function peak_amp(
-    s::AbstractArray;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        s::AbstractArray;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -333,12 +329,11 @@ function peak_amp(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean
+            demean = demean,
         )
     end
 
     return pa
-
 end
 
 """
@@ -368,23 +363,25 @@ Calculate amplitude at peak frequency within a frequency band for a NEURO object
 - `Matrix{Float64}`: amplitude at peak frequency, shape (channels, epochs)
 """
 function peak_amp(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return peak_amp(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
         method = method,
@@ -393,9 +390,8 @@ function peak_amp(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
-
 end
 
 """
@@ -426,24 +422,24 @@ Calculate power at the peak frequency within a frequency band.
 - `Float64`: power at peak frequency
 """
 function peak_pow(
-    s::AbstractVector;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Float64
+        s::AbstractVector;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Float64
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     psd_data = psd(
-        s,
+        s;
         fs = fs,
         db = false,
         method = method,
@@ -452,7 +448,7 @@ function peak_pow(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
     pw = psd_data.p
     pf = psd_data.f
@@ -461,9 +457,7 @@ function peak_pow(
     f2_idx = vsearch(flim[2], pf)
 
     return maximum(@view(pw[f1_idx:f2_idx]))
-
 end
-
 
 """
     peak_pow(s; <keyword arguments>)
@@ -493,17 +487,17 @@ Calculate power at peak frequency within a frequency band for a 3-D signal array
 - `pp::Matrix{Float64}`: peak power, shape (channels, epochs)
 """
 function peak_pow(
-    s::AbstractArray;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        s::AbstractArray;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -530,12 +524,11 @@ function peak_pow(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean
+            demean = demean,
         )
     end
 
     return pp
-
 end
 
 """
@@ -565,23 +558,25 @@ Calculate power at peak frequency within a frequency band for a NEURO object.
 - `Matrix{Float64}`: peak power, shape (channels, epochs)
 """
 function peak_pow(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return peak_pow(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
         method = method,
@@ -590,7 +585,6 @@ function peak_pow(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
-
 end

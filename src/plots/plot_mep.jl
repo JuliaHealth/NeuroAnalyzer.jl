@@ -22,22 +22,22 @@ Plot MEP (single channel).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_mep(
-    t::Union{AbstractVector, AbstractRange},
-    s::AbstractVector;
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    zl::Bool = true,
-    yrev::Bool = false,
-    mono::Bool = false
-)::GLMakie.Figure
+        t::Union{AbstractVector, AbstractRange},
+        s::AbstractVector;
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        zl::Bool = true,
+        yrev::Bool = false,
+        mono::Bool = false,
+    )::GLMakie.Figure
 
     # prepare plot
-    GLMakie.activate!(title = "plot_mep()")
+    GLMakie.activate!(; title = "plot_mep()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -55,7 +55,7 @@ function plot_mep(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -73,7 +73,6 @@ function plot_mep(
     GLMakie.lines!(ax, t, s; color = :black, linewidth = 1)
 
     return fig
-
 end
 
 """
@@ -112,19 +111,18 @@ function plot_mep(
         ci95::Bool = false,
         leg::Bool = true,
         zl::Bool = true,
-        mono::Bool = false
+        mono::Bool = false,
     )::GLMakie.Figure
-
     pal = mono ? :grays : :darktest
 
     ch_n = size(s, 1)
 
     # prepare plot
-    GLMakie.activate!(title = "plot_mep()")
+    GLMakie.activate!(; title = "plot_mep()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -142,7 +140,7 @@ function plot_mep(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -175,13 +173,13 @@ function plot_mep(
             GLMakie.lines!(
                 ax,
                 t,
-                s[idx, :],
+                s[idx, :];
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 1,
                 alpha = avg ? 0.25 : 1.0,
-                label = clabels[idx]
+                label = clabels[idx],
             )
         end
     end
@@ -189,9 +187,9 @@ function plot_mep(
     # plot averaged MEP
     if avg
         if ch_n == 1
-            s = mean(s, dims = 2)[:]
+            s = mean(s; dims = 2)[:]
         else
-            s = mean(s, dims = 1)[:]
+            s = mean(s; dims = 1)[:]
         end
         GLMakie.lines!(ax, t, s; color = :black, linewidth = 2)
     end
@@ -199,7 +197,6 @@ function plot_mep(
     (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
 
     return fig
-
 end
 
 """
@@ -238,10 +235,13 @@ function plot_mep_stack(
         smooth::Bool = false,
         ks::Int64 = 3,
         zl::Bool = true,
-        mono::Bool = false
+        mono::Bool = false,
     )::GLMakie.Figure
-
-    !(length(t) == size(s, 2)) && throw(ArgumentError("Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."))
+    !(length(t) == size(s, 2)) && throw(
+        ArgumentError(
+            "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t))).",
+        ),
+    )
 
     pal = mono ? :grays : :darktest
 
@@ -250,11 +250,11 @@ function plot_mep_stack(
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_mep()")
+    GLMakie.activate!(; title = "plot_mep()")
     plot_size = size(s, 1) <= 64 ? (1200, 800) : (1200, 1200)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -270,7 +270,7 @@ function plot_mep_stack(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -291,7 +291,6 @@ function plot_mep_stack(
     end
 
     return fig
-
 end
 
 """
@@ -327,25 +326,25 @@ Plot MEP.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_mep(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    xlabel::String = "default",
-    ylabel::String = "default",
-    title::String = "default",
-    cb::Bool = true,
-    cb_title::String = "default",
-    peaks::Symbol=:detect,
-    leg::Bool = true,
-    type::Symbol = :normal,
-    yrev::Bool = false,
-    avg::Bool = true,
-    ci95::Bool = false,
-    smooth::Bool = false,
-    ks::Int64 = 3,
-    zl::Bool = true,
-    mono::Bool = false,
-    gui::Bool = false
-)::GLMakie.Figure
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        xlabel::String = "default",
+        ylabel::String = "default",
+        title::String = "default",
+        cb::Bool = true,
+        cb_title::String = "default",
+        peaks::Symbol = :detect,
+        leg::Bool = true,
+        type::Symbol = :normal,
+        yrev::Bool = false,
+        avg::Bool = true,
+        ci95::Bool = false,
+        smooth::Bool = false,
+        ks::Int64 = 3,
+        zl::Bool = true,
+        mono::Bool = false,
+        gui::Bool = false,
+    )::GLMakie.Figure
 
     # validate
     _check_datatype(obj, "mep")
@@ -353,7 +352,9 @@ function plot_mep(
     _check_var(peaks, [:detect, :embed, :off], "peaks")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
     (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
         throw(ArgumentError("All channels must be of the same type."))
 
@@ -376,16 +377,27 @@ function plot_mep(
 
     if length(ch) == 1
         xl, yl, tt = NeuroAnalyzer._set_defaults(
-            xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude, channel: $(clabels[1])"
-        )
-        fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt, mono = mono, yrev = yrev, zl = zl)
-    elseif type === :normal
-        xl, yl, tt = NeuroAnalyzer._set_defaults(
-            xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude, $(length(ch)) channels"
+            xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]",
+            "MEP amplitude, channel: $(clabels[1])",
         )
         fig = plot_mep(
             t,
-            s,
+            s;
+            xlabel = xl,
+            ylabel = yl,
+            title = tt,
+            mono = mono,
+            yrev = yrev,
+            zl = zl,
+        )
+    elseif type === :normal
+        xl, yl, tt = NeuroAnalyzer._set_defaults(
+            xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]",
+            "MEP amplitude, $(length(ch)) channels",
+        )
+        fig = plot_mep(
+            t,
+            s;
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -395,14 +407,21 @@ function plot_mep(
             avg = avg,
             ci95 = ci95,
             leg = leg,
-            zl = zl
+            zl = zl,
         )
     elseif type === :stack
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "MEP amplitude, $(length(ch)) channels")
+        xl, yl, tt = _set_defaults(
+            xlabel,
+            ylabel,
+            title,
+            "Time [ms]",
+            "",
+            "MEP amplitude, $(length(ch)) channels",
+        )
         cb_title == "default" && (cb_title = "Amplitude [$units]")
         fig = plot_mep_stack(
             t,
-            s,
+            s;
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -412,7 +431,7 @@ function plot_mep(
             mono = mono,
             ks = ks,
             smooth = smooth,
-            zl = zl
+            zl = zl,
         )
     end
 
@@ -422,15 +441,18 @@ function plot_mep(
             if peaks === :detect
                 pp = mep_peaks(obj)
             elseif peaks === :embed
-                pp = hcat(obj.header.recording[:markers_pos], obj.header.recording[:markers_neg])
+                pp = hcat(
+                    obj.header.recording[:markers_pos],
+                    obj.header.recording[:markers_neg],
+                )
             end
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[ch, 1]][1],
-                obj.data[ch, pp[ch, 1], 1][1],
+                obj.data[ch, pp[ch, 1], 1][1];
                 marker = :xcross,
                 color = mono ? :black : :red,
-                markersize = 15
+                markersize = 15,
             )
             GLMakie.scatter!(
                 fig[1, 1],
@@ -438,32 +460,36 @@ function plot_mep(
                 obj.data[ch, pp[ch, 2], 1][1];
                 marker = :xcross,
                 color = mono ? :black : :blue,
-                markersize = 15
+                markersize = 15,
             )
             _info("Positive peak time: $(round(t[pp[ch, 1]][1] * 1000, digits = 0)) ms")
-            _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1], digits = 2)) $units")
+            _info(
+                "Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1], digits = 2)) $units",
+            )
             _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000, digits = 0)) ms")
-            _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1], digits = 2)) $units")
+            _info(
+                "Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1], digits = 2)) $units",
+            )
         elseif length(ch) > 1 && type === :normal
-            mep_tmp = mean(obj.data[ch, :, 1], dims = 1)[:, :, :]
+            mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)[:, :, :]
             obj_tmp = keep_channel(obj; ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
             pp = mep_peaks(obj_tmp)
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[1, 1]],
-                mep_tmp[pp[1, 1]],
-                 marker = :xcross,
-                 color = mono ? :black : :red,
-                 markersize = 15
+                mep_tmp[pp[1, 1]];
+                marker = :xcross,
+                color = mono ? :black : :red,
+                markersize = 15,
             )
             GLMakie.scatter!(
                 fig[1, 1],
                 t[pp[1, 2]],
-                mep_tmp[pp[1, 2]],
+                mep_tmp[pp[1, 2]];
                 marker = :xcross,
                 color = mono ? :black : :blue,
-                markersize = 15
+                markersize = 15,
             )
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits = 0)) ms")
             _info("Positive peak amplitude: $(round(mep_tmp[pp[1, 1]], digits = 2)) $units")
@@ -473,5 +499,4 @@ function plot_mep(
     end
 
     return fig
-
 end

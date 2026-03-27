@@ -41,21 +41,21 @@ Named tuple:
 Setting `demean=true` reduces (but doesn't fully eliminate) DC contamination; the 0 Hz bin is still present in the output.
 """
 function psd(
-    s::AbstractVector;
-    fs::Int64,
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Vector{Float64},
-    f::Vector{Float64}
-}
+        s::AbstractVector;
+        fs::Int64,
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Vector{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
@@ -69,57 +69,49 @@ function psd(
     n = length(s)
 
     if method === :mt
-        
         demean && (s = remove_dc(s))
         win = w ? hanning(n) : ones(n)
-        pg = mt_pgram(s .* win, fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
+        pg = mt_pgram(s .* win; fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
         f = Vector(freq(pg))
         p = power(pg)[1:length(f)]
         db && (p = pow2db.(p))
 
     elseif method === :stft
-
         demean && (s = remove_dc(s))
         win = w ? DSP.hanning : nothing
-        sg = abs.(DSP.stft(s, wlen, woverlap, fs = fs, window = win))
+        sg = abs.(DSP.stft(s, wlen, woverlap; fs = fs, window = win))
         # average STFT segments over time; build a matching frequency vector.
-        p = dropdims(mean(sg, dims = 2), dims = 2)
+        p = dropdims(mean(sg; dims = 2); dims = 2)
         f = linspace(0, fs / 2, length(p))
         db && (p = pow2db.(p))
 
     elseif method === :welch
-
         demean && (s = remove_dc(s))
         win = w ? DSP.hanning : nothing
-        pg  = DSP.welch_pgram(s, wlen, woverlap, fs = fs, window = win)
-        f   = Vector(freq(pg))
-        p   = power(pg)
+        pg = DSP.welch_pgram(s, wlen, woverlap; fs = fs, window = win)
+        f = Vector(freq(pg))
+        p = power(pg)
         db && (p = pow2db.(p))
 
     elseif method === :fft
-
         win = w ? DSP.hanning : nothing
-        pg  = DSP.periodogram(s, fs = fs, window = win)
-        f   = Vector(freq(pg))
-        p   = power(pg)[1:length(f)]
+        pg = DSP.periodogram(s; fs = fs, window = win)
+        f = Vector(freq(pg))
+        p = power(pg)[1:length(f)]
         db && (p = pow2db.(p))
 
     elseif method === :mw
-
-        mwpsd_data = mwpsd(s, db = db, fs = fs, ncyc = ncyc, w = w, demean = demean)
+        mwpsd_data = mwpsd(s; db = db, fs = fs, ncyc = ncyc, w = w, demean = demean)
         p = mwpsd_data.p
         f = mwpsd_data.f
 
     elseif method === :gh
-
-        ghpsd_data = ghpsd(s, fs = fs, db = db, gw = gw, w = w, demean = demean)
+        ghpsd_data = ghpsd(s; fs = fs, db = db, gw = gw, w = w, demean = demean)
         p = ghpsd_data.p
         f = ghpsd_data.f
-
     end
 
     return (; p, f)
-
 end
 
 """
@@ -154,25 +146,25 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function psd(
-    s::AbstractMatrix;
-    fs::Int64,
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool=true
-)::@NamedTuple{
-    p::Matrix{Float64},
-    f::Vector{Float64}
-}
+        s::AbstractMatrix;
+        fs::Int64,
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # pilot call to determine output frequency vector length
     f = psd(
-        @view(s[1, :]),
+        @view(s[1, :]);
         fs = fs,
         db = db,
         method = method,
@@ -182,7 +174,7 @@ function psd(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     ).f
 
     p = zeros(size(s, 1), length(f))
@@ -199,12 +191,11 @@ function psd(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean
+            demean = demean,
         ).p
     end
 
     return (; p, f)
-
 end
 
 """
@@ -242,21 +233,21 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function psd(
-    s::AbstractArray;
-    fs::Int64,
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        s::AbstractArray;
+        fs::Int64,
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -268,7 +259,7 @@ function psd(
 
     # pilot call to determine output frequency vector length
     f = psd(
-        @view(s[1, :, 1]),
+        @view(s[1, :, 1]);
         fs = fs,
         db = db,
         method = method,
@@ -278,7 +269,7 @@ function psd(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     ).f
 
     # pre-allocate output
@@ -298,12 +289,11 @@ function psd(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean
-    ).p
+            demean = demean,
+        ).p
     end
 
     return (; p, f)
-
 end
 
 """
@@ -342,30 +332,33 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies (trimmed to `flim`)
 """
 function psd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    demean::Bool = true
-)::@NamedTuple{
-    p::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # validate
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
-    psd_data = psd(@view(obj.data[ch, :, :]),
+    psd_data = psd(
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         db = db,
         method = method,
@@ -375,7 +368,7 @@ function psd(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
 
     # trim output to requested frequency band
@@ -383,7 +376,6 @@ function psd(
     f2 = vsearch(flim[2], psd_data.f)
 
     return (p = psd_data.p[:, f1:f2, :], f = psd_data.f[f1:f2])
-
 end
 
 """
@@ -409,17 +401,17 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function mwpsd(
-    s::AbstractVector;
-    pad::Int64 = 0,
-    db::Bool = true,
-    fs::Int64,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    w::Bool = true,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Vector{Float64},
-    f::Vector{Float64}
-}
+        s::AbstractVector;
+        pad::Int64 = 0,
+        db::Bool = true,
+        fs::Int64,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        w::Bool = true,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Vector{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -453,7 +445,6 @@ function mwpsd(
     db && (p = pow2db.(p))
 
     return (; p, f)
-
 end
 
 """
@@ -478,13 +469,13 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function ghpsd(
-    s::AbstractVector;
-    fs::Int64,
-    db::Bool = true,
-    gw::Real = 5,
-    w::Bool = true,
-    demean::Bool = true
-)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+        s::AbstractVector;
+        fs::Int64,
+        db::Bool = true,
+        gw::Real = 5,
+        w::Bool = true,
+        demean::Bool = true,
+    )::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -508,10 +499,9 @@ function ghpsd(
     p[p .== +Inf] .= maximum(p[p .!= +Inf])
 
     # average instantaneous power across time at each frequency.
-    p = dropdims(mean(p, dims = 2), dims = 2)
+    p = dropdims(mean(p; dims = 2); dims = 2)
 
     db && (p = pow2db.(p))
 
     return (; p, f)
-
 end

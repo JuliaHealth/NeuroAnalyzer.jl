@@ -31,13 +31,13 @@ Perform 2D scattered interpolation of signal data on a regular grid.
 - The output is normalized using the specified method.
 """
 function _interpolate2d(
-    s::AbstractVector,
-    loc_x::Vector{Float64},
-    loc_y::Vector{Float64},
-    ifactor::Int64 = 100,
-    imethod::Symbol = :sh,
-    nmethod::Symbol = :minmax
-)::Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}
+        s::AbstractVector,
+        loc_x::Vector{Float64},
+        loc_y::Vector{Float64},
+        ifactor::Int64 = 100,
+        imethod::Symbol = :sh,
+        nmethod::Symbol = :minmax,
+    )::Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}
 
     # validate
     ifactor > 0 || throw(ArgumentError("Interpolation factor (ifactor) must be positive"))
@@ -46,19 +46,20 @@ function _interpolate2d(
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     # calculate grid limits based on electrode positions
-    max_abs_loc = max(ceil(maximum(abs, loc_x), digits = 1), ceil(maximum(abs, loc_y), digits = 1))
+    max_abs_loc =
+        max(ceil(maximum(abs, loc_x); digits = 1), ceil(maximum(abs, loc_y); digits = 1))
     # expand grid slightly beyond electrode positions
     extr = max_abs_loc > 1.2 ? 1.6 : 1.2
 
     # create interpolation grid
     x_lim_int = (-extr, extr)
     y_lim_int = (-extr, extr)
-    interpolated_x = range(x_lim_int[1], x_lim_int[2], length=ifactor) |> collect
-    interpolated_y = range(y_lim_int[1], y_lim_int[2], length=ifactor) |> collect
+    interpolated_x = range(x_lim_int[1], x_lim_int[2]; length = ifactor) |> collect
+    interpolated_y = range(y_lim_int[1], y_lim_int[2]; length = ifactor) |> collect
 
     # round for cleaner visualization (optional)
-    interpolated_x = round.(interpolated_x, digits=2)
-    interpolated_y = round.(interpolated_y, digits=2)
+    interpolated_x = round.(interpolated_x; digits = 2)
+    interpolated_y = round.(interpolated_y; digits = 2)
 
     # pre-allocate interpolation matrix
     interpolation_m = Matrix{NTuple{2, Float64}}(undef, ifactor, ifactor)
@@ -85,8 +86,10 @@ function _interpolate2d(
     # perform interpolation on each grid point
     @inbounds for idx1 in 1:ifactor
         for idx2 in 1:ifactor
-            x_val, y_val = interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
-            s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [x_val, y_val])[1]
+            x_val, y_val =
+                interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
+            s_interpolated[idx1, idx2] =
+                ScatteredInterpolation.evaluate(itp, [x_val, y_val])[1]
         end
     end
 
@@ -94,8 +97,7 @@ function _interpolate2d(
     s_interpolated = rotl90(s_interpolated)
 
     # normalize the interpolated data
-    normalized_signal = NeuroAnalyzer.normalize(s_interpolated, method=nmethod)
+    normalized_signal = NeuroAnalyzer.normalize(s_interpolated; method = nmethod)
 
     return normalized_signal, interpolated_x, interpolated_y
-
 end

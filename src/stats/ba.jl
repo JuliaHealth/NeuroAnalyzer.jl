@@ -33,14 +33,14 @@ hline!([md, ul, ll])
 ```
 """
 function ba(
-    x::AbstractVector,
-    y::AbstractVector;
-    la::Float64 = 0.95
-)::@NamedTuple{
-    md::Float64,
-    ll::Float64,
-    ul::Float64
-}
+        x::AbstractVector,
+        y::AbstractVector;
+        la::Float64 = 0.95,
+    )::@NamedTuple{
+        md::Float64,
+        ll::Float64,
+        ul::Float64,
+    }
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
@@ -48,7 +48,7 @@ function ba(
     _in(la, (0, 1), "la")
 
     # two-tailed Z-score for the requested confidence level
-    z = p2z(1 - la; twotailed=true)
+    z = p2z(1 - la; twotailed = true)
 
     d = x .- y
     md = mean(d)
@@ -58,5 +58,4 @@ function ba(
     ul = z * sd
 
     return (; md, ll, ul)
-
 end

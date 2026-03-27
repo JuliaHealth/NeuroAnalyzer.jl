@@ -25,7 +25,6 @@ function covm(s::AbstractVector; norm::Bool = false)::Matrix{Float64}
     norm && (cm = m_norm(cm))
 
     return cm
-
 end
 
 """
@@ -56,7 +55,6 @@ function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matri
     norm && (cm = m_norm(cm))
 
     return cm
-
 end
 
 """
@@ -83,7 +81,6 @@ function covm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
     norm && (cm = m_norm(cm))
 
     return cm
-
 end
 
 """
@@ -119,7 +116,6 @@ function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
     end
 
     return cm
-
 end
 
 """
@@ -137,11 +133,16 @@ Calculate covariance matrix between all channel pairs within a NEURO object.
 
 - `Array{Float64, 3}`: covariance matrix, shape `(channels, channels, epochs)`
 """
-function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false)::Array{Float64, 3}
+function covm(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        norm::Bool = false,
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
-    return covm(@view(obj.data[ch, :, :]), norm = norm)
-
+    return covm(@view(obj.data[ch, :, :]); norm = norm)
 end

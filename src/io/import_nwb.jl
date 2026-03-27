@@ -19,11 +19,11 @@ Load EEG data from Neurodata Without Borders (NWB) file and return `NeuroAnalyze
  1. https://www.biorxiv.org/content/10.1101/523035v1
 """
 function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
-
     _wip()
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".nwb") && throw(ArgumentError("This is not NWB file."))
+    !(lowercase(splitext(file_name)[2]) == ".nwb") &&
+        throw(ArgumentError("This is not NWB file."))
 
     file_type = "NWB"
 
@@ -54,7 +54,12 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
         exp_notes = "Instructions" in k ? header["Instructions"] : ""
         "RecordingType" in k &&
-            !(header["RecordingType"] == "continuous") && throw(ArgumentError("Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
+            !(header["RecordingType"] == "continuous") &&
+            throw(
+            ArgumentError(
+                "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+            ),
+        )
 
         # what if the files contains mixed recordings (e.g. EEG + SEEG)
         if "EEGChannelCount" in k && header["EEGChannelCount"] > 0
@@ -97,7 +102,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             lpad(string(Dates.day(recording_date)), 2, '0')
         # convert to UTC time
         recording_time = astimezone(
-            ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz")), tz"UTC"
+            ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz")), tz"UTC",
         )
         recording_time =
             lpad(string(Dates.hour(recording_time)), 2, '0') *
@@ -165,14 +170,14 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     time_pts =
         round.(
         collect(
-            0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-        )[1:(end - 1)],
-        digits = 4
+            0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
+        )[1:(end - 1)];
+        digits = 4,
     ) .+ t_start
     epoch_time =
         round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
-        digits = 4
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
     ) .+ t_start
 
     # events
@@ -196,17 +201,17 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         event_start_sample = events[!, :sample] .+ 1
         event_start = zeros(length(event_start_sample))
         [
-            event_start[idx] = time_pts[event_start_sample[idx]] for
+            event_start[idx] in time_pts[event_start_sample[idx]] for
                 idx in eachindex(event_start_sample)
         ]
-        event_length = round.(events[!, :duration], digits = 4)
+        event_length = round.(events[!, :duration]; digits = 4)
         event_channel = zeros(Int64, DataFrames.nrow(events))
         markers = DataFrame(
             :id => event_id,
             :start => event_start,
             :length => event_length,
             :value => event_description,
-            :channel => event_channel
+            :channel => event_channel,
         )
     else
         markers = DataFrame(
@@ -214,7 +219,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[]
+            :channel => Int64[],
         )
     end
 
@@ -246,10 +251,9 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # dataset["specifications/hdmf-experimental/0.2.0/namespace"]
     # dataset["specifications/hdmf-experimental/0.2.0/resources"]
 
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
-
-    s = _create_subject(
+    s = _create_subject(;
         id = subj_id,
         first_name = "",
         middle_name = "",
@@ -257,9 +261,9 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
-    r = _create_recording_eeg(
+    r = _create_recording_eeg(;
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -278,11 +282,11 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         line_frequency = 50,
         sampling_rate = sampling_rate,
         gain = gain,
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(name = exp_name, notes = exp_notes, design = exp_design)
+    e = _create_experiment(; name = exp_name, notes = exp_notes, design = exp_design)
 
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     history = String[]
 
@@ -293,9 +297,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj
-
 end

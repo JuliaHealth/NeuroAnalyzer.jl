@@ -25,7 +25,6 @@ function cvm(x::AbstractVector)::Float64
     m != 0 || throw(ArgumentError("mean(x) must not be zero (division by zero)."))
 
     return std(x) / m
-
 end
 
 """
@@ -51,7 +50,6 @@ function cvmd(x::AbstractVector)::Float64
     md != 0 || throw(ArgumentError("median(x) must not be zero (division by zero)."))
 
     return (quantile(x, 0.75) - quantile(x, 0.25)) / 2 / md
-
 end
 
 """
@@ -77,5 +75,4 @@ function fano(x::AbstractVector)::Float64
     m != 0 || throw(ArgumentError("mean(x) must not be zero (division by zero)."))
 
     return var(x) / m
-
 end

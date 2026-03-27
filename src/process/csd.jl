@@ -30,11 +30,11 @@ The algorithm (Perrin et al. 1989):
 2. Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
 """
 function csd(
-    obj::NeuroAnalyzer.NEURO;
-    m::Int64 = 4,
-    n::Int64 = 8,
-    lambda::Float64 = 10^-5
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        m::Int64 = 4,
+        n::Int64 = 8,
+        lambda::Float64 = 10^-5,
+    )::NeuroAnalyzer.NEURO
 
     # validate
     _check_datatype(obj, "eeg")
@@ -44,8 +44,9 @@ function csd(
     lambda > 0 || throw(ArgumentError("lambda must be > 0."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch = get_channel(obj, type = datatype(obj)))
-    locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
+    ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+    locs =
+        Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     # number of channels
@@ -57,11 +58,15 @@ function csd(
 
     # regularised G matrix and its inverse
     Gs = G + I(ch_n) * lambda
-    Gs_inv  = inv(Gs)
+    Gs_inv = inv(Gs)
 
     # row sums of the inverse and their total - used for the zero-mean constraint
-    Gs_rs = vec(sum(Gs_inv, dims
-=2))
+    Gs_rs = vec(
+        sum(
+            Gs_inv; dims
+            = 2
+        )
+    )
     Gs_inv_sum = sum(Gs_rs)
 
     # create new dataset
@@ -73,7 +78,7 @@ function csd(
 
         # solve Gs * C_unconstrained = data for each time point
         # (samples × ch_n): spline coefficients (unconstrained)
-        dataGs  = (Gs \ data')'
+        dataGs = (Gs \ data')'
 
         # enforce the zero-sum constraint on the coefficients
         # C[t, i] = dataGs[t, i] - (Σ_j dataGs[t, j] * Gs_rs[j]) / Gs_inv_sum * Gs_rs[i]
@@ -94,7 +99,6 @@ function csd(
     push!(obj_new.history, "csd(OBJ, m=$m, n=$n, lambda=$lambda)")
 
     return obj_new
-
 end
 
 """
@@ -119,19 +123,17 @@ Transform EEG data using the CSD transformation in-place.
 2. Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
 """
 function csd!(
-    obj::NeuroAnalyzer.NEURO;
-    m::Int64 = 4,
-    n::Int64 = 8,
-    lambda::Float64 = 10^-5
-)::Nothing
-
-    obj_new = csd(obj, m = m, n = n, lambda = lambda)
+        obj::NeuroAnalyzer.NEURO;
+        m::Int64 = 4,
+        n::Int64 = 8,
+        lambda::Float64 = 10^-5,
+    )::Nothing
+    obj_new = csd(obj; m = m, n = n, lambda = lambda)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
 
     return nothing
-
 end
 
 """
@@ -157,14 +159,13 @@ Named tuple:
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184–187.
 """
 function gh(
-    locs::DataFrame;
-    m::Int64 = 4,
-    n::Int64 = 8
-)::@NamedTuple{
-    G::Matrix{Float64},
-    H::Matrix{Float64}
-}
-
+        locs::DataFrame;
+        m::Int64 = 4,
+        n::Int64 = 8,
+    )::@NamedTuple{
+        G::Matrix{Float64},
+        H::Matrix{Float64},
+    }
     (m >= 2 && m <= 10) || throw(ArgumentError("m must be in [2, 10]."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
@@ -213,5 +214,4 @@ function gh(
     end
 
     return (; G, H)
-
 end

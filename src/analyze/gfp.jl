@@ -28,10 +28,9 @@ function erp_gfp(s::AbstractMatrix)::Vector{Float64}
 
     # GFP = population std across channels at each time point
     # dropdims removes the trailing singleton dimension left by std(..., dims=1) without allocating a copy
-    g = dropdims(std(s, dims = 1), dims = 1)
+    g = dropdims(std(s; dims = 1); dims = 1)
 
     return g
-
 end
 
 """
@@ -50,7 +49,6 @@ Each column (time point) is divided by the GFP value at that time, so that the r
 - `Matrix{Float64}`: GFP-normalised signal (channels × samples)
 """
 function erp_gfp_norm(s::AbstractMatrix)::Matrix{Float64}
-
     g = erp_gfp(s)
 
     # pre-allocate output
@@ -61,7 +59,6 @@ function erp_gfp_norm(s::AbstractMatrix)::Matrix{Float64}
     @. gn = s / g'
 
     return gn
-
 end
 
 """
@@ -90,20 +87,21 @@ GFP is the population standard deviation across all channels at each time point.
 GFP(t) = std_channels( s[:, t] )
 """
 function erp_gfp(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    norm::Bool = false
-)::Union{Vector{Float64}, Matrix{Float64}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        norm::Bool = false,
+    )::Union{Vector{Float64}, Matrix{Float64}}
 
     # validate
     _check_datatype(obj, ["erp", "erf"])
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
     length(ch) > 1 || throw(ArgumentError("More than 1 channel must be selected."))
 
     s = @view obj.data[ch, :, 1]
 
     return norm ? erp_gfp_norm(s) : erp_gfp(s)
-
 end

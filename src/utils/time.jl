@@ -27,7 +27,6 @@ function t2s(t::Real, fs::Int64)::Int64
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     return t == 0 ? 1 : ceil(Int64, t * fs)
-
 end
 
 """
@@ -56,8 +55,7 @@ function s2t(s::Real, fs::Int64)::Float64
         s = 1
     end
 
-    return round(s / fs - 1 / fs, digits=4)
-
+    return round(s / fs - 1 / fs; digits = 4)
 end
 
 """
@@ -75,9 +73,7 @@ Convert a time in seconds to a sample number using the object's sampling rate.
 - `Int64`: sample number (≥ 1)
 """
 function t2s(obj::NeuroAnalyzer.NEURO; t::Real)::Int64
-
     return t2s(t, sr(obj))
-
 end
 
 """
@@ -95,9 +91,7 @@ Convert a sample number to time in seconds using the object's sampling rate.
 - `Float64`: time in seconds
 """
 function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)::Float64
-
     return s2t(s, sr(obj))
-
 end
 
 """
@@ -119,11 +113,10 @@ function markers_s2t(m::DataFrame; fs::Int64)::DataFrame
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     m_new = deepcopy(m)
-    m_new[!, :start]  = s2t.(m[!, :start],  fs)
+    m_new[!, :start] = s2t.(m[!, :start], fs)
     m_new[!, :length] = s2t.(m[!, :length], fs)
 
     return m_new
-
 end
 
 """
@@ -145,11 +138,10 @@ function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
-    m[!, :start]  = s2t.(m[!, :start],  fs)
+    m[!, :start] = s2t.(m[!, :start], fs)
     m[!, :length] = s2t.(m[!, :length], fs)
 
     return nothing
-
 end
 
 """
@@ -166,9 +158,7 @@ Return a copy of the object's markers DataFrame with `:start` and `:length` conv
 - `DataFrame`: new DataFrame with `:start` and `:length` expressed in seconds
 """
 function markers_s2t(obj::NeuroAnalyzer.NEURO)::DataFrame
-
-    return markers_s2t(deepcopy(obj.markers), fs=sr(obj))
-
+    return markers_s2t(deepcopy(obj.markers); fs = sr(obj))
 end
 
 """
@@ -185,11 +175,9 @@ Convert `:start` and `:length` columns of the object's markers DataFrame from sa
 - `Nothing`
 """
 function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
-
-    markers_s2t!(obj.markers; fs=sr(obj))
+    markers_s2t!(obj.markers; fs = sr(obj))
 
     return nothing
-
 end
 
 """
@@ -219,7 +207,6 @@ function e2t(obj::NeuroAnalyzer.NEURO, ep::Int64)::Tuple{Real, Real}
     ee = es + el - 1
 
     return (obj.time_pts[es], obj.time_pts[ee])
-
 end
 
 """
@@ -244,10 +231,9 @@ function e2t(obj::NeuroAnalyzer.NEURO, ep::AbstractVector)::Tuple{Real, Real}
     # epoch length
     el = epoch_len(obj)
     # first sample of the first epoch
-    es = (ep[1]   - 1) * el + 1
+    es = (ep[1] - 1) * el + 1
     # last  sample of the last  epoch
-    ee =  ep[end] * el
+    ee = ep[end] * el
 
     return (obj.time_pts[es], obj.time_pts[ee])
-
 end

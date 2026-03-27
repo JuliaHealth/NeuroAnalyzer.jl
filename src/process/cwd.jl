@@ -17,13 +17,15 @@ Returns the real part of the CWT coefficient matrix. Each row corresponds to one
 
 - `Matrix{Float64}`: CWT coefficient matrix of shape `(n_scales,  length(s))`
 """
-function cwd(s::AbstractVector; wt::T = wavelet(Morlet(2π), β = 2))::Matrix{Float64} where {T <: CWT}
+function cwd(
+        s::AbstractVector;
+        wt::T = wavelet(Morlet(2π), β = 2),
+    )::Matrix{Float64} where {T <: CWT}
 
     # ContinuousWavelets.cwt returns (samples × scales); transpose to (scales × samples)
     return Matrix(real.(ContinuousWavelets.cwt(s, wt))')
 
     return ct
-
 end
 
 """
@@ -42,7 +44,10 @@ Applies [`cwd(::AbstractVector)`](@ref) to every channel × epoch slice in paral
 
 - `Array{Float64, 4}`: CWT coefficients of shape `(channels, n_scales, samples, epochs)`
 """
-function cwd(s::AbstractArray; wt::T = wavelet(Morlet(2π), β = 2))::Array{Float64, 4} where {T <: CWT}
+function cwd(
+        s::AbstractArray;
+        wt::T = wavelet(Morlet(2π), β = 2),
+    )::Array{Float64, 4} where {T <: CWT}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -60,13 +65,12 @@ function cwd(s::AbstractArray; wt::T = wavelet(Morlet(2π), β = 2))::Array{Floa
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ct[ch_idx, :, :, ep_idx] = cwd(@view(s[ch_idx, :, ep_idx]), wt=wt)
+        ct[ch_idx, :, :, ep_idx] = cwd(@view(s[ch_idx, :, ep_idx]), wt = wt)
     end
 
     _log_on()
 
     return ct
-
 end
 
 """
@@ -85,16 +89,15 @@ Perform continuous wavelet decomposition on selected channels of a NEURO object.
 - `Array{Float64, 4}`: CWT coefficients of shape `(channels, n_scales, samples, epochs)`
 """
 function cwd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    wt::T=wavelet(Morlet(2π), β=2)
-)::Array{Float64, 4} where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        wt::T = wavelet(Morlet(2π), β = 2),
+    )::Array{Float64, 4} where {T <: CWT}
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch=ch)
+    ch = get_channel(obj; ch = ch)
 
-    return cwd(@view(obj.data[ch, :, :]); wt=wt)
-
+    return cwd(@view(obj.data[ch, :, :]); wt = wt)
 end
 
 """
@@ -118,11 +121,10 @@ Reconstructs the original signal from a CWT coefficient matrix produced by [`cwd
 - `Vector{Float64}`: reconstructed signal
 """
 function icwd(
-    ct::Matrix{Float64};
-    wt::T = wavelet(Morlet(2π), β = 2),
-    type::Symbol = :pd
-)::Vector{Float64} where {T <: CWT}
-
+        ct::Matrix{Float64};
+        wt::T = wavelet(Morlet(2π), β = 2),
+        type::Symbol = :pd,
+    )::Vector{Float64} where {T <: CWT}
     _check_var(type, [:nd, :pd, :df], "type")
 
     # transpose back from (scales × samples) to the (samples × scales) layout expected by ContinuousWavelets.icwt
@@ -137,5 +139,4 @@ function icwd(
     end
 
     return vec(s)
-
 end

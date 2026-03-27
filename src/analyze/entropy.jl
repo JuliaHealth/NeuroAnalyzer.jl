@@ -34,16 +34,15 @@ Histogram entropy uses Freedman-Diaconis binning: `p = n / sum(n)`, `ent = −Σ
 with irregularity.
 """
 function entropy(
-    s::AbstractVector
-)::@NamedTuple{
-    ent::Float64,
-    shent::Float64,
-    leent::Float64,
-    sent::Float64,
-    nsent::Float64,
-    dent::Float64
-}
-
+        s::AbstractVector,
+    )::@NamedTuple{
+        ent::Float64,
+        shent::Float64,
+        leent::Float64,
+        sent::Float64,
+        nsent::Float64,
+        dent::Float64,
+    }
     n = length(s)
 
     # Freedman-Diaconis rule: optimal bin width = 2·IQR·N^(−1/3).
@@ -51,7 +50,7 @@ function entropy(
     fd_bins = ceil(Int64, maxmin_range / (2.0 * iqr(s) * n^(-1 / 3)))
 
     # fit histogram and convert bin counts to probabilities
-    h = StatsKit.fit(Histogram, s, nbins = fd_bins)
+    h = StatsKit.fit(Histogram, s; nbins = fd_bins)
     p = h.weights ./ sum(h.weights)
 
     # histogram entropy in bits; eps() guards against log(0)
@@ -63,7 +62,7 @@ function entropy(
     # differential entropy
     # estimate the PDF using Kernel Density Estimation (KDE)
     kde_model = kde(s)
-    points = range(minimum(s), stop=maximum(s), length=1000)
+    points = range(minimum(s); stop = maximum(s), length = 1000)
     pdf_values = pdf(kde_model, points)
     # calculate differential entropy in bits
     dent = -trapz(points, pdf_values .* log2.(pdf_values .+ eps()))
@@ -74,9 +73,8 @@ function entropy(
         leent = Wavelets.coefentropy(s, LogEnergyEntropy()),
         sent = ComplexityMeasures.complexity(se, s),
         nsent = ComplexityMeasures.complexity_normalized(se, s),
-        dent = dent
+        dent = dent,
     )
-
 end
 
 """
@@ -107,15 +105,15 @@ Named tuple:
 - `dent::Matrix{Float64}`: differential entropy, shape (channels, epochs)
 """
 function entropy(
-    s::AbstractArray
-)::@NamedTuple{
-    ent::Matrix{Float64},
-    shent::Matrix{Float64},
-    leent::Matrix{Float64},
-    sent::Matrix{Float64},
-    nsent::Matrix{Float64},
-    dent::Matrix{Float64}
-}
+        s::AbstractArray,
+    )::@NamedTuple{
+        ent::Matrix{Float64},
+        shent::Matrix{Float64},
+        leent::Matrix{Float64},
+        sent::Matrix{Float64},
+        nsent::Matrix{Float64},
+        dent::Matrix{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -137,16 +135,15 @@ function entropy(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         entropy_data = entropy(@view(s[ch_idx, :, ep_idx]))
-        ent[ch_idx, ep_idx]   = entropy_data.ent
+        ent[ch_idx, ep_idx] = entropy_data.ent
         shent[ch_idx, ep_idx] = entropy_data.shent
         leent[ch_idx, ep_idx] = entropy_data.leent
-        sent[ch_idx, ep_idx]  = entropy_data.sent
+        sent[ch_idx, ep_idx] = entropy_data.sent
         nsent[ch_idx, ep_idx] = entropy_data.nsent
         dent[ch_idx, ep_idx] = entropy_data.dent
     end
 
     return (; ent, shent, leent, sent, nsent, dent)
-
 end
 
 """
@@ -173,22 +170,23 @@ Named tuple:
 - `dent::Matrix{Float64}`: differential entropy, shape (channels, epochs)
 """
 function entropy(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{
-    ent::Matrix{Float64},
-    shent::Matrix{Float64},
-    leent::Matrix{Float64},
-    sent::Matrix{Float64},
-    nsent::Matrix{Float64},
-    dent::Matrix{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::@NamedTuple{
+        ent::Matrix{Float64},
+        shent::Matrix{Float64},
+        leent::Matrix{Float64},
+        sent::Matrix{Float64},
+        nsent::Matrix{Float64},
+        dent::Matrix{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return entropy(@view(obj.data[ch, :, :]))
-
 end
 
 """
@@ -210,11 +208,11 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 - `Float64`: negentropy (≥ 0; equals 0 for a Gaussian signal)
 """
 function negentropy(
-    s::AbstractVector;
-    demean::Bool=true,
-    norm::Bool=true,
-    type::Symbol=:diff
-)::Float64
+        s::AbstractVector;
+        demean::Bool = true,
+        norm::Bool = true,
+        type::Symbol = :diff,
+    )::Float64
 
     # validate
     _check_var(type, [:diff, :shannon, :sample], "type")
@@ -223,7 +221,7 @@ function negentropy(
     demean && (s = remove_dc(s))
 
     # normalize the signal by its total energy
-    norm && (s ./= sum(s.^2))
+    norm && (s ./= sum(s .^ 2))
 
     # Gaussian differential entropy: 0.5·ln(2πe·σ²).
     # ℯ is the built-in mathematical constant (more readable than exp(1)).
@@ -239,7 +237,6 @@ function negentropy(
     end
 
     return gaussian_h - signal_h
-
 end
 
 """
@@ -261,11 +258,11 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 - `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(
-    s::AbstractArray;
-    demean::Bool=true,
-    norm::Bool=true,
-    type::Symbol=:diff
-)::Matrix{Float64}
+        s::AbstractArray;
+        demean::Bool = true,
+        norm::Bool = true,
+        type::Symbol = :diff,
+    )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -285,12 +282,11 @@ function negentropy(
             @view(s[ch_idx, :, ep_idx]),
             demean = demean,
             norm = norm,
-            type = type
+            type = type,
         )
     end
 
     return ne
-
 end
 
 """
@@ -313,21 +309,22 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 - `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    demean::Bool=true,
-    norm::Bool=true,
-    type::Symbol=:diff
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        demean::Bool = true,
+        norm::Bool = true,
+        type::Symbol = :diff,
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return negentropy(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         demean = demean,
         norm = norm,
-        type = type
+        type = type,
     )
-
 end

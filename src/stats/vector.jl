@@ -23,5 +23,4 @@ function op(x::AbstractVector, y::AbstractVector)::AbstractMatrix
     length(y) > 0 || throw(ArgumentError("y must not be empty."))
 
     return x * y'
-
 end

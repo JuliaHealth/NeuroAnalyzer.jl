@@ -72,9 +72,13 @@ end
 function validate_bands_D(bands_D, D, fs)
     validate_bands(bands_D, fs)
     size(bands_D, 2) == size(D, 2) == 2 ||
-        throw(ArgumentError("Frequency bands and desired response should be N x 2 matrices"))
+        throw(
+        ArgumentError("Frequency bands and desired response should be N x 2 matrices"),
+    )
     return size(bands_D, 1) == size(D, 1) ||
-        throw(ArgumentError("Frequency bands and desired response should be N x 2 matrices"))
+        throw(
+        ArgumentError("Frequency bands and desired response should be N x 2 matrices"),
+    )
 end
 
 function validate_bands_W(bands_W, W, fs)
@@ -90,7 +94,11 @@ function validate_bands(fbands::Matrix{T}, fs) where {T}
         throw(ArgumentError("Frequency bands should start at 0."))
     fbands[end] == fs * (1 // 2) ||
         throw(ArgumentError("Frequency bands should end at fs/2"))
-    return @views !(all((fbands[2:end, 1] .- fbands[1:(end - 1), 2]) .== zero(T))) && throw(ArgumentError("Frequency bands should cover entire [0,fs/2] interval, without gaps or overlaps."))
+    return @views !(all((fbands[2:end, 1] .- fbands[1:(end - 1), 2]) .== zero(T))) && throw(
+        ArgumentError(
+            "Frequency bands should cover entire [0,fs/2] interval, without gaps or overlaps.",
+        ),
+    )
 end
 
 @doc """
@@ -110,7 +118,6 @@ function get_flength_M(filter_order)
     M = isodd(filter_length) ? (filter_length - 1) ÷ 2 : filter_length ÷ 2 - 1
     return filter_length, M
 end
-
 
 to_matrix_simple(v::Vector) = hcat(v, v)
 to_matrix_simple(m::Matrix) = m
@@ -140,7 +147,7 @@ function firls_design(
         W::Matrix,
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \
+        solver::Function = \,
     )
     validate_inputs(filter_order, bands_DW, D, W, fs)
     filter_length, M = get_flength_M(filter_order)
@@ -170,10 +177,11 @@ function firls_design(
         W::Union{Vector, Matrix},
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \
+        solver::Function = \,
     )
     return firls_design(
-        filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric, fs = fs, solver = solver
+        filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric,
+        fs = fs, solver = solver,
     )
 end
 
@@ -199,7 +207,7 @@ function firls_design(
         W::Vector,
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \
+        solver::Function = \,
     )
     return firls_design(
         filter_order,
@@ -208,7 +216,7 @@ function firls_design(
         knotpoints_to_matrix(W),
         antisymmetric,
         fs = fs,
-        solver = solver
+        solver = solver,
     )
 end
 
@@ -232,7 +240,7 @@ function firls_design(
         D::Union{Vector, Matrix},
         antisymmetric::Bool;
         fs::Real = 1,
-        solver::Function = \
+        solver::Function = \,
     )
     D = to_matrix_simple(D)
     validate_inputs(filter_order, bands_DW, D, fs)
@@ -257,7 +265,8 @@ end
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
 function firls_design(
-        filter_order::Integer, knotpoints_D::Vector, D::Vector, antisymmetric::Bool; fs::Real = 1, solver::Function = \
+        filter_order::Integer, knotpoints_D::Vector, D::Vector, antisymmetric::Bool;
+        fs::Real = 1, solver::Function = \,
     )
     return firls_design(
         filter_order,
@@ -265,7 +274,7 @@ function firls_design(
         knotpoints_to_matrix(D),
         antisymmetric;
         fs = fs,
-        solver = solver
+        solver = solver,
     )
 end
 
@@ -460,7 +469,8 @@ function get_b(M, f, D, W, fir_type)
     a, b, c, d, α, β, γ, δ, k = constants_b(f, D, W)
     _αn, _βn², _δn = copy(α), copy(β), copy(δ)
     b_out, _bn = zeros(M + 1), zeros(size(f))
-    b_out[1] = bn_n0!(_bn, idx2n_b(1, fir_type), k, f, a, b, c, d, _αn, _βn², γ, _δn, fir_type)
+    b_out[1] =
+        bn_n0!(_bn, idx2n_b(1, fir_type), k, f, a, b, c, d, _αn, _βn², γ, _δn, fir_type)
     for idx in 2:length(b_out)
         _αn .= α
         _βn² .= β

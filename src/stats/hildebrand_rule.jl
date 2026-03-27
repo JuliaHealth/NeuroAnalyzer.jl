@@ -31,5 +31,4 @@ function hildebrand_rule(x::AbstractVector; verbose::Bool = true)::Float64
     abs(h) < 0.2 && _info("H < 0.2: x is approximately symmetric")
 
     return h
-
 end

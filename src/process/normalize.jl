@@ -54,7 +54,6 @@ Normalize.
 - `normalized::AbstractVector`
 """
 function normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVector
-
     _check_var(
         method,
         [
@@ -76,28 +75,27 @@ function normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVect
             :rank,
             :none,
         ],
-        "method"
+        "method",
     )
 
-    method === :zscore   && return normalize_zscore(s)
-    method === :minmax   && return normalize_minmax(s, n)
-    method === :log      && return normalize_log(s)
-    method === :log10    && return normalize_log10(s)
-    method === :neglog   && return normalize_neglog(s)
+    method === :zscore && return normalize_zscore(s)
+    method === :minmax && return normalize_minmax(s, n)
+    method === :log && return normalize_log(s)
+    method === :log10 && return normalize_log10(s)
+    method === :neglog && return normalize_neglog(s)
     method === :neglog10 && return normalize_neglog10(s)
-    method === :neg      && return normalize_neg(s)
-    method === :pos      && return normalize_pos(s)
-    method === :perc     && return normalize_perc(s)
-    method === :gauss    && return normalize_gauss(s)
-    method === :invroot  && return normalize_invroot(s)
-    method === :n        && return normalize_n(s, n)
-    method === :softmax  && return normalize_softmax(s)
-    method === :sigmoid  && return normalize_sigmoid(s)
-    method === :mad      && return normalize_mad(s)
-    method === :rank     && return normalize_rank(s)
-    method === :fisher   && return normalize_fisher(s)
-    method === :none     && return s
-
+    method === :neg && return normalize_neg(s)
+    method === :pos && return normalize_pos(s)
+    method === :perc && return normalize_perc(s)
+    method === :gauss && return normalize_gauss(s)
+    method === :invroot && return normalize_invroot(s)
+    method === :n && return normalize_n(s, n)
+    method === :softmax && return normalize_softmax(s)
+    method === :sigmoid && return normalize_sigmoid(s)
+    method === :mad && return normalize_mad(s)
+    method === :rank && return normalize_rank(s)
+    method === :fisher && return normalize_fisher(s)
+    return method === :none && return s
 end
 
 """
@@ -131,8 +129,12 @@ Normalize a signal array using the specified method.
 
 - `AbstractArray`: normalized signal, same shape as `s`
 """
-function normalize(s::AbstractArray, n::Real = 1; bych::Bool = false, method::Symbol)::AbstractArray
-
+function normalize(
+        s::AbstractArray,
+        n::Real = 1;
+        bych::Bool = false,
+        method::Symbol,
+    )::AbstractArray
     _check_var(
         method,
         [
@@ -152,27 +154,25 @@ function normalize(s::AbstractArray, n::Real = 1; bych::Bool = false, method::Sy
             :sigmoid,
             :none,
         ],
-        "method"
+        "method",
     )
 
-    method === :zscore   && return normalize_zscore(s;    bych = bych)
-    method === :minmax   && return normalize_minmax(s, n; bych = bych)
-    method === :log      && return normalize_log(s;       bych = bych)
-    method === :log10    && return normalize_log10(s;     bych = bych)
-    method === :neglog   && return normalize_neglog(s;    bych = bych)
-    method === :neglog10 && return normalize_neglog10(s;  bych = bych)
-    method === :neg      && return normalize_neg(s;       bych = bych)
-    method === :pos      && return normalize_pos(s;       bych = bych)
-    method === :perc     && return normalize_perc(s;      bych = bych)
-    method === :gauss    && return normalize_gauss(s;     bych = bych)
-    method === :invroot  && return normalize_invroot(s;   bych = bych)
-    method === :n        && return normalize_n(s, n;      bych = bych)
-    method === :softmax  && return normalize_softmax(s;   bych = bych)
-    method === :sigmoid  && return normalize_sigmoid(s;   bych = bych)
-    method === :none     && return s
-
+    method === :zscore && return normalize_zscore(s; bych = bych)
+    method === :minmax && return normalize_minmax(s, n; bych = bych)
+    method === :log && return normalize_log(s; bych = bych)
+    method === :log10 && return normalize_log10(s; bych = bych)
+    method === :neglog && return normalize_neglog(s; bych = bych)
+    method === :neglog10 && return normalize_neglog10(s; bych = bych)
+    method === :neg && return normalize_neg(s; bych = bych)
+    method === :pos && return normalize_pos(s; bych = bych)
+    method === :perc && return normalize_perc(s; bych = bych)
+    method === :gauss && return normalize_gauss(s; bych = bych)
+    method === :invroot && return normalize_invroot(s; bych = bych)
+    method === :n && return normalize_n(s, n; bych = bych)
+    method === :softmax && return normalize_softmax(s; bych = bych)
+    method === :sigmoid && return normalize_sigmoid(s; bych = bych)
+    return method === :none && return s
 end
-
 
 """
     normalize(obj; <keyword arguments>)
@@ -209,12 +209,12 @@ Normalize selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function normalize(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    method::Symbol,
-    bych::Bool = false,
-    n::Real = 1
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        method::Symbol,
+        bych::Bool = false,
+        n::Real = 1,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -232,23 +232,22 @@ function normalize(
             obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(
                 @view(obj_new.data[ch[ch_idx], :, ep_idx]),
                 n,
-                method = method
+                method = method,
             )
         end
     else
         # normalize the entire selected channel block at once
         obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(
             obj_new.data[ch, :, :],
-            n,
+            n;
             method = method,
-            bych = false
+            bych = false,
         )
     end
 
     push!(obj_new.history, "normalize(obj; ch=$ch, method=$method, n=$n)")
 
     return obj_new
-
 end
 
 """
@@ -286,19 +285,17 @@ Normalize selected channels in-place.
 - `Nothing`
 """
 function normalize!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    method::Symbol,
-    bych::Bool = false,
-    n::Real = 1
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        method::Symbol,
+        bych::Bool = false,
+        n::Real = 1,
+    )::Nothing
     obj_new = NeuroAnalyzer.normalize(obj; ch = ch, method = method, bych = bych, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end
 
 # ------------------------------------------------------------------ #
@@ -319,8 +316,7 @@ Normalize by z-score: `(x − x̄) / σ`. If `σ = 0`, subtracts the mean only.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_zscore(s::AbstractVector)::AbstractVector
-
-    m  = mean(s)
+    m = mean(s)
     sd = std(s)
     if sd != 0
         return @. (s - m) / sd
@@ -328,7 +324,6 @@ function normalize_zscore(s::AbstractVector)::AbstractVector
         _warn("STD is 0; values normalized to (x − x̄).")
         return @. (s - m)
     end
-
 end
 
 """
@@ -348,10 +343,11 @@ Normalize by z-score across the whole array, or per channel when `bych=true`.
 function normalize_zscore(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_zscore() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_zscore() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
-        m  = mean(s)
+        m = mean(s)
         sd = std(s)
         if sd != 0
             return @. (s - m) / sd
@@ -372,7 +368,6 @@ function normalize_zscore(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -400,7 +395,6 @@ function normalize_minmax(s::AbstractVector, n::Real = 1)::AbstractVector
     mi, mx = extrema(s)
 
     return @. ((2 * (s - mi) / (mx - mi)) - 1) * n
-
 end
 
 """
@@ -424,7 +418,8 @@ function normalize_minmax(s::AbstractArray, n::Real = 1; bych::Bool = false)::Ab
     s = replace(s, -0.0 => 0.0)
     length(unique(s)) == 1 && return ones(size(s)) .* n
 
-    ndims(s) <= 3 || throw(ArgumentError("normalize_minmax() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_minmax() only works for arrays of ≤ 3 dimensions."))
 
     length(unique(s)) == 1 && return ones(size(s)) .* n
     if !bych
@@ -443,7 +438,6 @@ function normalize_minmax(s::AbstractArray, n::Real = 1; bych::Bool = false)::Ab
         end
         return sn
     end
-
 end
 
 """
@@ -471,7 +465,6 @@ function normalize_n(s::AbstractVector, n::Real = 1)::AbstractVector
     smin, smax = extrema(s)
 
     return @. n * (s - smin) / (smax - smin)
-
 end
 
 """
@@ -490,8 +483,8 @@ Normalize to `[0, n]`, or per channel when `bych=true`.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_n(s::AbstractArray, n::Real = 1; bych::Bool = false)::AbstractArray
-
-    ndims(s) <= 3 || throw(ArgumentError("normalize_n() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_n() only works for arrays of ≤ 3 dimensions."))
 
     # replace negative zero to avoid unexpected behavior with extrema
     s = replace(s, -0.0 => 0.0)
@@ -516,7 +509,6 @@ function normalize_n(s::AbstractArray, n::Real = 1; bych::Bool = false)::Abstrac
         end
         return sn
     end
-
 end
 
 """
@@ -533,12 +525,10 @@ Log-normalize: `log(1 + x + |min(x)|)`, ensuring the argument is always ≥ 1.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_log(s::AbstractVector)::AbstractVector
-
     m = abs(minimum(s))
     sn = @. log(1 + s + m)
 
     return sn
-
 end
 
 """
@@ -558,7 +548,8 @@ Normalize using log-transformation.
 function normalize_log(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_log() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_log() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
         m = abs(minimum(s))
@@ -576,7 +567,6 @@ function normalize_log(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -593,11 +583,9 @@ Normalize to Gaussian via rank-based inverse normal transform (Fisher–Yates): 
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_gauss(s::AbstractVector)::AbstractVector
-
-    l  = length(s) + 1
+    l = length(s) + 1
     sn = (tiedrank(s) ./ l .- 0.5) .* 2
     return atanh.(sn)
-
 end
 
 """
@@ -617,10 +605,11 @@ Normalize to Gaussian via rank-based inverse normal transform (Fisher–Yates): 
 function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_gauss() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_gauss() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
-        l  = length(s) + 1
+        l = length(s) + 1
         sn = (tiedrank(s) ./ l .- 0.5) .* 2
         return atanh.(sn)
     else
@@ -636,7 +625,6 @@ function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -653,10 +641,8 @@ Log₁₀-normalize: `log10(x + 1 + |min(x)|)`.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_log10(s::AbstractVector)::AbstractVector
-
     m = 1 + abs(minimum(s))
     return @. log10(s + m)
-
 end
 
 """
@@ -676,7 +662,8 @@ Log₁₀-normalize: `log10(x + 1 + |min(x)|)`.
 function normalize_log10(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_log10() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_log10() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
         m = 1 + abs(minimum(s))
@@ -694,7 +681,6 @@ function normalize_log10(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -712,9 +698,7 @@ Negative log-normalize: `−log(x)`. `bych` is ignored (element-wise operation).
 - `Vector{Float64}`
 """
 function normalize_neglog(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     return @. -log(s)
-
 end
 
 """
@@ -732,9 +716,7 @@ Negative log-normalize: `−log(x)`. `bych` is ignored (element-wise operation).
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_neglog10(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     return @. -log10(s)
-
 end
 
 """
@@ -751,9 +733,7 @@ Shift signal to `(−∞, 0]` by subtracting the maximum.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_neg(s::AbstractVector)::AbstractVector
-
     return @. s - maximum(s)
-
 end
 
 """
@@ -773,7 +753,8 @@ Shift signal to `(−∞, 0]` by subtracting the maximum.
 function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_neg() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_neg() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
         return @. s - maximum(s)
@@ -790,7 +771,6 @@ function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -807,9 +787,7 @@ Shift signal to `[0, +∞)` by adding `|min(x)|`.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_pos(s::AbstractVector)::AbstractVector
-
     return @. s + abs(minimum(s))
-
 end
 
 """
@@ -829,7 +807,8 @@ Shift signal to `[0, +∞)` by adding `|min(x)|`.
 function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_pos() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_pos() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
         return @. s + abs(minimum(s))
@@ -846,7 +825,6 @@ function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -863,11 +841,9 @@ Normalize to percentages: `(x − min) / (max − min)`. Constant signals produc
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_perc(s::AbstractVector)::AbstractVector
-
     m1 = minimum(s)
-    m  = maximum(s) - m1
+    m = maximum(s) - m1
     return m != 0 ? (s .- m1) ./ m : (s .- m1)
-
 end
 
 """
@@ -887,11 +863,12 @@ Normalize to percentages: `(x − min) / (max − min)`. Constant signals produc
 function normalize_perc(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_perc() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_perc() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
         m1 = minimum(s)
-        m  = maximum(s) - m1
+        m = maximum(s) - m1
         return m != 0 ? (s .- m1) ./ m : (s .- m1)
     else
         sn = zeros(size(s))
@@ -906,7 +883,6 @@ function normalize_perc(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -923,13 +899,11 @@ Inverse-root normalize: `1 / √x`. Exact zeros are replaced with `eps()` to avo
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_invroot(s::AbstractVector)::AbstractVector
-
     sc = copy(s)
     idx = findall(iszero, sc)
     isempty(idx) || (sc[idx] .= eps())
 
     return 1 ./ sqrt.(sc)
-
 end
 
 """
@@ -949,7 +923,8 @@ Inverse-root normalize: `1 / √x`. Exact zeros are replaced with `eps()` to avo
 function normalize_invroot(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_invroot() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_invroot() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
         sc = copy(s)
@@ -969,7 +944,6 @@ function normalize_invroot(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -987,10 +961,8 @@ Softmax normalization: `exp(xᵢ) / Σexp(x)`. `bych` is ignored.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_softmax(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     ex = exp.(s)
     return ex ./ sum(ex)
-
 end
 
 """
@@ -1008,9 +980,7 @@ Sigmoid normalization: `1 / (1 + e^{−xᵢ})`. `bych` is ignored.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_sigmoid(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     return @. 1 / (1 + exp(-s))
-
 end
 
 """
@@ -1029,8 +999,7 @@ The `1.4826` factor is the standard consistency constant for a normal distributi
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_mad(s::AbstractVector)::AbstractVector
-
-    m  = median(s)
+    m = median(s)
     md = 1.4826 * mad(s)
     if md != 0
         return @. (s - m) / md
@@ -1038,7 +1007,6 @@ function normalize_mad(s::AbstractVector)::AbstractVector
         _warn("MAD is 0; values normalized to (x − x̃).")
         return @. (s - m)
     end
-
 end
 
 """
@@ -1060,10 +1028,11 @@ The `1.4826` factor is the standard consistency constant for a normal distributi
 function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     # validate
-    ndims(s) <= 3 || throw(ArgumentError("normalize_mad() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_mad() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
-        m  = median(s)
+        m = median(s)
         # FIX: original used `mad(s)` without the 1.4826 consistency factor,
         # making the array method inconsistent with the vector method.
         md = 1.4826 * mad(s)
@@ -1086,7 +1055,6 @@ function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -1103,11 +1071,9 @@ Normalize using tied ranks (result is in `[1, n]`).
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_rank(s::AbstractVector)::AbstractVector
-
     sn = tiedrank(s)
 
     return sn
-
 end
 
 """
@@ -1129,7 +1095,8 @@ function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
     # validate
     length(unique(s)) == 1 && return ones(length(s))
 
-    ndims(s) <= 3 || throw(ArgumentError("normalize_rank() only works for arrays of ≤ 3 dimensions."))
+    ndims(s) <= 3 ||
+        throw(ArgumentError("normalize_rank() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
         return tiedrank(s)
@@ -1146,7 +1113,6 @@ function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
         end
         return sn
     end
-
 end
 
 """
@@ -1165,14 +1131,12 @@ This is mathematically equivalent to `atanh`, and converts a uniform distributio
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_fisher(s::AbstractVector)::AbstractVector
-
     sn = normalize_minmax(s)
     # clamp boundary values to avoid atanh(±1) = ±Inf.
     sn[sn .== -1.0] .= -1.0 + eps()
-    sn[sn .==  1.0] .=  1.0 - eps()
+    sn[sn .== 1.0] .= 1.0 - eps()
     # `log(ℯ, x)` = `atanh`.
     return atanh.(sn)
-
 end
 
 """
@@ -1192,11 +1156,9 @@ This is mathematically equivalent to `atanh`, and converts a uniform distributio
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_fisher(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     sn = normalize_minmax(s)
     sn[sn .== -1.0] .= -1.0 + eps()
-    sn[sn .==  1.0] .=  1.0 - eps()
+    sn[sn .== 1.0] .= 1.0 - eps()
     # `log(ℯ, x)` = `atanh`.
     return atanh.(sn)
-
 end

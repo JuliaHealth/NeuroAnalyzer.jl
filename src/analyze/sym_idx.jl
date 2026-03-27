@@ -16,11 +16,9 @@ Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates t
 - `Float64`: symmetry index
 """
 function sym_idx(s::AbstractVector)::Float64
-
     sym = sum(s .< 0) == 0 ? sum(s .>= 0) : sum(s .>= 0) / sum(s .< 0)
 
     return sym
-
 end
 
 """
@@ -57,7 +55,6 @@ function sym_idx(s::AbstractArray)::Matrix{Float64}
     end
 
     return sym
-
 end
 
 """
@@ -74,11 +71,15 @@ Calculate signal symmetry index (ratio of positive to negative amplitudes). Perf
 
 - `Matrix{Float64}`: symmetry index
 """
-function sym_idx(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
+function sym_idx(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return sym_idx(@view(obj.data[ch, :, :]))
-
 end

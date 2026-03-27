@@ -19,13 +19,13 @@ The signal is split into non-overlapping windows. A polynomial of degree `order`
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
 function filter_poly(
-    s::AbstractVector;
-    order::Int64 = 8,
-    window::Int64 = 10
-)::Vector{Float64}
-
+        s::AbstractVector;
+        order::Int64 = 8,
+        window::Int64 = 10,
+    )::Vector{Float64}
     order >= 2 || throw(ArgumentError("order must be ≥ 2."))
-    (window >= 1 && window <= length(s)) || throw(ArgumentError("window must be in [1, $(length(s))]."))
+    (window >= 1 && window <= length(s)) ||
+        throw(ArgumentError("window must be in [1, $(length(s))]."))
     order < window || throw(ArgumentError("order must be < window ($window)."))
 
     s_filtered = float(copy(s))
@@ -61,7 +61,7 @@ function filter_poly(
         j2 = min(length(s), junction + half - 1)   # was: no bounds check - could exceed signal length
         s_tmp = s_filtered[j1:j2]
         t = collect(1.0:length(s_tmp))
-        model = Loess.loess(t, Vector{Float64}(s_tmp); span=1.0)
+        model = Loess.loess(t, Vector{Float64}(s_tmp); span = 1.0)
         smoothed = Loess.predict(model, t)
         # preserve edge values to avoid boundary artifacts
         smoothed[1] = s_tmp[1]
@@ -70,7 +70,6 @@ function filter_poly(
     end
 
     return s_filtered
-
 end
 
 """
@@ -91,10 +90,10 @@ Apply a piecewise polynomial filter to every channel × epoch slice of a 3-D sig
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_poly(
-    s::AbstractArray;
-    order::Int64 = 8,
-    window::Int64 = 10
-)::Array{Float64, 3}
+        s::AbstractArray;
+        order::Int64 = 8,
+        window::Int64 = 10,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -111,14 +110,13 @@ function filter_poly(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_filtered[ch_idx, :, ep_idx] = filter_poly(
-                                            @view(s[ch_idx, :, ep_idx]),
-                                            order=order,
-                                            window=window
-                                        )
+            @view(s[ch_idx, :, ep_idx]),
+            order = order,
+            window = window,
+        )
     end
 
     return s_filtered
-
 end
 
 """
@@ -138,11 +136,11 @@ Apply a piecewise polynomial filter to selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_poly(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    order::Int64 = 8,
-    window::Int64 = 10
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        order::Int64 = 8,
+        window::Int64 = 10,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -151,14 +149,13 @@ function filter_poly(
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = filter_poly(
-                                @view(obj.data[ch, :, :]),
-                                order=order,
-                                window=window
-                             )
+        @view(obj.data[ch, :, :]);
+        order = order,
+        window = window,
+    )
     push!(obj_new.history, "filter_poly(obj; ch=$ch, order=$order, window=$window)")
 
     return obj_new
-
 end
 
 """
@@ -178,16 +175,14 @@ Apply a piecewise polynomial filter in-place to selected channels of a NEURO obj
 - `Nothing`
 """
 function filter_poly!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    order::Int64 = 8,
-    window::Int64 = 10
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        order::Int64 = 8,
+        window::Int64 = 10,
+    )::Nothing
     obj_new = filter_poly(obj; ch = ch, order = order, window = window)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

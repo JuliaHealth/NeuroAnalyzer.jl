@@ -42,14 +42,13 @@ Channel locations:
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.NEURO
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     length(obj.header.recording[:label]) > 0 ||
         throw(ArgumentError("OBJ does not contain labels, use add_label() first."))
 
     _info(
-        "Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org"
+        "Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org",
     )
     _info("Nose direction is set at '+Y'")
 
@@ -82,26 +81,26 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
     end
 
     # add locations of reference channels
-    ref_labels = get_channel(obj, type = "ref")
+    ref_labels = get_channel(obj; type = "ref")
     if length(ref_labels) > 0
         for idx in eachindex(ref_labels)
             (
                 occursin("a", lowercase(ref_labels[idx])) &&
-                    occursin("1", ref_labels[idx])
+                occursin("1", ref_labels[idx])
             ) && push!(
                 locs,
-                [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.1, -165.96, -30.11]
+                [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.1, -165.96, -30.11],
             )
             (
                 occursin("a", lowercase(ref_labels[idx])) &&
-                    occursin("2", ref_labels[idx])
+                occursin("2", ref_labels[idx])
             ) && push!(
                 locs,
-                [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.1, -14.04, -30.11]
+                [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.1, -14.04, -30.11],
             )
             (
                 occursin("m", lowercase(ref_labels[idx])) &&
-                    occursin("1", ref_labels[idx])
+                occursin("1", ref_labels[idx])
             ) && push!(
                 locs,
                 [
@@ -114,40 +113,40 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
                     0.99,
                     -173.93,
                     -17.61,
-                ]
+                ],
             )
             (
                 occursin("m", lowercase(ref_labels[idx])) &&
-                    occursin("2", ref_labels[idx])
+                occursin("2", ref_labels[idx])
             ) && push!(
                 locs,
-                [ref_labels[idx], 0.95, -6.07, 0.94, -0.1, -0.3, 0.99, -6.07, -17.61]
+                [ref_labels[idx], 0.95, -6.07, 0.94, -0.1, -0.3, 0.99, -6.07, -17.61],
             )
         end
     end
 
     # add locations of EMG channels
-    emg_labels = get_channel(obj, type = "emg")
+    emg_labels = get_channel(obj; type = "emg")
     if length(emg_labels) > 0
         for idx in eachindex(emg_labels)
             occursin("1", emg_labels[idx]) && push!(
                 locs,
-                [emg_labels[idx], 0.99, 135.0, -0.7, 0.7, -1.1, 1.48, 135.0, -48.01]
+                [emg_labels[idx], 0.99, 135.0, -0.7, 0.7, -1.1, 1.48, 135.0, -48.01],
             )
             occursin("2", emg_labels[idx]) && push!(
                 locs,
-                [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01]
+                [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01],
             )
             # if no numbers, assume that EMG channel is on the right side
             (!occursin("1", emg_labels[idx]) && !occursin("2", emg_labels[idx])) && push!(
                 locs,
-                [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01]
+                [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01],
             )
         end
     end
 
     # add locations of EOG channels
-    eog_labels = get_channel(obj, type = "eog")
+    eog_labels = get_channel(obj; type = "eog")
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)
             if occursin("1", eog_labels[idx])
@@ -203,7 +202,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
             end
             # if no V/H indicators, assume that EEG channels are vertical
             if !occursin("v", lowercase(eog_labels[idx])) &&
-                    !occursin("h", lowercase(eog_labels[idx]))
+               !occursin("h", lowercase(eog_labels[idx]))
                 occursin("1", eog_labels[idx]) && push!(
                     locs,
                     [
@@ -228,7 +227,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
 
     no_match = setdiff(labels(obj), locs[!, :label])
     length(no_match) > 0 && _warn(
-        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name"
+        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name",
     )
 
     # create new dataset
@@ -246,7 +245,6 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")
 
     return obj_new
-
 end
 
 """
@@ -289,10 +287,8 @@ Channel locations:
 - `Nothing`
 """
 function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
-
-    obj_tmp = load_locs(obj, file_name = file_name)
+    obj_tmp = load_locs(obj; file_name = file_name)
     obj.locs = obj_tmp.locs
 
     return nothing
-
 end

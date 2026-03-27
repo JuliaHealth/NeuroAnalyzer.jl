@@ -28,10 +28,9 @@ Electrode locations:
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEURO
-
     no_match = setdiff(labels(obj), locs[!, :label])
     length(no_match) > 0 && _warn(
-        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object."
+        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.",
     )
     locs = Base.filter(:label => in(labels(obj)), locs)
 
@@ -50,7 +49,6 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEUR
     push!(obj_new.history, "add_locs(OBJ, locs)")
 
     return obj_new
-
 end
 
 """
@@ -80,11 +78,9 @@ Electrode locations:
 - `Nothing`
 """
 function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::Nothing
-
-    obj_new = add_locs(obj, locs = locs)
+    obj_new = add_locs(obj; locs = locs)
     obj.history = obj_new.history
     obj.locs = obj_new.locs
 
     return nothing
-
 end

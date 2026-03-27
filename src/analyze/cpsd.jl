@@ -33,20 +33,20 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function cpsd(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true
-)::@NamedTuple{
-    pxy::Vector{ComplexF64},
-    f::Vector{Float64}
-}
+        s1::AbstractVector,
+        s2::AbstractVector;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        pxy::Vector{ComplexF64},
+        f::Vector{Float64},
+    }
 
     # validate
     _check_var(method, [:mt, :fft, :stft], "method")
@@ -71,12 +71,12 @@ function cpsd(
 
         # compute the full cross-power spectra matrix.
         pxy_mt = DSP.mt_cross_power_spectra(
-            s,
+            s;
             fs = fs,
             demean = demean,
             nfft = nextfastfft(n_samples),
             nw = ((nt + 1) ÷ 2),
-            ntapers = nt
+            ntapers = nt,
         )
         f = DSP.freq(pxy_mt)
         pxy = DSP.power(pxy_mt)
@@ -92,7 +92,7 @@ function cpsd(
     elseif method === :stft
 
         # segment the signals into overlapping windows
-        chunks_idx = _fchunks(length(s1), wlen = wlen, woverlap = woverlap)
+        chunks_idx = _fchunks(length(s1); wlen = wlen, woverlap = woverlap)
         pxy = zeros(ComplexF64, nextpow(2, wlen + 1))
 
         # apply Hanning window (or unit window)
@@ -142,17 +142,15 @@ function cpsd(
         f, _ = freqs(nextfastfft(n_samples), fs)
         # CPSD = conj(S1) * S2
         pxy = conj.(ss1) .* ss2
-        
+
         # trim to the requested frequency band
         f1_idx = vsearch(flim[1], f)
         f2_idx = vsearch(flim[2], f)
         f = f[f1_idx:f2_idx]
         pxy = pxy[f1_idx:f2_idx]
-
     end
 
     return (; pxy, f)
-
 end
 
 """
@@ -188,20 +186,20 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function cpsd(
-    s1::AbstractArray,
-    s2::AbstractArray;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true
-)::@NamedTuple{
-    pxy::Array{ComplexF64, 3},
-    f::Vector{Float64}
-}
+        s1::AbstractArray,
+        s2::AbstractArray;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        pxy::Array{ComplexF64, 3},
+        f::Vector{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
@@ -217,7 +215,7 @@ function cpsd(
     # pre-compute the frequency vector with a single pilot call on the first channel/epoch pair
     cpsd_data = cpsd(
         @view(s1[1, :, 1]),
-        @view(s2[1, :, 1]),
+        @view(s2[1, :, 1]);
         method = method,
         fs = fs,
         flim = flim,
@@ -225,10 +223,10 @@ function cpsd(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w
+        w = w,
     )
     f = cpsd_data.f
-    
+
     # pre-allocate output
     pxy = zeros(ComplexF64, ch_n, length(f), ep_n)
 
@@ -245,7 +243,7 @@ function cpsd(
             nt = nt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w
+            w = w,
         )
     end
 
@@ -288,32 +286,41 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function cpsd(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    method::Symbol = :mt,
-    flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj1),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true
-)::@NamedTuple{
-    pxy::Array{ComplexF64, 3},
-    f::Vector{Float64}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        method::Symbol = :mt,
+        flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj1),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        pxy::Array{ComplexF64, 3},
+        f::Vector{Float64},
+    }
 
     # validate
-    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    sr(obj1) == sr(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -322,13 +329,17 @@ function cpsd(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
     length(ep1) == length(ep2) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     return cpsd(
         @view(obj1.data[ch1, :, ep1]),
-        @view(obj2.data[ch2, :, ep2]),
+        @view(obj2.data[ch2, :, ep2]);
         method = method,
         fs = sr(obj1),
         flim = flim,
@@ -336,7 +347,6 @@ function cpsd(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w
+        w = w,
     )
-
 end

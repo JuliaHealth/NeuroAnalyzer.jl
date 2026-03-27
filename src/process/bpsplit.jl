@@ -25,16 +25,15 @@ Named tuple:
 - `bf::Vector{Tuple{Real, Real}}`: frequency limits `(f_low, f_high)` in Hz for each band, in the same order as `bn`
 """
 function bpsplit(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    order::Int64 = 91,
-    w::Union{Nothing, AbstractVector, <:Real} = nothing
-)::@NamedTuple{
-    s::Array{Float64, 4},
-    bn::Vector{Symbol},
-    bf::Vector{Tuple{Real, Real}}
-}
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        order::Int64 = 91,
+        w::Union{Nothing, AbstractVector, <:Real} = nothing,
+    )::@NamedTuple{
+        s::Array{Float64, 4},
+        bn::Vector{Symbol},
+        bf::Vector{Tuple{Real, Real}},
+    }
     bn = [
         :delta,
         :theta,
@@ -52,7 +51,7 @@ function bpsplit(
     ]
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch=ch)
+    ch = get_channel(obj; ch = ch)
 
     # number of channels
     ch_n = length(ch)
@@ -63,7 +62,7 @@ function bpsplit(
     # epoch lengths
     el = epoch_len(obj)
 
-    s  = zeros(length(bn), ch_n, el, ep_n)
+    s = zeros(length(bn), ch_n, el, ep_n)
 
     # pre-allocate output
     bf = Vector{Tuple{Real, Real}}(undef, length(bn))
@@ -72,7 +71,7 @@ function bpsplit(
     # the outer band loop is sequential (each band uses a different filter)
     # the inner channel loop is parallelized
     @inbounds for band_idx in eachindex(bn)
-        band_f = band_frq(obj, band=bn[band_idx])
+        band_f = band_frq(obj, band = bn[band_idx])
         bf[band_idx] = band_f
         flt = filter_create(
             fs = fs,
@@ -80,7 +79,7 @@ function bpsplit(
             ftype = :bp,
             cutoff = band_f,
             order = order,
-            w = w
+            w = w,
         )
 
         # calculate over channel and epochs
@@ -88,12 +87,10 @@ function bpsplit(
             ch_idx, ep_idx = idx[1], idx[2]
             s[band_idx, ch_idx, :, ep_idx] = filter_apply(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
-                flt=flt
+                flt = flt,
             )
         end
-
     end
 
     return (; s, bn, bf)
-
 end

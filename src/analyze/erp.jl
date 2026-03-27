@@ -38,7 +38,6 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
     end
 
     return p
-
 end
 
 """
@@ -56,12 +55,12 @@ Calculate amplitude at a given time point.
 - `Matrix{Float64}`: amplitude for each channel per epoch, shape (channels, epochs) or `(channels, 1)` for continuous objects
 """
 function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
-
     if datatype(obj) in ["erp", "erf", "mep"]
 
         # validate
         t >= obj.epoch_time[1] || throw(ArgumentError("t must be ≥ $(obj.epoch_time[1])."))
-        t <= obj.epoch_time[end] || throw(ArgumentError("t must be ≤ $(obj.epoch_time[end])."))
+        t <= obj.epoch_time[end] ||
+            throw(ArgumentError("t must be ≤ $(obj.epoch_time[end])."))
 
         # time point index
         t_idx = vsearch(t, obj.epoch_time)
@@ -97,11 +96,9 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
         @inbounds Threads.@threads :static for ch_idx in 1:ch_n
             p[ch_idx, 1] = obj.data[ch_idx, t_idx, 1]
         end
-
     end
 
     return p
-
 end
 
 """
@@ -119,7 +116,6 @@ Calculate mean amplitude over a time segment.
 - `Matrix{Float64}`: mean amplitude for each channel per epoch, shape (channels, epochs) or `(channels, 1)` for continuous objects
 """
 function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
-
     if datatype(obj) in ["erp", "erf", "mep"]
 
         # validate
@@ -160,11 +156,9 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         @inbounds Threads.@threads :static for ch_idx in 1:ch_n
             p[ch_idx, 1] = mean(@view(obj.data[ch_idx, t_idx1:t_idx2, 1]))
         end
-
     end
 
     return p
-
 end
 
 """
@@ -182,7 +176,6 @@ Calculate maximum amplitude over a time segment.
 - `Matrix{Float64}`: maximum amplitude for each channel per epoch, shape (channels, epochs) or `(channels, 1)` for continuous objects
 """
 function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
-
     if datatype(obj) in ["erp", "erf", "mep"]
 
         # validate
@@ -223,11 +216,9 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         @inbounds Threads.@threads :static for ch_idx in 1:ch_n
             p[ch_idx, 1] = maximum(@view(obj.data[ch_idx, t_idx1:t_idx2, 1]))
         end
-
     end
 
     return p
-
 end
 
 """
@@ -245,7 +236,6 @@ Calculate minimum amplitude over a time segment.
 - `Matrix{Float64}`: minimum amplitude for each channel per epoch, shape (channels, epochs) or `(channels, 1)` for continuous objects
 """
 function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
-
     if datatype(obj) in ["erp", "erf", "mep"]
 
         # validate
@@ -286,11 +276,9 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         @inbounds Threads.@threads :static for ch_idx in 1:ch_n
             p[ch_idx, 1] = minimum(@view(obj.data[ch_idx, t_idx1:t_idx2, 1]))
         end
-
     end
 
     return p
-
 end
 
 """
@@ -313,11 +301,11 @@ Compute area under curve of an ERP/ERF/MEP (epoch 1).
 - `Vector{Float64}`
 """
 function erp_auc(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
-    type::Symbol = :all
-)::Vector{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
+        type::Symbol = :all,
+    )::Vector{Float64}
 
     # validate
     _check_datatype(obj, ["erp", "erf", "mep"])
@@ -329,7 +317,9 @@ function erp_auc(
     t2 = vsearch(seg[2], obj.epoch_time)
 
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] : get_channel(obj; ch = ch, exclude = "")[1]
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] :
+        get_channel(obj; ch = ch, exclude = "")[1]
 
     # pre-allocate output
     auc = zeros(length(ch))
@@ -344,25 +334,27 @@ function erp_auc(
         s = @view obj.data[ch_idx, t1:t2, 1]
 
         if type === :all
-
             auc[ch_idx] = simpson(s, t, dx = dx)
 
         elseif type === :pos
-
             mask = s .> 0
-            !(any(mask)) && throw(ArgumentError("No positive values in channel $(ch[ch_idx]) segment, cannot compute AUC."))
+            !(any(mask)) && throw(
+                ArgumentError(
+                    "No positive values in channel $(ch[ch_idx]) segment, cannot compute AUC.",
+                ),
+            )
             auc[ch_idx] = simpson(s[mask], t[mask], dx = dx)
 
         elseif type === :neg
-
             mask = s .< 0
-            !(any(mask)) && throw(ArgumentError("No negative values in channel $(ch[ch_idx]) segment, cannot compute AUC."))
+            !(any(mask)) && throw(
+                ArgumentError(
+                    "No negative values in channel $(ch[ch_idx]) segment, cannot compute AUC.",
+                ),
+            )
             auc[ch_idx] = simpson(s[mask], t[mask], dx = dx)
-
         end
-
     end
 
     return auc
-
 end

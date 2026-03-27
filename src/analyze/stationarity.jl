@@ -17,11 +17,9 @@ Calculate phase stationarity using Hilbert transformation for a 1-D signal vecto
 - `Vector{Float64}`
 """
 function stationarity_hilbert(s::AbstractVector)::Vector{Float64}
-
     stph = diff(DSP.unwrap(DSP.angle.(hilbert(s))))
 
     return stph
-
 end
 
 """
@@ -49,10 +47,9 @@ function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
 
-    stm = mean(s, dims = 1)[:]
+    stm = mean(s; dims = 1)[:]
 
     return stm
-
 end
 
 """
@@ -80,10 +77,9 @@ function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
 
-    stv = var(s, dims = 1)[:]
+    stv = var(s; dims = 1)[:]
 
     return stv
-
 end
 
 """
@@ -108,11 +104,11 @@ Calculate stationarity for a NEURO object.
 - `Union{Matrix{Float64}, Array{Float64, 3}}`
 """
 function stationarity(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    window::Int64 = 10,
-    method::Symbol = :hilbert
-)::Union{Matrix{Float64}, Array{Float64, 3}}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        window::Int64 = 10,
+        method::Symbol = :hilbert,
+    )::Union{Matrix{Float64}, Array{Float64, 3}}
 
     # validate
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
@@ -120,51 +116,51 @@ function stationarity(
     window <= epoch_len(obj) || throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
     if method === :mean
-
         s = zeros(ch_n, window, ep_n)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            s[ch_idx, :, ep_idx] = stationarity_mean(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
+            s[ch_idx, :, ep_idx] =
+                stationarity_mean(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
         end
 
         return s
-
     end
 
     if method === :var
-
         s = zeros(ch_n, window, ep_n)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            s[ch_idx, :, ep_idx] = stationarity_var(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
+            s[ch_idx, :, ep_idx] =
+                stationarity_var(@view(obj.data[ch[ch_idx], :, ep_idx]), window = window)
         end
 
         return s
-
     end
 
     if method === :hilbert
-
         s = zeros(ch_n, epoch_len(obj) - 1, ep_n)
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            s[ch_idx, :, ep_idx] = stationarity_hilbert(@view(obj.data[ch[ch_idx], :, ep_idx]))
+            s[ch_idx, :, ep_idx] =
+                stationarity_hilbert(@view(obj.data[ch[ch_idx], :, ep_idx]))
         end
 
         return s
-
     end
 
     if method === :cov
 
         # validate
-        ch_n >= 2 || throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
+        ch_n >= 2 ||
+            throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
 
         # number of time windows per epoch
         window_n = epoch_len(obj)
@@ -193,15 +189,19 @@ function stationarity(
         end
 
         return s
-
     end
 
     if method === :adf
-
         s = zeros(ch_n, 2, ep_n)
 
         # initialize progress bar
-        progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+        progbar = Progress(
+            ep_n * ch_n;
+            dt = 1,
+            barlen = 20,
+            color = :white,
+            enabled = progress_bar,
+        )
 
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx in 1:ep_n
@@ -221,7 +221,5 @@ function stationarity(
         end
 
         return s
-
     end
-
 end

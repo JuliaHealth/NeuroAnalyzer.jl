@@ -16,11 +16,9 @@ Calculate mean of a segment (e.g. spectrogram).
 - `Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)::Vector{Float64}
-
     _chk3d(seg)
 
-    return reshape(mean(mean(seg, dims = 1), dims = 2), size(seg, 3))
-
+    return reshape(mean(mean(seg; dims = 1); dims = 2), size(seg, 3))
 end
 
 """
@@ -41,18 +39,16 @@ Named tuple:
 - `seg2::Vector{Float64}`: averaged segment 2
 """
 function seg_mean(
-    seg1::AbstractArray,
-    seg2::AbstractArray
-)::@NamedTuple{
-    seg1::Vector{Float64},
-    seg2::Vector{Float64}
-}
-
+        seg1::AbstractArray,
+        seg2::AbstractArray,
+    )::@NamedTuple{
+        seg1::Vector{Float64},
+        seg2::Vector{Float64},
+    }
     seg1 = seg_mean(seg1)
     seg2 = seg_mean(seg2)
 
     return (; seg1, seg2)
-
 end
 
 """
@@ -72,12 +68,11 @@ Extract segment from a matrix.
 - `Union{AbstractMatrix, AbstractVector}`
 """
 function seg_extract(
-    m::AbstractMatrix,
-    rc::NTuple{4, Int64};
-    v::Bool = false,
-    c::Bool = false
-)::Union{AbstractMatrix, AbstractVector}
-
+        m::AbstractMatrix,
+        rc::NTuple{4, Int64};
+        v::Bool = false,
+        c::Bool = false,
+    )::Union{AbstractMatrix, AbstractVector}
     r1 = rc[1]
     c1 = rc[2]
     r2 = rc[3]
@@ -93,11 +88,9 @@ function seg_extract(
     c2 <= size(m, 2) || throw(ArgumentError("c2 must be ≤ $(size(m, 2))."))
 
     if !c
-
         return !v ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
 
     else
-
         seg = zeros(Bool, size(m))
         seg_radius = distance((r1, c1), (r2, c2))
         for idx_r in axes(m, 1), idx_c in axes(m, 2)
@@ -107,9 +100,7 @@ function seg_extract(
         end
 
         return m[seg .== true]
-
     end
-
 end
 
 """
@@ -139,18 +130,18 @@ Named tuple:
 - `bm::Matrix{Bool}`: map of the segment
 """
 function seg_extract(
-    m::AbstractMatrix;
-    threshold::Union{Real, Tuple{Real, Real}} = 0,
-    threshold_type::Symbol = :neq
-)::@NamedTuple{
-    idx::Vector{CartesianIndex{2}},
-    bm::Matrix{Bool}
-}
-
+        m::AbstractMatrix;
+        threshold::Union{Real, Tuple{Real, Real}} = 0,
+        threshold_type::Symbol = :neq,
+    )::@NamedTuple{
+        idx::Vector{CartesianIndex{2}},
+        bm::Matrix{Bool},
+    }
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
 
     if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-        length(threshold) == 1 || throw(ArgumentError("threshold must contain a single value."))
+        length(threshold) == 1 ||
+            throw(ArgumentError("threshold must contain a single value."))
     else
         length(threshold) == 2 || throw(ArgumentError("threshold must contain two values."))
         _check_tuple(threshold, extrema(m), "threshold")
@@ -178,7 +169,6 @@ function seg_extract(
     bm[idx] .= true
 
     return (; idx, bm)
-
 end
 
 export seg_select
@@ -203,26 +193,25 @@ Interactive selection of a matrix area.
 - `Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
 function seg_select(
-    m::AbstractMatrix;
-    shape::Symbol = :r,
-    extract::Bool = false,
-    v::Bool = false
-)::Union{
-    Nothing,
-    <:Real,
-    Tuple{Int64, Int64},
-    Tuple{Int64, Int64, Int64, Int64},
-    Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
-}
-
+        m::AbstractMatrix;
+        shape::Symbol = :r,
+        extract::Bool = false,
+        v::Bool = false,
+    )::Union{
+        Nothing,
+        <:Real,
+        Tuple{Int64, Int64},
+        Tuple{Int64, Int64, Int64, Int64},
+        Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
+    }
     _check_var(shape, [:r, :p, :c], "shape")
 
     size_x = size(m, 2)
     size_y = size(m, 1)
 
-    p = GLMakie.Figure(size = (size_x, size_y))
+    p = GLMakie.Figure(; size = (size_x, size_y))
     ax = GLMakie.Axis(
-        p[1, 1],
+        p[1, 1];
         xlabel = "",
         ylabel = "",
         title = "",
@@ -236,10 +225,10 @@ function seg_select(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     hidedecorations!(ax)
-    hm = GLMakie.heatmap!(m[end:-1:1, :]', colormap = :darktest)
+    hm = GLMakie.heatmap!(m[end:-1:1, :]'; colormap = :darktest)
 
     poins = nothing
     if shape in [:p, :r]
@@ -250,8 +239,7 @@ function seg_select(
     radius = Observable(1)
 
     if shape === :p
-
-        GLMakie.scatter!(ax, points, marker = :rect, markersize = 10, color = :red)
+        GLMakie.scatter!(ax, points; marker = :rect, markersize = 10, color = :red)
 
         on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
@@ -274,16 +262,15 @@ function seg_select(
         end
 
     elseif shape === :c
+        GLMakie.arc!(ax, points, radius, -pi, pi; linewidth = 5, color = :red)
 
-        GLMakie.arc!(ax, points, radius, -pi, pi, linewidth = 5, color = :red)
-
-        on(events(p).scroll, priority = 1) do (dx, dy)
+        on(events(p).scroll; priority = 1) do (dx, dy)
             if dy == 1.0
                 radius[] <= size_x && (radius[] += dy)
             elseif dy == -1.0
                 radius[] > 1 && (radius[] += dy)
             end
-            notify(radius)
+            return notify(radius)
         end
 
         on(events(ax).mousebutton) do event
@@ -300,8 +287,7 @@ function seg_select(
         end
 
     elseif shape === :r
-
-        GLMakie.lines!(ax, points, linewidth = 5, color = :red)
+        GLMakie.lines!(ax, points; linewidth = 5, color = :red)
         on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
                 pos = round.(Int64, mouseposition(ax))
@@ -404,9 +390,8 @@ function seg_select(
         r1 > r2 && ((r1, r2) = _swap(r1, r2))
         c1 > c2 && ((c1, c2) = _swap(c1, c2))
         c = shape == :c
-        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v = v, c = c)
+        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2); v = v, c = c)
     else
         return !extract ? (r, c) : m[r, c]
     end
-
 end

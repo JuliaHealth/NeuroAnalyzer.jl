@@ -26,23 +26,24 @@ Named tuple:
 - `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
 function locs_details(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    out::Bool = true
-)::@NamedTuple{
-    label::String,
-    theta_pl::Float64,
-    radius_pl::Float64,
-    x::Float64,
-    y::Float64,
-    z::Float64,
-    theta_sph::Float64,
-    radius_sph::Float64,
-    phi_sph::Float64
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        out::Bool = true,
+    )::@NamedTuple{
+        label::String,
+        theta_pl::Float64,
+        radius_pl::Float64,
+        x::Float64,
+        y::Float64,
+        z::Float64,
+        theta_sph::Float64,
+        radius_sph::Float64,
+        phi_sph::Float64,
+    }
 
     # validate
-    length(get_channel(obj; ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(get_channel(obj; ch = ch)) == 1 ||
+        throw(ArgumentError("ch must resolve to exactly one channel."))
 
     ch = intersect(obj.locs[!, :label], [ch])
     locs = Base.filter(:label => in(ch), obj.locs)
@@ -71,5 +72,4 @@ function locs_details(
     end
 
     return (; label, theta_pl, radius_pl, x, y, z, theta_sph, radius_sph, phi_sph)
-
 end

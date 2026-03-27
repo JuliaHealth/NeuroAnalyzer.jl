@@ -30,7 +30,6 @@ function varp(p::Float64, n::Int64)::Float64
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return (p * (1 - p)) / n
-
 end
 
 """
@@ -50,9 +49,7 @@ Computed as `√(p × (1 − p) / n)`.
 - `Float64`: standard deviation of the proportion
 """
 function stdp(p::Float64, n::Int64)::Float64
-
     return sqrt(varp(p, n))
-
 end
 
 """
@@ -84,7 +81,6 @@ function varc(g::Vector{Int64}, x::Vector{Int64})::Float64
     σ2 = (sum(g .^ 2 .* x) - sum(g .* x)^2 / n) / (n - 1)
 
     return σ2
-
 end
 
 """
@@ -102,9 +98,7 @@ Calculate the standard deviation of categorical data.
 - `Float64`: standard deviation of the categorical variable
 """
 function stdc(g::Vector{Int64}, x::Vector{Int64})::Float64
-
     return sqrt(varc(g, x))
-
 end
 
 """
@@ -121,11 +115,9 @@ Calculate the range of an array (maximum − minimum).
 - `Float64`: range of `x`
 """
 function rng(x::AbstractArray)::Float64
-
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
     return Float64(maximum(x) - minimum(x))
-
 end
 
 """
@@ -143,7 +135,6 @@ function mrng(x::AbstractArray)::Float64
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
     return Float64((maximum(x) - minimum(x)) / 2)
-
 end
 
 """
@@ -167,7 +158,6 @@ function moe(n::Int64)::Float64
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return 1 / sqrt(n)
-
 end
 
 """
@@ -191,7 +181,6 @@ function moe(x::AbstractArray)::Float64
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
     return 1 / sqrt(length(x))
-
 end
 
 """
@@ -212,7 +201,6 @@ Calculate absolute and relative frequencies for a categorical variable.
     - row 3: relative frequencies as percentages (rounded to 2 d.p.), total = 100.0
 """
 function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
-
     x = df[!, var]
     uvals = unique(x)
     k = length(uvals)
@@ -224,8 +212,8 @@ function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
     for (idx, val) in enumerate(uvals)
         abs_freq = count(==(val), x)
         m[1, idx] = abs_freq
-        m[2, idx] = round(abs_freq / n, digits=3)
-        m[3, idx] = round(m[2, idx] * 100, digits=2)
+        m[2, idx] = round(abs_freq / n; digits = 3)
+        m[3, idx] = round(m[2, idx] * 100; digits = 2)
     end
 
     # totals column
@@ -234,5 +222,4 @@ function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
     m[3, end] = 100.0
 
     return m
-
 end

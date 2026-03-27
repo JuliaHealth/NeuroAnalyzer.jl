@@ -27,16 +27,13 @@ function mep_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
     # calculate over channels
     ss = obj.header.recording[:stimulation_sample] .+ 20
     @inbounds Threads.@threads :static for ch_idx in 1:ch_n
-
         p[ch_idx, :] = [
             argmax(@view(obj.data[ch_idx, ss[ch_idx]:end, 1])),
-            argmin(@view(obj.data[ch_idx, ss[ch_idx]:end, 1]))
+            argmin(@view(obj.data[ch_idx, ss[ch_idx]:end, 1])),
         ]
 
         p[ch_idx, :] .+= ss[ch_idx]
-
     end
 
     return p
-
 end

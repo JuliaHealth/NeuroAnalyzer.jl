@@ -28,7 +28,6 @@ function p2z(p::Float64 = 0.05; twotailed::Bool = false)::Float64
     d = Distributions.Normal(0.0, 1.0)
 
     return twotailed ? quantile(d, 1 - p / 2) : quantile(d, 1 - p)
-
 end
 
 """
@@ -54,7 +53,6 @@ Derived probabilities:
 - `P(0 < Z < z)`: `(1 - z2p(z; twotailed=true)) / 2`
 """
 function z2p(z::Real; twotailed::Bool = false)::Float64
-
     d = Distributions.Normal(0.0, 1.0)
     if twotailed
         return 2 * ccdf(d, abs(z))
@@ -62,7 +60,6 @@ function z2p(z::Real; twotailed::Bool = false)::Float64
         # one-tailed: P(Z > z) for z ≥ 0; P(Z < z) for z < 0
         return z >= 0 ? ccdf(d, z) : cdf(d, z)   # was: 1 - ccdf(d, abs(z)) == cdf(d, -|z|) == cdf(d, z)
     end
-
 end
 
 """
@@ -99,7 +96,6 @@ function t2p(t::Real; df::Real, twotailed::Bool = false)::Float64
     else
         return t >= 0 ? ccdf(d, t) : cdf(d, t)
     end
-
 end
 
 """
@@ -127,9 +123,7 @@ function chi2p(chi::Real; df::Real)::Float64
     df > 0 || throw(ArgumentError("df must be > 0."))
 
     return ccdf(Distributions.Chisq(df), chi)
-
 end
-
 
 """
     f2p(t; <keyword arguments>)
@@ -158,7 +152,6 @@ function f2p(f::Real; df1::Real, df2::Real)::Float64
     df2 > 0 || throw(ArgumentError("df2 must be > 0."))
 
     return ccdf(Distributions.FDist(df1, df2), f)
-
 end
 
 export norminv
@@ -184,7 +177,6 @@ function norminv(x::Real)::Float64
     0 < x < 1 || throw(ArgumentError("x must be in (0, 1)."))
 
     return quantile(Distributions.Normal(), x)
-
 end
 
 """
@@ -206,10 +198,9 @@ function p2o(p::Real)::Float64
 
     # validate
     p >= 0 || throw(ArgumentError("p must be ≥ 0."))
-    p <  1 || throw(ArgumentError("p must be < 1 (odds undefined at p = 1)."))
+    p < 1 || throw(ArgumentError("p must be < 1 (odds undefined at p = 1)."))
 
     return p / (1 - p)
-
 end
 
 """
@@ -233,5 +224,4 @@ function o2p(o::Real)::Float64
     o >= 0 || throw(ArgumentError("o must be ≥ 0."))
 
     return o / (1 + o)
-
 end

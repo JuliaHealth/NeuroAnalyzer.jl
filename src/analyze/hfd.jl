@@ -20,9 +20,7 @@ Wraps FractalDimensions.higuchi_dim() to compute the Higuchi fractal dimension (
 The Higuchi FD estimates the fractal dimension directly from the time series by measuring how the length of the signal scales with the lag parameter k. Values range from 1 (smooth/linear) to 2 (maximally irregular/random).
 """
 function hfd(s::AbstractVector)::Float64
-
     return higuchi_dim(s)
-
 end
 
 """
@@ -64,7 +62,6 @@ function hfd(s::AbstractArray)::Matrix{Float64}
     end
 
     return hd
-
 end
 
 """
@@ -87,11 +84,15 @@ Wraps FractalDimensions.higuchi_dim() to compute the Higuchi fractal dimension (
 
 The Higuchi FD estimates the fractal dimension directly from the time series by measuring how the length of the signal scales with the lag parameter k. Values range from 1 (smooth/linear) to 2 (maximally irregular/random).
 """
-function hfd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
+function hfd(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return hfd(@view(obj.data[ch, :, :]))
-
 end

@@ -26,25 +26,25 @@ The signal is transformed into the time-frequency domain via CWD, the coefficien
 - `Vector{Float64}`: artifact-corrected signal of the same length as `s`
 """
 function artrem_cwd(
-    s::AbstractVector,
-    t::AbstractVector;
-    fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    tseg::Tuple{Real, Real},
-    fseg::Tuple{Real, Real},
-    type::Symbol = :nd
-)::Vector{Float64} where {T <: CWT}
+        s::AbstractVector,
+        t::AbstractVector;
+        fs::Int64,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        tseg::Tuple{Real, Real},
+        fseg::Tuple{Real, Real},
+        type::Symbol = :nd,
+    )::Vector{Float64} where {T <: CWT}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))   # was: !(fs >= 1) && throw(...)
 
     # compute the wavelet frequency axis, then validate the segment bounds
-    f = cwtfrq(s; fs=fs, wt=wt)
+    f = cwtfrq(s; fs = fs, wt = wt)
     _check_tuple(tseg, (t[1], t[end]), "tseg")
     _check_tuple(fseg, (f[1], f[end]), "fseg")
 
     # forward CWD → complex coefficient matrix (frequencies × time)
-    coef = cwd(s; wt=wt)
+    coef = cwd(s; wt = wt)
 
     # find the nearest frequency and time indices for the artifact window
     f_idx1 = vsearch(fseg[1], f)
@@ -56,8 +56,7 @@ function artrem_cwd(
     coef[f_idx1:f_idx2, t_idx1:t_idx2] .= 0
 
     # reconstruct the clean signal via inverse CWD
-    return vec(icwd(coef; wt=wt, type=type))
-
+    return vec(icwd(coef; wt = wt, type = type))
 end
 
 """
@@ -83,14 +82,14 @@ Remove an artifact from one channel and one epoch of a NEURO object using contin
 - `NeuroAnalyzer.NEURO`: new object with the artifact removed from the specified channel and epoch
 """
 function artrem_cwd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    tseg::Tuple{Real, Real},
-    fseg::Tuple{Real, Real},
-    type::Symbol = :nd
-)::NeuroAnalyzer.NEURO where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Int64,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        tseg::Tuple{Real, Real},
+        fseg::Tuple{Real, Real},
+        type::Symbol = :nd,
+    )::NeuroAnalyzer.NEURO where {T <: CWT}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -104,17 +103,19 @@ function artrem_cwd(
 
     obj_new.data[ch, :, ep] = artrem_cwd(
         @view(obj.data[ch, :, ep]),
-        obj.epoch_time,
+        obj.epoch_time;
         fs = sr(obj),
         wt = wt,
         tseg = tseg,
         fseg = fseg,
-        type = type
+        type = type,
     )
-    push!(obj_new.history, "artrem_cwd(obj; ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)")
+    push!(
+        obj_new.history,
+        "artrem_cwd(obj; ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)",
+    )
 
     return obj_new
-
 end
 
 """
@@ -140,19 +141,18 @@ Remove an artifact from one channel and one epoch of a NEURO object in-place usi
 - `Nothing`
 """
 function artrem_cwd!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    tseg::Tuple{Real, Real},
-    fseg::Tuple{Real, Real},
-    type::Symbol = :nd
-)::Nothing where {T <: CWT}
-
-    obj_new = artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        ep::Int64,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        tseg::Tuple{Real, Real},
+        fseg::Tuple{Real, Real},
+        type::Symbol = :nd,
+    )::Nothing where {T <: CWT}
+    obj_new =
+        artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

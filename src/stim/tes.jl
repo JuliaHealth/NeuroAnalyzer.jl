@@ -27,17 +27,17 @@ Named tuple:
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """
 function tdcs_dose(;
-    current::Real,
-    pad_area::Real,
-    duration::Int64
-)::@NamedTuple{
-    charge::Float64,
-    current_density::Float64,
-    charge_density::Float64
-}
+        current::Real,
+        pad_area::Real,
+        duration::Int64,
+    )::@NamedTuple{
+        charge::Float64,
+        current_density::Float64,
+        charge_density::Float64,
+    }
 
     # validate
-    current  > 0 || throw(ArgumentError("current must be > 0."))
+    current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
     duration > 0 || throw(ArgumentError("duration must be > 0."))
 
@@ -45,7 +45,7 @@ function tdcs_dose(;
     #   current:   mA → A    (÷ 1_000)
     #   pad_area:  cm² → m²  (÷ 10_000)   was: ÷ 1_000 (wrong)
     #   charge:    C  → kC   (÷ 1_000)
-    i_A = current  / 1_000
+    i_A = current / 1_000
     a_m2 = pad_area / 10_000
 
     # [A × s = C]
@@ -53,7 +53,7 @@ function tdcs_dose(;
     # [A/m²]
     current_density = i_A / a_m2
     # [kC/m²]
-    charge_density  = (charge / 1_000) / a_m2
+    charge_density = (charge / 1_000) / a_m2
 
     return (; charge, current_density, charge_density)
 end
@@ -83,18 +83,17 @@ Named tuple:
 - `charge_density::Float64`: delivered charge density in kC/m²
 """
 function tacs_dose(;
-    current::Real,
-    pad_area::Real,
-    duration::Int64,
-    offset::Real,
-    frequency::Real,
-    phase::Real
-)::@NamedTuple{
-    charge::Float64,
-    current_density::Float64,
-    charge_density::Float64
-}
-
+        current::Real,
+        pad_area::Real,
+        duration::Int64,
+        offset::Real,
+        frequency::Real,
+        phase::Real,
+    )::@NamedTuple{
+        charge::Float64,
+        current_density::Float64,
+        charge_density::Float64,
+    }
     current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
     duration > 0 || throw(ArgumentError("duration must be > 0."))
@@ -111,7 +110,7 @@ function tacs_dose(;
     _info("Effective current: $eff_current mA")
 
     # unit conversions: mA → A (÷ 1_000), cm² → m² (÷ 10_000)
-    i_A  = eff_current / 1_000
+    i_A = eff_current / 1_000
     a_m2 = pad_area / 10_000
 
     charge = i_A * duration
@@ -146,16 +145,16 @@ Named tuple:
 - `charge_density::Float64`: delivered charge density in kC/m²
 """
 function tpcs_dose(;
-    current::Real,
-    pad_area::Real,
-    duration::Real,
-    pw::Real,
-    isi::Real
-)::@NamedTuple{
-    charge::Float64,
-    current_density::Float64,
-    charge_density::Float64}
-
+        current::Real,
+        pad_area::Real,
+        duration::Real,
+        pw::Real,
+        isi::Real,
+    )::@NamedTuple{
+        charge::Float64,
+        current_density::Float64,
+        charge_density::Float64,
+    }
     current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
     duration > 0 || throw(ArgumentError("duration must be > 0."))
@@ -163,7 +162,7 @@ function tpcs_dose(;
     isi > pw || throw(ArgumentError("isi must be > pw."))
 
     # convert pulse timings from ms → s
-    pw_s  = pw  / 1_000
+    pw_s = pw / 1_000
     isi_s = isi / 1_000
 
     cycles = duration / isi_s
@@ -181,7 +180,6 @@ function tpcs_dose(;
     charge_density = (charge / 1_000) / a_m2
 
     return (; charge, current_density, charge_density)
-
 end
 
 """
@@ -209,19 +207,19 @@ Create a TES (tDCS/tACS/tRNS/tPCS) stimulation protocol dictionary.
 - `Dict`: protocol dictionary with all stimulation parameters
 """
 function tes_protocol(;
-    type::Symbol,
-    hd::Bool,
-    current::Real,
-    frequency::Real = 0,
-    anode_size::Tuple{Int64, Int64},
-    cathode_size::Tuple{Int64, Int64},
-    anode_loc::Symbol,
-    cathode_loc::Symbol,
-    duration::Real,
-    ramp_in::Real,
-    ramp_out::Real,
-    sham::Bool
-)::Dict
+        type::Symbol,
+        hd::Bool,
+        current::Real,
+        frequency::Real = 0,
+        anode_size::Tuple{Int64, Int64},
+        cathode_size::Tuple{Int64, Int64},
+        anode_loc::Symbol,
+        cathode_loc::Symbol,
+        duration::Real,
+        ramp_in::Real,
+        ramp_out::Real,
+        sham::Bool,
+    )::Dict
 
     # validate
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
@@ -234,7 +232,7 @@ function tes_protocol(;
     cathode_size[1] > 0 || throw(ArgumentError("cathode_size width must be > 0 mm."))
     cathode_size[2] > 0 || throw(ArgumentError("cathode_size height must be > 0 mm."))
     duration > 0 || throw(ArgumentError("duration must be > 0 s."))
-    ramp_in  >= 0 || throw(ArgumentError("ramp_in must be ≥ 0 s."))
+    ramp_in >= 0 || throw(ArgumentError("ramp_in must be ≥ 0 s."))
     ramp_out >= 0 || throw(ArgumentError("ramp_out must be ≥ 0 s."))
 
     return Dict(
@@ -243,13 +241,12 @@ function tes_protocol(;
         :current => current,
         :frequency => frequency,
         :anode_size => anode_size
-        :cathode_size => cathode_size,
+            :cathode_size => cathode_size,
         :anode_loc => anode_loc,
         :cathode_loc => cathode_loc,
         :duration => duration,
         :ramp_in => ramp_in,
         :ramp_out => ramp_out,
-        :sham => sham
+        :sham => sham,
     )
-
 end

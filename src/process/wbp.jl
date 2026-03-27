@@ -19,12 +19,12 @@ Perform wavelet band-pass filtering.
 - `Vector{Float64}`
 """
 function wbp(
-    s::AbstractVector;
-    pad::Int64 = 0,
-    frq::Real,
-    fs::Int64,
-    ncyc::Int64 = 6
-)::Vector{Float64}
+        s::AbstractVector;
+        pad::Int64 = 0,
+        frq::Real,
+        fs::Int64,
+        ncyc::Int64 = 6,
+    )::Vector{Float64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -38,7 +38,6 @@ function wbp(
     kernel = generate_morlet(fs, frq, 1; ncyc = ncyc, complex = true)
 
     return real.(fconv(s; kernel = kernel, norm = true))
-
 end
 
 """
@@ -59,12 +58,12 @@ Perform wavelet band-pass filtering for a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function wbp(
-    s::AbstractArray;
-    pad::Int64 = 0,
-    frq::Real,
-    fs::Int64,
-    ncyc::Int64 = 6
-)::Array{Float64, 3}
+        s::AbstractArray;
+        pad::Int64 = 0,
+        frq::Real,
+        fs::Int64,
+        ncyc::Int64 = 6,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -81,12 +80,11 @@ function wbp(
             pad = pad,
             frq = frq,
             fs = fs,
-            ncyc = ncyc
+            ncyc = ncyc,
         )
     end
 
     return s_new
-
 end
 
 """
@@ -107,12 +105,12 @@ Perform wavelet band-pass filtering.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function wbp(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    frq::Real,
-    ncyc::Int64 = 6
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        frq::Real,
+        ncyc::Int64 = 6,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -120,11 +118,11 @@ function wbp(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = wbp(@view(obj.data[ch, :, :]), pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
+    obj_new.data[ch, :, :] =
+        wbp(@view(obj.data[ch, :, :]); pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
     push!(obj_new.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
 
     return obj_new
-
 end
 
 """
@@ -145,17 +143,15 @@ Perform wavelet band-pass filtering.
 - `Nothing`
 """
 function wbp!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    frq::Real,
-    ncyc::Int64 = 6
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        frq::Real,
+        ncyc::Int64 = 6,
+    )::Nothing
     obj_new = wbp(obj; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

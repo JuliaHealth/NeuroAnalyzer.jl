@@ -28,10 +28,11 @@ function plot_phsd(
         xlabel::String = "",
         ylabel::String = "",
         title::String = "",
-        frq::Symbol = :lin
+        frq::Symbol = :lin,
     )::GLMakie.Figure
-
-    !(length(ph) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    !(length(ph) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -41,11 +42,11 @@ function plot_phsd(
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_phsd()")
+    GLMakie.activate!(; title = "plot_phsd()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -59,7 +60,7 @@ function plot_phsd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, extrema(ph))
@@ -73,7 +74,6 @@ function plot_phsd(
     Makie.lines!(f, ph; linewidth = 2, color = :black)
 
     return fig
-
 end
 
 """
@@ -112,12 +112,13 @@ function plot_phsd(
         frq::Symbol = :lin,
         avg::Bool = false,
         ci95::Bool = false,
-        leg::Bool = true
+        leg::Bool = true,
     )::GLMakie.Figure
-
     ch_n = size(ph, 1)
 
-    !(size(ph, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    !(size(ph, 2) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -132,11 +133,11 @@ function plot_phsd(
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_phsd()")
+    GLMakie.activate!(; title = "plot_phsd()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -150,7 +151,7 @@ function plot_phsd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.xlims!(ax, flim)
     if ci95
@@ -175,28 +176,26 @@ function plot_phsd(
         for idx in 1:ch_n
             Makie.lines!(
                 f,
-                ph[idx, :],
+                ph[idx, :];
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 2,
-                label = clabels[idx]
+                label = clabels[idx],
             )
         end
 
         # draw averaged channels
         if avg
-            s = mean(ph, dims = 1)[:]
+            s = mean(ph; dims = 1)[:]
             Makie.lines!(f, s; colormap = pal, linewidth = 4, color = :black)
         end
 
-        GLMakie.activate!(title = "plot_phsd()")
-        (leg && ch_n < 30) && axislegend(position = :rt, colormap = pal)
-
+        GLMakie.activate!(; title = "plot_phsd()")
+        (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
     end
 
     return fig
-
 end
 
 """
@@ -235,11 +234,12 @@ function plot_phsd_3d(
         title::String = "",
         mono::Bool = false,
         frq::Symbol = :lin,
-        variant::Symbol
+        variant::Symbol,
     )::GLMakie.Figure
-
     _check_var(variant, [:w, :s], "variant")
-    !(size(ph, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    !(size(ph, 2) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -262,12 +262,12 @@ function plot_phsd_3d(
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_phsd()")
+    GLMakie.activate!(; title = "plot_phsd()")
     if variant === :w
         plot_size = (900, 450)
-        fig = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(; size = plot_size)
         ax = GLMakie.Axis3(
-            fig[1, 1],
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -283,7 +283,7 @@ function plot_phsd_3d(
             aspect = (1, 1, 0.5),
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
-            zautolimitmargin = (0, 0)
+            zautolimitmargin = (0, 0),
         )
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 18
@@ -298,20 +298,20 @@ function plot_phsd_3d(
             Makie.lines!(
                 f,
                 ones(length(f)) .* idx,
-                ph[idx, :],
+                ph[idx, :];
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n
+                colorrange = 1:ch_n,
             )
         end
     else
         f1 = vsearch(flim[1], f)
         f2 = vsearch(flim[2], f)
         plot_size = (900, 450)
-        fig = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(; size = plot_size)
         ax = GLMakie.Axis3(
-            fig[1, 1],
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -327,7 +327,7 @@ function plot_phsd_3d(
             aspect = (1, 1, 0.5),
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
-            zautolimitmargin = (0, 0)
+            zautolimitmargin = (0, 0),
         )
         ax.titlesize = 18
         ax.xlabelsize = 18
@@ -341,7 +341,6 @@ function plot_phsd_3d(
     end
 
     return fig
-
 end
 
 """
@@ -376,10 +375,11 @@ function plot_phsd_topo(
         title::String = "",
         frq::Symbol = :lin,
         cart::Bool = false,
-        head::Bool = true
+        head::Bool = true,
     )::GLMakie.Figure
-
-    !(size(ph, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    !(size(ph, 2) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -411,7 +411,8 @@ function plot_phsd_topo(
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in axes(locs, 1)
-            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+            loc_x[idx], loc_y[idx] =
+                pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
     else
         loc_x = locs[!, :loc_x]
@@ -422,19 +423,19 @@ function plot_phsd_topo(
     pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(ph, 1)
-        GLMakie.activate!(title = "plot_phsd()")
-        pp = GLMakie.Figure(
+        GLMakie.activate!(; title = "plot_phsd()")
+        pp = GLMakie.Figure(;
             size = marker_size,
-            figure_padding = 0
+            figure_padding = 0,
         )
         ax = GLMakie.Axis(
-            pp[1, 1],
+            pp[1, 1];
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
             xscale = frq === :lin ? identity : log,
             xautolimitmargin = (0, 0),
-            yautolimitmargin = (0.1, 0.1)
+            yautolimitmargin = (0.1, 0.1),
         )
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
@@ -444,30 +445,30 @@ function plot_phsd_topo(
         push!(pp_vec, pp)
         pp_full = plot_phsd(
             f,
-            ph[idx, :],
+            ph[idx, :];
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,
             flim = flim,
-            frq = frq
+            frq = frq,
         )
         push!(pp_full_vec, pp_full)
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_phsd()")
-    fig = GLMakie.Figure(
+    GLMakie.activate!(; title = "plot_phsd()")
+    fig = GLMakie.Figure(;
         size = plot_size,
-        figure_padding = 0
+        figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
         aspect = 1,
         xautolimitmargin = (0, 0),
-        yautolimitmargin = (0.1, 0.1)
+        yautolimitmargin = (0.1, 0.1),
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -512,7 +513,13 @@ function plot_phsd_topo(
         io = IOBuffer()
         show(io, MIME"image/png"(), pp_vec[idx])
         pp = FileIO.load(io)
-        GLMakie.scatter!(loc_x[idx], loc_y[idx]; marker = pp, markersize = marker_size, markerspace = :pixel)
+        GLMakie.scatter!(
+            loc_x[idx],
+            loc_y[idx];
+            marker = pp,
+            markersize = marker_size,
+            markerspace = :pixel,
+        )
     end
 
     loc_x_range = Tuple{Float64, Float64}[]
@@ -540,7 +547,6 @@ function plot_phsd_topo(
     end
 
     return fig
-
 end
 
 """
@@ -577,30 +583,31 @@ Plot PHSD (phase spectral density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_phsd(
-    obj::NeuroAnalyzer.NEURO;
-    seg::Tuple{Real, Real} = (0, 10),
-    ep::Int64 = 0,
-    ch::Union{String, Vector{String}, Regex} = "all",
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    frq::Symbol = :lin,
-    xlabel::String = "default",
-    ylabel::String = "default",
-    zlabel::String = "default",
-    title::String = "default",
-    mono::Bool = false,
-    type::Symbol = :normal,
-    cart::Bool = false,
-    head::Bool = true,
-    leg::Bool = true,
-    avg::Bool = false,
-    ci95::Bool = false
-)::GLMakie.Figure
-
+        obj::NeuroAnalyzer.NEURO;
+        seg::Tuple{Real, Real} = (0, 10),
+        ep::Int64 = 0,
+        ch::Union{String, Vector{String}, Regex} = "all",
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        frq::Symbol = :lin,
+        xlabel::String = "default",
+        ylabel::String = "default",
+        zlabel::String = "default",
+        title::String = "default",
+        mono::Bool = false,
+        type::Symbol = :normal,
+        cart::Bool = false,
+        head::Bool = true,
+        leg::Bool = true,
+        avg::Bool = false,
+        ci95::Bool = false,
+    )::GLMakie.Figure
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(frq, [:lin, :log], "frq")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
@@ -640,11 +647,19 @@ function plot_phsd(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Phase [rad]")
         if length(ch) == 1
-            fig = plot_phsd(sf, sp; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
+            fig = plot_phsd(
+                sf,
+                sp;
+                xlabel = xlabel,
+                ylabel = ylabel,
+                title = title,
+                flim = flim,
+                frq = frq,
+            )
         else
             fig = plot_phsd(
                 sf,
-                sp,
+                sp;
                 xlabel = xlabel,
                 ylabel = "",
                 clabels = clabels,
@@ -654,19 +669,21 @@ function plot_phsd(
                 avg = avg,
                 ci95 = ci95,
                 leg = leg,
-                mono = mono
+                mono = mono,
             )
         end
     elseif type === :w3d || type === :s3d
         ch_t = obj.header.recording[:channel_type]
         ndims(sp) >= 2 ||
-            throw(ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."))
+            throw(
+            ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."),
+        )
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
         fig = plot_phsd_3d(
             sf,
-            sp,
+            sp;
             clabels = clabels,
             xlabel = xlabel,
             ylabel = ylabel,
@@ -675,14 +692,18 @@ function plot_phsd(
             flim = flim,
             frq = frq,
             mono = mono,
-            variant = type === :w3d ? :w : :s
+            variant = type === :w3d ? :w : :s,
         )
     elseif type === :topo
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Phase [rad]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         length(unique(obj.header.recording[:channel_type][ch])) == 1 ||
-            throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
+            throw(
+            ArgumentError(
+                "For multi-channel topo plot all channels must be of the same type.",
+            ),
+        )
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
@@ -691,17 +712,16 @@ function plot_phsd(
         fig = plot_phsd_topo(
             locs,
             sf,
-            sp,
+            sp;
             xlabel = xlabel,
             ylabel = ylabel,
             title = title,
             flim = flim,
             frq = frq,
             cart = cart,
-            head = head
+            head = head,
         )
     end
 
     return fig
-
 end

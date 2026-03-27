@@ -28,11 +28,10 @@ function rfz(r::Float64)::Float64
     _in(r, (-1.0, 1.0), "r")
 
     # clamp boundary values to avoid ±Inf from atanh(±1)
-    r == 1.0  && return atanh(1.0 - eps())
+    r == 1.0 && return atanh(1.0 - eps())
     r == -1.0 && return atanh(-1.0 + eps())
 
     return atanh(r)
-
 end
 
 """
@@ -62,14 +61,15 @@ function r1r2_zscore(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)::Float64
     # validate
     _in(r1, (-1.0, 1.0), "r1")
     _in(r2, (-1.0, 1.0), "r2")
-    n1 > 3 || throw(ArgumentError("n1 must be > 3 (required for Fisher's Z standard error)."))
-    n2 > 3 || throw(ArgumentError("n2 must be > 3 (required for Fisher's Z standard error)."))
+    n1 > 3 ||
+        throw(ArgumentError("n1 must be > 3 (required for Fisher's Z standard error)."))
+    n2 > 3 ||
+        throw(ArgumentError("n2 must be > 3 (required for Fisher's Z standard error)."))
 
     # Fisher z-transform both coefficients, then standardize the difference
     z = (rfz(r1) - rfz(r2)) / sqrt(1 / (n1 - 3) + 1 / (n2 - 3))
 
     return z
-
 end
 
 """
@@ -94,20 +94,21 @@ Named tuple:
 - `p::Float64`: two-tailed p-value (clamped to `eps()` if below machine epsilon)
 """
 function cor_test(
-    s1::AbstractVector,
-    s2::AbstractVector
-)::@NamedTuple{
-    t::CorrelationTest{Float64},
-    r::Float64,
-    rc::Tuple{Float64, Float64},
-    ts::Tuple{Float64, String},
-    df::Int64,
-    p::Float64
-}
+        s1::AbstractVector,
+        s2::AbstractVector,
+    )::@NamedTuple{
+        t::CorrelationTest{Float64},
+        r::Float64,
+        rc::Tuple{Float64, Float64},
+        ts::Tuple{Float64, String},
+        df::Int64,
+        p::Float64,
+    }
 
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
-    length(s1) > 3 || throw(ArgumentError("length(s1) must be > 3 (required for confidence interval)."))
+    length(s1) > 3 ||
+        throw(ArgumentError("length(s1) must be > 3 (required for confidence interval)."))
 
     t = CorrelationTest(s1, s2)
     p = pvalue(t)
@@ -118,5 +119,4 @@ function cor_test(
     ts = (t.t, "t")
 
     return (; t, r, rc, ts, df, p)
-
 end

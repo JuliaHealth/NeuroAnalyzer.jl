@@ -6,7 +6,8 @@ https://neuroanalyzer.org
 
 module NeuroAnalyzer
 
-    VERSION >= v"1.11.0" || throw(ArgumentError("NeuroAnalyzer requires Julia 1.11.0 or above."))
+    VERSION >= v"1.11.0" ||
+        throw(ArgumentError("NeuroAnalyzer requires Julia 1.11.0 or above."))
 
     # set constants
 
@@ -77,13 +78,14 @@ module NeuroAnalyzer
         "other",
     ]
     const channel_units = [
-        "μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s", "",
+        "μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s",
+        "",
     ]
     const fiducial_points = (
         nasion = (0.0, 1.03, -0.2),
         inion = (0.0, -1.03, -0.2),
         lpa = (-1.04, 0.2, -0.2),
-        rpa = (1.04, 0.2, -0.2)
+        rpa = (1.04, 0.2, -0.2),
     )
     begin
         tmp = pwd()
@@ -205,11 +207,11 @@ module NeuroAnalyzer
     global verbose = @load_preference("verbose", true)
     global exclude_bads = @load_preference("exclude_bads", false)
     global colors = @load_preference("colors", true)
-    na_set_prefs(
+    na_set_prefs(;
         progress_bar = progress_bar,
         verbose = verbose,
         exclude_bads = exclude_bads,
-        colors = colors
+        colors = colors,
     )
 
     # show major parameters

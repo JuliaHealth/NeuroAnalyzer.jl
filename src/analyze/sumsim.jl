@@ -23,12 +23,15 @@ function sumsim(s1::AbstractVector, s2::AbstractVector; theta::Real)::Float64
 
     # validate
     length(s1) == length(s2) ||
-        throw(ArgumentError("Lengths of s1 ($(length(s1))) and s2 ($(length(s2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of s1 ($(length(s1))) and s2 ($(length(s2))) must be equal.",
+        ),
+    )
 
     ss = exp(-theta * sqrt(sum((s1 .- s2) .^ 2)))
 
     return ss
-
 end
 
 """
@@ -53,7 +56,9 @@ Values of `ss` are in the range [0, 1]; higher value indicates larger similarity
 function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float64}
 
     # validate
-    size(s1) == size(s2) || throw(ArgumentError("Sizes of s1 ($(size(s1))) and s2 ($(size(s2))) must be equal."))
+    size(s1) == size(s2) || throw(
+        ArgumentError("Sizes of s1 ($(size(s1))) and s2 ($(size(s2))) must be equal."),
+    )
     _chk3d(s1)
     _chk3d(s2)
 
@@ -67,12 +72,11 @@ function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float
         ss[ch_idx, ep_idx] = sumsim(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx]),
-            theta = theta
+            theta = theta,
         )
     end
 
     return ss
-
 end
 
 """
@@ -99,26 +103,38 @@ Calculate summed similarity using an exponential decay model between two NEURO o
 Values of `ss` are in the range [0, 1]; higher value indicates larger similarity.
 """
 function sumsim(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    theta::Real
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        theta::Real,
+    )::Matrix{Float64}
 
     # validate
     length(ch1) == length(ch2) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+        ),
+    )
     length(ep1) == length(ep2) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])
@@ -126,8 +142,7 @@ function sumsim(
 
     return sumsim(
         @view(obj1.data[ch1, :, ep1]),
-        @view(obj2.data[ch2, :, ep2]),
-        theta = theta
+        @view(obj2.data[ch2, :, ep2]);
+        theta = theta,
     )
-
 end

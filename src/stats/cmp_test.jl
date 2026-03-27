@@ -43,24 +43,70 @@ All other tests, named tuple:
 - `p::Float64`: two-tailed p-value (clamped to `eps()` if below machine epsilon)
 """
 function cmp_test(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    paired::Bool,
-    alpha::Float64 = 0.05,
-    type::Symbol = :auto,
-    exact::Bool = false,
-    nperm::Int64 = 1000,
-    verbose::Bool = true
-)::Union{
-    @NamedTuple{t::OneSampleTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
-    @NamedTuple{t::EqualVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
-    @NamedTuple{t::UnequalVarianceTTest, ts::Tuple{Float64, String}, tc::Tuple{Float64, Float64}, df::Float64, p::Float64},
-    @NamedTuple{t::ExactSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-    @NamedTuple{t::ApproximateSignedRankTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-    @NamedTuple{t::ExactMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-    @NamedTuple{t::ApproximateMannWhitneyUTest{Float64}, ts::Tuple{Float64, String}, tc::Float64, df::Float64, p::Float64},
-    @NamedTuple{t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64}, p1::Float64, p2::Float64}
-}
+        s1::AbstractVector,
+        s2::AbstractVector;
+        paired::Bool,
+        alpha::Float64 = 0.05,
+        type::Symbol = :auto,
+        exact::Bool = false,
+        nperm::Int64 = 1000,
+        verbose::Bool = true,
+    )::Union{
+        @NamedTuple{
+            t::OneSampleTTest,
+            ts::Tuple{Float64, String},
+            tc::Tuple{Float64, Float64},
+            df::Float64,
+            p::Float64,
+        },
+        @NamedTuple{
+            t::EqualVarianceTTest,
+            ts::Tuple{Float64, String},
+            tc::Tuple{Float64, Float64},
+            df::Float64,
+            p::Float64,
+        },
+        @NamedTuple{
+            t::UnequalVarianceTTest,
+            ts::Tuple{Float64, String},
+            tc::Tuple{Float64, Float64},
+            df::Float64,
+            p::Float64,
+        },
+        @NamedTuple{
+            t::ExactSignedRankTest{Float64},
+            ts::Tuple{Float64, String},
+            tc::Float64,
+            df::Float64,
+            p::Float64,
+        },
+        @NamedTuple{
+            t::ApproximateSignedRankTest{Float64},
+            ts::Tuple{Float64, String},
+            tc::Float64,
+            df::Float64,
+            p::Float64,
+        },
+        @NamedTuple{
+            t::ExactMannWhitneyUTest{Float64},
+            ts::Tuple{Float64, String},
+            tc::Float64,
+            df::Float64,
+            p::Float64,
+        },
+        @NamedTuple{
+            t::ApproximateMannWhitneyUTest{Float64},
+            ts::Tuple{Float64, String},
+            tc::Float64,
+            df::Float64,
+            p::Float64,
+        },
+        @NamedTuple{
+            t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64},
+            p1::Float64,
+            p2::Float64,
+        }
+    }
 
     # validate
     _check_var(type, [:auto, :perm, :p, :np], "type")
@@ -68,13 +114,14 @@ function cmp_test(
     alpha < 1.0 || throw(ArgumentError("alpha must be < 1."))
     nperm >= 1 || throw(ArgumentError("nperm must be ≥ 1."))
     if paired
-        length(s1) == length(s2) || throw(ArgumentError("Paired test requires equal-length vectors."))
+        length(s1) == length(s2) ||
+            throw(ArgumentError("Paired test requires equal-length vectors."))
     end
 
     # --- normality test (Jarque–Bera on pooled data) ---
     jb = JarqueBeraTest([s1; s2])
-    pjb = round(pvalue(jb), digits=3)
-    jb_stat = round(jb.JB, digits=3)
+    pjb = round(pvalue(jb); digits = 3)
+    jb_stat = round(jb.JB; digits = 3)
     if verbose
         dist_label = pjb < alpha ? "non-normal" : "normal"
         println("Distribution: $dist_label (Jarque-Bera test: JB=$jb_stat, p=$pjb)")
@@ -89,12 +136,10 @@ function cmp_test(
 
             # parametric branch
             if paired
-
                 verbose && println("Using one-sample T-test (paired data)")
-                t  = OneSampleTTest(s1, s2)
+                t = OneSampleTTest(s1, s2)
 
             else
-
                 pf = pvalue(VarianceFTest(s1, s2))
                 if pf >= alpha
                     verbose && println("Using equal-variance two-sample T-test")
@@ -103,23 +148,23 @@ function cmp_test(
                     verbose && println("Using unequal-variance two-sample T-test (Welch)")
                     t = UnequalVarianceTTest(s1, s2)
                 end
-
             end
             df = t.df
             ts = t.t
-            tc = confint(t; level=(1 - alpha))
+            tc = confint(t; level = (1 - alpha))
             tn = "t"
 
         else
 
             # non-parametric branch
             if paired
-
                 if exact
-                    verbose && println("Using exact Wilcoxon signed-rank test (paired data)")
+                    verbose &&
+                        println("Using exact Wilcoxon signed-rank test (paired data)")
                     t = ExactSignedRankTest(s1, s2)
                 else
-                    verbose && println("Using approximate Wilcoxon signed-rank test (paired data)")
+                    verbose &&
+                        println("Using approximate Wilcoxon signed-rank test (paired data)")
                     t = SignedRankTest(s1, s2)
                 end
                 ts = t.W
@@ -127,26 +172,23 @@ function cmp_test(
                 tn = "W"
 
             else
-
                 verbose && println("Using Mann-Whitney U test")
-                t  = MannWhitneyUTest(s1, s2)
+                t = MannWhitneyUTest(s1, s2)
                 ts = t.U
                 df = length(s1) + length(s2) - 2
                 tn = "U"
-
             end
             tc = NaN
-
         end
 
         p = pvalue(t)
         p < eps() && (p = eps())
         return (
             t = t,
-            ts = (round(ts, digits=3), tn),
-            tc = round.(tc, digits=3),
-            df = round(df, digits=3),
-            p = p
+            ts = (round(ts; digits = 3), tn),
+            tc = round.(tc; digits = 3),
+            df = round(df; digits = 3),
+            p = p,
         )
 
     else
@@ -154,17 +196,17 @@ function cmp_test(
         # --- permutation test branch ---
         n1 = length(s1)
         n2 = length(s2)
-        g  = [s1; s2]
+        g = [s1; s2]
 
-        verbose && println("Group 1 mean: $(round(mean(s1), digits=3))")
-        verbose && println("Group 2 mean: $(round(mean(s2), digits=3))")
+        verbose && println("Group 1 mean: $(round(mean(s1), digits = 3))")
+        verbose && println("Group 2 mean: $(round(mean(s2), digits = 3))")
 
         # observed difference (group 1 − group 2)
-        observed_diff = round(mean(s1) - mean(s2), digits=3)
+        observed_diff = round(mean(s1) - mean(s2); digits = 3)
 
         # build null distribution by repeatedly shuffling group labels
         perm_diff = zeros(nperm)
-        progbar   = Progress(nperm, dt=1, barlen=20, color=:white, enabled=progress_bar)
+        progbar = Progress(nperm; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
         @inbounds for idx in 1:nperm
             # random label assignment: first n1 positions → group 0, rest → group 1
@@ -176,11 +218,13 @@ function cmp_test(
         # one-tailed p-value: proportion of permuted differences ≥ observed
         if pjb < alpha
             # non-normal: use empirical proportion directly
-            verbose && println("H0 distribution is non-normal (Jarque-Bera p=$pjb); using empirical p-value.")
+            verbose && println(
+                "H0 distribution is non-normal (Jarque-Bera p=$pjb); using empirical p-value.",
+            )
             p1 = sum(perm_diff .>= observed_diff) / nperm
         else
             # normal null: standardise and use Z-score
-            z  = round((observed_diff - mean(perm_diff)) / std(perm_diff), digits=3)
+            z = round((observed_diff - mean(perm_diff)) / std(perm_diff); digits = 3)
             verbose && println("Permutation Z-score: $z")
             p1 = 1 - cdf(Distributions.Normal(), abs(z))
         end
@@ -189,11 +233,9 @@ function cmp_test(
         p2 = min(1.0, 2 * p1)
 
         return (
-            t  = (perm_diff=perm_diff, obs_diff=observed_diff),
+            t = (perm_diff = perm_diff, obs_diff = observed_diff),
             p1 = p1,
-            p2 = p2
+            p2 = p2,
         )
-
     end
-
 end

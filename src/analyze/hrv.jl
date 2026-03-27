@@ -19,13 +19,16 @@ Named tuple:
 - `nn_seg::Vector{Float64}`: NN (normal-to-normal) interval durations [ms]
 - `r_idx::Vector{Int64}`: sample indices of detected R-peaks
 """
-function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Int64}}
+function hrv_detect(
+        obj::NeuroAnalyzer.NEURO,
+    )::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Int64}}
 
     # validate
-    "ecg" in obj.header.recording[:channel_type] || throw(ArgumentError("OBJ does not contain ECG channel."))
+    "ecg" in obj.header.recording[:channel_type] ||
+        throw(ArgumentError("OBJ does not contain ECG channel."))
 
     # locate the ECG channel index
-    ch = get_channel(obj, type = "ecg")
+    ch = get_channel(obj; type = "ecg")
     _info("ECG channel found: $(ch[1])")
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -35,7 +38,7 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float6
     ecg = vec(obj.data[ch, :, :])
 
     # detect R-peaks: threshold at mean + 2σ to select prominent peaks only
-    r_idx, _ = findpeaks1d(ecg, height = mean(ecg) + 2 * std(ecg))
+    r_idx, _ = findpeaks1d(ecg; height = mean(ecg) + 2 * std(ecg))
     r_idx = Int.(r_idx)
 
     # convert inter-peak sample distances to milliseconds
@@ -44,7 +47,6 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float6
     _info("Detected NN segments: $(length(nn_seg))")
 
     return (; nn_seg, r_idx)
-
 end
 
 """
@@ -72,38 +74,37 @@ Named tuple:
 - `pnn20::Float64`: proportion of NN20 to total number of NN intervals
 """
 function hrv_analyze(
-    nn_seg::Vector{Float64}
-)::@NamedTuple{
-    menn::Float64,
-    mdnn::Float64,
-    vnn::Float64,
-    sdnn::Float64,
-    rmssd::Float64,
-    sdsd::Float64,
-    nn50::Int64,
-    pnn50::Float64,
-    nn20::Int64,
-    pnn20::Float64,
-}
-
+        nn_seg::Vector{Float64},
+    )::@NamedTuple{
+        menn::Float64,
+        mdnn::Float64,
+        vnn::Float64,
+        sdnn::Float64,
+        rmssd::Float64,
+        sdsd::Float64,
+        nn50::Int64,
+        pnn50::Float64,
+        nn20::Int64,
+        pnn20::Float64,
+    }
     nn_diff = diff(nn_seg)
     nn_total = length(nn_seg)
 
-    menn = round(mean(nn_seg), digits = 3)
-    mdnn = round(median(nn_seg), digits = 3)
-    vnn = round(var(nn_seg), digits = 3)
-    sdnn = round(std(nn_seg), digits = 3)
+    menn = round(mean(nn_seg); digits = 3)
+    mdnn = round(median(nn_seg); digits = 3)
+    vnn = round(var(nn_seg); digits = 3)
+    sdnn = round(std(nn_seg); digits = 3)
 
     # RMSSD: root mean square of successive differences.
-    rmssd = round(sqrt(sum(abs2, nn_diff) / length(nn_diff)), digits = 3)
-    sdsd  = round(std(nn_diff), digits = 3)
+    rmssd = round(sqrt(sum(abs2, nn_diff) / length(nn_diff)); digits = 3)
+    sdsd = round(std(nn_diff); digits = 3)
 
     # NN50 / NN20: count pairs of successive intervals differing by > threshold.
-    nn50  = count(d -> abs(d) > 50, nn_diff)
-    pnn50 = round(nn50 / nn_total, digits = 3)
+    nn50 = count(d -> abs(d) > 50, nn_diff)
+    pnn50 = round(nn50 / nn_total; digits = 3)
 
-    nn20  = count(d -> abs(d) > 20, nn_diff)
-    pnn20 = round(nn20 / nn_total, digits = 3)
+    nn20 = count(d -> abs(d) > 20, nn_diff)
+    pnn20 = round(nn20 / nn_total; digits = 3)
 
     return (;
         menn,
@@ -115,7 +116,6 @@ function hrv_analyze(
         nn50,
         pnn50,
         nn20,
-        pnn20
+        pnn20,
     )
-
 end

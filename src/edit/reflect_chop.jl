@@ -34,7 +34,8 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NE
         s1 = obj_new.data[:, 1:n, ep_idx]
         s2 = obj_new.data[:, end:-1:(end - n + 1), ep_idx]
         s[ch_idx, :, ep_idx] = _reflect(
-            @view(obj.data[ch_idx, :, ep_idx]), @view(s1[ch_idx, :]), @view(s2[ch_idx, :])
+            @view(obj.data[ch_idx, :, ep_idx]), @view(s1[ch_idx, :]),
+            @view(s2[ch_idx, :])
         )
     end
 
@@ -61,8 +62,7 @@ Expand signal by adding reflected signal before the signal and after the signal,
 - `Nothing`
 """
 function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::nothing
-
-    obj_new = reflect(obj, n = n)
+    obj_new = reflect(obj; n = n)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -70,7 +70,6 @@ function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::nothing
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
-
 end
 
 """
@@ -110,7 +109,6 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
     push!(obj_new.history, "chop(OBJ, n=$n)")
 
     return obj_new
-
 end
 
 """
@@ -128,8 +126,7 @@ Reduce signal by removing reflected signal before the signal and after the signa
 - `Nothing`
 """
 function chop!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
-
-    obj_new = chop(obj, n = n)
+    obj_new = chop(obj; n = n)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -137,5 +134,4 @@ function chop!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
-
 end

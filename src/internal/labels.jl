@@ -44,7 +44,6 @@ function _clean_labels(clabels::Vector{String})::Vector{String}
     l = replace.(l, "  " => " ")
 
     return strip.(l)
-
 end
 
 """
@@ -75,7 +74,6 @@ function _clean_meg_labels(clabels::Vector{String})::Vector{String}
     l = replace.(l, "  " => " ")
 
     return strip.(l)
-
 end
 
 """
@@ -113,5 +111,4 @@ function _clean_eeg_labels(clabels::Vector{String})::Vector{String}
     l = replace.(l, "  " => " ")
 
     return strip.(l)
-
 end

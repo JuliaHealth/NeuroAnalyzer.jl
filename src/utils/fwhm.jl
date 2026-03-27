@@ -29,7 +29,7 @@ function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
     s = normalize_n(s)
 
     # index of the global peak
-    signal_peak_idx  = vsearch(maximum(s), s)
+    signal_peak_idx = vsearch(maximum(s), s)
 
     # nearest sample to 0.5 in the pre-peak segment [1 … signal_peak_idx]
     prepeak_hmp = vsearch(0.5, s[1:signal_peak_idx])
@@ -39,5 +39,4 @@ function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
     postpeak_hmp = signal_peak_idx + vsearch(0.5, s[signal_peak_idx:end]) - 1
 
     return prepeak_hmp, signal_peak_idx, postpeak_hmp
-
 end

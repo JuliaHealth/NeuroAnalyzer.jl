@@ -29,12 +29,11 @@ function derivative(s::AbstractVector)::AbstractVector
     # forward half-difference at left boundary
     s_new[1] = dv[1]
     # symmetric: left + right half-differences
-    s_new[2:end-1] = dv[1:end-1] .+ dv[2:end]
+    s_new[2:(end - 1)] = dv[1:(end - 1)] .+ dv[2:end]
     # backward half-difference at right boundary
     s_new[end] = dv[end]
 
     return s_new
-
 end
 
 """
@@ -74,7 +73,6 @@ function derivative(s::AbstractArray)::Array{Float64, 3}
     end
 
     return s_new
-
 end
 
 """
@@ -92,9 +90,9 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 - `NeuroAnalyzer.NEURO`: new object with differentiated channels
 """
 function derivative(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -106,7 +104,6 @@ function derivative(
     push!(obj_new.history, "derivative(obj; ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -123,12 +120,13 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 
 - `Nothing`
 """
-function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
+function derivative!(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Nothing
     obj_new = derivative(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

@@ -21,19 +21,21 @@ Named tuple:
 - `ey::Matrix{Float64}`: electric field Y axis vector
 """
 function efield2d(
-    q::Vector{Int64},
-    qx::Vector{Int64},
-    qy::Vector{Int64}
-)::@NamedTuple{
-    qq::Vector{Vector{Float64}},
-    norm_e::Matrix{Float64},
-    ex::Matrix{Float64},
-    ey::Matrix{Float64}
-}
+        q::Vector{Int64},
+        qx::Vector{Int64},
+        qy::Vector{Int64},
+    )::@NamedTuple{
+        qq::Vector{Vector{Float64}},
+        norm_e::Matrix{Float64},
+        ex::Matrix{Float64},
+        ey::Matrix{Float64},
+    }
 
     # validate
-    length(qx) == length(q) || throw(ArgumentError("Length of qx and number of charges must be equal."))
-    length(qx) == length(q) || throw(ArgumentError("Length of qy and number of charges must be equal."))
+    length(qx) == length(q) ||
+        throw(ArgumentError("Length of qx and number of charges must be equal."))
+    length(qx) == length(q) ||
+        throw(ArgumentError("Length of qy and number of charges must be equal."))
 
     m = 100
     n = 100
@@ -45,8 +47,8 @@ function efield2d(
         _in(qy[idx], (1, n))
     end
 
-    x = round.(collect(range(-1, 1, m)), digits = 3)
-    y = round.(collect(range(-1, 1, n)), digits = 3)
+    x = round.(collect(range(-1, 1, m)); digits = 3)
+    y = round.(collect(range(-1, 1, n)); digits = 3)
 
     #strength
     ex = zeros(n, m)
@@ -74,5 +76,4 @@ function efield2d(
     ey = ey ./ norm_e
 
     return (; qq, norm_e, ex, ey)
-
 end

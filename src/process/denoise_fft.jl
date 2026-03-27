@@ -22,14 +22,13 @@ Named tuple:
 - `f_idx::BitVector`: boolean mask; `true` at each frequency index that was zeroed
 """
 function denoise_fft(
-    s::AbstractVector;
-    pad::Int64 = 0,
-    t::Real = 0
-)::@NamedTuple{
-    s::Vector{Float64},
-    f_idx::BitVector
-}
-
+        s::AbstractVector;
+        pad::Int64 = 0,
+        t::Real = 0,
+    )::@NamedTuple{
+        s::Vector{Float64},
+        f_idx::BitVector,
+    }
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
 
     # compute FFT and power spectrum
@@ -45,7 +44,6 @@ function denoise_fft(
     s = abs.(ifft0(s_fft, pad))
 
     return (; s, f_idx)
-
 end
 
 """
@@ -64,10 +62,10 @@ Perform FFT-based denoising on every channel × epoch slice of a 3-D signal arra
 - `Array{Float64, 3}`: denoised 3D signal array
 """
 function denoise_fft(
-    s::AbstractArray;
-    pad::Int64 = 0,
-    t::Real = 0
-)::Array{Float64, 3}
+        s::AbstractArray;
+        pad::Int64 = 0,
+        t::Real = 0,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -88,7 +86,6 @@ function denoise_fft(
     end
 
     return s_new
-
 end
 
 """
@@ -108,11 +105,11 @@ Perform FFT-based denoising on selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
 """
 function denoise_fft(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    t::Int64 = 0
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        t::Int64 = 0,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -120,11 +117,10 @@ function denoise_fft(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = denoise_fft(@view(obj.data[ch, :, :]), pad = pad, t = t)
+    obj_new.data[ch, :, :] = denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
     push!(obj_new.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
 
     return obj_new
-
 end
 
 """
@@ -144,16 +140,14 @@ Perform FFT-based denoising in-place on selected channels of a NEURO object.
 - `Nothing`
 """
 function denoise_fft!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    t::Int64 = 0
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        t::Int64 = 0,
+    )::Nothing
     obj_new = denoise_fft(obj; ch = ch, pad = pad, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

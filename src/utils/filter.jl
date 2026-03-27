@@ -27,7 +27,6 @@ function fir_order_bw(; bw::Real, a::Real = 60, fs::Int64)::Int64
     fs > 0 || throw(ArgumentError("fs must be > 0."))
 
     return round(Int64, (a * fs) / (22 * bw))
-
 end
 
 """
@@ -48,9 +47,7 @@ Convenience wrapper that reads the sampling rate from `obj`.
 - `Int64`: estimated FIR filter order
 """
 function fir_order_bw(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real = 60)::Int64
-
-    return fir_order_bw(bw = bw, a = a, fs = sr(obj))
-
+    return fir_order_bw(; bw = bw, a = a, fs = sr(obj))
 end
 
 """
@@ -80,7 +77,6 @@ function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
 
     # convert to samples
     return (4 * cycle_samples, 5 * cycle_samples)
-
 end
 
 """
@@ -100,9 +96,7 @@ Convenience wrapper that reads the sampling rate from `obj`.
 - `Tuple{Int64, Int64}`: `(lower_order, upper_order)` recommended filter order range
 """
 function fir_order_f(obj::NeuroAnalyzer.NEURO; f::Real)::Tuple{Int64, Int64}
-
     return fir_order_f(; f = f, fs = sr(obj))
-
 end
 
 """
@@ -140,18 +134,18 @@ The order is estimated via the appropriate `DSP.jl` design function (`buttord`, 
 - `order::Int64`: minimum filter order satisfying the specifications
 """
 function iir_order(;
-    fprototype::Symbol,
-    ftype::Symbol,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    bw::Real,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    fs::Int64
-)::Int64
+        fprototype::Symbol,
+        ftype::Symbol,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        bw::Real,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        fs::Int64,
+    )::Int64
 
     # validate
     _check_var(
-        fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype"
+        fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype",
     )
     _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     bw > 0 || throw(ArgumentError("bw must be > 0."))
@@ -167,19 +161,23 @@ function iir_order(;
     # compute normalized pass-band (wp) and stop-band (ws) edges
     # the transition band is centered on `cutoff`; half-width = bw/2.
     if ftype === :lp
-        !(length(cutoff) == 1) && throw(ArgumentError("cutoff must specify exactly one frequency for :lp."))
+        !(length(cutoff) == 1) &&
+            throw(ArgumentError("cutoff must specify exactly one frequency for :lp."))
         wp = (cutoff[1] - bw / 2) / nqf  # pass edge (below cutoff)
         ws = (cutoff[1] + bw / 2) / nqf  # stop edge (above cutoff)
     elseif ftype === :hp
-        !(length(cutoff) == 1) && throw(ArgumentError("cutoff must specify exactly one frequency for :hp."))
+        !(length(cutoff) == 1) &&
+            throw(ArgumentError("cutoff must specify exactly one frequency for :hp."))
         ws = (cutoff[1] - bw / 2) / nqf  # stop edge (below cutoff)
         wp = (cutoff[1] + bw / 2) / nqf  # pass edge (above cutoff)
     elseif ftype === :bp
-        !(length(cutoff) == 2) && throw(ArgumentError("cutoff must specify exactly two frequencies for :bp."))
+        !(length(cutoff) == 2) &&
+            throw(ArgumentError("cutoff must specify exactly two frequencies for :bp."))
         wp = ((cutoff[1] + bw / 2) / nqf, (cutoff[2] - bw / 2) / nqf)  # inner pass edges
         ws = ((cutoff[1] - bw / 2) / nqf, (cutoff[2] + bw / 2) / nqf)  # outer stop edges
     elseif ftype === :bs
-        !(length(cutoff) == 2) && throw(ArgumentError("cutoff must specify exactly two frequencies for :bs."))
+        !(length(cutoff) == 2) &&
+            throw(ArgumentError("cutoff must specify exactly two frequencies for :bs."))
         ws = ((cutoff[1] + bw / 2) / nqf, (cutoff[2] - bw / 2) / nqf)  # inner stop edges
         wp = ((cutoff[1] - bw / 2) / nqf, (cutoff[2] + bw / 2) / nqf)  # outer pass edges
     end
@@ -196,7 +194,6 @@ function iir_order(;
     end
 
     return order
-
 end
 
 """
@@ -229,23 +226,21 @@ Convenience wrapper that reads the sampling rate from `obj`.
 - `Int64`: minimum filter order satisfying the specifications
 """
 function iir_order(
-    obj::NeuroAnalyzer.NEURO;
-    fprototype::Symbol,
-    ftype::Symbol,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    bw::Real,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing
-)::Int64
-
-    return iir_order(
+        obj::NeuroAnalyzer.NEURO;
+        fprototype::Symbol,
+        ftype::Symbol,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        bw::Real,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+    )::Int64
+    return iir_order(;
         fprototype = fprototype,
         ftype = ftype,
         cutoff = cutoff,
         bw = bw,
         rp = rp,
         rs = rs,
-        fs = sr(obj)
+        fs = sr(obj),
     )
-
 end

@@ -15,10 +15,10 @@ eeg.epoch_time = eeg.time_pts[1:(sr(eeg) * 100)]
 
 locs = import_locs(joinpath(testfiles_path, "locs.ced"))
 
-add_locs!(eeg, locs=locs)
+add_locs!(eeg; locs = locs)
 
-e10 = epoch(eeg, ep_len=10)
-keep_epoch!(e10, ep=1:10)
+e10 = epoch(eeg; ep_len = 10)
+keep_epoch!(e10; ep = 1:10)
 
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -65,9 +65,9 @@ a2 = zeros(2, 3, 4)
 
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 
-a = NeuroAnalyzer._make_epochs(rand(10, 1000), ep_len=100)
+a = NeuroAnalyzer._make_epochs(rand(10, 1000); ep_len = 100)
 @test size(a) == (10, 100, 10)
-a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_len=100)
+a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2); ep_len = 100)
 @test size(a) == (10, 100, 20)
 @test NeuroAnalyzer._get_epoch_markers(e10) == 0.0:10.0:90.0
 
@@ -136,19 +136,72 @@ s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10))
 ## Create Operations
 ##
 
-s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
+s = NeuroAnalyzer._create_subject(;
+    id = "001",
+    first_name = "A",
+    middle_name = "B",
+    last_name = "C",
+    head_circumference = 64,
+    handedness = "left",
+    weight = 90,
+    height = 180,
+)
 @test s isa Dict{Symbol, Any}
 
-r = NeuroAnalyzer._create_recording_eeg(data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false])
+r = NeuroAnalyzer._create_recording_eeg(;
+    data_type = "a",
+    file_name = "a",
+    file_size_mb = 1,
+    file_type = "a",
+    recording = "a",
+    recording_date = "a",
+    recording_time = "a",
+    recording_notes = "a",
+    channel_type = ["a"],
+    reference = "a",
+    clabels = ["a"],
+    transducers = ["a"],
+    units = ["a"],
+    prefiltering = ["a"],
+    sampling_rate = 1,
+    gain = [0.0],
+    channel_order = [1],
+    line_frequency = 50,
+    bad_channels = [false],
+)
 @test r isa Dict{Symbol, Any}
 
-r = NeuroAnalyzer._create_recording_meg(data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false], ssp_labels=String[], ssp_data=Array{Float64}(undef, 0, 0), ssp_channels=Bool[])
+r = NeuroAnalyzer._create_recording_meg(;
+    data_type = "a",
+    file_name = "a",
+    file_size_mb = 1,
+    file_type = "a",
+    recording = "a",
+    recording_date = "a",
+    recording_time = "a",
+    recording_notes = "a",
+    channel_type = ["a"],
+    reference = "a",
+    clabels = ["a"],
+    units = ["a"],
+    prefiltering = ["a"],
+    sampling_rate = 1,
+    magnetometers = [0],
+    gradiometers = [0],
+    coil_type = [""],
+    channel_order = [1],
+    line_frequency = 50,
+    bad_channels = [false],
+    ssp_labels = String[],
+    ssp_data = Array{Float64}(undef, 0, 0),
+    ssp_channels = Bool[],
+)
 @test r isa Dict{Symbol, Any}
 
-e = NeuroAnalyzer._create_experiment(name="a", notes="a", design="a")
+e = NeuroAnalyzer._create_experiment(; name = "a", notes = "a", design = "a")
 @test e isa Dict{Symbol, String}
 
-hdr = NeuroAnalyzer._create_header(subject = s, recording = r, experiment = e)
+hdr = NeuroAnalyzer._create_header(; subject = s, recording = r, experiment = e)
 @test hdr isa NeuroAnalyzer.HEADER
 
 ##
@@ -168,7 +221,7 @@ df = NeuroAnalyzer._a2df(["1.0\x14stim\x14"])
 @test NeuroAnalyzer._initialize_locs(e10) isa DataFrame
 @test NeuroAnalyzer._initialize_locs() isa DataFrame
 
-add_locs!(e10, locs=locs)
+add_locs!(e10; locs = locs)
 x, y, z, = e10.locs[!, :loc_x], e10.locs[!, :loc_y], e10.locs[!, :loc_z]
 xn, yn = NeuroAnalyzer._locs_norm(x, y)
 @test xn[1] ≈ -0.31
@@ -191,9 +244,20 @@ locs = NeuroAnalyzer._locs_round(locs)
 @test NeuroAnalyzer._angle_quadrant(270) == 3
 @test NeuroAnalyzer._angle_quadrant(270+45) == 4
 
-@test NeuroAnalyzer._locs_remove_nans(DataFrame(:a=>[0.0, 1.0, NaN])) == DataFrame(:a=>[0.0, 1.0, 0.0])
+@test NeuroAnalyzer._locs_remove_nans(DataFrame(:a=>[0.0, 1.0, NaN])) ==
+      DataFrame(:a=>[0.0, 1.0, 0.0])
 
-@test NeuroAnalyzer._flipx([1.0, 2.0, -1.0, 0.0, -1.0, 2.0, 0.0, 1.0, -1.0]) == [-0.3333333333333334, -1.3333333333333335, 1.6666666666666665, 0.6666666666666666, 1.6666666666666665, -1.3333333333333335, 0.6666666666666666, -0.3333333333333334, 1.6666666666666665]
+@test NeuroAnalyzer._flipx([1.0, 2.0, -1.0, 0.0, -1.0, 2.0, 0.0, 1.0, -1.0]) == [
+    -0.3333333333333334,
+    -1.3333333333333335,
+    1.6666666666666665,
+    0.6666666666666666,
+    1.6666666666666665,
+    -1.3333333333333335,
+    0.6666666666666666,
+    -0.3333333333333334,
+    1.6666666666666665,
+]
 
 @test NeuroAnalyzer._find_bylabel(eeg.locs, "fp1") == 1
 
@@ -204,10 +268,13 @@ locs = NeuroAnalyzer._locs_round(locs)
 @test NeuroAnalyzer._xlims(1:10) == (1.0, 10.0)
 @test NeuroAnalyzer._ticks(1:10) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 @test NeuroAnalyzer._ticks((1, 10)) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-@test NeuroAnalyzer._erpticks(1:10) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]
-@test NeuroAnalyzer._erpticks((1, 10)) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]
+@test NeuroAnalyzer._erpticks(1:10) ==
+      [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]
+@test NeuroAnalyzer._erpticks((1, 10)) ==
+      [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]
 @test NeuroAnalyzer._set_defaults("a", "b", "c", "d", "e", "f") == ("a", "b", "c")
-@test NeuroAnalyzer._set_defaults("default", "default", "default", "a", "b", "c") == ("a", "b", "c")
+@test NeuroAnalyzer._set_defaults("default", "default", "default", "a", "b", "c") ==
+      ("a", "b", "c")
 
 @test NeuroAnalyzer._def_ylabel("eeg", "μV") == "Amplitude [μV]"
 
@@ -218,7 +285,7 @@ locs = NeuroAnalyzer._locs_round(locs)
 ## Miscellaneous Operations
 ##
 
-r = NeuroAnalyzer._fir_response(rand(100), range(0, stop=π, length=1024))
+r = NeuroAnalyzer._fir_response(rand(100), range(0; stop = π, length = 1024))
 @test r isa Vector{ComplexF64}
 @test length(r) == 1024
 
@@ -244,12 +311,12 @@ t, et = NeuroAnalyzer._get_t(e10)
 
 @test NeuroAnalyzer._midxy(1, 1, 4, 4) == (2.5, 2.5)
 
-@test length(NeuroAnalyzer._split(1:55, wlen=32, woverlap=8)) == 4
-@test length(NeuroAnalyzer._fsplit(1:55, wlen=32, woverlap=8)) == 3
+@test length(NeuroAnalyzer._split(1:55, wlen = 32, woverlap = 8)) == 4
+@test length(NeuroAnalyzer._fsplit(1:55, wlen = 32, woverlap = 8)) == 3
 
-@test NeuroAnalyzer._chunks(55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48; 25 55]
-@test NeuroAnalyzer._chunks(1:55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48; 25 55]
-@test NeuroAnalyzer._fchunks(55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48]
-@test NeuroAnalyzer._fchunks(1:55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48]
+@test NeuroAnalyzer._chunks(55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48; 25 55]
+@test NeuroAnalyzer._chunks(1:55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48; 25 55]
+@test NeuroAnalyzer._fchunks(55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48]
+@test NeuroAnalyzer._fchunks(1:55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48]
 
 true

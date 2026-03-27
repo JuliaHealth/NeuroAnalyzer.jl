@@ -19,10 +19,10 @@ Delete channel(s).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_channel(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        del_opt::Bool = false,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -30,15 +30,19 @@ function delete_channel(
 
     # validate
     length(ch) == 0 && (return obj)
-    length(ch) > 1 && (ch = sort!(ch, rev = true))
+    length(ch) > 1 && (ch = sort!(ch; rev = true))
     length(ch) < ch_n ||
-        throw(ArgumentError("Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."))
+        throw(
+        ArgumentError(
+            "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n).",
+        ),
+    )
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn(
-        "OBJ contains SSP projections data, you should apply them before modifying OBJ data."
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
     )
 
     # update headers
@@ -48,7 +52,8 @@ function delete_channel(
         !isnothing(loc_idx) && deleteat!(obj_new.locs, loc_idx)
         deleteat!(obj_new.header.recording[:label], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
-        obj_new.header.recording[:bad_channel] = obj_new.header.recording[:bad_channel][1:end .!= idx]
+        obj_new.header.recording[:bad_channel] =
+            obj_new.header.recording[:bad_channel][1:end .!= idx]
         deleteat!(obj_new.header.recording[:unit], idx)
         if obj_new.header.recording[:data_type] == "eeg"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
@@ -81,7 +86,7 @@ function delete_channel(
     end
 
     obj_new.header.recording[:channel_order] = _sort_channels(
-        obj_new.header.recording[:channel_type]
+        obj_new.header.recording[:channel_type],
     )
 
     # remove channel
@@ -90,7 +95,6 @@ function delete_channel(
     push!(obj_new.history, "delete_channel(obj; ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -109,10 +113,10 @@ Delete channels.
 - `Nothing`
 """
 function delete_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        del_opt::Bool = false,
+    )::Nothing
 
     # validate
     length(get_channel(obj; ch = ch)) == 0 && (return nothing)
@@ -124,7 +128,6 @@ function delete_channel!(
     obj.locs = obj_new.locs
 
     return nothing
-
 end
 
 """
@@ -142,10 +145,9 @@ Keep channels.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function keep_channel(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::NeuroAnalyzer.NEURO
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::NeuroAnalyzer.NEURO
     ch_n = nchannels(obj)
 
     # resolve channel names to integer indices
@@ -154,12 +156,15 @@ function keep_channel(
 
     # validate
     length(chs_to_remove) < ch_n ||
-        throw(ArgumentError("Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."))
+        throw(
+        ArgumentError(
+            "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n).",
+        ),
+    )
 
     obj_new = delete_channel(obj; ch = chs_to_remove)
 
     return obj_new
-
 end
 
 """
@@ -177,9 +182,9 @@ Keep channels.
 - `Nothing`
 """
 function keep_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Nothing
 
     # validate
     length(get_channel(obj; ch = ch)) == nchannels(obj) && (return nothing)
@@ -191,5 +196,4 @@ function keep_channel!(
     obj.locs = obj_new.locs
 
     return nothing
-
 end

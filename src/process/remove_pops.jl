@@ -22,24 +22,23 @@ Named tuple:
 - `r_seg::Int64`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops(
-    s::AbstractVector;
-    r::Int64 = 20,
-    repair::Bool = true
-)::Union{
-    Nothing,
-    @NamedTuple{
-        s::Vector{Float64},
-        pop_loc::Int64,
-        l_seg::Int64,
-        r_seg::Int64
-    },
-    @NamedTuple{
-        pop_loc::Int64,
-        l_seg::Int64,
-        r_seg::Int64
+        s::AbstractVector;
+        r::Int64 = 20,
+        repair::Bool = true,
+    )::Union{
+        Nothing,
+        @NamedTuple{
+            s::Vector{Float64},
+            pop_loc::Int64,
+            l_seg::Int64,
+            r_seg::Int64,
+        },
+        @NamedTuple{
+            pop_loc::Int64,
+            l_seg::Int64,
+            r_seg::Int64,
+        }
     }
-}
-
     length(s) >= 2 * r + 1 || throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
 
     s_m = mean(s)
@@ -136,7 +135,7 @@ function remove_pops(
             # s_pop[s_pop_min:end] += ll2
 
             # s_pop = filter_mavg(s_pop, k=12)
-            s_pop = filter_mavg(s_pop, k = 4)
+            s_pop = filter_mavg(s_pop; k = 4)
 
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
@@ -185,7 +184,7 @@ function remove_pops(
 
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
-            s_pop = filter_mavg(s_pop, k = 4)
+            s_pop = filter_mavg(s_pop; k = 4)
 
             # s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
             # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
@@ -206,14 +205,12 @@ function remove_pops(
             # s_pop[s_pop_min:s_pop_max][s_pop[s_pop_min:s_pop_max] .< 0] .*= minimum(s[1:s_pop_min])
             # s[zero_1:zero_2] = s_pop
         end
-
     end
 
     l_seg = l_seg[1]
     r_seg = r_seg[end]
 
     return repair ? (; s, pop_loc, l_seg, r_seg) : (; pop_loc, l_seg, r_seg)
-
 end
 
 """
@@ -237,15 +234,15 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    repair::Bool = true,
-    window::Real = 10.0,
-    r::Int64 = sr(obj) ÷ 2
-)::Union{
-    Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
-    Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        repair::Bool = true,
+        window::Real = 10.0,
+        r::Int64 = sr(obj) ÷ 2,
+    )::Union{
+        Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
+        Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
+    }
 
     # validate
     nepochs(obj) == 1 || throw(ArgumentError("pop() must be applied to continuous object."))
@@ -262,13 +259,14 @@ function remove_pops(
     r_seg = Vector{Int64}()
 
     window *= sr(obj)
-    window <= signal_len(obj) || throw(ArgumentError("window must be ≤ $(signal_len(obj) / sr(obj))."))
+    window <= signal_len(obj) ||
+        throw(ArgumentError("window must be ≤ $(signal_len(obj) / sr(obj))."))
     ch_n = size(s, 1)
 
     @inbounds for ch_idx in 1:ch_n
         for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
             p = remove_pops(
-                obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair = repair, r = r
+                obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair = repair, r = r,
             )
             if !isnothing(p)
                 if repair
@@ -288,7 +286,6 @@ function remove_pops(
     else
         return pop_loc, l_seg, r_seg
     end
-
 end
 
 """
@@ -311,23 +308,22 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function remove_pops!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    repair::Bool = true,
-    window::Real = 10.0,
-    r::Int64 = sr(obj) ÷ 2
-)::Tuple{
-    Vector{Vector{Int64}},
-    Vector{Int64},
-    Vector{Int64}
-}
-
-    obj_new, pop_loc, l_seg, r_seg = remove_pops(obj; ch = ch, repair = true, window = window, r = r)
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        repair::Bool = true,
+        window::Real = 10.0,
+        r::Int64 = sr(obj) ÷ 2,
+    )::Tuple{
+        Vector{Vector{Int64}},
+        Vector{Int64},
+        Vector{Int64},
+    }
+    obj_new, pop_loc, l_seg, r_seg =
+        remove_pops(obj; ch = ch, repair = true, window = window, r = r)
     if repair
         obj.data = obj_new.data
         obj.history = obj_new.history
     end
 
     return pop_loc, l_seg, r_seg
-
 end

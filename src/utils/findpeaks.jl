@@ -17,9 +17,7 @@ Peaks are detected using `findpeaks1d` and a minimum separation of `d` samples i
 - `Vector{Int64}`: indices of detected peaks in `signal`, sorted in ascending order
 """
 function findpeaks(signal::AbstractVector; d::Int64 = 32)::Vector{Int64}
-
     d >= 1 || throw(ArgumentError("d must be ≥ 1."))
 
-    return findpeaks1d(signal, distance = d)[1]
-
+    return findpeaks1d(signal; distance = d)[1]
 end

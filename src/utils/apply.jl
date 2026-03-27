@@ -20,10 +20,10 @@ Example: `f = "cumsum(obj)"` or `f = "obj .^ 2"`.
 - `Array{Float64, 3}`: result array, shape (channels, epoch length, epochs)
 """
 function apply(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    f::String
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        f::String,
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -49,7 +49,7 @@ function apply(
 
     # initialize progress bar
     progbar = Progress(
-        ch_n * ep_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar
+        ch_n * ep_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar,
     )
     # compute over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -65,5 +65,4 @@ function apply(
     end
 
     return result
-
 end

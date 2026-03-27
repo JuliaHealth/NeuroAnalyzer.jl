@@ -20,25 +20,24 @@ The Gaussian is normalized to unit gain at its peak. Taking the absolute value o
 - `Vector{Float64}`: filtered signal of length `length(s)`
 """
 function filter_g(
-    s::AbstractVector;
-    fs::Int64,
-    pad::Int64 = 0,
-    f::Real,
-    gw::Real = 5
-)::Vector{Float64}
-
+        s::AbstractVector;
+        fs::Int64,
+        pad::Int64 = 0,
+        f::Real,
+        gw::Real = 5,
+    )::Vector{Float64}
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
     f >= 0 || throw(ArgumentError("f must be ≥ 0."))
-    f < fs / 2 || throw(ArgumentError("f must be < $(fs/2) Hz (Nyquist)."))
+    f < fs / 2 || throw(ArgumentError("f must be < $(fs / 2) Hz (Nyquist)."))
     gw > 0 || throw(ArgumentError("gw must be > 0."))
 
     # frequency axis matching the FFT output length (including zero-padding)
-    n   = length(s) + pad
-    gf  = collect(range(0, fs; length=n))
+    n = length(s) + pad
+    gf = collect(range(0, fs; length = n))
 
     # Gaussian standard deviation derived from the width parameter
-    gs  = (gw * (2π - 1)) / (4π)
+    gs = (gw * (2π - 1)) / (4π)
 
     # Build the Gaussian kernel centered at f, then normalize to unit peak gain
     gf .-= f
@@ -47,7 +46,6 @@ function filter_g(
 
     # multiply spectrum by kernel and invert; abs gives the signal envelope
     return abs.(ifft0(fft0(s, pad) .* g, pad))
-
 end
 
 """
@@ -68,12 +66,12 @@ Filter a 3-dimensional signal array using a Gaussian kernel in the frequency dom
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_g(
-    s::AbstractArray;
-    fs::Int64,
-    pad::Int64 = 0,
-    f::Real,
-    gw::Real = 5
-)::Array{Float64, 3}
+        s::AbstractArray;
+        fs::Int64,
+        pad::Int64 = 0,
+        f::Real,
+        gw::Real = 5,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -89,15 +87,16 @@ function filter_g(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = filter_g(@views(s[ch_idx, :, ep_idx]),
-                                            fs = fs,
-                                            pad = pad,
-                                            f = f,
-                                            gw = gw)
+        s_new[ch_idx, :, ep_idx] = filter_g(
+            @views(s[ch_idx, :, ep_idx]),
+            fs = fs,
+            pad = pad,
+            f = f,
+            gw = gw
+        )
     end
 
     return s_new
-
 end
 
 """
@@ -118,12 +117,12 @@ Filter selected channels of a NEURO object using a Gaussian kernel in the freque
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_g(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    f::Real,
-    gw::Real = 5
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        f::Real,
+        gw::Real = 5,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -132,16 +131,15 @@ function filter_g(
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = filter_g(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         pad = pad,
         f = f,
-        gw = gw
+        gw = gw,
     )
     push!(obj_new.history, "filter_g(obj; ch=$ch, pad=$pad, f=$f)")
 
     return obj_new
-
 end
 
 """
@@ -162,17 +160,15 @@ Filter selected channels of a NEURO object in-place using a Gaussian kernel in t
 - `Nothing`
 """
 function filter_g!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    pad::Int64 = 0,
-    f::Real,
-    gw::Real = 5
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        pad::Int64 = 0,
+        f::Real,
+        gw::Real = 5,
+    )::Nothing
     obj_new = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

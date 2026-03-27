@@ -22,9 +22,12 @@ function zipratio(obj::NeuroAnalyzer.NEURO)::Float64
     # determine the platform-appropriate zip executable name
     zip_cmd = Sys.iswindows() ? "zip.exe" : "zip"
     Sys.which(zip_cmd) === nothing &&
-        throw(ArgumentError(
+        throw(
+        ArgumentError(
             "zip command not found: \"$zip_cmd\". " *
-            "Install zip and ensure it is on PATH."))
+                "Install zip and ensure it is on PATH."
+        ),
+    )
 
     # create a temporary CSV file for the exported signal data
     tmp_path, tmp_io = mktemp()
@@ -38,14 +41,14 @@ function zipratio(obj::NeuroAnalyzer.NEURO)::Float64
         # non-signal content that could skew the compression ratio)
         export_csv(
             obj;
-            file_name  = csv_path,
-            names      = false,
-            header     = false,
+            file_name = csv_path,
+            names = false,
+            header = false,
             epoch_time = false,
-            markers    = false,
-            locs       = false,
-            history    = false,
-            overwrite  = true,
+            markers = false,
+            locs = false,
+            history = false,
+            overwrite = true,
         )
 
         _info("Compressing exported data to estimate signal complexity")
@@ -73,7 +76,5 @@ function zipratio(obj::NeuroAnalyzer.NEURO)::Float64
         isfile(zip_path) && rm(zip_path)
         # remove the bare mktemp path that was never used directly
         isfile(tmp_path) && rm(tmp_path)
-
     end
-
 end

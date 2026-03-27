@@ -24,12 +24,10 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform for a
 Uses the Hilbert transform; best results for narrowband signals. Broadband signals produce meaningless instantaneous frequencies.
 """
 function frqinst(s::AbstractVector)::Vector{Float64}
-
     h = htransform(s)
     ph = h.ph
 
     return NeuroAnalyzer.derivative(DSP.unwrap(ph)) / (2 * π)
-
 end
 
 """
@@ -56,8 +54,9 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 Uses the Hilbert transform; best results for narrowband signals. Broadband signals produce meaningless instantaneous frequencies.
 """
 function frqinst(s::AbstractArray)::Array{Float64, 3}
-
-    _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
+    _warn(
+        "frqinst() uses Hilbert transform, the signal should be narrowband for best results.",
+    )
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -77,7 +76,6 @@ function frqinst(s::AbstractArray)::Array{Float64, 3}
     end
 
     return f
-
 end
 
 """
@@ -104,11 +102,15 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 Uses the Hilbert transform; best results for narrowband signals. Broadband signals produce meaningless instantaneous frequencies.
 """
-function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function frqinst(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return frqinst(@view(obj.data[ch, :, :])) .* sr(obj)
-
 end

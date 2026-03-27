@@ -23,5 +23,4 @@ function phases(s::AbstractVector)::Vector{Float64}
     # DSP.hilbert() returns the analytic signal z = s + i·H(s)
     # Base.angle(z) = atan(imag(z), real(z)) gives the wrapped instantaneous phase
     return Base.angle.(DSP.hilbert(s))
-
 end

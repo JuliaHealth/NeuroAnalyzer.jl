@@ -19,10 +19,10 @@ Remove segment from the signal.
 - `Vector{Float64}`
 """
 function trim(
-    v::AbstractVector;
-    seg::Tuple{Int64, Int64},
-    keep::Bool = false
-)::Vector{Float64}
+        v::AbstractVector;
+        seg::Tuple{Int64, Int64},
+        keep::Bool = false,
+    )::Vector{Float64}
 
     # validate
     _check_segment(v, seg[1], seg[2])
@@ -32,7 +32,6 @@ function trim(
     else
         return vcat(v[1:(seg[1] - 1)], v[(seg[2] + 1):end])
     end
-
 end
 
 """
@@ -51,10 +50,10 @@ Remove segment from the signal.
 - `Matrix{Float64}`
 """
 function trim(
-    m::AbstractMatrix;
-    seg::Tuple{Int64, Int64},
-    keep::Bool = false
-)::Matrix{Float64}
+        m::AbstractMatrix;
+        seg::Tuple{Int64, Int64},
+        keep::Bool = false,
+    )::Matrix{Float64}
 
     # validate
     _check_segment(m[1, :], seg[1], seg[2])
@@ -64,7 +63,6 @@ function trim(
     else
         return hcat(m[:, 1:(seg[1] - 1)], m[:, (seg[2] + 1):end])
     end
-
 end
 
 """
@@ -83,10 +81,10 @@ Remove segment from a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function trim(
-    a::AbstractArray;
-    seg::Tuple{Int64, Int64},
-    keep::Bool = false
-)::Array{Float64, 3}
+        a::AbstractArray;
+        seg::Tuple{Int64, Int64},
+        keep::Bool = false,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(a)
@@ -99,7 +97,6 @@ function trim(
     else
         return hcat(a[:, 1:(seg[1] - 1), :], a[:, (seg[2] + 1):end, :])
     end
-
 end
 
 """
@@ -119,26 +116,27 @@ Trim signal by removing parts of the signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function trim(
-    obj::NeuroAnalyzer.NEURO;
-    seg::Tuple{Real, Real},
-    keep::Bool = false
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        seg::Tuple{Real, Real},
+        keep::Bool = false,
+    )::NeuroAnalyzer.NEURO
 
     # validate
-    nepochs(obj) == 1 || throw(ArgumentError("trim() must be applied to continuous object."))
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("trim() must be applied to continuous object."))
     _check_segment(obj, seg)
 
     s_idx = vsearch(seg[1], obj.time_pts)
     seg_tpos = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn(
-        "OBJ contains SSP projections data, you should apply them before modifying OBJ data."
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
     )
 
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data = trim(obj_new.data, seg = seg_tpos, keep = keep)
+    obj_new.data = trim(obj_new.data; seg = seg_tpos, keep = keep)
 
     if keep
         obj_new.time_pts = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
@@ -157,7 +155,7 @@ function trim(
 
     if !keep
         add_marker!(
-            obj_new, id = "NA", start = obj_new.time_pts[s_idx], value = "DELETED"
+            obj_new; id = "NA", start = obj_new.time_pts[s_idx], value = "DELETED",
         )
         obj_new.markers = unique(obj_new.markers)
     end
@@ -165,7 +163,6 @@ function trim(
     push!(obj_new.history, "trim(OBJ, seg=$seg, keep=$keep")
 
     return obj_new
-
 end
 
 """
@@ -184,14 +181,14 @@ Trim signal by removing parts of the signal.
 - `Nothing`
 """
 function trim!(
-    obj::NeuroAnalyzer.NEURO;
-    seg::Tuple{Real, Real},
-    keep::Bool = false
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        seg::Tuple{Real, Real},
+        keep::Bool = false,
+    )::Nothing
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("trim!() must be applied to continuous object."))
 
-    nepochs(obj) == 1 || throw(ArgumentError("trim!() must be applied to continuous object."))
-
-    obj_new = trim(obj, seg = seg, keep = keep)
+    obj_new = trim(obj; seg = seg, keep = keep)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.time_pts = obj_new.time_pts
@@ -199,7 +196,6 @@ function trim!(
     obj.markers = obj_new.markers
 
     return nothing
-
 end
 
 """
@@ -217,13 +213,12 @@ Crop signal by removing parts of the signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function crop(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::NeuroAnalyzer.NEURO
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("crop() must be applied to continuous object."))
 
-    nepochs(obj) == 1 || throw(ArgumentError("crop() must be applied to continuous object."))
-
-    obj_new = trim(obj, seg = seg, keep = true)
+    obj_new = trim(obj; seg = seg, keep = true)
 
     return obj_new
-
 end
 
 """
@@ -241,10 +236,10 @@ Crop signal by removing parts of the signal.
 - `Nothing`
 """
 function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("crop!() must be applied to continuous object."))
 
-    nepochs(obj) == 1 || throw(ArgumentError("crop!() must be applied to continuous object."))
-
-    obj_new = trim(obj, seg = seg, keep = true)
+    obj_new = trim(obj; seg = seg, keep = true)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.time_pts = obj_new.time_pts
@@ -252,5 +247,4 @@ function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
     obj.markers = obj_new.markers
 
     return nothing
-
 end

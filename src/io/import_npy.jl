@@ -15,9 +15,9 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 - `NeuroAnalyzer.NEURO`
 """
 function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEURO
-
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".npy") && throw(ArgumentError("This is not NPY file."))
+    !(lowercase(splitext(file_name)[2]) == ".npy") &&
+        throw(ArgumentError("This is not NPY file."))
 
     !(sampling_rate > 1) && throw(ArgumentError("Sampling rate must be ≥ 1."))
 
@@ -36,23 +36,23 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[]
+        :channel => Int64[],
     )
 
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)],
-        digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits = 4,
     )
     epoch_time = round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
-        digits = 4
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
     )
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     data_type = "eeg"
 
-    s = _create_subject(
+    s = _create_subject(;
         id = "",
         first_name = "",
         middle_name = "",
@@ -60,9 +60,9 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
-    r = _create_recording_eeg(
+    r = _create_recording_eeg(;
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -81,11 +81,11 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         line_frequency = 50,
         sampling_rate = sampling_rate,
         gain = repeat([1.0], ch_n),
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(name = "", notes = "", design = "")
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     history = String[]
 
@@ -96,9 +96,8 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj
-
 end

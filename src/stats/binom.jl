@@ -26,8 +26,7 @@ function binom_prob(p::Float64, r::Int64, n::Int64)::Float64
     r >= 0 || throw(ArgumentError("r must be ≥ 0."))
     r <= n || throw(ArgumentError("r must be ≤ n."))
 
-    return binomial(n, r) * (p ^ r) * (1 - p) ^ (n - r)
-
+    return binomial(n, r) * (p^r) * (1 - p)^(n - r)
 end
 
 """
@@ -54,18 +53,18 @@ Named tuple:
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
 """
 function binom_test(
-    prop::Float64,
-    n::Int64;
-    verbose::Bool = true
-)::@NamedTuple{
-    x0::Int64,
-    x1::Int64,
-    p0::Float64,
-    p1::Float64,
-    ci0::Tuple{Float64, Float64},
-    ci1::Tuple{Float64, Float64},
-    p::Float64
-}
+        prop::Float64,
+        n::Int64;
+        verbose::Bool = true,
+    )::@NamedTuple{
+        x0::Int64,
+        x1::Int64,
+        p0::Float64,
+        p1::Float64,
+        ci0::Tuple{Float64, Float64},
+        ci1::Tuple{Float64, Float64},
+        p::Float64,
+    }
 
     # validate
     _in(prop, (0.0, 1.0), "prop")
@@ -78,16 +77,20 @@ function binom_test(
     ci1 = cip(prop, n)
 
     if verbose
-        println("Level 0: counts: $x0\t proportion: $(round(1 - prop, digits=3))\t" *
-                " 95%CI: $(round(ci0[1], digits=3)), $(round(ci0[2], digits=3))")
-        println("Level 1: counts: $x1\t proportion: $(round(prop, digits=3))\t" *
-                " 95%CI: $(round(ci1[1], digits=3)), $(round(ci1[2], digits=3))")
+        println(
+            "Level 0: counts: $x0\t proportion: $(round(1 - prop, digits = 3))\t" *
+                " 95%CI: $(round(ci0[1], digits = 3)), $(round(ci0[2], digits = 3))",
+        )
+        println(
+            "Level 1: counts: $x1\t proportion: $(round(prop, digits = 3))\t" *
+                " 95%CI: $(round(ci1[1], digits = 3)), $(round(ci1[2], digits = 3))",
+        )
     end
 
     p = pvalue(BinomialTest(x1, n, 0.5))
 
     if verbose
-        pv_str = round(p, digits=3) == 0.0 ? "<0.001" : string(round(p, digits=3))
+        pv_str = round(p; digits = 3) == 0.0 ? "<0.001" : string(round(p; digits = 3))
         println("Binomial test p value: $pv_str")
         println("Note: level-1 proportion is tested against 0.5")
     end
@@ -99,7 +102,6 @@ function binom_test(
     p1 = prop
 
     return (; x0, x1, p0, p1, ci0, ci1, p)
-
 end
 
 """
@@ -127,17 +129,17 @@ Named tuple:
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
 """
 function binom_test(
-    x::Vector{Bool};
-    verbose::Bool = true
-)::@NamedTuple{
-    x0::Int64,
-    x1::Int64,
-    p0::Float64,
-    p1::Float64,
-    ci0::Tuple{Float64, Float64},
-    ci1::Tuple{Float64, Float64},
-    p::Float64
-}
+        x::Vector{Bool};
+        verbose::Bool = true,
+    )::@NamedTuple{
+        x0::Int64,
+        x1::Int64,
+        p0::Float64,
+        p1::Float64,
+        ci0::Tuple{Float64, Float64},
+        ci1::Tuple{Float64, Float64},
+        p::Float64,
+    }
 
     # validate
     n = length(x)
@@ -147,10 +149,9 @@ function binom_test(
 
     return binom_test(
         n1 / n,
-        n,
-        verbose=verbose
+        n;
+        verbose = verbose,
     )
-
 end
 
 """
@@ -179,18 +180,18 @@ Named tuple:
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
 """
 function binom_test(
-    x::Int64,
-    n::Int64;
-    verbose::Bool = true
-)::@NamedTuple{
-    x0::Int64,
-    x1::Int64,
-    p0::Float64,
-    p1::Float64,
-    ci0::Tuple{Float64, Float64},
-    ci1::Tuple{Float64, Float64},
-    p::Float64
-}
+        x::Int64,
+        n::Int64;
+        verbose::Bool = true,
+    )::@NamedTuple{
+        x0::Int64,
+        x1::Int64,
+        p0::Float64,
+        p1::Float64,
+        ci0::Tuple{Float64, Float64},
+        ci1::Tuple{Float64, Float64},
+        p::Float64,
+    }
 
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -198,8 +199,7 @@ function binom_test(
 
     return binom_test(
         x / n,
-        n,
-        verbose=verbose
+        n;
+        verbose = verbose,
     )
-
 end

@@ -25,7 +25,6 @@ function prank(x::AbstractVector)::Vector{Float64}
     n = length(x)
 
     return [count(<(xi), x) / n for xi in x]
-
 end
 
 """
@@ -45,17 +44,16 @@ Tied ranks are computed with `StatsBase.tiedrank`, normalised to `(0, 1]`, then 
 - `Array{Int64}`: rank-bin indices ∈ `[1, nbins]`, same shape as `x`
 """
 function dranks(
-    x::AbstractArray,
-    nbins::Int64=ceil(Int64, 1 + log2(length(x)))
-)::Array{Int64}
+        x::AbstractArray,
+        nbins::Int64 = ceil(Int64, 1 + log2(length(x))),
+    )::Array{Int64}
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     nbins >= 1 || throw(ArgumentError("nbins must be ≥ 1."))
 
     # normalize tied ranks to (0, 1], then bin into 1..nbins
-    r  = tiedrank(x) ./ length(x)
+    r = tiedrank(x) ./ length(x)
 
     return ceil.(Int64, r .* nbins)
-
 end

@@ -16,19 +16,20 @@ Calculate the variance across channels at each time point of an ERP/ERF object (
 - `Vector{Float64}`: topographical variance
 """
 function topo_var(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::Vector{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Vector{Float64}
 
     # validate
     datatype(obj) in ["erp", "erf"] ||
         throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
-    
+
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
-    return dropdims(var(@view(obj.data[ch, :, 1]), dims = 1), dims = 1)
-
+    return dropdims(var(@view(obj.data[ch, :, 1]); dims = 1); dims = 1)
 end
 
 """
@@ -56,12 +57,12 @@ Named tuple:
 - `sc::Vector{Float64}`: spatial correlation ∈ [-1, 1], one value per time point
 """
 function diss(
-    s1::AbstractMatrix,
-    s2::AbstractMatrix
-)::@NamedTuple{
-    gd::Vector{Float64},
-    sc::Vector{Float64}
-}
+        s1::AbstractMatrix,
+        s2::AbstractMatrix,
+    )::@NamedTuple{
+        gd::Vector{Float64},
+        sc::Vector{Float64},
+    }
 
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
@@ -87,7 +88,6 @@ function diss(
     end
 
     return (; gd, sc)
-
 end
 
 """
@@ -111,14 +111,14 @@ Named tuple:
 - `sc::Vector{Float64}`: spatial correlation ∈ [-1, 1], one value per time point
 """
 function diss(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex}
-)::@NamedTuple{
-    gd::Vector{Float64},
-    sc::Vector{Float64}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+    )::@NamedTuple{
+        gd::Vector{Float64},
+        sc::Vector{Float64},
+    }
 
     # validate
     datatype(obj1) in ["erp", "erf"] ||
@@ -133,14 +133,21 @@ function diss(
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     return diss(
         @view(obj1.data[ch1, :, 1]),
         @view(obj2.data[ch2, :, 1])
     )
-
 end

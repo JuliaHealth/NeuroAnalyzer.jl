@@ -22,16 +22,17 @@ Named tuple:
 - `U::Matrix{Float64}}`: SVD U matrix (orthonormal basis of the noise subspace)
 """
 function generate_ssp_projectors(
-    obj::NeuroAnalyzer.NEURO;
-    pidx::Union{Int64, Vector{Int64}} = 0
-)::@NamedTuple{
-    ssp_projectors::Matrix{Float64},
-    U::Matrix{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        pidx::Union{Int64, Vector{Int64}} = 0,
+    )::@NamedTuple{
+        ssp_projectors::Matrix{Float64},
+        U::Matrix{Float64},
+    }
 
     # validate
     _check_datatype(obj, "meg")
-    :ssp_data in keys(obj.header.recording) || throw(ArgumentError("OBJ does not contain SSP projections."))
+    :ssp_data in keys(obj.header.recording) ||
+        throw(ArgumentError("OBJ does not contain SSP projections."))
     n_proj = size(obj.header.recording[:ssp_data], 1)
     n_proj > 0 ||
         throw(ArgumentError("OBJ does not contain SSP projections."))
@@ -76,7 +77,6 @@ function generate_ssp_projectors(
     ssp_projectors = Matrix{Float64}(I(n_ssp_ch)) .- (U * U')
 
     return (; ssp_projectors, U)
-
 end
 
 """
@@ -92,19 +92,18 @@ Apply SSP projectors generated from embedded projections to a MEG object.
 # Returns
 
 - `NeuroAnalyzer.NEURO`: output NEURO object with SSP projections applied
-""" 
+"""
 function apply_ssp_projectors(
-    obj::NeuroAnalyzer.NEURO;
-    pidx::Union{Int64, Vector{Int64}} = 0
-)::NeuroAnalyzer.NEURO
-
+        obj::NeuroAnalyzer.NEURO;
+        pidx::Union{Int64, Vector{Int64}} = 0,
+    )::NeuroAnalyzer.NEURO
     _check_datatype(obj, "meg")
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     # generate the projector matrix and the noise-subspace basis U
-    ssp_projectors, U = generate_ssp_projectors(obj, pidx = pidx)
+    ssp_projectors, U = generate_ssp_projectors(obj; pidx = pidx)
     _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
 
     ssp_mask = obj.header.recording[:ssp_channels]
@@ -112,7 +111,6 @@ function apply_ssp_projectors(
     push!(obj_new.history, "apply_ssp_projectors(OBJ, pidx=$pidx)")
 
     return obj_new
-
 end
 
 """
@@ -129,12 +127,13 @@ Apply SSP projectors from embedded projections.
 
 - `Nothing`
 """
-function apply_ssp_projectors!(obj::NeuroAnalyzer.NEURO; pidx::Union{Int64, Vector{Int64}} = 0)::Nothing
-
-    obj_new = apply_ssp_projectors(obj, pidx = pidx)
+function apply_ssp_projectors!(
+        obj::NeuroAnalyzer.NEURO;
+        pidx::Union{Int64, Vector{Int64}} = 0,
+    )::Nothing
+    obj_new = apply_ssp_projectors(obj; pidx = pidx)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

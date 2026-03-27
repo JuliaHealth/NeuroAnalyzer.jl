@@ -17,9 +17,9 @@ Interactive view of ICA components.
 - `Nothing`
 """
 function iview_ica(
-        obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}, Regex}
+        obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64};
+        ch::Union{String, Vector{String}, Regex},
     )::Nothing
-
     plot_sig_type = 0
     plot_psd_type = 0
 
@@ -35,13 +35,25 @@ function iview_ica(
 
     # validate
     size(ic_mw, 1) == length(chn) ||
-        throw(ArgumentError("ICA weighting matrix size does not match number of OBJ channels."))
+        throw(
+        ArgumentError(
+            "ICA weighting matrix size does not match number of OBJ channels.",
+        ),
+    )
     size(ic_mw, 2) == size(ic, 1) ||
-        throw(ArgumentError("ICA weighting matrix size does not match number of ICA components."))
+        throw(
+        ArgumentError(
+            "ICA weighting matrix size does not match number of ICA components.",
+        ),
+    )
     size(ic, 2) == signal_len(obj) ||
         throw(ArgumentError("ICA components length does not match OBJ signal length."))
     size(ic_mw, 1) >= length(ch) ||
-        throw(ArgumentError("ICA weighting matrix size does not match number of selected channels."))
+        throw(
+        ArgumentError(
+            "ICA weighting matrix size does not match number of selected channels.",
+        ),
+    )
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -55,7 +67,10 @@ function iview_ica(
     obj_reconstructed = Vector{NeuroAnalyzer.NEURO}()
     obj_removed = Vector{NeuroAnalyzer.NEURO}()
     @inbounds for idx in ic_idx
-        push!(obj_reconstructed, ica_reconstruct(obj, ic, ic_mw, ch = ch, ic_idx = idx, keep = true))
+        push!(
+            obj_reconstructed,
+            ica_reconstruct(obj, ic, ic_mw, ch = ch, ic_idx = idx, keep = true),
+        )
         push!(obj_removed, ica_reconstruct(obj, ic, ic_mw, ch = ch, ic_idx = idx))
     end
 
@@ -63,14 +78,14 @@ function iview_ica(
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
         p_tmp = plot_topo(
-            obj_reconstructed[idx],
+            obj_reconstructed[idx];
             ch = datatype(obj_reconstructed[1]),
             seg = seg,
             amethod = :mean,
             imethod = :sh,
             nmethod = :minmax,
             cb = false,
-            large = false
+            large = false,
         )
         cx_tmp = plot2canvas(p_tmp)
         push!(ica_set, cx_tmp)
@@ -87,24 +102,32 @@ function iview_ica(
             Cairo.paint(ctx_ica)
             Cairo.move_to(ctx_ica, 10.0, 12.0)
             Cairo.set_source_rgb(ctx_ica, 0, 0, 0)
-            Cairo.show_text(ctx_ica, "IC: $idx")
+            return Cairo.show_text(ctx_ica, "IC: $idx")
         end
     end
 
-    p_sig = NeuroAnalyzer.plot(obj; ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
-    p_psd = NeuroAnalyzer.plot_psd(obj; ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
+    p_sig = NeuroAnalyzer.plot(
+        obj;
+        ch = cl[chn[ch_idx]],
+        title = "Channel: $(cl[chn[ch_idx]]) (original)",
+    )
+    p_psd = NeuroAnalyzer.plot_psd(
+        obj;
+        ch = cl[chn[ch_idx]],
+        title = "Channel: $(cl[chn[ch_idx]]) (original)",
+    )
 
     k = nothing
     scaled_sig = false
     scaled_psd = false
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ica()")
         Gtk4.default_size(
             win,
             Int64(ica_set[1].width) + round(Int64, p_sig.attr[:size][1] * 0.75) + 20,
-            round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20
+            round(Int64, p_sig.attr[:size][2] * 0.75) +
+                round(Int64, p_psd.attr[:size][2] * 0.75) + 20,
         )
 
         ica_view = GtkScrolledWindow()
@@ -130,7 +153,8 @@ function iview_ica(
         psd_view.content_height = round(Int64, p_psd.attr[:size][2] * 0.75)
         ica_view.min_content_width = Int64(ica_set[1].width) + 10
         ica_view.max_content_height =
-            round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20
+            round(Int64, p_sig.attr[:size][2] * 0.75) +
+            round(Int64, p_psd.attr[:size][2] * 0.75) + 20
 
         g_opts = GtkGrid()
         g_opts.column_homogeneous = false
@@ -186,14 +210,24 @@ function iview_ica(
         signal_slider.tooltip_text = "Time position"
 
         combo_sig = GtkComboBoxText()
-        for idx in ["signal (original)", "signal (reconstructed from IC)", "signal (IC removed)", "IC"]
+        for idx in [
+                "signal (original)",
+                "signal (reconstructed from IC)",
+                "signal (IC removed)",
+                "IC",
+            ]
             push!(combo_sig, idx)
         end
         combo_sig.active = 0
         combo_sig.tooltip_text = "Viewed signal"
 
         combo_psd = GtkComboBoxText()
-        for idx in ["signal (original)", "signal (reconstructed from IC)", "signal (IC removed)", "IC"]
+        for idx in [
+                "signal (original)",
+                "signal (reconstructed from IC)",
+                "signal (IC removed)",
+                "IC",
+            ]
             push!(combo_psd, idx)
         end
         combo_psd.active = 0
@@ -280,7 +314,7 @@ function iview_ica(
                 )
             end
             withenv("GKSwstype" => "100") do
-                png(p_sig, io)
+                return png(p_sig, io)
             end
             ctx_sig = getgc(signal_view)
             if !scaled_sig
@@ -289,7 +323,7 @@ function iview_ica(
             end
             img_sig = read_from_png(io)
             set_source_surface(ctx_sig, img_sig, 0, 0)
-            paint(ctx_sig)
+            return paint(ctx_sig)
         end
 
         @guarded draw(psd_view) do widget
@@ -334,7 +368,7 @@ function iview_ica(
                 )
             end
             withenv("GKSwstype" => "100") do
-                png(p_psd, io)
+                return png(p_psd, io)
             end
             ctx_psd = getgc(psd_view)
             if !scaled_psd
@@ -343,7 +377,7 @@ function iview_ica(
             end
             img_psd = read_from_png(io)
             set_source_surface(ctx_psd, img_psd, 0, 0)
-            paint(ctx_psd)
+            return paint(ctx_psd)
         end
 
         function _mwheel_scroll(_, dx, dy)
@@ -415,26 +449,32 @@ function iview_ica(
             time1 = entry_time.value
             time2 = time1 + zoom
             time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-            _refresh_ica_can_set(obj_reconstructed, ica_can_set, ic_idx, time1, time2)
+            return _refresh_ica_can_set(
+                obj_reconstructed,
+                ica_can_set,
+                ic_idx,
+                time1,
+                time2,
+            )
         end
 
         signal_connect(ch_slider, "value-changed") do widget
             ch_idx = round(Int64, Gtk4.value(ch_slider))
             draw(signal_view)
-            draw(psd_view)
+            return draw(psd_view)
         end
 
         signal_connect(combo_sig, "changed") do widget
-            draw(signal_view)
+            return draw(signal_view)
         end
 
         signal_connect(combo_psd, "changed") do widget
-            draw(psd_view)
+            return draw(psd_view)
         end
 
         signal_connect(cb_mark, "toggled") do widget
             current_ic = Int64(entry_ic.value)
-            ic_remove_idx[current_ic] = cb_mark.active
+            return ic_remove_idx[current_ic] = cb_mark.active
         end
 
         signal_connect(entry_ic, "value-changed") do widget
@@ -447,7 +487,7 @@ function iview_ica(
                 cb_mark.opacity = 1
             end
             draw(signal_view)
-            draw(psd_view)
+            return draw(psd_view)
         end
 
         signal_connect(bt_reconstruct, "clicked") do widget
@@ -461,7 +501,14 @@ function iview_ica(
                         _info(
                             "Reconstructing the signal using the IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))",
                         )
-                        ica_reconstruct!(obj_new, ic, ic_mw, ch = ch, ic_idx = ic_idx[ic_remove_idx], keep = true)
+                        ica_reconstruct!(
+                            obj_new,
+                            ic,
+                            ic_mw;
+                            ch = ch,
+                            ic_idx = ic_idx[ic_remove_idx],
+                            keep = true,
+                        )
                         ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                         ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                         cb_mark.sensitive = ic_available_for_removal_idx[current_ic]
@@ -489,8 +536,16 @@ function iview_ica(
                 ) do ans
                     if ans
                         current_ic = Int64(entry_ic.value)
-                        _info("Removing IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
-                        ica_reconstruct!(obj_new, ic, ic_mw, ch = ch, ic_idx = ic_idx[ic_remove_idx])
+                        _info(
+                            "Removing IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))",
+                        )
+                        ica_reconstruct!(
+                            obj_new,
+                            ic,
+                            ic_mw;
+                            ch = ch,
+                            ic_idx = ic_idx[ic_remove_idx],
+                        )
                         ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                         ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                         cb_mark.sensitive = ic_available_for_removal_idx[current_ic]
@@ -512,7 +567,10 @@ function iview_ica(
 
         signal_connect(bt_apply, "clicked") do widget
             if obj_edited
-                ask_dialog("This operation will apply all changes.\nPlease confirm.", win) do ans
+                ask_dialog(
+                    "This operation will apply all changes.\nPlease confirm.",
+                    win,
+                ) do ans
                     if ans
                         obj.header = obj_new.header
                         obj.data = obj_new.data
@@ -556,7 +614,7 @@ function iview_ica(
         end
 
         signal_connect(bt_close, "clicked") do widget
-            close(win)
+            return close(win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -564,7 +622,10 @@ function iview_ica(
         return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             k = keyval
             # CONTROL
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+            if (
+                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                        keyval == UInt('q')
+                )
                 close(win)
             end
         end
@@ -576,5 +637,4 @@ function iview_ica(
     Gtk4.run(app)
 
     return nothing
-
 end

@@ -28,7 +28,6 @@ function fft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
     # when n == 0, skip pad0() to avoid an unnecessary copy.
     return n == 0 ? fft(x) : fft(pad0(x, n))
-
 end
 
 """
@@ -51,14 +50,14 @@ function ifft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
     # validate
     n >= 0 || throw(ArgumentError("n must be ≥ 0."))
-    n < length(x) || throw(ArgumentError("n must be < length(x); got n=$n, length(x)=$(length(x))."))
+    n < length(x) ||
+        throw(ArgumentError("n must be < length(x); got n=$n, length(x)=$(length(x))."))
 
     # when n == 0 no trimming is needed; return the full IFFT directly
     n == 0 && return ifft(x)
 
     # trim trailing n samples to recover the original signal length L = length(x) - n
     return ifft(x)[1:(length(x) - n)]
-
 end
 
 """
@@ -82,7 +81,6 @@ function fft2(x::AbstractVector)::Vector{ComplexF64}
     n = nextpow2(length(x)) - length(x)
 
     return fft0(x, n)
-
 end
 
 """
@@ -105,9 +103,7 @@ nextpow2(9)   # → 16
 ```
 """
 function nextpow2(x::Int64)::Int64
-
     return nextpow(2, x)
-
 end
 
 """
@@ -133,7 +129,6 @@ function rfft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
     # when n == 0, skip pad0() to avoid an unnecessary copy
     return n == 0 ? rfft(x) : rfft(pad0(x, n))
-
 end
 
 """
@@ -157,5 +152,4 @@ function rfft2(x::AbstractVector)::Vector{ComplexF64}
     n = nextpow2(length(x)) - length(x)
 
     return rfft0(x, n)
-
 end

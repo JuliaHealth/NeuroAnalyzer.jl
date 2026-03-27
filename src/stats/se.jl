@@ -29,7 +29,6 @@ function sem(x::AbstractVector)::Float64
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
     return std(x) / sqrt(length(x))
-
 end
 
 """
@@ -53,7 +52,6 @@ function semd(x::AbstractVector)::Float64
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
     return 1.253 * std(x) / sqrt(length(x))
-
 end
 
 """
@@ -78,7 +76,6 @@ function sep(p::Float64, n::Int64)::Float64
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return sqrt((p * (1 - p)) / n)
-
 end
 
 """
@@ -100,7 +97,6 @@ function sen(n::Int64)::Float64
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return sqrt(n)
-
 end
 
 """
@@ -132,7 +128,6 @@ function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
     else
         return stdp(x, y) * sqrt(1 / length(x) + 1 / length(y))
     end
-
 end
 
 """
@@ -153,11 +148,11 @@ Computed as `√(p1(1−p1)/n1 + p2(1−p2)/n2)`.
 - `Float64`: standard error of the difference in proportions
 """
 function sep_diff(
-    p1::Float64,
-    p2::Float64,
-    n1::Int64,
-    n2::Int64
-)::Float64
+        p1::Float64,
+        p2::Float64,
+        n1::Int64,
+        n2::Int64,
+    )::Float64
 
     # validate
     _in(p1, (0.0, 1.0), "p1")
@@ -166,7 +161,6 @@ function sep_diff(
     n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
 
     return sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)
-
 end
 
 """
@@ -192,7 +186,6 @@ function sen_diff(n1::Int64, n2::Int64)::Float64
     n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
 
     return sqrt(n1 + n2)
-
 end
 
 """
@@ -219,7 +212,6 @@ function ses(x::AbstractVector)::Float64
     n >= 3 || throw(ArgumentError("x must contain at least 3 elements."))
 
     return sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
-
 end
 
 """
@@ -241,7 +233,6 @@ function ses(n::Int64)::Float64
     n >= 3 || throw(ArgumentError("n must be ≥ 3."))
 
     return sqrt((6 * n * (n - 1)) / ((n - 2) * (n + 1) * (n + 3)))
-
 end
 
 """
@@ -268,7 +259,6 @@ function sek(x::AbstractVector)::Float64
     n >= 4 || throw(ArgumentError("x must contain at least 4 elements."))
 
     return 2 * (n - 1) * sqrt((6 * n) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)))
-
 end
 
 """
@@ -292,5 +282,4 @@ function sek(n::Int64)::Float64
     n >= 4 || throw(ArgumentError("n must be ≥ 4."))
 
     return 2 * (n - 1) * sqrt((6 * n) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)))
-
 end

@@ -25,16 +25,16 @@ Plot Event-Related Potential/Field (single channel).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp(
-    t::Union{AbstractVector, AbstractRange},
-    s::AbstractVector;
-    rt::Union{Nothing, Real} = nothing,
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    yrev::Bool = false,
-    zl::Bool = true,
-    mono::Bool = false
-)::GLMakie.Figure
+        t::Union{AbstractVector, AbstractRange},
+        s::AbstractVector;
+        rt::Union{Nothing, Real} = nothing,
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        yrev::Bool = false,
+        zl::Bool = true,
+        mono::Bool = false,
+    )::GLMakie.Figure
 
     # validate
     length(t) == length(s) ||
@@ -45,13 +45,13 @@ function plot_erp(
         throw(ArgumentError("Signal values must be finite."))
 
     # prepare plot
-    GLMakie.activate!(title = "plot_erp()")
+    GLMakie.activate!(; title = "plot_erp()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
 
     # create axis with customizable properties
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -69,7 +69,7 @@ function plot_erp(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -80,24 +80,23 @@ function plot_erp(
 
     # draw zero line if requested
     if zl
-        GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
     end
 
     # plot ERP signal
-    GLMakie.lines!(ax, t, s, color = :black, linewidth = 1)
+    GLMakie.lines!(ax, t, s; color = :black, linewidth = 1)
 
     # plot response time if provided
-    if !isnothing(rt) && rt/1000 ∈ t
+    if !isnothing(rt) && rt / 1000 ∈ t
         GLMakie.vlines!(
             ax,
-            rt/1000,
-            linewidth=1.5,
-            color=mono ? :black : :red
+            rt / 1000;
+            linewidth = 1.5,
+            color = mono ? :black : :red,
         )
     end
 
     return fig
-
 end
 
 """
@@ -138,7 +137,7 @@ function plot_erp(
         ci95::Bool = false,
         leg::Bool = true,
         zl::Bool = true,
-        mono::Bool = false
+        mono::Bool = false,
     )::GLMakie.Figure
 
     # validate
@@ -156,13 +155,13 @@ function plot_erp(
     ch_n = size(s, 1)
 
     # prepare plot
-    GLMakie.activate!(title = "plot_erp()")
+    GLMakie.activate!(; title = "plot_erp()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
 
     # create axis with customizable properties
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -180,7 +179,7 @@ function plot_erp(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     ax.titlesize = 18
@@ -191,7 +190,7 @@ function plot_erp(
 
     # draw zero line if requested
     if zl
-        GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
     end
 
     # plot ERPs
@@ -206,10 +205,10 @@ function plot_erp(
         s_l = msci95_data.ll
 
         # plot confidence interval
-        GLMakie.Makie.band!(ax, t, s_l, s_u, alpha=0.25, color=:grey)
+        GLMakie.Makie.band!(ax, t, s_l, s_u; alpha = 0.25, color = :grey)
 
         # plot mean signal
-        GLMakie.Makie.lines!(ax, t, s_m, color=:black, linewidth=2)
+        GLMakie.Makie.lines!(ax, t, s_m; color = :black, linewidth = 2)
     else
         # plot individual channels
         cmap = GLMakie.resample_cmap(pal, ch_n)
@@ -217,34 +216,33 @@ function plot_erp(
             GLMakie.lines!(
                 ax,
                 t,
-                s[idx, :],
+                s[idx, :];
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 1,
                 alpha = avg ? 0.25 : 1.0,
-                label = clabels[idx]
+                label = clabels[idx],
             )
         end
     end
 
     # plot averaged signal if requested
     if avg
-        GLMakie.lines!(ax, t, mean(s, dims = 1)[:], color = :black, linewidth = 2)
+        GLMakie.lines!(ax, t, mean(s; dims = 1)[:]; color = :black, linewidth = 2)
     end
 
     # plot response time if provided
-    if !isnothing(rt) && rt/1000 ∈ t
-        GLMakie.vlines!(ax, rt/1000, linewidth=1.5, color=mono ? :black : :red)
+    if !isnothing(rt) && rt / 1000 ∈ t
+        GLMakie.vlines!(ax, rt / 1000; linewidth = 1.5, color = mono ? :black : :red)
     end
 
     # add legend if requested and not too many channels
     if leg && ch_n < 30
-        axislegend(ax, position=:rt, colormap=pal)
+        axislegend(ax; position = :rt, colormap = pal)
     end
 
     return fig
-
 end
 
 """
@@ -285,7 +283,7 @@ function plot_erp_topo(
         cart::Bool = false,
         head::Bool = true,
         zl::Bool = true,
-        mono::Bool = false
+        mono::Bool = false,
     )::GLMakie.Figure
 
     # validate
@@ -333,44 +331,52 @@ function plot_erp_topo(
     pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(s, 1)
-        pp = GLMakie.Figure(size = marker_size, figure_padding = 0)
+        pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
         ax = GLMakie.Axis(
-            pp[1, 1],
+            pp[1, 1];
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
             yreversed = yrev,
             xautolimitmargin = (0, 0),
-            yautolimitmargin = (0.1, 0.1)
+            yautolimitmargin = (0.1, 0.1),
         )
         hidedecorations!(ax)
         ax.titlesize = 8
 
         # plot ERP with zero line
-        GLMakie.hlines!(ax, 0, color = :black, linewidth = 1)
+        GLMakie.hlines!(ax, 0; color = :black, linewidth = 1)
         if zl
-            GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 1)
+            GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 1)
         end
-        GLMakie.lines!(ax, t, s[idx, :], linewidth = 1, color = :black)
+        GLMakie.lines!(ax, t, s[idx, :]; linewidth = 1, color = :black)
         # plot response time if provided
-        if !isnothing(rt) && rt/1000 ∈ t
-            GLMakie.vlines!(ax, rt/1000, linewidth=1.5, color=mono ? :black : :red)
+        if !isnothing(rt) && rt / 1000 ∈ t
+            GLMakie.vlines!(ax, rt / 1000; linewidth = 1.5, color = mono ? :black : :red)
         end
         push!(pp_vec, pp)
-        pp_full = plot_erp(t, s[idx, :], xlabel = xlabel, ylabel = ylabel, title = title, rt = rt, yrev = yrev)
+        pp_full = plot_erp(
+            t,
+            s[idx, :];
+            xlabel = xlabel,
+            ylabel = ylabel,
+            title = title,
+            rt = rt,
+            yrev = yrev,
+        )
         push!(pp_full_vec, pp_full)
     end
 
     # prepare main topographical plot
-    GLMakie.activate!(title = "plot_erp()")
-    fig = GLMakie.Figure(
+    GLMakie.activate!(; title = "plot_erp()")
+    fig = GLMakie.Figure(;
         size = plot_size,
-        figure_padding = 0
+        figure_padding = 0,
     )
 
     # create axis with customizable properties
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
@@ -382,7 +388,7 @@ function plot_erp_topo(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -402,10 +408,10 @@ function plot_erp_topo(
         marker_img = FileIO.load(io)
         GLMakie.scatter!(
             ax,
-            x, y,
-            marker=marker_img,
-            markersize=marker_size,
-            markerspace=:pixel
+            x, y;
+            marker = marker_img,
+            markersize = marker_size,
+            markerspace = :pixel,
         )
     end
 
@@ -437,7 +443,6 @@ function plot_erp_topo(
     end
 
     return fig
-
 end
 
 """
@@ -466,26 +471,34 @@ Plot stacked Event-Related Potentials/Fields.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp_stack(
-    t::AbstractVector,
-    s::AbstractMatrix;
-    rt::Union{Nothing, AbstractVector} = nothing,
-    clabels::Vector{String} = string.(1:size(s, 1)),
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    cb::Bool = true,
-    cb_title::String = "",
-    smooth::Bool = false,
-    ks::Int64 = 3,
-    zl::Bool = true,
-    mono::Bool = false
-)::GLMakie.Figure
+        t::AbstractVector,
+        s::AbstractMatrix;
+        rt::Union{Nothing, AbstractVector} = nothing,
+        clabels::Vector{String} = string.(1:size(s, 1)),
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        cb::Bool = true,
+        cb_title::String = "",
+        smooth::Bool = false,
+        ks::Int64 = 3,
+        zl::Bool = true,
+        mono::Bool = false,
+    )::GLMakie.Figure
 
     # validate
     length(t) == size(s, 2) ||
-        throw(ArgumentError("Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."))
+        throw(
+        ArgumentError(
+            "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t))).",
+        ),
+    )
     !isnothing(rt) && (length(rt) == size(s, 1)) ||
-        throw(ArgumentError("Length of the rt vector must equal number of ERP epochs ($(size(s, 1)))."))
+        throw(
+        ArgumentError(
+            "Length of the rt vector must equal number of ERP epochs ($(size(s, 1))).",
+        ),
+    )
 
     # select color palette
     pal = mono ? :grays : :darktest
@@ -496,13 +509,13 @@ function plot_erp_stack(
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_erp()")
+    GLMakie.activate!(; title = "plot_erp()")
     plot_size = size(s, 1) <= 64 ? (900, 600) : (900, 900)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
 
     # create axis with customizable properties
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -511,14 +524,14 @@ function plot_erp_stack(
         xminorticks = IntervalsBetween(10),
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        yticks = (1:size(s,1), size(s,1) <= 30 ? clabels : clabels[1:5:end]),
+        yticks = (1:size(s, 1), size(s, 1) <= 30 ? clabels : clabels[1:5:end]),
         yticklabelsize = size(s, 1) <= 64 ? 8 : 5,
         xzoomlock = true,
         yzoomlock = true,
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     ax.titlesize = 18
     ax.xlabelsize = 18
@@ -527,23 +540,23 @@ function plot_erp_stack(
     ax.yticklabelsize = 12
 
     # create heatmap of ERP data
-    hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s), colormap = pal)
+    hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s); colormap = pal)
 
     # draw zero line if requested
     if zl
-        GLMakie.vlines!(ax, 0, color = :white, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
     end
 
     # plot response times if provided
     if !isnothing(rt)
         for (i, rt_val) in enumerate(rt)
-            if rt_val/1000 ∈ t
+            if rt_val / 1000 ∈ t
                 GLMakie.lines!(
                     ax,
-                    [rt_val/1000, rt_val/1000],
-                    [i-0.5, i+0.5],
-                    linewidth=1.5,
-                    color=mono ? :black : :red
+                    [rt_val / 1000, rt_val / 1000],
+                    [i - 0.5, i + 0.5];
+                    linewidth = 1.5,
+                    color = mono ? :black : :red,
                 )
             end
         end
@@ -551,11 +564,10 @@ function plot_erp_stack(
 
     # add colorbar if requested
     if cb
-        Colorbar(fig[1, 2], hm, label = cb_title, labelsize = 16)
+        Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
     end
 
     return fig
-
 end
 
 """
@@ -579,16 +591,16 @@ Plot Global Field Power (GFP).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_gfp(
-    t::Union{AbstractVector, AbstractRange},
-    g::AbstractVector;
-    rt::Union{Nothing, Real} = nothing,
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    yrev::Bool = false,
-    zl::Bool = true,
-    mono::Bool = false
-)::GLMakie.Figure
+        t::Union{AbstractVector, AbstractRange},
+        g::AbstractVector;
+        rt::Union{Nothing, Real} = nothing,
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        yrev::Bool = false,
+        zl::Bool = true,
+        mono::Bool = false,
+    )::GLMakie.Figure
 
     # validate
     length(t) == length(g) ||
@@ -599,13 +611,13 @@ function plot_gfp(
         throw(ArgumentError("GFP values must be non-negative."))
 
     # prepare plot
-    GLMakie.activate!(title = "plot_gfp()")
+    GLMakie.activate!(; title = "plot_gfp()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
 
     # create axis with customizable properties
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -622,7 +634,7 @@ function plot_gfp(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.ylims!(ax, 0, maximum(g) * 1.15)
     ax.titlesize = 18
@@ -633,20 +645,19 @@ function plot_gfp(
 
     # draw zero line if requested
     if zl
-        GLMakie.vlines!(ax, 0, color = :gray, linestyle = :dash, linewidth = 2)
+        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
     end
 
     # plot GFP as filled band with outline
-    GLMakie.band!(ax, t, 0, g, color = :gray)
-    GLMakie.lines!(ax, t, g, color = :black, linewidth = 1)
+    GLMakie.band!(ax, t, 0, g; color = :gray)
+    GLMakie.lines!(ax, t, g; color = :black, linewidth = 1)
 
     # plot response time if provided
-    if !isnothing(rt) && rt/1000 ∈ t
-        GLMakie.vlines!(ax, rt/1000, linewidth=1.5, color=mono ? :black : :red)
+    if !isnothing(rt) && rt / 1000 ∈ t
+        GLMakie.vlines!(ax, rt / 1000; linewidth = 1.5, color = mono ? :black : :red)
     end
 
     return fig
-
 end
 
 """
@@ -687,35 +698,37 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
-    xlabel::String = "default",
-    ylabel::String = "default",
-    title::String = "default",
-    cb::Bool = true,
-    cb_title::String = "default",
-    peaks::Bool = true,
-    leg::Bool = true,
-    type::Symbol = :normal,
-    yrev::Bool = false,
-    avg::Bool = true,
-    ci95::Bool = false,
-    smooth::Bool = false,
-    ks::Int64 = 3,
-    rt::Union{Nothing, Real, AbstractVector} = nothing,
-    sort_epochs::Bool = false,
-    zl::Bool = true,
-    mono::Bool = false,
-    gui::Bool = false
-)::GLMakie.Figure
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
+        xlabel::String = "default",
+        ylabel::String = "default",
+        title::String = "default",
+        cb::Bool = true,
+        cb_title::String = "default",
+        peaks::Bool = true,
+        leg::Bool = true,
+        type::Symbol = :normal,
+        yrev::Bool = false,
+        avg::Bool = true,
+        ci95::Bool = false,
+        smooth::Bool = false,
+        ks::Int64 = 3,
+        rt::Union{Nothing, Real, AbstractVector} = nothing,
+        sort_epochs::Bool = false,
+        zl::Bool = true,
+        mono::Bool = false,
+        gui::Bool = false,
+    )::GLMakie.Figure
 
     # validate
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
     length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1 ||
         throw(ArgumentError("All channels must be of the same type."))
     length(ch) > 1 && (eavg = false)
@@ -745,13 +758,13 @@ function plot_erp(
     t = obj.epoch_time
 
     if length(ch) == 1
-
         if type === :stack
 
             # prepare default labels/titles
             xl, yl, tt = _set_defaults(
                 xlabel, ylabel, title,
-                "Time [ms]", "Amplitude [$units]", "ERP amplitude, $(length(clabels)) channels, avgₑ: $ep_n"
+                "Time [ms]", "Amplitude [$units]",
+                "ERP amplitude, $(length(clabels)) channels, avgₑ: $ep_n",
             )
             cb_title = cb_title == "default" ? "Amplitude [$units]" : cb_title
 
@@ -764,7 +777,7 @@ function plot_erp(
 
             fig = plot_erp_stack(
                 t,
-                s,
+                s;
                 rt = rt,
                 xlabel = xl,
                 ylabel = yl,
@@ -773,7 +786,7 @@ function plot_erp(
                 smooth = smooth,
                 ks = ks,
                 zl = zl,
-                mono = mono
+                mono = mono,
             )
 
         elseif type === :normal
@@ -785,20 +798,19 @@ function plot_erp(
                 title,
                 "Time [ms]",
                 "Amplitude [$units]",
-                "ERP amplitude, $(clabels[1]), avgₑ: $ep_n"
+                "ERP amplitude, $(clabels[1]), avgₑ: $ep_n",
             )
             fig = plot_erp(
                 t,
-                s,
+                s;
                 xlabel = xl,
                 ylabel = yl,
                 title = tt,
                 rt = rt,
                 yrev = yrev,
                 zl = zl,
-                mono = mono
+                mono = mono,
             )
-
         end
 
     elseif type === :normal
@@ -811,11 +823,11 @@ function plot_erp(
             title,
             "Time [ms]",
             "Amplitude [$units]",
-            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n"
+            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n",
         )
         fig = plot_erp(
             t,
-            s,
+            s;
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -826,11 +838,10 @@ function plot_erp(
             ci95 = ci95,
             leg = leg,
             zl = zl,
-            mono = mono
+            mono = mono,
         )
 
     elseif type === :stack
-
         cb_title == "default" && (cb_title = "Amplitude [$units]")
         xl, yl, tt = _set_defaults(
             xlabel,
@@ -838,11 +849,11 @@ function plot_erp(
             title,
             "Time [ms]",
             "",
-            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n"
+            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n",
         )
         fig = plot_erp_stack(
             t,
-            s,
+            s;
             rt = rt,
             xlabel = xl,
             ylabel = yl,
@@ -853,11 +864,10 @@ function plot_erp(
             smooth = smooth,
             ks = ks,
             zl = zl,
-            mono = mono
+            mono = mono,
         )
 
     elseif type === :gfp
-
         g = erp_gfp(obj; ch = clabels)
         xl, yl, tt = _set_defaults(
             xlabel,
@@ -865,32 +875,35 @@ function plot_erp(
             title,
             "Time [ms]",
             "GFP [$units]",
-            "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n"
+            "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n",
         )
         fig = plot_gfp(
             t,
-            g,
+            g;
             xlabel = xl,
             ylabel = yl,
             title = tt,
             rt = rt,
             zl = zl,
-            mono = mono
+            mono = mono,
         )
 
     elseif type === :topo
-
         xl, yl, tt = _set_defaults(
             xlabel,
             ylabel,
             title,
             "Time [ms]",
             "Amplitude [$units]",
-            "ERP amplitude, avgₑ: $ep_n"
+            "ERP amplitude, avgₑ: $ep_n",
         )
         _check_ch_locs(ch, labels(obj), obj.locs.label)
         length(unique(obj.header.recording[:channel_type][ch])) == 1 ||
-            throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
+            throw(
+            ArgumentError(
+                "For multi-channel topo plot all channels must be of the same type.",
+            ),
+        )
         _has_locs(obj)
         chs = intersect(obj.locs.label, labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
@@ -898,7 +911,7 @@ function plot_erp(
         fig = plot_erp_topo(
             locs,
             t,
-            s,
+            s;
             xlabel = xl,
             ylabel = yl,
             title = tt,
@@ -906,21 +919,21 @@ function plot_erp(
             rt = rt,
             yrev = yrev,
             mono = mono,
-            zl = zl
+            zl = zl,
         )
     end
 
     # add time markers if requested
     if !isnothing(tm)
         for (i, marker) in enumerate(tm)
-            marker/1000 >= t[1] && marker/1000 <= t[end] ||
+            marker / 1000 >= t[1] && marker / 1000 <= t[end] ||
                 throw(ArgumentError("Time marker $marker is out of epoch range"))
-            marker_idx = vsearch(marker/1000, t)
+            marker_idx = vsearch(marker / 1000, t)
             GLMakie.vlines!(
                 fig[1, 1],
-                t[marker_idx],
-                linewidth=0.5,
-                color=:black
+                t[marker_idx];
+                linewidth = 0.5,
+                color = :black,
             )
         end
     end
@@ -928,7 +941,6 @@ function plot_erp(
     # add peak markers if requested
     if peaks
         if length(ch_indices) == 1 && type === :normal
-
             pp = erp_peaks(obj)
             pos_time = t[pp[ch_indices[1], 1]][1] * 1000
             pos_amp = obj.data[ch_indices[1], pp[ch_indices[1], 1], 1][1]
@@ -937,29 +949,29 @@ function plot_erp(
 
             GLMakie.scatter!(
                 fig[1, 1],
-                pos_time/1000,
-                pos_amp,
-                marker=:xcross,
-                color=mono ? :black : :red,
-                markersize=15
+                pos_time / 1000,
+                pos_amp;
+                marker = :xcross,
+                color = mono ? :black : :red,
+                markersize = 15,
             )
             GLMakie.scatter!(
                 fig[1, 1],
-                neg_time/1000,
-                neg_amp,
-                marker=:xcross,
-                color=mono ? :black : :blue,
-                markersize=15
+                neg_time / 1000,
+                neg_amp;
+                marker = :xcross,
+                color = mono ? :black : :blue,
+                markersize = 15,
             )
 
-            @info "Positive peak: $(round(pos_time, digits=0)) ms, $(round(pos_amp, digits=2)) $units"
-            @info "Negative peak: $(round(neg_time, digits=0)) ms, $(round(neg_amp, digits=2)) $units"
+            @info "Positive peak: $(round(pos_time, digits = 0)) ms, $(round(pos_amp, digits = 2)) $units"
+            @info "Negative peak: $(round(neg_time, digits = 0)) ms, $(round(neg_amp, digits = 2)) $units"
 
         elseif length(ch_indices) > 1 && type === :normal
 
             # for multi-channel average
-            mep_tmp = mean(obj.data[ch_indices, :, 1], dims=1)[:, :, :]
-            obj_tmp = keep_channel(obj; ch=clabels[1])
+            mep_tmp = mean(obj.data[ch_indices, :, 1]; dims = 1)[:, :, :]
+            obj_tmp = keep_channel(obj; ch = clabels[1])
             obj_tmp.data = mep_tmp
             pp = erp_peaks(obj_tmp)
 
@@ -970,27 +982,25 @@ function plot_erp(
 
             GLMakie.scatter!(
                 fig[1, 1],
-                pos_time/1000,
-                pos_amp,
-                marker=:xcross,
-                color=mono ? :black : :red,
-                markersize=15
+                pos_time / 1000,
+                pos_amp;
+                marker = :xcross,
+                color = mono ? :black : :red,
+                markersize = 15,
             )
             GLMakie.scatter!(
                 fig[1, 1],
-                neg_time/1000,
-                neg_amp,
-                marker=:xcross,
-                color=mono ? :black : :blue,
-                markersize=15
+                neg_time / 1000,
+                neg_amp;
+                marker = :xcross,
+                color = mono ? :black : :blue,
+                markersize = 15,
             )
 
-            @info "Positive peak: $(round(pos_time, digits=0)) ms, $(round(pos_amp, digits=2)) $units"
-            @info "Negative peak: $(round(neg_time, digits=0)) ms, $(round(neg_amp, digits=2)) $units"
-
+            @info "Positive peak: $(round(pos_time, digits = 0)) ms, $(round(pos_amp, digits = 2)) $units"
+            @info "Negative peak: $(round(neg_time, digits = 0)) ms, $(round(neg_amp, digits = 2)) $units"
         end
     end
 
     return fig
-
 end

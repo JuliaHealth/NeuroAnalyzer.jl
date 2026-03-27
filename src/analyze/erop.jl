@@ -46,28 +46,29 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function erop(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    method::Symbol = :welch,
-    db::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Matrix{Float64},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        method::Symbol = :welch,
+        db::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
-    length(get_channel(obj; ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(get_channel(obj; ch = ch)) == 1 ||
+        throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel
     psd_data = psd(
-        obj,
+        obj;
         ch = ch,
         db = db,
         method = method,
@@ -77,18 +78,17 @@ function erop(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
 
     p = psd_data.p[1, :, :]
     f = psd_data.f
 
     if datatype(obj) in ["erp", "erf"]
-        p = cat(p[:, 1], mean(p, dims = 2), dims = 2)
+        p = cat(p[:, 1], mean(p; dims = 2); dims = 2)
     else
-        p = mean(p, dims = 2)
+        p = mean(p; dims = 2)
     end
 
     return (; p, f)
-
 end

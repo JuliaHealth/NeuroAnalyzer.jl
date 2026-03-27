@@ -24,18 +24,18 @@ export plot_locs3d
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_locs3d(
-    locs::DataFrame;
-    ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
-    sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
-    ch_labels::Bool = true,
-    head_labels::Bool = true,
-    mono::Bool = false,
-    cart::Bool = false,
-    cam::Tuple{Real, Real} = (20, 45),
-    mesh_type::Symbol = :disabled,
-    mesh_alpha::Float64 = 0.95,
-    gui::Bool = true
-)::GLMakie.Figure
+        locs::DataFrame;
+        ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
+        sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
+        ch_labels::Bool = true,
+        head_labels::Bool = true,
+        mono::Bool = false,
+        cart::Bool = false,
+        cam::Tuple{Real, Real} = (20, 45),
+        mesh_type::Symbol = :disabled,
+        mesh_alpha::Float64 = 0.95,
+        gui::Bool = true,
+    )::GLMakie.Figure
 
     # validate
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
@@ -69,7 +69,8 @@ function plot_locs3d(
         loc_z = zeros(DataFrames.nrow(locs))
         for idx in 1:DataFrames.nrow(locs)
             loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(
-                locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph]
+                locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph],
+                locs[idx, :loc_phi_sph],
             )
         end
     else
@@ -78,7 +79,8 @@ function plot_locs3d(
         loc_z = locs[!, :loc_z]
     end
 
-    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
+    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 &&
+            maximum(locs[:, :loc_z]) <= 1.5
         x_lim = (-1.5, 1.5)
         y_lim = (-1.5, 1.5)
         z_lim = (-1.5, 1.5)
@@ -93,11 +95,11 @@ function plot_locs3d(
     font_size = 14
 
     # prepare plot
-    GLMakie.activate!(title = "plot_locs3d()")
-    fig = GLMakie.Figure(size = plot_size)
+    GLMakie.activate!(; title = "plot_locs3d()")
+    fig = GLMakie.Figure(; size = plot_size)
 
     ax = GLMakie.Axis3(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = "X",
         ylabel = "Y",
         zlabel = "Z",
@@ -108,7 +110,7 @@ function plot_locs3d(
         yticks = [-1, 0, 1],
         zticks = [-1, 0, 1],
         elevation = deg2rad(cam[1]),
-        azimuth = deg2rad(cam[2])
+        azimuth = deg2rad(cam[2]),
     )
 
     if mesh_type !== :disabled
@@ -125,7 +127,7 @@ function plot_locs3d(
                 GLMakie.scatter!(
                     loc_x[idx],
                     loc_y[idx],
-                    loc_z[idx],
+                    loc_z[idx];
                     markersize = marker_size,
                     color = :gray,
                     strokewidth = 1,
@@ -136,7 +138,7 @@ function plot_locs3d(
                 GLMakie.scatter!(
                     loc_x[idx],
                     loc_y[idx],
-                    loc_z[idx],
+                    loc_z[idx];
                     markersize = marker_size,
                     color = cmap[idx],
                     colormap = pal,
@@ -149,11 +151,11 @@ function plot_locs3d(
             GLMakie.scatter!(
                 loc_x[idx],
                 loc_y[idx],
-                loc_z[idx],
+                loc_z[idx];
                 markersize = marker_size,
                 color = :gray,
                 strokewidth = 1,
-                strokecolor = :black
+                strokecolor = :black,
             )
         end
     end
@@ -162,19 +164,19 @@ function plot_locs3d(
         GLMakie.text!(
             loc_x[ch] * 1.15,
             loc_y[ch] * 1.15,
-            loc_z[ch] * 1.15,
+            loc_z[ch] * 1.15;
             text = locs[ch, :label],
             fontsize = font_size,
-            align = (:center, :center)
+            align = (:center, :center),
         )
         if sch != 0
             GLMakie.text!(
                 loc_x[sch] * 1.15,
                 loc_y[sch] * 1.15,
-                loc_z[sch] * 1.15,
+                loc_z[sch] * 1.15;
                 text = locs[sch, :label],
                 fontsize = font_size,
-                align = (:center, :center)
+                align = (:center, :center),
             )
         end
     end
@@ -184,10 +186,10 @@ function plot_locs3d(
         for idx in 1:length(NeuroAnalyzer.fiducial_points)
             GLMakie.text!(
                 NeuroAnalyzer.fiducial_points[idx][1],
-                NeuroAnalyzer.fiducial_points[idx][2],
+                NeuroAnalyzer.fiducial_points[idx][2];
                 text = fid_names[idx],
                 fontsize = font_size,
-                align = (:center, :center)
+                align = (:center, :center),
             )
         end
     end
@@ -219,7 +221,6 @@ function plot_locs3d(
     gui && wait(display(fig))
 
     return fig
-
 end
 
 """
@@ -245,21 +246,22 @@ Preview of channel locations.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_locs3d(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    sch::Union{String, Vector{String}, Regex} = "",
-    ch_labels::Bool = true,
-    head_labels::Bool = false,
-    cart::Bool = false,
-    mono::Bool = false,
-    cam::Tuple{Real, Real} = (20, 45),
-    mesh_type::Symbol = :disabled,
-    mesh_alpha::Float64 = 0.95,
-    gui::Bool = true
-)::GLMakie.Figure
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        sch::Union{String, Vector{String}, Regex} = "",
+        ch_labels::Bool = true,
+        head_labels::Bool = false,
+        cart::Bool = false,
+        mono::Bool = false,
+        cam::Tuple{Real, Real} = (20, 45),
+        mesh_type::Symbol = :disabled,
+        mesh_alpha::Float64 = 0.95,
+        gui::Bool = true,
+    )::GLMakie.Figure
 
     # validate
-    datatype(obj) in ["eeg"] || throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
+    datatype(obj) in ["eeg"] ||
+        throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -278,7 +280,7 @@ function plot_locs3d(
     end
 
     fig = plot_locs3d(
-        locs,
+        locs;
         ch = ch,
         sch = sch,
         ch_labels = ch_labels,
@@ -288,9 +290,8 @@ function plot_locs3d(
         cam = cam,
         mesh_type = mesh_type,
         mesh_alpha = mesh_alpha,
-        gui = gui
+        gui = gui,
     )
 
     return fig
-
 end

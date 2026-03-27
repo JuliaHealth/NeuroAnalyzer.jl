@@ -18,7 +18,6 @@ Channel locations are read from the `[Coordinates]` section of the header when a
 - `NeuroAnalyzer.NEURO`
 """
 function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) in (".vhdr", ".ahdr") ||
@@ -52,7 +51,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # ------------------------------------------------------------------ #
     function vhdr_get(key)
         matches = vhdr[startswith.(lowercase.(vhdr), lowercase(key) * "=")]
-        isempty(matches) ? nothing : split(matches[1], '=')[2]
+        return isempty(matches) ? nothing : split(matches[1], '=')[2]
     end
 
     # ------------------------------------------------------------------ #
@@ -65,7 +64,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     binary_format = lowercase(something(vhdr_get("BinaryFormat"), ""))
     ch_n = parse(Int64, something(vhdr_get("NumberOfChannels"), "0"))
     sampling_interval = parse(Float64, something(vhdr_get("SamplingInterval"), "0"))
-    averaged = something(vhdr_get("Averaged"), "no")  == "yes"
+    averaged = something(vhdr_get("Averaged"), "no") == "yes"
     averaged_segments = parse(Int64, something(vhdr_get("AveragedSegments"), "0"))
     averaged_points = parse(Int64, something(vhdr_get("AveragedDataPoints"), "0"))
     segmentation = something(vhdr_get("Segmentation"), "no") == "yes"
@@ -77,8 +76,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # ------------------------------------------------------------------ #
     # locate section indices                                             #
     # ------------------------------------------------------------------ #
-    channels_idx  = findfirst(l -> startswith(lowercase(l), "[channelinfos]"),  vhdr)
-    locs_idx = findfirst(l -> startswith(lowercase(l), "[coordinates]"),   vhdr)
+    channels_idx = findfirst(l -> startswith(lowercase(l), "[channelinfos]"), vhdr)
+    locs_idx = findfirst(l -> startswith(lowercase(l), "[coordinates]"), vhdr)
     soft_filt_idx = findfirst(l -> startswith(lowercase(l), "softwarefilters"), vhdr)
     channels_idx = something(channels_idx, 0)
     locs_idx = something(locs_idx, 0)
@@ -90,13 +89,15 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     soft_filt = false
     if soft_filt_idx != 0
         if lowercase(vhdr[soft_filt_idx + 2]) != "disabled"
-            _info("Embedded software filters are not implemented yet; " *
-                  "if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+            _info(
+                "Embedded software filters are not implemented yet; " *
+                "if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+            )
         end
     end
     soft_filt_file = replace(splitext(file_name)[1], "eeg" => "channels.tsv")
     isfile(soft_filt_file) &&
-        (soft_filt = CSV.read(soft_filt_file, stringtype = String, DataFrame))
+        (soft_filt = CSV.read(soft_filt_file; stringtype = String, DataFrame))
 
     # ------------------------------------------------------------------ #
     # optional BIDS JSON sidecar                                         #
@@ -109,8 +110,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     r_notes = ""
     ref = ""
     if isfile(js_file)
-        js = JSON.parsefile(js_file, dicttype = Dict, inttype = Int64, use_mmap = true)
-        "TaskName" in keys(js) && (e_name  = js["TaskName"])
+        js = JSON.parsefile(js_file; dicttype = Dict, inttype = Int64, use_mmap = true)
+        "TaskName" in keys(js) && (e_name = js["TaskName"])
         "TaskDescription" in keys(js) && (e_notes = js["TaskDescription"])
         "ManufacturersModelName" in keys(js) && (r_notes = js["ManufacturersModelName"])
         "EEGReference" in keys(js) && (ref = js["EEGReference"])
@@ -132,8 +133,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     for idx in 1:ch_n
         fields = split(split(vhdr[idx + channels_idx], '=')[2], ',')
-        clabels[idx]  = replace(fields[1], "\1" => ",")
-        ref_chs[idx]  = length(fields) >= 2 ? fields[2] : ""
+        clabels[idx] = replace(fields[1], "\1" => ",")
+        ref_chs[idx] = length(fields) >= 2 ? fields[2] : ""
         if length(fields) >= 3 && fields[3] != ""
             gain[idx] = parse(Float64, fields[3])
         end
@@ -146,11 +147,12 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     if soft_filt !== false
         clabels = soft_filt[!, :name]
         units = soft_filt[!, :unit]
-        prefiltering = repeat(["LP: "], ch_n) .*
-                       string.(round.(soft_filt[!, :low_cutoff],  digits = 4)) .*
-                       repeat([" Hz, HP: "], ch_n) .*
-                       string.(round.(soft_filt[!, :high_cutoff], digits = 4)) .*
-                       " Hz"
+        prefiltering =
+            repeat(["LP: "], ch_n) .*
+            string.(round.(soft_filt[!, :low_cutoff]; digits = 4)) .*
+            repeat([" Hz, HP: "], ch_n) .*
+            string.(round.(soft_filt[!, :high_cutoff]; digits = 4)) .*
+            " Hz"
     end
     clabels = _clean_labels(string.(clabels))
 
@@ -185,7 +187,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     if locs_idx != 0
         for idx in 1:ch_n
-            l = occursin('=', vhdr[locs_idx + idx]) ?
+            l =
+                occursin('=', vhdr[locs_idx + idx]) ?
                 split(vhdr[locs_idx + idx], '=')[2] : vhdr[locs_idx + idx]
             parts = split(l, ',')
             loc_radius_sph[idx] = parse(Float64, parts[1])
@@ -196,7 +199,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(
                 loc_radius_sph[idx],
                 loc_theta_sph[idx],
-                loc_phi_sph[idx]
+                loc_phi_sph[idx],
             )
         end
         locs = DataFrame(
@@ -209,12 +212,12 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             :loc_z => loc_z,
             :loc_radius_sph => loc_radius_sph,
             :loc_theta_sph => loc_theta_sph,
-            :loc_phi_sph => loc_phi_sph
+            :loc_phi_sph => loc_phi_sph,
         )
     end
 
     # sampling interval is in μs; convert to Hz.
-    sampling_rate = round(Int64, 1 / (sampling_interval / 1e6))
+    sampling_rate = round(Int64, 1 / (sampling_interval / 1.0e6))
 
     # ------------------------------------------------------------------ #
     # event markers                                                      #
@@ -232,11 +235,16 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             throw(ArgumentError("$marker_file is not a valid BrainVision .VMRK file."))
 
         markers_idx = something(
-            findfirst(l -> startswith(lowercase(replace(l, " " => "")), "[markerinfos]"), vmrk),
-            0)
+            findfirst(
+                l -> startswith(lowercase(replace(l, " " => "")), "[markerinfos]"),
+                vmrk,
+            ),
+            0,
+        )
 
         # keep only lines that start with "Mk" (case-insensitive marker entries).
-        mk_lines = Base.filter(l -> startswith(lowercase(l), "mk"), vmrk[(markers_idx + 1):end])
+        mk_lines =
+            Base.filter(l -> startswith(lowercase(l), "mk"), vmrk[(markers_idx + 1):end])
         n_mk = length(mk_lines)
 
         m_id = repeat([""], n_mk)
@@ -251,7 +259,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             fields[2] != "" && (m_desc[idx] = replace(fields[2], "\1" => ","))
             m_pos[idx] = parse(Int64, fields[3])
             m_len[idx] = parse(Int64, fields[4])
-            m_ch[idx]  = parse(Int64, fields[5])
+            m_ch[idx] = parse(Int64, fields[5])
         end
 
         markers = DataFrame(
@@ -259,7 +267,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             :start => m_pos ./ sampling_rate,
             :length => round.(m_len ./ sampling_rate),
             :value => m_desc,
-            :channel => m_ch
+            :channel => m_ch,
         )
         if all(==(""), markers[!, :id])
             markers[!, :id] .= "mrk"
@@ -267,18 +275,21 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     elseif isfile(replace(splitext(file_name)[1], "eeg" => "events.tsv"))
         vmrk = CSV.read(
-            replace(splitext(file_name)[1], "eeg" => "events.tsv"), stringtype = String, DataFrame)
+            replace(splitext(file_name)[1], "eeg" => "events.tsv"); stringtype = String,
+            DataFrame,
+        )
         markers = DataFrame(
             :id => repeat(["mrk"], DataFrames.nrow(vmrk)),
             :start => vmrk[!, :sample] ./ sampling_rate,
             :length => round.(vmrk[!, :duration] ./ sampling_rate),
             :value => vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value]),
-            :channel => zeros(Int64, DataFrames.nrow(vmrk))
+            :channel => zeros(Int64, DataFrames.nrow(vmrk)),
         )
     else
         markers = DataFrame(
             :id => String[], :start => Float64[],
-            :length => Float64[], :value => String[], :channel => Int64[])
+            :length => Float64[], :value => String[], :channel => Int64[],
+        )
     end
 
     # ------------------------------------------------------------------ #
@@ -294,9 +305,12 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         elseif binary_format == "ieee_float_32"
             4
         else
-            throw(ArgumentError(
-                "Binary format \"$binary_format\" is not supported. " *
-                "Please send this file to adam.wysokinski@neuroanalyzer.org"))
+            throw(
+                ArgumentError(
+                    "Binary format \"$binary_format\" is not supported. " *
+                    "Please send this file to adam.wysokinski@neuroanalyzer.org",
+                ),
+            )
         end
 
         # read the entire signal file at once then reinterpret
@@ -314,17 +328,23 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             n_samples = length(signal) ÷ ch_n
             data = zeros(ch_n, n_samples, 1)
             @inbounds for s in 1:n_samples
-                data[:, s, 1] = signal[((s-1)*ch_n + 1):(s*ch_n)]
+                data[:, s, 1] = signal[((s - 1) * ch_n + 1):(s * ch_n)]
             end
         else
-            throw(ArgumentError(
-                "Data orientation \"$data_orientation\" is not supported. " *
-                "Please send this file to adam.wysokinski@neuroanalyzer.org"))
+            throw(
+                ArgumentError(
+                    "Data orientation \"$data_orientation\" is not supported. " *
+                    "Please send this file to adam.wysokinski@neuroanalyzer.org",
+                ),
+            )
         end
     else
-        throw(ArgumentError(
-            "Data format \"$data_format\" (ASCII) is not supported. " *
-            "Please send this file to adam.wysokinski@neuroanalyzer.org"))
+        throw(
+            ArgumentError(
+                "Data format \"$data_format\" (ASCII) is not supported. " *
+                "Please send this file to adam.wysokinski@neuroanalyzer.org",
+            ),
+        )
     end
 
     # apply per-channel gain.
@@ -337,29 +357,33 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         units[idx] == "" && (units[idx] = "μV")
         ch_type[idx] == "eeg" || continue
         if lowercase(units[idx]) == "mv"
-            units[idx] = "μV";  data[idx, :] .*= 1000
+            units[idx] = "μV"
+            data[idx, :] .*= 1000
         elseif lowercase(units[idx]) == "nv"
-            units[idx] = "μV";  data[idx, :] ./= 1000
+            units[idx] = "μV"
+            data[idx, :] ./= 1000
         end
     end
 
     # ------------------------------------------------------------------ #
     # time axes                                                          #
     # ------------------------------------------------------------------ #
-    n_samples  = size(data, 2) * size(data, 3)
-    time_pts   = round.(range(0; step = 1/sampling_rate, length = n_samples);  digits = 4)
-    epoch_time = round.(range(0; step = 1/sampling_rate, length = size(data,2)); digits = 4)
+    n_samples = size(data, 2) * size(data, 3)
+    time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
+    epoch_time =
+        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
     # ------------------------------------------------------------------ #
     # assemble NEURO object                                              #
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(eeg_file) / 1024^2; digits = 2)
 
-    s = _create_subject(
+    s = _create_subject(;
         id = "", first_name = "", middle_name = "",
         last_name = string(patient), head_circumference = -1,
-        handedness = "", weight = -1, height = -1)
-    r = _create_recording_eeg(
+        handedness = "", weight = -1, height = -1,
+    )
+    r = _create_recording_eeg(;
         data_type = "eeg",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -378,19 +402,20 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
         gain = gain,
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
-    e   = _create_experiment(name = e_name, notes = e_notes, design = "")
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    e = _create_experiment(; name = e_name, notes = e_notes, design = "")
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
-    _info("Imported: " *
+    _info(
+        "Imported: " *
         uppercase(obj.header.recording[:data_type]) *
         " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end], digits=2)) s)")
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
+    )
 
     return obj
-
 end

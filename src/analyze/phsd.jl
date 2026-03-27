@@ -18,12 +18,12 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(
-    s::AbstractVector;
-    fs::Int64
-)::@NamedTuple{
-    ph::Vector{Float64},
-    f::Vector{Float64}
-}
+        s::AbstractVector;
+        fs::Int64,
+    )::@NamedTuple{
+        ph::Vector{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -33,7 +33,6 @@ function phsd(
     f = freqs(s, fs)[1]
 
     return (; ph, f)
-
 end
 
 """
@@ -54,15 +53,14 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(
-    s::AbstractMatrix;
-    fs::Int64
-)::@NamedTuple{
-    ph::Matrix{Float64},
-    f::Vector{Float64}
-}
-
+        s::AbstractMatrix;
+        fs::Int64,
+    )::@NamedTuple{
+        ph::Matrix{Float64},
+        f::Vector{Float64},
+    }
     ch_n = size(s, 1)
-    phsd_data = phsd(s[1, :], fs = fs)
+    phsd_data = phsd(s[1, :]; fs = fs)
     f = phsd_data.f
 
     ph = zeros(ch_n, length(f))
@@ -73,7 +71,6 @@ function phsd(
     end
 
     return (; ph, f)
-
 end
 
 """
@@ -94,12 +91,12 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(
-    s::AbstractArray;
-    fs::Int64
-)::@NamedTuple{
-    ph::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        s::AbstractArray;
+        fs::Int64,
+    )::@NamedTuple{
+        ph::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -121,7 +118,6 @@ function phsd(
     end
 
     return (; ph, f)
-
 end
 
 """
@@ -142,16 +138,17 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{
-    ph::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::@NamedTuple{
+        ph::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
-    return phsd(@view(obj.data[ch, :, :]), fs = sr(obj))
-
+    return phsd(@view(obj.data[ch, :, :]); fs = sr(obj))
 end

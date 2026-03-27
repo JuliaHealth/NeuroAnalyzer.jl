@@ -22,15 +22,15 @@ Returns the decomposition coefficient matrix. Each row corresponds to one subspa
 - `Matrix{Float64}`: DWD coefficient matrix of shape `((1 + Σ 2^k for k=1..l), length(s))`
 """
 function dwd(
-    s::AbstractVector;
-    wt::T=wavelet(WT.haar),
-    type::Symbol,
-    l::Int64=maxtransformlevels(s)
-)::Matrix{Float64} where {T <: DiscreteWavelet}
-
+        s::AbstractVector;
+        wt::T = wavelet(WT.haar),
+        type::Symbol,
+        l::Int64 = maxtransformlevels(s),
+    )::Matrix{Float64} where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
-    l <= maxtransformlevels(s) || throw(ArgumentError("l must be ≤ $(maxtransformlevels(s))."))
+    l <= maxtransformlevels(s) ||
+        throw(ArgumentError("l must be ≤ $(maxtransformlevels(s))."))
 
     if type === :sdwt
         dc = swpd(s, wt, l)
@@ -39,7 +39,6 @@ function dwd(
     end
 
     return Matrix(dc')
-
 end
 
 """
@@ -65,11 +64,11 @@ Each row corresponds to one subspace node; each column corresponds to one time s
 - `Array{Float64, 4}`: DWD coefficients of shape `(channels, n_nodes, samples, epochs)`
 """
 function dwd(
-    s::AbstractArray;
-    wt::T=wavelet(WT.haar),
-    type::Symbol,
-    l::Int64=maxtransformlevels(s[1, :, 1])
-)::Array{Float64, 4} where {T <: DiscreteWavelet}
+        s::AbstractArray;
+        wt::T = wavelet(WT.haar),
+        type::Symbol,
+        l::Int64 = maxtransformlevels(s[1, :, 1]),
+    )::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -79,8 +78,9 @@ function dwd(
 
     n_nodes = 1 + sum(2 .^ (1:l))
     # 8 bytes per Float64
-    mem_mb  = (ch_n * n_nodes * ep_len * ep_n * 8) / 1_048_576
-    mem_mb < _fmem() || throw(ArgumentError("Insufficient memory: need ≈ $(round(mem_mb, digits=1)) MB."))
+    mem_mb = (ch_n * n_nodes * ep_len * ep_n * 8) / 1_048_576
+    mem_mb < _fmem() ||
+        throw(ArgumentError("Insufficient memory: need ≈ $(round(mem_mb, digits = 1)) MB."))
 
     dc = zeros(ch_n, n_nodes, ep_len, ep_n)
 
@@ -91,16 +91,15 @@ function dwd(
         ch_idx, ep_idx = idx[1], idx[2]
         dc[ch_idx, :, :, ep_idx] = dwd(
             @view(s[ch_idx, :, ep_idx]),
-            wt=wt,
-            type=type,
-            l=l
+            wt = wt,
+            type = type,
+            l = l,
         )
     end
 
     _log_on()
 
     return dc
-
 end
 
 """
@@ -123,13 +122,12 @@ Perform discrete wavelet decomposition on selected channels of a NEURO object.
 - `Array{Float64, 4}`: DWD coefficients of shape `(channels, n_nodes, samples, epochs)`
 """
 function dwd(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    wt::T = wavelet(WT.haar),
-    type::Symbol,
-    l::Int64 = 0
-)::Array{Float64, 4} where {T <: DiscreteWavelet}
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        wt::T = wavelet(WT.haar),
+        type::Symbol,
+        l::Int64 = 0,
+    )::Array{Float64, 4} where {T <: DiscreteWavelet}
     if l == 0
         l = maxtransformlevels(obj.data[1, :, 1])
         _info("Calculating DWD using maximum level: $l")
@@ -138,8 +136,7 @@ function dwd(
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
 
-    return dwd(@view(obj.data[ch, :, :]); wt=wt, type=type, l=l)
-
+    return dwd(@view(obj.data[ch, :, :]); wt = wt, type = type, l = l)
 end
 
 """
@@ -163,12 +160,11 @@ Reconstructs a signal from a subset (or all) of the DWD coefficient rows.
 - `Vector{Float64}`: reconstructed signal
 """
 function idwd(
-    dc::Matrix{Float64};
-    wt::T = wavelet(WT.haar),
-    type::Symbol,
-    c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1)
-)::Vector{Float64} where {T <: DiscreteWavelet}
-
+        dc::Matrix{Float64};
+        wt::T = wavelet(WT.haar),
+        type::Symbol,
+        c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
+    )::Vector{Float64} where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     # validate and normalize coefficient index selection
@@ -185,5 +181,4 @@ function idwd(
     end
 
     return vec(s)
-
 end

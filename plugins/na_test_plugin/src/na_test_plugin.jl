@@ -14,7 +14,6 @@ Nothing
 - `Nothing`
 """
 function na_test_plugin()::Nothing
-
     _info("This is a test plugin for NeuroAnalyzer")
     _info("Running na_info()")
 
@@ -23,5 +22,4 @@ function na_test_plugin()::Nothing
     _info("Test completed")
 
     return nothing
-
 end

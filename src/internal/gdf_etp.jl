@@ -233,7 +233,7 @@ const _GDF_ETP_TABLE = Dict{Tuple{UInt8, UInt8}, String}(
 
     # --- 0x7f: Segment / sampling control ---
     (0x7f, 0xfe) => "start of a new segment (after a break)",
-    (0x7f, 0xff) => "non-equidistant sampling value"
+    (0x7f, 0xff) => "non-equidistant sampling value",
 )
 
 """

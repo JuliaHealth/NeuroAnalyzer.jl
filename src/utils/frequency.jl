@@ -20,9 +20,7 @@ Computes `2π × f`.
 - `Float64`: frequency in rad/s
 """
 function hz2rads(f::Real)::Float64
-
     return 2pi * f
-
 end
 
 """
@@ -41,9 +39,7 @@ Computes `f / 2π`.
 - `Float64`: frequency in Hz
 """
 function rads2hz(f::Real)::Float64
-
     return f / 2pi
-
 end
 
 """
@@ -66,8 +62,7 @@ function t2f(t::Real)::Float64
     # validate
     t > 0 || throw(ArgumentError("t must be > 0."))
 
-    return round(1000 / t, digits = 2)
-
+    return round(1000 / t; digits = 2)
 end
 
 """
@@ -90,8 +85,7 @@ function f2t(f::Real)::Float64
     # validate
     f > 0 || throw(ArgumentError("f must be > 0."))
 
-    return round(1000 / f, digits = 2)
-
+    return round(1000 / f; digits = 2)
 end
 
 """
@@ -112,13 +106,13 @@ The sampling rate is inferred as `1 / (t[2] - t[1])`.
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-    t::Union{AbstractVector, AbstractRange};
-    nf::Bool = false
-)::Tuple{Vector{Float64}, Float64}
+        t::Union{AbstractVector, AbstractRange};
+        nf::Bool = false,
+    )::Tuple{Vector{Float64}, Float64}
 
     # validate
     length(t) >= 2 || throw(ArgumentError("t must contain at least 2 elements."))
-    
+
     # materialize ranges so indexing is always valid
     t = collect(t)
 
@@ -128,11 +122,11 @@ function freqs(
     # Nyquist frequency
     nqf = fs / 2
     # frequency vector
-    hz = nf ? fftshift(round.(Vector(fftfreq(length(t), fs)), digits=3)) :
-              round.(Vector(rfftfreq(length(t), fs)), digits=3)
+    hz =
+        nf ? fftshift(round.(Vector(fftfreq(length(t), fs)); digits = 3)) :
+        round.(Vector(rfftfreq(length(t), fs)); digits = 3)
 
     return hz, nqf
-
 end
 
 """
@@ -152,10 +146,10 @@ Return the frequency vector and Nyquist frequency for a signal vector.
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-    s::AbstractVector,
-    fs::Int64;
-    nf::Bool = false
-)::Tuple{Vector{Float64}, Float64}
+        s::AbstractVector,
+        fs::Int64;
+        nf::Bool = false,
+    )::Tuple{Vector{Float64}, Float64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -163,11 +157,11 @@ function freqs(
     # Nyquist frequency
     nqf = fs / 2
     # frequency vector
-    hz = nf ? fftshift(round.(Vector(fftfreq(length(s), fs)), digits=3)) :
-              round.(Vector(rfftfreq(length(s), fs)), digits=3)
+    hz =
+        nf ? fftshift(round.(Vector(fftfreq(length(s), fs)); digits = 3)) :
+        round.(Vector(rfftfreq(length(s), fs)); digits = 3)
 
     return hz, nqf
-
 end
 
 """
@@ -187,10 +181,10 @@ Return the frequency vector and Nyquist frequency for a signal of `n` samples.
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-    n::Int64,
-    fs::Int64;
-    nf::Bool = false
-)::Tuple{Vector{Float64}, Float64}
+        n::Int64,
+        fs::Int64;
+        nf::Bool = false,
+    )::Tuple{Vector{Float64}, Float64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -198,11 +192,11 @@ function freqs(
     # Nyquist frequency
     nqf = fs / 2
     # frequency vector
-    hz = nf ? fftshift(round.(Vector(fftfreq(n, fs)), digits=3)) :
-              round.(Vector(rfftfreq(n, fs)), digits=3)
+    hz =
+        nf ? fftshift(round.(Vector(fftfreq(n, fs)); digits = 3)) :
+        round.(Vector(rfftfreq(n, fs)); digits = 3)
 
     return hz, nqf
-
 end
 
 """
@@ -223,10 +217,8 @@ Uses the first channel and first epoch of `obj` to infer signal length, and read
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-    obj::NeuroAnalyzer.NEURO;
-    nf::Bool = false
-)::Tuple{Vector{Float64}, Float64}
-
+        obj::NeuroAnalyzer.NEURO;
+        nf::Bool = false,
+    )::Tuple{Vector{Float64}, Float64}
     return freqs(obj.data[1, :, 1], sr(obj); nf = nf)
-
 end

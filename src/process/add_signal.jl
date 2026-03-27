@@ -16,11 +16,9 @@ Add two equal-length signal vectors element-wise.
 - `AbstractVector`: element-wise sum `s1 .+ s2`
 """
 function add_signal(s1::AbstractVector, s2::AbstractVector)::AbstractVector
-
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
     return s1 .+ s2
-
 end
 
 """
@@ -42,13 +40,14 @@ The same signal `s` is added to every selected channel in every epoch. `s` must 
 - `NeuroAnalyzer.NEURO`: new object with `s` added to the selected channels
 """
 function add_signal(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    s::AbstractVector
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        s::AbstractVector,
+    )::NeuroAnalyzer.NEURO
 
     # validate s length against epoch length before any allocation
-    length(s) == epoch_len(obj) || throw(ArgumentError("Length of s must equal epoch_len(obj) ($(epoch_len(obj)))."))
+    length(s) == epoch_len(obj) ||
+        throw(ArgumentError("Length of s must equal epoch_len(obj) ($(epoch_len(obj)))."))
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -71,7 +70,6 @@ function add_signal(
     push!(obj_new.history, "add_signal(obj; ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -89,12 +87,14 @@ Add a signal vector to selected channels of a NEURO object in-place.
 
 - `Nothing`
 """
-function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
-
+function add_signal!(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        s::AbstractVector,
+    )::Nothing
     obj_new = add_signal(obj; ch = ch, s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

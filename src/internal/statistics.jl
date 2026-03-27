@@ -8,7 +8,7 @@ function _cm(cm::Matrix{Int64})::Nothing
         prediction   ├─────┼─────┤
                    1 │ $(lpad(cm[2], 3, " ")) │ $(lpad(cm[4], 3, " ")) │
                      └─────┴─────┘
-                 """
+                 """,
     )
     return nothing
 end

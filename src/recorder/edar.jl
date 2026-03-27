@@ -15,8 +15,10 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
-function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
-
+function iedar(;
+        duration::Int64 = 20,
+        port_name::String = "/dev/ttyUSB0",
+    )::NeuroAnalyzer.NEURO
     sp = _serial_open(port_name; baudrate = 19200)
     @assert !isnothing(sp) _info("Serial port $port_name is not available")
 
@@ -25,7 +27,7 @@ function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neur
     t = collect(0:(1 / fs):duration)
     eda_signal = repeat([NaN], length(t))
 
-    p = Plots.plot(
+    p = Plots.plot(;
         ylims = (0, 10),
         xlims = (t[1], t[end]),
         legend = false,
@@ -35,11 +37,10 @@ function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neur
         xlabelfontsize = 8,
         ylabelfontsize = 8,
         xtickfontsize = 8,
-        ytickfontsize = 8
+        ytickfontsize = 8,
     )
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroRecorder: iedar()")
         Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 40)
 
@@ -92,15 +93,15 @@ function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neur
                 xlabelfontsize = 8,
                 ylabelfontsize = 8,
                 xtickfontsize = 8,
-                ytickfontsize = 8
+                ytickfontsize = 8,
             )
             ctx = getgc(can)
             withenv("GKSwstype" => "100") do
-                png(p, io)
+                return png(p, io)
             end
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
-            Cairo.paint(ctx)
+            return Cairo.paint(ctx)
         end
 
         return @guarded signal_connect(bt_record, "clicked") do widget
@@ -147,15 +148,14 @@ function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neur
     Gtk4.run(app)
 
     eda_signal = eda_signal[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits = 4)
+    t = round.(t[1:(end - 1)]; digits = 4)
     eda_signal = reshape(eda_signal, 1, :, 1)
 
     obj = create_object(; data_type = "eda")
-    add_channel!(obj, data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
-    create_time!(obj, fs = fs)
+    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
+    create_time!(obj; fs = fs)
 
     return obj
-
 end
 
 """
@@ -172,8 +172,10 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
-function edar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
-
+function edar(;
+        duration::Int64 = 20,
+        port_name::String = "/dev/ttyUSB0",
+    )::NeuroAnalyzer.NEURO
     sp = _serial_open(port_name; baudrate = 19200)
     !(!isnothing(sp)) && throw(ArgumentError("Serial port $port_name is not available"))
 
@@ -236,13 +238,12 @@ function edar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
     println("Recording finished.")
 
     eda_signal = eda_signal[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits = 4)
+    t = round.(t[1:(end - 1)]; digits = 4)
     eda_signal = reshape(eda_signal, 1, :, 1)
 
     obj = create_object(; data_type = "eda")
-    add_channel!(obj, data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
-    create_time!(obj, fs = fs)
+    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
+    create_time!(obj; fs = fs)
 
     return obj
-
 end

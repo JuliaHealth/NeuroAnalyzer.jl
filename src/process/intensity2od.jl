@@ -29,7 +29,6 @@ function intensity2od(s::AbstractArray)::AbstractArray
     od = -log.(abs.(s) ./ sm)
 
     return od
-
 end
 
 """
@@ -48,17 +47,18 @@ Convert NIRS intensity (RAW) channels to optical density (OD) and append the OD 
 - `NeuroAnalyzer.NEURO`: output NEURO object with OD channels appended after the selected intensity channels
 """
 function intensity2od(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int")
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
 
     # validate
-    length(get_channel(obj, type = "nirs_int")) > 0 || throw(ArgumentError("OBJ does not contain NIRS intensity channels."))
+    length(get_channel(obj; type = "nirs_int")) > 0 ||
+        throw(ArgumentError("OBJ does not contain NIRS intensity channels."))
     _check_datatype(obj, "nirs")
-    _check_channels(get_channel(obj, type = "nirs_int"), ch)
+    _check_channels(get_channel(obj; type = "nirs_int"), ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -70,9 +70,11 @@ function intensity2od(
     # Signal data: [original intensity | new OD | remaining channels]    #
     # ------------------------------------------------------------------ #
     obj_new.data = vcat(
-        obj.data[ch,       :, :],
-        reshape(intensity2od(@view(obj.data[ch, :, :])),
-                length(ch), epoch_len(obj), nepochs(obj)),
+        obj.data[ch, :, :],
+        reshape(
+            intensity2od(@view(obj.data[ch, :, :])),
+            length(ch), epoch_len(obj), nepochs(obj)
+        ),
         obj.data[other_ch, :, :],
     )
 
@@ -85,14 +87,14 @@ function intensity2od(
     obj_new.header.recording[:wavelength_index] = vcat(
         obj.header.recording[:wavelength_index][ch],        # intensity
         obj.header.recording[:wavelength_index][ch],        # OD (same wavelength)
-        obj.header.recording[:wavelength_index][other_ch]
+        obj.header.recording[:wavelength_index][other_ch],
     )
 
     # optode pairs: same fix as wavelength_index
     obj_new.header.recording[:optode_pairs] = vcat(
-        obj.header.recording[:optode_pairs][ch,       :],   # intensity
-        obj.header.recording[:optode_pairs][ch,       :],   # OD (same pairs)
-        obj.header.recording[:optode_pairs][other_ch, :]
+        obj.header.recording[:optode_pairs][ch, :],   # intensity
+        obj.header.recording[:optode_pairs][ch, :],   # OD (same pairs)
+        obj.header.recording[:optode_pairs][other_ch, :],
     )
 
     # channel type: OD channels get the "nirs_od" type string
@@ -106,14 +108,14 @@ function intensity2od(
     obj_new.header.recording[:label] = vcat(
         obj.header.recording[:label][ch],              # intensity
         obj.header.recording[:label][ch] .* " OD",     # OD (same pairs)
-        obj.header.recording[:label][other_ch]
+        obj.header.recording[:label][other_ch],
     )
 
     # units: OD channels inherit the same unit string as their source channels
     obj_new.header.recording[:unit] = vcat(
         obj.header.recording[:unit][ch],              # intensity
         obj.header.recording[:unit][ch],              # OD (same pairs)
-        obj.header.recording[:unit][other_ch]
+        obj.header.recording[:unit][other_ch],
     )
 
     # reset bad-channel flags to match the new channel count
@@ -122,7 +124,6 @@ function intensity2od(
     push!(obj_new.history, "intensity2od(obj; ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -140,15 +141,13 @@ Convert NIRS intensity channels to optical density in-place.
 - `Nothing`
 """
 function intensity2od!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int")
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
+    )::Nothing
     obj_new = intensity2od(obj; ch = ch)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
 
     return nothing
-
 end

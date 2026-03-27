@@ -57,5 +57,4 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
     p = ccdf(Distributions.Chisq(k - 1), q)
 
     return (; q, w, p)
-
 end

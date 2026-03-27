@@ -36,22 +36,22 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function coherence(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true
-)::@NamedTuple{
-    coh::Vector{ComplexF64},
-    imcoh::Vector{Float64},
-    msc::Vector{Float64},
-    f::Vector{Float64}
-}
+        s1::AbstractVector,
+        s2::AbstractVector;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        coh::Vector{ComplexF64},
+        imcoh::Vector{Float64},
+        msc::Vector{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     _check_var(method, [:mt, :fft, :stft], "method")
@@ -72,7 +72,7 @@ function coherence(
         w = w,
         demean = demean,
         method = method,
-        flim = flim
+        flim = flim,
     )
 
     # compute the three cross-power spectra needed for coherence
@@ -93,7 +93,6 @@ function coherence(
     msc = abs2.(coh)
 
     return (; coh, imcoh, msc, f)
-
 end
 
 """
@@ -132,22 +131,22 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies in Hz
 """
 function coherence(
-    s1::AbstractArray,
-    s2::AbstractArray;
-    method::Symbol = :mt,
-    fs::Int64,
-    flim::Tuple{Real, Real} = (0, fs / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true
-)::@NamedTuple{
-    coh::Array{ComplexF64, 3},
-    imcoh::Array{Float64, 3},
-    msc::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        s1::AbstractArray,
+        s2::AbstractArray;
+        method::Symbol = :mt,
+        fs::Int64,
+        flim::Tuple{Real, Real} = (0, fs / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        coh::Array{ComplexF64, 3},
+        imcoh::Array{Float64, 3},
+        msc::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
@@ -163,7 +162,7 @@ function coherence(
     # pre-compute the frequency vector with a single pilot call on the first channel/epoch pair
     coh_data = NeuroAnalyzer.coherence(
         @view(s1[1, :, 1]),
-        @view(s2[1, :, 1]),
+        @view(s2[1, :, 1]);
         method = method,
         fs = fs,
         flim = flim,
@@ -171,7 +170,7 @@ function coherence(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w
+        w = w,
     )
     f = coh_data.f
 
@@ -193,7 +192,7 @@ function coherence(
             nt = nt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w
+            w = w,
         )
         coh[ch_idx, :, ep_idx] = coh_data.coh
         imcoh[ch_idx, :, ep_idx] = coh_data.imcoh
@@ -243,34 +242,43 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function coherence(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    method::Symbol = :mt,
-    flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
-    demean::Bool = false,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj1),
-    woverlap::Int64 = round(Int64, wlen * 0.90),
-    w::Bool = true
-)::@NamedTuple{
-    coh::Array{ComplexF64, 3},
-    imcoh::Array{Float64, 3},
-    msc::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        method::Symbol = :mt,
+        flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
+        demean::Bool = false,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj1),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        coh::Array{ComplexF64, 3},
+        imcoh::Array{Float64, 3},
+        msc::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # validate
-    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    sr(obj1) == sr(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -279,13 +287,17 @@ function coherence(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
     length(ep1) == length(ep2) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     return coherence(
         @view(obj1.data[ch1, :, ep1]),
-        @view(obj2.data[ch2, :, ep2]),
+        @view(obj2.data[ch2, :, ep2]);
         method = method,
         fs = sr(obj1),
         flim = flim,
@@ -293,7 +305,6 @@ function coherence(
         nt = nt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w
+        w = w,
     )
-
 end

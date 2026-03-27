@@ -23,13 +23,13 @@ Named tuple:
 - `ress_norm::Vector{Float64}`: RESS normalized to −1..1
 """
 function ged(
-    s1::AbstractMatrix,
-    s2::AbstractMatrix
-)::@NamedTuple{
-    sged::Matrix{Float64},
-    ress::Vector{Float64},
-    ress_norm::Vector{Float64}
-}
+        s1::AbstractMatrix,
+        s2::AbstractMatrix,
+    )::@NamedTuple{
+        sged::Matrix{Float64},
+        ress::Vector{Float64},
+        ress_norm::Vector{Float64},
+    }
 
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
@@ -43,9 +43,9 @@ function ged(
     eig_val, eig_vec = eigen(s1cov, s2cov)
 
     # sort by descending eigenvalue so the first component has maximum power ratio
-    eig_val_idx = sortperm(eig_val, rev = true)
+    eig_val_idx = sortperm(eig_val; rev = true)
     eig_val = eig_val[eig_val_idx]
-    eig_vec = m_sort(eig_vec, eig_val_idx, dims = 2)
+    eig_vec = m_sort(eig_vec, eig_val_idx; dims = 2)
 
     # weight each channel of s2 by its component in the leading eigenvector
     sged = s2 .* eig_vec[:, 1]
@@ -58,7 +58,6 @@ function ged(
     ress_norm = ress ./ maximum(abs, ress)
 
     return (; sged, ress, ress_norm)
-
 end
 
 """
@@ -88,22 +87,30 @@ Named tuple:
 - `ress_norm::Matrix{Float64}`: RESS normalized to −1..1, shape (channels, epochs)
 """
 function ged(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::@NamedTuple{
-    sged::Array{Float64, 3},
-    ress::Matrix{Float64},
-    ress_norm::Matrix{Float64}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::@NamedTuple{
+        sged::Array{Float64, 3},
+        ress::Matrix{Float64},
+        ress_norm::Matrix{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
+    length(ch1) == length(ch2) || throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -111,8 +118,13 @@ function ged(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ep1) == length(ep2) || throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
+    epoch_len(obj1) == epoch_len(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # number of channels
     ch_n = length(ch1)
@@ -137,5 +149,4 @@ function ged(
     end
 
     return (; sged, ress, ress_norm)
-
 end

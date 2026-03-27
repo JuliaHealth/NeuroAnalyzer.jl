@@ -19,21 +19,19 @@ Named tuple:
 - `Vector{Float64}`: phase differences in radians
 """
 function phdiff(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    pad::Int64 = 0,
-    h::Bool = false
-)::Vector{Float64}
-
-    h1 = h ? NeuroAnalyzer.htransform(s1) : NeuroAnalyzer.ftransform(s1, pad = pad)
-    h2 = h ? NeuroAnalyzer.htransform(s2) : NeuroAnalyzer.ftransform(s2, pad = pad)
+        s1::AbstractVector,
+        s2::AbstractVector;
+        pad::Int64 = 0,
+        h::Bool = false,
+    )::Vector{Float64}
+    h1 = h ? NeuroAnalyzer.htransform(s1) : NeuroAnalyzer.ftransform(s1; pad = pad)
+    h2 = h ? NeuroAnalyzer.htransform(s2) : NeuroAnalyzer.ftransform(s2; pad = pad)
     ph1 = h1.ph
     ph2 = h2.ph
 
     phd = ph1 - ph2
 
     return phd
-
 end
 
 """
@@ -56,12 +54,12 @@ Calculate phase difference between channels and mean phase of reference `ch` for
 - `Array{Float64, 3}`
 """
 function phdiff(
-    s::AbstractArray;
-    ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
-    avg::Symbol = :phase,
-    pad::Int64 = 0,
-    h::Bool = false
-)::Array{Float64, 3}
+        s::AbstractArray;
+        ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
+        avg::Symbol = :phase,
+        pad::Int64 = 0,
+        h::Bool = false,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -84,31 +82,33 @@ function phdiff(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         if avg === :phase
-
             ref_channels = setdiff(ch, ch_idx)
             ph_ref = zeros(length(ref_channels), ep_len)
             for ref_idx in eachindex(ref_channels)
-                h_data = h ? NeuroAnalyzer.htransform(@view(s[ref_channels[ref_idx], :, ep_idx])) :
-                             NeuroAnalyzer.ftransform(@view(s[ref_channels[ref_idx], :, ep_idx]); pad = pad)
+                h_data =
+                    h ?
+                    NeuroAnalyzer.htransform(@view(s[ref_channels[ref_idx], :, ep_idx])) :
+                    NeuroAnalyzer.ftransform(
+                        @view(s[ref_channels[ref_idx], :, ep_idx]);
+                        pad = pad,
+                    )
                 ph_ref[ref_idx, :] = h_data.ph
             end
             ph_ref = vec(mean(ph_ref, dims = 1))
 
-            h_data = h ? NeuroAnalyzer.htransform(@view(s[ch[ch_idx], :, ep_idx])) :
-                         NeuroAnalyzer.ftransform(@view(s[ch[ch_idx], :, ep_idx]); pad = pad)
+            h_data =
+                h ? NeuroAnalyzer.htransform(@view(s[ch[ch_idx], :, ep_idx])) :
+                NeuroAnalyzer.ftransform(@view(s[ch[ch_idx], :, ep_idx]); pad = pad)
             phd[ch_idx, :, ep_idx] = h_data.ph - ph_ref
 
         elseif avg === :signal
-
             ref_channels = setdiff(ch, ch_idx)
             signal_m = vec(mean(@view(s[ref_channels, :, ep_idx]), dims = 1))
             phd[ch_idx, :, ep_idx] = phdiff(@view(s[ch[ch_idx], :, ep_idx]), signal_m)
-
         end
     end
 
     return phd
-
 end
 
 """
@@ -131,21 +131,22 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 - `Array{Float64, 3}`
 """
 function phdiff(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    avg::Symbol = :phase,
-    pad::Int64 = 0,
-    h::Bool = false
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        avg::Symbol = :phase,
+        pad::Int64 = 0,
+        h::Bool = false,
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return phdiff(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         avg = avg,
         pad = pad,
-        h = h
+        h = h,
     )
-
 end

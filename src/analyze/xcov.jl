@@ -22,17 +22,18 @@ Calculate cross-covariance between two 1-D signal vectors.
 - `Array{Float64, 3}`: cross-covariance at lags `−l:l`
 """
 function xcov(
-    s1::AbstractVector,
-    s2::AbstractVector;
-    l::Int64 = round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))),
-    demean::Bool = true,
-    biased::Bool = true,
-    method::Symbol = :sum
-)::Array{Float64, 3}
+        s1::AbstractVector,
+        s2::AbstractVector;
+        l::Int64 = round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))),
+        demean::Bool = true,
+        biased::Bool = true,
+        method::Symbol = :sum,
+    )::Array{Float64, 3}
 
     # validate
     _check_var(method, [:sum, :cov, :stat], "method")
-    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) ||
+        throw(ArgumentError("Both signals must have the same length."))
 
     # optionally remove the DC component (mean) from both signals before
     # computing cross-covariance to eliminate offset bias
@@ -67,29 +68,28 @@ function xcov(
         # which is the # UNBIASED estimator; we must invert: biased → corrected=false
         for idx in 0:l
             xc[idx + 1] = @views cov(
-                s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)], corrected = !biased
+                s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)], corrected = !biased,
             )
         end
         for idx in 0:l
             xc_neg[idx + 1] = @views cov(
-                s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end], corrected = !biased
+                s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end], corrected = !biased,
             )
         end
     elseif method === :stat
         # StatsBase crosscov handles demeaning internally; `biased` is ignored.
-        xc = crosscov(s1, s2, 0:l, demean = demean)
-        xc_neg = crosscov(s2, s1, 0:l, demean = demean)
+        xc = crosscov(s1, s2, 0:l; demean = demean)
+        xc_neg = crosscov(s2, s1, 0:l; demean = demean)
     end
 
-    # concatenate negative lags (reversed) with positive lags to produce a 
+    # concatenate negative lags (reversed) with positive lags to produce a
     # symmetric lag vector from −l to +l. xc_neg[1] is lag 0 (same as xc[1])
     # so drop the duplicate when concatenating
     xc = vcat(reverse(xc_neg), xc[2:end])
-    xc = round.(xc, digits = 3)
+    xc = round.(xc; digits = 3)
 
     # return as (1 × lags × 1) so all xcov methods share a consistent shape
     return reshape(xc, 1, :, 1)
-
 end
 
 """
@@ -114,13 +114,13 @@ Calculate cross-covariance for a pair of 2-D arrays.
 - `Array{Float64, 3}`: cross-covariance, shape (1, 2l+1, ep_n)
 """
 function xcov(
-    s1::AbstractMatrix,
-    s2::AbstractMatrix;
-    l::Int64 = round(Int64, min(size(s1, 2) - 1, 10 * log10(size(s1, 2)))),
-    demean::Bool = true,
-    biased::Bool = true,
-    method::Symbol = :sum
-)::Array{Float64, 3}
+        s1::AbstractMatrix,
+        s2::AbstractMatrix;
+        l::Int64 = round(Int64, min(size(s1, 2) - 1, 10 * log10(size(s1, 2)))),
+        demean::Bool = true,
+        biased::Bool = true,
+        method::Symbol = :sum,
+    )::Array{Float64, 3}
 
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
@@ -138,12 +138,11 @@ function xcov(
             l = l,
             demean = demean,
             biased = biased,
-            method = method
+            method = method,
         )
     end
 
     return xc
-
 end
 
 """
@@ -168,13 +167,13 @@ Calculate cross-covariance for a pair of 3-D arrays.
 - `Array{Float64, 3}`: cross-covariance, shape (ch_n, 2l+1, ep_n)
 """
 function xcov(
-    s1::AbstractArray,
-    s2::AbstractArray;
-    l::Int64 = round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))),
-    demean::Bool = true,
-    biased::Bool = true,
-    method::Symbol = :sum
-)::Array{Float64, 3}
+        s1::AbstractArray,
+        s2::AbstractArray;
+        l::Int64 = round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))),
+        demean::Bool = true,
+        biased::Bool = true,
+        method::Symbol = :sum,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
@@ -199,12 +198,11 @@ function xcov(
             l = l,
             demean = demean,
             biased = biased,
-            method = method
+            method = method,
         )
     end
 
     return xc
-
 end
 
 """
@@ -238,34 +236,46 @@ Named tuple:
 - `lags::Vector{Float64}`: lag values in seconds
 """
 function xcov(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    l::Real = 1,
-    demean::Bool = true,
-    biased::Bool = true,
-    method::Symbol = :sum
-)::@NamedTuple{
-    xc::Array{Float64, 3},
-    lags::Vector{Float64}
-}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+        l::Real = 1,
+        demean::Bool = true,
+        biased::Bool = true,
+        method::Symbol = :sum,
+    )::@NamedTuple{
+        xc::Array{Float64, 3},
+        lags::Vector{Float64},
+    }
 
     # validate
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
     length(ch1) == length(ch2) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+        ),
+    )
     length(ep1) == length(ep2) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])
@@ -285,12 +295,13 @@ function xcov(
             l = l,
             demean = demean,
             biased = biased,
-            method = method
+            method = method,
         )
-        xc = cat(mean(xc, dims = 3), xc, dims = 3)
+        xc = cat(mean(xc; dims = 3), xc; dims = 3)
     else
         xc = @views xcov(
-            obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean, biased = biased, method = method
+            obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean,
+            biased = biased, method = method,
         )
     end
 
@@ -298,5 +309,4 @@ function xcov(
     lags = collect((-l_samples):l_samples) ./ sr(obj1)
 
     return (; xc, lags)
-
 end

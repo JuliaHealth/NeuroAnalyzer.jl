@@ -149,5 +149,4 @@ function _wl2ext(wl::Real)::Vector{Float64}
     wl_idx = vsearch(wl, wl_hb[:, 1])
 
     return wl_hb[wl_idx, 2:3]
-
 end

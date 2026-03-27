@@ -22,7 +22,8 @@ Calculate Amplitude Envelope Correlation (AEC) for 1-D signal vectors.
 function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
 
     # validate
-    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) ||
+        throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous amplitude envelopes via Hilbert transform
     ht1 = htransform(s1)
@@ -32,7 +33,6 @@ function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
 
     # AEC is the Pearson correlation of the two amplitude envelopes
     return cor(e1, e2)
-
 end
 
 """
@@ -54,19 +54,27 @@ Calculate Amplitude Envelope Correlation (AEC) for two NEURO objects.
 - `Matrix{Float64}`: AEC value, shape (channels, epochs)
 """
 function aecor(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) ||
-        throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -75,7 +83,11 @@ function aecor(
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
     length(ep1) == length(ep2) ||
-        throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
+        throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
@@ -97,7 +109,6 @@ function aecor(
     end
 
     return aec
-
 end
 
 """
@@ -115,12 +126,14 @@ Calculate Amplitude Envelope Correlation (AEC) for a NEURO object.
 - `Array{Float64, 3}`: AEC value, shape `(channels, channels, epochs)`
 """
 function aecor(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch1)
@@ -143,7 +156,6 @@ function aecor(
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(aec)
-
 end
 
 """
@@ -167,7 +179,8 @@ Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequenc
 function escor(s1::AbstractVector, s2::AbstractVector)::Float64
 
     # validate
-    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) ||
+        throw(ArgumentError("Both signals must have the same length."))
 
     # instantaneous amplitude envelope via Hilbert transform
     # only s2's envelope is needed; s1 enters the correlation as the raw signal
@@ -176,7 +189,6 @@ function escor(s1::AbstractVector, s2::AbstractVector)::Float64
 
     # ESC: correlation of the raw s1 signal against s2's amplitude envelope
     return cor(s1, e2)
-
 end
 
 """
@@ -198,18 +210,26 @@ Calculate Envelope-to-Signal Correlation (ESC) for two NEURO objects.
 - `Matrix{Float64}`: ESC value, shape (channels, epochs)
 """
 function escor(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
+    (length(ch1) == length(ch2)) || throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -217,8 +237,13 @@ function escor(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    (length(ep1) == length(ep2)) || throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
+    epoch_len(obj1) == epoch_len(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # number of channels
     ch_n = length(ch1)
@@ -238,7 +263,6 @@ function escor(
     end
 
     return esc
-
 end
 
 """
@@ -256,13 +280,15 @@ Calculate Envelope-to-Signal Correlation (ESC) for a NEURO object.
 - `Array{Float64, 3}`: ESC value, shape `(channels, channels, epochs)`
 """
 function escor(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}
-)::Array{Float64, 3}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
-    
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
+
     # number of channels
     ch_n = length(ch1)
     # number of epochs
@@ -284,5 +310,4 @@ function escor(
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(esc)
-
 end

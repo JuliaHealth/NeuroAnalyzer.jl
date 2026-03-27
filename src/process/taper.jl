@@ -18,10 +18,10 @@ Taper the signal.
 function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
 
     # validate
-    length(t) == length(s) || throw(ArgumentError("Taper and signal lengths must be equal."))
+    length(t) == length(s) ||
+        throw(ArgumentError("Taper and signal lengths must be equal."))
 
     return s .* t
-
 end
 
 """
@@ -39,7 +39,6 @@ Taper a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
-
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -52,7 +51,6 @@ function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
     end
 
     return s_new
-
 end
 
 """
@@ -71,10 +69,10 @@ Taper the signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function taper(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    t::Vector{<:Real}
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        t::Vector{<:Real},
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -86,7 +84,6 @@ function taper(
     push!(obj_new.history, "taper(obj; ch=$ch), t=$t")
 
     return obj_new
-
 end
 
 """
@@ -104,12 +101,14 @@ Taper the signal.
 
 - `Nothing`
 """
-function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::Nothing
-
+function taper!(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        t::Vector{<:Real},
+    )::Nothing
     obj_new = taper(obj; ch = ch, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

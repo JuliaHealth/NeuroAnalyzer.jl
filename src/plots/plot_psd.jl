@@ -22,16 +22,17 @@ Plot PSD (power spectrum density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_psd(
-    f::Vector{Float64},
-    p::Vector{Float64};
-    flim::Tuple{Real, Real} = (f[1], f[end]),
-    xlabel::String = "",
-    ylabel::String = "",
-    title::String = "",
-    frq::Symbol = :lin
-)::GLMakie.Figure
-
-    !(length(p) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+        f::Vector{Float64},
+        p::Vector{Float64};
+        flim::Tuple{Real, Real} = (f[1], f[end]),
+        xlabel::String = "",
+        ylabel::String = "",
+        title::String = "",
+        frq::Symbol = :lin,
+    )::GLMakie.Figure
+    !(length(p) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -44,11 +45,11 @@ function plot_psd(
     f2 = vsearch(flim[2], f)
 
     # prepare plot
-    GLMakie.activate!(title = "plot_psd()")
+    GLMakie.activate!(; title = "plot_psd()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -62,7 +63,7 @@ function plot_psd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.autolimits!(ax)
     ax.titlesize = 18
@@ -72,14 +73,15 @@ function plot_psd(
     ax.yticklabelsize = 12
 
     # draw powers
-    Makie.lines!(ax,
-                 f[f1:f2],
-                 p[f1:f2],
-                 linewidth = 2,
-                 color = :black)
+    Makie.lines!(
+        ax,
+        f[f1:f2],
+        p[f1:f2];
+        linewidth = 2,
+        color = :black
+    )
 
     return fig
-
 end
 
 """
@@ -118,12 +120,13 @@ function plot_psd(
         frq::Symbol = :lin,
         avg::Bool = false,
         ci95::Bool = false,
-        leg::Bool = true
+        leg::Bool = true,
     )::GLMakie.Figure
-
     ch_n = size(p, 1)
 
-    !(size(p, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    !(size(p, 2) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -141,11 +144,11 @@ function plot_psd(
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_psd()")
+    GLMakie.activate!(; title = "plot_psd()")
     plot_size = (900, 450)
-    fig = GLMakie.Figure(size = plot_size)
+    fig = GLMakie.Figure(; size = plot_size)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
@@ -160,7 +163,7 @@ function plot_psd(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.autolimits!(ax)
     ax.titlesize = 18
@@ -181,34 +184,32 @@ function plot_psd(
             Makie.lines!(
                 ax,
                 f[f1:f2],
-                p[idx, f1:f2],
+                p[idx, f1:f2];
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
                 linewidth = 2,
-                label = clabels[idx]
+                label = clabels[idx],
             )
         end
 
         # draw averaged channels
         if avg
-            s = mean(p[f1:f2], dims = 1)[:]
+            s = mean(p[f1:f2]; dims = 1)[:]
             Makie.lines!(
                 ax,
                 f[f1:f2],
-                s,
+                s;
                 colormap = pal,
                 linewidth = 4,
-                color = :black
+                color = :black,
             )
         end
 
         (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
-
     end
 
     return fig
-
 end
 
 """
@@ -247,11 +248,12 @@ function plot_psd_3d(
         title::String = "",
         mono::Bool = false,
         frq::Symbol = :lin,
-        variant::Symbol
+        variant::Symbol,
     )::GLMakie.Figure
-
     _check_var(variant, [:w, :s], "variant")
-    !(size(p, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    !(size(p, 2) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -274,12 +276,12 @@ function plot_psd_3d(
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_psd()")
+    GLMakie.activate!(; title = "plot_psd()")
     if variant === :w
         plot_size = (900, 450)
-        fig = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(; size = plot_size)
         ax = GLMakie.Axis3(
-            fig[1, 1],
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -296,7 +298,7 @@ function plot_psd_3d(
             aspect = (1, 1, 0.5),
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0.1, 0.1),
-            zautolimitmargin = (0, 0)
+            zautolimitmargin = (0, 0),
         )
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 18
@@ -311,20 +313,20 @@ function plot_psd_3d(
             Makie.lines!(
                 f,
                 ones(length(f)) .* idx,
-                p[idx, :],
+                p[idx, :];
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n
+                colorrange = 1:ch_n,
             )
         end
     else
         f1 = vsearch(flim[1], f)
         f2 = vsearch(flim[2], f)
         plot_size = (900, 450)
-        fig = GLMakie.Figure(size = plot_size)
+        fig = GLMakie.Figure(; size = plot_size)
         ax = GLMakie.Axis3(
-            fig[1, 1],
+            fig[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
             zlabel = zlabel,
@@ -341,7 +343,7 @@ function plot_psd_3d(
             aspect = (1, 1, 0.5),
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
-            zautolimitmargin = (0, 0)
+            zautolimitmargin = (0, 0),
         )
         ax.titlesize = 18
         ax.xlabelsize = 18
@@ -355,7 +357,6 @@ function plot_psd_3d(
     end
 
     return fig
-
 end
 
 """
@@ -390,10 +391,11 @@ function plot_psd_topo(
         ylabel::String = "",
         frq::Symbol = :lin,
         cart::Bool = false,
-        head::Bool = true
+        head::Bool = true,
     )::GLMakie.Figure
-
-    !(size(p, 2) == length(f)) && throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    !(size(p, 2) == length(f)) && throw(
+        ArgumentError("Length of powers vector must equal length of frequencies vector."),
+    )
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
@@ -427,7 +429,8 @@ function plot_psd_topo(
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in axes(locs, 1)
-            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+            loc_x[idx], loc_y[idx] =
+                pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
     else
         loc_x = locs[!, :loc_x]
@@ -438,18 +441,18 @@ function plot_psd_topo(
     fig_vec = GLMakie.Figure[]
     fig_full_vec = GLMakie.Figure[]
     for idx in axes(p, 1)
-        fig = GLMakie.Figure(
+        fig = GLMakie.Figure(;
             size = marker_size,
-            figure_padding = 0
+            figure_padding = 0,
         )
         ax = GLMakie.Axis(
-            fig[1, 1],
+            fig[1, 1];
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
             xscale = frq === :lin ? identity : log,
             xautolimitmargin = (0, 0),
-            yautolimitmargin = (0.1, 0.1)
+            yautolimitmargin = (0.1, 0.1),
         )
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
@@ -459,24 +462,24 @@ function plot_psd_topo(
         push!(fig_vec, fig)
         fig_full = plot_psd(
             f,
-            p[idx, :],
+            p[idx, :];
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,
             flim = flim,
-            frq = frq
+            frq = frq,
         )
         push!(fig_full_vec, fig_full)
     end
 
     # prepare plot
-    GLMakie.activate!(title = "plot_psd()")
-    fig = GLMakie.Figure(
+    GLMakie.activate!(; title = "plot_psd()")
+    fig = GLMakie.Figure(;
         size = plot_size,
-        figure_padding = 0
+        figure_padding = 0,
     )
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         xlabel = "",
         ylabel = "",
         title = title,
@@ -488,7 +491,7 @@ function plot_psd_topo(
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -533,7 +536,13 @@ function plot_psd_topo(
         io = IOBuffer()
         show(io, MIME"image/png"(), fig_vec[idx])
         pp = FileIO.load(io)
-        GLMakie.scatter!(loc_x[idx], loc_y[idx]; marker = pp, markersize = marker_size, markerspace = :pixel)
+        GLMakie.scatter!(
+            loc_x[idx],
+            loc_y[idx];
+            marker = pp,
+            markersize = marker_size,
+            markerspace = :pixel,
+        )
     end
 
     loc_x_range = Tuple{Float64, Float64}[]
@@ -561,7 +570,6 @@ function plot_psd_topo(
     end
 
     return fig
-
 end
 
 """
@@ -614,35 +622,34 @@ Plot PSD (power spectrum density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_psd(
-    obj::NeuroAnalyzer.NEURO;
-    seg::Tuple{Real, Real} = (0, 10),
-    ep::Int64 = 0,
-    ch::Union{String, Vector{String}, Regex} = datatype(obj),
-    db::Bool = true,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    ref::Symbol = :abs,
-    demean::Bool = true,
-    frq::Symbol = :lin,
-    xlabel::String = "default",
-    ylabel::String = "default",
-    zlabel::String = "default",
-    title::String = "default",
-    mono::Bool = false,
-    type::Symbol = :normal,
-    cart::Bool = false,
-    head::Bool = true,
-    leg::Bool = true,
-    avg::Bool = false,
-    ci95::Bool = false
-)::GLMakie.Figure
-
+        obj::NeuroAnalyzer.NEURO;
+        seg::Tuple{Real, Real} = (0, 10),
+        ep::Int64 = 0,
+        ch::Union{String, Vector{String}, Regex} = datatype(obj),
+        db::Bool = true,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        ref::Symbol = :abs,
+        demean::Bool = true,
+        frq::Symbol = :lin,
+        xlabel::String = "default",
+        ylabel::String = "default",
+        zlabel::String = "default",
+        title::String = "default",
+        mono::Bool = false,
+        type::Symbol = :normal,
+        cart::Bool = false,
+        head::Bool = true,
+        leg::Bool = true,
+        avg::Bool = false,
+        ci95::Bool = false,
+    )::GLMakie.Figure
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
     _check_var(
@@ -664,12 +671,14 @@ function plot_psd(
             :gamma_lower,
             :gamma_higher,
         ],
-        "ref"
+        "ref",
     )
     _check_var(frq, [:lin, :log], "frq")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
@@ -698,222 +707,261 @@ function plot_psd(
 
     # frequency limits
     fs = sr(obj)
-    ref !== :abs && (flim = band_frq(obj, band = ref))
+    ref !== :abs && (flim = band_frq(obj; band = ref))
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
     # calculate PSD
     if ref === :abs
         if method === :welch
             p, f = psd(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :welch,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :welch,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "Absolute PSD (Welch's periodogram)\n[epoch: $ep]")
+                title == "default" &&
+                    (title = "Absolute PSD (Welch's periodogram)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Absolute PSD (Welch's periodogram)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (
+                    title = "Absolute PSD (Welch's periodogram)\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :fft
             p, f = psd(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :fft,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :fft,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "Absolute PSD (fast Fourier transform)\n[epoch: $ep]")
+                title == "default" &&
+                    (title = "Absolute PSD (fast Fourier transform)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Absolute PSD (fast Fourier transform)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (
+                    title = "Absolute PSD (fast Fourier transform)\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :stft
             p, f = psd(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :stft,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :stft,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "Absolute PSD (short-time Fourier transform)\n[epoch: $ep]")
+                title == "default" &&
+                    (title = "Absolute PSD (short-time Fourier transform)\n[epoch: $ep]")
             else
                 title == "default" &&
-                    (title = "Absolute PSD (short-time Fourier transform)\n[time window: $t_s1:$t_s2]")
+                    (
+                    title = "Absolute PSD (short-time Fourier transform)\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :mt
             p, f = psd(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :mt,
-                        nt = nt,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :mt,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" && (title = "Absolute PSD (multi-taper)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Absolute PSD (multi-taper)\n[time window: $t_s1:$t_s2]")
+                title == "default" &&
+                    (title = "Absolute PSD (multi-taper)\n[time window: $t_s1:$t_s2]")
             end
         elseif method === :mw
             p, f = psd(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :mw,
-                        ncyc = ncyc,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :mw,
+                ncyc = ncyc,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "Absolute PSD (Morlet wavelet convolution)\n[epoch: $ep]")
+                title == "default" &&
+                    (title = "Absolute PSD (Morlet wavelet convolution)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Absolute PSD (Morlet wavelet convolution)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (
+                    title = "Absolute PSD (Morlet wavelet convolution)\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :gh
             p, f = psd(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :gh,
-                        gw = gw,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :gh,
+                gw = gw,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "Absolute PSD (Gaussian and Hilbert transform)\n[epoch: $ep]")
+                title == "default" &&
+                    (title = "Absolute PSD (Gaussian and Hilbert transform)\n[epoch: $ep]")
             else
                 title == "default" &&
-                    (title = "Absolute PSD (Gaussian and Hilbert transform)\n[time window: $t_s1:$t_s2]")
+                    (
+                    title = "Absolute PSD (Gaussian and Hilbert transform)\n[time window: $t_s1:$t_s2]"
+                )
             end
         end
     elseif ref === :total
         if method === :welch
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :welch,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :welch,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "PSD (Welch's periodogram) relative to total power\n[epoch: $ep]")
+                title == "default" && (
+                    title = "PSD (Welch's periodogram) relative to total power\n[epoch: $ep]"
+                )
             else
                 title == "default" &&
-                    (title = "PSD (Welch's periodogram) relative to total power\n[time window: $t_s1:$t_s2]")
+                    (
+                    title = "PSD (Welch's periodogram) relative to total power\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :fft
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :fft,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :fft,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "PSD (fast Fourier transform) relative to total power\n[epoch: $ep]")
+                title == "default" && (
+                    title = "PSD (fast Fourier transform) relative to total power\n[epoch: $ep]"
+                )
             else
                 title == "default" &&
-                    (title = "PSD (fast Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]")
+                    (
+                    title = "PSD (fast Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :stft
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :stft,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :stft,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" &&
-                    (title = "PSD (short-time Fourier transform) relative to total power\n[epoch: $ep]")
+                    (
+                    title = "PSD (short-time Fourier transform) relative to total power\n[epoch: $ep]"
+                )
             else
                 title == "default" &&
-                    (title = "PSD (short-time Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]")
+                    (
+                    title = "PSD (short-time Fourier transform) relative to total power\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :mt
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :mt,
-                        nt = nt,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :mt,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "PSD (multi-taper) relative to total power\n[epoch: $ep]")
+                title == "default" &&
+                    (title = "PSD (multi-taper) relative to total power\n[epoch: $ep]")
             else
-                title == "default" && (title = "PSD (multi-taper) relative to total power\n[time window: $t_s1:$t_s2]")
+                title == "default" && (
+                    title = "PSD (multi-taper) relative to total power\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :mw
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :mw,
-                        ncyc = ncyc,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :mw,
+                ncyc = ncyc,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
-                title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power\n[epoch: $ep]")
+                title == "default" && (
+                    title = "PSD (Morlet wavelet convolution) relative to total power\n[epoch: $ep]"
+                )
             else
                 title == "default" &&
-                    (title = "PSD (Morlet wavelet convolution) relative to total power\n[time window: $t_s1:$t_s2]")
+                    (
+                    title = "PSD (Morlet wavelet convolution) relative to total power\n[time window: $t_s1:$t_s2]"
+                )
             end
         elseif method === :gh
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :gh,
-                        gw = gw,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :gh,
+                gw = gw,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" &&
-                    (title = "PSD (Gaussian and Hilbert transform) relative to total power\n[epoch: $ep]")
+                    (
+                    title = "PSD (Gaussian and Hilbert transform) relative to total power\n[epoch: $ep]"
+                )
             else
                 title == "default" &&
-                    (title = "PSD (Gaussian and Hilbert transform) relative to total power\n[time window: $t_s1:$t_s2]")
+                    (
+                    title = "PSD (Gaussian and Hilbert transform) relative to total power\n[time window: $t_s1:$t_s2]"
+                )
             end
         end
     else
         if method === :welch
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :welch,
-                        flim = flim,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :welch,
+                flim = flim,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" && (
                     title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -925,14 +973,14 @@ function plot_psd(
             end
         elseif method === :fft
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :fft,
-                        flim = flim,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :fft,
+                flim = flim,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" && (
                     title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -944,16 +992,16 @@ function plot_psd(
             end
         elseif method === :stft
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :stft,
-                        flim = flim,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :stft,
+                flim = flim,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" && (
                     title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -965,20 +1013,22 @@ function plot_psd(
             end
         elseif method === :mt
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :mt,
-                        flim = flim,
-                        nt = nt,
-                        wlen = wlen,
-                        woverlap = woverlap,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :mt,
+                flim = flim,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" &&
-                    (title = "PSD (multi-taper) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]")
+                    (
+                    title = "PSD (multi-taper) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
+                )
             else
                 title == "default" && (
                     title = "PSD (multi-taper) relative to $(replace(string(ref), "_" => " ")) power\n[time window: $t_s1:$t_s2]"
@@ -986,15 +1036,15 @@ function plot_psd(
             end
         elseif method === :mw
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :mw,
-                        flim = flim,
-                        ncyc = ncyc,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :mw,
+                flim = flim,
+                ncyc = ncyc,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" && (
                     title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -1006,15 +1056,15 @@ function plot_psd(
             end
         elseif method === :gh
             p, f = psd_rel(
-                        signal,
-                        fs = fs,
-                        db = db,
-                        method = :gh,
-                        flim = flim,
-                        gw = gw,
-                        w = w,
-                        demean = demean,
-                    )
+                signal;
+                fs = fs,
+                db = db,
+                method = :gh,
+                flim = flim,
+                gw = gw,
+                w = w,
+                demean = demean,
+            )
             if ep != 0
                 title == "default" && (
                     title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_" => " ")) power\n[epoch: $ep]"
@@ -1032,14 +1082,23 @@ function plot_psd(
         if ref !== :abs
             ylabel == "default" && (ylabel = "Power ratio")
         else
-            ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+            ylabel == "default" &&
+                (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         if length(ch) == 1
-            fig = plot_psd(f, p; xlabel = xlabel, ylabel = ylabel, title = title, flim = flim, frq = frq)
+            fig = plot_psd(
+                f,
+                p;
+                xlabel = xlabel,
+                ylabel = ylabel,
+                title = title,
+                flim = flim,
+                frq = frq,
+            )
         else
             fig = plot_psd(
                 f,
-                p,
+                p;
                 xlabel = xlabel,
                 ylabel = "",
                 clabels = clabels,
@@ -1049,17 +1108,18 @@ function plot_psd(
                 avg = avg,
                 ci95 = ci95,
                 leg = leg,
-                mono = mono
+                mono = mono,
             )
         end
     elseif type === :w3d || type === :s3d
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
-        zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+        zlabel == "default" &&
+            (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         ch_t = obj.header.recording[:channel_type]
         return plot_psd_3d(
             f,
-            p,
+            p;
             clabels = clabels,
             xlabel = xlabel,
             ylabel = ylabel,
@@ -1068,13 +1128,18 @@ function plot_psd(
             flim = flim,
             frq = frq,
             mono = mono,
-            variant = type === :w3d ? :w : :s
+            variant = type === :w3d ? :w : :s,
         )
     elseif type === :topo
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+        ylabel == "default" &&
+            (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        !(length(unique(obj.header.recording[:channel_type][ch])) == 1) && throw(ArgumentError("For multi-channel topo plot all channels must be of the same type."))
+        !(length(unique(obj.header.recording[:channel_type][ch])) == 1) && throw(
+            ArgumentError(
+                "For multi-channel topo plot all channels must be of the same type.",
+            ),
+        )
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
@@ -1083,17 +1148,16 @@ function plot_psd(
         fig = plot_psd_topo(
             locs,
             f,
-            p,
+            p;
             xlabel = xlabel,
             ylabel = ylabel,
             title = title,
             flim = flim,
             frq = frq,
             cart = cart,
-            head = head
+            head = head,
         )
     end
 
     return fig
-
 end

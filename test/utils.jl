@@ -4,8 +4,8 @@ using Test
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 n = import_snirf(joinpath(testfiles_path, "fnirs-test-snirf.snirf"))
-e10 = epoch(eeg, ep_len=10)
-keep_epoch!(e10, ep=1:10)
+e10 = epoch(eeg; ep_len = 10)
+keep_epoch!(e10; ep = 1:10)
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
 v2 = [6, 5, 4, 3, 2]
@@ -16,7 +16,7 @@ a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
 @info "Test: apply()"
-@test size(apply(e10, ch="all", f="mean(obj, dims=1)")) == (24, 1, 10)
+@test size(apply(e10, ch = "all", f = "mean(obj, dims=1)")) == (24, 1, 10)
 
 @info "Test: l1()"
 @test l1(a1, a2) == 12
@@ -94,28 +94,28 @@ x[10] *= 1000
 @test e2t(e10, 1:10) == (0.0, 99.9961)
 
 @info "Test: freqs()"
-f, nf = NeuroAnalyzer.freqs(0:1/10:10)
+f, nf = NeuroAnalyzer.freqs(0:(1 / 10):10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(0:1/10:10, nf=true)
+f, nf = NeuroAnalyzer.freqs(0:(1 / 10):10; nf = true)
 @test length(f) == 101
 @test nf == 5
 f, nf = NeuroAnalyzer.freqs(rand(100), 10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(rand(100), 10, nf=true)
+f, nf = NeuroAnalyzer.freqs(rand(100), 10; nf = true)
 @test length(f) == 100
 @test nf == 5
 f, nf = NeuroAnalyzer.freqs(100, 10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(100, 10, nf=true)
+f, nf = NeuroAnalyzer.freqs(100, 10; nf = true)
 @test length(f) == 100
 @test nf == 5
 f, nf = NeuroAnalyzer.freqs(e10)
 @test length(f) == 1281
 @test nf == 128
-f, nf = NeuroAnalyzer.freqs(e10, nf=true)
+f, nf = NeuroAnalyzer.freqs(e10; nf = true)
 @test length(f) == 2560
 @test nf == 128
 
@@ -185,12 +185,12 @@ s = generate_morlet_fwhm(100, 10)
 @test epoch_len(e10) == 2560
 
 @info "Test: get_channel()"
-@test length(get_channel(e10, type=["eeg", "eeg", "ecg", "mrk"])) == 20
-@test length(get_channel(e10, ch=r"Fp.*")) == 2
+@test length(get_channel(e10, type = ["eeg", "eeg", "ecg", "mrk"])) == 20
+@test length(get_channel(e10, ch = r"Fp.*")) == 2
 
 @info "Test: cwtfrq()"
 s = rand(100)
-@test length(cwtfrq(s, fs=10)) == 12
+@test length(cwtfrq(s, fs = 10)) == 12
 @test length(cwtfrq(e10)) == 19
 
 @info "Test: history()"
@@ -200,11 +200,11 @@ s = rand(100)
 @test length(labels(e10)) == 24
 
 @info "Test: channel_cluster()"
-@test channel_cluster(e10, cluster=:f1) == ["Fp1", "F3", "F7"]
+@test channel_cluster(e10, cluster = :f1) == ["Fp1", "F3", "F7"]
 
 @info "Test: band_frq()"
-@test band_frq(256, band=:alpha) == (8.0, 13.0)
-@test band_frq(e10, band=:alpha) == (8.0, 13.0)
+@test band_frq(256, band = :alpha) == (8.0, 13.0)
+@test band_frq(e10, band = :alpha) == (8.0, 13.0)
 
 @info "Test: m_pad0()"
 @test m_pad0(m1) == [1 2 3; 4 5 6; 0 0 0]
@@ -223,7 +223,8 @@ s = rand(100)
 @test linspace(1, 10, 10) == 1:10
 
 @info "Test: logspace()"
-@test logspace(1, 10, 5) == [1.0, 1.7782794100389228, 3.1622776601683795, 5.623413251903491, 10.0]
+@test logspace(1, 10, 5) ==
+      [1.0, 1.7782794100389228, 3.1622776601683795, 5.623413251903491, 10.0]
 
 @info "Test: cmax()"
 @test cmax([1 + 2im, 10 + 10im]) == 10 + 10im
@@ -242,7 +243,7 @@ m = [(1.0, 2.0) (3.0, 4.0); (5.0, 6.0) (7.0, 8.0)]
 @test view_note(e10) == ""
 
 @info "Test: add_note()"
-add_note!(e10, note="test")
+add_note!(e10; note = "test")
 @test view_note(e10) == "test"
 
 @info "Test: delete_note()"
@@ -261,18 +262,18 @@ delete_note!(e10)
 @test length(phases(e10.data[1, :, 1])) == 2560
 
 @info "Test: pick()"
-@test channel_pick(e10, pick=[:l, :f]) == ["Fp1", "F3", "F7"]
+@test channel_pick(e10, pick = [:l, :f]) == ["Fp1", "F3", "F7"]
 
 @info "Test: t2s()"
 @test t2s(1.0, 256) == 256
-@test t2s(e10, t=1.0) == 256
+@test t2s(e10, t = 1.0) == 256
 
 @info "Test: s2t()"
 @test s2t(2560, 256) == 9.9961
-@test s2t(e10, s=256) == 0.9961
+@test s2t(e10, s = 256) == 0.9961
 
 @info "Test: get_channel(wl)"
-@test length(get_channel(n, wl=760)) == 36
+@test length(get_channel(n, wl = 760)) == 36
 
 @info "Test: size()"
 @test size(e10) == (24, 2560, 10)
@@ -295,13 +296,13 @@ n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
 
 @info "Test: padm()"
 @test padm(ones(2), 2) == ones(4)
-@test padm(ones(2, 4), 2, mode=:all) == ones(2, 6)
-@test padm(ones(2, 4), 2, mode=:row) == ones(2, 6)
-@test padm(ones(2, 4, 3), 2, mode=:all) == ones(2, 6, 3)
-@test padm(ones(2, 4, 3), 2, mode=:row) == ones(2, 6, 3)
+@test padm(ones(2, 4), 2, mode = :all) == ones(2, 6)
+@test padm(ones(2, 4), 2, mode = :row) == ones(2, 6)
+@test padm(ones(2, 4, 3), 2, mode = :all) == ones(2, 6, 3)
+@test padm(ones(2, 4, 3), 2, mode = :row) == ones(2, 6, 3)
 
 @info "Test: vec2mat()"
-@test size(vec2mat(ones(10), wlen=2, woverlap=2)) == (5, 2)
+@test size(vec2mat(ones(10), wlen = 2, woverlap = 2)) == (5, 2)
 
 @info "Test: arr2mat()"
 @test size(arr2mat(rand(1, 10, 10))) == (10, 10)
@@ -318,8 +319,8 @@ v2 = [6, 5, 4, 3, 2]
 
 @info "Test: paired_labels()"
 l = ["ch1", "ch2", "ch3"]
-@test length(paired_labels(l, unq=true)) == 6
-@test length(paired_labels(l, unq=false)) == 9
+@test length(paired_labels(l, unq = true)) == 6
+@test length(paired_labels(l, unq = false)) == 9
 @test length(paired_labels(l, l)) == 3
 
 @info "Test: vreduce()"
@@ -339,16 +340,16 @@ x2, f2 = areduce(x, f)
 @test size(x2, 2) == length(f2) == 21
 
 @info "Test: info()"
-@test isa(info(e10, df=true), DataFrame)
+@test isa(info(e10, df = true), DataFrame)
 
 @info "Test: describe()"
-@test isa(NeuroAnalyzer.describe(e10, df=true), DataFrame)
+@test isa(NeuroAnalyzer.describe(e10, df = true), DataFrame)
 
 @info "Test: ntapers()"
-@test ntapers(e10, df=1) == 9
+@test ntapers(e10, df = 1) == 9
 
 @info "Test: trtm()"
-@test size(trtm(e10, ch="Fp1")) == (10, 2560)
+@test size(trtm(e10, ch = "Fp1")) == (10, 2560)
 
 @info "Test: meshgrid()"
 @test length(meshgrid(collect(range(-1, 1, 100)), collect(range(-1, 1, 100)))) == 2
@@ -360,27 +361,44 @@ x2, f2 = areduce(x, f)
 @test mni2tal([10, 12, 14]) == [9.9, 12.2696, 12.2826]
 
 @info "Test: aff_tal2mni()"
-@test aff_tal2mni([9.9, 12.2692, 12.2826]) == [12.15909090909091, 16.071340206185567, 13.544355670103092]
+@test aff_tal2mni([9.9, 12.2692, 12.2826]) ==
+      [12.15909090909091, 16.071340206185567, 13.544355670103092]
 
 @info "Test: tal2mni()"
 @test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643125, 13.999435493742183]
 
 @info "Test: fir_order_bw()"
-@test fir_order_bw(eeg, bw=0.2, a=50) == 2909
-@test fir_order_bw(bw=0.2, a=50, fs=256) == 2909
+@test fir_order_bw(eeg, bw = 0.2, a = 50) == 2909
+@test fir_order_bw(bw = 0.2, a = 50, fs = 256) == 2909
 
 @info "Test: fir_order_f()"
-@test fir_order_f(eeg, f=35) == (32, 40)
-@test fir_order_f(f=35, fs=256) == (32, 40)
+@test fir_order_f(eeg, f = 35) == (32, 40)
+@test fir_order_f(f = 35, fs = 256) == (32, 40)
 
 @info "Test: iir_order()"
-@test iir_order(eeg, fprototype=:butterworth, ftype=:lp, cutoff=12, bw=0.2) == 152
-@test iir_order(eeg, fprototype=:butterworth, ftype=:hp, cutoff=12, bw=0.2) == 152
-@test iir_order(eeg, fprototype=:butterworth, ftype=:bp, cutoff=(12, 15), bw=0.2) == 22
-@test iir_order(eeg, fprototype=:butterworth, ftype=:bs, cutoff=(12, 15), bw=0.2) == 22
-@test iir_order(fprototype=:butterworth, ftype=:lp, cutoff=12, bw=0.2, fs=256) == 152
-@test iir_order(fprototype=:butterworth, ftype=:hp, cutoff=12, bw=0.2, fs=256) == 152
-@test iir_order(fprototype=:butterworth, ftype=:bp, cutoff=(12, 15), bw=0.2, fs=256) == 22
-@test iir_order(fprototype=:butterworth, ftype=:bs, cutoff=(12, 15), bw=0.2, fs=256) == 22
+@test iir_order(eeg, fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2) == 152
+@test iir_order(eeg, fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2) == 152
+@test iir_order(eeg, fprototype = :butterworth, ftype = :bp, cutoff = (12, 15), bw = 0.2) ==
+      22
+@test iir_order(eeg, fprototype = :butterworth, ftype = :bs, cutoff = (12, 15), bw = 0.2) ==
+      22
+@test iir_order(fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2, fs = 256) ==
+      152
+@test iir_order(fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2, fs = 256) ==
+      152
+@test iir_order(
+    fprototype = :butterworth,
+    ftype = :bp,
+    cutoff = (12, 15),
+    bw = 0.2,
+    fs = 256,
+) == 22
+@test iir_order(
+    fprototype = :butterworth,
+    ftype = :bs,
+    cutoff = (12, 15),
+    bw = 0.2,
+    fs = 256,
+) == 22
 
 true

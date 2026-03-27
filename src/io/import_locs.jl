@@ -28,7 +28,6 @@ Supported formats: CED, ELC, LOCS, TSV, SFP, CSD, GEO, MAT, TXT, DAT, ASC, CSV.
 - `DataFrame`
 """
 function import_locs(file_name::String)::DataFrame
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -64,16 +63,18 @@ function import_locs(file_name::String)::DataFrame
     elseif ext == ".csv"
         import_locs_csv(file_name)
     else
-        throw(ArgumentError(
-            "Unknown locations file format \"$ext\". " *
-            "Supported: .ced, .elc, .locs, .tsv, .sfp, .csd, .geo, " *
-            ".mat, .txt, .dat, .asc, .csv"))
+        throw(
+            ArgumentError(
+                "Unknown locations file format \"$ext\". " *
+                    "Supported: .ced, .elc, .locs, .tsv, .sfp, .csd, .geo, " *
+                    ".mat, .txt, .dat, .asc, .csv"
+            ),
+        )
     end
 
     _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -90,13 +91,12 @@ Load channel locations from a CED (EEGLAB) file.
 - `DataFrame`
 """
 function import_locs_ced(file_name::String)::DataFrame
-
-    isfile(file_name) ||  throw(ArgumentError("$file_name not found."))
+    isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".ced" ||
         throw(ArgumentError("$file_name is not a CED file."))
 
     locs_raw = CSV.read(file_name; delim = "\t", stringtype = String, DataFrame)
-    colnames  = lowercase.(names(locs_raw))
+    colnames = lowercase.(names(locs_raw))
     DataFrames.rename!(locs_raw, Symbol.(colnames))
 
     clabels = if "labels" in colnames
@@ -106,7 +106,11 @@ function import_locs_ced(file_name::String)::DataFrame
     elseif "name" in colnames
         string.(lstrip.(locs_raw[!, "name"]))
     else
-        throw(ArgumentError("$file_name contains no recognized label column (labels/label/name)."))
+        throw(
+            ArgumentError(
+                "$file_name contains no recognized label column (labels/label/name).",
+            ),
+        )
     end
 
     n = length(clabels)
@@ -128,16 +132,15 @@ function import_locs_ced(file_name::String)::DataFrame
         :loc_z => z,
         :loc_radius_sph => radius_sph,
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph
+        :loc_phi_sph => phi_sph,
     )
 
-    locs_swapxy!(locs, polar = true, cart = true, spherical = true)
-    locs_flipx!(locs, polar = true, cart = false, spherical = false)
+    locs_swapxy!(locs; polar = true, cart = true, spherical = true)
+    locs_flipx!(locs; polar = true, cart = false, spherical = false)
     locs_normalize!(locs)
     _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -154,13 +157,14 @@ Load channel locations from an EEGLAB LOCS file.
 - `DataFrame`
 """
 function import_locs_locs(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".locs" ||
         throw(ArgumentError("$file_name is not a LOCS file."))
 
-    locs_raw = CSV.read(file_name, header = false, delim = "\t",
-                        stringtype = String, DataFrame)
+    locs_raw = CSV.read(
+        file_name; header = false, delim = "\t",
+        stringtype = String, DataFrame
+    )
     DataFrames.rename!(locs_raw, [:number, :theta, :radius, :label])
 
     clabels = string.(lstrip.(locs_raw[!, :label]))
@@ -177,17 +181,16 @@ function import_locs_locs(file_name::String)::DataFrame
         :loc_z => zeros(n),
         :loc_radius_sph => copy(radius),
         :loc_theta_sph => copy(theta),
-        :loc_phi_sph => zeros(n)
+        :loc_phi_sph => zeros(n),
     )
 
-    locs_swapxy!(locs, polar = true, cart = false, spherical = false)
-    locs_flipx!(locs, polar = true, cart = false, spherical = false)
+    locs_swapxy!(locs; polar = true, cart = false, spherical = false)
+    locs_flipx!(locs; polar = true, cart = false, spherical = false)
     locs[!, :loc_phi_sph] .= 0.0
     locs_normalize!(locs)
     _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -204,14 +207,14 @@ Load channel locations from an ELC file.
 - `DataFrame`
 """
 function import_locs_elc(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".elc" ||
         throw(ArgumentError("$file_name is not an ELC file."))
 
     elc_file = readlines(file_name)
 
-    locs_n = 0; locs_l = 0
+    locs_n = 0
+    locs_l = 0
     for idx in eachindex(elc_file)
         if occursin("NumberPositions", elc_file[idx])
             locs_n = parse(Int64, replace(elc_file[idx], "NumberPositions=" => ""))
@@ -221,7 +224,9 @@ function import_locs_elc(file_name::String)::DataFrame
 
     n = locs_n
     clabels = repeat([""], n)
-    x = zeros(n); y = zeros(n); z = zeros(n)
+    x = zeros(n)
+    y = zeros(n)
+    z = zeros(n)
 
     for (i, line_idx) in enumerate(locs_l:(locs_l + n - 1))
         l = lstrip(elc_file[line_idx])
@@ -244,14 +249,15 @@ function import_locs_elc(file_name::String)::DataFrame
         :loc_z => z,
         :loc_radius_sph => zeros(n),
         :loc_theta_sph => zeros(n),
-        :loc_phi_sph => zeros(n)
+        :loc_phi_sph => zeros(n),
     )
 
-    locs_cart2sph!(locs); locs_cart2pol!(locs)
-    locs_normalize!(locs); _locs_round!(locs)
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -268,13 +274,14 @@ Load channel locations from a TSV (BIDS-style) file.
 - `DataFrame`
 """
 function import_locs_tsv(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".tsv" ||
         throw(ArgumentError("$file_name is not a TSV file."))
 
-    locs_raw = CSV.read(file_name, header = true, delim = "\t",
-                        ignorerepeated = true, stringtype = String, DataFrame)
+    locs_raw = CSV.read(
+        file_name; header = true, delim = "\t",
+        ignorerepeated = true, stringtype = String, DataFrame
+    )
     colnames = lowercase.(names(locs_raw))
     DataFrames.rename!(locs_raw, Symbol.(colnames))
 
@@ -287,7 +294,11 @@ function import_locs_tsv(file_name::String)::DataFrame
     elseif "site" in colnames
         string.(lstrip.(locs_raw[!, "site"]))
     else
-        throw(ArgumentError("$file_name contains no recognized label column (labels/label/name/site)."))
+        throw(
+            ArgumentError(
+                "$file_name contains no recognized label column (labels/label/name/site).",
+            ),
+        )
     end
 
     n = length(clabels)
@@ -297,11 +308,11 @@ function import_locs_tsv(file_name::String)::DataFrame
     theta = "theta" in colnames ? Float64.(locs_raw[!, "theta"]) : zeros(n)
     radius = "radius" in colnames ? Float64.(locs_raw[!, "radius"]) : zeros(n)
     radius_sph = "radius_sph" in colnames ? Float64.(locs_raw[!, "radius_sph"]) :
-                 "radius" in colnames ? Float64.(locs_raw[!, "radius"]) : zeros(n)
-    theta_sph  = "theta_sph" in colnames ? Float64.(locs_raw[!, "theta_sph"]) :
-                 "theta" in colnames ? Float64.(locs_raw[!, "theta"]) : zeros(n)
-    phi_sph    = "phi_sph" in colnames ? Float64.(locs_raw[!, "phi_sph"]) :
-                 "phi" in colnames ? Float64.(locs_raw[!, "phi"]) : zeros(n)
+        "radius" in colnames ? Float64.(locs_raw[!, "radius"]) : zeros(n)
+    theta_sph = "theta_sph" in colnames ? Float64.(locs_raw[!, "theta_sph"]) :
+        "theta" in colnames ? Float64.(locs_raw[!, "theta"]) : zeros(n)
+    phi_sph = "phi_sph" in colnames ? Float64.(locs_raw[!, "phi_sph"]) :
+        "phi" in colnames ? Float64.(locs_raw[!, "phi"]) : zeros(n)
 
     locs = DataFrame(
         :label => clabels,
@@ -312,14 +323,15 @@ function import_locs_tsv(file_name::String)::DataFrame
         :loc_z => z,
         :loc_radius_sph => radius_sph,
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph
+        :loc_phi_sph => phi_sph,
     )
 
-    locs_cart2sph!(locs); locs_cart2pol!(locs)
-    locs_normalize!(locs); _locs_round!(locs)
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -336,22 +348,25 @@ Load channel locations from an SFP file.
 - `DataFrame`
 """
 function import_locs_sfp(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".sfp" ||
         throw(ArgumentError("$file_name is not an SFP file."))
 
     # try common delimiters in order; SFP files are inconsistently delimited.
-    locs_raw = CSV.read(file_name, header = false, stringtype = String, DataFrame)
+    locs_raw = CSV.read(file_name; header = false, stringtype = String, DataFrame)
     if size(locs_raw, 2) != 4
         _info("Checking TAB as delimiter")
-        locs_raw = CSV.read(file_name, header = false, delim = "\t",
-                            ignorerepeated = true, stringtype = String, DataFrame)
+        locs_raw = CSV.read(
+            file_name; header = false, delim = "\t",
+            ignorerepeated = true, stringtype = String, DataFrame
+        )
     end
     if size(locs_raw, 2) != 4
         _info("Checking SPACE as delimiter")
-        locs_raw = CSV.read(file_name, header = false, delim = " ",
-                            ignorerepeated = true, stringtype = String, DataFrame)
+        locs_raw = CSV.read(
+            file_name; header = false, delim = " ",
+            ignorerepeated = true, stringtype = String, DataFrame
+        )
     end
     size(locs_raw, 2) == 4 ||
         throw(ArgumentError("$file_name could not be parsed - check delimiters."))
@@ -377,16 +392,17 @@ function import_locs_sfp(file_name::String)::DataFrame
         :loc_z => z,
         :loc_radius_sph => zeros(n),
         :loc_theta_sph => zeros(n),
-        :loc_phi_sph => zeros(n)
+        :loc_phi_sph => zeros(n),
     )
 
     x_range = (maximum(x) + abs(minimum(x))) / 2
     locs[:, :loc_x] .-= x_range
-    locs_cart2sph!(locs); locs_cart2pol!(locs)
-    locs_normalize!(locs); _locs_round!(locs)
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -403,14 +419,18 @@ Load channel locations from a CSD file.
 - `DataFrame`
 """
 function import_locs_csd(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".csd" ||
         throw(ArgumentError("$file_name is not a CSD file."))
 
-    locs_raw = CSV.read(file_name, skipto = 3, delim = ' ', header = false,
-                        ignorerepeated = true, stringtype = String, DataFrame)
-    DataFrames.rename!(locs_raw, [:label, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
+    locs_raw = CSV.read(
+        file_name; skipto = 3, delim = ' ', header = false,
+        ignorerepeated = true, stringtype = String, DataFrame
+    )
+    DataFrames.rename!(
+        locs_raw,
+        [:label, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface],
+    )
 
     clabels = string.(lstrip.(locs_raw[!, :label]))
     x = Float64.(locs_raw[!, :x])
@@ -421,7 +441,8 @@ function import_locs_csd(file_name::String)::DataFrame
     phi_sph = Float64.(locs_raw[!, :phi_sph])
     n = length(x)
 
-    radius = zeros(n); theta = zeros(n)
+    radius = zeros(n)
+    theta = zeros(n)
     for idx in 1:n
         radius[idx], theta[idx] = sph2pol(radius_sph[idx], theta_sph[idx], phi_sph[idx])
     end
@@ -435,13 +456,13 @@ function import_locs_csd(file_name::String)::DataFrame
         :loc_z => z,
         :loc_radius_sph => radius_sph,
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph
+        :loc_phi_sph => phi_sph,
     )
 
-    locs_normalize!(locs); _locs_round!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -458,13 +479,13 @@ Load channel locations from a GEO file.
 - `DataFrame`
 """
 function import_locs_geo(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".geo" ||
         throw(ArgumentError("$file_name is not a GEO file."))
 
     raw = readlines(file_name)
-    l1 = 0; l2 = 0
+    l1 = 0
+    l2 = 0
     for idx in eachindex(raw)
         raw[idx] == "View\"\"{" && (l1 = idx + 1)
         raw[idx] == "};" && (l2 = idx - 1)
@@ -473,7 +494,9 @@ function import_locs_geo(file_name::String)::DataFrame
     n = length(entries)
 
     clabels = repeat([""], n)
-    x = zeros(n); y = zeros(n); z = zeros(n)
+    x = zeros(n)
+    y = zeros(n)
+    z = zeros(n)
     p = r"(.+)(\(.+\)){(.+)}"
     for idx in 1:n
         m = match(p, entries[idx])
@@ -498,14 +521,15 @@ function import_locs_geo(file_name::String)::DataFrame
         :loc_z => z,
         :loc_radius_sph => zeros(n),
         :loc_theta_sph => zeros(n),
-        :loc_phi_sph => zeros(n)
+        :loc_phi_sph => zeros(n),
     )
 
-    locs_cart2sph!(locs); locs_cart2pol!(locs)
-    locs_normalize!(locs); _locs_round!(locs)
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -522,7 +546,6 @@ Load channel locations from a MATLAB MAT file.
 - `DataFrame`
 """
 function import_locs_mat(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".mat" ||
         throw(ArgumentError("$file_name is not a MAT file."))
@@ -551,14 +574,14 @@ function import_locs_mat(file_name::String)::DataFrame
         :loc_z => zeros(n),
         :loc_radius_sph => zeros(n),
         :loc_theta_sph => zeros(n),
-        :loc_phi_sph => zeros(n))
+        :loc_phi_sph => zeros(n)
+    )
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
     _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -575,13 +598,14 @@ Load channel locations from a TXT file (spherical theta/phi format).
 - `DataFrame`
 """
 function import_locs_txt(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".txt" ||
         throw(ArgumentError("$file_name is not a TXT file."))
 
-    locs_raw = CSV.read(file_name, header = true, delim = "\t",
-                        stringtype = String, DataFrame)
+    locs_raw = CSV.read(
+        file_name; header = true, delim = "\t",
+        stringtype = String, DataFrame
+    )
     DataFrames.rename!(locs_raw, [:label, :theta, :phi])
 
     clabels = string.(lstrip.(locs_raw[!, :label]))
@@ -598,12 +622,12 @@ function import_locs_txt(file_name::String)::DataFrame
         :loc_z => zeros(n),
         :loc_radius_sph => ones(n),
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph
+        :loc_phi_sph => phi_sph,
     )
 
     locs_sph2cart!(locs)
-    locs_swapxy!(locs, polar = false, cart = true, spherical = false)
-    locs_rotx!(locs, a = 90, polar = false, cart = true, spherical = false)
+    locs_swapxy!(locs; polar = false, cart = true, spherical = false)
+    locs_rotx!(locs; a = 90, polar = false, cart = true, spherical = false)
 
     q1 = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .>= 0
     q2 = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .>= 0
@@ -623,7 +647,6 @@ function import_locs_txt(file_name::String)::DataFrame
     _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -640,13 +663,14 @@ Load channel locations from a DAT file.
 - `DataFrame`
 """
 function import_locs_dat(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".dat" ||
         throw(ArgumentError("$file_name is not a DAT file."))
 
-    locs_raw = CSV.read(file_name, ignorerepeated = true, delim = ' ',
-                        stringtype = String, header = 0, DataFrame)
+    locs_raw = CSV.read(
+        file_name; ignorerepeated = true, delim = ' ',
+        stringtype = String, header = 0, DataFrame
+    )
 
     # detect column layout from number of columns and type of column 2
     colnames = if ncol(locs_raw) == 4
@@ -655,12 +679,16 @@ function import_locs_dat(file_name::String)::DataFrame
     elseif ncol(locs_raw) == 5
         ["channel", "labels", "x", "y", "z"]
     else
-        throw(ArgumentError(
-            "$file_name has $(ncol(locs_raw)) columns; expected 4 or 5."))
+        throw(
+            ArgumentError(
+                "$file_name has $(ncol(locs_raw)) columns; expected 4 or 5."
+            )
+        )
     end
 
     DataFrames.rename!(locs_raw, colnames)
-    clabels = "labels" in colnames ?
+    clabels =
+        "labels" in colnames ?
         string.(lstrip.(locs_raw[!, "labels"])) : string.(locs_raw[!, "channel"])
 
     n = length(clabels)
@@ -682,15 +710,16 @@ function import_locs_dat(file_name::String)::DataFrame
         :loc_z => z,
         :loc_radius_sph => radius_sph,
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph
+        :loc_phi_sph => phi_sph,
     )
 
     locs_center!(locs; polar = false, spherical = false)
-    locs_cart2pol!(locs); locs_cart2sph!(locs)
-    locs_normalize!(locs); _locs_round!(locs)
+    locs_cart2pol!(locs)
+    locs_cart2sph!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -707,7 +736,6 @@ Load channel locations from an ASC file.
 - `DataFrame`
 """
 function import_locs_asc(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".asc" ||
         throw(ArgumentError("$file_name is not an ASC file."))
@@ -721,7 +749,8 @@ function import_locs_asc(file_name::String)::DataFrame
 
     data_lines = buffer[(n + 1):(2 * n)]
     locs_mat = zeros(n, 4)
-    re = r"([0-9]+ +)([0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+)"
+    re =
+        r"([0-9]+ +)([0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+)"
     for (idx, m) in enumerate(match.(re, data_lines))
         locs_mat[idx, 1] = parse(Float64, strip(m[3]))
         locs_mat[idx, 2] = parse(Float64, strip(m[4]))
@@ -738,7 +767,7 @@ function import_locs_asc(file_name::String)::DataFrame
         :loc_z => zeros(n),
         :loc_radius_sph => zeros(n),
         :loc_theta_sph => zeros(n),
-        :loc_phi_sph => zeros(n)
+        :loc_phi_sph => zeros(n),
     )
 
     locs_center!(locs; polar = false, spherical = false)
@@ -749,7 +778,6 @@ function import_locs_asc(file_name::String)::DataFrame
     _locs_round!(locs)
 
     return locs
-
 end
 
 """
@@ -766,21 +794,26 @@ Load channel locations from a NeuroAnalyzer standard CSV file.
 - `DataFrame`
 """
 function import_locs_csv(file_name::String)::DataFrame
-
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".csv" ||
         throw(ArgumentError("$file_name is not a CSV file."))
 
-    locs = CSV.read(file_name, header = true, delim = ",",
-                    stringtype = String, DataFrame)
+    locs = CSV.read(
+        file_name; header = true, delim = ",",
+        stringtype = String, DataFrame
+    )
 
-    expected = ["label", "loc_radius", "loc_theta", "loc_x", "loc_y", "loc_z",
-                "loc_radius_sph", "loc_theta_sph", "loc_phi_sph"]
+    expected = [
+        "label", "loc_radius", "loc_theta", "loc_x", "loc_y", "loc_z",
+        "loc_radius_sph", "loc_theta_sph", "loc_phi_sph",
+    ]
     names(locs) == expected ||
-        throw(ArgumentError(
+        throw(
+        ArgumentError(
             "$file_name is not a NeuroAnalyzer locs CSV file. " *
-            "Expected columns: $(join(expected, ", "))."))
+                "Expected columns: $(join(expected, ", "))."
+        ),
+    )
 
     return locs
-
 end

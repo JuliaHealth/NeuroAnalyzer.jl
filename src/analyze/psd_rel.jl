@@ -38,22 +38,22 @@ Named tuple:
 - `f::Vector{Float64}`: corresponding frequencies in Hz
 """
 function psd_rel(
-    s::AbstractVector;
-    fs::Int64,
-    db::Bool = false,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Vector{Float64},
-    f::Vector{Float64}
-}
+        s::AbstractVector;
+        fs::Int64,
+        db::Bool = false,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Vector{Float64},
+        f::Vector{Float64},
+    }
 
     # shared keyword arguments forwarded to every internal PSD/band-power call
     psd_kwargs = (
@@ -65,7 +65,7 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
 
     # compute the reference power: either within the specified band or broadband
@@ -74,13 +74,12 @@ function psd_rel(
     else
         band_power(s; flim = flim, psd_kwargs...)
     end
- 
+
     psd_data = psd(s; db = db, psd_kwargs...)
     p = psd_data.p ./ ref_pw
     f = psd_data.f
- 
-    return (; p, f)
 
+    return (; p, f)
 end
 
 """
@@ -119,28 +118,28 @@ Named tuple:
 - `f::Vector{Float64}`: corresponding frequencies in Hz
 """
 function psd_rel(
-    s::AbstractMatrix;
-    fs::Int64,
-    db::Bool = false,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Matrix{Float64},
-    f::Vector{Float64}
-}
+        s::AbstractMatrix;
+        fs::Int64,
+        db::Bool = false,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # number of channels
     ch_n = size(s, 1)
 
     f = psd_rel(
-        @view(s[1, :]),
+        @view(s[1, :]);
         fs = fs,
         db = db,
         flim = flim,
@@ -151,12 +150,12 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     ).f
 
     # pre-allocate output
     p = zeros(ch_n, length(f))
- 
+
     @inbounds for ch_idx in 1:ch_n
         p[ch_idx, :] = psd_rel(
             @view(s[ch_idx, :]),
@@ -170,12 +169,11 @@ function psd_rel(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean
+            demean = demean,
         ).p
     end
- 
-    return (; p, f)
 
+    return (; p, f)
 end
 
 """
@@ -214,22 +212,22 @@ Named tuple:
 - `f::Vector{Float64}`: corresponding frequencies in Hz
 """
 function psd_rel(
-    s::AbstractArray;
-    fs::Int64,
-    db::Bool = false,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        s::AbstractArray;
+        fs::Int64,
+        db::Bool = false,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -241,7 +239,7 @@ function psd_rel(
 
     # probe the frequency axis length using the first (channel, epoch) slice
     f = psd_rel(
-        @view(s[1, :, 1]),
+        @view(s[1, :, 1]);
         fs = fs,
         db = db,
         method = method,
@@ -251,7 +249,7 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     ).f
 
     # pre-allocate output
@@ -271,12 +269,11 @@ function psd_rel(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean
+            demean = demean,
         ).p
     end
 
     return (; p, f)
-
 end
 
 """
@@ -315,28 +312,30 @@ Named tuple:
 - `f::Vector{Float64}`: corresponding frequencies in Hz
 """
 function psd_rel(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    db::Bool = false,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    flim::Union{Tuple{Real, Real}, Nothing} = nothing,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::@NamedTuple{
-    p::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        db::Bool = false,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        flim::Union{Tuple{Real, Real}, Nothing} = nothing,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::@NamedTuple{
+        p::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return psd_rel(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
         db = db,
@@ -347,7 +346,6 @@ function psd_rel(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
-
 end

@@ -23,11 +23,11 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 function cosim(s1::AbstractVector, s2::AbstractVector)::Float64
 
     # validate
-    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
+    length(s1) == length(s2) ||
+        throw(ArgumentError("Both signals must have the same length."))
 
     # CS = (s1 · s2) / (‖s1‖ · ‖s2‖)
     return dot(s1, s2) / (norm(s1) * norm(s2))
-
 end
 
 """
@@ -55,18 +55,26 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 - `Matrix{Float64}`: cosine similarity values, shape (channels, epochs)
 """
 function cosim(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    (length(ch1) == length(ch2)) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
+    (length(ch1) == length(ch2)) || throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -74,8 +82,13 @@ function cosim(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    (length(ep1) == length(ep2)) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    (length(ep1) == length(ep2)) || throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
+    epoch_len(obj1) == epoch_len(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # number of channels
     ch_n = length(ch1)
@@ -95,7 +108,6 @@ function cosim(
     end
 
     return cs
-
 end
 
 """
@@ -118,10 +130,15 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
 - `Array{Float64, 3}`: cosine similarity values, shape (channels, channels, epochs)
 """
-function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function cosim(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -144,5 +161,4 @@ function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(cs)
-
 end

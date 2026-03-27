@@ -17,13 +17,14 @@ Append `n` zeros along the second axis (or at the end for 1-D input). Works with
 - `Union{AbstractVector, AbstractArray}`: padded array with the same number of dimensions as `x`
 """
 function pad0(
-    x::Union{AbstractVector, AbstractArray},
-    n::Int64
-)::Union{AbstractVector, AbstractArray}
+        x::Union{AbstractVector, AbstractArray},
+        n::Int64,
+    )::Union{AbstractVector, AbstractArray}
 
     # validate
     n >= 0 || throw(ArgumentError("n must be ≥ 0."))
-    ndims(x) <= 3 || throw(ArgumentError("pad0() supports only 1-, 2-, or 3-dimensional arrays."))
+    ndims(x) <= 3 ||
+        throw(ArgumentError("pad0() supports only 1-, 2-, or 3-dimensional arrays."))
 
     # fast path: nothing to append
     n == 0 && return x
@@ -33,10 +34,11 @@ function pad0(
         return hcat(x, zeros(eltype(x), size(x, 1), n))
     else
         # cat along dim 2 is safer than hcat for 3-D arrays
-        return cat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)), dims
-=2)
+        return cat(
+            x, zeros(eltype(x), size(x, 1), n, size(x, 3)); dims
+            = 2
+        )
     end
-
 end
 
 """
@@ -53,11 +55,12 @@ Pad an array with zeros along its second axis to the next power-of-2 length. Wor
 - `Union{AbstractVector, AbstractArray}`: padded array whose second dimension (or length, for 1-D) is a power of 2
 """
 function pad2(
-    x::Union{AbstractVector, AbstractArray}
-)::Union{AbstractVector, AbstractArray}
+        x::Union{AbstractVector, AbstractArray},
+    )::Union{AbstractVector, AbstractArray}
 
     # validate
-    ndims(x) <= 3 || throw(ArgumentError("pad2() supports only 1-, 2-, or 3-dimensional arrays."))
+    ndims(x) <= 3 ||
+        throw(ArgumentError("pad2() supports only 1-, 2-, or 3-dimensional arrays."))
 
     if ndims(x) == 1
         n = nextpow2(length(x)) - length(x)
@@ -68,10 +71,11 @@ function pad2(
     else
         n = nextpow2(size(x, 2)) - size(x, 2)
         # cat along dim 2 is safer than hcat for 3-D arrays
-        return n == 0 ? x : cat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)), dims
-=2)
+        return n == 0 ? x : cat(
+                x, zeros(eltype(x), size(x, 1), n, size(x, 3)); dims
+                = 2
+            )
     end
-
 end
 
 """
@@ -92,15 +96,16 @@ Pad an array with mean values along its second axis (or at the end for 1-D input
 - `Union{AbstractVector, AbstractArray}`: padded array with the same number of dimensions as `x`
 """
 function padm(
-    x::Union{AbstractVector, AbstractArray},
-    n::Int64;
-    mode::Symbol = :all
-)::Union{AbstractVector, AbstractArray}
+        x::Union{AbstractVector, AbstractArray},
+        n::Int64;
+        mode::Symbol = :all,
+    )::Union{AbstractVector, AbstractArray}
 
     # validate
     _check_var(mode, [:all, :row], "mode")
     n >= 0 || throw(ArgumentError("n must be ≥ 0."))
-    ndims(x) <= 3 || throw(ArgumentError("padm() supports only 1-, 2-, or 3-dimensional arrays."))
+    ndims(x) <= 3 ||
+        throw(ArgumentError("padm() supports only 1-, 2-, or 3-dimensional arrays."))
 
     # fast path: nothing to append
     n == 0 && return x
@@ -108,15 +113,20 @@ function padm(
         # mode has no effect for 1-D: there is only one "row"
         return vcat(x, fill(mean(x), n))
     elseif ndims(x) == 2
-        m = mode === :all ? mean(x) : mean(x, dims
-=2)
+        m = mode === :all ? mean(x) : mean(
+                x; dims
+                = 2
+            )
         return hcat(x, m .* ones(eltype(x), size(x, 1), n))
     else
-        m = mode === :all ? mean(x) : mean(x, dims
-=2)
+        m = mode === :all ? mean(x) : mean(
+                x; dims
+                = 2
+            )
         # cat along dim 2 is safer than hcat for 3-D arrays
-        return cat(x, m .* ones(eltype(x), size(x, 1), n, size(x, 3)), dims
-=2)
+        return cat(
+            x, m .* ones(eltype(x), size(x, 1), n, size(x, 3)); dims
+            = 2
+        )
     end
-
 end

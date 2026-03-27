@@ -15,7 +15,10 @@ Invert polarity.
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
-function invert_polarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
+function invert_polarity(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -27,7 +30,6 @@ function invert_polarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     push!(obj_new.history, "invert_polarity(obj; ch=$ch)")
 
     return obj_new
-
 end
 
 """
@@ -44,12 +46,13 @@ Invert polarity.
 
 - `Nothing`
 """
-function invert_polarity!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
+function invert_polarity!(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Nothing
     obj_new = invert_polarity(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

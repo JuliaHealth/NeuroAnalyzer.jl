@@ -19,14 +19,21 @@ Uses the spherical law of cosines:
 
     d = √(r₁² + r₂² - 2·r₁·r₂·[cos(θ₁)cos(θ₂) + sin(θ₁)sin(θ₂)cos(φ₁-φ₂)])
 """
-function _sph_distance_sph(r1::Real, theta1::Real, phi1::Real, r2::Real, theta2::Real, phi2::Real)
+function _sph_distance_sph(
+        r1::Real,
+        theta1::Real,
+        phi1::Real,
+        r2::Real,
+        theta2::Real,
+        phi2::Real,
+    )
     # convert angles to radians for calculation
     θ1, θ2 = deg2rad(theta1), deg2rad(theta2)
     φ1, φ2 = deg2rad(phi1), deg2rad(phi2)
     # calculate spherical distance using law of cosines
     d = sqrt(
-        r1^2 + r2^2 - 
-        2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2))
+        r1^2 + r2^2 -
+            2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2)),
     )
     return d
 end
@@ -49,23 +56,40 @@ function _sph_distance_cart(x1::Real, y1::Real, z1::Real, x2::Real, y2::Real, z2
     return sqrt((x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
 end
 
-function _check_ch_locs(ch::Union{Int64, Vector{Int64}}, objl::Vector{String}, locsl::Vector{String})::Nothing
+function _check_ch_locs(
+        ch::Union{Int64, Vector{Int64}},
+        objl::Vector{String},
+        locsl::Vector{String},
+    )::Nothing
     for idx in ch
-        objl[idx] in locsl || throw(ArgumentError("Channel $(objl[idx]) does not have a location."))
+        objl[idx] in locsl ||
+            throw(ArgumentError("Channel $(objl[idx]) does not have a location."))
     end
     return nothing
 end
 
-_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{Int64, Vector{Int64}} = _find_bylabel(
-    obj.locs, labels(obj)[ch]
+_loc_idx(
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{Int64, Vector{Int64}},
+)::Union{Int64, Vector{Int64}} = _find_bylabel(
+    obj.locs, labels(obj)[ch],
 )
-_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{Int64} = _find_bylabel(
-    obj.locs, labels(obj)[get_channel(obj; ch = ch)]
+_loc_idx(
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{String, Vector{String}, Regex},
+)::Vector{Int64} = _find_bylabel(
+    obj.locs, labels(obj)[get_channel(obj; ch = ch)],
 )
-_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{String, Vector{String}} = obj.locs[
+_idx2lab(
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{Int64, Vector{Int64}},
+)::Union{String, Vector{String}} = obj.locs[
     _loc_idx(obj; ch), :label,
 ]
-_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{String} = obj.locs[
+_idx2lab(
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{String, Vector{String}, Regex},
+)::Vector{String} = obj.locs[
     _loc_idx(obj; ch), :label,
 ]
 
@@ -77,14 +101,17 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Da
     return locs
 end
 
-function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::DataFrame
+function _ch_locs(
+        obj::NeuroAnalyzer.NEURO,
+        ch::Union{String, Vector{String}, Regex},
+    )::DataFrame
     return _ch_locs(obj, get_channel(obj; ch = ch))
 end
 
 function _find_bylabel(
-    locs::DataFrame,
-    l::Union{String, Vector{String}, Vector{SubString{String}}}
-)::Union{Int64, Vector{Int64}}
+        locs::DataFrame,
+        l::Union{String, Vector{String}, Vector{SubString{String}}},
+    )::Union{Int64, Vector{Int64}}
     if isa(l, String)
         if !isnothing(findfirst(isequal.(lowercase(l), lowercase.(locs[!, :label]))))
             return findfirst(isequal.(lowercase(l), lowercase.(locs[!, :label])))
@@ -95,7 +122,10 @@ function _find_bylabel(
         l_idx = Vector{Int64}()
         for idx in l
             lowercase(idx) in lowercase.(locs[!, :label]) &&
-                push!(l_idx, findfirst(isequal.(lowercase(idx), lowercase.(locs[!, :label]))))
+                push!(
+                l_idx,
+                findfirst(isequal.(lowercase(idx), lowercase.(locs[!, :label]))),
+            )
         end
         return l_idx
     end
@@ -111,16 +141,29 @@ function _initialize_locs()::DataFrame
         :loc_z => Float64[],
         :loc_radius_sph => Float64[],
         :loc_theta_sph => Float64[],
-        :loc_phi_sph => Float64[]
+        :loc_phi_sph => Float64[],
     )
 end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
     locs_ch = get_channel(
-        obj,
+        obj;
         ch = get_channel(
-            obj; type = ["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg", "nirs_int", "nirs_od", "eog", "ref"]
-        )
+            obj;
+            type = [
+                "meg",
+                "grad",
+                "mag",
+                "eeg",
+                "ecog",
+                "seeg",
+                "ieeg",
+                "nirs_int",
+                "nirs_od",
+                "eog",
+                "ref",
+            ],
+        ),
     )
     obj.locs = DataFrame(
         :label => labels(obj)[locs_ch],
@@ -131,13 +174,13 @@ function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
         :loc_z => zeros(length(locs_ch)),
         :loc_radius_sph => zeros(length(locs_ch)),
         :loc_theta_sph => zeros(length(locs_ch)),
-        :loc_phi_sph => zeros(length(locs_ch))
+        :loc_phi_sph => zeros(length(locs_ch)),
     )
     return nothing
 end
 
 function _initialize_locs(obj::NeuroAnalyzer.NEURO)::DataFrame
-    locs_ch = get_channel(obj; ch = get_channel(obj, type = datatype(obj)))
+    locs_ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     return DataFrame(
         :label => labels(obj)[locs_ch],
         :loc_radius => zeros(length(locs_ch)),
@@ -147,32 +190,32 @@ function _initialize_locs(obj::NeuroAnalyzer.NEURO)::DataFrame
         :loc_z => zeros(length(locs_ch)),
         :loc_radius_sph => zeros(length(locs_ch)),
         :loc_theta_sph => zeros(length(locs_ch)),
-        :loc_phi_sph => zeros(length(locs_ch))
+        :loc_phi_sph => zeros(length(locs_ch)),
     )
 end
 
 function _locs_round(locs::DataFrame)::DataFrame
     locs_new = deepcopy(locs)
-    locs_new[!, :loc_radius] = round.(locs[!, :loc_radius], digits = 2)
-    locs_new[!, :loc_theta] = round.(locs[!, :loc_theta], digits = 2)
-    locs_new[!, :loc_x] = round.(locs[!, :loc_x], digits = 2)
-    locs_new[!, :loc_y] = round.(locs[!, :loc_y], digits = 2)
-    locs_new[!, :loc_z] = round.(locs[!, :loc_z], digits = 2)
-    locs_new[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits = 2)
-    locs_new[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits = 2)
-    locs_new[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits = 2)
+    locs_new[!, :loc_radius] = round.(locs[!, :loc_radius]; digits = 2)
+    locs_new[!, :loc_theta] = round.(locs[!, :loc_theta]; digits = 2)
+    locs_new[!, :loc_x] = round.(locs[!, :loc_x]; digits = 2)
+    locs_new[!, :loc_y] = round.(locs[!, :loc_y]; digits = 2)
+    locs_new[!, :loc_z] = round.(locs[!, :loc_z]; digits = 2)
+    locs_new[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph]; digits = 2)
+    locs_new[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph]; digits = 2)
+    locs_new[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph]; digits = 2)
     return locs_new
 end
 
 function _locs_round!(locs::DataFrame)::Nothing
-    locs[!, :loc_radius] = round.(locs[!, :loc_radius], digits = 2)
-    locs[!, :loc_theta] = round.(locs[!, :loc_theta], digits = 2)
-    locs[!, :loc_x] = round.(locs[!, :loc_x], digits = 2)
-    locs[!, :loc_y] = round.(locs[!, :loc_y], digits = 2)
-    locs[!, :loc_z] = round.(locs[!, :loc_z], digits = 2)
-    locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits = 2)
-    locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits = 2)
-    locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits = 2)
+    locs[!, :loc_radius] = round.(locs[!, :loc_radius]; digits = 2)
+    locs[!, :loc_theta] = round.(locs[!, :loc_theta]; digits = 2)
+    locs[!, :loc_x] = round.(locs[!, :loc_x]; digits = 2)
+    locs[!, :loc_y] = round.(locs[!, :loc_y]; digits = 2)
+    locs[!, :loc_z] = round.(locs[!, :loc_z]; digits = 2)
+    locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph]; digits = 2)
+    locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph]; digits = 2)
+    locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph]; digits = 2)
     return nothing
 end
 
@@ -199,12 +242,16 @@ function _locs_round!(obj::NeuroAnalyzer.NEURO)::Nothing
 end
 
 function _has_locs(obj::NeuroAnalyzer.NEURO)::Nothing
-    !(DataFrames.nrow(obj.locs) > 0) && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    !(DataFrames.nrow(obj.locs) > 0) && throw(
+        ArgumentError(
+            "Electrode locations not available, use load_locs() or add_locs() first.",
+        ),
+    )
     return nothing
 end
 
 function _locs_norm(
-        x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}
+        x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real},
     )::Tuple{Vector{Float64}, Vector{Float64}}
     xy = normalize_minmax(hcat(x, y))
     x = xy[:, 1]
@@ -213,7 +260,8 @@ function _locs_norm(
 end
 
 function _locs_norm(
-        x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}, z::Union{AbstractVector, Real}
+        x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real},
+        z::Union{AbstractVector, Real},
     )::Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}}
     xyz = normalize_minmax(hcat(x, y, z))
     x = xyz[:, 1]
@@ -274,4 +322,5 @@ end
 
 _xyz2r(x::Real, y::Real, z::Real)::Float64 = sqrt(x^2 + y^2 + z^2)
 
-_midxy(x1::Real, y1::Real, x2::Real, y2::Real)::Tuple{Float64, Float64} = (x1 + ((x2 - x1) / 2), y1 + ((y2 - y1) / 2))
+_midxy(x1::Real, y1::Real, x2::Real, y2::Real)::Tuple{Float64, Float64} =
+    (x1 + ((x2 - x1) / 2), y1 + ((y2 - y1) / 2))

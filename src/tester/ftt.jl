@@ -26,23 +26,26 @@ Named tuple:
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function iftt(
-    duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
-)::@NamedTuple{
-    taps::Vector{Int64},
-    tap_t::Vector{Vector{Float64}},
-    tap_d::Vector{Vector{Float64}},
-    taps_int::Vector{Int64},
-    tap_t_int::Vector{Vector{Float64}},
-    tap_d_int::Vector{Vector{Float64}},
-}
-
-    (port_name != "" && gpio != -1) || throw(ArgumentError("If serial port is used, GPIO must be specified."))
+        duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1,
+        port_name::String = "",
+    )::@NamedTuple{
+        taps::Vector{Int64},
+        tap_t::Vector{Vector{Float64}},
+        tap_d::Vector{Vector{Float64}},
+        taps_int::Vector{Int64},
+        tap_t_int::Vector{Vector{Float64}},
+        tap_d_int::Vector{Vector{Float64}},
+    }
+    (port_name != "" && gpio != -1) ||
+        throw(ArgumentError("If serial port is used, GPIO must be specified."))
 
     sp = nothing
     if port_name != ""
         sp = _serial_open(port_name)
         if sp === nothing
-            _info("Serial port $port_name is not available, keyboard SPACEBAR key will be used")
+            _info(
+                "Serial port $port_name is not available, keyboard SPACEBAR key will be used",
+            )
             port_name = ""
         else
             _serial_close(sp)
@@ -70,7 +73,6 @@ function iftt(
     int_idx = Vector{Float64}()
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iftt()")
         Gtk4.default_size(win, Int64(img1.width), Int64(img1.height) + 100)
 
@@ -131,7 +133,7 @@ function iftt(
         @guarded draw(can) do widget
             ctx = getgc(can)
             Cairo.set_source_surface(ctx, img1, 0, 0)
-            Cairo.paint(ctx)
+            return Cairo.paint(ctx)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -150,7 +152,7 @@ function iftt(
                     key_pressed = true
                 end
             end
-            sleep(0.1)
+            return sleep(0.1)
         end
 
         signal_connect(win_key, "key-released") do widget, keyval, keycode, state
@@ -167,7 +169,7 @@ function iftt(
                     key_pressed = false
                 end
             end
-            sleep(0.1)
+            return sleep(0.1)
         end
 
         return signal_connect(bt_start, "clicked") do widget
@@ -183,7 +185,7 @@ function iftt(
                         @idle_add @guarded draw(can) do widget
                             ctx = getgc(can)
                             Cairo.set_source_surface(ctx, img2, 0, 0)
-                            Cairo.paint(ctx)
+                            return Cairo.paint(ctx)
                         end
                         @idle_add lb_status2.label = "TEST"
                         l = strip(string(idx) * " of " * string(trials))
@@ -199,7 +201,7 @@ function iftt(
                             @idle_add @guarded draw(can) do widget
                                 ctx = getgc(can)
                                 Cairo.set_source_surface(ctx, img1, 0, 0)
-                                Cairo.paint(ctx)
+                                return Cairo.paint(ctx)
                             end
                             @idle_add lb_status2.label = "INTERVAL"
                             @idle_add lb_trial2.label = "-"
@@ -228,7 +230,7 @@ function iftt(
                         @idle_add @guarded draw(can) do widget
                             ctx = getgc(can)
                             Cairo.set_source_surface(ctx, img2, 0, 0)
-                            Cairo.paint(ctx)
+                            return Cairo.paint(ctx)
                         end
                         @idle_add lb_status2.label = "TEST"
                         l = strip(string(idx) * " of " * string(trials))
@@ -266,7 +268,7 @@ function iftt(
                             @idle_add @guarded draw(can) do widget
                                 ctx = getgc(can)
                                 Cairo.set_source_surface(ctx, img1, 0, 0)
-                                Cairo.paint(ctx)
+                                return Cairo.paint(ctx)
                             end
                             @idle_add lb_status2.label = "INTERVAL"
                             l = strip(string(idx) * " of " * string(trials))
@@ -326,10 +328,10 @@ function iftt(
                 int_d_kp[idx] = int_d_kp[idx][1:l]
                 int_result[idx] = length(int_t_kp[idx])
             end
-            d_kp[idx] = round.((d_kp[idx] .- t_kp[idx]) .* 1000, digits = 1)
-            t_kp[idx] = round.((t_kp[idx] .- t_idx[idx]) .* 1000, digits = 1)
-            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000, digits = 1)
-            int_t_kp[idx] = round.((int_t_kp[idx] .- int_idx[idx]) .* 1000, digits = 1)
+            d_kp[idx] = round.((d_kp[idx] .- t_kp[idx]) .* 1000; digits = 1)
+            t_kp[idx] = round.((t_kp[idx] .- t_idx[idx]) .* 1000; digits = 1)
+            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000; digits = 1)
+            int_t_kp[idx] = round.((int_t_kp[idx] .- int_idx[idx]) .* 1000; digits = 1)
         end
 
         # remove out of time boundary taps
@@ -353,15 +355,16 @@ function iftt(
         end
 
         return (
-            taps = result, tap_t = t_kp, tap_d = d_kp, taps_int = int_result, tap_t_int = int_t_kp, tap_d_int = int_d_kp
+            taps = result, tap_t = t_kp, tap_d = d_kp, taps_int = int_result,
+            tap_t_int = int_t_kp, tap_d_int = int_d_kp,
         )
 
     elseif !isnothing(sp)
         # format time points
-        d_kp = round.((d_kp .- t_kp) .* 1000, digits = 1)
-        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000, digits = 1)
-        t_kp = round.(t_kp .* 1000, digits = 1)
-        int_t_kp = round.(int_t_kp .* 1000, digits = 1)
+        d_kp = round.((d_kp .- t_kp) .* 1000; digits = 1)
+        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits = 1)
+        t_kp = round.(t_kp .* 1000; digits = 1)
+        int_t_kp = round.(int_t_kp .* 1000; digits = 1)
 
         # format time points
         t_keypressed = Vector{Vector{Float64}}()
@@ -375,8 +378,8 @@ function iftt(
             end
             reverse!(tk)
             reverse!(td)
-            push!(t_keypressed, round.(tk, digits = 1))
-            push!(d_keypressed, round.(td, digits = 1))
+            push!(t_keypressed, round.(tk; digits = 1))
+            push!(d_keypressed, round.(td; digits = 1))
         end
         reverse!(t_keypressed)
         reverse!(d_keypressed)
@@ -393,8 +396,8 @@ function iftt(
             end
             reverse!(tk)
             reverse!(td)
-            push!(int_t_keypressed, round.(tk, digits = 1))
-            push!(int_d_keypressed, round.(td, digits = 1))
+            push!(int_t_keypressed, round.(tk; digits = 1))
+            push!(int_d_keypressed, round.(td; digits = 1))
         end
         reverse!(int_t_keypressed)
         reverse!(int_d_keypressed)
@@ -423,7 +426,10 @@ function iftt(
         d_idx = Vector{Vector{Int64}}()
         for idx in eachindex(t_keypressed)
             if length(unique(t_keypressed[idx])) != length(t_keypressed[idx])
-                push!(d_idx, unique(i -> t_keypressed[idx][i], eachindex(t_keypressed[idx])))
+                push!(
+                    d_idx,
+                    unique(i -> t_keypressed[idx][i], eachindex(t_keypressed[idx])),
+                )
             else
                 push!(d_idx, eachindex(t_keypressed[idx]))
             end
@@ -434,7 +440,10 @@ function iftt(
         d_idx = Vector{Vector{Int64}}()
         for idx in eachindex(int_t_keypressed)
             if length(unique(int_t_keypressed[idx])) != length(int_t_keypressed[idx])
-                push!(d_idx, unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])))
+                push!(
+                    d_idx,
+                    unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])),
+                )
             else
                 push!(d_idx, eachindex(int_t_keypressed[idx]))
             end
@@ -449,9 +458,8 @@ function iftt(
             tap_d = d_keypressed,
             taps_int = int_result,
             tap_t_int = int_t_keypressed,
-            tap_d_int = int_d_keypressed
+            tap_d_int = int_d_keypressed,
         )
-
     end
 end
 
@@ -480,7 +488,8 @@ Named tuple:
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function ftt(
-        duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1, port_name::String = ""
+        duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1,
+        port_name::String = "",
     )::@NamedTuple{
         taps::Vector{Int64},
         tap_t::Vector{Vector{Float64}},
@@ -489,8 +498,8 @@ function ftt(
         tap_t_int::Vector{Vector{Float64}},
         tap_d_int::Vector{Vector{Float64}},
     }
-
-    !(!(port_name != "" && gpio == -1)) && throw(ArgumentError("If serial port is used, GPIO must be specified."))
+    !(!(port_name != "" && gpio == -1)) &&
+        throw(ArgumentError("If serial port is used, GPIO must be specified."))
 
     sp = nothing
 
@@ -505,7 +514,9 @@ function ftt(
     elseif port_name != ""
         sp = _serial_open(port_name)
         if sp === nothing
-            _info("Serial port $port_name is not available, keyboard SPACEBAR key will be used")
+            _info(
+                "Serial port $port_name is not available, keyboard SPACEBAR key will be used",
+            )
             port_name = ""
         else
             _serial_close(sp)
@@ -623,7 +634,9 @@ function ftt(
                     idx2 += 1
                 else
                     println()
-                    print("   Trial $idx1: press the SPACEBAR button as quickly as possible")
+                    print(
+                        "   Trial $idx1: press the SPACEBAR button as quickly as possible",
+                    )
                     idx1 += 1
                 end
                 idx += 1
@@ -631,7 +644,7 @@ function ftt(
         end
 
         # format time points
-        t = round.(t .* 1000, digits = 3)
+        t = round.(t .* 1000; digits = 3)
         if r > 0
             for idx1 in 1:r
                 for idx2 in 1:(2 * trials)
@@ -798,10 +811,10 @@ function ftt(
 
     # format time points
     if rpi isa PiGPIO.Pi || !isnothing(sp)
-        d_kp = round.((d_kp .- t_kp) .* 1000, digits = 1)
-        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000, digits = 1)
-        t_kp = round.(t_kp .* 1000, digits = 1)
-        int_t_kp = round.(int_t_kp .* 1000, digits = 1)
+        d_kp = round.((d_kp .- t_kp) .* 1000; digits = 1)
+        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits = 1)
+        t_kp = round.(t_kp .* 1000; digits = 1)
+        int_t_kp = round.(int_t_kp .* 1000; digits = 1)
     end
 
     # format time points
@@ -816,8 +829,8 @@ function ftt(
         end
         reverse!(tk)
         reverse!(td)
-        push!(t_keypressed, round.(tk, digits = 1))
-        push!(d_keypressed, round.(td, digits = 1))
+        push!(t_keypressed, round.(tk; digits = 1))
+        push!(d_keypressed, round.(td; digits = 1))
     end
     reverse!(t_keypressed)
     reverse!(d_keypressed)
@@ -834,19 +847,22 @@ function ftt(
         end
         reverse!(tk)
         reverse!(td)
-        push!(int_t_keypressed, round.(tk, digits = 1))
-        push!(int_d_keypressed, round.(td, digits = 1))
+        push!(int_t_keypressed, round.(tk; digits = 1))
+        push!(int_d_keypressed, round.(td; digits = 1))
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)
 
     if isnothing(sp) && !(rpi isa PiGPIO.Pi)
         for idx in eachindex(t_keypressed)
-            t_keypressed[idx] = round.(t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000, digits = 3)
+            t_keypressed[idx] = round.(
+                t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000;
+                digits = 3,
+            )
         end
         for idx in eachindex(int_t_keypressed)
             int_t_keypressed[idx] = round.(
-                int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000), digits = 1
+                int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000); digits = 1,
             )
         end
     end
@@ -886,7 +902,10 @@ function ftt(
     d_idx = Vector{Vector{Int64}}()
     for idx in eachindex(int_t_keypressed)
         if length(unique(int_t_keypressed[idx])) != length(int_t_keypressed[idx])
-            push!(d_idx, unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])))
+            push!(
+                d_idx,
+                unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])),
+            )
         else
             push!(d_idx, eachindex(int_t_keypressed[idx]))
         end
@@ -901,7 +920,6 @@ function ftt(
         tap_d = d_keypressed,
         taps_int = int_result,
         tap_t_int = int_t_keypressed,
-        tap_d_int = int_d_keypressed
+        tap_d_int = int_d_keypressed,
     )
-
 end

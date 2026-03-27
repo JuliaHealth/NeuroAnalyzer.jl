@@ -18,7 +18,6 @@ Move locs origin ([0, 0, 0]) along the axes.
 - `DataFrame`
 """
 function locs_origin(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::DataFrame
-
     locs_new = deepcopy(locs)
     locs_new[:, :loc_x] .+= x
     locs_new[:, :loc_y] .+= y
@@ -27,7 +26,6 @@ function locs_origin(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::Da
     locs_cart2pol!(locs_new)
 
     return locs_new
-
 end
 
 """
@@ -46,12 +44,15 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 - `Nothing`
 """
-function locs_origin!(obj::NeuroAnalyzer.NEURO; x::Real = 0, y::Real = 0, z::Real = 0)::Nothing
-
+function locs_origin!(
+        obj::NeuroAnalyzer.NEURO;
+        x::Real = 0,
+        y::Real = 0,
+        z::Real = 0,
+    )::Nothing
     obj.locs = locs_origin(obj.locs; x = x, y = y, z = z)
 
     return nothing
-
 end
 
 """
@@ -71,9 +72,7 @@ Move locs origin ([0, 0, 0]) along the axes.
 - `Nothing`
 """
 function locs_origin!(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::Nothing
-
     locs[!, :] = locs_origin(locs; x = x, y = y, z = z)[!, :]
 
     return nothing
-
 end

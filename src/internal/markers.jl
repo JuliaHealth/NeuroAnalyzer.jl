@@ -17,7 +17,10 @@ function _shift_markers(markers::DataFrame, seg::Tuple{Real, Real})::DataFrame
 end
 
 function _get_epoch_markers(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
-    return round.(s2t.(collect(1:epoch_len(obj):(epoch_len(obj) * nepochs(obj))), sr(obj)), digits = 4)
+    return round.(
+        s2t.(collect(1:epoch_len(obj):(epoch_len(obj) * nepochs(obj))), sr(obj));
+        digits = 4,
+    )
 end
 
 function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
@@ -25,12 +28,16 @@ function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
     markers_channel = 0
     if "mrk" in channel_types
         markers = true
-        [channel_types[ch_idx] == "mrk" && (markers_channel = ch_idx) for ch_idx in eachindex(channel_types)]
+        [
+            channel_types[ch_idx] == "mrk" && (markers_channel = ch_idx) for
+                ch_idx in eachindex(channel_types)
+        ]
     end
     return markers, markers_channel
 end
 
-_has_markers(obj::NeuroAnalyzer.NEURO)::Bool = DataFrames.nrow(obj.markers) > 0 ? true : false
+_has_markers(obj::NeuroAnalyzer.NEURO)::Bool =
+    DataFrames.nrow(obj.markers) > 0 ? true : false
 
 function _a2df(annotations::Vector{String})::DataFrame
     # convert EDF/BDF annotations to markers DataFrame
@@ -45,7 +52,10 @@ function _a2df(annotations::Vector{String})::DataFrame
     a_event = Vector{String}()
 
     # remove empty
-    [!(length(mrk[idx]) == 0 || occursin('|', mrk[idx])) && deleteat!(mrk, idx) for idx in length(mrk):-1:1]
+    [
+        !(length(mrk[idx]) == 0 || occursin('|', mrk[idx])) && deleteat!(mrk, idx) for
+            idx in length(mrk):-1:1
+    ]
 
     if length(mrk) == 1
         s = split(mrk[1], "|")
@@ -72,7 +82,7 @@ function _a2df(annotations::Vector{String})::DataFrame
             :start => a_start,
             :length => a_length,
             :value => a_event,
-            :channel => zeros(Int64, length(a_event))
+            :channel => zeros(Int64, length(a_event)),
         )
     else
         for idx in eachindex(mrk)
@@ -102,7 +112,7 @@ function _a2df(annotations::Vector{String})::DataFrame
             :start => a_start,
             :length => a_length,
             :value => a_event,
-            :channel => zeros(Int64, length(a_event))
+            :channel => zeros(Int64, length(a_event)),
         )
     end
 end

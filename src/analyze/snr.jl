@@ -16,9 +16,7 @@ Calculate SNR between two 1-D signal vectors.
 - `Float64`: SNR
 """
 function snr(s1::AbstractVector, s2::AbstractVector)::Float64
-
     return -20 * log10(norm(abs.(s2 - s1)) / norm(s2))
-
 end
 
 """
@@ -39,9 +37,7 @@ Calculate mean-based SNR for a 1-D signal vector.
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
 function snr(s::AbstractVector)::Float64
-
     return mean(s) / std(s)
-
 end
 
 """
@@ -58,10 +54,8 @@ Calculate RMS-based SNR for a 1-D signal vector.
 - `Float64`: SNR
 """
 function snr2(s::AbstractVector)::Float64
-
     a = amp(s)
     return (maximum(s) - minimum(s)) / a.rmsq
-
 end
 
 """
@@ -85,13 +79,13 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function snr(
-    s::AbstractArray;
-    t::Vector{Float64},
-    type::Symbol = :rms
-)::@NamedTuple{
-    sn::Matrix{Float64},
-    f::Vector{Float64}
-}
+        s::AbstractArray;
+        t::Vector{Float64},
+        type::Symbol = :rms,
+    )::@NamedTuple{
+        sn::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     _check_var(type, [:mean, :rms], "type")
@@ -129,7 +123,6 @@ function snr(
     end
 
     return (; sn, f)
-
 end
 
 """
@@ -153,17 +146,18 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function snr(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    type::Symbol = :rms
-)::@NamedTuple{
-    sn::Matrix{Float64},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        type::Symbol = :rms,
+    )::@NamedTuple{
+        sn::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
-    return snr(@view(obj.data[ch, :, :]), t = obj.epoch_time, type = type)
-
+    return snr(@view(obj.data[ch, :, :]); t = obj.epoch_time, type = type)
 end

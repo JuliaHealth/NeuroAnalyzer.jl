@@ -18,7 +18,6 @@ Nothing
 - `Nothing`
 """
 function na_plugins_reload()::Nothing
-
     !(isdir(plugins_path)) && throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
     path_tmp = pwd()
@@ -37,7 +36,6 @@ function na_plugins_reload()::Nothing
     cd(path_tmp)
 
     return nothing
-
 end
 
 """
@@ -54,7 +52,6 @@ Nothing
 - `Nothing`
 """
 function na_plugins_list()::Nothing
-
     !(isdir(plugins_path)) && throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
     path_tmp = pwd()
@@ -68,7 +65,6 @@ function na_plugins_list()::Nothing
     cd(path_tmp)
 
     return nothing
-
 end
 
 """
@@ -85,7 +81,6 @@ Remove NeuroAnalyzer plugin.
 - `Nothing`
 """
 function na_plugins_remove(plugin::String)::Nothing
-
     _warn("This will remove the whole $plugin directory, along with its file contents.")
     !(isdir(plugins_path)) && throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
@@ -103,7 +98,6 @@ function na_plugins_remove(plugin::String)::Nothing
     cd(path_tmp)
 
     return nothing
-
 end
 
 """
@@ -120,7 +114,6 @@ Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.Z
 - `Nothing`
 """
 function na_plugins_install(plugin::String)::Nothing
-
     !(isdir(plugins_path)) && throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
     path_tmp = pwd()
@@ -135,7 +128,8 @@ function na_plugins_install(plugin::String)::Nothing
     else
         # install from local archive
         !(isfile(plugin)) && throw(ArgumentError("File $plugin cannot be opened."))
-        !(lowercase(splitext(plugin)[2]) in [".zip", ".gz"]) && throw(ArgumentError("PLUGIN must specify .ZIP/.TAR.GZ file."))
+        !(lowercase(splitext(plugin)[2]) in [".zip", ".gz"]) &&
+            throw(ArgumentError("PLUGIN must specify .ZIP/.TAR.GZ file."))
         if lowercase(splitext(plugin)[2]) == ".zip"
             Sys.which("unzip") === nothing && (@error "Unknown command: unzip")
             _info("Installing from .ZIP archive")
@@ -144,7 +138,8 @@ function na_plugins_install(plugin::String)::Nothing
             catch
                 @error "Cannot install $plugin."
             end
-        elseif lowercase(splitext(plugin)[2]) == ".gz" && lowercase(splitext(splitext(plugin)[1])[2]) == ".tar"
+        elseif lowercase(splitext(plugin)[2]) == ".gz" &&
+                lowercase(splitext(splitext(plugin)[1])[2]) == ".tar"
             Sys.which("tar") === nothing && (@error "Unknown command: tar")
             _info("Installing from .TAR.GZ archive")
             try
@@ -159,7 +154,6 @@ function na_plugins_install(plugin::String)::Nothing
     cd(path_tmp)
 
     return nothing
-
 end
 
 """
@@ -176,7 +170,6 @@ Update NeuroAnalyzer plugin(s).
 - `Nothing`
 """
 function na_plugins_update(plugin::String = "")::Nothing
-
     !(isdir(plugins_path)) && throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
     path_tmp = pwd()
@@ -208,5 +201,4 @@ function na_plugins_update(plugin::String = "")::Nothing
     cd(path_tmp)
 
     return nothing
-
 end

@@ -19,9 +19,9 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
  1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
 function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
-
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".set") && throw(ArgumentError("This is not SET file."))
+    !(lowercase(splitext(file_name)[2]) == ".set") &&
+        throw(ArgumentError("This is not SET file."))
 
     file_type = "SET"
 
@@ -43,7 +43,8 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             error("File $data_src cannot be loaded.")
         end
         samples_per_channel = length(dataset["times"])
-        !(filesize(data_src) == ch_n * samples_per_channel * 4) && throw(ArgumentError("Incorrect file size."))
+        !(filesize(data_src) == ch_n * samples_per_channel * 4) &&
+            throw(ArgumentError("Incorrect file size."))
         data_tmp = Float64[]
         for ch_idx in 1:ch_n
             buf = UInt8[]
@@ -176,7 +177,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :loc_z => z,
             :loc_radius_sph => radius_sph,
             :loc_theta_sph => theta_sph,
-            :loc_phi_sph => phi_sph
+            :loc_phi_sph => phi_sph,
         )
         for idx in DataFrames.nrow(locs):-1:1
             (
@@ -186,7 +187,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             ) || deleteat!(locs, idx)
         end
         DataFrames.nrow(locs) > 0 && _info(
-            "Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found"
+            "Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found",
         )
         if DataFrames.nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
@@ -202,7 +203,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[]
+        :channel => Int64[],
     )
 
     if "event" in keys(dataset)
@@ -221,7 +222,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
                 :start => start,
                 :length => len,
                 :value => desc,
-                :channel => zeros(Int64, length(start))
+                :channel => zeros(Int64, length(start)),
             )
         end
     end
@@ -234,15 +235,15 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             epoch_time = dataset["times"][:]
         else
             epoch_time = round.(
-                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
-                digits = 4
+                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+                digits = 4,
             )
         end
         time_pts = round.(
             collect(
-                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-            )[1:(end - 1)],
-            digits = 4
+                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
+            )[1:(end - 1)];
+            digits = 4,
         )
     else
         # if length(dataset["times"][:]) > 0
@@ -250,25 +251,25 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         # end
         time_pts = round.(
             collect(
-                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate)
-            )[1:(end - 1)],
-            digits = 4
+                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
+            )[1:(end - 1)];
+            digits = 4,
         )
         epoch_time = round.(
-            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
-            digits = 4
+            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+            digits = 4,
         )
     end
 
     if data_src isa String
-        file_size_mb = round(filesize(data_src) / 1024^2, digits = 2)
+        file_size_mb = round(filesize(data_src) / 1024^2; digits = 2)
     else
-        file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
+        file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
     end
 
     data_type = "eeg"
 
-    s = _create_subject(
+    s = _create_subject(;
         id = "",
         first_name = "",
         middle_name = "",
@@ -276,9 +277,9 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
-    r = _create_recording_eeg(
+    r = _create_recording_eeg(;
         data_type = data_type,
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -297,11 +298,11 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         line_frequency = 50,
         sampling_rate = sampling_rate,
         gain = gain,
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(name = "", notes = note, design = "")
+    e = _create_experiment(; name = "", notes = note, design = "")
 
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
@@ -309,9 +310,8 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj
-
 end

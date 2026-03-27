@@ -17,9 +17,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 - `Float64`: mutual information
 """
 function mutual_information(s1::AbstractVector, s2::AbstractVector)::Float64
-
     return InformationMeasures.get_mutual_information(s1, s2)
-
 end
 
 """
@@ -65,7 +63,6 @@ function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float6
     end
 
     return mi
-
 end
 
 """
@@ -94,7 +91,8 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n, dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar =
+        Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     mi = zeros(ch_n, ch_n, ep_n)
 
@@ -102,7 +100,7 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 in 1:ch_idx1 - 1
+        for ch_idx2 in 1:(ch_idx1 - 1)
             mi[ch_idx1, ch_idx2, ep_idx] = mutual_information(
                 @view(s[ch_idx1, :, ep_idx]),
                 @view(s[ch_idx2, :, ep_idx]),
@@ -113,7 +111,6 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(mi)
-
 end
 
 """
@@ -132,13 +129,17 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 - `Array{Float64, 3}`: symmetric mutual information matrix, shape `(channels, channels, epochs)`
 """
-function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function mutual_information(
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+    )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return mutual_information(@view(obj.data[ch, :, :]))
-
 end
 
 """
@@ -162,18 +163,26 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 - `Matrix{Float64}`: mutual information matrix, shape (channels, epochs)
 """
 function mutual_information(
-    obj1::NeuroAnalyzer.NEURO,
-    obj2::NeuroAnalyzer.NEURO;
-    ch1::Union{String, Vector{String}, Regex},
-    ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2))
-)::Matrix{Float64}
+        obj1::NeuroAnalyzer.NEURO,
+        obj2::NeuroAnalyzer.NEURO;
+        ch1::Union{String, Vector{String}, Regex},
+        ch2::Union{String, Vector{String}, Regex},
+        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 = exclude_bads ? get_channel(obj1, ch = ch1, exclude = "bad") : get_channel(obj1, ch = ch1, exclude = "")
-    ch2 = exclude_bads ? get_channel(obj2, ch = ch2, exclude = "bad") : get_channel(obj2, ch = ch2, exclude = "")
-    length(ch1) == length(ch2) || throw(ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."))
+    ch1 =
+        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
+                       get_channel(obj1; ch = ch1, exclude = "")
+    ch2 =
+        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
+                       get_channel(obj2; ch = ch2, exclude = "")
+    length(ch1) == length(ch2) || throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
+    )
 
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
@@ -181,12 +190,16 @@ function mutual_information(
     # normalize scalar epoch arguments to vectors so indexing is uniform
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
-    length(ep1) == length(ep2) || throw(ArgumentError("Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    length(ep1) == length(ep2) || throw(
+        ArgumentError(
+            "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+        ),
+    )
+    epoch_len(obj1) == epoch_len(obj2) ||
+        throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     return mutual_information(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2])
     )
-
 end

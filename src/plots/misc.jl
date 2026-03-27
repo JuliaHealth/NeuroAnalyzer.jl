@@ -20,14 +20,17 @@ Empty plots are added automatically when `length(vfig) < layout[1]*layout[2]` so
 - `GLMakie.Figure`: the plotted figure: composite figure
 """
 function plot_compose(
-    vfig::Vector{GLMakie.Figure};
-    layout::Tuple{Int64, Int64}
-)::GLMakie.Figure
+        vfig::Vector{GLMakie.Figure};
+        layout::Tuple{Int64, Int64},
+    )::GLMakie.Figure
 
     # validate that the layout can accommodate all provided plots.
     layout[1] * layout[2] >= length(vfig) ||
-        throw(ArgumentError(
-            "Layout ($(layout[1]) × $(layout[2])) must be ≥ number of plots ($(length(vfig)))."))
+        throw(
+        ArgumentError(
+            "Layout ($(layout[1]) × $(layout[2])) must be ≥ number of plots ($(length(vfig))).",
+        ),
+    )
 
     plot_size = (0, 0)
     for idx in eachindex(vfig)
@@ -51,8 +54,8 @@ function plot_compose(
     end
 
     # build the composite figure using a GridLayout so axes are properly nested
-    GLMakie.activate!(title = "plot_compose()")
-    pc = GLMakie.Figure(size = canvas_size)
+    GLMakie.activate!(; title = "plot_compose()")
+    pc = GLMakie.Figure(; size = canvas_size)
     gl = pc[1, 1] = GridLayout(layout[1], layout[2])
 
     p_idx = 1
@@ -65,7 +68,7 @@ function plot_compose(
             pp = FileIO.load(fname)
             # place the axis inside the GridLayout, not the Figure directly.
             ax = GLMakie.Axis(
-                gl[idx1, idx2],
+                gl[idx1, idx2];
                 aspect = DataAspect(),
                 xzoomlock = true,
                 yzoomlock = true,
@@ -85,8 +88,6 @@ function plot_compose(
     end
 
     return pc
-
-
 end
 
 """
@@ -99,9 +100,7 @@ Return an empty `GLMakie.Figure`, useful for padding a grid of plots.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_empty()::GLMakie.Figure
-
     return GLMakie.Figure()
-
 end
 
 """
@@ -131,10 +130,13 @@ function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
     # make the white background transparent so only the electrode markers are composited onto the primary figure
     # three near-white values are handled to account for sub-pixel anti-aliasing on the background fill
     transparent_pp = map(c -> RGBA(color(c), 1.0), pp)
-    for near_white in (RGBA(1.0,   1.0,   1.0,   1.0),
-                       RGBA(0.999, 0.999, 0.999, 1.0),
-                       RGBA(0.998, 0.998, 0.998, 1.0))
-        transparent_pp[transparent_pp .== near_white] .= RGBA(near_white.r, near_white.g, near_white.b, 0.0)
+    for near_white in (
+            RGBA(1.0, 1.0, 1.0, 1.0),
+            RGBA(0.999, 0.999, 0.999, 1.0),
+            RGBA(0.998, 0.998, 0.998, 1.0),
+        )
+        transparent_pp[transparent_pp .== near_white] .=
+            RGBA(near_white.r, near_white.g, near_white.b, 0.0)
     end
 
     # determine the top-right corner of the primary axis in data coordinates
@@ -149,14 +151,12 @@ function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
     GLMakie.scatter!(
         fig[1, 1],
         pos_x,
-        pos_y,
+        pos_y;
         marker_offset = half_size,
         marker = transparent_pp,
         markersize = size(transparent_pp),
-        markerspace = :pixel
+        markerspace = :pixel,
     )
 
-
     return fig
-
 end

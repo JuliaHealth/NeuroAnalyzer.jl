@@ -29,7 +29,6 @@ function meanp(p::Float64, n::Int64)::Float64
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     return n * p
-
 end
 
 """
@@ -56,7 +55,6 @@ function meanc(g::Vector{Int64}, x::Vector{Int64})::Float64
     sum(x) > 0 || throw(ArgumentError("sum(x) must be > 0 (division by zero)."))
 
     return sum(g .* x) / sum(x)
-
 end
 
 """
@@ -82,7 +80,6 @@ function meang(x::AbstractVector)::Float64
 
     # use log-sum-exp form for numerical stability (avoids overflow from prod)
     return exp(mean(log.(x)))
-
 end
 
 """
@@ -107,7 +104,6 @@ function meanh(x::AbstractVector)::Float64
     any(iszero, x) && throw(ArgumentError("x must not contain zeros."))
 
     return length(x) / sum(1 ./ x)
-
 end
 
 """
@@ -134,7 +130,6 @@ function meanw(x::AbstractVector, w::AbstractVector)::Float64
     sum(w) != 0 || throw(ArgumentError("sum(w) must not be zero (division by zero)."))
 
     return sum(x .* w) / sum(w)
-
 end
 
 """
@@ -163,7 +158,6 @@ function meancirc(x::AbstractVector; rad::Bool = false)::Float64
     else
         return rad2deg(atan(sum(sind.(x)), sum(cosd.(x))))
     end
-
 end
 
 """
@@ -188,8 +182,8 @@ function meant(x::AbstractVector; n::Float64 = 0.1)::Float64
     n > 0.0 && n < 0.5 || throw(ArgumentError("n must be in (0, 0.5)."))
     xs = sort(x)
     xn = round(Int64, length(xs) * n)
-    xn + 1 <= length(xs) - xn || throw(ArgumentError("n is too large: no observations remain after trimming."))
+    xn + 1 <= length(xs) - xn ||
+        throw(ArgumentError("n is too large: no observations remain after trimming."))
 
     return mean(xs[(xn + 1):(end - xn)])
-
 end

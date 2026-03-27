@@ -39,13 +39,13 @@ function mcc(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::Float64
     tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))
     fp >= 0 || throw(ArgumentError("fp must be ≥ 0."))
     fn >= 0 || throw(ArgumentError("fn must be ≥ 0."))
-    tp + tn + fp + fn > 0 || throw(ArgumentError("Total count (tp + tn + fp + fn) must be > 0."))
+    tp + tn + fp + fn > 0 ||
+        throw(ArgumentError("Total count (tp + tn + fp + fn) must be > 0."))
 
     denom = sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
 
     denom == 0 && return 0.0
     return (tp * tn - fp * fn) / denom
-
 end
 
 export f1
@@ -75,18 +75,31 @@ Named tuple:
 
 https://www.statology.org/what-is-a-good-f1-score/
 """
-function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
+function f1(;
+        tp::Int64,
+        tn::Int64,
+        fp::Int64,
+        fn::Int64,
+    )::@NamedTuple{f1::Float64, p::Float64, r::Float64}
 
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
     tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))
     fp >= 0 || throw(ArgumentError("fp must be ≥ 0."))
     fn >= 0 || throw(ArgumentError("fn must be ≥ 0."))
-    tp + fp > 0 || throw(ArgumentError("tp + fp must be > 0 (precision is undefined when no positives are predicted)."))
-    tp + fn > 0 || throw(ArgumentError("tp + fn must be > 0 (recall is undefined when there are no actual positives)."))
+    tp + fp > 0 || throw(
+        ArgumentError(
+            "tp + fp must be > 0 (precision is undefined when no positives are predicted).",
+        ),
+    )
+    tp + fn > 0 || throw(
+        ArgumentError(
+            "tp + fn must be > 0 (recall is undefined when there are no actual positives).",
+        ),
+    )
 
     prec = tp / (tp + fp)
-    rec  = tp / (tp + fn)
+    rec = tp / (tp + fn)
 
     # when both precision and recall are 0 the harmonic mean is undefined;
     # return 0.0 by convention rather than NaN
@@ -94,7 +107,6 @@ function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float
 
     # note: `tn` is accepted for API consistency but is not used in F1 calculation
     return (; f1_score, prec, rec)
-
 end
 
 """
@@ -122,7 +134,12 @@ Named tuple:
 
 https://www.statology.org/misclassification-rate/
 """
-function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Float64, acc::Float64}
+function mscr(;
+        tp::Int64,
+        tn::Int64,
+        fp::Int64,
+        fn::Int64,
+    )::@NamedTuple{mr::Float64, acc::Float64}
 
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
@@ -136,5 +153,4 @@ function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Flo
     acc = 1 - mr
 
     return (; mr, acc)
-
 end

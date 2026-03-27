@@ -16,9 +16,9 @@ int(x) = trunc(Int, x)
 """
 function dropmean(X, d)
     return if ndims(X) == 1
-        mean(X, dims = d)
+        mean(X; dims = d)
     else
-        dropdims(mean(X, dims = d), dims = d)
+        dropdims(mean(X; dims = d); dims = d)
     end
 end
 
@@ -53,7 +53,7 @@ function detrend!(data::AbstractArray, n::Integer)
 
     data = reshape(data, (nsamp, :))  # reshaping data
     if n == 0
-        data .-= mean(data, dims = 1)
+        data .-= mean(data; dims = 1)
     elseif n == 1
         data .-= A * (A \ data)
     end
@@ -66,7 +66,7 @@ end
 Hanning window similar to MATLAB `hanning` implementation
 """
 function hanning_fun(N::Integer)
-    x = [range(0.0, 1.0, length = N + 2);]
+    x = [range(0.0, 1.0; length = N + 2);]
     window = 0.5 .* (1 .- cospi.(2 .* x))
     window = (window + window[end:-1:1]) ./ 2  # forcing symmetry
     return window[2:(end - 1)]  # excluding the zero values
@@ -93,15 +93,15 @@ Extracts and builds a named tuple of parameters.
 - `NamedTuple`: a named tuple of parameters
 """
 function data2para(
-    data::AbstractArray,
-    seglen::Integer,
-    segshift::Integer,
-    eplen::Integer,
-    freqlist::AbstractArray{Int},
-    method::String,
-    subave::Bool,
-    verbose::Bool
-)
+        data::AbstractArray,
+        seglen::Integer,
+        segshift::Integer,
+        eplen::Integer,
+        freqlist::AbstractArray{Int},
+        method::String,
+        subave::Bool,
+        verbose::Bool,
+    )
 
     # data dimension
     if ndims(data) != 2
@@ -170,9 +170,8 @@ function data2para(
         nseg = nseg,
         freqlist = freqlist,
         maxfreq = maxfreq,
-        nfbands = nfbands
+        nfbands = nfbands,
     )
-
 end
 
 """
@@ -198,14 +197,14 @@ Partitioning data into epochs and segments
 Returned Array may have more data entries than input data.
 """
 function make_eposeg(
-    data::AbstractArray,
-    seglen::Integer,
-    eplen::Integer,
-    nep::Integer,
-    nseg::Integer,
-    nchan::Integer,
-    segshift::Integer
-)::AbstractArray
+        data::AbstractArray,
+        seglen::Integer,
+        eplen::Integer,
+        nep::Integer,
+        nseg::Integer,
+        nchan::Integer,
+        segshift::Integer,
+    )::AbstractArray
 
     # preallocation
     epseg = Array{Float64}(undef, seglen, nep, nseg, nchan)
@@ -304,14 +303,14 @@ preparing Cross Spectra for Phase Slope by segment averaging and subtraction
 - `AbstractArray`: segment averaged and subtracted Cross Spectra
 """
 function cs2cs_(
-    data::AbstractArray,
-    cs::AbstractArray,
-    fband::AbstractArray,
-    nep::Integer,
-    segave::Bool,
-    subave::Bool,
-    method::String
-)
+        data::AbstractArray,
+        cs::AbstractArray,
+        fband::AbstractArray,
+        nep::Integer,
+        segave::Bool,
+        subave::Bool,
+        method::String,
+    )
     if segave
         if method == "bootstrap"
             randboot = rand(1:nep, nep)
@@ -384,22 +383,34 @@ Calculates phase slope index (PSI)
 - `AbstractArray`: PSI estimated standard deviation with shape `(channel, channel, frequency bands)`
 """
 function data2psi(
-    data::AbstractArray,
-    seglen::Integer;
-    segshift::Integer = 0,
-    eplen::Integer = 0,
-    freqlist::AbstractArray{Int} = Int[],
-    method::String = "jackknife",
-    subave::Bool = false,
-    segave::Bool = true,
-    nboot::Integer = 100,
-    detrend::Bool = false,
-    window::Function = hanning_fun,
-    verbose::Bool = false
-)
-
-    (data, nsamples, nchan, eplen, nep, method, subave, segshift, nseg, freqlist, maxfreq, nfbands) = data2para(
-        data, seglen, segshift, eplen, freqlist, method, subave, verbose
+        data::AbstractArray,
+        seglen::Integer;
+        segshift::Integer = 0,
+        eplen::Integer = 0,
+        freqlist::AbstractArray{Int} = Int[],
+        method::String = "jackknife",
+        subave::Bool = false,
+        segave::Bool = true,
+        nboot::Integer = 100,
+        detrend::Bool = false,
+        window::Function = hanning_fun,
+        verbose::Bool = false,
+    )
+    (
+        data,
+        nsamples,
+        nchan,
+        eplen,
+        nep,
+        method,
+        subave,
+        segshift,
+        nseg,
+        freqlist,
+        maxfreq,
+        nfbands,
+    ) = data2para(
+        data, seglen, segshift, eplen, freqlist, method, subave, verbose,
     )
 
     eposeg = make_eposeg(data, seglen, eplen, nep, nseg, nchan, segshift)
@@ -440,9 +451,9 @@ function data2psi(
     end
 
     if method == "jackknife"
-        psi_std = sqrt(nep) * squeeze(std(psi_est, corrected = true, dims = 4))
+        psi_std = sqrt(nep) * squeeze(std(psi_est; corrected = true, dims = 4))
     elseif method == "bootstrap"
-        psi_std = squeeze(std(psi_est, corrected = true, dims = 4))
+        psi_std = squeeze(std(psi_est; corrected = true, dims = 4))
     else
         psi_std = fill(NaN, (nchan, nchan, nfbands))
     end
@@ -451,7 +462,6 @@ function data2psi(
     psi_std = squeeze(psi_std)
 
     return psi, psi_std
-
 end
 
 end  # module

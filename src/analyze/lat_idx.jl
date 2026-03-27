@@ -39,27 +39,30 @@ Hemisphere channels are detected automatically via `channel_pick()`.
 - `Float64`: lateralization index (positive = right-dominant)
 """
 function lat_idx(
-    obj::NeuroAnalyzer.NEURO;
-    frq::Union{Real, Tuple{<:Real, <:Real}},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::Float64
+        obj::NeuroAnalyzer.NEURO;
+        frq::Union{Real, Tuple{<:Real, <:Real}},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::Float64
 
     # validate
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
 
-    length(channel_pick(obj, pick = :l)) > 0 || throw(ArgumentError("Could not detect left hemisphere channels, check OBJ labels."))
-    length(channel_pick(obj, pick = :r)) > 0 || throw(ArgumentError("Could not detect right hemisphere channels, check OBJ labels."))
+    length(channel_pick(obj; pick = :l)) > 0 ||
+        throw(ArgumentError("Could not detect left hemisphere channels, check OBJ labels."))
+    length(channel_pick(obj; pick = :r)) > 0 || throw(
+        ArgumentError("Could not detect right hemisphere channels, check OBJ labels."),
+    )
 
     # get channel indices for left and right picks
-    ch_l = get_channel(obj; ch = channel_pick(obj, pick = :l))
-    ch_r = get_channel(obj; ch = channel_pick(obj, pick = :r))
+    ch_l = get_channel(obj; ch = channel_pick(obj; pick = :l))
+    ch_r = get_channel(obj; ch = channel_pick(obj; pick = :r))
 
     # shared PSD keyword arguments - avoids repeating them four times
     psd_kwargs = (
@@ -72,7 +75,7 @@ function lat_idx(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
 
     _log_off()
@@ -97,15 +100,15 @@ function lat_idx(
     # average across epochs (no-op for ERP/ERF which already has ep_n=1),
     # then average across channels to get a single (freq,) power vector
     if size(p_left, 3) > 1
-        p_left  = dropdims(mean(p_left,  dims = 3), dims = 3)
-        p_right = dropdims(mean(p_right, dims = 3), dims = 3)
+        p_left = dropdims(mean(p_left; dims = 3); dims = 3)
+        p_right = dropdims(mean(p_right; dims = 3); dims = 3)
     else
-        p_left  = dropdims(p_left,  dims = 3)
-        p_right = dropdims(p_right, dims = 3)
+        p_left = dropdims(p_left; dims = 3)
+        p_right = dropdims(p_right; dims = 3)
     end
     # now (ch, freq) - average over channels to get (freq,)
-    p_left  = vec(mean(p_left,  dims = 1))
-    p_right = vec(mean(p_right, dims = 1))
+    p_left = vec(mean(p_left; dims = 1))
+    p_right = vec(mean(p_right; dims = 1))
 
     # extract power at the requested frequency or frequency range
     if frq isa Real
@@ -121,5 +124,4 @@ function lat_idx(
     end
 
     return log(p_left_val / p_right_val)
-
 end

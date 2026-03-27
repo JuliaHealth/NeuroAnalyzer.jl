@@ -16,7 +16,6 @@ This function is intended for EDF+ files whose `data_records_duration` header fi
 - `DataFrame` with columns `:id`, `:start`, `:length`, `:value`, `:channel`
 """
 function import_edf_annotations(file_name::String)::DataFrame
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".edf" ||
@@ -26,7 +25,6 @@ function import_edf_annotations(file_name::String)::DataFrame
     # parse header - single open/close via `do` block                    #
     # ------------------------------------------------------------------ #
     markers = open(file_name, "r") do fid
-
         buf = zeros(UInt8, 256)
         readbytes!(fid, buf, 256)
         header = String(Char.(buf))
@@ -47,18 +45,24 @@ function import_edf_annotations(file_name::String)::DataFrame
         reserved = strip(header[193:236])
 
         reserved == "EDF+D" &&
-            throw(ArgumentError(
-                "EDF+D (interrupted recordings) is not supported. " *
-                "Please send this file to adam.wysokinski@neuroanalyzer.org"))
+            throw(
+                ArgumentError(
+                    "EDF+D (interrupted recordings) is not supported. " *
+                    "Please send this file to adam.wysokinski@neuroanalyzer.org",
+                ),
+            )
         reserved == "EDF+C" && (file_type = "EDF+")
 
         data_records = parse(Int, strip(header[237:244]))
         data_records_duration = parse(Float64, strip(header[245:252]))
 
         data_records_duration != 0 &&
-            throw(ArgumentError(
-                "$file_name is a regular $file_type file with signal data; " *
-                "use import_edf() instead."))
+            throw(
+                ArgumentError(
+                    "$file_name is a regular $file_type file with signal data; " *
+                    "use import_edf() instead.",
+                ),
+            )
 
         ch_n = parse(Int, strip(header[253:256]))
 
@@ -69,7 +73,7 @@ function import_edf_annotations(file_name::String)::DataFrame
             buf = zeros(UInt8, ch_n * width)
             readbytes!(fid, buf, ch_n * width)
             s = String(Char.(buf))
-            [parse_fn(strip(s[(1 + (i-1)*width):(i*width)])) for i in 1:ch_n]
+            [parse_fn(strip(s[(1 + (i - 1) * width):(i * width)])) for i in 1:ch_n]
         end
 
         clabels = read_fields(16)
@@ -80,7 +84,7 @@ function import_edf_annotations(file_name::String)::DataFrame
         digital_minimum = read_fields(8, s -> parse(Float64, s))
         digital_maximum = read_fields(8, s -> parse(Float64, s))
         _prefiltering = read_fields(80)
-        samples_per_datarecord = read_fields(8,  s -> parse(Int, s))
+        samples_per_datarecord = read_fields(8, s -> parse(Int, s))
 
         # ------------------------------------------------------------ #
         # identify annotation channels                                 #
@@ -106,13 +110,14 @@ function import_edf_annotations(file_name::String)::DataFrame
             ch in annotation_channels && push!(annotations, String(Char.(raw)))
         end
 
-        isempty(annotations) ?
-            DataFrame(:id => String[], :start => Float64[],
-                      :length => Float64[], :value => String[], :channel => Int64[]) :
-            _a2df(annotations)
+        return isempty(annotations) ?
+               DataFrame(
+            :id => String[], :start => Float64[],
+            :length => Float64[], :value => String[], :channel => Int64[],
+        ) :
+               _a2df(annotations)
     end
     # file closed here in all cases, including exceptions
 
     return markers
-
 end

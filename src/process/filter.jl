@@ -42,29 +42,37 @@ Create a FIR or IIR filter object.
 - `Biquad{:z, Float64}`: second-order biquad filter (for `:iirnotch`)
 """
 function filter_create(;
-    fprototype::Symbol,
-    ftype::Union{Nothing, Symbol} = nothing,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    fs::Int64,
-    order::Union{Nothing, Int64} = nothing,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing
-)::Union{
-    Vector{Float64},
-    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-    Biquad{:z, Float64}
-}
-
+        fprototype::Symbol,
+        ftype::Union{Nothing, Symbol} = nothing,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        fs::Int64,
+        order::Union{Nothing, Int64} = nothing,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        bw::Union{Nothing, Real} = nothing,
+        w::Union{Nothing, AbstractVector} = nothing,
+    )::Union{
+        Vector{Float64},
+        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+        Biquad{:z, Float64},
+    }
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     nqf = div(fs, 2)
 
     # check parameters
     _check_var(
         fprototype,
-        [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch],
-        "fprototype"
+        [
+            :fir,
+            :firls,
+            :remez,
+            :butterworth,
+            :chebyshev1,
+            :chebyshev2,
+            :elliptic,
+            :iirnotch,
+        ],
+        "fprototype",
     )
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
 
@@ -81,7 +89,8 @@ function filter_create(;
                 throw(ArgumentError("order must be odd for :hp/:bp/:bs filters."))
             w = DSP.hamming(order)
         end
-        length(w) == order || throw(ArgumentError("Length of w ($(length(w))) must equal order ($order)."))
+        length(w) == order ||
+            throw(ArgumentError("Length of w ($(length(w))) must equal order ($order)."))
     end
 
     # --- :firls / :remez / :iirnotch bw validation ---
@@ -91,12 +100,12 @@ function filter_create(;
         bw <= 10 || throw(ArgumentError("bw must be ≤ 10."))
         if length(cutoff) == 1
             if bw >= cutoff
-                bw = round(cutoff - 0.1, digits=1)
+                bw = round(cutoff - 0.1; digits = 1)
                 _info("bw truncated to $bw Hz")
             end
         else
             if bw >= cutoff[2]
-                bw = round(cutoff[2] - 0.1, digits=1)
+                bw = round(cutoff[2] - 0.1; digits = 1)
                 _info("bw truncated to $bw Hz")
             end
         end
@@ -106,13 +115,15 @@ function filter_create(;
     if fprototype === :firls
         if ftype in [:bp, :bs]
             if !isnothing(w)
-                !(length(w) == 6) && throw(ArgumentError("Length of w must be 6 for :bp/:bs filter."))
+                !(length(w) == 6) &&
+                    throw(ArgumentError("Length of w must be 6 for :bp/:bs filter."))
             else
                 w = ones(6)
             end
         elseif ftype in [:lp, :hp]
             if !isnothing(w)
-                !(length(w) == 4) && throw(ArgumentError("Length of w must be 4 for :lp/:hp filter."))
+                !(length(w) == 4) &&
+                    throw(ArgumentError("Length of w must be 4 for :lp/:hp filter."))
             else
                 w = ones(4)
             end
@@ -141,21 +152,24 @@ function filter_create(;
     if fprototype === :iirnotch
         !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
         !isnothing(order) && _info("For :iirnotch filter order is ignored")
-        length(cutoff) == 1 || throw(ArgumentError("cutoff must be a scalar for :iirnotch."))
+        length(cutoff) == 1 ||
+            throw(ArgumentError("cutoff must be a scalar for :iirnotch."))
     end
 
     # --- cutoff arity check ---
     if fprototype in (:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic)
         if ftype in (:lp, :hp)
-            length(cutoff) == 1 || throw(ArgumentError("For :$ftype, cutoff must be a scalar."))
+            length(cutoff) == 1 ||
+                throw(ArgumentError("For :$ftype, cutoff must be a scalar."))
         elseif ftype in (:bp, :bs)
-            length(cutoff) == 2 || throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
+            length(cutoff) == 2 ||
+                throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
         end
     end
 
     # --- cutoff value checks and normalization ---
     if length(cutoff) == 1
-        cutoff > 0   || throw(ArgumentError("cutoff must be > 0 Hz."))
+        cutoff > 0 || throw(ArgumentError("cutoff must be > 0 Hz."))
         cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz (Nyquist)."))
     else
         if cutoff[1] == cutoff[2]
@@ -170,68 +184,99 @@ function filter_create(;
     # -----------------------------------------------------------------------
 
     if fprototype === :fir
-        responsetype = if ftype === :lp; Lowpass(cutoff)
-                       elseif ftype === :hp; Highpass(cutoff)
-                       elseif ftype === :bp; Bandpass(cutoff[1], cutoff[2])
-                       elseif ftype === :bs; Bandstop(cutoff[1], cutoff[2])
-                       end
+        responsetype = if ftype === :lp
+
+            Lowpass(cutoff)
+        elseif ftype === :hp
+
+            Highpass(cutoff)
+        elseif ftype === :bp
+
+            Bandpass(cutoff[1], cutoff[2])
+        elseif ftype === :bs
+
+            Bandstop(cutoff[1], cutoff[2])
+        end
         _info("Creating $(uppercase(string(ftype))) FIR filter ($(order) taps)")
-        return digitalfilter(responsetype, FIRWindow(w); fs=fs)
+        return digitalfilter(responsetype, FIRWindow(w); fs = fs)
     end
 
     if fprototype === :firls
         if ftype === :bp
-            f1_stop, f1_pass = cutoff[1] - bw/2, cutoff[1] + bw/2
-            f2_pass, f2_stop = cutoff[2] - bw/2, cutoff[2] + bw/2
+            f1_stop, f1_pass = cutoff[1] - bw / 2, cutoff[1] + bw / 2
+            f2_pass, f2_stop = cutoff[2] - bw / 2, cutoff[2] + bw / 2
             flt_shape = [0, 0, 1, 1, 0, 0]
             flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, nqf]
             _info("Creating BP FIRLS filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
+            _info(
+                " Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]",
+            )
         elseif ftype === :bs
-            f1_pass, f1_stop = cutoff[1] - bw/2, cutoff[1] + bw/2
-            f2_stop, f2_pass = cutoff[2] - bw/2, cutoff[2] + bw/2
+            f1_pass, f1_stop = cutoff[1] - bw / 2, cutoff[1] + bw / 2
+            f2_stop, f2_pass = cutoff[2] - bw / 2, cutoff[2] + bw / 2
             flt_shape = [1, 1, 0, 0, 1, 1]
             flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, nqf]
             _info("Creating BS FIRLS filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: stop=[0,$f1_pass], pass=[$f1_stop,$f2_stop], stop=[$f2_pass,$nqf]")
+            _info(
+                " Bands: stop=[0,$f1_pass], pass=[$f1_stop,$f2_stop], stop=[$f2_pass,$nqf]",
+            )
         elseif ftype === :lp
-            f_pass, f_stop = cutoff - bw/2, cutoff + bw/2
+            f_pass, f_stop = cutoff - bw / 2, cutoff + bw / 2
             flt_shape = [1, 1, 0, 0]
-            flt_frq   = [0, f_pass, f_stop, nqf]
-            _info("Creating LP FIRLS filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
+            flt_frq = [0, f_pass, f_stop, nqf]
+            _info(
+                "Creating LP FIRLS filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)",
+            )
         elseif ftype === :hp
-            f_stop, f_pass = cutoff - bw/2, cutoff + bw/2
+            f_stop, f_pass = cutoff - bw / 2, cutoff + bw / 2
             flt_shape = [0, 0, 1, 1]
-            flt_frq   = [0, f_stop, f_pass, nqf]
-            _info("Creating HP FIRLS filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
+            flt_frq = [0, f_stop, f_pass, nqf]
+            _info(
+                "Creating HP FIRLS filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)",
+            )
         end
-        return FIRLSFilterDesign.firls_design(order - 1, flt_frq, flt_shape, w, true; fs=fs)
+        return FIRLSFilterDesign.firls_design(
+            order - 1,
+            flt_frq,
+            flt_shape,
+            w,
+            true;
+            fs = fs,
+        )
     end
 
     if fprototype === :remez
         if ftype === :bp
-            f1_stop, f1_pass = cutoff[1] - bw/2, cutoff[1] + bw/2
-            f2_pass, f2_stop = cutoff[2] - bw/2, cutoff[2] + bw/2
+            f1_stop, f1_pass = cutoff[1] - bw / 2, cutoff[1] + bw / 2
+            f2_pass, f2_stop = cutoff[2] - bw / 2, cutoff[2] + bw / 2
             w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, nqf) => 0]
             _info("Creating BP Remez filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
+            _info(
+                " Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]",
+            )
         elseif ftype === :bs
-            f1_pass, f1_stop = cutoff[1] - bw/2, cutoff[1] + bw/2
-            f2_stop, f2_pass = cutoff[2] - bw/2, cutoff[2] + bw/2
+            f1_pass, f1_stop = cutoff[1] - bw / 2, cutoff[1] + bw / 2
+            f2_stop, f2_pass = cutoff[2] - bw / 2, cutoff[2] + bw / 2
             w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, nqf) => 1]
             _info("Creating BS Remez filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: stop=[0,$f1_pass], pass=[$f1_stop,$f2_stop], stop=[$f2_pass,$nqf]")
+            _info(
+                " Bands: stop=[0,$f1_pass], pass=[$f1_stop,$f2_stop], stop=[$f2_pass,$nqf]",
+            )
         elseif ftype === :lp
-            f_pass, f_stop = cutoff - bw/2, cutoff + bw/2
+            f_pass, f_stop = cutoff - bw / 2, cutoff + bw / 2
             w = [(0, f_pass) => 1, (f_stop, nqf) => 0]
-            _info("Creating LP Remez filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
+            _info(
+                "Creating LP Remez filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)",
+            )
         elseif ftype === :hp
-            f_stop, f_pass = cutoff - bw/2, cutoff + bw/2
+            f_stop, f_pass = cutoff - bw / 2, cutoff + bw / 2
             w = [(0, f_stop) => 0, (f_pass, nqf) => 1]
-            _info("Creating HP Remez filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
+            _info(
+                "Creating HP Remez filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)",
+            )
         end
         _info("Creating $(uppercase(string(ftype))) Remez filter ($order taps, bw=$bw Hz)")
-        return remez(order, w; Hz=fs, maxiter=100)
+        return remez(order, w; Hz = fs, maxiter = 100)
     end
 
     # -----------------------------------------------------------------------
@@ -239,25 +284,40 @@ function filter_create(;
     # -----------------------------------------------------------------------
 
     if fprototype in (:butterworth, :chebyshev1, :chebyshev2, :elliptic)
-        responsetype = if ftype === :lp; Lowpass(cutoff)
-                       elseif ftype === :hp; Highpass(cutoff)
-                       elseif ftype === :bp; Bandpass(cutoff[1], cutoff[2])
-                       elseif ftype === :bs; Bandstop(cutoff[1], cutoff[2])
-                       end
-        prototype = if fprototype === :butterworth; Butterworth(order)
-                    elseif fprototype === :chebyshev1; Chebyshev1(order, rp)
-                    elseif fprototype === :chebyshev2; Chebyshev2(order, rs)
-                    elseif fprototype === :elliptic; Elliptic(order, rp, rs)
-                    end
+        responsetype = if ftype === :lp
+
+            Lowpass(cutoff)
+        elseif ftype === :hp
+
+            Highpass(cutoff)
+        elseif ftype === :bp
+
+            Bandpass(cutoff[1], cutoff[2])
+        elseif ftype === :bs
+
+            Bandstop(cutoff[1], cutoff[2])
+        end
+        prototype = if fprototype === :butterworth
+
+            Butterworth(order)
+        elseif fprototype === :chebyshev1
+
+            Chebyshev1(order, rp)
+        elseif fprototype === :chebyshev2
+
+            Chebyshev2(order, rs)
+        elseif fprototype === :elliptic
+
+            Elliptic(order, rp, rs)
+        end
         _info("Creating $(uppercase(string(ftype))) $(fprototype) filter (order=$order)")
-        return digitalfilter(responsetype, prototype; fs=fs)
+        return digitalfilter(responsetype, prototype; fs = fs)
     end
 
     if fprototype === :iirnotch
         _info("Creating IIR notch filter (cutoff=$(cutoff[1]) Hz, bw=$bw Hz)")
-        return iirnotch(cutoff[1], bw; fs=fs)
+        return iirnotch(cutoff[1], bw; fs = fs)
     end
-
 end
 
 """
@@ -279,15 +339,14 @@ Apply a pre-designed IIR or FIR filter to a signal vector.
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
 function filter_apply(
-    s::AbstractVector;
-    flt::Union{
-        Vector{Float64},
-        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-        Biquad{:z, Float64}
-    },
-    dir::Symbol = :twopass
-)::Vector{Float64}
-
+        s::AbstractVector;
+        flt::Union{
+            Vector{Float64},
+            ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+            Biquad{:z, Float64},
+        },
+        dir::Symbol = :twopass,
+    )::Vector{Float64}
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
     if dir === :onepass
@@ -297,7 +356,6 @@ function filter_apply(
     elseif dir === :reverse
         return filt(flt, reverse(s))
     end
-
 end
 
 """
@@ -324,15 +382,15 @@ Apply a pre-designed filter to selected channels of a NEURO object.
 - Taper the signal before filtering to reduce edge artifacts.
 """
 function filter_apply(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flt::Union{
-        Vector{Float64},
-        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-        Biquad{:z, Float64}
-    },
-    dir::Symbol = :twopass
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flt::Union{
+            Vector{Float64},
+            ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+            Biquad{:z, Float64},
+        },
+        dir::Symbol = :twopass,
+    )::NeuroAnalyzer.NEURO
 
     # validate
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
@@ -353,7 +411,13 @@ function filter_apply(
     obj_new = deepcopy(obj)
 
     # initialize progress bar
-    progbar = Progress(ep_n * length(ch), dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(
+        ep_n * length(ch);
+        dt = 1,
+        barlen = 20,
+        color = :white,
+        enabled = progress_bar,
+    )
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -361,7 +425,7 @@ function filter_apply(
         obj_new.data[ch[ch_idx], :, ep_idx] = filter_apply(
             @view(obj.data[ch[ch_idx], :, ep_idx]),
             flt = flt,
-            dir = dir
+            dir = dir,
         )
         # update progress bar
         progress_bar && next!(progbar)
@@ -370,7 +434,6 @@ function filter_apply(
     push!(obj_new.history, "filter_apply(obj; ch=$ch, dir=$dir)")
 
     return obj_new
-
 end
 
 """
@@ -396,21 +459,20 @@ Delegates to [`filter_apply`](@ref) and copies the result back.
 - `Nothing`
 """
 function filter_apply!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flt::Union{
-        Vector{Float64},
-        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-        Biquad{:z, Float64}},
-    dir::Symbol = :twopass
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flt::Union{
+            Vector{Float64},
+            ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+            Biquad{:z, Float64},
+        },
+        dir::Symbol = :twopass,
+    )::Nothing
     obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end
 
 """
@@ -458,27 +520,26 @@ Combines [`filter_create`](@ref) and [`filter_apply`](@ref). When `preview=true`
 - `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
 """
 function filter(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    fprototype::Symbol,
-    ftype::Union{Nothing, Symbol} = nothing,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64} = nothing,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing,
-    dir::Symbol = :twopass,
-    preview::Bool = false
-)::Union{
-    NeuroAnalyzer.NEURO,
-    GLMakie.Figure
-}
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        fprototype::Symbol,
+        ftype::Union{Nothing, Symbol} = nothing,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        order::Union{Nothing, Int64} = nothing,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        bw::Union{Nothing, Real} = nothing,
+        w::Union{Nothing, AbstractVector} = nothing,
+        dir::Symbol = :twopass,
+        preview::Bool = false,
+    )::Union{
+        NeuroAnalyzer.NEURO,
+        GLMakie.Figure,
+    }
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        return plot_filter(
+        return plot_filter(;
             fs = sr(obj),
             fprototype = fprototype,
             ftype = ftype,
@@ -487,10 +548,10 @@ function filter(
             rp = rp,
             rs = rs,
             bw = bw,
-            w = w
+            w = w,
         )
     else
-        flt = filter_create(
+        flt = filter_create(;
             fprototype = fprototype,
             ftype = ftype,
             cutoff = cutoff,
@@ -499,12 +560,11 @@ function filter(
             rp = rp,
             rs = rs,
             bw = bw,
-            w = w
+            w = w,
         )
         obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
 
         return obj_new
-
     end
 end
 
@@ -554,27 +614,26 @@ When `preview=true`, the filter frequency response is plotted and returned witho
 - `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
 """
 function filter!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    fprototype::Symbol,
-    ftype::Union{Symbol, Nothing} = nothing,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64} = nothing,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing,
-    dir::Symbol = :twopass,
-    preview::Bool = false
-)::Union{
-    Nothing,
-    GLMakie.Figure
-}
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        fprototype::Symbol,
+        ftype::Union{Symbol, Nothing} = nothing,
+        cutoff::Union{Real, Tuple{Real, Real}},
+        order::Union{Nothing, Int64} = nothing,
+        rp::Union{Nothing, Real} = nothing,
+        rs::Union{Nothing, Real} = nothing,
+        bw::Union{Nothing, Real} = nothing,
+        w::Union{Nothing, AbstractVector} = nothing,
+        dir::Symbol = :twopass,
+        preview::Bool = false,
+    )::Union{
+        Nothing,
+        GLMakie.Figure,
+    }
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        return plot_filter(
+        return plot_filter(;
             fs = sr(obj),
             fprototype = fprototype,
             ftype = ftype,
@@ -583,12 +642,12 @@ function filter!(
             rp = rp,
             rs = rs,
             bw = bw,
-            w = w
+            w = w,
         )
     end
 
     obj_new = NeuroAnalyzer.filter(
-        obj,
+        obj;
         ch = ch,
         fprototype = fprototype,
         ftype = ftype,
@@ -598,12 +657,11 @@ function filter!(
         rs = rs,
         bw = bw,
         dir = dir,
-        w = w
+        w = w,
     )
 
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

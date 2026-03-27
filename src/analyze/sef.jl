@@ -31,34 +31,35 @@ SEF is the frequency below which x percent of the total power of a given signal 
 - `Float64`: spectral edge frequency
 """
 function sef(
-    s::AbstractVector;
-    x::Float64 = 0.95,
-    fs::Int64,
-    f::Tuple{Real, Real} = (0, fs / 2),
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Float64
+        s::AbstractVector;
+        x::Float64 = 0.95,
+        fs::Int64,
+        f::Tuple{Real, Real} = (0, fs / 2),
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Float64
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(f, (0, fs / 2), "f")
 
-    pw, pf = psd(s,
-                fs = fs,
-                db = false,
-                method = method,
-                nt = nt,
-                wlen = wlen,
-                woverlap = woverlap,
-                w = w,
-                ncyc = ncyc,
-                demean = demean
-            )
+    pw, pf = psd(
+        s;
+        fs = fs,
+        db = false,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        demean = demean,
+    )
 
     f1_idx = vsearch(f[1], pf)
     f2_idx = vsearch(f[2], pf)
@@ -69,7 +70,7 @@ function sef(
     pw = pw[f1_idx:f2_idx]
     pf = pf[f1_idx:f2_idx]
 
-    tp = simpson(pw, dx = dx)
+    tp = simpson(pw; dx = dx)
     tp_threshold = tp * x
 
     sef_frq = nothing
@@ -81,7 +82,6 @@ function sef(
     end
 
     return sef_frq
-
 end
 
 """
@@ -115,18 +115,18 @@ SEF is the frequency below which x percent of the total power of a given signal 
 - `Matrix{Float64}`: spectral edge frequency
 """
 function sef(
-    s::AbstractArray;
-    x::Float64 = 0.95,
-    fs::Int64,
-    f::Tuple{Real, Real} = (0, fs / 2),
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        s::AbstractArray;
+        x::Float64 = 0.95,
+        fs::Int64,
+        f::Tuple{Real, Real} = (0, fs / 2),
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -152,12 +152,11 @@ function sef(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean
+            demean = demean,
         )
     end
 
     return sef_frq
-
 end
 
 """
@@ -190,24 +189,26 @@ SEF is the frequency below which x percent of the total power of a given signal 
 - `Matrix{Float64}`: spectral edge frequency
 """
 function sef(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    x::Float64 = 0.95,
-    f::Tuple{Real, Real} = (0, sr(obj) / 2),
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        x::Float64 = 0.95,
+        f::Tuple{Real, Real} = (0, sr(obj) / 2),
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return sef(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         x = x,
         fs = sr(obj),
         f = f,
@@ -217,7 +218,6 @@ function sef(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
-
 end

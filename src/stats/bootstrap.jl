@@ -26,15 +26,15 @@ Named tuple:
 - `ul::Vector{Float64}`: upper CI bound at each time point
 """
 function bootstrap_ci(
-    s::AbstractMatrix;
-    n1::Int64 = 3000,
-    n2::Int64 = 1000,
-    cl::Float64 = 0.95
-)::@NamedTuple{
-    gm::Vector{Float64},
-    ll::Vector{Float64},
-    ul::Vector{Float64}
-}
+        s::AbstractMatrix;
+        n1::Int64 = 3000,
+        n2::Int64 = 1000,
+        cl::Float64 = 0.95,
+    )::@NamedTuple{
+        gm::Vector{Float64},
+        ll::Vector{Float64},
+        ul::Vector{Float64},
+    }
 
     # validate
     _bin(cl, (0.0, 1.0), "cl")
@@ -47,21 +47,23 @@ function bootstrap_ci(
     ep_n = size(s, 2)
 
     # stage 1: build n1 bootstrap mean traces of shape (n1 × tp_n)
-    progbar = Progress(n1, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     s_boot = zeros(n1, tp_n)
     @inbounds for idx1 in 1:n1
-
         s_tmp = zeros(tp_n, n2)
 
         for idx2 in 1:n2
             s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
         end
 
-        s_boot[idx1, :] = vec(mean(s_tmp, dims
-=2))
+        s_boot[idx1, :] = vec(
+            mean(
+                s_tmp, dims
+                = 2
+            )
+        )
         progress_bar && next!(progbar)
-
     end
 
     # stage 2: derive CI bounds from the empirical quantiles of the bootstrap distribution
@@ -82,10 +84,9 @@ function bootstrap_ci(
         ul[tp] = tpt[ci_h_idx]
     end
 
-    gm = vec(mean(s_boot, dims=1))
+    gm = vec(mean(s_boot; dims = 1))
 
     return (; gm, ll, ul)
-
 end
 
 """
@@ -109,11 +110,11 @@ The formula string `f` must reference the current signal trace using the placeho
 - `AbstractVector`: bootstrap distribution of the statistic; length `n1`
 """
 function bootstrap_stat(
-    s::AbstractMatrix;
-    n1::Int64 = 3000,
-    n2::Int64 = 1000,
-    f::String
-)::AbstractVector
+        s::AbstractMatrix;
+        n1::Int64 = 3000,
+        n2::Int64 = 1000,
+        f::String,
+    )::AbstractVector
 
     # validate
     n1 > 0 || throw(ArgumentError("n1 must be > 0."))
@@ -137,7 +138,7 @@ function bootstrap_stat(
     s_boot = zeros(n1, tp_n)
 
     # initialize progress bar
-    progbar = Progress(n1, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for idx1 in 1:n1
 
@@ -146,7 +147,7 @@ function bootstrap_stat(
         for idx2 in 1:n2
             s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
         end
-        s_boot[idx1, :] = vec(mean(s_tmp, dims=2))
+        s_boot[idx1, :] = vec(mean(s_tmp, dims = 2))
 
         # evaluate the user formula on this bootstrap mean trace
         f_tmp = replace(f, "obj" => "$(s_boot[idx1, :])")
@@ -157,9 +158,7 @@ function bootstrap_stat(
         end
 
         progress_bar && next!(progbar)
-
     end
 
     return result
-
 end

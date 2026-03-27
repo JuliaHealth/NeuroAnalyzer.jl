@@ -34,18 +34,18 @@ Calculate the absolute power in a frequency band by:
 - `Float64`: band power
 """
 function band_power(
-    s::AbstractVector;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::Float64
+        s::AbstractVector;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::Float64
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -53,7 +53,7 @@ function band_power(
 
     # compute the power spectral density over the full frequency range
     psd_data = psd(
-        s,
+        s;
         fs = fs,
         db = false,
         method = method,
@@ -63,7 +63,7 @@ function band_power(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
     pow = psd_data.p
     frq = psd_data.f
@@ -76,10 +76,9 @@ function band_power(
     dx = frq[2] - frq[1]
 
     # integrate
-    bp = Simpson.simpson(@view(pow[f1_idx:f2_idx]), @view(frq[f1_idx:f2_idx]), dx = dx)
+    bp = Simpson.simpson(@view(pow[f1_idx:f2_idx]), @view(frq[f1_idx:f2_idx]); dx = dx)
 
     return bp
-
 end
 
 """
@@ -112,18 +111,18 @@ Calculate absolute band power between two frequencies for a 3-D signal array.
 - `Matrix{Float64}`: band power, shape (channels, epochs)
 """
 function band_power(
-    s::AbstractArray;
-    fs::Int64,
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean = demean
-)::Matrix{Float64}
+        s::AbstractArray;
+        fs::Int64,
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = fs,
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean = demean,
+    )::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -150,12 +149,11 @@ function band_power(
             w = w,
             ncyc = ncyc,
             gw = gw,
-            demean = demean
+            demean = demean,
         )
     end
 
     return bp
-
 end
 
 """
@@ -188,24 +186,26 @@ Calculate absolute band power between two frequencies for a NEURO object.
 - `Matrix{Float64}`: band power, shape (channels, epochs)
 """
 function band_power(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    flim::Tuple{Real, Real},
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    gw::Real = 5,
-    demean::Bool = true
-)::Matrix{Float64}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        flim::Tuple{Real, Real},
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        gw::Real = 5,
+        demean::Bool = true,
+    )::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return band_power(
-        @view(obj.data[ch, :, :]),
+        @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
         method = method,
@@ -215,7 +215,6 @@ function band_power(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        demean = demean
+        demean = demean,
     )
-
 end

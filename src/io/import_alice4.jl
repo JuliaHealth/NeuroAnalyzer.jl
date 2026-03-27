@@ -19,7 +19,6 @@ Alice 4 EDF files are non-conforming in two ways that prevent `import_edf` from 
 - `NeuroAnalyzer.NEURO`
 """
 function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -27,7 +26,6 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     # parse header - all reads share one open/close via the `do` block.  #
     # ------------------------------------------------------------------ #
     imported_object = open(file_name, "r") do fid
-
         header = _v2s(_fread(fid, 256, :s))
 
         # bytes 1–8: version; must be 0 for EDF
@@ -47,17 +45,23 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         reserved = strip(header[193:236])
 
         reserved == "EDF+D" &&
-            throw(ArgumentError(
+            throw(
+            ArgumentError(
                 "EDF+D (interrupted recordings) is not supported. " *
-                "Please send this file to adam.wysokinski@neuroanalyzer.org"))
+                    "Please send this file to adam.wysokinski@neuroanalyzer.org"
+            ),
+        )
         reserved == "EDF+C" && (file_type = "EDF+")
 
         # Alice 4 always writes -1 here; validated below before use
         data_records = parse(Int, strip(header[237:244]))
         data_records != -1 &&
-            throw(ArgumentError(
+            throw(
+            ArgumentError(
                 "data_records ≠ -1; this looks like a standard EDF file. " *
-                "Use import_edf() instead."))
+                    "Use import_edf() instead."
+            ),
+        )
 
         data_records_duration = parse(Float64, strip(header[245:252]))
         ch_n = parse(Int, strip(header[253:256]))
@@ -67,7 +71,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         # ------------------------------------------------------------ #
         read_fields(width, parse_fn = identity) = begin
             buf = _v2s(_fread(fid, ch_n * width, :s))
-            [parse_fn(strip(buf[(1 + (i-1)*width):(i*width)])) for i in 1:ch_n]
+            [parse_fn(strip(buf[(1 + (i - 1) * width):(i * width)])) for i in 1:ch_n]
         end
 
         clabels = read_fields(16)
@@ -86,7 +90,8 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         # channel types and annotation channels                        #
         # ------------------------------------------------------------ #
         clabels = _clean_labels(string.(clabels))
-        ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
+        ch_type =
+            detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
         units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
         annotation_channels = if file_type == "EDF"
@@ -100,15 +105,19 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         # sampling rate                                                 #
         # ------------------------------------------------------------ #
         if length(unique(samples_per_datarecord)) == 1
-            sampling_rate = round(Int64,
-                samples_per_datarecord[1] / data_records_duration)
+            sampling_rate = round(
+                Int64,
+                samples_per_datarecord[1] / data_records_duration
+            )
         else
-            sampling_rate = round.(Int64,
-                samples_per_datarecord ./ data_records_duration)
+            sampling_rate = round.(
+                Int64,
+                samples_per_datarecord ./ data_records_duration
+            )
         end
 
         gain = @. (physical_maximum - physical_minimum) /
-                  (digital_maximum  - digital_minimum)
+            (digital_maximum - digital_minimum)
 
         # ------------------------------------------------------------ #
         # signal data                                                   #
@@ -159,10 +168,13 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
                 pos += n
 
                 col_start = (rec - 1) * data_segment + 1
-                col_end =  rec * data_segment
+                col_end = rec * data_segment
 
                 if ch in annotation_channels
-                    push!(annotations, String(Char.(reinterpret(UInt8, signal[pos-n:pos-1]))))
+                    push!(
+                        annotations,
+                        String(Char.(reinterpret(UInt8, signal[(pos - n):(pos - 1)]))),
+                    )
                 else
                     tmp .*= gain[ch]
                     if sampling_rate[ch] != max_rate
@@ -178,20 +190,22 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         end
 
         # return a named tuple to avoid wide argument lists
-        (;
+        return (;
             patient, recording, recording_date, recording_time, data_offset, reserved,
             file_type, data_records, data_records_duration, ch_n, clabels, transducers,
             units, physical_minimum, physical_maximum, digital_minimum, digital_maximum,
             prefiltering, samples_per_datarecord, ch_type, annotation_channels,
-            sampling_rate, gain, annotations, data
+            sampling_rate, gain, annotations, data,
         )
     end
     # file closed here in all cases, including exceptions
 
     # unpack named tuple
-    (; patient, recording, recording_date, recording_time, file_type, ch_n, clabels,
-       transducers, units, prefiltering, ch_type, annotation_channels, sampling_rate,
-       gain, annotations, data) = imported_object
+    (;
+        patient, recording, recording_date, recording_time, file_type, ch_n, clabels,
+        transducers, units, prefiltering, ch_type, annotation_channels, sampling_rate,
+        gain, annotations, data,
+    ) = imported_object
     # reuse binding
 
     # ------------------------------------------------------------------ #
@@ -201,9 +215,11 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         units[idx] == "" && (units[idx] = "μV")
         ch_type[idx] == "eeg" || continue
         if lowercase(units[idx]) == "mv"
-            units[idx] = "μV";  data[idx, :] .*= 1000
+            units[idx] = "μV"
+            data[idx, :] .*= 1000
         elseif lowercase(units[idx]) == "nv"
-            units[idx] = "μV";  data[idx, :] ./= 1000
+            units[idx] = "μV"
+            data[idx, :] ./= 1000
         end
     end
 
@@ -213,15 +229,16 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     markers = if isempty(annotation_channels)
         DataFrame(
             :id => String[], :start => Float64[],
-            :length => Float64[], :value => String[], :channel => Int64[])
+            :length => Float64[], :value => String[], :channel => Int64[]
+        )
     else
         m = _a2df(annotations)
-        deleteat!(ch_type,      annotation_channels)
-        deleteat!(transducers,  annotation_channels)
-        deleteat!(units,        annotation_channels)
+        deleteat!(ch_type, annotation_channels)
+        deleteat!(transducers, annotation_channels)
+        deleteat!(units, annotation_channels)
         deleteat!(prefiltering, annotation_channels)
-        deleteat!(clabels,      annotation_channels)
-        data  = data[setdiff(1:ch_n, annotation_channels), :, :]
+        deleteat!(clabels, annotation_channels)
+        data = data[setdiff(1:ch_n, annotation_channels), :, :]
         ch_n -= length(annotation_channels)
         m
     end
@@ -229,20 +246,21 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     # ------------------------------------------------------------------ #
     # time axes                                                            #
     # ------------------------------------------------------------------ #
-    n_samples  = size(data, 2) * size(data, 3)
-    time_pts   = round.(range(0; step = 1/sampling_rate, length = n_samples);  digits = 4)
-    epoch_time = round.(range(0; step = 1/sampling_rate, length = size(data,2)); digits = 4)
+    n_samples = size(data, 2) * size(data, 3)
+    time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
+    epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
     # ------------------------------------------------------------------ #
     # Assemble NEURO object                                               #
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(
+    s = _create_subject(;
         id = "", first_name = "", middle_name = "",
         last_name = string(patient), head_circumference = -1,
-        handedness = "", weight = -1, height = -1)
-    r = _create_recording_eeg(
+        handedness = "", weight = -1, height = -1
+    )
+    r = _create_recording_eeg(;
         data_type = "eeg",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -261,20 +279,21 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
         gain = gain,
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(name = "", notes = "", design = "")
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
     locs = _initialize_locs()
-    obj  = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
+    obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
 
-    _info("Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+            "; $(round(obj.time_pts[end], digits = 2)) s)",
+    )
 
     return obj
-
 end

@@ -19,18 +19,17 @@ Fits a polynomial of degree `order` to successive overlapping windows of `window
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
 function filter_sg(
-    s::AbstractVector;
-    order::Int64 = 6,
-    window::Int64 = 11
-)::Vector{Float64}
-
-    (window >= 1 && window <= length(s)) || throw(ArgumentError("window must be in [1, $(length(s))]."))
+        s::AbstractVector;
+        order::Int64 = 6,
+        window::Int64 = 11,
+    )::Vector{Float64}
+    (window >= 1 && window <= length(s)) ||
+        throw(ArgumentError("window must be in [1, $(length(s))]."))
     isodd(window) || throw(ArgumentError("window must be odd."))
     order >= 2 || throw(ArgumentError("order must be ≥ 2."))
     order < window || throw(ArgumentError("order must be < window ($window)."))
 
     return savitzky_golay(s, window, order).y
-
 end
 
 """
@@ -49,10 +48,10 @@ Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal ar
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_sg(
-    s::AbstractArray;
-    order::Int64 = 6,
-    window::Int64 = 11
-)::Array{Float64, 3}
+        s::AbstractArray;
+        order::Int64 = 6,
+        window::Int64 = 11,
+    )::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -68,11 +67,11 @@ function filter_sg(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_filtered[ch_idx, :, ep_idx] = filter_sg(@view(s[ch_idx, :, ep_idx]); order=order, window=window)
+        s_filtered[ch_idx, :, ep_idx] =
+            filter_sg(@view(s[ch_idx, :, ep_idx]); order = order, window = window)
     end
 
     return s_filtered
-
 end
 
 """
@@ -92,11 +91,11 @@ Apply a Savitzky-Golay filter to selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_sg(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    order::Int64 = 6,
-    window::Int64 = 11
-)::NeuroAnalyzer.NEURO
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        order::Int64 = 6,
+        window::Int64 = 11,
+    )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -108,7 +107,6 @@ function filter_sg(
     push!(obj_new.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
 
     return obj_new
-
 end
 
 """
@@ -128,16 +126,14 @@ Apply a Savitzky-Golay filter in-place to selected channels of a NEURO object.
 - `Nothing`
 """
 function filter_sg!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    order::Int64 = 6,
-    window::Int64 = 11
-)::Nothing
-
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        order::Int64 = 6,
+        window::Int64 = 11,
+    )::Nothing
     obj_new = filter_sg(obj; ch = ch, order = order, window = window)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

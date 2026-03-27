@@ -20,7 +20,6 @@ Nothing
 - `Nothing`
 """
 function na_info()::Nothing
-
     println("     NeuroAnalyzer: $(NeuroAnalyzer.VER)")
     println("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
     println("     Julia version: $VERSION")
@@ -31,14 +30,16 @@ function na_info()::Nothing
     println("      Exclude bads: $(NeuroAnalyzer.exclude_bads)")
     println("            Colors: $(NeuroAnalyzer.colors)")
     println(
-        "           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]"
+        "           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]",
     )
     println()
     Threads.nthreads() < length(Sys.cpu_info()) || println(
-        "For best performance, environment variable `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))"
+        "For best performance, environment variable `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))",
     )
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
-        println("Environment variable `JULIA_COPY_STACKS` is set to 1, multi-threading may not work correctly")
+        println(
+            "Environment variable `JULIA_COPY_STACKS` is set to 1, multi-threading may not work correctly",
+        )
     end
     println()
 
@@ -117,11 +118,12 @@ function na_info()::Nothing
             println("$pkg $pkg_ver")
         end
     else
-        _warn("Manifest.toml file could not be found in $(na_pkg), cannot report versions of imported packages.")
+        _warn(
+            "Manifest.toml file could not be found in $(na_pkg), cannot report versions of imported packages.",
+        )
     end
 
     return nothing
-
 end
 
 """
@@ -138,12 +140,10 @@ Change `progress_bar` preference.
 - `Nothing`
 """
 function na_set_progress_bar(value::Bool)::Nothing
-
     NeuroAnalyzer.progress_bar = value
     @set_preferences!("progress_bar" => value)
 
     return nothing
-
 end
 
 """
@@ -160,12 +160,10 @@ Change `verbose` preference.
 - `Nothing`
 """
 function na_set_verbose(value::Bool)::Nothing
-
     NeuroAnalyzer.verbose = value
     @set_preferences!("verbose" => value)
 
     return nothing
-
 end
 
 """
@@ -182,12 +180,10 @@ Change `colors` preference.
 - `Nothing`
 """
 function na_set_colors(value::Bool)::Nothing
-
     NeuroAnalyzer.colors = value
     @set_preferences!("colors" => value)
 
     return nothing
-
 end
 
 """
@@ -206,15 +202,18 @@ Set and save NeuroAnalyzer preferences.
 
 - `Nothing`
 """
-function na_set_prefs(; progress_bar::Bool, verbose::Bool, exclude_bads::Bool, colors::Bool)::Nothing
-
+function na_set_prefs(;
+        progress_bar::Bool,
+        verbose::Bool,
+        exclude_bads::Bool,
+        colors::Bool,
+    )::Nothing
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
     @set_preferences!("exclude_bads" => exclude_bads)
     @set_preferences!("colors" => colors)
 
     return nothing
-
 end
 
 """
@@ -231,7 +230,6 @@ Nothing
 - `VER::String`
 """
 function na_version()::String
-
     VER =
         string(Int(NeuroAnalyzer.VER.major)) *
         "." *
@@ -240,7 +238,6 @@ function na_version()::String
         string(Int(NeuroAnalyzer.VER.patch))
 
     return VER
-
 end
 
 """
@@ -257,10 +254,8 @@ Change `exclude_bads` preference.
 - `Nothing`
 """
 function na_set_exclude_bads(value::Bool)::Nothing
-
     NeuroAnalyzer.exclude_bads = value
     @set_preferences!("exclude_bads" => value)
 
     return nothing
-
 end

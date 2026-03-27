@@ -21,16 +21,15 @@ Named tuple:
 - `te_signal::Float64`: total signal energy (`Σ s²`)
 """
 function amp(
-    s::AbstractVector
-)::@NamedTuple{
-    peak_amp::Float64,
-    rms_amp::Float64,
-    p2p_amp::Float64,
-    semi_p2p_amp::Float64,
-    ms_amp::Float64,
-    te_signal::Float64
-}
-
+        s::AbstractVector,
+    )::@NamedTuple{
+        peak_amp::Float64,
+        rms_amp::Float64,
+        p2p_amp::Float64,
+        semi_p2p_amp::Float64,
+        ms_amp::Float64,
+        te_signal::Float64,
+    }
     peak_amp = maximum(abs, s)
     rms_amp = rms(s)
     s_min, s_max = extrema(s)
@@ -40,7 +39,6 @@ function amp(
     te_signal = sum(abs2, s)
 
     return (; peak_amp, rms_amp, p2p_amp, semi_p2p_amp, ms_amp, te_signal)
-
 end
 
 """
@@ -64,15 +62,15 @@ Named tuple:
 - `te_signal::Matrix{Float64}`: total signal energy (`Σ s²`), shape (channels, epochs)
 """
 function amp(
-    s::AbstractArray
-)::@NamedTuple{
-    peak_amp::Matrix{Float64},
-    rms_amp::Matrix{Float64},
-    p2p_amp::Matrix{Float64},
-    semi_p2p_amp::Matrix{Float64},
-    ms_amp::Matrix{Float64},
-    te_signal::Matrix{Float64}
-}
+        s::AbstractArray,
+    )::@NamedTuple{
+        peak_amp::Matrix{Float64},
+        rms_amp::Matrix{Float64},
+        p2p_amp::Matrix{Float64},
+        semi_p2p_amp::Matrix{Float64},
+        ms_amp::Matrix{Float64},
+        te_signal::Matrix{Float64},
+    }
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -102,7 +100,6 @@ function amp(
     end
 
     return (; peak_amp, rms_amp, p2p_amp, semi_p2p_amp, ms_amp, te_signal)
-
 end
 
 """
@@ -127,19 +124,20 @@ Named tuple:
 - `te_signal::Matrix{Float64}`: total signal energy (`Σ s²`), shape (channels, epochs)
 """
 function amp(
-    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
-)::@NamedTuple{
-    peak_amp::Matrix{Float64},
-    rms_amp::Matrix{Float64},
-    p2p_amp::Matrix{Float64},
-    semi_p2p_amp::Matrix{Float64},
-    ms_amp::Matrix{Float64},
-    te_signal::Matrix{Float64}
-}
+        obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
+    )::@NamedTuple{
+        peak_amp::Matrix{Float64},
+        rms_amp::Matrix{Float64},
+        p2p_amp::Matrix{Float64},
+        semi_p2p_amp::Matrix{Float64},
+        ms_amp::Matrix{Float64},
+        te_signal::Matrix{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     return amp(@view(obj.data[ch, :, :]))
-
 end

@@ -14,15 +14,14 @@ Plot a simplified plot of 10-20 EEG channels on a grid.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
-
     pal = mono ? :grays : :darktest
 
     # prepare plot
-    GLMakie.activate!(title = "plot_gridlocs()")
+    GLMakie.activate!(; title = "plot_gridlocs()")
     plot_size = (800, 800)
-    fig = GLMakie.Figure(size = plot_size, figure_padding = 0)
+    fig = GLMakie.Figure(; size = plot_size, figure_padding = 0)
     ax = GLMakie.Axis(
-        fig[1, 1],
+        fig[1, 1];
         aspect = 1,
         xlabel = "",
         ylabel = "",
@@ -34,7 +33,7 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
         xpanlock = true,
         ypanlock = true,
         xrectzoom = false,
-        yrectzoom = false
+        yrectzoom = false,
     )
     hidedecorations!(ax; grid = true)
     hidespines!(ax)
@@ -64,8 +63,52 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     GLMakie.lines!([0.5, 0.5], [-1, 1]; color = :black, linewidth = 0.5)
     GLMakie.lines!([1, 1], [-0.5, 0.5]; color = :black, linewidth = 0.5)
 
-    loc_x = [-0.5, 0, 0.5, -1, -0.5, 0, 0.5, 1, -1, -0.5, 0, 0.5, 1, -1, -0.5, 0, 0.5, 1, -0.5, 0, 0.5]
-    loc_y = [1, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0, -0.5, -0.5, -0.5, -0.5, -0.5, -1, -1, -1]
+    loc_x = [
+        -0.5,
+        0,
+        0.5,
+        -1,
+        -0.5,
+        0,
+        0.5,
+        1,
+        -1,
+        -0.5,
+        0,
+        0.5,
+        1,
+        -1,
+        -0.5,
+        0,
+        0.5,
+        1,
+        -0.5,
+        0,
+        0.5,
+    ]
+    loc_y = [
+        1,
+        1,
+        1,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -0.5,
+        -0.5,
+        -0.5,
+        -0.5,
+        -0.5,
+        -1,
+        -1,
+        -1,
+    ]
     loc_lab = [
         "Fp1",
         "Fpz",
@@ -99,19 +142,19 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     for idx in eachindex(loc_x)
         GLMakie.scatter!(
             loc_x[idx],
-            loc_y[idx],
+            loc_y[idx];
             colormap = pal,
             color = cmap[idx],
             colorrange = 1:ch_n,
             markersize = 16.0,
             strokewidth = 2,
-            strokecolor = :black
+            strokecolor = :black,
         )
         GLMakie.text!(
-            loc_x[idx] + label_offset_x, loc_y[idx] + label_offset_y; text = loc_lab[idx], fontsize = font_size
+            loc_x[idx] + label_offset_x, loc_y[idx] + label_offset_y; text = loc_lab[idx],
+            fontsize = font_size,
         )
     end
 
     return fig
-
 end

@@ -15,8 +15,10 @@ Perform Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 ac
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
-function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
-
+function itpt(;
+        duration::Int64 = 20,
+        port_name::String = "/dev/ttyUSB0",
+    )::NeuroAnalyzer.NEURO
     sp = _serial_open(port_name; baudrate = 19200)
     @assert !isnothing(sp) _info("Serial port $port_name is not available")
 
@@ -34,7 +36,6 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
     tpt_ch_accz = zeros(length(t))
 
     function _activate(app)
-
         win = GtkApplicationWindow(app, "NeuroAnalyzer: itpt()")
         Gtk4.default_size(win, Int64(img1.width), Int64(img1.height) + 100)
 
@@ -69,7 +70,7 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
         @guarded draw(can) do widget
             ctx = getgc(can)
             Cairo.set_source_surface(ctx, img1, 0, 0)
-            Cairo.paint(ctx)
+            return Cairo.paint(ctx)
         end
 
         return @guarded signal_connect(bt_record, "clicked") do widget
@@ -84,7 +85,7 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
                 @idle_add @guarded draw(can) do widget
                     ctx = getgc(can)
                     Cairo.set_source_surface(ctx, img2, 0, 0)
-                    Cairo.paint(ctx)
+                    return Cairo.paint(ctx)
                 end
                 @idle_add lb_status2.label = "RECORDING"
                 idx = 1
@@ -114,7 +115,7 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
                 @idle_add @guarded draw(can) do widget
                     ctx = getgc(can)
                     Cairo.set_source_surface(ctx, img1, 0, 0)
-                    Cairo.paint(ctx)
+                    return Cairo.paint(ctx)
                 end
                 sleep(2)
                 @idle_add close(win)
@@ -132,16 +133,15 @@ function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::Neuro
 
     obj = create_object(; data_type = "tpt")
     add_channel!(
-        obj,
+        obj;
         data = tpt_signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],
-        unit = ["", "", "", "m/s²", "m/s²", "m/s²"]
+        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
     )
-    create_time!(obj, fs = fs)
+    create_time!(obj; fs = fs)
 
     return obj
-
 end
 
 """
@@ -158,8 +158,10 @@ Perform Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 ac
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
-function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
-
+function tpt(;
+        duration::Int64 = 20,
+        port_name::String = "/dev/ttyUSB0",
+    )::NeuroAnalyzer.NEURO
     sp = _serial_open(port_name; baudrate = 19200)
     !(!isnothing(sp)) && throw(ArgumentError("Serial port $port_name is not available"))
 
@@ -209,7 +211,7 @@ function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroA
         if !isnothing(sp_signal)
             m = match(
                 r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)",
-                sp_signal
+                sp_signal,
             )
             if !isnothing(m)
                 if length(m.captures) == 7
@@ -234,14 +236,13 @@ function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroA
 
     obj = create_object(; data_type = "tpt")
     add_channel!(
-        obj,
+        obj;
         data = tpt_signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
         type = ["orient", "orient", "orient", "accel", "accel", "accel"],
-        unit = ["", "", "", "m/s²", "m/s²", "m/s²"]
+        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
     )
-    create_time!(obj, fs = fs)
+    create_time!(obj; fs = fs)
 
     return obj
-
 end

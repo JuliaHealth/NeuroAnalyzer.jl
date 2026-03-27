@@ -26,21 +26,23 @@ Refresh ICA component plots in GUI canvas widgets.
 - The plots are generated using `plot_topo` with specific parameters for ICA visualization.
 """
 function _refresh_ica_can_set(
-    obj_reconstructed::Vector{NeuroAnalyzer.NEURO},
-    ica_can_set::Vector{Gtk4.GtkCanvas},
-    ic_idx::Vector{Int64},
-    time1::Float64,
-    time2::Float64
-)::Nothing
+        obj_reconstructed::Vector{NeuroAnalyzer.NEURO},
+        ica_can_set::Vector{Gtk4.GtkCanvas},
+        ic_idx::Vector{Int64},
+        time1::Float64,
+        time2::Float64,
+    )::Nothing
 
     # validate
-    isempty(obj_reconstructed) && throw(ArgumentError("Reconstructed objects vector cannot be empty"))
+    isempty(obj_reconstructed) &&
+        throw(ArgumentError("Reconstructed objects vector cannot be empty"))
     isempty(ica_can_set) && throw(ArgumentError("Canvas vector cannot be empty"))
     isempty(ic_idx) && throw(ArgumentError("IC indices vector cannot be empty"))
     length(obj_reconstructed) == length(ica_can_set) == length(ic_idx) ||
         throw(ArgumentError("Input vectors must have equal lengths"))
     time1 < time2 || throw(ArgumentError("Start time must be less than end time"))
-    all(1 .<= ic_idx .<= length(obj_reconstructed)) || throw(ArgumentError("IC indices must be valid"))
+    all(1 .<= ic_idx .<= length(obj_reconstructed)) ||
+        throw(ArgumentError("IC indices must be valid"))
 
     # create Cairo surfaces for each ICA component
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
@@ -49,14 +51,14 @@ function _refresh_ica_can_set(
     for idx in ic_idx
         # create topographical plot for the ICA component
         p_tmp = plot_topo(
-            obj_reconstructed[idx],
+            obj_reconstructed[idx];
             ch = datatype(obj_reconstructed[1]),  # use same channel type as first object
             seg = (time1, time2),                 # plot specified time segment
             amethod = :mean,                      # amplitude method
             imethod = :sh,                        # interpolation method
             nmethod = :minmax,                    # normalization method
             cb = false,                           # don't show color bar
-            large = false                         # don't use large plot size
+            large = false,                         # don't use large plot size
         )
         # convert plot to Cairo surface for GTK display
         cx_tmp = plot2canvas(p_tmp)
@@ -76,10 +78,9 @@ function _refresh_ica_can_set(
             # draw component index label
             Cairo.move_to(ctx_ica, 10.0, 12.0)
             Cairo.set_source_rgb(ctx_ica, 0, 0, 0) # black text
-            Cairo.show_text(ctx_ica, "IC: $can_idx")
+            return Cairo.show_text(ctx_ica, "IC: $can_idx")
         end
     end
 
     return nothing
-
 end

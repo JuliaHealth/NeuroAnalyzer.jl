@@ -33,8 +33,7 @@ function dprime(p1::Real, p2::Real)::@NamedTuple{dp::Float64, rb::Float64}
     z2 = quantile(Distributions.Normal(), p2)
 
     dp = z1 - z2
-    rb=-(z1 + z2) / 2
+    rb = -(z1 + z2) / 2
 
     return (; dp, rb)
-
 end

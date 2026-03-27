@@ -18,7 +18,7 @@ function axc2frq(c::AbstractVector, l::AbstractVector)::Vector{Float64}
 
     # find indices of local peaks in the correlation/covariance vector
     # d=2 sets the minimum distance between accepted peaks
-    p_idx = findpeaks(c, d = 2)
+    p_idx = findpeaks(c; d = 2)
 
     # extract the lag values at the peak positions
     l_pts = l[p_idx]
@@ -28,9 +28,8 @@ function axc2frq(c::AbstractVector, l::AbstractVector)::Vector{Float64}
     l_pts .+= abs(minimum(l_pts))
 
     # compute inter-peak intervals, convert to frequencies, round and de-duplicate
-    frq = sort(unique(round.(1 ./ round.(diff(l_pts), digits = 3), digits = 2)))
+    frq = sort(unique(round.(1 ./ round.(diff(l_pts); digits = 3); digits = 2)))
     Base.filter!(!isinf, frq)
 
     return frq
-
 end

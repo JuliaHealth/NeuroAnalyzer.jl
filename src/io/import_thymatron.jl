@@ -28,15 +28,14 @@ Image properties:
  1. Wysokiński A. EEG_ADC: Digitizer and Analyzer of Electroconvulsive Therapy Paper Electroencephalogram Recordings. JECT 2022; 4: 255-256
 """
 function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
-
     data_tmp = Vector{Vector{Float64}}()
     sampling_rate = 100 # = DPI
 
     typeof(file_name) == String && (file_name = [file_name])
 
     for file_idx in eachindex(file_name)
-
-        isfile(file_name[file_idx]) || throw(ArgumentError("File $(file_name[file_idx]) cannot be loaded."))
+        isfile(file_name[file_idx]) ||
+            throw(ArgumentError("File $(file_name[file_idx]) cannot be loaded."))
 
         # load data
         img = Gray.(FileIO.load(file_name[file_idx]))
@@ -109,10 +108,9 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
             eeg_time[idx] = idx * px_s
         end
 
-        eeg_signal = round.(eeg_signal, digits = 3)
+        eeg_signal = round.(eeg_signal; digits = 3)
 
         push!(data_tmp, eeg_signal)
-
     end
 
     data = zeros(length(data_tmp), length(data_tmp[1]), 1)
@@ -127,15 +125,15 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         clabels[idx] *= string(idx)
     end
     time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)],
-        digits = 4
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+        digits = 4,
     )
     epoch_time = round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)],
-        digits = 4
+        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+        digits = 4,
     )
 
-    s = _create_subject(
+    s = _create_subject(;
         id = "",
         first_name = "",
         middle_name = "",
@@ -143,9 +141,9 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
-    r = _create_recording_eeg(
+    r = _create_recording_eeg(;
         data_type = "eeg",
         file_name = file_name[1],
         file_size_mb = 0,
@@ -164,11 +162,11 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         line_frequency = 50,
         sampling_rate = sampling_rate,
         gain = ones(ch_n),
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(name = "", notes = "", design = "")
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     history = String[]
 
@@ -177,7 +175,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[]
+        :channel => Int64[],
     )
 
     locs = _initialize_locs()
@@ -185,10 +183,9 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     _initialize_locs!(obj)
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj
-
 end

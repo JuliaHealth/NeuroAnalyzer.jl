@@ -33,7 +33,6 @@ function cl2z(cl::Float64; twotailed::Bool = true)::Float64
     d = Distributions.Normal(0, 1)
 
     return twotailed ? quantile(d, 1 - (1 - cl) / 2) : quantile(d, cl)
-
 end
 
 """
@@ -52,7 +51,12 @@ Calculate the confidence interval for the mean.
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
-function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::Bool = true)::Tuple{Float64, Float64}
+function cim(
+        x::AbstractVector;
+        cl::Float64 = 0.95,
+        d::Symbol = :t,
+        twotailed::Bool = true,
+    )::Tuple{Float64, Float64}
 
     # validate
     _bin(cl, (0.0, 1.0), "cl")
@@ -65,13 +69,12 @@ function cim(x::AbstractVector; cl::Float64 = 0.95, d::Symbol = :t, twotailed::B
     df = n - 1
 
     e = if d === :t
-        crit_t(df, 1 - cl; twotailed=twotailed) * s
+        crit_t(df, 1 - cl; twotailed = twotailed) * s
     else
-        crit_z(1 - cl; twotailed=twotailed) * s
+        crit_z(1 - cl; twotailed = twotailed) * s
     end
 
     return (m - e, m + e)
-
 end
 
 """
@@ -96,20 +99,19 @@ function cimd(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     _bin(cl, (0.0, 1.0), "cl")
 
     x_sorted = sort(x)
-    n  = length(x)
+    n = length(x)
     # median quantile
-    q  = 0.5
-    z  = cl2z(cl)
+    q = 0.5
+    z = cl2z(cl)
     # half-width of the index interval
     hw = z * sqrt(n * q * (1 - q))
 
     # clamp to avoid index < 1
-    j  = max(1, ceil(Int64, n * q - hw))
+    j = max(1, ceil(Int64, n * q - hw))
     # clamp to avoid index > n
-    k  = min(n, ceil(Int64, n * q + hw))
+    k = min(n, ceil(Int64, n * q + hw))
 
     return (x_sorted[j], x_sorted[k])
-
 end
 
 """
@@ -134,8 +136,14 @@ function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     _bin(cl, (0.0, 1.0), "cl")
     size(x, 2) >= 2 || throw(ArgumentError("x must have at least 2 columns."))
 
-    x_sorted = sort(vec(median(x, dims
-=1)))
+    x_sorted = sort(
+        vec(
+            median(
+                x; dims
+                = 1
+            )
+        )
+    )
     n = size(x, 2)
     # the quantile of interest; for a median, we will use q = 0.5
     q = 0.5
@@ -170,11 +178,10 @@ function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     _in(p, (0.0, 1.0), "p")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
-    z= cl2z(cl)
-    hw= z * sqrt((p * (1 - p)) / n)
+    z = cl2z(cl)
+    hw = z * sqrt((p * (1 - p)) / n)
 
     return (p - hw, p + hw)
-
 end
 
 """
@@ -192,15 +199,18 @@ Calculate the confidence interval for a Pearson correlation coefficient computed
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
-function cir(x::AbstractVector, y::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
+function cir(
+        x::AbstractVector,
+        y::AbstractVector;
+        cl::Float64 = 0.95,
+    )::Tuple{Float64, Float64}
 
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
     length(x) > 3 || throw(ArgumentError("length(x) must be > 3 for Fisher's Z transform."))
 
-    return cir(; r=cor(x, y), n=length(x), cl=cl)
-
+    return cir(; r = cor(x, y), n = length(x), cl = cl)
 end
 
 """
@@ -231,13 +241,12 @@ function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64
     se = 1 / sqrt(n - 3)
     # Fisher Z transform: arctanh(r)
     z_score = rfz(r)
-    z_crit  = cl2z(cl)
+    z_crit = cl2z(cl)
 
     ll = tanh(z_score - z_crit * se)
     ul = tanh(z_score + z_crit * se)
 
     return (ll, ul)
-
 end
 
 """
@@ -271,7 +280,6 @@ function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     chi_u = crit_chi(df, α / 2)
 
     return (sqrt((df * s^2) / chi_l), sqrt((df * s^2) / chi_u))
-
 end
 
 """
@@ -305,5 +313,4 @@ function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     chi_u = crit_chi(df, α / 2)
 
     return ((df * v) / chi_l, (df * v) / chi_u)
-
 end

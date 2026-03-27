@@ -31,6 +31,5 @@ function ect_charge(; pw::Real, pint::Real, pf::Real, duration::Real)::Float64
     duration > 0 || throw(ArgumentError("duration must be > 0."))
 
     # unit conversion: ms × mA × Hz × s → mC requires a factor of 10⁻³
-    return pw * pint * pf * duration * 1e-3
-
+    return pw * pint * pf * duration * 1.0e-3
 end

@@ -23,12 +23,12 @@ function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
 
     for ep_idx in 2:nepochs(obj_new)
-        obj_new.data[:, :, ep_idx] = @view(obj_new.data[:, :, ep_idx]) - @view(obj_new.data[:, :, 1])
+        obj_new.data[:, :, ep_idx] =
+            @view(obj_new.data[:, :, ep_idx]) - @view(obj_new.data[:, :, 1])
     end
     push!(obj_new.history, "npl(OBJ)")
 
     return obj_new
-
 end
 
 """
@@ -45,11 +45,9 @@ Calculate non-phase-locked signal.
 - `Nothing`
 """
 function npl!(obj::NeuroAnalyzer.NEURO)::Nothing
-
     obj_new = npl(obj)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
-
 end

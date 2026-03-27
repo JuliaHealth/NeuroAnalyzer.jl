@@ -36,8 +36,7 @@ function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
-    return (k1=sqrt(n), k2=1 + 3.222 * log10(n))
-
+    return (k1 = sqrt(n), k2 = 1 + 3.222 * log10(n))
 end
 
 """
@@ -57,10 +56,11 @@ Calculate the slope of the line passing through two points.
 function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
     # validate
-    p2[1] != p1[1] || throw(ArgumentError("p2[1] and p1[1] must not be equal (vertical line has no slope)."))
+    p2[1] != p1[1] || throw(
+        ArgumentError("p2[1] and p1[1] must not be equal (vertical line has no slope)."),
+    )
 
     return (p2[2] - p1[2]) / (p2[1] - p1[1])
-
 end
 
 """
@@ -77,9 +77,7 @@ Calculate the Euclidean distance between two points.
 - `Float64`: Euclidean distance `√((x₂−x₁)² + (y₂−y₁)²)`
 """
 function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
-
     return sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
-
 end
 
 """
@@ -105,7 +103,11 @@ Named tuple:
 - `x_t::Matrix{Bool}`: boolean mask; `true` where the condition holds
 - `n::Int64`: number of elements satisfying the condition
 """
-function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol = :g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
+function count_thresh(
+        x::AbstractMatrix;
+        t::Real,
+        t_type::Symbol = :g,
+    )::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
 
     # validate
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
@@ -122,8 +124,7 @@ function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol = :g)::@NamedTu
         x .<= t
     end
 
-    return (x_t=Matrix{Bool}(x_t), n=count(x_t))
-
+    return (x_t = Matrix{Bool}(x_t), n = count(x_t))
 end
 
 """
@@ -154,7 +155,6 @@ function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float6
     elseif type === :l
         return count(<(v), stat_dist) / length(stat_dist)
     end
-
 end
 
 """
@@ -187,7 +187,6 @@ function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
     end
 
     return s_new
-
 end
 
 """
@@ -211,13 +210,13 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
 
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
-    2 <= ndims(s) <= 3 || throw(ArgumentError("permute() only supports 2- and 3-dimensional arrays."))
+    2 <= ndims(s) <= 3 ||
+        throw(ArgumentError("permute() only supports 2- and 3-dimensional arrays."))
     size(s, 2) >= 2 || throw(ArgumentError("Second dimension of s must be ≥ 2."))
 
     ncols = size(s, 2)
 
     if ndims(s) == 2
-
         nrows = size(s, 1)
         s_new = zeros(n, nrows, ncols)
 
@@ -231,10 +230,9 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
         end
 
     elseif ndims(s) == 3
-
-        nrows  = size(s, 1)
+        nrows = size(s, 1)
         ep_n = size(s, 3)
-        s_new  = zeros(n, nrows, ncols, ep_n)
+        s_new = zeros(n, nrows, ncols, ep_n)
 
         # Thread over permutations: each idx1 writes to s_new[idx1, :, :, :]
         # the two inner loops are sequential (short; threading would add overhead)
@@ -243,14 +241,13 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
             for idx2 in 1:nrows
                 x = rand(2:ncols)
                 s_new[idx1, idx2, 1:(ncols - x + 1), ep_idx] .= @view s[idx2, x:end, ep_idx]
-                s_new[idx1, idx2, (ncols - x + 2):end, ep_idx] .= @view s[idx2, 1:(x - 1), ep_idx]
+                s_new[idx1, idx2, (ncols - x + 2):end, ep_idx] .=
+                    @view s[idx2, 1:(x - 1), ep_idx]
             end
         end
-
     end
 
     return s_new
-
 end
 
 """
@@ -274,7 +271,6 @@ function logit(p::Float64)::Float64
     _in(p, (0.0, 1.0), "p")
 
     return log(p / (1 - p))
-
 end
 
 """
@@ -300,7 +296,6 @@ function sumsq(x::AbstractVector)::Float64
     m = mean(x)
 
     return sum((x .- m) .^ 2)
-
 end
 
 """
@@ -322,7 +317,6 @@ function rmna(x::AbstractVector)::Vector{Float64}
     x_clean = collect(skipmissing(x))
 
     return Float64.(Base.filter(!isnan, x_clean))
-
 end
 
 """
@@ -344,7 +338,6 @@ function df(x::AbstractVector)::Int64
     length(x) >= 1 || throw(ArgumentError("x must not be empty."))
 
     return length(x) - 1
-
 end
 
 """
@@ -366,5 +359,4 @@ function center(x::AbstractVector)::Vector{Float64}
     length(x) >= 1 || throw(ArgumentError("x must not be empty."))
 
     return x .- mean(x)
-
 end

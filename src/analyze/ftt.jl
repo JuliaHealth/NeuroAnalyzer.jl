@@ -27,21 +27,21 @@ Named tuple:
 - `t_sdsd::Float64`: standard deviation of successive differences [ms]: `std(diff(ITI))`
 """
 function ftt_analyze(
-    t::@NamedTuple{
-        taps::Vector{Int64},
-        tap_t::Vector{Vector{Float64}},
-        tap_d::Vector{Vector{Float64}},
-        taps_int::Vector{Int64},
-        tap_t_int::Vector{Vector{Float64}},
-        tap_d_int::Vector{Vector{Float64}}
+        t::@NamedTuple{
+            taps::Vector{Int64},
+            tap_t::Vector{Vector{Float64}},
+            tap_d::Vector{Vector{Float64}},
+            taps_int::Vector{Int64},
+            tap_t_int::Vector{Vector{Float64}},
+            tap_d_int::Vector{Vector{Float64}},
+        }
+    )::@NamedTuple{
+        n::Int64,
+        t_mean::Float64,
+        t_median::Float64,
+        t_rmssd::Float64,
+        t_sdsd::Float64,
     }
-)::@NamedTuple{
-    n::Int64,
-    t_mean::Float64,
-    t_median::Float64,
-    t_rmssd::Float64,
-    t_sdsd::Float64
-}
 
     # total tap count across all trials
     n = sum(t.taps)
@@ -54,20 +54,19 @@ function ftt_analyze(
         if length(t.tap_t[idx]) == 1
             push!(t_iti, t.tap_t[idx][1])
         elseif length(t.tap_t[idx]) > 1
-            append!(t_iti, round.(diff(t.tap_t[idx]), digits = 1))
+            append!(t_iti, round.(diff(t.tap_t[idx]); digits = 1))
         end
     end
 
-    t_mean = round(mean(t_iti), digits = 1)
-    t_median = round(median(t_iti), digits = 1)
+    t_mean = round(mean(t_iti); digits = 1)
+    t_median = round(median(t_iti); digits = 1)
 
     # successive differences of the ITI vector (difference-of-differences)
     sd = diff(t_iti)
 
     # sum(abs2, x) = Σ xᵢ² - avoids allocating x .^ 2 array.
-    t_rmssd = round(sqrt(sum(abs2, sd) / length(sd)), digits = 1)
-    t_sdsd = round(std(sd), digits = 1)
+    t_rmssd = round(sqrt(sum(abs2, sd) / length(sd)); digits = 1)
+    t_sdsd = round(std(sd); digits = 1)
 
-    return (;n, t_mean, t_median, t_rmssd, t_sdsd)
-
+    return (; n, t_mean, t_median, t_rmssd, t_sdsd)
 end

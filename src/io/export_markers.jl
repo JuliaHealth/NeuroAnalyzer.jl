@@ -20,12 +20,14 @@ If the markers table is empty, a warning is issued and no file is written.
 function export_markers(
     obj::NeuroAnalyzer.NEURO;
     file_name::String,
-    overwrite::Bool = false
+    overwrite::Bool = false,
 )::Nothing
-
     isfile(file_name) && !overwrite &&
-        throw(ArgumentError(
-            "File $file_name already exists; use overwrite=true to overwrite."))
+        throw(
+            ArgumentError(
+                "File $file_name already exists; use overwrite=true to overwrite.",
+            ),
+        )
 
     if DataFrames.nrow(obj.markers) == 0
         @warn "No markers to export; $file_name was not written."
@@ -35,5 +37,4 @@ function export_markers(
     CSV.write(file_name, obj.markers)
 
     return nothing
-
 end

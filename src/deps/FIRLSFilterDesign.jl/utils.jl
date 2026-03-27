@@ -6,7 +6,9 @@ function to_mat(y::AbstractVector)
     return ymat
 end
 function to_mat(
-        pairs::Vector{Pair{T1, T2}} where {T1 <: Tuple{<:Real, <:Real}, T2 <: Union{Real, Tuple{<:Real, <:Real}}}
+        pairs::Vector{
+            Pair{T1, T2},
+        } where {T1 <: Tuple{<:Real, <:Real}, T2 <: Union{Real, Tuple{<:Real, <:Real}}},
     )
     xmat, ymat = zeros(length(pairs), 2), zeros(length(pairs), 2)
     for i in eachindex(pairs)
@@ -17,7 +19,10 @@ function to_mat(
 end
 
 to_toeplitz(vals) = to_toeplitz(vals, vals)
-function to_toeplitz(vals_left::AbstractVector{T1}, vals_top::AbstractVector{T2}) where {T1, T2}
+function to_toeplitz(
+        vals_left::AbstractVector{T1},
+        vals_top::AbstractVector{T2},
+    ) where {T1, T2}
     @assert vals_left[1] == vals_top[1]
     N_rows, N_cols = length(vals_left), length(vals_top)
     A = zeros(promote_type(T1, T2), N_rows, N_cols)
@@ -31,7 +36,10 @@ function to_toeplitz(vals_left::AbstractVector{T1}, vals_top::AbstractVector{T2}
 end
 
 to_hankel(vals) = to_hankel(vals, vals)
-function to_hankel(vals_left::AbstractVector{T1}, vals_bottom::AbstractVector{T2}) where {T1, T2}
+function to_hankel(
+        vals_left::AbstractVector{T1},
+        vals_bottom::AbstractVector{T2},
+    ) where {T1, T2}
     @assert vals_left[end] == vals_bottom[1]
     N_rows, N_cols = length(vals_left), length(vals_bottom)
     A = zeros(promote_type(T1, T2), N_rows, N_cols)
@@ -54,7 +62,7 @@ function nan2zero!(x::Array{T}) where {T}
 end
 
 function freqz(h::Vector{T}; fs::Real = 1, N = 1000) where {T}
-    ω = range(0, stop = π, length = N)
+    ω = range(0; stop = π, length = N)
     H = zeros(Complex{T}, length(ω))
     for (idx, h_n) in enumerate(h)
         n = idx - 1

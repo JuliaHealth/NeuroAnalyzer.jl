@@ -20,7 +20,6 @@ The NIRS format is a MATLAB `.mat` file containing raw intensity data (`d`), a t
 1. https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """
 function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".nirs" ||
@@ -67,9 +66,11 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # channel labels: "S<src>_D<det> <wavelength_nm>"
     clabels = [
         replace(
-            "S$(meas[i,1])_D$(meas[i,2]) $(wavelengths[wavelength_index[i]])",
-            ".0" => "")
-        for i in 1:ch_n]
+            "S$(meas[i, 1])_D$(meas[i, 2]) $(wavelengths[wavelength_index[i]])",
+            ".0" => "",
+        )
+        for i in 1:ch_n
+    ]
 
     # ------------------------------------------------------------------ #
     # signal data (intensity, raw)                                       #
@@ -88,7 +89,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[]
+            :channel => Int64[],
         )
     else
         stim = ndims(stim_raw) == 1 ? reshape(stim_raw, :, 1) : Matrix(stim_raw)
@@ -98,7 +99,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[]
+            :channel => Int64[],
         )
         for col in 1:s_n
             for samp in findall(!iszero, stim[:, col])
@@ -142,7 +143,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         x, y, z = _locs_norm(x, y, z)
     else
         x_n, y_n = _locs_norm(x, y)
-        x = x_n; y = y_n
+        x = x_n
+        y = y_n
     end
 
     n_opt = length(opt_labels)
@@ -155,7 +157,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         :loc_z => z,
         :loc_radius_sph => zeros(n_opt),
         :loc_theta_sph => zeros(n_opt),
-        :loc_phi_sph => zeros(n_opt)
+        :loc_phi_sph => zeros(n_opt),
     )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -165,15 +167,16 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(
+    s = _create_subject(;
         id = "", first_name = "",
         middle_name = "",
         last_name = "",
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1)
-    r = _create_recording_nirs(
+        height = -1,
+    )
+    r = _create_recording_nirs(;
         data_type = "nirs",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -191,18 +194,19 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         det_labels = det_labels,
         opt_labels = opt_labels,
         sampling_rate = sampling_rate,
-        bad_channels = zeros(Bool, size(data, 1))
+        bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(name = "", notes = "", design = "")
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    e = _create_experiment(; name = "", notes = "", design = "")
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
 
-    _info("Imported: " *
+    _info(
+        "Imported: " *
         uppercase(obj.header.recording[:data_type]) *
         " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end], digits=2)) s)")
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
+    )
 
     return obj
-
 end

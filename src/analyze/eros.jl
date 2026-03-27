@@ -47,30 +47,31 @@ Named tuple:
 - `t::Vector{Float64}`: time
 """
 function eros(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    pad::Int64 = 0,
-    method::Symbol = :stft,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    db::Bool = true,
-    gw::Real = 5,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    wt::T = wavelet(Morlet(2π), β = 2)
-)::@NamedTuple{
-    s::Array{Float64, 3},
-    f::Vector{Float64},
-    t::Vector{Float64}
-} where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        pad::Int64 = 0,
+        method::Symbol = :stft,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        db::Bool = true,
+        gw::Real = 5,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        wt::T = wavelet(Morlet(2π), β = 2),
+    )::@NamedTuple{
+        s::Array{Float64, 3},
+        f::Vector{Float64},
+        t::Vector{Float64},
+    } where {T <: CWT}
 
     # validate
-    length(get_channel(obj; ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(get_channel(obj; ch = ch)) == 1 ||
+        throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel
     spec_data = NeuroAnalyzer.spectrogram(
-        obj,
+        obj;
         ch = ch,
         method = method,
         nt = nt,
@@ -81,7 +82,7 @@ function eros(
         w = w,
         ncyc = ncyc,
         gw = gw,
-        wt = wt
+        wt = wt,
     )
     f = spec_data.f
     t = spec_data.t
@@ -89,11 +90,10 @@ function eros(
     s = spec_data.p[1, :, :, :]
 
     if datatype(obj) in ["erp", "erf"]
-        s = cat(s[:, :, 1], dropdims(mean(s, dims = 3), dims = 3), dims = 3)
+        s = cat(s[:, :, 1], dropdims(mean(s; dims = 3); dims = 3); dims = 3)
     else
-        s = mean(s, dims = 3)
+        s = mean(s; dims = 3)
     end
 
     return (; s, f, t)
-
 end

@@ -54,8 +54,7 @@ function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
         o .= (x .< lo) .| (x .> hi)
 
     elseif method === :z
-
-        z  = z_score(x)
+        z = z_score(x)
         o .= (z .< -3) .| (z .> 3)
 
     elseif method === :g
@@ -70,7 +69,7 @@ function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
         removed = Int[]
         for _ in (length(x_tmp)):-1:7
             m_idx_local = argmax(x_tmp)
-            if grubbs(x_tmp; t=1)
+            if grubbs(x_tmp; t = 1)
                 # map local index back to the original index
                 orig_idx = _original_index(m_idx_local, removed, length(x))
                 o[orig_idx] = true
@@ -83,11 +82,11 @@ function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
         end
 
         # lower-tail pass: reset working copy and repeat for the minimum
-        x_tmp   = collect(Float64, x)
+        x_tmp = collect(Float64, x)
         removed = Int[]
         for _ in (length(x_tmp)):-1:7
             m_idx_local = argmin(x_tmp)
-            if grubbs(x_tmp; t=-1)
+            if grubbs(x_tmp; t = -1)
                 orig_idx = _original_index(m_idx_local, removed, length(x))
                 o[orig_idx] = true
                 push!(removed, orig_idx)
@@ -99,7 +98,6 @@ function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
     end
 
     return o
-
 end
 
 """
@@ -141,10 +139,10 @@ function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
     alpha < 1.0 || throw(ArgumentError("alpha must be < 1."))
     t in (-1, 0, 1) || throw(ArgumentError("t must be -1, 0, or 1."))
 
-    n  = length(x)
+    n = length(x)
     df = n - 2
-    m  = mean(x)
-    s  = std(x)
+    m = mean(x)
+    s = std(x)
 
     two_tailed, g = if t == 0
         true, maximum(abs.(x .- m)) / s
@@ -160,5 +158,4 @@ function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
     threshold = (n - 1) / sqrt(n) * sqrt(t_crit^2 / (df + t_crit^2))
 
     return g >= threshold
-
 end

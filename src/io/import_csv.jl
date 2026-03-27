@@ -24,7 +24,6 @@ Gzip-compressed files (`.csv.gz`) are decompressed automatically by `CSV.jl`.
 - `NeuroAnalyzer.NEURO`
 """
 function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -40,7 +39,7 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         time_pts_raw = Float64.(df[!, 1])
         data = Matrix(df[:, 2:end])' # → (ch_n × n_samples)
         ch_n = DataFrames.ncol(df) - 1
-        clabels_tmp  = String.(names(df)[2:end])
+        clabels_tmp = String.(names(df)[2:end])
     else
         # layout: rows = channels, columns = time points
         # first column holds channel names; remaining column headers are time
@@ -63,8 +62,9 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
     t0 = time_pts_raw[1]
-    time_pts = round.(range(t0; step = 1/sampling_rate, length = n_samples);  digits = 4)
-    epoch_time = round.(range(t0; step = 1/sampling_rate, length = size(data,2)); digits = 4)
+    time_pts = round.(range(t0; step = 1 / sampling_rate, length = n_samples); digits = 4)
+    epoch_time =
+        round.(range(t0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
     # ------------------------------------------------------------------ #
     # channel metadata                                                   #
@@ -78,17 +78,19 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[])
+        :channel => Int64[]
+    )
 
     # ------------------------------------------------------------------ #
     # assemble NEURO object                                               #
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(
+    s = _create_subject(;
         id = "", first_name = "", middle_name = "", last_name = "",
-        head_circumference = -1, handedness = "", weight = -1, height = -1)
-    r = _create_recording_eeg(
+        head_circumference = -1, handedness = "", weight = -1, height = -1
+    )
+    r = _create_recording_eeg(;
         data_type = "eeg",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -109,18 +111,19 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         gain = ones(ch_n),
         bad_channels = zeros(Bool, ch_n)
     )
-    e   = _create_experiment(name = "", notes = "", design = "")
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    e = _create_experiment(; name = "", notes = "", design = "")
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     locs = _initialize_locs()
-    obj  = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
+    obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
 
-    _info("Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+            "; $(round(obj.time_pts[end], digits = 2)) s)",
+    )
 
     return obj
-
 end

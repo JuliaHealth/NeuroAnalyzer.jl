@@ -28,19 +28,22 @@ end
 
 """Assert that `a` is 2-dimensional."""
 function _chk2d(a::AbstractArray)::Nothing
-    ndims(a) == 2 || throw(ArgumentError("Input array must be 2-dimensional; got $(ndims(a))."))
+    ndims(a) == 2 ||
+        throw(ArgumentError("Input array must be 2-dimensional; got $(ndims(a))."))
     return nothing
 end
 
 """Assert that `a` is 3-dimensional."""
 function _chk3d(a::AbstractArray)::Nothing
-    ndims(a) == 3 || throw(ArgumentError("Input array must be 3-dimensional; got $(ndims(a))."))
+    ndims(a) == 3 ||
+        throw(ArgumentError("Input array must be 3-dimensional; got $(ndims(a))."))
     return nothing
 end
 
 """Assert that `a` is 4-dimensional."""
 function _chk4d(a::AbstractArray)::Nothing
-    ndims(a) == 4 || throw(ArgumentError("Input array must be 4-dimensional; got $(ndims(a))."))
+    ndims(a) == 4 ||
+        throw(ArgumentError("Input array must be 4-dimensional; got $(ndims(a))."))
     return nothing
 end
 
@@ -52,19 +55,22 @@ end
 Assert that tuple `t` contains two values in strict ascending order and lies within the reference range `r`. The `type` argument selects the bound type: `:in` (closed) or `:bin` (open).
 """
 function _check_tuple(
-    t::Tuple{Real, Real},
-    r::Tuple{Real, Real},
-    name::Union{Nothing, String}=nothing,
-    type::Symbol=:in
-)::Nothing
+        t::Tuple{Real, Real},
+        r::Tuple{Real, Real},
+        name::Union{Nothing, String} = nothing,
+        type::Symbol = :in,
+    )::Nothing
     _check_var(type, [:in, :bin], "type")
     label = isnothing(name) ? "Tuple" : name
-    t[1] < t[2] || throw(ArgumentError("$label must contain two strictly ascending values."))
+    t[1] < t[2] ||
+        throw(ArgumentError("$label must contain two strictly ascending values."))
     if r != t
         if type === :bin
-            (t[1] > r[1] && t[2] < r[2]) || throw(ArgumentError("$label must be in ($(r[1]), $(r[2]))."))
+            (t[1] > r[1] && t[2] < r[2]) ||
+                throw(ArgumentError("$label must be in ($(r[1]), $(r[2]))."))
         else
-            (t[1] >= r[1] && t[2] <= r[2]) || throw(ArgumentError("$label must be in [$(r[1]), $(r[2])]."))
+            (t[1] >= r[1] && t[2] <= r[2]) ||
+                throw(ArgumentError("$label must be in [$(r[1]), $(r[2])]."))
         end
     end
     return nothing
@@ -75,7 +81,10 @@ end
 # ---------------------------------------------------------------------------
 
 """Assert that all integer channel indices in `ch` are within `[1, size(s, 1)]`."""
-function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
+function _check_channels(
+        s::AbstractArray,
+        ch::Union{Int64, Vector{Int64}, AbstractRange},
+    )::Nothing
     isa(ch, Int64) && (ch = [ch])
     n = size(s, 1)
     for ch_idx in ch
@@ -85,25 +94,36 @@ function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, Abstr
 end
 
 """Assert that all channel names in `ch` exist in the object."""
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Nothing
-    _check_channels(get_channel(obj; type="all"), ch)
+function _check_channels(
+        obj::NeuroAnalyzer.NEURO,
+        ch::Union{String, Vector{String}, Regex},
+    )::Nothing
+    _check_channels(get_channel(obj; type = "all"), ch)
     return nothing
 end
 
 """Assert that all channel names in `ch` exist among channels of `type`."""
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex}, type::String)::Nothing
-    _check_channels(get_channel(obj; type=type), ch)
+function _check_channels(
+        obj::NeuroAnalyzer.NEURO,
+        ch::Union{String, Vector{String}, Regex},
+        type::String,
+    )::Nothing
+    _check_channels(get_channel(obj; type = type), ch)
     return nothing
 end
 
 """Assert that all channel name(s) in `ch` are present in `ch_ref`."""
-function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String, Vector{String}, Regex})::Nothing
+function _check_channels(
+        ch_ref::Union{String, Vector{String}},
+        ch::Union{String, Vector{String}, Regex},
+    )::Nothing
     isa(ch_ref, String) && (ch_ref = [ch_ref])
     isa(ch, String) && (ch = [ch])
     length(ch) > 0 || throw(ArgumentError("ch must not be empty."))
     length(ch_ref) > 0 || throw(ArgumentError("ch_ref must not be empty."))
     for label in ch
-        label in ch_ref || throw(ArgumentError("$label does not match any label in ch_ref."))
+        label in ch_ref ||
+            throw(ArgumentError("$label does not match any label in ch_ref."))
     end
     return nothing
 end
@@ -113,7 +133,10 @@ end
 # ---------------------------------------------------------------------------
 
 """Assert that all epoch indices are within `[1, nepochs(obj)]`."""
-function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
+function _check_epochs(
+        obj::NeuroAnalyzer.NEURO,
+        epoch::Union{Int64, Vector{Int64}, AbstractRange},
+    )::Nothing
     n = nepochs(obj)
     for idx in epoch
         (1 <= idx <= n) || throw(ArgumentError("epoch must be in [1, $n], got $idx."))
@@ -130,7 +153,8 @@ end
 """Assert that the time segment `[from, to]` lies within `obj`'s time axis."""
 function _check_segment(obj::NeuroAnalyzer.NEURO, from::Real, to::Real)::Nothing
     t0, t1 = obj.time_pts[1], obj.time_pts[end]
-    to >= from || throw(ArgumentError("Segment end ($to) must be ≥ than segment start ($from)."))
+    to >= from ||
+        throw(ArgumentError("Segment end ($to) must be ≥ than segment start ($from)."))
     from >= t0 || throw(ArgumentError("Segment start must be ≥ $t0."))
     to <= t1 || throw(ArgumentError("Segment end must be ≤ $t1."))
     return nothing
@@ -185,7 +209,8 @@ end
 
 """Assert that `marker` is a known marker value in `obj`."""
 function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)::Nothing
-    marker in unique(obj.markers[!, :value]) || throw(ArgumentError("Marker '$marker' not found."))
+    marker in unique(obj.markers[!, :value]) ||
+        throw(ArgumentError("Marker '$marker' not found."))
     return nothing
 end
 
@@ -194,12 +219,23 @@ end
 # ---------------------------------------------------------------------------
 
 """Assert that `obj`'s data type matches `type` (String or Vector{String})."""
-function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{String, Vector{String}})::Nothing
+function _check_datatype(
+        obj::NeuroAnalyzer.NEURO,
+        type::Union{String, Vector{String}},
+    )::Nothing
     dt = datatype(obj)
     if type isa String
-        dt == type || throw(ArgumentError("This function requires a $(uppercase(type)) object; got $(uppercase(dt))."))
+        dt == type || throw(
+            ArgumentError(
+                "This function requires a $(uppercase(type)) object; got $(uppercase(dt)).",
+            ),
+        )
     else
-        dt in type|| throw(ArgumentError("This function requires one of $(uppercase.(type)); got $(uppercase(dt))."))
+        dt in type || throw(
+            ArgumentError(
+                "This function requires one of $(uppercase.(type)); got $(uppercase(dt)).",
+            ),
+        )
     end
     return nothing
 end
@@ -234,7 +270,7 @@ function _check_stuplei(s::String)::Bool
     s = replace(s, " " => "")
     all(c -> c in ('0':'9'..., ',', '(', ')'), s) || return false
     return startswith(s, "(") && endswith(s, ")") &&
-           length(split(s, ",")) == 2 && length(s) > 2
+        length(split(s, ",")) == 2 && length(s) > 2
 end
 
 """Return `true` if `s` is a valid float 2-tuple string, e.g. `"(1.5,2.0)"`."""
@@ -242,7 +278,7 @@ function _check_stuplef(s::String)::Bool
     s = replace(s, " " => "")
     all(c -> c in ('0':'9'..., '.', ',', '(', ')'), s) || return false
     return startswith(s, "(") && endswith(s, ")") &&
-           length(split(s, ",")) == 2 && length(s) > 2
+        length(split(s, ",")) == 2 && length(s) > 2
 end
 
 """Return `true` if `s` consists entirely of digits and at most one decimal point."""

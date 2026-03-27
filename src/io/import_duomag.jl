@@ -18,7 +18,6 @@ amplitudes scaled to μV on import.
 - `NeuroAnalyzer.NEURO`
 """
 function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -34,13 +33,12 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
     if ext == ".ascii"
         sw_version, subject, subject_id, record_id, record_created,
-        sampling_interval, sampling_interval_unit,
-        sensitivity, sensitivity_unit,
-        signal_count, samples_count,
-        stim_sample, stim_intens, coil_type,
-        markers_pos, markers_neg,
-        mep_signal = open(file_name, "r") do f
-
+            sampling_interval, sampling_interval_unit,
+            sensitivity, sensitivity_unit,
+            signal_count, samples_count,
+            stim_sample, stim_intens, coil_type,
+            markers_pos, markers_neg,
+            mep_signal = open(file_name, "r") do f
             readline(f) # software name (unused)
             readline(f) # blank
             sw_version = split(strip(readline(f)), '=')[2]
@@ -52,9 +50,12 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             readline(f)
             readline(f) # marker latency unit (unused)
             sampling_interval = parse(Int, split(strip(readline(f)), '=')[2])
-            sampling_interval_unit = replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
-            sensitivity = parse(Float64,
-                replace(split(strip(readline(f)), '=')[2], ',' => '.'))
+            sampling_interval_unit =
+                replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
+            sensitivity = parse(
+                Float64,
+                replace(split(strip(readline(f)), '=')[2], ',' => '.')
+            )
             sensitivity_unit = replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
             signal_count = parse(Int, split(strip(readline(f)), '=')[2])
             readline(f) # reserved field
@@ -77,28 +78,29 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             # signal matrix: rows = samples, columns = signals
             mep_signal = zeros(samples_count[1], signal_count)
             for idx in axes(mep_signal, 1)
-                mep_signal[idx, :] = parse.(Float64,
-                    replace.(split(strip(readline(f)), ' '), ',' => '.'))
+                mep_signal[idx, :] = parse.(
+                    Float64,
+                    replace.(split(strip(readline(f)), ' '), ',' => '.')
+                )
             end
 
-            sw_version, subject, subject_id, record_id, record_created,
-            sampling_interval, sampling_interval_unit,
-            sensitivity, sensitivity_unit,
-            signal_count, samples_count,
-            stim_sample, stim_intens, coil_type,
-            markers_pos, markers_neg, mep_signal
+            return sw_version, subject, subject_id, record_id, record_created,
+                sampling_interval, sampling_interval_unit,
+                sensitivity, sensitivity_unit,
+                signal_count, samples_count,
+                stim_sample, stim_intens, coil_type,
+                markers_pos, markers_neg, mep_signal
         end
         # file closed here
 
     elseif ext == ".m"
         sw_version, subject, subject_id, record_id, record_created,
-        sampling_interval, sampling_interval_unit,
-        sensitivity, sensitivity_unit,
-        signal_count, samples_count,
-        stim_sample, stim_intens, coil_type,
-        markers_pos, markers_neg,
-        mep_signal = open(file_name, "r") do f
-
+            sampling_interval, sampling_interval_unit,
+            sensitivity, sensitivity_unit,
+            signal_count, samples_count,
+            stim_sample, stim_intens, coil_type,
+            markers_pos, markers_neg,
+            mep_signal = open(file_name, "r") do f
             readline(f)
             record_info = readline(f)
             readline(f)
@@ -114,8 +116,10 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             # helper: strip MATLAB struct wrapper and split on comma   #
             # -------------------------------------------------------- #
             parse_struct(s, prefix) = begin
-                s = replace(s, prefix => "", ");" => "", "\xb5" => "μ",
-                              "'" => "", "{" => "", "}" => "", ";" => " ")
+                s = replace(
+                    s, prefix => "", ");" => "", "\xb5" => "μ",
+                    "'" => "", "{" => "", "}" => "", ";" => " "
+                )
                 split(s, ',')
             end
 
@@ -137,7 +141,8 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             sensitivity_unit = split(si[2], ' ')[2]
 
             sti = parse_struct(stimulations_info, "StimulationInfo = struct(")
-            popfirst!(sti); popfirst!(sti)
+            popfirst!(sti)
+            popfirst!(sti)
             stim_intens = Int64[]
             coil_type = String[]
             for idx in 2:2:(2 * signal_count)
@@ -169,12 +174,12 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
                 tmp[1] == "A-" && (markers_neg[stim_number] = parse(Int64, tmp[2]))
             end
 
-            sw_version, subject, subject_id, record_id, record_created,
-            sampling_interval, sampling_interval_unit,
-            sensitivity, sensitivity_unit,
-            signal_count, samples_count,
-            stim_sample, stim_intens, coil_type,
-            markers_pos, markers_neg, mep_signal
+            return sw_version, subject, subject_id, record_id, record_created,
+                sampling_interval, sampling_interval_unit,
+                sensitivity, sensitivity_unit,
+                signal_count, samples_count,
+                stim_sample, stim_intens, coil_type,
+                markers_pos, markers_neg, mep_signal
         end
         # file closed here
 
@@ -197,26 +202,27 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     # unit conversion to μV                                              #
     # ------------------------------------------------------------------ #
-    sensitivity_unit == "mV" && (data .*= 1e3)
-    sensitivity_unit == "V"  && (data .*= 1e6)
+    sensitivity_unit == "mV" && (data .*= 1.0e3)
+    sensitivity_unit == "V" && (data .*= 1.0e6)
 
     # sampling interval to sampling rate
-    sampling_interval_unit == "μs" && (sampling_interval *= 1e-6)
-    sampling_interval_unit == "ms" && (sampling_interval *= 1e-3)
+    sampling_interval_unit == "μs" && (sampling_interval *= 1.0e-6)
+    sampling_interval_unit == "ms" && (sampling_interval *= 1.0e-3)
     sampling_rate = round(Int64, 1 / sampling_interval)
 
     # ------------------------------------------------------------------ #
     # channel labels                                                      #
     # ------------------------------------------------------------------ #
-    ch_n    = signal_count
+    ch_n = signal_count
     clabels = ["MEP$idx" for idx in 1:ch_n]
 
     # ------------------------------------------------------------------ #
     # time axis - zero-aligned to the stimulation sample                  #
     # ------------------------------------------------------------------ #
-    n_samples  = size(data, 2) * size(data, 3)
-    time_pts   = round.(
-        range(0, step = 1/sampling_rate, length = n_samples) .- (stim_sample[1] / sampling_rate), digits = 4)
+    n_samples = size(data, 2) * size(data, 3)
+    time_pts = round.(
+        range(0; step = 1 / sampling_rate, length = n_samples) .- (stim_sample[1] / sampling_rate); digits = 4
+    )
     epoch_time = time_pts
 
     # convert .ascii marker positions (ms) to sample indices
@@ -236,7 +242,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(
+    s = _create_subject(;
         id = string(subject_id),
         first_name = "",
         middle_name = "",
@@ -244,8 +250,9 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1)
-    r = _create_recording_mep(
+        height = -1
+    )
+    r = _create_recording_mep(;
         data_type = "mep",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -266,24 +273,26 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         markers_neg = markers_neg,
         bad_channels = zeros(Bool, ch_n)
     )
-    e   = _create_experiment(name = "", notes = "", design = "")
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    e = _create_experiment(; name = "", notes = "", design = "")
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     markers_df = DataFrame(
         :id => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[])
+        :channel => Int64[]
+    )
 
     locs = _initialize_locs()
-    obj  = NeuroAnalyzer.NEURO(hdr, String[], markers_df, locs, time_pts, epoch_time, data)
+    obj = NeuroAnalyzer.NEURO(hdr, String[], markers_df, locs, time_pts, epoch_time, data)
 
-    _info("Imported: " *
-        uppercase(obj.header.recording[:data_type]) *
-        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-        "; $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+            "; $(round(obj.time_pts[end], digits = 2)) s)",
+    )
 
     return obj
-
 end

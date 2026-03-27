@@ -16,7 +16,6 @@ The DAT format has a 20-line text header followed by space-separated data rows w
 - `DataFrame`: table with columns `:event`, `:trial`, `:response`, `:type`, `:correct`
 """
 function import_dat(file_name)::DataFrame
-
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".dat" ||
@@ -31,20 +30,22 @@ function import_dat(file_name)::DataFrame
         ignorerepeated = true,
         skipto = 21, # 20-line header; data starts at line 21
         header = 0, # no column-header row in the data block
-        DataFrame
+        DataFrame,
     )
 
     expected_cols = [:event, :trial, :response, :type, :correct]
     DataFrames.ncol(dat) == length(expected_cols) ||
-        throw(ArgumentError(
-            "$file_name has $(DataFrames.ncol(dat)) data columns; " *
-            "expected $(length(expected_cols)) " *
-            "($(join(expected_cols, ", ")))."))
+        throw(
+            ArgumentError(
+                "$file_name has $(DataFrames.ncol(dat)) data columns; " *
+                "expected $(length(expected_cols)) " *
+                "($(join(expected_cols, ", "))).",
+            ),
+        )
     DataFrames.rename!(dat, expected_cols)
 
     # convert event index from 1-based (file convention) to 0-based
     dat[!, :event] = Int64.(dat[!, :event]) .- 1
 
     return dat
-
 end

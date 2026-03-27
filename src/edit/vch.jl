@@ -55,5 +55,4 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
     end
 
     return vc
-
 end

@@ -19,9 +19,9 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
  1. https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 """
 function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
-
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".snirf" || throw(ArgumentError("This is not SNIRF file."))
+    lowercase(splitext(file_name)[2]) == ".snirf" ||
+        throw(ArgumentError("This is not SNIRF file."))
 
     nirs = nothing
     try
@@ -44,10 +44,14 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     n_id = "nirs"
     n != 0 &&
         any(occursin.("nirs$n", keys(nirs))) ||
-            throw(ArgumentError("No data for subject $n found in the recording."))
+        throw(ArgumentError("No data for subject $n found in the recording."))
     if any(occursin.("nirs1", keys(nirs)))
         n != 0 ||
-            throw(ArgumentError("This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."))
+            throw(
+            ArgumentError(
+                "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter.",
+            ),
+        )
         n_id = "nirs$n"
     end
 
@@ -178,7 +182,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     end
     data_n -= 1
     data_n > 1 && _warn(
-        "Multiple data SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+        "Multiple data SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
     )
 
     d_id = "data1"
@@ -191,7 +195,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     else
         sampling_rate = 1 / time_pts[2]
         time_pts = collect(
-            time_pts[1]:(1 / sampling_rate):(time_pts[1] + size(data, 2) * time_pts[2])
+            time_pts[1]:(1 / sampling_rate):(time_pts[1] + size(data, 2) * time_pts[2]),
         )[1:(end - 1)]
     end
     time_pts .-= time_pts[1]
@@ -284,32 +288,32 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         data_type_label = replace(lowercase.(data_type_label), "bfi" => "nirs_bfi")
         # Hemodynamic response function for change in optical density
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dod" => "nirs_hrf_dod"
+            lowercase.(data_type_label), "hrf_dod" => "nirs_hrf_dod",
         )
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dmean" => "nirs_hrf_dmean"
+            lowercase.(data_type_label), "hrf_dmean" => "nirs_hrf_dmean",
         )
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dvar" => "nirs_hrf_dvar"
+            lowercase.(data_type_label), "hrf_dvar" => "nirs_hrf_dvar",
         )
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dskew" => "nirs_hrf_dskew"
+            lowercase.(data_type_label), "hrf_dskew" => "nirs_hrf_dskew",
         )
         # Hemodynamic response function for oxyhemoglobin concentration
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_hbo" => "nirs_hrf_hbo"
+            lowercase.(data_type_label), "hrf_hbo" => "nirs_hrf_hbo",
         )
         # emodynamic response function for deoxyhemoglobin concentration
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_hbr" => "nirs_hrf_hbr"
+            lowercase.(data_type_label), "hrf_hbr" => "nirs_hrf_hbr",
         )
         # Hemodynamic response function for total hemoglobin concentration
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_hbt" => "nirs_hrf_hbt"
+            lowercase.(data_type_label), "hrf_hbt" => "nirs_hrf_hbt",
         )
         # Hemodynamic response function for blood flow index (BFi)
         data_type_label = replace(
-            lowercase.(data_type_label), "hrf_bfi" => "nirs_hrf_bfi"
+            lowercase.(data_type_label), "hrf_bfi" => "nirs_hrf_bfi",
         )
 
         # Data type index for a given channel
@@ -357,7 +361,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
             data_type[idx] == 301 &&
                 push!(tmp, "Raw: Time Domain: Moments (TD Moments): Amplitude")
             data_type[idx] == 351 && push!(
-                tmp, "Raw: Time Domain: Moments (TD Moments): Fluorescence Amplitude"
+                tmp, "Raw: Time Domain: Moments (TD Moments): Fluorescence Amplitude",
             )
             data_type[idx] == 351 &&
                 push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): g2")
@@ -417,7 +421,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     end
     stim_n -= 1
     stim_n > 1 && _warn(
-        "Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+        "Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
     )
 
     s_id = "stim1"
@@ -443,12 +447,11 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
             :start => stim_data[1, :],
             :length => stim_data[2, :],
             :value => stim_name,
-            :channel => repeat([0], size(stim_data, 2))
+            :channel => repeat([0], size(stim_data, 2)),
         )
         # generate unique IDs
         value = unique(markers[!, :value])
         for idx1 in 1:DataFrames.nrow(markers), idx2 in eachindex(value)
-
             markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
         end
     else
@@ -457,7 +460,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[]
+            :channel => Int64[],
         )
     end
 
@@ -473,7 +476,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     end
     aux_n -= 1
     aux_n > 1 && _warn(
-        "Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+        "Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
     )
 
     a_id = "aux$aux_n"
@@ -524,12 +527,12 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     if src_pos3d === nothing
         if src_pos2d === nothing
             _warn(
-                "The data does not contain 3D nor 2D location information for the optode positions."
+                "The data does not contain 3D nor 2D location information for the optode positions.",
             )
             x = zeros(length(opt_labels))
         else
             _warn(
-                "The data only contains 2D location information for the optode positions."
+                "The data only contains 2D location information for the optode positions.",
             )
             x = pos2d[1, :]
         end
@@ -572,14 +575,14 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         :loc_z => z,
         :loc_radius_sph => radius_sph,
         :loc_theta_sph => theta_sph,
-        :loc_phi_sph => phi_sph
+        :loc_phi_sph => phi_sph,
     )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits = 2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(
+    s = _create_subject(;
         id = subject_id,
         first_name = "",
         middle_name = "",
@@ -587,9 +590,9 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
-    r = _create_recording_nirs(
+    r = _create_recording_nirs(;
         data_type = "nirs",
         file_name = file_name,
         file_size_mb = file_size_mb,
@@ -609,11 +612,11 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         det_labels = det_labels,
         opt_labels = opt_labels,
         sampling_rate = round(Int64, sampling_rate),
-        bad_channels = zeros(Bool, size(data, 1))
+        bad_channels = zeros(Bool, size(data, 1)),
     )
-    e = _create_experiment(name = "", notes = "", design = "")
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     history = String[]
 
@@ -622,9 +625,8 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     _info(
         "Imported: " *
             uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)"
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj
-
 end

@@ -34,12 +34,14 @@ Calculate upper cubic-spline envelope from local maxima for a 1-D signal vector.
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
 
     # validate
-    length(s) == length(x) || throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
+    length(s) == length(x) || throw(
+        ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."),
+    )
 
     e = zeros(length(s))
 
     # locate local maxima at least d samples apart
-    p_idx = findpeaks(s, d = d)
+    p_idx = findpeaks(s; d = d)
 
     if length(p_idx) < 2
         _info("Envelope cannot be interpolated, less than 2 peaks detected")
@@ -50,12 +52,11 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Flo
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
         # fit a cubic spline through the peak positions and evaluate on x
-        model = Spline1D(x[p_idx], s[p_idx], bc = "extrapolate")
+        model = Spline1D(x[p_idx], s[p_idx]; bc = "extrapolate")
         e = model(x)
     end
 
     return e
-
 end
 
 """
@@ -76,13 +77,15 @@ Calculate lower cubic-spline envelope from local minima for a 1-D signal vector.
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
 
     # validate
-    length(s) == length(x) || throw(ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."))
+    length(s) == length(x) || throw(
+        ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."),
+    )
 
     e = zeros(length(s))
 
     # flip the signal so minima become maxima, then find peaks.
     s_tmp = _flipx(s)
-    p_idx = findpeaks(s_tmp, d = d)
+    p_idx = findpeaks(s_tmp; d = d)
 
     if length(p_idx) < 2
         _info("Envelope cannot be interpolated, less than 2 peaks detected")
@@ -93,12 +96,11 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Flo
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
         # fit a cubic spline through the peak positions and evaluate on x
-        model = Spline1D(x[p_idx], s[p_idx], bc = "extrapolate")
+        model = Spline1D(x[p_idx], s[p_idx]; bc = "extrapolate")
         e = model(x)
     end
 
     return e
-
 end
 
 """
@@ -119,10 +121,8 @@ Calculate upper amplitude envelope using the Hilbert transform for a 1-D signal 
 The Hilbert transform works best for narrowband signals (energy concentrated around a single frequency).
 """
 function henv_up(s::AbstractVector)::Vector{Float64}
-
     h = htransform(s)
     return h.a
-
 end
 
 """
@@ -143,10 +143,8 @@ Calculate lower amplitude envelope using the Hilbert transform for a 1-D signal 
 The Hilbert transform works best for narrowband signals (energy concentrated around a single frequency).
 """
 function henv_lo(s::AbstractVector)::Vector{Float64}
-
     h = htransform(-s)
     return h.a
-
 end
 
 """
@@ -168,16 +166,18 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function tenv(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    d::Int64 = 32
-)::@NamedTuple{
-    e::Array{Float64, 3},
-    t::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        d::Int64 = 32,
+    )::@NamedTuple{
+        e::Array{Float64, 3},
+        t::Vector{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -196,7 +196,6 @@ function tenv(
     end
 
     return (; e, t)
-
 end
 
 """
@@ -221,16 +220,16 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function tenv_mean(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64,
-    d::Int64 = 32
-)::@NamedTuple{
-    em::Matrix{Float64},
-    el::Matrix{Float64},
-    eu::Matrix{Float64},
-    t::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64,
+        d::Int64 = 32,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        el::Matrix{Float64},
+        eu::Matrix{Float64},
+        t::Vector{Float64},
+    }
 
     # validate
     if dims == 1
@@ -288,14 +287,12 @@ function tenv_mean(
 
         tenv_data = tenv_mean(obj; ch = ch, dims = 1, d = d)
 
-        em = mean(tenv_data.em, dims = 2)
-        eu = mean(tenv_data.eu, dims = 2)
-        el = mean(tenv_data.el, dims = 2)
-
+        em = mean(tenv_data.em; dims = 2)
+        eu = mean(tenv_data.eu; dims = 2)
+        el = mean(tenv_data.el; dims = 2)
     end
 
     return (; em, el, eu, t)
-
 end
 
 """
@@ -320,16 +317,16 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function tenv_median(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64,
-    d::Int64 = 32
-)::@NamedTuple{
-    em::Matrix{Float64},
-    el::Matrix{Float64},
-    eu::Matrix{Float64},
-    t::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64,
+        d::Int64 = 32,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        el::Matrix{Float64},
+        eu::Matrix{Float64},
+        t::Vector{Float64},
+    }
 
     # validate
     if dims == 1
@@ -386,14 +383,12 @@ function tenv_median(
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
         tenv_data = tenv_median(obj; ch = ch, dims = 1, d = d)
-        em = median(tenv_data.em, dims = 2)
-        eu = median(tenv_data.eu, dims = 2)
-        el = median(tenv_data.el, dims = 2)
-
+        em = median(tenv_data.em; dims = 2)
+        eu = median(tenv_data.eu; dims = 2)
+        el = median(tenv_data.el; dims = 2)
     end
 
     return (; em, el, eu, t)
-
 end
 
 """
@@ -427,23 +422,25 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function penv(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    d::Int64 = 8,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::@NamedTuple{
-    e::Array{Float64, 3},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        d::Int64 = 8,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::@NamedTuple{
+        e::Array{Float64, 3},
+        f::Vector{Float64},
+    }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -454,7 +451,7 @@ function penv(
 
     # pilot call to determine the frequency vector length
     psd_data = psd(
-        @view(obj.data[ch[1], :, 1]),
+        @view(obj.data[ch[1], :, 1]);
         fs = fs,
         method = method,
         nt = nt,
@@ -462,7 +459,7 @@ function penv(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
     f = psd_data.f
 
@@ -482,13 +479,12 @@ function penv(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean
+            demean = demean,
         )
         e[ch_idx, :, ep_idx] = env_up(psd_data.p, f, d = d)
     end
 
     return (e = e, f = f)
-
 end
 
 """
@@ -525,23 +521,23 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function penv_mean(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64,
-    d::Int64 = 8,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::@NamedTuple{
-    em::Matrix{Float64},
-    el::Matrix{Float64},
-    eu::Matrix{Float64},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64,
+        d::Int64 = 8,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        el::Matrix{Float64},
+        eu::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     if dims == 1
@@ -553,8 +549,10 @@ function penv_mean(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    penv_data = penv(obj; ch = ch, d = d, method = method, nt = nt, wlen = wlen,
-                    woverlap = woverlap, w = w, ncyc = ncyc, demean = demean)
+    penv_data = penv(
+        obj; ch = ch, d = d, method = method, nt = nt, wlen = wlen,
+        woverlap = woverlap, w = w, ncyc = ncyc, demean = demean
+    )
     pw = penv_data.e
     f = penv_data.f
 
@@ -600,7 +598,8 @@ function penv_mean(
         # mean over channels and epochs: first average over channels (dims=1),
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
-        penv_data = penv_mean(obj,
+        penv_data = penv_mean(
+            obj;
             ch = ch,
             dims = 1,
             d = d,
@@ -610,16 +609,14 @@ function penv_mean(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean
+            demean = demean,
         )
-        em = mean(penv_data.em, dims = 2)
-        eu = mean(penv_data.eu, dims = 2)
-        el = mean(penv_data.el, dims = 2)
-
+        em = mean(penv_data.em; dims = 2)
+        eu = mean(penv_data.eu; dims = 2)
+        el = mean(penv_data.el; dims = 2)
     end
 
     return (; em, el, eu, f)
-
 end
 
 """
@@ -656,23 +653,23 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function penv_median(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64,
-    d::Int64 = 8,
-    method::Symbol = :welch,
-    nt::Int64 = 7,
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    demean::Bool = true
-)::@NamedTuple{
-    em::Matrix{Float64},
-    el::Matrix{Float64},
-    eu::Matrix{Float64},
-    f::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64,
+        d::Int64 = 8,
+        method::Symbol = :welch,
+        nt::Int64 = 7,
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        demean::Bool = true,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        el::Matrix{Float64},
+        eu::Matrix{Float64},
+        f::Vector{Float64},
+    }
 
     # validate
     if dims == 1
@@ -684,7 +681,8 @@ function penv_median(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    penv_data = penv(obj,
+    penv_data = penv(
+        obj;
         ch = ch,
         d = d,
         method = method,
@@ -693,10 +691,10 @@ function penv_median(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
-        demean = demean
+        demean = demean,
     )
     pw = penv_data.e
-    f  = penv_data.f
+    f = penv_data.f
 
     # number of channels
     ch_n = size(pw, 1)
@@ -740,7 +738,8 @@ function penv_median(
         # mean over channels and epochs: first average over channels (dims=1),
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
-        penv_data = penv_median(obj,
+        penv_data = penv_median(
+            obj;
             ch = ch,
             dims = 1,
             d = d,
@@ -750,16 +749,14 @@ function penv_median(
             woverlap = woverlap,
             w = w,
             ncyc = ncyc,
-            demean = demean
+            demean = demean,
         )
-        em = median(penv_data.em, dims = 2)
-        eu = median(penv_data.eu, dims = 2)
-        el = median(penv_data.el, dims = 2)
-
+        em = median(penv_data.em; dims = 2)
+        eu = median(penv_data.eu; dims = 2)
+        el = median(penv_data.el; dims = 2)
     end
 
     return (; em, el, eu, f)
-
 end
 
 """
@@ -797,27 +794,29 @@ Named tuple:
 - `t::Vector{Float64}`: spectrogram time
 """
 function senv(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    d::Int64 = 2,
-    threshold::Union{Real, Nothing} = nothing,
-    pad::Int64 = 0,
-    method::Symbol = :stft,
-    db::Bool = true,
-    nt::Int64 = 7,
-    gw::Real = 5,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true
-)::@NamedTuple{
-    e::Array{Float64, 3},
-    t::Vector{Float64}
-} where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        d::Int64 = 2,
+        threshold::Union{Real, Nothing} = nothing,
+        pad::Int64 = 0,
+        method::Symbol = :stft,
+        db::Bool = true,
+        nt::Int64 = 7,
+        gw::Real = 5,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        e::Array{Float64, 3},
+        t::Vector{Float64},
+    } where {T <: CWT}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -826,55 +825,55 @@ function senv(
     # sampling rate
     fs = sr(obj)
 
-    # pilot call to determine the spectrogram time vector 
+    # pilot call to determine the spectrogram time vector
     if method === :stft
         spec_data = NeuroAnalyzer.spectrogram(
-            @view(obj.data[ch[1], :, 1]),
+            @view(obj.data[ch[1], :, 1]);
             fs = fs,
             db = db,
             method = :stft,
             wlen = wlen,
             woverlap = woverlap,
-            w = w
+            w = w,
         )
         sp = spec_data.p
     elseif method === :mt
         spec_data = NeuroAnalyzer.spectrogram(
-            @view(obj.data[ch[1], :, 1]),
+            @view(obj.data[ch[1], :, 1]);
             fs = fs,
             db = db,
             method = :mt,
             nt = nt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w
+            w = w,
         )
         sp = spec_data.p
     elseif method === :mw
         spec_data = NeuroAnalyzer.mwspectrogram(
-            @view(obj.data[ch[1], :, 1]),
+            @view(obj.data[ch[1], :, 1]);
             pad = pad,
             fs = fs,
             db = db,
             ncyc = ncyc,
-            w = w
+            w = w,
         )
         sp = spec_data.p
     elseif method === :gh
         spec_data = NeuroAnalyzer.ghtspectrogram(
-            @view(obj.data[ch[1], :, 1]),
+            @view(obj.data[ch[1], :, 1]);
             fs = fs,
             db = db,
             gw = gw,
-            w = w
+            w = w,
         )
         sp = spec_data.p
     elseif method === :cwt
         _log_off()
         spec_data = NeuroAnalyzer.cwtspectrogram(
-            @view(obj.data[ch[1], :, 1]),
+            @view(obj.data[ch[1], :, 1]);
             wt = wt,
-            fs = fs
+            fs = fs,
         )
         _log_on()
         sp = spec_data.m
@@ -899,7 +898,7 @@ function senv(
                 method = :stft,
                 wlen = wlen,
                 woverlap = woverlap,
-                w = w
+                w = w,
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
@@ -912,7 +911,7 @@ function senv(
                 nt = nt,
                 wlen = wlen,
                 woverlap = woverlap,
-                w = w
+                w = w,
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
@@ -923,7 +922,7 @@ function senv(
                 fs = fs,
                 db = db,
                 ncyc = ncyc,
-                w = w
+                w = w,
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
@@ -933,7 +932,7 @@ function senv(
                 fs = fs,
                 db = db,
                 gw = gw,
-                w = w
+                w = w,
             )
             sp_loc = spec_data.p
             sp_loc = spec_data.f
@@ -941,7 +940,7 @@ function senv(
             spec_data = NeuroAnalyzer.cwtspectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
                 wt = wt,
-                fs = fs
+                fs = fs,
             )
             sp_loc = spec_data.m
             sp_loc = spec_data.f
@@ -966,7 +965,6 @@ function senv(
     end
 
     return (; e, t)
-
 end
 
 """
@@ -1007,27 +1005,27 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function senv_mean(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64,
-    d::Int64 = 2,
-    t::Union{Real, Nothing} = nothing,
-    method::Symbol = :stft,
-    pad::Int64 = 0,
-    db::Bool = true,
-    nt::Int64 = 7,
-    gw::Real = 5,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true
-)::@NamedTuple{
-    em::Matrix{Float64},
-    el::Matrix{Float64},
-    eu::Matrix{Float64},
-    t::Vector{Float64}
-} where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64,
+        d::Int64 = 2,
+        t::Union{Real, Nothing} = nothing,
+        method::Symbol = :stft,
+        pad::Int64 = 0,
+        db::Bool = true,
+        nt::Int64 = 7,
+        gw::Real = 5,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        el::Matrix{Float64},
+        eu::Matrix{Float64},
+        t::Vector{Float64},
+    } where {T <: CWT}
 
     # validate
     if dims == 1
@@ -1040,7 +1038,7 @@ function senv_mean(
     end
 
     env_data = senv(
-        obj,
+        obj;
         ch = ch,
         d = d,
         threshold = threshold,
@@ -1053,7 +1051,7 @@ function senv_mean(
         wt = wt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w
+        w = w,
     )
     sp = env_data.e
     t = env_data.t
@@ -1101,7 +1099,7 @@ function senv_mean(
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
         env_data = senv_mean(
-            obj,
+            obj;
             ch = ch,
             dims = 1,
             d = d,
@@ -1115,16 +1113,14 @@ function senv_mean(
             wt = wt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w
+            w = w,
         )
-        em = mean(env_data.em, dims = 2)
-        eu = mean(env_data.eu, dims = 2)
-        el = mean(env_data.el, dims = 2)
-
+        em = mean(env_data.em; dims = 2)
+        eu = mean(env_data.eu; dims = 2)
+        el = mean(env_data.el; dims = 2)
     end
 
     return (; em, el, eu, t)
-
 end
 
 """
@@ -1165,27 +1161,27 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function senv_median(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64,
-    d::Int64 = 2,
-    threshold::Union{Real, Nothing} = nothing,
-    method::Symbol = :stft,
-    pad::Int64 = 0,
-    db::Bool = true,
-    nt::Int64 = 7,
-    gw::Real = 5,
-    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    wt::T = wavelet(Morlet(2π), β = 2),
-    wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
-    w::Bool = true
-)::@NamedTuple{
-    em::Matrix{Float64},
-    el::Matrix{Float64},
-    eu::Matrix{Float64},
-    t::Vector{Float64}
-} where {T <: CWT}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64,
+        d::Int64 = 2,
+        threshold::Union{Real, Nothing} = nothing,
+        method::Symbol = :stft,
+        pad::Int64 = 0,
+        db::Bool = true,
+        nt::Int64 = 7,
+        gw::Real = 5,
+        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+        wt::T = wavelet(Morlet(2π), β = 2),
+        wlen::Int64 = sr(obj),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
+        w::Bool = true,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        el::Matrix{Float64},
+        eu::Matrix{Float64},
+        t::Vector{Float64},
+    } where {T <: CWT}
 
     # validate
     if dims == 1
@@ -1197,7 +1193,8 @@ function senv_median(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    senv_data = senv(obj,
+    senv_data = senv(
+        obj;
         ch = ch,
         d = d,
         threshold = threshold,
@@ -1210,7 +1207,7 @@ function senv_median(
         wt = wt,
         wlen = wlen,
         woverlap = woverlap,
-        w = w
+        w = w,
     )
     sp = senv_data.e
     t = senv_data.t
@@ -1259,7 +1256,8 @@ function senv_median(
         # median over channels and epochs: first average over channels (dims=1),
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
-        senv_data = senv_median(obj,
+        senv_data = senv_median(
+            obj;
             ch = ch,
             dims = 1,
             d = d,
@@ -1273,17 +1271,15 @@ function senv_median(
             wt = wt,
             wlen = wlen,
             woverlap = woverlap,
-            w = w
+            w = w,
         )
 
-        em = median(senv_data.em, dims = 2)
-        eu = median(senv_data.eu, dims = 2)
-        el = median(senv_data.el, dims = 2)
-
+        em = median(senv_data.em; dims = 2)
+        eu = median(senv_data.eu; dims = 2)
+        el = median(senv_data.el; dims = 2)
     end
 
     return (; em, el, eu, t)
-
 end
 
 """
@@ -1305,18 +1301,21 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function henv(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    d::Int64 = 32
-)::@NamedTuple{
-    e::Array{Float64, 3},
-    t::Vector{Float64}
-}
-
-    _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        d::Int64 = 32,
+    )::@NamedTuple{
+        e::Array{Float64, 3},
+        t::Vector{Float64},
+    }
+    _warn(
+        "henv() uses Hilbert transform, the signal should be narrowband for best results.",
+    )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+                       get_channel(obj; ch = ch, exclude = "")
 
     henv_data = htransform(@view(obj.data[ch, :, :]))
     a = henv_data.a
@@ -1339,7 +1338,6 @@ function henv(
     end
 
     return (; e, t)
-
 end
 
 """
@@ -1364,15 +1362,15 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function henv_mean(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64, d::Int64 = 32
-)::@NamedTuple{
-    em::Matrix{Float64},
-    eu::Matrix{Float64},
-    el::Matrix{Float64},
-    t::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64, d::Int64 = 32,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        eu::Matrix{Float64},
+        el::Matrix{Float64},
+        t::Vector{Float64},
+    }
 
     # validate
     if dims == 1
@@ -1430,14 +1428,12 @@ function henv_mean(
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
         henv_data = henv_mean(obj; ch = ch, dims = 1, d = d)
-        em = vec(mean(henv_data.em, dims = 2))
-        eu = vec(mean(henv_data.eu, dims = 2))
-        el = vec(mean(henv_data.el, dims = 2))
-
+        em = vec(mean(henv_data.em; dims = 2))
+        eu = vec(mean(henv_data.eu; dims = 2))
+        el = vec(mean(henv_data.el; dims = 2))
     end
 
     return (; em, el, eu, t)
-
 end
 
 """
@@ -1462,16 +1458,16 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function henv_median(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    dims::Int64,
-    d::Int64 = 32
-)::@NamedTuple{
-    em::Matrix{Float64},
-    el::Matrix{Float64},
-    eu::Matrix{Float64},
-    t::Vector{Float64}
-}
+        obj::NeuroAnalyzer.NEURO;
+        ch::Union{String, Vector{String}, Regex},
+        dims::Int64,
+        d::Int64 = 32,
+    )::@NamedTuple{
+        em::Matrix{Float64},
+        el::Matrix{Float64},
+        eu::Matrix{Float64},
+        t::Vector{Float64},
+    }
 
     # validate
     if dims == 1
@@ -1530,13 +1526,12 @@ function henv_median(
         em = henv_median_data.em
         eu = henv_median_data.eu
         el = henv_median_data.el
-        em = median(em, dims = 2)
-        eu = median(eu, dims = 2)
-        el = median(el, dims = 2)
+        em = median(em; dims = 2)
+        eu = median(eu; dims = 2)
+        el = median(el; dims = 2)
         em = reshape(em, size(em, 1))
         eu = reshape(eu, size(eu, 1))
         el = reshape(el, size(el, 1))
-
     end
 
     return (; em, el, eu, t)
@@ -1559,10 +1554,14 @@ Named tuple:
 - `ec::Vector{Float64}`: envelope correlation coefficient
 - `p::Vector{Float64}`: p-value
 """
-function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
+function env_cor(
+        env1::Array{Float64, 3},
+        env2::Array{Float64, 3},
+    )::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
 
     # validate
-    size(env1) == size(env2) || throw(ArgumentError("Both envelopes must have the same size."))
+    size(env1) == size(env2) ||
+        throw(ArgumentError("Both envelopes must have the same size."))
 
     # number of epochs
     ep_n = size(env1, 3)
@@ -1579,5 +1578,4 @@ function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{
     end
 
     return (; ec, p)
-
 end

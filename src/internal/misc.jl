@@ -41,7 +41,8 @@ function _copy_lt2ut(m::AbstractArray)::AbstractArray
         return m + m' - diagm(diag(m))
     else
         Threads.@threads :static for ep_idx in axes(m, 3)
-            @inbounds m[:, :, ep_idx] = m[:, :, ep_idx] + m[:, :, ep_idx]' - diagm(diag(m[:, :, ep_idx]))
+            @inbounds m[:, :, ep_idx] =
+                m[:, :, ep_idx] + m[:, :, ep_idx]' - diagm(diag(m[:, :, ep_idx]))
         end
         return m
     end
@@ -84,7 +85,11 @@ function _s2ti(s::String)::Tuple{Int64, Int64}
     return (parse(Int64, split(s, ",")[1]), parse(Int64, split(s, ",")[2]))
 end
 
-function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_type::String)::String
+function _detect_montage(
+        clabels::Vector{String},
+        ch_type::Vector{String},
+        data_type::String,
+    )::String
     m = match.(r"(.+)\-(.+)", lowercase.(clabels[ch_type .== data_type]))
     if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
@@ -99,7 +104,10 @@ function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_
             return "bipolar"
         end
     end
-    m = match.(r"([a-z]+)([0-9]+[0-9]?)([a-z]+)([0-9]+)", lowercase.(clabels[ch_type .== data_type]))
+    m = match.(
+        r"([a-z]+)([0-9]+[0-9]?)([a-z]+)([0-9]+)",
+        lowercase.(clabels[ch_type .== data_type]),
+    )
     if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
         for idx in eachindex(m)
@@ -161,7 +169,10 @@ end
 
 _swap(x, y)::Tuple{Real, Real} = y, x
 
-function _veqlen(s1::AbstractVector, s2::AbstractVector)::Tuple{AbstractVector, AbstractVector}
+function _veqlen(
+        s1::AbstractVector,
+        s2::AbstractVector,
+    )::Tuple{AbstractVector, AbstractVector}
     if length(s1) > length(s2)
         n = length(s1) - length(s2)
         return s1, pad0(s2, n)

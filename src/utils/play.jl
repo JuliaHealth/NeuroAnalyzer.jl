@@ -19,15 +19,15 @@ The signal is normalized to `[−1, 1]` and scaled to `[−1000, +1000]` before 
 - `Nothing`
 """
 function play(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    seg::Tuple{Real, Real},
-    ep::Int64
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        ch::String,
+        seg::Tuple{Real, Real},
+        ep::Int64,
+    )::Nothing
 
     # resolve channel names to integer indices
     _check_epochs(obj, ep)
-    ch = get_channel(obj; ch=ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
@@ -43,5 +43,4 @@ function play(
     wavplay(s, sr(obj))
 
     return nothing
-
 end

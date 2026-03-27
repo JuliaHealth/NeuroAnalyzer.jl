@@ -25,16 +25,20 @@ The output format is determined automatically from `file_name`'s extension:
 - `Nothing`
 """
 function export_locs(
-    obj::NeuroAnalyzer.NEURO;
-    file_name::String,
-    overwrite::Bool = false
-)::Nothing
+        obj::NeuroAnalyzer.NEURO;
+        file_name::String,
+        overwrite::Bool = false,
+    )::Nothing
 
     # the .csv branch is only available via the NEURO method (full locs table)
     # all other formats are handled by delegating to the DataFrame method
     if splitext(file_name)[2] == ".csv"
         isfile(file_name) && !overwrite &&
-            throw(ArgumentError("File $file_name already exists; use overwrite=true to overwrite."))
+            throw(
+            ArgumentError(
+                "File $file_name already exists; use overwrite=true to overwrite.",
+            ),
+        )
         CSV.write(file_name, obj.locs)
     else
         # delegate to the DataFrame method, which handles .ced / .locs / .tsv
@@ -68,14 +72,18 @@ The output format is determined automatically from `file_name`'s extension:
 - `Nothing`
 """
 function export_locs(
-    locs::DataFrame;
-    file_name::String,
-    overwrite::Bool = false
-)::Nothing
+        locs::DataFrame;
+        file_name::String,
+        overwrite::Bool = false,
+    )::Nothing
 
     # guard against accidental overwrites before doing any work
     isfile(file_name) && !overwrite &&
-        throw(ArgumentError("File $file_name already exists; use overwrite=true to overwrite."))
+        throw(
+        ArgumentError(
+            "File $file_name already exists; use overwrite=true to overwrite.",
+        ),
+    )
 
     # extract the extension once; used for every branch below
     ext = splitext(file_name)[2]
@@ -94,7 +102,7 @@ function export_locs(
 
     if ext == ".ced"
         # EEGLAB CED format: tab-separated, column header required.
-        df = DataFrame(
+        df = DataFrame(;
             Number = channels,
             labels = clabels,
             theta = theta,
@@ -104,23 +112,23 @@ function export_locs(
             Z = z,
             sph_theta = theta_sph,
             sph_phi = phi_sph,
-            sph_radius = radius_sph
+            sph_radius = radius_sph,
         )
-        CSV.write(file_name, df, delim = "\t", header = true)
+        CSV.write(file_name, df; delim = "\t", header = true)
 
     elseif ext == ".locs"
         # EEGLAB .locs format: tab-separated, no column header.
-        df = DataFrame(
+        df = DataFrame(;
             Number = channels,
             theta = theta,
             radius = radius,
-            labels = clabels
+            labels = clabels,
         )
-        CSV.write(file_name, df, delim = "\t", header = false)
+        CSV.write(file_name, df; delim = "\t", header = false)
 
     elseif ext == ".tsv"
         # BIDS-style TSV: tab-separated, column header required.
-        df = DataFrame(
+        df = DataFrame(;
             labels = clabels,
             x = x,
             y = y,
@@ -129,13 +137,16 @@ function export_locs(
             radius = radius,
             radius_sph = radius_sph,
             theta_sph = theta_sph,
-            phi_sph = phi_sph
+            phi_sph = phi_sph,
         )
-        CSV.write(file_name, df, delim = "\t", header = true)
+        CSV.write(file_name, df; delim = "\t", header = true)
 
     else
-        throw(ArgumentError(
-            "Unsupported extension \"$ext\". file_name must end in .ced, .locs, or .tsv."))
+        throw(
+            ArgumentError(
+                "Unsupported extension \"$ext\". file_name must end in .ced, .locs, or .tsv.",
+            ),
+        )
     end
 
     return nothing
