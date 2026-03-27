@@ -8,7 +8,6 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
 `ppf` parameter is the partial path length factors for each wavelength. This is a vector of factors per wavelength. Typical value is ~6 for each wavelength if the absorption change is uniform over the volume of tissue measured. To approximate the partial volume effect of a small localized absorption change within an adult human head, this value could be as small as 0.1. Convention is becoming to set `ppf=1` and to not divide by the source-detector separation such that the resultant "concentration" is in units of Molar mm (or Molar cm if those are the spatial units). This is becoming wide spread in the literature but there is no fixed citation. Use a value of 1 to choose this option.
 
-
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
@@ -32,7 +31,7 @@ function od2conc(
     _check_channels(get_channel(obj, type = "nirs_od"), ch)
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -117,7 +116,7 @@ function od2conc(
     obj_new.header.recording[:wavelength_index] = vcat(obj_new.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
     =#
 
-    push!(obj_new.history, "od2conc(OBJ, ch=$ch)")
+    push!(obj_new.history, "od2conc(obj; ch=$ch)")
 
     return obj_new
 
@@ -146,7 +145,7 @@ function od2conc!(
     ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths]))
 )::Nothing
 
-    obj_new = od2conc(obj, ch = ch, ppf = ppf)
+    obj_new = od2conc(obj; ch = ch, ppf = ppf)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history

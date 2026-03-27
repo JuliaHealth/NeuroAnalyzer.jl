@@ -1161,10 +1161,10 @@ function plot_locs(
     datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     ch_info = String[]
-    [push!(ch_info, channel_info(obj, ch = labels(obj)[ch[idx]], pr = false)) for idx in eachindex(ch)]
+    [push!(ch_info, channel_info(obj; ch = labels(obj)[ch[idx]], pr = false)) for idx in eachindex(ch)]
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
@@ -1173,7 +1173,7 @@ function plot_locs(
         sch = 0
     else
         # resolve channel names to integer indices, optionally skipping bad channels
-        sch = exclude_bads ? get_channel(obj, ch = sch, exclude = "bad") : get_channel(obj, ch = sch, exclude = "")
+        sch = exclude_bads ? get_channel(obj; ch = sch, exclude = "bad") : get_channel(obj; ch = sch, exclude = "")
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
     end

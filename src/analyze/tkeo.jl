@@ -114,7 +114,7 @@ function tkeo(
 )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     return tkeo(@view(obj.data[ch, :, :]), obj.epoch_time, method = method)
 

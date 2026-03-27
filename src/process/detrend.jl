@@ -175,7 +175,7 @@ function detrend(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -187,7 +187,7 @@ function detrend(
         order=order,
         f=f
     )
-    push!(obj_new.history, "detrend(OBJ, ch=$ch, type=$type, offset=$offset, order=$order, f=$f)")
+    push!(obj_new.history, "detrend(obj; ch=$ch, type=$type, offset=$offset, order=$order, f=$f)")
 
     return obj_new
 
@@ -226,7 +226,7 @@ function detrend!(
         f::Float64 = 1.0
     )::Nothing
 
-    obj_new = detrend(obj, ch = ch, type = type, offset = offset, order = order, f = f)
+    obj_new = detrend(obj; ch = ch, type = type, offset = offset, order = order, f = f)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

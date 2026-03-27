@@ -91,7 +91,7 @@ function cwd(
 )::Array{Float64, 4} where {T <: CWT}
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
 
     return cwd(@view(obj.data[ch, :, :]); wt=wt)
 

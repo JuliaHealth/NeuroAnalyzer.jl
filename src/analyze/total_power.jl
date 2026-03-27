@@ -135,7 +135,7 @@ function total_power(
 end
 
 """
-    total_power(obj, ch, method, nt, wlen, woverlap, w, ncyc, gw, wt)
+    total_power(obj; ch, method, nt, wlen, woverlap, w, ncyc, gw, wt)
 
 Calculate total power for a NEURO object.
 
@@ -176,7 +176,7 @@ function total_power(
 )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     return total_power(
         @view(obj.data[ch, :, :]),

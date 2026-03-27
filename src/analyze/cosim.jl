@@ -121,7 +121,7 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 function cosim(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)

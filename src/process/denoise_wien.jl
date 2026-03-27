@@ -71,13 +71,13 @@ function denoise_wien(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = denoise_wien(@view(obj.data[ch, :, :]))
-    push!(obj_new.history, "denoise_wien(OBJ, ch=$ch)")
+    push!(obj_new.history, "denoise_wien(obj; ch=$ch)")
 
     return obj_new
 
@@ -99,7 +99,7 @@ Perform Wiener deconvolution denoising in-place on selected channels of a NEURO 
 """
 function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = denoise_wien(obj, ch = ch)
+    obj_new = denoise_wien(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

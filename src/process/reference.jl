@@ -38,9 +38,9 @@ function reference_ce(
     _check_datatype(obj, "eeg")
 
     # reference channel indices
-    ref_ch_idx  = get_channel(obj, ch=ch)
+    ref_ch_idx  = get_channel(obj; ch=ch)
     # channels to re-reference
-    sig_ch_idx  = get_channel(obj, ch=get_channel(obj; type="eeg"))
+    sig_ch_idx  = get_channel(obj; ch=get_channel(obj; type="eeg"))
 
     # number of channels
     ch_n = length(sig_ch_idx)
@@ -79,7 +79,7 @@ function reference_ce(
     else
         "common ($(join(labels(obj)[ref_ch_idx], ", ")) averaged)"
     end
-    push!(obj_new.history, "reference_ce(OBJ, ch=$ch, med=$med)")
+    push!(obj_new.history, "reference_ce(obj; ch=$ch, med=$med)")
 
     return obj_new
 
@@ -106,7 +106,7 @@ function reference_ce!(
     med::Bool = false
 )::Nothing
 
-    obj_new = reference_ce(obj, ch = ch, med = med)
+    obj_new = reference_ce(obj; ch = ch, med = med)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -146,7 +146,7 @@ function reference_avg(
     _check_datatype(obj, "eeg")
 
     # channels that will be referenced
-    sig_ch_idx = get_channel(obj, ch=get_channel(obj; type="eeg"))
+    sig_ch_idx = get_channel(obj; ch=get_channel(obj; type="eeg"))
     ch_n       = length(sig_ch_idx)
     ep_n       = nepochs(obj)
 
@@ -353,14 +353,14 @@ function reference_a(
     "A1" in labels(obj) || throw(ArgumentError("OBJ does not contain A1 channel."))
     "A2" in labels(obj) || throw(ArgumentError("OBJ does not contain A2 channel."))
 
-    ch = get_channel(obj, ch=get_channel(obj; type="eeg"))
+    ch = get_channel(obj; ch=get_channel(obj; type="eeg"))
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     s = obj_new.data[ch, :, :]
-    a1 = extract_channel(obj, ch="A1")
-    a2 = extract_channel(obj, ch="A2")
+    a1 = extract_channel(obj; ch="A1")
+    a2 = extract_channel(obj; ch="A2")
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     s_ref = copy(s)
@@ -372,18 +372,18 @@ function reference_a(
         _apply_paired_reference!(s_ref, s, linked, collect(1:ch_n), ref_label, "-A1A2", ep_n, med)
     elseif type === :i
         _apply_paired_reference!(s_ref, s, linked,
-            get_channel(obj, ch=channel_pick(obj, pick=:central)), ref_label, "-A1A2", ep_n, med)
+            get_channel(obj; ch=channel_pick(obj, pick=:central)), ref_label, "-A1A2", ep_n, med)
         _apply_single_reference!(s_ref, s, a1,
-            get_channel(obj, ch=channel_pick(obj, pick=:left)),  ref_label, "-A1", ep_n)
+            get_channel(obj; ch=channel_pick(obj, pick=:left)),  ref_label, "-A1", ep_n)
         _apply_single_reference!(s_ref, s, a2,
-            get_channel(obj, ch=channel_pick(obj, pick=:right)), ref_label, "-A2", ep_n)
+            get_channel(obj; ch=channel_pick(obj, pick=:right)), ref_label, "-A2", ep_n)
     elseif type === :c
         _apply_paired_reference!(s_ref, s, linked,
-            get_channel(obj, ch=channel_pick(obj, pick=:central)), ref_label, "-A1A2", ep_n, med)
+            get_channel(obj; ch=channel_pick(obj, pick=:central)), ref_label, "-A1A2", ep_n, med)
         _apply_single_reference!(s_ref, s, a2,
-            get_channel(obj, ch=channel_pick(obj, pick=:left)),  ref_label, "-A2", ep_n)
+            get_channel(obj; ch=channel_pick(obj, pick=:left)),  ref_label, "-A2", ep_n)
         _apply_single_reference!(s_ref, s, a1,
-            get_channel(obj, ch=channel_pick(obj, pick=:right)), ref_label, "-A1", ep_n)
+            get_channel(obj; ch=channel_pick(obj, pick=:right)), ref_label, "-A1", ep_n)
     end
 
     obj_new.data[ch, :, :] = s_ref

@@ -54,9 +54,6 @@ function ica_decompose(
     _info("Training will end when W change = $(tol[end]) or after $(iter * length(tol)) steps")
     _info("Data will be demeaned and pre-whitened")
 
-
-    M = nothing
-
     final_tol = nothing
 
     # initialize progress bar
@@ -128,7 +125,7 @@ function ica_decompose(
     signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 && (ch = ch[1])
 
     # perform decomposition on the selected slice
@@ -228,7 +225,7 @@ function ica_reconstruct(
     nepochs(obj) == 1 || throw(ArgumentError("ica_reconstruct() must be applied to continuous object."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 && (ch = ch[1])
 
     # reconstruction
@@ -237,7 +234,7 @@ function ica_reconstruct(
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, 1] = ica_reconstruct(ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)[ch, :]
-    push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx, keep=$keep)")
+    push!(obj_new.history, "ica_reconstruct(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
     return obj_new
 
@@ -270,7 +267,7 @@ function ica_reconstruct!(
     keep::Bool = false
 )::Nothing
 
-    obj_new = ica_reconstruct(obj, ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
+    obj_new = ica_reconstruct(obj; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
@@ -307,7 +304,7 @@ function ica_remove(
     nepochs(obj) == 1 || throw(ArgumentError("ica_remove() must be applied to continuous object."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 && (ch = ch[1])
     ch_n = length(ch)
 
@@ -331,7 +328,7 @@ function ica_remove(
         obj_new.data[ch[ch_idx], :, 1] = @views obj_new.data[ch[ch_idx], :, 1] - obj_tmp.data[ch[ch_idx], :, 1]
     end
 
-    push!(obj_new.history, "ica_remove(OBJ, ch=$ch, ic_idx=$ic_idx)")
+    push!(obj_new.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx)")
 
     return obj_new
 

@@ -353,7 +353,7 @@ function plot_mep(
     _check_var(peaks, [:detect, :embed, :off], "peaks")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
         throw(ArgumentError("All channels must be of the same type."))
 
@@ -446,7 +446,7 @@ function plot_mep(
             _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1], digits = 2)) $units")
         elseif length(ch) > 1 && type === :normal
             mep_tmp = mean(obj.data[ch, :, 1], dims = 1)[:, :, :]
-            obj_tmp = keep_channel(obj, ch = labels(obj)[1])
+            obj_tmp = keep_channel(obj; ch = labels(obj)[1])
             obj_tmp.data = mep_tmp
             pp = mep_peaks(obj_tmp)
             GLMakie.scatter!(

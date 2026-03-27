@@ -669,7 +669,7 @@ function plot_psd(
     _check_var(frq, [:lin, :log], "frq")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1

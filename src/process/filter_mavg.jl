@@ -147,7 +147,7 @@ function filter_mavg(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
 
     # sampling rate
     fs = sr(obj)
@@ -166,7 +166,7 @@ function filter_mavg(
     obj_new.data[ch, :, :] = filter_mavg(
         @view(obj.data[ch, :, :]), k=k, t=t, ww=ww
     )
-    push!(obj_new.history, "filter_mavg(OBJ, ch=$ch, k=$k, t=$t, ww=$ww)")
+    push!(obj_new.history, "filter_mavg(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
 
     return obj_new
 
@@ -198,7 +198,7 @@ function filter_mavg!(
     ww::AbstractVector = ones(2 * k + 1)
 )::Nothing
 
-    obj_new = filter_mavg(obj, ch=ch, k=k, t=t, ww=ww)
+    obj_new = filter_mavg(obj; ch=ch, k=k, t=t, ww=ww)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

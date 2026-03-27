@@ -93,7 +93,7 @@ function artrem_cwd(
 )::NeuroAnalyzer.NEURO where {T <: CWT}
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
@@ -111,7 +111,7 @@ function artrem_cwd(
         fseg = fseg,
         type = type
     )
-    push!(obj_new.history, "artrem_cwd(OBJ, ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)")
+    push!(obj_new.history, "artrem_cwd(obj; ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)")
 
     return obj_new
 
@@ -149,7 +149,7 @@ function artrem_cwd!(
     type::Symbol = :nd
 )::Nothing where {T <: CWT}
 
-    obj_new = artrem_cwd(obj, ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
+    obj_new = artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

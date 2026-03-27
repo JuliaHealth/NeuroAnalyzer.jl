@@ -252,7 +252,7 @@ function channel_reject(
     end
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     ch_list = labels(obj)[ch]
 
     # number of channels
@@ -526,7 +526,7 @@ function channel_reject!(
         ransac_t = ransac_t,
         amp_t = amp_t
     )
-    obj.header.recording[:bad_channel][get_channel(obj, ch = ch)] = bc
+    obj.header.recording[:bad_channel][get_channel(obj; ch = ch)] = bc
 
     return nothing
 
@@ -606,7 +606,7 @@ function epoch_reject(
     end
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     ch_list = labels(obj)[ch]
 
     # number of channels

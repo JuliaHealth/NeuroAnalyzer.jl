@@ -115,13 +115,13 @@ function wbp(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = wbp(@view(obj.data[ch, :, :]), pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
-    push!(obj_new.history, "wbp(OBJ, ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
+    push!(obj_new.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
 
     return obj_new
 
@@ -152,7 +152,7 @@ function wbp!(
     ncyc::Int64 = 6
 )::Nothing
 
-    obj_new = wbp(obj, ch = ch, pad = pad, frq = frq, ncyc = ncyc)
+    obj_new = wbp(obj; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

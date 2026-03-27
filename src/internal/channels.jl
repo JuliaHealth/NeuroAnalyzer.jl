@@ -73,7 +73,7 @@ function _ch_units(ch_type::String)::String
 end
 
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String =
-    _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
+    _ch_units(obj.header.recording[:channel_type][_ch_idx(obj; ch)[1]])
 
 function _ch_idx(
     cl::Union{String, Vector{String}},

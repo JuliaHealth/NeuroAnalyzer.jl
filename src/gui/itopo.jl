@@ -21,7 +21,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    p = NeuroAnalyzer.plot_topo(obj, ch = ch)
+    p = NeuroAnalyzer.plot_topo(obj; ch = ch)
 
     function _activate(app)
 
@@ -362,7 +362,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    p = NeuroAnalyzer.plot_topo(obj, ch = ch)
+    p = NeuroAnalyzer.plot_topo(obj; ch = ch)
 
     function _activate(app)
 

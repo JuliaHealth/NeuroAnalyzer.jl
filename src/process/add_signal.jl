@@ -51,7 +51,7 @@ function add_signal(
     length(s) == epoch_len(obj) || throw(ArgumentError("Length of s must equal epoch_len(obj) ($(epoch_len(obj)))."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # number of channels
     ch_n = length(ch)
@@ -68,7 +68,7 @@ function add_signal(
             add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)
     end
 
-    push!(obj_new.history, "add_signal(OBJ, ch=$ch)")
+    push!(obj_new.history, "add_signal(obj; ch=$ch)")
 
     return obj_new
 
@@ -91,7 +91,7 @@ Add a signal vector to selected channels of a NEURO object in-place.
 """
 function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
 
-    obj_new = add_signal(obj, ch = ch, s = s)
+    obj_new = add_signal(obj; ch = ch, s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

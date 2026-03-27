@@ -1,19 +1,3 @@
-
-
-inking
-
-
-
-
-
-
-
-Here are the comprehensively optimized, error-checked, commented, and docstring-enhanced versions of all your location-related helper functions:
-
-1. Distance Functions
-julia
-Copy
-
 """
     _sph_distance_sph(r1, theta1, phi1, r2, theta2, phi2)
 
@@ -36,10 +20,10 @@ Uses the spherical law of cosines:
     d = √(r₁² + r₂² - 2·r₁·r₂·[cos(θ₁)cos(θ₂) + sin(θ₁)sin(θ₂)cos(φ₁-φ₂)])
 """
 function _sph_distance_sph(r1::Real, theta1::Real, phi1::Real, r2::Real, theta2::Real, phi2::Real)
-    # Convert angles to radians for calculation
+    # convert angles to radians for calculation
     θ1, θ2 = deg2rad(theta1), deg2rad(theta2)
     φ1, φ2 = deg2rad(phi1), deg2rad(phi2)
-    # Calculate spherical distance using law of cosines
+    # calculate spherical distance using law of cosines
     d = sqrt(
         r1^2 + r2^2 - 
         2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2))
@@ -67,7 +51,7 @@ end
 
 function _check_ch_locs(ch::Union{Int64, Vector{Int64}}, objl::Vector{String}, locsl::Vector{String})::Nothing
     for idx in ch
-        !(objl[idx] in locsl) && throw(ArgumentError("Channel $(objl[idx]) does not have a location."))
+        objl[idx] in locsl || throw(ArgumentError("Channel $(objl[idx]) does not have a location."))
     end
     return nothing
 end
@@ -76,13 +60,13 @@ _loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{Int64
     obj.locs, labels(obj)[ch]
 )
 _loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{Int64} = _find_bylabel(
-    obj.locs, labels(obj)[get_channel(obj, ch = ch)]
+    obj.locs, labels(obj)[get_channel(obj; ch = ch)]
 )
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{String, Vector{String}} = obj.locs[
-    _loc_idx(obj, ch), :label,
+    _loc_idx(obj; ch), :label,
 ]
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{String} = obj.locs[
-    _loc_idx(obj, ch), :label,
+    _loc_idx(obj; ch), :label,
 ]
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::DataFrame
@@ -94,7 +78,7 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Da
 end
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::DataFrame
-    return _ch_locs(obj, get_channel(obj, ch = ch))
+    return _ch_locs(obj, get_channel(obj; ch = ch))
 end
 
 function _find_bylabel(
@@ -153,7 +137,7 @@ function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
 end
 
 function _initialize_locs(obj::NeuroAnalyzer.NEURO)::DataFrame
-    locs_ch = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
+    locs_ch = get_channel(obj; ch = get_channel(obj, type = datatype(obj)))
     return DataFrame(
         :label => labels(obj)[locs_ch],
         :loc_radius => zeros(length(locs_ch)),

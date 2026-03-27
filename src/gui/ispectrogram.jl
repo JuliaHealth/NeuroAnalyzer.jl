@@ -26,13 +26,13 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
     !(zoom <= signal_len(obj) / sr(obj)) && throw(ArgumentError("zoom must be ≤ $(signal_len(obj) / sr(obj))."))
 
     ch_init = ch
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch = clabels[ch])
+    p = NeuroAnalyzer.plot_spectrogram(obj; ch = clabels[ch])
 
     function _activate(app)
 
@@ -316,7 +316,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1
+            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)])) > 1
                 warn_dialog(_nill, "For multi-channel spectrogram plot, all channels must be of the same type.", win)
                 no_error = false
             end
@@ -657,13 +657,13 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     !(nepochs(obj) > 1) && throw(ArgumentError("For continuous object ispectrogram() must be used."))
 
     ch_init = ch
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch = clabels[ch], ep = 1)
+    p = NeuroAnalyzer.plot_spectrogram(obj; ch = clabels[ch], ep = 1)
 
     function _activate(app)
 
@@ -939,7 +939,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1
+            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)])) > 1
                 warn_dialog(_nill, "For multi-channel spectrogram plot, all channels must be of the same type.", win)
                 no_error = false
             end

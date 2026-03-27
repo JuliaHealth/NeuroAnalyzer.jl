@@ -26,13 +26,13 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
     !(zoom <= signal_len(obj) / sr(obj)) && throw(ArgumentError("zoom must be ≤ $(signal_len(obj) / sr(obj))."))
 
     ch_init = ch
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_psd(obj, ch = clabels[ch])
+    p = NeuroAnalyzer.plot_psd(obj; ch = clabels[ch])
 
     function _activate(app)
 
@@ -358,22 +358,22 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :butterfly
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :butterfly
                 warn_dialog(_nill, "For butterfly plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :mean
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :mean
                 warn_dialog(_nill, "For mean plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :w3d
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :w3d
                 warn_dialog(_nill, "For w3d plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :s3d
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :s3d
                 warn_dialog(_nill, "For s3d plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
             elseif DataFrames.nrow(obj.locs) == 0 && type === :topo
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1 &&
+            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)])) > 1 &&
                     (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
                 warn_dialog(_nill, "For multi-channel $(string(type)) plot all channels must be of the same type.", win)
                 no_error = false
@@ -691,7 +691,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
 end
 
 """
-    ipsd_ep(obj, ch)
+    ipsd_ep(obj; ch)
 
 Interactive PSD of epoched signal.
 
@@ -709,12 +709,12 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     !(nepochs(obj) > 1) && throw(ArgumentError("For continuous object ipsd() must be used."))
 
     ch_init = ch
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     clabels = labels(obj)
 
     k = nothing
 
-    p = NeuroAnalyzer.plot_psd(obj, ch = clabels[ch], ep = 1)
+    p = NeuroAnalyzer.plot_psd(obj; ch = clabels[ch], ep = 1)
 
     function _activate(app)
 
@@ -1032,22 +1032,22 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :butterfly
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :butterfly
                 warn_dialog(_nill, "For butterfly plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :mean
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :mean
                 warn_dialog(_nill, "For mean plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :w3d
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :w3d
                 warn_dialog(_nill, "For w3d plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
-            elseif length(get_channel(obj, ch = ch)) < 2 && type === :s3d
+            elseif length(get_channel(obj; ch = ch)) < 2 && type === :s3d
                 warn_dialog(_nill, "For s3d plot, the signal must contain ≥ 2 channels.", win)
                 no_error = false
             elseif DataFrames.nrow(obj.locs) == 0 && type === :topo
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1 &&
+            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)])) > 1 &&
                     (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
                 warn_dialog(_nill, "For multi-channel $(string(type)) plot all channels must be of the same type.", win)
                 no_error = false

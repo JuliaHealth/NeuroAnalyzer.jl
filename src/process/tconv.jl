@@ -86,7 +86,7 @@ function tconv(
 )::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -96,7 +96,7 @@ function tconv(
         return tconv(obj.data[ch, :, :]; kernel = kernel)
     else
         obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :]; kernel = kernel)
-        push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
+        push!(obj_new.history, "tconv(obj; ch=$ch, kernel=kernel)")
         return obj_new
     end
 
@@ -122,7 +122,7 @@ function tconv!(
     if eltype(kernel) == ComplexF64
         return tconv(obj.data, ch = ch, kernel = kernel)
     else
-        obj_new = tconv(obj, ch = ch, kernel = kernel)
+        obj_new = tconv(obj; ch = ch, kernel = kernel)
         obj.data = obj_new.data
         obj.history = obj_new.history
         return nothing

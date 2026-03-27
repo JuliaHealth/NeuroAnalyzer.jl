@@ -66,7 +66,7 @@ function eros(
 } where {T <: CWT}
 
     # validate
-    length(get_channel(obj, ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(get_channel(obj; ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute per-epoch power spectra for the selected channel
     spec_data = NeuroAnalyzer.spectrogram(

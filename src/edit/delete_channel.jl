@@ -25,7 +25,7 @@ function delete_channel(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     ch_n = nchannels(obj)
 
     # validate
@@ -87,7 +87,7 @@ function delete_channel(
     # remove channel
     obj_new.data = obj_new.data[setdiff(_c(ch_n), ch), :, :]
 
-    push!(obj_new.history, "delete_channel(OBJ, ch=$ch)")
+    push!(obj_new.history, "delete_channel(obj; ch=$ch)")
 
     return obj_new
 
@@ -115,9 +115,9 @@ function delete_channel!(
 )::Nothing
 
     # validate
-    length(get_channel(obj, ch = ch)) == 0 && (return nothing)
+    length(get_channel(obj; ch = ch)) == 0 && (return nothing)
 
-    obj_new = delete_channel(obj, ch = ch, del_opt = del_opt)
+    obj_new = delete_channel(obj; ch = ch, del_opt = del_opt)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -149,14 +149,14 @@ function keep_channel(
     ch_n = nchannels(obj)
 
     # resolve channel names to integer indices
-    length(get_channel(obj, ch = ch)) == ch_n && (return obj)
-    chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch = ch))]
+    length(get_channel(obj; ch = ch)) == ch_n && (return obj)
+    chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj; ch = ch))]
 
     # validate
     length(chs_to_remove) < ch_n ||
         throw(ArgumentError("Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."))
 
-    obj_new = delete_channel(obj, ch = chs_to_remove)
+    obj_new = delete_channel(obj; ch = chs_to_remove)
 
     return obj_new
 
@@ -182,9 +182,9 @@ function keep_channel!(
 )::Nothing
 
     # validate
-    length(get_channel(obj, ch = ch)) == nchannels(obj) && (return nothing)
+    length(get_channel(obj; ch = ch)) == nchannels(obj) && (return nothing)
 
-    obj_new = keep_channel(obj, ch = ch)
+    obj_new = keep_channel(obj; ch = ch)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history

@@ -58,8 +58,8 @@ function lat_idx(
     length(channel_pick(obj, pick = :r)) > 0 || throw(ArgumentError("Could not detect right hemisphere channels, check OBJ labels."))
 
     # get channel indices for left and right picks
-    ch_l = get_channel(obj, ch = channel_pick(obj, pick = :l))
-    ch_r = get_channel(obj, ch = channel_pick(obj, pick = :r))
+    ch_l = get_channel(obj; ch = channel_pick(obj, pick = :l))
+    ch_r = get_channel(obj; ch = channel_pick(obj, pick = :r))
 
     # shared PSD keyword arguments - avoids repeating them four times
     psd_kwargs = (

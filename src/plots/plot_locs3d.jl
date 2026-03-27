@@ -262,7 +262,7 @@ function plot_locs3d(
     datatype(obj) in ["eeg"] || throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
@@ -272,7 +272,7 @@ function plot_locs3d(
         sch = 0
     else
         # resolve channel names to integer indices
-        sch = get_channel(obj, ch = sch)
+        sch = get_channel(obj; ch = sch)
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
     end

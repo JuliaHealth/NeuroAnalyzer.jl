@@ -32,10 +32,10 @@ function hmspectrum(
 }
 
     # validate
-    length(get_channel(obj, ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(get_channel(obj; ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # compute HHT time-frequency spectrogram with dB normalization
-    spec = NeuroAnalyzer.spectrogram(obj, ch = ch, method = :hht, db = false)
+    spec = NeuroAnalyzer.spectrogram(obj; ch = ch, method = :hht, db = false)
 
     p = dropdims(spec.p, dims = 3)
     p = dropdims(sum(p, dims = 2), dims = 2)

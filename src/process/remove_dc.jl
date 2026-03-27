@@ -120,13 +120,13 @@ function remove_dc(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = remove_dc(@view(obj.data[ch, :, :]), n)
-    push!(result.history, "remove_dc(OBJ, ch=$ch, n=$n)")
+    push!(result.history, "remove_dc(obj; ch=$ch, n=$n)")
 
     return obj_new
 
@@ -153,7 +153,7 @@ function remove_dc!(
     n::Union{Int64, Tuple{Int64, Int64}} = 0
 )::Nothing
 
-    obj_new = remove_dc(obj, ch = ch, n = n)
+    obj_new = remove_dc(obj; ch = ch, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

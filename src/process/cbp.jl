@@ -61,7 +61,7 @@ function cbp(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
 
     # number of channels
     ch_n = length(ch)
@@ -84,7 +84,7 @@ function cbp(
         )
     end
 
-    push!(obj_new.history, "cbp(OBJ, ch=$ch, pad=$pad, frq=$frq)")
+    push!(obj_new.history, "cbp(obj; ch=$ch, pad=$pad, frq=$frq)")
 
     return obj_new
 
@@ -113,7 +113,7 @@ function cbp!(
     frq::Real
 )::Nothing
 
-    obj_new = cbp(obj, ch = ch, pad = pad, frq = frq)
+    obj_new = cbp(obj; ch = ch, pad = pad, frq = frq)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

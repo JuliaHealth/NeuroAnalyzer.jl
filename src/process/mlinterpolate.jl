@@ -4,19 +4,22 @@ export mlinterpolate_channel!
 """
     mlinterpolate_channel(obj; <keyword arguments>)
 
-Interpolate channel using a machine-learning model.
+Interpolate a single channel in a specified epoch using a machine-learning regression model trained on the remaining epochs.
+
+The model is trained with all other signal channels as features and the target channel as the response. After training, the fitted model predicts the target channel's values for the epoch to interpolate.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel to interpolate
-- `ep::Int64`: epoch index within to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
-- `model<:MLJ.Model`: MLJ regressor model
+- `ch::String`: name of the channel to interpolate
+- `ep::Int64`: index of the epoch to interpolate
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used
+  for training; default is all epochs except `ep`
+- `model::T where T <: MLJ.Model`: any MLJ regressor (e.g. `RandomForestRegressor`)
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object with the specified channel/epoch replaced by the model's prediction
 """
 function mlinterpolate_channel(
     obj::NeuroAnalyzer.NEURO;
@@ -28,47 +31,68 @@ function mlinterpolate_channel(
 
     # resolve channel names to integer indices
     channels = get_channel(obj, type = datatype(obj))
+    channel_labels  = labels(obj)[channels]
+
+    # validate
     length(channels) > 1 ||
-        throw(ArgumentError("signal must contain > 1 signal channel."))
-    ch in channels ||
-        throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+        throw(ArgumentError("Signal must contain > 1 signal channel."))
+    ch in channel_labels ||
+        throw(ArgumentError("\"$ch\" is not a signal channel; cannot interpolate non-signal channels."))
     nepochs(obj) > 1 ||
-        throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
-
+        throw(ArgumentError("Training the model requires > 1 epoch."))
     _check_epochs(obj, ep_ref)
-    ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
+    ep in ep_ref && throw(ArgumentError("ep ($ep) must not be included in ep_ref."))
 
-    ch_ref = setdiff(channels, ch)
-    signal_ref = deepcopy(obj)
-    keep_channel!(signal_ref, ch = labels(obj)[channels])
-    signal_ref.data = reshape(signal_ref.data[:, :, ep_ref], size(signal_ref.data[:, :, ep_ref], 1), (size(signal_ref.data[:, :, ep_ref], 2) * size(signal_ref.data[:, :, ep_ref], 3)), 1)
+    ch_idx = get_channel(obj; ch = ch)[1]     # String → Int64
+    ch_ref = setdiff(channel_indices, ch_idx) # all signal channels except ch
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)[1]
+    # ------------------------------------------------------------------ #
+    # build training data from reference epochs                          #
+    # flatten the selected epochs into a single time axis:               #
+    #   (ch × samples × n_ref_epochs) → (ch × samples*n_ref_epochs)      #
+    # ------------------------------------------------------------------ #
+    # extract only the signal channels from the reference epochs
+    ref_data = obj.data[channel_indices, :, ep_ref] # signal ch × samples × ep_ref
+    n_ch_sig = length(channel_indices)
+    n_samples = epoch_len(obj)
+    n_ref = length(ep_ref)
 
-    # train
-    y = signal_ref[ch, :, 1]
-    x = table(signal_ref[ch_ref, :, 1]')
+    # reshape to (signal_channels × total_samples)
+    ref_flat = reshape(ref_data, n_ch_sig, n_samples * n_ref)
+
+    # find the position of ch_idx within channel_indices (1-based into ref_flat)
+    ch_pos = findfirst(==(ch_idx), channel_indices)
+    ch_ref_pos = setdiff(1:n_ch_sig, ch_pos)
+
+    # target vector: the channel to interpolate, flattened over reference epochs
+    y = ref_flat[ch_pos, :]
+
+    # feature matrix: all other signal channels, transposed so rows = samples
+    x = MLJBase.table(ref_flat[ch_ref_pos, :]')
+
+    # ------------------------------------------------------------------ #
+    # Train the model                                                    #
+    # ------------------------------------------------------------------ #
     mach = MLJ.machine(model, x, y)
     MLJ.fit!(mach)
-    # reconstruct
+
+    # report training accuracy metrics for diagnostics
     yhat = MLJ.predict(mach, x)
+    _info("Training accuracy on reference epochs:")
+    _info("  R²:   $(round(MLJ.RSquared()(yhat, y); digits = 4))")
+    _info("  RMSE: $(round(MLJ.RootMeanSquaredError()(yhat, y); digits = 4))")
 
-    _info("Accuracy report:")
-    m = MLJ.RSquared()
-    _info(" R²: $(round(m(yhat, y), digits = 4))")
-    m = MLJ.RootMeanSquaredError()
-    _info(" RMSE: $(round(m(yhat, y), digits = 4))")
-
-    # predict
-
-    # create new dataset
+    # ------------------------------------------------------------------ #
+    # Predict the interpolated epoch                                     #
+    # ------------------------------------------------------------------ #
     obj_new = deepcopy(obj)
 
-    x = table(obj.data[ch_ref, :, ep]')
-    obj_new.data[ch, :, ep] = MLJ.predict(mach, x)
+    # feature matrix for the epoch to reconstruct: same other-channel layout
+    x_pred = MLJBase.table(obj.data[ch_ref, :, ep]')
+    obj_new.data[ch_idx, :, ep] = MLJ.predict(mach, x_pred)
 
-    push!(obj_new.history, "mlinterpolate_channel(OBJ, ch=$ch, ep=$ep, ep_ref=$ep_ref, model)")
+    push!(obj_new.history,
+        "mlinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, model=$(typeof(model)))")
 
     return obj_new
 
@@ -77,19 +101,19 @@ end
 """
     mlinterpolate_channel!(obj; <keyword arguments>)
 
-Interpolate channel using linear regression.
+Interpolate a channel using an MLJ regression model, modifying `obj` in-place.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel to interpolate
-- `ep::Int64`: epoch index within to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
-- `model::T where T <: DataType`: MLJ regressor model
+- `ch::String`: name of the channel to interpolate
+- `ep::Int64`: index of the epoch to interpolate
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epochs for training; default is all epochs except `ep`
+- `model::T where T <: MLJ.Model`: any MLJ regressor (e.g. `RandomForestRegressor`)
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: output NEURO object
+- `Nothing`
 """
 function mlinterpolate_channel!(
     obj::NeuroAnalyzer.NEURO;
@@ -99,7 +123,7 @@ function mlinterpolate_channel!(
     model::T
 )::Nothing where {T <: MLJ.Model}
 
-    obj_new = mlinterpolate_channel(obj, ch = ch, ep = ep, ep_ref = ep_ref, model = model)
+    obj_new = mlinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref, model = model)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

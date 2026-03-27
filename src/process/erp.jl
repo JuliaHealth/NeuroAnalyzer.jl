@@ -31,9 +31,9 @@ function average_epochs(
         _warn("Non-signal channels will be removed.")
 
     obj_new = if datatype(obj) == "eeg"
-        keep_channel(obj, ch = get_channel(obj, type = datatype(obj)))
+        keep_channel(obj; ch = get_channel(obj, type = datatype(obj)))
     else
-        keep_channel(obj, ch = ["meg", "mag", "grad"])
+        keep_channel(obj; ch = ["meg", "mag", "grad"])
     end
 
     # remove baseline prior to averaging

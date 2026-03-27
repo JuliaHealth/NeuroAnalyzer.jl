@@ -44,7 +44,7 @@ function csd(
     lambda > 0 || throw(ArgumentError("lambda must be > 0."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
+    ch = get_channel(obj; ch = get_channel(obj, type = datatype(obj)))
     locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 

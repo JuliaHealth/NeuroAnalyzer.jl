@@ -177,7 +177,7 @@ function tenv(
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -242,7 +242,7 @@ function tenv_mean(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    tenv_data = tenv(obj, ch = ch, d = d)
+    tenv_data = tenv(obj; ch = ch, d = d)
     s_a = tenv_data.e
     t = tenv_data.t
 
@@ -286,7 +286,7 @@ function tenv_mean(
         # mean over channels and epochs: first average over channels (dims=1),
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
-        tenv_data = tenv_mean(obj, ch = ch, dims = 1, d = d)
+        tenv_data = tenv_mean(obj; ch = ch, dims = 1, d = d)
 
         em = mean(tenv_data.em, dims = 2)
         eu = mean(tenv_data.eu, dims = 2)
@@ -341,7 +341,7 @@ function tenv_median(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    tenv_data = tenv(obj, ch = ch, d = d)
+    tenv_data = tenv(obj; ch = ch, d = d)
     s_a = tenv_data.e
     t = tenv_data.t
 
@@ -385,7 +385,7 @@ function tenv_median(
         # median over channels and epochs: first average over channels (dims=1),
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
-        tenv_data = tenv_median(obj, ch = ch, dims = 1, d = d)
+        tenv_data = tenv_median(obj; ch = ch, dims = 1, d = d)
         em = median(tenv_data.em, dims = 2)
         eu = median(tenv_data.eu, dims = 2)
         el = median(tenv_data.el, dims = 2)
@@ -443,7 +443,7 @@ function penv(
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -553,7 +553,7 @@ function penv_mean(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    penv_data = penv(obj, ch = ch, d = d, method = method, nt = nt, wlen = wlen,
+    penv_data = penv(obj; ch = ch, d = d, method = method, nt = nt, wlen = wlen,
                     woverlap = woverlap, w = w, ncyc = ncyc, demean = demean)
     pw = penv_data.e
     f = penv_data.f
@@ -817,7 +817,7 @@ function senv(
 } where {T <: CWT}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -1316,7 +1316,7 @@ function henv(
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     henv_data = htransform(@view(obj.data[ch, :, :]))
     a = henv_data.a
@@ -1384,7 +1384,7 @@ function henv_mean(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    henv_data = henv(obj, ch = ch, d = d)
+    henv_data = henv(obj; ch = ch, d = d)
     s_a = henv_data.a
     t = henv_data.t
 
@@ -1429,7 +1429,7 @@ function henv_mean(
         # mean over channels and epochs: first average over channels (dims=1),
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
-        henv_data = henv_mean(obj, ch = ch, dims = 1, d = d)
+        henv_data = henv_mean(obj; ch = ch, dims = 1, d = d)
         em = vec(mean(henv_data.em, dims = 2))
         eu = vec(mean(henv_data.eu, dims = 2))
         el = vec(mean(henv_data.el, dims = 2))
@@ -1483,7 +1483,7 @@ function henv_median(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    henv_data = henv(obj, ch = ch, d = d)
+    henv_data = henv(obj; ch = ch, d = d)
     s_a = henv_data.a
     t = henv_data.t
 
@@ -1526,7 +1526,7 @@ function henv_median(
 
         # median over channels and epochs
 
-        henv_median_data = henv_median(obj, ch = ch, dims = 1, d = d)
+        henv_median_data = henv_median(obj; ch = ch, dims = 1, d = d)
         em = henv_median_data.em
         eu = henv_median_data.eu
         el = henv_median_data.el

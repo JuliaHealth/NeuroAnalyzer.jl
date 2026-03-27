@@ -251,7 +251,7 @@ function remove_pops(
     nepochs(obj) == 1 || throw(ArgumentError("pop() must be applied to continuous object."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -283,7 +283,7 @@ function remove_pops(
 
     if repair
         obj_new.data[ch, :, :] = s
-        push!(obj_new.history, "remove_pops(OBJ, ch=$ch, repair=true, window=$window)")
+        push!(obj_new.history, "remove_pops(obj; ch=$ch, repair=true, window=$window)")
         return obj_new, pop_loc, l_seg, r_seg
     else
         return pop_loc, l_seg, r_seg
@@ -322,7 +322,7 @@ function remove_pops!(
     Vector{Int64}
 }
 
-    obj_new, pop_loc, l_seg, r_seg = remove_pops(obj, ch = ch, repair = true, window = window, r = r)
+    obj_new, pop_loc, l_seg, r_seg = remove_pops(obj; ch = ch, repair = true, window = window, r = r)
     if repair
         obj.data = obj_new.data
         obj.history = obj_new.history

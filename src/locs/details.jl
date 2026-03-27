@@ -42,7 +42,7 @@ function locs_details(
 }
 
     # validate
-    length(get_channel(obj, ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    length(get_channel(obj; ch=ch)) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     ch = intersect(obj.locs[!, :label], [ch])
     locs = Base.filter(:label => in(ch), obj.locs)

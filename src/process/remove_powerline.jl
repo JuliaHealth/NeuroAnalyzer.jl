@@ -44,7 +44,7 @@ function remove_powerline(
     _check_var(method, [:iir], "method")
 
     # resolve channel names to integer indices
-    ch_idx_vec = get_channel(obj, ch=ch)
+    ch_idx_vec = get_channel(obj; ch=ch)
     clabels = labels(obj)
 
     # create new dataset

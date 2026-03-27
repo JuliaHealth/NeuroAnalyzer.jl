@@ -109,7 +109,7 @@ function phsd(
     # number of epochs
     ep_n = size(s, 3)
 
-    f = phsd(s[1, :, 1], fs = fs).f
+    f = phsd(s[1, :, 1]; fs = fs).f
 
     ph = zeros(ch_n, length(f), ep_n)
 
@@ -150,7 +150,7 @@ function phsd(
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     return phsd(@view(obj.data[ch, :, :]), fs = sr(obj))
 

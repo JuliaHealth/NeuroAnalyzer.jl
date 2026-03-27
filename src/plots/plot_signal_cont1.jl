@@ -77,7 +77,7 @@ function plot_cont(
     end
 
     # check channels and meta data
-    _ = get_channel(obj, ch = ch)
+    _ = get_channel(obj; ch = ch)
     obj_tmp = deepcopy(obj)
     keep_channel!(obj_tmp; ch = ch)
     ch_n = nchannels(obj_tmp)
@@ -461,7 +461,7 @@ function plot_cont(
                         # mark channel as bad
                         if ax1_x < ax1.limits[][1][1]
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
-                            obj.header.recording[:bad_channel][get_channel(obj, ch = clabels[round(Int64, ax1_y)])[1]] =
+                            obj.header.recording[:bad_channel][get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1]] =
                                 !obj.header.recording[:bad_channel][
                                 get_channel(
                                     obj; ch = clabels[round(Int64, ax1_y)]
@@ -491,7 +491,7 @@ function plot_cont(
 
                         # get channel info
                         if ax1_x < ax1.limits[][1][1]
-                            channel_info(obj, ch = clabels[round(Int64, ax1_y)])
+                            channel_info(obj; ch = clabels[round(Int64, ax1_y)])
                         end
 
                         # place marker

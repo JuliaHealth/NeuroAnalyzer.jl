@@ -41,7 +41,7 @@ function get_channel(
     # return physical channel numbers
     if ch != ""
         exclude = _ch_idx(obj, exclude)
-        ch = _ch_idx(obj, ch)
+        ch = _ch_idx(obj; ch)
         if isnothing(exclude)
             return ch
         else
@@ -101,7 +101,7 @@ Get channel type.
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
@@ -143,7 +143,7 @@ function set_channel_type(
     obj_new = deepcopy(obj)
 
     obj_new.header.recording[:channel_type][ch] = type
-    push!(obj_new.history, "set_channel_type(OBJ, ch=$ch, type=$type)")
+    push!(obj_new.history, "set_channel_type(obj; ch=$ch, type=$type)")
 
     return obj_new
 
@@ -166,7 +166,7 @@ Set channel type.
 """
 function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::Nothing
 
-    obj_new = set_channel_type(obj, ch = ch, type = type)
+    obj_new = set_channel_type(obj; ch = ch, type = type)
     obj.header = obj_new.header
     obj.history = obj_new.history
 
@@ -202,14 +202,14 @@ function rename_channel(
     name in clabels && throw(ArgumentError("Channel $name already exist."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)[1]
+    ch = get_channel(obj; ch = ch)[1]
     obj_new.header.recording[:label][ch] = name
 
     # rename label in locs
     l_idx = _find_bylabel(obj_new.locs, labels(obj)[ch])[1]
     !isnothing(l_idx) && (obj_new.locs[l_idx, :label] = name)
 
-    push!(obj_new.history, "rename_channel(OBJ, ch=$ch, name=$name)")
+    push!(obj_new.history, "rename_channel(obj; ch=$ch, name=$name)")
 
     return obj_new
 
@@ -232,7 +232,7 @@ Rename channel.
 """
 function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::Nothing
 
-    obj_new = rename_channel(obj, ch = ch, name = name)
+    obj_new = rename_channel(obj; ch = ch, name = name)
     obj.header = obj_new.header
     obj.history = obj_new.history
     obj.locs = obj_new.locs
@@ -269,7 +269,7 @@ function edit_channel(
     _check_var(field, [:channel_type, :label], "field")
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
@@ -277,7 +277,7 @@ function edit_channel(
     obj_new = deepcopy(obj)
     obj_new.header.recording[field][ch] = value
 
-    push!(obj_new.history, "edit_channel(OBJ, ch=$ch, field=$field, value=$value)")
+    push!(obj_new.history, "edit_channel(obj; ch=$ch, field=$field, value=$value)")
 
     return obj_new
 
@@ -306,7 +306,7 @@ function edit_channel!(
     value::String
 )::Nothing
 
-    obj_new = edit_channel(obj, ch = ch, field = field, value = value)
+    obj_new = edit_channel(obj; ch = ch, field = field, value = value)
     obj.header = obj_new.header
     obj.history = obj_new.history
 
@@ -346,7 +346,7 @@ function replace_channel(
         )
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
@@ -354,7 +354,7 @@ function replace_channel(
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = s
 
-    push!(obj_new.history, "replace_channel(OBJ, ch=$ch, s")
+    push!(obj_new.history, "replace_channel(obj; ch=$ch, s")
 
     return obj_new
 
@@ -381,7 +381,7 @@ function replace_channel!(
     s::Array{Float64, 3}
 )::Nothing
 
-    obj_new = replace_channel(obj, ch = ch, s = s)
+    obj_new = replace_channel(obj; ch = ch, s = s)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history

@@ -45,7 +45,7 @@ function plinterpolate_channel(
     _has_locs(obj)
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)[1]
+    ch = get_channel(obj; ch = ch)[1]
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 
@@ -94,7 +94,7 @@ function plinterpolate_channel(
 
     obj_new.data[ch, :, ep] = s_interpolated
 
-    push!(obj_new.history, "plinterpolate_channel(OBJ, ch=$ch, ep=$ep, imethod=$imethod, ifactor=$ifactor)")
+    push!(obj_new.history, "plinterpolate_channel(obj; ch=$ch, ep=$ep, imethod=$imethod, ifactor=$ifactor)")
 
     return obj_new
 

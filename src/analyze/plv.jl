@@ -160,7 +160,7 @@ Calculate Phase Locking Value (PLV) for a NEURO object.
 """
 function plv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     isa(ch, Int64) && (ch = [ch])

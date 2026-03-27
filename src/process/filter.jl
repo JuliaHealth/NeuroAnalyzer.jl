@@ -338,7 +338,7 @@ function filter_apply(
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # number of channels
     ch_n = length(ch)
@@ -367,7 +367,7 @@ function filter_apply(
         progress_bar && next!(progbar)
     end
 
-    push!(obj_new.history, "filter_apply(OBJ, ch=$ch, dir=$dir)")
+    push!(obj_new.history, "filter_apply(obj; ch=$ch, dir=$dir)")
 
     return obj_new
 
@@ -405,7 +405,7 @@ function filter_apply!(
     dir::Symbol = :twopass
 )::Nothing
 
-    obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
+    obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
@@ -501,7 +501,7 @@ function filter(
             bw = bw,
             w = w
         )
-        obj_new = filter_apply(obj, ch = ch, flt = flt, dir = dir)
+        obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
 
         return obj_new
 

@@ -121,7 +121,7 @@ function fconv(
 )::Array{ComplexF64, 3}
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     _info("Group delay: $(_group_delay(kernel)) samples")
     
     return fconv(@view(obj.data[ch, :, :]), kernel = kernel, norm = norm)

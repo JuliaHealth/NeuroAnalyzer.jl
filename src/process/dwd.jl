@@ -136,7 +136,7 @@ function dwd(
     end
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     return dwd(@view(obj.data[ch, :, :]); wt=wt, type=type, l=l)
 

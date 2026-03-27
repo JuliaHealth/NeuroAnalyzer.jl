@@ -308,7 +308,7 @@ function channel2marker(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
@@ -378,7 +378,7 @@ function channel2marker(
         )
     )
     sort!(obj_new.markers, :start)
-    push!(obj_new.history, "channel2marker(OBJ, ch=$ch, v=$v, id=$id, value=$value")
+    push!(obj_new.history, "channel2marker(obj; ch=$ch, v=$v, id=$id, value=$value")
 
     return obj_new
 
@@ -409,7 +409,7 @@ function channel2marker!(
         value::String = ""
     )::Nothing
 
-    obj_new = channel2marker(obj, ch = ch, v = v, id = id, value = value)
+    obj_new = channel2marker(obj; ch = ch, v = v, id = id, value = value)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 

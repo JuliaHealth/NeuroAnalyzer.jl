@@ -97,13 +97,13 @@ function derivative(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = derivative(obj.data[ch, :, :])
-    push!(obj_new.history, "derivative(OBJ, ch=$ch)")
+    push!(obj_new.history, "derivative(obj; ch=$ch)")
 
     return obj_new
 
@@ -125,7 +125,7 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 """
 function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = derivative(obj, ch = ch)
+    obj_new = derivative(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

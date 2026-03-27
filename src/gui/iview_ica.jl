@@ -29,7 +29,7 @@ function iview_ica(
     zoom = 10
     obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
     seg = (obj.time_pts[1], obj.time_pts[1] + zoom)
-    chn = get_channel(obj, ch = ch)
+    chn = get_channel(obj; ch = ch)
     cl = labels(obj)
     ch_idx = 1
 
@@ -91,8 +91,8 @@ function iview_ica(
         end
     end
 
-    p_sig = NeuroAnalyzer.plot(obj, ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
-    p_psd = NeuroAnalyzer.plot_psd(obj, ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
+    p_sig = NeuroAnalyzer.plot(obj; ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
+    p_psd = NeuroAnalyzer.plot_psd(obj; ch = cl[chn[ch_idx]], title = "Channel: $(cl[chn[ch_idx]]) (original)")
 
     k = nothing
     scaled_sig = false

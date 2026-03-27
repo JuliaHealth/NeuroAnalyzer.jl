@@ -99,13 +99,13 @@ function filter_sg(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :]; order = order, window = window)
-    push!(obj_new.history, "filter_sg(OBJ, ch=$ch, order=$order, window=$window)")
+    push!(obj_new.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
 
     return obj_new
 
@@ -134,7 +134,7 @@ function filter_sg!(
     window::Int64 = 11
 )::Nothing
 
-    obj_new = filter_sg(obj, ch = ch, order = order, window = window)
+    obj_new = filter_sg(obj; ch = ch, order = order, window = window)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

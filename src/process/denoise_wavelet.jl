@@ -154,7 +154,7 @@ function denoise_cwd(
 )::NeuroAnalyzer.NEURO where {T <: CWT}
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -167,7 +167,7 @@ function denoise_cwd(
         w = w,
         type = type
     )
-    push!(obj_new.history, "denoise_cwd(OBJ, ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
+    push!(obj_new.history, "denoise_cwd(obj; ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
 
     return obj_new
 
@@ -202,7 +202,7 @@ function denoise_cwd!(
     type::Symbol = :nd
 )::Nothing where {T <: CWT}
 
-    obj_new = denoise_cwd(obj, ch = ch, wt = wt, nf = nf, type = type)
+    obj_new = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, type = type)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
@@ -341,13 +341,13 @@ function denoise_dwd(
     end
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
-    push!(obj_new.history, "denoise_dwd(OBJ, ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))")
+    push!(obj_new.history, "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))")
 
     return obj_new
 
@@ -382,7 +382,7 @@ function denoise_dwd!(
     smooth::Symbol = :regular
 )::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
-    obj_new = denoise_dwd(obj, ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
+    obj_new = denoise_dwd(obj; ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

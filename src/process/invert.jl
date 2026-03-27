@@ -18,14 +18,13 @@ Invert polarity.
 function invert_polarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
-
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = .- obj_new.data[ch, :, :]
-    push!(obj_new.history, "invert_polarity(OBJ, ch=$ch)")
+    push!(obj_new.history, "invert_polarity(obj; ch=$ch)")
 
     return obj_new
 
@@ -47,7 +46,7 @@ Invert polarity.
 """
 function invert_polarity!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = invert_polarity(obj, ch = ch)
+    obj_new = invert_polarity(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

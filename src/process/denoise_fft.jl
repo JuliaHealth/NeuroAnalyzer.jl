@@ -115,13 +115,13 @@ function denoise_fft(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = denoise_fft(@view(obj.data[ch, :, :]), pad = pad, t = t)
-    push!(obj_new.history, "denoise_fft(OBJ, ch=$ch, pad=$pad, t=$t)")
+    push!(obj_new.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
 
     return obj_new
 
@@ -150,7 +150,7 @@ function denoise_fft!(
     t::Int64 = 0
 )::Nothing
 
-    obj_new = denoise_fft(obj, ch = ch, pad = pad, t = t)
+    obj_new = denoise_fft(obj; ch = ch, pad = pad, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

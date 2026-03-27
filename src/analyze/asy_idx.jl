@@ -55,8 +55,8 @@ function asy_idx(
 }
 
     # resolve channel names to integer indices
-    ch1 = get_channel(obj, ch = ch1)
-    ch2 = get_channel(obj, ch = ch2)
+    ch1 = get_channel(obj; ch = ch1)
+    ch2 = get_channel(obj; ch = ch2)
 
     # shared keyword arguments for both band_power calls - defined once to
     # avoid duplicating the argument list and to keep the two calls in sync

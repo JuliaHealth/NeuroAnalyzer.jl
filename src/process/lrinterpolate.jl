@@ -10,8 +10,8 @@ Interpolate channel using linear regression.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
-- `ep::Int64`: epoch index(s) within to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
+- `ep::Int64`: epoch index to interpolate
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
 
 # Returns
 
@@ -25,19 +25,21 @@ function lrinterpolate_channel(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)[1]
-    channels = get_channel(obj, ch = get_channel(obj, type = datatype(obj)))
+    ch = get_channel(obj; ch = ch)[1]
+    channels = get_channel(obj; ch = get_channel(obj, type = datatype(obj)))
     length(channels) > 1 ||
         throw(ArgumentError("signal must contain > 1 signal channel."))
     ch in channels ||
         throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
     nepochs(obj) > 1 ||
         throw(ArgumentError("Training the model requires the signal to have > 1 epoch."))
-
     _check_epochs(obj, ep_ref)
     ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
 
+    # source data
     signal_src = @view(obj.data[:, :, ep])
+
+    # reference channels and data
     ch_ref = setdiff(channels, ch)
     signal_ref = reshape(obj.data, size(obj.data, 1), (size(obj.data, 2) * size(obj.data, 3)), 1)
 
@@ -75,7 +77,7 @@ function lrinterpolate_channel(
     )
     obj_new.data[ch, :, ep] = GLM.predict(linear_regressor, df)
 
-    push!(obj_new.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep, ep_ref=$ep_ref)")
+    push!(obj_new.history, "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref)")
 
     return obj_new
 
@@ -91,7 +93,7 @@ Interpolate channel using linear regression.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
 - `ep::Int64`: epoch index(s) within to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
 
 # Returns
 
@@ -104,7 +106,7 @@ function lrinterpolate_channel!(
     ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep)
 )::Nothing
 
-    obj_new = lrinterpolate_channel(obj, ch = ch, ep = ep, ep_ref = ep_ref)
+    obj_new = lrinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

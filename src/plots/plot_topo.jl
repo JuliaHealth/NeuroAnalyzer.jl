@@ -466,12 +466,12 @@ function plot_topo(
     )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     if !isnothing(sch)
         if isa(sch, String)
-            !(length(intersect(ch, get_channel(obj, ch = sch))) == 1) && throw(ArgumentError("sch channel was not found in ch."))
+            !(length(intersect(ch, get_channel(obj; ch = sch))) == 1) && throw(ArgumentError("sch channel was not found in ch."))
         else
-            !(length(intersect(ch, get_channel(obj, ch = sch))) == length(sch)) && throw(ArgumentError("Some sch channels were not found in ch."))
+            !(length(intersect(ch, get_channel(obj; ch = sch))) == length(sch)) && throw(ArgumentError("Some sch channels were not found in ch."))
         end
     end
     length(ch) >= 2 || throw(ArgumentError("plot_topo() requires ≥ 2 channels."))

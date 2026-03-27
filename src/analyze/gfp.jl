@@ -99,7 +99,7 @@ function erp_gfp(
     _check_datatype(obj, ["erp", "erf"])
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     length(ch) > 1 || throw(ArgumentError("More than 1 channel must be selected."))
 
     s = @view obj.data[ch, :, 1]

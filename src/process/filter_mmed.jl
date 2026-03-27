@@ -146,7 +146,7 @@ function filter_mmed(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
 
     # window length
     wlen = 2 * k + 1
@@ -158,7 +158,7 @@ function filter_mmed(
     obj_new.data[ch, :, :] = filter_mmed(
         @view(obj.data[ch, :, :]), k=k, t=t, ww=ww
     )
-    push!(obj_new.history, "filter_mmed(OBJ, ch=$ch, k=$k, t=$t, ww=$ww)")
+    push!(obj_new.history, "filter_mmed(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
 
     return obj_new
 
@@ -190,7 +190,7 @@ function filter_mmed!(
     ww::AbstractVector = ones(2 * k + 1)
 )::Nothing
 
-    obj_new = filter_mmed(obj, ch = ch, k = k, t = t, ww = ww)
+    obj_new = filter_mmed(obj; ch = ch, k = k, t = t, ww = ww)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

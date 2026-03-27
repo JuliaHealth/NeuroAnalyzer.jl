@@ -20,7 +20,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         throw(ArgumentError("Currently this function only works for EEG or MEG objects."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
     length(ch) == 1 || throw(ArgumentError("ch must be a single channel."))
     current_channel = ch[1]
 

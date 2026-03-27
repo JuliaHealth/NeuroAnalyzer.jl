@@ -126,7 +126,7 @@ function filter_g(
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch = ch)
+    ch = get_channel(obj; ch = ch)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -138,7 +138,7 @@ function filter_g(
         f = f,
         gw = gw
     )
-    push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
+    push!(obj_new.history, "filter_g(obj; ch=$ch, pad=$pad, f=$f)")
 
     return obj_new
 
@@ -169,7 +169,7 @@ function filter_g!(
     gw::Real = 5
 )::Nothing
 
-    obj_new = filter_g(obj, ch = ch, pad = pad, f = f, gw = gw)
+    obj_new = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

@@ -715,7 +715,7 @@ function plot_erp(
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1 ||
         throw(ArgumentError("All channels must be of the same type."))
     length(ch) > 1 && (eavg = false)
@@ -858,7 +858,7 @@ function plot_erp(
 
     elseif type === :gfp
 
-        g = erp_gfp(obj, ch = clabels)
+        g = erp_gfp(obj; ch = clabels)
         xl, yl, tt = _set_defaults(
             xlabel,
             ylabel,
@@ -959,7 +959,7 @@ function plot_erp(
 
             # for multi-channel average
             mep_tmp = mean(obj.data[ch_indices, :, 1], dims=1)[:, :, :]
-            obj_tmp = keep_channel(obj, ch=clabels[1])
+            obj_tmp = keep_channel(obj; ch=clabels[1])
             obj_tmp.data = mep_tmp
             pp = erp_peaks(obj_tmp)
 

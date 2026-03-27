@@ -52,7 +52,7 @@ function bpsplit(
     ]
 
     # resolve channel names to integer indices
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch=ch)
 
     # number of channels
     ch_n = length(ch)

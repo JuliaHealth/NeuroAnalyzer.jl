@@ -89,13 +89,13 @@ function phdiff(
             ph_ref = zeros(length(ref_channels), ep_len)
             for ref_idx in eachindex(ref_channels)
                 h_data = h ? NeuroAnalyzer.htransform(@view(s[ref_channels[ref_idx], :, ep_idx])) :
-                             NeuroAnalyzer.ftransform(@view(s[ref_channels[ref_idx], :, ep_idx]), pad = pad)
+                             NeuroAnalyzer.ftransform(@view(s[ref_channels[ref_idx], :, ep_idx]); pad = pad)
                 ph_ref[ref_idx, :] = h_data.ph
             end
             ph_ref = vec(mean(ph_ref, dims = 1))
 
             h_data = h ? NeuroAnalyzer.htransform(@view(s[ch[ch_idx], :, ep_idx])) :
-                         NeuroAnalyzer.ftransform(@view(s[ch[ch_idx], :, ep_idx]), pad = pad)
+                         NeuroAnalyzer.ftransform(@view(s[ch[ch_idx], :, ep_idx]); pad = pad)
             phd[ch_idx, :, ep_idx] = h_data.ph - ph_ref
 
         elseif avg === :signal
@@ -139,7 +139,7 @@ function phdiff(
 )::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ? get_channel(obj, ch = ch, exclude = "bad") : get_channel(obj, ch = ch, exclude = "")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     return phdiff(
         @view(obj.data[ch, :, :]),
