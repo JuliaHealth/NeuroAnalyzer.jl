@@ -958,7 +958,7 @@ function plot_eros(
         yt = round.(logspace(flim[1], flim[2], nfrq); digits = 1)
     end
  
-    # use Gaussian filter if requested
+    # apply Gaussian filter if requested
     if smooth
         for idx in axes(sp, 3)
             sp[:, :, idx] = imfilter(@view(sp[:, :, idx]), Kernel.gaussian(ks))
@@ -1326,7 +1326,9 @@ Plot a heatmap with customizable labels, styling, and optional threshold highlig
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `cb::Bool=true`: if `true`, show colorbar
 - `cb_title::String=""`: colorbar title
-- `threshold::Union{Nothing, Real}=nothing`: threshold value for highlighting regions 
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+    - if `Real`, use a single threshold value
+    - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for threshold-based highlighting:
     - `:eq`: draw region where values are not equal to threshold
     - `:neq`: draw region where values are equal to threshold
@@ -1349,7 +1351,7 @@ function plot_heatmap(
     mono::Bool = false,
     cb::Bool = true,
     cb_title::String = "",
-    threshold::Union{Nothing, Real} = nothing,
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     threshold_type::Symbol = :neq,
 )::GLMakie.Figure
     # validate

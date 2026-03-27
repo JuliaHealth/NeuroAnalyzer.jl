@@ -459,7 +459,7 @@ Plot stacked Event-Related Potentials/Fields.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `cb::Bool=true`: if `true`, plot color bar
+- `cb::Bool=true`: if `true`, show color bar
 - `cb_title::String=""`: color bar title
 - `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
@@ -673,7 +673,7 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `title::String="default"`: plot title
-- `cb::Bool=true`: if `true`, plot color bar
+- `cb::Bool=true`: if `true`, show color bar
 - `cb_title::String="default"`: color bar title
 - `peaks::Bool=true`: draw peak markers
 - `leg::Bool=true`: if `true`, add legend with channel labels

@@ -28,7 +28,7 @@ Plot signal from a NEURO object.
 - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
 - `n_channels::Int64=20`: number of visible channels
 - `n_epochs::Int64=5`: number of visible epochs
-- `cb::Bool=true`: if `true`, plot color bar (for ERP/ERF/MEP)
+- `cb::Bool=true`: if `true`, show color bar (for ERP/ERF/MEP)
 - `cb_title::String="default"`: color bar title (for ERP/ERF/MEP)
 - `peaks::Bool=true`: draw peak markers (for ERP/ERF/MEP)
 - `leg::Bool=true`: if `true`, add legend with channel labels (for ERP/ERF/MEP)

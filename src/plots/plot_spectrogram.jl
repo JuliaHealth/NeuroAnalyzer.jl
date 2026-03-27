@@ -4,25 +4,25 @@ export plot_spectrogram_topo
 """
     plot_spectrogram(st, sf, sp; <keyword arguments>)
 
-Plot single-channel spectrogram.
+Plot a single-channel spectrogram (time vs. frequency).
 
 # Arguments
 
-- `st::Vector{Float64}`: time
-- `sf::Vector{<:Real}`: frequencies
-- `sp::Matrix{Float64}`: powers
-- `db::Bool=true`: whether powers are normalized to dB
+- `st::Vector{Float64}`: vector of time values in seconds
+- `sf::Vector{<:Real}`: vector of frequency values in Hz
+- `sp::Matrix{Float64}`: spectrogram power values
+- `db::Bool=true`: whether to display power values in decibels
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
-- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plot
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `units::String=""`
+- `units::String=""`: power units
 - `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
-- `cb::Bool=true`: if `true`, plot color bar
-- `cb_title::String=""`: color bar label
+- `cb::Bool=true`: if `true`, show color bar
+- `cb_title::String=""`: colorbar title
 - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
     - if `Real`, use a single threshold value
     - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
@@ -59,27 +59,28 @@ function plot_spectrogram(
     threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     threshold_type::Symbol = :neq,
 )::GLMakie.Figure
-    !(size(sp, 2) == length(st)) && throw(
+    # validate
+    size(sp, 2) == length(st) || throw(
         ArgumentError(
             "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match.",
         ),
     )
-    !(size(sp, 1) == length(sf)) && throw(
+    size(sp, 1) == length(sf) || throw(
         ArgumentError(
             "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match.",
         ),
     )
-    !(ks > 0) && throw(ArgumentError("ks must be ≥ 1."))
-
+    ks > 0 || throw(ArgumentError("ks must be ≥ 1."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
 
+    # set color palette
     pal = mono ? :grays : :darktest
 
-    if smooth
-        sp = imfilter(sp, Kernel.gaussian(ks))
-    end
+    # apply Gaussian filter if requested
+    smooth && (sp = imfilter(sp, Kernel.gaussian(ks)))
 
+    # transpose for GLMakie heatmap (expects x columns, y rows)
     sp = sp'
 
     if !isnothing(threshold)
@@ -161,7 +162,7 @@ Plot multiple-channel spectrogram.
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
-- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plot
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -169,8 +170,8 @@ Plot multiple-channel spectrogram.
 - `units::String=""`
 - `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
-- `cb::Bool=true`: if `true`, plot color bar
-- `cb_title::String=""`: color bar label
+- `cb::Bool=true`: if `true`, show color bar
+- `cb_title::String=""`: colorbar title
 - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
     - if `Real`, use a single threshold value
     - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
@@ -306,8 +307,8 @@ Plot topographical map of spectrograms.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `units::String=""`
-- `cb::Bool=true`: if `true`, plot color bar
-- `cb_title::String=""`: color bar label
+- `cb::Bool=true`: if `true`, show color bar
+- `cb_title::String=""`: colorbar title
 - `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `mono::Bool=false`: unused, for compatibility only
@@ -576,7 +577,7 @@ Plots spectrogram.
 - `markers::Bool`: draw markers if available
 - `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
-- `cb::Bool=true`: if `true`, plot color bar
+- `cb::Bool=true`: if `true`, show color bar
 - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
     - if `Real`, use a single threshold value
     - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
