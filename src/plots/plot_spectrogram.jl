@@ -19,7 +19,7 @@ Plot single-channel spectrogram.
 - `title::String=""`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `units::String=""`
-- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `cb::Bool=true`: if `true`, plot color bar
 - `cb_title::String=""`: color bar label
@@ -167,7 +167,7 @@ Plot multiple-channel spectrogram.
 - `title::String=""`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `units::String=""`
-- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `cb::Bool=true`: if `true`, plot color bar
 - `cb_title::String=""`: color bar label
@@ -308,7 +308,7 @@ Plot topographical map of spectrograms.
 - `units::String=""`
 - `cb::Bool=true`: if `true`, plot color bar
 - `cb_title::String=""`: color bar label
-- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `mono::Bool=false`: unused, for compatibility only
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
@@ -574,7 +574,7 @@ Plots spectrogram.
 - `title::String="default"`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `markers::Bool`: draw markers if available
-- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `cb::Bool=true`: if `true`, plot color bar
 - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
@@ -636,8 +636,8 @@ function plot_spectrogram(
     ks > 0 || throw(ArgumentError("ks must be ≥ 1."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     if method === :cwt
         if type === :normal

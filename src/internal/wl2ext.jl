@@ -1,28 +1,42 @@
 """
     _wl2ext(wl)
 
+Convert wavelength to hemoglobin molar extinction coefficients using data from Wray et al. (1988).
+
+# Arguments
+
+- `wl::Real`: wavelength in nanometers (nm) to convert to extinction coefficients
+
+# Returns
+
+- `Vector{Float64}`: vector containing two extinction coefficients in [cm⁻¹/(mol/L)]:
+
+    1. extinction coefficient for oxyhemoglobin (HbO₂)
+    2. extinction coefficient for deoxyhemoglobin (Hb)
+
 Get molar extinction coefficient e in [cm-1/(moles/liter)].
+
+# Conversion Formulas
+
+`A = ε × c × l`
+
+where:
+- ε: molar extinction coefficient [cm⁻¹/(mol/L)]
+- c: molar concentration [mol/L]
+- l: pathlength [cm]
+
+To convert to absorption coefficient (cm⁻¹):
+
+`μₐ = 2.303 × ε × c`
+
+where c is concentration in g/L and 66,500 g/mol is the molecular weight of hemoglobin.
 
 # Source
 
 Wray, S., Cope, M., Delpy, D., Wyatt, J., Reynolds, E. (1988). Characterization of the near infrared absorption spectra of cytochrome aa3 and haemoglobin for the non-invasive monitoring of cerebral oxygenation Biochimica et Biophysica Acta (BBA) - Bioenergetics 933(1), 184-192. https://dx.doi.org/10.1016/0005-2728(88)90069-2
-
-To convert this data to absorbance A, multiply by the molar concentration and the pathlength. For example, if x is the number of grams per liter and a 1 cm cuvette is being used, then the absorbance is given by
-
-    (e) [(1/cm)/(moles/liter)] (x) [g/liter] (1) [cm]
-A =  ---------------------------------------------------
-                      66,500 [g/mole]
-
-using 66,500 as the gram molecular weight of hemoglobin.
-
-To convert this data to absorption coefficient in (cm-1), multiply by the molar concentration and 2.303,
-
-µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
-
-where x is the number of grams per liter. A typical value of x for whole blood is x=150 g Hb/liter.
 """
 function _wl2ext(wl::Real)::Vector{Float64}
-    wl_hb = [
+    hemoglobin_extinction_data = [
         650.0 506.0 3743.0;
         652.0 488.0 3677.0;
         654.0 474.0 3612.0;
@@ -151,9 +165,13 @@ function _wl2ext(wl::Real)::Vector{Float64}
         900.0 1241.3 883.3
     ]
 
-    wl_hb[:, 2:3] .*= 2.303
+    extinction_scaling = 2.303
 
-    wl_idx = vsearch(wl, wl_hb[:, 1])
+    650.0 ≤ wl ≤ 900.0 || throw(ArgumentError("Wavelength must be between 650 and 900 nm (got $wl nm)"))
+    isfinite(wl) || throw(ArgumentError("Wavelength must be a finite number"))
+
+    extinction_data = hemoglobin_extinction_data[:, 2:3] .* extinction_scaling
+    wl_idx = vsearch(wl, hemoglobin_extinction_data[:, 1])
 
     return wl_hb[wl_idx, 2:3]
 end

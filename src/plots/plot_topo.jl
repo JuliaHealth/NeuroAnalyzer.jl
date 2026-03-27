@@ -1,17 +1,31 @@
 export plot_topo
 
+# ---------------------------------------------------------------------------
+# shared helpers
+# ---------------------------------------------------------------------------
+ 
+"""Keyword arguments applied to every locked/non-interactive Axis."""
+const _AXIS_LOCK_KWARGS = (
+    xzoomlock  = true,
+    yzoomlock  = true,
+    xpanlock   = true,
+    ypanlock   = true,
+    xrectzoom  = false,
+    yrectzoom  = false,
+)
+
 """
     plot_topo(s; <keyword arguments>)
 
-Plot topographical view.
+Plot a topographical map of signal values across channel locations.
 
 # Arguments
 
-- `s::AbstractVector`: signal vector: values to plot (one value per channel)
-- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
-- `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: list of significant channels
-- `cb::Bool=true`: plot colorbar
+- `s::AbstractVector`: signal values to plot (one value per channel)
+- `locs::DataFrame`: channel coordinates; must include labels and spatial columns (`loc_x`, `loc_y` or `loc_radius`, `loc_theta`).
+- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: channels to include; defaults to all rows in `locs`
+- `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: significant channels to highlight
+- `cb::Bool=true`: if `true`, show colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
 - `title::String=""`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
@@ -24,9 +38,12 @@ Plot topographical view.
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
-- `electrodes::Bools=true`: plot electrodes over topo plot
-- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-- `head::Bool=true`: draw head
+- `electrodes::Bools=true`: if `true`, plot electrode locations over topography
+- `ps::Symbol`: plot size:
+    - `:l`: large (800×800 px)
+    - `:m`: medium (300×300 px)
+    - `:s`: small (100×100 px)
+- `head::Bool=true`: if `true`, draw head outline
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
     - if `Real`, use a single threshold value
@@ -66,8 +83,6 @@ function plot_topo(
     threshold_type::Symbol = :neq,
     threshold_method::Symbol = :reg,
 )::GLMakie.Figure
-    pal = mono ? :grays : :bluesreds
-
     # validate
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
@@ -81,52 +96,66 @@ function plot_topo(
             throw(ArgumentError("Both sch and threshold cannot be specified."))
     end
 
-    ch_n = length(ch)
-    locs = locs[ch, :]
+    # set color palette
+    pal = mono ? :grays : :bluesreds
 
-    if cart == false
-        loc_x = zeros(length(ch))
-        loc_y = zeros(length(ch))
+    # number of channels
+    ch_n = length(ch)
+
+    # channel locations by labels
+    local_locs = locs[ch, :]
+
+    if !cart
+        # polar coordinates
+        loc_x = zeros(ch_n)
+        loc_y = zeros(ch_n)
         for idx in eachindex(ch)
             loc_x[idx], loc_y[idx] =
-                pol2cart(locs.loc_radius[idx], locs.loc_theta[idx])
+                pol2cart(local_locs.loc_radius[idx], local_locs.loc_theta[idx])
         end
     else
-        loc_x = locs[ch, :loc_x]
-        loc_y = locs[ch, :loc_y]
+        # cartesian coordinates
+        loc_x = local_locs.loc_x
+        loc_y = local_locs.loc_y
     end
 
+    # plot parameters
     if ps === :l
-        plot_size = (800, 800)
+        plot_size   = (800, 800)
         marker_size = length(ch) > 64 ? 8 : 16
-        length(ch) > 64 && (ch_labels = false)
-        iter = 512
-        font_size = 20
+        iter        = 512
+        font_size   = 20
+        lw          = 3
+        sw          = 4
         !occursin("\n", title) && title !== "" && (title *= "\n")
     elseif ps === :m
-        plot_size = (300, 300)
+        plot_size   = (300, 300)
         marker_size = length(ch) > 64 ? 2 : 4
-        font_size = 8
-        iter = 256
-        cb_title = ""
-        font_size = 10
+        iter        = 256
+        font_size   = 10
+        cb_title    = ""
+        lw          = 2
+        sw          = 2
     elseif ps === :s
-        plot_size = (100, 100)
+        plot_size   = (100, 100)
         marker_size = length(ch) > 64 ? 1 : 2
-        iter = 128
-        title = ""
-        cb = false
-        contours = 0
-        cb_title = ""
-        font_size = 5
+        iter        = 128
+        font_size   = 5
+        title       = ""
+        cb          = false
+        contours    = 0
+        cb_title    = ""
+        lw          = 1
+        sw          = 1
     end
 
+    # interpolate signal
     s_interpolated, interpolated_x, interpolated_y =
         _interpolate2d(s, loc_x, loc_y, iter, imethod, nmethod)
     s_interpolated = s_interpolated'[:, end:-1:1]
     s_interpolated_threshold = deepcopy(s_interpolated)
 
-    # we need to calculate thresholded region before removing peripherals
+    # compute thresholded region before removing peripheral values
     threshold_idx = nothing
     if !isnothing(threshold)
         if threshold_method === :loc
@@ -136,9 +165,12 @@ function plot_topo(
             else
                 length(threshold) == 2 ||
                     throw(ArgumentError("threshold must contain two values."))
+                s_norm = normalize(s; method = nmethod)
                 _check_tuple(threshold, extrema(s_norm), "threshold")
             end
+ 
             s_norm = normalize(s; method = nmethod)
+ 
             if threshold_type === :eq
                 threshold_idx = findall(x -> x == threshold, s_norm)
             elseif threshold_type === :neq
@@ -153,34 +185,34 @@ function plot_topo(
                 threshold_idx = findall(x -> x < threshold, s_norm)
             elseif threshold_type === :in
                 threshold_idx =
-                    findall(x -> (x >= threshold[1] && x <= threshold[2]), s_norm)
+                    findall(x -> x >= threshold[1] && x <= threshold[2], s_norm)
             elseif threshold_type === :bin
-                threshold_idx = findall(x -> (x > threshold[1] && x < threshold[2]), s_norm)
+                threshold_idx =
+                    findall(x -> x > threshold[1] && x < threshold[2], s_norm)
             end
         else
             _, bm = seg_extract(
                 s_interpolated;
-                threshold = threshold,
+                threshold      = threshold,
                 threshold_type = threshold_type,
             )
             s_interpolated_threshold[.!bm] .= NaN
         end
     end
 
-    head12 = false
-    maximum(abs.(locs[:, :loc_x])) <= 1.2 &&
-        maximum(abs.(locs[:, :loc_y])) <= 1.2 &&
-        maximum(abs.(locs[:, :loc_z])) <= 1.5 &&
-        (head12 = true)
-
+    head12 =
+        maximum(abs.(local_locs[!, :loc_x])) <= 1.2 &&
+        maximum(abs.(local_locs[!, :loc_y])) <= 1.2 &&
+        maximum(abs.(local_locs[!, :loc_z])) <= 1.5
+ 
     if head12
         xl = (-1.2, 1.2)
         yl = (-1.2, 1.2)
-        r = 1.2
+        r  = 1.2
     else
         xl = (-1.6, 1.6)
         yl = (-1.6, 1.6)
-        r = 1.6
+        r  = 1.6
     end
 
     if head12
@@ -192,7 +224,6 @@ function plot_topo(
                     distance((0, 0), (interpolated_x[idx1], interpolated_y[idx2]))
             end
         end
-        # remove everything outside the radius
         s_interpolated[d .>= xl[2]] .= NaN
         !isnothing(threshold) && (s_interpolated_threshold[d .>= xl[2]] .= NaN)
     end
@@ -203,6 +234,8 @@ function plot_topo(
         size = plot_size,
         figure_padding = ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0), # L R B T
     )
+
+    # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
         aspect = 1,
@@ -213,17 +246,13 @@ function plot_topo(
         yautolimitmargin = (0, 0),
         backgroundcolor = :transparent,
         titlesize = font_size,
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
     hidedecorations!(ax)
     hidespines!(ax)
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
+
     if !isnothing(threshold) && threshold_method === :reg
         hm = GLMakie.heatmap!(
             ax,
@@ -231,7 +260,7 @@ function plot_topo(
             interpolated_y,
             s_interpolated_threshold;
             colorrange = extrema(s_interpolated[.!isnan.(s_interpolated)]),
-            colormap = pal,
+            colormap   = pal,
         )
     else
         hm = GLMakie.heatmap!(
@@ -243,129 +272,80 @@ function plot_topo(
         )
     end
 
-    # draw contours
+    # draw contours over the unthresholded heatmap
+    # skipped when threshold_method === :reg because the thresholded heatmap
+    # already marks the region visually.
     if contours > 0 &&
-       (
-        (isnothing(threshold) && threshold_method === :reg) ||
-        (!isnothing(threshold) && threshold_method === :loc)
-    )
+       (isnothing(threshold) || threshold_method === :loc)
         GLMakie.contour!(
             ax,
             interpolated_x,
             interpolated_y,
             s_interpolated;
             linestyle = :dash,
-            levels = contours,
+            levels    = contours,
             linewidth = 0.5,
-            color = :black,
+            color     = :black,
         )
     end
 
-    # draw head
-    if head
-        ps === :l && (lw = 3)
-        ps === :m && (lw = 2)
-        ps === :s && (lw = 1)
-        # nose
-        GLMakie.lines!(ax, [-0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
+    # draw head outline
+    head && _draw_head_outline!(ax)
 
-        # ears
-        # left
-        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.12, -1.1], [0.05, -0.1]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.1, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22]; linewidth = lw, color = :black)
-        # right
-        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.12, 1.1], [0.05, -0.1]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.1, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
-        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22]; linewidth = lw, color = :black)
-
-        # head
-        GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
-    end
-
-    # draw electrodes
-    # mark thresholded or significant channels
+    # draw electrodes, highlighting thresholded or significant channels
     if electrodes
-        ps === :l && (sw = 4)
-        ps === :m && (sw = 2)
-        ps === :s && (sw = 1)
         if (isnothing(threshold) && isnothing(sch)) ||
            (!isnothing(threshold) && threshold_method === :reg)
             for idx in 1:ch_n
                 GLMakie.scatter!(
-                    ax,
-                    loc_x[idx],
-                    loc_y[idx];
+                    ax, loc_x[idx], loc_y[idx];
                     markersize = marker_size,
-                    color = :black,
+                    color      = :black,
                 )
             end
+ 
         elseif threshold_method === :loc
             for idx in 1:ch_n
                 if idx in threshold_idx
                     GLMakie.scatter!(
-                        ax,
-                        loc_x[idx],
-                        loc_y[idx];
-                        markersize = marker_size * 2,
-                        color = :gray,
+                        ax, loc_x[idx], loc_y[idx];
+                        markersize  = marker_size * 2,
+                        color       = :gray,
                         strokewidth = sw,
                         strokecolor = :black,
                     )
                 else
                     GLMakie.scatter!(
-                        ax,
-                        loc_x[idx],
-                        loc_y[idx];
+                        ax, loc_x[idx], loc_y[idx];
                         markersize = marker_size,
-                        color = :black,
+                        color      = :black,
                     )
                 end
             end
+ 
         elseif !isnothing(sch)
             for idx in 1:ch_n
                 if idx in sch
                     GLMakie.scatter!(
-                        ax,
-                        loc_x[idx],
-                        loc_y[idx];
-                        markersize = marker_size * 2,
-                        color = :gray,
+                        ax, loc_x[idx], loc_y[idx];
+                        markersize  = marker_size * 2,
+                        color       = :gray,
                         strokewidth = sw,
                         strokecolor = :black,
                     )
                 else
                     GLMakie.scatter!(
-                        ax,
-                        loc_x[idx],
-                        loc_y[idx];
+                        ax, loc_x[idx], loc_y[idx];
                         markersize = marker_size,
-                        color = :black,
+                        color      = :black,
                     )
                 end
             end
         end
     end
 
-    # draw mask
-    if head12
-        GLMakie.arc!(ax, Point2f(0), r, -pi, pi; linewidth = 5, color = :white)
-    end
+    # draw mask to crop interpolation outside the head circle
+    head12 && GLMakie.arc!(ax, Point2f(0, 0), r, -pi, pi; linewidth = 5, color = :white)
 
     # draw colorbar
     if cb
@@ -391,18 +371,18 @@ end
 """
     plot_topo(obj; <keyword arguments>)
 
-Topographical plot.
+Plot a topographical map of signal values across channel locations.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: channels × values, will be averaged by channels
+- `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: (channels × values), will be averaged by channels
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
+- `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: significant channels to highlight
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
-- `title::String="default"`: plot title, default is tpos value
+- `title::String="default"`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `cb::Bool=true`: plot colorbar
+- `cb::Bool=true`: if `true`, show colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
 - `amethod::Symbol=:mean`: averaging method:
     - `:mean`
@@ -416,9 +396,12 @@ Topographical plot.
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
-- `electrodes::Bools=true`: plot electrodes over topo plot
-- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
-- `head::Bool=true`: draw head
+- `electrodes::Bools=true`: if `true`, plot electrode locations over topography
+- `ps::Symbol`: plot size:
+    - `:l`: large (800×800 px)
+    - `:m`: medium (300×300 px)
+    - `:s`: small (100×100 px)
+- `head::Bool=true`: if `true`, draw head outline
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
     - if `Real`, use a single threshold value
@@ -465,60 +448,55 @@ function plot_topo(
     nc::Int64 = 0,
 )::GLMakie.Figure
 
-    # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one shared colorbar
-    if length(tpos) > 1
+    # TO DO: vector of tpos:
+    # generate separate plots, put them in nr × nc matrix and add one shared colorbar
+    if !isnothing(tpos) && tpos isa AbstractVector && length(tpos) > 1
         if nr == 1
             nc = length(tpos)
-        elseif nr > 1 & nc == 0
+        # FIX: was `nr > 1 & nc == 0` — bitwise & has higher precedence than >, so this
+        #      parsed as `nr > (1 & nc) == 0` rather than `(nr > 1) && (nc == 0)`
+        elseif nr > 1 && nc == 0
             nc = ceil(Int64, length(tpos) / nr)
         elseif nc != 0
             nr = ceil(Int64, length(tpos) / nc)
         end
-        _warn("Vector of tpos is not supported yet.")
-        tpos = collect(tpos)[1]
+        _warn("Vector of tpos is not yet supported; using first time point only.")
+        # FIX: was `collect(tpos)[1]` — allocates unnecessarily; just take first element
+        tpos = first(tpos)
     end
 
-    !(contours >= 0) && throw(ArgumentError("contours must be ≥ 0."))
+    # validate
+    contours >= 0 || throw(ArgumentError("contours must be ≥ 0."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
     _check_var(
         nmethod,
         [
-            :zscore,
-            :minmax,
-            :log,
-            :log10,
-            :neglog,
-            :neglog10,
-            :neg,
-            :pos,
-            :perc,
-            :gauss,
-            :invroot,
-            :n,
-            :softmax,
-            :sigmoid,
-            :mad,
-            :rank,
-            :none,
+            :zscore, :minmax, :log, :log10, :neglog, :neglog10,
+            :neg, :pos, :perc, :gauss, :invroot, :n,
+            :softmax, :sigmoid, :mad, :rank, :none,
         ],
         "nmethod",
     )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+
+    # significant channels
     if !isnothing(sch)
         if isa(sch, String)
-            !(length(intersect(ch, get_channel(obj; ch = sch))) == 1) &&
+            length(intersect(ch, get_channel(obj; ch = sch))) == 1 ||
                 throw(ArgumentError("sch channel was not found in ch."))
         else
-            !(length(intersect(ch, get_channel(obj; ch = sch))) == length(sch)) &&
+            length(intersect(ch, get_channel(obj; ch = sch))) == length(sch) ||
                 throw(ArgumentError("Some sch channels were not found in ch."))
         end
     end
+
     length(ch) >= 2 || throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
+ 
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
@@ -526,57 +504,60 @@ function plot_topo(
 
     # prepare data or time position
     if isnothing(data)
+
         isnothing(tpos) && throw(ArgumentError("Either tpos or data must be provided."))
-        tpos >= obj.time_pts[1] || throw(ArgumentError("tpos must be ≥ $(obj.time_pts[1])"))
+        tpos >= obj.time_pts[1] ||
+            throw(ArgumentError("tpos must be ≥ $(obj.time_pts[1])"))
         tpos <= obj.time_pts[end] ||
             throw(ArgumentError("tpos must be ≤ $(obj.time_pts[end])"))
-        tpos = vsearch(tpos, obj.time_pts)
-        if nepochs(obj) == 1
-            data = obj.data[ch, tpos, 1]
+ 
+        tpos_idx = vsearch(tpos, obj.time_pts)
+        title == "default" && (title = "$(obj.time_pts[tpos_idx]) s")
+ 
+        data = if nepochs(obj) == 1
+            obj.data[ch, tpos_idx, 1]
         else
-            data =
-                reshape(obj.data, size(obj.data, 1), size(obj.data, 2) * size(obj.data, 3))[
-                    ch,
-                    tpos,
-                ]
+            reshape(obj.data, size(obj.data, 1), size(obj.data, 2) * size(obj.data, 3))[
+                ch, tpos_idx,
+            ]
         end
-        title == "default" && (title = "$(obj.time_pts[tpos]) s")
+
     else
-        !isnothing(tpos) && _info("If data is provided, tpos is ignored")
+
+        !isnothing(tpos) && _info("tpos is ignored when data is provided.")
         if ndims(data) == 2
             data = amethod === :mean ? mean(data; dims = 2)[:] : median(data; dims = 2)[:]
         end
-        length(data) == length(ch) ||
-            throw(
-                ArgumentError(
-                    "Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch))).",
-                ),
-            )
+        length(data) == length(ch) || throw(
+            ArgumentError(
+                "Number of data values ($(length(data))) must equal the number of channels ($(length(ch))).",
+            ),
+        )
         title == "default" && (title = "")
+
     end
 
+    # colorbar title
     cb_title == "default" && (cb_title = "[A.U.]")
 
-    fig = plot_topo(
+    return plot_topo(
         data;
-        locs = locs,
-        ch = collect(1:DataFrames.nrow(locs)),
-        sch = sch,
-        cb = cb,
-        cb_title = cb_title,
-        title = title,
-        mono = mono,
-        imethod = imethod,
-        nmethod = nmethod,
-        contours = contours,
-        electrodes = electrodes,
-        ps = ps,
-        head = head,
-        cart = cart,
-        threshold = threshold,
-        threshold_type = threshold_type,
+        locs             = locs,
+        ch               = collect(1:DataFrames.nrow(locs)),
+        sch              = sch,
+        cb               = cb,
+        cb_title         = cb_title,
+        title            = title,
+        mono             = mono,
+        imethod          = imethod,
+        nmethod          = nmethod,
+        contours         = contours,
+        electrodes       = electrodes,
+        ps               = ps,
+        head             = head,
+        cart             = cart,
+        threshold        = threshold,
+        threshold_type   = threshold_type,
         threshold_method = threshold_method,
     )
-
-    return fig
 end

@@ -11,7 +11,7 @@ Plot PHSD (phase spectral density).
 
 - `f::Vector{Float64}`: frequencies
 - `ph::Vector{Float64}`: phases
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plots
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plots
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -86,7 +86,7 @@ Plot multi-channel PHSD (phase spectral density).
 - `f::Vector{Float64}`: frequencies
 - `ph::Matrix{Float64}`: phases
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plots
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plots
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -605,8 +605,8 @@ function plot_phsd(
     _check_var(frq, [:lin, :log], "frq")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 

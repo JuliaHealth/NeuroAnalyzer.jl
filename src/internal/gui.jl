@@ -58,7 +58,7 @@ function _refresh_ica_can_set(
             imethod = :sh,                        # interpolation method
             nmethod = :minmax,                    # normalization method
             cb = false,                           # don't show color bar
-            large = false,                         # don't use large plot size
+            large = false,                        # don't use large plot size
         )
         # convert plot to Cairo surface for GTK display
         cx_tmp = plot2canvas(p_tmp)

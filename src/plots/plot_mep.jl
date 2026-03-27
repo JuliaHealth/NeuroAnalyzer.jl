@@ -214,7 +214,7 @@ Plot MEPs stacked by channels or by epochs.
 - `title::String=""`: plot title
 - `cb::Bool=true`: if `true`, plot color bar
 - `cb_title::String=""`: color bar title
-- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
@@ -315,7 +315,7 @@ Plot MEP.
 - `yrev::Bool=false`: if `true`, reverse the y-axis
 - `avg::Bool=true`: if `true`, plot averaged MEP
 - `ci95::Bool=false`: if `true`, plot mean and ±95% CI
-- `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur
+- `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
@@ -352,8 +352,8 @@ function plot_mep(
     _check_var(peaks, [:detect, :embed, :off], "peaks")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
         throw(ArgumentError("All channels must be of the same type."))

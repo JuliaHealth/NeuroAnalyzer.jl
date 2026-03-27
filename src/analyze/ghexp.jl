@@ -123,8 +123,8 @@ function ghexp(
 )::Array{Float64, 4}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
     return ghexp(@view(obj.data[ch, :, :]); tau_range = tau_range, q_range = q_range)

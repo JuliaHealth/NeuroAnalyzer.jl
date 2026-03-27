@@ -11,11 +11,14 @@ Preview channel locations.
 - `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
 - `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels are selected
 - `ch_labels::Bool=true`: plot locations labels
-- `head::Bool=true`: draw head
+- `head::Bool=true`: if `true`, draw head outline
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `ps::Symbol`: plot size:
+    - `:l`: large (800×800 px)
+    - `:m`: medium (300×300 px)
+    - `:s`: small (100×100 px)
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
@@ -1172,11 +1175,14 @@ Preview of channel locations.
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
-- `head::Bool=true`: draw head
+- `head::Bool=true`: if `true`, draw head outline
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `ps::Symbol`: plot size:
+    - `:l`: large (800×800 px)
+    - `:m`: medium (300×300 px)
+    - `:s`: small (100×100 px)
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
@@ -1224,8 +1230,8 @@ function plot_locs(
     datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
     ch_info = String[]

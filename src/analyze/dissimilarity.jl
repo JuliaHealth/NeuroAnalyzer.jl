@@ -25,8 +25,8 @@ function topo_var(
         throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
     return dropdims(var(@view(obj.data[ch, :, 1]); dims = 1); dims = 1)

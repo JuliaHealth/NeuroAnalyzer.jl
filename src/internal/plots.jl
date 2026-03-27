@@ -1,24 +1,15 @@
 function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64)
-    # nose
-    GLMakie.lines!(ax, [-0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax, [0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax, [-0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax, [0.2, 0.0],  [0.98, 1.08]; linewidth = lw, color = :black)
     # ears
-    ear_coords = [
-        (-1.03, 0.15), (-1.06, 0.16), (-1.1, 0.14), (-1.12, 0.05),
-        (-1.1, -0.1), (-1.13, -0.3), (-1.09, -0.37), (-1.02, -0.39),
-        (-0.98, -0.33), (-0.975, -0.22), (1.03, 0.15), (1.06, 0.16),
-        (1.1, 0.14), (1.12, 0.05), (1.1, -0.1), (1.13, -0.3),
-        (1.09, -0.37), (1.02, -0.39), (0.98, -0.33), (0.975, -0.22),
-    ]
-    GLMakie.lines!(
-        ax,
-        first.(ear_coords),
-        last.(ear_coords);
-        linewidth = lw,
-        color = :black,
-    )
+    left_ear_x = [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
+    left_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
+    GLMakie.lines!(ax, left_ear_x, left_ear_y; linewidth = lw, color = :black)
+    right_ear_x = [0.995, 1.03, 1.06, 1.1, 1.12, 1.1, 1.13, 1.09, 1.02, 0.98, 0.975]
+    right_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
+    GLMakie.lines!(ax, right_ear_x, right_ear_y; linewidth = lw, color = :black)
     # head outline
-    return GLMakie.arc!(ax, (0, 0), 1, 0, 2π; linewidth = lw, color = :black)
+    GLMakie.arc!(ax, Point2f(0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
 end
 
 _xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} =

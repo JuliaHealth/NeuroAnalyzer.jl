@@ -11,7 +11,7 @@ Plot PSD (power spectrum density).
 
 - `f::Vector{Float64}`: frequencies
 - `p::Vector{Float64}`: powers
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plots
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plots
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -94,7 +94,7 @@ Plot multi-channel PSD (power spectrum density).
 - `f::Vector{Float64}`: frequencies
 - `p::Matrix{Float64}`: powers
 - `clabels::Vector{String}=string.(1:size(p, 1))`: channel labels
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plots
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plots
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -676,8 +676,8 @@ function plot_psd(
     _check_var(frq, [:lin, :log], "frq")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+    ch = exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 

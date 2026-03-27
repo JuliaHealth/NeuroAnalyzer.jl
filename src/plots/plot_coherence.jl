@@ -9,7 +9,7 @@ Plot single-channel coherence as a function of frequency.
 
 - `coh::Vector{Float64}`: coherence values (must match length of `f`)
 - `f::Vector{Float64}`: frequency values (Hz)
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plot
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plot
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Coherence"`: y-axis label
 - `title::String=""`: plot title
@@ -108,7 +108,7 @@ Plot multi-channel coherence as a function of frequency.
 - `coh::Matrix{Float64}`: coherence matrix, shape (channels, frequencies)
 - `f::Vector{Float64}`: frequency values (Hz)
 - `clabels::Vector{String}=string.(1:size(coh, 1))`: channel pair labels
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the plot
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plot
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title

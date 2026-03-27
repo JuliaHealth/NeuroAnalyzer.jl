@@ -3,17 +3,7 @@ _log_off() = Logging.disable_logging(Logging.Warn)
 # restore console output
 _log_on() = Logging.disable_logging(Logging.Debug)
 
-function _error(s::String)::Nothing
-    if verbose
-        if colors
-            println(RED_FG("[ Error: "), s)
-        else
-            println("[ Error: $s")
-        end
-    end
-    return nothing
-end
-
+"""Display info message."""
 function _info(s::String)::Nothing
     if verbose
         if colors
@@ -25,6 +15,7 @@ function _info(s::String)::Nothing
     return nothing
 end
 
+"""Display warning message."""
 function _warn(s::String)::Nothing
     if verbose
         if colors
@@ -36,6 +27,19 @@ function _warn(s::String)::Nothing
     return nothing
 end
 
+"""Display error message."""
+function _error(s::String)::Nothing
+    if verbose
+        if colors
+            println(RED_FG("[ Error: "), s)
+        else
+            println("[ Error: $s")
+        end
+    end
+    return nothing
+end
+
+"""Display deprecated function message."""
 function _deprecated(s::String)::Nothing
     if verbose
         if colors
@@ -47,6 +51,7 @@ function _deprecated(s::String)::Nothing
     return nothing
 end
 
+"""Display deprecated function message. Provide the name of an alternative function."""
 function _deprecated(s1::String, s2::String)::Nothing
     if verbose
         if colors
@@ -61,6 +66,7 @@ function _deprecated(s1::String, s2::String)::Nothing
     return nothing
 end
 
+"""Display WIP (Work In Progress) message."""
 function _wip()::Nothing
     if verbose
         if allow_wip
@@ -90,8 +96,9 @@ function _wip()::Nothing
     return nothing
 end
 
+"""Load functions from a folder."""
 function _load_functions(f::String)
-    !(isdir("src/$f")) && throw(ArgumentError("Directory src/$f does not exist."))
+    isdir("src/$f") || throw(ArgumentError("Directory src/$f does not exist."))
     files = readdir("src/$f")
     if length(files) > 0
         _info("Loading sub-module: $f")
