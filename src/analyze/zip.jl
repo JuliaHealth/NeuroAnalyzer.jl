@@ -23,11 +23,11 @@ function zipratio(obj::NeuroAnalyzer.NEURO)::Float64
     zip_cmd = Sys.iswindows() ? "zip.exe" : "zip"
     Sys.which(zip_cmd) === nothing &&
         throw(
-        ArgumentError(
-            "zip command not found: \"$zip_cmd\". " *
-                "Install zip and ensure it is on PATH."
-        ),
-    )
+            ArgumentError(
+                "zip command not found: \"$zip_cmd\". " *
+                "Install zip and ensure it is on PATH.",
+            ),
+        )
 
     # create a temporary CSV file for the exported signal data
     tmp_path, tmp_io = mktemp()

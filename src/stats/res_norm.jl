@@ -29,12 +29,12 @@ If there is only one group, both vectors have length 1 (whole-sample result only
 - For large groups `ExactOneSampleKSTest` may be slow; consider wrapping in `ApproximateOneSampleKSTest` for `n > 1000`.
 """
 function res_norm(
-        x::AbstractVector,
-        g::Vector{Int64} = repeat([1], length(x)),
-    )::@NamedTuple{
-        adt_p::Vector{Float64},
-        ks_p::Vector{Float64},
-    }
+    x::AbstractVector,
+    g::Vector{Int64} = repeat([1], length(x)),
+)::@NamedTuple{
+    adt_p::Vector{Float64},
+    ks_p::Vector{Float64},
+}
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))

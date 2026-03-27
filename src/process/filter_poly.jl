@@ -19,10 +19,10 @@ The signal is split into non-overlapping windows. A polynomial of degree `order`
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
 function filter_poly(
-        s::AbstractVector;
-        order::Int64 = 8,
-        window::Int64 = 10,
-    )::Vector{Float64}
+    s::AbstractVector;
+    order::Int64 = 8,
+    window::Int64 = 10,
+)::Vector{Float64}
     order >= 2 || throw(ArgumentError("order must be ≥ 2."))
     (window >= 1 && window <= length(s)) ||
         throw(ArgumentError("window must be in [1, $(length(s))]."))
@@ -90,10 +90,10 @@ Apply a piecewise polynomial filter to every channel × epoch slice of a 3-D sig
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_poly(
-        s::AbstractArray;
-        order::Int64 = 8,
-        window::Int64 = 10,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    order::Int64 = 8,
+    window::Int64 = 10,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -136,11 +136,11 @@ Apply a piecewise polynomial filter to selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_poly(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        order::Int64 = 8,
-        window::Int64 = 10,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    order::Int64 = 8,
+    window::Int64 = 10,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -175,11 +175,11 @@ Apply a piecewise polynomial filter in-place to selected channels of a NEURO obj
 - `Nothing`
 """
 function filter_poly!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        order::Int64 = 8,
-        window::Int64 = 10,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    order::Int64 = 8,
+    window::Int64 = 10,
+)::Nothing
     obj_new = filter_poly(obj; ch = ch, order = order, window = window)
     obj.data = obj_new.data
     obj.history = obj_new.history

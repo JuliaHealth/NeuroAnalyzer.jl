@@ -78,7 +78,7 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[]
+        :channel => Int64[],
     )
 
     # ------------------------------------------------------------------ #
@@ -88,7 +88,7 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     s = _create_subject(;
         id = "", first_name = "", middle_name = "", last_name = "",
-        head_circumference = -1, handedness = "", weight = -1, height = -1
+        head_circumference = -1, handedness = "", weight = -1, height = -1,
     )
     r = _create_recording_eeg(;
         data_type = "eeg",
@@ -109,7 +109,7 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
         gain = ones(ch_n),
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
     e = _create_experiment(; name = "", notes = "", design = "")
     hdr = _create_header(; subject = s, recording = r, experiment = e)
@@ -120,9 +120,9 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-            "; $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

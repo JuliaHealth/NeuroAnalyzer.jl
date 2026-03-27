@@ -43,24 +43,24 @@ Plot epoched signal.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_ep(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = "all",
-        ep::Int64 = 1,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-        markers::Bool = true,
-        scale::Bool = true,
-        group_ch::Bool = true,
-        type::Symbol = :normal,
-        avg::Bool = true,
-        ci95::Bool = false,
-        n_channels::Int64 = 20,
-        n_epochs::Int64 = 5,
-        res::Int64 = 1,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    ep::Int64 = 1,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    markers::Bool = true,
+    scale::Bool = true,
+    group_ch::Bool = true,
+    type::Symbol = :normal,
+    avg::Bool = true,
+    ci95::Bool = false,
+    n_channels::Int64 = 20,
+    n_epochs::Int64 = 5,
+    res::Int64 = 1,
+    gui::Bool = true,
+)::GLMakie.Figure
     !(res >= 1) && throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
     !(n_channels >= 1) && throw(ArgumentError("n_channels must be ≥ 1."))
@@ -486,15 +486,15 @@ function plot_ep(
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][
                                 get_channel(
-                                    obj;
-                                    ch = clabels[round(Int64, ax1_y)],
-                                )[1],
+                                obj;
+                                ch = clabels[round(Int64, ax1_y)],
+                            )[1],
                             ] =
                                 !obj.header.recording[:bad_channel][
-                                get_channel(
+                                    get_channel(
                                     obj; ch = clabels[round(Int64, ax1_y)],
                                 )[1],
-                            ]
+                                ]
                             notify(bad_ch)
                         end
                     end
@@ -524,7 +524,7 @@ function plot_ep(
                     # change channels
                     if type === :normal
                         if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
-                                ax3_y <= ax3.limits[][2][2]
+                           ax3_y <= ax3.limits[][2][2]
                             ch1[] = floor(Int64, ax3_y)
                             ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
                             ax1.limits[] =

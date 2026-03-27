@@ -130,11 +130,11 @@ Normalize a signal array using the specified method.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize(
-        s::AbstractArray,
-        n::Real = 1;
-        bych::Bool = false,
-        method::Symbol,
-    )::AbstractArray
+    s::AbstractArray,
+    n::Real = 1;
+    bych::Bool = false,
+    method::Symbol,
+)::AbstractArray
     _check_var(
         method,
         [
@@ -209,12 +209,12 @@ Normalize selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function normalize(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Symbol,
-        bych::Bool = false,
-        n::Real = 1,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol,
+    bych::Bool = false,
+    n::Real = 1,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -285,12 +285,12 @@ Normalize selected channels in-place.
 - `Nothing`
 """
 function normalize!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Symbol,
-        bych::Bool = false,
-        n::Real = 1,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol,
+    bych::Bool = false,
+    n::Real = 1,
+)::Nothing
     obj_new = NeuroAnalyzer.normalize(obj; ch = ch, method = method, bych = bych, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history

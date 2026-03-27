@@ -22,9 +22,9 @@ Named tuple:
 - `delta::Float64`: Glass' Δ (uses SD of `x2` as the denominator; preferred when groups have different variances)
 """
 function efs(
-        x1::AbstractVector,
-        x2::AbstractVector,
-    )::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
+    x1::AbstractVector,
+    x2::AbstractVector,
+)::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
 
     # validate
     length(x1) >= 2 || throw(ArgumentError("x1 must contain at least 2 elements."))

@@ -26,15 +26,15 @@ Named tuple:
 - `ul::Vector{Float64}`: upper CI bound at each time point
 """
 function bootstrap_ci(
-        s::AbstractMatrix;
-        n1::Int64 = 3000,
-        n2::Int64 = 1000,
-        cl::Float64 = 0.95,
-    )::@NamedTuple{
-        gm::Vector{Float64},
-        ll::Vector{Float64},
-        ul::Vector{Float64},
-    }
+    s::AbstractMatrix;
+    n1::Int64 = 3000,
+    n2::Int64 = 1000,
+    cl::Float64 = 0.95,
+)::@NamedTuple{
+    gm::Vector{Float64},
+    ll::Vector{Float64},
+    ul::Vector{Float64},
+}
 
     # validate
     _bin(cl, (0.0, 1.0), "cl")
@@ -60,8 +60,8 @@ function bootstrap_ci(
         s_boot[idx1, :] = vec(
             mean(
                 s_tmp, dims
-                = 2
-            )
+                = 2,
+            ),
         )
         progress_bar && next!(progbar)
     end
@@ -110,11 +110,11 @@ The formula string `f` must reference the current signal trace using the placeho
 - `AbstractVector`: bootstrap distribution of the statistic; length `n1`
 """
 function bootstrap_stat(
-        s::AbstractMatrix;
-        n1::Int64 = 3000,
-        n2::Int64 = 1000,
-        f::String,
-    )::AbstractVector
+    s::AbstractMatrix;
+    n1::Int64 = 3000,
+    n2::Int64 = 1000,
+    f::String,
+)::AbstractVector
 
     # validate
     n1 > 0 || throw(ArgumentError("n1 must be > 0."))

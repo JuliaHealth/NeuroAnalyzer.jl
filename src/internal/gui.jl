@@ -26,12 +26,12 @@ Refresh ICA component plots in GUI canvas widgets.
 - The plots are generated using `plot_topo` with specific parameters for ICA visualization.
 """
 function _refresh_ica_can_set(
-        obj_reconstructed::Vector{NeuroAnalyzer.NEURO},
-        ica_can_set::Vector{Gtk4.GtkCanvas},
-        ic_idx::Vector{Int64},
-        time1::Float64,
-        time2::Float64,
-    )::Nothing
+    obj_reconstructed::Vector{NeuroAnalyzer.NEURO},
+    ica_can_set::Vector{Gtk4.GtkCanvas},
+    ic_idx::Vector{Int64},
+    time1::Float64,
+    time2::Float64,
+)::Nothing
 
     # validate
     isempty(obj_reconstructed) &&

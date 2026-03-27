@@ -30,7 +30,7 @@ function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
         markers = true
         [
             channel_types[ch_idx] == "mrk" && (markers_channel = ch_idx) for
-                ch_idx in eachindex(channel_types)
+            ch_idx in eachindex(channel_types)
         ]
     end
     return markers, markers_channel
@@ -54,7 +54,7 @@ function _a2df(annotations::Vector{String})::DataFrame
     # remove empty
     [
         !(length(mrk[idx]) == 0 || occursin('|', mrk[idx])) && deleteat!(mrk, idx) for
-            idx in length(mrk):-1:1
+        idx in length(mrk):-1:1
     ]
 
     if length(mrk) == 1

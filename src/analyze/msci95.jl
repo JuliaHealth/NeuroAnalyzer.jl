@@ -26,15 +26,15 @@ Named tuple:
 - `ul::Float64`: upper 95% CI
 """
 function msci95(
-        s::AbstractVector;
-        n::Int64 = 3,
-        method::Symbol = :normal,
-    )::@NamedTuple{
-        sm::Float64,
-        se::Float64,
-        ll::Float64,
-        ul::Float64,
-    }
+    s::AbstractVector;
+    n::Int64 = 3,
+    method::Symbol = :normal,
+)::@NamedTuple{
+    sm::Float64,
+    se::Float64,
+    ll::Float64,
+    ul::Float64,
+}
 
     # validate
     _check_var(method, [:normal, :boot], "method")
@@ -96,15 +96,15 @@ Named tuple:
 - `ul::Vector{Float64}`: upper 95% CI per sample
 """
 function msci95(
-        s::AbstractMatrix;
-        n::Int64 = 3,
-        method::Symbol = :normal,
-    )::@NamedTuple{
-        sm::Vector{Float64},
-        se::Vector{Float64},
-        ll::Vector{Float64},
-        ul::Vector{Float64},
-    }
+    s::AbstractMatrix;
+    n::Int64 = 3,
+    method::Symbol = :normal,
+)::@NamedTuple{
+    sm::Vector{Float64},
+    se::Vector{Float64},
+    ll::Vector{Float64},
+    ul::Vector{Float64},
+}
 
     # validate
     _check_var(method, [:normal, :boot], "method")
@@ -160,15 +160,15 @@ Named tuple:
 - `ul::Matrix{Float64}`: upper 95% CI, shape (epochs, samples)
 """
 function msci95(
-        s::AbstractArray;
-        n::Int64 = 3,
-        method::Symbol = :normal,
-    )::@NamedTuple{
-        sm::Matrix{Float64},
-        se::Matrix{Float64},
-        ll::Matrix{Float64},
-        ul::Matrix{Float64},
-    }
+    s::AbstractArray;
+    n::Int64 = 3,
+    method::Symbol = :normal,
+)::@NamedTuple{
+    sm::Matrix{Float64},
+    se::Matrix{Float64},
+    ll::Matrix{Float64},
+    ul::Matrix{Float64},
+}
     _check_var(method, [:normal, :boot], "method")
 
     # epoch lengths
@@ -214,14 +214,14 @@ Named tuple:
 - `ul::Float64`: upper 95% CI
 """
 function msci95(
-        s1::AbstractVector,
-        s2::AbstractVector,
-    )::@NamedTuple{
-        sm::Float64,
-        se::Float64,
-        ll::Float64,
-        ul::Float64,
-    }
+    s1::AbstractVector,
+    s2::AbstractVector,
+)::@NamedTuple{
+    sm::Float64,
+    se::Float64,
+    ll::Float64,
+    ul::Float64,
+}
 
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
@@ -256,14 +256,14 @@ Named tuple:
 - `ul::Matrix{Float64}`: upper 95% CI, shape (channels, epochs)
 """
 function msci95(
-        s1::AbstractArray,
-        s2::AbstractArray,
-    )::@NamedTuple{
-        sm::Matrix{Float64},
-        se::Matrix{Float64},
-        ll::Matrix{Float64},
-        ul::Matrix{Float64},
-    }
+    s1::AbstractArray,
+    s2::AbstractArray,
+)::@NamedTuple{
+    sm::Matrix{Float64},
+    se::Matrix{Float64},
+    ll::Matrix{Float64},
+    ul::Matrix{Float64},
+}
 
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
@@ -317,21 +317,21 @@ Named tuple:
 - `ul::Matrix{Float64}`: upper 95% CI
 """
 function msci95(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        n::Int64 = 3,
-        method::Symbol = :normal,
-    )::@NamedTuple{
-        sm::Matrix{Float64},
-        se::Matrix{Float64},
-        ul::Matrix{Float64},
-        ll::Matrix{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Int64 = 3,
+    method::Symbol = :normal,
+)::@NamedTuple{
+    sm::Matrix{Float64},
+    se::Matrix{Float64},
+    ul::Matrix{Float64},
+    ll::Matrix{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return NeuroAnalyzer.msci95(@view(obj.data[ch, :, :]); n = n, method = method)
 end
@@ -360,26 +360,26 @@ Named tuple:
 - `ul::Matrix{Float64}`: upper 95% CI bound, shape (channels, epochs)
 """
 function msci95(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::@NamedTuple{
-        sm::Matrix{Float64},
-        se::Matrix{Float64},
-        ll::Matrix{Float64},
-        ul::Matrix{Float64},
-    }
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::@NamedTuple{
+    sm::Matrix{Float64},
+    se::Matrix{Float64},
+    ll::Matrix{Float64},
+    ul::Matrix{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-                       get_channel(obj1; ch = ch1, exclude = "")
+        get_channel(obj1; ch = ch1, exclude = "")
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-                       get_channel(obj2; ch = ch2, exclude = "")
+        get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) || throw(
         ArgumentError(
             "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",

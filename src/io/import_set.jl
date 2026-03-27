@@ -86,7 +86,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     else
         if length(dataset["chanlocs"]) > 0 &&
-                string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
+           string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
             ch_type = repeat(["eeg"], ch_n)
             units = repeat(["μV"], ch_n)
         else
@@ -182,8 +182,8 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         for idx in DataFrames.nrow(locs):-1:1
             (
                 chanlocs["X"][:][idx] isa Float64 &&
-                    chanlocs["Y"][:][idx] isa Float64 &&
-                    chanlocs["Z"][:][idx] isa Float64
+                chanlocs["Y"][:][idx] isa Float64 &&
+                chanlocs["Z"][:][idx] isa Float64
             ) || deleteat!(locs, idx)
         end
         DataFrames.nrow(locs) > 0 && _info(
@@ -309,8 +309,8 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

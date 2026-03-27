@@ -25,15 +25,15 @@ Named tuple:
 - `bf::Vector{Tuple{Real, Real}}`: frequency limits `(f_low, f_high)` in Hz for each band, in the same order as `bn`
 """
 function bpsplit(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        order::Int64 = 91,
-        w::Union{Nothing, AbstractVector, <:Real} = nothing,
-    )::@NamedTuple{
-        s::Array{Float64, 4},
-        bn::Vector{Symbol},
-        bf::Vector{Tuple{Real, Real}},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    order::Int64 = 91,
+    w::Union{Nothing, AbstractVector, <:Real} = nothing,
+)::@NamedTuple{
+    s::Array{Float64, 4},
+    bn::Vector{Symbol},
+    bf::Vector{Tuple{Real, Real}},
+}
     bn = [
         :delta,
         :theta,

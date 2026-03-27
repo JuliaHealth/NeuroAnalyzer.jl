@@ -26,14 +26,14 @@ The signal is transformed into the time-frequency domain via CWD, the coefficien
 - `Vector{Float64}`: artifact-corrected signal of the same length as `s`
 """
 function artrem_cwd(
-        s::AbstractVector,
-        t::AbstractVector;
-        fs::Int64,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        tseg::Tuple{Real, Real},
-        fseg::Tuple{Real, Real},
-        type::Symbol = :nd,
-    )::Vector{Float64} where {T <: CWT}
+    s::AbstractVector,
+    t::AbstractVector;
+    fs::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    tseg::Tuple{Real, Real},
+    fseg::Tuple{Real, Real},
+    type::Symbol = :nd,
+)::Vector{Float64} where {T <: CWT}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))   # was: !(fs >= 1) && throw(...)
@@ -82,14 +82,14 @@ Remove an artifact from one channel and one epoch of a NEURO object using contin
 - `NeuroAnalyzer.NEURO`: new object with the artifact removed from the specified channel and epoch
 """
 function artrem_cwd(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        tseg::Tuple{Real, Real},
-        fseg::Tuple{Real, Real},
-        type::Symbol = :nd,
-    )::NeuroAnalyzer.NEURO where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    tseg::Tuple{Real, Real},
+    fseg::Tuple{Real, Real},
+    type::Symbol = :nd,
+)::NeuroAnalyzer.NEURO where {T <: CWT}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -141,14 +141,14 @@ Remove an artifact from one channel and one epoch of a NEURO object in-place usi
 - `Nothing`
 """
 function artrem_cwd!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        tseg::Tuple{Real, Real},
-        fseg::Tuple{Real, Real},
-        type::Symbol = :nd,
-    )::Nothing where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    tseg::Tuple{Real, Real},
+    fseg::Tuple{Real, Real},
+    type::Symbol = :nd,
+)::Nothing where {T <: CWT}
     obj_new =
         artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
     obj.data = obj_new.data

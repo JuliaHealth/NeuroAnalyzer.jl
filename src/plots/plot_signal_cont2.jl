@@ -25,19 +25,19 @@ Plot two continuous signals.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_cont(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = "all",
-        seg::Tuple{Real, Real} = (0, 10),
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        scale::Bool = true,
-        group_ch::Bool = true,
-        n_channels::Int64 = 20,
-        res::Int64 = 1,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    seg::Tuple{Real, Real} = (0, 10),
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    scale::Bool = true,
+    group_ch::Bool = true,
+    n_channels::Int64 = 20,
+    res::Int64 = 1,
+    gui::Bool = true,
+)::GLMakie.Figure
     !(size(obj1) == size(obj2)) && throw(ArgumentError("Size of OBJ1 and OBJ2 must equal."))
     !(sr(obj1) == sr(obj2)) &&
         throw(ArgumentError("Sampling rate of OBJ1 and OBJ2 must equal."))

@@ -322,8 +322,8 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
             elseif length(
-                    unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
-                ) > 1
+                unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
+            ) > 1
                 warn_dialog(
                     _nill,
                     "For multi-channel spectrogram plot, all channels must be of the same type.",
@@ -567,18 +567,18 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
 
             # ALT
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt(',')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
                     @idle_add entry_time.value = time_current
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt('.')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -588,33 +588,33 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
                     @idle_add entry_time.value = time_current
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt('m')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
 
             # CONTROL
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('h')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('s')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
                         if Cairo.write_to_png(surface_buf, file_name) ==
-                                Cairo.STATUS_SUCCESS
+                           Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
@@ -622,18 +622,18 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
                     end
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt(',')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + 1
                     time_current = time_current - 1
                     @idle_add entry_time.value = time_current
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('.')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - 1
                     time_current += 1
@@ -643,18 +643,18 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::No
                     @idle_add entry_time.value = time_current
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('z')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('z')
+            )
                 if ch_first > 1
                     ch_first -= 1
                     ch_last -= 1
                     @idle_add Gtk4.value(ch_slider, ch_first)
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('x')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('x')
+            )
                 if mch
                     if ch_last < length(ch)
                         ch_first += 1
@@ -985,8 +985,8 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
             elseif length(
-                    unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
-                ) > 1
+                unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
+            ) > 1
                 warn_dialog(
                     _nill,
                     "For multi-channel spectrogram plot, all channels must be of the same type.",
@@ -1143,32 +1143,32 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             k = keyval
             # ALT
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt('m')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
             # CONTROL
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('h')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('s')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
                         if Cairo.write_to_png(surface_buf, file_name) ==
-                                Cairo.STATUS_SUCCESS
+                           Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
@@ -1176,9 +1176,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                     end
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt(',')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
@@ -1186,9 +1186,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 end
                 draw(can)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('.')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1

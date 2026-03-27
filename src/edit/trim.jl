@@ -19,10 +19,10 @@ Remove segment from the signal.
 - `Vector{Float64}`
 """
 function trim(
-        v::AbstractVector;
-        seg::Tuple{Int64, Int64},
-        keep::Bool = false,
-    )::Vector{Float64}
+    v::AbstractVector;
+    seg::Tuple{Int64, Int64},
+    keep::Bool = false,
+)::Vector{Float64}
 
     # validate
     _check_segment(v, seg[1], seg[2])
@@ -50,10 +50,10 @@ Remove segment from the signal.
 - `Matrix{Float64}`
 """
 function trim(
-        m::AbstractMatrix;
-        seg::Tuple{Int64, Int64},
-        keep::Bool = false,
-    )::Matrix{Float64}
+    m::AbstractMatrix;
+    seg::Tuple{Int64, Int64},
+    keep::Bool = false,
+)::Matrix{Float64}
 
     # validate
     _check_segment(m[1, :], seg[1], seg[2])
@@ -81,10 +81,10 @@ Remove segment from a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function trim(
-        a::AbstractArray;
-        seg::Tuple{Int64, Int64},
-        keep::Bool = false,
-    )::Array{Float64, 3}
+    a::AbstractArray;
+    seg::Tuple{Int64, Int64},
+    keep::Bool = false,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(a)
@@ -116,10 +116,10 @@ Trim signal by removing parts of the signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function trim(
-        obj::NeuroAnalyzer.NEURO;
-        seg::Tuple{Real, Real},
-        keep::Bool = false,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real},
+    keep::Bool = false,
+)::NeuroAnalyzer.NEURO
 
     # validate
     nepochs(obj) == 1 ||
@@ -181,10 +181,10 @@ Trim signal by removing parts of the signal.
 - `Nothing`
 """
 function trim!(
-        obj::NeuroAnalyzer.NEURO;
-        seg::Tuple{Real, Real},
-        keep::Bool = false,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real},
+    keep::Bool = false,
+)::Nothing
     nepochs(obj) == 1 ||
         throw(ArgumentError("trim!() must be applied to continuous object."))
 

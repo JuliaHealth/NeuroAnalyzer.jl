@@ -42,17 +42,17 @@ Plot matrix.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_matrix(
-        m::Matrix{<:Real};
-        xlabels::Vector{String},
-        ylabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        cb::Bool = true,
-        cb_title::String = "",
-        xrot::Int64 = 90,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    m::Matrix{<:Real};
+    xlabels::Vector{String},
+    ylabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    cb::Bool = true,
+    cb_title::String = "",
+    xrot::Int64 = 90,
+    mono::Bool = false,
+)::GLMakie.Figure
     !(size(m, 1) == size(m, 2)) && throw(ArgumentError("Matrix must be square."))
     !(length(xlabels) == length(ylabels)) && throw(
         ArgumentError(
@@ -128,12 +128,12 @@ Plot cross/auto-covariance/correlation.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_xac(
-        m::AbstractVector,
-        lags::AbstractVector;
-        xlabel::String = "Lag [s]",
-        ylabel::String = "",
-        title::String = "",
-    )::GLMakie.Figure
+    m::AbstractVector,
+    lags::AbstractVector;
+    xlabel::String = "Lag [s]",
+    ylabel::String = "",
+    title::String = "",
+)::GLMakie.Figure
 
     # prepare plot
     GLMakie.activate!(; title = "plot_xac()")
@@ -189,17 +189,17 @@ Plot histogram.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_histogram(
-        s::AbstractVector,
-        x::Union{Nothing, Real} = nothing;
-        type::Symbol = :hist,
-        bins::Int64 = 15,
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        draw_mean::Bool = true,
-        draw_median::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractVector,
+    x::Union{Nothing, Real} = nothing;
+    type::Symbol = :hist,
+    bins::Int64 = 15,
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    draw_mean::Bool = true,
+    draw_median::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
     _check_var(type, [:hist, :kd], "type")
 
     type === :kd && (type = :density)
@@ -264,19 +264,19 @@ function plot_histogram(
 
     draw_mean && (
         GLMakie.vlines!(
-            round(mean(s); digits = 2);
-            linestyle = :dot,
-            color = :black,
-            label = "mean",
-        )
+        round(mean(s); digits = 2);
+        linestyle = :dot,
+        color = :black,
+        label = "mean",
+    )
     )
     draw_median && (
         GLMakie.vlines!(
-            round(median(s); digits = 2);
-            linestyle = :dash,
-            color = :grey,
-            label = "median",
-        )
+        round(median(s); digits = 2);
+        linestyle = :dash,
+        color = :grey,
+        label = "median",
+    )
     )
 
     if isnothing(x) != true
@@ -314,13 +314,13 @@ Bar plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_bar(
-        s::AbstractVector;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractVector;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
     !(length(s) == length(xlabels)) && throw(
         ArgumentError(
             "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal.",
@@ -388,12 +388,12 @@ Line plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_line(
-        s::AbstractVector;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-    )::GLMakie.Figure
+    s::AbstractVector;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+)::GLMakie.Figure
     !(length(s) == length(xlabels)) && throw(
         ArgumentError(
             "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal.",
@@ -460,27 +460,27 @@ Line plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_line(
-        s::AbstractArray;
-        rlabels::Vector{String},
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    rlabels::Vector{String},
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
     _chk2d(s)
     size(s, 1) == length(rlabels) ||
         throw(
-        ArgumentError(
-            "Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal.",
-        ),
-    )
+            ArgumentError(
+                "Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal.",
+            ),
+        )
     size(s, 2) == length(xlabels) ||
         throw(
-        ArgumentError(
-            "Number of s columns ($(size(s, 2))) and length of xlabels ($(length(xlabels))) must be equal.",
-        ),
-    )
+            ArgumentError(
+                "Number of s columns ($(size(s, 2))) and length of xlabels ($(length(xlabels))) must be equal.",
+            ),
+        )
 
     pal = mono ? :grays : :darktest
 
@@ -555,13 +555,13 @@ Box plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_box(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
     _chk2d(s)
     !(size(s, 1) == length(xlabels)) && throw(
         ArgumentError(
@@ -636,13 +636,13 @@ Violin plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_violin(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
     _chk2d(s)
     !(size(s, 1) == length(xlabels)) && throw(
         ArgumentError(
@@ -719,13 +719,13 @@ Dots plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_dots(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
     !(size(s, 1) == length(xlabels)) && throw(
         ArgumentError(
             "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal.",
@@ -803,13 +803,13 @@ Plot paired data.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_paired(
-        s::AbstractArray;
-        xlabels::Vector{String},
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractArray;
+    xlabels::Vector{String},
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
     !(size(s, 1) == length(xlabels)) && throw(
         ArgumentError(
             "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal.",
@@ -900,12 +900,12 @@ Polar plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_polar(
-        s::Union{AbstractVector, AbstractMatrix};
-        m::Tuple{Real, Real} = (0, 0),
-        title::String = "",
-        mono::Bool = false,
-        ticks::Bool = true,
-    )::GLMakie.Figure
+    s::Union{AbstractVector, AbstractMatrix};
+    m::Tuple{Real, Real} = (0, 0),
+    title::String = "",
+    mono::Bool = false,
+    ticks::Bool = true,
+)::GLMakie.Figure
     size(s, 1) == 2 && (s = s')
     !(length(m) == 2) &&
         throw(ArgumentError("m must have exactly 2 values: phases and lengths."))
@@ -973,22 +973,22 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_eros(
-        sp::AbstractArray,
-        sf::AbstractVector,
-        st::AbstractVector;
-        db::Bool = true,
-        frq::Symbol = :lin,
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        tm::Union{Int64, Vector{Int64}} = 0,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        cb::Bool = true,
-        mono::Bool = false,
-        units::String = "μV",
-        smooth::Bool = false,
-        ks::Int64 = 3,
-    )::GLMakie.Figure
+    sp::AbstractArray,
+    sf::AbstractVector,
+    st::AbstractVector;
+    db::Bool = true,
+    frq::Symbol = :lin,
+    flim::Tuple{Real, Real} = (sf[1], sf[end]),
+    tm::Union{Int64, Vector{Int64}} = 0,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    cb::Bool = true,
+    mono::Bool = false,
+    units::String = "μV",
+    smooth::Bool = false,
+    ks::Int64 = 3,
+)::GLMakie.Figure
     !(size(sp, 1) == length(sf)) && throw(
         ArgumentError(
             "Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal.",
@@ -1226,17 +1226,17 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erop(
-        sp::AbstractArray,
-        sf::AbstractVector;
-        db::Bool = true,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        frq::Symbol = :lin,
-        units::String = "μV",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    sp::AbstractArray,
+    sf::AbstractVector;
+    db::Bool = true,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    flim::Tuple{Real, Real} = (sf[1], sf[end]),
+    frq::Symbol = :lin,
+    units::String = "μV",
+    mono::Bool = false,
+)::GLMakie.Figure
     _in(flim[1], (sf[1], sf[end]), "flim")
     _in(flim[2], (sf[1], sf[end]), "flim")
     !(size(sp, 1) == length(sf)) && throw(
@@ -1418,18 +1418,18 @@ Topographical plot of external ICA components.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_icatopo(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange} = axes(ic_idx, 1),
-        tpos::Union{Nothing, Real, AbstractVector},
-        imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
-        contours::Int64 = 0,
-        electrodes::Bool = true,
-        ps::Symbol = :l,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange} = axes(ic_idx, 1),
+    tpos::Union{Nothing, Real, AbstractVector},
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+    contours::Int64 = 0,
+    electrodes::Bool = true,
+    ps::Symbol = :l,
+)::GLMakie.Figure
     fig_topo = GLMakie.Figure[]
     for idx in eachindex(ic_idx)
         obj_tmp =
@@ -1475,15 +1475,15 @@ Confidence interval plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_ci(
-        s::AbstractVector,
-        s_l::AbstractVector,
-        s_u::AbstractVector,
-        t::AbstractVector;
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    s::AbstractVector,
+    s_l::AbstractVector,
+    s_u::AbstractVector,
+    t::AbstractVector;
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+)::GLMakie.Figure
     !(length(s) == length(s_l) == length(s_u)) &&
         throw(ArgumentError("All input signals must be of the same length."))
 
@@ -1561,18 +1561,18 @@ Plot heatmap.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_heatmap(
-        m::AbstractMatrix;
-        x::AbstractVector,
-        y::AbstractVector,
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-        cb::Bool = true,
-        cb_title::String = "",
-        threshold::Union{Nothing, Real} = nothing,
-        threshold_type::Symbol = :neq,
-    )::GLMakie.Figure
+    m::AbstractMatrix;
+    x::AbstractVector,
+    y::AbstractVector,
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+    cb::Bool = true,
+    cb_title::String = "",
+    threshold::Union{Nothing, Real} = nothing,
+    threshold_type::Symbol = :neq,
+)::GLMakie.Figure
     !(size(m, 1) == length(y)) && throw(
         ArgumentError(
             "Number of m rows ($(size(m, 1))) and y length ($(length(y))) must be equal.",
@@ -1643,20 +1643,20 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_imf(
-        imf::Matrix{Float64};
-        n::Int64 = size(imf, 1) - 1,
-        t::AbstractVector,
-    )::GLMakie.Figure
+    imf::Matrix{Float64};
+    n::Int64 = size(imf, 1) - 1,
+    t::AbstractVector,
+)::GLMakie.Figure
 
     # validate
     n > 0 || throw(ArgumentError("n must be ≥ 1."))
     n + 1 <= size(imf, 1) || throw(ArgumentError("n must be ≤ $(size(imf, 1) - 1)."))
     size(imf, 2) == length(t) ||
         throw(
-        ArgumentError(
-            "Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal.",
-        ),
-    )
+            ArgumentError(
+                "Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal.",
+            ),
+        )
 
     s_restored = sum(imf; dims = 1)[:]
     imf = vcat(imf, s_restored')
@@ -1778,12 +1778,12 @@ Plot instantaneous frequencies.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_fi(
-        fi::Vector{Float64},
-        st::Vector{Float64};
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-    )::GLMakie.Figure
+    fi::Vector{Float64},
+    st::Vector{Float64};
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+)::GLMakie.Figure
     !(length(fi) == length(st)) && throw(
         ArgumentError(
             "Length of frequencies ($(length(fi))) and time points ($(length(st))) must be equal.",
@@ -1846,14 +1846,14 @@ Plot phases.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_phase(
-        ph::Vector{Float64},
-        sf::Vector{Float64};
-        unit::Symbol = :rad,
-        type::Symbol = :line,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-    )::GLMakie.Figure
+    ph::Vector{Float64},
+    sf::Vector{Float64};
+    unit::Symbol = :rad,
+    type::Symbol = :line,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+)::GLMakie.Figure
     _check_var(unit, [:rad, :deg], "unit")
     _check_var(type, [:line, :stem], "type")
     !(length(ph) == length(sf)) && throw(
@@ -1928,11 +1928,11 @@ Polar pole-zero map.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_polezero(
-        pol::Vector{Complex{Float64}},
-        zer::Vector{Complex{Float64}};
-        title::String = "default",
-        mono::Bool = false,
-    )::GLMakie.Figure
+    pol::Vector{Complex{Float64}},
+    zer::Vector{Complex{Float64}};
+    title::String = "default",
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # prepare plot
     GLMakie.activate!(; title = "plot_polezero()")
@@ -1990,10 +1990,10 @@ Plot discrete wavelet decomposition coefficients.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_dwc(
-        dc::Matrix{Float64};
-        n::Int64 = size(dc, 1) - 1,
-        t::AbstractVector,
-    )::GLMakie.Figure
+    dc::Matrix{Float64};
+    n::Int64 = size(dc, 1) - 1,
+    t::AbstractVector,
+)::GLMakie.Figure
     !(n > 1) && throw(ArgumentError("n must be > 1."))
     !(n <= size(dc, 1) - 1) && throw(ArgumentError("n must be ≤ $(size(dc, 1) - 1)."))
     !(size(dc, 2) == length(t)) && throw(

@@ -18,10 +18,10 @@ The first frequency bin is set to `0.0` Hz because `getMeanFreq` returns a non-p
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places), length determined by the number of wavelet scales
 """
 function cwtfrq(
-        s::AbstractVector;
-        fs::Int64,
-        wt::T = wavelet(Morlet(2π), β = 2),
-    ) where {T <: CWT}
+    s::AbstractVector;
+    fs::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2),
+) where {T <: CWT}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -54,10 +54,10 @@ Delegates to the vector method using the first channel and first epoch `s[1, :, 
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places)
 """
 function cwtfrq(
-        s::AbstractArray;
-        fs::Int64,
-        wt::T = wavelet(Morlet(2π), β = 2),
-    ) where {T <: CWT}
+    s::AbstractArray;
+    fs::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2),
+) where {T <: CWT}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -83,8 +83,8 @@ Uses the first channel and first epoch to determine the wavelet frequency grid.
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places)
 """
 function cwtfrq(
-        obj::NeuroAnalyzer.NEURO;
-        wt::T = wavelet(Morlet(2π), β = 2),
-    ) where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    wt::T = wavelet(Morlet(2π), β = 2),
+) where {T <: CWT}
     return cwtfrq(@view(obj.data[1, :, 1]); fs = sr(obj), wt = wt)
 end

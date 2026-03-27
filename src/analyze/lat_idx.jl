@@ -39,17 +39,17 @@ Hemisphere channels are detected automatically via `channel_pick()`.
 - `Float64`: lateralization index (positive = right-dominant)
 """
 function lat_idx(
-        obj::NeuroAnalyzer.NEURO;
-        frq::Union{Real, Tuple{<:Real, <:Real}},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )::Float64
+    obj::NeuroAnalyzer.NEURO;
+    frq::Union{Real, Tuple{<:Real, <:Real}},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)::Float64
 
     # validate
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])

@@ -130,14 +130,14 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 - `Array{Float64, 3}`: symmetric mutual information matrix, shape `(channels, channels, epochs)`
 """
 function mutual_information(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return mutual_information(@view(obj.data[ch, :, :]))
 end
@@ -163,21 +163,21 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 - `Matrix{Float64}`: mutual information matrix, shape (channels, epochs)
 """
 function mutual_information(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::Matrix{Float64}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-                       get_channel(obj1; ch = ch1, exclude = "")
+        get_channel(obj1; ch = ch1, exclude = "")
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-                       get_channel(obj2; ch = ch2, exclude = "")
+        get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) || throw(
         ArgumentError(
             "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",

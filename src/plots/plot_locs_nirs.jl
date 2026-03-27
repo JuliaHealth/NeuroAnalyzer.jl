@@ -31,22 +31,22 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_locs_nirs(
-        locs::DataFrame,
-        opt_pairs::Matrix{Int64},
-        src_n::Int64,
-        det_n::Int64;
-        src_labels::Bool = false,
-        det_labels::Bool = false,
-        opt_labels::Bool = false,
-        head::Bool = true,
-        head_labels::Bool = true,
-        mono::Bool = false,
-        grid::Bool = false,
-        ps::Symbol = :l,
-        cart::Bool = false,
-        plane::Symbol = :xy,
-        ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
-    )::GLMakie.Figure
+    locs::DataFrame,
+    opt_pairs::Matrix{Int64},
+    src_n::Int64,
+    det_n::Int64;
+    src_labels::Bool = false,
+    det_labels::Bool = false,
+    opt_labels::Bool = false,
+    head::Bool = true,
+    head_labels::Bool = true,
+    mono::Bool = false,
+    grid::Bool = false,
+    ps::Symbol = :l,
+    cart::Bool = false,
+    plane::Symbol = :xy,
+    ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
+)::GLMakie.Figure
 
     # TO DO: plot channel numbers
 

@@ -104,11 +104,11 @@ Calculate stationarity for a NEURO object.
 - `Union{Matrix{Float64}, Array{Float64, 3}}`
 """
 function stationarity(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        window::Int64 = 10,
-        method::Symbol = :hilbert,
-    )::Union{Matrix{Float64}, Array{Float64, 3}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    window::Int64 = 10,
+    method::Symbol = :hilbert,
+)::Union{Matrix{Float64}, Array{Float64, 3}}
 
     # validate
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
@@ -118,7 +118,7 @@ function stationarity(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     ch_n = length(ch)
     ep_n = nepochs(obj)

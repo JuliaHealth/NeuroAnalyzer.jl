@@ -55,11 +55,11 @@ end
 Assert that tuple `t` contains two values in strict ascending order and lies within the reference range `r`. The `type` argument selects the bound type: `:in` (closed) or `:bin` (open).
 """
 function _check_tuple(
-        t::Tuple{Real, Real},
-        r::Tuple{Real, Real},
-        name::Union{Nothing, String} = nothing,
-        type::Symbol = :in,
-    )::Nothing
+    t::Tuple{Real, Real},
+    r::Tuple{Real, Real},
+    name::Union{Nothing, String} = nothing,
+    type::Symbol = :in,
+)::Nothing
     _check_var(type, [:in, :bin], "type")
     label = isnothing(name) ? "Tuple" : name
     t[1] < t[2] ||
@@ -82,9 +82,9 @@ end
 
 """Assert that all integer channel indices in `ch` are within `[1, size(s, 1)]`."""
 function _check_channels(
-        s::AbstractArray,
-        ch::Union{Int64, Vector{Int64}, AbstractRange},
-    )::Nothing
+    s::AbstractArray,
+    ch::Union{Int64, Vector{Int64}, AbstractRange},
+)::Nothing
     isa(ch, Int64) && (ch = [ch])
     n = size(s, 1)
     for ch_idx in ch
@@ -95,28 +95,28 @@ end
 
 """Assert that all channel names in `ch` exist in the object."""
 function _check_channels(
-        obj::NeuroAnalyzer.NEURO,
-        ch::Union{String, Vector{String}, Regex},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{String, Vector{String}, Regex},
+)::Nothing
     _check_channels(get_channel(obj; type = "all"), ch)
     return nothing
 end
 
 """Assert that all channel names in `ch` exist among channels of `type`."""
 function _check_channels(
-        obj::NeuroAnalyzer.NEURO,
-        ch::Union{String, Vector{String}, Regex},
-        type::String,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{String, Vector{String}, Regex},
+    type::String,
+)::Nothing
     _check_channels(get_channel(obj; type = type), ch)
     return nothing
 end
 
 """Assert that all channel name(s) in `ch` are present in `ch_ref`."""
 function _check_channels(
-        ch_ref::Union{String, Vector{String}},
-        ch::Union{String, Vector{String}, Regex},
-    )::Nothing
+    ch_ref::Union{String, Vector{String}},
+    ch::Union{String, Vector{String}, Regex},
+)::Nothing
     isa(ch_ref, String) && (ch_ref = [ch_ref])
     isa(ch, String) && (ch = [ch])
     length(ch) > 0 || throw(ArgumentError("ch must not be empty."))
@@ -134,9 +134,9 @@ end
 
 """Assert that all epoch indices are within `[1, nepochs(obj)]`."""
 function _check_epochs(
-        obj::NeuroAnalyzer.NEURO,
-        epoch::Union{Int64, Vector{Int64}, AbstractRange},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO,
+    epoch::Union{Int64, Vector{Int64}, AbstractRange},
+)::Nothing
     n = nepochs(obj)
     for idx in epoch
         (1 <= idx <= n) || throw(ArgumentError("epoch must be in [1, $n], got $idx."))
@@ -220,9 +220,9 @@ end
 
 """Assert that `obj`'s data type matches `type` (String or Vector{String})."""
 function _check_datatype(
-        obj::NeuroAnalyzer.NEURO,
-        type::Union{String, Vector{String}},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO,
+    type::Union{String, Vector{String}},
+)::Nothing
     dt = datatype(obj)
     if type isa String
         dt == type || throw(
@@ -270,7 +270,7 @@ function _check_stuplei(s::String)::Bool
     s = replace(s, " " => "")
     all(c -> c in ('0':'9'..., ',', '(', ')'), s) || return false
     return startswith(s, "(") && endswith(s, ")") &&
-        length(split(s, ",")) == 2 && length(s) > 2
+           length(split(s, ",")) == 2 && length(s) > 2
 end
 
 """Return `true` if `s` is a valid float 2-tuple string, e.g. `"(1.5,2.0)"`."""
@@ -278,7 +278,7 @@ function _check_stuplef(s::String)::Bool
     s = replace(s, " " => "")
     all(c -> c in ('0':'9'..., '.', ',', '(', ')'), s) || return false
     return startswith(s, "(") && endswith(s, ")") &&
-        length(split(s, ",")) == 2 && length(s) > 2
+           length(split(s, ",")) == 2 && length(s) > 2
 end
 
 """Return `true` if `s` consists entirely of digits and at most one decimal point."""

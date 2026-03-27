@@ -16,9 +16,9 @@ Remove mean value (DC offset).
 - `Vector{Float64}`
 """
 function remove_dc(
-        s::AbstractVector,
-        n::Union{Int64, Tuple{Int64, Int64}} = 0,
-    )::Vector{Float64}
+    s::AbstractVector,
+    n::Union{Int64, Tuple{Int64, Int64}} = 0,
+)::Vector{Float64}
     if isa(n, Int64)
         n >= 0 || throw(ArgumentError("n must be ≥ 0."))
         n <= length(s) || throw(ArgumentError("n must be ≤ $(length(s))."))
@@ -47,9 +47,9 @@ Remove mean value (DC offset).
 - `Matrix{Float64}`
 """
 function remove_dc(
-        s::AbstractMatrix,
-        n::Union{Int64, Tuple{Int64, Int64}} = 0,
-    )::Matrix{Float64}
+    s::AbstractMatrix,
+    n::Union{Int64, Tuple{Int64, Int64}} = 0,
+)::Matrix{Float64}
     ch_n = size(s, 1)
 
     result = similar(s, Float64)
@@ -75,9 +75,9 @@ Remove mean value (DC offset) for a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function remove_dc(
-        s::AbstractArray,
-        n::Union{Int64, Tuple{Int64, Int64}} = 0,
-    )::Array{Float64, 3}
+    s::AbstractArray,
+    n::Union{Int64, Tuple{Int64, Int64}} = 0,
+)::Array{Float64, 3}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -108,10 +108,10 @@ Remove mean value (DC offset).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function remove_dc(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        n::Union{Int64, Tuple{Int64, Int64}} = 0,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Union{Int64, Tuple{Int64, Int64}} = 0,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -141,10 +141,10 @@ Remove mean value (DC offset).
 - `Nothing`
 """
 function remove_dc!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        n::Union{Int64, Tuple{Int64, Int64}} = 0,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Union{Int64, Tuple{Int64, Int64}} = 0,
+)::Nothing
     obj_new = remove_dc(obj; ch = ch, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history

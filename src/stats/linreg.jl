@@ -34,17 +34,17 @@ predict(lr, new_x)
 ```
 """
 function linreg(
-        x::AbstractVector, y::AbstractVector,
-    )::@NamedTuple{
-        lr::StatsModels.TableRegressionModel,
-        c::Vector{Float64},
-        se::Vector{Float64},
-        R2::Float64,
-        R2adj::Float64,
-        aic::Float64,
-        bic::Float64,
-        lf::Vector{Float64},
-    }
+    x::AbstractVector, y::AbstractVector,
+)::@NamedTuple{
+    lr::StatsModels.TableRegressionModel,
+    c::Vector{Float64},
+    se::Vector{Float64},
+    R2::Float64,
+    R2adj::Float64,
+    aic::Float64,
+    bic::Float64,
+    lf::Vector{Float64},
+}
 
     # validate
     length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
@@ -87,13 +87,13 @@ Named tuple:
 - AICc correction is applied when the sample-to-parameter ratio `n/k < 40`.
 """
 function infcrit(
-        m::T,
-    )::@NamedTuple{
-        R2::Float64,
-        R2adj::Float64,
-        aic::Float64,
-        bic::Float64,
-    } where {T <: StatsModels.TableRegressionModel}
+    m::T,
+)::@NamedTuple{
+    R2::Float64,
+    R2adj::Float64,
+    aic::Float64,
+    bic::Float64,
+} where {T <: StatsModels.TableRegressionModel}
 
     # number of predictors (excluding intercept)
     k = length(GLM.coef(m)) - 1

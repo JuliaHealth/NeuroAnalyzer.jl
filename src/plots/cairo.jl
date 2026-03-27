@@ -83,9 +83,9 @@ Resize a Cairo surface by a uniform scale factor.
 - `Cairo.CairoSurfaceBase{UInt32}`: new surface of size `(w*r, h*r)`
 """
 function resize_canvas(
-        c::Cairo.CairoSurfaceBase{UInt32};
-        r::Real,
-    )::Cairo.CairoSurfaceBase{UInt32}
+    c::Cairo.CairoSurfaceBase{UInt32};
+    r::Real,
+)::Cairo.CairoSurfaceBase{UInt32}
 
     # use round consistently for both axes to get the nearest integer size.
     new_w = round(Int64, c.width * r)
@@ -123,9 +123,9 @@ Create a new canvas with `c2` placed at the top and `c1` below it, effectively a
 - `Cairo.CairoSurfaceBase{UInt32}`: combined canvas of height `c1.height + c2.height`
 """
 function add_topmargin_canvas(
-        c1::Cairo.CairoSurfaceBase{UInt32},
-        c2::Cairo.CairoSurfaceBase{UInt32},
-    )::Cairo.CairoSurfaceBase{UInt32}
+    c1::Cairo.CairoSurfaceBase{UInt32},
+    c2::Cairo.CairoSurfaceBase{UInt32},
+)::Cairo.CairoSurfaceBase{UInt32}
     total_h = c1.height + c2.height
     c = CairoRGBSurface(c1.width, total_h)
     cr = CairoContext(c)
@@ -164,13 +164,13 @@ Composite `c2` onto `c1` at position `(x, y)`, optionally adding a title label b
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function add_to_canvas(
-        c1::Cairo.CairoSurfaceBase{UInt32},
-        c2::Cairo.CairoSurfaceBase{UInt32};
-        x::Int64,
-        y::Int64,
-        title::String = "",
-        file_name::String = "",
-    )::Cairo.CairoSurfaceBase{UInt32}
+    c1::Cairo.CairoSurfaceBase{UInt32},
+    c2::Cairo.CairoSurfaceBase{UInt32};
+    x::Int64,
+    y::Int64,
+    title::String = "",
+    file_name::String = "",
+)::Cairo.CairoSurfaceBase{UInt32}
 
     # create output canvas matching c1's size, paint c1 as background, then composite c2 at the requested position
     c = CairoRGBSurface(c1.width, c1.height)

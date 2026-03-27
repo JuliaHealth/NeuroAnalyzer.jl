@@ -40,10 +40,10 @@ The same signal `s` is added to every selected channel in every epoch. `s` must 
 - `NeuroAnalyzer.NEURO`: new object with `s` added to the selected channels
 """
 function add_signal(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        s::AbstractVector,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    s::AbstractVector,
+)::NeuroAnalyzer.NEURO
 
     # validate s length against epoch length before any allocation
     length(s) == epoch_len(obj) ||
@@ -88,10 +88,10 @@ Add a signal vector to selected channels of a NEURO object in-place.
 - `Nothing`
 """
 function add_signal!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        s::AbstractVector,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    s::AbstractVector,
+)::Nothing
     obj_new = add_signal(obj; ch = ch, s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history

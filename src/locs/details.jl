@@ -26,20 +26,20 @@ Named tuple:
 - `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
 function locs_details(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        out::Bool = true,
-    )::@NamedTuple{
-        label::String,
-        theta_pl::Float64,
-        radius_pl::Float64,
-        x::Float64,
-        y::Float64,
-        z::Float64,
-        theta_sph::Float64,
-        radius_sph::Float64,
-        phi_sph::Float64,
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    out::Bool = true,
+)::@NamedTuple{
+    label::String,
+    theta_pl::Float64,
+    radius_pl::Float64,
+    x::Float64,
+    y::Float64,
+    z::Float64,
+    theta_sph::Float64,
+    radius_sph::Float64,
+    phi_sph::Float64,
+}
 
     # validate
     length(get_channel(obj; ch = ch)) == 1 ||

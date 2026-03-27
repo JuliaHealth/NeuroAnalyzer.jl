@@ -43,15 +43,15 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     # check for multi-subject recordings
     n_id = "nirs"
     n != 0 &&
-        any(occursin.("nirs$n", keys(nirs))) ||
+    any(occursin.("nirs$n", keys(nirs))) ||
         throw(ArgumentError("No data for subject $n found in the recording."))
     if any(occursin.("nirs1", keys(nirs)))
         n != 0 ||
             throw(
-            ArgumentError(
-                "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter.",
-            ),
-        )
+                ArgumentError(
+                    "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter.",
+                ),
+            )
         n_id = "nirs$n"
     end
 
@@ -624,8 +624,8 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

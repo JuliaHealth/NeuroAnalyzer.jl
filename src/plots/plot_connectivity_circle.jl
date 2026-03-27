@@ -28,20 +28,20 @@ Plot a circular connectivity diagram for a matrix of connectivities.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_connectivity_circle(
-        m::AbstractMatrix;
-        clabels = Vector{String},
-        title::String = "",
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-    )::GLMakie.Figure
+    m::AbstractMatrix;
+    clabels = Vector{String},
+    title::String = "",
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+)::GLMakie.Figure
 
     # validate
     size(m, 1) == length(clabels) ||
         throw(
-        ArgumentError(
-            "Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) must match.",
-        ),
-    )
+            ArgumentError(
+                "Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) must match.",
+            ),
+        )
     size(m, 1) >= 2 ||
         throw(ArgumentError("Connectivity matrix must contain data for ≥ 2 channels."))
     size(m, 1) == size(m, 2) || throw(ArgumentError("Connectivity matrix must be square."))
@@ -106,11 +106,11 @@ function plot_connectivity_circle(
                 (threshold_type === :leq && m[idx1, idx2] > threshold) && break
                 (
                     threshold_type === :in &&
-                        (m[idx1, idx2] >= threshold[1] && m[idx1, idx2] <= threshold[2])
+                    (m[idx1, idx2] >= threshold[1] && m[idx1, idx2] <= threshold[2])
                 ) && break
                 (
                     threshold_type === :bin &&
-                        (m[idx1, idx2] > threshold[1] && m[idx1, idx2] < threshold[2])
+                    (m[idx1, idx2] > threshold[1] && m[idx1, idx2] < threshold[2])
                 ) && break
             end
 

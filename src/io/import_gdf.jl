@@ -29,9 +29,9 @@ Both GDF 1.x and GDF 2.x variants are supported. Channels may have mixed data ty
 3. Schlögl A. GDF v2.51. 2013.
 """
 function import_gdf(
-        file_name::String;
-        detect_type::Bool = true,
-    )::NeuroAnalyzer.NEURO
+    file_name::String;
+    detect_type::Bool = true,
+)::NeuroAnalyzer.NEURO
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".gdf" ||
@@ -64,30 +64,30 @@ function import_gdf(
     # Helper: read n_ch fixed-width string fields, stripping NUL bytes
     read_str_fields(fid, n, width) = [
         replace(
-                strip(
-                    String(
-                        Char.(
-                            let b = UInt8[]
-                                readbytes!(fid, b, width)
-                                b
-                        end
-                        )
-                    )
+            strip(
+                String(
+                    Char.(
+                        let b = UInt8[]
+                            readbytes!(fid, b, width)
+                            b
+                        end,
+                    ),
                 ),
-                '\0' => ""
-            )
-            for _ in 1:n
+            ),
+            '\0' => "",
+        )
+        for _ in 1:n
     ]
 
     # helper: read n_ch fixed-width binary fields with a given reinterpret type
     read_bin_fields(fid, n, width, T) = [
         (
-                let b = UInt8[]
-                    readbytes!(fid, b, width)
-                    reinterpret(T, b)[1]
+            let b = UInt8[]
+                readbytes!(fid, b, width)
+                reinterpret(T, b)[1]
             end
-            )
-            for _ in 1:n
+        )
+        for _ in 1:n
     ]
 
     (
@@ -116,7 +116,7 @@ function import_gdf(
             data_records = reinterpret(Int64, header[237:244])[1]
             sampling_rate = Int64(
                 reinterpret(Int32, header[245:252])[2] ÷
-                    reinterpret(Int32, header[245:252])[1],
+                reinterpret(Int32, header[245:252])[1],
             )
             ch_n = reinterpret(Int32, header[253:256])[1]
 
@@ -157,7 +157,7 @@ function import_gdf(
                 throw(ArgumentError("Number of data records cannot be -1."))
             sampling_rate = Int64(
                 reinterpret(Int32, header[245:252])[2] ÷
-                    reinterpret(Int32, header[245:252])[1],
+                reinterpret(Int32, header[245:252])[1],
             )
             ch_n = reinterpret(Int16, header[253:254])[1]
 
@@ -187,7 +187,7 @@ function import_gdf(
                 3072 => "l/min",
                 2848 => "l/(min m²)",
                 4128 => "dyn s/cm⁵",
-                6016 => "dyn s/m² cm⁵"
+                6016 => "dyn s/m² cm⁵",
             )
             prefix_map = Dict(
                 10 => "Y",
@@ -210,7 +210,7 @@ function import_gdf(
                 22 => "f",
                 23 => "a",
                 24 => "z",
-                25 => "y"
+                25 => "y",
             )
             for idx in 1:ch_n
                 base_code =
@@ -249,7 +249,7 @@ function import_gdf(
             # combine LP/HP into prefiltering strings (overrides the obsolete field)
             prefiltering = [
                 "LP: $(prefiltering_lp[i]) Hz; HP: $(prefiltering_hp[i]) Hz"
-                    for i in 1:ch_n
+                for i in 1:ch_n
             ]
 
             samples_per_datarecord = read_bin_fields(fid, ch_n, 4, Int32)
@@ -324,7 +324,7 @@ function import_gdf(
         6 => (4, UInt32),
         7 => (8, Int64),
         16 => (4, Float32),
-        17 => (8, Float64)
+        17 => (8, Float64),
     )
 
     # one signal buffer per channel (n_samples = spdr × data_records)
@@ -388,12 +388,12 @@ function import_gdf(
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[]
+        :channel => Int64[],
     )
 
     data_bytes = sum(
         Int.(samples_per_datarecord) .* data_records .*
-            [get(gdf_type_map, Int(t), (1,))[1] for t in gdf_type],
+        [get(gdf_type_map, Int(t), (1,))[1] for t in gdf_type],
     )
 
     if header_bytes + data_bytes < filesize(file_name)
@@ -463,7 +463,7 @@ function import_gdf(
                 :start => round.(start ./ sr_denom; digits = 4),
                 :length => round.(len ./ Float64(sampling_rate); digits = 4),
                 :value => value,
-                :channel => ch[1:etp_number]
+                :channel => ch[1:etp_number],
             )
         end
         # event file closed here
@@ -479,7 +479,8 @@ function import_gdf(
 
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
-    epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    epoch_time =
+        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
     data_type = "eeg"
     "meg" in ch_type && (data_type = "meg")
@@ -499,7 +500,7 @@ function import_gdf(
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
     r = _create_recording_eeg(;
         data_type = data_type,
@@ -520,7 +521,7 @@ function import_gdf(
         line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
         gain = gain,
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
     e = _create_experiment(; name = "", notes = "", design = "")
     hdr = _create_header(; subject = s, recording = r, experiment = e)
@@ -531,9 +532,9 @@ function import_gdf(
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-            "; $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

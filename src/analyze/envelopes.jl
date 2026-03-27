@@ -166,18 +166,18 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function tenv(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        d::Int64 = 32,
-    )::@NamedTuple{
-        e::Array{Float64, 3},
-        t::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    d::Int64 = 32,
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    t::Vector{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -220,16 +220,16 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function tenv_mean(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64,
-        d::Int64 = 32,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        el::Matrix{Float64},
-        eu::Matrix{Float64},
-        t::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 32,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    el::Matrix{Float64},
+    eu::Matrix{Float64},
+    t::Vector{Float64},
+}
 
     # validate
     if dims == 1
@@ -317,16 +317,16 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function tenv_median(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64,
-        d::Int64 = 32,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        el::Matrix{Float64},
-        eu::Matrix{Float64},
-        t::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 32,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    el::Matrix{Float64},
+    eu::Matrix{Float64},
+    t::Vector{Float64},
+}
 
     # validate
     if dims == 1
@@ -422,25 +422,25 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function penv(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        d::Int64 = 8,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
-    )::@NamedTuple{
-        e::Array{Float64, 3},
-        f::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    d::Int64 = 8,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    demean::Bool = true,
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    f::Vector{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -521,23 +521,23 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function penv_mean(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64,
-        d::Int64 = 8,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        el::Matrix{Float64},
-        eu::Matrix{Float64},
-        f::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 8,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    demean::Bool = true,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    el::Matrix{Float64},
+    eu::Matrix{Float64},
+    f::Vector{Float64},
+}
 
     # validate
     if dims == 1
@@ -551,7 +551,7 @@ function penv_mean(
 
     penv_data = penv(
         obj; ch = ch, d = d, method = method, nt = nt, wlen = wlen,
-        woverlap = woverlap, w = w, ncyc = ncyc, demean = demean
+        woverlap = woverlap, w = w, ncyc = ncyc, demean = demean,
     )
     pw = penv_data.e
     f = penv_data.f
@@ -653,23 +653,23 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function penv_median(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64,
-        d::Int64 = 8,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        demean::Bool = true,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        el::Matrix{Float64},
-        eu::Matrix{Float64},
-        f::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 8,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    demean::Bool = true,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    el::Matrix{Float64},
+    eu::Matrix{Float64},
+    f::Vector{Float64},
+}
 
     # validate
     if dims == 1
@@ -794,29 +794,29 @@ Named tuple:
 - `t::Vector{Float64}`: spectrogram time
 """
 function senv(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        d::Int64 = 2,
-        threshold::Union{Real, Nothing} = nothing,
-        pad::Int64 = 0,
-        method::Symbol = :stft,
-        db::Bool = true,
-        nt::Int64 = 7,
-        gw::Real = 5,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-    )::@NamedTuple{
-        e::Array{Float64, 3},
-        t::Vector{Float64},
-    } where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    d::Int64 = 2,
+    threshold::Union{Real, Nothing} = nothing,
+    pad::Int64 = 0,
+    method::Symbol = :stft,
+    db::Bool = true,
+    nt::Int64 = 7,
+    gw::Real = 5,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    t::Vector{Float64},
+} where {T <: CWT}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -1005,27 +1005,27 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function senv_mean(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64,
-        d::Int64 = 2,
-        t::Union{Real, Nothing} = nothing,
-        method::Symbol = :stft,
-        pad::Int64 = 0,
-        db::Bool = true,
-        nt::Int64 = 7,
-        gw::Real = 5,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        el::Matrix{Float64},
-        eu::Matrix{Float64},
-        t::Vector{Float64},
-    } where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 2,
+    t::Union{Real, Nothing} = nothing,
+    method::Symbol = :stft,
+    pad::Int64 = 0,
+    db::Bool = true,
+    nt::Int64 = 7,
+    gw::Real = 5,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    el::Matrix{Float64},
+    eu::Matrix{Float64},
+    t::Vector{Float64},
+} where {T <: CWT}
 
     # validate
     if dims == 1
@@ -1161,27 +1161,27 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function senv_median(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64,
-        d::Int64 = 2,
-        threshold::Union{Real, Nothing} = nothing,
-        method::Symbol = :stft,
-        pad::Int64 = 0,
-        db::Bool = true,
-        nt::Int64 = 7,
-        gw::Real = 5,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        el::Matrix{Float64},
-        eu::Matrix{Float64},
-        t::Vector{Float64},
-    } where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 2,
+    threshold::Union{Real, Nothing} = nothing,
+    method::Symbol = :stft,
+    pad::Int64 = 0,
+    db::Bool = true,
+    nt::Int64 = 7,
+    gw::Real = 5,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    el::Matrix{Float64},
+    eu::Matrix{Float64},
+    t::Vector{Float64},
+} where {T <: CWT}
 
     # validate
     if dims == 1
@@ -1301,13 +1301,13 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function henv(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        d::Int64 = 32,
-    )::@NamedTuple{
-        e::Array{Float64, 3},
-        t::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    d::Int64 = 32,
+)::@NamedTuple{
+    e::Array{Float64, 3},
+    t::Vector{Float64},
+}
     _warn(
         "henv() uses Hilbert transform, the signal should be narrowband for best results.",
     )
@@ -1315,7 +1315,7 @@ function henv(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     henv_data = htransform(@view(obj.data[ch, :, :]))
     a = henv_data.a
@@ -1362,15 +1362,15 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function henv_mean(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64, d::Int64 = 32,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        eu::Matrix{Float64},
-        el::Matrix{Float64},
-        t::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64, d::Int64 = 32,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    eu::Matrix{Float64},
+    el::Matrix{Float64},
+    t::Vector{Float64},
+}
 
     # validate
     if dims == 1
@@ -1458,16 +1458,16 @@ Named tuple:
 - `t::Vector{Float64}`: time points
 """
 function henv_median(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        dims::Int64,
-        d::Int64 = 32,
-    )::@NamedTuple{
-        em::Matrix{Float64},
-        el::Matrix{Float64},
-        eu::Matrix{Float64},
-        t::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    dims::Int64,
+    d::Int64 = 32,
+)::@NamedTuple{
+    em::Matrix{Float64},
+    el::Matrix{Float64},
+    eu::Matrix{Float64},
+    t::Vector{Float64},
+}
 
     # validate
     if dims == 1
@@ -1555,9 +1555,9 @@ Named tuple:
 - `p::Vector{Float64}`: p-value
 """
 function env_cor(
-        env1::Array{Float64, 3},
-        env2::Array{Float64, 3},
-    )::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
+    env1::Array{Float64, 3},
+    env2::Array{Float64, 3},
+)::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
 
     # validate
     size(env1) == size(env2) ||

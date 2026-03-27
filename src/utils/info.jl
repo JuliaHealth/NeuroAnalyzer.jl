@@ -430,30 +430,30 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
         # standard (non-NIRS) channel table
         println(
             rpad(" ch", 8) * rpad("label", 16) * rpad("type", 12) *
-                rpad("unit", 8) * rpad("bad", 8),
+            rpad("unit", 8) * rpad("bad", 8),
         )
         println(
             " " * repeat("-", 6) * " " * repeat("-", 15) * " " *
-                repeat("-", 11) * " " * repeat("-", 7) * " " * repeat("-", 7),
+            repeat("-", 11) * " " * repeat("-", 7) * " " * repeat("-", 7),
         )
         for idx in eachindex(rec[:label])
             println(
                 rpad(" $idx", 8) *
-                    rpad(rec[:label][idx], 16) *
-                    rpad(uppercase(rec[:channel_type][idx]), 12) *
-                    rpad(rec[:unit][idx], 8) *
-                    rpad(string(rec[:bad_channel][idx]), 8),
+                rpad(rec[:label][idx], 16) *
+                rpad(uppercase(rec[:channel_type][idx]), 12) *
+                rpad(rec[:unit][idx], 8) *
+                rpad(string(rec[:bad_channel][idx]), 8),
             )
         end
     else
         # NIRS channel table (includes wavelength column for non-derived channels)
         println(
             rpad(" ch", 8) * rpad("label", 16) * rpad("type", 12) *
-                rpad("unit", 8) * rpad("wavelength", 12),
+            rpad("unit", 8) * rpad("wavelength", 12),
         )
         println(
             " " * repeat("-", 6) * " " * repeat("-", 15) * " " *
-                repeat("-", 11) * " " * repeat("-", 7) * " " * repeat("-", 12),
+            repeat("-", 11) * " " * repeat("-", 7) * " " * repeat("-", 12),
         )
         derived = ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]
         for idx in eachindex(rec[:label])
@@ -461,16 +461,16 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
                 wl = rec[:wavelengths][rec[:wavelength_index][idx]]
                 println(
                     rpad(" $idx", 8) *
-                        rpad(rec[:label][idx], 16) *
-                        rpad(uppercase(rec[:channel_type][idx]), 12) *
-                        rpad(rec[:unit][idx], 8) *
-                        rpad(string(wl), 12),
+                    rpad(rec[:label][idx], 16) *
+                    rpad(uppercase(rec[:channel_type][idx]), 12) *
+                    rpad(rec[:unit][idx], 8) *
+                    rpad(string(wl), 12),
                 )
             else
                 println(
                     rpad(" $idx", 8) *
-                        rpad(rec[:label][idx], 16) *
-                        rpad(uppercase(rec[:channel_type][idx]), 12),
+                    rpad(rec[:label][idx], 16) *
+                    rpad(uppercase(rec[:channel_type][idx]), 12),
                 )
             end
         end
@@ -504,10 +504,10 @@ Return or print information for a single channel.
 - `Nothing` when `pr=true`, or `String` when `pr=false`.
 """
 function channel_info(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        pr::Bool = true,
-    )::Union{Nothing, String}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    pr::Bool = true,
+)::Union{Nothing, String}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -571,9 +571,9 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 - `Vector{String}`: channel names matching the pick
 """
 function channel_pick(
-        obj::NeuroAnalyzer.NEURO;
-        pick::Union{Symbol, Vector{Symbol}},
-    )::Vector{String}
+    obj::NeuroAnalyzer.NEURO;
+    pick::Union{Symbol, Vector{Symbol}},
+)::Vector{String}
 
     # validate
     _check_datatype(obj, "eeg")
@@ -724,14 +724,14 @@ function _clamp_band(bf::Tuple{Float64, Float64}, nqf::Float64, band::Symbol, la
     if bf_low > nqf
         _warn(
             "Nyquist frequency ($nqf Hz) is lower than $band range: $bf. " *
-                "Band truncated to: ($(nqf - 0.2), $(nqf - 0.1)).",
+            "Band truncated to: ($(nqf - 0.2), $(nqf - 0.1)).",
         )
         return (nqf - 0.2, nqf - 0.1)
     end
     if bf_high > nqf
         _warn(
             "Nyquist frequency ($nqf Hz) is lower than $band range: $bf. " *
-                "Band truncated to: ($bf_low, $(nqf - 0.1)).",
+            "Band truncated to: ($bf_low, $(nqf - 0.1)).",
         )
         return (bf_low, nqf - 0.1)
     end
@@ -894,8 +894,8 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
     else
         println(
             "< $(uppercase(obj.header.recording[:data_type])), " *
-                "$(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) " *
-                "($(signal_len(obj) / sr(obj)) s) >",
+            "$(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) " *
+            "($(signal_len(obj) / sr(obj)) s) >",
         )
         hdr =
             rpad("ch", 4) * rpad("label", 16) * rpad("type", 12) * rpad("unit", 8) *
@@ -906,10 +906,10 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
         for idx in 1:nchannels(obj)
             println(
                 rpad(string(idx), 4) *
-                    rpad(labels(obj)[idx], 16) *
-                    rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
-                    rpad(obj.header.recording[:unit][idx], 8) *
-                    Base.join(rpad.(string.(d[:, idx]), 10)),
+                rpad(labels(obj)[idx], 16) *
+                rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
+                rpad(obj.header.recording[:unit][idx], 8) *
+                Base.join(rpad.(string.(d[:, idx]), 10)),
             )
         end
 

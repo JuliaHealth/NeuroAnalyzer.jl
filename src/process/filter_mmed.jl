@@ -25,11 +25,11 @@ Samples within the threshold band `[mean(s) − t×std(s), mean(s) + t×std(s)]`
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
 """
 function filter_mmed(
-        s::AbstractVector;
-        k::Int64 = 8,
-        t::Real = 0,
-        ww::AbstractVector = ones(2 * k + 1),
-    )::Vector{Float64}
+    s::AbstractVector;
+    k::Int64 = 8,
+    t::Real = 0,
+    ww::AbstractVector = ones(2 * k + 1),
+)::Vector{Float64}
 
     # check k
     _in(k, (1, length(s) - 1), "k")
@@ -93,10 +93,10 @@ Apply a weighted moving median filter to every channel × epoch slice of a 3-D s
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_mmed(
-        s::AbstractArray;
-        k::Int64 = 8,
-        t::Real = 0, ww::AbstractVector = ones(2 * k + 1),
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    k::Int64 = 8,
+    t::Real = 0, ww::AbstractVector = ones(2 * k + 1),
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -138,12 +138,12 @@ Apply a weighted moving median filter to selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_mmed(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        k::Int64 = 8,
-        t::Real = 0,
-        ww::AbstractVector = ones(2 * k + 1),
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    k::Int64 = 8,
+    t::Real = 0,
+    ww::AbstractVector = ones(2 * k + 1),
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -182,12 +182,12 @@ Apply a weighted moving median filter in-place to selected channels of a NEURO o
 - `Nothing`
 """
 function filter_mmed!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        k::Int64 = 8,
-        t::Real = 0,
-        ww::AbstractVector = ones(2 * k + 1),
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    k::Int64 = 8,
+    t::Real = 0,
+    ww::AbstractVector = ones(2 * k + 1),
+)::Nothing
     obj_new = filter_mmed(obj; ch = ch, k = k, t = t, ww = ww)
     obj.data = obj_new.data
     obj.history = obj_new.history

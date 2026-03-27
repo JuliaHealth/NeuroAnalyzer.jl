@@ -17,9 +17,9 @@ Interactive view of ICA components.
 - `Nothing`
 """
 function iview_ica(
-        obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64};
-        ch::Union{String, Vector{String}, Regex},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64};
+    ch::Union{String, Vector{String}, Regex},
+)::Nothing
     plot_sig_type = 0
     plot_psd_type = 0
 
@@ -36,24 +36,24 @@ function iview_ica(
     # validate
     size(ic_mw, 1) == length(chn) ||
         throw(
-        ArgumentError(
-            "ICA weighting matrix size does not match number of OBJ channels.",
-        ),
-    )
+            ArgumentError(
+                "ICA weighting matrix size does not match number of OBJ channels.",
+            ),
+        )
     size(ic_mw, 2) == size(ic, 1) ||
         throw(
-        ArgumentError(
-            "ICA weighting matrix size does not match number of ICA components.",
-        ),
-    )
+            ArgumentError(
+                "ICA weighting matrix size does not match number of ICA components.",
+            ),
+        )
     size(ic, 2) == signal_len(obj) ||
         throw(ArgumentError("ICA components length does not match OBJ signal length."))
     size(ic_mw, 1) >= length(ch) ||
         throw(
-        ArgumentError(
-            "ICA weighting matrix size does not match number of selected channels.",
-        ),
-    )
+            ArgumentError(
+                "ICA weighting matrix size does not match number of selected channels.",
+            ),
+        )
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -127,7 +127,7 @@ function iview_ica(
             win,
             Int64(ica_set[1].width) + round(Int64, p_sig.attr[:size][1] * 0.75) + 20,
             round(Int64, p_sig.attr[:size][2] * 0.75) +
-                round(Int64, p_psd.attr[:size][2] * 0.75) + 20,
+            round(Int64, p_psd.attr[:size][2] * 0.75) + 20,
         )
 
         ica_view = GtkScrolledWindow()
@@ -211,11 +211,11 @@ function iview_ica(
 
         combo_sig = GtkComboBoxText()
         for idx in [
-                "signal (original)",
-                "signal (reconstructed from IC)",
-                "signal (IC removed)",
-                "IC",
-            ]
+            "signal (original)",
+            "signal (reconstructed from IC)",
+            "signal (IC removed)",
+            "IC",
+        ]
             push!(combo_sig, idx)
         end
         combo_sig.active = 0
@@ -223,11 +223,11 @@ function iview_ica(
 
         combo_psd = GtkComboBoxText()
         for idx in [
-                "signal (original)",
-                "signal (reconstructed from IC)",
-                "signal (IC removed)",
-                "IC",
-            ]
+            "signal (original)",
+            "signal (reconstructed from IC)",
+            "signal (IC removed)",
+            "IC",
+        ]
             push!(combo_psd, idx)
         end
         combo_psd.active = 0
@@ -623,9 +623,9 @@ function iview_ica(
             k = keyval
             # CONTROL
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end

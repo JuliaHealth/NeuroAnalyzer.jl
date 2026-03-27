@@ -94,16 +94,16 @@ Named tuple:
 - `p::Float64`: two-tailed p-value (clamped to `eps()` if below machine epsilon)
 """
 function cor_test(
-        s1::AbstractVector,
-        s2::AbstractVector,
-    )::@NamedTuple{
-        t::CorrelationTest{Float64},
-        r::Float64,
-        rc::Tuple{Float64, Float64},
-        ts::Tuple{Float64, String},
-        df::Int64,
-        p::Float64,
-    }
+    s1::AbstractVector,
+    s2::AbstractVector,
+)::@NamedTuple{
+    t::CorrelationTest{Float64},
+    r::Float64,
+    rc::Tuple{Float64, Float64},
+    ts::Tuple{Float64, String},
+    df::Int64,
+    p::Float64,
+}
 
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))

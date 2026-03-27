@@ -19,10 +19,10 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function od2conc(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
-        ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+    ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
+)::NeuroAnalyzer.NEURO
 
     # validate
     length(get_channel(obj; type = "nirs_od")) > 0 || throw(
@@ -75,9 +75,9 @@ function od2conc(
             if ppf[1] ≈ 1
                 dc[1:2, :, idx, ep_idx] =
                     einv * (
-                    dod[vcat(idx1, idx2), :] ./
+                        dod[vcat(idx1, idx2), :] ./
                         (ones(ep_len, length(ppf)) .* rho .* ppf')'
-                )
+                    )
             else
                 dc[1:2, :, idx, ep_idx] =
                     einv * (dod[vcat(idx1, idx2), :] ./ (ones(ep_len, length(ppf)))')
@@ -149,10 +149,10 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 - `Nothing`
 """
 function od2conc!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
-        ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+    ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
+)::Nothing
     obj_new = od2conc(obj; ch = ch, ppf = ppf)
     obj.data = obj_new.data
     obj.header = obj_new.header

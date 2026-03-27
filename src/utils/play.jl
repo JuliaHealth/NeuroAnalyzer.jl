@@ -19,11 +19,11 @@ The signal is normalized to `[−1, 1]` and scaled to `[−1000, +1000]` before 
 - `Nothing`
 """
 function play(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        seg::Tuple{Real, Real},
-        ep::Int64,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    seg::Tuple{Real, Real},
+    ep::Int64,
+)::Nothing
 
     # resolve channel names to integer indices
     _check_epochs(obj, ep)

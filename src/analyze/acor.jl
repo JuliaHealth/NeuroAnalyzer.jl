@@ -21,12 +21,12 @@ Calculate auto-correlation for a 1-D signal vector.
 - `Vector{Float64}`: auto-correlation of length `2l + 1`
 """
 function acor(
-        s::AbstractVector;
-        l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum,
-    )::Vector{Float64}
+    s::AbstractVector;
+    l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum,
+)::Vector{Float64}
 
     # reject any method symbol not in the supported set
     _check_var(method, [:sum, :cor, :stat], "method")
@@ -96,12 +96,12 @@ Calculate auto-correlation for a 3-D signal array.
 - `Array{Float64, 3}`: auto-correlations, shape (channels, 2l+1, epochs)
 """
 function acor(
-        s::AbstractArray;
-        l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -156,16 +156,16 @@ Named tuple:
 - `l::Vector{Float64}`: lags in seconds
 """
 function acor(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        l::Int64 = round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2)))),
-        demean::Bool = true,
-        biased::Bool = true,
-        method::Symbol = :sum,
-    )::@NamedTuple{
-        autocor::Array{Float64, 3},
-        lags::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    l::Int64 = round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2)))),
+    demean::Bool = true,
+    biased::Bool = true,
+    method::Symbol = :sum,
+)::@NamedTuple{
+    autocor::Array{Float64, 3},
+    lags::Vector{Float64},
+}
 
     # validate lag bounds: must be non-negative and within the signal length
     l <= size(obj, 2) || throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
@@ -174,7 +174,7 @@ function acor(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     if datatype(obj) == "erp"
 

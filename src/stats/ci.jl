@@ -52,11 +52,11 @@ Calculate the confidence interval for the mean.
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
 function cim(
-        x::AbstractVector;
-        cl::Float64 = 0.95,
-        d::Symbol = :t,
-        twotailed::Bool = true,
-    )::Tuple{Float64, Float64}
+    x::AbstractVector;
+    cl::Float64 = 0.95,
+    d::Symbol = :t,
+    twotailed::Bool = true,
+)::Tuple{Float64, Float64}
 
     # validate
     _bin(cl, (0.0, 1.0), "cl")
@@ -140,9 +140,9 @@ function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
         vec(
             median(
                 x; dims
-                = 1
-            )
-        )
+                = 1,
+            ),
+        ),
     )
     n = size(x, 2)
     # the quantile of interest; for a median, we will use q = 0.5
@@ -200,10 +200,10 @@ Calculate the confidence interval for a Pearson correlation coefficient computed
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
 function cir(
-        x::AbstractVector,
-        y::AbstractVector;
-        cl::Float64 = 0.95,
-    )::Tuple{Float64, Float64}
+    x::AbstractVector,
+    y::AbstractVector;
+    cl::Float64 = 0.95,
+)::Tuple{Float64, Float64}
 
     # validate
     _bin(cl, (0.0, 1.0), "cl")

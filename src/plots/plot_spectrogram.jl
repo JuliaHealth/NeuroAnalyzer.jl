@@ -41,24 +41,24 @@ Plot single-channel spectrogram.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram(
-        st::Vector{Float64},
-        sf::Vector{<:Real},
-        sp::Matrix{Float64};
-        db::Bool = true,
-        frq::Symbol = :lin,
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-        units::String = "",
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        cb::Bool = true,
-        cb_title::String = "",
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-    )::GLMakie.Figure
+    st::Vector{Float64},
+    sf::Vector{<:Real},
+    sp::Matrix{Float64};
+    db::Bool = true,
+    frq::Symbol = :lin,
+    flim::Tuple{Real, Real} = (sf[1], sf[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+    units::String = "",
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    cb::Bool = true,
+    cb_title::String = "",
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+)::GLMakie.Figure
     !(size(sp, 2) == length(st)) && throw(
         ArgumentError(
             "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match.",
@@ -189,24 +189,24 @@ Plot multiple-channel spectrogram.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram(
-        sf::Vector{<:Real},
-        sp::Matrix{Float64};
-        clabels::Vector{String} = string.(1:size(sp, 1)),
-        db::Bool = true,
-        frq::Symbol = :lin,
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-        units::String = "",
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        cb::Bool = true,
-        cb_title::String = "",
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-    )::GLMakie.Figure
+    sf::Vector{<:Real},
+    sp::Matrix{Float64};
+    clabels::Vector{String} = string.(1:size(sp, 1)),
+    db::Bool = true,
+    frq::Symbol = :lin,
+    flim::Tuple{Real, Real} = (sf[1], sf[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+    units::String = "",
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    cb::Bool = true,
+    cb_title::String = "",
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+)::GLMakie.Figure
     !(size(sp, 1) == length(clabels)) && throw(
         ArgumentError(
             "Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match.",
@@ -320,25 +320,25 @@ Plot topographical map of spectrograms.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram_topo(
-        locs::DataFrame,
-        st::Vector{Float64},
-        sf::Vector{Float64},
-        sp::Array{Float64, 3};
-        db::Bool = true,
-        flim::Tuple{Real, Real} = (sf[1], sf[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        units::String = "",
-        cb::Bool = true,
-        cb_title::String = "",
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        mono::Bool = true,
-        frq::Symbol = :lin,
-        cart::Bool = false,
-        head::Bool = true,
-    )::GLMakie.Figure
+    locs::DataFrame,
+    st::Vector{Float64},
+    sf::Vector{Float64},
+    sp::Array{Float64, 3};
+    db::Bool = true,
+    flim::Tuple{Real, Real} = (sf[1], sf[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    units::String = "",
+    cb::Bool = true,
+    cb_title::String = "",
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    mono::Bool = true,
+    frq::Symbol = :lin,
+    cart::Bool = false,
+    head::Bool = true,
+)::GLMakie.Figure
     !(size(sp, 3) == DataFrames.nrow(locs)) && throw(
         ArgumentError(
             "Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match.",
@@ -527,9 +527,9 @@ function plot_spectrogram_topo(
                 ax_y = mouseposition(ax)[2]
                 for idx in eachindex(loc_x)
                     if ax_x >= loc_x_range[idx][1] &&
-                            ax_x <= loc_x_range[idx][2] &&
-                            ax_y >= loc_y_range[idx][1] &&
-                            ax_y <= loc_y_range[idx][2]
+                       ax_x <= loc_x_range[idx][2] &&
+                       ax_y >= loc_y_range[idx][1] &&
+                       ax_y <= loc_y_range[idx][2]
                         display(GLMakie.Screen(), pp_full_vec[idx])
                         break
                     end
@@ -600,35 +600,35 @@ Plots spectrogram.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_spectrogram(
-        obj::NeuroAnalyzer.NEURO;
-        seg::Tuple{Real, Real} = (0, 10),
-        ep::Int64 = 0,
-        ch::Union{String, Vector{String}, Regex} = datatype(obj),
-        db::Bool = true,
-        method::Symbol = :stft,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        gw::Real = 10,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        frq::Symbol = :lin,
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-        markers::Bool = true,
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        cb::Bool = true,
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-        type::Symbol = :normal,
-        cart::Bool = false,
-        head::Bool = true,
-    )::GLMakie.Figure where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real} = (0, 10),
+    ep::Int64 = 0,
+    ch::Union{String, Vector{String}, Regex} = datatype(obj),
+    db::Bool = true,
+    method::Symbol = :stft,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    gw::Real = 10,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    frq::Symbol = :lin,
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    markers::Bool = true,
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    cb::Bool = true,
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+    type::Symbol = :normal,
+    cart::Bool = false,
+    head::Bool = true,
+)::GLMakie.Figure where {T <: CWT}
 
     # validate
     _check_var(type, [:normal, :topo], "type")
@@ -638,7 +638,7 @@ function plot_spectrogram(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
     if method === :cwt
         if type === :normal
             length(ch) == 1 ||

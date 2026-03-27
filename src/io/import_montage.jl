@@ -28,11 +28,11 @@ Named tuple:
 - `ref_name::String`: name of the montage
 """
 function import_montage(
-        file_name::String,
-    )::@NamedTuple{
-        ref_list::Vector{String},
-        ref_name::String,
-    }
+    file_name::String,
+)::@NamedTuple{
+    ref_list::Vector{String},
+    ref_name::String,
+}
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -42,11 +42,11 @@ function import_montage(
 
     length(montage_file) >= 2 ||
         throw(
-        ArgumentError(
-            "$file_name does not contain a valid montage structure " *
-                "(expected: name on line 1, at least one channel entry)."
-        ),
-    )
+            ArgumentError(
+                "$file_name does not contain a valid montage structure " *
+                "(expected: name on line 1, at least one channel entry).",
+            ),
+        )
 
     return (ref_list = montage_file[2:end], ref_name = montage_file[1])
 end

@@ -23,12 +23,12 @@ Rotate channel locations around the Z axis.
 - `DataFrame`
 """
 function locs_rotz(
-        locs::DataFrame;
-        a::Real,
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::DataFrame
+    locs::DataFrame;
+    a::Real,
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::DataFrame
     locs_new = deepcopy(locs)
 
     if cart
@@ -81,12 +81,12 @@ Rotate channel locations in the xy-plane.
 - `Nothing`
 """
 function locs_rotz!(
-        locs::DataFrame;
-        a::Real,
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::Nothing
+    locs::DataFrame;
+    a::Real,
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::Nothing
     locs[!, :] =
         locs_rotz(locs; a = a, polar = polar, cart = cart, spherical = spherical)[!, :]
 
@@ -111,12 +111,12 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 - `DataFrame`
 """
 function locs_roty(
-        locs::DataFrame;
-        a::Real,
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::DataFrame
+    locs::DataFrame;
+    a::Real,
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::DataFrame
     locs_new = deepcopy(locs)
 
     if cart
@@ -169,12 +169,12 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 - `Nothing`
 """
 function locs_roty!(
-        locs::DataFrame;
-        a::Real,
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::Nothing
+    locs::DataFrame;
+    a::Real,
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::Nothing
     locs[!, :] =
         locs_roty(locs; a = a, polar = polar, cart = cart, spherical = spherical)[!, :]
 
@@ -199,12 +199,12 @@ Rotate channel locations around the X axis (in the YZ-plane).
 - `DataFrame`
 """
 function locs_rotx(
-        locs::DataFrame;
-        a::Real,
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::DataFrame
+    locs::DataFrame;
+    a::Real,
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::DataFrame
     locs_new = deepcopy(locs)
 
     if cart
@@ -257,12 +257,12 @@ Rotate channel locations around the X axis (in the YZ-plane).
 - `Nothing`
 """
 function locs_rotx!(
-        locs::DataFrame;
-        a::Real,
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::Nothing
+    locs::DataFrame;
+    a::Real,
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::Nothing
     locs[!, :] =
         locs_rotx(locs; a = a, polar = polar, cart = cart, spherical = spherical)[!, :]
 

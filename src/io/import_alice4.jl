@@ -46,22 +46,22 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
         reserved == "EDF+D" &&
             throw(
-            ArgumentError(
-                "EDF+D (interrupted recordings) is not supported. " *
-                    "Please send this file to adam.wysokinski@neuroanalyzer.org"
-            ),
-        )
+                ArgumentError(
+                    "EDF+D (interrupted recordings) is not supported. " *
+                    "Please send this file to adam.wysokinski@neuroanalyzer.org",
+                ),
+            )
         reserved == "EDF+C" && (file_type = "EDF+")
 
         # Alice 4 always writes -1 here; validated below before use
         data_records = parse(Int, strip(header[237:244]))
         data_records != -1 &&
             throw(
-            ArgumentError(
-                "data_records ≠ -1; this looks like a standard EDF file. " *
-                    "Use import_edf() instead."
-            ),
-        )
+                ArgumentError(
+                    "data_records ≠ -1; this looks like a standard EDF file. " *
+                    "Use import_edf() instead.",
+                ),
+            )
 
         data_records_duration = parse(Float64, strip(header[245:252]))
         ch_n = parse(Int, strip(header[253:256]))
@@ -107,17 +107,17 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         if length(unique(samples_per_datarecord)) == 1
             sampling_rate = round(
                 Int64,
-                samples_per_datarecord[1] / data_records_duration
+                samples_per_datarecord[1] / data_records_duration,
             )
         else
             sampling_rate = round.(
                 Int64,
-                samples_per_datarecord ./ data_records_duration
+                samples_per_datarecord ./ data_records_duration,
             )
         end
 
         gain = @. (physical_maximum - physical_minimum) /
-            (digital_maximum - digital_minimum)
+           (digital_maximum - digital_minimum)
 
         # ------------------------------------------------------------ #
         # signal data                                                   #
@@ -229,7 +229,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     markers = if isempty(annotation_channels)
         DataFrame(
             :id => String[], :start => Float64[],
-            :length => Float64[], :value => String[], :channel => Int64[]
+            :length => Float64[], :value => String[], :channel => Int64[],
         )
     else
         m = _a2df(annotations)
@@ -248,7 +248,8 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
-    epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    epoch_time =
+        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
     # ------------------------------------------------------------------ #
     # Assemble NEURO object                                               #
@@ -258,7 +259,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     s = _create_subject(;
         id = "", first_name = "", middle_name = "",
         last_name = string(patient), head_circumference = -1,
-        handedness = "", weight = -1, height = -1
+        handedness = "", weight = -1, height = -1,
     )
     r = _create_recording_eeg(;
         data_type = "eeg",
@@ -290,9 +291,9 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-            "; $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

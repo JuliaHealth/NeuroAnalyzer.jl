@@ -94,8 +94,8 @@ function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector
 end
 
 function detect_tkeo(
-        s::AbstractMatrix, t::AbstractVector; tkeo_method::Symbol = :pow, p::Float64 = 0.95,
-    )::Vector{Bool}
+    s::AbstractMatrix, t::AbstractVector; tkeo_method::Symbol = :pow, p::Float64 = 0.95,
+)::Vector{Bool}
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
 
@@ -109,7 +109,7 @@ function detect_tkeo(
         for idx in 1:w:length(stkeo)
             count(
                 abs.(z_signal[idx:(idx + w - 1)]) - abs.(z_tkeo[idx:(idx + w - 1)]) .>
-                    cl2z(p),
+                cl2z(p),
             ) > 1 && (bad_windows += 1)
         end
         # mark channel as bad if there is at least one bad window
@@ -120,14 +120,14 @@ function detect_tkeo(
 end
 
 function detect_ransac(
-        s::AbstractMatrix;
-        loc_x::Vector{Float64},
-        loc_y::Vector{Float64},
-        w::Int64 = 10,
-        ransac_r::Float64 = 0.8,
-        ransac_tr::Float64 = 0.4,
-        ransac_t::Float64 = 100.0,
-    )
+    s::AbstractMatrix;
+    loc_x::Vector{Float64},
+    loc_y::Vector{Float64},
+    w::Int64 = 10,
+    ransac_r::Float64 = 0.8,
+    ransac_tr::Float64 = 0.4,
+    ransac_t::Float64 = 100.0,
+)
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
 
@@ -202,23 +202,23 @@ Detect bad channels.
 - `Vector{Bool}`: vector of bad channels
 """
 function channel_reject(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Union{Symbol, Vector{Symbol}} = [
-            :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp,
-        ],
-        w::Int64 = sr(obj),
-        flat_tol::Float64 = 0.1,
-        flat_fr::Float64 = 0.3,
-        p::Float64 = 0.99,
-        tc::Float64 = 0.2,
-        tkeo_method::Symbol = :pow,
-        z::Real = 3,
-        ransac_r::Float64 = 0.8,
-        ransac_tr::Float64 = 0.4,
-        ransac_t::Float64 = 100.0,
-        amp_t::Real = 400.0,
-    )::Vector{Bool}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Union{Symbol, Vector{Symbol}} = [
+        :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp,
+    ],
+    w::Int64 = sr(obj),
+    flat_tol::Float64 = 0.1,
+    flat_fr::Float64 = 0.3,
+    p::Float64 = 0.99,
+    tc::Float64 = 0.2,
+    tkeo_method::Symbol = :pow,
+    z::Real = 3,
+    ransac_r::Float64 = 0.8,
+    ransac_tr::Float64 = 0.4,
+    ransac_t::Float64 = 100.0,
+    amp_t::Real = 400.0,
+)::Vector{Bool}
 
     # validate
     _in(p, (0, 1), "p")
@@ -269,7 +269,7 @@ function channel_reject(
             ch_idx, ep_idx = idx[1], idx[2]
             sm = [
                 mean(@view obj.data[ch_idx, idx_w:(idx_w + w), ep_idx]) for
-                    idx_w in 1:w:(n_samples - w)
+                idx_w in 1:w:(n_samples - w)
             ]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
             bad_chs[ch_idx, ep_idx] = r > flat_fr
@@ -462,23 +462,23 @@ Detect bad channels and update the `:bad_channel` field in the OBJ header.
 - `Nothing`
 """
 function channel_reject!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Union{Symbol, Vector{Symbol}} = [
-            :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp,
-        ],
-        w::Int64 = sr(obj),
-        flat_tol::Float64 = 0.1,
-        flat_fr::Float64 = 0.3,
-        p::Float64 = 0.99,
-        tc::Float64 = 0.2,
-        tkeo_method::Symbol = :pow,
-        z::Real = 3,
-        ransac_r::Float64 = 0.8,
-        ransac_tr::Float64 = 0.4,
-        ransac_t::Float64 = 100.0,
-        amp_t::Real = 400.0,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Union{Symbol, Vector{Symbol}} = [
+        :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp,
+    ],
+    w::Int64 = sr(obj),
+    flat_tol::Float64 = 0.1,
+    flat_fr::Float64 = 0.3,
+    p::Float64 = 0.99,
+    tc::Float64 = 0.2,
+    tkeo_method::Symbol = :pow,
+    z::Real = 3,
+    ransac_r::Float64 = 0.8,
+    ransac_tr::Float64 = 0.4,
+    ransac_t::Float64 = 100.0,
+    amp_t::Real = 400.0,
+)::Nothing
     bc = channel_reject(
         obj;
         ch = ch,
@@ -538,24 +538,24 @@ Detect bad epochs.
 - `Vector{Int64}`: bad epochs numbers
 """
 function epoch_reject(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Union{Symbol, Vector{Symbol}} = [
-            :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp,
-        ],
-        w::Int64 = sr(obj),
-        flat_tol::Float64 = 0.1,
-        flat_fr::Float64 = 0.3,
-        p::Float64 = 0.99,
-        tc::Float64 = 0.2,
-        tkeo_method::Symbol = :pow,
-        z::Real = 3,
-        ransac_r::Float64 = 0.8,
-        ransac_tr::Float64 = 0.4,
-        ransac_t::Float64 = 100.0,
-        amp_t::Real = 400.0,
-        nbad::Int64 = 1,
-    )::Vector{Int64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Union{Symbol, Vector{Symbol}} = [
+        :flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp,
+    ],
+    w::Int64 = sr(obj),
+    flat_tol::Float64 = 0.1,
+    flat_fr::Float64 = 0.3,
+    p::Float64 = 0.99,
+    tc::Float64 = 0.2,
+    tkeo_method::Symbol = :pow,
+    z::Real = 3,
+    ransac_r::Float64 = 0.8,
+    ransac_tr::Float64 = 0.4,
+    ransac_t::Float64 = 100.0,
+    amp_t::Real = 400.0,
+    nbad::Int64 = 1,
+)::Vector{Int64}
 
     # validate
     _in(p, (0, 1), "p")
@@ -605,7 +605,7 @@ function epoch_reject(
             ch_idx, ep_idx = idx[1], idx[2]
             sm = [
                 mean(@view obj.data[ch_idx, idx_w:(idx_w + w), ep_idx]) for
-                    idx_w in 1:w:(n_samples - w)
+                idx_w in 1:w:(n_samples - w)
             ]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
             bad_chs[ch_idx, ep_idx] = r > flat_fr

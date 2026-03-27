@@ -76,9 +76,9 @@ _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String =
     _ch_units(obj.header.recording[:channel_type][_ch_idx(obj; ch)[1]])
 
 function _ch_idx(
-        cl::Union{String, Vector{String}},
-        l::Union{String, Vector{String}, Regex},
-    )::Vector{Int64}
+    cl::Union{String, Vector{String}},
+    l::Union{String, Vector{String}, Regex},
+)::Vector{Int64}
     if isa(l, Regex)
         matches = Base.filter(!isnothing, match.(l, cl))
         l = [m.match for m in matches]
@@ -108,9 +108,9 @@ const _NIRS_TYPES = [
 ]
 
 function _ch_idx(
-        obj::NeuroAnalyzer.NEURO,
-        l::Union{String, Vector{String}, Regex},
-    )::Vector{Int64}
+    obj::NeuroAnalyzer.NEURO,
+    l::Union{String, Vector{String}, Regex},
+)::Vector{Int64}
     cl = labels(obj)
 
     if isa(l, Regex)
@@ -174,9 +174,9 @@ function _ch_idx(
 end
 
 function _set_channel_types(
-        clabels::Vector{String},
-        default::String = "other",
-    )::Vector{String}
+    clabels::Vector{String},
+    default::String = "other",
+)::Vector{String}
     channel_names = [
         "af3", "af4", "af7", "af8", "afz",
         "c1", "c2", "c3", "c4", "c5", "c6",
@@ -226,20 +226,20 @@ function _set_channel_types(
 
         # non-neural / auxiliary channels
         for pattern in (
-                "rr",
-                "mic",
-                "flw",
-                "tho",
-                "abd",
-                "sao2",
-                "sa02",
-                "plr",
-                "body",
-                "ux",
-                "ias",
-                "sys",
-                "aux",
-            )
+            "rr",
+            "mic",
+            "flw",
+            "tho",
+            "abd",
+            "sao2",
+            "sa02",
+            "plr",
+            "body",
+            "ux",
+            "ias",
+            "sys",
+            "aux",
+        )
             occursin(pattern, lbl) && (channel_type[idx] = "other")
         end
 
@@ -247,17 +247,17 @@ function _set_channel_types(
 
         # marker / event channels
         for pattern in (
-                "sti",
-                "stim",
-                "mark",
-                "marker",
-                "markers",
-                "event",
-                "trigger",
-                "annotation",
-                "annotations",
-                "status",
-            )
+            "sti",
+            "stim",
+            "mark",
+            "marker",
+            "markers",
+            "event",
+            "trigger",
+            "annotation",
+            "annotations",
+            "status",
+        )
             occursin(pattern, lbl) && (channel_type[idx] = "mrk")
         end
         lbl == "e" && (channel_type[idx] = "mrk")

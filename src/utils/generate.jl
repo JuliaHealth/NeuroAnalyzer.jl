@@ -35,10 +35,10 @@ Return an `n`-point symmetric window of the given type.
 - `Vector{Float64}`: generated window of length `n` (or `n + 1` if `even=true` and `n` was odd)
 """
 function generate_window(
-        type::Symbol,
-        n::Int64;
-        even::Bool = false,
-    )::Vector{Float64}
+    type::Symbol,
+    n::Int64;
+    even::Bool = false,
+)::Vector{Float64}
 
     # validate
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
@@ -56,31 +56,31 @@ function generate_window(
 
         # Blackman-Harris 4-term window
         return @. 0.35875 - 0.48829 * cos(2 * pi * t) + 0.14128 * cos(4 * pi * t) -
-            0.01168 * cos(6 * pi * t)
+                  0.01168 * cos(6 * pi * t)
 
     elseif type === :bohman
 
         # Bohman window (product of triangle and sinc)
         return @. (1 - abs(t * 2 - 1)) * cos(pi * abs(t * 2 - 1)) +
-            (1 / pi) * sin(pi * abs(t * 2 - 1))
+                  (1 / pi) * sin(pi * abs(t * 2 - 1))
 
     elseif type === :flat
 
         # Flat-top 5-term window (minimises amplitude error)
         return @. 0.21557 - 0.41663 * cos(2 * pi * t) + 0.27726 * cos(4 * pi * t) -
-            0.08357 * cos(6 * pi * t) + 0.00694 * cos(8 * pi * t)
+                  0.08357 * cos(6 * pi * t) + 0.00694 * cos(8 * pi * t)
 
     elseif type === :bn
 
         # Blackman-Nuttall 4-term window
         return @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) -
-            0.0106411 * cos(6 * pi * t)
+                  0.0106411 * cos(6 * pi * t)
 
     elseif type === :nutall
 
         # Nuttall 4-term window
         return @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) -
-            0.012604 * cos(6 * pi * t)
+                  0.012604 * cos(6 * pi * t)
 
     elseif type === :triangle
 
@@ -133,11 +133,11 @@ Computes `a × sin(2πft + φ)` where `φ = deg2rad(p)`.
 - `Vector{Float64}`: sine wave sampled at the points in `t`
 """
 function generate_sine(
-        f::Real,
-        t::AbstractVector,
-        a::Real = 1,
-        p::Real = 0,
-    )::Vector{Float64}
+    f::Real,
+    t::AbstractVector,
+    a::Real = 1,
+    p::Real = 0,
+)::Vector{Float64}
     return @. a * sin(2 * pi * f * t + deg2rad(p))
 end
 
@@ -160,11 +160,11 @@ Computes `a × cos(2πft + φ)` where `φ = deg2rad(p)`.
 - `Vector{Float64}`: cosine wave sampled at the points in `t`
 """
 function generate_cosine(
-        f::Real,
-        t::AbstractVector,
-        a::Real = 1,
-        p::Real = 0,
-    )::Vector{Float64}
+    f::Real,
+    t::AbstractVector,
+    a::Real = 1,
+    p::Real = 0,
+)::Vector{Float64}
     return @. a * cos(2 * pi * f * t + deg2rad(p))
 end
 
@@ -186,10 +186,10 @@ Computes `a × exp(i × 2πft)`.
 - `Vector{ComplexF64}`: complex exponential sampled at the points in `t`
 """
 function generate_csine(
-        f::Real,
-        t::AbstractVector,
-        a::Real = 1,
-    )::Vector{ComplexF64}
+    f::Real,
+    t::AbstractVector,
+    a::Real = 1,
+)::Vector{ComplexF64}
     return @. a * exp(1im * 2 * pi * f * t)
 end
 
@@ -212,11 +212,11 @@ Produces either the normalized (`sin(2πf(t−peak)) / (π(t−peak))`) or unnor
 - `Vector{Float64}`: sinc function sampled at the points in `t`
 """
 function generate_sinc(
-        t::AbstractVector = -2:0.01:2;
-        f::Real = 1.0,
-        peak::Real = 0,
-        norm::Bool = true,
-    )::Vector{Float64}
+    t::AbstractVector = -2:0.01:2;
+    f::Real = 1.0,
+    peak::Real = 0,
+    norm::Bool = true,
+)::Vector{Float64}
     s = if norm
         (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak)))
     else
@@ -252,12 +252,12 @@ The wavelet is the product of a complex (or real) sine wave at frequency `f` and
 - `Union{Vector{Float64}, Vector{ComplexF64}}`: Morlet wavelet of length `length(-t:1/fs:t)`
 """
 function generate_morlet(
-        fs::Int64,
-        f::Real,
-        t::Real = 1;
-        ncyc::Int64 = 5,
-        complex::Bool = false,
-    )::Union{Vector{Float64}, Vector{ComplexF64}}
+    fs::Int64,
+    f::Real,
+    t::Real = 1;
+    ncyc::Int64 = 5,
+    complex::Bool = false,
+)::Union{Vector{Float64}, Vector{ComplexF64}}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -291,12 +291,12 @@ The standard deviation of the Gaussian is `σ = ncyc / (2πf)`. The time axis sp
 - `Vector{Float64}`: Gaussian envelope of length `length(-t:1/fs:t)`
 """
 function generate_gaussian(
-        fs::Int64,
-        f::Real,
-        t::Real = 1;
-        ncyc::Int64 = 5,
-        a::Real = 1.0,
-    )::Vector{Float64}
+    fs::Int64,
+    f::Real,
+    t::Real = 1;
+    ncyc::Int64 = 5,
+    a::Real = 1.0,
+)::Vector{Float64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -332,10 +332,10 @@ The raw noise is normalized to `[−1, 1]` and then scaled by `a`.
 - `Vector{Float64}`: noise signal of length `n`
 """
 function generate_noise(
-        n::Int64,
-        a::Real = 1.0;
-        type::Symbol = :whiten,
-    )::Vector{Float64}
+    n::Int64,
+    a::Real = 1.0;
+    type::Symbol = :whiten,
+)::Vector{Float64}
 
     # validate
     _check_var(type, [:whiten, :whiteu, :pink], "type")
@@ -406,11 +406,11 @@ Uses the FWHM-based Gaussian envelope `exp(−4 ln 2 × t² / h²)` instead of a
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
 """
 function generate_morlet_fwhm(
-        fs::Int64,
-        f::Real,
-        t::Real = 1;
-        h::Float64 = 0.25,
-    )::Vector{ComplexF64}
+    fs::Int64,
+    f::Real,
+    t::Real = 1;
+    h::Float64 = 0.25,
+)::Vector{ComplexF64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -441,12 +441,12 @@ Generate a square wave.
 - `Vector{Float64}`: square wave sampled at the points in `t`
 """
 function generate_square(
-        t::AbstractVector,
-        a::Real,
-        p::Real;
-        w::Real = 1,
-        offset::Real = 0,
-    )::Vector{Float64}
+    t::AbstractVector,
+    a::Real,
+    p::Real;
+    w::Real = 1,
+    offset::Real = 0,
+)::Vector{Float64}
     return @. offset + a * (mod(p + t, 2) > w)
 end
 
@@ -467,8 +467,8 @@ Computes `a × |mod(t, 2) − 1|`, which produces a symmetric triangle wave with
 - `Vector{Float64}`: triangle wave sampled at the points in `t`
 """
 function generate_triangle(
-        t::AbstractVector,
-        a::Real = 1,
-    )::Vector{Float64}
+    t::AbstractVector,
+    a::Real = 1,
+)::Vector{Float64}
     return @. a * abs(mod(t, 2) - 1)
 end

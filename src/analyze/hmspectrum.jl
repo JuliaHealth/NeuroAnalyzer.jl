@@ -24,12 +24,12 @@ Named tuple:
 Huang et al. (1998), "The empirical mode decomposition and the Hilbert spectrum for nonlinear and non-stationary time series analysis."
 """
 function hmspectrum(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-    )::@NamedTuple{
-        p::Matrix{Float64},
-        f::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+)::@NamedTuple{
+    p::Matrix{Float64},
+    f::Vector{Float64},
+}
 
     # validate
     length(get_channel(obj; ch = ch)) == 1 ||

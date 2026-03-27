@@ -87,10 +87,10 @@ GFP is the population standard deviation across all channels at each time point.
 GFP(t) = std_channels( s[:, t] )
 """
 function erp_gfp(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        norm::Bool = false,
-    )::Union{Vector{Float64}, Matrix{Float64}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    norm::Bool = false,
+)::Union{Vector{Float64}, Matrix{Float64}}
 
     # validate
     _check_datatype(obj, ["erp", "erf"])
@@ -98,7 +98,7 @@ function erp_gfp(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
     length(ch) > 1 || throw(ArgumentError("More than 1 channel must be selected."))
 
     s = @view obj.data[ch, :, 1]

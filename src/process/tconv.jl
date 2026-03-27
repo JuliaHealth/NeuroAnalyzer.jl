@@ -16,9 +16,9 @@ Performs convolution in the time domain.
 - `Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
 """
 function tconv(
-        s::AbstractVector;
-        kernel::AbstractVector,
-    )::Union{Vector{Float64}, Vector{ComplexF64}}
+    s::AbstractVector;
+    kernel::AbstractVector,
+)::Union{Vector{Float64}, Vector{ComplexF64}}
     s_conv = DSP.conv(s, kernel)
     return _remove_kernel(s_conv, kernel)
 end
@@ -38,9 +38,9 @@ Perform convolution in the time domain for a 3-D signal array.
 - `Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
 function tconv(
-        s::AbstractArray;
-        kernel::AbstractVector,
-    )::Union{Array{Float64, 3}, Array{ComplexF64, 3}}
+    s::AbstractArray;
+    kernel::AbstractVector,
+)::Union{Array{Float64, 3}, Array{ComplexF64, 3}}
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -77,10 +77,10 @@ Perform convolution in the time domain.
 - `Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}`: convoluted signal
 """
 function tconv(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        kernel::AbstractVector,
-    )::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    kernel::AbstractVector,
+)::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -110,10 +110,10 @@ Perform convolution in the time domain.
 - `kernel::AbstractVector`: convolution kernel
 """
 function tconv!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        kernel::AbstractVector,
-    )::Union{Nothing, Array{ComplexF64, 3}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    kernel::AbstractVector,
+)::Union{Nothing, Array{ComplexF64, 3}}
     if eltype(kernel) == ComplexF64
         return tconv(obj.data; ch = ch, kernel = kernel)
     else

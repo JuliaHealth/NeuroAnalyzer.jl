@@ -19,10 +19,10 @@ Fits a polynomial of degree `order` to successive overlapping windows of `window
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
 function filter_sg(
-        s::AbstractVector;
-        order::Int64 = 6,
-        window::Int64 = 11,
-    )::Vector{Float64}
+    s::AbstractVector;
+    order::Int64 = 6,
+    window::Int64 = 11,
+)::Vector{Float64}
     (window >= 1 && window <= length(s)) ||
         throw(ArgumentError("window must be in [1, $(length(s))]."))
     isodd(window) || throw(ArgumentError("window must be odd."))
@@ -48,10 +48,10 @@ Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal ar
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_sg(
-        s::AbstractArray;
-        order::Int64 = 6,
-        window::Int64 = 11,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    order::Int64 = 6,
+    window::Int64 = 11,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -91,11 +91,11 @@ Apply a Savitzky-Golay filter to selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_sg(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        order::Int64 = 6,
-        window::Int64 = 11,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    order::Int64 = 6,
+    window::Int64 = 11,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -126,11 +126,11 @@ Apply a Savitzky-Golay filter in-place to selected channels of a NEURO object.
 - `Nothing`
 """
 function filter_sg!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        order::Int64 = 6,
-        window::Int64 = 11,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    order::Int64 = 6,
+    window::Int64 = 11,
+)::Nothing
     obj_new = filter_sg(obj; ch = ch, order = order, window = window)
     obj.data = obj_new.data
     obj.history = obj_new.history

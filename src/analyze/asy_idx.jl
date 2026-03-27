@@ -37,22 +37,22 @@ Named tuple:
 - `nasi::Float64`: normalized band asymmetry
 """
 function asy_idx(
-        obj::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        flim::Tuple{Real, Real},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )::@NamedTuple{
-        asi::Float64,
-        nasi::Float64,
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)::@NamedTuple{
+    asi::Float64,
+    nasi::Float64,
+}
 
     # resolve channel names to integer indices
     ch1 = get_channel(obj; ch = ch1)

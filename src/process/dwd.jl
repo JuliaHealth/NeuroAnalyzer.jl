@@ -22,11 +22,11 @@ Returns the decomposition coefficient matrix. Each row corresponds to one subspa
 - `Matrix{Float64}`: DWD coefficient matrix of shape `((1 + Σ 2^k for k=1..l), length(s))`
 """
 function dwd(
-        s::AbstractVector;
-        wt::T = wavelet(WT.haar),
-        type::Symbol,
-        l::Int64 = maxtransformlevels(s),
-    )::Matrix{Float64} where {T <: DiscreteWavelet}
+    s::AbstractVector;
+    wt::T = wavelet(WT.haar),
+    type::Symbol,
+    l::Int64 = maxtransformlevels(s),
+)::Matrix{Float64} where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     l <= maxtransformlevels(s) ||
@@ -64,11 +64,11 @@ Each row corresponds to one subspace node; each column corresponds to one time s
 - `Array{Float64, 4}`: DWD coefficients of shape `(channels, n_nodes, samples, epochs)`
 """
 function dwd(
-        s::AbstractArray;
-        wt::T = wavelet(WT.haar),
-        type::Symbol,
-        l::Int64 = maxtransformlevels(s[1, :, 1]),
-    )::Array{Float64, 4} where {T <: DiscreteWavelet}
+    s::AbstractArray;
+    wt::T = wavelet(WT.haar),
+    type::Symbol,
+    l::Int64 = maxtransformlevels(s[1, :, 1]),
+)::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -122,12 +122,12 @@ Perform discrete wavelet decomposition on selected channels of a NEURO object.
 - `Array{Float64, 4}`: DWD coefficients of shape `(channels, n_nodes, samples, epochs)`
 """
 function dwd(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        wt::T = wavelet(WT.haar),
-        type::Symbol,
-        l::Int64 = 0,
-    )::Array{Float64, 4} where {T <: DiscreteWavelet}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    wt::T = wavelet(WT.haar),
+    type::Symbol,
+    l::Int64 = 0,
+)::Array{Float64, 4} where {T <: DiscreteWavelet}
     if l == 0
         l = maxtransformlevels(obj.data[1, :, 1])
         _info("Calculating DWD using maximum level: $l")
@@ -160,11 +160,11 @@ Reconstructs a signal from a subset (or all) of the DWD coefficient rows.
 - `Vector{Float64}`: reconstructed signal
 """
 function idwd(
-        dc::Matrix{Float64};
-        wt::T = wavelet(WT.haar),
-        type::Symbol,
-        c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
-    )::Vector{Float64} where {T <: DiscreteWavelet}
+    dc::Matrix{Float64};
+    wt::T = wavelet(WT.haar),
+    type::Symbol,
+    c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
+)::Vector{Float64} where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     # validate and normalize coefficient index selection

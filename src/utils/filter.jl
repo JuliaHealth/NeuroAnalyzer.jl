@@ -134,14 +134,14 @@ The order is estimated via the appropriate `DSP.jl` design function (`buttord`, 
 - `order::Int64`: minimum filter order satisfying the specifications
 """
 function iir_order(;
-        fprototype::Symbol,
-        ftype::Symbol,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        bw::Real,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        fs::Int64,
-    )::Int64
+    fprototype::Symbol,
+    ftype::Symbol,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    bw::Real,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    fs::Int64,
+)::Int64
 
     # validate
     _check_var(
@@ -226,14 +226,14 @@ Convenience wrapper that reads the sampling rate from `obj`.
 - `Int64`: minimum filter order satisfying the specifications
 """
 function iir_order(
-        obj::NeuroAnalyzer.NEURO;
-        fprototype::Symbol,
-        ftype::Symbol,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        bw::Real,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-    )::Int64
+    obj::NeuroAnalyzer.NEURO;
+    fprototype::Symbol,
+    ftype::Symbol,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    bw::Real,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+)::Int64
     return iir_order(;
         fprototype = fprototype,
         ftype = ftype,

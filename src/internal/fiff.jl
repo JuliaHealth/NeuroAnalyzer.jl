@@ -18,19 +18,32 @@ _i32i32(x)::Int32 = ntoh(reinterpret(Int32, x)[1])
 # ---------------------------------------------------------------------------
 _find_fiff_tag(t::String)::Int64 = fiff_tags[:id][findfirst(isequal(t), fiff_tags[:tag])]
 _find_fiff_tag(n::Int64)::String = fiff_tags[:tag][findfirst(isequal(n), fiff_tags[:id])]
-_find_fiff_block(t::String)::Int64 = fiff_blocks[:id][findfirst(isequal(t), fiff_blocks[:block])]
-_find_fiff_block(n::Int64)::String = fiff_blocks[:block][findfirst(isequal(n), fiff_blocks[:id])]
-_find_fiff_dt(n::Int64)::String = fiff_data_type[:name][findfirst(isequal(n & 0x00000FFF), fiff_data_type[:id])]
-_find_fiff_unit(n::Int64)::String = fiff_units[:unit][findfirst(isequal(n), fiff_units[:id])]
-_find_fiff_mul(n::Int64)::String = fiff_multipliers[:multiplier][findfirst(isequal(n), fiff_multipliers[:id])]
-_find_fiff_chtype(n::Int64)::String = fiff_channel_type[:channel_type][findfirst(isequal(n), fiff_channel_type[:id])]
-_find_fiff_gantry_type(n::Int64)::String = fiff_gantry_type[:gantry_type][findfirst(isequal(n), fiff_gantry_type[:id])]
-_find_fiff_dacq_system(n::Int64)::String = fiff_dacq_system[:dacq_system][findfirst(isequal(n), fiff_dacq_system[:id])]
-_find_fiff_proj_item(n::Int64)::String = fiff_proj_item[:proj_item][findfirst(isequal(n), fiff_proj_item[:id])]
-_find_fiff_proj_by(n::Int64)::String = fiff_proj_by[:proj_by][findfirst(isequal(n), fiff_proj_by[:id])]
-_find_fiff_coiltype(n::Int64)::String = fiff_coil_type[:coil_type][findfirst(isequal(n), fiff_coil_type[:id])]
-_find_fiff_aspect(n::Int64)::String = fiff_aspect[:aspect][findfirst(isequal(n), fiff_aspect[:id])]
-_find_fiff_sss_job(n::Int64)::String = fiff_sss_job[:sss_job][findfirst(isequal(n), fiff_sss_job[:id])]
+_find_fiff_block(t::String)::Int64 =
+    fiff_blocks[:id][findfirst(isequal(t), fiff_blocks[:block])]
+_find_fiff_block(n::Int64)::String =
+    fiff_blocks[:block][findfirst(isequal(n), fiff_blocks[:id])]
+_find_fiff_dt(n::Int64)::String =
+    fiff_data_type[:name][findfirst(isequal(n & 0x00000FFF), fiff_data_type[:id])]
+_find_fiff_unit(n::Int64)::String =
+    fiff_units[:unit][findfirst(isequal(n), fiff_units[:id])]
+_find_fiff_mul(n::Int64)::String =
+    fiff_multipliers[:multiplier][findfirst(isequal(n), fiff_multipliers[:id])]
+_find_fiff_chtype(n::Int64)::String =
+    fiff_channel_type[:channel_type][findfirst(isequal(n), fiff_channel_type[:id])]
+_find_fiff_gantry_type(n::Int64)::String =
+    fiff_gantry_type[:gantry_type][findfirst(isequal(n), fiff_gantry_type[:id])]
+_find_fiff_dacq_system(n::Int64)::String =
+    fiff_dacq_system[:dacq_system][findfirst(isequal(n), fiff_dacq_system[:id])]
+_find_fiff_proj_item(n::Int64)::String =
+    fiff_proj_item[:proj_item][findfirst(isequal(n), fiff_proj_item[:id])]
+_find_fiff_proj_by(n::Int64)::String =
+    fiff_proj_by[:proj_by][findfirst(isequal(n), fiff_proj_by[:id])]
+_find_fiff_coiltype(n::Int64)::String =
+    fiff_coil_type[:coil_type][findfirst(isequal(n), fiff_coil_type[:id])]
+_find_fiff_aspect(n::Int64)::String =
+    fiff_aspect[:aspect][findfirst(isequal(n), fiff_aspect[:id])]
+_find_fiff_sss_job(n::Int64)::String =
+    fiff_sss_job[:sss_job][findfirst(isequal(n), fiff_sss_job[:id])]
 
 # ---------------------------------------------------------------------------
 # FIFF data-type dictionary
@@ -636,7 +649,15 @@ fiff_dacq_system = Dict(
 # Sources: MNE-Python fiff/constants.py and the FIFF standard specification.
 fiff_proj_item = Dict(
     :id => [0, 1, 2, 3, 4, 5, 10],
-    :proj_item => ["none", "field", "dip_fix", "dip_rot", "homog_grad", "homog_field", "eeg_avref"],
+    :proj_item => [
+        "none",
+        "field",
+        "dip_fix",
+        "dip_rot",
+        "homog_grad",
+        "homog_field",
+        "eeg_avref",
+    ],
 )
 
 # FIFF SSP projection method ID → method name lookup table.
@@ -747,9 +768,9 @@ fiff_sss_job = Dict(
 )
 
 function _fiff_matrix(
-        fb::Int64,
-        buf::Vector{UInt8},
-    )::Union{Vector{Float64}, Matrix{Float64}}
+    fb::Int64,
+    buf::Vector{UInt8},
+)::Union{Vector{Float64}, Matrix{Float64}}
     df = _find_fiff_dt(fb)
     fs_mask = fb & 0xFF000000
 
@@ -907,9 +928,9 @@ function _read_fiff_tag(fid::IOStream)::Tuple{Int32, Int32, Int32, Vector{UInt8}
 end
 
 function _get_fiff_block_type(
-        fid::IOStream,
-        tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64},
-    )::Vector{Int32}
+    fid::IOStream,
+    tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64},
+)::Vector{Int32}
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])
     readbytes!(fid, buf, tag[4])
@@ -983,10 +1004,10 @@ function _get_blocks(b::Matrix{Int64})::Tuple{Vector{Vector{Int64}}, Vector{Int6
 end
 
 function _pack_fiff_blocks(
-        fiff_object::Vector{Any},
-        block::String,
-        fields::Vector{String},
-    )::Dict
+    fiff_object::Vector{Any},
+    block::String,
+    fields::Vector{String},
+)::Dict
     block_mask = [fiff_object[i][3] for i in eachindex(fiff_object)] .== block
     block_obj = fiff_object[block_mask]
     d = Dict{Symbol, Any}()

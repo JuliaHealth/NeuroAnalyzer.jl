@@ -21,11 +21,11 @@ Calculate Phase Slope Index (PSI) for two 1-D signal vectors.
  1. Nolte, G., Ziehe, A., Nikulin, V. V., Schlögl, A., Krämer, N., Brismar, T., & Müller, K.-R. (2008). Robustly Estimating the Flow Direction of Information in Complex Physical Systems. Physical Review Letters. 2008; 100(23).
 """
 function psi(
-        s1::AbstractVector,
-        s2::AbstractVector;
-        fs::Int64,
-        flim::Tuple{Real, Real} = (1, fs / 2 - 1),
-    )::Tuple{Float64, Float64}
+    s1::AbstractVector,
+    s2::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real, Real} = (1, fs / 2 - 1),
+)::Tuple{Float64, Float64}
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
     _check_tuple(flim, (1, fs / 2 - 1), "flim")
@@ -74,37 +74,37 @@ Calculate Phase Slope Index (PSI) for two NEURO objects.
 - `Matrix{Float64}`: PSI value
 """
 function psi(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-        flim::Tuple{Real, Real} = (1, sr(obj1) / 2 - 1),
-    )::Matrix{Tuple{Float64, Float64}}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    flim::Tuple{Real, Real} = (1, sr(obj1) / 2 - 1),
+)::Matrix{Tuple{Float64, Float64}}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-                       get_channel(obj1; ch = ch1, exclude = "")
+        get_channel(obj1; ch = ch1, exclude = "")
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-                       get_channel(obj2; ch = ch2, exclude = "")
+        get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) ||
         throw(
-        ArgumentError(
-            "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
-        ),
-    )
+            ArgumentError(
+                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+            ),
+        )
 
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     length(ep1) == length(ep2) ||
         throw(
-        ArgumentError(
-            "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
-        ),
-    )
+            ArgumentError(
+                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+            ),
+        )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
     isa(ep1, Int64) && (ep1 = [ep1])
@@ -145,15 +145,15 @@ Calculate Phase Slope Index (PSI) for a NEURO object.
 - `Array{Tuple{Float64, Float64}, 3}`: PSI value
 """
 function psi(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        flim::Tuple{Real, Real} = (1, sr(obj) / 2 - 1),
-    )::Array{Tuple{Float64, Float64}, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flim::Tuple{Real, Real} = (1, sr(obj) / 2 - 1),
+)::Array{Tuple{Float64, Float64}, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     ch_n = length(ch)
     ep_n = nepochs(obj)

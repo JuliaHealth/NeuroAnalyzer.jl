@@ -15,9 +15,9 @@ Saves plot as file (PNG/PDF). File format is determined using `file_name` extens
 - `Nothing`
 """
 function plot_save(
-        fig::Union{Plots.Plot{Plots.GRBackend}, Makie.Figure};
-        file_name::String,
-    )::Nothing
+    fig::Union{Plots.Plot{Plots.GRBackend}, Makie.Figure};
+    file_name::String,
+)::Nothing
     ext = splitext(file_name)[2]
     _check_var(ext, [".png", ".pdf"], "File format")
 

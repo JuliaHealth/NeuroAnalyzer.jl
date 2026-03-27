@@ -38,24 +38,24 @@ Preview channel locations.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_locs(
-        locs::DataFrame;
-        ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
-        sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
-        ch_labels::Bool = true,
-        head::Bool = true,
-        head_labels::Bool = false,
-        mono::Bool = false,
-        grid::Bool = false,
-        ps::Symbol = :l,
-        cart::Bool = false,
-        plane::Symbol = :xy,
-        connections::Matrix{<:Real} = [0 0; 0 0],
-        threshold::Real = 0,
-        threshold_type::Symbol = :neq,
-        weights::Union{Bool, Vector{<:Real}} = true,
-        ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
-        gui::Bool = true,
-    )::GLMakie.Figure
+    locs::DataFrame;
+    ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
+    sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
+    ch_labels::Bool = true,
+    head::Bool = true,
+    head_labels::Bool = false,
+    mono::Bool = false,
+    grid::Bool = false,
+    ps::Symbol = :l,
+    cart::Bool = false,
+    plane::Symbol = :xy,
+    connections::Matrix{<:Real} = [0 0; 0 0],
+    threshold::Real = 0,
+    threshold_type::Symbol = :neq,
+    weights::Union{Bool, Vector{<:Real}} = true,
+    ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
+    gui::Bool = true,
+)::GLMakie.Figure
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(plane, [:xy, :yz, :xz], "plane")
     pal = mono ? :grays : :darktest
@@ -594,7 +594,7 @@ function plot_locs(
                         end
                     elseif threshold_type === :in
                         if connections[idx1, idx2] >= threshold[1] &&
-                                connections[idx1, idx2] <= threshold[2]
+                           connections[idx1, idx2] <= threshold[2]
                             if weights
                                 if connections[idx1, idx2] > 0
                                     if mono
@@ -645,7 +645,7 @@ function plot_locs(
                         end
                     elseif threshold_type === :bin
                         if connections[idx1, idx2] > threshold[1] &&
-                                connections[idx1, idx2] < threshold[2]
+                           connections[idx1, idx2] < threshold[2]
                             if weights
                                 if connections[idx1, idx2] > 0
                                     if mono
@@ -1005,7 +1005,7 @@ function plot_locs(
                         end
                     elseif threshold_type === :in
                         if connections[idx1, idx2] >= threshold[1] &&
-                                connections[idx1, idx2] <= threshold[2]
+                           connections[idx1, idx2] <= threshold[2]
                             l_pos =
                                 _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono
@@ -1040,7 +1040,7 @@ function plot_locs(
                         end
                     elseif threshold_type === :bin
                         if connections[idx1, idx2] > threshold[1] &&
-                                connections[idx1, idx2] < threshold[2]
+                           connections[idx1, idx2] < threshold[2]
                             l_pos =
                                 _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono
@@ -1141,9 +1141,9 @@ function plot_locs(
                     ax_y = mouseposition(ax)[2]
                     for idx in eachindex(loc_x)
                         if ax_x >= loc_x_range[idx][1] &&
-                                ax_x <= loc_x_range[idx][2] &&
-                                ax_y >= loc_y_range[idx][1] &&
-                                ax_y <= loc_y_range[idx][2]
+                           ax_x <= loc_x_range[idx][2] &&
+                           ax_y >= loc_y_range[idx][1] &&
+                           ax_y <= loc_y_range[idx][2]
                             println(ch_info[idx])
                             break
                         end
@@ -1199,26 +1199,26 @@ Preview of channel locations.
 - `Union{GLMakie.Figure, Nothing}`
 """
 function plot_locs(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        sch::Union{String, Vector{String}, Regex} = "",
-        ch_labels::Bool = true,
-        src_labels::Bool = false,
-        det_labels::Bool = false,
-        opt_labels::Bool = false,
-        head::Bool = true,
-        head_labels::Bool = false,
-        mono::Bool = false,
-        grid::Bool = false,
-        ps::Symbol = :l,
-        cart::Bool = false,
-        plane::Symbol = :xy,
-        connections::Matrix{<:Real} = [0 0; 0 0],
-        threshold::Real = 0,
-        threshold_type::Symbol = :neq,
-        weights::Union{Bool, Vector{<:Real}} = true,
-        gui::Bool = true,
-    )::Union{GLMakie.Figure, Nothing}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    sch::Union{String, Vector{String}, Regex} = "",
+    ch_labels::Bool = true,
+    src_labels::Bool = false,
+    det_labels::Bool = false,
+    opt_labels::Bool = false,
+    head::Bool = true,
+    head_labels::Bool = false,
+    mono::Bool = false,
+    grid::Bool = false,
+    ps::Symbol = :l,
+    cart::Bool = false,
+    plane::Symbol = :xy,
+    connections::Matrix{<:Real} = [0 0; 0 0],
+    threshold::Real = 0,
+    threshold_type::Symbol = :neq,
+    weights::Union{Bool, Vector{<:Real}} = true,
+    gui::Bool = true,
+)::Union{GLMakie.Figure, Nothing}
 
     # validate
     datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
@@ -1226,12 +1226,12 @@ function plot_locs(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     ch_info = String[]
     [
         push!(ch_info, channel_info(obj; ch = labels(obj)[ch[idx]], pr = false)) for
-            idx in eachindex(ch)
+        idx in eachindex(ch)
     ]
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)

@@ -41,12 +41,12 @@ Supported formats and their extensions:
 - `DataFrame`: when `type = :events` (FieldTrip `.mat` files)
 """
 function import_recording(
-        file_name::String;
-        detect_type::Bool = true,
-        type::Union{Nothing, Symbol} = nothing,
-        sampling_rate::Union{Nothing, Int64} = nothing,
-        n::Int64 = 0,
-    )::NeuroAnalyzer.NEURO
+    file_name::String;
+    detect_type::Bool = true,
+    type::Union{Nothing, Symbol} = nothing,
+    sampling_rate::Union{Nothing, Int64} = nothing,
+    n::Int64 = 0,
+)::NeuroAnalyzer.NEURO
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -58,7 +58,7 @@ function import_recording(
         inner_ext == ".csv" && return import_csv(file_name, detect_type)
         throw(
             ArgumentError(
-                "Unsupported compressed format \"$inner_ext.gz\" in $file_name."
+                "Unsupported compressed format \"$inner_ext.gz\" in $file_name.",
             ),
         )
     end
@@ -88,8 +88,8 @@ function import_recording(
     throw(
         ArgumentError(
             "Unsupported file format \"$ext\" in $file_name. " *
-                "Supported extensions: .edf, .bdf, .gdf, .vhdr, .ahdr, .csv, .csv.gz, " *
-                ".set, .npy, .xdf, .nwb, .ncs, .fif, .fiff, .mat, .snirf, .nirs, .ascii, .m"
+            "Supported extensions: .edf, .bdf, .gdf, .vhdr, .ahdr, .csv, .csv.gz, " *
+            ".set, .npy, .xdf, .nwb, .ncs, .fif, .fiff, .mat, .snirf, .nirs, .ascii, .m",
         ),
     )
 end

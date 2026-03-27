@@ -65,21 +65,21 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
         reserved == "EDF+D" &&
             throw(
-            ArgumentError(
-                "EDF+D (interrupted recordings) is not supported yet. " *
-                    "Please send this file to adam.wysokinski@neuroanalyzer.org"
-            ),
-        )
+                ArgumentError(
+                    "EDF+D (interrupted recordings) is not supported yet. " *
+                    "Please send this file to adam.wysokinski@neuroanalyzer.org",
+                ),
+            )
         file_type = reserved == "EDF+C" ? "EDF+" : "EDF"
 
         data_records = parse(Int, strip(hdr[237:244]))
         data_records_duration = parse(Float64, strip(hdr[245:252]))
         data_records_duration > 0 ||
             throw(
-            ArgumentError(
-                "This file contains only annotations; use import_edf_annotations().",
-            ),
-        )
+                ArgumentError(
+                    "This file contains only annotations; use import_edf_annotations().",
+                ),
+            )
         ch_n = parse(Int, strip(hdr[253:256]))
 
         # ------------------------------------------------------------ #
@@ -131,17 +131,17 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             first_sig = signal_chs[1]
             sampling_rate = round(
                 Int64,
-                samples_per_datarecord[first_sig] / data_records_duration
+                samples_per_datarecord[first_sig] / data_records_duration,
             )
         else
             sampling_rate = round.(
                 Int64,
-                samples_per_datarecord[signal_chs] ./ data_records_duration
+                samples_per_datarecord[signal_chs] ./ data_records_duration,
             )
         end
 
         gain = @. (physical_maximum - physical_minimum) /
-            (digital_maximum - digital_minimum)
+           (digital_maximum - digital_minimum)
 
         # ------------------------------------------------------------ #
         # read signal data                                             #
@@ -273,10 +273,10 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(
-        range(0; step = 1 / sampling_rate, length = n_samples); digits = 4
+        range(0; step = 1 / sampling_rate, length = n_samples); digits = 4,
     )
     epoch_time = round.(
-        range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4
+        range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4,
     )
 
     # ------------------------------------------------------------------ #
@@ -324,9 +324,9 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-            "; $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

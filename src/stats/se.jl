@@ -148,11 +148,11 @@ Computed as `√(p1(1−p1)/n1 + p2(1−p2)/n2)`.
 - `Float64`: standard error of the difference in proportions
 """
 function sep_diff(
-        p1::Float64,
-        p2::Float64,
-        n1::Int64,
-        n2::Int64,
-    )::Float64
+    p1::Float64,
+    p2::Float64,
+    n1::Int64,
+    n2::Int64,
+)::Float64
 
     # validate
     _in(p1, (0.0, 1.0), "p1")

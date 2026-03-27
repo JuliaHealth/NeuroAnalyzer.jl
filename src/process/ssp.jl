@@ -22,12 +22,12 @@ Named tuple:
 - `U::Matrix{Float64}}`: SVD U matrix (orthonormal basis of the noise subspace)
 """
 function generate_ssp_projectors(
-        obj::NeuroAnalyzer.NEURO;
-        pidx::Union{Int64, Vector{Int64}} = 0,
-    )::@NamedTuple{
-        ssp_projectors::Matrix{Float64},
-        U::Matrix{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    pidx::Union{Int64, Vector{Int64}} = 0,
+)::@NamedTuple{
+    ssp_projectors::Matrix{Float64},
+    U::Matrix{Float64},
+}
 
     # validate
     _check_datatype(obj, "meg")
@@ -94,9 +94,9 @@ Apply SSP projectors generated from embedded projections to a MEG object.
 - `NeuroAnalyzer.NEURO`: output NEURO object with SSP projections applied
 """
 function apply_ssp_projectors(
-        obj::NeuroAnalyzer.NEURO;
-        pidx::Union{Int64, Vector{Int64}} = 0,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    pidx::Union{Int64, Vector{Int64}} = 0,
+)::NeuroAnalyzer.NEURO
     _check_datatype(obj, "meg")
 
     # create new dataset
@@ -128,9 +128,9 @@ Apply SSP projectors from embedded projections.
 - `Nothing`
 """
 function apply_ssp_projectors!(
-        obj::NeuroAnalyzer.NEURO;
-        pidx::Union{Int64, Vector{Int64}} = 0,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    pidx::Union{Int64, Vector{Int64}} = 0,
+)::Nothing
     obj_new = apply_ssp_projectors(obj; pidx = pidx)
     obj.data = obj_new.data
     obj.history = obj_new.history

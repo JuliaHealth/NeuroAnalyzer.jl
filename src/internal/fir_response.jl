@@ -19,9 +19,9 @@ Evaluates `H(ω) = Σₖ f[k] × exp(−im × ω × (k−1))` for each frequency
 Based on Matti Pastell, "FIR filter design with Julia".
 """
 function _fir_response(
-        f::Vector{<:Real},
-        w = range(0, π; length = 1024),
-    )::Vector{ComplexF64}
+    f::Vector{<:Real},
+    w = range(0, π; length = 1024),
+)::Vector{ComplexF64}
     n = length(w)
     h = Vector{ComplexF64}(undef, n)
 

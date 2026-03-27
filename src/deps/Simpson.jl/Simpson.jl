@@ -3,12 +3,12 @@ module Simpson
 export simpson
 
 function basic_simpson(
-        y::AbstractVector,
-        x::Union{AbstractVector, Nothing} = nothing,
-        start::Real = 1,
-        stop::Real = length(y) - 2,
-        dx::Real = 1.0,
-    )
+    y::AbstractVector,
+    x::Union{AbstractVector, Nothing} = nothing,
+    start::Real = 1,
+    stop::Real = length(y) - 2,
+    dx::Real = 1.0,
+)
     slice0 = start:2:stop
     slice1 = (start + 1):2:(stop + 1)
     slice2 = (start + 2):2:(stop + 2)
@@ -30,8 +30,8 @@ function basic_simpson(
         h0divh1 = h0 ./ h1
         tmp = @. hsum / 6.0 .* (
             y[slice0] * (2 - 1.0 / h0divh1) +
-                y[slice1] * (hsum * hsum / hprod) +
-                y[slice2] * (2 - h0divh1)
+            y[slice1] * (hsum * hsum / hprod) +
+            y[slice2] * (2 - h0divh1)
         )
         integral = sum(tmp)
     end
@@ -67,14 +67,14 @@ The code is based on SciPy v1.7.1: https://github.com/scipy/scipy/blob/v1.7.1/sc
 For an odd number of samples that are equally spaced the result is exact if the function is a polynomial of order 3 or less. If the samples are not equally spaced, then the result is exact only if the function is a polynomial of order 2 or less.
 """
 function simpson(
-        y::AbstractVector,
-        x::Union{AbstractVector, Nothing} = nothing;
-        dx::Real = 1.0,
-        even::Symbol = :avg,
-    )
+    y::AbstractVector,
+    x::Union{AbstractVector, Nothing} = nothing;
+    dx::Real = 1.0,
+    even::Symbol = :avg,
+)
     isnothing(x) || (
         length(x) != length(y) &&
-            throw(ArgumentError("If given, length of x must be the same as y."))
+        throw(ArgumentError("If given, length of x must be the same as y."))
     )
     even in (:avg, :last, :first) ||
         throw(ArgumentError("""Parameter "even" must be :avg, :last, or :first."""))

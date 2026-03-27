@@ -25,16 +25,16 @@ Plot Event-Related Potential/Field (single channel).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp(
-        t::Union{AbstractVector, AbstractRange},
-        s::AbstractVector;
-        rt::Union{Nothing, Real} = nothing,
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        yrev::Bool = false,
-        zl::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::Union{AbstractVector, AbstractRange},
+    s::AbstractVector;
+    rt::Union{Nothing, Real} = nothing,
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    yrev::Bool = false,
+    zl::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # validate
     length(t) == length(s) ||
@@ -125,20 +125,20 @@ Plot multi-channel Event-Related Potential/Field with optional averaging and con
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp(
-        t::Union{AbstractVector, AbstractRange},
-        s::AbstractMatrix;
-        rt::Union{Nothing, Real} = nothing,
-        clabels::Vector{String} = string.(1:size(s, 1)),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        yrev::Bool = false,
-        avg::Bool = true,
-        ci95::Bool = false,
-        leg::Bool = true,
-        zl::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::Union{AbstractVector, AbstractRange},
+    s::AbstractMatrix;
+    rt::Union{Nothing, Real} = nothing,
+    clabels::Vector{String} = string.(1:size(s, 1)),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    yrev::Bool = false,
+    avg::Bool = true,
+    ci95::Bool = false,
+    leg::Bool = true,
+    zl::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # validate
     size(s, 2) == length(t) ||
@@ -271,20 +271,20 @@ Plot topographical maps of Event-Related Potentials/Fields.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp_topo(
-        locs::DataFrame,
-        t::Vector{Float64},
-        s::Matrix{Float64};
-        rt::Union{Nothing, Real} = nothing,
-        clabels::Vector{String} = string.(1:size(s, 1)),
-        title::String = "",
-        xlabel::String = "",
-        ylabel::String = "",
-        yrev::Bool = false,
-        cart::Bool = false,
-        head::Bool = true,
-        zl::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    locs::DataFrame,
+    t::Vector{Float64},
+    s::Matrix{Float64};
+    rt::Union{Nothing, Real} = nothing,
+    clabels::Vector{String} = string.(1:size(s, 1)),
+    title::String = "",
+    xlabel::String = "",
+    ylabel::String = "",
+    yrev::Bool = false,
+    cart::Bool = false,
+    head::Bool = true,
+    zl::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # validate
     size(s, 2) == length(t) ||
@@ -431,9 +431,9 @@ function plot_erp_topo(
                 ax_y = mouseposition(ax)[2]
                 for idx in eachindex(loc_x)
                     if ax_x >= loc_x_range[idx][1] &&
-                            ax_x <= loc_x_range[idx][2] &&
-                            ax_y >= loc_y_range[idx][1] &&
-                            ax_y <= loc_y_range[idx][2]
+                       ax_x <= loc_x_range[idx][2] &&
+                       ax_y >= loc_y_range[idx][1] &&
+                       ax_y <= loc_y_range[idx][2]
                         display(GLMakie.Screen(), pp_full_vec[idx])
                         break
                     end
@@ -471,34 +471,34 @@ Plot stacked Event-Related Potentials/Fields.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp_stack(
-        t::AbstractVector,
-        s::AbstractMatrix;
-        rt::Union{Nothing, AbstractVector} = nothing,
-        clabels::Vector{String} = string.(1:size(s, 1)),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        cb::Bool = true,
-        cb_title::String = "",
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        zl::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::AbstractVector,
+    s::AbstractMatrix;
+    rt::Union{Nothing, AbstractVector} = nothing,
+    clabels::Vector{String} = string.(1:size(s, 1)),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    cb::Bool = true,
+    cb_title::String = "",
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    zl::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # validate
     length(t) == size(s, 2) ||
         throw(
-        ArgumentError(
-            "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t))).",
-        ),
-    )
+            ArgumentError(
+                "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t))).",
+            ),
+        )
     !isnothing(rt) && (length(rt) == size(s, 1)) ||
         throw(
-        ArgumentError(
-            "Length of the rt vector must equal number of ERP epochs ($(size(s, 1))).",
-        ),
-    )
+            ArgumentError(
+                "Length of the rt vector must equal number of ERP epochs ($(size(s, 1))).",
+            ),
+        )
 
     # select color palette
     pal = mono ? :grays : :darktest
@@ -591,16 +591,16 @@ Plot Global Field Power (GFP).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_gfp(
-        t::Union{AbstractVector, AbstractRange},
-        g::AbstractVector;
-        rt::Union{Nothing, Real} = nothing,
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        yrev::Bool = false,
-        zl::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::Union{AbstractVector, AbstractRange},
+    g::AbstractVector;
+    rt::Union{Nothing, Real} = nothing,
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    yrev::Bool = false,
+    zl::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # validate
     length(t) == length(g) ||
@@ -698,28 +698,28 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_erp(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        cb::Bool = true,
-        cb_title::String = "default",
-        peaks::Bool = true,
-        leg::Bool = true,
-        type::Symbol = :normal,
-        yrev::Bool = false,
-        avg::Bool = true,
-        ci95::Bool = false,
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        rt::Union{Nothing, Real, AbstractVector} = nothing,
-        sort_epochs::Bool = false,
-        zl::Bool = true,
-        mono::Bool = false,
-        gui::Bool = false,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    cb::Bool = true,
+    cb_title::String = "default",
+    peaks::Bool = true,
+    leg::Bool = true,
+    type::Symbol = :normal,
+    yrev::Bool = false,
+    avg::Bool = true,
+    ci95::Bool = false,
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    rt::Union{Nothing, Real, AbstractVector} = nothing,
+    sort_epochs::Bool = false,
+    zl::Bool = true,
+    mono::Bool = false,
+    gui::Bool = false,
+)::GLMakie.Figure
 
     # validate
     _check_datatype(obj, ["erp", "erf"])
@@ -728,7 +728,7 @@ function plot_erp(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
     length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1 ||
         throw(ArgumentError("All channels must be of the same type."))
     length(ch) > 1 && (eavg = false)
@@ -900,10 +900,10 @@ function plot_erp(
         _check_ch_locs(ch, labels(obj), obj.locs.label)
         length(unique(obj.header.recording[:channel_type][ch])) == 1 ||
             throw(
-            ArgumentError(
-                "For multi-channel topo plot all channels must be of the same type.",
-            ),
-        )
+                ArgumentError(
+                    "For multi-channel topo plot all channels must be of the same type.",
+                ),
+            )
         _has_locs(obj)
         chs = intersect(obj.locs.label, labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)

@@ -31,8 +31,8 @@ Named tuple:
 D'Agostino RB, Belanger A, D'Agostino RB Jr. A suggestion for using powerful and informative tests of normality. The American Statistician. 1990;44(4):316–21.
 """
 function dap(
-        x::AbstractVector,
-    )::@NamedTuple{zs::Float64, zk::Float64, d::Float64, p::Float64}
+    x::AbstractVector,
+)::@NamedTuple{zs::Float64, zk::Float64, d::Float64, p::Float64}
 
     # validate
     length(x) >= 8 || throw(ArgumentError("x must contain at least 8 elements."))

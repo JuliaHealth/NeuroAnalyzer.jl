@@ -64,7 +64,7 @@ function crit_t(df::Real, alpha::Float64 = 0.05; twotailed::Bool = true)::Float6
     df > 0 || throw(ArgumentError("df must be > 0."))
 
     return twotailed ? quantile(TDist(df), 1 - alpha / 2) :
-        quantile(TDist(df), 1 - alpha)
+           quantile(TDist(df), 1 - alpha)
 end
 
 """

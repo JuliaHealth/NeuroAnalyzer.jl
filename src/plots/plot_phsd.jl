@@ -22,14 +22,14 @@ Plot PHSD (phase spectral density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_phsd(
-        f::Vector{Float64},
-        ph::Vector{Float64};
-        flim::Tuple{Real, Real} = (f[1], f[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        frq::Symbol = :lin,
-    )::GLMakie.Figure
+    f::Vector{Float64},
+    ph::Vector{Float64};
+    flim::Tuple{Real, Real} = (f[1], f[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    frq::Symbol = :lin,
+)::GLMakie.Figure
     !(length(ph) == length(f)) && throw(
         ArgumentError("Length of powers vector must equal length of frequencies vector."),
     )
@@ -101,19 +101,19 @@ Plot multi-channel PHSD (phase spectral density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_phsd(
-        f::Vector{Float64},
-        ph::Matrix{Float64};
-        clabels::Vector{String} = string.(1:size(ph, 1)),
-        flim::Tuple{Real, Real} = (f[1], f[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-        frq::Symbol = :lin,
-        avg::Bool = false,
-        ci95::Bool = false,
-        leg::Bool = true,
-    )::GLMakie.Figure
+    f::Vector{Float64},
+    ph::Matrix{Float64};
+    clabels::Vector{String} = string.(1:size(ph, 1)),
+    flim::Tuple{Real, Real} = (f[1], f[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+    frq::Symbol = :lin,
+    avg::Bool = false,
+    ci95::Bool = false,
+    leg::Bool = true,
+)::GLMakie.Figure
     ch_n = size(ph, 1)
 
     !(size(ph, 2) == length(f)) && throw(
@@ -223,19 +223,19 @@ Plot 3-d PHSD (phase phectral density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_phsd_3d(
-        f::Vector{Float64},
-        ph::Matrix{Float64};
-        clabels::Vector{String} = string.(1:size(ph, 1)),
-        db::Bool = true,
-        flim::Tuple{Real, Real} = (f[1], f[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        zlabel::String = "",
-        title::String = "",
-        mono::Bool = false,
-        frq::Symbol = :lin,
-        variant::Symbol,
-    )::GLMakie.Figure
+    f::Vector{Float64},
+    ph::Matrix{Float64};
+    clabels::Vector{String} = string.(1:size(ph, 1)),
+    db::Bool = true,
+    flim::Tuple{Real, Real} = (f[1], f[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    zlabel::String = "",
+    title::String = "",
+    mono::Bool = false,
+    frq::Symbol = :lin,
+    variant::Symbol,
+)::GLMakie.Figure
     _check_var(variant, [:w, :s], "variant")
     !(size(ph, 2) == length(f)) && throw(
         ArgumentError("Length of powers vector must equal length of frequencies vector."),
@@ -366,17 +366,17 @@ Plot topographical map of PHSDs (phase spectral density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_phsd_topo(
-        locs::DataFrame,
-        f::Vector{Float64},
-        ph::Matrix{Float64};
-        flim::Tuple{Real, Real} = (f[1], f[end]),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        frq::Symbol = :lin,
-        cart::Bool = false,
-        head::Bool = true,
-    )::GLMakie.Figure
+    locs::DataFrame,
+    f::Vector{Float64},
+    ph::Matrix{Float64};
+    flim::Tuple{Real, Real} = (f[1], f[end]),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    frq::Symbol = :lin,
+    cart::Bool = false,
+    head::Bool = true,
+)::GLMakie.Figure
     !(size(ph, 2) == length(f)) && throw(
         ArgumentError("Length of powers vector must equal length of frequencies vector."),
     )
@@ -535,9 +535,9 @@ function plot_phsd_topo(
                 ax_y = mouseposition(ax)[2]
                 for idx in eachindex(loc_x)
                     if ax_x >= loc_x_range[idx][1] &&
-                            ax_x <= loc_x_range[idx][2] &&
-                            ax_y >= loc_y_range[idx][1] &&
-                            ax_y <= loc_y_range[idx][2]
+                       ax_x <= loc_x_range[idx][2] &&
+                       ax_y >= loc_y_range[idx][1] &&
+                       ax_y <= loc_y_range[idx][2]
                         display(GLMakie.Screen(), pp_full_vec[idx])
                         break
                     end
@@ -583,31 +583,31 @@ Plot PHSD (phase spectral density).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_phsd(
-        obj::NeuroAnalyzer.NEURO;
-        seg::Tuple{Real, Real} = (0, 10),
-        ep::Int64 = 0,
-        ch::Union{String, Vector{String}, Regex} = "all",
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        frq::Symbol = :lin,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        zlabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-        type::Symbol = :normal,
-        cart::Bool = false,
-        head::Bool = true,
-        leg::Bool = true,
-        avg::Bool = false,
-        ci95::Bool = false,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    seg::Tuple{Real, Real} = (0, 10),
+    ep::Int64 = 0,
+    ch::Union{String, Vector{String}, Regex} = "all",
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    frq::Symbol = :lin,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    zlabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    type::Symbol = :normal,
+    cart::Bool = false,
+    head::Bool = true,
+    leg::Bool = true,
+    avg::Bool = false,
+    ci95::Bool = false,
+)::GLMakie.Figure
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(frq, [:lin, :log], "frq")
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1
@@ -676,8 +676,8 @@ function plot_phsd(
         ch_t = obj.header.recording[:channel_type]
         ndims(sp) >= 2 ||
             throw(
-            ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."),
-        )
+                ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."),
+            )
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
@@ -700,10 +700,10 @@ function plot_phsd(
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         length(unique(obj.header.recording[:channel_type][ch])) == 1 ||
             throw(
-            ArgumentError(
-                "For multi-channel topo plot all channels must be of the same type.",
-            ),
-        )
+                ArgumentError(
+                    "For multi-channel topo plot all channels must be of the same type.",
+                ),
+            )
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)

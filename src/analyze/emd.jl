@@ -29,10 +29,10 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 - `Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row; returns an empty `0×0` matrix if no IMFs found
 """
 function emd(
-        s::AbstractVector,
-        x::AbstractVector;
-        epsilon::Real = 0.3,
-    )::Matrix{Float64}
+    s::AbstractVector,
+    x::AbstractVector;
+    epsilon::Real = 0.3,
+)::Matrix{Float64}
 
     # validate
     epsilon > 0 || throw(ArgumentError("epsilon must be > 0."))
@@ -74,11 +74,11 @@ function emd(
         # IMF validity check
         # a valid IMF must have the number of extrema and zero-crossings differ by at most one, and both must exceed 1 (non-trivial oscillation)
         if n_roots >= n_extrema - 1 &&
-                n_roots <= n_extrema + 1 &&
-                n_extrema >= n_roots - 1 &&
-                n_extrema <= n_roots + 1 &&
-                n_roots > 1 &&
-                n_extrema > 1
+           n_roots <= n_extrema + 1 &&
+           n_extrema >= n_roots - 1 &&
+           n_extrema <= n_roots + 1 &&
+           n_roots > 1 &&
+           n_extrema > 1
 
             # accept this IMF; next iteration works on the residue
             push!(imf_v, imf_tmp)
@@ -140,11 +140,11 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 - `Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row
 """
 function emd(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        epsilon::Real = 0.3,
-    )::Matrix{Float64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    epsilon::Real = 0.3,
+)::Matrix{Float64}
 
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
     ch =

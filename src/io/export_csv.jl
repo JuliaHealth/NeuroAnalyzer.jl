@@ -32,26 +32,26 @@ The primary signal data is always written to `file_name`. When the corresponding
 - `Nothing`
 """
 function export_csv(
-        obj::NeuroAnalyzer.NEURO;
-        file_name::String,
-        names::Bool = true,
-        header::Bool = false,
-        epoch_time::Bool = false,
-        markers::Bool = false,
-        locs::Bool = false,
-        history::Bool = false,
-        overwrite::Bool = false,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    file_name::String,
+    names::Bool = true,
+    header::Bool = false,
+    epoch_time::Bool = false,
+    markers::Bool = false,
+    locs::Bool = false,
+    history::Bool = false,
+    overwrite::Bool = false,
+)::Nothing
 
     # internal guard: throw if the file already exists and overwriting is not permitted
     # defined once here to avoid repeating the condition
     check_overwrite(path) =
         isfile(path) && !overwrite &&
         throw(
-        ArgumentError(
-            "File $path already exists; use overwrite=true to overwrite."
+            ArgumentError(
+                "File $path already exists; use overwrite=true to overwrite.",
+            ),
         )
-    )
 
     # derive ALL companion paths upfront from the original base name
     base = replace(file_name, r"\.csv$"i => "")

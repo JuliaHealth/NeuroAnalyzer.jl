@@ -20,20 +20,20 @@ Uses the spherical law of cosines:
     d = √(r₁² + r₂² - 2·r₁·r₂·[cos(θ₁)cos(θ₂) + sin(θ₁)sin(θ₂)cos(φ₁-φ₂)])
 """
 function _sph_distance_sph(
-        r1::Real,
-        theta1::Real,
-        phi1::Real,
-        r2::Real,
-        theta2::Real,
-        phi2::Real,
-    )
+    r1::Real,
+    theta1::Real,
+    phi1::Real,
+    r2::Real,
+    theta2::Real,
+    phi2::Real,
+)
     # convert angles to radians for calculation
     θ1, θ2 = deg2rad(theta1), deg2rad(theta2)
     φ1, φ2 = deg2rad(phi1), deg2rad(phi2)
     # calculate spherical distance using law of cosines
     d = sqrt(
         r1^2 + r2^2 -
-            2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2)),
+        2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2)),
     )
     return d
 end
@@ -57,10 +57,10 @@ function _sph_distance_cart(x1::Real, y1::Real, z1::Real, x2::Real, y2::Real, z2
 end
 
 function _check_ch_locs(
-        ch::Union{Int64, Vector{Int64}},
-        objl::Vector{String},
-        locsl::Vector{String},
-    )::Nothing
+    ch::Union{Int64, Vector{Int64}},
+    objl::Vector{String},
+    locsl::Vector{String},
+)::Nothing
     for idx in ch
         objl[idx] in locsl ||
             throw(ArgumentError("Channel $(objl[idx]) does not have a location."))
@@ -102,16 +102,16 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Da
 end
 
 function _ch_locs(
-        obj::NeuroAnalyzer.NEURO,
-        ch::Union{String, Vector{String}, Regex},
-    )::DataFrame
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{String, Vector{String}, Regex},
+)::DataFrame
     return _ch_locs(obj, get_channel(obj; ch = ch))
 end
 
 function _find_bylabel(
-        locs::DataFrame,
-        l::Union{String, Vector{String}, Vector{SubString{String}}},
-    )::Union{Int64, Vector{Int64}}
+    locs::DataFrame,
+    l::Union{String, Vector{String}, Vector{SubString{String}}},
+)::Union{Int64, Vector{Int64}}
     if isa(l, String)
         if !isnothing(findfirst(isequal.(lowercase(l), lowercase.(locs[!, :label]))))
             return findfirst(isequal.(lowercase(l), lowercase.(locs[!, :label])))
@@ -123,9 +123,9 @@ function _find_bylabel(
         for idx in l
             lowercase(idx) in lowercase.(locs[!, :label]) &&
                 push!(
-                l_idx,
-                findfirst(isequal.(lowercase(idx), lowercase.(locs[!, :label]))),
-            )
+                    l_idx,
+                    findfirst(isequal.(lowercase(idx), lowercase.(locs[!, :label]))),
+                )
         end
         return l_idx
     end
@@ -251,8 +251,8 @@ function _has_locs(obj::NeuroAnalyzer.NEURO)::Nothing
 end
 
 function _locs_norm(
-        x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real},
-    )::Tuple{Vector{Float64}, Vector{Float64}}
+    x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real},
+)::Tuple{Vector{Float64}, Vector{Float64}}
     xy = normalize_minmax(hcat(x, y))
     x = xy[:, 1]
     y = xy[:, 2]
@@ -260,9 +260,9 @@ function _locs_norm(
 end
 
 function _locs_norm(
-        x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real},
-        z::Union{AbstractVector, Real},
-    )::Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}}
+    x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real},
+    z::Union{AbstractVector, Real},
+)::Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}}
     xyz = normalize_minmax(hcat(x, y, z))
     x = xyz[:, 1]
     y = xyz[:, 2]

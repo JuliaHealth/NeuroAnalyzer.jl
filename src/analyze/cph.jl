@@ -19,13 +19,13 @@ Named tuple:
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
-        s1::AbstractVector,
-        s2::AbstractVector;
-        fs::Int64,
-    )::@NamedTuple{
-        ph::Vector{Float64},
-        f::Vector{Float64},
-    }
+    s1::AbstractVector,
+    s2::AbstractVector;
+    fs::Int64,
+)::@NamedTuple{
+    ph::Vector{Float64},
+    f::Vector{Float64},
+}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -63,12 +63,12 @@ Named tuple:
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
-        s::AbstractArray;
-        fs::Int64,
-    )::@NamedTuple{
-        ph::Array{Float64, 4},
-        f::Vector{Float64},
-    }
+    s::AbstractArray;
+    fs::Int64,
+)::@NamedTuple{
+    ph::Array{Float64, 4},
+    f::Vector{Float64},
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -137,13 +137,13 @@ Named tuple:
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
-        s1::AbstractArray,
-        s2::AbstractArray;
-        fs::Int64,
-    )::@NamedTuple{
-        ph::Array{Float64, 3},
-        f::Vector{Float64},
-    }
+    s1::AbstractArray,
+    s2::AbstractArray;
+    fs::Int64,
+)::@NamedTuple{
+    ph::Array{Float64, 3},
+    f::Vector{Float64},
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
@@ -194,17 +194,17 @@ Named tuple:
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::@NamedTuple{
-        ph::Array{Float64, 4},
-        f::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::@NamedTuple{
+    ph::Array{Float64, 4},
+    f::Vector{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return cph(@view(obj.data[ch, :, :]); fs = sr(obj))
 end
@@ -231,13 +231,13 @@ Named tuple:
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
 function cph(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
     # validate
     sr(obj1) == sr(obj2) ||
@@ -246,10 +246,10 @@ function cph(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-                       get_channel(obj1; ch = ch1, exclude = "")
+        get_channel(obj1; ch = ch1, exclude = "")
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-                       get_channel(obj2; ch = ch2, exclude = "")
+        get_channel(obj2; ch = ch2, exclude = "")
     length(ch1) == length(ch2) || throw(
         ArgumentError(
             "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",

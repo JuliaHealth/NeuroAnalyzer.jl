@@ -44,9 +44,9 @@ Tied ranks are computed with `StatsBase.tiedrank`, normalised to `(0, 1]`, then 
 - `Array{Int64}`: rank-bin indices ∈ `[1, nbins]`, same shape as `x`
 """
 function dranks(
-        x::AbstractArray,
-        nbins::Int64 = ceil(Int64, 1 + log2(length(x))),
-    )::Array{Int64}
+    x::AbstractArray,
+    nbins::Int64 = ceil(Int64, 1 + log2(length(x))),
+)::Array{Int64}
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))

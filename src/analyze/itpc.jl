@@ -34,15 +34,15 @@ Named tuple:
 Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
 function itpc(
-        s::AbstractArray;
-        t::Int64,
-        w::Union{AbstractVector, Nothing} = nothing,
-    )::@NamedTuple{
-        itpcv::Float64,
-        itpcz::Float64,
-        itpca::Float64,
-        itpcph::Vector{Float64},
-    }
+    s::AbstractArray;
+    t::Int64,
+    w::Union{AbstractVector, Nothing} = nothing,
+)::@NamedTuple{
+    itpcv::Float64,
+    itpcz::Float64,
+    itpca::Float64,
+    itpcph::Vector{Float64},
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -112,16 +112,16 @@ Named tuple:
 - `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape (channels, epochs)
 """
 function itpc(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        t::Real,
-        w::Union{Vector{<:Real}, Nothing} = nothing,
-    )::@NamedTuple{
-        itpcv::Vector{Float64},
-        itpcz::Vector{Float64},
-        itpca::Vector{Float64},
-        itpcph::Matrix{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    t::Real,
+    w::Union{Vector{<:Real}, Nothing} = nothing,
+)::@NamedTuple{
+    itpcv::Vector{Float64},
+    itpcz::Vector{Float64},
+    itpca::Vector{Float64},
+    itpcph::Matrix{Float64},
+}
 
     # number of epochs
     ep_n = nepochs(obj)
@@ -130,7 +130,7 @@ function itpc(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
     ch_n = length(ch)
 
     # get time point index
@@ -189,14 +189,14 @@ Named tuple:
 - `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape (channels, epochs)
 """
 function itpc_spec(
-        s::AbstractArray;
-        w::Union{AbstractVector, Nothing} = nothing,
-    )::@NamedTuple{
-        itpcv::Vector{Float64},
-        itpcz::Vector{Float64},
-        itpca::Vector{Float64},
-        itpcph::Matrix{Float64},
-    }
+    s::AbstractArray;
+    w::Union{AbstractVector, Nothing} = nothing,
+)::@NamedTuple{
+    itpcv::Vector{Float64},
+    itpcz::Vector{Float64},
+    itpca::Vector{Float64},
+    itpcph::Matrix{Float64},
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -266,17 +266,17 @@ Named tuple:
 - `f::Vector{Float64}`: frequency vector
 """
 function itpc_spec(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        nfrq::Int64 = _tlength(flim),
-        frq::Symbol = :log,
-        w::Union{Vector{<:Real}, Nothing} = nothing,
-    )::@NamedTuple{
-        itpcs::Matrix{Float64},
-        itpczs::Matrix{Float64},
-        f::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    nfrq::Int64 = _tlength(flim),
+    frq::Symbol = :log,
+    w::Union{Vector{<:Real}, Nothing} = nothing,
+)::@NamedTuple{
+    itpcs::Matrix{Float64},
+    itpczs::Matrix{Float64},
+    f::Vector{Float64},
+}
 
     # validate
     _check_var(frq, [:log, :lin], "frq")
@@ -295,7 +295,7 @@ function itpc_spec(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)

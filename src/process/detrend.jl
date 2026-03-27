@@ -25,12 +25,12 @@ Remove a trend.
 - `Vector{Float64}`: detrended signal of the same length as `s`
 """
 function detrend(
-        s::AbstractVector;
-        type::Symbol = :linear,
-        offset::Real = 0,
-        order::Int64 = 1,
-        f::Float64 = 1.0,
-    )::Vector{Float64}
+    s::AbstractVector;
+    type::Symbol = :linear,
+    offset::Real = 0,
+    order::Int64 = 1,
+    f::Float64 = 1.0,
+)::Vector{Float64}
     _check_var(type, [:ls, :linear, :mean, :constant, :poly, :loess], "type")
     f > 0 || throw(ArgumentError("f must be > 0."))
     order >= 1 || throw(ArgumentError("order must be ≥ 1."))
@@ -99,12 +99,12 @@ Remove a trend in a 3-D signal array.
 - `Array{Float64, 3}`: detrended array of the same shape as `s`
 """
 function detrend(
-        s::AbstractArray;
-        type::Symbol = :linear,
-        offset::Real = 0,
-        order::Int64 = 1,
-        f::Float64 = 1.0,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    type::Symbol = :linear,
+    offset::Real = 0,
+    order::Int64 = 1,
+    f::Float64 = 1.0,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -157,13 +157,13 @@ Remove a trend from selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with detrended channels
 """
 function detrend(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        type::Symbol = :linear,
-        offset::Real = 0,
-        order::Int64 = 1,
-        f::Float64 = 1.0,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    type::Symbol = :linear,
+    offset::Real = 0,
+    order::Int64 = 1,
+    f::Float64 = 1.0,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -211,13 +211,13 @@ Remove a trend in-place from selected channels of a NEURO object.
 - `Nothing`
 """
 function detrend!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        type::Symbol = :linear,
-        offset::Real = 0,
-        order::Int64 = 1,
-        f::Float64 = 1.0,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    type::Symbol = :linear,
+    offset::Real = 0,
+    order::Int64 = 1,
+    f::Float64 = 1.0,
+)::Nothing
     obj_new = detrend(obj; ch = ch, type = type, offset = offset, order = order, f = f)
     obj.data = obj_new.data
     obj.history = obj_new.history

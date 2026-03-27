@@ -15,9 +15,9 @@ Convert a dictionary to labeled matrix format (labels and values vectors).
     - vector of values (vectors of Float64)
 """
 function _dict2labeled_matrix(
-        d::Dict;
-        rev::Bool = true,
-    )::Tuple{Vector{String}, Vector{Vector{Float64}}}
+    d::Dict;
+    rev::Bool = true,
+)::Tuple{Vector{String}, Vector{Vector{Float64}}}
     isempty(d) && throw(ArgumentError("Dictionary cannot be empty."))
 
     # extract labels and values

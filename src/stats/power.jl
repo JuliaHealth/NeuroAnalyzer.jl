@@ -35,13 +35,13 @@ Named tuple:
 - `n2::Int64`: group 2 sample size
 """
 function size_c2g(;
-        m1::Real,
-        s1::Real,
-        m2::Real,
-        r::Int64 = 1,
-        alpha::Float64 = 0.05,
-        power::Float64 = 0.8,
-    )::@NamedTuple{n1::Int64, n2::Int64}
+    m1::Real,
+    s1::Real,
+    m2::Real,
+    r::Int64 = 1,
+    alpha::Float64 = 0.05,
+    power::Float64 = 0.8,
+)::@NamedTuple{n1::Int64, n2::Int64}
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -78,13 +78,13 @@ Calculate the required sample size for a one-group continuous outcome study (gro
 - `Int64`: required sample size
 """
 function size_c1g(;
-        m::Real,
-        s::Real,
-        xbar::Real,
-        alpha::Float64 = 0.05,
-        power::Float64 = 0.8,
-        iter::Bool = false,
-    )::Int64
+    m::Real,
+    s::Real,
+    xbar::Real,
+    alpha::Float64 = 0.05,
+    power::Float64 = 0.8,
+    iter::Bool = false,
+)::Int64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -124,12 +124,12 @@ Named tuple:
 - `n2::Int64`: group 2 sample size
 """
 function size_p2g(;
-        p1::Float64,
-        p2::Float64,
-        r::Int64 = 1,
-        alpha::Float64 = 0.05,
-        power::Float64 = 0.8,
-    )::@NamedTuple{n1::Int64, n2::Int64}
+    p1::Float64,
+    p2::Float64,
+    r::Int64 = 1,
+    alpha::Float64 = 0.05,
+    power::Float64 = 0.8,
+)::@NamedTuple{n1::Int64, n2::Int64}
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -150,7 +150,7 @@ function size_p2g(;
         Int64,
         (
             cl2z(1 - alpha) * sqrt(p_dash * q_dash * (1 + 1 / r)) +
-                cl2z(1 - beta) * sqrt(p1 * q1 + p2 * q2 / r)
+            cl2z(1 - beta) * sqrt(p1 * q1 + p2 * q2 / r)
         )^2 / delta^2,
     )
     n2 = n1 * r
@@ -175,11 +175,11 @@ Calculate the required sample size for a one-group proportion study (group vs po
 - `Int64`: required sample size
 """
 function size_p1g(;
-        p1::Float64,
-        p2::Float64,
-        alpha::Float64 = 0.05,
-        power::Float64 = 0.8,
-    )::Int64
+    p1::Float64,
+    p2::Float64,
+    alpha::Float64 = 0.05,
+    power::Float64 = 0.8,
+)::Int64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -195,7 +195,7 @@ function size_p1g(;
     return ceil(
         Int64,
         (p1 * q0 * (cl2z(1 - alpha) + cl2z(1 - beta) * sqrt((p2 * q1) / (p1 * q0)))^2) /
-            (p2 - p1)^2,
+        (p2 - p1)^2,
     )
 end
 
@@ -219,14 +219,14 @@ Calculate study power for a two-group continuous outcome comparison.
 - `Float64`: estimated study power
 """
 function power_c2g(;
-        m1::Real,
-        s1::Real,
-        n1::Int64,
-        m2::Real,
-        s2::Real,
-        n2::Int64,
-        alpha::Float64 = 0.05,
-    )::Float64
+    m1::Real,
+    s1::Real,
+    n1::Int64,
+    m2::Real,
+    s2::Real,
+    n2::Int64,
+    alpha::Float64 = 0.05,
+)::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -259,12 +259,12 @@ Calculate study power for a one-group continuous outcome comparison (group vs po
 - `Float64`: estimated study power
 """
 function power_c1g(;
-        m::Real,
-        s::Real,
-        xbar::Real,
-        n::Int64,
-        alpha::Float64 = 0.05,
-    )::Float64
+    m::Real,
+    s::Real,
+    xbar::Real,
+    n::Int64,
+    alpha::Float64 = 0.05,
+)::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -298,12 +298,12 @@ Calculate study power for a two-proportion comparison.
 - `Float64`: estimated study power
 """
 function power_p2g(;
-        p1::Float64,
-        p2::Float64,
-        n1::Int64,
-        n2::Int64,
-        alpha::Float64 = 0.05,
-    )::Float64
+    p1::Float64,
+    p2::Float64,
+    n1::Int64,
+    n2::Int64,
+    alpha::Float64 = 0.05,
+)::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -344,11 +344,11 @@ Calculate study power for a one-proportion comparison (group vs population).
 - `Float64`: estimated study power
 """
 function power_p1g(;
-        p1::Float64,
-        p2::Float64,
-        n1::Int64,
-        alpha::Float64 = 0.05,
-    )::Float64
+    p1::Float64,
+    p2::Float64,
+    n1::Int64,
+    alpha::Float64 = 0.05,
+)::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -385,11 +385,11 @@ Calculate required sample size for detecting a difference in variance (study SD 
 Values outside the table range are clamped to the nearest boundary and a warning is issued.
 """
 function size_c1diff(;
-        s1::Real,
-        s2::Real,
-        twotailed::Bool = true,
-        power::Float64 = 0.8,
-    )::Int64
+    s1::Real,
+    s2::Real,
+    twotailed::Bool = true,
+    power::Float64 = 0.8,
+)::Int64
 
     # validate
     _in(power, (0, 1.0), "power")
@@ -454,10 +454,10 @@ Calculate required sample size for detecting a difference in proportions (study 
 Values outside the table range are clamped and a warning is issued.
 """
 function size_p1diff(;
-        p1::Float64,
-        p2::Float64,
-        power::Float64 = 0.8,
-    )::Int64
+    p1::Float64,
+    p2::Float64,
+    power::Float64 = 0.8,
+)::Int64
 
     # validate
     _in(power, (0, 1.0), "power")
@@ -526,12 +526,12 @@ Computed as `MDE = (z_α + z_β)² × s² / n`.
 - `Float64`: minimum detectable effect size
 """
 function mde(;
-        n::Int64,
-        s::Real,
-        alpha::Float64 = 0.05,
-        beta::Float64 = 0.2,
-        verbose::Bool = true,
-    )::Float64
+    n::Int64,
+    s::Real,
+    alpha::Float64 = 0.05,
+    beta::Float64 = 0.2,
+    verbose::Bool = true,
+)::Float64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")
@@ -564,10 +564,10 @@ Calculate the required sample size for estimating a proportion within a margin o
 - `Int64`: required sample size
 """
 function size_p(;
-        p::Union{Float64, Nothing} = nothing,
-        alpha::Float64 = 0.05,
-        E::Float64,
-    )::Int64
+    p::Union{Float64, Nothing} = nothing,
+    alpha::Float64 = 0.05,
+    E::Float64,
+)::Int64
 
     # validate
     _in(E, (0, 1.0), "E")
@@ -599,10 +599,10 @@ Calculate the required sample size for estimating a population mean within a mar
 - `Int64`: required sample size
 """
 function size_m(;
-        sigma::Real,
-        alpha::Float64 = 0.05,
-        E::Real,
-    )::Int64
+    sigma::Real,
+    alpha::Float64 = 0.05,
+    E::Real,
+)::Int64
 
     # validate
     _in(alpha, (0, 1.0), "alpha")

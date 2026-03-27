@@ -33,12 +33,12 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
     if ext == ".ascii"
         sw_version, subject, subject_id, record_id, record_created,
-            sampling_interval, sampling_interval_unit,
-            sensitivity, sensitivity_unit,
-            signal_count, samples_count,
-            stim_sample, stim_intens, coil_type,
-            markers_pos, markers_neg,
-            mep_signal = open(file_name, "r") do f
+        sampling_interval, sampling_interval_unit,
+        sensitivity, sensitivity_unit,
+        signal_count, samples_count,
+        stim_sample, stim_intens, coil_type,
+        markers_pos, markers_neg,
+        mep_signal = open(file_name, "r") do f
             readline(f) # software name (unused)
             readline(f) # blank
             sw_version = split(strip(readline(f)), '=')[2]
@@ -54,7 +54,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
                 replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
             sensitivity = parse(
                 Float64,
-                replace(split(strip(readline(f)), '=')[2], ',' => '.')
+                replace(split(strip(readline(f)), '=')[2], ',' => '.'),
             )
             sensitivity_unit = replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
             signal_count = parse(Int, split(strip(readline(f)), '=')[2])
@@ -80,27 +80,27 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             for idx in axes(mep_signal, 1)
                 mep_signal[idx, :] = parse.(
                     Float64,
-                    replace.(split(strip(readline(f)), ' '), ',' => '.')
+                    replace.(split(strip(readline(f)), ' '), ',' => '.'),
                 )
             end
 
             return sw_version, subject, subject_id, record_id, record_created,
-                sampling_interval, sampling_interval_unit,
-                sensitivity, sensitivity_unit,
-                signal_count, samples_count,
-                stim_sample, stim_intens, coil_type,
-                markers_pos, markers_neg, mep_signal
+            sampling_interval, sampling_interval_unit,
+            sensitivity, sensitivity_unit,
+            signal_count, samples_count,
+            stim_sample, stim_intens, coil_type,
+            markers_pos, markers_neg, mep_signal
         end
         # file closed here
 
     elseif ext == ".m"
         sw_version, subject, subject_id, record_id, record_created,
-            sampling_interval, sampling_interval_unit,
-            sensitivity, sensitivity_unit,
-            signal_count, samples_count,
-            stim_sample, stim_intens, coil_type,
-            markers_pos, markers_neg,
-            mep_signal = open(file_name, "r") do f
+        sampling_interval, sampling_interval_unit,
+        sensitivity, sensitivity_unit,
+        signal_count, samples_count,
+        stim_sample, stim_intens, coil_type,
+        markers_pos, markers_neg,
+        mep_signal = open(file_name, "r") do f
             readline(f)
             record_info = readline(f)
             readline(f)
@@ -118,7 +118,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             parse_struct(s, prefix) = begin
                 s = replace(
                     s, prefix => "", ");" => "", "\xb5" => "μ",
-                    "'" => "", "{" => "", "}" => "", ";" => " "
+                    "'" => "", "{" => "", "}" => "", ";" => " ",
                 )
                 split(s, ',')
             end
@@ -175,11 +175,11 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             end
 
             return sw_version, subject, subject_id, record_id, record_created,
-                sampling_interval, sampling_interval_unit,
-                sensitivity, sensitivity_unit,
-                signal_count, samples_count,
-                stim_sample, stim_intens, coil_type,
-                markers_pos, markers_neg, mep_signal
+            sampling_interval, sampling_interval_unit,
+            sensitivity, sensitivity_unit,
+            signal_count, samples_count,
+            stim_sample, stim_intens, coil_type,
+            markers_pos, markers_neg, mep_signal
         end
         # file closed here
 
@@ -221,7 +221,8 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(
-        range(0; step = 1 / sampling_rate, length = n_samples) .- (stim_sample[1] / sampling_rate); digits = 4
+        range(0; step = 1 / sampling_rate, length = n_samples) .-
+        (stim_sample[1] / sampling_rate); digits = 4,
     )
     epoch_time = time_pts
 
@@ -250,7 +251,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
     r = _create_recording_mep(;
         data_type = "mep",
@@ -271,7 +272,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         stimulation_sample = stim_sample,
         markers_pos = markers_pos,
         markers_neg = markers_neg,
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
     e = _create_experiment(; name = "", notes = "", design = "")
     hdr = _create_header(; subject = s, recording = r, experiment = e)
@@ -281,7 +282,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[]
+        :channel => Int64[],
     )
 
     locs = _initialize_locs()
@@ -289,9 +290,9 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-            "; $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

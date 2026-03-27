@@ -19,10 +19,10 @@ Average EEG/MEG epochs and prepend the average as epoch 1. Non-signal channels a
 - `NeuroAnalyzer.NEURO`
 """
 function average_epochs(
-        obj::NeuroAnalyzer.NEURO;
-        bl::Tuple{Real, Real} = (0, 0),
-        blfirst::Bool = false,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    bl::Tuple{Real, Real} = (0, 0),
+    blfirst::Bool = false,
+)::NeuroAnalyzer.NEURO
 
     # validate
     _check_datatype(obj, ["eeg", "meg"])
@@ -53,8 +53,8 @@ function average_epochs(
     obj_new.data = cat(
         mean(
             obj_new.data; dims
-            = 3
-        ), obj_new.data; dims = 3
+            = 3,
+        ), obj_new.data; dims = 3,
     )
 
     obj_new.header.recording[:data_type] = datatype(obj) == "eeg" ? "erp" : "erf"
@@ -97,10 +97,10 @@ Average EEG/MEG epochs in-place and prepend the average as epoch 1. Non-signal c
 - `Nothing`
 """
 function average_epochs!(
-        obj::NeuroAnalyzer.NEURO;
-        bl::Tuple{Real, Real} = (0, 0),
-        blfirst::Bool = false,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    bl::Tuple{Real, Real} = (0, 0),
+    blfirst::Bool = false,
+)::Nothing
     obj_new = average_epochs(obj; bl = bl, blfirst = blfirst)
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -130,17 +130,17 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
     _check_datatype(obj, ["erp", "erf"])
     length(s) == nepochs(obj) - 1 ||
         throw(
-        ArgumentError(
-            "Length of s must be $(nepochs(obj) - 1) (number of non-average epochs)."
-        ),
-    )
+            ArgumentError(
+                "Length of s must be $(nepochs(obj) - 1) (number of non-average epochs).",
+            ),
+        )
 
     all(i -> 2 <= i <= nepochs(obj), s) ||
         throw(
-        ArgumentError(
-            "All values in s must be in 2:$(nepochs(obj)); epoch 1 is the average and cannot be reordered.",
-        ),
-    )
+            ArgumentError(
+                "All values in s must be in 2:$(nepochs(obj)); epoch 1 is the average and cannot be reordered.",
+            ),
+        )
 
     # create new dataset
     obj_new = deepcopy(obj)

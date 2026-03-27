@@ -55,21 +55,21 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 - `Matrix{Float64}`: cosine similarity values, shape (channels, epochs)
 """
 function cosim(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::Matrix{Float64}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-                       get_channel(obj1; ch = ch1, exclude = "")
+        get_channel(obj1; ch = ch1, exclude = "")
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-                       get_channel(obj2; ch = ch2, exclude = "")
+        get_channel(obj2; ch = ch2, exclude = "")
     (length(ch1) == length(ch2)) || throw(
         ArgumentError(
             "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
@@ -131,14 +131,14 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 - `Array{Float64, 3}`: cosine similarity values, shape (channels, channels, epochs)
 """
 function cosim(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)

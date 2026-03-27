@@ -72,15 +72,15 @@ Calculate Root Mean Square (RMS) for a NEURO object.
 - `Matrix{Float64}`: RMS
 """
 function rms(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
-    )::Matrix{Float64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
@@ -166,21 +166,21 @@ Calculate Root Mean Square Error (RMSE) for two NEURO objects.
 - `Matrix{Float64}`: RMSE
 """
 function rmse(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::Matrix{Float64}
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-                       get_channel(obj1; ch = ch1, exclude = "")
+        get_channel(obj1; ch = ch1, exclude = "")
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-                       get_channel(obj2; ch = ch2, exclude = "")
+        get_channel(obj2; ch = ch2, exclude = "")
 
     # validate
     _check_epochs(obj1, ep1)
@@ -189,16 +189,16 @@ function rmse(
     isa(ep2, Int64) && (ep2 = [ep2])
     length(ch1) == length(ch2) ||
         throw(
-        ArgumentError(
-            "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
-        ),
-    )
+            ArgumentError(
+                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+            ),
+        )
     length(ep1) == length(ep2) ||
         throw(
-        ArgumentError(
-            "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
-        ),
-    )
+            ArgumentError(
+                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+            ),
+        )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 

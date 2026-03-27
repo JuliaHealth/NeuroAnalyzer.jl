@@ -18,10 +18,10 @@ Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1`
 - `Vector{ComplexF64}`: convolved signal (same length as `s`)
 """
 function fconv(
-        s::AbstractVector;
-        kernel::AbstractVector,
-        norm::Bool = true,
-    )::Vector{ComplexF64}
+    s::AbstractVector;
+    kernel::AbstractVector,
+    norm::Bool = true,
+)::Vector{ComplexF64}
     isempty(kernel) &&
         throw(ArgumentError("kernel must be non-empty."))
 
@@ -33,7 +33,7 @@ function fconv(
         # guard against a zero kernel (all elements zero → cmax = 0)
         iszero(km) && throw(
             ArgumentError(
-                "kernel is all-zero; convolution would produce NaN output."
+                "kernel is all-zero; convolution would produce NaN output.",
             ),
         )
         kernel_fft ./= km
@@ -63,10 +63,10 @@ Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1`
 - `Array{ComplexF64, 3}`: convolved signal, same shape as `s`
 """
 function fconv(
-        s::AbstractArray;
-        kernel::AbstractVector,
-        norm::Bool = true,
-    )::Array{ComplexF64, 3}
+    s::AbstractArray;
+    kernel::AbstractVector,
+    norm::Bool = true,
+)::Array{ComplexF64, 3}
     isempty(kernel) &&
         throw(ArgumentError("kernel must be non-empty."))
 
@@ -115,11 +115,11 @@ Perform convolution in the frequency domain on selected channels of a `NeuroAnal
 - `Array{ComplexF64, 3}`: convolved signal for the selected channels
 """
 function fconv(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        kernel::AbstractVector,
-        norm::Bool = true,
-    )::Array{ComplexF64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    kernel::AbstractVector,
+    norm::Bool = true,
+)::Array{ComplexF64, 3}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)

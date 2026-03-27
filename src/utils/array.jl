@@ -78,14 +78,14 @@ Named tuple:
 - `bm::BitMatrix`: Boolean mask where `true` indicates a **statistically significant** position (`|z| ≥ zval`)
 """
 function perm_cmp(
-        a1::Array{<:Real, 3},
-        a2::Array{<:Real, 3};
-        p::Float64 = 0.05,
-        perm_n::Int64 = 1000,
-    )::@NamedTuple{
-        zmap::Matrix{Float64},
-        bm::BitMatrix,
-    }
+    a1::Array{<:Real, 3},
+    a2::Array{<:Real, 3};
+    p::Float64 = 0.05,
+    perm_n::Int64 = 1000,
+)::@NamedTuple{
+    zmap::Matrix{Float64},
+    bm::BitMatrix,
+}
 
     # validate
     size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
@@ -112,7 +112,7 @@ function perm_cmp(
         # difference between the two random halves → one null sample
         perm_maps[:, :, perm_idx] = dropdims(
             mean(@view(rand_spec[:, :, (half + 1):end]), dims = 3) .-
-                mean(@view(rand_spec[:, :, 1:half]), dims = 3),
+            mean(@view(rand_spec[:, :, 1:half]), dims = 3),
             dims = 3,
         )
     end
@@ -170,10 +170,10 @@ Useful for downsampling a frequency axis (and its associated data) when the numb
 - `Vector{eltype(f)}`: reduced frequency vector
 """
 function areduce(
-        a::AbstractArray,
-        f::AbstractVector;
-        n::Float64 = 0.5,
-    )::Tuple{AbstractArray, AbstractVector}
+    a::AbstractArray,
+    f::AbstractVector;
+    n::Float64 = 0.5,
+)::Tuple{AbstractArray, AbstractVector}
 
     # validate
     ndims(a) <= 3 ||

@@ -22,15 +22,15 @@ Plot MEP (single channel).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_mep(
-        t::Union{AbstractVector, AbstractRange},
-        s::AbstractVector;
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        zl::Bool = true,
-        yrev::Bool = false,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::Union{AbstractVector, AbstractRange},
+    s::AbstractVector;
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    zl::Bool = true,
+    yrev::Bool = false,
+    mono::Bool = false,
+)::GLMakie.Figure
 
     # prepare plot
     GLMakie.activate!(; title = "plot_mep()")
@@ -100,19 +100,19 @@ Plot MEP (multi-channel).
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_mep(
-        t::Union{AbstractVector, AbstractRange},
-        s::AbstractMatrix;
-        clabels::Vector{String} = string.(1:size(s, 1)),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        yrev::Bool = false,
-        avg::Bool = true,
-        ci95::Bool = false,
-        leg::Bool = true,
-        zl::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::Union{AbstractVector, AbstractRange},
+    s::AbstractMatrix;
+    clabels::Vector{String} = string.(1:size(s, 1)),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    yrev::Bool = false,
+    avg::Bool = true,
+    ci95::Bool = false,
+    leg::Bool = true,
+    zl::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
     pal = mono ? :grays : :darktest
 
     ch_n = size(s, 1)
@@ -224,19 +224,19 @@ Plot MEPs stacked by channels or by epochs.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_mep_stack(
-        t::AbstractVector,
-        s::AbstractArray;
-        clabels::Vector{String} = string.(1:size(s, 1)),
-        xlabel::String = "",
-        ylabel::String = "",
-        title::String = "",
-        cb::Bool = true,
-        cb_title::String = "",
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        zl::Bool = true,
-        mono::Bool = false,
-    )::GLMakie.Figure
+    t::AbstractVector,
+    s::AbstractArray;
+    clabels::Vector{String} = string.(1:size(s, 1)),
+    xlabel::String = "",
+    ylabel::String = "",
+    title::String = "",
+    cb::Bool = true,
+    cb_title::String = "",
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    zl::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
     !(length(t) == size(s, 2)) && throw(
         ArgumentError(
             "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t))).",
@@ -326,25 +326,25 @@ Plot MEP.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_mep(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        cb::Bool = true,
-        cb_title::String = "default",
-        peaks::Symbol = :detect,
-        leg::Bool = true,
-        type::Symbol = :normal,
-        yrev::Bool = false,
-        avg::Bool = true,
-        ci95::Bool = false,
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        zl::Bool = true,
-        mono::Bool = false,
-        gui::Bool = false,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    cb::Bool = true,
+    cb_title::String = "default",
+    peaks::Symbol = :detect,
+    leg::Bool = true,
+    type::Symbol = :normal,
+    yrev::Bool = false,
+    avg::Bool = true,
+    ci95::Bool = false,
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    zl::Bool = true,
+    mono::Bool = false,
+    gui::Bool = false,
+)::GLMakie.Figure
 
     # validate
     _check_datatype(obj, "mep")
@@ -354,7 +354,7 @@ function plot_mep(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
     (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
         throw(ArgumentError("All channels must be of the same type."))
 

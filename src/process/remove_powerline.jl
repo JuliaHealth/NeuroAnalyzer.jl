@@ -26,14 +26,14 @@ For each selected channel, an IIR notch filter is optimised by scanning a range 
 - `DataFrame`: detected peaks with their optimized notch bandwidths
 """
 function remove_powerline(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pl_frq::Real = obj.header.recording[:line_frequency],
-        method::Symbol = :iir,
-        pr::Real = 2.0,
-        d::Real = 5.0,
-        q::Real = 0.1,
-    )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pl_frq::Real = obj.header.recording[:line_frequency],
+    method::Symbol = :iir,
+    pr::Real = 2.0,
+    d::Real = 5.0,
+    q::Real = 0.1,
+)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
     # validate
     nepochs(obj) == 1 ||
@@ -94,25 +94,25 @@ function remove_powerline(
             pl_frq_detected = f_band_vals[pl_amp]
             (pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) &&
                 throw(
-                ArgumentError(
-                    "Channel $ch_label: power line peak at $pl_frq_detected Hz is outside the expected range.",
-                ),
-            )
+                    ArgumentError(
+                        "Channel $ch_label: power line peak at $pl_frq_detected Hz is outside the expected range.",
+                    ),
+                )
 
             # --- optimize notch bandwidth for the fundamental ---
             v = [
                 begin
-                        obj_tmp = NeuroAnalyzer.filter(
-                            obj_new;
-                            ch = ch_label,
-                            fprototype = :iirnotch,
-                            cutoff = pl_frq,
-                            bw = bw,
-                        )
-                        p2, f2 = psd(obj_tmp; ch = ch_label, db = true)
-                        seg = p2[vsearch(pl_frq - d, f2):vsearch(pl_frq + d, f2)]
-                        var(seg)
-                    end for bw in bw_values
+                    obj_tmp = NeuroAnalyzer.filter(
+                        obj_new;
+                        ch = ch_label,
+                        fprototype = :iirnotch,
+                        cutoff = pl_frq,
+                        bw = bw,
+                    )
+                    p2, f2 = psd(obj_tmp; ch = ch_label, db = true)
+                    seg = p2[vsearch(pl_frq - d, f2):vsearch(pl_frq + d, f2)]
+                    var(seg)
+                end for bw in bw_values
             ]
             best_bw = bw_values[vsearch(minimum(v), v)]
             push!(pl_best_bw, best_bw)
@@ -157,26 +157,26 @@ function remove_powerline(
                 for peak_idx in eachindex(pks_frq)
                     vh = [
                         begin
-                                obj_tmp = NeuroAnalyzer.filter(
-                                    obj_new; ch = ch_label, fprototype = :iirnotch,
-                                    cutoff = pks_frq[peak_idx], bw = bw
-                                )
-                                p2, f2 = psd(obj_tmp; ch = ch_label, db = true)
-                                seg = p2[
-                                    vsearch(
-                                        pks_frq[peak_idx] - d / 2,
-                                        f2,
-                                    ):vsearch(pks_frq[peak_idx] + d / 2, f2),
-                                ]
-                                var(seg)
-                            end for bw in bw_harm
+                            obj_tmp = NeuroAnalyzer.filter(
+                                obj_new; ch = ch_label, fprototype = :iirnotch,
+                                cutoff = pks_frq[peak_idx], bw = bw,
+                            )
+                            p2, f2 = psd(obj_tmp; ch = ch_label, db = true)
+                            seg = p2[
+                                vsearch(
+                                pks_frq[peak_idx] - d / 2,
+                                f2,
+                            ):vsearch(pks_frq[peak_idx] + d / 2, f2),
+                            ]
+                            var(seg)
+                        end for bw in bw_harm
                     ]
                     best_bw_harm[peak_idx] = bw_harm[vsearch(minimum(vh), vh)]
                 end
                 for peak_idx in eachindex(pks_frq)
                     NeuroAnalyzer.filter!(
                         obj_new; ch = ch_label, fprototype = :iirnotch,
-                        cutoff = pks_frq[peak_idx], bw = best_bw_harm[peak_idx]
+                        cutoff = pks_frq[peak_idx], bw = best_bw_harm[peak_idx],
                     )
                 end
                 push!(pks_best_bw, best_bw_harm)
@@ -235,14 +235,14 @@ Remove power line noise in-place.
 - `DataFrame`: detected peaks with their optimized notch bandwidths
 """
 function remove_powerline!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pl_frq::Real = obj.header.recording[:line_frequency],
-        method::Symbol = :iir,
-        pr::Real = 2.0,
-        d::Real = 5.0,
-        q::Real = 0.1,
-    )::DataFrame
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pl_frq::Real = obj.header.recording[:line_frequency],
+    method::Symbol = :iir,
+    pr::Real = 2.0,
+    d::Real = 5.0,
+    q::Real = 0.1,
+)::DataFrame
     obj_new, df = remove_powerline(
         obj;
         ch = ch,

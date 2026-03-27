@@ -99,7 +99,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     ch_n = length(unique(dwChannelNumber))
     ch_n > 1 && _warn(
         "Multi-channel NCS files are not implemented yet; " *
-            "please send this file to adam.wysokinski@neuroanalyzer.org"
+        "please send this file to adam.wysokinski@neuroanalyzer.org",
     )
 
     # use ADChannel number in label; fall back to "Ch0" if header was absent
@@ -124,7 +124,8 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     # -------------------------------------------------------------------- #
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 6)
-    epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 6)
+    epoch_time =
+        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 6)
 
     # ------------------------------------------------------------------ #
     # assemble NEURO object                                              #
@@ -139,7 +140,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
     r = _create_recording_eeg(;
         data_type = "ieeg",
@@ -156,11 +157,12 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         clabels = clabels,
         transducers = repeat([""], ch_n),
         units = units,
-        prefiltering = isempty(filter_str) ? repeat([""], ch_n) : repeat([filter_str], ch_n),
+        prefiltering = isempty(filter_str) ? repeat([""], ch_n) :
+                       repeat([filter_str], ch_n),
         line_frequency = 50, # TODO: make this a keyword argument
         sampling_rate = sampling_rate,
         gain = ones(ch_n),
-        bad_channels = zeros(Bool, ch_n)
+        bad_channels = zeros(Bool, ch_n),
     )
     e = _create_experiment(; name = "", notes = "", design = "")
     hdr = _create_header(; subject = s, recording = r, experiment = e)
@@ -171,9 +173,9 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-            "; $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

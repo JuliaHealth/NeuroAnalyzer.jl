@@ -20,12 +20,12 @@ The Gaussian is normalized to unit gain at its peak. Taking the absolute value o
 - `Vector{Float64}`: filtered signal of length `length(s)`
 """
 function filter_g(
-        s::AbstractVector;
-        fs::Int64,
-        pad::Int64 = 0,
-        f::Real,
-        gw::Real = 5,
-    )::Vector{Float64}
+    s::AbstractVector;
+    fs::Int64,
+    pad::Int64 = 0,
+    f::Real,
+    gw::Real = 5,
+)::Vector{Float64}
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
     f >= 0 || throw(ArgumentError("f must be ≥ 0."))
@@ -66,12 +66,12 @@ Filter a 3-dimensional signal array using a Gaussian kernel in the frequency dom
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
 function filter_g(
-        s::AbstractArray;
-        fs::Int64,
-        pad::Int64 = 0,
-        f::Real,
-        gw::Real = 5,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    fs::Int64,
+    pad::Int64 = 0,
+    f::Real,
+    gw::Real = 5,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -92,7 +92,7 @@ function filter_g(
             fs = fs,
             pad = pad,
             f = f,
-            gw = gw
+            gw = gw,
         )
     end
 
@@ -117,12 +117,12 @@ Filter selected channels of a NEURO object using a Gaussian kernel in the freque
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function filter_g(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pad::Int64 = 0,
-        f::Real,
-        gw::Real = 5,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    f::Real,
+    gw::Real = 5,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -160,12 +160,12 @@ Filter selected channels of a NEURO object in-place using a Gaussian kernel in t
 - `Nothing`
 """
 function filter_g!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pad::Int64 = 0,
-        f::Real,
-        gw::Real = 5,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    f::Real,
+    gw::Real = 5,
+)::Nothing
     obj_new = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
     obj.data = obj_new.data
     obj.history = obj_new.history

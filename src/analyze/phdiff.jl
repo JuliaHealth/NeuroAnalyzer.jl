@@ -19,11 +19,11 @@ Named tuple:
 - `Vector{Float64}`: phase differences in radians
 """
 function phdiff(
-        s1::AbstractVector,
-        s2::AbstractVector;
-        pad::Int64 = 0,
-        h::Bool = false,
-    )::Vector{Float64}
+    s1::AbstractVector,
+    s2::AbstractVector;
+    pad::Int64 = 0,
+    h::Bool = false,
+)::Vector{Float64}
     h1 = h ? NeuroAnalyzer.htransform(s1) : NeuroAnalyzer.ftransform(s1; pad = pad)
     h2 = h ? NeuroAnalyzer.htransform(s2) : NeuroAnalyzer.ftransform(s2; pad = pad)
     ph1 = h1.ph
@@ -54,12 +54,12 @@ Calculate phase difference between channels and mean phase of reference `ch` for
 - `Array{Float64, 3}`
 """
 function phdiff(
-        s::AbstractArray;
-        ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
-        avg::Symbol = :phase,
-        pad::Int64 = 0,
-        h::Bool = false,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
+    avg::Symbol = :phase,
+    pad::Int64 = 0,
+    h::Bool = false,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -131,17 +131,17 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 - `Array{Float64, 3}`
 """
 function phdiff(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        avg::Symbol = :phase,
-        pad::Int64 = 0,
-        h::Bool = false,
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    avg::Symbol = :phase,
+    pad::Int64 = 0,
+    h::Bool = false,
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return phdiff(
         @view(obj.data[ch, :, :]);

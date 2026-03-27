@@ -47,9 +47,9 @@ Convert NIRS intensity (RAW) channels to optical density (OD) and append the OD 
 - `NeuroAnalyzer.NEURO`: output NEURO object with OD channels appended after the selected intensity channels
 """
 function intensity2od(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -73,7 +73,7 @@ function intensity2od(
         obj.data[ch, :, :],
         reshape(
             intensity2od(@view(obj.data[ch, :, :])),
-            length(ch), epoch_len(obj), nepochs(obj)
+            length(ch), epoch_len(obj), nepochs(obj),
         ),
         obj.data[other_ch, :, :],
     )
@@ -141,9 +141,9 @@ Convert NIRS intensity channels to optical density in-place.
 - `Nothing`
 """
 function intensity2od!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
+)::Nothing
     obj_new = intensity2od(obj; ch = ch)
     obj.data = obj_new.data
     obj.header = obj_new.header

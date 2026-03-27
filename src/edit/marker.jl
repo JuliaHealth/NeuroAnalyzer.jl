@@ -28,21 +28,21 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
 
     println(
         rpad("n", 5) *
-            rpad("ID", 24) *
-            rpad("start [s]", 12) *
-            rpad("length [s]", 12) *
-            rpad("value", 24) *
-            rpad("channel", 1),
+        rpad("ID", 24) *
+        rpad("start [s]", 12) *
+        rpad("length [s]", 12) *
+        rpad("value", 24) *
+        rpad("channel", 1),
     )
 
     for mrk_idx in 1:DataFrames.nrow(obj.markers)
         println(
             rpad(string(mrk_idx), 5) *
-                rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) *
-                rpad(string(round(obj.markers[mrk_idx, :start]; digits = 3)), 12) *
-                rpad(string(round(obj.markers[mrk_idx, :length]; digits = 3)), 12) *
-                rpad("'" * obj.markers[mrk_idx, :value] * "'", 24) *
-                rpad(string(obj.markers[mrk_idx, :channel]), 1),
+            rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) *
+            rpad(string(round(obj.markers[mrk_idx, :start]; digits = 3)), 12) *
+            rpad(string(round(obj.markers[mrk_idx, :length]; digits = 3)), 12) *
+            rpad("'" * obj.markers[mrk_idx, :value] * "'", 24) *
+            rpad(string(obj.markers[mrk_idx, :channel]), 1),
         )
     end
 
@@ -119,13 +119,13 @@ Add marker.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_marker(
-        obj::NeuroAnalyzer.NEURO;
-        id::String,
-        start::Real,
-        len::Real = 1.0,
-        value::String,
-        ch::Int64 = 0,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    id::String,
+    start::Real,
+    len::Real = 1.0,
+    value::String,
+    ch::Int64 = 0,
+)::NeuroAnalyzer.NEURO
     start >= 0 || throw(ArgumentError("start must be ≥ 0."))
     len > 0 || throw(ArgumentError("len must be > 0."))
     start < obj.time_pts[end] ||
@@ -174,13 +174,13 @@ Add marker.
 - `Nothing`
 """
 function add_marker!(
-        obj::NeuroAnalyzer.NEURO;
-        id::String,
-        start::Real,
-        len::Real = 1.0,
-        value::String,
-        ch::Int64 = 0,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    id::String,
+    start::Real,
+    len::Real = 1.0,
+    value::String,
+    ch::Int64 = 0,
+)::Nothing
     obj_new = add_marker(obj; id = id, start = start, len = len, value = value, ch = ch)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
@@ -208,14 +208,14 @@ Edit marker.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function edit_marker(
-        obj::NeuroAnalyzer.NEURO;
-        n::Int64,
-        id::String,
-        start::Real,
-        len::Real = 1.0,
-        value::String,
-        ch::Int64 = 0,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    n::Int64,
+    id::String,
+    start::Real,
+    len::Real = 1.0,
+    value::String,
+    ch::Int64 = 0,
+)::NeuroAnalyzer.NEURO
     !(_has_markers(obj)) && throw(ArgumentError("OBJ has no markers."))
     !(start > 0) && throw(ArgumentError("start must be > 0."))
     !(len > 0) && throw(ArgumentError("len must be > 0."))
@@ -262,14 +262,14 @@ Edit marker.
 - `Nothing`
 """
 function edit_marker!(
-        obj::NeuroAnalyzer.NEURO;
-        n::Int64,
-        id::String,
-        start::Real,
-        len::Real = 1.0,
-        value::String,
-        ch::Int64 = 0,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    n::Int64,
+    id::String,
+    start::Real,
+    len::Real = 1.0,
+    value::String,
+    ch::Int64 = 0,
+)::Nothing
     obj_new = edit_marker(
         obj; n = n, id = id, start = start, len = len, value = value, ch = ch,
     )
@@ -297,12 +297,12 @@ Convert event channel to markers.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function channel2marker(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        v::Real = 1.0,
-        id::String = "",
-        value::String = "",
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    v::Real = 1.0,
+    id::String = "",
+    value::String = "",
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -398,12 +398,12 @@ Convert event channel to markers.
 - `Nothing`
 """
 function channel2marker!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        v::Real = 1.0,
-        id::String = "",
-        value::String = "",
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    v::Real = 1.0,
+    id::String = "",
+    value::String = "",
+)::Nothing
     obj_new = channel2marker(obj; ch = ch, v = v, id = id, value = value)
     obj.history = obj_new.history
     obj.markers = obj_new.markers

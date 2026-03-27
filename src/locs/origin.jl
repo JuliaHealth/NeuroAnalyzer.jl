@@ -45,11 +45,11 @@ Move locs origin ([0, 0, 0]) along the axes.
 - `Nothing`
 """
 function locs_origin!(
-        obj::NeuroAnalyzer.NEURO;
-        x::Real = 0,
-        y::Real = 0,
-        z::Real = 0,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    x::Real = 0,
+    y::Real = 0,
+    z::Real = 0,
+)::Nothing
     obj.locs = locs_origin(obj.locs; x = x, y = y, z = z)
 
     return nothing

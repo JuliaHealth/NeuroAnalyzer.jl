@@ -26,11 +26,11 @@ Computes the partial auto-correlation function (PACF) of a 1-D signal vector ove
 If you get `ERROR: PosDefException: matrix is not positive definite; Cholesky factorization failed.`, try lowering `l` value or change method to `:yw`.
 """
 function pacor(
-        s::AbstractVector;
-        l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
-        demean::Bool = true,
-        method::Symbol = :yw,
-    )::Array{Float64, 3}
+    s::AbstractVector;
+    l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
+    demean::Bool = true,
+    method::Symbol = :yw,
+)::Array{Float64, 3}
     _check_var(method, [:reg, :yw], "method")
 
     # map short symbol names to the names expected by StatsBase.pacf()
@@ -72,11 +72,11 @@ Calculate partial auto-correlation function (PACF) for each epoch of a matrix ov
 - `Array{Float64, 3}`
 """
 function pacor(
-        s::AbstractMatrix;
-        l::Int64 = round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))),
-        demean::Bool = true,
-        method::Symbol = :yw,
-    )::Array{Float64, 3}
+    s::AbstractMatrix;
+    l::Int64 = round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))),
+    demean::Bool = true,
+    method::Symbol = :yw,
+)::Array{Float64, 3}
 
     # number of epochs
     ep_n = size(s, 2)
@@ -114,11 +114,11 @@ Calculate partial auto-correlation function (PACF) for a 3-D signal array over l
 - `Array{Float64, 3}`: shape `(channels, 2l+1, epochs)`
 """
 function pacor(
-        s::AbstractArray;
-        l::Int64 = round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))),
-        demean::Bool = true,
-        method::Symbol = :yw,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    l::Int64 = round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))),
+    demean::Bool = true,
+    method::Symbol = :yw,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -138,8 +138,8 @@ function pacor(
         pac[ch_idx, :, ep_idx] = vec(
             pacor(
                 @view(s[ch_idx, :, ep_idx]),
-                l = l, demean = demean, method = method
-            )
+                l = l, demean = demean, method = method,
+            ),
         )
     end
 
@@ -174,15 +174,15 @@ Named tuple:
 - `lags::Vector{Float64}`: lag values in seconds
 """
 function pacor(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        l::Real = 1,
-        demean::Bool = true,
-        method::Symbol = :yw,
-    )::@NamedTuple{
-        pac::Array{Float64, 3},
-        lags::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    l::Real = 1,
+    demean::Bool = true,
+    method::Symbol = :yw,
+)::@NamedTuple{
+    pac::Array{Float64, 3},
+    lags::Vector{Float64},
+}
 
     # validate
     (method === :yw && l > 1) || throw(ArgumentError("For method=:yw, l must be > 1."))
@@ -190,7 +190,7 @@ function pacor(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     # convert l from seconds to samples for the inner call
     l_samp = round(Int64, l * sr(obj))

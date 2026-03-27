@@ -301,11 +301,11 @@ Compute area under curve of an ERP/ERF/MEP (epoch 1).
 - `Vector{Float64}`
 """
 function erp_auc(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
-        type::Symbol = :all,
-    )::Vector{Float64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
+    type::Symbol = :all,
+)::Vector{Float64}
 
     # validate
     _check_datatype(obj, ["erp", "erf", "mep"])

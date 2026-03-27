@@ -164,9 +164,9 @@ Computes the Euclidean distance from every element of `m` to `p` and returns the
 - `Tuple{Int64, Int64}`: `(row, column)` of the nearest position in `m`
 """
 function f_nearest(
-        m::Matrix{Tuple{Float64, Float64}},
-        p::Tuple{Float64, Float64},
-    )::Tuple{Int64, Int64}
+    m::Matrix{Tuple{Float64, Float64}},
+    p::Tuple{Float64, Float64},
+)::Tuple{Int64, Int64}
     d = zeros(size(m))
 
     @inbounds for idx1 in axes(m, 1), idx2 in axes(m, 2)
@@ -196,9 +196,9 @@ The formula is `nt = floor(df × T) - 1`, where `T = epoch_len / fs` is the epoc
 - `Int64`: recommended number of Slepian tapers (≥ 1)
 """
 function ntapers(
-        obj::NeuroAnalyzer.NEURO;
-        df::Real,
-    )::Int64
+    obj::NeuroAnalyzer.NEURO;
+    df::Real,
+)::Int64
 
     # validate that df lies within (0, Nyquist)
     _bin(df, (0, sr(obj) / 2))
@@ -227,10 +227,10 @@ Return a single channel's signal in trials × time format.
 - `Matrix{Float64}`: matrix of shape `(n_epochs, epoch_len)`
 """
 function trtm(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
-    )::Matrix{Float64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
+)::Matrix{Float64}
 
     # validate
     _check_epochs(obj, ep)

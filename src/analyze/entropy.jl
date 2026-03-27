@@ -34,15 +34,15 @@ Histogram entropy uses Freedman-Diaconis binning: `p = n / sum(n)`, `ent = −Σ
 with irregularity.
 """
 function entropy(
-        s::AbstractVector,
-    )::@NamedTuple{
-        ent::Float64,
-        shent::Float64,
-        leent::Float64,
-        sent::Float64,
-        nsent::Float64,
-        dent::Float64,
-    }
+    s::AbstractVector,
+)::@NamedTuple{
+    ent::Float64,
+    shent::Float64,
+    leent::Float64,
+    sent::Float64,
+    nsent::Float64,
+    dent::Float64,
+}
     n = length(s)
 
     # Freedman-Diaconis rule: optimal bin width = 2·IQR·N^(−1/3).
@@ -105,15 +105,15 @@ Named tuple:
 - `dent::Matrix{Float64}`: differential entropy, shape (channels, epochs)
 """
 function entropy(
-        s::AbstractArray,
-    )::@NamedTuple{
-        ent::Matrix{Float64},
-        shent::Matrix{Float64},
-        leent::Matrix{Float64},
-        sent::Matrix{Float64},
-        nsent::Matrix{Float64},
-        dent::Matrix{Float64},
-    }
+    s::AbstractArray,
+)::@NamedTuple{
+    ent::Matrix{Float64},
+    shent::Matrix{Float64},
+    leent::Matrix{Float64},
+    sent::Matrix{Float64},
+    nsent::Matrix{Float64},
+    dent::Matrix{Float64},
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -170,21 +170,21 @@ Named tuple:
 - `dent::Matrix{Float64}`: differential entropy, shape (channels, epochs)
 """
 function entropy(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::@NamedTuple{
-        ent::Matrix{Float64},
-        shent::Matrix{Float64},
-        leent::Matrix{Float64},
-        sent::Matrix{Float64},
-        nsent::Matrix{Float64},
-        dent::Matrix{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::@NamedTuple{
+    ent::Matrix{Float64},
+    shent::Matrix{Float64},
+    leent::Matrix{Float64},
+    sent::Matrix{Float64},
+    nsent::Matrix{Float64},
+    dent::Matrix{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return entropy(@view(obj.data[ch, :, :]))
 end
@@ -208,11 +208,11 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 - `Float64`: negentropy (≥ 0; equals 0 for a Gaussian signal)
 """
 function negentropy(
-        s::AbstractVector;
-        demean::Bool = true,
-        norm::Bool = true,
-        type::Symbol = :diff,
-    )::Float64
+    s::AbstractVector;
+    demean::Bool = true,
+    norm::Bool = true,
+    type::Symbol = :diff,
+)::Float64
 
     # validate
     _check_var(type, [:diff, :shannon, :sample], "type")
@@ -258,11 +258,11 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 - `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(
-        s::AbstractArray;
-        demean::Bool = true,
-        norm::Bool = true,
-        type::Symbol = :diff,
-    )::Matrix{Float64}
+    s::AbstractArray;
+    demean::Bool = true,
+    norm::Bool = true,
+    type::Symbol = :diff,
+)::Matrix{Float64}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -309,17 +309,17 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 - `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
 function negentropy(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        demean::Bool = true,
-        norm::Bool = true,
-        type::Symbol = :diff,
-    )::Matrix{Float64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    demean::Bool = true,
+    norm::Bool = true,
+    type::Symbol = :diff,
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return negentropy(
         @view(obj.data[ch, :, :]);

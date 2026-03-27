@@ -334,14 +334,14 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
         return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('s')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
                         if Cairo.write_to_png(surface_buf, file_name) ==
-                                Cairo.STATUS_SUCCESS
+                           Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File $file_name cannot be written!", win)
@@ -349,14 +349,14 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
                     end
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('h')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end
@@ -385,9 +385,9 @@ Interactive topographical map of epoched signal.
 - `Nothing`
 """
 function itopo_ep(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Nothing
     !(nepochs(obj) > 1) &&
         throw(ArgumentError("For continuous object itopo() must be used."))
 
@@ -723,14 +723,14 @@ function itopo_ep(
 
         return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('s')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
                         if Cairo.write_to_png(surface_buf, file_name) ==
-                                Cairo.STATUS_SUCCESS
+                           Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File $file_name cannot be written!", win)
@@ -738,14 +738,14 @@ function itopo_ep(
                     end
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('h')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end

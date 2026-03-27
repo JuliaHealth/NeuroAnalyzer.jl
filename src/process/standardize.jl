@@ -16,8 +16,8 @@ Standardize channels of a 3-D signal array.
 - `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(
-        s::AbstractArray,
-    )::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
+    s::AbstractArray,
+)::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
     _chk3d(s)
     ep_n = size(s, 3)
 
@@ -48,9 +48,9 @@ Standardize channels.
 - `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -79,8 +79,8 @@ Standardize channels.
 - `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize!(
-        obj::NeuroAnalyzer.NEURO,
-    )::Vector{ZScoreTransform{Float64, Vector{Float64}}}
+    obj::NeuroAnalyzer.NEURO,
+)::Vector{ZScoreTransform{Float64, Vector{Float64}}}
     obj_new, scaler = standardize(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history

@@ -79,13 +79,13 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function snr(
-        s::AbstractArray;
-        t::Vector{Float64},
-        type::Symbol = :rms,
-    )::@NamedTuple{
-        sn::Matrix{Float64},
-        f::Vector{Float64},
-    }
+    s::AbstractArray;
+    t::Vector{Float64},
+    type::Symbol = :rms,
+)::@NamedTuple{
+    sn::Matrix{Float64},
+    f::Vector{Float64},
+}
 
     # validate
     _check_var(type, [:mean, :rms], "type")
@@ -146,18 +146,18 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 """
 function snr(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        type::Symbol = :rms,
-    )::@NamedTuple{
-        sn::Matrix{Float64},
-        f::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    type::Symbol = :rms,
+)::@NamedTuple{
+    sn::Matrix{Float64},
+    f::Vector{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return snr(@view(obj.data[ch, :, :]); t = obj.epoch_time, type = type)
 end

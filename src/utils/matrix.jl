@@ -126,11 +126,11 @@ Sort a matrix using a pre-computed permutation index vector.
 - `AbstractMatrix`: sorted matrix with the same size and element type as `m`
 """
 function m_sort(
-        m::AbstractMatrix,
-        m_idx::Vector{Int64};
-        rev::Bool = false,
-        dims::Int64 = 1,
-    )::AbstractMatrix
+    m::AbstractMatrix,
+    m_idx::Vector{Int64};
+    rev::Bool = false,
+    dims::Int64 = 1,
+)::AbstractMatrix
     dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
 
     # copy to avoid mutating the caller's index vector
@@ -255,12 +255,12 @@ Returns a pair `(mx, my)` where `mx[i]` repeats the full `x` vector for row `i`,
     - `my`: `m` vectors each filled with the corresponding `y[i]` value
 """
 function meshgrid(
-        x::Vector{Float64},
-        y::Vector{Float64},
-    )::Tuple{
-        Vector{Vector{Float64}},
-        Vector{Vector{Float64}},
-    }
+    x::Vector{Float64},
+    y::Vector{Float64},
+)::Tuple{
+    Vector{Vector{Float64}},
+    Vector{Vector{Float64}},
+}
     xn = length(x)
     yn = length(y)
 

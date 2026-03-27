@@ -33,14 +33,14 @@ hline!([md, ul, ll])
 ```
 """
 function ba(
-        x::AbstractVector,
-        y::AbstractVector;
-        la::Float64 = 0.95,
-    )::@NamedTuple{
-        md::Float64,
-        ll::Float64,
-        ul::Float64,
-    }
+    x::AbstractVector,
+    y::AbstractVector;
+    la::Float64 = 0.95,
+)::@NamedTuple{
+    md::Float64,
+    ll::Float64,
+    ul::Float64,
+}
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))

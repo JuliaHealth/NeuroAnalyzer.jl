@@ -28,12 +28,12 @@ Named tuple:
 - `h_comp::Float64`: complexity
 """
 function hjorth(
-        s::AbstractVector,
-    )::@NamedTuple{
-        h_act::Float64,
-        h_mob::Float64,
-        h_comp::Float64,
-    }
+    s::AbstractVector,
+)::@NamedTuple{
+    h_act::Float64,
+    h_mob::Float64,
+    h_comp::Float64,
+}
     h_act = var(s)
     h_mob = _h_mob(s)
     h_comp = _h_mob(derivative(s)) / h_mob
@@ -66,12 +66,12 @@ Named tuple:
 - `h_comp::Matrix{Float64}`: complexity, shape (channels, epochs)
 """
 function hjorth(
-        s::AbstractArray,
-    )::@NamedTuple{
-        h_act::Matrix{Float64},
-        h_mob::Matrix{Float64},
-        h_comp::Matrix{Float64},
-    }
+    s::AbstractArray,
+)::@NamedTuple{
+    h_act::Matrix{Float64},
+    h_mob::Matrix{Float64},
+    h_comp::Matrix{Float64},
+}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -123,18 +123,18 @@ Named tuple:
 - `h_comp::Matrix{Float64}`: complexity, shape (channels, epochs)
 """
 function hjorth(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::@NamedTuple{
-        h_act::Matrix{Float64},
-        h_mob::Matrix{Float64},
-        h_comp::Matrix{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::@NamedTuple{
+    h_act::Matrix{Float64},
+    h_mob::Matrix{Float64},
+    h_comp::Matrix{Float64},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return hjorth(@view(obj.data[ch, :, :]))
 end

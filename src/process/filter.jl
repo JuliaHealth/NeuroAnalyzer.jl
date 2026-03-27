@@ -42,20 +42,20 @@ Create a FIR or IIR filter object.
 - `Biquad{:z, Float64}`: second-order biquad filter (for `:iirnotch`)
 """
 function filter_create(;
-        fprototype::Symbol,
-        ftype::Union{Nothing, Symbol} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        fs::Int64,
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-    )::Union{
-        Vector{Float64},
-        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-        Biquad{:z, Float64},
-    }
+    fprototype::Symbol,
+    ftype::Union{Nothing, Symbol} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    fs::Int64,
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+)::Union{
+    Vector{Float64},
+    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+    Biquad{:z, Float64},
+}
     !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
     nqf = div(fs, 2)
 
@@ -185,16 +185,12 @@ function filter_create(;
 
     if fprototype === :fir
         responsetype = if ftype === :lp
-
             Lowpass(cutoff)
         elseif ftype === :hp
-
             Highpass(cutoff)
         elseif ftype === :bp
-
             Bandpass(cutoff[1], cutoff[2])
         elseif ftype === :bs
-
             Bandstop(cutoff[1], cutoff[2])
         end
         _info("Creating $(uppercase(string(ftype))) FIR filter ($(order) taps)")
@@ -285,29 +281,21 @@ function filter_create(;
 
     if fprototype in (:butterworth, :chebyshev1, :chebyshev2, :elliptic)
         responsetype = if ftype === :lp
-
             Lowpass(cutoff)
         elseif ftype === :hp
-
             Highpass(cutoff)
         elseif ftype === :bp
-
             Bandpass(cutoff[1], cutoff[2])
         elseif ftype === :bs
-
             Bandstop(cutoff[1], cutoff[2])
         end
         prototype = if fprototype === :butterworth
-
             Butterworth(order)
         elseif fprototype === :chebyshev1
-
             Chebyshev1(order, rp)
         elseif fprototype === :chebyshev2
-
             Chebyshev2(order, rs)
         elseif fprototype === :elliptic
-
             Elliptic(order, rp, rs)
         end
         _info("Creating $(uppercase(string(ftype))) $(fprototype) filter (order=$order)")
@@ -339,14 +327,14 @@ Apply a pre-designed IIR or FIR filter to a signal vector.
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
 function filter_apply(
-        s::AbstractVector;
-        flt::Union{
-            Vector{Float64},
-            ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-            Biquad{:z, Float64},
-        },
-        dir::Symbol = :twopass,
-    )::Vector{Float64}
+    s::AbstractVector;
+    flt::Union{
+        Vector{Float64},
+        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+        Biquad{:z, Float64},
+    },
+    dir::Symbol = :twopass,
+)::Vector{Float64}
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
     if dir === :onepass
@@ -382,15 +370,15 @@ Apply a pre-designed filter to selected channels of a NEURO object.
 - Taper the signal before filtering to reduce edge artifacts.
 """
 function filter_apply(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        flt::Union{
-            Vector{Float64},
-            ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-            Biquad{:z, Float64},
-        },
-        dir::Symbol = :twopass,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flt::Union{
+        Vector{Float64},
+        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+        Biquad{:z, Float64},
+    },
+    dir::Symbol = :twopass,
+)::NeuroAnalyzer.NEURO
 
     # validate
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
@@ -459,15 +447,15 @@ Delegates to [`filter_apply`](@ref) and copies the result back.
 - `Nothing`
 """
 function filter_apply!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        flt::Union{
-            Vector{Float64},
-            ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-            Biquad{:z, Float64},
-        },
-        dir::Symbol = :twopass,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flt::Union{
+        Vector{Float64},
+        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+        Biquad{:z, Float64},
+    },
+    dir::Symbol = :twopass,
+)::Nothing
     obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -520,22 +508,22 @@ Combines [`filter_create`](@ref) and [`filter_apply`](@ref). When `preview=true`
 - `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
 """
 function filter(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        fprototype::Symbol,
-        ftype::Union{Nothing, Symbol} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-        dir::Symbol = :twopass,
-        preview::Bool = false,
-    )::Union{
-        NeuroAnalyzer.NEURO,
-        GLMakie.Figure,
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    fprototype::Symbol,
+    ftype::Union{Nothing, Symbol} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    dir::Symbol = :twopass,
+    preview::Bool = false,
+)::Union{
+    NeuroAnalyzer.NEURO,
+    GLMakie.Figure,
+}
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
@@ -614,22 +602,22 @@ When `preview=true`, the filter frequency response is plotted and returned witho
 - `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
 """
 function filter!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        fprototype::Symbol,
-        ftype::Union{Symbol, Nothing} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-        dir::Symbol = :twopass,
-        preview::Bool = false,
-    )::Union{
-        Nothing,
-        GLMakie.Figure,
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    fprototype::Symbol,
+    ftype::Union{Symbol, Nothing} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    dir::Symbol = :twopass,
+    preview::Bool = false,
+)::Union{
+    Nothing,
+    GLMakie.Figure,
+}
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)

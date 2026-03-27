@@ -19,12 +19,12 @@ Return the index of the first occurrence of string `y` in vector `x`, or `nothin
 - `Union{Int64, Nothing}`: index of the first match, or `nothing` if not found
 """
 function vsearch(
-        y::String,
-        x::Vector{String},
-    )::Union{
-        Int64,
-        Nothing,
-    }
+    y::String,
+    x::Vector{String},
+)::Union{
+    Int64,
+    Nothing,
+}
 
     # findfirst already returns nothing on no match
     return findfirst(isequal(y), x)
@@ -47,13 +47,13 @@ Return the index of the element in `x` nearest to scalar `y`.
 - `Tuple{Int64, Real}`: `(index, |y − x[index]|)` when `acc=true`
 """
 function vsearch(
-        y::Real,
-        x::AbstractVector;
-        acc::Bool = false,
-    )::Union{
-        Int64,
-        Tuple{Int64, Real},
-    }
+    y::Real,
+    x::AbstractVector;
+    acc::Bool = false,
+)::Union{
+    Int64,
+    Tuple{Int64, Real},
+}
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
@@ -80,13 +80,13 @@ Return the indices of the elements in `x` nearest to each element of `y`.
 - `Tuple{Vector{Int64}, Vector{Real}}`: `(indices, differences)` when `acc=true`
 """
 function vsearch(
-        y::AbstractVector,
-        x::AbstractVector;
-        acc::Bool = false,
-    )::Union{
-        AbstractVector,
-        Tuple{AbstractVector, AbstractVector},
-    }
+    y::AbstractVector,
+    x::AbstractVector;
+    acc::Bool = false,
+)::Union{
+    AbstractVector,
+    Tuple{AbstractVector, AbstractVector},
+}
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
@@ -201,10 +201,10 @@ Useful for downsampling a frequency axis (and its associated data) when the numb
 - `AbstractVector`: reduced frequency grid
 """
 function vreduce(
-        x::AbstractVector,
-        f::AbstractVector;
-        n::Float64 = 0.5,
-    )::Tuple{AbstractVector, AbstractVector}
+    x::AbstractVector,
+    f::AbstractVector;
+    n::Float64 = 0.5,
+)::Tuple{AbstractVector, AbstractVector}
 
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))

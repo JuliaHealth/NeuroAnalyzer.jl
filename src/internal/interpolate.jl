@@ -31,13 +31,13 @@ Perform 2D scattered interpolation of signal data on a regular grid.
 - The output is normalized using the specified method.
 """
 function _interpolate2d(
-        s::AbstractVector,
-        loc_x::Vector{Float64},
-        loc_y::Vector{Float64},
-        ifactor::Int64 = 100,
-        imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
-    )::Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}
+    s::AbstractVector,
+    loc_x::Vector{Float64},
+    loc_y::Vector{Float64},
+    ifactor::Int64 = 100,
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+)::Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}
 
     # validate
     ifactor > 0 || throw(ArgumentError("Interpolation factor (ifactor) must be positive"))

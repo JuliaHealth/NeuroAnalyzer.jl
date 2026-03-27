@@ -48,16 +48,16 @@ Named tuple:
 - `pc_model::MultivariateStats.PCA{Float64}`: fitted PCA model object
 """
 function pcacomp(
-        m::Matrix{Float64};
-        n::Int64 = size(m, 2),
-        zstd::Bool = true,
-    )::@NamedTuple{
-        pc::DataFrame,
-        pcv::Vector{Float64},
-        pcm::Vector{Float64},
-        pcp::Matrix{Float64},
-        pc_model::MultivariateStats.PCA{Float64},
-    }
+    m::Matrix{Float64};
+    n::Int64 = size(m, 2),
+    zstd::Bool = true,
+)::@NamedTuple{
+    pc::DataFrame,
+    pcv::Vector{Float64},
+    pcm::Vector{Float64},
+    pcp::Matrix{Float64},
+    pc_model::MultivariateStats.PCA{Float64},
+}
 
     # validate
     size(m, 1) >= 2 || throw(ArgumentError("m must have at least 2 observations (rows)."))
@@ -127,17 +127,17 @@ Named tuple:
 - `pc_model::MultivariateStats.PCA{Float64}`: fitted PCA model object
 """
 function pcacomp(
-        df::DataFrame,
-        vars::Union{Vector{String}, Vector{Symbol}};
-        n::Int64 = length(vars),
-        zstd::Bool = true,
-    )::@NamedTuple{
-        pc::DataFrame,
-        pcv::Vector{Float64},
-        pcm::Vector{Float64},
-        pcp::Matrix{Float64},
-        pc_model::MultivariateStats.PCA{Float64},
-    }
+    df::DataFrame,
+    vars::Union{Vector{String}, Vector{Symbol}};
+    n::Int64 = length(vars),
+    zstd::Bool = true,
+)::@NamedTuple{
+    pc::DataFrame,
+    pcv::Vector{Float64},
+    pcm::Vector{Float64},
+    pcp::Matrix{Float64},
+    pc_model::MultivariateStats.PCA{Float64},
+}
 
     # validate
     length(vars) >= 2 ||
@@ -171,11 +171,11 @@ Requires at least 2 PCs; returns `nothing` with a warning otherwise.
 - `GLMakie.Figure`: biplot figure, or `nothing` if fewer than 2 PCs result
 """
 function biplot(
-        df::DataFrame,
-        vars::Union{Vector{String}, Vector{Symbol}};
-        n::Int64 = length(vars),
-        zstd::Bool = true,
-    )::Union{Nothing, GLMakie.Figure}
+    df::DataFrame,
+    vars::Union{Vector{String}, Vector{Symbol}};
+    n::Int64 = length(vars),
+    zstd::Bool = true,
+)::Union{Nothing, GLMakie.Figure}
     pca = pcacomp(df, vars; n = n, zstd = zstd)
     n_pc = length(pca.pc_model.prinvars)
 
@@ -228,11 +228,11 @@ Plot a PCA scree plot showing variance explained and eigenvalues per PC.
 - `GLMakie.Figure`: two-panel figure (% variance explained + eigenvalues)
 """
 function screeplot(
-        df::DataFrame,
-        vars::Union{Vector{String}, Vector{Symbol}};
-        n::Int64 = length(vars),
-        zstd::Bool = true,
-    )::GLMakie.Figure
+    df::DataFrame,
+    vars::Union{Vector{String}, Vector{Symbol}};
+    n::Int64 = length(vars),
+    zstd::Bool = true,
+)::GLMakie.Figure
     pca = pcacomp(df, vars; n = n, zstd = zstd)
     n_pc = length(pca.pc_model.prinvars)
     xl = ["PC$i" for i in 1:n_pc]
@@ -304,7 +304,7 @@ function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real):
     if type === :var
         pcv = cumsum(
             MultivariateStats.principalvars(pc_model) ./
-                MultivariateStats.var(pc_model),
+            MultivariateStats.var(pc_model),
         )
         # return the index of the first cumulative variance that meets the threshold
         idx = findfirst(>=(value), pcv)

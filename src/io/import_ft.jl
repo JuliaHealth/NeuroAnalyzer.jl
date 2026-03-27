@@ -19,10 +19,10 @@ FieldTrip stores EEG, MEG, fNIRS data and event tables in separate `.mat` files.
 - `DataFrame` for event tables
 """
 function import_ft(
-        file_name::String;
-        type::Symbol,
-        detect_type::Bool = false,
-    )::Union{NeuroAnalyzer.NEURO, DataFrame}
+    file_name::String;
+    type::Symbol,
+    detect_type::Bool = false,
+)::Union{NeuroAnalyzer.NEURO, DataFrame}
 
     # validate
     _check_var(type, [:eeg, :meg, :nirs, :events], "type")
@@ -36,11 +36,11 @@ function import_ft(
 
     length(keys(dataset)) == 1 ||
         throw(
-        ArgumentError(
-            "Files with > 1 dataset are not supported; " *
-                "please send this file to adam.wysokinski@neuroanalyzer.org"
-        ),
-    )
+            ArgumentError(
+                "Files with > 1 dataset are not supported; " *
+                "please send this file to adam.wysokinski@neuroanalyzer.org",
+            ),
+        )
     _info("Reading object: $(string.(keys(dataset))[1])")
     dataset = dataset[string.(keys(dataset))[1]]
 
@@ -78,11 +78,11 @@ function import_ft(
             :start => Float64.(start),
             :length => Float64.(duration),
             :value => strip.(string.(value)),
-            :channel => zeros(Int64, length(id))
+            :channel => zeros(Int64, length(id)),
         )
         _info(
             "Imported: $(DataFrames.nrow(markers)) events; " *
-                "start and length are in samples - use `markers_s2t()` to convert.",
+            "start and length are in samples - use `markers_s2t()` to convert.",
         )
         return markers
     end
@@ -116,14 +116,17 @@ function import_ft(
     ch_type, units = if detect_type
         # FIX: original omitted the required second argument to _set_channel_types
         ct = _set_channel_types(clabels, data_type)
-        u = "chanunit" in keys(hdr) ?
+        u =
+            "chanunit" in keys(hdr) ?
             replace.(strip.(string.(hdr["chanunit"][:])), "uV" => "μV") :
             [_ch_units(ct[i]) for i in 1:ch_n]
         ct, u
     else
-        ct = "chantype" in keys(hdr) ?
+        ct =
+            "chantype" in keys(hdr) ?
             string.(hdr["chantype"][:]) : repeat([data_type], ch_n)
-        u = "chanunit" in keys(hdr) ?
+        u =
+            "chanunit" in keys(hdr) ?
             replace.(string.(hdr["chanunit"][:]), "uV" => "μV") :
             repeat(["μV"], ch_n)
         ct, u
@@ -137,7 +140,7 @@ function import_ft(
         "stimulus" => "mrk",
         "analog trigger" => "mrk",
         "digital trigger" => "mrk",
-        "unknown" => "other"
+        "unknown" => "other",
     )
 
     # ------------------------------------------------------------------ #
@@ -165,27 +168,28 @@ function import_ft(
             time_pts = round.(
                 range(
                     0; step = 1 / sampling_rate,
-                    length = size(data, 2) * size(data, 3)
-                ); digits = 4
+                    length = size(data, 2) * size(data, 3),
+                ); digits = 4,
             )
         end
     else
-        epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+        epoch_time =
+            round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
         time_pts = round.(
             range(
                 0; step = 1 / sampling_rate,
-                length = size(data, 2) * size(data, 3)
-            ); digits = 4
+                length = size(data, 2) * size(data, 3),
+            ); digits = 4,
         )
     end
 
     _info(
         "FieldTrip markers are stored separately; import with " *
-            "`import_ft(file_name, type=:events)` and add with `add_markers()`.",
+        "`import_ft(file_name, type=:events)` and add with `add_markers()`.",
     )
     markers = DataFrame(
         :id => String[], :start => Float64[],
-        :length => Float64[], :value => String[], :channel => Int64[]
+        :length => Float64[], :value => String[], :channel => Int64[],
     )
 
     locs = _initialize_locs()
@@ -198,7 +202,7 @@ function import_ft(
         ref = if "reref" in keys(cfg) && cfg["reref"] != "no"
             _info(
                 "Embedded referencing is not supported; " *
-                    "please send this file to adam.wysokinski@neuroanalyzer.org",
+                "please send this file to adam.wysokinski@neuroanalyzer.org",
             )
             "" # safe fallback
         else
@@ -224,12 +228,12 @@ function import_ft(
             reference = ref,
             clabels = clabels,
             transducers = "Transducer" in keys(hdr["orig"]) ?
-                string.(strip.(hdr["orig"]["Transducer"])) :
-                repeat([""], ch_n),
+                          string.(strip.(hdr["orig"]["Transducer"])) :
+                          repeat([""], ch_n),
             units = units,
             prefiltering = "PreFilt" in keys(hdr["orig"]) ?
-                string.(strip.(hdr["orig"]["PreFilt"])) :
-                repeat([""], ch_n),
+                           string.(strip.(hdr["orig"]["PreFilt"])) :
+                           repeat([""], ch_n),
             line_frequency = 50, # TODO: make this a keyword argument
             sampling_rate = sampling_rate,
             gain = ones(ch_n),
@@ -248,7 +252,8 @@ function import_ft(
         mag_idx = occursin.(r".*mag.*", lowercase.(ch_type))
         grad_idx = occursin.(r".*grad.*", lowercase.(ch_type))
         pgrad_idx = occursin.(r".*planar.*", lowercase.(ch_type))
-        agrad_idx = occursin.(r".*axial.*", lowercase.(ch_type)) .|
+        agrad_idx =
+            occursin.(r".*axial.*", lowercase.(ch_type)) .|
             occursin.(r".*ctf.*", lowercase.(ch_type))
 
         combined_grad_idx = grad_idx .| pgrad_idx .| agrad_idx
@@ -294,7 +299,7 @@ function import_ft(
                 :loc_z => pos[:, 3],
                 :loc_radius_sph => zeros(length(meg_labels)),
                 :loc_theta_sph => zeros(length(meg_labels)),
-                :loc_phi_sph => zeros(length(meg_labels))
+                :loc_phi_sph => zeros(length(meg_labels)),
             )
             locs_normalize!(meg_locs)
             locs_cart2sph!(meg_locs)
@@ -318,7 +323,7 @@ function import_ft(
                 :loc_z => epos[:, 3],
                 :loc_radius_sph => zeros(length(eeg_labels)),
                 :loc_theta_sph => zeros(length(eeg_labels)),
-                :loc_phi_sph => zeros(length(eeg_labels))
+                :loc_phi_sph => zeros(length(eeg_labels)),
             )
             locs_normalize!(eeg_locs)
             locs_cart2sph!(eeg_locs)
@@ -330,7 +335,7 @@ function import_ft(
         ref = if "reref" in keys(cfg) && cfg["reref"] != "no"
             _info(
                 "Embedded referencing is not supported; " *
-                    "please send this file to adam.wysokinski@neuroanalyzer.org",
+                "please send this file to adam.wysokinski@neuroanalyzer.org",
             )
             ""
         else
@@ -383,7 +388,7 @@ function import_ft(
             bad_channels = zeros(Bool, ch_n),
             ssp_labels = ssp_labels,
             ssp_channels = ssp_channels,
-            ssp_data = ssp_data
+            ssp_data = ssp_data,
         )
 
     elseif data_type == "nirs"
@@ -397,7 +402,7 @@ function import_ft(
         wavelength_index = Int64[]
         for idx1 in eachindex(ch_type), idx2 in eachindex(wavelengths)
             if ch_type[idx1] == "nirs" &&
-                    occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1])
+               occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1])
                 push!(wavelength_index, idx2)
             end
         end
@@ -428,7 +433,7 @@ function import_ft(
             :loc_z => pos[:, 3],
             :loc_radius_sph => zeros(length(opt_labels)),
             :loc_theta_sph => zeros(length(opt_labels)),
-            :loc_phi_sph => zeros(length(opt_labels))
+            :loc_phi_sph => zeros(length(opt_labels)),
         )
         locs_normalize!(locs)
         locs_cart2sph!(locs)
@@ -464,7 +469,7 @@ function import_ft(
         head_circumference = -1,
         handedness = "",
         weight = -1,
-        height = -1
+        height = -1,
     )
     e = _create_experiment(; name = "", notes = "", design = "")
     hdr = _create_header(; subject = s, recording = r, experiment = e)
@@ -474,9 +479,9 @@ function import_ft(
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
-            "; $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj))" *
+        "; $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

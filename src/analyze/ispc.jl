@@ -28,16 +28,16 @@ Named tuple:
 - `s2ph::Vector{Float64}`: instantaneous phase of s2
 """
 function ispc(
-        s1::AbstractVector,
-        s2::AbstractVector,
-    )::@NamedTuple{
-        ispcv::Float64,
-        ispca::Float64,
-        sd::Vector{Float64},
-        phd::Vector{Float64},
-        s1ph::Vector{Float64},
-        s2ph::Vector{Float64},
-    }
+    s1::AbstractVector,
+    s2::AbstractVector,
+)::@NamedTuple{
+    ispcv::Float64,
+    ispca::Float64,
+    sd::Vector{Float64},
+    phd::Vector{Float64},
+    s1ph::Vector{Float64},
+    s2ph::Vector{Float64},
+}
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
 
@@ -82,17 +82,17 @@ Named tuple:
 - `ispca::Array{Float64, 3}`: ISPC angle matrices, shape `(channels, channels, epochs)`
 """
 function ispc(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::@NamedTuple{
-        ispcv::Array{Float64, 3},
-        ispca::Array{Float64, 3},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::@NamedTuple{
+    ispcv::Array{Float64, 3},
+    ispca::Array{Float64, 3},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     # number of channels
     ch_n = length(ch)
@@ -150,28 +150,28 @@ Named tuple:
 - `s2ph::Array{Float64, 3}`: signal 2 phases, shape (channels, samples, epochs)
 """
 function ispc(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch1::Union{String, Vector{String}, Regex},
-        ch2::Union{String, Vector{String}, Regex},
-        ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-        ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
-    )::@NamedTuple{
-        ispcv::Matrix{Float64},
-        ispca::Matrix{Float64},
-        sd::Array{Float64, 3},
-        phd::Array{Float64, 3},
-        s1ph::Array{Float64, 3},
-        s2ph::Array{Float64, 3},
-    }
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}, Regex},
+    ch2::Union{String, Vector{String}, Regex},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::@NamedTuple{
+    ispcv::Matrix{Float64},
+    ispca::Matrix{Float64},
+    sd::Array{Float64, 3},
+    phd::Array{Float64, 3},
+    s1ph::Array{Float64, 3},
+    s2ph::Array{Float64, 3},
+}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-                       get_channel(obj1; ch = ch1, exclude = "")
+        get_channel(obj1; ch = ch1, exclude = "")
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-                       get_channel(obj2; ch = ch2, exclude = "")
+        get_channel(obj2; ch = ch2, exclude = "")
     (length(ch1) == length(ch2)) || throw(
         ArgumentError(
             "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",

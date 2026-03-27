@@ -107,15 +107,15 @@ Calculate correlation matrix for a NEURO object.
 - `Array{Float64, 3}`: correlation matrix for each epoch, shape (channels, channels, epochs)
 """
 function corm(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        norm::Bool = false,
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    norm::Bool = false,
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return corm(@view(obj.data[ch, :, :]); norm = norm)
 end

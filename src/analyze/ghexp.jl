@@ -31,18 +31,18 @@ Two modes:
 - `Matrix{Float64}`: shape `(1, 2)` when `q_range=nothing`, otherwise `(length(q_range), 2)` - columns are (exponent, goodness-of-fit)
 """
 function ghexp(
-        s::AbstractVector;
-        tau_range::UnitRange{Int64},
-        q_range::_QRange = nothing,
-    )::Matrix{Float64}
+    s::AbstractVector;
+    tau_range::UnitRange{Int64},
+    q_range::_QRange = nothing,
+)::Matrix{Float64}
 
     # validate
     tau_range[end] < length(s) ||
         throw(
-        ArgumentError(
-            "End of tau_range ($(tau_range[end])) must be < length of s ($(length(s))).",
-        ),
-    )
+            ArgumentError(
+                "End of tau_range ($(tau_range[end])) must be < length of s ($(length(s))).",
+            ),
+        )
 
     if isnothing(q_range)
         ghe = hurst_exponent(Vector(s), tau_range)
@@ -69,10 +69,10 @@ Calculate the Generalised Hurst Exponents (GHEs) for a 3-D signal array.
 - `Array{Float64, 4}`: shape (channels, q, 2, epochs) where `q` is 1 when `q_range=nothing`, otherwise `length(q_range)`
 """
 function ghexp(
-        s::AbstractArray;
-        tau_range::UnitRange{Int64},
-        q_range::_QRange = nothing,
-    )::Array{Float64, 4}
+    s::AbstractArray;
+    tau_range::UnitRange{Int64},
+    q_range::_QRange = nothing,
+)::Array{Float64, 4}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -116,16 +116,16 @@ Calculate the Generalised Hurst Exponents (GHEs) for a NEURO object.
 - `Array{Float64, 4}`: shape `(channels, q, 2, epochs)`
 """
 function ghexp(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        tau_range::UnitRange{Int64},
-        q_range::_QRange = nothing,
-    )::Array{Float64, 4}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    tau_range::UnitRange{Int64},
+    q_range::_QRange = nothing,
+)::Array{Float64, 4}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return ghexp(@view(obj.data[ch, :, :]); tau_range = tau_range, q_range = q_range)
 end

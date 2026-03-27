@@ -22,12 +22,12 @@ The model is trained with all other signal channels as features and the target c
 - `NeuroAnalyzer.NEURO`: output NEURO object with the specified channel/epoch replaced by the model's prediction
 """
 function mlinterpolate_channel(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-        model::T,
-    )::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    model::T,
+)::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
 
     # resolve channel names to integer indices
     channels = get_channel(obj; type = datatype(obj))
@@ -38,10 +38,10 @@ function mlinterpolate_channel(
         throw(ArgumentError("Signal must contain > 1 signal channel."))
     ch in channel_labels ||
         throw(
-        ArgumentError(
-            "\"$ch\" is not a signal channel; cannot interpolate non-signal channels.",
-        ),
-    )
+            ArgumentError(
+                "\"$ch\" is not a signal channel; cannot interpolate non-signal channels.",
+            ),
+        )
     nepochs(obj) > 1 ||
         throw(ArgumentError("Training the model requires > 1 epoch."))
     _check_epochs(obj, ep_ref)
@@ -121,12 +121,12 @@ Interpolate a channel using an MLJ regression model, modifying `obj` in-place.
 - `Nothing`
 """
 function mlinterpolate_channel!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        ep::Int64,
-        ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
-        model::T,
-    )::Nothing where {T <: MLJ.Model}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    model::T,
+)::Nothing where {T <: MLJ.Model}
     obj_new = mlinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref, model = model)
     obj.data = obj_new.data
     obj.history = obj_new.history

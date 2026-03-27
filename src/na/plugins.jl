@@ -139,7 +139,7 @@ function na_plugins_install(plugin::String)::Nothing
                 @error "Cannot install $plugin."
             end
         elseif lowercase(splitext(plugin)[2]) == ".gz" &&
-                lowercase(splitext(splitext(plugin)[1])[2]) == ".tar"
+               lowercase(splitext(splitext(plugin)[1])[2]) == ".tar"
             Sys.which("tar") === nothing && (@error "Unknown command: tar")
             _info("Installing from .TAR.GZ archive")
             try

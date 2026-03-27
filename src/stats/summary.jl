@@ -93,21 +93,21 @@ Named tuple:
 - `mo::Float64`: mode
 """
 function summary(
-        x::AbstractVector;
-        g::String = "",
-    )::@NamedTuple{
-        n::Int64,
-        ms::Int64,
-        m::Float64,
-        v::Float64,
-        s::Float64,
-        mn::Float64,
-        q1::Float64,
-        me::Float64,
-        q3::Float64,
-        mx::Float64,
-        mo::Float64,
-    }
+    x::AbstractVector;
+    g::String = "",
+)::@NamedTuple{
+    n::Int64,
+    ms::Int64,
+    m::Float64,
+    v::Float64,
+    s::Float64,
+    mn::Float64,
+    q1::Float64,
+    me::Float64,
+    q3::Float64,
+    mx::Float64,
+    mo::Float64,
+}
 
     # remove NaNs
     x_clean = rmna(x)
@@ -154,10 +154,10 @@ Return summary statistics for each column of a matrix, printing a formatted tabl
   `:median`, `:Q3`, `:max`, `:mode`
 """
 function summary(
-        x::AbstractMatrix;
-        g::Vector{String},
-        d::Int64 = 3,
-    )::DataFrame
+    x::AbstractMatrix;
+    g::Vector{String},
+    d::Int64 = 3,
+)::DataFrame
     length(g) == size(x, 2) || throw(
         ArgumentError("length(g) ($(length(g))) must equal size(x, 2) ($(size(x, 2)))."),
     )
@@ -188,10 +188,10 @@ Return summary statistics for each vector in a varargs list, printing a formatte
   `:median`, `:Q3`, `:max`, `:mode`
 """
 function summary(
-        x::AbstractArray...;
-        g::Vector{String},
-        d::Int64 = 3,
-    )::DataFrame
+    x::AbstractArray...;
+    g::Vector{String},
+    d::Int64 = 3,
+)::DataFrame
     length(g) == length(x) || throw(
         ArgumentError(
             "Number of group names ($length(g)) must be equal to the number of groups $(size(x, 2)).",

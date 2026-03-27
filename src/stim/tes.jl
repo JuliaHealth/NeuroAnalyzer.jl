@@ -27,14 +27,14 @@ Named tuple:
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """
 function tdcs_dose(;
-        current::Real,
-        pad_area::Real,
-        duration::Int64,
-    )::@NamedTuple{
-        charge::Float64,
-        current_density::Float64,
-        charge_density::Float64,
-    }
+    current::Real,
+    pad_area::Real,
+    duration::Int64,
+)::@NamedTuple{
+    charge::Float64,
+    current_density::Float64,
+    charge_density::Float64,
+}
 
     # validate
     current > 0 || throw(ArgumentError("current must be > 0."))
@@ -83,17 +83,17 @@ Named tuple:
 - `charge_density::Float64`: delivered charge density in kC/m²
 """
 function tacs_dose(;
-        current::Real,
-        pad_area::Real,
-        duration::Int64,
-        offset::Real,
-        frequency::Real,
-        phase::Real,
-    )::@NamedTuple{
-        charge::Float64,
-        current_density::Float64,
-        charge_density::Float64,
-    }
+    current::Real,
+    pad_area::Real,
+    duration::Int64,
+    offset::Real,
+    frequency::Real,
+    phase::Real,
+)::@NamedTuple{
+    charge::Float64,
+    current_density::Float64,
+    charge_density::Float64,
+}
     current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
     duration > 0 || throw(ArgumentError("duration must be > 0."))
@@ -145,16 +145,16 @@ Named tuple:
 - `charge_density::Float64`: delivered charge density in kC/m²
 """
 function tpcs_dose(;
-        current::Real,
-        pad_area::Real,
-        duration::Real,
-        pw::Real,
-        isi::Real,
-    )::@NamedTuple{
-        charge::Float64,
-        current_density::Float64,
-        charge_density::Float64,
-    }
+    current::Real,
+    pad_area::Real,
+    duration::Real,
+    pw::Real,
+    isi::Real,
+)::@NamedTuple{
+    charge::Float64,
+    current_density::Float64,
+    charge_density::Float64,
+}
     current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
     duration > 0 || throw(ArgumentError("duration must be > 0."))
@@ -207,19 +207,19 @@ Create a TES (tDCS/tACS/tRNS/tPCS) stimulation protocol dictionary.
 - `Dict`: protocol dictionary with all stimulation parameters
 """
 function tes_protocol(;
-        type::Symbol,
-        hd::Bool,
-        current::Real,
-        frequency::Real = 0,
-        anode_size::Tuple{Int64, Int64},
-        cathode_size::Tuple{Int64, Int64},
-        anode_loc::Symbol,
-        cathode_loc::Symbol,
-        duration::Real,
-        ramp_in::Real,
-        ramp_out::Real,
-        sham::Bool,
-    )::Dict
+    type::Symbol,
+    hd::Bool,
+    current::Real,
+    frequency::Real = 0,
+    anode_size::Tuple{Int64, Int64},
+    cathode_size::Tuple{Int64, Int64},
+    anode_loc::Symbol,
+    cathode_loc::Symbol,
+    duration::Real,
+    ramp_in::Real,
+    ramp_out::Real,
+    sham::Bool,
+)::Dict
 
     # validate
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
@@ -241,7 +241,7 @@ function tes_protocol(;
         :current => current,
         :frequency => frequency,
         :anode_size => anode_size
-            :cathode_size => cathode_size,
+        :cathode_size => cathode_size,
         :anode_loc => anode_loc,
         :cathode_loc => cathode_loc,
         :duration => duration,

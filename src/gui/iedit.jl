@@ -176,9 +176,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         [push!(combo_chunits, idx) for idx in NeuroAnalyzer.channel_units]
         combo_chunits.active =
             findfirst(
-            isequal(_ch_units(ch_types[current_channel])),
-            NeuroAnalyzer.channel_units,
-        ) - 1
+                isequal(_ch_units(ch_types[current_channel])),
+                NeuroAnalyzer.channel_units,
+            ) - 1
 
         lab_chlabel = GtkLabel("Label")
         entry_label = GtkEntry()
@@ -544,14 +544,14 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                     entry_label.text = ch_labels[current_channel]
                     combo_chtype.active =
                         findfirst(
-                        isequal(ch_types[current_channel]),
-                        NeuroAnalyzer.channel_types,
-                    ) - 2
+                            isequal(ch_types[current_channel]),
+                            NeuroAnalyzer.channel_types,
+                        ) - 2
                     combo_chunits.active =
                         findfirst(
-                        isequal(ch_units[current_channel]),
-                        NeuroAnalyzer.channel_units,
-                    ) - 1
+                            isequal(ch_units[current_channel]),
+                            NeuroAnalyzer.channel_units,
+                        ) - 1
                     refresh = false
                     _refresh_locs()
                     refresh = true
@@ -599,72 +599,72 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         signal_connect(entry_loc_radius, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius] =
-                    entry_loc_radius.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius] =
+                        entry_loc_radius.value
+                )
             return _refresh_plots()
         end
 
         signal_connect(entry_loc_theta, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta] =
-                    entry_loc_theta.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta] =
+                        entry_loc_theta.value
+                )
             return _refresh_plots()
         end
 
         signal_connect(entry_loc_x, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x] =
-                    entry_loc_x.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x] =
+                        entry_loc_x.value
+                )
             return _refresh_plots()
         end
 
         signal_connect(entry_loc_y, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y] =
-                    entry_loc_y.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y] =
+                        entry_loc_y.value
+                )
             return _refresh_plots()
         end
 
         signal_connect(entry_loc_z, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z] =
-                    entry_loc_z.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z] =
+                        entry_loc_z.value
+                )
             return _refresh_plots()
         end
 
         signal_connect(entry_loc_radius_sph, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph] =
-                    entry_loc_radius_sph.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph] =
+                        entry_loc_radius_sph.value
+                )
             return _refresh_plots()
         end
 
         signal_connect(entry_loc_theta_sph, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph] =
-                    entry_loc_theta_sph.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph] =
+                        entry_loc_theta_sph.value
+                )
             return _refresh_plots()
         end
 
         signal_connect(entry_loc_phi_sph, "value-changed") do widget
             current_channel in ch_signal &&
                 (
-                locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph] =
-                    entry_loc_phi_sph.value
-            )
+                    locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph] =
+                        entry_loc_phi_sph.value
+                )
             return _refresh_plots()
         end
 
@@ -900,9 +900,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         return signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             # CONTROL
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             end
         end

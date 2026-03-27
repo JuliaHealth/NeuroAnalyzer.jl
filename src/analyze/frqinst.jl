@@ -103,14 +103,14 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 Uses the Hilbert transform; best results for narrowband signals. Broadband signals produce meaningless instantaneous frequencies.
 """
 function frqinst(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return frqinst(@view(obj.data[ch, :, :])) .* sr(obj)
 end

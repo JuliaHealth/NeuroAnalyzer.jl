@@ -39,12 +39,12 @@ Named tuple:
 - `seg2::Vector{Float64}`: averaged segment 2
 """
 function seg_mean(
-        seg1::AbstractArray,
-        seg2::AbstractArray,
-    )::@NamedTuple{
-        seg1::Vector{Float64},
-        seg2::Vector{Float64},
-    }
+    seg1::AbstractArray,
+    seg2::AbstractArray,
+)::@NamedTuple{
+    seg1::Vector{Float64},
+    seg2::Vector{Float64},
+}
     seg1 = seg_mean(seg1)
     seg2 = seg_mean(seg2)
 
@@ -68,11 +68,11 @@ Extract segment from a matrix.
 - `Union{AbstractMatrix, AbstractVector}`
 """
 function seg_extract(
-        m::AbstractMatrix,
-        rc::NTuple{4, Int64};
-        v::Bool = false,
-        c::Bool = false,
-    )::Union{AbstractMatrix, AbstractVector}
+    m::AbstractMatrix,
+    rc::NTuple{4, Int64};
+    v::Bool = false,
+    c::Bool = false,
+)::Union{AbstractMatrix, AbstractVector}
     r1 = rc[1]
     c1 = rc[2]
     r2 = rc[3]
@@ -130,13 +130,13 @@ Named tuple:
 - `bm::Matrix{Bool}`: map of the segment
 """
 function seg_extract(
-        m::AbstractMatrix;
-        threshold::Union{Real, Tuple{Real, Real}} = 0,
-        threshold_type::Symbol = :neq,
-    )::@NamedTuple{
-        idx::Vector{CartesianIndex{2}},
-        bm::Matrix{Bool},
-    }
+    m::AbstractMatrix;
+    threshold::Union{Real, Tuple{Real, Real}} = 0,
+    threshold_type::Symbol = :neq,
+)::@NamedTuple{
+    idx::Vector{CartesianIndex{2}},
+    bm::Matrix{Bool},
+}
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
 
     if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
@@ -193,17 +193,17 @@ Interactive selection of a matrix area.
 - `Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
 function seg_select(
-        m::AbstractMatrix;
-        shape::Symbol = :r,
-        extract::Bool = false,
-        v::Bool = false,
-    )::Union{
-        Nothing,
-        <:Real,
-        Tuple{Int64, Int64},
-        Tuple{Int64, Int64, Int64, Int64},
-        Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
-    }
+    m::AbstractMatrix;
+    shape::Symbol = :r,
+    extract::Bool = false,
+    v::Bool = false,
+)::Union{
+    Nothing,
+    <:Real,
+    Tuple{Int64, Int64},
+    Tuple{Int64, Int64, Int64, Int64},
+    Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
+}
     _check_var(shape, [:r, :p, :c], "shape")
 
     size_x = size(m, 2)

@@ -1,20 +1,27 @@
+"""
+    _wl2ext(wl)
+
+Get molar extinction coefficient e in [cm-1/(moles/liter)].
+
+# Source
+
+Wray, S., Cope, M., Delpy, D., Wyatt, J., Reynolds, E. (1988). Characterization of the near infrared absorption spectra of cytochrome aa3 and haemoglobin for the non-invasive monitoring of cerebral oxygenation Biochimica et Biophysica Acta (BBA) - Bioenergetics 933(1), 184-192. https://dx.doi.org/10.1016/0005-2728(88)90069-2
+
+To convert this data to absorbance A, multiply by the molar concentration and the pathlength. For example, if x is the number of grams per liter and a 1 cm cuvette is being used, then the absorbance is given by
+
+    (e) [(1/cm)/(moles/liter)] (x) [g/liter] (1) [cm]
+A =  ---------------------------------------------------
+                      66,500 [g/mole]
+
+using 66,500 as the gram molecular weight of hemoglobin.
+
+To convert this data to absorption coefficient in (cm-1), multiply by the molar concentration and 2.303,
+
+µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
+
+where x is the number of grams per liter. A typical value of x for whole blood is x=150 g Hb/liter.
+"""
 function _wl2ext(wl::Real)::Vector{Float64}
-    """
-    Get molar extinction coefficient e in [cm-1/(moles/liter)].
-
-    # Source
-
-    Wray, S., Cope, M., Delpy, D., Wyatt, J., Reynolds, E. (1988). Characterization of the near infrared absorption spectra of cytochrome aa3 and haemoglobin for the non-invasive monitoring of cerebral oxygenation Biochimica et Biophysica Acta (BBA) - Bioenergetics 933(1), 184-192. https://dx.doi.org/10.1016/0005-2728(88)90069-2
-
-    To convert this data to absorbance A, multiply by the molar concentration and the pathlength. For example, if x is the number of grams per liter and a 1 cm cuvette is being used, then the absorbance is given by
-        (e) [(1/cm)/(moles/liter)] (x) [g/liter] (1) [cm]
-    A =  ---------------------------------------------------
-                          66,500 [g/mole]
-    using 66,500 as the gram molecular weight of hemoglobin.
-    To convert this data to absorption coefficient in (cm-1), multiply by the molar concentration and 2.303,
-    µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
-    where x is the number of grams per liter. A typical value of x for whole blood is x=150 g Hb/liter.
-    """
     wl_hb = [
         650.0 506.0 3743.0;
         652.0 488.0 3677.0;

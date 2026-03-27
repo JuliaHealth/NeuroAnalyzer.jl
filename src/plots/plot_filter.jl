@@ -49,24 +49,24 @@ Plot filter response with interactive controls for various filter types.
 - Bandwidth (`bw`) is required for `:firls`, `:remez`, and `:iirnotch` filters.
 """
 function plot_filter(;
-        fs::Int64,
-        fprototype::Symbol,
-        ftype::Union{Nothing, Symbol} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-        flim::Tuple{Real, Real} = (0, fs / 2),
-        mono::Bool = false,
-        gui::Bool = true,
-    )::Union{
-        GLMakie.Figure,
-        Vector{Float64},
-        ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-        Biquad{:z, Float64},
-    }
+    fs::Int64,
+    fprototype::Symbol,
+    ftype::Union{Nothing, Symbol} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    flim::Tuple{Real, Real} = (0, fs / 2),
+    mono::Bool = false,
+    gui::Bool = true,
+)::Union{
+    GLMakie.Figure,
+    Vector{Float64},
+    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+    Biquad{:z, Float64},
+}
 
     # validate
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -164,14 +164,14 @@ function plot_filter(;
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         (ftype in [:lp, :hp] && length(cutoff) == 1) ||
             throw(
-            ArgumentError(
-                "For :$(ftype) filter, cutoff must specify only one frequency.",
-            ),
-        )
+                ArgumentError(
+                    "For :$(ftype) filter, cutoff must specify only one frequency.",
+                ),
+            )
         (ftype in [:bp, :bs] && length(cutoff) == 2) ||
             throw(
-            ArgumentError("For :$(ftype) filter, cutoff must specify two frequencies."),
-        )
+                ArgumentError("For :$(ftype) filter, cutoff must specify two frequencies."),
+            )
     end
     if length(cutoff) == 1
         cutoff > 0 || throw(ArgumentError("cutoff must be > 0 Hz."))
@@ -1253,19 +1253,19 @@ Plot filter response.
 - `f::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: if `gui=true`
 """
 function plot_filter(
-        obj::NeuroAnalyzer.NEURO;
-        fprototype::Symbol,
-        ftype::Union{Nothing, Symbol} = nothing,
-        cutoff::Union{Real, Tuple{Real, Real}},
-        order::Union{Nothing, Int64} = nothing,
-        rp::Union{Nothing, Real} = nothing,
-        rs::Union{Nothing, Real} = nothing,
-        bw::Union{Nothing, Real} = nothing,
-        w::Union{Nothing, AbstractVector} = nothing,
-        flim::Tuple{Real, Real} = (0, sr(obj) / 2),
-        mono::Bool = false,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    fprototype::Symbol,
+    ftype::Union{Nothing, Symbol} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    mono::Bool = false,
+    gui::Bool = true,
+)::GLMakie.Figure
     return plot_filter(;
         fs = sr(obj),
         fprototype = fprototype,

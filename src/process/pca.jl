@@ -22,14 +22,14 @@ Named tuple:
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pca_decompose(
-        s::AbstractArray;
-        n::Int64,
-    )::@NamedTuple{
-        pc::Array{Float64, 3},
-        pcv::Matrix{Float64},
-        pcm::Vector{Float64},
-        pc_model::MultivariateStats.PCA{Float64},
-    }
+    s::AbstractArray;
+    n::Int64,
+)::@NamedTuple{
+    pc::Array{Float64, 3},
+    pcv::Matrix{Float64},
+    pcm::Vector{Float64},
+    pc_model::MultivariateStats.PCA{Float64},
+}
     _chk3d(s)
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     n <= size(s, 1) || throw(ArgumentError("n must be ≤ $(size(s, 1))."))
@@ -99,15 +99,15 @@ Named tuple:
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pca_decompose(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        n::Int64,
-    )::@NamedTuple{
-        pc::Array{Float64, 3},
-        pcv::Matrix{Float64},
-        pcm::Vector{Float64},
-        pc_model::MultivariateStats.PCA{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Int64,
+)::@NamedTuple{
+    pc::Array{Float64, 3},
+    pcv::Matrix{Float64},
+    pcm::Vector{Float64},
+    pc_model::MultivariateStats.PCA{Float64},
+}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -131,10 +131,10 @@ Reconstructs signal using PCA components for a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function pca_reconstruct(
-        s::AbstractArray;
-        pc::AbstractArray,
-        pc_model::MultivariateStats.PCA{Float64},
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    pc::AbstractArray,
+    pc_model::MultivariateStats.PCA{Float64},
+)::Array{Float64, 3}
     _chk3d(s)
     s_new = similar(s, Float64)
     ep_n = size(s, 3)
@@ -164,11 +164,11 @@ Reconstruct signal using PCA components (`pc` and `pca`).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function pca_reconstruct(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pc::Array{Float64, 3},
-        pc_model::MultivariateStats.PCA{Float64},
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pc::Array{Float64, 3},
+    pc_model::MultivariateStats.PCA{Float64},
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -200,11 +200,11 @@ Reconstruct signals using PCA components (`pc` and `pc_model`).
 - `Nothing`
 """
 function pca_reconstruct!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pc::Array{Float64, 3},
-        pc_model::MultivariateStats.PCA{Float64},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pc::Array{Float64, 3},
+    pc_model::MultivariateStats.PCA{Float64},
+)::Nothing
     obj_new = pca_reconstruct(obj; ch = ch, pc = pc, pc_model = pc_model)
     obj.data = obj_new.data
     obj.history = obj_new.history

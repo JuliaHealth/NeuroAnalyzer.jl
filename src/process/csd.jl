@@ -30,11 +30,11 @@ The algorithm (Perrin et al. 1989):
 2. Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
 """
 function csd(
-        obj::NeuroAnalyzer.NEURO;
-        m::Int64 = 4,
-        n::Int64 = 8,
-        lambda::Float64 = 10^-5,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    m::Int64 = 4,
+    n::Int64 = 8,
+    lambda::Float64 = 10^-5,
+)::NeuroAnalyzer.NEURO
 
     # validate
     _check_datatype(obj, "eeg")
@@ -64,8 +64,8 @@ function csd(
     Gs_rs = vec(
         sum(
             Gs_inv; dims
-            = 2
-        )
+            = 2,
+        ),
     )
     Gs_inv_sum = sum(Gs_rs)
 
@@ -123,11 +123,11 @@ Transform EEG data using the CSD transformation in-place.
 2. Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clinical Neurophysiology. 2006;117(2):348–368.
 """
 function csd!(
-        obj::NeuroAnalyzer.NEURO;
-        m::Int64 = 4,
-        n::Int64 = 8,
-        lambda::Float64 = 10^-5,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    m::Int64 = 4,
+    n::Int64 = 8,
+    lambda::Float64 = 10^-5,
+)::Nothing
     obj_new = csd(obj; m = m, n = n, lambda = lambda)
     obj.data = obj_new.data
     obj.header = obj_new.header
@@ -159,13 +159,13 @@ Named tuple:
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184–187.
 """
 function gh(
-        locs::DataFrame;
-        m::Int64 = 4,
-        n::Int64 = 8,
-    )::@NamedTuple{
-        G::Matrix{Float64},
-        H::Matrix{Float64},
-    }
+    locs::DataFrame;
+    m::Int64 = 4,
+    n::Int64 = 8,
+)::@NamedTuple{
+    G::Matrix{Float64},
+    H::Matrix{Float64},
+}
     (m >= 2 && m <= 10) || throw(ArgumentError("m must be in [2, 10]."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 

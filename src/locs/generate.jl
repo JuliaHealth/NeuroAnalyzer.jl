@@ -220,9 +220,9 @@ function locs_generate(locs::DataFrame)::DataFrame
             z[lab .== "afz"] .= zi
         end
         for (lbl, phi) in [
-                ("af2", 67.5), ("af4", 45), ("af6", 22.5),
-                ("af1", 112.5), ("af3", 135), ("af7", 157.5),
-            ]
+            ("af2", 67.5), ("af4", 45), ("af6", 22.5),
+            ("af1", 112.5), ("af3", 135), ("af7", 157.5),
+        ]
             let (xi, yi, zi) = sph2cart(r, 0, phi)
                 x[lab .== lbl] .= xi
                 y[lab .== lbl] .= off .+ yi
@@ -346,9 +346,9 @@ function locs_generate(locs::DataFrame)::DataFrame
             z[lab .== "poz"] .= zi
         end
         for (lbl, phi) in [
-                ("po2", 67.5), ("po4", 45), ("po6", 22.5), ("po8", 0),
-                ("po1", 112.5), ("po3", 135), ("po5", 157.5), ("po7", 180),
-            ]
+            ("po2", 67.5), ("po4", 45), ("po6", 22.5), ("po8", 0),
+            ("po1", 112.5), ("po3", 135), ("po5", 157.5), ("po7", 180),
+        ]
             let (xi, yi, zi) = sph2cart(r, 0, phi)
                 x[lab .== lbl] .= xi
                 y[lab .== lbl] .= off .+ yi
@@ -458,9 +458,9 @@ function locs_generate!(locs::DataFrame)::Nothing
 
     # copy all location columns back into the original DataFrame.
     for col in (
-            :loc_radius, :loc_theta, :loc_x, :loc_y, :loc_z,
-            :loc_radius_sph, :loc_theta_sph, :loc_phi_sph,
-        )
+        :loc_radius, :loc_theta, :loc_x, :loc_y, :loc_z,
+        :loc_radius_sph, :loc_theta_sph, :loc_phi_sph,
+    )
         locs[:, col] = locs_tmp[:, col]
     end
 

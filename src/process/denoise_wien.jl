@@ -65,9 +65,9 @@ Perform Wiener deconvolution denoising on selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
 """
 function denoise_wien(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -96,9 +96,9 @@ Perform Wiener deconvolution denoising in-place on selected channels of a NEURO 
 - `Nothing`
 """
 function denoise_wien!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Nothing
     obj_new = denoise_wien(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history

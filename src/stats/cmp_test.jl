@@ -43,70 +43,70 @@ All other tests, named tuple:
 - `p::Float64`: two-tailed p-value (clamped to `eps()` if below machine epsilon)
 """
 function cmp_test(
-        s1::AbstractVector,
-        s2::AbstractVector;
-        paired::Bool,
-        alpha::Float64 = 0.05,
-        type::Symbol = :auto,
-        exact::Bool = false,
-        nperm::Int64 = 1000,
-        verbose::Bool = true,
-    )::Union{
-        @NamedTuple{
-            t::OneSampleTTest,
-            ts::Tuple{Float64, String},
-            tc::Tuple{Float64, Float64},
-            df::Float64,
-            p::Float64,
-        },
-        @NamedTuple{
-            t::EqualVarianceTTest,
-            ts::Tuple{Float64, String},
-            tc::Tuple{Float64, Float64},
-            df::Float64,
-            p::Float64,
-        },
-        @NamedTuple{
-            t::UnequalVarianceTTest,
-            ts::Tuple{Float64, String},
-            tc::Tuple{Float64, Float64},
-            df::Float64,
-            p::Float64,
-        },
-        @NamedTuple{
-            t::ExactSignedRankTest{Float64},
-            ts::Tuple{Float64, String},
-            tc::Float64,
-            df::Float64,
-            p::Float64,
-        },
-        @NamedTuple{
-            t::ApproximateSignedRankTest{Float64},
-            ts::Tuple{Float64, String},
-            tc::Float64,
-            df::Float64,
-            p::Float64,
-        },
-        @NamedTuple{
-            t::ExactMannWhitneyUTest{Float64},
-            ts::Tuple{Float64, String},
-            tc::Float64,
-            df::Float64,
-            p::Float64,
-        },
-        @NamedTuple{
-            t::ApproximateMannWhitneyUTest{Float64},
-            ts::Tuple{Float64, String},
-            tc::Float64,
-            df::Float64,
-            p::Float64,
-        },
-        @NamedTuple{
-            t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64},
-            p1::Float64,
-            p2::Float64,
-        }
+    s1::AbstractVector,
+    s2::AbstractVector;
+    paired::Bool,
+    alpha::Float64 = 0.05,
+    type::Symbol = :auto,
+    exact::Bool = false,
+    nperm::Int64 = 1000,
+    verbose::Bool = true,
+)::Union{
+    @NamedTuple{
+        t::OneSampleTTest,
+        ts::Tuple{Float64, String},
+        tc::Tuple{Float64, Float64},
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::EqualVarianceTTest,
+        ts::Tuple{Float64, String},
+        tc::Tuple{Float64, Float64},
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::UnequalVarianceTTest,
+        ts::Tuple{Float64, String},
+        tc::Tuple{Float64, Float64},
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ExactSignedRankTest{Float64},
+        ts::Tuple{Float64, String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ApproximateSignedRankTest{Float64},
+        ts::Tuple{Float64, String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ExactMannWhitneyUTest{Float64},
+        ts::Tuple{Float64, String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::ApproximateMannWhitneyUTest{Float64},
+        ts::Tuple{Float64, String},
+        tc::Float64,
+        df::Float64,
+        p::Float64,
+    },
+    @NamedTuple{
+        t::@NamedTuple{perm_diff::Vector{Float64}, obs_diff::Float64},
+        p1::Float64,
+        p2::Float64,
     }
+}
 
     # validate
     _check_var(type, [:auto, :perm, :p, :np], "type")
@@ -206,7 +206,8 @@ function cmp_test(
 
         # build null distribution by repeatedly shuffling group labels
         perm_diff = zeros(nperm)
-        progbar = Progress(nperm; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+        progbar =
+            Progress(nperm; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
         @inbounds for idx in 1:nperm
             # random label assignment: first n1 positions → group 0, rest → group 1

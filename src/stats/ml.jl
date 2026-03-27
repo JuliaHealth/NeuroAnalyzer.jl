@@ -76,11 +76,11 @@ Named tuple:
 https://www.statology.org/what-is-a-good-f1-score/
 """
 function f1(;
-        tp::Int64,
-        tn::Int64,
-        fp::Int64,
-        fn::Int64,
-    )::@NamedTuple{f1::Float64, p::Float64, r::Float64}
+    tp::Int64,
+    tn::Int64,
+    fp::Int64,
+    fn::Int64,
+)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
 
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
@@ -135,11 +135,11 @@ Named tuple:
 https://www.statology.org/misclassification-rate/
 """
 function mscr(;
-        tp::Int64,
-        tn::Int64,
-        fp::Int64,
-        fn::Int64,
-    )::@NamedTuple{mr::Float64, acc::Float64}
+    tp::Int64,
+    tn::Int64,
+    fp::Int64,
+    fn::Int64,
+)::@NamedTuple{mr::Float64, acc::Float64}
 
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))

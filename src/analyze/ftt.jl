@@ -27,21 +27,21 @@ Named tuple:
 - `t_sdsd::Float64`: standard deviation of successive differences [ms]: `std(diff(ITI))`
 """
 function ftt_analyze(
-        t::@NamedTuple{
-            taps::Vector{Int64},
-            tap_t::Vector{Vector{Float64}},
-            tap_d::Vector{Vector{Float64}},
-            taps_int::Vector{Int64},
-            tap_t_int::Vector{Vector{Float64}},
-            tap_d_int::Vector{Vector{Float64}},
-        }
-    )::@NamedTuple{
-        n::Int64,
-        t_mean::Float64,
-        t_median::Float64,
-        t_rmssd::Float64,
-        t_sdsd::Float64,
+    t::@NamedTuple{
+        taps::Vector{Int64},
+        tap_t::Vector{Vector{Float64}},
+        tap_d::Vector{Vector{Float64}},
+        taps_int::Vector{Int64},
+        tap_t_int::Vector{Vector{Float64}},
+        tap_d_int::Vector{Vector{Float64}},
     }
+)::@NamedTuple{
+    n::Int64,
+    t_mean::Float64,
+    t_median::Float64,
+    t_rmssd::Float64,
+    t_sdsd::Float64,
+}
 
     # total tap count across all trials
     n = sum(t.taps)

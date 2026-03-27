@@ -24,18 +24,18 @@ export plot_locs3d
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_locs3d(
-        locs::DataFrame;
-        ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
-        sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
-        ch_labels::Bool = true,
-        head_labels::Bool = true,
-        mono::Bool = false,
-        cart::Bool = false,
-        cam::Tuple{Real, Real} = (20, 45),
-        mesh_type::Symbol = :disabled,
-        mesh_alpha::Float64 = 0.95,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    locs::DataFrame;
+    ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
+    sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
+    ch_labels::Bool = true,
+    head_labels::Bool = true,
+    mono::Bool = false,
+    cart::Bool = false,
+    cam::Tuple{Real, Real} = (20, 45),
+    mesh_type::Symbol = :disabled,
+    mesh_alpha::Float64 = 0.95,
+    gui::Bool = true,
+)::GLMakie.Figure
 
     # validate
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
@@ -80,7 +80,7 @@ function plot_locs3d(
     end
 
     if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 &&
-            maximum(locs[:, :loc_z]) <= 1.5
+       maximum(locs[:, :loc_z]) <= 1.5
         x_lim = (-1.5, 1.5)
         y_lim = (-1.5, 1.5)
         z_lim = (-1.5, 1.5)
@@ -246,18 +246,18 @@ Preview of channel locations.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_locs3d(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        sch::Union{String, Vector{String}, Regex} = "",
-        ch_labels::Bool = true,
-        head_labels::Bool = false,
-        cart::Bool = false,
-        mono::Bool = false,
-        cam::Tuple{Real, Real} = (20, 45),
-        mesh_type::Symbol = :disabled,
-        mesh_alpha::Float64 = 0.95,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    sch::Union{String, Vector{String}, Regex} = "",
+    ch_labels::Bool = true,
+    head_labels::Bool = false,
+    cart::Bool = false,
+    mono::Bool = false,
+    cam::Tuple{Real, Real} = (20, 45),
+    mesh_type::Symbol = :disabled,
+    mesh_alpha::Float64 = 0.95,
+    gui::Bool = true,
+)::GLMakie.Figure
 
     # validate
     datatype(obj) in ["eeg"] ||

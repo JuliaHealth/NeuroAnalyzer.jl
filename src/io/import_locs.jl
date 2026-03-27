@@ -66,8 +66,8 @@ function import_locs(file_name::String)::DataFrame
         throw(
             ArgumentError(
                 "Unknown locations file format \"$ext\". " *
-                    "Supported: .ced, .elc, .locs, .tsv, .sfp, .csd, .geo, " *
-                    ".mat, .txt, .dat, .asc, .csv"
+                "Supported: .ced, .elc, .locs, .tsv, .sfp, .csd, .geo, " *
+                ".mat, .txt, .dat, .asc, .csv",
             ),
         )
     end
@@ -163,7 +163,7 @@ function import_locs_locs(file_name::String)::DataFrame
 
     locs_raw = CSV.read(
         file_name; header = false, delim = "\t",
-        stringtype = String, DataFrame
+        stringtype = String, DataFrame,
     )
     DataFrames.rename!(locs_raw, [:number, :theta, :radius, :label])
 
@@ -280,7 +280,7 @@ function import_locs_tsv(file_name::String)::DataFrame
 
     locs_raw = CSV.read(
         file_name; header = true, delim = "\t",
-        ignorerepeated = true, stringtype = String, DataFrame
+        ignorerepeated = true, stringtype = String, DataFrame,
     )
     colnames = lowercase.(names(locs_raw))
     DataFrames.rename!(locs_raw, Symbol.(colnames))
@@ -307,11 +307,14 @@ function import_locs_tsv(file_name::String)::DataFrame
     z = "z" in colnames ? Float64.(locs_raw[!, "z"]) : zeros(n)
     theta = "theta" in colnames ? Float64.(locs_raw[!, "theta"]) : zeros(n)
     radius = "radius" in colnames ? Float64.(locs_raw[!, "radius"]) : zeros(n)
-    radius_sph = "radius_sph" in colnames ? Float64.(locs_raw[!, "radius_sph"]) :
+    radius_sph =
+        "radius_sph" in colnames ? Float64.(locs_raw[!, "radius_sph"]) :
         "radius" in colnames ? Float64.(locs_raw[!, "radius"]) : zeros(n)
-    theta_sph = "theta_sph" in colnames ? Float64.(locs_raw[!, "theta_sph"]) :
+    theta_sph =
+        "theta_sph" in colnames ? Float64.(locs_raw[!, "theta_sph"]) :
         "theta" in colnames ? Float64.(locs_raw[!, "theta"]) : zeros(n)
-    phi_sph = "phi_sph" in colnames ? Float64.(locs_raw[!, "phi_sph"]) :
+    phi_sph =
+        "phi_sph" in colnames ? Float64.(locs_raw[!, "phi_sph"]) :
         "phi" in colnames ? Float64.(locs_raw[!, "phi"]) : zeros(n)
 
     locs = DataFrame(
@@ -358,14 +361,14 @@ function import_locs_sfp(file_name::String)::DataFrame
         _info("Checking TAB as delimiter")
         locs_raw = CSV.read(
             file_name; header = false, delim = "\t",
-            ignorerepeated = true, stringtype = String, DataFrame
+            ignorerepeated = true, stringtype = String, DataFrame,
         )
     end
     if size(locs_raw, 2) != 4
         _info("Checking SPACE as delimiter")
         locs_raw = CSV.read(
             file_name; header = false, delim = " ",
-            ignorerepeated = true, stringtype = String, DataFrame
+            ignorerepeated = true, stringtype = String, DataFrame,
         )
     end
     size(locs_raw, 2) == 4 ||
@@ -425,7 +428,7 @@ function import_locs_csd(file_name::String)::DataFrame
 
     locs_raw = CSV.read(
         file_name; skipto = 3, delim = ' ', header = false,
-        ignorerepeated = true, stringtype = String, DataFrame
+        ignorerepeated = true, stringtype = String, DataFrame,
     )
     DataFrames.rename!(
         locs_raw,
@@ -574,7 +577,7 @@ function import_locs_mat(file_name::String)::DataFrame
         :loc_z => zeros(n),
         :loc_radius_sph => zeros(n),
         :loc_theta_sph => zeros(n),
-        :loc_phi_sph => zeros(n)
+        :loc_phi_sph => zeros(n),
     )
 
     locs_cart2sph!(locs)
@@ -604,7 +607,7 @@ function import_locs_txt(file_name::String)::DataFrame
 
     locs_raw = CSV.read(
         file_name; header = true, delim = "\t",
-        stringtype = String, DataFrame
+        stringtype = String, DataFrame,
     )
     DataFrames.rename!(locs_raw, [:label, :theta, :phi])
 
@@ -669,20 +672,20 @@ function import_locs_dat(file_name::String)::DataFrame
 
     locs_raw = CSV.read(
         file_name; ignorerepeated = true, delim = ' ',
-        stringtype = String, header = 0, DataFrame
+        stringtype = String, header = 0, DataFrame,
     )
 
     # detect column layout from number of columns and type of column 2
     colnames = if ncol(locs_raw) == 4
         typeof(locs_raw[!, 2]) == Vector{String} ?
-            ["channel", "labels", "x", "y"] : ["channel", "x", "y", "z"]
+        ["channel", "labels", "x", "y"] : ["channel", "x", "y", "z"]
     elseif ncol(locs_raw) == 5
         ["channel", "labels", "x", "y", "z"]
     else
         throw(
             ArgumentError(
-                "$file_name has $(ncol(locs_raw)) columns; expected 4 or 5."
-            )
+                "$file_name has $(ncol(locs_raw)) columns; expected 4 or 5.",
+            ),
         )
     end
 
@@ -800,7 +803,7 @@ function import_locs_csv(file_name::String)::DataFrame
 
     locs = CSV.read(
         file_name; header = true, delim = ",",
-        stringtype = String, DataFrame
+        stringtype = String, DataFrame,
     )
 
     expected = [
@@ -809,11 +812,11 @@ function import_locs_csv(file_name::String)::DataFrame
     ]
     names(locs) == expected ||
         throw(
-        ArgumentError(
-            "$file_name is not a NeuroAnalyzer locs CSV file. " *
-                "Expected columns: $(join(expected, ", "))."
-        ),
-    )
+            ArgumentError(
+                "$file_name is not a NeuroAnalyzer locs CSV file. " *
+                "Expected columns: $(join(expected, ", ")).",
+            ),
+        )
 
     return locs
 end

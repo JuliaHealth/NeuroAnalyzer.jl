@@ -41,24 +41,24 @@ Plot continuous signal.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_cont(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = "all",
-        seg::Tuple{Real, Real} = (0, 10),
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        mono::Bool = false,
-        markers::Bool = true,
-        scale::Bool = true,
-        group_ch::Bool = true,
-        type::Symbol = :normal,
-        avg::Bool = true,
-        ci95::Bool = false,
-        n_channels::Int64 = 20,
-        res::Int64 = 1,
-        snap::Bool = true,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    seg::Tuple{Real, Real} = (0, 10),
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    markers::Bool = true,
+    scale::Bool = true,
+    group_ch::Bool = true,
+    type::Symbol = :normal,
+    avg::Bool = true,
+    ci95::Bool = false,
+    n_channels::Int64 = 20,
+    res::Int64 = 1,
+    snap::Bool = true,
+    gui::Bool = true,
+)::GLMakie.Figure
 
     # validate
     res >= 1 || throw(ArgumentError("res must be ≥ 1."))
@@ -495,23 +495,23 @@ function plot_cont(
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][
                                 get_channel(
-                                    obj;
-                                    ch = clabels[round(Int64, ax1_y)],
-                                )[1],
+                                obj;
+                                ch = clabels[round(Int64, ax1_y)],
+                            )[1],
                             ] =
                                 !obj.header.recording[:bad_channel][
-                                get_channel(
+                                    get_channel(
                                     obj; ch = clabels[round(Int64, ax1_y)],
                                 )[1],
-                            ]
+                                ]
                             notify(bad_ch)
                         end
 
                         # place marker
                         if ax1_x >= ax1.limits[][1][1] &&
-                                ax1_x <= ax1.limits[][1][2] &&
-                                ax1_y >= ax1.limits[][2][1] &&
-                                ax1_y <= ax1.limits[][2][2]
+                           ax1_x <= ax1.limits[][1][2] &&
+                           ax1_y >= ax1.limits[][2][1] &&
+                           ax1_y <= ax1.limits[][2][2]
                             vmarker1[] = NaN
                             vmarker2[] = NaN
                             marker_range[] = [NaN, NaN]
@@ -531,9 +531,9 @@ function plot_cont(
 
                         # place marker
                         if ax1_x >= ax1.limits[][1][1] &&
-                                ax1_x <= ax1.limits[][1][2] &&
-                                ax1_y >= ax1.limits[][2][1] &&
-                                ax1_y <= ax1.limits[][2][2]
+                           ax1_x <= ax1.limits[][1][2] &&
+                           ax1_y >= ax1.limits[][2][1] &&
+                           ax1_y <= ax1.limits[][2][2]
                             vmarker_pos = snap ? round(ax1_x; digits = 1) : ax1_x
                             if isnan(vmarker1[])
                                 vmarker1[] = vmarker_pos
@@ -554,12 +554,12 @@ function plot_cont(
 
                     # change time
                     if ax2_x >= 0 && ax2_x <= (ax2.limits[][1][2] - seg_len) &&
-                            ax2_y >= 0 && ax2_y <= 1
+                       ax2_y >= 0 && ax2_y <= 1
                         seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
                         ax1.limits[] = (seg, ax1.limits[][2])
                         seg_pos[] = round(Int64, ax2_x)
                     elseif ax2_x >= 0 && ax2_x > (ax2.limits[][1][2] - seg_len) &&
-                            ax2_y >= 0 && ax2_y <= 1
+                           ax2_y >= 0 && ax2_y <= 1
                         seg = (ceil(t[end]) - seg_len, ceil(t[end]))
                         ax1.limits[] = (seg, ax1.limits[][2])
                         seg_pos[] = seg[1]
@@ -568,7 +568,7 @@ function plot_cont(
                     # change channels
                     if type === :normal
                         if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
-                                ax3_y <= ax3.limits[][2][2]
+                           ax3_y <= ax3.limits[][2][2]
                             ch1[] = floor(Int64, ax3_y)
                             ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
                             ax1.limits[] =

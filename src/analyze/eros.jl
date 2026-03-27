@@ -47,23 +47,23 @@ Named tuple:
 - `t::Vector{Float64}`: time
 """
 function eros(
-        obj::NeuroAnalyzer.NEURO;
-        ch::String,
-        pad::Int64 = 0,
-        method::Symbol = :stft,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        db::Bool = true,
-        gw::Real = 5,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        wt::T = wavelet(Morlet(2π), β = 2),
-    )::@NamedTuple{
-        s::Array{Float64, 3},
-        f::Vector{Float64},
-        t::Vector{Float64},
-    } where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    pad::Int64 = 0,
+    method::Symbol = :stft,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    db::Bool = true,
+    gw::Real = 5,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    wt::T = wavelet(Morlet(2π), β = 2),
+)::@NamedTuple{
+    s::Array{Float64, 3},
+    f::Vector{Float64},
+    t::Vector{Float64},
+} where {T <: CWT}
 
     # validate
     length(get_channel(obj; ch = ch)) == 1 ||

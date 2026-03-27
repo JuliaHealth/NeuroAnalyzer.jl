@@ -106,9 +106,9 @@ The sampling rate is inferred as `1 / (t[2] - t[1])`.
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-        t::Union{AbstractVector, AbstractRange};
-        nf::Bool = false,
-    )::Tuple{Vector{Float64}, Float64}
+    t::Union{AbstractVector, AbstractRange};
+    nf::Bool = false,
+)::Tuple{Vector{Float64}, Float64}
 
     # validate
     length(t) >= 2 || throw(ArgumentError("t must contain at least 2 elements."))
@@ -146,10 +146,10 @@ Return the frequency vector and Nyquist frequency for a signal vector.
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-        s::AbstractVector,
-        fs::Int64;
-        nf::Bool = false,
-    )::Tuple{Vector{Float64}, Float64}
+    s::AbstractVector,
+    fs::Int64;
+    nf::Bool = false,
+)::Tuple{Vector{Float64}, Float64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -181,10 +181,10 @@ Return the frequency vector and Nyquist frequency for a signal of `n` samples.
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-        n::Int64,
-        fs::Int64;
-        nf::Bool = false,
-    )::Tuple{Vector{Float64}, Float64}
+    n::Int64,
+    fs::Int64;
+    nf::Bool = false,
+)::Tuple{Vector{Float64}, Float64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -217,8 +217,8 @@ Uses the first channel and first epoch of `obj` to infer signal length, and read
 - `Float64`: Nyquist frequency in Hz
 """
 function freqs(
-        obj::NeuroAnalyzer.NEURO;
-        nf::Bool = false,
-    )::Tuple{Vector{Float64}, Float64}
+    obj::NeuroAnalyzer.NEURO;
+    nf::Bool = false,
+)::Tuple{Vector{Float64}, Float64}
     return freqs(obj.data[1, :, 1], sr(obj); nf = nf)
 end

@@ -26,16 +26,16 @@ Named tuple:
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function iftt(
-        duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1,
-        port_name::String = "",
-    )::@NamedTuple{
-        taps::Vector{Int64},
-        tap_t::Vector{Vector{Float64}},
-        tap_d::Vector{Vector{Float64}},
-        taps_int::Vector{Int64},
-        tap_t_int::Vector{Vector{Float64}},
-        tap_d_int::Vector{Vector{Float64}},
-    }
+    duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1,
+    port_name::String = "",
+)::@NamedTuple{
+    taps::Vector{Int64},
+    tap_t::Vector{Vector{Float64}},
+    tap_d::Vector{Vector{Float64}},
+    taps_int::Vector{Int64},
+    tap_t_int::Vector{Vector{Float64}},
+    tap_d_int::Vector{Vector{Float64}},
+}
     (port_name != "" && gpio != -1) ||
         throw(ArgumentError("If serial port is used, GPIO must be specified."))
 
@@ -488,16 +488,16 @@ Named tuple:
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function ftt(
-        duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1,
-        port_name::String = "",
-    )::@NamedTuple{
-        taps::Vector{Int64},
-        tap_t::Vector{Vector{Float64}},
-        tap_d::Vector{Vector{Float64}},
-        taps_int::Vector{Int64},
-        tap_t_int::Vector{Vector{Float64}},
-        tap_d_int::Vector{Vector{Float64}},
-    }
+    duration::Int64 = 20, trials::Int64 = 2, interval::Int64 = 2, gpio::Int64 = -1,
+    port_name::String = "",
+)::@NamedTuple{
+    taps::Vector{Int64},
+    tap_t::Vector{Vector{Float64}},
+    tap_d::Vector{Vector{Float64}},
+    taps_int::Vector{Int64},
+    tap_t_int::Vector{Vector{Float64}},
+    tap_d_int::Vector{Vector{Float64}},
+}
     !(!(port_name != "" && gpio == -1)) &&
         throw(ArgumentError("If serial port is used, GPIO must be specified."))
 

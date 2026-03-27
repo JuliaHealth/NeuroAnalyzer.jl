@@ -19,12 +19,12 @@ Perform wavelet band-pass filtering.
 - `Vector{Float64}`
 """
 function wbp(
-        s::AbstractVector;
-        pad::Int64 = 0,
-        frq::Real,
-        fs::Int64,
-        ncyc::Int64 = 6,
-    )::Vector{Float64}
+    s::AbstractVector;
+    pad::Int64 = 0,
+    frq::Real,
+    fs::Int64,
+    ncyc::Int64 = 6,
+)::Vector{Float64}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -58,12 +58,12 @@ Perform wavelet band-pass filtering for a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function wbp(
-        s::AbstractArray;
-        pad::Int64 = 0,
-        frq::Real,
-        fs::Int64,
-        ncyc::Int64 = 6,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    pad::Int64 = 0,
+    frq::Real,
+    fs::Int64,
+    ncyc::Int64 = 6,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -105,12 +105,12 @@ Perform wavelet band-pass filtering.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function wbp(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pad::Int64 = 0,
-        frq::Real,
-        ncyc::Int64 = 6,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    frq::Real,
+    ncyc::Int64 = 6,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -143,12 +143,12 @@ Perform wavelet band-pass filtering.
 - `Nothing`
 """
 function wbp!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pad::Int64 = 0,
-        frq::Real,
-        ncyc::Int64 = 6,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    frq::Real,
+    ncyc::Int64 = 6,
+)::Nothing
     obj_new = wbp(obj; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
     obj.data = obj_new.data
     obj.history = obj_new.history

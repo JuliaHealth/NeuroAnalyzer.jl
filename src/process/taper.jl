@@ -69,10 +69,10 @@ Taper the signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function taper(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        t::Vector{<:Real},
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    t::Vector{<:Real},
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -102,10 +102,10 @@ Taper the signal.
 - `Nothing`
 """
 function taper!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        t::Vector{<:Real},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    t::Vector{<:Real},
+)::Nothing
     obj_new = taper(obj; ch = ch, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history

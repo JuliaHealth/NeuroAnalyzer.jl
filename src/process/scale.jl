@@ -17,10 +17,10 @@ Multiply channel(s) by `factor`.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function scale(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        factor::Real,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    factor::Real,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -50,10 +50,10 @@ Multiply channel(s) by `factor`.
 - `Nothing`
 """
 function scale!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        factor::Real,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    factor::Real,
+)::Nothing
     obj_new = scale(obj; ch = ch, factor = factor)
     obj.data = obj_new.data
     obj.history = obj_new.history

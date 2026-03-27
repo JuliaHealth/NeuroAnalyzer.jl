@@ -18,11 +18,11 @@ Center channel locations at `(0, 0)`
 - `DataFrame`: modified channel location data
 """
 function locs_center(
-        locs::DataFrame;
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::DataFrame
+    locs::DataFrame;
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::DataFrame
     locs_new = deepcopy(locs)
     # search for central line channels (Fz, Cz, Pz)
     cl = nothing
@@ -89,11 +89,11 @@ Center channel locations at `(0, 0)`.
 - `Nothing`
 """
 function locs_center!(
-        locs::DataFrame;
-        polar::Bool = true,
-        cart::Bool = true,
-        spherical::Bool = true,
-    )::Nothing
+    locs::DataFrame;
+    polar::Bool = true,
+    cart::Bool = true,
+    spherical::Bool = true,
+)::Nothing
     locs[!, :] = locs_center(
         locs;
         polar = polar,

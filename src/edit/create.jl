@@ -324,11 +324,11 @@ Create data, channel labels, types and units and time points for NEURO object.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_data(
-        obj::NeuroAnalyzer.NEURO;
-        data::Array{Float64, 3},
-        fs::Int64,
-        type::String,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{Float64, 3},
+    fs::Int64,
+    type::String,
+)::NeuroAnalyzer.NEURO
 
     # validate
     length(obj.data) == 0 || throw(ArgumentError("OBJ already contains data."))
@@ -369,8 +369,8 @@ Create data, channel labels, types and units and time points for NEURO object.
 - `Nothing`
 """
 function create_data!(
-        obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String,
+)::Nothing
     obj_new = create_data(obj; data = data, fs = fs, type = type)
     obj.header = obj_new.header
     obj.data = obj_new.data

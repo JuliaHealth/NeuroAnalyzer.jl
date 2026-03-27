@@ -19,11 +19,11 @@ Generates a sine-wave kernel at `frq` Hz over a ±1 s window and convolves it wi
 - `Vector{Float64}`: band-pass filtered signal of the same length as `s` (padding is removed after convolution)
 """
 function cbp(
-        s::AbstractVector;
-        pad::Int64 = 0,
-        frq::Real,
-        fs::Int64,
-    )::Vector{Float64}
+    s::AbstractVector;
+    pad::Int64 = 0,
+    frq::Real,
+    fs::Int64,
+)::Vector{Float64}
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
     frq > 0 || throw(ArgumentError("frq must be > 0."))
@@ -52,11 +52,11 @@ Perform convolution band-pass filtering on selected channels of a NEURO object.
 - `NeuroAnalyzer.NEURO`: new object with filtered channels
 """
 function cbp(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pad::Int64 = 0,
-        frq::Real,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    frq::Real,
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -104,11 +104,11 @@ Perform convolution band-pass filtering in-place on selected channels of a NEURO
 - `Nothing`
 """
 function cbp!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        pad::Int64 = 0,
-        frq::Real,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    pad::Int64 = 0,
+    frq::Real,
+)::Nothing
     obj_new = cbp(obj; ch = ch, pad = pad, frq = frq)
     obj.data = obj_new.data
     obj.history = obj_new.history

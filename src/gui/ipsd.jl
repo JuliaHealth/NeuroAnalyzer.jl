@@ -390,9 +390,9 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
             elseif length(
-                    unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
-                ) > 1 &&
-                    (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
+                unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
+            ) > 1 &&
+                   (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
                 warn_dialog(
                     _nill,
                     "For multi-channel $(string(type)) plot all channels must be of the same type.",
@@ -649,18 +649,18 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
 
             # ALT
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt(',')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
                     @idle_add entry_time.value = time_current
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt('.')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -670,33 +670,33 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
                     @idle_add entry_time.value = time_current
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt('m')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
 
             # CONTROL
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('h')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('s')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
                         if Cairo.write_to_png(surface_buf, file_name) ==
-                                Cairo.STATUS_SUCCESS
+                           Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
@@ -704,18 +704,18 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
                     end
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt(',')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + 1
                     time_current = time_current - 1
                     @idle_add entry_time.value = time_current
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('.')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 time_current = entry_time.value
                 if time_current < obj.time_pts[end] - 1
                     time_current += 1
@@ -1109,9 +1109,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 warn_dialog(_nill, "Electrode locations not available.", win)
                 no_error = false
             elseif length(
-                    unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
-                ) > 1 &&
-                    (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
+                unique(obj.header.recording[:channel_type][get_channel(obj; ch = ch)]),
+            ) > 1 &&
+                   (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
                 warn_dialog(
                     _nill,
                     "For multi-channel $(string(type)) plot all channels must be of the same type.",
@@ -1279,32 +1279,32 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             k = keyval
             # ALT
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
-                        keyval == UInt('m')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) &&
+                keyval == UInt('m')
+            )
                 mono = !mono
                 cb_mono.active = mono
             end
             # CONTROL
             if (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('q')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('q')
+            )
                 close(win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('h')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('h')
+            )
                 info_dialog(_nill, help, win)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('s')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('s')
+            )
                 save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
                         surface_buf = Gtk4.cairo_surface(can)
                         if Cairo.write_to_png(surface_buf, file_name) ==
-                                Cairo.STATUS_SUCCESS
+                           Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
                             warn_dialog(_nill, "File cannot be saved!", win)
@@ -1312,9 +1312,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                     end
                 end
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt(',')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt(',')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1
@@ -1322,9 +1322,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 end
                 draw(can)
             elseif (
-                    (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
-                        keyval == UInt('.')
-                )
+                (ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) &&
+                keyval == UInt('.')
+            )
                 ep = Int64(entry_epoch.value)
                 if ep > 1
                     ep -= 1

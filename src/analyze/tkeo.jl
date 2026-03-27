@@ -19,10 +19,10 @@ Calculate Teager-Kaiser energy-tracking operator for a 1-D signal vector.
 - `Vector{Float64}`
 """
 function tkeo(
-        s::AbstractVector,
-        t::AbstractVector = collect(1:length(s));
-        method::Symbol = :pow,
-    )::Vector{Float64}
+    s::AbstractVector,
+    t::AbstractVector = collect(1:length(s));
+    method::Symbol = :pow,
+)::Vector{Float64}
     _check_var(method, [:pow, :der, :amp], "method")
 
     tk = nothing
@@ -64,10 +64,10 @@ Calculate Teager-Kaiser energy-tracking operator for a 3-D signal array.
 - `Array{Float64, 3}`
 """
 function tkeo(
-        s::AbstractArray,
-        t::AbstractVector = collect(1:length(s));
-        method::Symbol = :pow,
-    )::Array{Float64, 3}
+    s::AbstractArray,
+    t::AbstractVector = collect(1:length(s));
+    method::Symbol = :pow,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -105,15 +105,15 @@ Calculate Teager-Kaiser energy-tracking operator for a NEURO object.
 - `Array{Float64, 3}`
 """
 function tkeo(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Symbol = :pow,
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol = :pow,
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return tkeo(@view(obj.data[ch, :, :]), obj.epoch_time; method = method)
 end

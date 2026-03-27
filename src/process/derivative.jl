@@ -90,9 +90,9 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 - `NeuroAnalyzer.NEURO`: new object with differentiated channels
 """
 function derivative(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -121,9 +121,9 @@ Return the derivative of a discrete signal using the symmetric difference quotie
 - `Nothing`
 """
 function derivative!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Nothing
     obj_new = derivative(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history

@@ -6,10 +6,10 @@ function to_mat(y::AbstractVector)
     return ymat
 end
 function to_mat(
-        pairs::Vector{
-            Pair{T1, T2},
-        } where {T1 <: Tuple{<:Real, <:Real}, T2 <: Union{Real, Tuple{<:Real, <:Real}}},
-    )
+    pairs::Vector{
+        Pair{T1, T2},
+    } where {T1 <: Tuple{<:Real, <:Real}, T2 <: Union{Real, Tuple{<:Real, <:Real}}},
+)
     xmat, ymat = zeros(length(pairs), 2), zeros(length(pairs), 2)
     for i in eachindex(pairs)
         xmat[i, :] .= pairs[i].first
@@ -20,9 +20,9 @@ end
 
 to_toeplitz(vals) = to_toeplitz(vals, vals)
 function to_toeplitz(
-        vals_left::AbstractVector{T1},
-        vals_top::AbstractVector{T2},
-    ) where {T1, T2}
+    vals_left::AbstractVector{T1},
+    vals_top::AbstractVector{T2},
+) where {T1, T2}
     @assert vals_left[1] == vals_top[1]
     N_rows, N_cols = length(vals_left), length(vals_top)
     A = zeros(promote_type(T1, T2), N_rows, N_cols)
@@ -37,9 +37,9 @@ end
 
 to_hankel(vals) = to_hankel(vals, vals)
 function to_hankel(
-        vals_left::AbstractVector{T1},
-        vals_bottom::AbstractVector{T2},
-    ) where {T1, T2}
+    vals_left::AbstractVector{T1},
+    vals_bottom::AbstractVector{T2},
+) where {T1, T2}
     @assert vals_left[end] == vals_bottom[1]
     N_rows, N_cols = length(vals_left), length(vals_bottom)
     A = zeros(promote_type(T1, T2), N_rows, N_cols)

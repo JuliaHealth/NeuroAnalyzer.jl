@@ -56,10 +56,10 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         "RecordingType" in k &&
             !(header["RecordingType"] == "continuous") &&
             throw(
-            ArgumentError(
-                "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
-            ),
-        )
+                ArgumentError(
+                    "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+                ),
+            )
 
         # what if the files contains mixed recordings (e.g. EEG + SEEG)
         if "EEGChannelCount" in k && header["EEGChannelCount"] > 0
@@ -169,16 +169,16 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     time_pts =
         round.(
-        collect(
-            0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
-        )[1:(end - 1)];
-        digits = 4,
-    ) .+ t_start
+            collect(
+                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
+            )[1:(end - 1)];
+            digits = 4,
+        ) .+ t_start
     epoch_time =
         round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-        digits = 4,
-    ) .+ t_start
+            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
+            digits = 4,
+        ) .+ t_start
 
     # events
     "acquisition/Stimulus/data" in k && (stim = dataset["acquisition/Stimulus/data"])
@@ -202,7 +202,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         event_start = zeros(length(event_start_sample))
         [
             event_start[idx] in time_pts[event_start_sample[idx]] for
-                idx in eachindex(event_start_sample)
+            idx in eachindex(event_start_sample)
         ]
         event_length = round.(events[!, :duration]; digits = 4)
         event_channel = zeros(Int64, DataFrames.nrow(events))
@@ -296,8 +296,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     _info(
         "Imported: " *
-            uppercase(obj.header.recording[:data_type]) *
-            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits = 2)) s)",
     )
 
     return obj

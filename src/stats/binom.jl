@@ -53,18 +53,18 @@ Named tuple:
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
 """
 function binom_test(
-        prop::Float64,
-        n::Int64;
-        verbose::Bool = true,
-    )::@NamedTuple{
-        x0::Int64,
-        x1::Int64,
-        p0::Float64,
-        p1::Float64,
-        ci0::Tuple{Float64, Float64},
-        ci1::Tuple{Float64, Float64},
-        p::Float64,
-    }
+    prop::Float64,
+    n::Int64;
+    verbose::Bool = true,
+)::@NamedTuple{
+    x0::Int64,
+    x1::Int64,
+    p0::Float64,
+    p1::Float64,
+    ci0::Tuple{Float64, Float64},
+    ci1::Tuple{Float64, Float64},
+    p::Float64,
+}
 
     # validate
     _in(prop, (0.0, 1.0), "prop")
@@ -79,11 +79,11 @@ function binom_test(
     if verbose
         println(
             "Level 0: counts: $x0\t proportion: $(round(1 - prop, digits = 3))\t" *
-                " 95%CI: $(round(ci0[1], digits = 3)), $(round(ci0[2], digits = 3))",
+            " 95%CI: $(round(ci0[1], digits = 3)), $(round(ci0[2], digits = 3))",
         )
         println(
             "Level 1: counts: $x1\t proportion: $(round(prop, digits = 3))\t" *
-                " 95%CI: $(round(ci1[1], digits = 3)), $(round(ci1[2], digits = 3))",
+            " 95%CI: $(round(ci1[1], digits = 3)), $(round(ci1[2], digits = 3))",
         )
     end
 
@@ -129,17 +129,17 @@ Named tuple:
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
 """
 function binom_test(
-        x::Vector{Bool};
-        verbose::Bool = true,
-    )::@NamedTuple{
-        x0::Int64,
-        x1::Int64,
-        p0::Float64,
-        p1::Float64,
-        ci0::Tuple{Float64, Float64},
-        ci1::Tuple{Float64, Float64},
-        p::Float64,
-    }
+    x::Vector{Bool};
+    verbose::Bool = true,
+)::@NamedTuple{
+    x0::Int64,
+    x1::Int64,
+    p0::Float64,
+    p1::Float64,
+    ci0::Tuple{Float64, Float64},
+    ci1::Tuple{Float64, Float64},
+    p::Float64,
+}
 
     # validate
     n = length(x)
@@ -180,18 +180,18 @@ Named tuple:
 - `p::Float64`: Two-sided binomial test p-value (clamped to `eps()` if below machine epsilon)
 """
 function binom_test(
-        x::Int64,
-        n::Int64;
-        verbose::Bool = true,
-    )::@NamedTuple{
-        x0::Int64,
-        x1::Int64,
-        p0::Float64,
-        p1::Float64,
-        ci0::Tuple{Float64, Float64},
-        ci1::Tuple{Float64, Float64},
-        p::Float64,
-    }
+    x::Int64,
+    n::Int64;
+    verbose::Bool = true,
+)::@NamedTuple{
+    x0::Int64,
+    x1::Int64,
+    p0::Float64,
+    p1::Float64,
+    ci0::Tuple{Float64, Float64},
+    ci1::Tuple{Float64, Float64},
+    p::Float64,
+}
 
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))

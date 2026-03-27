@@ -47,26 +47,25 @@ Plot topographical view.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_topo(
-        s::AbstractVector;
-        locs::DataFrame,
-        ch::Union{Int64, Vector{Int64}} = 1:DataFrames.nrow(locs),
-        sch::Union{Nothing, Int64, Vector{Int64}} = nothing,
-        cb::Bool = true,
-        cb_title::String = "[A.U.]",
-        title::String = "",
-        mono::Bool = false,
-        imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
-        contours::Int64 = 0,
-        electrodes::Bool = true,
-        ps::Symbol = :l,
-        head::Bool = true,
-        cart::Bool = false,
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-        threshold_method::Symbol = :reg,
-    )::GLMakie.Figure
-
+    s::AbstractVector;
+    locs::DataFrame,
+    ch::Union{Int64, Vector{Int64}} = 1:DataFrames.nrow(locs),
+    sch::Union{Nothing, Int64, Vector{Int64}} = nothing,
+    cb::Bool = true,
+    cb_title::String = "[A.U.]",
+    title::String = "",
+    mono::Bool = false,
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+    contours::Int64 = 0,
+    electrodes::Bool = true,
+    ps::Symbol = :l,
+    head::Bool = true,
+    cart::Bool = false,
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+    threshold_method::Symbol = :reg,
+)::GLMakie.Figure
     pal = mono ? :grays : :bluesreds
 
     # validate
@@ -246,10 +245,10 @@ function plot_topo(
 
     # draw contours
     if contours > 0 &&
-            (
-            (isnothing(threshold) && threshold_method === :reg) ||
-                (!isnothing(threshold) && threshold_method === :loc)
-        )
+       (
+        (isnothing(threshold) && threshold_method === :reg) ||
+        (!isnothing(threshold) && threshold_method === :loc)
+    )
         GLMakie.contour!(
             ax,
             interpolated_x,
@@ -306,7 +305,7 @@ function plot_topo(
         ps === :m && (sw = 2)
         ps === :s && (sw = 1)
         if (isnothing(threshold) && isnothing(sch)) ||
-                (!isnothing(threshold) && threshold_method === :reg)
+           (!isnothing(threshold) && threshold_method === :reg)
             for idx in 1:ch_n
                 GLMakie.scatter!(
                     ax,
@@ -442,29 +441,29 @@ Topographical plot.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot_topo(
-        obj::NeuroAnalyzer.NEURO;
-        data::Union{Nothing, AbstractArray} = nothing,
-        ch::Union{String, Vector{String}, Regex},
-        sch::Union{Nothing, String, Vector{String}, Regex} = nothing,
-        tpos::Union{Nothing, Real, AbstractVector} = nothing,
-        title::String = "default",
-        mono::Bool = false,
-        cb::Bool = true,
-        cb_title::String = "default",
-        amethod::Symbol = :mean,
-        imethod::Symbol = :sh,
-        nmethod::Symbol = :minmax,
-        contours::Int64 = 0,
-        electrodes::Bool = true,
-        ps::Symbol = :l,
-        head::Bool = true,
-        cart::Bool = false,
-        threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
-        threshold_type::Symbol = :neq,
-        threshold_method::Symbol = :reg,
-        nr::Int64 = 1,
-        nc::Int64 = 0,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    data::Union{Nothing, AbstractArray} = nothing,
+    ch::Union{String, Vector{String}, Regex},
+    sch::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    tpos::Union{Nothing, Real, AbstractVector} = nothing,
+    title::String = "default",
+    mono::Bool = false,
+    cb::Bool = true,
+    cb_title::String = "default",
+    amethod::Symbol = :mean,
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+    contours::Int64 = 0,
+    electrodes::Bool = true,
+    ps::Symbol = :l,
+    head::Bool = true,
+    cart::Bool = false,
+    threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
+    threshold_type::Symbol = :neq,
+    threshold_method::Symbol = :reg,
+    nr::Int64 = 1,
+    nc::Int64 = 0,
+)::GLMakie.Figure
 
     # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one shared colorbar
     if length(tpos) > 1
@@ -509,7 +508,7 @@ function plot_topo(
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
     if !isnothing(sch)
         if isa(sch, String)
             !(length(intersect(ch, get_channel(obj; ch = sch))) == 1) &&
@@ -537,9 +536,9 @@ function plot_topo(
         else
             data =
                 reshape(obj.data, size(obj.data, 1), size(obj.data, 2) * size(obj.data, 3))[
-                ch,
-                tpos,
-            ]
+                    ch,
+                    tpos,
+                ]
         end
         title == "default" && (title = "$(obj.time_pts[tpos]) s")
     else
@@ -549,10 +548,10 @@ function plot_topo(
         end
         length(data) == length(ch) ||
             throw(
-            ArgumentError(
-                "Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch))).",
-            ),
-        )
+                ArgumentError(
+                    "Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch))).",
+                ),
+            )
         title == "default" && (title = "")
     end
 

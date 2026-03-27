@@ -20,12 +20,12 @@ Named tuple:
 - `grad_mag::Vector{Float64}`: scalar field of gradient magnitudes
 """
 function gradient(
-        x::AbstractVector;
-        rev::Bool = false,
-    )::@NamedTuple{
-        grad_vf::Vector{Vector{Float64}},
-        grad_mag::Vector{Float64},
-    }
+    x::AbstractVector;
+    rev::Bool = false,
+)::@NamedTuple{
+    grad_vf::Vector{Vector{Float64}},
+    grad_mag::Vector{Float64},
+}
     g_tmp, grad_mag = _gradient(x; rev = rev)
 
     grad_vf = Vector{Vector{Float64}}(undef, length(g_tmp))
@@ -55,12 +55,12 @@ Named tuple:
 - `grad_mag::Matrix{Float64}`: scalar field of gradient magnitudes
 """
 function gradient(
-        x::AbstractMatrix;
-        rev::Bool = false,
-    )::@NamedTuple{
-        grad_vf::Matrix{Vector{Float64}},
-        grad_mag::Matrix{Float64},
-    }
+    x::AbstractMatrix;
+    rev::Bool = false,
+)::@NamedTuple{
+    grad_vf::Matrix{Vector{Float64}},
+    grad_mag::Matrix{Float64},
+}
     g_tmp, grad_mag = _gradient(x; rev = rev)
 
     grad_vf = Matrix{Vector{Float64}}(undef, size(g_tmp))
@@ -91,12 +91,12 @@ Named tuple:
 - `grad_mag::Array{Float64, 3}`: scalar field of gradient magnitudes
 """
 function gradient(
-        x::AbstractArray;
-        rev::Bool = false,
-    )::@NamedTuple{
-        grad_vf::Array{Vector{Float64}, 3},
-        grad_mag::Array{Float64, 3},
-    }
+    x::AbstractArray;
+    rev::Bool = false,
+)::@NamedTuple{
+    grad_vf::Array{Vector{Float64}, 3},
+    grad_mag::Array{Float64, 3},
+}
     g_tmp, grad_mag = _gradient(x; rev = rev)
 
     grad_vf = Array{Vector{Float64}}(undef, size(g_tmp))

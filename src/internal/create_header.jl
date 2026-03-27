@@ -2,21 +2,21 @@
 # internal helper: build the fields shared by every recording type
 # ---------------------------------------------------------------------------
 function _common_recording_fields(;
-        data_type::String,
-        file_name::String,
-        file_size_mb::Real,
-        file_type::String,
-        recording::String,
-        recording_date::String,
-        recording_time::String,
-        recording_notes::String,
-        channel_type::Vector{String},
-        channel_order::Vector{Int64},
-        clabels::Vector{String},
-        units::Vector{String},
-        sampling_rate::Int64,
-        bad_channels::Vector{Bool},
-    )::Dict
+    data_type::String,
+    file_name::String,
+    file_size_mb::Real,
+    file_type::String,
+    recording::String,
+    recording_date::String,
+    recording_time::String,
+    recording_notes::String,
+    channel_type::Vector{String},
+    channel_order::Vector{Int64},
+    clabels::Vector{String},
+    units::Vector{String},
+    sampling_rate::Int64,
+    bad_channels::Vector{Bool},
+)::Dict
     return Dict(
         :data_type => data_type,
         :file_name => file_name,
@@ -40,15 +40,15 @@ end
 # ---------------------------------------------------------------------------
 
 function _create_subject(;
-        id::String,
-        first_name::String,
-        middle_name::String,
-        last_name::String,
-        handedness::String,
-        head_circumference::Real,
-        weight::Real,
-        height::Real,
-    )::Dict
+    id::String,
+    first_name::String,
+    middle_name::String,
+    last_name::String,
+    handedness::String,
+    head_circumference::Real,
+    weight::Real,
+    height::Real,
+)::Dict
     return Dict(
         :id => id,
         :first_name => first_name,
@@ -66,26 +66,26 @@ end
 # ---------------------------------------------------------------------------
 
 function _create_recording_eeg_like(;
-        data_type::String,
-        file_name::String,
-        file_size_mb::Real,
-        file_type::String,
-        recording::String,
-        recording_date::String,
-        recording_time::String,
-        recording_notes::String,
-        channel_type::Vector{String},
-        channel_order::Vector{Int64},
-        reference::String,
-        clabels::Vector{String},
-        transducers::Vector{String},
-        units::Vector{String},
-        prefiltering::Vector{String},
-        line_frequency::Real,
-        sampling_rate::Int64,
-        gain::Vector{Float64},
-        bad_channels::Vector{Bool},
-    )::Dict
+    data_type::String,
+    file_name::String,
+    file_size_mb::Real,
+    file_type::String,
+    recording::String,
+    recording_date::String,
+    recording_time::String,
+    recording_notes::String,
+    channel_type::Vector{String},
+    channel_order::Vector{Int64},
+    reference::String,
+    clabels::Vector{String},
+    transducers::Vector{String},
+    units::Vector{String},
+    prefiltering::Vector{String},
+    line_frequency::Real,
+    sampling_rate::Int64,
+    gain::Vector{Float64},
+    bad_channels::Vector{Bool},
+)::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
@@ -115,30 +115,30 @@ _create_recording_ecog(; kwargs...) = _create_recording_eeg_like(; kwargs...)
 # ---------------------------------------------------------------------------
 
 function _create_recording_meg(;
-        data_type::String,
-        file_name::String,
-        file_size_mb::Real,
-        file_type::String,
-        recording::String,
-        recording_date::String,
-        recording_time::String,
-        recording_notes::String,
-        channel_type::Vector{String},
-        channel_order::Vector{Int64},
-        reference::String,
-        clabels::Vector{String},
-        units::Vector{String},
-        prefiltering::Vector{String},
-        line_frequency::Real,
-        sampling_rate::Int64,
-        magnetometers::Vector{Int64},
-        gradiometers::Vector{Int64},
-        coil_type::Vector{String},
-        bad_channels::Vector{Bool},
-        ssp_labels::Vector{String},
-        ssp_channels::Vector{Bool},
-        ssp_data::Matrix{Float64},
-    )::Dict
+    data_type::String,
+    file_name::String,
+    file_size_mb::Real,
+    file_type::String,
+    recording::String,
+    recording_date::String,
+    recording_time::String,
+    recording_notes::String,
+    channel_type::Vector{String},
+    channel_order::Vector{Int64},
+    reference::String,
+    clabels::Vector{String},
+    units::Vector{String},
+    prefiltering::Vector{String},
+    line_frequency::Real,
+    sampling_rate::Int64,
+    magnetometers::Vector{Int64},
+    gradiometers::Vector{Int64},
+    coil_type::Vector{String},
+    bad_channels::Vector{Bool},
+    ssp_labels::Vector{String},
+    ssp_channels::Vector{Bool},
+    ssp_data::Matrix{Float64},
+)::Dict
     # normalize time separator (MEG files sometimes use '.' instead of ':')
     recording_time = replace(recording_time, '.' => ':')
     d = _common_recording_fields(;
@@ -169,27 +169,27 @@ end
 # ---------------------------------------------------------------------------
 
 function _create_recording_nirs(;
-        data_type::String,
-        file_name::String,
-        file_size_mb::Real,
-        file_type::String,
-        recording::String,
-        recording_date::String,
-        recording_time::String,
-        recording_notes::String,
-        wavelengths::Vector{Float64},
-        wavelength_index::Vector{Int64},
-        optode_pairs::Matrix{Int64},
-        channel_type::Vector{String},
-        channel_order::Vector{Int64},
-        clabels::Vector{String},
-        units::Vector{String},
-        src_labels::Vector{String},
-        det_labels::Vector{String},
-        opt_labels::Vector{String},
-        sampling_rate::Int64,
-        bad_channels::Vector{Bool},
-    )::Dict
+    data_type::String,
+    file_name::String,
+    file_size_mb::Real,
+    file_type::String,
+    recording::String,
+    recording_date::String,
+    recording_time::String,
+    recording_notes::String,
+    wavelengths::Vector{Float64},
+    wavelength_index::Vector{Int64},
+    optode_pairs::Matrix{Int64},
+    channel_type::Vector{String},
+    channel_order::Vector{Int64},
+    clabels::Vector{String},
+    units::Vector{String},
+    src_labels::Vector{String},
+    det_labels::Vector{String},
+    opt_labels::Vector{String},
+    sampling_rate::Int64,
+    bad_channels::Vector{Bool},
+)::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
@@ -215,22 +215,22 @@ end
 # ---------------------------------------------------------------------------
 
 function _create_recording_prefiltered(;
-        data_type::String,
-        file_name::String,
-        file_size_mb::Real,
-        file_type::String,
-        recording::String,
-        recording_date::String,
-        recording_time::String,
-        recording_notes::String,
-        channel_type::Vector{String},
-        channel_order::Vector{Int64},
-        clabels::Vector{String},
-        units::Vector{String},
-        prefiltering::Vector{String},
-        sampling_rate::Int64,
-        bad_channels::Vector{Bool},
-    )::Dict
+    data_type::String,
+    file_name::String,
+    file_size_mb::Real,
+    file_type::String,
+    recording::String,
+    recording_date::String,
+    recording_time::String,
+    recording_notes::String,
+    channel_type::Vector{String},
+    channel_order::Vector{Int64},
+    clabels::Vector{String},
+    units::Vector{String},
+    prefiltering::Vector{String},
+    sampling_rate::Int64,
+    bad_channels::Vector{Bool},
+)::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
@@ -240,7 +240,7 @@ function _create_recording_prefiltered(;
         d, Dict(
             :prefiltering => prefiltering,
             :epoch_id => "",
-        )
+        ),
     )
     return d
 end
@@ -254,26 +254,26 @@ _create_recording_tpt(; kwargs...) = _create_recording_prefiltered(; kwargs...)
 # ---------------------------------------------------------------------------
 
 function _create_recording_mep(;
-        data_type::String,
-        file_name::String,
-        file_size_mb::Real,
-        file_type::String,
-        recording::String,
-        recording_date::String,
-        recording_time::String,
-        recording_notes::String,
-        channel_type::Vector{String},
-        channel_order::Vector{Int64},
-        clabels::Vector{String},
-        units::Vector{String},
-        sampling_rate::Int64,
-        stimulation_intensity::Vector{Int64},
-        coil_type::Vector{String},
-        stimulation_sample::Vector{Int64},
-        markers_pos::Vector{Int64},
-        markers_neg::Vector{Int64},
-        bad_channels::Vector{Bool},
-    )::Dict
+    data_type::String,
+    file_name::String,
+    file_size_mb::Real,
+    file_type::String,
+    recording::String,
+    recording_date::String,
+    recording_time::String,
+    recording_notes::String,
+    channel_type::Vector{String},
+    channel_order::Vector{Int64},
+    clabels::Vector{String},
+    units::Vector{String},
+    sampling_rate::Int64,
+    stimulation_intensity::Vector{Int64},
+    coil_type::Vector{String},
+    stimulation_sample::Vector{Int64},
+    markers_pos::Vector{Int64},
+    markers_neg::Vector{Int64},
+    bad_channels::Vector{Bool},
+)::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
@@ -302,9 +302,9 @@ function _create_experiment(; name::String, notes::String, design::String)::Dict
 end
 
 function _create_header(;
-        subject::Dict,
-        recording::Dict,
-        experiment::Dict,
-    )::NeuroAnalyzer.HEADER
+    subject::Dict,
+    recording::Dict,
+    experiment::Dict,
+)::NeuroAnalyzer.HEADER
     return NeuroAnalyzer.HEADER(subject, recording, experiment)
 end

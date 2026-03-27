@@ -20,10 +20,10 @@ Example: `f = "cumsum(obj)"` or `f = "obj .^ 2"`.
 - `Array{Float64, 3}`: result array, shape (channels, epoch length, epochs)
 """
 function apply(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        f::String,
-    )::Array{Float64, 3}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    f::String,
+)::Array{Float64, 3}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)

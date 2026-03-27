@@ -20,17 +20,17 @@ Empty plots are added automatically when `length(vfig) < layout[1]*layout[2]` so
 - `GLMakie.Figure`: the plotted figure: composite figure
 """
 function plot_compose(
-        vfig::Vector{GLMakie.Figure};
-        layout::Tuple{Int64, Int64},
-    )::GLMakie.Figure
+    vfig::Vector{GLMakie.Figure};
+    layout::Tuple{Int64, Int64},
+)::GLMakie.Figure
 
     # validate that the layout can accommodate all provided plots.
     layout[1] * layout[2] >= length(vfig) ||
         throw(
-        ArgumentError(
-            "Layout ($(layout[1]) × $(layout[2])) must be ≥ number of plots ($(length(vfig))).",
-        ),
-    )
+            ArgumentError(
+                "Layout ($(layout[1]) × $(layout[2])) must be ≥ number of plots ($(length(vfig))).",
+            ),
+        )
 
     plot_size = (0, 0)
     for idx in eachindex(vfig)
@@ -131,10 +131,10 @@ function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
     # three near-white values are handled to account for sub-pixel anti-aliasing on the background fill
     transparent_pp = map(c -> RGBA(color(c), 1.0), pp)
     for near_white in (
-            RGBA(1.0, 1.0, 1.0, 1.0),
-            RGBA(0.999, 0.999, 0.999, 1.0),
-            RGBA(0.998, 0.998, 0.998, 1.0),
-        )
+        RGBA(1.0, 1.0, 1.0, 1.0),
+        RGBA(0.999, 0.999, 0.999, 1.0),
+        RGBA(0.998, 0.998, 0.998, 1.0),
+    )
         transparent_pp[transparent_pp .== near_white] .=
             RGBA(near_white.r, near_white.g, near_white.b, 0.0)
     end

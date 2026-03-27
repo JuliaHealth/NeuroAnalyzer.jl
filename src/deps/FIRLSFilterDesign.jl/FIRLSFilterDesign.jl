@@ -73,10 +73,10 @@ function validate_bands_D(bands_D, D, fs)
     validate_bands(bands_D, fs)
     size(bands_D, 2) == size(D, 2) == 2 ||
         throw(
-        ArgumentError("Frequency bands and desired response should be N x 2 matrices"),
-    )
+            ArgumentError("Frequency bands and desired response should be N x 2 matrices"),
+        )
     return size(bands_D, 1) == size(D, 1) ||
-        throw(
+           throw(
         ArgumentError("Frequency bands and desired response should be N x 2 matrices"),
     )
 end
@@ -86,7 +86,7 @@ function validate_bands_W(bands_W, W, fs)
     size(bands_W, 2) == size(W, 2) == 2 ||
         throw(ArgumentError("Frequency band and weight matrix should be N x 2."))
     return size(bands_W, 1) == size(W, 1) ||
-        throw(ArgumentError("Number of frequency bands should match number of weights."))
+           throw(ArgumentError("Number of frequency bands should match number of weights."))
 end
 
 function validate_bands(fbands::Matrix{T}, fs) where {T}
@@ -141,14 +141,14 @@ Designs a linear-phase FIR filter.
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
 function firls_design(
-        filter_order::Integer,
-        bands_DW::Matrix,
-        D::Matrix,
-        W::Matrix,
-        antisymmetric::Bool;
-        fs::Real = 1,
-        solver::Function = \,
-    )
+    filter_order::Integer,
+    bands_DW::Matrix,
+    D::Matrix,
+    W::Matrix,
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
     validate_inputs(filter_order, bands_DW, D, W, fs)
     filter_length, M = get_flength_M(filter_order)
     fir_type = infer_fir_type(isodd(filter_length), antisymmetric)
@@ -171,14 +171,14 @@ end
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
 function firls_design(
-        filter_order::Integer,
-        bands_DW::Matrix,
-        D::Union{Vector, Matrix},
-        W::Union{Vector, Matrix},
-        antisymmetric::Bool;
-        fs::Real = 1,
-        solver::Function = \,
-    )
+    filter_order::Integer,
+    bands_DW::Matrix,
+    D::Union{Vector, Matrix},
+    W::Union{Vector, Matrix},
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
     return firls_design(
         filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric,
         fs = fs, solver = solver,
@@ -201,14 +201,14 @@ end
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
 function firls_design(
-        filter_order::Integer,
-        knotpoints_DW::Vector,
-        D::Vector,
-        W::Vector,
-        antisymmetric::Bool;
-        fs::Real = 1,
-        solver::Function = \,
-    )
+    filter_order::Integer,
+    knotpoints_DW::Vector,
+    D::Vector,
+    W::Vector,
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
     return firls_design(
         filter_order,
         knotpoints_to_matrix(knotpoints_DW),
@@ -235,13 +235,13 @@ end
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
 function firls_design(
-        filter_order::Integer,
-        bands_DW::Matrix,
-        D::Union{Vector, Matrix},
-        antisymmetric::Bool;
-        fs::Real = 1,
-        solver::Function = \,
-    )
+    filter_order::Integer,
+    bands_DW::Matrix,
+    D::Union{Vector, Matrix},
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
     D = to_matrix_simple(D)
     validate_inputs(filter_order, bands_DW, D, fs)
     filter_length, M = get_flength_M(filter_order)
@@ -265,9 +265,9 @@ end
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
 function firls_design(
-        filter_order::Integer, knotpoints_D::Vector, D::Vector, antisymmetric::Bool;
-        fs::Real = 1, solver::Function = \,
-    )
+    filter_order::Integer, knotpoints_D::Vector, D::Vector, antisymmetric::Bool;
+    fs::Real = 1, solver::Function = \,
+)
     return firls_design(
         filter_order,
         knotpoints_to_matrix(knotpoints_D),

@@ -104,10 +104,10 @@ Named tuple:
 - `n::Int64`: number of elements satisfying the condition
 """
 function count_thresh(
-        x::AbstractMatrix;
-        t::Real,
-        t_type::Symbol = :g,
-    )::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
+    x::AbstractMatrix;
+    t::Real,
+    t_type::Symbol = :g,
+)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
 
     # validate
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")

@@ -203,11 +203,11 @@ Set and save NeuroAnalyzer preferences.
 - `Nothing`
 """
 function na_set_prefs(;
-        progress_bar::Bool,
-        verbose::Bool,
-        exclude_bads::Bool,
-        colors::Bool,
-    )::Nothing
+    progress_bar::Bool,
+    verbose::Bool,
+    exclude_bads::Bool,
+    colors::Bool,
+)::Nothing
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
     @set_preferences!("exclude_bads" => exclude_bads)

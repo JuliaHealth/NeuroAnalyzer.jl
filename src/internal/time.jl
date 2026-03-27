@@ -35,10 +35,10 @@ function _convert_t(t1::Float64, t2::Float64)::Tuple{Float64, String, Float64, S
 end
 
 function _s2epoch(
-        obj::NeuroAnalyzer.NEURO,
-        from::Int64,
-        to::Int64,
-    )::Union{Int64, AbstractRange}
+    obj::NeuroAnalyzer.NEURO,
+    from::Int64,
+    to::Int64,
+)::Union{Int64, AbstractRange}
     ep = floor(Int64, from / epoch_len(obj)):ceil(Int64, to / epoch_len(obj))
     from / epoch_len(obj) > from ÷ epoch_len(obj) && (ep = (ep[1] + 1):ep[end])
     ep[1] == 0 && (ep = 1:ep[end])

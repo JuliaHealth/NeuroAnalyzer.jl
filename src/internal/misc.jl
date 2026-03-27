@@ -86,10 +86,10 @@ function _s2ti(s::String)::Tuple{Int64, Int64}
 end
 
 function _detect_montage(
-        clabels::Vector{String},
-        ch_type::Vector{String},
-        data_type::String,
-    )::String
+    clabels::Vector{String},
+    ch_type::Vector{String},
+    data_type::String,
+)::String
     m = match.(r"(.+)\-(.+)", lowercase.(clabels[ch_type .== data_type]))
     if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
@@ -170,9 +170,9 @@ end
 _swap(x, y)::Tuple{Real, Real} = y, x
 
 function _veqlen(
-        s1::AbstractVector,
-        s2::AbstractVector,
-    )::Tuple{AbstractVector, AbstractVector}
+    s1::AbstractVector,
+    s2::AbstractVector,
+)::Tuple{AbstractVector, AbstractVector}
     if length(s1) > length(s2)
         n = length(s1) - length(s2)
         return s1, pad0(s2, n)

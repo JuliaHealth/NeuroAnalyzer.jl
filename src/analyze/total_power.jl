@@ -29,17 +29,17 @@ Calculate total power for a 1-D signal vector.
 - `Float64`: total power
 """
 function total_power(
-        s::AbstractVector;
-        fs::Int64,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )
+    s::AbstractVector;
+    fs::Int64,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)
     pw, pf = psd(
         s;
         fs = fs,
@@ -90,17 +90,17 @@ Calculate total power for a 3-D signal array.
 - `Matrix{Float64}`: total power
 """
 function total_power(
-        s::AbstractArray;
-        fs::Int64,
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = fs,
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )
+    s::AbstractArray;
+    fs::Int64,
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -161,22 +161,22 @@ Calculate total power for a NEURO object.
 - `Matrix{Float64}`: total power
 """
 function total_power(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        method::Symbol = :welch,
-        nt::Int64 = 7,
-        wlen::Int64 = sr(obj),
-        woverlap::Int64 = round(Int64, wlen * 0.9),
-        w::Bool = true,
-        ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-        gw::Real = 5,
-        demean::Bool = true,
-    )
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.9),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+    demean::Bool = true,
+)
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return total_power(
         @view(obj.data[ch, :, :]);

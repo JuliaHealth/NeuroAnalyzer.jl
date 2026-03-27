@@ -1,7 +1,7 @@
 function _make_epochs(
-        s::AbstractMatrix;
-        ep_len::Int64,
-    )::Array{Float64, 3}
+    s::AbstractMatrix;
+    ep_len::Int64,
+)::Array{Float64, 3}
     !(ep_len >= 1) && throw(ArgumentError("ep_len must be ≥ 1."))
     !(ep_len <= size(s, 2)) && throw(ArgumentError("ep_len must be ≤ $(size(s, 2))."))
 
@@ -13,9 +13,9 @@ function _make_epochs(
 end
 
 function _make_epochs(
-        s::AbstractArray;
-        ep_len::Int64,
-    )::Array{Float64, 3}
+    s::AbstractArray;
+    ep_len::Int64,
+)::Array{Float64, 3}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -38,14 +38,14 @@ function _make_epochs(
 end
 
 function _make_epochs_bymarkers(
-        s::AbstractArray;
-        marker::String,
-        markers::DataFrame,
-        marker_start::Vector{Int64},
-        offset::Int64,
-        ep_len::Int64,
-        fs::Int64,
-    )::Tuple{Array{Float64, 3}, DataFrame}
+    s::AbstractArray;
+    marker::String,
+    markers::DataFrame,
+    marker_start::Vector{Int64},
+    offset::Int64,
+    ep_len::Int64,
+    fs::Int64,
+)::Tuple{Array{Float64, 3}, DataFrame}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -86,7 +86,7 @@ function _make_epochs_bymarkers(
     @inbounds for mrk_idx in DataFrames.nrow(markers):-1:1
         within = any(
             _in(markers[mrk_idx, :start] * fs, (ep_start[ep_idx], ep_end[ep_idx]))
-                for ep_idx in 1:mrk_n
+            for ep_idx in 1:mrk_n
         )
         !within && deleteat!(markers, mrk_idx)
     end

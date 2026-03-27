@@ -24,14 +24,14 @@ Named tuple:
 - `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
 """
 function ica_decompose(
-        s::AbstractMatrix;
-        n::Int64,
-        iter::Int64 = 100,
-        f::Symbol = :tanh,
-    )::@NamedTuple{
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-    }
+    s::AbstractMatrix;
+    n::Int64,
+    iter::Int64 = 100,
+    f::Symbol = :tanh,
+)::@NamedTuple{
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+}
 
     # validate
     _check_var(f, [:tanh, :gaus], "f")
@@ -118,16 +118,16 @@ Named tuple:
 - `ic_var::Vector{Float64}`: variance explained by each component
 """
 function ica_decompose(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        n::Int64 = length(ch),
-        iter::Int64 = 100,
-        f::Symbol = :tanh,
-    )::@NamedTuple{
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-        ic_var::Vector{Float64},
-    }
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    n::Int64 = length(ch),
+    iter::Int64 = 100,
+    f::Symbol = :tanh,
+)::@NamedTuple{
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    ic_var::Vector{Float64},
+}
 
     # validate
     nepochs(obj) == 1 ||
@@ -184,11 +184,11 @@ Reconstruct a signal from independent components.
 - `Matrix{Float64}`: reconstructed signal, shape (channels, samples)
 """
 function ica_reconstruct(;
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-        keep::Bool = false,
-    )::Matrix{Float64}
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    keep::Bool = false,
+)::Matrix{Float64}
 
     # validate
     typeof(ic_idx) <: AbstractRange && (ic_idx = collect(ic_idx))
@@ -227,13 +227,13 @@ Reconstruct selected channels of a NEURO object from independent components.
 - `NeuroAnalyzer.NEURO`: reconstructed NEURO object
 """
 function ica_reconstruct(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-        keep::Bool = false,
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    keep::Bool = false,
+)::NeuroAnalyzer.NEURO
 
     # validate
     nepochs(obj) == 1 ||
@@ -274,13 +274,13 @@ Reconstruct selected channels of a NEURO object in-place from independent compon
 - `Nothing`
 """
 function ica_reconstruct!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-        keep::Bool = false,
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    keep::Bool = false,
+)::Nothing
     obj_new =
         ica_reconstruct(obj; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
     obj.data = obj_new.data
@@ -307,12 +307,12 @@ Remove independent components from a NEURO object.
 - `NeuroAnalyzer.NEURO`: reconstructed NEURO object
 """
 function ica_remove(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-    )::NeuroAnalyzer.NEURO
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+)::NeuroAnalyzer.NEURO
 
     # validate
     nepochs(obj) == 1 ||
@@ -367,12 +367,12 @@ Remove independent components from a NEURO object in-place.
 - `Nothing`
 """
 function ica_remove!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
-        ic::Matrix{Float64},
-        ic_mw::Matrix{Float64},
-    )::Nothing
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+)::Nothing
     obj_new = ica_remove(
         obj,
         ic,

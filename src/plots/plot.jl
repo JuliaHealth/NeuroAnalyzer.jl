@@ -46,36 +46,36 @@ Plot signal from a NEURO object.
 - `GLMakie.Figure`: the plotted figure: the plotted figure
 """
 function plot(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = "all",
-        ep::Int64 = 1,
-        seg::Tuple{Real, Real} = (0, 10),
-        tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
-        rt::Union{Nothing, Real, AbstractVector} = nothing,
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        markers::Bool = true,
-        scale::Bool = true,
-        group_ch::Bool = true,
-        type::Symbol = :normal,
-        avg::Bool = true,
-        ci95::Bool = false,
-        n_channels::Int64 = 20,
-        n_epochs::Int64 = 5,
-        cb::Bool = true,
-        cb_title::String = "default",
-        peaks::Bool = true,
-        leg::Bool = true,
-        yrev::Bool = false,
-        smooth::Bool = false,
-        ks::Int64 = 3,
-        zl::Bool = true,
-        mono::Bool = false,
-        res::Int64 = 1,
-        snap::Bool = true,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    ep::Int64 = 1,
+    seg::Tuple{Real, Real} = (0, 10),
+    tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
+    rt::Union{Nothing, Real, AbstractVector} = nothing,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    markers::Bool = true,
+    scale::Bool = true,
+    group_ch::Bool = true,
+    type::Symbol = :normal,
+    avg::Bool = true,
+    ci95::Bool = false,
+    n_channels::Int64 = 20,
+    n_epochs::Int64 = 5,
+    cb::Bool = true,
+    cb_title::String = "default",
+    peaks::Bool = true,
+    leg::Bool = true,
+    yrev::Bool = false,
+    smooth::Bool = false,
+    ks::Int64 = 3,
+    zl::Bool = true,
+    mono::Bool = false,
+    res::Int64 = 1,
+    snap::Bool = true,
+    gui::Bool = true,
+)::GLMakie.Figure
 
     # validate and clamp n_channels/n_epochs to object dimensions
     n_channels > nchannels(obj) && (n_channels = nchannels(obj))
@@ -199,19 +199,19 @@ Plot two signals from NEURO objects for comparison.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot(
-        obj1::NeuroAnalyzer.NEURO,
-        obj2::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex} = "all",
-        seg::Tuple{Real, Real} = (0, 10),
-        xlabel::String = "default",
-        ylabel::String = "default",
-        title::String = "default",
-        scale::Bool = true,
-        group_ch::Bool = true,
-        n_channels::Int64 = 20,
-        res::Int64 = 1,
-        gui::Bool = true,
-    )::GLMakie.Figure
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    seg::Tuple{Real, Real} = (0, 10),
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    scale::Bool = true,
+    group_ch::Bool = true,
+    n_channels::Int64 = 20,
+    res::Int64 = 1,
+    gui::Bool = true,
+)::GLMakie.Figure
 
     # validate
     datatype(obj1) in ["eeg", "meg"] ||
@@ -261,12 +261,12 @@ Plot a continuous signal with time and amplitude axes.
 - `GLMakie.Figure`: the plotted figure
 """
 function plot(
-        t::AbstractVector,
-        s::AbstractVector;
-        xlabel::String = "Time [s]",
-        ylabel::String = "Amplitude",
-        title::String = "",
-    )::GLMakie.Figure
+    t::AbstractVector,
+    s::AbstractVector;
+    xlabel::String = "Time [s]",
+    ylabel::String = "Amplitude",
+    title::String = "",
+)::GLMakie.Figure
 
     # validate
     length(t) == length(s) || throw(ArgumentError("Length of s must equal length of t."))

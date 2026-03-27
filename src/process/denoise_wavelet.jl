@@ -27,13 +27,13 @@ Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, th
 - `Vector{Float64}`: denoised signal of the same length as `s`
 """
 function denoise_cwd(
-        s::AbstractVector;
-        fs::Int64,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        nf::Real,
-        w::Int64 = 5,
-        type::Symbol = :nd,
-    )::Vector{Float64} where {T <: CWT}
+    s::AbstractVector;
+    fs::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    nf::Real,
+    w::Int64 = 5,
+    type::Symbol = :nd,
+)::Vector{Float64} where {T <: CWT}
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -73,13 +73,13 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain f
 - `Array{Float64, 3}`: denoised signal array
 """
 function denoise_cwd(
-        s::AbstractArray;
-        fs::Int64,
-        wt::T = wavelet(Morlet(2π), β = 2),
-        nf::Real,
-        w::Int64 = 5,
-        type::Symbol = :nd,
-    )::Array{Float64, 3} where {T <: CWT}
+    s::AbstractArray;
+    fs::Int64,
+    wt::T = wavelet(Morlet(2π), β = 2),
+    nf::Real,
+    w::Int64 = 5,
+    type::Symbol = :nd,
+)::Array{Float64, 3} where {T <: CWT}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -146,13 +146,13 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain o
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
 """
 function denoise_cwd(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        wt::T = wavelet(Morlet(2π), β = 2),
-        nf::Real,
-        w::Int64 = 5,
-        type::Symbol = :nd,
-    )::NeuroAnalyzer.NEURO where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    wt::T = wavelet(Morlet(2π), β = 2),
+    nf::Real,
+    w::Int64 = 5,
+    type::Symbol = :nd,
+)::NeuroAnalyzer.NEURO where {T <: CWT}
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -195,12 +195,12 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain i
 - `Nothing`
 """
 function denoise_cwd!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        wt::T = wavelet(Morlet(2π), β = 2),
-        nf::Real,
-        type::Symbol = :nd,
-    )::Nothing where {T <: CWT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    wt::T = wavelet(Morlet(2π), β = 2),
+    nf::Real,
+    type::Symbol = :nd,
+)::Nothing where {T <: CWT}
     obj_new = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, type = type)
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -228,12 +228,12 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 - `Vector{Float64}`: denoised signal
 """
 function denoise_dwd(
-        s::AbstractVector;
-        wt::T1 = wavelet(WT.haar),
-        l::Int64 = 0,
-        dnt::T2 = RelErrorShrink(SoftTH()),
-        smooth::Symbol = :regular,
-    )::Vector{Float64} where {T1 <: DiscreteWavelet, T2 <: DNFT}
+    s::AbstractVector;
+    wt::T1 = wavelet(WT.haar),
+    l::Int64 = 0,
+    dnt::T2 = RelErrorShrink(SoftTH()),
+    smooth::Symbol = :regular,
+)::Vector{Float64} where {T1 <: DiscreteWavelet, T2 <: DNFT}
     _check_var(smooth, [:regular, :undersmooth], "smooth")
 
     l <= maxtransformlevels(s) ||
@@ -269,12 +269,12 @@ Perform threshold denoising using discrete wavelet decomposition (DWD) for a 3-D
 - `Array{Float64, 3}`: denoised signal array
 """
 function denoise_dwd(
-        s::AbstractArray;
-        wt::T1 = wavelet(WT.haar),
-        l::Int64 = 0,
-        dnt::T2 = RelErrorShrink(SoftTH()),
-        smooth::Symbol = :regular,
-    )::Array{Float64, 3} where {T1 <: DiscreteWavelet, T2 <: DNFT}
+    s::AbstractArray;
+    wt::T1 = wavelet(WT.haar),
+    l::Int64 = 0,
+    dnt::T2 = RelErrorShrink(SoftTH()),
+    smooth::Symbol = :regular,
+)::Array{Float64, 3} where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -323,13 +323,13 @@ Perform denoising using discrete wavelet decomposition (DWD) on selected channel
 - `NeuroAnalyzer.NEURO`: new object with denoised channels
 """
 function denoise_dwd(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        wt::T1 = wavelet(WT.haar),
-        l::Int64 = 0,
-        dnt::T2 = RelErrorShrink(SoftTH()),
-        smooth::Symbol = :regular,
-    )::NeuroAnalyzer.NEURO where {T1 <: DiscreteWavelet, T2 <: DNFT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    wt::T1 = wavelet(WT.haar),
+    l::Int64 = 0,
+    dnt::T2 = RelErrorShrink(SoftTH()),
+    smooth::Symbol = :regular,
+)::NeuroAnalyzer.NEURO where {T1 <: DiscreteWavelet, T2 <: DNFT}
     if l == 0
         l = maxtransformlevels(obj.data[1, :, 1])
         _info("Calculating DWD using maximum level: $l")
@@ -372,13 +372,13 @@ Perform denoising using discrete wavelet decomposition (DWD) in-place on selecte
 - `Nothing`
 """
 function denoise_dwd!(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-        wt::T1 = wavelet(WT.haar),
-        l::Int64 = 0,
-        dnt::T2 = RelErrorShrink(SoftTH()),
-        smooth::Symbol = :regular,
-    )::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    wt::T1 = wavelet(WT.haar),
+    l::Int64 = 0,
+    dnt::T2 = RelErrorShrink(SoftTH()),
+    smooth::Symbol = :regular,
+)::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
     obj_new = denoise_dwd(obj; ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
     obj.data = obj_new.data
     obj.history = obj_new.history

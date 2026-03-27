@@ -72,14 +72,14 @@ Calculate signal symmetry index (ratio of positive to negative amplitudes). Perf
 - `Matrix{Float64}`: symmetry index
 """
 function sym_idx(
-        obj::NeuroAnalyzer.NEURO;
-        ch::Union{String, Vector{String}, Regex},
-    )::Matrix{Float64}
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Matrix{Float64}
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-                       get_channel(obj; ch = ch, exclude = "")
+        get_channel(obj; ch = ch, exclude = "")
 
     return sym_idx(@view(obj.data[ch, :, :]))
 end

@@ -20,8 +20,8 @@ Named tuple:
 - `r_idx::Vector{Int64}`: sample indices of detected R-peaks
 """
 function hrv_detect(
-        obj::NeuroAnalyzer.NEURO,
-    )::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Int64}}
+    obj::NeuroAnalyzer.NEURO,
+)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Int64}}
 
     # validate
     "ecg" in obj.header.recording[:channel_type] ||
@@ -74,19 +74,19 @@ Named tuple:
 - `pnn20::Float64`: proportion of NN20 to total number of NN intervals
 """
 function hrv_analyze(
-        nn_seg::Vector{Float64},
-    )::@NamedTuple{
-        menn::Float64,
-        mdnn::Float64,
-        vnn::Float64,
-        sdnn::Float64,
-        rmssd::Float64,
-        sdsd::Float64,
-        nn50::Int64,
-        pnn50::Float64,
-        nn20::Int64,
-        pnn20::Float64,
-    }
+    nn_seg::Vector{Float64},
+)::@NamedTuple{
+    menn::Float64,
+    mdnn::Float64,
+    vnn::Float64,
+    sdnn::Float64,
+    rmssd::Float64,
+    sdsd::Float64,
+    nn50::Int64,
+    pnn50::Float64,
+    nn20::Int64,
+    pnn20::Float64,
+}
     nn_diff = diff(nn_seg)
     nn_total = length(nn_seg)
 
