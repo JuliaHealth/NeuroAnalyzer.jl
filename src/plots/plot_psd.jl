@@ -5,8 +5,8 @@ export plot_psd_topo
 # ---------------------------------------------------------------------------
 # shared helpers
 # ---------------------------------------------------------------------------
- 
-"""Keyword arguments applied to every locked/non-interactive Axis."""
+
+# Keyword arguments applied to every locked/non-interactive Axis.
 const _AXIS_LOCK_KWARGS = (
     xzoomlock  = true,
     yzoomlock  = true,
@@ -16,7 +16,7 @@ const _AXIS_LOCK_KWARGS = (
     yrectzoom  = false,
 )
 
-"""Apply standard font sizes to an Axis."""
+# Apply standard font sizes to an Axis.
 function _style_axis!(ax)
     ax.titlesize      = 18
     ax.xlabelsize     = 18
@@ -440,7 +440,8 @@ function plot_psd_topo(
         ax.titlesize = 8
         GLMakie.lines!(ax, f, p[idx, :]; linewidth = 1, color = :black)
         push!(fig_vec, fig_mini)
- 
+
+
         fig_full = plot_psd(
             f, p[idx, :];
             xlabel = xlabel,
@@ -711,7 +712,8 @@ function plot_psd(
         ylabel == "default" && (ylabel = ref !== :abs ?
             "Power ratio" :
             (db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]"))
- 
+
+
         if length(ch) == 1
             fig = plot_psd(
                 f,
@@ -787,6 +789,7 @@ function plot_psd(
             head   = head,
         )
     end
- 
+
+
     return fig
 end

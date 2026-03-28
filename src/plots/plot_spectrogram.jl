@@ -4,8 +4,8 @@ export plot_spectrogram_topo
 # ---------------------------------------------------------------------------
 # shared helpers
 # ---------------------------------------------------------------------------
- 
-"""Keyword arguments applied to every locked/non-interactive Axis."""
+
+# Keyword arguments applied to every locked/non-interactive Axis.
 const _AXIS_LOCK_KWARGS = (
     xzoomlock  = true,
     yzoomlock  = true,
@@ -15,7 +15,7 @@ const _AXIS_LOCK_KWARGS = (
     yrectzoom  = false,
 )
 
-"""Apply standard font sizes to an Axis."""
+# Apply standard font sizes to an Axis.
 function _style_axis!(ax)
     ax.titlesize      = 18
     ax.xlabelsize     = 18
@@ -432,7 +432,8 @@ function plot_spectrogram_topo(
         ax.titlesize = 8
         GLMakie.heatmap!(ax, sf, st, sp[:, :, idx]'; colormap = pal)
         push!(pp_vec, pp)
- 
+
+
         pp_full = plot_spectrogram(
             st, sf, sp[:, :, idx];
             db         = db,
@@ -789,7 +790,8 @@ function plot_spectrogram(
             threshold      = threshold,
             threshold_type = threshold_type,
         )
- 
+
+
     elseif length(ch) > 1 && type === :normal
         ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
@@ -811,7 +813,8 @@ function plot_spectrogram(
             threshold      = threshold,
             threshold_type = threshold_type,
         )
- 
+
+
     elseif type === :topo
         xlabel == "default" && (xlabel = "Time [s]")
         ylabel == "default" && (ylabel = "Frequency [Hz]")
