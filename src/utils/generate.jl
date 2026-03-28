@@ -28,7 +28,7 @@ Return an `n`-point symmetric window of the given type.
     - `:triangle`: symmetric triangle (left half ↑, right half ↓)
     - `:exp`: symmetric exponential (left half ↑, right half ↓)
 - `n::Int64`: window length in samples; must be ≥ 1
-- `even::Bool=false`: if `true` and `n` is odd, increment `n` by 1 to enforce even length
+- `even::Bool=false`: if `true`, and `n` is odd, increment `n` by 1 to enforce even length
 
 # Returns
 

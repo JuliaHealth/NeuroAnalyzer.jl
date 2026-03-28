@@ -17,7 +17,7 @@ For a given frequency band, computes four descriptors:
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
@@ -114,7 +114,7 @@ For a given frequency band, computes four descriptors:
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
@@ -212,7 +212,7 @@ For a given frequency band, computes four descriptors:
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram

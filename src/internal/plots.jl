@@ -1,4 +1,4 @@
-function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64)
+function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64=1)
     GLMakie.lines!(ax, [-0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
     GLMakie.lines!(ax, [0.2, 0.0],  [0.98, 1.08]; linewidth = lw, color = :black)
     # ears

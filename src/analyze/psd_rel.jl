@@ -15,7 +15,7 @@ Default method is Welch's periodogram.
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: if `true`, convert power to dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency band `(f_low, f_high)` used as the reference power; `nothing` uses total broadband power
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram
@@ -95,7 +95,7 @@ Default method is Welch's periodogram.
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: if `true`, convert power to dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram
@@ -189,7 +189,7 @@ Default method is Welch's periodogram.
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: if `true`, convert power to dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram (default)
 - `:fft`: plain FFT periodogram
 - `:mt`: multi-tapered periodogram
@@ -289,7 +289,7 @@ Default method is Welch's periodogram.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `db::Bool=false`: if `true`, convert power to dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram (default)
 - `:fft`: plain FFT periodogram
 - `:mt`: multi-tapered periodogram

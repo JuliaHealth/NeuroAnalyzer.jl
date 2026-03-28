@@ -15,9 +15,9 @@ Interpolate channel using planar interpolation.
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
-    - `:imq`: InverseMultiquadratic
+    - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
-    - `:nn`: NearestNeighbour
+    - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
 - `ifactor::Int64=100`: interpolation quality
 
@@ -152,9 +152,9 @@ Interpolate channel using planar interpolation.
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
-    - `:imq`: InverseMultiquadratic
+    - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
-    - `:nn`: NearestNeighbour
+    - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes

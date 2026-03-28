@@ -1193,9 +1193,9 @@ Create a topographical plot of Independent Component Analysis (ICA) components f
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
-    - `:imq`: InverseMultiquadratic
+    - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
-    - `:nn`: NearestNeighbour
+    - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: number of contour levels to plot

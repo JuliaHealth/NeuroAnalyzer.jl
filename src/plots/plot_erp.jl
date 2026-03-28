@@ -262,7 +262,7 @@ Plot topographical maps of Event-Related Potentials/Fields.
 - `title::String=""`: plot title
 - `yrev::Bool=false`: if `true`, reverse the y-axis
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `head::Bool=true`: plot head shape
+- `head::Bool=true`: if `true`, draw head outline
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
 

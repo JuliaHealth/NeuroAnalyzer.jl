@@ -32,9 +32,9 @@ Plot a topographical map of signal values across channel locations.
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
-    - `:imq`: InverseMultiquadratic
+    - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
-    - `:nn`: NearestNeighbour
+    - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
@@ -57,7 +57,9 @@ Plot a topographical map of signal values across channel locations.
     - `:l`: values < threshold
     - `:in`: values in the threshold range (inclusive)
     - `:bin`: values in the threshold range (exclusive)
-- `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
+- `threshold_method::Symbol=:reg`: thresholding method:
+    - `:reg`: threshold whole topomap region (default)
+    - `:loc`: threshold only at channel locations
 
 # Returns
 
@@ -201,9 +203,9 @@ function plot_topo(
     end
 
     head12 =
-        maximum(abs.(local_locs[!, :loc_x])) <= 1.2 &&
-        maximum(abs.(local_locs[!, :loc_y])) <= 1.2 &&
-        maximum(abs.(local_locs[!, :loc_z])) <= 1.5
+        maximum(abs.(local_locs.loc_x)) <= 1.2 &&
+        maximum(abs.(local_locs.loc_y)) <= 1.2 &&
+        maximum(abs.(local_locs.loc_z)) <= 1.5
  
     if head12
         xl = (-1.2, 1.2)
@@ -290,7 +292,7 @@ function plot_topo(
     end
 
     # draw head outline
-    head && _draw_head_outline!(ax)
+    head && _draw_head_outline!(ax; lw = lw)
 
     # draw electrodes, highlighting thresholded or significant channels
     if electrodes
@@ -371,12 +373,15 @@ end
 """
     plot_topo(obj; <keyword arguments>)
 
-Plot a topographical map of signal values across channel locations.
+Plot a topographical map of signal values from a NEURO object with customizable visualization options.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: (channels × values), will be averaged by channels
+- `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot:
+    - `Vector`: one value per channel
+    - `Matrix`: (channels × values), will be averaged by channels
+    - `nothing`: use data from NEURO object at specified time point(s) (default)
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: significant channels to highlight
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
@@ -384,15 +389,15 @@ Plot a topographical map of signal values across channel locations.
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `cb::Bool=true`: if `true`, show colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
-- `amethod::Symbol=:mean`: averaging method:
-    - `:mean`
-    - `:median`
+- `amethod::Symbol=:mean`: averaging method for matrix data:
+    - `:mean`: mean averaging 
+    - `:median`: median averaging
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
-    - `:imq`: InverseMultiquadratic
+    - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
-    - `:nn`: NearestNeighbour
+    - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
@@ -415,9 +420,11 @@ Plot a topographical map of signal values across channel locations.
     - `:l`: values < threshold
     - `:in`: values in the threshold range (inclusive)
     - `:bin`: values in the threshold range (exclusive)
-- `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
-- `nr::Int64=0`: number of rows to place topomaps
-- `nc::Int64=0`: number of columns to place topomaps
+- `threshold_method::Symbol=:reg`: thresholding method:
+    - `:reg`: threshold whole topomap region (default)
+    - `:loc`: threshold only at channel locations
+- `nr::Int64=0`: number of rows for arranging multiple topomaps
+- `nc::Int64=0`: number of columns for arranging multiple topomaps
 
 # Returns
 

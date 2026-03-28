@@ -14,7 +14,7 @@ Default method is Welch's periodogram.
 - `s::Vector{Float64}`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize powers to dB
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram
@@ -124,7 +124,7 @@ Calculate Power Spectral Density for each channel of a matrix. Default method is
 - `s::AbstractMatrix`: signal matrix (channels, samples)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize powers to dB
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram
@@ -210,7 +210,7 @@ Default method is Welch's periodogram.
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=false`: normalize powers to dB
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram
@@ -308,7 +308,7 @@ Default method is Welch's periodogram.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `db::Bool=false`: normalize powers to dB
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram

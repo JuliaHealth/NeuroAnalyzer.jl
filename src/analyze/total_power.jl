@@ -9,7 +9,7 @@ Calculate total power for a 1-D signal vector.
 
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram
@@ -70,7 +70,7 @@ Calculate total power for a 3-D signal array.
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram
@@ -141,7 +141,7 @@ Calculate total power for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
     - `:fft`: plain FFT periodogram
     - `:mt`: multi-tapered periodogram

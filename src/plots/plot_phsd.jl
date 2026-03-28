@@ -359,7 +359,7 @@ Plot topographical map of PHSDs (phase spectral density).
 - `title::String=""`: plot title
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
-- `head::Bool=true`: plot head shape
+- `head::Bool=true`: if `true`, draw head outline
 
 # Returns
 
@@ -573,7 +573,7 @@ Plot PHSD (phase spectral density).
     - `:s3d`: 3-d surface
     - `:topo`: topographical
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
-- `head::Bool=true`: plot head shape
+- `head::Bool=true`: if `true`, draw head outline
 - `leg::Bool=true`: if `true`, add legend with channel labels
 - `avg::Bool=false`: if `true`, plot averaged PSD
 - `ci95::Bool=false`: if `true`, plot mean and ±95% CI of averaged PSDs

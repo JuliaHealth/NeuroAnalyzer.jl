@@ -13,7 +13,7 @@ Default method is Welch's periodogram.
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: if `true`, convert power to dB
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram (default)
 - `:fft`: plain FFT periodogram
 - `:mt`: multi-tapered periodogram
@@ -97,7 +97,7 @@ Default method is Welch's periodogram.
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: if `true`, convert power to dB
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram (default)
 - `:fft`: plain FFT periodogram
 - `:mt`: multi-tapered periodogram
@@ -203,7 +203,7 @@ Default method is Welch's periodogram.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range flim[1] to flim[2]
 - `db::Bool=false`: if `true`, convert power to dB
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram (default)
 - `:fft`: plain FFT periodogram
 - `:mt`: multi-tapered periodogram

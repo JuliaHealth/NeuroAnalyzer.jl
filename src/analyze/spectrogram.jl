@@ -159,7 +159,7 @@ Calculate spectrogram for a NEURO object.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: number of zeros to append
-- `method::Symbol=:stft`: spectrogram method:
+- `method::Symbol=:stft`: spectrogram estimation method:
 - `:stft`: short-time Fourier transform
 - `:mt`: multi-tapered periodogram
 - `:mw`: Morlet wavelet convolution

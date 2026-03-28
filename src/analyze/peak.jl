@@ -12,12 +12,12 @@ Calculate peak frequency within a frequency band for a 1-D signal vector.
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds in Hz
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -80,12 +80,12 @@ Calculate peak frequency within a frequency band for a 3-D signal array.
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -151,7 +151,7 @@ Calculate peak frequency within a frequency band for a NEURO object.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram
 - `:fft`: fast Fourier transform
 - `:mt`: multi-tapered periodogram
@@ -209,12 +209,12 @@ Calculate amplitude at the peak frequency within a frequency band.
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -275,12 +275,12 @@ Calculate amplitude at peak frequency within a frequency band for a 3-D signal a
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -346,7 +346,7 @@ Calculate amplitude at peak frequency within a frequency band for a NEURO object
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram
 - `:fft`: fast Fourier transform
 - `:mt`: multi-tapered periodogram
@@ -404,12 +404,12 @@ Calculate power at the peak frequency within a frequency band.
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -469,12 +469,12 @@ Calculate power at peak frequency within a frequency band for a 3-D signal array
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -541,7 +541,7 @@ Calculate power at peak frequency within a frequency band for a NEURO object.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
 - `:welch`: Welch's periodogram
 - `:fft`: fast Fourier transform
 - `:mt`: multi-tapered periodogram

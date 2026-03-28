@@ -13,7 +13,7 @@ SEF is the frequency below which x percent of the total power of a given signal 
 - `x::Float64=0.95`: threshold
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
@@ -97,7 +97,7 @@ SEF is the frequency below which x percent of the total power of a given signal 
 - `x::Float64=0.95`: threshold
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
@@ -172,7 +172,7 @@ SEF is the frequency below which x percent of the total power of a given signal 
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `x::Float64=0.95`: threshold
 - `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: lower and upper frequency bounds, default is total power
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram

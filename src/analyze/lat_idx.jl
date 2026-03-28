@@ -19,7 +19,7 @@ Hemisphere channels are detected automatically via `channel_pick()`.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `frq::Union{Real, Tuple{<:Real, <:Real}}`: frequency at which the index is calculated; if range is provided, than averaged index across the range is calculated
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram

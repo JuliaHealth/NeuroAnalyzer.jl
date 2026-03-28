@@ -14,7 +14,7 @@ Computes the log-ratio and normalized difference of mean band power between two 
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`, e.g. left frontal channels
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`, e.g. right frontal channels
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: PSD method:
+- `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram

@@ -401,12 +401,12 @@ Calculate power spectrum (in dB) envelope for a NEURO object.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -498,12 +498,12 @@ Calculate power spectrum (in dB) envelope (mean and 95% CI) for a NEURO object.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
@@ -630,12 +630,12 @@ Calculate power spectrum (in dB) envelope (median and 95% CI) for a NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
-- `method::Symbol=:welch`: PSD method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
-- `:mw`: Morlet wavelet convolution
+- `method::Symbol=:welch`: PSD estimation method:
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples

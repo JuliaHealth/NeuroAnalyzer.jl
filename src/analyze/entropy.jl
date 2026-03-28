@@ -199,8 +199,8 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `demean::Bool=true`: if `true` subtract DC before calculating negentropy
-- `norm::Bool=true`: if `true` normalize the signal by its total energy
+- `demean::Bool=true`: if `true`, subtract DC before calculating negentropy
+- `norm::Bool=true`: if `true`, normalize the signal by its total energy
 - `type::Symbol=:diff`: entropy type used for calculations (`:diff` differential, `:shannon` Shannon, `:sample` sample)
 
 # Returns
@@ -249,8 +249,8 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 # Arguments
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
-- `demean::Bool=true`: if `true` subtract DC before calculating negentropy
-- `norm::Bool=true`: if `true` normalize the signal by its total energy
+- `demean::Bool=true`: if `true`, subtract DC before calculating negentropy
+- `norm::Bool=true`: if `true`, normalize the signal by its total energy
 - `type::Symbol=:diff`: entropy type used for calculations (`:diff` differential, `:shannon` Shannon, `:sample` sample)
 
 # Returns
@@ -300,8 +300,8 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `demean::Bool=true`: if `true` subtract DC before calculating negentropy
-- `norm::Bool=true`: if `true` normalize the signal by its total energy
+- `demean::Bool=true`: if `true`, subtract DC before calculating negentropy
+- `norm::Bool=true`: if `true`, normalize the signal by its total energy
 - `type::Symbol=:diff`: entropy type used for calculations (`:diff` differential, `:shannon` Shannon, `:sample` sample)
 
 # Returns
