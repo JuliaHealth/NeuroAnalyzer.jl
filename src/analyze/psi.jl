@@ -10,7 +10,7 @@ Calculate Phase Slope Index (PSI) for two 1-D signal vectors.
 - `s1::AbstractVector`: signal vector
 - `s2::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `flim::Tuple{Real, Real}=(1, fs / 2 - 1))`: frequency bounds
+- `flim::Tuple{Real, Real}=(1, fs / 2 - 1))`: frequency limits
 
 # Returns
 
@@ -67,7 +67,7 @@ Calculate Phase Slope Index (PSI) for two NEURO objects.
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
-- `flim::Tuple{Real, Real}=(1, sr(obj1) / 2 - 1))`: frequency bounds
+- `flim::Tuple{Real, Real}=(1, sr(obj1) / 2 - 1))`: frequency limits
 
 # Returns
 
@@ -138,7 +138,7 @@ Calculate Phase Slope Index (PSI) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `flim::Tuple{Real, Real}=(1, sr(obj) / 2 - 1))`: frequency bounds
+- `flim::Tuple{Real, Real}=(1, sr(obj) / 2 - 1))`: frequency limits
 
 # Returns
 

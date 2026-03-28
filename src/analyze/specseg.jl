@@ -13,7 +13,7 @@ Return spectrogram segment.
 - `sf::Vector{Float64}`: spectrogram frequencies
 - `st::Vector{Float64}`: spectrogram time
 - `t::Tuple{Real, Real}`: time bounds
-- `f::Tuple{Real, Real}`: frequency bounds
+- `f::Tuple{Real, Real}`: frequency limits
 
 # Returns
 
@@ -72,7 +72,7 @@ Return spectrogram segment.
 - `st::AbstractVector`: spectrogram time
 - `ch::Int64`: channel
 - `t::Tuple{Real, Real}`: time bounds
-- `f::Tuple{Real, Real}`: frequency bounds
+- `f::Tuple{Real, Real}`: frequency limits
 
 # Returns
 
@@ -128,7 +128,7 @@ Trim power spectrum or spectrogram array to a range of frequencies.
 
 - `p::AbstractArray`: powers
 - `f::AbstractVector`: frequencies
-- `spec_flim::Tuple{Real, Real}`: frequency bounds
+- `spec_flim::Tuple{Real, Real}`: frequency limits
 
 # Returns
 

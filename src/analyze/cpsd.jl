@@ -18,7 +18,7 @@ Calculate the complex cross power spectral density (CPSD) between two 1-D signal
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
@@ -171,7 +171,7 @@ Calculate the complex cross power spectral density (CPSD) between two 3-D signal
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
@@ -271,7 +271,7 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
-- `flim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj1)`: window length in samples, default is 1 second

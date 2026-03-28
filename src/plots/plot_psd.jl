@@ -160,7 +160,7 @@ function plot_psd(
 
     # get mean and 95%CI
     if ci95
-        msci95_data = NeuroAnalyzer.msci95(p[f1:f2])
+        msci95_data = NeuroAnalyzer.msci95(p[:, f1:f2])
         s_m = msci95_data.sm
         s_l = msci95_data.ll
         s_u = msci95_data.ul
@@ -284,6 +284,10 @@ function plot_psd_3d(
         flim = (f[2], flim[2])
     end
 
+    # frequency limits
+    f1 = vsearch(flim[1], f)
+    f2 = vsearch(flim[2], f)
+
     yts = ch_n > 64 ? 5 : ch_n > 32 ? 2 : 1
 
     # prepare plot
@@ -312,7 +316,7 @@ function plot_psd_3d(
         yautolimitmargin = (0.1, 0.1),
         zautolimitmargin = (0, 0),
     )
-    GLMakie.xlims!(ax, flim)
+    GLMakie.autolimits!(ax)
     _style_axis!(ax)
 
     # plot powers
@@ -323,7 +327,7 @@ function plot_psd_3d(
             GLMakie.lines!(
                 f,
                 ones(length(f)) .* idx,
-                p[idx, :];
+                p[idx, f1:f2];
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
@@ -335,7 +339,7 @@ function plot_psd_3d(
 
         # plot powers
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        GLMakie.surface!(f, eachindex(clabels), p'; colormap = pal)
+        GLMakie.surface!(f, eachindex(clabels), p[:, f1f2]'; colormap = pal)
 
     end
 
@@ -389,6 +393,10 @@ function plot_psd_topo(
         flim = (f[2], flim[2])
     end
 
+    # frequency limits
+    f1 = vsearch(flim[1], f)
+    f2 = vsearch(flim[2], f)
+
     # plot parameters
     ch_n = size(p, 1)
     if ch_n <= 64
@@ -436,14 +444,14 @@ function plot_psd_topo(
             yautolimitmargin = (0.1, 0.1),
         )
         hidedecorations!(ax)
-        GLMakie.xlims!(ax, flim)
+        GLMakie.autolimits!(ax)
         ax.titlesize = 8
-        GLMakie.lines!(ax, f, p[idx, :]; linewidth = 1, color = :black)
+        GLMakie.lines!(ax, f, p[idx, f1:f2]; linewidth = 1, color = :black)
         push!(fig_vec, fig_mini)
 
 
         fig_full = plot_psd(
-            f, p[idx, :];
+            f, p[idx, f1:f2];
             xlabel = xlabel,
             ylabel = ylabel,
             title  = locs[idx, :label] * ": " * title,
@@ -539,7 +547,7 @@ Plot Power Spectral Density (PSD) using various estimation methods with customiz
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits for the plots
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `ref::Symbol=:abs`: PSD reference type:

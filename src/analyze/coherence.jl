@@ -19,7 +19,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
@@ -114,7 +114,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
@@ -225,7 +225,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
     - `:fft`: fast Fourier transformation
     - `:stft`: short-time Fourier transformation
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
