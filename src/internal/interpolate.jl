@@ -38,7 +38,6 @@ function _interpolate2d(
     imethod::Symbol = :sh,
     nmethod::Symbol = :minmax,
 )::Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}
-
     # validate
     ifactor > 0 || throw(ArgumentError("Interpolation factor (ifactor) must be positive"))
     length(s) == length(loc_x) == length(loc_y) ||

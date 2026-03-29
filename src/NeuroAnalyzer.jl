@@ -176,6 +176,13 @@ const mask_alt = Gtk4.ModifierType_ALT_MASK
 # internal helpers
 # ---------------------------------------------------------------------------
 
+""" Columns that hold numeric coordinate data in a locations DataFrame."""
+const _LOCS_COORD_COLS = [
+    "loc_x", "loc_y", "loc_z",
+    "loc_radius", "loc_theta",
+    "loc_radius_sph", "loc_theta_sph", "loc_phi_sph",
+]
+
 """Keyword arguments applied to every locked/non-interactive Axis."""
 const _AXIS_LOCK_KWARGS = (
     xzoomlock  = true,

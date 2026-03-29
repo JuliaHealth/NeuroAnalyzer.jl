@@ -248,6 +248,6 @@ Looks up the `(high_byte, low_byte)` pair in `_GDF_ETP_TABLE`. Returns an "unkno
 - `etp::Vector{UInt8}`: 2-byte event type code vector; `etp[1]` is the high byte (category), `etp[2]` is the low byte (specific event)
 """
 function _gdf_etp(etp::Vector{UInt8})::String
-    !(length(etp) >= 2) && throw(ArgumentError("etp must contain at least 2 bytes."))
+    length(etp) >= 2 || throw(ArgumentError("etp must contain at least 2 bytes."))
     return get(_GDF_ETP_TABLE, (etp[1], etp[2]), "unknown code ($(etp[1]) $(etp[2]))")
 end

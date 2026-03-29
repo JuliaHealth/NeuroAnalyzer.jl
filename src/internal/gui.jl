@@ -32,7 +32,6 @@ function _refresh_ica_can_set(
     time1::Float64,
     time2::Float64,
 )::Nothing
-
     # validate
     isempty(obj_reconstructed) &&
         throw(ArgumentError("Reconstructed objects vector cannot be empty"))

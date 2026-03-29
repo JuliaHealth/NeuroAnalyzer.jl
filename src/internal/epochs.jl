@@ -2,8 +2,9 @@ function _make_epochs(
     s::AbstractMatrix;
     ep_len::Int64,
 )::Array{Float64, 3}
-    !(ep_len >= 1) && throw(ArgumentError("ep_len must be ≥ 1."))
-    !(ep_len <= size(s, 2)) && throw(ArgumentError("ep_len must be ≤ $(size(s, 2))."))
+    # validate
+    ep_len >= 1 || throw(ArgumentError("ep_len must be ≥ 1."))
+    ep_len <= size(s, 2) || throw(ArgumentError("ep_len must be ≤ $(size(s, 2))."))
 
     ch_n = size(s, 1)
     ep_n = size(s, 2) ÷ ep_len
@@ -16,7 +17,6 @@ function _make_epochs(
     s::AbstractArray;
     ep_len::Int64,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -46,7 +46,6 @@ function _make_epochs_bymarkers(
     ep_len::Int64,
     fs::Int64,
 )::Tuple{Array{Float64, 3}, DataFrame}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 

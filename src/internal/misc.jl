@@ -1,40 +1,80 @@
-_pl(x::Union{AbstractRange, AbstractVector})::String = length(collect(x)) > 1 ? "s" : ""
+"""
+    _pl(x)
 
+Return `"s"` if `x` represents a plural quantity, otherwise `""`.
+
+Accepts a range/vector (plural when length > 1).
+"""
+_pl(x::Union{AbstractRange, AbstractVector})::String = length(x) > 1 ? "s" : ""
+
+"""
+    _pl(x)
+
+Return `"s"` if `x` represents a plural quantity, otherwise `""`.
+
+Accepts a scalar Real (plural when > 1).
+"""
 _pl(x::Real)::String = x > 1 ? "s" : ""
 
-# _get_range(signal::Union{AbstractVector, AbstractArray}) = round(abs(minimum(signal)) + abs(maximum(signal)), digits=0)
-_get_range(s::Union{AbstractVector, AbstractArray})::Float64 = round(rng(s), digits = 0)
+"""
+    _get_range(s)
 
-_c(n)::Vector{Int64} = collect(1:n)
+Return the peak-to-peak range of `s` (i.e. `rng(s)`), rounded to 0 decimal places.
+"""
+_get_range(s::Union{AbstractVector, AbstractArray})::Float64 = round(rng(s); digits = 0)
 
-_tuple_max(t::Tuple{Real, Real})::Tuple{Real, Real} =
-    abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1])) : (-abs(t[2]), abs(t[2]))
+"""
+    _c(n)
 
-# number to vector
-_n2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = typeof(s) <: Number ? [s] : s
+Return `collect(1:n)` as a `Vector{Int64}`.
+"""
+_c(n::Integer)::Vector{Int64} = collect(1:n)
 
-function _v2s(v::Vector{String})::String
-    s = ""
-    for idx in eachindex(v)
-        s *= v[idx]
-    end
-    return s
-end
+"""
+    _tuple_max(t)
 
-function _v2s(x::Vector{<:Number})::String
-    s_tmp = string.(x)
-    s = ""
-    if length(s_tmp) > 1
-        for idx in 1:(length(s_tmp) - 1)
-            s *= s_tmp[idx] * ", "
-        end
-    end
-    s *= s_tmp[end]
-    return s
+Return a symmetric tuple `(-m, m)` where `m = max(|t[1]|, |t[2]|)`.
+
+Useful for building balanced y-axis limits.
+"""
+function _tuple_max(t::Tuple{Real, Real})::Tuple{Real, Real}
+    m = max(abs(t[1]), abs(t[2]))
+    return (-m, m)
 end
 
 """
-Mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+    _n2v(s)
+
+Wrap a scalar number in a single-element vector, or return the vector unchanged.
+"""
+_n2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = s isa Number ? [s] : s
+
+"""
+    _v2s(v)
+
+Concatenate all strings in `v` into a single `String`.
+"""
+_v2s(v::Vector{String})::String = join(v)
+
+"""
+    _v2s(x)
+
+Convert a numeric vector to a comma-separated `String` (e.g. `[1, 2, 3]` → `"1, 2, 3"`).
+"""
+_v2s(x::Vector{<:Number})::String = join(string.(x), ", ")
+
+"""
+    _copy_lt2ut(m)
+
+Mirror the lower triangle of a symmetric matrix (or batch of matrices) to the upper triangle, producing a fully symmetric result.
+
+For a 2-D matrix returns a new matrix `m + m' - diag(m)`.
+
+For a 3-D array operates in-place on each slice along the third dimension.
+
+# Notes
+
+The 2-D method returns a new array while the 3-D method mutates the input. This asymmetry is a known limitation; use `copy(m)` before calling if in-place behaviour is undesirable for the 3-D case.
 """
 function _copy_lt2ut(m::AbstractArray)::AbstractArray
     if ndims(m) == 2
@@ -48,140 +88,225 @@ function _copy_lt2ut(m::AbstractArray)::AbstractArray
     end
 end
 
+"""
+    _tlength(t)
+
+Return the number of integer steps from `t[1]` to `t[2]` inclusive.
+"""
 _tlength(t::Tuple{Real, Real})::Int64 = length(t[1]:1:t[2])
 
+"""
+    _s2i(s)
+
+Parse a string representation of an integer or integer range/list into `Int64` or `Vector{Int64}`.
+
+Supported formats:
+- `"3"` → `3`
+- `"1:5"` → `[1, 2, 3, 4, 5]`
+- `"1,3,7"` or `"[1,3,7]"` → `[1, 3, 7]`
+
+Throws if the string does not match any recognized format.
+"""
 function _s2i(s::String)::Union{Int64, Vector{Int64}}
-    s = replace(s, " " => "")
+    s = replace(s, " " => "", "[" => "", "]" => "")
     if occursin(":", s)
-        return collect(parse(Int64, split(s, ":")[1]):parse(Int64, split(s, ":")[2]))
+        parts = split(s, ":")
+        return collect(parse(Int64, parts[1]):parse(Int64, parts[2]))
     elseif occursin(",", s)
-        s = replace(s, "[" => "")
-        s = replace(s, "]" => "")
         return parse.(Int64, split(s, ","))
     elseif _check_sint(s)
-        return parse.(Int64, s)
+        return parse(Int64, s)
+    else
+        throw(ArgumentError("Cannot parse \"$s\" as an integer or integer range/list."))
     end
 end
 
+"""
+    _i2s(s)
+
+Convert an integer, vector of integers, or range to a comma-separated `String`.
+"""
 function _i2s(s::Union{Int64, Vector{Int64}, AbstractRange})::String
-    !isa(s, Int64) && (s = collect(s))
-    s = string(s)
-    s = replace(s, "[" => "")
-    s = replace(s, "]" => "")
-    return s
+    s_str = string(collect(s))
+    return replace(s_str, "[" => "", "]" => "")
 end
 
+"""
+    _s2tf(s)
+
+Parse a string of the form `"(f1, f2)"` into a `Tuple{Float64, Float64}`.
+"""
 function _s2tf(s::String)::Tuple{Float64, Float64}
-    s = replace(s, " " => "")
-    s = replace(s, "(" => "")
-    s = replace(s, ")" => "")
-    return (parse(Float64, split(s, ",")[1]), parse(Float64, split(s, ",")[2]))
+    s = replace(s, " " => "", "(" => "", ")" => "")
+    parts = split(s, ",")
+    return (parse(Float64, parts[1]), parse(Float64, parts[2]))
 end
 
+"""
+    _s2ti(s)
+
+Parse a string of the form `"(i1, i2)"` into a `Tuple{Int64, Int64}`.
+"""
 function _s2ti(s::String)::Tuple{Int64, Int64}
-    s = replace(s, " " => "")
-    s = replace(s, "(" => "")
-    s = replace(s, ")" => "")
-    return (parse(Int64, split(s, ",")[1]), parse(Int64, split(s, ",")[2]))
+    s = replace(s, " " => "", "(" => "", ")" => "")
+    parts = split(s, ",")
+    return (parse(Int64, parts[1]), parse(Int64, parts[2]))
 end
 
+"""
+    _detect_montage(clabels, ch_type, data_type)
+
+Infer the EEG montage type from channel labels.
+
+# Arguments
+
+- `clabels::Vector{String}`: all channel labels
+- `ch_type::Vector{String}`: corresponding channel type strings
+- `data_type::String`: the data type to inspect (e.g. `"eeg"`)
+
+# Returns
+
+- `String`: one of `"common (A)"`, `"common (M)"`, `"common"`, `"bipolar"`, or `"physical"`
+"""
 function _detect_montage(
     clabels::Vector{String},
     ch_type::Vector{String},
     data_type::String,
 )::String
-    m = match.(r"(.+)\-(.+)", lowercase.(clabels[ch_type .== data_type]))
-    if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
-        r = String[]
-        for idx in eachindex(m)
-            push!(r, m[idx].captures[2])
-        end
-        if length(unique(r)) == 1
-            occursin("a", lowercase(r[1])) && return "common (A)"
-            occursin("m", lowercase(r[1])) && return "common (M)"
+    target = clabels[ch_type .== data_type]
+
+    # check for bipolar / common reference pattern: "label-ref"
+    m = match.(r"(.+)\-(.+)", lowercase.(target))
+    if length(findall(!isnothing, m)) == length(target)
+        refs = [m[idx].captures[2] for idx in eachindex(m)]
+        if length(unique(refs)) == 1
+            occursin("a", lowercase(refs[1])) && return "common (A)"
+            occursin("m", lowercase(refs[1])) && return "common (M)"
             return "common"
         else
             return "bipolar"
         end
     end
-    m = match.(
-        r"([a-z]+)([0-9]+[0-9]?)([a-z]+)([0-9]+)",
-        lowercase.(clabels[ch_type .== data_type]),
-    )
-    if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
-        r = String[]
-        for idx in eachindex(m)
-            push!(r, m[idx].captures[3])
-        end
-        if length(unique(r)) == 1
-            occursin("a", lowercase(r[1])) && return "common (A)"
-            occursin("m", lowercase(r[1])) && return "common (M)"
+
+    # check for paired label pattern: "label1num1label2num2"
+    m = match.(r"([a-z]+)([0-9]+[0-9]?)([a-z]+)([0-9]+)", lowercase.(target))
+    if length(findall(!isnothing, m)) == length(target)
+        refs = [m[idx].captures[3] for idx in eachindex(m)]
+        if length(unique(refs)) == 1
+            occursin("a", lowercase(refs[1])) && return "common (A)"
+            occursin("m", lowercase(refs[1])) && return "common (M)"
             return "common"
         else
             return "bipolar"
         end
-    else
-        return "physical"
     end
+
+    return "physical"
 end
 
-function _fread(fid, n, t)::Union{Int64, Float64, Vector{Int64}}
+"""
+    _fread(fid, n, t)
+ 
+Read `n` values of type `t` from an open IO stream `fid`, returning the result as `Int64`, `Float64`, or `Vector{Int64}`.
+ 
+# Type symbols
+ 
+| Symbol   | Meaning                          |
+|----------|----------------------------------|
+| `:s`     | string of `n` bytes (→ `Vector`) |
+| `:c`     | single byte character            |
+| `:l`     | 32-bit signed integer            |
+| `:ul`    | 32-bit unsigned integer          |
+| `:ui8`   | 8-bit unsigned integer           |
+| `:ui16`  | 16-bit unsigned integer          |
+| `:ui32`  | 32-bit unsigned integer          |
+| `:ui64`  | 64-bit unsigned integer          |
+| `:i`     | 32-bit signed integer            |
+| `:i8`    | 8-bit signed integer             |
+| `:i16`   | 16-bit signed integer            |
+| `:i32`   | 32-bit signed integer            |
+| `:i64`   | 64-bit signed integer            |
+| `:f16`   | 16-bit float                     |
+| `:f32`   | 32-bit float                     |
+| `:f64`   | 64-bit float                     |
+"""
+function _fread(fid, n::Int64, t::Symbol)::Union{Int64, Float64, Vector{Int64}}
     (n > 1 && t === :c) && (t = :s)
-    t === :s && (n = n)
-    t === :c && (n = n)
-    t === :l && (n *= 4)
-    t === :ul && (n *= 4)
-    t === :ui8 && (n = n)
-    t === :ui16 && (n *= 2)
-    t === :ui32 && (n *= 4)
-    t === :ui64 && (n *= 8)
-    t === :i && (n *= 4)
-    t === :i8 && (n = n)
-    t === :i16 && (n *= 2)
-    t === :i32 && (n *= 4)
-    t === :i64 && (n *= 8)
-    t === :f16 && (n *= 2)
-    t === :f32 && (n *= 4)
-    t === :f64 && (n *= 8)
-    header = zeros(UInt8, n)
-    readbytes!(fid, header, n)
-    t === :s && return Int64.(map(ltoh, reinterpret(UInt8, header)))
-    t === :c && return Int64(map(ltoh, reinterpret(UInt8, header))[1])
-    t === :l && return Int64(map(ltoh, reinterpret(Int32, header))[1])
-    t === :ul && return Int64(map(ltoh, reinterpret(UInt32, header))[1])
-    t === :ui8 && return Int64(map(ltoh, reinterpret(UInt8, header))[1])
-    t === :ui16 && return Int64(map(ltoh, reinterpret(UInt16, header))[1])
-    t === :ui32 && return Int64(map(ltoh, reinterpret(UInt32, header))[1])
-    t === :ui64 && return Int64(map(ltoh, reinterpret(UInt64, header))[1])
-    t === :i && return Int64(map(ltoh, reinterpret(Int32, header))[1])
-    t === :i16 && return Int64(map(ltoh, reinterpret(Int16, header))[1])
-    t === :i32 && return Int64(map(ltoh, reinterpret(Int32, header))[1])
-    t === :i64 && return Int64(map(ltoh, reinterpret(Int64, header))[1])
+ 
+    # compute byte count
+    nbytes = if t in (:s, :c, :ui8, :i8)
+        n
+    elseif t in (:ui16, :i16, :f16)
+        n * 2
+    elseif t in (:l, :ul, :ui32, :i, :i32, :f32)
+        n * 4
+    elseif t in (:ui64, :i64, :f64)
+        n * 8
+    else
+        throw(ArgumentError("Unknown type symbol :$t"))
+    end
+ 
+    header = zeros(UInt8, nbytes)
+    readbytes!(fid, header, nbytes)
+ 
+    # decode and return
+    t === :s   && return Int64.(map(ltoh, reinterpret(UInt8,   header)))
+    t === :c   && return Int64(map(ltoh, reinterpret(UInt8,    header))[1])
+    t === :l   && return Int64(map(ltoh, reinterpret(Int32,    header))[1])
+    t === :ul  && return Int64(map(ltoh, reinterpret(UInt32,   header))[1])
+    t === :ui8 && return Int64(map(ltoh, reinterpret(UInt8,    header))[1])
+    t === :ui16 && return Int64(map(ltoh, reinterpret(UInt16,  header))[1])
+    t === :ui32 && return Int64(map(ltoh, reinterpret(UInt32,  header))[1])
+    t === :ui64 && return Int64(map(ltoh, reinterpret(UInt64,  header))[1])
+    t === :i   && return Int64(map(ltoh, reinterpret(Int32,    header))[1])
+    t === :i8  && return Int64(map(ltoh, reinterpret(Int8,     header))[1])
+    t === :i16 && return Int64(map(ltoh, reinterpret(Int16,    header))[1])
+    t === :i32 && return Int64(map(ltoh, reinterpret(Int32,    header))[1])
+    t === :i64 && return Int64(map(ltoh, reinterpret(Int64,    header))[1])
     t === :f16 && return Float64(map(ltoh, reinterpret(Float16, header))[1])
     t === :f32 && return Float64(map(ltoh, reinterpret(Float32, header))[1])
-    return t === :f64 && return Float64(map(ltoh, reinterpret(Float64, header))[1])
+    return Float64(map(ltoh, reinterpret(Float64, header))[1])
 end
 
+"""
+    _vint2str(x)
+
+Convert a vector of integer code points to a `String`, stripping null characters.
+"""
 function _vint2str(x::Vector{Int64})::String
-    s = strip(String(Char.(x)))
-    return replace(s, "\0" => "")
+    return replace(strip(String(Char.(x))), "\0" => "")
 end
 
-_swap(x, y)::Tuple{Real, Real} = y, x
+"""
+    _swap(x, y)
 
+Return `(y, x)` — swap two values.
+"""
+_swap(x, y) = (y, x)
+
+"""
+    _veqlen(s1, s2)
+
+Pad the shorter of two vectors with trailing zeros so both have equal length.
+
+Returns `(s1, s2)` with the shorter one zero-padded.
+"""
 function _veqlen(
     s1::AbstractVector,
     s2::AbstractVector,
 )::Tuple{AbstractVector, AbstractVector}
     if length(s1) > length(s2)
-        n = length(s1) - length(s2)
-        return s1, pad0(s2, n)
+        return s1, pad0(s2, length(s1) - length(s2))
     elseif length(s2) > length(s1)
-        n = length(s2) - length(s1)
-        return pad0(s1, n), s2
+        return pad0(s1, length(s2) - length(s1)), s2
     else
         return s1, s2
     end
 end
 
-_fmem()::Float64 = return Sys.free_memory() / 2^20
+"""
+    _fmem()
+
+Return the amount of free system memory in megabytes.
+"""
+_fmem()::Float64 = Sys.free_memory() / 2^20

@@ -178,7 +178,7 @@ function plv(
         get_channel(obj; ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _n2v(ch)
 
     pv = zeros(ch_n, ch_n, ep_n)
 

@@ -76,7 +76,7 @@ function _a2df(annotations::Vector{String})::DataFrame
                 push!(a_event, strip(s[idx + 2]))
             end
         end
-        !all(isascii.(a_event)) && _warn("Unicode labels were not converted.")
+        all(isascii.(a_event)) || _warn("Unicode labels were not converted.")
         return DataFrame(
             :id => string.(collect(eachindex(a_event))),
             :start => a_start,
@@ -106,7 +106,7 @@ function _a2df(annotations::Vector{String})::DataFrame
                 id[idx1] = findfirst(a_event[idx1] .== unique(a_event))
             end
         end
-        !all(isascii.(a_event)) && _warn("Unicode labels were not converted.")
+        all(isascii.(a_event)) || _warn("Unicode labels were not converted.")
         return DataFrame(
             :id => string.(id),
             :start => a_start,

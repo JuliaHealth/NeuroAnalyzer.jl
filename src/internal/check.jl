@@ -85,7 +85,7 @@ function _check_channels(
     s::AbstractArray,
     ch::Union{Int64, Vector{Int64}, AbstractRange},
 )::Nothing
-    isa(ch, Int64) && (ch = [ch])
+    ch = _n2v(ch)
     n = size(s, 1)
     for ch_idx in ch
         (1 <= ch_idx <= n) || throw(ArgumentError("ch must be in [1, $n], got $ch_idx."))

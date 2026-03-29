@@ -181,7 +181,7 @@ function wpli(
     ch = exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
-    isa(ch, Int64) && (ch = [ch])
+    ch = _n2v(ch)
 
     ch_n = length(ch)
     ep_n = nepochs(obj)
