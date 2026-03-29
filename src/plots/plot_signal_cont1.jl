@@ -32,10 +32,9 @@ Plot continuous signal with customizable visualization and interactive editing.
 - `avg::Bool=false`: if `true`, plot averaged channel in butterfly plot
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged channels in butterfly plot
 - `n_channels::Int64=20`: maximum number of visible channels
-- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `snap::Bool=true`: if `true`, snap to grid when placing markers
 - `gui::Bool=true`: if `true`, keep window open and interactive
-
 
 # Returns
 
@@ -60,7 +59,6 @@ function plot_cont(
     snap::Bool = true,
     gui::Bool = true,
 )::GLMakie.Figure
-
     # validate
     res >= 1 || throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
@@ -84,7 +82,12 @@ function plot_cont(
     # check channels and meta data
     _ = get_channel(obj; ch = ch)
     obj_tmp = deepcopy(obj)
-    keep_channel!(obj_tmp; ch = ch)
+    if datatype(obj) != "nirs"
+        keep_channel!(obj_tmp; ch = ch)
+    else
+        _info("Currently for NIRS objects ch is ignored.")
+        ch = "all"
+    end
     ch_n = nchannels(obj_tmp)
     if group_ch
         ch_order = _sort_channels(obj_tmp.header.recording[:channel_type])
@@ -121,20 +124,18 @@ function plot_cont(
     seg_len = Float64(seg[2]) - Float64(seg[1])
 
     if type === :normal
-        nch = Observable(n_channels)
-        ch1 = Observable(1)
+        nch      = Observable(n_channels)
+        ch1      = Observable(1)
         ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
-    elseif type === :butterfly
-        ch1     = Observable(1)
+    else
+        ch1      = Observable(1)
         ch2_init = length(ctypes_uni)
-        clabels = uppercase.(ctypes_uni)
-        ch_n    = length(ctypes_uni)
-        nch     = Observable(ch_n)
+        nch      = Observable(ch_n)
     end
 
     # get ranges of the original signal for the scales
     # normalize in groups by channel type
-    # between -1.0 and +1.0 and shift so all channels are visible
+    # between -0.5 and +0.5 and shift so all channels are visible
     r = Observable(Float64[])
     for idx in eachindex(ctypes_uni)
         group = s[ctypes .== ctypes_uni[idx], :]
@@ -142,11 +143,7 @@ function plot_cont(
         # remove per-channel DC offset
         group = group .- mean(group; dims=2)
         # map to [-0.5, 0.5]
-        if size(group, 1) == 1
-            s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5)
-        else
-            s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych=true)
-        end
+        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych=true)
     end
     if type === :normal
         s .+= collect(1:ch_n)
@@ -157,6 +154,12 @@ function plot_cont(
     end
 
     # y-axis labels colors
+    if type === :normal
+        ytc = repeat([:black], nchannels(obj_tmp))
+        ytc[bad_ch[]] .= :lightgray
+    else
+        ytc = repeat([:black], ch_n)
+    end
 
     # prepare markers
     if markers
@@ -187,13 +190,10 @@ function plot_cont(
         # TO DO: yticklabelcolor = ytc
         xautolimitmargin   = (0, 0),
         yautolimitmargin   = (0, 0),
-        xzoomlock          = true,
-        yzoomlock          = true,
-        xpanlock           = true,
-        ypanlock           = true,
-        xrectzoom          = false,
-        yrectzoom          = false,
-        yticklabelspace    = 60.0,
+        _AXIS_LOCK_KWARGS...,
+        yticklabelspace = let ml = maximum(length, clabels)
+            ml <= 5 ? 60.0 : ml >= 10 ? 100.0 : 80.0
+        end,
     )
     GLMakie.xlims!(ax1, seg)
     if gui && ch_n > nch[]
@@ -201,11 +201,7 @@ function plot_cont(
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
     end
-    ax1.titlesize      = 18
-    ax1.xlabelsize     = 12
-    ax1.ylabelsize     = 12
-    ax1.xticklabelsize = 12
-    ax1.yticklabelsize = 12
+    _style_axis!(ax1)
 
     # draw channels
     if type === :normal
@@ -242,6 +238,7 @@ function plot_cont(
                 end
             end
         end
+
     end
 
     # draw scale bars
@@ -292,7 +289,7 @@ function plot_cont(
         end
     end
 
-    # plot markers if available
+    # draw event markers
     if markers
         GLMakie.vlines!(ax1, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
         for idx in eachindex(markers_pos)
@@ -408,7 +405,7 @@ function plot_cont(
             if event.action == Mouse.press
                 if event.button == Mouse.right
                     if type === :normal
-                        # Mark channel as bad
+                        # mark/unmark channel as bad
                         if ax1_x < ax1.limits[][1][1]
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][
@@ -418,7 +415,7 @@ function plot_cont(
                             ]
                             notify(bad_ch)
                         end
-                        # Clear markers
+                        # clear markers
                         if ax1_x >= ax1.limits[][1][1] &&
                            ax1_x <= ax1.limits[][1][2] &&
                            ax1_y >= ax1.limits[][2][1] &&
@@ -432,11 +429,11 @@ function plot_cont(
  
                 elseif event.button == Mouse.left
                     if type === :normal
-                        # Get channel info
+                        # get channel info
                         ax1_x < ax1.limits[][1][1] &&
                             channel_info(obj; ch = clabels[round(Int64, ax1_y)])
  
-                        # Place marker
+                        # place marker
                         if ax1_x >= ax1.limits[][1][1] &&
                            ax1_x <= ax1.limits[][1][2] &&
                            ax1_y >= ax1.limits[][2][1] &&
@@ -456,7 +453,7 @@ function plot_cont(
                         end
                     end
  
-                    # Change time window
+                    # change time window
                     if ax2_x >= 0 && ax2_y >= 0 && ax2_y <= 1
                         if ax2_x <= ax2.limits[][1][2] - seg_len
                             seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
@@ -469,7 +466,7 @@ function plot_cont(
                         end
                     end
  
-                    # Change channel window
+                    # change channels window
                     if type === :normal
                         if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
                            ax3_y <= ax3.limits[][2][2]
@@ -520,22 +517,19 @@ function plot_cont(
                             update_ax3 = true
                         end
                     end
- 
-                    if event.key == Keyboard.up
+                     if event.key == Keyboard.up
                         if ch1[] > 1
                             ch1[] -= 1
                             update_ax3 = true
                         end
                     end
- 
-                    if ispressed(fig, Keyboard.page_down)
+                     if ispressed(fig, Keyboard.page_down)
                         if ch_n > 1 && nch[] > 1
                             nch[] -= 1
                             update_ax3 = true
                         end
                     end
- 
-                    if ispressed(fig, Keyboard.page_up)
+                     if ispressed(fig, Keyboard.page_up)
                         if ch_n > 1 && nch[] < ch_n && ch1[] + (nch[] - 1) < ch_n
                             nch[] += 1
                             update_ax3 = true

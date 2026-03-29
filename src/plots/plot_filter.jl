@@ -161,7 +161,6 @@ Plot filter response with interactive controls for various filter types.
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
-
 # Returns
 
 - `GLMakie.Figure`: the plotted figure, if `gui = false`
@@ -518,7 +517,6 @@ Plot the frequency response of a digital filter with customizable visualization 
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2): frequency limit
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `gui::Bool=true`: if `true`, keep window open and interactive
-
 
 # Returns
 

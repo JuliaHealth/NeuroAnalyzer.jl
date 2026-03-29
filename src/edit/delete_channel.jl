@@ -12,7 +12,7 @@ Delete channel(s).
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to be removed
-- `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
+- `del_opt::Bool=false`: for NIRS data is set as `true` if called from `delete_optode()`
 
 # Returns
 
@@ -49,11 +49,10 @@ function delete_channel(
     for idx in ch
         # remove channel locations
         loc_idx = _find_bylabel(obj_new.locs, labels(obj)[idx])
-        !isnothing(loc_idx) && deleteat!(obj_new.locs, loc_idx)
+        !isempty(loc_idx) && deleteat!(obj_new.locs, loc_idx)
         deleteat!(obj_new.header.recording[:label], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
-        obj_new.header.recording[:bad_channel] =
-            obj_new.header.recording[:bad_channel][1:end .!= idx]
+        deleteat!(obj_new.header.recording[:bad_channel], idx)
         deleteat!(obj_new.header.recording[:unit], idx)
         if obj_new.header.recording[:data_type] == "eeg"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
@@ -70,8 +69,7 @@ function delete_channel(
                 deleteat!(obj_new.header.recording[:magnetometers], idx_tmp)
         elseif obj_new.header.recording[:data_type] == "nirs"
             if !del_opt && idx in 1:length(obj_new.header.recording[:optode_labels])
-                _warn("NIRS signal channels must be deleted using delete_optode().")
-                return nothing
+                throw(ArgumentError("NIRS signal channels must be deleted using delete_optode()."))
             end
             idx in 1:length(obj_new.header.recording[:wavelength_index]) &&
                 deleteat!(obj_new.header.recording[:wavelength_index], idx)
@@ -106,7 +104,7 @@ Delete channels.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channels to be removed
-- `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
+- `del_opt::Bool=false`: for NIRS data is set as `true` if called from `delete_optode()`
 
 # Returns
 

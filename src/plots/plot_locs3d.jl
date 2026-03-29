@@ -22,7 +22,6 @@ export plot_locs3d
 - `mesh_alpha::Float64=0.95`: mesh opacity (0.0-1.0, higher = more opaque)
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
-
 # Returns
 
 - `GLMakie.Figure`: the plotted figure

@@ -173,5 +173,5 @@ function _wl2ext(wl::Real)::Vector{Float64}
     extinction_data = hemoglobin_extinction_data[:, 2:3] .* extinction_scaling
     wl_idx = vsearch(wl, hemoglobin_extinction_data[:, 1])
 
-    return wl_hb[wl_idx, 2:3]
+    return hemoglobin_extinction_data[wl_idx, 2:3]
 end

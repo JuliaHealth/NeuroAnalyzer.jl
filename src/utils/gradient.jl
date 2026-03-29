@@ -82,7 +82,6 @@ Dispatches when `x` is neither a vector nor a matrix (i.e. `ndims(x) ≥ 3`). Ea
 - `x::AbstractArray`: scalar field with `ndims(x) ≥ 3`
 - `rev::Bool=false`: if `false` (default), the gradient direction points toward the maximum value; if `true`, it points toward the minimum value
 
-
 # Returns
 
 Named tuple:

@@ -431,7 +431,6 @@ Apply a pre-designed filter in-place to selected channels of a NEURO object.
 
 Delegates to [`filter_apply`](@ref) and copies the result back.
 
-
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place

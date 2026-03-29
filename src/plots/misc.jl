@@ -9,7 +9,6 @@ Compose a grid of `GLMakie.Figure` plots into a single figure using the specifie
 
 Empty plots are added automatically when `length(vfig) < layout[1]*layout[2]` so the grid is always fully populated.
 
-
 # Arguments
 
 - `vfig::Vector{GLMakie.Figure}`: plots to compose

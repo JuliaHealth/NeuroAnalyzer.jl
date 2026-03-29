@@ -157,9 +157,7 @@ function plot_topo(
                 _check_tuple(threshold, extrema(s_norm), "threshold")
             end
 
-
             s_norm = normalize(s; method = nmethod)
-
 
             if threshold_type === :eq
                 threshold_idx = findall(x -> x == threshold, s_norm)
@@ -194,7 +192,6 @@ function plot_topo(
         maximum(abs.(local_locs.loc_x)) <= 1.2 &&
         maximum(abs.(local_locs.loc_y)) <= 1.2 &&
         maximum(abs.(local_locs.loc_z)) <= 1.5
-
 
     if head12
         xl = (-1.2, 1.2)
@@ -295,7 +292,6 @@ function plot_topo(
                 )
             end
 
-
         elseif threshold_method === :loc
             for idx in 1:ch_n
                 if idx in threshold_idx
@@ -314,7 +310,6 @@ function plot_topo(
                     )
                 end
             end
-
 
         elseif !isnothing(sch)
             for idx in 1:ch_n
@@ -495,7 +490,6 @@ function plot_topo(
 
     length(ch) >= 2 || throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
 
-
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
@@ -510,10 +504,8 @@ function plot_topo(
         tpos <= obj.time_pts[end] ||
             throw(ArgumentError("tpos must be ≤ $(obj.time_pts[end])"))
 
-
         tpos_idx = vsearch(tpos, obj.time_pts)
         title == "default" && (title = "$(obj.time_pts[tpos_idx]) s")
-
 
         data = if nepochs(obj) == 1
             obj.data[ch, tpos_idx, 1]

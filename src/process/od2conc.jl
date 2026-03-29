@@ -23,7 +23,6 @@ function od2conc(
     ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
     ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
 )::NeuroAnalyzer.NEURO
-
     # validate
     length(get_channel(obj; type = "nirs_od")) > 0 || throw(
         ArgumentError("OBJ does not contain NIRS OD channels, use intensity2od() first."),

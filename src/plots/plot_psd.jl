@@ -424,7 +424,6 @@ function plot_psd_topo(
         GLMakie.lines!(ax, f, p[idx, f1:f2]; linewidth = 1, color = :black)
         push!(fig_vec, fig_mini)
 
-
         fig_full = plot_psd(
             f, p[idx, f1:f2];
             xlabel = xlabel,
@@ -696,7 +695,6 @@ function plot_psd(
             "Power ratio" :
             (db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]"))
 
-
         if length(ch) == 1
             fig = plot_psd(
                 f,
@@ -772,7 +770,6 @@ function plot_psd(
             head   = head,
         )
     end
-
 
     return fig
 end

@@ -87,14 +87,12 @@ function intensity2od(
     obj_new.header.recording[:wavelength_index] = vcat(
         obj.header.recording[:wavelength_index][ch],        # intensity
         obj.header.recording[:wavelength_index][ch],        # OD (same wavelength)
-        obj.header.recording[:wavelength_index][other_ch],
     )
 
     # optode pairs: same fix as wavelength_index
     obj_new.header.recording[:optode_pairs] = vcat(
         obj.header.recording[:optode_pairs][ch, :],   # intensity
         obj.header.recording[:optode_pairs][ch, :],   # OD (same pairs)
-        obj.header.recording[:optode_pairs][other_ch, :],
     )
 
     # channel type: OD channels get the "nirs_od" type string
@@ -114,7 +112,7 @@ function intensity2od(
     # units: OD channels inherit the same unit string as their source channels
     obj_new.header.recording[:unit] = vcat(
         obj.header.recording[:unit][ch],              # intensity
-        obj.header.recording[:unit][ch],              # OD (same pairs)
+        repeat([""], length(ch)),                     # OD (same pairs)
         obj.header.recording[:unit][other_ch],
     )
 

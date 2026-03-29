@@ -142,12 +142,7 @@ function plot_locs_nirs(
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
         backgroundcolor = :transparent,
-        xzoomlock       = true,
-        yzoomlock       = true,
-        xpanlock        = true,
-        ypanlock        = true,
-        xrectzoom       = false,
-        yrectzoom       = false,
+        _AXIS_LOCK_KWARGS...,
     )
 
     if grid
@@ -170,6 +165,7 @@ function plot_locs_nirs(
     end
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
+    _style_axis!(ax)
 
     # draw head outline
     head && _draw_head_outline!(ax; lw = 3)

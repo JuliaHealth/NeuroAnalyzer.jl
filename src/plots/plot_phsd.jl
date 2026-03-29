@@ -501,7 +501,6 @@ function plot_phsd_topo(
     return fig
 end
 
-
 """
     plot_phsd(obj; <keyword arguments>)
 

@@ -37,10 +37,9 @@ Plot signal from a NEURO object.
 - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing) (for ERP/ERF/MEP)
 - `zl::Bool`: if `true`, draw a dashed line at t = 0 (for ERP/ERF/MEP)
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `snap::Bool=true`: snap to grid when placing markers
 - `gui::Bool=true`: if `true`, keep window open and interactive
-
 
 # Returns
 
@@ -192,9 +191,8 @@ Plot two signals from NEURO objects for comparison.
 - `group_ch::Bool=true`: group channels by type
 - `n_channels::Int64=20`: number of visible channels
 - `n_epochs::Int64=5`: number of visible epochs
-- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `gui::Bool=true`: if `true`, keep window open and interactive
-
 
 # Returns
 

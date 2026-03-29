@@ -28,7 +28,6 @@ Add a signal vector to selected channels of a NEURO object.
 
 The same signal `s` is added to every selected channel in every epoch. `s` must have the same length as one epoch of the signal (`epoch_len(obj)`). Channels are processed in parallel using `Threads.@threads`.
 
-
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object

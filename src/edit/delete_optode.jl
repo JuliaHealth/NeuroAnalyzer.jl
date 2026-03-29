@@ -4,7 +4,7 @@ export delete_optode!
 """
     delete_optode(obj; <keyword arguments>)
 
-Delete optodes) and channels associated with removed optodes.
+Delete optodes and channels associated with removed optodes.
 
 # Arguments
 

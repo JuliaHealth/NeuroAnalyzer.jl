@@ -63,19 +63,10 @@ function plot_erp(
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
         yreversed = yrev,
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    _style_axis!(ax)
 
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
@@ -170,24 +161,13 @@ function plot_erp(
         yreversed = yrev,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    _style_axis!(ax)
 
     # draw zero line if requested
-    if zl
-        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
-    end
+    zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
 
     # plot ERPs
     if ci95
@@ -279,7 +259,6 @@ function plot_erp_topo(
     zl::Bool = true,
     mono::Bool = false,
 )::GLMakie.Figure
-
     # validate
     size(s, 2) == length(t) ||
         throw(ArgumentError("Signal matrix columns must match time vector length"))
@@ -340,10 +319,9 @@ function plot_erp_topo(
 
         # plot ERP with zero line
         GLMakie.hlines!(ax, 0; color = :black, linewidth = 1)
-        if zl
-            GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 1)
-        end
+        zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 1)
         GLMakie.lines!(ax, t, s[idx, :]; linewidth = 1, color = :black)
+
         # plot response time if provided
         if !isnothing(rt) && rt / 1000 ∈ t
             GLMakie.vlines!(ax, rt / 1000; linewidth = 1.5, color = mono ? :black : :red)
@@ -377,12 +355,7 @@ function plot_erp_topo(
         aspect = 1,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -390,12 +363,12 @@ function plot_erp_topo(
     hidedecorations!(ax)
     ax.titlesize = 18
 
-    # Draw head outline if requested
+    # draw head outline if requested
     if head
         draw_head_outline!(ax)
     end
 
-    # Draw channel markers with embedded ERP plots
+    # draw channel markers with embedded ERP plots
     for (idx, (x, y)) in enumerate(zip(loc_x, loc_y))
         io = IOBuffer()
         show(io, MIME"image/png"(), pp_vec[idx])
@@ -479,7 +452,6 @@ function plot_erp_stack(
     zl::Bool = true,
     mono::Bool = false,
 )::GLMakie.Figure
-
     # validate
     length(t) == size(s, 2) ||
         throw(
@@ -520,18 +492,9 @@ function plot_erp_stack(
         yautolimitmargin = (0, 0),
         yticks = (1:size(s, 1), size(s, 1) <= 30 ? clabels : clabels[1:5:end]),
         yticklabelsize = size(s, 1) <= 64 ? 8 : 5,
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    _style_axis!(ax)
 
     # create heatmap of ERP data
     hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s); colormap = pal)
@@ -620,19 +583,10 @@ function plot_gfp(
         yminorticks = IntervalsBetween(2),
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
     GLMakie.ylims!(ax, 0, maximum(g) * 1.15)
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    _style_axis!(ax)
 
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)

@@ -89,12 +89,10 @@ function plot_matrix(
         ),
     )
 
-
     n = size(m, 1)
 
     # set color palette
     pal = mono ? :grays : :bluesreds
-
 
     # prepare plot
     GLMakie.activate!(; title = "plot_matrix()")
@@ -117,10 +115,8 @@ function plot_matrix(
     )
     _style_axis!(ax)
 
-
     hm = GLMakie.heatmap!(m'; colormap = pal)
     cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
-
 
     return fig
 end
@@ -172,9 +168,7 @@ function plot_xac(
     )
     _style_axis!(ax)
 
-
     GLMakie.lines!(lags, m; linewidth = 1, color = :black)
-
 
     return fig
 end
@@ -240,11 +234,9 @@ function plot_histogram(
         ]
     end
 
-
     !draw_median && deleteat!(xticks, 3)
     !draw_mean   && deleteat!(xticks, 2)
     sort!(unique(xticks))
-
 
     # prepare plot
     GLMakie.activate!(; title = "plot_histogram()")
@@ -265,7 +257,6 @@ function plot_histogram(
     GLMakie.xlims!(ax, extrema(xticks))
     _style_axis!(ax)
 
-
     # plot histogram
     GLMakie.hist!(
         s;
@@ -275,7 +266,6 @@ function plot_histogram(
         color       = :grey,
         alpha       = 0.5,
     )
-
 
     # plot vertical line at mean
     draw_mean && GLMakie.vlines!(
@@ -291,7 +281,6 @@ function plot_histogram(
         color     = :grey,
         label     = "median",
     )
-
 
     if !isnothing(x)
         GLMakie.vlines!(
@@ -369,9 +358,7 @@ function plot_bar(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-
     GLMakie.barplot!(s; color = color, colormap = pal)
-
 
     return fig
 end
@@ -407,10 +394,8 @@ function plot_line(
         ),
     )
 
-
     # set y-axis limits
     yl = _ylims_padded(s)
-
 
     # prepare plot
     GLMakie.activate!(; title = "plot_line()")
@@ -430,9 +415,7 @@ function plot_line(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-
     GLMakie.lines!(eachindex(glabels), s; color = :black)
-
 
     return fig
 end
@@ -477,13 +460,11 @@ function plot_line(
         ),
     )
 
-
     # set color palette
     pal = mono ? :grays : :darktest
 
     # set y-axis limits
     yl  = _ylims_padded(s)
-
 
     # prepare plot
     GLMakie.activate!(; title = "plot_line()")
@@ -502,7 +483,6 @@ function plot_line(
     )
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
-
 
     cmap = GLMakie.resample_cmap(pal, size(s, 1))
     for idx in axes(s, 1)
@@ -555,14 +535,12 @@ function plot_box(
         ),
     )
 
-
     # set color palette
     pal   = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
 
     # set y-axis limits
     yl    = _ylims_padded(s)
-
 
     # prepare plot
     GLMakie.activate!(; title = "plot_box()")
@@ -582,14 +560,12 @@ function plot_box(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-
     GLMakie.boxplot!(
         repeat(eachindex(glabels), size(s, 2)),
         s[:];
         color    = color,
         colormap = pal,
     )
-
 
     return fig
 end
@@ -634,7 +610,6 @@ function plot_violin(
     # set y-axis limits
     yl    = _ylims_padded(s)
 
-
     # prepare plot
     GLMakie.activate!(; title = "plot_violin()")
     fig = GLMakie.Figure(; size = (800, 500))
@@ -653,7 +628,6 @@ function plot_violin(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-
     GLMakie.violin!(
         repeat(eachindex(glabels), size(s, 2)),
         s[:];
@@ -661,7 +635,6 @@ function plot_violin(
         strokewidth = 0.25,
         color       = color,
     )
-
 
     return fig
 end
@@ -699,7 +672,6 @@ function plot_dots(
         ),
     )
 
-
     # set color palette
     pal = mono ? :grays : :darktest
 
@@ -724,7 +696,6 @@ function plot_dots(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-
     cmap = GLMakie.resample_cmap(pal, length(glabels))
     for idx in eachindex(glabels)
         if mono
@@ -738,7 +709,6 @@ function plot_dots(
             )
         end
     end
-
 
     return fig
 end
@@ -776,7 +746,6 @@ function plot_paired(
         ),
     )
 
-
     # set color palette
     pal = mono ? :grays : :darktest
 
@@ -806,9 +775,7 @@ function plot_paired(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-
     cmap = GLMakie.resample_cmap(pal, length(glabels))
-
 
     for idx in eachindex(glabels)
         if mono
@@ -823,11 +790,9 @@ function plot_paired(
         end
     end
 
-
     for idx in axes(s, 2)
         GLMakie.lines!(eachindex(glabels), s[:, idx]; color = :black, linewidth = 0.5)
     end
-
 
     return fig
 end
@@ -863,7 +828,6 @@ function plot_polar(
     ndims(s) > 1 && size(s, 2) != 2 &&
         throw(ArgumentError("signal must contain 2 columns: phases and lengths."))
 
-
     # prepare plot
     GLMakie.activate!(; title = "plot_polar()")
     fig = GLMakie.Figure(; size = (800, 800))
@@ -877,7 +841,6 @@ function plot_polar(
     )
     !ticks && hidespines!(ax)
 
-
     if ndims(s) == 1
         for idx in eachindex(s)
             GLMakie.lines!([0, s[idx]], [0, 1]; linewidth = 2, color = :black)
@@ -888,7 +851,6 @@ function plot_polar(
         end
     end
 
-
     if m != (0, 0)
         GLMakie.lines!(
             [0, m[1]], [0, m[2]];
@@ -896,7 +858,6 @@ function plot_polar(
             color     = mono ? :darkgray : :red,
         )
     end
-
 
     return fig
 end
@@ -979,14 +940,12 @@ function plot_eros(
         yt = round.(logspace(flim[1], flim[2], nfrq); digits = 1)
     end
 
-
     # apply Gaussian filter if requested
     if smooth
         for idx in axes(sp, 3)
             sp[:, :, idx] = imfilter(@view(sp[:, :, idx]), Kernel.gaussian(ks))
         end
     end
-
 
     # resolve time markers to indices into a new local variable — do not mutate the input
     tm_indices = if !isnothing(tm)
@@ -1008,7 +967,6 @@ function plot_eros(
         Int64[]
     end
 
-
     function _draw_axis(fig, pos, xl, yl, tt, nticks)
         ax = GLMakie.Axis(
             fig[pos...];
@@ -1027,13 +985,11 @@ function plot_eros(
         return ax
     end
 
-
     function _draw_markers!(fig, pos, indices)
         for i in indices
             GLMakie.vlines!(fig[pos...], [st[i]]; color = :black, linewidth = 1)
         end
     end
-
 
     if size(sp, 3) == 1
 
@@ -1042,7 +998,6 @@ function plot_eros(
             xlabel, ylabel, title,
             "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of epochs",
         )
-
 
         # prepare plot
         GLMakie.activate!(; title = "plot_eros()")
@@ -1053,7 +1008,6 @@ function plot_eros(
         hm  = GLMakie.heatmap!(ax, st, sf, sp[:, :, 1]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
         _draw_markers!(fig, (1, 1), tm_indices)
-
 
     else
 
@@ -1067,11 +1021,9 @@ function plot_eros(
             "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs",
         )
 
-
         # prepare plot
         GLMakie.activate!(; title = "plot_eros()")
         fig = GLMakie.Figure(; size = (1200, 800))
-
 
         # create axis with customizable properties
         ax1 = _draw_axis(fig, (1, 1), xl1, yl1, tt1, 10)
@@ -1080,7 +1032,6 @@ function plot_eros(
         GLMakie.vlines!(ax1, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
         _draw_markers!(fig, (1, 1), tm_indices)
 
-
         # create axis with customizable properties
         ax2 = _draw_axis(fig, (2, 1), xl2, yl2, tt2, 10)
         hm2 = GLMakie.heatmap!(ax2, st, sf, sp[:, :, 2]'; colormap = pal)
@@ -1088,7 +1039,6 @@ function plot_eros(
         GLMakie.vlines!(ax2, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
         _draw_markers!(fig, (2, 1), tm_indices)
     end
-
 
     return fig
 end
@@ -1139,17 +1089,14 @@ function plot_erop(
     size(sp, 2) <= 2 || throw(ArgumentError("sp must contain ≤ 2 epochs."))
     _check_var(frq, [:lin, :log], "frq")
 
-
     # set frequency limits
     if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz")
         flim = (sf[2], flim[2])
     end
 
-
     # set y-axis label
     power_ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]"
-
 
     function _make_power_axis(fig, pos, xl, yl, tt)
         ax = GLMakie.Axis(
@@ -1167,10 +1114,8 @@ function plot_erop(
         return ax
     end
 
-
     # prepare plot
     GLMakie.activate!(; title = "plot_erop()")
-
 
     if size(sp, 2) == 1
 
@@ -1180,14 +1125,12 @@ function plot_erop(
             "Frequency [Hz]", power_ylabel, "Averaged power-spectra of epochs",
         )
 
-
         # prepare plot
         fig = GLMakie.Figure(; size = (900, 450))
 
         # create axis with customizable properties
         ax  = _make_power_axis(fig, (1, 1), xl, power_ylabel, tt)
         GLMakie.lines!(ax, sf, sp[:, 1]; color = :black)
-
 
     else
 
@@ -1201,7 +1144,6 @@ function plot_erop(
             "Frequency [Hz]", power_ylabel, "Averaged power-spectra of ERP epochs",
         )
 
-
         # prepare plot
         fig = GLMakie.Figure(; size = (1200, 800))
 
@@ -1209,12 +1151,10 @@ function plot_erop(
         ax1 = _make_power_axis(fig, (1, 1), xl, power_ylabel, tt1)
         GLMakie.lines!(ax1, sf, sp[:, 1]; color = :black)
 
-
         ax2 = _make_power_axis(fig, (2, 1), xl, power_ylabel, tt2)
         GLMakie.lines!(ax2, sf, sp[:, 2]; color = :black)
 
     end
-
 
     return fig
 end
@@ -1284,7 +1224,6 @@ function plot_icatopo(
         push!(fig_topo, fig_tmp)
     end
 
-
     return plot_compose(fig_topo; layout = (1, length(ic_idx)))
 end
 
@@ -1323,12 +1262,10 @@ function plot_ci(
         ArgumentError("All input signals must be of the same length."),
     )
 
-
     # set y-axis limits
     yl     = (floor(minimum(s_l); digits = 0), ceil(maximum(s_u); digits = 0))
     yl     = _tuple_max(yl)
     yticks = [yl[1], 0, yl[2]]
-
 
     # prepare plot
     GLMakie.activate!(; title = "plot_ci()")
@@ -1349,10 +1286,8 @@ function plot_ci(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-
     GLMakie.band!(t, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
     GLMakie.lines!(t, s; color = :black, linewidth = 2)
-
 
     return fig
 end
@@ -1413,10 +1348,8 @@ function plot_heatmap(
         ),
     )
 
-
     # set color palette
     pal = mono ? :grays : :bluesreds
-
 
     # prepare plot
     GLMakie.activate!(; title = "plot_heatmap()")
@@ -1439,7 +1372,6 @@ function plot_heatmap(
     # plot colorbar
     cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
 
-
     # apply thresholding
     if !isnothing(threshold)
         _, bm  = seg_extract(m; threshold = threshold, threshold_type = threshold_type)
@@ -1447,7 +1379,6 @@ function plot_heatmap(
         reg[bm] .= maximum(m)
         GLMakie.contour!(ax, x, y, reg'; levels = 1, color = :black, linewidth = 2)
     end
-
 
     return fig
 end
@@ -1481,23 +1412,19 @@ function plot_imf(
         ),
     )
 
-
     # the last row of imf is the residual; the reconstruction is the sum of all rows
     s_restored = sum(imf; dims = 1)[:]
     imf_plot   = vcat(imf, s_restored')
-
 
     # set y-axis limits
     ylim   = (floor(minimum(imf_plot); digits = 0), ceil(maximum(imf_plot); digits = 0))
     ylim   = _tuple_max(ylim)
     yticks = [ylim[1], 0, ylim[2]]
 
-
     # prepare plot
     GLMakie.activate!(; title = "plot_imf()")
     fig = GLMakie.Figure(; size = (1200, 800))
     nr  = ceil(Int64, (n + 1) / 2)
-
 
     idx  = 1
     cidx = 1
@@ -1527,7 +1454,6 @@ function plot_imf(
         end
     end
 
-
     # place the reconstructed signal spanning both columns
     row = cidx == 1 ? nr : nr + 1
     ax  = GLMakie.Axis(
@@ -1544,7 +1470,6 @@ function plot_imf(
     GLMakie.ylims!(ax, ylim)
     _style_axis!(ax)
     GLMakie.lines!(ax, t, s_restored; color = :black)
-
 
     return fig
 end
@@ -1583,7 +1508,6 @@ function plot_fi(
     # set default values
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Frequency [Hz]", "")
 
-
     # prepare plot
     GLMakie.activate!(; title = "plot_fi()")
     fig = GLMakie.Figure(; size = (900, 450))
@@ -1602,9 +1526,7 @@ function plot_fi(
     GLMakie.xlims!(ax, _xlims(st))
     _style_axis!(ax)
 
-
     GLMakie.lines!(st, fi; linewidth = 1, color = :black)
-
 
     return fig
 end
@@ -1654,7 +1576,6 @@ function plot_phase(
         "",
     )
 
-
     # prepare plot
     GLMakie.activate!(; title = "plot_phase()")
     fig = GLMakie.Figure(; size = (900, 450))
@@ -1679,13 +1600,11 @@ function plot_phase(
     GLMakie.xlims!(ax, _xlims(sf))
     _style_axis!(ax)
 
-
     if type === :line
         GLMakie.lines!(sf, ph; linewidth = 1, color = :black)
     else
         GLMakie.stem!(sf, ph; markersize = 10, color = :black)
     end
-
 
     return fig
 end
@@ -1756,7 +1675,6 @@ function plot_polezero(
     # plot unit circle
     GLMakie.arc!(Point2f(0), 1, -pi, pi; linestyle = :dot, linewidth = 0.5, color = :black)
 
-
     return fig
 end
 
@@ -1794,12 +1712,10 @@ function plot_dwc(
     ylim   = _tuple_max(ylim)
     yticks = unique([ylim[1], 0, ylim[2]])
 
-
     # prepare plot
     GLMakie.activate!(; title = "plot_dwc()")
     fig = GLMakie.Figure(; size = (1200, 800))
     nr  = ceil(Int64, (n + 1) / 2)
-
 
     # dc[1, :] is the original signal; coefficients start at dc[2, :]
     idx  = 2
@@ -1828,7 +1744,6 @@ function plot_dwc(
         end
     end
 
-
     # place the original signal spanning both columns
     row = cidx == 1 ? nr : nr + 1
     ax  = GLMakie.Axis(
@@ -1846,7 +1761,6 @@ function plot_dwc(
     GLMakie.ylims!(ax, ylim)
     _style_axis!(ax)
     GLMakie.lines!(ax, t, dc[1, :]; color = :black)
-
 
     return fig
 end

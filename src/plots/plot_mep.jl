@@ -54,10 +54,12 @@ function plot_mep(
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     _style_axis!(ax)
- 
+
+    # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
+
     GLMakie.lines!(ax, t, s; color = :black, linewidth = 1)
- 
+
     return fig
 end
 
@@ -101,7 +103,7 @@ function plot_mep(
 )::GLMakie.Figure
     # validate
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
- 
+
     # set color palette
     pal = mono ? :grays : :darktest
 
@@ -129,9 +131,10 @@ function plot_mep(
     )
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     _style_axis!(ax)
- 
+
+    # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
- 
+
     if ci95
         # get mean and 95%CI
         msci95_data = NeuroAnalyzer.msci95(s)
@@ -155,7 +158,7 @@ function plot_mep(
                 label      = clabels[idx],
             )
         end
- 
+
         # draw averaged channels
         if avg
             s_avg = mean(s; dims = 1)[:]
@@ -165,7 +168,8 @@ function plot_mep(
         # add legend if requested
         (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
     end
- 
+
+
     return fig
 end
 
@@ -213,13 +217,13 @@ function plot_mep_stack(
             "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t))).",
         ),
     )
- 
+
     # set color palette
     pal = mono ? :grays : :darktest
 
     # apply Gaussian filter if requested
     smooth && (s = imfilter(s, Kernel.gaussian(ks)))
- 
+
     ytick_size = size(s, 1) <= 64 ? 8 : 5
 
     # prepare plot
@@ -243,15 +247,15 @@ function plot_mep_stack(
     )
     _style_axis!(ax)
     ax.yticklabelsize = ytick_size  # conditional, overwrite _style_axis!
- 
+
     hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s); colormap = pal)
- 
+
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
- 
-    # FIX: was bare `Colorbar(...)` - use GLMakie.Colorbar
+
+     # draw zero line if requested
     cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
- 
+
     return fig
 end
 
@@ -342,7 +346,7 @@ function plot_mep(
         )
         fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt,
             mono = mono, yrev = yrev, zl = zl)
- 
+
     elseif type === :normal
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
@@ -352,7 +356,7 @@ function plot_mep(
         fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt,
             clabels = clabels, mono = mono, yrev = yrev,
             avg = avg, ci95 = ci95, leg = leg, zl = zl)
- 
+
     elseif type === :stack
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
@@ -365,7 +369,7 @@ function plot_mep(
             mono = mono, ks = ks, smooth = smooth, zl = zl)
 
     end
- 
+
     # draw peaks - single-channel only
     if peaks !== :off
         if length(ch) == 1
@@ -393,7 +397,7 @@ function plot_mep(
             _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1]; digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000; digits=0)) ms")
             _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1]; digits=2)) $units")
- 
+
         elseif length(ch) > 1 && type === :normal
             mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)
             obj_tmp = keep_channel(obj; ch = labels(obj)[1])
@@ -417,6 +421,6 @@ function plot_mep(
             _info("Negative peak amplitude: $(round(mep_tmp[pp[1, 2]]; digits=2)) $units")
         end
     end
- 
+
     return fig
 end

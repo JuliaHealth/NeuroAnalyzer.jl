@@ -409,7 +409,6 @@ function plot_spectrogram_topo(
         GLMakie.heatmap!(ax, sf, st, sp[:, :, idx]'; colormap = pal)
         push!(pp_vec, pp)
 
-
         pp_full = plot_spectrogram(
             st, sf, sp[:, :, idx];
             db         = db,
@@ -767,7 +766,6 @@ function plot_spectrogram(
             threshold_type = threshold_type,
         )
 
-
     elseif length(ch) > 1 && type === :normal
         ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
@@ -789,7 +787,6 @@ function plot_spectrogram(
             threshold      = threshold,
             threshold_type = threshold_type,
         )
-
 
     elseif type === :topo
         xlabel == "default" && (xlabel = "Time [s]")
