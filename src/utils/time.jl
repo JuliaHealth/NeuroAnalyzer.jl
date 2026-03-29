@@ -183,47 +183,20 @@ end
 """
     e2t(obj; <keyword arguments>)
 
-Return the time segment in seconds corresponding to a single epoch index.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Int64`: epoch index
-
-# Returns
-
-- `Tuple{Float64, Float64}`: `(start_time, end_time)` in seconds
-"""
-function e2t(obj::NeuroAnalyzer.NEURO, ep::Int64)::Tuple{Real, Real}
-
-    # validate
-    _check_epochs(obj, ep)
-
-    # epoch length
-    el = epoch_len(obj)
-    # first sample of this epoch
-    es = (ep - 1) * el + 1
-    # last  sample of this epoch
-    ee = es + el - 1
-
-    return (obj.time_pts[es], obj.time_pts[ee])
-end
-
-"""
-    e2t(obj; <keyword arguments>)
-
 Return the time segment in seconds spanning a contiguous range of epoch indices. The returned segment runs from the start of `ep[1]` to the end of `ep[end]`.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::AbstractVector`: vector of epoch indices
+- `ep::Union{Int64, Vector{Int64}`: epoch index or vector of epoch indices
 
 # Returns
 
 - `Tuple{Float64, Float64}`: `(start_time, end_time)` in seconds
 """
-function e2t(obj::NeuroAnalyzer.NEURO, ep::AbstractVector)::Tuple{Real, Real}
+function e2t(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, UnitRange{Int64}, Vector{Int64}})::Tuple{Real, Real}
+
+    ep isa Int64 && (ep = [ep])
 
     # validate
     _check_epochs(obj, ep)

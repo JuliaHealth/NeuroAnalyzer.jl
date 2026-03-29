@@ -67,8 +67,8 @@ Calculate variance F-test for two NEURO objects.
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
+- `ep1::Union{Int64, Vector{Int64}, UnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
+- `ep2::Union{Int64, Vector{Int64}, UnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 
 # Returns
 
@@ -82,8 +82,8 @@ function vartest(
     obj2::NeuroAnalyzer.NEURO;
     ch1::Union{String, Vector{String}, Regex},
     ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    ep1::Union{Int64, Vector{Int64}, UnitRange{Int64}} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, UnitRange{Int64}} = _c(nepochs(obj2)),
 )::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
     length(ch1) == length(ch2) ||
         throw(

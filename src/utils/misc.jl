@@ -220,7 +220,7 @@ Return a single channel's signal in trials × time format.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj))`: epoch numbers; default use all epochs
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}=_c(nepochs(obj))`: epoch numbers; default use all epochs
 
 # Returns
 
@@ -229,7 +229,7 @@ Return a single channel's signal in trials × time format.
 function trtm(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
-    ep::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj)),
+    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}} = _c(nepochs(obj)),
 )::Matrix{Float64}
 
     # validate

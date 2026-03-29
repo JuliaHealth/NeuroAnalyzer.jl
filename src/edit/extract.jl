@@ -91,7 +91,7 @@ Extract data.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}=1:nepochs(obj)`: index of epochs, default is all epochs
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}=1:nepochs(obj)`: index of epochs, default is all epochs
 - `time::Bool=false`: return time vector
 - `etime::Bool=false`: return epoch time vector
 
@@ -104,7 +104,7 @@ Extract data.
 function extract_data(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    ep::Union{Int64, Vector{Int64}, AbstractRange} = 1:nepochs(obj),
+    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}} = 1:nepochs(obj),
     time::Bool = false,
     etime::Bool = false,
 )::Union{

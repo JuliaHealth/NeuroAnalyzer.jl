@@ -135,8 +135,8 @@ Calculate ISPC (Inter-Site Phase Clustering) between channel-matched pairs of tw
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
+- `ep1::Union{Int64, Vector{Int64}, UnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
+- `ep2::Union{Int64, Vector{Int64}, UnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 
 # Returns
 
@@ -154,8 +154,8 @@ function ispc(
     obj2::NeuroAnalyzer.NEURO;
     ch1::Union{String, Vector{String}, Regex},
     ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+    ep1::Union{Int64, Vector{Int64}, UnitRange{Int64}} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, UnitRange{Int64}} = _c(nepochs(obj2)),
 )::@NamedTuple{
     ispcv::Matrix{Float64},
     ispca::Matrix{Float64},

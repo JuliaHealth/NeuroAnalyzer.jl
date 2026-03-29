@@ -11,7 +11,7 @@ Remove epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to be removed
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to be removed
 
 # Returns
 
@@ -19,7 +19,7 @@ Remove epochs.
 """
 function delete_epoch(
     obj::NeuroAnalyzer.NEURO;
-    ep::Union{Int64, Vector{Int64}, AbstractRange},
+    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
 
     # validate
@@ -63,14 +63,14 @@ Remove epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to be removed
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to be removed
 
 # Returns
 
 - `Nothing`
 """
 function delete_epoch!(
-    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange},
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
 )::Nothing
     obj_new = delete_epoch(obj; ep = ep)
     obj.header = obj_new.header
@@ -90,14 +90,14 @@ Keep epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to keep
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to keep
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function keep_epoch(
-    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange},
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
     !(nepochs(obj) > 1) && throw(ArgumentError("OBJ contains only one epoch."))
     typeof(ep) <: AbstractRange && (ep = collect(ep))
@@ -123,14 +123,14 @@ Keep epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch numbers to keep
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to keep
 
 # Returns
 
 - `Nothing`
 """
 function keep_epoch!(
-    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange},
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
 )::Nothing
     obj_new = keep_epoch(obj; ep = ep)
     obj.header = obj_new.header

@@ -443,14 +443,14 @@ function plot_ep(
                     # select / deselect epochs
                     if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
                         nep = ceil(Int64, ax1_x / ep_len)
-                        if 1 <= nep <= n_ep
+                        if 1 <= nep <= ep_n[]
                             ep_selected[nep] = !ep_selected[nep]
                         end
                     end
 
                     # change displayed epoch window
                     if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
-                        nep = clamp(round(Int64, ax2_x), 1, n_ep)
+                        nep = clamp(round(Int64, ax2_x), 1, ep_n[])
                         seg = ((nep - 1) * ep_len, (nep + n_epochs - 1) * ep_len)
                         ax1.limits[] = (seg, ax1.limits[][2])
                         seg_pos[] = Float64(nep - 1)
@@ -508,7 +508,7 @@ function plot_ep(
                     update_ax2 = true
                 end
                 if event.key == Keyboard._end
-                    seg_pos[] = Float64(n_ep - n_epochs)
+                    seg_pos[] = Float64(ep_n[] - n_epochs)
                     update_ax2 = true
                 end
                 if event.key == Keyboard.left && seg_pos[] > 0
@@ -516,15 +516,15 @@ function plot_ep(
                     update_ax2 = true
                 end
                 if ispressed(fig, Keyboard.left_shift & Keyboard.left)
-                    seg_pos[] = clamp(seg_pos[] - (n_epochs - 1), 0.0, Float64(n_ep - n_epochs))
+                    seg_pos[] = clamp(seg_pos[] - (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
                     update_ax2 = true
                 end
-                if event.key == Keyboard.right && seg_pos[] < n_ep - n_epochs
+                if event.key == Keyboard.right && seg_pos[] < ep_n[] - n_epochs
                     seg_pos[] += 1.0
                     update_ax2 = true
                 end
                 if ispressed(fig, Keyboard.left_shift & Keyboard.right)
-                    seg_pos[] = clamp(seg_pos[] + (n_epochs - 1), 0.0, Float64(n_ep - n_epochs))
+                    seg_pos[] = clamp(seg_pos[] + (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
                     update_ax2 = true
                 end
                 if update_ax2
