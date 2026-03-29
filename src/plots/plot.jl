@@ -30,7 +30,7 @@ Plot signal from a NEURO object.
 - `n_epochs::Int64=5`: number of visible epochs
 - `cb::Bool=true`: if `true`, show color bar (for ERP/ERF/MEP)
 - `cb_title::String="default"`: color bar title (for ERP/ERF/MEP)
-- `peaks::Bool=true`: draw peak markers (for ERP/ERF/MEP)
+- `peaks::Bool=true`: if `true`, draw peak markers (for ERP/ERF/MEP)
 - `leg::Bool=true`: if `true`, add legend with channel labels (for ERP/ERF/MEP)
 - `yrev::Bool=false`: if `true`, reverse the y-axis (for ERP/ERF/MEP)
 - `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur (for ERP/ERF/MEP)
@@ -117,7 +117,7 @@ function plot(
             ci95 = ci95,
             cb = cb,
             cb_title = cb_title,
-            peaks = peaks,
+            peaks = :embed,
             leg = leg,
             yrev = yrev,
             smooth = smooth,
@@ -267,7 +267,6 @@ function plot(
     ylabel::String = "Amplitude",
     title::String = "",
 )::GLMakie.Figure
-
     # validate
     length(t) == length(s) || throw(ArgumentError("Length of s must equal length of t."))
 
@@ -287,13 +286,9 @@ function plot(
         xminorticks = IntervalsBetween(10),
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
+    _style_axis!(ax)
 
     # set axis limits
     if minimum(s) == 0
@@ -301,13 +296,6 @@ function plot(
     else
         GLMakie.ylims!(ax, extrema(s) .* 1.1)
     end
-
-    # configure axis appearance
-    ax.titlesize = 18
-    ax.xlabelsize = 12
-    ax.ylabelsize = 12
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
 
     # plot the signal
     GLMakie.lines!(

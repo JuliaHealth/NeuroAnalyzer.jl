@@ -48,25 +48,24 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     ch_n = length(_GRIDLOCS_LABELS)
     cmap = GLMakie.resample_cmap(pal, ch_n)
 
+    # prepare plot
     GLMakie.activate!(; title = "plot_gridlocs()")
     fig = GLMakie.Figure(; size = (800, 800), figure_padding = 0)
+
+    # create axis with customizable properties
     ax  = GLMakie.Axis(
         fig[1, 1];
         aspect = 1,
         xlabel = "",
         ylabel = "",
         title  = "",
-        xzoomlock  = true,
-        yzoomlock  = true,
-        xpanlock   = true,
-        ypanlock   = true,
-        xrectzoom  = false,
-        yrectzoom  = false,
+        _AXIS_LOCK_KWARGS...,
     )
     hidedecorations!(ax; grid = true)
     hidespines!(ax)
     GLMakie.xlims!(ax, (-1.2, 1.2))
     GLMakie.ylims!(ax, (-1.2, 1.2))
+    _style_axis!(ax)
 
     # outer border — thin lines
     for (xs, ys) in [

@@ -93,7 +93,11 @@ function plot_topo(
     # channel locations by labels
     local_locs = locs[ch, :]
 
-    if !cart
+    if cart
+        # cartesian coordinates
+        loc_x = local_locs.loc_x
+        loc_y = local_locs.loc_y
+    else
         # polar coordinates
         loc_x = zeros(ch_n)
         loc_y = zeros(ch_n)
@@ -101,10 +105,6 @@ function plot_topo(
             loc_x[idx], loc_y[idx] =
                 pol2cart(local_locs.loc_radius[idx], local_locs.loc_theta[idx])
         end
-    else
-        # cartesian coordinates
-        loc_x = local_locs.loc_x
-        loc_y = local_locs.loc_y
     end
 
     # plot parameters

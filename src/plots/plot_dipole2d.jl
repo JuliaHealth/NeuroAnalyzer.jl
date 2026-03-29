@@ -49,11 +49,13 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
         xrectzoom = false,
         yrectzoom = false,
         title = "Top view",
+        _AXIS_LOCK_KWARGS...,
     )
     hidedecorations!(ax_xy)
     hidespines!(ax_xy)
     GLMakie.xlims!(ax_xy, -1.2, 1.2)
     GLMakie.ylims!(ax_xy, -1.2, 1.2)
+    _style_axis!(ax_xy)
 
     ax_yz = GLMakie.Axis(
         fig[1, 2];
@@ -65,11 +67,13 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
         xrectzoom = false,
         yrectzoom = false,
         title = "Side view",
+        _AXIS_LOCK_KWARGS...,
     )
     hidedecorations!(ax_yz)
     hidespines!(ax_yz)
     GLMakie.xlims!(ax_yz, -1.2, 1.2)
     GLMakie.ylims!(ax_yz, -1.2, 1.2)
+    _style_axis!(ax_yz)
 
     ax_xz = GLMakie.Axis(
         fig[1, 3];
@@ -81,11 +85,13 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
         xrectzoom = false,
         yrectzoom = false,
         title = "Front view",
+        _AXIS_LOCK_KWARGS...,
     )
     hidedecorations!(ax_xz)
     hidespines!(ax_xz)
     GLMakie.xlims!(ax_xz, -1.2, 1.2)
     GLMakie.ylims!(ax_xz, -1.2, 1.2)
+    _style_axis!(ax_xz)
 
     # draw head outline (nose, ears, head)
     lw = 2

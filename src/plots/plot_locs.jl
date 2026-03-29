@@ -222,12 +222,7 @@ function plot_locs(
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
         backgroundcolor = :transparent,
-        xzoomlock       = true,
-        yzoomlock       = true,
-        xpanlock        = true,
-        ypanlock        = true,
-        xrectzoom       = false,
-        yrectzoom       = false,
+        _AXIS_LOCK_KWARGS...,
     )
 
     # create axis with customizable properties

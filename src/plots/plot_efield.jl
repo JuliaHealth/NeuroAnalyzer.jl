@@ -80,18 +80,9 @@ function plot_efield2d(
         aspect = DataAspect(),
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
+        _AXIS_LOCK_KWARGS...,
     )
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    _style_axis!(ax)
 
     # draw electric field streamlines
     GLMakie.streamplot!(

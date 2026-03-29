@@ -61,6 +61,7 @@ function plot_ep(
     res::Int64 = 1,
     gui::Bool = true,
 )::GLMakie.Figure
+    # validate
     res >= 1 || throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
     n_channels >= 1 || throw(ArgumentError("n_channels must be ≥ 1."))
@@ -70,6 +71,7 @@ function plot_ep(
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
     !_has_markers(obj) && (markers = false)
 
+    # set color palette
     pal = mono ? :grays : :darktest
 
     _check_epochs(obj, ep)

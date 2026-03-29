@@ -22,7 +22,6 @@ function plot_compose(
     vfig::Vector{GLMakie.Figure};
     layout::Tuple{Int64, Int64},
 )::GLMakie.Figure
-
     # validate that the layout can accommodate all provided plots.
     layout[1] * layout[2] >= length(vfig) ||
         throw(
@@ -98,9 +97,7 @@ Return an empty `GLMakie.Figure`, useful for padding a grid of plots.
 
 - `GLMakie.Figure`: the plotted figure
 """
-function plot_empty()::GLMakie.Figure
-    return GLMakie.Figure()
-end
+plot_empty()::GLMakie.Figure = GLMakie.Figure()
 
 """
     add_pl(fig, pl; <keyword arguments>)

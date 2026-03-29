@@ -66,16 +66,14 @@ function plot_coherence(
         xminorticks = IntervalsBetween(10),
         xscale = frq === :lin ? identity : log,
         xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        _AXIS_LOCK_KWARGS...,
     )
 
     # set axis limits
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    _style_axis!(ax)
 
     # plot coherence
     GLMakie.lines!(
@@ -168,16 +166,14 @@ function plot_coherence(
         xminorticks = IntervalsBetween(10),
         xscale = frq === :lin ? identity : log,
         xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        _AXIS_LOCK_KWARGS...,
     )
 
     # set axis limits
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    _style_axis!(ax)
 
     if ci95
 

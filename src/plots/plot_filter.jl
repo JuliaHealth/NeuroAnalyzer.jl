@@ -229,7 +229,6 @@ function plot_filter(;
         end
 
         if fprototype in [:firls, :remez, :iirnotch]
-            # FIX: was `!(!isnothing(bw))` — double negation; equivalent to `isnothing(bw)`
             isnothing(bw) && throw(ArgumentError("bw must be specified."))
             bw > 0 || throw(ArgumentError("bw must be > 0."))
             if length(cutoff) == 1

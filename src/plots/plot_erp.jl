@@ -618,7 +618,7 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `title::String="default"`: plot title
 - `cb::Bool=true`: if `true`, show color bar
 - `cb_title::String="default"`: color bar title
-- `peaks::Bool=true`: draw peak markers
+- `peaks::Bool=true`: if `true`, draw peak markers
 - `leg::Bool=true`: if `true`, add legend with channel labels
 - `type::Symbol=:normal`: plot type:
     - `:normal`: standard ERP plot

@@ -70,17 +70,14 @@ function plot_connectivity_circle(
         yticksvisible = false,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
+        _AXIS_LOCK_KWARGS...,
     )
     hidedecorations!(ax)
+    _style_axis!(ax)
 
     # set axis limits
     GLMakie.xlims!(ax, (-1.5, 1.5))
     GLMakie.ylims!(ax, (-1.5, 1.5))
-    ax.titlesize = 18
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
 
     # draw connections
     m_norm = normalize_minmax(m)
