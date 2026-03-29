@@ -137,15 +137,19 @@ function plot_cont(
     # between -1.0 and +1.0 and shift so all channels are visible
     r = Observable(Float64[])
     for idx in eachindex(ctypes_uni)
-        push!(r[], round(_get_range(s[ctypes .== ctypes_uni[idx], :])))
-        s[ctypes .== ctypes_uni[idx], :] =
-            normalize_minmax(s[ctypes .== ctypes_uni[idx], :])
+        group = s[ctypes .== ctypes_uni[idx], :]
+        push!(r[], round(_get_range(group)))
+        # remove per-channel DC offset
+        group = group .- mean(group; dims=2)
+        # map to [-0.5, 0.5]
+        if size(group, 1) == 1
+            s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5)
+        else
+            s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych=true)
+        end
     end
     if type === :normal
-        s .+= collect(1:ch_n) # .+ 0.25
-        for idx in eachindex(ctypes_uni)
-            size(s[ctypes .== ctypes_uni[idx], :], 1) > 2 && (s[ctypes .== ctypes_uni[idx], :] .+= 0.25)
-        end
+        s .+= collect(1:ch_n)
     elseif type === :butterfly
         for idx in eachindex(ctypes_uni)
             s[ctypes .== ctypes_uni[idx], :] .+= idx
