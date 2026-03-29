@@ -95,7 +95,12 @@ function import_locs_ced(file_name::String)::DataFrame
     lowercase(splitext(file_name)[2]) == ".ced" ||
         throw(ArgumentError("$file_name is not a CED file."))
 
-    locs_raw = CSV.read(file_name; delim = "\t", stringtype = String, DataFrame)
+    locs_raw = CSV.read(
+        file_name,
+        DataFrame;
+        delim = "\t",
+        stringtype = String
+    )
     colnames = lowercase.(names(locs_raw))
     DataFrames.rename!(locs_raw, Symbol.(colnames))
 
@@ -162,8 +167,11 @@ function import_locs_locs(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not a LOCS file."))
 
     locs_raw = CSV.read(
-        file_name; header = false, delim = "\t",
-        stringtype = String, DataFrame,
+        file_name,
+        DataFrame;
+        header = false,
+        delim = "\t",
+        stringtype = String,
     )
     DataFrames.rename!(locs_raw, [:number, :theta, :radius, :label])
 
@@ -279,8 +287,12 @@ function import_locs_tsv(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not a TSV file."))
 
     locs_raw = CSV.read(
-        file_name; header = true, delim = "\t",
-        ignorerepeated = true, stringtype = String, DataFrame,
+        file_name,
+        DataFrame;
+        header = true,
+        delim = "\t",
+        ignorerepeated = true,
+        stringtype = String,
     )
     colnames = lowercase.(names(locs_raw))
     DataFrames.rename!(locs_raw, Symbol.(colnames))
@@ -356,19 +368,32 @@ function import_locs_sfp(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not an SFP file."))
 
     # try common delimiters in order; SFP files are inconsistently delimited.
-    locs_raw = CSV.read(file_name; header = false, stringtype = String, DataFrame)
+    locs_raw = CSV.read(
+        file_name,
+        DataFrame;
+        header = false,
+        stringtype = String,
+    )
     if size(locs_raw, 2) != 4
         _info("Checking TAB as delimiter")
         locs_raw = CSV.read(
-            file_name; header = false, delim = "\t",
-            ignorerepeated = true, stringtype = String, DataFrame,
+            file_name,
+            DataFrame;
+            header = false,
+            delim = "\t",
+            ignorerepeated = true,
+            stringtype = String,
         )
     end
     if size(locs_raw, 2) != 4
         _info("Checking SPACE as delimiter")
         locs_raw = CSV.read(
-            file_name; header = false, delim = " ",
-            ignorerepeated = true, stringtype = String, DataFrame,
+            file_name,
+            DataFrame;
+            header = false,
+            delim = " ",
+            ignorerepeated = true,
+            stringtype = String,
         )
     end
     size(locs_raw, 2) == 4 ||
@@ -427,8 +452,13 @@ function import_locs_csd(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not a CSD file."))
 
     locs_raw = CSV.read(
-        file_name; skipto = 3, delim = ' ', header = false,
-        ignorerepeated = true, stringtype = String, DataFrame,
+        file_name,
+        DataFrame;
+        skipto = 3,
+        delim = ' ',
+        header = false,
+        ignorerepeated = true,
+        stringtype = String,
     )
     DataFrames.rename!(
         locs_raw,
@@ -606,8 +636,11 @@ function import_locs_txt(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not a TXT file."))
 
     locs_raw = CSV.read(
-        file_name; header = true, delim = "\t",
-        stringtype = String, DataFrame,
+        file_name,
+        DataFrame;
+        header = true,
+        delim = "\t",
+        stringtype = String,
     )
     DataFrames.rename!(locs_raw, [:label, :theta, :phi])
 
@@ -671,8 +704,12 @@ function import_locs_dat(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not a DAT file."))
 
     locs_raw = CSV.read(
-        file_name; ignorerepeated = true, delim = ' ',
-        stringtype = String, header = 0, DataFrame,
+        file_name,
+        DataFrame;
+        ignorerepeated = true,
+        delim = ' ',
+        stringtype = String,
+        header = 0,
     )
 
     # detect column layout from number of columns and type of column 2
@@ -802,8 +839,11 @@ function import_locs_csv(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not a CSV file."))
 
     locs = CSV.read(
-        file_name; header = true, delim = ",",
-        stringtype = String, DataFrame,
+        file_name,
+        DataFrame;
+        header = true,
+        delim = ",",
+        stringtype = String,
     )
 
     expected = [

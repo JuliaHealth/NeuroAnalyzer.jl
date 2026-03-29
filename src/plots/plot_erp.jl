@@ -35,7 +35,6 @@ function plot_erp(
     zl::Bool = true,
     mono::Bool = false,
 )::GLMakie.Figure
-
     # validate
     length(t) == length(s) ||
         throw(ArgumentError("Time and signal vectors must have the same length."))
@@ -79,9 +78,7 @@ function plot_erp(
     ax.yticklabelsize = 12
 
     # draw zero line if requested
-    if zl
-        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
-    end
+    zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
 
     # plot ERP signal
     GLMakie.lines!(ax, t, s; color = :black, linewidth = 1)
@@ -139,7 +136,6 @@ function plot_erp(
     zl::Bool = true,
     mono::Bool = false,
 )::GLMakie.Figure
-
     # validate
     size(s, 2) == length(t) ||
         throw(ArgumentError("Signal matrix columns must match time vector length"))
@@ -228,9 +224,7 @@ function plot_erp(
     end
 
     # plot averaged signal if requested
-    if avg
-        GLMakie.lines!(ax, t, mean(s; dims = 1)[:]; color = :black, linewidth = 2)
-    end
+    avg && GLMakie.lines!(ax, t, mean(s; dims = 1)[:]; color = :black, linewidth = 2)
 
     # plot response time if provided
     if !isnothing(rt) && rt / 1000 ∈ t
@@ -563,9 +557,7 @@ function plot_erp_stack(
     end
 
     # add colorbar if requested
-    if cb
-        Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
-    end
+    cb && Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
 
     return fig
 end
@@ -601,7 +593,6 @@ function plot_gfp(
     zl::Bool = true,
     mono::Bool = false,
 )::GLMakie.Figure
-
     # validate
     length(t) == length(g) ||
         throw(ArgumentError("Time vector and GFP must have equal length."))
@@ -644,9 +635,7 @@ function plot_gfp(
     ax.yticklabelsize = 12
 
     # draw zero line if requested
-    if zl
-        GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
-    end
+    zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
 
     # plot GFP as filled band with outline
     GLMakie.band!(ax, t, 0, g; color = :gray)
@@ -720,7 +709,6 @@ function plot_erp(
     mono::Bool = false,
     gui::Bool = false,
 )::GLMakie.Figure
-
     # validate
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")

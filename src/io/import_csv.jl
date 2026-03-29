@@ -28,7 +28,12 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         throw(ArgumentError("File $file_name cannot be loaded."))
 
     file_type = "CSV"
-    df = CSV.read(file_name; stringtype = String, DataFrame)
+
+    df = CSV.read(
+        file_name,
+        DataFrame;
+        stringtype = String,
+    )
 
     # ------------------------------------------------------------------ #
     # detect layout and extract time axis + signal matrix                 #

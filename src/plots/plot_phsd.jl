@@ -2,30 +2,6 @@ export plot_phsd
 export plot_phsd_3d
 export plot_phsd_topo
 
-# ---------------------------------------------------------------------------
-# shared helpers
-# ---------------------------------------------------------------------------
-
-# Keyword arguments applied to every locked/non-interactive Axis.
-const _AXIS_LOCK_KWARGS = (
-    xzoomlock  = true,
-    yzoomlock  = true,
-    xpanlock   = true,
-    ypanlock   = true,
-    xrectzoom  = false,
-    yrectzoom  = false,
-)
-
-# Apply standard font sizes to an Axis.
-function _style_axis!(ax)
-    ax.titlesize      = 18
-    ax.xlabelsize     = 18
-    ax.ylabelsize     = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
-    return ax
-end
-
 """
     plot_phsd(f, ph; <keyword arguments>)
 

@@ -2,30 +2,6 @@ export plot_psd
 export plot_psd_3d
 export plot_psd_topo
 
-# ---------------------------------------------------------------------------
-# shared helpers
-# ---------------------------------------------------------------------------
-
-# Keyword arguments applied to every locked/non-interactive Axis.
-const _AXIS_LOCK_KWARGS = (
-    xzoomlock  = true,
-    yzoomlock  = true,
-    xpanlock   = true,
-    ypanlock   = true,
-    xrectzoom  = false,
-    yrectzoom  = false,
-)
-
-# Apply standard font sizes to an Axis.
-function _style_axis!(ax)
-    ax.titlesize      = 18
-    ax.xlabelsize     = 18
-    ax.ylabelsize     = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
-    return ax
-end
-
 """
     plot_psd(f, p; <keyword arguments>)
 
@@ -191,7 +167,6 @@ function plot_psd(
     if ci95
         # draw 95% CI
         GLMakie.band!(ax, f[f1:f2], s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
-
         # draw mean
         GLMakie.lines!(ax, f[f1:f2], s_m; color = :black, linewidth = 2)
     else

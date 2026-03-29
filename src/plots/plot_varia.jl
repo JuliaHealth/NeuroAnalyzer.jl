@@ -23,26 +23,6 @@ export plot_dwc
 # shared helpers
 # ---------------------------------------------------------------------------
 
-# Keyword arguments applied to every locked/non-interactive Axis.
-const _AXIS_LOCK_KWARGS = (
-    xzoomlock  = true,
-    yzoomlock  = true,
-    xpanlock   = true,
-    ypanlock   = true,
-    xrectzoom  = false,
-    yrectzoom  = false,
-)
-
-# Apply standard font sizes to an Axis.
-function _style_axis!(ax)
-    ax.titlesize      = 18
-    ax.xlabelsize     = 18
-    ax.ylabelsize     = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
-    return ax
-end
-
 """
 Compute padded y-limits for a data array.
 Lower bound is 0 when all values are positive, otherwise 1.5× the minimum.
@@ -54,6 +34,8 @@ function _ylims_padded(s::AbstractArray)
     hi_lim = ceil(Int64, round(hi * 1.5; digits = 1))
     return (lo_lim, hi_lim)
 end
+
+# ---------------------------------------------------------------------------
 
 """
     plot_matrix(m; <keyword arguments>)

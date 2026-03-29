@@ -197,10 +197,10 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     # read raw light intensity channels (V)
     nirs_int = Matrix(
         CSV.read(
-            splitext(file_name)[1] * ".wl1";
+            splitext(file_name)[1] * ".wl1",
+            DataFrame;
             header = false,
             stringtype = String,
-            DataFrame,
         ),
     )'[
         ch_masks, :,

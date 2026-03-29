@@ -149,10 +149,10 @@ function _find_bylabel(
     locs::DataFrame,
     l::Union{String, Vector{String}, Vector{SubString{String}}},
 )::Union{Int64, Vector{Int64}}
-    :label in names(locs) ||
-        throw(ArgumentError("Channel locations DataFrame must contain a \":label\" column."))
+    "label" in names(locs) ||
+        throw(ArgumentError("Channel locations DataFrame must contain a \"label\" column."))
     # convert labels to lowercase for case-insensitive comparison
-    loc_labels = lowercase.(locs[!, ])
+    loc_labels = lowercase.(locs.label)
     if l isa String
         # single label case - return first match index or empty vector
         match_idx = findfirst(==(lowercase(l)), loc_labels)

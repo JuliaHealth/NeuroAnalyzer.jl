@@ -36,7 +36,8 @@ Plot epoched signal.
 - `n_channels::Int64=20`: number of visible channels
 - `n_epochs::Int64=5`: number of visible epochs
 - `res::Int64=1`: resampling factor (draw every res-nth sample)
-- `gui::Bool=true`: if `true`, keep window open and use it interactively
+- `gui::Bool=true`: if `true`, keep window open and interactive
+
 
 # Returns
 

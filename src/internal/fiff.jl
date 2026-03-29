@@ -963,14 +963,12 @@ function _create_fiff_block(fid::IOStream)::Tuple{Vector{Vector{UInt8}}, Matrix{
     bs = _find_fiff_tag("block_start")
     be = _find_fiff_tag("block_end")
     d = Vector{Vector{UInt8}}(undef, n)
-
     @inbounds for i in eachindex(tags)
         tag_pos[i] = tags[i][1]
         tag_ids[i] = tags[i][2]
         tag_type[i] = tags[i][3]
         tag_size[i] = tags[i][4]
         d[i] = tags[i][5]
-
         if tag_ids[i] == bs
             block_level[i:end] .+= 1
             block_type_current = _get_fiff_block_type(fid, tags[i])[]

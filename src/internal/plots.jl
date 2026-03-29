@@ -1,3 +1,26 @@
+function _draw_head_labels!(ax::GLMakie.Axis; font_size::Int64=8)
+    fid_names = ["NAS", "IN", "LPA", "RPA"]
+    for idx in 1:length(NeuroAnalyzer.fiducial_points)
+        if plane === :xy
+            fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+            fid_loc_y = NeuroAnalyzer.fiducial_points[idx][2]
+        elseif plane === :xz
+            fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+            fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+        elseif plane === :yz
+            fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
+            fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+        end
+        GLMakie.text!(
+            fid_loc_x,
+            fid_loc_y;
+            text = fid_names[idx],
+            fontsize = font_size,
+            align = (:center, :center),
+        )
+    end
+end
+
 function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64=1)
     GLMakie.lines!(ax, [-0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
     GLMakie.lines!(ax, [0.2, 0.0],  [0.98, 1.08]; linewidth = lw, color = :black)

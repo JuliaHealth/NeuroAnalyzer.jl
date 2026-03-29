@@ -73,7 +73,17 @@ function _ch_units(ch_type::String)::String
 end
 
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String =
-    _ch_units(obj.header.recording[:channel_type][_ch_idx(obj; ch)[1]])
+    _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
+
+# ---------------------------------------------------------------------------
+# NIRS channel type list - defined once to avoid repetition
+# ---------------------------------------------------------------------------
+const _NIRS_TYPES = [
+    "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp",
+    "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi",
+    "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew",
+    "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux",
+]
 
 function _ch_idx(
     cl::Union{String, Vector{String}},
@@ -96,16 +106,6 @@ function _ch_idx(
     end
     return unique(ch)
 end
-
-# ---------------------------------------------------------------------------
-# NIRS channel type list - defined once to avoid repetition
-# ---------------------------------------------------------------------------
-const _NIRS_TYPES = [
-    "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp",
-    "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi",
-    "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew",
-    "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux",
-]
 
 function _ch_idx(
     obj::NeuroAnalyzer.NEURO,

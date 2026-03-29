@@ -1,19 +1,5 @@
 export plot_topo
 
-# ---------------------------------------------------------------------------
-# shared helpers
-# ---------------------------------------------------------------------------
-
-# Keyword arguments applied to every locked/non-interactive Axis.
-const _AXIS_LOCK_KWARGS = (
-    xzoomlock  = true,
-    yzoomlock  = true,
-    xpanlock   = true,
-    ypanlock   = true,
-    xrectzoom  = false,
-    yrectzoom  = false,
-)
-
 """
     plot_topo(s; <keyword arguments>)
 
@@ -22,7 +8,7 @@ Plot a topographical map of signal values across channel locations.
 # Arguments
 
 - `s::AbstractVector`: signal values to plot (one value per channel)
-- `locs::DataFrame`: channel coordinates; must include labels and spatial columns (`loc_x`, `loc_y` or `loc_radius`, `loc_theta`).
+- `locs::DataFrame`: channel location data
 - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: channels to include; defaults to all rows in `locs`
 - `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: significant channels to highlight
 - `cb::Bool=true`: if `true`, show colorbar

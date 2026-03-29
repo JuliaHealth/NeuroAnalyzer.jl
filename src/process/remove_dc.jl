@@ -22,13 +22,12 @@ function remove_dc(
     if isa(n, Int64)
         n >= 0 || throw(ArgumentError("n must be ≥ 0."))
         n <= length(s) || throw(ArgumentError("n must be ≤ $(length(s))."))
-
         return n == 0 ? s .- mean(s) : s .- mean(s[1:n])
 
     else
         n != (0, 0) && _check_tuple(n, (1, length(s)), "n")
-
         return n == (0, 0) ? s .- mean(s) : s .- mean(s[n[1]:n[2]])
+
     end
 end
 
@@ -50,14 +49,15 @@ function remove_dc(
     s::AbstractMatrix,
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Matrix{Float64}
+    # validate
     ch_n = size(s, 1)
 
-    result = similar(s, Float64)
+    s_new = similar(s, Float64)
     Threads.@threads :static for ch_idx in 1:ch_n
-        result[ch_idx, :] = remove_dc(@view(s[ch_idx, :]), n)
+        s_new[ch_idx, :] = remove_dc(@view(s[ch_idx, :]), n)
     end
 
-    return result
+    return s_new
 end
 
 """
@@ -120,7 +120,7 @@ function remove_dc(
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = remove_dc(@view(obj.data[ch, :, :]), n)
-    push!(result.history, "remove_dc(obj; ch=$ch, n=$n)")
+    push!(obj_new.history, "remove_dc(obj; ch=$ch, n=$n)")
 
     return obj_new
 end

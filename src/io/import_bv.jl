@@ -97,7 +97,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     end
     soft_filt_file = replace(splitext(file_name)[1], "eeg" => "channels.tsv")
     isfile(soft_filt_file) &&
-        (soft_filt = CSV.read(soft_filt_file; stringtype = String, DataFrame))
+        (soft_filt = CSV.read(soft_filt_file, DataFrame; stringtype = String))
 
     # ------------------------------------------------------------------ #
     # optional BIDS JSON sidecar                                         #
@@ -275,8 +275,9 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     elseif isfile(replace(splitext(file_name)[1], "eeg" => "events.tsv"))
         vmrk = CSV.read(
-            replace(splitext(file_name)[1], "eeg" => "events.tsv"); stringtype = String,
-            DataFrame,
+            replace(splitext(file_name)[1], "eeg" => "events.tsv"),
+            DataFrame;
+            stringtype = String,
         )
         markers = DataFrame(
             :id => repeat(["mrk"], DataFrames.nrow(vmrk)),

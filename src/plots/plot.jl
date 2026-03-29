@@ -39,7 +39,8 @@ Plot signal from a NEURO object.
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `res::Int64=1`: resampling factor (draw every res-nth sample)
 - `snap::Bool=true`: snap to grid when placing markers
-- `gui::Bool=true`: if `true`, keep window open and use it interactively
+- `gui::Bool=true`: if `true`, keep window open and interactive
+
 
 # Returns
 
@@ -192,7 +193,8 @@ Plot two signals from NEURO objects for comparison.
 - `n_channels::Int64=20`: number of visible channels
 - `n_epochs::Int64=5`: number of visible epochs
 - `res::Int64=1`: resampling factor (draw every res-nth sample)
-- `gui::Bool=true`: if `true`, keep window open and use it interactively
+- `gui::Bool=true`: if `true`, keep window open and interactive
+
 
 # Returns
 

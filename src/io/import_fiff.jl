@@ -27,7 +27,7 @@ function load_fiff(
     Vector{Any},
     Matrix{Int64},
 }
-    fiff_object, fiff_blocks, buf = open(file_name, "r") do fid
+    buf, fiff_blocks = open(file_name, "r") do fid
 
         # verify first tag is file_id (required by the FIFF spec).
         tag_kind, tag_type, tag_size, data, tag_next =
@@ -52,6 +52,7 @@ function load_fiff(
 
     fiff_object = Any[]
     @inbounds for block_idx in eachindex(buf)
+
         tag_type = fiff_blocks[block_idx, 2]
         tag_dt = fiff_blocks[block_idx, 3]
         buf_tmp = @views buf[block_idx]
@@ -285,7 +286,6 @@ function load_fiff(
                 "Tag $tag_type not implemented; please send this file to adam.wysokinski@neuroanalyzer.org",
             )
         end
-
         push!(
             fiff_object,
             (
@@ -395,7 +395,7 @@ function load_fiff(
         deleteat!(dacq_pars[:dacq_pars], lastindex(dacq_pars[:dacq_pars]))
     dacq_pars[:dacq_pars] = split.(rstrip.(dacq_pars[:dacq_pars]), ' ')
 
-    merge!(
+    meas_info = merge(
         meas_info,
         _pack_fiff_blocks(
             fiff_object, "meas_info",
@@ -419,25 +419,22 @@ function load_fiff(
     for item in raw_data_tmp1
         append!(raw_data_flat, item[2])
     end
-
     raw_data = Dict(:raw_data => raw_data_flat)
-    merge!(
-        raw_data,
-        _pack_fiff_blocks(
+    packed_fiff_blocks = _pack_fiff_blocks(
             fiff_object, "raw_data",
             ["first_samp", "data_skip", "data_skip_samp"],
-        ),
+        )
+    raw_data = merge(
+        raw_data,
+        packed_fiff_blocks,
     )
-
-    isnothing(raw_data[:data_skip]) && (raw_data[:data_skip] = 0)
     isnothing(raw_data[:data_skip_samp]) && (raw_data[:data_skip_samp] = 0)
-
+    isnothing(raw_data[:data_skip]) && (raw_data[:data_skip] = 0)
     if isnothing(raw_data[:first_samp])
         raw_data[:first_samp] = 0
     else
         raw_data[:first_samp] /= meas_info[:sfreq]
     end
-
     raw_data[:data_skip] > 0 && _warn(
         "data_skip not implemented; please send this file to adam.wysokinski@neuroanalyzer.org",
     )
@@ -464,6 +461,7 @@ Load an Elekta-Neuromag FIFF file (MEG or EEG) and return a `NeuroAnalyzer.NEURO
 - `NeuroAnalyzer.NEURO`
 """
 function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -471,7 +469,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 
     sampling_rate = fiff[:meas_info][:sfreq]
     ch_n = fiff[:meas_info][:nchan]
-    data = @views reshape(fiff[:raw_data][:raw_data], ch_n, :, 1)
+    data = reshape(fiff[:raw_data][:raw_data], ch_n, :, 1)
 
     units = repeat([""], ch_n)
     ch_type = repeat([""], ch_n)

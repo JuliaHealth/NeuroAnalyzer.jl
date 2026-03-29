@@ -771,11 +771,11 @@ Calculate spectral envelope (dominant frequency over time) for a NEURO object.
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-- `:stft`: short-time Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian and Hilbert transform
-- `:cwt`: continuous wavelet transformation
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
@@ -980,11 +980,11 @@ Calculate spectral envelope (mean and 95% CI) for a NEURO object.
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-- `:stft`: short-time Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian and Hilbert transform
-- `:cwt`: continuous wavelet transformation
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
@@ -1136,11 +1136,11 @@ Calculate spectral envelope (median and 95% CI) for a NEURO object.
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
-- `:stft`: short-time Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian and Hilbert transform
-- `:cwt`: continuous wavelet transformation
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to append
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)

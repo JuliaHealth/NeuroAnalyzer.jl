@@ -41,7 +41,7 @@ function get_channel(
     # return physical channel numbers
     if ch != ""
         exclude = _ch_idx(obj, exclude)
-        ch = _ch_idx(obj; ch)
+        ch = _ch_idx(obj, ch)
         if isnothing(exclude)
             return ch
         else

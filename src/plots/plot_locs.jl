@@ -1,20 +1,81 @@
 export plot_locs
 
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+# Return true if `val` passes the given threshold rule.
+function _passes_threshold(val::Real, threshold, threshold_type::Symbol)::Bool
+    threshold_type === :g   && return val > threshold
+    threshold_type === :l   && return val < threshold
+    threshold_type === :eq  && return val == threshold
+    threshold_type === :neq && return val != threshold
+    threshold_type === :leq && return val <= threshold
+    threshold_type === :geq && return val >= threshold
+    threshold_type === :in  && return val >= threshold[1] && val <= threshold[2]
+    threshold_type === :bin && return val > threshold[1] && val < threshold[2]
+    return false
+end
+
+# Draw a single weighted connection line between two channel positions.
+function _draw_connection!(
+    loc_x::AbstractVector, loc_y::AbstractVector,
+    idx1::Int, idx2::Int,
+    val::Real, weight::Real,
+    mono::Bool, use_weights::Bool,
+)
+    xs = [loc_x[idx1], loc_x[idx2]]
+    ys = [loc_y[idx1], loc_y[idx2]]
+    if use_weights
+        lw = 6 * weight
+        al = 0.25 * weight
+        if val > 0
+            GLMakie.lines!(xs, ys; linewidth = lw, alpha = al,
+                color = mono ? :black : :red)
+        elseif val < 0
+            GLMakie.lines!(xs, ys; linewidth = lw, alpha = al,
+                color = mono ? :black : :blue,
+                linestyle = mono ? :dot : :solid)
+        end
+    else
+        GLMakie.lines!(xs, ys; linewidth = 0.2, color = :black)
+    end
+end
+
+# Draw a connection weight label at the midpoint between two channel positions.
+function _draw_connection_label!(
+    loc_x::AbstractVector, loc_y::AbstractVector,
+    idx1::Int, idx2::Int,
+    val::Real, font_size::Int, mono::Bool,
+)
+    l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+    color = mono ? :black : (val >= 0 ? :red : :blue)
+    GLMakie.text!(
+        l_pos[1], l_pos[2];
+        align    = (:center, :center),
+        text     = string(val),
+        fontsize = font_size,
+        color    = color,
+    )
+end
+
+# ---------------------------------------------------------------------------
+
 """
     plot_locs(locs; <keyword arguments>)
 
-Preview channel locations.
+Preview channel locations with customizable visualization and connection mapping.
 
 # Arguments
 
-- `locs::DataFrame`: columns: `channel`, `labels`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`
+- `locs::DataFrame`: channel location data
 - `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
-- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels are selected
-- `ch_labels::Bool=true`: plot locations labels
+- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: significant channels to highlight
+- `ch_labels::Bool=true`: if `true`, draw locations labels
 - `head::Bool=true`: if `true`, draw head outline
-- `head_labels::Bool=false`: plot head labels
+- `head_labels::Bool=false`: draw head labels
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `grid::Bool=false`: draw grid, useful for locating positions
+- `grid::Bool=true`: if `true`, draw grid for locating positions
 - `ps::Symbol`: plot size:
     - `:l`: large (800×800 px)
     - `:m`: medium (300×300 px)
@@ -24,17 +85,19 @@ Preview channel locations.
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
     - `:yz`: sagittal (side)
-- `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
-- `threshold::Real=0`: threshold for plotting, see below
+- `connections::Union{Nothing, Matrix{<:Real}}=nothing`: matrix of connections weights, shape (channels, channels)
+- `threshold::Real=0`: threshold for plotting connections
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-- `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
-- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channels info
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
+- `weights::Union{Bool, Vector{<:Real}}=true`: if `true`, auto-scale line widths and transparency based on connection strength; if Vector, use provided weights to place at channel location
+- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channel information details
 
 # Returns
 
@@ -52,97 +115,96 @@ function plot_locs(
     ps::Symbol = :l,
     cart::Bool = false,
     plane::Symbol = :xy,
-    connections::Matrix{<:Real} = [0 0; 0 0],
+    connections::Union{Nothing, Matrix{<:Real}} = nothing,
     threshold::Real = 0,
     threshold_type::Symbol = :neq,
     weights::Union{Bool, Vector{<:Real}} = true,
     ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
     gui::Bool = true,
 )::GLMakie.Figure
+    # validate
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(plane, [:xy, :yz, :xz], "plane")
+
+    # set color palette
     pal = mono ? :grays : :darktest
+
+    # significant channel labels
     sch_labels = ch_labels
 
     if plane === :xy
-        if !cart
-            loc_x = zeros(length(ch))
-            loc_y = zeros(length(ch))
-            for idx in 1:length(ch)
-                loc_x[idx], loc_y[idx] =
-                    pol2cart(locs[ch, :loc_radius][idx], locs[ch, :loc_theta][idx])
-            end
+        if cart
+            loc_x = locs.loc_x[ch]
+            loc_y = locs.loc_y[ch]
         else
-            loc_x = locs[ch, :loc_x]
-            loc_y = locs[ch, :loc_y]
+            for idx in eachindex(ch)
+                loc_x[idx], loc_y[idx] =
+                    pol2cart(locs.loc_radius[ch][idx], locs.loc_theta[ch][idx])
+            end
         end
     elseif plane === :xz
-        if !cart
-            loc_x = zeros(length(ch))
-            loc_y = zeros(length(ch))
-            for idx in 1:length(ch)
+        if cart
+            loc_x = locs.loc_x[ch]
+            loc_y = locs.loc_z[ch]
+        else
+            for idx in eachindex(ch)
                 loc_x[idx], _, loc_y[idx] = sph2cart(
-                    locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx],
-                    locs[ch, :loc_phi_sph][idx],
+                    locs.loc_radius_sph[ch][idx], locs.loc_theta_sph[ch][idx],
+                    locs.loc_phi_sph[ch][idx],
                 )
             end
-        else
-            loc_x = locs[ch, :loc_x]
-            loc_y = locs[ch, :loc_z]
         end
     elseif plane === :yz
-        if !cart
-            loc_x = zeros(length(ch))
-            loc_y = zeros(length(ch))
-            for idx in 1:length(ch)
+        if cart
+            loc_x = locs.loc_y[ch]
+            loc_y = locs.loc_z[ch]
+        else
+            for idx in eachindex(ch)
                 _, loc_x[idx], loc_y[idx] = sph2cart(
-                    locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx],
-                    locs[ch, :loc_phi_sph][idx],
+                    locs.loc_radius_sph[ch][idx], locs.loc_theta_sph[ch][idx],
+                    locs.loc_phi_sph[ch][idx],
                 )
             end
-        else
-            loc_x = locs[ch, :loc_y]
-            loc_y = locs[ch, :loc_z]
         end
     end
 
     loc_x = _n2v(loc_x)
     loc_y = _n2v(loc_y)
 
-    head12 = false
-    maximum(abs.(locs[:, :loc_x])) <= 1.2 &&
-        maximum(abs.(locs[:, :loc_y])) <= 1.2 &&
-        maximum(abs.(locs[:, :loc_z])) <= 1.5 &&
-        (head12 = true)
+    head12 =
+        maximum(abs.(locs.loc_x)) <= 1.2 &&
+        maximum(abs.(locs.loc_y)) <= 1.2 &&
+        maximum(abs.(locs.loc_z)) <= 1.5
 
-    if head12
-        xl = (-1.2, 1.2)
-        yl = (-1.2, 1.2)
-    else
-        xl = (-1.6, 1.6)
-        yl = (-1.6, 1.6)
-    end
+    xl = head12 ? (-1.2, 1.2) : (-1.6, 1.6)
+    yl = head12 ? (-1.2, 1.2) : (-1.6, 1.6)
 
+    # plot parameters
     if ps === :l
-        plot_size = (800, 800)
+        plot_size   = (800, 800)
         marker_size = length(ch) > 64 ? 10 : 20
-        font_size = 14
-        length(ch) > 64 && (ch_labels = false)
+        font_size   = 14
+        lw          = 3
+        sw          = 2
     elseif ps === :m
-        plot_size = (300, 300)
+        plot_size   = (300, 300)
         marker_size = length(ch) > 64 ? 5 : 10
-        font_size = 8
-        ch_labels = false
-        sch_labels = false
-        grid = false
+        font_size   = 8
+        lw          = 2
+        sw          = 1
+        ch_labels   = false
+        sch_labels  = false
+        grid        = false
     elseif ps === :s
-        plot_size = (100, 100)
+        plot_size   = (100, 100)
         marker_size = length(ch) > 64 ? 4 : 8
-        font_size = 8
+        font_size   = 8
+        lw          = 1
+        sw          = 0.0
         head_labels = false
-        ch_labels = false
-        sch_labels = false
-        grid = false
+        ch_labels   = false
+        sch_labels  = false
+        grid        = false
     end
 
     # prepare plot
@@ -151,116 +213,48 @@ function plot_locs(
         size = plot_size,
         figure_padding = grid ? (10, 10, 10, 10) : (0, 0, 0, 0),
     ) # L R B T
+
+    shared_ax_kwargs = (
+        aspect          = 1,
+        xlabel          = "",
+        ylabel          = "",
+        title           = "",
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        backgroundcolor = :transparent,
+        xzoomlock       = true,
+        yzoomlock       = true,
+        xpanlock        = true,
+        ypanlock        = true,
+        xrectzoom       = false,
+        yrectzoom       = false,
+    )
+
+    # create axis with customizable properties
     if grid
         ax = GLMakie.Axis(
             fig[1, 1];
-            aspect = 1,
-            xlabel = "",
-            ylabel = "",
-            title = "",
+            shared_ax_kwargs...,
             xminorticksvisible = true,
-            xminorticks = IntervalsBetween(5),
+            xminorticks        = IntervalsBetween(5),
             yminorticksvisible = true,
-            yminorticks = IntervalsBetween(5),
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            backgroundcolor = :transparent,
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
+            yminorticks        = IntervalsBetween(5),
         )
     else
-        ax = GLMakie.Axis(
-            fig[1, 1];
-            aspect = 1,
-            xlabel = "",
-            ylabel = "",
-            title = "",
-            xautolimitmargin = (0, 0),
-            yautolimitmargin = (0, 0),
-            backgroundcolor = :transparent,
-            xzoomlock = true,
-            yzoomlock = true,
-            xpanlock = true,
-            ypanlock = true,
-            xrectzoom = false,
-            yrectzoom = false,
-        )
+        ax = GLMakie.Axis(fig[1, 1]; shared_ax_kwargs...)
         hidedecorations!(ax; grid = true)
         hidespines!(ax)
     end
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
 
-    # draw head
+    # draw head outline
     if head
         ps === :l && (lw = 3)
         ps === :m && (lw = 2)
         ps === :s && (lw = 1)
         if plane === :xy
-            # nose
-            GLMakie.lines!(ax, [-0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [0.2, 0], [0.98, 1.08]; linewidth = lw, color = :black)
-
-            # ears
-            # left
-            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.12, -1.1], [0.05, -0.1]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [-1.1, -1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-            GLMakie.lines!(
-                ax,
-                [-1.13, -1.09],
-                [-0.3, -0.37];
-                linewidth = lw,
-                color = :black,
-            )
-            GLMakie.lines!(
-                ax,
-                [-1.09, -1.02],
-                [-0.37, -0.39];
-                linewidth = lw,
-                color = :black,
-            )
-            GLMakie.lines!(
-                ax,
-                [-1.02, -0.98],
-                [-0.39, -0.33];
-                linewidth = lw,
-                color = :black,
-            )
-            GLMakie.lines!(
-                ax,
-                [-0.98, -0.975],
-                [-0.33, -0.22];
-                linewidth = lw,
-                color = :black,
-            )
-            # right
-            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.12, 1.1], [0.05, -0.1]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.1, 1.13], [-0.1, -0.3]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39]; linewidth = lw, color = :black)
-            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33]; linewidth = lw, color = :black)
-            GLMakie.lines!(
-                ax,
-                [0.98, 0.975],
-                [-0.33, -0.22];
-                linewidth = lw,
-                color = :black,
-            )
-
-            # head
-            GLMakie.arc!(ax, (0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
+            _draw_head_outline!(ax; lw = lw)
         elseif plane === :yz
             # head
             GLMakie.arc!(ax, (0, 0), 1, 0, pi; linewidth = lw, color = :black)
@@ -270,915 +264,192 @@ function plot_locs(
         end
     end
 
-    # draw connections
-    if connections != [0 0; 0 0]
-        sch = ""
-        !(size(connections, 1) == length(ch)) && throw(
-            ArgumentError(
-                "Length of channel and number of connections rows must be equal.",
-            ),
+    # draw connections lines
+    if !isnothing(connections)
+        size(connections, 1) == length(ch) || throw(
+            ArgumentError("Number of connections rows must equal number of channels."),
         )
-        _check_var(
-            threshold_type,
-            [:eq, :neq, :geq, :leq, :g, :l, :in, :bin],
-            "threshold_type",
-        )
+        _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
         if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-            !(length(threshold) == 1) &&
+            length(threshold) == 1 ||
                 throw(ArgumentError("threshold must contain a single value."))
         else
-            !(length(threshold) == 2) &&
+            length(threshold) == 2 ||
                 throw(ArgumentError("threshold must contain two values."))
             _check_tuple(threshold, extrema(connections), "threshold")
         end
+ 
         m_tmp = normalize_n(abs.(connections))
+        use_weights = weights === true
+ 
         for idx1 in axes(connections, 1)
-            for idx2 in 2:size(connections, 1)
-                if idx1 != idx2
-                    if threshold_type === :g
-                        if connections[idx1, idx2] > threshold
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    elseif threshold_type === :l
-                        if connections[idx1, idx2] < threshold
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    elseif threshold_type === :eq
-                        if connections[idx1, idx2] == threshold
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    elseif threshold_type === :neq
-                        if connections[idx1, idx2] != threshold
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    elseif threshold_type === :leq
-                        if connections[idx1, idx2] <= threshold
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    elseif threshold_type === :geq
-                        if connections[idx1, idx2] >= threshold
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    elseif threshold_type === :in
-                        if connections[idx1, idx2] >= threshold[1] &&
-                           connections[idx1, idx2] <= threshold[2]
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    elseif threshold_type === :bin
-                        if connections[idx1, idx2] > threshold[1] &&
-                           connections[idx1, idx2] < threshold[2]
-                            if weights
-                                if connections[idx1, idx2] > 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :red,
-                                        )
-                                    end
-                                elseif connections[idx1, idx2] < 0
-                                    if mono
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :black,
-                                            linestyle = :dot,
-                                        )
-                                    else
-                                        GLMakie.lines!(
-                                            [loc_x[idx1], loc_x[idx2]],
-                                            [loc_y[idx1], loc_y[idx2]];
-                                            linewidth = 6 * m_tmp[idx1, idx2],
-                                            alpha = 0.25 * m_tmp[idx1, idx2],
-                                            color = :blue,
-                                        )
-                                    end
-                                end
-                            else
-                                GLMakie.lines!(
-                                    [loc_x[idx1], loc_x[idx2]],
-                                    [loc_y[idx1], loc_y[idx2]];
-                                    linewidth = 0.2,
-                                    color = :black,
-                                )
-                            end
-                        end
-                    end
+            for idx2 in (idx1 + 1):size(connections, 1)
+                val = connections[idx1, idx2]
+                if _passes_threshold(val, threshold, threshold_type)
+                    _draw_connection!(loc_x, loc_y, idx1, idx2,
+                        val, m_tmp[idx1, idx2], mono, use_weights)
                 end
             end
         end
     end
 
-    ch_n = length(ch)
-    cmap = GLMakie.resample_cmap(pal, ch_n)
-    ch = setdiff(ch, sch)
+    # draw channel markers
+    ch_n  = length(ch)
+    cmap  = GLMakie.resample_cmap(pal, ch_n)
+    sch_set = Set(sch)
 
-    ps === :l && (sw = 2)
-    ps === :m && (sw = 1)
-    ps === :s && (sw = 0.0)
-
-    for idx in 1:ch_n
-        if idx in sch
-            if mono
-                GLMakie.scatter!(
-                    loc_x[idx],
-                    loc_y[idx];
-                    markersize = marker_size,
-                    color = :gray,
-                    strokewidth = sw,
-                    strokecolor = :black,
-                )
-
-            else
-                GLMakie.scatter!(
-                    loc_x[idx],
-                    loc_y[idx];
-                    markersize = marker_size,
-                    color = cmap[idx],
-                    colormap = pal,
-                    colorrange = 1:ch_n,
-                    strokewidth = sw,
-                    strokecolor = :black,
-                )
-            end
+    for (i, idx) in enumerate(ch)
+        if idx in sch_set
+            GLMakie.scatter!(
+                loc_x[i], loc_y[i];
+                markersize  = marker_size,
+                color       = mono ? :gray : cmap[i],
+                colormap    = pal,
+                colorrange  = 1:ch_n,
+                strokewidth = sw,
+                strokecolor = :black,
+            )
         else
             GLMakie.scatter!(
-                loc_x[idx], loc_y[idx]; markersize = marker_size, color = :gray,
-                strokewidth = sw, strokecolor = :black,
+                loc_x[i], loc_y[i];
+                markersize  = marker_size,
+                color       = :gray,
+                strokewidth = sw,
+                strokecolor = :black,
             )
         end
     end
-
+ 
     label_offset_x = 0.0
     label_offset_y = -0.08
 
+    # draw labels
     if ch_labels
+        ch_set = Set(ch)
         for idx in eachindex(locs[!, :label])
-            if idx in ch
+            if idx in ch_set
+                local_i = findfirst(==(idx), collect(ch))
+                isnothing(local_i) && continue
                 GLMakie.text!(
-                    loc_x[idx] + label_offset_x,
-                    loc_y[idx] + label_offset_y;
-                    text = locs[!, :label][idx],
-                    align = (:center, :bottom),
-                    fontsize = font_size,
-                )
-            end
-        end
-    end
-    if sch_labels
-        for idx in eachindex(locs[!, :label])
-            if idx in sch
-                GLMakie.text!(
-                    loc_x[idx] + label_offset_x,
-                    loc_y[idx] + label_offset_y;
-                    text = locs[!, :label][idx],
-                    align = (:center, :bottom),
+                    loc_x[local_i] + label_offset_x,
+                    loc_y[local_i] + label_offset_y;
+                    text     = locs[!, :label][idx],
+                    align    = (:center, :bottom),
                     fontsize = font_size,
                 )
             end
         end
     end
 
+    # draw head labels
     if head_labels
         fid_names = ["NAS", "IN", "LPA", "RPA"]
-        for idx in 1:length(NeuroAnalyzer.fiducial_points)
-            if plane === :xy
-                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
-                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][2]
+        for idx in eachindex(NeuroAnalyzer.fiducial_points)
+            pt = NeuroAnalyzer.fiducial_points[idx]
+            fid_loc_x, fid_loc_y = if plane === :xy
+                pt[1], pt[2]
             elseif plane === :xz
-                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
-                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
-            elseif plane === :yz
-                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
-                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+                pt[1], pt[3]
+            elseif  plane === :yz
+                pt[2], pt[3]
             end
             GLMakie.text!(
-                fid_loc_x,
-                fid_loc_y;
-                text = fid_names[idx],
+                fid_loc_x, fid_loc_y;
+                text     = fid_names[idx],
                 fontsize = font_size,
-                align = (:center, :center),
+                align    = (:center, :center),
             )
         end
     end
 
-    # draw weights
-    if connections != [0 0; 0 0]
-        label_offset_x = 0.07
-        label_offset_y = 0.0
+    # draw connection weight labels
+    if !isnothing(connections)
         for idx1 in axes(connections, 1)
-            for idx2 in 2:size(connections, 1)
-                if idx1 != idx2
-                    if threshold_type === :g
-                        if connections[idx1, idx2] > threshold
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    elseif threshold_type === :l
-                        if connections[idx1, idx2] < threshold
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    elseif threshold_type === :eq
-                        if connections[idx1, idx2] == threshold
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    elseif threshold_type === :neq
-                        if connections[idx1, idx2] != threshold
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    elseif threshold_type === :leq
-                        if connections[idx1, idx2] <= threshold
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    elseif threshold_type === :geq
-                        if connections[idx1, idx2] >= threshold
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    elseif threshold_type === :in
-                        if connections[idx1, idx2] >= threshold[1] &&
-                           connections[idx1, idx2] <= threshold[2]
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    elseif threshold_type === :bin
-                        if connections[idx1, idx2] > threshold[1] &&
-                           connections[idx1, idx2] < threshold[2]
-                            l_pos =
-                                _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono
-                                GLMakie.text!(
-                                    l_pos[1],
-                                    l_pos[2];
-                                    align = (:center, :center),
-                                    text = string(connections[idx1, idx2]),
-                                    fontsize = font_size,
-                                )
-                            else
-                                if connections[idx1, idx2] >= 0
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :red,
-                                    )
-                                else
-                                    GLMakie.text!(
-                                        l_pos[1],
-                                        l_pos[2];
-                                        align = (:center, :center),
-                                        text = string(connections[idx1, idx2]),
-                                        fontsize = font_size,
-                                        color = :blue,
-                                    )
-                                end
-                            end
-                        end
-                    end
+            for idx2 in (idx1 + 1):size(connections, 1)
+                val = connections[idx1, idx2]
+                if _passes_threshold(val, threshold, threshold_type)
+                    _draw_connection_label!(
+                        loc_x,
+                        loc_y,
+                        idx1,
+                        idx2,
+                        val,
+                        font_size,
+                        mono,
+                    )
                 end
             end
         end
     end
 
-    if typeof(weights) <: Vector
+    # draw per-channel weight values
+    if weights isa Vector
         label_offset_x = 0.0
         label_offset_y = 0.07
-        !(length(weights) <= length(ch)) && throw(
-            ArgumentError(
-                "Number of weights must be ≤ number of channels to plot ($(length(ch))).",
-            ),
-        )
-        !(length(weights) >= 1) &&
+        length(weights) <= length(ch) ||
+            throw(ArgumentError(
+                "Number of weights ($(length(weights))) must be ≤ number of channels ($(length(ch))).",
+            ))
+        length(weights) >= 1 ||
             throw(ArgumentError("weights must contain at least one value."))
-        for idx in eachindex(locs[ch, :label])
-            if idx in ch
-                if mono
-                    GLMakie.text!(
-                        loc_x[idx] + label_offset_x,
-                        loc_y[idx] + label_offset_y;
-                        text = string(weights[idx]),
-                        fontsize = font_size,
-                        align = (:center, :top),
-                    )
-                else
-                    if weights[idx] >= 0
-                        GLMakie.text!(
-                            loc_x[idx] + label_offset_x,
-                            loc_y[idx] + label_offset_y;
-                            text = string(weights[idx]),
-                            fontsize = font_size,
-                            color = :red,
-                            align = (:center, :top),
-                        )
-                    else
-                        GLMakie.text!(
-                            loc_x[idx] + label_offset_x,
-                            loc_y[idx] + label_offset_y;
-                            text = string(weights[idx]),
-                            fontsize = font_size,
-                            color = :blue,
-                            align = (:center, :top),
-                        )
-                    end
-                end
-            end
+ 
+        for (i, idx) in enumerate(collect(ch))
+            i > length(weights) && break
+            color = mono ? :black : (weights[i] >= 0 ? :red : :blue)
+            GLMakie.text!(
+                loc_x[i] + label_offset_x,
+                loc_y[i] + label_offset_y;
+                text     = string(weights[i]),
+                fontsize = font_size,
+                color    = color,
+                align    = (:center, :top),
+            )
         end
     end
 
-    loc_x_range = Tuple{Float64, Float64}[]
-    loc_y_range = Tuple{Float64, Float64}[]
-    for idx in eachindex(loc_x)
-        push!(loc_x_range, (loc_x[idx] - 0.02, loc_x[idx] + 0.02))
-        push!(loc_y_range, (loc_y[idx] - 0.02, loc_y[idx] + 0.02))
-    end
+    loc_x_range = [(loc_x[i] - 0.02, loc_x[i] + 0.02) for i in eachindex(loc_x)]
+    loc_y_range = [(loc_y[i] - 0.02, loc_y[i] + 0.02) for i in eachindex(loc_y)]
 
+    # mouse events
     if gui
         println()
-
         on(events(fig).mousebutton) do event
-            if event.button == Mouse.left
-                if event.action == Mouse.press
-                    ax_x = mouseposition(ax)[1]
-                    ax_y = mouseposition(ax)[2]
-                    for idx in eachindex(loc_x)
-                        if ax_x >= loc_x_range[idx][1] &&
-                           ax_x <= loc_x_range[idx][2] &&
-                           ax_y >= loc_y_range[idx][1] &&
-                           ax_y <= loc_y_range[idx][2]
-                            println(ch_info[idx])
-                            break
-                        end
+            if event.button == Mouse.left && event.action == Mouse.press
+                ax_x = mouseposition(ax)[1]
+                ax_y = mouseposition(ax)[2]
+                for idx in eachindex(loc_x)
+                    if ax_x >= loc_x_range[idx][1] && ax_x <= loc_x_range[idx][2] &&
+                       ax_y >= loc_y_range[idx][1] && ax_y <= loc_y_range[idx][2]
+                        println(ch_info[idx])
+                        break
                     end
                 end
             end
         end
-
         wait(display(fig))
     end
-
+ 
     return fig
 end
 
 """
     plot_locs(obj; <keyword arguments>)
 
-Preview of channel locations.
+Preview channel locations from a NEURO object with customizable 2D/3D visualization and optional connection mapping.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `sch::Union{String, Vector{String}, Regex}`: which channels are selected
+- `sch::Union{String, Vector{String}, Regex}`: significant channels to highlight
 - `ch_labels::Bool=true`: plot channel labels
-- `src_labels::Bool=false`: plot source labels
-- `det_labels::Bool=false`: plot detector labels
-- `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
+- `src_labels::Bool=false`: if `true`, plot source labels (for NIRS data)
+- `det_labels::Bool=false`: if `true`, plot detector labels (for NIRS data)
+- `opt_labels::Bool=false`: if `true`, plot optode type (S for source, D for detector) and number 
 - `head::Bool=true`: if `true`, draw head outline
-- `head_labels::Bool=false`: plot head labels
+- `head_labels::Bool=false`: if `true`, draw head labels
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `grid::Bool=false`: draw grid, useful for locating positions
+- `grid::Bool=true`: if `true`, draw grid for locating positions
 - `ps::Symbol`: plot size:
     - `:l`: large (800×800 px)
     - `:m`: medium (300×300 px)
@@ -1188,17 +459,19 @@ Preview of channel locations.
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
     - `:yz`: sagittal (side)
-- `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
-- `threshold::Real=0`: threshold for plotting, see below
+- `connections::Union{Nothing, Matrix{<:Real}}=nothing`: matrix of connections weights, shape (channels, channels)
+- `threshold::Real=0`: threshold for plotting connections
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: draw region is values are equal to threshold
-    - `:neq`: draw region is values are not equal to threshold
-    - `:geq`: draw region is values are ≥ to threshold
-    - `:leq`: draw region is values are ≤ to threshold
-    - `:g`: draw region is values are > to threshold
-    - `:l`: draw region is values are < to threshold
-- `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
-- `gui::Bool=true`: if `true`, keep window open and use it interactively
+    - `:eq`: values equal to threshold
+    - `:neq`: values not equal to threshold
+    - `:geq`: values ≥ threshold
+    - `:leq`: values ≤ threshold
+    - `:g`: values > threshold
+    - `:l`: values < threshold
+    - `:in`: values in the threshold range (inclusive)
+    - `:bin`: values in the threshold range (exclusive)
+- `weights::Union{Bool, Vector{<:Real}}=true`: if `true`, auto-scale line widths and transparency based on connection strength; if Vector, use provided weights to place at channel location
+- `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
@@ -1219,7 +492,7 @@ function plot_locs(
     ps::Symbol = :l,
     cart::Bool = false,
     plane::Symbol = :xy,
-    connections::Matrix{<:Real} = [0 0; 0 0],
+    connections::Union{Nothing, Matrix{<:Real}} = nothing,
     threshold::Real = 0,
     threshold_type::Symbol = :neq,
     weights::Union{Bool, Vector{<:Real}} = true,
@@ -1235,65 +508,61 @@ function plot_locs(
         get_channel(obj; ch = ch, exclude = "")
 
     ch_info = String[]
-    [
-        push!(ch_info, channel_info(obj; ch = labels(obj)[ch[idx]], pr = false)) for
-        idx in eachindex(ch)
-    ]
-    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    for idx in eachindex(ch)
+        push!(ch_info, channel_info(obj; ch = labels(obj)[ch[idx]], pr = false))
+    end
+ 
+    chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    ch = collect(1:DataFrames.nrow(locs))
+    ch   = collect(1:DataFrames.nrow(locs))
 
-    if sch == ""
-        sch = 0
+    sch_resolved = if sch == ""
+        Int64[]
     else
-        # resolve channel names to integer indices, optionally skipping bad channels
-        sch =
-            exclude_bads ? get_channel(obj; ch = sch, exclude = "bad") :
+        sch_idx = exclude_bads ?
+            get_channel(obj; ch = sch, exclude = "bad") :
             get_channel(obj; ch = sch, exclude = "")
-        sch = intersect(locs[!, :label], labels(obj)[sch])
-        sch = _find_bylabel(locs, sch)
+        sch_chs = intersect(locs[!, :label], labels(obj)[sch_idx])
+        _find_bylabel(locs, sch_chs)
     end
 
     if datatype(obj) in ["eeg", "meg", "csd", "erp", "erf"]
-        fig = plot_locs(
+        return plot_locs(
             locs;
-            ch = ch,
-            sch = sch,
-            ch_labels = ch_labels,
-            head = head,
-            head_labels = head_labels,
-            grid = grid,
-            ps = ps,
-            mono = mono,
-            cart = cart,
-            plane = plane,
-            connections = connections,
-            threshold = threshold,
+            ch             = ch,
+            sch            = sch_resolved,
+            ch_labels      = ch_labels,
+            head           = head,
+            head_labels    = head_labels,
+            grid           = grid,
+            ps             = ps,
+            mono           = mono,
+            cart           = cart,
+            plane          = plane,
+            connections    = connections,
+            threshold      = threshold,
             threshold_type = threshold_type,
-            weights = weights,
-            ch_info = ch_info,
-            gui = gui,
+            weights        = weights,
+            ch_info        = ch_info,
+            gui            = gui,
         )
     elseif datatype(obj) == "nirs"
         opt_pairs = obj.header.recording[:optode_pairs]
-        src_n = length(source_labels(obj))
-        det_n = length(detector_labels(obj))
-        fig = plot_locs_nirs(
-            obj.locs,
-            opt_pairs,
-            src_n,
-            det_n;
-            src_labels = src_labels,
-            det_labels = det_labels,
-            opt_labels = opt_labels,
-            ps = ps,
-            head = head,
+        src_n     = length(source_labels(obj))
+        det_n     = length(detector_labels(obj))
+        return plot_locs_nirs(
+            obj.locs, opt_pairs, src_n, det_n;
+            src_labels  = src_labels,
+            det_labels  = det_labels,
+            opt_labels  = opt_labels,
+            ps          = ps,
+            head        = head,
             head_labels = head_labels,
-            cart = cart,
-            grid = grid,
-            mono = mono,
-            plane = plane,
-            ch_info = ch_info,
+            cart        = cart,
+            grid        = grid,
+            mono        = mono,
+            plane       = plane,
+            ch_info     = ch_info,
         )
     elseif datatype(obj) == "ecog"
         _warn("ECOG locs are not supported yet.")
@@ -1306,7 +575,9 @@ function plot_locs(
         return nothing
     elseif datatype(obj) in ["sensors", "eda", "mep", "tpt"]
         _warn("For $(datatype(obj)) object type locs are not available.")
+        return nothing
     end
 
+    # should never be reached, but satisfies the return type
     return fig
 end
