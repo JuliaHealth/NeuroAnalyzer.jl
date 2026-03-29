@@ -329,6 +329,7 @@ include("internal/vec.jl")
 # utils
 include("utils/apply.jl")
 include("utils/array.jl")
+include("utils/channel.jl")
 include("utils/fft.jl")
 include("utils/filter.jl")
 include("utils/findpeaks.jl")

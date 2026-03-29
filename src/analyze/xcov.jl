@@ -250,7 +250,6 @@ function xcov(
     xc::Array{Float64, 3},
     lags::Vector{Float64},
 }
-
     # validate
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))

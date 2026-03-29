@@ -166,7 +166,6 @@ function acor(
     autocor::Array{Float64, 3},
     lags::Vector{Float64},
 }
-
     # validate lag bounds: must be non-negative and within the signal length
     l <= size(obj, 2) || throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
     l >= 0 || throw(ArgumentError("l must be ≥ 0."))
