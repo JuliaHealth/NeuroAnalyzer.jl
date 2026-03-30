@@ -117,7 +117,7 @@ function plot_cont(
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "")
 
     # list of bad channels
-    bad_ch  = Observable(obj_tmp.header.recording[:bad_channel])
+    bad_ch = Observable(obj_tmp.header.recording[:bad_channel])
 
     # displayed segment
     seg_pos = Observable(Float64(seg[1]))
@@ -141,9 +141,9 @@ function plot_cont(
         group = s[ctypes .== ctypes_uni[idx], :]
         push!(r[], round(_get_range(group)))
         # remove per-channel DC offset
-        group = group .- mean(group; dims=2)
+        group = group .- mean(group; dims = 2)
         # map to [-0.5, 0.5]
-        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych=true)
+        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych = true)
     end
     if type === :normal
         s .+= collect(1:ch_n)
@@ -188,8 +188,8 @@ function plot_cont(
         xminorticks        = IntervalsBetween(10),
         yticks             = (1:ch_n, clabels),
         # TO DO: yticklabelcolor = ytc
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0, 0),
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
         _AXIS_LOCK_KWARGS...,
         yticklabelspace = let ml = maximum(length, clabels)
             ml <= 5 ? 60.0 : ml >= 10 ? 100.0 : 80.0
@@ -217,7 +217,15 @@ function plot_cont(
                 s_m = msci95_data.sm
                 s_u = msci95_data.ul
                 s_l = msci95_data.ll
-                GLMakie.band!(ax1, t, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
+                GLMakie.band!(
+                    ax1,
+                    t,
+                    s_u,
+                    s_l;
+                    alpha = 0.25,
+                    color = :grey,
+                    strokewidth = 0.5,
+                )
                 GLMakie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
             end
         else
@@ -238,7 +246,6 @@ function plot_cont(
                 end
             end
         end
-
     end
 
     # draw scale bars
@@ -254,7 +261,13 @@ function plot_cont(
                     l_pos = lift(seg_pos) do sp
                         return (sp + 0.01, idx1 + 0.49)
                     end
-                    GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                    GLMakie.poly!(
+                        ax1,
+                        s_rectangle;
+                        color = :red,
+                        strokecolor = :red,
+                        strokewidth = 2,
+                    )
                     GLMakie.text!(
                         ax1, l_pos;
                         markerspace = :pixel,
@@ -275,7 +288,13 @@ function plot_cont(
                 l_pos = lift(seg_pos) do sp
                     return (sp, idx + 0.5)
                 end
-                GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                GLMakie.poly!(
+                    ax1,
+                    s_rectangle;
+                    color = :red,
+                    strokecolor = :red,
+                    strokewidth = 2,
+                )
                 GLMakie.text!(
                     ax1, l_pos;
                     text        = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
@@ -298,14 +317,14 @@ function plot_cont(
             end
             GLMakie.textlabel!(
                 ax1, markers_ypos;
-                text          = "$(markers_id[idx]) / $(markers_desc[idx])",
-                text_align    = (:left, :center),
-                fontsize      = 8,
-                cornerradius  = 0,
+                text = "$(markers_id[idx]) / $(markers_desc[idx])",
+                text_align = (:left, :center),
+                fontsize = 8,
+                cornerradius = 0,
                 cornervertices = 2,
-                padding       = 2,
-                strokewidth   = 1,
-                offset        = (0, 5),
+                padding = 2,
+                strokewidth = 1,
+                offset = (0, 5),
                 text_rotation = pi / 2,
             )
         end
@@ -319,34 +338,47 @@ function plot_cont(
         # time bar
         ax2 = GLMakie.Axis(
             fig[2, 1];
-            xlabel             = xl,
-            ylabel             = "",
-            title              = "",
-            xticks             = LinearTicks(25),
-            yticksvisible      = false,
-            xautolimitmargin   = (0, 0),
-            yautolimitmargin   = (0, 0),
-            backgroundcolor    = :white,
-            xzoomlock          = true,
-            yzoomlock          = true,
-            xpanlock           = true,
-            ypanlock           = true,
-            xrectzoom          = false,
-            yrectzoom          = false,
+            xlabel           = xl,
+            ylabel           = "",
+            title            = "",
+            xticks           = LinearTicks(25),
+            yticksvisible    = false,
+            xautolimitmargin = (0, 0),
+            yautolimitmargin = (0, 0),
+            backgroundcolor  = :white,
+            xzoomlock        = true,
+            yzoomlock        = true,
+            xpanlock         = true,
+            ypanlock         = true,
+            xrectzoom        = false,
+            yrectzoom        = false,
         )
         GLMakie.xlims!(ax2, t[1], t[end])
         GLMakie.ylims!(ax2, 0, 1)
         hideydecorations!(ax2)
         hidexdecorations!(ax2; label = false, ticks = false, ticklabels = false)
         ax2.xticklabelsize = 12
- 
-        markers && GLMakie.vlines!(ax2, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
- 
+
+        markers && GLMakie.vlines!(
+            ax2,
+            markers_pos;
+            linestyle = :dash,
+            linewidth = 1,
+            color = :black,
+        )
+
         t_rectangle = lift(seg_pos) do v
             return Rect(v, 0, seg_len, 1)
         end
-        GLMakie.poly!(ax2, t_rectangle; color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.5)
- 
+        GLMakie.poly!(
+            ax2,
+            t_rectangle;
+            color = :darkgrey,
+            strokecolor = :black,
+            strokewidth = 2,
+            alpha = 0.5,
+        )
+
         # channel bar (normal type only)
         if type === :normal
             ax3 = GLMakie.Axis(
@@ -370,13 +402,13 @@ function plot_cont(
             )
             ch_n > 1 && GLMakie.ylims!(ax3, ch_n, 1)
             hidedecorations!(ax3)
- 
+
             if group_ch
                 for idx in eachindex(ctypes_pos)
                     GLMakie.hlines!(ax3, ctypes_pos[idx]; linewidth = 5, color = :black)
                 end
             end
- 
+
             ch_rectangle = @lift(Rect(0, $ch1, 1, $nch - 1))
             GLMakie.poly!(
                 ax3, ch_rectangle;
@@ -386,11 +418,11 @@ function plot_cont(
                 alpha       = 0.25,
             )
         end
- 
+
         GLMakie.vlines!(ax1, vmarker1; color = (:blue, 0.8), linewidth = 1)
         GLMakie.vlines!(ax1, vmarker2; color = (:blue, 0.8), linewidth = 1)
         GLMakie.band!(ax1, marker_range, 0.5, ch_n + 0.5; color = (:blue, 0.1))
- 
+
         # mouse events
         on(events(fig).mousebutton) do event
             ax1_x = mouseposition(ax1)[1]
@@ -401,7 +433,7 @@ function plot_cont(
                 ax3_x = mouseposition(ax3)[1]
                 ax3_y = mouseposition(ax3)[2]
             end
- 
+
             if event.action == Mouse.press
                 if event.button == Mouse.right
                     if type === :normal
@@ -410,9 +442,10 @@ function plot_cont(
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][
                                 get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                            ] = !obj.header.recording[:bad_channel][
-                                get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                            ]
+                            ] =
+                                !obj.header.recording[:bad_channel][
+                                    get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
+                                ]
                             notify(bad_ch)
                         end
                         # clear markers
@@ -423,16 +456,18 @@ function plot_cont(
                             vmarker1[] = NaN
                             vmarker2[] = NaN
                             marker_range[] = [NaN, NaN]
-                            notify(vmarker1); notify(vmarker2); notify(marker_range)
+                            notify(vmarker1);
+                            notify(vmarker2);
+                            notify(marker_range)
                         end
                     end
- 
+
                 elseif event.button == Mouse.left
                     if type === :normal
                         # get channel info
                         ax1_x < ax1.limits[][1][1] &&
                             channel_info(obj; ch = clabels[round(Int64, ax1_y)])
- 
+
                         # place marker
                         if ax1_x >= ax1.limits[][1][1] &&
                            ax1_x <= ax1.limits[][1][2] &&
@@ -449,10 +484,12 @@ function plot_cont(
                             vmarker1[] > t[end] && (vmarker1[] = t[end])
                             vmarker2[] > t[end] && (vmarker2[] = t[end])
                             marker_range[] = [vmarker1[], vmarker2[]]
-                            notify(vmarker1); notify(vmarker2); notify(marker_range)
+                            notify(vmarker1);
+                            notify(vmarker2);
+                            notify(marker_range)
                         end
                     end
- 
+
                     # change time window
                     if ax2_x >= 0 && ax2_y >= 0 && ax2_y <= 1
                         if ax2_x <= ax2.limits[][1][2] - seg_len
@@ -465,7 +502,7 @@ function plot_cont(
                             seg_pos[] = seg[1]
                         end
                     end
- 
+
                     # change channels window
                     if type === :normal
                         if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
@@ -479,7 +516,7 @@ function plot_cont(
                 end
             end
         end
- 
+
         # keyboard events
         on(events(fig).keyboardbutton) do event
             update_ax2 = false
@@ -508,35 +545,35 @@ function plot_cont(
                             )
                         end
                     end
- 
+
                     event.key == Keyboard.s && (snap = !snap)
- 
+
                     if event.key == Keyboard.down
                         if ch1[] < ch_n - nch[] + 1
                             ch1[] += 1
                             update_ax3 = true
                         end
                     end
-                     if event.key == Keyboard.up
+                    if event.key == Keyboard.up
                         if ch1[] > 1
                             ch1[] -= 1
                             update_ax3 = true
                         end
                     end
-                     if ispressed(fig, Keyboard.page_down)
+                    if ispressed(fig, Keyboard.page_down)
                         if ch_n > 1 && nch[] > 1
                             nch[] -= 1
                             update_ax3 = true
                         end
                     end
-                     if ispressed(fig, Keyboard.page_up)
+                    if ispressed(fig, Keyboard.page_up)
                         if ch_n > 1 && nch[] < ch_n && ch1[] + (nch[] - 1) < ch_n
                             nch[] += 1
                             update_ax3 = true
                         end
                     end
                 end
- 
+
                 if event.key == Keyboard.home
                     seg_pos[] = 0
                     update_ax2 = true
@@ -563,16 +600,18 @@ function plot_cont(
                     update_ax2 = true
                 end
 
-                update_ax2 && (ax1.limits[] = ((seg_pos[], seg_pos[] + seg_len), ax1.limits[][2]))
-                update_ax3 && (ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5)))
+                update_ax2 &&
+                    (ax1.limits[] = ((seg_pos[], seg_pos[] + seg_len), ax1.limits[][2]))
+                update_ax3 &&
+                    (ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5)))
             end
         end
 
         type === :normal && colsize!(fig.layout, 2, GLMakie.Fixed(20))
         rowsize!(fig.layout, 2, GLMakie.Fixed(20))
- 
+
         wait(display(fig))
     end
- 
+
     return fig
 end

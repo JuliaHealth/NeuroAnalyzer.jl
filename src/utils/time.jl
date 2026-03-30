@@ -194,8 +194,10 @@ Return the time segment in seconds spanning a contiguous range of epoch indices.
 
 - `Tuple{Float64, Float64}`: `(start_time, end_time)` in seconds
 """
-function e2t(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, UnitRange{Int64}, Vector{Int64}})::Tuple{Real, Real}
-
+function e2t(
+    obj::NeuroAnalyzer.NEURO;
+    ep::Union{Int64, UnitRange{Int64}, Vector{Int64}},
+)::Tuple{Real, Real}
     ep isa Int64 && (ep = [ep])
 
     # validate

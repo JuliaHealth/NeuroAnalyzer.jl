@@ -148,7 +148,7 @@ function plot_psd(
     fig = GLMakie.Figure(; size = plot_size)
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel             = xlabel,
         ylabel             = ylabel,
@@ -166,7 +166,15 @@ function plot_psd(
 
     if ci95
         # draw 95% CI
-        GLMakie.band!(ax, f[f1:f2], s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
+        GLMakie.band!(
+            ax,
+            f[f1:f2],
+            s_u,
+            s_l;
+            alpha = 0.25,
+            color = :grey,
+            strokewidth = 0.5,
+        )
         # draw mean
         GLMakie.lines!(ax, f[f1:f2], s_m; color = :black, linewidth = 2)
     else
@@ -188,7 +196,6 @@ function plot_psd(
         if avg
             s = mean(p[f1:f2]; dims = 1)[:]
             GLMakie.lines!(ax, f[f1:f2], s; linewidth = 4, color = :black)
-
         end
 
         # add legend if requested
@@ -296,7 +303,6 @@ function plot_psd_3d(
 
     # plot powers
     if variant === :w
-
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx in 1:ch_n
             GLMakie.lines!(
@@ -315,7 +321,6 @@ function plot_psd_3d(
         # plot powers
         cmap = GLMakie.resample_cmap(pal, ch_n)
         GLMakie.surface!(f, eachindex(clabels), p[:, f1f2]'; colormap = pal)
-
     end
 
     return fig
@@ -377,18 +382,18 @@ function plot_psd_topo(
     if ch_n <= 64
         plot_size   = (1000, 1000)
         marker_size = (150, 75)
-        xl = 1.2
-        yl = 1.2
+        xl          = 1.2
+        yl          = 1.2
     elseif ch_n <= 100
         plot_size   = (1200, 1200)
         marker_size = (110, 55)
-        xl = 1.5
-        yl = 1.5
+        xl          = 1.5
+        yl          = 1.5
     else
         plot_size   = (1400, 1400)
         marker_size = (90, 45)
-        xl = 1.5
-        yl = 1.5
+        xl          = 1.5
+        yl          = 1.5
     end
 
     # get locations
@@ -440,11 +445,11 @@ function plot_psd_topo(
     fig = GLMakie.Figure(; size = plot_size, figure_padding = 0)
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel = "",
         ylabel = "",
-        title  = title,
+        title = title,
         aspect = 1,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
@@ -474,7 +479,7 @@ function plot_psd_topo(
 
     # PSD positions
     loc_x_range = [(loc_x[i] - 0.15, loc_x[i] + 0.15) for i in eachindex(loc_x)]
-    loc_y_range = [(loc_y[i] - 0.1,  loc_y[i] + 0.1)  for i in eachindex(loc_y)]
+    loc_y_range = [(loc_y[i] - 0.1, loc_y[i] + 0.1) for i in eachindex(loc_y)]
 
     # mouse events
     on(events(fig).mousebutton) do event
@@ -615,7 +620,8 @@ function plot_psd(
     _check_var(frq, [:lin, :log], "frq")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     length(ch) == 1 && (ch = ch[1])
@@ -668,7 +674,8 @@ function plot_psd(
     else
         "relative to $(replace(string(ref), "_" => " ")) power"
     end
-    default_title = ref === :abs ?
+    default_title =
+        ref === :abs ?
         "Absolute PSD ($method_label)$ep_suffix" :
         "PSD ($method_label) $ref_prefix$ep_suffix"
 
@@ -689,11 +696,13 @@ function plot_psd(
     title == "default" && (title = default_title)
 
     if type === :normal
-
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = ref !== :abs ?
-            "Power ratio" :
-            (db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]"))
+        ylabel == "default" && (
+            ylabel =
+                ref !== :abs ?
+                "Power ratio" :
+                (db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+        )
 
         if length(ch) == 1
             fig = plot_psd(
@@ -723,7 +732,6 @@ function plot_psd(
         end
 
     elseif type in [:w3d, :s3d]
-
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" &&
@@ -743,7 +751,6 @@ function plot_psd(
         )
 
     elseif type === :topo
-
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" &&
             (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")

@@ -143,9 +143,9 @@ function plot_ep(
         group = s[ctypes .== ctypes_uni[idx], :]
         push!(r[], round(_get_range(group)))
         # remove per-channel DC offset
-        group = group .- mean(group; dims=2)
+        group = group .- mean(group; dims = 2)
         # map to [-0.5, 0.5]
-        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych=true)
+        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych = true)
     end
     if type === :normal
         s .+= collect(1:ch_n)
@@ -197,8 +197,8 @@ function plot_ep(
         xminorticks        = IntervalsBetween(10),
         yticks             = (1:ch_n, clabels),
         # TO DO: yticklabelcolor=ytc[1:end],
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0, 0),
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
         _AXIS_LOCK_KWARGS...,
         yticklabelspace = let ml = maximum(length, clabels)
             ml <= 5 ? 60.0 : ml >= 10 ? 100.0 : 80.0
@@ -226,7 +226,15 @@ function plot_ep(
                 s_m = msci95_data.sm
                 s_u = msci95_data.ul
                 s_l = msci95_data.ll
-                GLMakie.band!(ax1, t, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
+                GLMakie.band!(
+                    ax1,
+                    t,
+                    s_u,
+                    s_l;
+                    alpha = 0.25,
+                    color = :grey,
+                    strokewidth = 0.5,
+                )
                 GLMakie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
             end
 
@@ -247,7 +255,6 @@ function plot_ep(
                     GLMakie.lines!(ax1, t, s_avg; linewidth = 2, color = :black)
                 end
             end
-
         end
     end
 
@@ -274,7 +281,13 @@ function plot_ep(
                     l_pos = lift(seg_pos) do sp
                         return (sp + 0.01, idx1 + 0.49)
                     end
-                    GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                    GLMakie.poly!(
+                        ax1,
+                        s_rectangle;
+                        color = :red,
+                        strokecolor = :red,
+                        strokewidth = 2,
+                    )
                     GLMakie.text!(
                         ax1, l_pos;
                         markerspace = :pixel,
@@ -295,7 +308,13 @@ function plot_ep(
                 l_pos = lift(seg_pos) do sp
                     return (sp, idx + 0.5)
                 end
-                GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                GLMakie.poly!(
+                    ax1,
+                    s_rectangle;
+                    color = :red,
+                    strokecolor = :red,
+                    strokewidth = 2,
+                )
                 GLMakie.text!(
                     ax1, l_pos;
                     text        = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
@@ -337,14 +356,14 @@ function plot_ep(
         # time/epoch bar
         ax2 = GLMakie.Axis(
             fig[2, 1];
-            xlabel             = xl,
-            ylabel             = "",
-            title              = "",
-            xticks             = LinearTicks(25),
-            yticksvisible      = false,
-            xautolimitmargin   = (0, 0),
-            yautolimitmargin   = (0, 0),
-            backgroundcolor    = :white,
+            xlabel           = xl,
+            ylabel           = "",
+            title            = "",
+            xticks           = LinearTicks(25),
+            yticksvisible    = false,
+            xautolimitmargin = (0, 0),
+            yautolimitmargin = (0, 0),
+            backgroundcolor  = :white,
             _AXIS_LOCK_KWARGS...,
         )
         GLMakie.xlims!(ax2, 0, ep_n[])
@@ -426,9 +445,10 @@ function plot_ep(
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][
                                 get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                            ] = !obj.header.recording[:bad_channel][
-                                get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                            ]
+                            ] =
+                                !obj.header.recording[:bad_channel][
+                                    get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
+                                ]
                             notify(bad_ch)
                         end
                     end
@@ -516,7 +536,8 @@ function plot_ep(
                     update_ax2 = true
                 end
                 if ispressed(fig, Keyboard.left_shift & Keyboard.left)
-                    seg_pos[] = clamp(seg_pos[] - (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
+                    seg_pos[] =
+                        clamp(seg_pos[] - (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
                     update_ax2 = true
                 end
                 if event.key == Keyboard.right && seg_pos[] < ep_n[] - n_epochs
@@ -524,7 +545,8 @@ function plot_ep(
                     update_ax2 = true
                 end
                 if ispressed(fig, Keyboard.left_shift & Keyboard.right)
-                    seg_pos[] = clamp(seg_pos[] + (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
+                    seg_pos[] =
+                        clamp(seg_pos[] + (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
                     update_ax2 = true
                 end
                 if update_ax2

@@ -34,8 +34,8 @@ function _add_cutoff_slider!(grid, row, cutoff, nqf, is_interval)
         on(sl.interval) do val
             cutoff[] = round.(val; digits = 1)
             cutoff[][1] == cutoff[][2] && (cutoff[] = (cutoff[][1], cutoff[][1] + 0.1))
-            cutoff[][1] >  cutoff[][2] && (cutoff[] = (cutoff[][2], cutoff[][1]))
-            notify(cutoff)
+            cutoff[][1] > cutoff[][2] && (cutoff[] = (cutoff[][2], cutoff[][1]))
+            return notify(cutoff)
         end
     else
         sl = Slider(
@@ -46,7 +46,7 @@ function _add_cutoff_slider!(grid, row, cutoff, nqf, is_interval)
         )
         on(sl.value) do val
             cutoff[] = round(val; digits = 1)
-            notify(cutoff)
+            return notify(cutoff)
         end
     end
     return sl
@@ -57,14 +57,14 @@ function _add_order_slider!(grid, row, order, ftype)
     Label(grid[row, 1], "Order [taps]"; fontsize = 15, halign = :right)
     rng = (ftype === :lp) ? (1:1:1000) : (1:2:1001)
     sl  = Slider(
-        grid[row, 2];
-        range      = rng,
-        startvalue = order[],   # FIX: was `order` (Observable) in :firls branch
-        horizontal = true,
-    )
+    grid[row, 2];
+    range      = rng,
+    startvalue = order[],   # FIX: was `order` (Observable) in :firls branch
+    horizontal = true
+)
     on(sl.value) do val
         order[] = val
-        notify(order)
+        return notify(order)
     end
     return sl
 end
@@ -80,7 +80,7 @@ function _add_bw_slider!(grid, row, bw, cutoff_ref)
     )
     on(sl.value) do val
         bw[] = round(val; digits = 1)
-        notify(bw)
+        return notify(bw)
     end
     return sl
 end
@@ -89,7 +89,7 @@ end
 function _draw_cutoff_vlines!(ax1, ax2, ax3, cutoff, bw, ftype, mono)
     vl_kwargs = (linestyle = :dash, linewidth = 1)
     thin_kwargs = (linestyle = :dash, linewidth = 0.25, color = :black)
- 
+
     if length(cutoff[]) == 1
         color = mono ? :black : :red
         for ax in (ax1, ax2, ax3)
@@ -97,9 +97,9 @@ function _draw_cutoff_vlines!(ax1, ax2, ax3, cutoff, bw, ftype, mono)
         end
         if isa(bw, Observable{Float64})
             f_pass = ftype === :lp ?
-                @lift($cutoff - ($bw / 2)) : @lift($cutoff + ($bw / 2))
+                     @lift($cutoff - ($bw / 2)) : @lift($cutoff + ($bw / 2))
             f_stop = ftype === :lp ?
-                @lift($cutoff + ($bw / 2)) : @lift($cutoff - ($bw / 2))
+                     @lift($cutoff + ($bw / 2)) : @lift($cutoff - ($bw / 2))
             for ax in (ax1, ax2, ax3)
                 GLMakie.vlines!(ax, f_pass; thin_kwargs...)
                 GLMakie.vlines!(ax, f_stop; thin_kwargs...)
@@ -113,9 +113,11 @@ function _draw_cutoff_vlines!(ax1, ax2, ax3, cutoff, bw, ftype, mono)
             GLMakie.vlines!(ax, c2; vl_kwargs..., color = mono ? :black : :green)
         end
         if isa(bw, Observable{Float64})
-            f_pass = ftype === :bp ?
+            f_pass =
+                ftype === :bp ?
                 @lift($cutoff[2] + ($bw / 2)) : @lift($cutoff[1] - ($bw / 2))
-            f_stop = ftype === :bp ?
+            f_stop =
+                ftype === :bp ?
                 @lift($cutoff[1] - ($bw / 2)) : @lift($cutoff[2] + ($bw / 2))
             for ax in (ax1, ax2, ax3)
                 GLMakie.vlines!(ax, f_pass; thin_kwargs...)
@@ -207,14 +209,23 @@ function plot_filter(;
         # Nyquist frequency
         nqf = div(fs, 2)
         nqf > flim[2] && (nqf = flim[2])
- 
+
         _check_var(
             fprototype,
-            [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch],
+            [
+                :fir,
+                :firls,
+                :remez,
+                :butterworth,
+                :chebyshev1,
+                :chebyshev2,
+                :elliptic,
+                :iirnotch,
+            ],
             "fprototype",
         )
         !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
- 
+
         if fprototype === :fir
             (isnothing(order) && isnothing(w)) &&
                 throw(ArgumentError("Either order or w must be specified."))
@@ -280,19 +291,29 @@ function plot_filter(;
             isnothing(ftype) || _info("For :iirnotch filter ftype is ignored")
             isnothing(order) || _info("For :iirnotch filter order is ignored")
             length(cutoff) == 1 || throw(
-                ArgumentError("For :iirnotch filter cutoff must contain only one frequency."),
+                ArgumentError(
+                    "For :iirnotch filter cutoff must contain only one frequency.",
+                ),
             )
         end
 
         if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
             (ftype in [:lp, :hp] && length(cutoff) == 1) ||
-                throw(ArgumentError("For :$(ftype) filter, cutoff must specify only one frequency."))
+                throw(
+                    ArgumentError(
+                        "For :$(ftype) filter, cutoff must specify only one frequency.",
+                    ),
+                )
             (ftype in [:bp, :bs] && length(cutoff) == 2) ||
-                throw(ArgumentError("For :$(ftype) filter, cutoff must specify two frequencies."))
+                throw(
+                    ArgumentError(
+                        "For :$(ftype) filter, cutoff must specify two frequencies.",
+                    ),
+                )
         end
 
         if length(cutoff) == 1
-            cutoff > 0   || throw(ArgumentError("cutoff must be > 0 Hz."))
+            cutoff > 0 || throw(ArgumentError("cutoff must be > 0 Hz."))
             cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz."))
         else
             _check_tuple(cutoff, (0, nqf), "cutoff")
@@ -311,15 +332,15 @@ function plot_filter(;
         GLMakie.activate!(; title = "plot_filter()")
         fig = GLMakie.Figure(; size = gui ? (1200, 900) : (1200, 800))
 
-       # GUI sliders
+        # GUI sliders
         if gui
             grid        = fig[4, 1] = GridLayout()
             is_interval = !isnothing(ftype) && ftype in [:bp, :bs]
- 
+
             if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
                 sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
                 sl_order  = _add_order_slider!(grid, 2, order, isnothing(ftype) ? :lp : ftype)
- 
+
                 if isa(rp, Observable{Float64})
                     Label(grid[3, 1], "RP [dB]"; fontsize = 15, halign = :right)
                     sl_rp = Slider(
@@ -329,10 +350,11 @@ function plot_filter(;
                         horizontal = true,
                     )
                     on(sl_rp.value) do val
-                        rp[] = round(val; digits = 1); notify(rp)
+                        rp[] = round(val; digits = 1);
+                        return notify(rp)
                     end
                 end
- 
+
                 if isa(rs, Observable{Float64})
                     rs_row = fprototype === :chebyshev2 ? 3 : 4
                     Label(grid[rs_row, 1], "RS [dB]"; fontsize = 15, halign = :right)
@@ -345,19 +367,20 @@ function plot_filter(;
                     on(sl_rs.value) do val
                         rs[] = round(val; digits = 1)
                         isa(rp, Observable{Float64}) && (sl_rp.range = 0.1:0.1:(rs[] - 0.1))
-                        notify(rs)
+                        return notify(rs)
                     end
                 end
- 
+
             elseif fprototype === :remez
                 sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
                 sl_order  = _add_order_slider!(grid, 2, order, isnothing(ftype) ? :lp : ftype)
                 _add_bw_slider!(grid, 3, bw, cutoff[][is_interval ? 1 : 1])
- 
+
             elseif fprototype === :fir
                 sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
-                isnothing(w) && _add_order_slider!(grid, 2, order, isnothing(ftype) ? :lp : ftype)
- 
+                isnothing(w) &&
+                    _add_order_slider!(grid, 2, order, isnothing(ftype) ? :lp : ftype)
+
             elseif fprototype === :firls
                 sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
                 on(sl_cutoff.value) do val  # update bw range when cutoff changes
@@ -372,8 +395,9 @@ function plot_filter(;
                     end
                 end
                 sl_bw = _add_bw_slider!(grid, 2, bw, is_interval ? cutoff[][1] : cutoff[])
-                isnothing(w) && _add_order_slider!(grid, 3, order, isnothing(ftype) ? :lp : ftype)
- 
+                isnothing(w) &&
+                    _add_order_slider!(grid, 3, order, isnothing(ftype) ? :lp : ftype)
+
             elseif fprototype === :iirnotch
                 sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, false)
                 on(sl_cutoff.value) do val
@@ -390,7 +414,7 @@ function plot_filter(;
                 sl_bw = _add_bw_slider!(grid, 2, bw, cutoff[])
             end
         end
- 
+
         # create filter observable
         flt = @lift(
             filter_create(
@@ -405,68 +429,86 @@ function plot_filter(;
                 w          = w,
             )
         )
- 
+
         # draw frequency, phase, and group-delay response plots
         if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
             fresp = lift(DSP.freqresp, flt)
             H     = @lift(real.(20 * log10.(abs.($fresp[1]))))
             f_hz  = @lift(round.($fresp[2] .* fs / 2 / pi; digits = 1))
- 
+
             if fprototype !== :iirnotch
                 fname = titlecase(String(fprototype))
                 title1 = if fprototype in [:chebyshev1, :chebyshev2, :elliptic]
-                    @lift("Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order), RP: $($rp) dB, RS: $($rs) dB\n\nFrequency response")
+                    @lift(
+                        "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order), RP: $($rp) dB, RS: $($rs) dB\n\nFrequency response"
+                    )
                 else
-                    @lift("Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order)\n\nFrequency response")
+                    @lift(
+                        "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order)\n\nFrequency response"
+                    )
                 end
             else
-                title1 = @lift("Filter: IIR notch, cutoff: $(round.($cutoff; digits=1)) Hz, bw: $(round($bw; digits=1)) Hz\n\nFrequency response")
+                title1 = @lift(
+                    "Filter: IIR notch, cutoff: $(round.($cutoff; digits=1)) Hz, bw: $(round($bw; digits=1)) Hz\n\nFrequency response"
+                )
             end
- 
+
             ax1 = _filter_axis(fig, (1, 1), title1, "Magnitude [dB]", flim)
             GLMakie.ylims!(ax1, (-100, 20))
             GLMakie.lines!(ax1, f_hz, H; color = mono ? :black : :blue)
- 
+
             phresp = lift(DSP.phaseresp, flt)
             phi    = @lift($phresp[1])
             f_ph   = @lift(round.($phresp[2] .* fs / 2 / pi; digits = 1))
             tau    = @lift(-derivative(rad2deg.($phresp[1])))
- 
+
             ax2 = _filter_axis(fig, (2, 1), "Phase response", "Phase [rad]", flim)
-            GLMakie.lines!(ax2, f_ph, phi; color = mono ? :black : :blue, nan_color = mono ? :black : :blue)
- 
+            GLMakie.lines!(
+                ax2,
+                f_ph,
+                phi;
+                color = mono ? :black : :blue,
+                nan_color = mono ? :black : :blue,
+            )
+
             ax3 = _filter_axis(fig, (3, 1), "Group delay", "Group delay [samples]", flim)
             GLMakie.lines!(ax3, f_ph, tau; color = mono ? :black : :blue)
- 
+
         else  # FIR family
             fresp = lift(_fir_response, flt)
             H     = @lift(amp2db.(abs.($fresp)))
             phi   = @lift(rad2deg.(-atan.(imag($fresp), real($fresp))))
             tau   = @lift(-derivative(rad2deg.(-atan.(imag($fresp), real($fresp)))))
             f_fir = range(0; stop = pi, length = 1024) .* fs / 2 / pi
- 
+
             title1 = if fprototype === :fir
-                @lift("Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order)\n\nFrequency response")
+                @lift(
+                    "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order)\n\nFrequency response"
+                )
             elseif fprototype === :firls
-                @lift("Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, bw: $($bw) Hz, order: $($order)\n\nFrequency response")
+                @lift(
+                    "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, bw: $($bw) Hz, order: $($order)\n\nFrequency response"
+                )
             else  # :remez
-                @lift("Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, bw: $($bw) Hz, order: $($order)\n\nFrequency response")
+                @lift(
+                    "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, bw: $($bw) Hz, order: $($order)\n\nFrequency response"
+                )
             end
- 
+
             ax1 = _filter_axis(fig, (1, 1), title1, "Magnitude [dB]", flim)
             GLMakie.ylims!(ax1, (-100, 20))
             GLMakie.lines!(ax1, f_fir, H; color = mono ? :black : :blue)
- 
+
             ax2 = _filter_axis(fig, (2, 1), "Phase response", "Phase [deg]", flim)
             GLMakie.lines!(ax2, f_fir, phi; color = mono ? :black : :blue)
- 
+
             ax3 = _filter_axis(fig, (3, 1), "Group delay", "Group delay [samples]", flim)
             GLMakie.lines!(ax3, f_fir, tau; color = mono ? :black : :blue)
         end
- 
+
         # draw cutoff indicator lines
         _draw_cutoff_vlines!(ax1, ax2, ax3, cutoff, bw, ftype, mono)
- 
+
         if gui
             wait(display(fig))
             NeuroAnalyzer.verbose = v
@@ -475,7 +517,7 @@ function plot_filter(;
             NeuroAnalyzer.verbose = v
             return fig
         end
- 
+
     catch
         NeuroAnalyzer.verbose = v
         rethrow()

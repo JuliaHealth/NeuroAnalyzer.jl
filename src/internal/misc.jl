@@ -232,7 +232,7 @@ Read `n` values of type `t` from an open IO stream `fid`, returning the result a
 """
 function _fread(fid, n::Int64, t::Symbol)::Union{Int64, Float64, Vector{Int64}}
     (n > 1 && t === :c) && (t = :s)
- 
+
     # compute byte count
     nbytes = if t in (:s, :c, :ui8, :i8)
         n
@@ -245,24 +245,24 @@ function _fread(fid, n::Int64, t::Symbol)::Union{Int64, Float64, Vector{Int64}}
     else
         throw(ArgumentError("Unknown type symbol :$t"))
     end
- 
+
     header = zeros(UInt8, nbytes)
     readbytes!(fid, header, nbytes)
- 
+
     # decode and return
-    t === :s   && return Int64.(map(ltoh, reinterpret(UInt8,   header)))
-    t === :c   && return Int64(map(ltoh, reinterpret(UInt8,    header))[1])
-    t === :l   && return Int64(map(ltoh, reinterpret(Int32,    header))[1])
-    t === :ul  && return Int64(map(ltoh, reinterpret(UInt32,   header))[1])
-    t === :ui8 && return Int64(map(ltoh, reinterpret(UInt8,    header))[1])
-    t === :ui16 && return Int64(map(ltoh, reinterpret(UInt16,  header))[1])
-    t === :ui32 && return Int64(map(ltoh, reinterpret(UInt32,  header))[1])
-    t === :ui64 && return Int64(map(ltoh, reinterpret(UInt64,  header))[1])
-    t === :i   && return Int64(map(ltoh, reinterpret(Int32,    header))[1])
-    t === :i8  && return Int64(map(ltoh, reinterpret(Int8,     header))[1])
-    t === :i16 && return Int64(map(ltoh, reinterpret(Int16,    header))[1])
-    t === :i32 && return Int64(map(ltoh, reinterpret(Int32,    header))[1])
-    t === :i64 && return Int64(map(ltoh, reinterpret(Int64,    header))[1])
+    t === :s && return Int64.(map(ltoh, reinterpret(UInt8, header)))
+    t === :c && return Int64(map(ltoh, reinterpret(UInt8, header))[1])
+    t === :l && return Int64(map(ltoh, reinterpret(Int32, header))[1])
+    t === :ul && return Int64(map(ltoh, reinterpret(UInt32, header))[1])
+    t === :ui8 && return Int64(map(ltoh, reinterpret(UInt8, header))[1])
+    t === :ui16 && return Int64(map(ltoh, reinterpret(UInt16, header))[1])
+    t === :ui32 && return Int64(map(ltoh, reinterpret(UInt32, header))[1])
+    t === :ui64 && return Int64(map(ltoh, reinterpret(UInt64, header))[1])
+    t === :i && return Int64(map(ltoh, reinterpret(Int32, header))[1])
+    t === :i8 && return Int64(map(ltoh, reinterpret(Int8, header))[1])
+    t === :i16 && return Int64(map(ltoh, reinterpret(Int16, header))[1])
+    t === :i32 && return Int64(map(ltoh, reinterpret(Int32, header))[1])
+    t === :i64 && return Int64(map(ltoh, reinterpret(Int64, header))[1])
     t === :f16 && return Float64(map(ltoh, reinterpret(Float16, header))[1])
     t === :f32 && return Float64(map(ltoh, reinterpret(Float32, header))[1])
     return Float64(map(ltoh, reinterpret(Float64, header))[1])

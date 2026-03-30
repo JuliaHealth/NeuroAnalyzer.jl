@@ -185,12 +185,12 @@ const _LOCS_COORD_COLS = [
 
 """Keyword arguments applied to every locked/non-interactive Axis."""
 const _AXIS_LOCK_KWARGS = (
-    xzoomlock  = true,
-    yzoomlock  = true,
-    xpanlock   = true,
-    ypanlock   = true,
-    xrectzoom  = false,
-    yrectzoom  = false,
+    xzoomlock = true,
+    yzoomlock = true,
+    xpanlock  = true,
+    ypanlock  = true,
+    xrectzoom = false,
+    yrectzoom = false,
 )
 
 """Apply standard font sizes to an Axis."""

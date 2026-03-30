@@ -54,7 +54,7 @@ function na_plugins_list()::Nothing
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
-    plugins = Base.filter(isdir, readdir(plugins_path; join=true))
+    plugins = Base.filter(isdir, readdir(plugins_path; join = true))
     println("Available plugins:")
     for (idx, plugin) in enumerate(basename(p))
         println("$idx. $plugin")
@@ -80,7 +80,7 @@ function na_plugins_remove(plugin::String)::Nothing
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
-    plugins = Base.filter(isdir, readdir(plugins_path; join=true))
+    plugins = Base.filter(isdir, readdir(plugins_path; join = true))
     plugin_path = joinpath(plugins_path, plugin)
 
     plugin_path in plugins ||
@@ -89,7 +89,7 @@ function na_plugins_remove(plugin::String)::Nothing
     _warn("This will remove the whole $plugin directory and all its contents.")
 
     try
-        rm(plugin_path; recursive=true)
+        rm(plugin_path; recursive = true)
         _info("Removed plugin: $plugin")
     catch e
         @error "Cannot remove $plugin directory." exception=e
@@ -200,7 +200,7 @@ function na_plugins_update(plugin::String = "")::Nothing
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
-    plugins = Base.filter(isdir, readdir(plugins_path; join=true))
+    plugins = Base.filter(isdir, readdir(plugins_path; join = true))
 
     if isnothing(plugin)
         for plugin_path in plugins

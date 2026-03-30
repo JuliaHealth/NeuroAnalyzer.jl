@@ -175,7 +175,8 @@ function tenv(
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -438,7 +439,8 @@ function penv(
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -814,7 +816,8 @@ function senv(
 } where {T <: CWT}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -1313,7 +1316,8 @@ function henv(
     )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 

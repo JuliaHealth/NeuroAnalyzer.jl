@@ -6,13 +6,13 @@ export plot_locs
 
 # Return true if `val` passes the given threshold rule.
 function _passes_threshold(val::Real, threshold, threshold_type::Symbol)::Bool
-    threshold_type === :g   && return val > threshold
-    threshold_type === :l   && return val < threshold
-    threshold_type === :eq  && return val == threshold
+    threshold_type === :g && return val > threshold
+    threshold_type === :l && return val < threshold
+    threshold_type === :eq && return val == threshold
     threshold_type === :neq && return val != threshold
     threshold_type === :leq && return val <= threshold
     threshold_type === :geq && return val >= threshold
-    threshold_type === :in  && return val >= threshold[1] && val <= threshold[2]
+    threshold_type === :in && return val >= threshold[1] && val <= threshold[2]
     threshold_type === :bin && return val > threshold[1] && val < threshold[2]
     return false
 end
@@ -50,7 +50,7 @@ function _draw_connection_label!(
 )
     l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
     color = mono ? :black : (val >= 0 ? :red : :blue)
-    GLMakie.text!(
+    return GLMakie.text!(
         l_pos[1], l_pos[2];
         align    = (:center, :center),
         text     = string(val),
@@ -215,10 +215,10 @@ function plot_locs(
     ) # L R B T
 
     shared_ax_kwargs = (
-        aspect          = 1,
-        xlabel          = "",
-        ylabel          = "",
-        title           = "",
+        aspect = 1,
+        xlabel = "",
+        ylabel = "",
+        title = "",
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
         backgroundcolor = :transparent,
@@ -264,7 +264,11 @@ function plot_locs(
         size(connections, 1) == length(ch) || throw(
             ArgumentError("Number of connections rows must equal number of channels."),
         )
-        _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
+        _check_var(
+            threshold_type,
+            [:eq, :neq, :geq, :leq, :g, :l, :in, :bin],
+            "threshold_type",
+        )
         if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
             length(threshold) == 1 ||
                 throw(ArgumentError("threshold must contain a single value."))
@@ -273,10 +277,10 @@ function plot_locs(
                 throw(ArgumentError("threshold must contain two values."))
             _check_tuple(threshold, extrema(connections), "threshold")
         end
- 
+
         m_tmp = normalize_n(abs.(connections))
         use_weights = weights === true
- 
+
         for idx1 in axes(connections, 1)
             for idx2 in (idx1 + 1):size(connections, 1)
                 val = connections[idx1, idx2]
@@ -289,8 +293,8 @@ function plot_locs(
     end
 
     # draw channel markers
-    ch_n  = length(ch)
-    cmap  = GLMakie.resample_cmap(pal, ch_n)
+    ch_n = length(ch)
+    cmap = GLMakie.resample_cmap(pal, ch_n)
     sch_set = Set(sch)
 
     for (i, idx) in enumerate(ch)
@@ -314,7 +318,7 @@ function plot_locs(
             )
         end
     end
- 
+
     label_offset_x = 0.0
     label_offset_y = -0.08
 
@@ -345,7 +349,7 @@ function plot_locs(
                 pt[1], pt[2]
             elseif plane === :xz
                 pt[1], pt[3]
-            elseif  plane === :yz
+            elseif plane === :yz
                 pt[2], pt[3]
             end
             GLMakie.text!(
@@ -382,12 +386,14 @@ function plot_locs(
         label_offset_x = 0.0
         label_offset_y = 0.07
         length(weights) <= length(ch) ||
-            throw(ArgumentError(
-                "Number of weights ($(length(weights))) must be ≤ number of channels ($(length(ch))).",
-            ))
+            throw(
+                ArgumentError(
+                    "Number of weights ($(length(weights))) must be ≤ number of channels ($(length(ch))).",
+                ),
+            )
         length(weights) >= 1 ||
             throw(ArgumentError("weights must contain at least one value."))
- 
+
         for (i, idx) in enumerate(collect(ch))
             i > length(weights) && break
             color = mono ? :black : (weights[i] >= 0 ? :red : :blue)
@@ -423,7 +429,7 @@ function plot_locs(
         end
         wait(display(fig))
     end
- 
+
     return fig
 end
 
@@ -498,7 +504,8 @@ function plot_locs(
     datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -506,7 +513,7 @@ function plot_locs(
     for idx in eachindex(ch)
         push!(ch_info, channel_info(obj; ch = labels(obj)[ch[idx]], pr = false))
     end
- 
+
     chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch   = collect(1:DataFrames.nrow(locs))
@@ -514,7 +521,8 @@ function plot_locs(
     sch_resolved = if sch == ""
         Int64[]
     else
-        sch_idx = exclude_bads ?
+        sch_idx =
+            exclude_bads ?
             get_channel(obj; ch = sch, exclude = "bad") :
             get_channel(obj; ch = sch, exclude = "")
         sch_chs = intersect(locs[!, :label], labels(obj)[sch_idx])

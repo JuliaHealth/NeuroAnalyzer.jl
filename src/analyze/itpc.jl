@@ -128,7 +128,8 @@ function itpc(
     ep_n >= 2 || throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     ch_n = length(ch)
@@ -293,7 +294,8 @@ function itpc_spec(
     end
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 

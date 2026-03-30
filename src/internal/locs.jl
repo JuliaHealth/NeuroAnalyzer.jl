@@ -51,7 +51,14 @@ Calculate the Euclidean distance between two points in Cartesian coordinates.
 
 - `Float64`: Euclidean distance between the two points
 """
-function _sph_distance_cart(x1::Real, y1::Real, z1::Real, x2::Real, y2::Real, z2::Real)::Float64
+function _sph_distance_cart(
+    x1::Real,
+    y1::Real,
+    z1::Real,
+    x2::Real,
+    y2::Real,
+    z2::Real,
+)::Float64
     return sqrt((x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
 end
 
@@ -73,8 +80,8 @@ function _check_ch_locs(
     objl::Vector{String},
     locsl::Vector{String},
 )::Nothing
-    isempty(ch)    && throw(ArgumentError("Channel specification cannot be empty."))
-    isempty(objl)  && throw(ArgumentError("Channel labels vector cannot be empty."))
+    isempty(ch) && throw(ArgumentError("Channel specification cannot be empty."))
+    isempty(objl) && throw(ArgumentError("Channel labels vector cannot be empty."))
     isempty(locsl) && throw(ArgumentError("Location labels vector cannot be empty."))
 
     indices = ch isa Int64 ? [ch] : ch
@@ -245,7 +252,7 @@ function _initialize_locs(obj::NeuroAnalyzer.NEURO)::DataFrame
         ch = get_channel(
             obj;
             type = ["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg",
-                    "nirs_int", "nirs_od", "eog", "ref"],
+                "nirs_int", "nirs_od", "eog", "ref"],
         ),
     )
     n = length(locs_ch)
@@ -458,7 +465,7 @@ Angles outside [0°, 360°) are first normalized via `mod`.
 function _angle_quadrant(a::Real)::Int64
     # normalize to [0°, 360°) regardless of sign
     a = mod(Float64(a), 360.0)
-    a <= 90  && return 1
+    a <= 90 && return 1
     a <= 180 && return 2
     a <= 270 && return 3
     return 4

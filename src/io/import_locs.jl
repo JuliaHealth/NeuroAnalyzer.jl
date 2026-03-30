@@ -99,7 +99,7 @@ function import_locs_ced(file_name::String)::DataFrame
         file_name,
         DataFrame;
         delim = "\t",
-        stringtype = String
+        stringtype = String,
     )
     colnames = lowercase.(names(locs_raw))
     DataFrames.rename!(locs_raw, Symbol.(colnames))

@@ -101,16 +101,16 @@ function plot_matrix(
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel               = xlabel,
-        ylabel               = ylabel,
-        title                = title,
-        xticks               = (1:n, xlabels),
-        xticklabelrotation   = deg2rad(xrot),
-        xticksvisible        = false,
-        yticks               = (1:n, ylabels),
-        yticksvisible        = false,
-        xautolimitmargin     = (0, 0),
-        yautolimitmargin     = (0, 0),
+        xlabel             = xlabel,
+        ylabel             = ylabel,
+        title              = title,
+        xticks             = (1:n, xlabels),
+        xticklabelrotation = deg2rad(xrot),
+        xticksvisible      = false,
+        yticks             = (1:n, ylabels),
+        yticksvisible      = false,
+        xautolimitmargin   = (0, 0),
+        yautolimitmargin   = (0, 0),
         _AXIS_LOCK_KWARGS...,
     )
     _style_axis!(ax)
@@ -155,15 +155,15 @@ function plot_xac(
     fig = GLMakie.Figure(; size = (800, 300))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel               = xlabel,
-        ylabel               = ylabel,
-        title                = title,
-        xminorticksvisible   = true,
-        xminorticks          = IntervalsBetween(10),
-        xautolimitmargin     = (0, 0),
-        yautolimitmargin     = (0, 0),
+        xlabel             = xlabel,
+        ylabel             = ylabel,
+        title              = title,
+        xminorticksvisible = true,
+        xminorticks        = IntervalsBetween(10),
+        xautolimitmargin   = (0, 0),
+        yautolimitmargin   = (0, 0),
         _AXIS_LOCK_KWARGS...,
     )
     _style_axis!(ax)
@@ -220,22 +220,22 @@ function plot_histogram(
     xticks = if !isnothing(x)
         [
             round(minimum(s); digits = 2),
-            round(mean(s);    digits = 2),
-            round(median(s);  digits = 2),
-            round(x;          digits = 2),
+            round(mean(s); digits = 2),
+            round(median(s); digits = 2),
+            round(x; digits = 2),
             round(maximum(s); digits = 2),
         ]
     else
         [
             round(minimum(s); digits = 2),
-            round(mean(s);    digits = 2),
-            round(median(s);  digits = 2),
+            round(mean(s); digits = 2),
+            round(median(s); digits = 2),
             round(maximum(s); digits = 2),
         ]
     end
 
     !draw_median && deleteat!(xticks, 3)
-    !draw_mean   && deleteat!(xticks, 2)
+    !draw_mean && deleteat!(xticks, 2)
     sort!(unique(xticks))
 
     # prepare plot
@@ -243,15 +243,15 @@ function plot_histogram(
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel             = xlabel,
         ylabel             = ylabel,
         title              = title,
         xticks             = xticks,
         xticklabelrotation = pi / 2,
-        xautolimitmargin     = (0, 0),
-        yautolimitmargin     = (0, 0),
+        xautolimitmargin   = (0, 0),
+        yautolimitmargin   = (0, 0),
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, extrema(xticks))
@@ -338,7 +338,7 @@ function plot_bar(
     color = mono ? :lightgrey : :lightblue
 
     # set y-axis limits
-    yl    = _ylims_padded(s)
+    yl = _ylims_padded(s)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_bar()")
@@ -347,12 +347,12 @@ function plot_bar(
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = xlabel,
-        ylabel             = ylabel,
-        title              = title,
-        xticks             = (eachindex(glabels), glabels),
-        xautolimitmargin   = (0.01, 0.01),
-        yautolimitmargin   = (0, 0),
+        xlabel           = xlabel,
+        ylabel           = ylabel,
+        title            = title,
+        xticks           = (eachindex(glabels), glabels),
+        xautolimitmargin = (0.01, 0.01),
+        yautolimitmargin = (0, 0),
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.ylims!(ax, yl)
@@ -464,14 +464,14 @@ function plot_line(
     pal = mono ? :grays : :darktest
 
     # set y-axis limits
-    yl  = _ylims_padded(s)
+    yl = _ylims_padded(s)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_line()")
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel           = xlabel,
         ylabel           = ylabel,
@@ -489,10 +489,10 @@ function plot_line(
         GLMakie.lines!(
             eachindex(glabels),
             s[idx, :];
-            label       = rlabels[idx],
-            color       = cmap[idx],
-            colormap    = pal,
-            colorrange  = eachindex(glabels),
+            label      = rlabels[idx],
+            color      = cmap[idx],
+            colormap   = pal,
+            colorrange = eachindex(glabels),
         )
     end
 
@@ -540,14 +540,14 @@ function plot_box(
     color = mono ? :lightgrey : :lightblue
 
     # set y-axis limits
-    yl    = _ylims_padded(s)
+    yl = _ylims_padded(s)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_box()")
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel           = xlabel,
         ylabel           = ylabel,
@@ -608,14 +608,14 @@ function plot_violin(
     color = mono ? :lightgrey : :lightblue
 
     # set y-axis limits
-    yl    = _ylims_padded(s)
+    yl = _ylims_padded(s)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_violin()")
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel           = xlabel,
         ylabel           = ylabel,
@@ -676,14 +676,14 @@ function plot_dots(
     pal = mono ? :grays : :darktest
 
     # set y-axis limits
-    yl  = _ylims_padded(s)
+    yl = _ylims_padded(s)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_dots()")
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel           = xlabel,
         ylabel           = ylabel,
@@ -750,14 +750,14 @@ function plot_paired(
     pal = mono ? :grays : :darktest
 
     # set y-axis limits
-    yl  = _ylims_padded(s)
+    yl = _ylims_padded(s)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_paired()")
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel           = xlabel,
         ylabel           = ylabel,
@@ -833,7 +833,7 @@ function plot_polar(
     fig = GLMakie.Figure(; size = (800, 800))
 
     # create axis with customizable properties
-    ax  = GLMakie.PolarAxis(
+    ax = GLMakie.PolarAxis(
         fig[1, 1];
         title         = title,
         thetazoomlock = true,
@@ -920,11 +920,11 @@ function plot_eros(
     ndims(sp) == 3 || throw(ArgumentError("sp must have 3 dimensions."))
     size(sp, 3) <= 2 || throw(ArgumentError("sp must contain ≤ 2 epochs."))
     ks > 0 || throw(ArgumentError("ks must be ≥ 1."))
-     _check_var(frq, [:lin, :log], "frq")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(sf), "flim")
 
     # set color palette
-    pal      = mono ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # colorbar title
     cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
@@ -1004,8 +1004,8 @@ function plot_eros(
         fig = GLMakie.Figure(; size = (900, 450))
 
         # create axis with customizable properties
-        ax  = _draw_axis(fig, (1, 1), xl, yl, tt, 15)
-        hm  = GLMakie.heatmap!(ax, st, sf, sp[:, :, 1]'; colormap = pal)
+        ax = _draw_axis(fig, (1, 1), xl, yl, tt, 15)
+        hm = GLMakie.heatmap!(ax, st, sf, sp[:, :, 1]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
         _draw_markers!(fig, (1, 1), tm_indices)
 
@@ -1129,7 +1129,7 @@ function plot_erop(
         fig = GLMakie.Figure(; size = (900, 450))
 
         # create axis with customizable properties
-        ax  = _make_power_axis(fig, (1, 1), xl, power_ylabel, tt)
+        ax = _make_power_axis(fig, (1, 1), xl, power_ylabel, tt)
         GLMakie.lines!(ax, sf, sp[:, 1]; color = :black)
 
     else
@@ -1153,7 +1153,6 @@ function plot_erop(
 
         ax2 = _make_power_axis(fig, (2, 1), xl, power_ylabel, tt2)
         GLMakie.lines!(ax2, sf, sp[:, 2]; color = :black)
-
     end
 
     return fig
@@ -1272,7 +1271,7 @@ function plot_ci(
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel             = xlabel,
         ylabel             = ylabel,
@@ -1356,7 +1355,7 @@ function plot_heatmap(
     fig = GLMakie.Figure(; size = (800, 500))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel = xlabel,
         ylabel = ylabel,
@@ -1374,8 +1373,8 @@ function plot_heatmap(
 
     # apply thresholding
     if !isnothing(threshold)
-        _, bm  = seg_extract(m; threshold = threshold, threshold_type = threshold_type)
-        reg    = ones(size(m)) .* minimum(m)
+        _, bm = seg_extract(m; threshold = threshold, threshold_type = threshold_type)
+        reg = ones(size(m)) .* minimum(m)
         reg[bm] .= maximum(m)
         GLMakie.contour!(ax, x, y, reg'; levels = 1, color = :black, linewidth = 2)
     end
@@ -1457,16 +1456,16 @@ function plot_imf(
     # place the reconstructed signal spanning both columns
     row = cidx == 1 ? nr : nr + 1
     ax  = GLMakie.Axis(
-        fig[row, 1:2];
-        xlabel             = "Time [s]",
-        ylabel             = "",
-        title              = "Reconstructed signal",
-        xticks             = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
-        yticks             = yticks,
-        _AXIS_LOCK_KWARGS...,
-    )
+    fig[row, 1:2];
+    xlabel             = "Time [s]",
+    ylabel             = "",
+    title              = "Reconstructed signal",
+    xticks             = LinearTicks(10),
+    xminorticksvisible = true,
+    xminorticks        = IntervalsBetween(10),
+    yticks             = yticks,
+    _AXIS_LOCK_KWARGS...
+)
     GLMakie.ylims!(ax, ylim)
     _style_axis!(ax)
     GLMakie.lines!(ax, t, s_restored; color = :black)
@@ -1513,7 +1512,7 @@ function plot_fi(
     fig = GLMakie.Figure(; size = (900, 450))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel             = xl,
         ylabel             = yl,
@@ -1581,7 +1580,7 @@ function plot_phase(
     fig = GLMakie.Figure(; size = (900, 450))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel             = xl,
         ylabel             = yl,
@@ -1640,12 +1639,12 @@ function plot_polezero(
     fig = GLMakie.Figure(; size = (600, 600))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel   = "Real",
-        ylabel   = "Imag",
-        aspect   = 1,
-        title    = title == "default" ? "Pole-zero map" : title,
+        xlabel    = "Real",
+        ylabel    = "Imag",
+        aspect    = 1,
+        title     = title == "default" ? "Pole-zero map" : title,
         xzoomlock = true,
         yzoomlock = true,
         xpanlock  = true,
@@ -1665,11 +1664,11 @@ function plot_polezero(
     # plot zeros
     GLMakie.scatter!(
         ax, real.(zer), imag.(zer);
-        markersize   = 15,
-        strokecolor  = mono ? :black : :blue,
-        strokewidth  = 2,
-        color        = :transparent,
-        marker       = :circle,
+        markersize  = 15,
+        strokecolor = mono ? :black : :blue,
+        strokewidth = 2,
+        color       = :transparent,
+        marker      = :circle,
     )
 
     # plot unit circle
@@ -1747,16 +1746,16 @@ function plot_dwc(
     # place the original signal spanning both columns
     row = cidx == 1 ? nr : nr + 1
     ax  = GLMakie.Axis(
-        fig[row, 1:2];
-        xlabel             = "Time [s]",
-        ylabel             = "",
-        title              = "Original signal",
-        xticks             = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
-        yticks             = yticks,
-        _AXIS_LOCK_KWARGS...,
-    )
+    fig[row, 1:2];
+    xlabel             = "Time [s]",
+    ylabel             = "",
+    title              = "Original signal",
+    xticks             = LinearTicks(10),
+    xminorticksvisible = true,
+    xminorticks        = IntervalsBetween(10),
+    yticks             = yticks,
+    _AXIS_LOCK_KWARGS...
+)
     GLMakie.xlims!(ax, _xlims(t))
     GLMakie.ylims!(ax, ylim)
     _style_axis!(ax)

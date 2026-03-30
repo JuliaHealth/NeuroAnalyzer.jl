@@ -359,18 +359,18 @@ function plot_spectrogram_topo(
     if ch_n <= 64
         plot_size   = (1000, 1000)
         marker_size = (150, 75)
-        xl = 1.2
-        yl = 1.2
+        xl          = 1.2
+        yl          = 1.2
     elseif ch_n <= 100
         plot_size   = (1200, 1200)
         marker_size = (110, 55)
-        xl = 1.5
-        yl = 1.5
+        xl          = 1.5
+        yl          = 1.5
     else
         plot_size   = (1400, 1400)
         marker_size = (90, 45)
-        xl = 1.5
-        yl = 1.5
+        xl          = 1.5
+        yl          = 1.5
     end
 
     # get locations
@@ -411,18 +411,18 @@ function plot_spectrogram_topo(
 
         pp_full = plot_spectrogram(
             st, sf, sp[:, :, idx];
-            db         = db,
-            frq        = frq,
-            flim       = flim,
-            xlabel     = xlabel,
-            ylabel     = ylabel,
-            title      = locs[idx, :label] * ": " * title,
-            mono       = mono,
-            units      = units,
-            smooth     = smooth,
-            ks         = ks,
-            cb         = cb,
-            cb_title   = cb_title,
+            db       = db,
+            frq      = frq,
+            flim     = flim,
+            xlabel   = xlabel,
+            ylabel   = ylabel,
+            title    = locs[idx, :label] * ": " * title,
+            mono     = mono,
+            units    = units,
+            smooth   = smooth,
+            ks       = ks,
+            cb       = cb,
+            cb_title = cb_title,
         )
         push!(pp_full_vec, pp_full)
     end
@@ -431,13 +431,13 @@ function plot_spectrogram_topo(
     GLMakie.activate!(; title = "plot_spectrogram_topo()")
     fig = GLMakie.Figure(; size = plot_size, figure_padding = 0)
     ax  = GLMakie.Axis(
-        fig[1, 1];
-        xlabel    = "",
-        ylabel    = "",
-        title     = title,
-        aspect    = 1,
-        _AXIS_LOCK_KWARGS...,
-    )
+    fig[1, 1];
+    xlabel = "",
+    ylabel = "",
+    title  = title,
+    aspect = 1,
+    _AXIS_LOCK_KWARGS...
+)
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
@@ -462,7 +462,7 @@ function plot_spectrogram_topo(
 
     # spectrogram positions
     loc_x_range = [(loc_x[idx] - 0.15, loc_x[idx] + 0.15) for idx in eachindex(loc_x)]
-    loc_y_range = [(loc_y[idx] - 0.1,  loc_y[idx] + 0.1)  for idx in eachindex(loc_y)]
+    loc_y_range = [(loc_y[idx] - 0.1, loc_y[idx] + 0.1) for idx in eachindex(loc_y)]
 
     # mouse events
     on(events(fig).mousebutton) do event
@@ -581,7 +581,8 @@ function plot_spectrogram(
     ks > 0 || throw(ArgumentError("ks must be ≥ 1."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     if method === :cwt
@@ -632,46 +633,46 @@ function plot_spectrogram(
 
     # calculate spectrogram
     if length(ch) == 1 || type === :topo
-            if method === :stft
-                spec_data = NeuroAnalyzer.spectrogram(
-                    signal; fs = fs, db = false, method = :stft,
-                    wlen = wlen, woverlap = woverlap, w = w,
-                )
-                sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
-                title == "default" && (title = "Spectrogram (short-time Fourier)$ep_suffix")
+        if method === :stft
+            spec_data = NeuroAnalyzer.spectrogram(
+                signal; fs = fs, db = false, method = :stft,
+                wlen = wlen, woverlap = woverlap, w = w,
+            )
+            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            title == "default" && (title = "Spectrogram (short-time Fourier)$ep_suffix")
 
-            elseif method === :mt
-                spec_data = NeuroAnalyzer.spectrogram(
-                    signal; fs = fs, db = false, method = :mt,
-                    nt = nt, wlen = wlen, woverlap = woverlap, w = w,
-                )
-                sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
-                title == "default" && (title = "Spectrogram (multi-tapered)$ep_suffix")
-            elseif method === :mw
-                spec_data =
-                    NeuroAnalyzer.mwspectrogram(signal; fs = fs, ncyc = ncyc, db = false, w = w)
-                sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
-                title == "default" && (title = "Spectrogram (Morlet wavelet)$ep_suffix")
+        elseif method === :mt
+            spec_data = NeuroAnalyzer.spectrogram(
+                signal; fs = fs, db = false, method = :mt,
+                nt = nt, wlen = wlen, woverlap = woverlap, w = w,
+            )
+            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            title == "default" && (title = "Spectrogram (multi-tapered)$ep_suffix")
+        elseif method === :mw
+            spec_data =
+                NeuroAnalyzer.mwspectrogram(signal; fs = fs, ncyc = ncyc, db = false, w = w)
+            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            title == "default" && (title = "Spectrogram (Morlet wavelet)$ep_suffix")
 
-            elseif method === :gh
-                spec_data =
-                    NeuroAnalyzer.ghtspectrogram(signal; fs = fs, db = false, gw = gw, w = w)
-                sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
-                title == "default" && (title = "Spectrogram (Gaussian-Hilbert)$ep_suffix")
+        elseif method === :gh
+            spec_data =
+                NeuroAnalyzer.ghtspectrogram(signal; fs = fs, db = false, gw = gw, w = w)
+            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            title == "default" && (title = "Spectrogram (Gaussian-Hilbert)$ep_suffix")
 
-            elseif method === :cwt
-                spec_data = NeuroAnalyzer.cwtspectrogram(signal; fs = fs, wt = wt)
-                sf[1]   > flim[1] && (flim = (sf[1], flim[2]))
-                sf[end] < flim[2] && (flim = (flim[1], sf[end]))
-                title == "default" && (title = "CWT Scaleogram$ep_suffix")
-                sp, sf, st = spec_data.m, spec_data.f, spec_data.t
+        elseif method === :cwt
+            spec_data = NeuroAnalyzer.cwtspectrogram(signal; fs = fs, wt = wt)
+            sf[1] > flim[1] && (flim = (sf[1], flim[2]))
+            sf[end] < flim[2] && (flim = (flim[1], sf[end]))
+            title == "default" && (title = "CWT Scaleogram$ep_suffix")
+            sp, sf, st = spec_data.m, spec_data.f, spec_data.t
 
-            elseif method === :hht
-                imf = emd(signal, t)
-                spec_data =
-                    NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], t; fs = fs, db = false)
-                sp, sf, st = spec_data.p, spec_data.f, spec_data.t
-                title == "default" && (title = "Spectrogram (Hilbert-Huang)$ep_suffix")
+        elseif method === :hht
+            imf = emd(signal, t)
+            spec_data =
+                NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], t; fs = fs, db = false)
+            sp, sf, st = spec_data.p, spec_data.f, spec_data.t
+            title == "default" && (title = "Spectrogram (Hilbert-Huang)$ep_suffix")
         end
     elseif length(ch) > 1 && type === :normal
         if method === :stft
@@ -703,7 +704,7 @@ function plot_spectrogram(
         elseif method === :cwt
             psd_data = psd(signal; fs = fs, method = :cwt, wt = wt)
             sp, sf = psd_data.p, psd_data.f
-            sf[1]   > flim[1] && (flim = (sf[1], flim[2]))
+            sf[1] > flim[1] && (flim = (sf[1], flim[2]))
             sf[end] < flim[2] && (flim = (flim[1], sf[end]))
             title == "default" && (title = "CWT Scaleogram$ep_suffix")
 
@@ -720,7 +721,6 @@ function plot_spectrogram(
                     NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], t; fs = fs, db = db).p
             end
             title == "default" && (title = "Spectrogram (Hilbert-Huang)$ep_suffix")
-
         end
     end
 
@@ -833,9 +833,9 @@ function plot_spectrogram(
                 GLMakie.textlabel!(
                     fig[1, 1],
                     (mpos + 0.07, 0.97 * minimum(obj.data[ch, :, :]));
-                    text         = "$(obj.markers[idx, :id]) / $(obj.markers[idx, :value])",
-                    text_align   = (:left, :center),
-                    fontsize     = 8,
+                    text = "$(obj.markers[idx, :id]) / $(obj.markers[idx, :value])",
+                    text_align = (:left, :center),
+                    fontsize = 8,
                     text_rotation = pi / 2,
                 )
             end

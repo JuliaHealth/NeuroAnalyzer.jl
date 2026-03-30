@@ -668,7 +668,8 @@ function plot_erp(
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1 ||

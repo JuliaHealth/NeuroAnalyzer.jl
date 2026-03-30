@@ -52,7 +52,6 @@ function load_fiff(
 
     fiff_object = Any[]
     @inbounds for block_idx in eachindex(buf)
-
         tag_type = fiff_blocks[block_idx, 2]
         tag_dt = fiff_blocks[block_idx, 3]
         buf_tmp = @views buf[block_idx]
@@ -421,9 +420,9 @@ function load_fiff(
     end
     raw_data = Dict(:raw_data => raw_data_flat)
     packed_fiff_blocks = _pack_fiff_blocks(
-            fiff_object, "raw_data",
-            ["first_samp", "data_skip", "data_skip_samp"],
-        )
+        fiff_object, "raw_data",
+        ["first_samp", "data_skip", "data_skip_samp"],
+    )
     raw_data = merge(
         raw_data,
         packed_fiff_blocks,
