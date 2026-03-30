@@ -27,7 +27,6 @@ function remove_dc(
     else
         n != (0, 0) && _check_tuple(n, (1, length(s)), "n")
         return n == (0, 0) ? s .- mean(s) : s .- mean(s[n[1]:n[2]])
-
     end
 end
 

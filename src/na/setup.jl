@@ -36,7 +36,7 @@ function _print_na_settings()::Nothing
     cpu_threads = length(Sys.cpu_info())
     println(
         "           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` " *
-        "environment variable or Julia --threads command-line option]"
+        "environment variable or Julia --threads command-line option]",
     )
     return nothing
 end
@@ -48,13 +48,13 @@ function _print_thread_warnings()::Nothing
     if n_threads >= cpu_threads
         println(
             "For best performance, `JULIA_NUM_THREADS` ($n_threads) should be " *
-            "less than the number of CPU threads ($cpu_threads)."
+            "less than the number of CPU threads ($cpu_threads).",
         )
     end
     if get(ENV, "JULIA_COPY_STACKS", "") == "1"
         println(
             "Environment variable `JULIA_COPY_STACKS` is set to 1; " *
-            "multi-threading may not work correctly."
+            "multi-threading may not work correctly.",
         )
     end
     return nothing

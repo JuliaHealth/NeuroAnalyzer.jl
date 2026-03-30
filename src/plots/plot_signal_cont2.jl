@@ -118,11 +118,11 @@ function plot_cont(
         group2 = s2[ctypes .== ctypes_uni[idx], :]
         push!(r[], round(_get_range(group)))
         # remove per-channel DC offset
-        group1 = group1 .- mean(group1; dims=2)
-        group2 = group2 .- mean(group2; dims=2)
+        group1 = group1 .- mean(group1; dims = 2)
+        group2 = group2 .- mean(group2; dims = 2)
         # map to [-0.5, 0.5]
-        s1[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group1, 0.5; bych=true)
-        s2[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group2, 0.5; bych=true)
+        s1[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group1, 0.5; bych = true)
+        s2[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group2, 0.5; bych = true)
     end
     s1 .+= collect(1:ch_n)
     s2 .+= collect(1:ch_n)
@@ -313,7 +313,7 @@ function plot_cont(
                             seg_pos[] = seg[1]
                         end
                     end
- 
+
                     # change channels window
                     if type === :normal
                         if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
@@ -339,19 +339,19 @@ function plot_cont(
                         update_ax3 = true
                     end
                 end
-                 if event.key == Keyboard.up
+                if event.key == Keyboard.up
                     if ch1[] > 1
                         ch1[] -= 1
                         update_ax3 = true
                     end
                 end
-                 if ispressed(fig, Keyboard.page_down)
+                if ispressed(fig, Keyboard.page_down)
                     if ch_n > 1 && nch[] > 1
                         nch[] -= 1
                         update_ax3 = true
                     end
                 end
-                 if ispressed(fig, Keyboard.page_up)
+                if ispressed(fig, Keyboard.page_up)
                     if ch_n > 1 && nch[] < ch_n && ch1[] + (nch[] - 1) < ch_n
                         nch[] += 1
                         update_ax3 = true
@@ -383,8 +383,10 @@ function plot_cont(
                     update_ax2 = true
                 end
 
-                update_ax2 && (ax1.limits[] = ((seg_pos[], seg_pos[] + seg_len), ax1.limits[][2]))
-                update_ax3 && (ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5)))
+                update_ax2 &&
+                    (ax1.limits[] = ((seg_pos[], seg_pos[] + seg_len), ax1.limits[][2]))
+                update_ax3 &&
+                    (ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5)))
             end
         end
 

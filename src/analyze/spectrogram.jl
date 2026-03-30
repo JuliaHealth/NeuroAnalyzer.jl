@@ -206,7 +206,8 @@ function spectrogram(
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -713,7 +714,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT) for each chan
 
 Named tuple:
 
-- `m::Array{Float64, 3}`: magnitudes, shape `(time points, frequencies, channels)`
+- `m::Array{Float64, 3}`: magnitudes, shape (samples, frequencies, channels)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """

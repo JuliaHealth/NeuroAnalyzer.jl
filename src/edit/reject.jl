@@ -56,7 +56,10 @@ function detect_euclid(s::AbstractMatrix)::Vector{Bool}
     return bad_chs
 end
 
-function detect_amp(s::AbstractMatrix; amp_t::Real = 400.0)::Vector{Bool}
+function detect_amp(
+    s::AbstractMatrix;
+    amp_t::Real = 400.0
+)::Vector{Bool}
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
 
@@ -67,8 +70,12 @@ function detect_amp(s::AbstractMatrix; amp_t::Real = 400.0)::Vector{Bool}
     return bad_chs
 end
 
-function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector{Bool}
-    !(w < size(s, 2)) && throw(ArgumentError("w must be < $(size(s, 2))."))
+function detect_p2p(
+    s::AbstractMatrix;
+    w::Int64 = 10,
+    p::Float64 = 0.95
+)::Vector{Bool}
+    w < size(s, 2) || throw(ArgumentError("w must be < $(size(s, 2))."))
 
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
@@ -94,7 +101,10 @@ function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector
 end
 
 function detect_tkeo(
-    s::AbstractMatrix, t::AbstractVector; tkeo_method::Symbol = :pow, p::Float64 = 0.95,
+    s::AbstractMatrix,
+    t::AbstractVector;
+    tkeo_method::Symbol = :pow,
+    p::Float64 = 0.95,
 )::Vector{Bool}
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
@@ -597,7 +607,7 @@ function epoch_reject(
     if :flat in method
 
         # validate
-        w < size(s, 2) || throw(ArgumentError("w must be < $(size(s, 2))."))
+        w < size(obj.data, 2) || throw(ArgumentError("w must be < $(size(obj.data, 2))."))
         _info("Using :flat method")
         bad_chs = zeros(Bool, ch_n, ep_n)
         n_samples = size(obj.data, 2)
@@ -610,8 +620,8 @@ function epoch_reject(
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
             bad_chs[ch_idx, ep_idx] = r > flat_fr
         end
-        bc[ch] = bc[ch] .|| vec(any(bad_mat; dims = 2))
-        append!(be, findall(vec(sum(bad_mat; dims = 1)) .>= nbad))
+        bc[ch] = bc[ch] .|| vec(any(bad_chs; dims = 2))
+        append!(be, findall(vec(sum(bad_chs; dims = 1)) .>= nbad))
     end
 
     if :rmse in method

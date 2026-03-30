@@ -1,4 +1,4 @@
-function _draw_head_labels!(ax::GLMakie.Axis; font_size::Int64=8)
+function _draw_head_labels!(ax::GLMakie.Axis; font_size::Int64 = 8)
     fid_names = ["NAS", "IN", "LPA", "RPA"]
     for idx in 1:length(NeuroAnalyzer.fiducial_points)
         if plane === :xy
@@ -21,18 +21,19 @@ function _draw_head_labels!(ax::GLMakie.Axis; font_size::Int64=8)
     end
 end
 
-function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64=1)
+function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64 = 1)
     GLMakie.lines!(ax, [-0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax, [0.2, 0.0],  [0.98, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax, [0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
     # ears
-    left_ear_x = [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
+    left_ear_x =
+        [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
     left_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
     GLMakie.lines!(ax, left_ear_x, left_ear_y; linewidth = lw, color = :black)
     right_ear_x = [0.995, 1.03, 1.06, 1.1, 1.12, 1.1, 1.13, 1.09, 1.02, 0.98, 0.975]
     right_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
     GLMakie.lines!(ax, right_ear_x, right_ear_y; linewidth = lw, color = :black)
     # head outline
-    GLMakie.arc!(ax, Point2f(0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
+    return GLMakie.arc!(ax, Point2f(0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
 end
 
 _xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} =

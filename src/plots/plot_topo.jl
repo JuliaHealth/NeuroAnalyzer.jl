@@ -446,8 +446,8 @@ function plot_topo(
     if !isnothing(tpos) && tpos isa AbstractVector && length(tpos) > 1
         if nr == 1
             nc = length(tpos)
-        # FIX: was `nr > 1 & nc == 0` — bitwise & has higher precedence than >, so this
-        #      parsed as `nr > (1 & nc) == 0` rather than `(nr > 1) && (nc == 0)`
+            # FIX: was `nr > 1 & nc == 0` — bitwise & has higher precedence than >, so this
+            #      parsed as `nr > (1 & nc) == 0` rather than `(nr > 1) && (nc == 0)`
         elseif nr > 1 && nc == 0
             nc = ceil(Int64, length(tpos) / nr)
         elseif nc != 0
@@ -473,7 +473,8 @@ function plot_topo(
     )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -497,7 +498,6 @@ function plot_topo(
 
     # prepare data or time position
     if isnothing(data)
-
         isnothing(tpos) && throw(ArgumentError("Either tpos or data must be provided."))
         tpos >= obj.time_pts[1] ||
             throw(ArgumentError("tpos must be ≥ $(obj.time_pts[1])"))
@@ -516,7 +516,6 @@ function plot_topo(
         end
 
     else
-
         !isnothing(tpos) && _info("tpos is ignored when data is provided.")
         if ndims(data) == 2
             data = amethod === :mean ? mean(data; dims = 2)[:] : median(data; dims = 2)[:]
@@ -527,7 +526,6 @@ function plot_topo(
             ),
         )
         title == "default" && (title = "")
-
     end
 
     # colorbar title

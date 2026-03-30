@@ -167,7 +167,8 @@ function _wl2ext(wl::Real)::Vector{Float64}
 
     extinction_scaling = 2.303
 
-    650.0 ≤ wl ≤ 900.0 || throw(ArgumentError("Wavelength must be between 650 and 900 nm (got $wl nm)"))
+    650.0 ≤ wl ≤ 900.0 ||
+        throw(ArgumentError("Wavelength must be between 650 and 900 nm (got $wl nm)"))
     isfinite(wl) || throw(ArgumentError("Wavelength must be a finite number"))
 
     extinction_data = hemoglobin_extinction_data[:, 2:3] .* extinction_scaling

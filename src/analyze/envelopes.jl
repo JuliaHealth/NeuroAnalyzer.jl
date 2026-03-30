@@ -175,7 +175,8 @@ function tenv(
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -438,7 +439,8 @@ function penv(
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -814,7 +816,8 @@ function senv(
 } where {T <: CWT}
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 
@@ -1246,7 +1249,7 @@ function senv_median(
             em[:, ch_idx] = dropdims(median(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
             for m_idx in eachindex(t)
                 # BUG FIX: was `cimd(sp[ch_idx, :, :])` - passed the entire
-                # (time, epochs) matrix instead of the epoch vector at m_idx.
+                # (samples, epochs) matrix instead of the epoch vector at m_idx.
                 eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(sp[ch_idx, m_idx, :]))
             end
         end
@@ -1313,7 +1316,8 @@ function henv(
     )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
 

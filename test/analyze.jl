@@ -102,7 +102,7 @@ mbp, maxf, maxbp, maxba = band_mpower(e10; ch = "Fp1", flim = (10, 20), method =
 @test size(corm(e10, ch = "all")) == (24, 24, 10)
 
 @info "Test: covm()"
-@test covm(v) == [ 2.5  5.0  7.5 10.0 12.5;
+@test covm(v) == [               2.5  5.0  7.5 10.0 12.5;
      5.0 10.0 15.0 20.0 25.0;
      7.5 15.0 22.5 30.0 37.5;
     10.0 20.0 30.0 40.0 50.0;

@@ -12,7 +12,7 @@ Algorithm:
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix, shape `(time_points, epochs)`
+- `s::AbstractMatrix`: signal matrix, shape (samples, epochs)
 - `n1::Int64=3000`: number of bootstrap resamples (outer loop); must be ≥ 1
 - `n2::Int64=1000`: number of epochs drawn per resample (inner loop); must be ≥ 1
 - `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
@@ -100,7 +100,7 @@ The formula string `f` must reference the current signal trace using the placeho
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix, shape `(time_points, epochs)`
+- `s::AbstractMatrix`: signal matrix, shape (samples, epochs)
 - `n1::Int64=3000`: number of bootstrap resamples; must be ≥ 1
 - `n2::Int64=1000`: number of epochs drawn per resample; must be ≥ 1
 - `f::String`: Julia expression to evaluate on each bootstrap mean trace; use `obj` as the placeholder for the current trace vector
@@ -127,14 +127,14 @@ function bootstrap_stat(
 
     # dry run on the first epoch to infer the output element type and validate f
     f_dry = replace(f, "obj" => "$(s[:, 1])")
-    local out_tmp
+    local s_boot_tmp
     try
-        out_tmp = eval(Meta.parse(f_dry))
+        s_boot_tmp = eval(Meta.parse(f_dry))
     catch err
         throw(ArgumentError("Formula dry-run failed. Check expression `f`. Error: $err"))
     end
 
-    result = zeros(typeof(out_tmp), n1)
+    result = zeros(typeof(s_boot_tmp), n1)
     s_boot = zeros(n1, tp_n)
 
     # initialize progress bar
@@ -152,7 +152,7 @@ function bootstrap_stat(
         # evaluate the user formula on this bootstrap mean trace
         f_tmp = replace(f, "obj" => "$(s_boot[idx1, :])")
         try
-            out[idx1] = eval(Meta.parse(f_tmp))
+            result[idx1] = eval(Meta.parse(f_tmp))
         catch err
             error("Formula failed at resample $idx1. Check expression `f`. Error: $err")
         end

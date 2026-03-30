@@ -94,7 +94,7 @@ function plot_locs3d(
         z_lim = (-2.0, 2.0)
     end
 
-    plot_size = (850, 850)
+    plot_size   = (850, 850)
     marker_size = length(ch) > 64 ? 8 : 16
     font_size   = 14
 
@@ -178,11 +178,11 @@ function plot_locs3d(
         if event.action == Keyboard.press
             new_pov = nothing
             event.key == Keyboard.home && (new_pov = (20, 45))
-            event.key == Keyboard.r    && (new_pov = (10, 10))
-            event.key == Keyboard.l    && (new_pov = (10, 190))
-            event.key == Keyboard.f    && (new_pov = (10, 100))
-            event.key == Keyboard.b    && (new_pov = (10, 280))
-            event.key == Keyboard.t    && (new_pov = (90, 270))
+            event.key == Keyboard.r && (new_pov = (10, 10))
+            event.key == Keyboard.l && (new_pov = (10, 190))
+            event.key == Keyboard.f && (new_pov = (10, 100))
+            event.key == Keyboard.b && (new_pov = (10, 280))
+            event.key == Keyboard.t && (new_pov = (90, 270))
             if event.key == Keyboard.s
                 save_dialog("Pick an image file", nothing, ["*.png"]) do file_name
                     if file_name != ""
@@ -197,9 +197,9 @@ function plot_locs3d(
             end
         end
     end
- 
+
     gui && wait(display(fig))
- 
+
     return fig
 end
 
@@ -246,16 +246,16 @@ function plot_locs3d(
         throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
 
     # resolve channel names to integer indices
-    ch  = get_channel(obj; ch = ch)
-    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    ch   = get_channel(obj; ch = ch)
+    chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch   = collect(1:DataFrames.nrow(locs))
 
     sch_resolved = if sch == ""
         Int64[]
     else
-        sch_idx  = get_channel(obj; ch = sch)
-        sch_chs  = intersect(locs[!, :label], labels(obj)[sch_idx])
+        sch_idx = get_channel(obj; ch = sch)
+        sch_chs = intersect(locs[!, :label], labels(obj)[sch_idx])
         _find_bylabel(locs, sch_chs)
     end
 

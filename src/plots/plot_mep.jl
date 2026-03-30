@@ -36,7 +36,7 @@ function plot_mep(
     fig = GLMakie.Figure(; size = (900, 450))
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel             = xlabel,
         ylabel             = ylabel,
@@ -114,21 +114,21 @@ function plot_mep(
     GLMakie.activate!(; title = "plot_mep()")
     fig = GLMakie.Figure(; size = (900, 450))
     ax  = GLMakie.Axis(
-        fig[1, 1];
-        xlabel             = xlabel,
-        ylabel             = ylabel,
-        title              = title,
-        xticks             = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
-        yticks             = LinearTicks(10),
-        yminorticksvisible = true,
-        yminorticks        = IntervalsBetween(10),
-        yreversed          = yrev,
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0, 0),
-        _AXIS_LOCK_KWARGS...,
-    )
+    fig[1, 1];
+    xlabel             = xlabel,
+    ylabel             = ylabel,
+    title              = title,
+    xticks             = LinearTicks(10),
+    xminorticksvisible = true,
+    xminorticks        = IntervalsBetween(10),
+    yticks             = LinearTicks(10),
+    yminorticksvisible = true,
+    yminorticks        = IntervalsBetween(10),
+    yreversed          = yrev,
+    xautolimitmargin   = (0, 0),
+    yautolimitmargin   = (0, 0),
+    _AXIS_LOCK_KWARGS...
+)
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
     _style_axis!(ax)
 
@@ -168,7 +168,6 @@ function plot_mep(
         # add legend if requested
         (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
     end
-
 
     return fig
 end
@@ -232,7 +231,7 @@ function plot_mep_stack(
     fig = GLMakie.Figure(; size = plot_size)
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel             = xlabel,
         ylabel             = ylabel,
@@ -253,7 +252,7 @@ function plot_mep_stack(
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
 
-     # draw zero line if requested
+    # draw zero line if requested
     cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
 
     return fig
@@ -320,7 +319,8 @@ function plot_mep(
     _check_var(peaks, [:detect, :embed, :off], "peaks")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch = exclude_bads ?
+    ch =
+        exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) &&
@@ -367,7 +367,6 @@ function plot_mep(
         fig = plot_mep_stack(t, s; xlabel = xl, ylabel = yl, title = tt,
             clabels = clabels, cb = cb, cb_title = cb_title,
             mono = mono, ks = ks, smooth = smooth, zl = zl)
-
     end
 
     # draw peaks - single-channel only
@@ -394,9 +393,13 @@ function plot_mep(
                 markersize = 15,
             )
             _info("Positive peak time: $(round(t[pp[ch, 1]][1] * 1000; digits=0)) ms")
-            _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1]; digits=2)) $units")
+            _info(
+                "Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1]; digits=2)) $units",
+            )
             _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000; digits=0)) ms")
-            _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1]; digits=2)) $units")
+            _info(
+                "Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1]; digits=2)) $units",
+            )
 
         elseif length(ch) > 1 && type === :normal
             mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)

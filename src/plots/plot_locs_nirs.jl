@@ -133,12 +133,12 @@ function plot_locs_nirs(
     # prepare plot
     GLMakie.activate!(; title = "plot_locs_nirs()")
     fig = GLMakie.Figure(; size = plot_size, figure_padding = 0)
- 
+
     shared_axis_kwargs = (
-        aspect          = 1,
-        xlabel          = "",
-        ylabel          = "",
-        title           = "",
+        aspect = 1,
+        xlabel = "",
+        ylabel = "",
+        title = "",
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
         backgroundcolor = :transparent,
@@ -183,19 +183,19 @@ function plot_locs_nirs(
         yd = loc_y[src_n + opt_pairs[idx, 2]]
         GLMakie.lines!([xs, xd], [ys, yd]; color = mono ? :gray : :blue, alpha = 0.5)
     end
- 
+
     label_offset_x = 0.0
     label_offset_y = -0.08
- 
+
     # draw source markers or labels
     if src_labels
         for idx in 1:src_n
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
                 loc_y[idx] + label_offset_y;
-                text      = locs[!, :label][idx],
-                align     = (:center, :bottom),
-                fontsize  = font_size,
+                text     = locs[!, :label][idx],
+                align    = (:center, :bottom),
+                fontsize = font_size,
             )
         end
     elseif !opt_labels
@@ -252,7 +252,7 @@ function plot_locs_nirs(
     end
 
     # draw head labels if requested
-    head_labels && _draw_head_labels!(ax, font_size=font_size)
+    head_labels && _draw_head_labels!(ax; font_size = font_size)
 
     return fig
 end
