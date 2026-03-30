@@ -281,6 +281,19 @@ function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
 end
 
 """
+    _check_locs_cols(locs)
+ 
+Throw `ArgumentError` if any expected coordinate column is absent from `locs`.
+"""
+function _check_locs_cols(locs::DataFrame)::Nothing
+    for col in _LOCS_COORD_COLS
+        col in names(locs) ||
+            throw(ArgumentError("Locations DataFrame must contain a \":$col\" column."))
+    end
+    return nothing
+end
+
+"""
     _locs_round(locs)
 
 Return a copy of `locs` with all coordinate columns rounded to 2 decimal places.
