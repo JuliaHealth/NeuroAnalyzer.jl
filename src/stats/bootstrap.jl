@@ -127,14 +127,14 @@ function bootstrap_stat(
 
     # dry run on the first epoch to infer the output element type and validate f
     f_dry = replace(f, "obj" => "$(s[:, 1])")
-    local out_tmp
+    local s_boot_tmp
     try
-        out_tmp = eval(Meta.parse(f_dry))
+        s_boot_tmp = eval(Meta.parse(f_dry))
     catch err
         throw(ArgumentError("Formula dry-run failed. Check expression `f`. Error: $err"))
     end
 
-    result = zeros(typeof(out_tmp), n1)
+    result = zeros(typeof(s_boot_tmp), n1)
     s_boot = zeros(n1, tp_n)
 
     # initialize progress bar
@@ -152,7 +152,7 @@ function bootstrap_stat(
         # evaluate the user formula on this bootstrap mean trace
         f_tmp = replace(f, "obj" => "$(s_boot[idx1, :])")
         try
-            out[idx1] = eval(Meta.parse(f_tmp))
+            result[idx1] = eval(Meta.parse(f_tmp))
         catch err
             error("Formula failed at resample $idx1. Check expression `f`. Error: $err")
         end

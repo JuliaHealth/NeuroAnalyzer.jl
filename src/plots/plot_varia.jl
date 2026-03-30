@@ -217,27 +217,6 @@ function plot_histogram(
     # set color palette
     pal = mono ? :grays : :darktest
 
-    xticks = if !isnothing(x)
-        [
-            round(minimum(s); digits = 2),
-            round(mean(s); digits = 2),
-            round(median(s); digits = 2),
-            round(x; digits = 2),
-            round(maximum(s); digits = 2),
-        ]
-    else
-        [
-            round(minimum(s); digits = 2),
-            round(mean(s); digits = 2),
-            round(median(s); digits = 2),
-            round(maximum(s); digits = 2),
-        ]
-    end
-
-    !draw_median && deleteat!(xticks, 3)
-    !draw_mean && deleteat!(xticks, 2)
-    sort!(unique(xticks))
-
     # prepare plot
     GLMakie.activate!(; title = "plot_histogram()")
     fig = GLMakie.Figure(; size = (800, 500))
@@ -248,13 +227,12 @@ function plot_histogram(
         xlabel             = xlabel,
         ylabel             = ylabel,
         title              = title,
-        xticks             = xticks,
-        xticklabelrotation = pi / 2,
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0, 0),
+        xminorticksvisible = true,
+        xminorticks        = IntervalsBetween(10),
+        xautolimitmargin   = (0.1, 0.1),
+        yautolimitmargin   = (0.0, 0.1),
         _AXIS_LOCK_KWARGS...,
     )
-    GLMakie.xlims!(ax, extrema(xticks))
     _style_axis!(ax)
 
     # plot histogram
@@ -269,16 +247,16 @@ function plot_histogram(
 
     # plot vertical line at mean
     draw_mean && GLMakie.vlines!(
-        round(mean(s); digits = 2);
+        mean(s);
         linestyle = :dot,
         color     = :black,
         label     = "mean",
     )
     # plot vertical line at median
     draw_median && GLMakie.vlines!(
-        round(median(s); digits = 2);
+        median(s);
         linestyle = :dash,
-        color     = :grey,
+        color     = :black,
         label     = "median",
     )
 
@@ -286,6 +264,7 @@ function plot_histogram(
         GLMakie.vlines!(
             [x];
             linewidth = 2,
+            linestyle = :dash,
             color     = mono ? :black : :red,
             label     = "test value",
         )
