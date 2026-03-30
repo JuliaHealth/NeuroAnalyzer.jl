@@ -714,7 +714,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT) for each chan
 
 Named tuple:
 
-- `m::Array{Float64, 3}`: magnitudes, shape `(time points, frequencies, channels)`
+- `m::Array{Float64, 3}`: magnitudes, shape (samples, frequencies, channels)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """

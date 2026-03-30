@@ -12,7 +12,7 @@ Algorithm:
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix, shape `(time_points, epochs)`
+- `s::AbstractMatrix`: signal matrix, shape (samples, epochs)
 - `n1::Int64=3000`: number of bootstrap resamples (outer loop); must be ≥ 1
 - `n2::Int64=1000`: number of epochs drawn per resample (inner loop); must be ≥ 1
 - `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
@@ -100,7 +100,7 @@ The formula string `f` must reference the current signal trace using the placeho
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix, shape `(time_points, epochs)`
+- `s::AbstractMatrix`: signal matrix, shape (samples, epochs)
 - `n1::Int64=3000`: number of bootstrap resamples; must be ≥ 1
 - `n2::Int64=1000`: number of epochs drawn per resample; must be ≥ 1
 - `f::String`: Julia expression to evaluate on each bootstrap mean trace; use `obj` as the placeholder for the current trace vector

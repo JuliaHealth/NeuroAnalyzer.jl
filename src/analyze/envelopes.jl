@@ -1249,7 +1249,7 @@ function senv_median(
             em[:, ch_idx] = dropdims(median(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
             for m_idx in eachindex(t)
                 # BUG FIX: was `cimd(sp[ch_idx, :, :])` - passed the entire
-                # (time, epochs) matrix instead of the epoch vector at m_idx.
+                # (samples, epochs) matrix instead of the epoch vector at m_idx.
                 eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(sp[ch_idx, m_idx, :]))
             end
         end
