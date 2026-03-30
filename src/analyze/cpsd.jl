@@ -22,7 +22,7 @@ Calculate the complex cross power spectral density (CPSD) between two 1-D signal
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -41,7 +41,7 @@ function cpsd(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
     pxy::Vector{ComplexF64},
@@ -55,8 +55,8 @@ function cpsd(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     wlen <= length(s1) || throw(ArgumentError("wlen must be ≤ $(length(s1))."))
     wlen >= 2 || throw(ArgumentError("wlen must be ≥ 2."))
-    woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
-    woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
+    wstep < wlen || throw(ArgumentError("wstep must be < $(wlen)."))
+    wstep >= 0 || throw(ArgumentError("wstep must be ≥ 0."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     n_samples = length(s1)
@@ -92,7 +92,7 @@ function cpsd(
     elseif method === :stft
 
         # segment the signals into overlapping windows
-        chunks_idx = _fchunks(length(s1); wlen = wlen, woverlap = woverlap)
+        chunks_idx = _fchunks(length(s1); wlen = wlen, wstep = wstep)
         pxy = zeros(ComplexF64, nextpow(2, wlen + 1))
 
         # apply Hanning window (or unit window)
@@ -175,7 +175,7 @@ Calculate the complex cross power spectral density (CPSD) between two 3-D signal
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -194,7 +194,7 @@ function cpsd(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
     pxy::Array{ComplexF64, 3},
@@ -222,7 +222,7 @@ function cpsd(
         demean = demean,
         nt = nt,
         wlen = wlen,
-        woverlap = woverlap,
+        wstep = wstep,
         w = w,
     )
     f = cpsd_data.f
@@ -242,7 +242,7 @@ function cpsd(
             demean = demean,
             nt = nt,
             wlen = wlen,
-            woverlap = woverlap,
+            wstep = wstep,
             w = w,
         )
     end
@@ -275,7 +275,7 @@ Calculate the complex cross power spectral density (CPSD) between paired channel
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj1)`: window length in samples, default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -297,7 +297,7 @@ function cpsd(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj1),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
     pxy::Array{ComplexF64, 3},
@@ -346,7 +346,7 @@ function cpsd(
         demean = demean,
         nt = nt,
         wlen = wlen,
-        woverlap = woverlap,
+        wstep = wstep,
         w = w,
     )
 end

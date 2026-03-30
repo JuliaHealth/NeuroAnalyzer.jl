@@ -311,12 +311,12 @@ t, et = NeuroAnalyzer._get_t(e10)
 
 @test NeuroAnalyzer._midxy(1, 1, 4, 4) == (2.5, 2.5)
 
-@test length(NeuroAnalyzer._split(1:55, wlen = 32, woverlap = 8)) == 4
-@test length(NeuroAnalyzer._fsplit(1:55, wlen = 32, woverlap = 8)) == 3
+@test length(NeuroAnalyzer._split(1:55, wlen = 32, wstep = 8)) == 4
+@test length(NeuroAnalyzer._fsplit(1:55, wlen = 32, wstep = 8)) == 3
 
-@test NeuroAnalyzer._chunks(55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48; 25 55]
-@test NeuroAnalyzer._chunks(1:55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48; 25 55]
-@test NeuroAnalyzer._fchunks(55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48]
-@test NeuroAnalyzer._fchunks(1:55, wlen = 32, woverlap = 8) == [1 32; 9 40; 17 48]
+@test NeuroAnalyzer._chunks(55, wlen = 32, wstep = 8) == [1 32; 9 40; 17 48; 25 55]
+@test NeuroAnalyzer._chunks(1:55, wlen = 32, wstep = 8) == [1 32; 9 40; 17 48; 25 55]
+@test NeuroAnalyzer._fchunks(55, wlen = 32, wstep = 8) == [1 32; 9 40; 17 48]
+@test NeuroAnalyzer._fchunks(1:55, wlen = 32, wstep = 8) == [1 32; 9 40; 17 48]
 
 true
