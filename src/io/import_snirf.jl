@@ -42,9 +42,10 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
     # check for multi-subject recordings
     n_id = "nirs"
-    n != 0 &&
-    any(occursin.("nirs$n", keys(nirs))) ||
-        throw(ArgumentError("No data for subject $n found in the recording."))
+    if n != 0
+        any(occursin.("nirs$n", keys(nirs))) ||
+            throw(ArgumentError("No data for subject $n found in the recording."))
+    end
     if any(occursin.("nirs1", keys(nirs)))
         n != 0 ||
             throw(
