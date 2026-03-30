@@ -56,7 +56,7 @@ function total_power(
 
     # dx: frequency resolution
     dx = pf[2] - pf[1]
-    tp = simpson(pw; dx = dx)
+    tp = Simpson.simpson(pw; dx = dx)
 
     return tp
 end

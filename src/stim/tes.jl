@@ -103,7 +103,7 @@ function tacs_dose(;
     t = collect(0:0.001:1)
     i_cycle = abs.(generate_sine(frequency, t, current, phase) .+ offset)
     # effective mA over one cycle
-    eff_current = simpson(i_cycle, t)
+    eff_current = Simpson.simpson(i_cycle, t)
 
     cycles = frequency * duration
     _info("Number of cycles: $cycles")

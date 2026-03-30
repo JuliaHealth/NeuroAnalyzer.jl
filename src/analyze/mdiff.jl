@@ -52,7 +52,7 @@ function mdiff(
         sts = maximum(abs, s1_mean .- s2_mean)
     else
         # statistic: integrated area of the squared difference
-        sts = simpson((s1_mean .- s2_mean) .^ 2)
+        sts = Simpson.simpson((s1_mean .- s2_mean) .^ 2)
     end
 
     # pooled sample for bootstrapping
@@ -86,7 +86,7 @@ function mdiff(
             @inbounds st[idx] = maximum(abs, bs1_mean .- bs2_mean)
         else
             # statistic: integrated area of the squared difference
-            @inbounds st[idx] = simpson((bs1_mean .- bs2_mean) .^ 2)
+            @inbounds st[idx] = Simpson.simpson((bs1_mean .- bs2_mean) .^ 2)
         end
     end
 

@@ -70,7 +70,7 @@ function sef(
     pw = pw[f1_idx:f2_idx]
     pf = pf[f1_idx:f2_idx]
 
-    tp = simpson(pw; dx = dx)
+    tp = Simpson.simpson(pw; dx = dx)
     tp_threshold = tp * x
 
     sef_frq = nothing
