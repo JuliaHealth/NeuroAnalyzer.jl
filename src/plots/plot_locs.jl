@@ -551,8 +551,8 @@ function plot_locs(
         )
     elseif datatype(obj) == "nirs"
         opt_pairs = obj.header.recording[:optode_pairs]
-        src_n     = length(source_labels(obj))
-        det_n     = length(detector_labels(obj))
+        src_n = length(source_labels(obj))
+        det_n = length(detector_labels(obj))
         return plot_locs_nirs(
             obj.locs, opt_pairs, src_n, det_n;
             src_labels  = src_labels,

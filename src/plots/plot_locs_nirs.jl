@@ -27,6 +27,7 @@ Preview NIRS (Near-Infrared Spectroscopy) optodes and channel locations with cus
     - `:xy`: horizontal (top-down) view
     - `:xz`: coronary (front) view
     - `:yz`: sagittal (side) view
+- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channel information details
 
 # Returns
 
@@ -47,6 +48,7 @@ function plot_locs_nirs(
     ps::Symbol = :l,
     cart::Bool = false,
     plane::Symbol = :xy,
+    ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))
 )::GLMakie.Figure
 
     # TO DO: plot channel numbers
