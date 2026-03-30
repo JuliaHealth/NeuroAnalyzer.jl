@@ -334,20 +334,20 @@ function erp_auc(
         s = @view obj.data[ch_idx, t1:t2, 1]
 
         if type === :all
-            auc[ch_idx] = Simpson.simpson(s, t, dx = dx)
+            auc[ch_idx] = Simpson.simpson(s, t; dx = dx)
 
         elseif type === :pos
             mask = s .> 0
-            !(any(mask)) && throw(
+            any(mask) || throw(
                 ArgumentError(
                     "No positive values in channel $(ch[ch_idx]) segment, cannot compute AUC.",
                 ),
             )
-            auc[ch_idx] = Simpson.simpson(s[mask], t[mask], dx = dx)
+            auc[ch_idx] = Simpson.simpson(s[mask], t[mask]; dx = dx)
 
         elseif type === :neg
             mask = s .< 0
-            !(any(mask)) && throw(
+            any(mask) || throw(
                 ArgumentError(
                     "No negative values in channel $(ch[ch_idx]) segment, cannot compute AUC.",
                 ),
