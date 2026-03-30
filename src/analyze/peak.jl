@@ -503,7 +503,6 @@ function peak_pow(
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    size(s, 1) == 1 || throw(ArgumentError("s must have 1 channel."))
 
     # number of channels
     ch_n = size(s, 1)
