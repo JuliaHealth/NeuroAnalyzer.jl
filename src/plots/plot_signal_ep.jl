@@ -83,25 +83,16 @@ function plot_ep(
     ep_selected = zeros(Bool, ep_n[])
 
     # check channels and meta data
-    _ = get_channel(obj; ch = ch)
-    obj_tmp = deepcopy(obj)
-    keep_channel!(obj_tmp; ch = ch)
-    obj_tmp.data = reshape(
-        obj_tmp.data,
-        size(obj_tmp.data, 1),
-        size(obj_tmp.data, 2) * size(obj_tmp.data, 3),
-        1,
-    )
-
-    ch_n = nchannels(obj_tmp)
+    ch = get_channel(obj; ch = ch)
+    ch_n = length(ch)
     if group_ch
-        ch_order = _sort_channels(obj_tmp.header.recording[:channel_type])
+        ch_order = _sort_channels(obj.header.recording[:channel_type][ch])
     else
         ch_order = collect(1:ch_n)
     end
-    clabels = labels(obj_tmp)[ch_order]
-    ctypes = obj_tmp.header.recording[:channel_type][ch_order]
-    cunits = obj_tmp.header.recording[:unit][ch_order]
+    clabels = labels(obj)[ch][ch_order]
+    ctypes  = obj.header.recording[:channel_type][ch][ch_order]
+    cunits  = obj.header.recording[:unit][ch][ch_order]
 
     # order by ctypes
     # and markers for ax3
@@ -110,16 +101,21 @@ function plot_ep(
     for idx in eachindex(ctypes_uni)
         ctypes_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
     end
+    # ctypes_uni_pos contains a list of ticks where scale has to be drawn
     ctypes_uni_pos = zeros(Int64, ch_n)
     ctypes_uni_pos[ctypes_pos] .= 1
 
-    t = obj_tmp.time_pts
-    s = obj_tmp.data[ch_order, :, 1]
+    # get time points vector
+    t = obj.time_pts[1:res:end]
+    # get signal matrix
+    s = obj.data[ch, :, :][ch_order, 1:res:end, :]
+    s = reshape(s, :, size(s, 2) * size(s, 3), 1)
+    s = dropdims(s, dims=3)
 
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Epochs", "", "")
 
     # list of bad channels
-    bad_ch = Observable(obj_tmp.header.recording[:bad_channel])
+    bad_ch = Observable(obj.header.recording[:bad_channel])
 
     # displayed segment
     seg_pos = Observable(seg[1])
@@ -157,7 +153,7 @@ function plot_ep(
 
     # y-axis labels colors
     if type === :normal
-        ytc = repeat([:black], nchannels(obj_tmp))
+        ytc = repeat([:black], nchannels(obj))
         ytc[bad_ch[]] .= :lightgray
     else
         ytc = repeat([:black], ch_n)

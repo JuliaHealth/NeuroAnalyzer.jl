@@ -81,30 +81,14 @@ function plot_cont(
 
     # check channels and meta data
     ch = get_channel(obj; ch = ch)
-#    obj_tmp = deepcopy(obj)
-#    if datatype(obj) != "nirs"
-#        keep_channel!(obj_tmp; ch = ch)
-#    else
-#        _info("Currently for NIRS objects ch is ignored.")
-#        ch = "all"
-#    end
-#    ch_n = nchannels(obj_tmp)
     ch_n = length(ch)
-#    if group_ch
-#        ch_order = _sort_channels(obj_tmp.header.recording[:channel_type])
-#    else
-#        ch_order = collect(1:ch_n)
-#    end
     if group_ch
         ch_order = _sort_channels(obj.header.recording[:channel_type][ch])
     else
         ch_order = collect(1:ch_n)
     end
-#    clabels = labels(obj_tmp)[ch_order]
     clabels = labels(obj)[ch][ch_order]
-#    ctypes  = obj_tmp.header.recording[:channel_type][ch_order]
     ctypes  = obj.header.recording[:channel_type][ch][ch_order]
-#    cunits  = obj_tmp.header.recording[:unit][ch_order]
     cunits  = obj.header.recording[:unit][ch][ch_order]
 
     # order by ctypes
@@ -119,17 +103,14 @@ function plot_cont(
     ctypes_uni_pos[ctypes_pos] .= 1
 
     # get time points vector
-    # t = obj_tmp.time_pts[1:res:end]
     t = obj.time_pts[1:res:end]
     # get signal matrix
-    # s = obj_tmp.data[ch_order, :, 1][:, 1:res:end]
     s = obj.data[ch, :, 1][ch_order, 1:res:end]
 
     # set defaults
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "")
 
     # list of bad channels
-    # bad_ch = Observable(obj_tmp.header.recording[:bad_channel])
     bad_ch = Observable(obj.header.recording[:bad_channel])
 
     # displayed segment
@@ -168,7 +149,6 @@ function plot_cont(
 
     # y-axis labels colors
     if type === :normal
-#        ytc = repeat([:black], nchannels(obj_tmp))
         ytc = repeat([:black], nchannels(obj))
         ytc[bad_ch[]] .= :lightgray
     else

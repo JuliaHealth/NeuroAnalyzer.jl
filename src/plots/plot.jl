@@ -218,7 +218,7 @@ function plot(
         throw(ArgumentError("This function works for continuous EEG and MEG objects."))
     datatype(obj2) in ["eeg", "meg"] ||
         throw(ArgumentError("This function works for continuous EEG and MEG objects."))
-    size(obj1) == size(obj) ||
+    size(obj1) == size(obj2) ||
         throw(ArgumentError("Both objects must have the same size."))
     nepochs(obj1) == 1 ||
         throw(ArgumentError("This function works for continuous EEG and MEG objects."))

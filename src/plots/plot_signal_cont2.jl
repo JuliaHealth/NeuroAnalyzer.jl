@@ -63,25 +63,16 @@ function plot_cont(
     end
 
     # check channels and meta data
-    _ = get_channel(obj1; ch = ch)
-    obj_tmp1 = deepcopy(obj1)
-    obj_tmp2 = deepcopy(obj2)
-    if datatype(obj1) != "nirs"
-        keep_channel!(obj_tmp1; ch = ch)
-        keep_channel!(obj_tmp2; ch = ch)
-    else
-        _info("Currently for NIRS objects ch is ignored.")
-        ch = "all"
-    end
-    ch_n = nchannels(obj_tmp1)
+    ch = get_channel(obj1; ch = ch)
+    ch_n = length(ch)
     if group_ch
-        ch_order = _sort_channels(obj_tmp1.header.recording[:channel_type])
+        ch_order = _sort_channels(obj1.header.recording[:channel_type][ch])
     else
         ch_order = collect(1:ch_n)
     end
-    clabels = labels(obj_tmp1)[ch_order]
-    ctypes = obj_tmp1.header.recording[:channel_type][ch_order]
-    cunits = obj_tmp1.header.recording[:unit][ch_order]
+    clabels = labels(obj1)[ch][ch_order]
+    ctypes  = obj1.header.recording[:channel_type][ch][ch_order]
+    cunits  = obj1.header.recording[:unit][ch][ch_order]
 
     # order by ctypes
     # and markers for ax3
@@ -94,10 +85,10 @@ function plot_cont(
     ctypes_uni_pos[ctypes_pos] .= 1
 
     # get time points vector
-    t = obj_tmp1.time_pts
+    t = obj1.time_pts
     # get signal matrices
-    s1 = obj_tmp1.data[ch_order, :, 1]
-    s2 = obj_tmp2.data[ch_order, :, 1]
+    s1 = obj1.data[ch, :, 1][ch_order, 1:res:end]
+    s2 = obj2.data[ch, :, 1][ch_order, 1:res:end]
 
     # set defaults
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "")
@@ -113,10 +104,11 @@ function plot_cont(
     # get ranges of the original signal for the scales
     # normalize in groups by channel type
     # between -0.5 and +0.5 and shift so all channels are visible
+    r = Observable(Float64[])
     for idx in eachindex(ctypes_uni)
         group1 = s1[ctypes .== ctypes_uni[idx], :]
         group2 = s2[ctypes .== ctypes_uni[idx], :]
-        push!(r[], round(_get_range(group)))
+        push!(r[], round(_get_range(group1)))
         # remove per-channel DC offset
         group1 = group1 .- mean(group1; dims = 2)
         group2 = group2 .- mean(group2; dims = 2)
@@ -159,7 +151,7 @@ function plot_cont(
     GLMakie.xlims!(ax1, seg)
     if gui
         if ch_n > nch[]
-            GLMakie.ylims!(ax1, ch2 + 0.5, ch2 - nch[] + 0.5)
+            GLMakie.ylims!(ax1, ch2_init + 0.5, ch2_init - nch[] + 0.5)
         else
             GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
         end
@@ -296,10 +288,8 @@ function plot_cont(
             ax1_y = mouseposition(ax1)[2]
             ax2_x = mouseposition(ax2)[1]
             ax2_y = mouseposition(ax2)[2]
-            if type === :normal
-                ax3_x = mouseposition(ax3)[1]
-                ax3_y = mouseposition(ax3)[2]
-            end
+            ax3_x = mouseposition(ax3)[1]
+            ax3_y = mouseposition(ax3)[2]
 
             if event.action == Mouse.press
                 if event.button == Mouse.left
@@ -318,15 +308,13 @@ function plot_cont(
                     end
 
                     # change channels window
-                    if type === :normal
-                        if ch_n > n_channels
-                            if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
-                               ax3_y <= ax3.limits[][2][2]
-                                ch1[] = floor(Int64, ax3_y)
-                                ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
-                                ax1.limits[] =
-                                    (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5))
-                            end
+                    if ch_n > n_channels
+                        if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
+                           ax3_y <= ax3.limits[][2][2]
+                            ch1[] = floor(Int64, ax3_y)
+                            ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
+                            ax1.limits[] =
+                                (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5))
                         end
                     end
                 end
