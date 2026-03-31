@@ -273,6 +273,8 @@ function coherence(
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
         get_channel(obj2; ch = ch2, exclude = "")
+    isempty(ch1) && throw(ArgumentError("No channels selected."))
+    isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(

@@ -17,17 +17,18 @@ Interactive PSD of continuous signal.
 - `Nothing`
 """
 function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
-    !(nepochs(obj) == 1) &&
+    nepochs(obj) == 1 ||
         throw(ArgumentError("For epoched object ipsd_ep() must be used."))
 
     obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
 
-    !(zoom > 0) && throw(ArgumentError("zoom must be > 0."))
-    !(zoom <= signal_len(obj) / sr(obj)) &&
+    zoom > 0 || throw(ArgumentError("zoom must be > 0."))
+    zoom <= signal_len(obj) / sr(obj) ||
         throw(ArgumentError("zoom must be ≤ $(signal_len(obj) / sr(obj))."))
 
     ch_init = ch
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     clabels = labels(obj)
 
     k = nothing
@@ -751,11 +752,12 @@ Interactive PSD of epoched signal.
 - `Nothing`
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
-    !(nepochs(obj) > 1) &&
+    nepochs(obj) > 1 ||
         throw(ArgumentError("For continuous object ipsd() must be used."))
 
     ch_init = ch
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     clabels = labels(obj)
 
     k = nothing

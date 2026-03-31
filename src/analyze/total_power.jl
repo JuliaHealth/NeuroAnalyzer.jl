@@ -178,6 +178,7 @@ function total_power(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return total_power(
         @view(obj.data[ch, :, :]);

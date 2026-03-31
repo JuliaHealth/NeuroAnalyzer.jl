@@ -619,11 +619,9 @@ function plot_psd(
     )
     _check_var(frq, [:lin, :log], "frq")
 
-    # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 && (ch = ch[1])
 
     # get signal for specified epochs

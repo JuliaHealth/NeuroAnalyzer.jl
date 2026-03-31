@@ -20,6 +20,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must be a single channel."))
     current_channel = ch[1]
 
@@ -48,6 +49,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         obj_new;
         ch = get_channel(obj_new; type = ["mag", "grad", "eeg", "eog", "ref"]),
     )
+    isempty(ch_signal) && throw(ArgumentError("No channels selected."))
 
     if DataFrames.nrow(obj_new.locs) > 0
         chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
@@ -574,6 +576,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 obj_new;
                 ch = get_channel(obj_new; type = ["mag", "grad", "eeg", "eog", "ref"]),
             )
+            isempty(ch_signal) && throw(ArgumentError("No channels selected."))
             combo_chunits.active =
                 findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) -
                 1

@@ -123,6 +123,8 @@ function fconv(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
     _info("Group delay: $(_group_delay(kernel)) samples")
 
     return fconv(@view(obj.data[ch, :, :]); kernel = kernel, norm = norm)

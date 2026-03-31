@@ -159,6 +159,7 @@ function snr(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return snr(@view(obj.data[ch, :, :]); t = obj.epoch_time, type = type)
 end

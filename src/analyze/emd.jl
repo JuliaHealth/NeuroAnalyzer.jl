@@ -150,6 +150,7 @@ function emd(
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] :
         get_channel(obj; ch = ch, exclude = "")[1]
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 

@@ -66,6 +66,7 @@ function eros(
 } where {T <: CWT}
 
     # validate
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(get_channel(obj; ch = ch)) == 1 ||
         throw(ArgumentError("ch must resolve to exactly one channel."))
 

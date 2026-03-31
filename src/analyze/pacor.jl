@@ -191,6 +191,7 @@ function pacor(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # convert l from seconds to samples for the inner call
     l_samp = round(Int64, l * sr(obj))

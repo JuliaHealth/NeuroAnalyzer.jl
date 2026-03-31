@@ -185,6 +185,7 @@ function peak_frq(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return peak_frq(
         @view(obj.data[ch, :, :]);
@@ -381,6 +382,7 @@ function peak_amp(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return peak_amp(
         @view(obj.data[ch, :, :]);
@@ -576,6 +578,7 @@ function peak_pow(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return peak_pow(
         @view(obj.data[ch, :, :]);

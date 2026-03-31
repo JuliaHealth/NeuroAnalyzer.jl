@@ -62,7 +62,9 @@ function lat_idx(
 
     # get channel indices for left and right picks
     ch_l = get_channel(obj; ch = channel_pick(obj; pick = :l))
+    isempty(ch_l) && throw(ArgumentError("No left picks found."))
     ch_r = get_channel(obj; ch = channel_pick(obj; pick = :r))
+    isempty(ch_r) && throw(ArgumentError("No right picks found."))
 
     # shared PSD keyword arguments - avoids repeating them four times
     psd_kwargs = (

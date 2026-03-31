@@ -70,6 +70,8 @@ function cosim(
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
         get_channel(obj2; ch = ch2, exclude = "")
+    isempty(ch1) && throw(ArgumentError("No channels selected."))
+    isempty(ch2) && throw(ArgumentError("No channels selected."))
     (length(ch1) == length(ch2)) || throw(
         ArgumentError(
             "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
@@ -140,6 +142,7 @@ function cosim(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
     ch_n = length(ch)

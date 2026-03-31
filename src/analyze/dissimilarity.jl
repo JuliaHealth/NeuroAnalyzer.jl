@@ -29,6 +29,7 @@ function topo_var(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return dropdims(var(@view(obj.data[ch, :, 1]); dims = 1); dims = 1)
 end
@@ -140,6 +141,8 @@ function diss(
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
         get_channel(obj2; ch = ch2, exclude = "")
+    isempty(ch1) && throw(ArgumentError("No channels selected."))
+    isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(

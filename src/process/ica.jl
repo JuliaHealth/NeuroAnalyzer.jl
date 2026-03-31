@@ -137,6 +137,7 @@ function ica_decompose(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 && (ch = ch[1])
 
     # perform decomposition on the selected slice
@@ -241,6 +242,7 @@ function ica_reconstruct(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 && (ch = ch[1])
 
     # reconstruction
@@ -320,6 +322,7 @@ function ica_remove(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 && (ch = ch[1])
     ch_n = length(ch)
 

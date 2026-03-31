@@ -100,6 +100,7 @@ function erp_gfp(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) > 1 || throw(ArgumentError("More than 1 channel must be selected."))
 
     s = @view obj.data[ch, :, 1]

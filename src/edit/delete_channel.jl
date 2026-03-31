@@ -26,6 +26,9 @@ function delete_channel(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    # number of channels
     ch_n = nchannels(obj)
 
     # validate
@@ -154,6 +157,7 @@ function keep_channel(
 
     # resolve channel names to integer indices
     length(get_channel(obj; ch = ch)) == ch_n && (return obj)
+    isempty(get_channel(obj; ch = ch)) && throw(ArgumentError("No channels selected."))
     chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj; ch = ch))]
 
     # validate
@@ -190,6 +194,7 @@ function keep_channel!(
 
     # validate
     length(get_channel(obj; ch = ch)) == nchannels(obj) && (return nothing)
+    isempty(get_channel(obj; ch = ch)) && throw(ArgumentError("No channels selected."))
 
     obj_new = keep_channel(obj; ch = ch)
     obj.header = obj_new.header

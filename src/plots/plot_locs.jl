@@ -508,6 +508,7 @@ function plot_locs(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     ch_info = String[]
     for idx in eachindex(ch)

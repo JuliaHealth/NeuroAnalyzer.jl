@@ -73,6 +73,7 @@ function normpower(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
     obj_new = deepcopy(obj)

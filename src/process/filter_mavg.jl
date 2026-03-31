@@ -148,6 +148,7 @@ function filter_mavg(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # sampling rate
     fs = sr(obj)

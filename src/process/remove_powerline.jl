@@ -46,7 +46,8 @@ function remove_powerline(
     _check_var(method, [:iir], "method")
 
     # resolve channel names to integer indices
-    ch_idx_vec = get_channel(obj; ch = ch)
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     clabels = labels(obj)
 
     # create new dataset
@@ -66,7 +67,7 @@ function remove_powerline(
         bw_values = collect(q:q:10.0)
 
         progbar = Progress(
-            length(ch_idx_vec);
+            length(ch);
             dt = 1,
             barlen = 20,
             color = :white,
@@ -74,7 +75,7 @@ function remove_powerline(
         )
 
         # use enumerate so we index pl_best_bw by loop position
-        for (loop_idx, ch_idx) in enumerate(ch_idx_vec)
+        for (loop_idx, ch_idx) in enumerate(ch)
             ch_label = clabels[ch_idx]
 
             # --- detect and validate the fundamental power line peak ---
@@ -187,11 +188,11 @@ function remove_powerline(
 
         # --- build results DataFrame ---
         df = DataFrame(
-            "channel" => clabels[ch_idx_vec],
+            "channel" => clabels[ch],
             "power line bandwidth" => pl_best_bw,
         )
         if !isempty(pks_frq)
-            n_ch = length(ch_idx_vec)
+            n_ch = length(ch)
             n_pk = length(pks_frq)
             pks_frq_m = zeros(n_ch, n_pk)
             pks_bw_m = zeros(n_ch, n_pk)

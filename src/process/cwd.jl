@@ -96,6 +96,7 @@ function cwd(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return cwd(@view(obj.data[ch, :, :]); wt = wt)
 end

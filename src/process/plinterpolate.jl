@@ -50,6 +50,8 @@ function plinterpolate_channel(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)[1]
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 

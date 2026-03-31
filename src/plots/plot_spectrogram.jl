@@ -580,11 +580,9 @@ function plot_spectrogram(
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     ks > 0 || throw(ArgumentError("ks must be ≥ 1."))
 
-    # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     if method === :cwt
         if type === :normal
             length(ch) == 1 ||

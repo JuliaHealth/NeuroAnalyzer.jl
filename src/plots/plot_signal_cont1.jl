@@ -79,6 +79,7 @@ function plot_cont(
 
     # check channels and meta data
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     ch_n = length(ch)
     if group_ch
         ch_order = _sort_channels(obj.header.recording[:channel_type][ch])

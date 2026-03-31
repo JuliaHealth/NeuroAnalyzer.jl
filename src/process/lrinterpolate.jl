@@ -26,6 +26,7 @@ function lrinterpolate_channel(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)[1]
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     channels = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     length(channels) > 1 ||
         throw(ArgumentError("signal must contain > 1 signal channel."))
