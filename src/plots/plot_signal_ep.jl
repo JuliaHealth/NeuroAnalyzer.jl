@@ -27,7 +27,7 @@ Plot epoched signal with interactive editing.
 - `group_ch::Bool=true`: group channels by type
 - `type::Symbol=:normal`: plot type:
     - `:normal`
-    - `:butterfly`: butterfly plot
+    - `:butterfly`: butterfly plot showing all channels overlaid
 - `avg::Bool=false`: plot averaged channel in butterfly plot
 - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
 - `n_channels::Int64=20`: number of visible channels

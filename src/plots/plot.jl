@@ -21,7 +21,7 @@ Plot signal from a NEURO object.
 - `group_ch::Bool=true`: group channels by type
 - `type::Symbol=:normal`: plot type:
     - `:normal`
-    - `:butterfly`
+    - `:butterfly`: butterfly plot showing all channels overlaid
     - `:stack`: for ERP/ERF/MEP
     - `:topo`: for ERP/ERF
 - `avg::Bool=false`: plot averaged channel in butterfly plot
