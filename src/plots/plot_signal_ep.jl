@@ -1,20 +1,17 @@
 # TO DO:
 
 # types by colors
-# add marker start : end
-# select region
-# select epoch
 # time format (SS:MS HH:MM:SS)
+# select epoch
 # delete epoch
 # change scaling
-# plot(obj1, obj2)
 
 export plot_ep
 
 """
     plot_ep(t, s; <keyword arguments>)
 
-Plot epoched signal.
+Plot epoched signal with interactive editing.
 
 # Arguments
 

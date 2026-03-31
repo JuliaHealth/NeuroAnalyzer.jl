@@ -2,9 +2,7 @@
 
 # types by colors
 # add marker start : end
-# select epoch
 # time format (SS:MS HH:MM:SS)
-# delete region
 # change scaling
 
 export plot_cont
@@ -12,7 +10,7 @@ export plot_cont
 """
     plot_cont(obj; <keyword arguments>)
 
-Plot continuous signal with customizable visualization and interactive editing.
+Plot continuous signal with interactive editing.
 
 # Arguments
 
