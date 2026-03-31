@@ -33,14 +33,14 @@ function get_channel(
             if isempty(ch)
                 throw(ArgumentError("ch resolved to no channels."))
             else
-                return ch
+                return sort(ch)
             end
         else
             chs = setdiff(ch, exclude)
             if isempty(chs)
                 throw(ArgumentError("ch resolved to no channels."))
             else
-                return chs
+                return sort(chs)
             end
         end
     end
@@ -84,6 +84,6 @@ function get_channel(
     if isempty(chs)
         throw(ArgumentError("ch resolved to no channels."))
     else
-        return chs
+        return sort(chs)
     end
 end

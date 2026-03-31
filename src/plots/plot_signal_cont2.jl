@@ -296,8 +296,11 @@ function plot_cont(
             ax1_y = mouseposition(ax1)[2]
             ax2_x = mouseposition(ax2)[1]
             ax2_y = mouseposition(ax2)[2]
-            ax3_x = mouseposition(ax3)[1]
-            ax3_y = mouseposition(ax3)[2]
+            if type === :normal
+                ax3_x = mouseposition(ax3)[1]
+                ax3_y = mouseposition(ax3)[2]
+            end
+
             if event.action == Mouse.press
                 if event.button == Mouse.left
 
@@ -316,12 +319,14 @@ function plot_cont(
 
                     # change channels window
                     if type === :normal
-                        if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
-                           ax3_y <= ax3.limits[][2][2]
-                            ch1[] = floor(Int64, ax3_y)
-                            ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
-                            ax1.limits[] =
-                                (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5))
+                        if ch_n > n_channels
+                            if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
+                               ax3_y <= ax3.limits[][2][2]
+                                ch1[] = floor(Int64, ax3_y)
+                                ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
+                                ax1.limits[] =
+                                    (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5))
+                            end
                         end
                     end
                 end

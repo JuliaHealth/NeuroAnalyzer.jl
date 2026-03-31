@@ -80,23 +80,32 @@ function plot_cont(
     end
 
     # check channels and meta data
-    _ = get_channel(obj; ch = ch)
-    obj_tmp = deepcopy(obj)
-    if datatype(obj) != "nirs"
-        keep_channel!(obj_tmp; ch = ch)
-    else
-        _info("Currently for NIRS objects ch is ignored.")
-        ch = "all"
-    end
-    ch_n = nchannels(obj_tmp)
+    ch = get_channel(obj; ch = ch)
+#    obj_tmp = deepcopy(obj)
+#    if datatype(obj) != "nirs"
+#        keep_channel!(obj_tmp; ch = ch)
+#    else
+#        _info("Currently for NIRS objects ch is ignored.")
+#        ch = "all"
+#    end
+#    ch_n = nchannels(obj_tmp)
+    ch_n = length(ch)
+#    if group_ch
+#        ch_order = _sort_channels(obj_tmp.header.recording[:channel_type])
+#    else
+#        ch_order = collect(1:ch_n)
+#    end
     if group_ch
-        ch_order = _sort_channels(obj_tmp.header.recording[:channel_type])
+        ch_order = _sort_channels(obj.header.recording[:channel_type][ch])
     else
         ch_order = collect(1:ch_n)
     end
-    clabels = labels(obj_tmp)[ch_order]
-    ctypes  = obj_tmp.header.recording[:channel_type][ch_order]
-    cunits  = obj_tmp.header.recording[:unit][ch_order]
+#    clabels = labels(obj_tmp)[ch_order]
+    clabels = labels(obj)[ch][ch_order]
+#    ctypes  = obj_tmp.header.recording[:channel_type][ch_order]
+    ctypes  = obj.header.recording[:channel_type][ch][ch_order]
+#    cunits  = obj_tmp.header.recording[:unit][ch_order]
+    cunits  = obj.header.recording[:unit][ch][ch_order]
 
     # order by ctypes
     # and markers for ax3
@@ -105,19 +114,23 @@ function plot_cont(
     for idx in eachindex(ctypes_uni)
         ctypes_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
     end
+    # ctypes_uni_pos contains a list of ticks where scale has to be drawn
     ctypes_uni_pos = zeros(Int64, ch_n)
     ctypes_uni_pos[ctypes_pos] .= 1
 
     # get time points vector
-    t = obj_tmp.time_pts[1:res:end]
+    # t = obj_tmp.time_pts[1:res:end]
+    t = obj.time_pts[1:res:end]
     # get signal matrix
-    s = obj_tmp.data[ch_order, :, 1][:, 1:res:end]
+    # s = obj_tmp.data[ch_order, :, 1][:, 1:res:end]
+    s = obj.data[ch, :, 1][ch_order, 1:res:end]
 
     # set defaults
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "")
 
     # list of bad channels
-    bad_ch = Observable(obj_tmp.header.recording[:bad_channel])
+    # bad_ch = Observable(obj_tmp.header.recording[:bad_channel])
+    bad_ch = Observable(obj.header.recording[:bad_channel])
 
     # displayed segment
     seg_pos = Observable(Float64(seg[1]))
@@ -155,7 +168,8 @@ function plot_cont(
 
     # y-axis labels colors
     if type === :normal
-        ytc = repeat([:black], nchannels(obj_tmp))
+#        ytc = repeat([:black], nchannels(obj_tmp))
+        ytc = repeat([:black], nchannels(obj))
         ytc[bad_ch[]] .= :lightgray
     else
         ytc = repeat([:black], ch_n)
@@ -505,12 +519,14 @@ function plot_cont(
 
                     # change channels window
                     if type === :normal
-                        if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
-                           ax3_y <= ax3.limits[][2][2]
-                            ch1[] = floor(Int64, ax3_y)
-                            ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
-                            ax1.limits[] =
-                                (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5))
+                        if ch_n > n_channels
+                            if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 &&
+                               ax3_y <= ax3.limits[][2][2]
+                                ch1[] = floor(Int64, ax3_y)
+                                ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
+                                ax1.limits[] =
+                                    (ax1.limits[][1], (ch1[] - 0.5, ch1[] + nch[] - 0.5))
+                            end
                         end
                     end
                 end
