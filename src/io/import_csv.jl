@@ -55,12 +55,12 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     end
 
     # add epoch dimension.
-    data = reshape(data, ch_n, size(data, 2), 1)
+    data = Array(reshape(data, ch_n, size(data, 2), 1))
 
     # ------------------------------------------------------------------ #
     # sampling rate                                                      #
     # ------------------------------------------------------------------ #
-    sampling_rate = round(Int64, 1 / (time_pts_raw[2] - time_pts_raw[1]))
+    sampling_rate = round(Int64, 1 / (time_pts_raw[2] - time_pts_raw[1]) * 1000)
 
     # ------------------------------------------------------------------ #
     # Reconstruct a canonical time axis starting at 0                    #
@@ -90,7 +90,6 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # assemble NEURO object                                               #
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
-
     s = _create_subject(;
         id = "", first_name = "", middle_name = "", last_name = "",
         head_circumference = -1, handedness = "", weight = -1, height = -1,

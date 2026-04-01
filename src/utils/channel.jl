@@ -24,24 +24,16 @@ function get_channel(
     wl::Real = 0,
     exclude::Union{String, Vector{String}, Regex} = "",
 )::Union{Vector{String}, Vector{Int64}}
-
+#    (isempty(ch) && isempty(type)) && throw(ArgumentError("ch resolved to no channels."))
     # return physical channel numbers
     if ch != ""
         exclude = _ch_idx(obj, exclude)
         ch = _ch_idx(obj, ch)
         if isnothing(exclude)
-            if isempty(ch)
-                throw(ArgumentError("ch resolved to no channels."))
-            else
-                return sort(ch)
-            end
+            return sort(ch)
         else
             chs = setdiff(ch, exclude)
-            if isempty(chs)
-                throw(ArgumentError("ch resolved to no channels."))
-            else
-                return sort(chs)
-            end
+            return sort(chs)
         end
     end
 
@@ -81,9 +73,5 @@ function get_channel(
     ch = exclude == [] ? ch : setdiff(ch, labels(obj)[exclude])
 
     chs = unique(ch)
-    if isempty(chs)
-        throw(ArgumentError("ch resolved to no channels."))
-    else
-        return sort(chs)
-    end
+    return sort(chs)
 end

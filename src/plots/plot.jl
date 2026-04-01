@@ -20,7 +20,7 @@ Plot signal from a NEURO object.
 - `scale::Bool=true`: draw scales
 - `group_ch::Bool=true`: group channels by type
 - `type::Symbol=:normal`: plot type:
-    - `:normal`
+    - `:normal`: standard multi-channel plot
     - `:butterfly`: butterfly plot showing all channels overlaid
     - `:stack`: for ERP/ERF/MEP
     - `:topo`: for ERP/ERF

@@ -9,7 +9,7 @@ export na_version
 const _NA_REQUIRED_PACKAGES = [
     "Cairo", "ColorSchemes", "ComplexityMeasures", "ContinuousWavelets",
     "Crayons", "CSV", "DataFrames", "Deconvolution", "DICOM", "Dierckx",
-    "Distances", "DSP", "Einsum", "FFTW", "FileIO", "FindPeaks1D",
+    "Distances", "DSP", "Einsum", "FFTW", "FileIO", "FilePaths", "FindPeaks1D",
     "FourierTools", "FractalDimensions", "GeometryBasics", "Git", "GLM",
     "GLMakie", "GR", "Gtk4", "Hurst", "HypothesisTests", "Images",
     "ImageBinarization", "ImageMorphology", "InformationMeasures",

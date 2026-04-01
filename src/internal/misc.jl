@@ -93,7 +93,10 @@ end
 
 Return the number of integer steps from `t[1]` to `t[2]` inclusive.
 """
-_tlength(t::Tuple{Real, Real})::Int64 = length(t[1]:1:t[2])
+function _tlength(t::Tuple{Real, Real})::Int64
+    t[1] <= t[2] || throw(ArgumentError("Incorrect order of elements."))
+    return length(t[1]:1:t[2])
+end
 
 """
     _s2i(s)

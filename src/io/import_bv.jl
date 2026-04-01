@@ -224,7 +224,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # ------------------------------------------------------------------ #
     if marker_file != ""
         # Resolve relative marker path against the header file's directory.
-        isabs(marker_file) || (marker_file = joinpath(dir, marker_file))
+        FilePaths.isabs(p"$marker_file") || (marker_file = joinpath(dir, marker_file))
         isfile(marker_file) ||
             throw(ArgumentError("Marker file $marker_file cannot be loaded."))
 
@@ -296,7 +296,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # ------------------------------------------------------------------ #
     # signal data                                                         #
     # ------------------------------------------------------------------ #
-    isabs(eeg_file) || (eeg_file = joinpath(dir, eeg_file))
+    FilePaths.isabs(p"$eeg_file") || (eeg_file = joinpath(dir, eeg_file))
     isfile(eeg_file) ||
         throw(ArgumentError("Signal file $eeg_file cannot be loaded."))
 

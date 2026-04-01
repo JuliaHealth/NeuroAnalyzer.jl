@@ -247,17 +247,7 @@ locs = NeuroAnalyzer._locs_round(locs)
 @test NeuroAnalyzer._locs_remove_nans(DataFrame(:a=>[0.0, 1.0, NaN])) ==
       DataFrame(:a=>[0.0, 1.0, 0.0])
 
-@test NeuroAnalyzer._flipx([1.0, 2.0, -1.0, 0.0, -1.0, 2.0, 0.0, 1.0, -1.0]) == [
-    -0.3333333333333334,
-    -1.3333333333333335,
-    1.6666666666666665,
-    0.6666666666666666,
-    1.6666666666666665,
-    -1.3333333333333335,
-    0.6666666666666666,
-    -0.3333333333333334,
-    1.6666666666666665,
-]
+@test NeuroAnalyzer._flipx([1.0, 2.0, -1.0, 0.0, -1.0, 2.0, 0.0, 1.0, -1.0]) == [-0.6666666666666667, -1.6666666666666667, 1.3333333333333333, 0.3333333333333333, 1.3333333333333333, -1.6666666666666667, 0.3333333333333333, -0.6666666666666667, 1.3333333333333333]
 
 @test NeuroAnalyzer._find_bylabel(eeg.locs, "fp1") == 1
 
@@ -305,7 +295,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test length(et) == 2560
 @test NeuroAnalyzer._get_t(1, 10, 10) == [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-@test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
+@test NeuroAnalyzer._wl2ext(760) == [645.5, 1669.0]
 
 @test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
 

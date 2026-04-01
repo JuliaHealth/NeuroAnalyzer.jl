@@ -117,6 +117,7 @@ using DSP
 using Einsum
 using FFTW
 using FileIO
+using FilePaths
 using FindPeaks1D
 using FourierTools
 using FractalDimensions
