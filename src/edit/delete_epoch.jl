@@ -6,12 +6,14 @@ export keep_epoch!
 """
     delete_epoch(obj; <keyword arguments>)
 
-Remove epochs.
+Return a copy of `obj` with the specified epoch(s) removed.
+
+Markers within deleted epochs are dropped; markers after deleted epochs are shifted to remain aligned with the new time axis.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to be removed
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to remove
 
 # Returns
 
@@ -23,32 +25,30 @@ function delete_epoch(
 )::NeuroAnalyzer.NEURO
     # validate
     nepochs(obj) > 1 || throw(ArgumentError("You cannot delete the last epoch."))
-    length(ep) < nepochs(obj) ||
-        throw(
-            ArgumentError(
-                "Number of epochs to delete ($(length(ep))) must be smaller than number of all epochs.",
-            ),
-        )
-    length(ep) > 1 && (ep = sort(ep; rev = true))
-    _check_epochs(obj, ep)
+    ep_sorted = sort(collect(ep); rev = true)
+    length(ep_sorted) < nepochs(obj) || throw(
+        ArgumentError(
+            "Number of epochs to delete ($(length(ep_sorted))) must be less than " *
+            "the total number of epochs ($(nepochs(obj))).",
+        ),
+    )
+    _check_epochs(obj, ep_sorted)
 
     # create new dataset
     obj_new = deepcopy(obj)
 
     # remove epoch
-    obj_new.data = obj_new.data[:, :, setdiff(1:end, (ep))]
+    obj_new = deepcopy(obj)
+    obj_new.data = obj_new.data[:, :, setdiff(1:nepochs(obj), ep_sorted)]
 
-    # remove markers within deleted epochs and shift markers after the deleted epoch
-    for ep_idx in ep
-        t1, t2 = _epoch2s(obj, ep_idx)
+    epoch_ranges = [_epoch2s(obj, e) for e in sort(collect(ep_sorted))]
+    for (t1, t2) in reverse(epoch_ranges) # process latest epochs first to preserve offsets
         obj_new.markers = _delete_markers(obj_new.markers, (t1, t2))
         obj_new.markers = _shift_markers(obj_new.markers, (t1, t2))
     end
 
-    # update time
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
-
-    push!(obj_new.history, "delete_epoch(OBJ, $ep)")
+    push!(obj_new.history, "delete_epoch(obj; ep=$ep)")
 
     return obj_new
 end
@@ -56,12 +56,12 @@ end
 """
     delete_epoch!(obj; <keyword arguments>)
 
-Remove epochs.
+Delete epoch(s) in-place.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to be removed
+- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to remove
 
 # Returns
 
@@ -75,6 +75,7 @@ function delete_epoch!(
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
     obj.markers = obj_new.markers
 
     return nothing
@@ -83,7 +84,9 @@ end
 """
     keep_epoch(obj; <keyword arguments>)
 
-Keep epochs.
+Return a copy of `obj` retaining only the specified epoch(s).
+
+Implemented by computing the complement set and delegating to `delete_epoch`.
 
 # Arguments
 
@@ -100,17 +103,13 @@ function keep_epoch(
 )::NeuroAnalyzer.NEURO
     # validate
     nepochs(obj) > 1 || throw(ArgumentError("OBJ contains only one epoch."))
-
-    length(ep) > 1 && (ep = sort(ep; rev = true))
     _check_epochs(obj, ep)
 
-    ep_list = collect(1:nepochs(obj))
-    ep_to_remove = setdiff(ep_list, ep)
-
-    length(ep_to_remove) > 1 && (ep_to_remove = sort(ep_to_remove; rev = true))
+    ep_to_remove = setdiff(1:nepochs(obj), ep)
+    isempty(ep_to_remove) && return deepcopy(obj) # nothing to remove
 
     obj_new = delete_epoch(obj; ep = ep_to_remove)
-    push!(obj_new.history, "keep_epoch(OBJ, $ep)")
+    push!(obj_new.history, "keep_epoch(obj; ep=$ep)")
 
     return obj_new
 end
@@ -118,7 +117,7 @@ end
 """
     keep_epoch!(obj; <keyword arguments>)
 
-Keep epochs.
+Keep only the specified epoch(s) in-place.
 
 # Arguments
 
@@ -137,6 +136,7 @@ function keep_epoch!(
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
     obj.markers = obj_new.markers
 
     return nothing

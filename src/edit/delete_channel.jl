@@ -60,10 +60,10 @@ function delete_channel(
         end
  
         # remove from universal header vectors
-        deleteat!(obj_new.header.recording[:label],       idx)
+        deleteat!(obj_new.header.recording[:label],        idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
-        deleteat!(obj_new.header.recording[:bad_channel], idx)
-        deleteat!(obj_new.header.recording[:unit],        idx)
+        deleteat!(obj_new.header.recording[:bad_channel],  idx)
+        deleteat!(obj_new.header.recording[:unit],         idx)
  
         # remove from type-specific header vectors
         dt = obj_new.header.recording[:data_type]
