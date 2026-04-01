@@ -129,7 +129,7 @@ end
 
 Convert an integer, vector of integers, or range to a comma-separated `String`.
 """
-function _i2s(s::Union{Int64, Vector{Int64}, AbstractRange})::String
+function _i2s(s::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}})::String
     s_str = string(collect(s))
     return replace(s_str, "[" => "", "]" => "")
 end

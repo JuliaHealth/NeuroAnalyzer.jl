@@ -120,7 +120,7 @@ function extract_data(
 
     # validate
     _check_epochs(obj, ep)
-    isa(ep, Int64) && (ep = [ep])
+    ep = _n2v(ep)
 
     if !time && !etime
         return obj.data[ch, :, ep][:, :, :]

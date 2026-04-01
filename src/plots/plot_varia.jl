@@ -1148,7 +1148,7 @@ Create a topographical plot of Independent Component Analysis (ICA) components f
 - `ic::Matrix{Float64}`: ICA component matrix IC(1)..IC(n) containing spatial patterns
 - `ic_mw::Matrix{Float64}`: weighting matrix for ICA components
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=axes(ic_idx, 1)`: component indices to plot, default is all components
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=axes(ic, 1)`: component indices to plot, default is all components
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point(s) in seconds to plot, ignored if `data` is provided
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
@@ -1174,7 +1174,7 @@ function plot_icatopo(
     ch::Union{String, Vector{String}, Regex},
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange} = axes(ic, 1),
+    ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = axes(ic, 1),
     tpos::Union{Nothing, Real, AbstractVector},
     imethod::Symbol = :sh,
     nmethod::Symbol = :minmax,

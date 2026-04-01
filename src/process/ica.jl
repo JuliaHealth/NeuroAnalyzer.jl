@@ -178,7 +178,7 @@ Reconstruct a signal from independent components.
 
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: indices of components to keep or remove
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to keep or remove
 - `keep::Bool=false`: if `true`, keep specified components; otherwise, remove them
 
 # Returns
@@ -187,12 +187,11 @@ Reconstruct a signal from independent components.
 function ica_reconstruct(;
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     keep::Bool = false,
 )::Matrix{Float64}
 
     # validate
-    typeof(ic_idx) <: AbstractRange && (ic_idx = collect(ic_idx))
     size(ic, 1) == size(ic_mw, 2) || throw(
         ArgumentError(
             "Dimension mismatch between ic ($(size(ic)))and ic_mw ($size(ic_mw))).",
@@ -218,7 +217,7 @@ Reconstruct selected channels of a NEURO object from independent components.
 # Arguments
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: indices of components to keep or remove
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to keep or remove
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
 - `keep::Bool=false`: if `true`, keep specified components; otherwise, remove them
@@ -230,7 +229,7 @@ Reconstruct selected channels of a NEURO object from independent components.
 function ica_reconstruct(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
     keep::Bool = false,
@@ -266,7 +265,7 @@ Reconstruct selected channels of a NEURO object in-place from independent compon
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: indices of components to keep or remove
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to keep or remove
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
 - `keep::Bool=false`: if `true`, keep specified components; otherwise, remove them
@@ -278,7 +277,7 @@ Reconstruct selected channels of a NEURO object in-place from independent compon
 function ica_reconstruct!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
     keep::Bool = false,
@@ -300,7 +299,7 @@ Remove independent components from a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: indices of components to keep or remove
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to keep or remove
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
 
@@ -311,7 +310,7 @@ Remove independent components from a NEURO object.
 function ica_remove(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
 )::NeuroAnalyzer.NEURO
@@ -361,7 +360,7 @@ Remove independent components from a NEURO object in-place.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: indices of components to keep or remove
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to keep or remove
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: weighting matrix, shape (channels, n)
 
@@ -372,7 +371,7 @@ Remove independent components from a NEURO object in-place.
 function ica_remove!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    ic_idx::Union{Int64, Vector{Int64}, AbstractRange},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
 )::Nothing

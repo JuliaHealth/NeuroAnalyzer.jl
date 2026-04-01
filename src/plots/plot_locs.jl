@@ -69,8 +69,8 @@ Preview channel locations with customizable visualization and connection mapping
 # Arguments
 
 - `locs::DataFrame`: channel location data
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
-- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: significant channels to highlight
+- `ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
+- `sch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=0`: significant channels to highlight
 - `ch_labels::Bool=true`: if `true`, draw locations labels
 - `head::Bool=true`: if `true`, draw head outline
 - `head_labels::Bool=false`: draw head labels
@@ -105,8 +105,8 @@ Preview channel locations with customizable visualization and connection mapping
 """
 function plot_locs(
     locs::DataFrame;
-    ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
-    sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
+    ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = 1:DataFrames.nrow(locs),
+    sch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = 0,
     ch_labels::Bool = true,
     head::Bool = true,
     head_labels::Bool = false,

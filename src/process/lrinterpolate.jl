@@ -11,7 +11,7 @@ Interpolate channel using linear regression.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
 - `ep::Int64`: epoch index to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
 
 # Returns
 
@@ -21,7 +21,7 @@ function lrinterpolate_channel(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     ep::Int64,
-    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(_c(nepochs(obj)), ep),
 )::NeuroAnalyzer.NEURO
 
     # resolve channel names to integer indices
@@ -102,7 +102,7 @@ Interpolate channel using linear regression.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
 - `ep::Int64`: epoch index(s) within to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
 
 # Returns
 
@@ -112,7 +112,7 @@ function lrinterpolate_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     ep::Int64,
-    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(_c(nepochs(obj)), ep),
 )::Nothing
     obj_new = lrinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref)
     obj.data = obj_new.data

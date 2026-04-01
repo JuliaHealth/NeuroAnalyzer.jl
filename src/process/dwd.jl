@@ -154,7 +154,7 @@ Reconstructs a signal from a subset (or all) of the DWD coefficient rows.
 - `type::Symbol`: transformation type:
     - `:sdwt`: average-based stationary discrete wavelet transform
     - `:acdwt`: discrete autocorrelation wavelet transform
-- `c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1)`: row indices of coefficients to use for reconstruction; default uses all rows; indices must be in `[1, size(dc, 1)]`
+- `c::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=axes(dc, 1)`: row indices of coefficients to use for reconstruction; default uses all rows; indices must be in `[1, size(dc, 1)]`
 
 # Returns
 
@@ -164,7 +164,7 @@ function idwd(
     dc::Matrix{Float64};
     wt::T = wavelet(WT.haar),
     type::Symbol,
-    c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
+    c::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = axes(dc, 1),
 )::Vector{Float64} where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 

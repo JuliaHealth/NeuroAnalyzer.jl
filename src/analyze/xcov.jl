@@ -279,8 +279,8 @@ function xcov(
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    isa(ep1, Int64) && (ep1 = [ep1])
-    isa(ep2, Int64) && (ep2 = [ep2])
+    ep1 = _n2v(ep1)
+    ep2 = _n2v(ep2)
 
     # validate lag bound against the epoch length (both in seconds)
     max_l = epoch_len(obj1) / sr(obj1)

@@ -8,8 +8,8 @@ export plot_locs3d
 # Arguments
 
 - `locs::DataFrame`: channel location data
-- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: channels to plot, default is all channels
-- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: significant channels to highlight
+- `ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=1:DataFrames.nrow(locs)`: channel indices to plot, default is all channels
+- `sch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=0`: significant channel indices to highlight
 - `ch_labels::Bool=true`: if `true`, plot channel labels
 - `head_labels::Bool=true`: if `true`, plot head labels
 - `mono::Bool=false`: if `true`, use a monochrome palette
@@ -28,8 +28,8 @@ export plot_locs3d
 """
 function plot_locs3d(
     locs::DataFrame;
-    ch::Union{Int64, Vector{Int64}, AbstractRange} = 1:DataFrames.nrow(locs),
-    sch::Union{Int64, Vector{Int64}, AbstractRange} = 0,
+    ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = 1:DataFrames.nrow(locs),
+    sch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = 0,
     ch_labels::Bool = true,
     head_labels::Bool = true,
     mono::Bool = false,

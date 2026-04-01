@@ -13,7 +13,7 @@ All data, time, and header fields are initialized to empty/zero values. Use `cre
 
 # Arguments
 
-- `data_type::String`: data type of the new object (must be a recognised type)
+- `data_type::String`: data type of the new object (must be a recognized type)
 
 # Returns
 
@@ -225,7 +225,7 @@ Auto-generates channel labels of the form `"ch-1"`, `"ch-2"`, … and sets chann
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `data::Array{Float64, 3}`: signal data, shape (ch_n, epoch_len, n_epochs)
 - `fs::Int64`: sampling rate in Hz; must be > 0
-- `type::String`: channel type applied to all channels (must be a recognised type)
+- `type::String`: channel type applied to all channels (must be a recognized type)
 
 # Returns
 
@@ -274,7 +274,7 @@ Populate `obj` with data, channel metadata and time vectors in-place.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `data::Array{Float64, 3}`: signal data, shape (ch_n, epoch_len, n_epochs)
 - `fs::Int64`: sampling rate in Hz; must be > 0
-- `type::String`: channel type applied to all channels (must be a recognised type)
+- `type::String`: channel type applied to all channels (must be a recognized type)
 
 # Returns
 

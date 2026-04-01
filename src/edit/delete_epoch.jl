@@ -21,10 +21,8 @@ function delete_epoch(
     obj::NeuroAnalyzer.NEURO;
     ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
-
     # validate
     nepochs(obj) > 1 || throw(ArgumentError("You cannot delete the last epoch."))
-    typeof(ep) <: AbstractRange && (ep = collect(ep))
     length(ep) < nepochs(obj) ||
         throw(
             ArgumentError(
@@ -99,8 +97,9 @@ Keep epochs.
 function keep_epoch(
     obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
-    !(nepochs(obj) > 1) && throw(ArgumentError("OBJ contains only one epoch."))
-    typeof(ep) <: AbstractRange && (ep = collect(ep))
+    # validate
+    nepochs(obj) > 1 || throw(ArgumentError("OBJ contains only one epoch."))
+
     length(ep) > 1 && (ep = sort!(ep; rev = true))
     _check_epochs(obj, ep)
 

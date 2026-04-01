@@ -38,7 +38,7 @@ function _s2epoch(
     obj::NeuroAnalyzer.NEURO,
     from::Int64,
     to::Int64,
-)::Union{Int64, AbstractRange}
+)::Union{Int64, AbstractUnitRange{Int64}}
     ep = floor(Int64, from / epoch_len(obj)):ceil(Int64, to / epoch_len(obj))
     from / epoch_len(obj) > from ÷ epoch_len(obj) && (ep = (ep[1] + 1):ep[end])
     ep[1] == 0 && (ep = 1:ep[end])

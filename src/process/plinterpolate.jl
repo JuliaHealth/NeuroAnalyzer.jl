@@ -53,7 +53,7 @@ function plinterpolate_channel(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     _check_epochs(obj, ep)
-    isa(ep, Int64) && (ep = [ep])
+    ep = _n2v(ep)
 
     # create new dataset
     obj_new = deepcopy(obj)

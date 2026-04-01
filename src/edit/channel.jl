@@ -260,7 +260,7 @@ function replace_channel(
     size(s) == (1, epoch_len(obj), nepochs(obj)) ||
         throw(
             ArgumentError(
-                "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :])).",
+                "data size ($(size(s, 2)) × $(size(s, 3))) must be the same as channel size ($(size(obj, 2)) × $(size(obj, 3))).",
             ),
         )
     datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,) &&
@@ -369,7 +369,7 @@ If `obj.data` is empty the object is initialized with the provided data; otherwi
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `data::Array{<:Number, 3}`: channel data, shape (n_ch, epoch_len, n_epochs)
+- `data::Array{<:Number, 3}`: channel data, shape (ch_n, epoch_len, epoch_n)
 - `label::Union{String, Vector{String}}`: channel label(s)
 - `type::Union{String, Vector{String}}`: channel type(s)
 - `unit::Union{String, Vector{String}}`: channel unit(s)
@@ -385,7 +385,7 @@ function add_channel(
     type::Union{String, Vector{String}},
     unit::Union{String, Vector{String}},
 )::NeuroAnalyzer.NEURO
-    n_new = size(data, 1)
+    ch_n = size(data, 1)
 
     # normalize to vectors for uniform handling below
     label_v = label isa String ? [label] : label
@@ -405,14 +405,14 @@ function add_channel(
             ),
         )
     end
-    length(label_v) == n_new || throw(
-        ArgumentError("Number of labels ($(length(label_v))) must equal number of new channels ($n_new)."),
+    length(label_v) == ch_n || throw(
+        ArgumentError("Number of labels ($(length(label_v))) must equal number of new channels ($ch_n)."),
     )
-    length(type_v) == n_new || throw(
-        ArgumentError("Number of types ($(length(type_v))) must equal number of new channels ($n_new)."),
+    length(type_v) == ch_n || throw(
+        ArgumentError("Number of types ($(length(type_v))) must equal number of new channels ($ch_n)."),
     )
-    length(unit_v) == n_new || throw(
-        ArgumentError("Number of units ($(length(unit_v))) must equal number of new channels ($n_new)."),
+    length(unit_v) == ch_n || throw(
+        ArgumentError("Number of units ($(length(unit_v))) must equal number of new channels ($ch_n)."),
     )
 
     for t in type_v
@@ -430,20 +430,20 @@ function add_channel(
         obj_new.header.recording[:label]        = vcat(obj.header.recording[:label],        label_v)
         obj_new.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], string.(type_v))
         obj_new.header.recording[:unit]         = vcat(obj.header.recording[:unit],         unit_v)
-        obj_new.header.recording[:bad_channel]  = vcat(obj.header.recording[:bad_channel],  zeros(Bool, n_new))
+        obj_new.header.recording[:bad_channel]  = vcat(obj.header.recording[:bad_channel],  zeros(Bool, ch_n))
 
         max_ord = maximum(obj_new.header.recording[:channel_order])
         obj_new.header.recording[:channel_order] = vcat(
             obj.header.recording[:channel_order],
-            collect((max_ord + 1):(max_ord + n_new)),
+            collect((max_ord + 1):(max_ord + ch_n)),
         )
     else
         obj_new.data = data
         obj_new.header.recording[:label]         = label_v
         obj_new.header.recording[:channel_type]  = string.(type_v)
         obj_new.header.recording[:unit]          = unit_v
-        obj_new.header.recording[:channel_order] = collect(1:n_new)
-        obj_new.header.recording[:bad_channel]   = zeros(Bool, n_new)
+        obj_new.header.recording[:channel_order] = collect(1:ch_n)
+        obj_new.header.recording[:bad_channel]   = zeros(Bool, ch_n)
     end
 
     push!(obj_new.history, "add_channel(obj; data, label=$label_v, type=$type_v, unit=$unit_v)")
@@ -459,7 +459,7 @@ Add new channel(s) in-place.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `data::Array{<:Number, 3}`: channel data, shape (n_ch, epoch_len, n_epochs)
+- `data::Array{<:Number, 3}`: channel data, shape (ch_n, epoch_len, epoch_n)
 - `label::Union{String, Vector{String}}`: channel label(s)
 - `type::Union{String, Vector{String}}`: channel type(s)
 - `unit::Union{String, Vector{String}}`: channel unit(s)

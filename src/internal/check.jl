@@ -83,7 +83,7 @@ end
 """Assert that all integer channel indices in `ch` are within `[1, size(s, 1)]`."""
 function _check_channels(
     s::AbstractArray,
-    ch::Union{Int64, Vector{Int64}, AbstractRange},
+    ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
     ch = _n2v(ch)
     n = size(s, 1)
@@ -135,7 +135,7 @@ end
 """Assert that all epoch indices are within `[1, nepochs(obj)]`."""
 function _check_epochs(
     obj::NeuroAnalyzer.NEURO,
-    epoch::Union{Int64, Vector{Int64}, AbstractRange},
+    epoch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
     n = nepochs(obj)
     for idx in epoch

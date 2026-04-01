@@ -81,8 +81,8 @@ function psa(
         )
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
-    isa(ep1, Int64) && (ep1 = [ep1])
-    isa(ep2, Int64) && (ep2 = [ep2])
+    ep1 = _n2v(ep1)
+    ep2 = _n2v(ep2)
 
     # number of channels
     ch_n = length(ch1)

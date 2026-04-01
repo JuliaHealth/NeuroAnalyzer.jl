@@ -1,4 +1,4 @@
-function _v2r(v::Vector{Int64})::Union{AbstractRange, Vector{Int64}}
+function _v2r(v::Vector{Int64})::Union{AbstractUnitRange{Int64}, Vector{Int64}}
     sv = sort(v)
     # return a contiguous range only if the sorted vector equals its own range
     if sv == sv[1]:sv[end]
