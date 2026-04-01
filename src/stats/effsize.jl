@@ -24,7 +24,7 @@ Named tuple:
 function efs(
     x1::AbstractVector,
     x2::AbstractVector,
-)::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
+)::@NamedTuple{d::Float64, g::Float64, delta::Float64}
 
     # validate
     length(x1) >= 2 || throw(ArgumentError("x1 must contain at least 2 elements."))

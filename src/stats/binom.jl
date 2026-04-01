@@ -19,12 +19,10 @@ Uses the binomial probability mass function: `P(X = r) = C(n, r) × pʳ × (1 �
 - `Float64`: probability of exactly `r` successes
 """
 function binom_prob(p::Float64, r::Int64, n::Int64)::Float64
-
     # validate
     _in(p, (0.0, 1.0), "p")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
-    r >= 0 || throw(ArgumentError("r must be ≥ 0."))
-    r <= n || throw(ArgumentError("r must be ≤ n."))
+    _in(r, (0, n), "r")
 
     return binomial(n, r) * (p^r) * (1 - p)^(n - r)
 end
@@ -65,7 +63,6 @@ function binom_test(
     ci1::Tuple{Float64, Float64},
     p::Float64,
 }
-
     # validate
     _in(prop, (0.0, 1.0), "prop")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -140,7 +137,6 @@ function binom_test(
     ci1::Tuple{Float64, Float64},
     p::Float64,
 }
-
     # validate
     n = length(x)
     n > 0 || throw(ArgumentError("x must not be empty."))
@@ -192,10 +188,9 @@ function binom_test(
     ci1::Tuple{Float64, Float64},
     p::Float64,
 }
-
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
-    _in(x, (0, n), 'x')
+    _in(x, (0, n), "x")
 
     return binom_test(
         x / n,

@@ -13,7 +13,7 @@ function _summary_stats(x_clean::Vector{Float64}, n_total::Int64, d::Int64)
     q1 = round(quantile(x_clean, 0.25); digits = d)
     me = round(median(x_clean); digits = d)
     q3 = round(quantile(x_clean, 0.75); digits = d)
-    mo = round(Float64(mode(x_clean)); digits = d)
+    mo = round(Float64(StatsKit.mode(x_clean)); digits = d)
     return (; ms, m, v, s, mn, q1, me, q3, mx, mo)
 end
 
@@ -115,7 +115,7 @@ function summary(
     length(x_clean) > 0 || throw(ArgumentError("No non-missing observations remain in x."))
 
     n = length(x)
-    st = _summary_stats(x_clean, n, 4)   # use 4 d.p. for the scalar method
+    st = _summary_stats(x_clean, n, 4)     # use 4 d.p. for the scalar method
 
     make_table(;
         header = Matrix{String}(["" g]),   # ensure correct type for make_table
@@ -134,7 +134,7 @@ function summary(
         ],
     )
 
-    return (; ms, m, v, s, mn, q1, me, q3, mx, mo)
+    return (n=n, ms=st.ms, m=st.m, v=st.v, s=st.s, mn=st.mn, q1=st.q1, me=st.me, q3=st.q3, mx=st.mx, mo=st.mo)
 end
 
 """
@@ -158,6 +158,7 @@ function summary(
     g::Vector{String},
     d::Int64 = 3,
 )::DataFrame
+    # validate
     length(g) == size(x, 2) || throw(
         ArgumentError("length(g) ($(length(g))) must equal size(x, 2) ($(size(x, 2)))."),
     )
@@ -192,12 +193,12 @@ function summary(
     g::Vector{String},
     d::Int64 = 3,
 )::DataFrame
+    # validate
     length(g) == length(x) || throw(
         ArgumentError(
             "Number of group names ($length(g)) must be equal to the number of groups $(size(x, 2)).",
         ),
     )
-
     length(g) == length(x) || throw(
         ArgumentError(
             "length(g) ($(length(g))) must equal the number of arrays ($(length(x))).",

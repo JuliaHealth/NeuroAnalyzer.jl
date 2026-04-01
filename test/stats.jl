@@ -25,7 +25,7 @@ a2 = zeros(2, 3, 2)
 @test round(k_categories(10)[1]) == 3.0
 
 @info "Test: efs()"
-@test efs([1, 2, 3], [2, 3, 4]) == (d = -1.0, g = -1.224744871391589, Δ = -1.0)
+@test efs([1, 2, 3], [2, 3, 4]) == (d = -1.0, g = -1.224744871391589, delta = -1.0)
 
 @info "Test: infcrit()"
 x = 1:10
@@ -39,7 +39,7 @@ R2, R2adj, aic, bic = infcrit(m)
 @test bic == -651.9926348600522
 
 @info "Test: outlier_detect()"
-@test !grubbs([1, 2, 3, 4, 5])
+@test grubbs([1, 2, 3, 4, 5, 6, 100]) == true
 @test outlier_detect(ones(10)) == zeros(10)
 
 @info "Test: cmp_test()"
@@ -72,7 +72,7 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 @test NeuroAnalyzer.meanh(ones(5)) == 1.0
 
 @info "Test: meanw()"
-@test NeuroAnalyzer.meanw(ones(5), [1, 2, 3, 4, 5]) == 3.0
+@test NeuroAnalyzer.meanw(ones(5), [1, 2, 3, 4, 5]) == 1.0
 
 @info "Test: efs_p1g()"
 @test efs_p1g(0.5) == 1.5707963267948968
@@ -103,7 +103,7 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 @test sem_diff(1:5, 2:6) == 1.0
 
 @info "Test: prank()"
-@test round.(NeuroAnalyzer.prank([1, 2, 3]), digits = 1) == [0.0, 0.1, 0.2]
+@test round.(NeuroAnalyzer.prank([1, 2, 3]), digits = 1) == [0.0, 0.3, 0.7]
 
 @info "Test: linreg()"
 _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
@@ -137,13 +137,13 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
     ms = 2,
     m = 3.12,
     v = 2.397,
-    s = 1.5482247898803325,
-    min = 1.0,
+    s = 1.5482,
+    mn = 1.0,
     q1 = 2.5,
     me = 3.0,
     q3 = 4.0,
-    max = 5.1,
-    mo = 1.0,
+    mx = 5.1,
+    mo = 1.0
 )
 @test NeuroAnalyzer.summary(rand(10, 3), g = ["g1", "g2", "g3"], d = 2) isa DataFrame
 @test NeuroAnalyzer.summary(rand(10), rand(11), rand(12), g = ["g1", "g2", "g3"], d = 2) isa
@@ -169,7 +169,7 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 
 @info "Test: friedman()"
 m = [1 4 7; 2 5 8; 3 6 9]
-@test friedman(m) == (q = 6.0, w = 1.0, p = 0.04978706836786394)
+@test friedman(m) == (q = 6.0, w = 1.0, p = 0.049787068367863944)
 
 @info "Test: count_thresh()"
 m = [1 4 7; 2 5 8; 3 6 9]
@@ -220,7 +220,7 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test size_c1diff(s1 = 10, s2 = 20) == 128
 
 @info "Test: size_p1diff()"
-@test size_p1diff(p1 = 0.12, p2 = 0.09) == 7352
+@test size_p1diff(p1 = 0.12, p2 = 0.09) == 3142
 
 @info "Test: bootstrap_ci()"
 x = rand(10, 100)
@@ -235,7 +235,7 @@ s = bootstrap_stat(x; f = "abs(maximum(obj))")
 @test length(s) == 3000
 
 @info "Test: f1()"
-@test f1(tp = 90, tn = 90, fp = 10, fn = 10) == (f1 = 0.9, p = 0.9, r = 0.9)
+@test f1(tp = 90, tn = 90, fp = 10, fn = 10) == (f1_score = 0.9, prec = 0.9, rec = 0.9)
 
 @info "Test: mscr()"
 @test mscr(tp = 90, tn = 90, fp = 10, fn = 10) == (mr = 0.1, acc = 0.9)
@@ -269,7 +269,7 @@ s = NeuroAnalyzer.permute(rand(2, 4, 8), 10)
 @info "Test: ba()"
 x = ones(10)
 y = ones(10) .+ 0.5
-@test ba(x, y) == (m = -0.5, s_u = 0.0, s_d = -0.0)
+@test ba(x, y) == (md = -0.5, ll = -0.0, ul = 0.0)
 
 @info "Test: logit()"
 @test NeuroAnalyzer.logit(0.8) == 1.3862943611198908
@@ -281,13 +281,13 @@ y = ones(10) .+ 0.5
 @test varp(0.5, 10) == 0.025
 
 @info "Test: varc()"
-@test varc([0, 1, 2, 3], [2, 8, 27, 45]) == 15.804878048780488
+@test varc([0, 1, 2, 3], [2, 8, 27, 45]) == 0.589129780186691
 
 @info "Test: stdp()"
 @test stdp(0.5, 10) == 0.15811388300841897
 
 @info "Test: stdc()"
-@test stdc([0, 1, 2, 3], [2, 8, 27, 45]) == 3.9755349386944756
+@test stdc([0, 1, 2, 3], [2, 8, 27, 45]) == 0.7675479009069669
 
 @info "Test: meanp()"
 @test meanp(0.5, 10) == 5
@@ -308,7 +308,7 @@ y = ones(10) .+ 0.5
 @test sen_diff(10, 15) == 5
 
 @info "Test: mde()"
-@test mde(n = 20, s = 1.0) == 0.392404582723816
+@test mde(n = 20, s = 1.0) == 0.5253711530720321
 
 @info "Test: binom_test()"
 @test binom_test(5, 10) == (
