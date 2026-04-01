@@ -39,10 +39,9 @@ function generate_window(
     n::Int64;
     even::Bool = false,
 )::Vector{Float64}
-
     # validate
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
-    n >= 1 && throw(ArgumentError("n must be ≥ 1."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     even && mod(n, 2) != 0 && (n += 1)
     t = range(0, 1, n)

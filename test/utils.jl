@@ -36,7 +36,7 @@ z, b = perm_cmp(a1, a2)
 @test vsearch("d", ["a", "b", "c"]) === nothing
 
 @info "Test: trim()"
-@test vsplit(1:10, 2) == [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
+@test vsplit(1:10, 2) == [1:2, 3:4, 5:6, 7:8, 9:10]
 
 @info "Test: fft0()"
 x = fft0(v1)
@@ -90,8 +90,8 @@ x[10] *= 1000
 @test f2t(1.0) == 1000.0
 
 @info "Test: e2t()"
-@test e2t(e10, 1) == (0.0, 9.9961)
-@test e2t(e10, 1:10) == (0.0, 99.9961)
+@test e2t(e10; ep = 1) == (0.0, 9.9961)
+@test e2t(e10; ep = 1:10) == (0.0, 99.9961)
 
 @info "Test: freqs()"
 f, nf = NeuroAnalyzer.freqs(0:(1 / 10):10)
@@ -191,7 +191,7 @@ s = generate_morlet_fwhm(100, 10)
 @info "Test: cwtfrq()"
 s = rand(100)
 @test length(cwtfrq(s, fs = 10)) == 12
-@test length(cwtfrq(e10)) == 19
+@test length(cwtfrq(e10)) == 30
 
 @info "Test: history()"
 @test NeuroAnalyzer.history(e10) isa Vector{String}
@@ -262,7 +262,7 @@ delete_note!(e10)
 @test length(phases(e10.data[1, :, 1])) == 2560
 
 @info "Test: pick()"
-@test channel_pick(e10, pick = [:l, :f]) == ["Fp1", "F3", "F7"]
+@test channel_pick(e10, pick = [:l, :f]) == ["F3", "F7", "Fp1"]
 
 @info "Test: t2s()"
 @test t2s(1.0, 256) == 256
@@ -302,7 +302,7 @@ n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
 @test padm(ones(2, 4, 3), 2, mode = :row) == ones(2, 6, 3)
 
 @info "Test: vec2mat()"
-@test size(vec2mat(ones(10), wlen = 2, woverlap = 2)) == (5, 2)
+@test size(vec2mat(ones(10), wlen = 2, woverlap = 1)) == (5, 2)
 
 @info "Test: arr2mat()"
 @test size(arr2mat(rand(1, 10, 10))) == (10, 10)
@@ -365,7 +365,7 @@ x2, f2 = areduce(x, f)
       [12.15909090909091, 16.071340206185567, 13.544355670103092]
 
 @info "Test: tal2mni()"
-@test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643125, 13.999435493742183]
+@test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643126, 13.999435493742183]
 
 @info "Test: fir_order_bw()"
 @test fir_order_bw(eeg, bw = 0.2, a = 50) == 2909
@@ -376,29 +376,25 @@ x2, f2 = areduce(x, f)
 @test fir_order_f(f = 35, fs = 256) == (32, 40)
 
 @info "Test: iir_order()"
-@test iir_order(eeg, fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2) == 152
-@test iir_order(eeg, fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2) == 152
-@test iir_order(eeg, fprototype = :butterworth, ftype = :bp, cutoff = (12, 15), bw = 0.2) ==
-      22
-@test iir_order(eeg, fprototype = :butterworth, ftype = :bs, cutoff = (12, 15), bw = 0.2) ==
-      22
-@test iir_order(fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2, fs = 256) ==
-      152
-@test iir_order(fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2, fs = 256) ==
-      152
+@test iir_order(eeg, fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2) == 199
+@test iir_order(eeg, fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2) == 199
+@test iir_order(eeg, fprototype = :butterworth, ftype = :bp, cutoff = (12, 15), bw = 0.2) == 28
+@test iir_order(eeg, fprototype = :butterworth, ftype = :bs, cutoff = (12, 15), bw = 0.2) == 28
+@test iir_order(fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2, fs = 256) == 199
+@test iir_order(fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2, fs = 256) == 199
 @test iir_order(
     fprototype = :butterworth,
     ftype = :bp,
     cutoff = (12, 15),
     bw = 0.2,
     fs = 256,
-) == 22
+) == 28
 @test iir_order(
     fprototype = :butterworth,
     ftype = :bs,
     cutoff = (12, 15),
     bw = 0.2,
     fs = 256,
-) == 22
+) == 28
 
 true

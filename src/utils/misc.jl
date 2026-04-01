@@ -136,12 +136,12 @@ function cums(s::Array{<:Real, 3})::Array{Float64, 3}
 
     # pre-allocate output
     # ensure Float64 output even for integer input
-    csa = similar(signal, Float64)
+    csa = similar(s, Float64)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        csa[ch_idx, :, ep_idx] = cumsum(@view(csa[ch_idx, :, ep_idx]))
+        csa[ch_idx, :, ep_idx] = cumsum(@view(s[ch_idx, :, ep_idx]))
     end
 
     return csa
@@ -167,6 +167,7 @@ function f_nearest(
     m::Matrix{Tuple{Float64, Float64}},
     p::Tuple{Float64, Float64},
 )::Tuple{Int64, Int64}
+    # pre-allocate output
     d = zeros(size(m))
 
     @inbounds for idx1 in axes(m, 1), idx2 in axes(m, 2)
@@ -199,7 +200,6 @@ function ntapers(
     obj::NeuroAnalyzer.NEURO;
     df::Real,
 )::Int64
-
     # validate that df lies within (0, Nyquist)
     _bin(df, (0, sr(obj) / 2))
 

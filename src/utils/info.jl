@@ -616,14 +616,14 @@ function channel_pick(
         for idx1 in eachindex(clabels), idx2 in eachindex(c)
             in(c[idx2], clabels[idx1]) && push!(ch, idx1)
         end
+        clabels_filtered = clabels[ch]
 
         # when both :left and :right are requested simultaneously, return the full bilateral set without further laterality filtering
         has_left = any(p -> p === :left || p === :l, pick)
         has_right = any(p -> p === :right || p === :r, pick)
-        has_left && has_right && return labels(obj)[ch]
+        has_left && has_right && return clabels_filtered
 
         # single-laterality filtering: remove contralateral electrode numbers
-        clabels = get_channel(obj; type = "eeg")[ch]
         pat = nothing
         for idx in pick
             # remove left-side numbers
@@ -632,12 +632,12 @@ function channel_pick(
             (idx === :left || idx === :l) && (pat = r"[z02468]$")
         end
         if pat isa Regex
-            for idx in length(ch):-1:1
-                !isnothing(match(pat, clabels[idx])) && deleteat!(ch, idx)
+            for idx in length(clabels_filtered):-1:1
+                !isnothing(match(pat, clabels_filtered[idx])) && deleteat!(ch, idx)
             end
         end
 
-        return labels(obj)[ch]
+        return clabels[ch]
 
     else
         _check_var(pick, valid, "pick")
