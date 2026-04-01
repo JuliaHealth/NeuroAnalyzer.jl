@@ -17,6 +17,8 @@ Labels are matched case-insensitively. Bipolar labels (e.g. `Fp1-Fz`) are stripp
 - `DataFrame`: modified channel location data
 """
 function locs_generate(locs::DataFrame)::DataFrame
+    # create new dataset
+    locs_new = deepcopy(locs)
 
     # work with lowercase labels for case-insensitive matching
     lab = lowercase.(locs[!, :label])

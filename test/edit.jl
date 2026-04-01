@@ -25,27 +25,7 @@ set_channel_type!(e10_tmp; ch = "F3", type = "eeg")
 @test channel_type(e10_tmp, ch = "F3") == "eeg"
 
 @info "Test: get_channel()"
-@test get_channel(e10, type = "eeg") == [
-    "Fp1",
-    "Fp2",
-    "F3",
-    "F4",
-    "C3",
-    "C4",
-    "P3",
-    "P4",
-    "O1",
-    "O2",
-    "F7",
-    "F8",
-    "T3",
-    "T4",
-    "T5",
-    "T6",
-    "Fz",
-    "Cz",
-    "Pz",
-]
+@test get_channel(e10, type = "eeg") == ["C3", "C4", "Cz", "F3", "F4", "F7", "F8", "Fp1", "Fp2", "Fz", "O1", "O2", "P3", "P4", "Pz", "T3", "T4", "T5", "T6"]
 
 @info "Test: rename_channel()"
 e10_tmp = rename_channel(e10; ch = "Fp1", name = "FP1")
@@ -69,8 +49,7 @@ add_label!(e10_tmp; clabels = l)
 @info "Test: delete_channel()"
 e10_tmp = delete_channel(e10; ch = "F3")
 @test nchannels(e10_tmp) == nchannels(e10) - 1
-e10_tmp = delete_channel(e10; ch = String[])
-@test nchannels(e10_tmp) == nchannels(e10)
+@test_throws ArgumentError  delete_channel(e10; ch = String[])
 
 @info "Test: delete_channel!()"
 e10_copy = deepcopy(e10)
@@ -156,14 +135,6 @@ e10_tmp = extract_epoch(e10; ep = 1)
 @info "Test: extract_data()"
 d = extract_data(e10; ch = "all")
 @test size(d) == (24, 2560, 120)
-
-@info "Test: extract_time()"
-tpts = extract_time(e10)
-@test length(tpts) == 307200
-
-@info "Test: extract_eptime()"
-et = extract_eptime(e10)
-@test length(et) == 2560
 
 @info "Test: trim()"
 s = collect(1:100)

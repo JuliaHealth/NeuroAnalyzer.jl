@@ -24,7 +24,6 @@ function apply(
     ch::Union{String, Vector{String}, Regex},
     f::String,
 )::Array{Float64, 3}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

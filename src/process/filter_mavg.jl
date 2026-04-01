@@ -13,7 +13,7 @@ Samples within the threshold band `[mean(s) − t×std(s), mean(s) + t×std(s)]`
 - `s::AbstractVector`: signal vector
 - `k::Int64=8`: half-window length; full window is `2k + 1` samples; for a desired normalized cutoff `F = f/fs`, choose
   `k = round(Int, sqrt(0.196202 + F^2) / F)`; must satisfy `1 ≤ k < length(s)`
-- `t::Real=0`: threshold multiplier (≥ 0). `t = 0` filters all samples
+- `t::Real=0`: threshold multiplier (≥ 0); `t = 0` filters all samples
 - `ww::Union{Nothing, AbstractVector}=ones(2k+1)`: weighting window of length `2k + 1`
 
 # Returns
@@ -30,7 +30,6 @@ function filter_mavg(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::Vector{Float64}
-
     # check k
     _in(k, (1, length(s) - 1), "k")
     # check weighting window
@@ -44,14 +43,14 @@ function filter_mavg(
     hi = s_mean + t * s_std
 
     # helper: return true when sample x is outside the threshold band
-    needs_filter(x) = t <= 0 || x < lo || x > hi
+    _needs_filter(x) = t <= 0 || x < lo || x > hi
 
     # unfiltered samples stay at their original value
-    s_filtered = copy(s)
+    s_filtered = copy(s) .* 1.0 # convert to floats
 
     # left edge: truncated window [1 … idx]
     @inbounds for idx in 1:k
-        needs_filter(s[idx]) || continue
+        _needs_filter(s[idx]) || continue
         s_tmp = @view s[1:idx]
         w_tmp = @view ww[1:idx]
         s_filtered[idx] = mean(s_tmp .* w_tmp)
@@ -59,14 +58,14 @@ function filter_mavg(
 
     # interior: full centered window [idx-k … idx+k]
     @inbounds for idx in (k + 1):(length(s) - k)
-        needs_filter(s[idx]) || continue
+        _needs_filter(s[idx]) || continue
         s_tmp = @view s[(idx - k):(idx + k)]
         s_filtered[idx] = mean(s_tmp .* ww)
     end
 
     # right edge: truncated window [idx … end]
     @inbounds for idx in (length(s) - k + 1):length(s)
-        needs_filter(s[idx]) || continue
+        _needs_filter(s[idx]) || continue
         s_tmp = @view s[idx:end]
         w_tmp = @view ww[(end - length(s_tmp) + 1):end]
         s_filtered[idx] = mean(s_tmp .* w_tmp)

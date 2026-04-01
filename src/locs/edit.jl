@@ -39,9 +39,8 @@ function edit_locs(
     name::String = "",
     type::String = "",
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
-    ch = get_channel(obj_new; ch = ch)
+    ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]

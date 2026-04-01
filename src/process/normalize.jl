@@ -734,7 +734,7 @@ Shift signal to `(−∞, 0]` by subtracting the maximum.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_neg(s::AbstractVector)::AbstractVector
-    return @. s - maximum(s)
+    return s .- maximum(s)
 end
 
 """
@@ -758,7 +758,7 @@ function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
         throw(ArgumentError("normalize_neg() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
-        return @. s - maximum(s)
+        return s .- maximum(s)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
@@ -788,7 +788,7 @@ Shift signal to `[0, +∞)` by adding `|min(x)|`.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_pos(s::AbstractVector)::AbstractVector
-    return @. s + abs(minimum(s))
+    return s .+ abs(minimum(s))
 end
 
 """
@@ -812,7 +812,7 @@ function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
         throw(ArgumentError("normalize_pos() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
-        return @. s + abs(minimum(s))
+        return s .+ abs(minimum(s))
     else
         sn = zeros(size(s))
         if ndims(s) == 2

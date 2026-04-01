@@ -215,15 +215,13 @@ function subepoch(
     ep_start::Real,
     ep_end::Real,
 )::NeuroAnalyzer.NEURO
+    # validate
+    ep_time = obj.epoch_time
+    ep_start >= ep_time[1] || throw(ArgumentError("ep_start must be ≥ $(ep_time[1])."))
+    ep_end <= ep_time[end] || throw(ArgumentError("ep_end must be ≤ $(ep_time[end])."))
 
     # create new dataset
     obj_new = deepcopy(obj)
-
-    ep_time = obj.epoch_time
-
-    # validate
-    ep_start >= ep_time[1] || throw(ArgumentError("ep_start must be ≥ $(ep_time[1])."))
-    ep_end <= ep_time[end] || throw(ArgumentError("ep_end must be ≤ $(ep_time[end])."))
 
     ep_start_idx = vsearch(ep_start, ep_time)
     ep_end_idx = vsearch(ep_end, ep_time)

@@ -44,7 +44,7 @@ function artrem_cwd(
     _check_tuple(fseg, (f[1], f[end]), "fseg")
 
     # forward CWD → complex coefficient matrix (frequencies × time)
-    coef = cwd(s; wt = wt)
+    coef = NeuroAnalyzer.cwd(s; wt = wt)
 
     # find the nearest frequency and time indices for the artifact window
     f_idx1 = vsearch(fseg[1], f)

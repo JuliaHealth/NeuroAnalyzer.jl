@@ -65,7 +65,7 @@ function cwd(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ct[ch_idx, :, :, ep_idx] = cwd(@view(s[ch_idx, :, ep_idx]), wt = wt)
+        ct[ch_idx, :, :, ep_idx] = NeuroAnalyzer.cwd(@view(s[ch_idx, :, ep_idx]), wt = wt)
     end
 
     _log_on()

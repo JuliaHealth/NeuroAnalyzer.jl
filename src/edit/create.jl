@@ -95,13 +95,17 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         )
     elseif data_type == "meg"
         r = _create_recording_meg(;
-            data_type    = "meg",
+            data_type      = "meg",
             _common...,
-            reference    = "",
-            transducers  = String[],
-            prefiltering = String[],
+            reference      = "",
+            prefiltering   = String[],
             line_frequency = 50,
-            gain         = Float64[],
+            magnetometers  = Int[],
+            gradiometers   = Int[],
+            coil_type      = String[],
+            ssp_labels     = String[],
+            ssp_channels   = Bool[],
+            ssp_data       = Matrix{Float64}(undef, 0, 0),
         )
     elseif data_type == "nirs"
         r = _create_recording_nirs(;
@@ -109,7 +113,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             _common...,
             wavelengths      = Float64[],
             wavelength_index = Int64[],
-            optode_pairs     = [0;;],
+            optode_pairs     = Matrix{Int64}(undef, 0, 0),
             src_labels       = String[],
             det_labels       = String[],
             opt_labels       = String[],
@@ -219,7 +223,7 @@ Auto-generates channel labels of the form `"ch-1"`, `"ch-2"`, … and sets chann
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `data::Array{Float64, 3}`: signal data, shape (n_ch, epoch_len, n_epochs)
+- `data::Array{Float64, 3}`: signal data, shape (ch_n, epoch_len, n_epochs)
 - `fs::Int64`: sampling rate in Hz; must be > 0
 - `type::String`: channel type applied to all channels (must be a recognised type)
 
@@ -239,16 +243,20 @@ function create_data(
     _check_var(type, channel_types, "type")
     fs > 0 || throw(ArgumentError("fs must be > 0."))
 
-    clabels = ["ch-$i" for i in 1:n_ch]
+    # number of channels
+    ch_n = size(data, 1)
+
+    # channel labels
+    clabels = ["ch-$i" for i in 1:ch_n]
  
     # create new dataset
     obj_new = deepcopy(obj)
     obj_new.data                                    = data
     obj_new.header.recording[:label]                = clabels
-    obj_new.header.recording[:channel_type]         = fill(type, n_ch)
-    obj_new.header.recording[:unit]                 = fill(_ch_units(type), n_ch)
-    obj_new.header.recording[:channel_order]        = collect(1:n_ch)
-    obj_new.header.recording[:bad_channel]          = zeros(Bool, n_ch)
+    obj_new.header.recording[:channel_type]         = fill(type, ch_n)
+    obj_new.header.recording[:unit]                 = fill(_ch_units(type), ch_n)
+    obj_new.header.recording[:channel_order]        = collect(1:ch_n)
+    obj_new.header.recording[:bad_channel]          = zeros(Bool, ch_n)
     obj_new.header.recording[:sampling_rate]        = fs
     obj_new.time_pts, obj_new.epoch_time            = _get_t(obj_new)
     push!(obj_new.history, "create_data(obj; data, fs=$fs, type=$type)")
@@ -264,7 +272,7 @@ Populate `obj` with data, channel metadata and time vectors in-place.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `data::Array{Float64, 3}`: signal data, shape (n_ch, epoch_len, n_epochs)
+- `data::Array{Float64, 3}`: signal data, shape (ch_n, epoch_len, n_epochs)
 - `fs::Int64`: sampling rate in Hz; must be > 0
 - `type::String`: channel type applied to all channels (must be a recognised type)
 

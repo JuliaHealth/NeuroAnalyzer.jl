@@ -41,7 +41,7 @@ function denoise_cwd(
     nf <= fs / 2 || throw(ArgumentError("nf must be ≤ $(fs / 2)."))
 
     # perform CWD and zero out noise frequency band
-    s_cwd = cwd(s; wt = wt)
+    s_cwd = NeuroAnalyzer.cwd(s; wt = wt)
     f = cwtfrq(s; fs = fs, wt = wt)
     f_idx1 = vsearch(nf - w, f)
     f_idx2 = vsearch(nf + w, f)

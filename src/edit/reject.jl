@@ -185,17 +185,17 @@ Detect bad channels.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
-- `:flat`: flat channel(s)
-- `:rmse`: RMSE vs average channel outside of 95% CI
-- `:rmsd`: RMSD
-- `:euclid`: Euclidean distance
-- `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
-- `:p2p`: mark bad channels based on peak-to-peak amplitude; good for detecting transient artifacts
-- `:tkeo`: mark bad channels based on z-score TKEO value outside of 95% CI
-- `:kurt`: mark bad channels based on z-scores of kurtosis values
-- `:z`: mark bad channels based on their z-score of amplitude
-- `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp channels in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
-- `:amp`: mark bad channels based on their amplitude
+    - `:flat`: flat channel(s)
+    - `:rmse`: RMSE vs average channel outside of 95% CI
+    - `:rmsd`: RMSD
+    - `:euclid`: Euclidean distance
+    - `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
+    - `:p2p`: mark bad channels based on peak-to-peak amplitude; good for detecting transient artifacts
+    - `:tkeo`: mark bad channels based on z-score TKEO value outside of 95% CI
+    - `:kurt`: mark bad channels based on z-scores of kurtosis values
+    - `:z`: mark bad channels based on their z-score of amplitude
+    - `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp channels in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
+    - `:amp`: mark bad channels based on their amplitude
 - `w::Int64=sr(obj)`: window width in samples (signal is averaged within `w`-width window), default is 1 second
 - `flat_tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 - `flat_fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
@@ -283,9 +283,9 @@ function channel_reject(
                 idx_w in 1:w:(n_samples - w)
             ]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
-            bad_chs[ch_idx, ep_idx] = r > flat_fr
+            bad_chs[ch_idx] = r > flat_fr
         end
-        bc[ch] = bc[ch] .|| vec(any(bad_mat; dims = 2))
+        bc[ch] = bc[ch] .|| vec(any(bad_chs; dims = 2))
     end
 
     if :rmse in method
@@ -316,14 +316,14 @@ function channel_reject(
         _info("Using :var method")
         s_v = var(obj.data[ch, :, :]; dims = 2)
         # mean variance
-        s_mv = vec(mean(s_v; dims = 3))
+        s_m = vec(mean(s_v; dims = 3))
         # variance outliers
         o = reshape(outlier_detect(vec(s_v); method = :iqr), ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
             bad_chs = zeros(Bool, ch_n)
             ch_v = vec(var(@view(obj.data[ch, :, ep_idx]), dims = 2))
-            s_mv = vcat(s_mv, ch_v)
+            s_m = vcat(s_m, ch_v)
             for ch_idx in 1:ch_n
                 #if ch_v[ch_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2] || o[ch_idx, ep_idx]
                 if o[ch_idx, ep_idx]
@@ -621,7 +621,7 @@ function epoch_reject(
                 idx_w in 1:w:(n_samples - w)
             ]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
-            bad_chs[ch_idx, ep_idx] = r > flat_fr
+            bad_chs[ch_idx] = r > flat_fr
         end
         bc[ch] = bc[ch] .|| vec(any(bad_chs; dims = 2))
         append!(be, findall(vec(sum(bad_chs; dims = 1)) .>= nbad))
@@ -663,19 +663,19 @@ function epoch_reject(
         _info("Using :var method")
         s_v = var(@view(obj.data[ch, :, :]); dims = 2)
         # mean variance
-        s_mv = vec(mean(s_v; dims = 3))
+        s_m = vec(mean(s_v; dims = 3))
         # variance outliers
         o = reshape(outlier_detect(vec(s_v); method = :iqr), ch_n, ep_n)
 
         # parallelize only the expensive per-epoch variance computation
-        s_mv_mat = zeros(ch_n, ep_n)
+        bad_mat = zeros(ch_n, ep_n)
         @inbounds Threads.@threads :static for ep_idx in 1:ep_n
             # each thread writes to its own column - no overlap, no race condition
-            s_mv_mat[:, ep_idx] = vec(var(@view(obj.data[ch, :, ep_idx]), dims = 2))
+            bad_mat[:, ep_idx] = vec(var(@view(obj.data[ch, :, ep_idx]), dims = 2))
         end
 
         # flatten variance results in epoch order
-        s_mv = vcat(s_mv, vec(s_mv_mat))
+        s_m = vcat(s_m, vec(bad_mat))
 
         # vectorized reductions - no loop needed
         bc[ch] = bc[ch] .|| vec(any(o; dims = 2))
@@ -684,7 +684,7 @@ function epoch_reject(
 
     if :p2p in method
         _info("Using :p2p method")
-        @inbounds Threads.@threads :static for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             bad_chs = detect_p2p(@view(obj.data[ch, :, ep_idx]), w = w, p = p)
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)

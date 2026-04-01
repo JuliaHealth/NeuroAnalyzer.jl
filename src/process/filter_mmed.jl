@@ -47,7 +47,7 @@ function filter_mmed(
     needs_filter(x) = t <= 0 || x < lo || x > hi
 
     # unfiltered samples stay at their original value
-    s_filtered = copy(s)
+    s_filtered = copy(s) .* 1.0 # convert to floats
 
     # left edge: truncated window [1 … idx]
     @inbounds for idx in 1:k

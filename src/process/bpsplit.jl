@@ -14,6 +14,7 @@ The following bands are extracted: `:delta`, `:theta`, `:alpha`, `:alpha_lower`,
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `order::Int64=91`: number of taps for the FIR band-pass filter; must be odd for band-pass filters
+- `bw::Real=0.5`: transition band width in Hz
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for the FIR filter; `nothing` applies the default Hamming window of length `order`
 
 # Returns
@@ -28,6 +29,7 @@ function bpsplit(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     order::Int64 = 91,
+    bw::Real=0.5,
     w::Union{Nothing, AbstractVector, <:Real} = nothing,
 )::@NamedTuple{
     s::Array{Float64, 4},
@@ -80,6 +82,7 @@ function bpsplit(
             ftype = :bp,
             cutoff = band_f,
             order = order,
+            bw = bw,
             w = w,
         )
 

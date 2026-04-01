@@ -144,7 +144,6 @@ function mscr(;
     fp::Int64,
     fn::Int64,
 )::@NamedTuple{mr::Float64, acc::Float64}
-
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
     tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))

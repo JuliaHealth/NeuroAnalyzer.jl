@@ -108,7 +108,7 @@ end
 function _epochs_tps(obj::NeuroAnalyzer.NEURO)::Matrix{Float64}
     ep_l = epoch_len(obj)
     ep_n = nepochs(obj)
-    tps = zeros(2, n)
+    tps = zeros(2, ep_n)
 
     # epoch start times: sample indices 1, ep_l+1, 2ep_l+1, …
     tps[1, :] = obj.time_pts[1:ep_l:(ep_n * ep_l - ep_l + 1)]
@@ -122,7 +122,7 @@ end
 function _markers_epochs(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     mrk_start = obj.markers[!, :start]
     mrk_epoch = zeros(Int64, length(mrk_start))
-    ep_tps = _ep_tps(obj)
+    ep_tps = _epochs_tps(obj)
     # cache: avoids repeated header lookups in the inner loop
     ep_n = nepochs(obj)
 
