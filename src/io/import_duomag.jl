@@ -3,11 +3,9 @@ export import_duomag
 """
     import_duomag(file_name)
 
-Load a DuoMAG TMS MEP recording file (`.ascii` or `.m`) and return a
-`NeuroAnalyzer.NEURO` object.
+Load a DuoMAG TMS MEP recording file (`.ascii` or `.m`) and return a `NeuroAnalyzer.NEURO` object.
 
-Both file formats carry metadata (subject, recording info, stimulation parameters), per-channel MEP signals, and positive/negative peak markers. Signal data are baseline-corrected, stimulation artifacts suppressed, and
-amplitudes scaled to μV on import.
+Both file formats carry metadata (subject, recording info, stimulation parameters), per-channel MEP signals, and positive/negative peak markers. Signal data are baseline-corrected, stimulation artifacts suppressed, and amplitudes scaled to μV on import.
 
 # Arguments
 
@@ -39,16 +37,17 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         stim_sample, stim_intens, coil_type,
         markers_pos, markers_neg,
         mep_signal = open(file_name, "r") do f
-            readline(f) # software name (unused)
-            readline(f) # blank
+            readline(f) # [Header]
+            readline(f) # sw_name (unused)
             sw_version = split(strip(readline(f)), '=')[2]
             subject = split(strip(readline(f)), '=')[2]
             subject_id = split(strip(readline(f)), '=')[2]
             record_id = split(strip(readline(f)), '=')[2]
             record_created = split(strip(readline(f)), '=')[2]
             readline(f) # method (unused)
-            readline(f)
+            readline(f) # [MarkerLegend]
             readline(f) # marker latency unit (unused)
+            readline(f) # [SignalLegend]
             sampling_interval = parse(Int, split(strip(readline(f)), '=')[2])
             sampling_interval_unit =
                 replace(split(strip(readline(f)), '=')[2], "\xb5" => "μ")
@@ -64,7 +63,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             stim_sample = parse.(Int, split(strip(readline(f)), ' ')[2:end])
             stim_intens = parse.(Int, split(strip(readline(f)), ' ')[2:end])
             coil_type = split(strip(readline(f)), ' ')[2:end]
-            readline(f)
+            readline(f) # [MarkerData]
 
             # positive and negative peak marker positions (ms, may be "N/A")
             parse_marker_line(l) = begin
@@ -73,7 +72,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             end
             markers_pos = parse_marker_line(readline(f))
             markers_neg = parse_marker_line(readline(f))
-            readline(f)
+            readline(f) # [SignalData]
 
             # signal matrix: rows = samples, columns = signals
             mep_signal = zeros(samples_count[1], signal_count)

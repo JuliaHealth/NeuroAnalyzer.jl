@@ -39,7 +39,7 @@ function import_dat(file_name)::DataFrame
             ArgumentError(
                 "$file_name has $(DataFrames.ncol(dat)) data columns; " *
                 "expected $(length(expected_cols)) " *
-                "($(join(expected_cols, ", "))).",
+                "($(Base.join(expected_cols, ", "))).",
             ),
         )
     DataFrames.rename!(dat, expected_cols)

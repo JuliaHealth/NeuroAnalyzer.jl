@@ -781,9 +781,9 @@ function import_locs_asc(file_name::String)::DataFrame
         throw(ArgumentError("$file_name is not an ASC file."))
 
     buffer = readlines(file_name)
-    filter!(l -> !startswith(l, ';'), buffer) # remove comments
+    Base.filter!(l -> !startswith(l, ';'), buffer) # remove comments
 
-    label_lines = filter(l -> startswith(l, '#'), buffer)
+    label_lines = Base.filter(l -> startswith(l, '#'), buffer)
     clabels = [m[1] for m in match.(r"\#.+ (.+)", label_lines)]
     n = length(clabels)
 
@@ -854,7 +854,7 @@ function import_locs_csv(file_name::String)::DataFrame
         throw(
             ArgumentError(
                 "$file_name is not a NeuroAnalyzer locs CSV file. " *
-                "Expected columns: $(join(expected, ", ")).",
+                "Expected columns: $(Base.join(expected, ", ")).",
             ),
         )
 

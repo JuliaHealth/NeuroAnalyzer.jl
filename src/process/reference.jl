@@ -87,7 +87,7 @@ function reference_ce(
     obj_new.header.recording[:reference] = if length(ref_ch_idx) == 1
         "common ($(labels(obj)[ref_ch_idx[1]]))"
     else
-        "common ($(join(labels(obj)[ref_ch_idx], ", ")) averaged)"
+        "common ($(Base.join(labels(obj)[ref_ch_idx], ", ")) averaged)"
     end
     push!(obj_new.history, "reference_ce(obj; ch=$ch, med=$med)")
 

@@ -56,14 +56,15 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         header = split.(header, ' ')
 
         for h in header
-            length(h) < 2 && continue
-            h[1] == "ADBitVolts" && (ADBitVolts = parse(Float64, h[2]))
-            h[1] == "SamplingFrequency" && (sampling_rate = parse(Int64, h[2]))
-            h[1] == "ADChannel" && (ADChannel = parse(Int64, h[2]))
-            h[1] == "ADGain" && (ADGain = parse(Float64, h[2]))
-            h[1] == "AmpGain" && (AmpGain = parse(Float64, h[2]))
-            h[1] == "AmpLowCut" && (AmpLowCut = parse(Float64, h[2]))
-            h[1] == "AmpHiCut" && (AmpHiCut = parse(Float64, h[2]))
+            if length(h) == 2
+                h[1] == "ADBitVolts" && (ADBitVolts = parse(Float64, h[2]))
+                h[1] == "SamplingFrequency" && (sampling_rate = parse(Int64, h[2]))
+                h[1] == "ADChannel" && (ADChannel = parse(Int64, h[2]))
+                h[1] == "ADGain" && (ADGain = parse(Float64, h[2]))
+                h[1] == "AmpGain" && (AmpGain = parse(Float64, h[2]))
+                h[1] == "AmpLowCut" && (AmpLowCut = parse(Float64, h[2]))
+                h[1] == "AmpHiCut" && (AmpHiCut = parse(Float64, h[2]))
+            end
         end
 
         isnothing(sampling_rate) &&

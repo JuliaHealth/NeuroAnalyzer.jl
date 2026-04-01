@@ -419,9 +419,10 @@ function import_cnt(
 
     # unpack named tuple
     (;
-        patient, recording, recording_date, recording_time, file_type, ch_n, clabels,
-        transducers, units, prefiltering, ch_type, annotation_channels, sampling_rate,
-        gain, annotations, data,
+        patient, recording_date, recording_time, ch_n, sampling_rate,
+            clabels, cbaseline, csenstivity, ccalib, cx_coord, cy_coord,
+            begdata, eventtablepos, prevfile, data_format, data,
+            nevents, evt_stimtype, evt_offset, evt_type, evt_code,
     ) = imported_object
     # reuse binding
 

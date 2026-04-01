@@ -54,14 +54,14 @@ _n2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = s isa Number ? [s
 
 Concatenate all strings in `v` into a single `String`.
 """
-_v2s(v::Vector{String})::String = join(v)
+_v2s(v::Vector{String})::String = Base.join(v)
 
 """
     _v2s(x)
 
 Convert a numeric vector to a comma-separated `String` (e.g. `[1, 2, 3]` → `"1, 2, 3"`).
 """
-_v2s(x::Vector{<:Number})::String = join(string.(x), ", ")
+_v2s(x::Vector{<:Number})::String = Base.join(string.(x), ", ")
 
 """
     _copy_lt2ut(m)
