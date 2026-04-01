@@ -385,6 +385,7 @@ function filter_apply(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
     ch_n = length(ch)

@@ -30,8 +30,8 @@ function hmspectrum(
     p::Matrix{Float64},
     f::Vector{Float64},
 }
-
     # validate
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(get_channel(obj; ch = ch)) == 1 ||
         throw(ArgumentError("ch must resolve to exactly one channel."))
 

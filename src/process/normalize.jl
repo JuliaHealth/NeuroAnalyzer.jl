@@ -218,6 +218,7 @@ function normalize(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     ch_n = length(ch)
     ep_n = nepochs(obj)

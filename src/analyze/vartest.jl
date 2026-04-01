@@ -30,10 +30,14 @@ function vartest(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
+    # number of channels
     ch_n = length(ch)
+    # number of epochs
     ep_n = nepochs(obj)
 
+    # pre-allocate outputs
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
 
@@ -108,6 +112,8 @@ function vartest(
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
         get_channel(obj2; ch = ch2, exclude = "")
+    isempty(ch1) && throw(ArgumentError("No channels selected."))
+    isempty(ch2) && throw(ArgumentError("No channels selected."))
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     isa(ep1, Int64) && (ep1 = [ep1])

@@ -39,6 +39,8 @@ function reference_ce(
 
     # reference channel indices
     ref_ch_idx = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
     # channels to re-reference
     sig_ch_idx = get_channel(obj; ch = get_channel(obj; type = "eeg"))
 

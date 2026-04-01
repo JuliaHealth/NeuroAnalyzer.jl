@@ -21,6 +21,7 @@ function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
@@ -115,6 +116,7 @@ function extract_data(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # validate
     _check_epochs(obj, ep)

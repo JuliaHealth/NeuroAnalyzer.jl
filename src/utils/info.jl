@@ -511,7 +511,7 @@ function channel_info(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
-    # validate
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 

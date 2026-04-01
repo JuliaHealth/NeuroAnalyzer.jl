@@ -82,6 +82,7 @@ function rms(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
@@ -182,6 +183,8 @@ function rmse(
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
         get_channel(obj2; ch = ch2, exclude = "")
+    isempty(ch1) && throw(ArgumentError("No channels selected."))
+    isempty(ch2) && throw(ArgumentError("No channels selected."))
 
     # validate
     _check_epochs(obj1, ep1)

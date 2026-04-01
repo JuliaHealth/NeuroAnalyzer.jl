@@ -28,6 +28,7 @@ function play(
     # resolve channel names to integer indices
     _check_epochs(obj, ep)
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 

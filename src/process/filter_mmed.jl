@@ -147,6 +147,7 @@ function filter_mmed(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # window length
     wlen = 2 * k + 1

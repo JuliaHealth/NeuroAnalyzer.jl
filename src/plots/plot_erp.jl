@@ -672,6 +672,7 @@ function plot_erp(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1 ||
         throw(ArgumentError("All channels must be of the same type."))
     length(ch) > 1 && (eavg = false)

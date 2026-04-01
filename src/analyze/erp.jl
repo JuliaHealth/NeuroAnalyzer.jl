@@ -320,6 +320,7 @@ function erp_auc(
     ch =
         exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] :
         get_channel(obj; ch = ch, exclude = "")[1]
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # pre-allocate output
     auc = zeros(length(ch))

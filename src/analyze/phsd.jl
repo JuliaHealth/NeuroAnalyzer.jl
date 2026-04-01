@@ -150,6 +150,7 @@ function phsd(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return phsd(@view(obj.data[ch, :, :]); fs = sr(obj))
 end

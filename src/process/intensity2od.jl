@@ -53,6 +53,7 @@ function intensity2od(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # validate
     length(get_channel(obj; type = "nirs_int")) > 0 ||

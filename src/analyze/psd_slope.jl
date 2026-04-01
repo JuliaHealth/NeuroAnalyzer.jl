@@ -250,6 +250,7 @@ function psd_slope(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return psd_slope(
         @view(obj.data[ch, :, :]);

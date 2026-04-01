@@ -248,6 +248,7 @@ function channel_reject(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     ch_list = labels(obj)[ch]
 
     # number of channels
@@ -401,6 +402,7 @@ function channel_reject(
 
         # resolve channel names to integer indices
         chs = get_channel(obj; type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
+        isempty(chs) && throw(ArgumentError("No channels selected."))
 
         length(setdiff(ch_list, chs)) == 0 ||
             throw(ArgumentError("ch must contain only signal channels."))
@@ -585,6 +587,7 @@ function epoch_reject(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
     ch_list = labels(obj)[ch]
 
     # number of channels
@@ -755,6 +758,7 @@ function epoch_reject(
 
         # resolve channel names to integer indices
         chs = get_channel(obj; type = ["eeg", "seeg", "ecog", "meg", "mag", "grad"])
+        isempty(chs) && throw(ArgumentError("No channels selected."))
 
         length(setdiff(ch_list, chs)) == 0 ||
             throw(ArgumentError("ch must contain only signal channels."))

@@ -132,6 +132,9 @@ function itpc(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    # number of channels
     ch_n = length(ch)
 
     # get time point index
@@ -298,6 +301,7 @@ function itpc_spec(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
     ch_n = length(ch)

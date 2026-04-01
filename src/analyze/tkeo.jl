@@ -115,6 +115,7 @@ function tkeo(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return tkeo(@view(obj.data[ch, :, :]), obj.epoch_time; method = method)
 end

@@ -117,6 +117,7 @@ function corm(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return corm(@view(obj.data[ch, :, :]); norm = norm)
 end

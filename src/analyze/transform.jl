@@ -330,6 +330,7 @@ function transform(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return transform(
         obj.data[ch, :, :];
@@ -422,6 +423,7 @@ function hanalytic(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return NeuroAnalyzer.hanalytic(@view(obj.data[ch, :, :]))
 end

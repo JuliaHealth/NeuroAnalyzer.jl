@@ -104,6 +104,8 @@ function plv(
     ch2 =
         exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
         get_channel(obj2; ch = ch2, exclude = "")
+    isempty(ch1) && throw(ArgumentError("No channels selected."))
+    isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(
@@ -176,10 +178,14 @@ function plv(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
-    ch_n = length(ch)
-    ep_n = nepochs(obj)
-    ch = _n2v(ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
+    # number of channels
+    ch_n = length(ch)
+    # number of epochs
+    ep_n = nepochs(obj)
+
+    # pre-allocate output
     pv = zeros(ch_n, ch_n, ep_n)
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))

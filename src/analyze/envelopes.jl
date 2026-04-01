@@ -179,6 +179,7 @@ function tenv(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
     ch_n = length(ch)
@@ -443,6 +444,7 @@ function penv(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
     ch_n = length(ch)
@@ -820,6 +822,7 @@ function senv(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
     ch_n = length(ch)
@@ -1320,6 +1323,7 @@ function henv(
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
+    isempty(ch) && throw(ArgumentError("No channels selected."))
 
     henv_data = htransform(@view(obj.data[ch, :, :]))
     a = henv_data.a
