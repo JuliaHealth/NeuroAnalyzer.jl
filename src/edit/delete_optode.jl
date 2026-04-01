@@ -27,7 +27,7 @@ function delete_optode(
     for idx in eachindex(opt)
         opt[idx] in 1:opt_n || throw(ArgumentError("opt must be in [1, $opt_n]."))
     end
-    length(opt) > 1 && (opt = sort!(opt; rev = true))
+    length(opt) > 1 && (opt = sort(opt; rev = true))
     length(opt) < opt_n ||
         throw(
             ArgumentError(

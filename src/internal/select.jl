@@ -1,5 +1,6 @@
 function _select_channels(
-    obj::NeuroAnalyzer.NEURO, channel::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+    obj::NeuroAnalyzer.NEURO,
+    channel::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     def_chn::Int64 = 0,
 )::Union{Int64, Vector{Int64}}
     # select channels, default is all or def_chn

@@ -31,7 +31,7 @@ function delete_channel(
     ch_n = nchannels(obj)
 
     # validate
-    length(ch) > 1 && (ch = sort!(ch; rev = true))
+    length(ch) > 1 && (ch = sort(ch; rev = true))
     length(ch) < ch_n ||
         throw(
             ArgumentError(

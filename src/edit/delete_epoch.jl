@@ -29,7 +29,7 @@ function delete_epoch(
                 "Number of epochs to delete ($(length(ep))) must be smaller than number of all epochs.",
             ),
         )
-    length(ep) > 1 && (ep = sort!(ep; rev = true))
+    length(ep) > 1 && (ep = sort(ep; rev = true))
     _check_epochs(obj, ep)
 
     # create new dataset
@@ -95,18 +95,19 @@ Keep epochs.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function keep_epoch(
-    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    obj::NeuroAnalyzer.NEURO;
+    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
     # validate
     nepochs(obj) > 1 || throw(ArgumentError("OBJ contains only one epoch."))
 
-    length(ep) > 1 && (ep = sort!(ep; rev = true))
+    length(ep) > 1 && (ep = sort(ep; rev = true))
     _check_epochs(obj, ep)
 
     ep_list = collect(1:nepochs(obj))
     ep_to_remove = setdiff(ep_list, ep)
 
-    length(ep_to_remove) > 1 && (ep_to_remove = sort!(ep_to_remove; rev = true))
+    length(ep_to_remove) > 1 && (ep_to_remove = sort(ep_to_remove; rev = true))
 
     obj_new = delete_epoch(obj; ep = ep_to_remove)
     push!(obj_new.history, "keep_epoch(OBJ, $ep)")

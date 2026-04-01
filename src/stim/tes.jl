@@ -220,7 +220,6 @@ function tes_protocol(;
     ramp_out::Real,
     sham::Bool,
 )::Dict
-
     # validate
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
     current > 0 || throw(ArgumentError("current must be > 0 mA."))
@@ -240,7 +239,7 @@ function tes_protocol(;
         :hd => hd,
         :current => current,
         :frequency => frequency,
-        :anode_size => anode_size
+        :anode_size => anode_size,
         :cathode_size => cathode_size,
         :anode_loc => anode_loc,
         :cathode_loc => cathode_loc,

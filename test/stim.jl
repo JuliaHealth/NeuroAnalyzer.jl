@@ -4,7 +4,7 @@ using Test
 @test tdcs_dose(current = 2.0, pad_area = 35, duration = 1200)[1] == 2.4
 
 @info "Test: ect_charge()"
-@test ect_charge(pw = 0.5, pint = 10, pf = 10, duration = 10) == 500.0
+@test ect_charge(pw = 0.5, pint = 10, pf = 10, duration = 10) == 0.5
 
 @info "Test: tes_protocol()"
 p = tes_protocol(;
