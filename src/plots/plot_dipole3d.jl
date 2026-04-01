@@ -30,11 +30,14 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)
     @assert all(-1.0 .≤ d.mag .≤ 1.0) "Magnitude must be within [-1.0, 1.0]."
 
     # define texture file paths (adjust as needed)
-    brain_top_texture_path = joinpath(res_path, "brain_top.png")
-    brain_side_texture_path = joinpath(res_path, "brain_side.png")
-    brain_front_texture_path = joinpath(res_path, "brain_front.png")
+    brain_top_texture_path = joinpath(NeuroAnalyzer.res_path, "brain_top.png")
+    brain_side_texture_path = joinpath(NeuroAnalyzer.res_path, "brain_side.png")
+    brain_front_texture_path = joinpath(NeuroAnalyzer.res_path, "brain_front.png")
 
     # load textures (fallback to simple colors if files are missing)
+    brain_top_texture = nothing
+    brain_side_texture = nothing
+    brain_front_texture = nothing
     try
         brain_top_texture = FileIO.load(brain_top_texture_path)
         brain_side_texture = FileIO.load(brain_side_texture_path)

@@ -57,14 +57,15 @@ function spectrogram(
             wlen = div(wlen, 2)
             woverlap = div(woverlap, 2)
         end
-        pg = DSP.spectrogram(s, wlen, woverlap; fs = fs, window = win)
+        spec_data = DSP.spectrogram(s, wlen, woverlap; fs = fs, window = win)
 
     elseif method === :mt
         win = w ? hanning(length(s)) : ones(length(s))
-        pg = DSP.mt_spectrogram(s .* win; fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
+        spec_data = DSP.mt_spectrogram(s .* win; fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
+
     end
 
-    p = pg.power
+    p = spec_data.power
 
     p[p .== -Inf] .= minimum(p[p .!= -Inf])
     p[p .== +Inf] .= maximum(p[p .!= +Inf])
@@ -132,8 +133,13 @@ function spectrogram(
     f = spec_data.f
     t = spec_data.t
 
+    # number of channels
+    ch_n = size(s, 1)
+
     # pre-allocate output
-    @inbounds Threads.@threads :static for ch_idx in axes(s, 1)
+    p = zeros(length(f), length(t), ch_n)
+
+    @inbounds Threads.@threads :static for ch_idx in 1:ch_n
         p[:, :, ch_idx] = NeuroAnalyzer.spectrogram(
             @view(s[ch_idx, :]),
             fs = fs,

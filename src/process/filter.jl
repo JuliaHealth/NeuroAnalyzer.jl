@@ -157,11 +157,11 @@ function filter_create(;
     end
 
     # --- cutoff arity check ---
-    if fprototype in (:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic)
-        if ftype in (:lp, :hp)
+    if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        if ftype in [:lp, :hp]
             length(cutoff) == 1 ||
                 throw(ArgumentError("For :$ftype, cutoff must be a scalar."))
-        elseif ftype in (:bp, :bs)
+        elseif ftype in [:bp, :bs]
             length(cutoff) == 2 ||
                 throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
         end

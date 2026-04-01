@@ -27,7 +27,7 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
     ch_n = size(obj, 1)
 
     #  pre-allocate output
-    p = zeros(ch_n, ep_n)
+    p = zeros(ch_n, 2)
 
     @inbounds Threads.@threads :static for ch_idx in 1:ch_n
         s = @view obj.data[ch_idx, :, 1]

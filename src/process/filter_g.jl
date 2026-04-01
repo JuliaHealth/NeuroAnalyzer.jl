@@ -29,7 +29,7 @@ function filter_g(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
     f >= 0 || throw(ArgumentError("f must be ≥ 0."))
-    f < fs / 2 || throw(ArgumentError("f must be < $(fs / 2) Hz (Nyquist)."))
+    f <= fs / 2 || throw(ArgumentError("f must be ≤ $(fs / 2) Hz (Nyquist)."))
     gw > 0 || throw(ArgumentError("gw must be > 0."))
 
     # frequency axis matching the FFT output length (including zero-padding)

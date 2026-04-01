@@ -88,12 +88,12 @@ function eros(
     f = spec_data.f
     t = spec_data.t
     # (freq, time, epochs)
-    s = spec_data.p[1, :, :, :]
+    s = spec_data.p
 
     if datatype(obj) in ["erp", "erf"]
-        s = cat(s[:, :, 1], dropdims(mean(s; dims = 3); dims = 3); dims = 3)
+        s = cat(s[:, :, :, 1], mean(s[:, :, 1, 2:end]; dims = 3); dims=3)
     else
-        s = mean(s; dims = 3)
+        s = dropdims(mean(s; dims = 4); dims= 4)
     end
 
     return (; s, f, t)

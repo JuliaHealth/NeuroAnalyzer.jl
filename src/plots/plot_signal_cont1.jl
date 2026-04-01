@@ -86,7 +86,6 @@ function plot_cont(
     else
         ch_order = collect(1:ch_n)
     end
-    clabels = labels(obj)[ch][ch_order]
     ctypes  = obj.header.recording[:channel_type][ch][ch_order]
     cunits  = obj.header.recording[:unit][ch][ch_order]
 
@@ -120,10 +119,13 @@ function plot_cont(
         nch      = Observable(n_channels)
         ch1      = Observable(1)
         ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
+        clabels = labels(obj)[ch][ch_order]
     else
+        ch_n     = length(ctypes_uni)
         ch1      = Observable(1)
         ch2_init = length(ctypes_uni)
         nch      = Observable(ch_n)
+        clabels  = uppercase.(ctypes_uni)
     end
 
     # get ranges of the original signal for the scales
@@ -211,16 +213,14 @@ function plot_cont(
                 s_u = msci95_data.ul
                 s_l = msci95_data.ll
                 GLMakie.band!(
-                    ax1,
-                    t,
-                    s_u,
-                    s_l;
+                    ax1, t, s_u, s_l;
                     alpha = 0.25,
                     color = :grey,
                     strokewidth = 0.5,
                 )
                 GLMakie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
             end
+
         else
             !mono && (cmap = GLMakie.resample_cmap(pal, size(s, 1)))
             for idx in axes(s, 1)
@@ -230,6 +230,7 @@ function plot_cont(
                     colormap   = pal,
                     colorrange = 1:size(s, 1),
                     linewidth  = 0.5,
+                    alpha = 1.0,
                 )
             end
             if avg

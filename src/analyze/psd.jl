@@ -440,7 +440,7 @@ function mwpsd(
     p = zeros(length(f))
     @inbounds for frq_idx in 1:nfrq
         kernel = generate_morlet(fs, f[frq_idx], 1, ncyc = ncyc[frq_idx], complex = true)
-        w_conv = fconv(s .* win, kernel = kernel, norm = false)
+        w_conv = fconv(s .* w, kernel = kernel, norm = false)
         p[frq_idx] = median(abs2.(w_conv))
     end
 
@@ -493,7 +493,7 @@ function ghpsd(
     p = zeros(length(f), length(s))
 
     @inbounds for frq_idx in eachindex(f)
-        s_filt = filter_g(s .* win, fs = fs, f = f[frq_idx], gw = gw)
+        s_filt = filter_g(s .* w, fs = fs, f = f[frq_idx], gw = gw)
         p[frq_idx, :] = abs2.(DSP.hilbert(s_filt))
     end
 

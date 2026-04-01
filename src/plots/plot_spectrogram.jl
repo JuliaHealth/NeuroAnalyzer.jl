@@ -631,12 +631,13 @@ function plot_spectrogram(
 
     # calculate spectrogram
     if length(ch) == 1 || type === :topo
+
         if method === :stft
             spec_data = NeuroAnalyzer.spectrogram(
                 signal; fs = fs, db = false, method = :stft,
                 wlen = wlen, woverlap = woverlap, w = w,
             )
-            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            sp, sf, st = spec_data.p, spec_data.f, spec_data.t
             title == "default" && (title = "Spectrogram (short-time Fourier)$ep_suffix")
 
         elseif method === :mt
@@ -644,26 +645,27 @@ function plot_spectrogram(
                 signal; fs = fs, db = false, method = :mt,
                 nt = nt, wlen = wlen, woverlap = woverlap, w = w,
             )
-            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            sp, sf, st = spec_data.p, spec_data.f, spec_data.t
             title == "default" && (title = "Spectrogram (multi-tapered)$ep_suffix")
+
         elseif method === :mw
             spec_data =
                 NeuroAnalyzer.mwspectrogram(signal; fs = fs, ncyc = ncyc, db = false, w = w)
-            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            sp, sf, st = spec_data.p, spec_data.f, spec_data.t
             title == "default" && (title = "Spectrogram (Morlet wavelet)$ep_suffix")
 
         elseif method === :gh
             spec_data =
                 NeuroAnalyzer.ghtspectrogram(signal; fs = fs, db = false, gw = gw, w = w)
-            sp, sf, st = spec_data.sp, spec_data.sf, spec_data.st
+            sp, sf, st = spec_data.p, spec_data.f, spec_data.t
             title == "default" && (title = "Spectrogram (Gaussian-Hilbert)$ep_suffix")
 
         elseif method === :cwt
             spec_data = NeuroAnalyzer.cwtspectrogram(signal; fs = fs, wt = wt)
+            sp, sf, st = spec_data.m, spec_data.f, spec_data.t
             sf[1] > flim[1] && (flim = (sf[1], flim[2]))
             sf[end] < flim[2] && (flim = (flim[1], sf[end]))
             title == "default" && (title = "CWT Scaleogram$ep_suffix")
-            sp, sf, st = spec_data.m, spec_data.f, spec_data.t
 
         elseif method === :hht
             imf = emd(signal, t)
@@ -673,6 +675,7 @@ function plot_spectrogram(
             title == "default" && (title = "Spectrogram (Hilbert-Huang)$ep_suffix")
         end
     elseif length(ch) > 1 && type === :normal
+
         if method === :stft
             psd_data = psd(
                 signal; fs = fs, db = db, method = :stft,
@@ -765,6 +768,7 @@ function plot_spectrogram(
         )
 
     elseif length(ch) > 1 && type === :normal
+
         ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         fig = plot_spectrogram(

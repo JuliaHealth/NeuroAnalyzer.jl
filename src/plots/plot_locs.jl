@@ -19,10 +19,14 @@ end
 
 # Draw a single weighted connection line between two channel positions.
 function _draw_connection!(
-    loc_x::AbstractVector, loc_y::AbstractVector,
-    idx1::Int, idx2::Int,
-    val::Real, weight::Real,
-    mono::Bool, use_weights::Bool,
+    loc_x::AbstractVector,
+    loc_y::AbstractVector,
+    idx1::Int,
+    idx2::Int,
+    val::Real,
+    weight::Real,
+    mono::Bool,
+    use_weights::Bool,
 )
     xs = [loc_x[idx1], loc_x[idx2]]
     ys = [loc_y[idx1], loc_y[idx2]]
@@ -30,28 +34,48 @@ function _draw_connection!(
         lw = 6 * weight
         al = 0.25 * weight
         if val > 0
-            GLMakie.lines!(xs, ys; linewidth = lw, alpha = al,
-                color = mono ? :black : :red)
+            GLMakie.lines!(
+                xs,
+                ys;
+                linewidth = lw,
+                alpha = al,
+                color = mono ? :black : :red
+            )
         elseif val < 0
-            GLMakie.lines!(xs, ys; linewidth = lw, alpha = al,
+            GLMakie.lines!(
+                xs,
+                ys;
+                linewidth = lw,
+                alpha = al,
                 color = mono ? :black : :blue,
-                linestyle = mono ? :dot : :solid)
+                linestyle = mono ? :dot : :solid
+            )
         end
     else
-        GLMakie.lines!(xs, ys; linewidth = 0.2, color = :black)
+        GLMakie.lines!(
+            xs,
+            ys;
+            linewidth = 0.2,
+            color = :black
+        )
     end
 end
 
 # Draw a connection weight label at the midpoint between two channel positions.
 function _draw_connection_label!(
-    loc_x::AbstractVector, loc_y::AbstractVector,
-    idx1::Int, idx2::Int,
-    val::Real, font_size::Int, mono::Bool,
+    loc_x::AbstractVector,
+    loc_y::AbstractVector,
+    idx1::Int,
+    idx2::Int,
+    val::Real,
+    font_size::Int,
+    mono::Bool,
 )
     l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
     color = mono ? :black : (val >= 0 ? :red : :blue)
     return GLMakie.text!(
-        l_pos[1], l_pos[2];
+        l_pos[1],
+        l_pos[2];
         align    = (:center, :center),
         text     = string(val),
         fontsize = font_size,
@@ -131,6 +155,9 @@ function plot_locs(
 
     # significant channel labels
     sch_labels = ch_labels
+
+    loc_x = zeros(length(ch))
+    loc_y = zeros(length(ch))
 
     if plane === :xy
         if cart
@@ -285,8 +312,16 @@ function plot_locs(
             for idx2 in (idx1 + 1):size(connections, 1)
                 val = connections[idx1, idx2]
                 if _passes_threshold(val, threshold, threshold_type)
-                    _draw_connection!(loc_x, loc_y, idx1, idx2,
-                        val, m_tmp[idx1, idx2], mono, use_weights)
+                    _draw_connection!(
+                        loc_x,
+                        loc_y,
+                        idx1,
+                        idx2,
+                        val,
+                        m_tmp[idx1, idx2],
+                        mono,
+                        use_weights
+                    )
                 end
             end
         end
@@ -300,7 +335,8 @@ function plot_locs(
     for (i, idx) in enumerate(ch)
         if idx in sch_set
             GLMakie.scatter!(
-                loc_x[i], loc_y[i];
+                loc_x[i],
+                loc_y[i];
                 markersize  = marker_size,
                 color       = mono ? :gray : cmap[i],
                 colormap    = pal,
@@ -310,7 +346,8 @@ function plot_locs(
             )
         else
             GLMakie.scatter!(
-                loc_x[i], loc_y[i];
+                loc_x[i],
+                loc_y[i];
                 markersize  = marker_size,
                 color       = :gray,
                 strokewidth = sw,
@@ -353,7 +390,8 @@ function plot_locs(
                 pt[2], pt[3]
             end
             GLMakie.text!(
-                fid_loc_x, fid_loc_y;
+                fid_loc_x,
+                fid_loc_y;
                 text     = fid_names[idx],
                 fontsize = font_size,
                 align    = (:center, :center),

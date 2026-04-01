@@ -320,7 +320,7 @@ function plot_psd_3d(
 
         # plot powers
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        GLMakie.surface!(f, eachindex(clabels), p[:, f1f2]'; colormap = pal)
+        GLMakie.surface!(f, eachindex(clabels), p[:, f1:f2]'; colormap = pal)
     end
 
     return fig

@@ -289,15 +289,15 @@ function plot_erp_topo(
     end
 
     # get locations
-    if !cart
-        loc_x = zeros(size(locs, 1))
-        loc_y = zeros(size(locs, 1))
+    loc_x = zeros(size(locs, 1))
+    loc_y = zeros(size(locs, 1))
+    if cart
+        loc_x = locs.loc_x
+        loc_y = locs.loc_y
+    else
         for idx in axes(locs, 1)
             loc_x[idx], loc_y[idx] = pol2cart(locs.loc_radius[idx], locs.loc_theta[idx])
         end
-    else
-        loc_x = locs.loc_x
-        loc_y = locs.loc_y
     end
 
     # create individual ERP plots for each channel
@@ -364,9 +364,7 @@ function plot_erp_topo(
     ax.titlesize = 18
 
     # draw head outline if requested
-    if head
-        draw_head_outline!(ax)
-    end
+    head && _draw_head_outline!(ax)
 
     # draw channel markers with embedded ERP plots
     for (idx, (x, y)) in enumerate(zip(loc_x, loc_y))
@@ -459,12 +457,14 @@ function plot_erp_stack(
                 "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t))).",
             ),
         )
-    !isnothing(rt) && (length(rt) == size(s, 1)) ||
+    if !isnothing(rt)
+        length(rt) == size(s, 1) ||
         throw(
             ArgumentError(
                 "Length of the rt vector must equal number of ERP epochs ($(size(s, 1))).",
             ),
         )
+    end
 
     # select color palette
     pal = mono ? :grays : :darktest
@@ -500,9 +500,7 @@ function plot_erp_stack(
     hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s); colormap = pal)
 
     # draw zero line if requested
-    if zl
-        GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
-    end
+    zl && GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
 
     # plot response times if provided
     if !isnothing(rt)
@@ -673,9 +671,10 @@ function plot_erp(
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1 ||
-        throw(ArgumentError("All channels must be of the same type."))
-    length(ch) > 1 && (eavg = false)
+    if length(ch) > 1
+        length(unique(obj.header.recording[:channel_type][ch])) == 1 ||
+            throw(ArgumentError("All channels must be of the same type."))
+    end
 
     # for GFP plots, we need at least 2 channels
     if type === :gfp
@@ -690,12 +689,12 @@ function plot_erp(
     ep_n = nepochs(obj) - 1
     if length(ch) == 1
         if type === :stack
-            s = obj.data[ch[1], :, 2:end]' # transpose for stacked plot
+            s = obj.data[ch[1], :, 2:end]'  # transpose for stacked plot
         else
-            s = obj.data[ch, :, 1][:] # single channel data
+            s = obj.data[ch, :, 1][:]       # single channel data
         end
     else
-        s = obj.data[ch, :, 1] # multi-channel data
+        s = obj.data[ch, :, 1]              # multi-channel data
     end
 
     # get time vector
@@ -884,12 +883,12 @@ function plot_erp(
 
     # add peak markers if requested
     if peaks
-        if length(ch_indices) == 1 && type === :normal
+        if length(ch) == 1 && type === :normal
             pp = erp_peaks(obj)
-            pos_time = t[pp[ch_indices[1], 1]][1] * 1000
-            pos_amp = obj.data[ch_indices[1], pp[ch_indices[1], 1], 1][1]
-            neg_time = t[pp[ch_indices[1], 2]][1] * 1000
-            neg_amp = obj.data[ch_indices[1], pp[ch_indices[1], 2], 1][1]
+            pos_time = t[pp[ch[1], 1]][1] * 1000
+            pos_amp = obj.data[ch[1], pp[ch[1], 1], 1][1]
+            neg_time = t[pp[ch[1], 2]][1] * 1000
+            neg_amp = obj.data[ch[1], pp[ch[1], 2], 1][1]
 
             GLMakie.scatter!(
                 fig[1, 1],
@@ -911,10 +910,10 @@ function plot_erp(
             @info "Positive peak: $(round(pos_time, digits = 0)) ms, $(round(pos_amp, digits = 2)) $units"
             @info "Negative peak: $(round(neg_time, digits = 0)) ms, $(round(neg_amp, digits = 2)) $units"
 
-        elseif length(ch_indices) > 1 && type === :normal
+        elseif length(ch) > 1 && type === :normal
 
             # for multi-channel average
-            mep_tmp = mean(obj.data[ch_indices, :, 1]; dims = 1)[:, :, :]
+            mep_tmp = mean(obj.data[ch, :, 1]; dims = 1)[:, :, :]
             obj_tmp = keep_channel(obj; ch = clabels[1])
             obj_tmp.data = mep_tmp
             pp = erp_peaks(obj_tmp)

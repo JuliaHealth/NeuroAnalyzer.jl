@@ -96,7 +96,7 @@ p = plot_filter(;
     fprototype = :iirnotch,
     ftype = :lp,
     cutoff = 10,
-    bw = 2,
+    bw = 0.5,
     gui = false,
 )
 @test p isa GLMakie.Figure
@@ -105,7 +105,18 @@ p = plot_filter(;
     fprototype = :fir,
     ftype = :lp,
     cutoff = 10,
-    order = 8,
+    order = 11,
+    bw = 0.5,
+    gui = false,
+)
+@test p isa GLMakie.Figure
+p = plot_filter(;
+    fs = 256,
+    fprototype = :fir,
+    ftype = :hp,
+    cutoff = 10,
+    order = 11,
+    bw = 0.5,
     gui = false,
 )
 @test p isa GLMakie.Figure
@@ -114,8 +125,8 @@ p = plot_filter(;
     fprototype = :firls,
     ftype = :bp,
     cutoff = (10, 12),
-    order = 8,
-    bw = 2,
+    order = 11,
+    bw = 0.5,
     gui = false,
 )
 @test p isa GLMakie.Figure
@@ -124,8 +135,8 @@ p = plot_filter(;
     fprototype = :remez,
     ftype = :bs,
     cutoff = (10, 12),
-    order = 8,
-    bw = 2,
+    order = 11,
+    bw = 0.5,
     gui = false,
 )
 @test p isa GLMakie.Figure
@@ -165,7 +176,7 @@ p = plot_psd(e10; db = true, ep = 1, ch = ["Fp1", "Fp2"], type = :topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_save()"
-p = NeuroAnalyzer.plot(e10; ch = "Fp1")
+p = NeuroAnalyzer.plot(e10; ch = "Fp1", gui = false)
 NeuroAnalyzer.plot_save(p; file_name = "test.png")
 @test isfile("test.png")
 isfile("test.png") && rm("test.png")
@@ -191,6 +202,7 @@ p = NeuroAnalyzer.plot(
     e10;
     ch = ["Fp1", "Fp2"],
     type = :butterfly,
+    avg = false,
     ci95 = true,
     gui = false,
 )
@@ -246,39 +258,39 @@ p = plot_histogram(stats[1, :], 0.8)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_bar()"
-p = plot_bar([1, 2, 3, 4, 5]; xlabels = ["G1", "G2", "G3", "G4", "G5"])
+p = plot_bar([1, 2, 3, 4, 5]; glabels = ["G1", "G2", "G3", "G4", "G5"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_line()"
-p = plot_line([1, 2, 1, 4.1, 1.5]; xlabels = ["G1", "G2", "G3", "G4", "G5"])
+p = plot_line([1, 2, 1, 4.1, 1.5]; glabels = ["G1", "G2", "G3", "G4", "G5"])
 @test p isa GLMakie.Figure
 p = plot_line(
     rand(2, 5);
     rlabels = ["pre", "post"],
-    xlabels = ["G1", "G2", "G3", "G4", "G5"],
+    glabels = ["G1", "G2", "G3", "G4", "G5"],
 )
 @test p isa GLMakie.Figure
 
 @info "Test: plot_box()"
 s = rand(3, 10)
 s[1, :] .*= 2
-p = plot_box(s; xlabels = ["G1", "G2", "G3"])
+p = plot_box(s; glabels = ["G1", "G2", "G3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_violin()"
 s = rand(3, 10)
 s[1, :] .*= 2
-p = plot_violin(s; xlabels = ["G1", "G2", "G3"])
+p = plot_violin(s; glabels = ["G1", "G2", "G3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_dots()"
 s = rand(2, 10)
-p = plot_dots(s; xlabels = ["G1", "G2"])
+p = plot_dots(s; glabels = ["G1", "G2"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_paired()"
 s = rand(3, 10)
-p = plot_paired(s; xlabels = ["V1", "V2", "V3"])
+p = plot_paired(s; glabels = ["V1", "V2", "V3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polar()"
@@ -309,7 +321,8 @@ p = plot_dipole3d(d)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_eros()"
-s, f, t = eros(e10; ch = "Fp1")
+eros_data = eros(e10; ch = "Fp1")
+s, f, t = eros_data.s, eros_data.f, eros_data.t
 p = plot_eros(s, f, t; tm = 1000)
 @test p isa GLMakie.Figure
 e10_erp = average_epochs(e10)

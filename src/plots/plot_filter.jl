@@ -226,97 +226,107 @@ function plot_filter(;
         )
         !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
 
+        # --- :fir parameter validation ---
         if fprototype === :fir
-            (isnothing(order) && isnothing(w)) &&
-                throw(ArgumentError("Either order or w must be specified."))
+            isnothing(bw) && throw(ArgumentError("bw must be specified for $fprototype."))
             if !isnothing(w)
-                (ftype in [:hp, :bp, :bs] && mod(length(w), 2) != 0) ||
-                    throw(ArgumentError("Length of w must be odd."))
+                ftype in (:hp, :bp, :bs) && mod(length(w), 2) == 0 &&
+                    throw(ArgumentError("Length of w must be odd for :hp/:bp/:bs filters."))
                 length(w) >= 1 || throw(ArgumentError("Length of w must be ≥ 1."))
+                order = length(w)
             elseif !isnothing(order)
-                (ftype in [:hp, :bp, :bs] && mod(order, 2) != 0) ||
-                    throw(ArgumentError("order must be odd."))
+                ftype in (:hp, :bp, :bs) && mod(order, 2) == 0 &&
+                    throw(ArgumentError("order must be odd for :hp/:bp/:bs filters."))
+                w = DSP.hamming(order)
             end
+            length(w) == order ||
+                throw(ArgumentError("Length of w ($(length(w))) must equal order ($order)."))
         end
 
+        # --- :firls / :remez / :iirnotch bw validation ---
         if fprototype in [:firls, :remez, :iirnotch]
-            isnothing(bw) && throw(ArgumentError("bw must be specified."))
+            isnothing(bw) && throw(ArgumentError("bw must be specified for $fprototype."))
             bw > 0 || throw(ArgumentError("bw must be > 0."))
+            bw <= 10 || throw(ArgumentError("bw must be ≤ 10."))
             if length(cutoff) == 1
                 if bw >= cutoff
-                    bw = cutoff - 0.1
+                    bw = round(cutoff - 0.1; digits = 1)
                     _info("bw truncated to $bw Hz")
                 end
             else
                 if bw >= cutoff[2]
-                    bw = cutoff[2] - 0.1
+                    bw = round(cutoff[2] - 0.1; digits = 1)
                     _info("bw truncated to $bw Hz")
                 end
             end
         end
 
+        # --- :firls weight vector defaults ---
         if fprototype === :firls
             if ftype in [:bp, :bs]
                 if !isnothing(w)
-                    length(w) == 6 || throw(ArgumentError("Length of w must be 6."))
+                    !(length(w) == 6) &&
+                        throw(ArgumentError("Length of w must be 6 for :bp/:bs filter."))
                 else
                     w = ones(6)
                 end
             elseif ftype in [:lp, :hp]
                 if !isnothing(w)
-                    length(w) == 4 || throw(ArgumentError("Length of w must be 4."))
+                    !(length(w) == 4) &&
+                        throw(ArgumentError("Length of w must be 4 for :lp/:hp filter."))
                 else
                     w = ones(4)
                 end
             end
         end
 
+        # --- ripple defaults for equiripple IIR prototypes ---
         if fprototype in [:chebyshev1, :chebyshev2, :elliptic]
             if isnothing(rp)
                 rp = 0.5
-                _info("rp set at $rp dB.")
+                _info("rp set at $rp Hz.")
             end
             if isnothing(rs)
                 rs = 20
-                _info("rs set at $rs dB.")
+                _info("rs set at $rs Hz.")
             end
         end
 
+        # --- order and ftype required for these prototypes ---
         if fprototype in [:firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-            isnothing(order) && throw(ArgumentError("order must be specified."))
-            isnothing(ftype) && throw(ArgumentError("ftype must be specified."))
+            isnothing(order) && throw(ArgumentError("order must be specified for $fprototype."))
+            isnothing(ftype) && throw(ArgumentError("ftype must be specified for $fprototype."))
         end
 
+        # --- :iirnotch specifics ---
         if fprototype === :iirnotch
-            isnothing(ftype) || _info("For :iirnotch filter ftype is ignored")
-            isnothing(order) || _info("For :iirnotch filter order is ignored")
-            length(cutoff) == 1 || throw(
-                ArgumentError(
-                    "For :iirnotch filter cutoff must contain only one frequency.",
-                ),
-            )
+            !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
+            !isnothing(order) && _info("For :iirnotch filter order is ignored")
+            length(cutoff) == 1 ||
+                throw(ArgumentError("cutoff must be a scalar for :iirnotch."))
         end
 
+        # --- cutoff arity check ---
         if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-            (ftype in [:lp, :hp] && length(cutoff) == 1) ||
-                throw(
-                    ArgumentError(
-                        "For :$(ftype) filter, cutoff must specify only one frequency.",
-                    ),
-                )
-            (ftype in [:bp, :bs] && length(cutoff) == 2) ||
-                throw(
-                    ArgumentError(
-                        "For :$(ftype) filter, cutoff must specify two frequencies.",
-                    ),
-                )
+            if ftype in [:lp, :hp]
+                length(cutoff) == 1 ||
+                    throw(ArgumentError("For :$ftype, cutoff must be a scalar."))
+            elseif ftype in [:bp, :bs]
+                length(cutoff) == 2 ||
+                    throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
+            end
         end
 
+        # --- cutoff value checks and normalization ---
         if length(cutoff) == 1
             cutoff > 0 || throw(ArgumentError("cutoff must be > 0 Hz."))
-            cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz."))
+            cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz (Nyquist)."))
         else
-            _check_tuple(cutoff, (0, nqf), "cutoff")
+            if cutoff[1] == cutoff[2]
+                cutoff = (cutoff[1], cutoff[1] + 0.1)
+            elseif cutoff[1] > cutoff[2]
+                cutoff = (cutoff[2], cutoff[1])
+            end
         end
 
         # wrap parameters in Observables for reactive updates

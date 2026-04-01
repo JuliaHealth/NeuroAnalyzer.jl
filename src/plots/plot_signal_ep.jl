@@ -123,10 +123,13 @@ function plot_ep(
         nch      = Observable(n_channels)
         ch1      = Observable(1)
         ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
+        clabels = labels(obj)[ch][ch_order]
     else
+        ch_n     = length(ctypes_uni)
         ch1      = Observable(1)
         ch2_init = length(ctypes_uni)
         nch      = Observable(ch_n)
+        clabels  = uppercase.(ctypes_uni)
     end
 
     # get ranges of the original signal for the scales
@@ -221,10 +224,7 @@ function plot_ep(
                 s_u = msci95_data.ul
                 s_l = msci95_data.ll
                 GLMakie.band!(
-                    ax1,
-                    t,
-                    s_u,
-                    s_l;
+                    ax1, t, s_u, s_l;
                     alpha = 0.25,
                     color = :grey,
                     strokewidth = 0.5,
@@ -241,6 +241,7 @@ function plot_ep(
                     colormap   = pal,
                     colorrange = 1:size(s, 1),
                     linewidth  = 0.5,
+                    alpha = 1.0,
                 )
             end
             if avg
@@ -295,7 +296,7 @@ function plot_ep(
                 end
             end
         elseif type === :butterfly
-            for idx in 1:ch_n
+            for idx in eachindex(ctypes_uni)
                 s_rectangle = lift(seg_pos) do sp
                     return Rect(sp, (idx - 0.475), 0.01, 0.975)
                 end
