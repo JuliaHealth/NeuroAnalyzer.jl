@@ -35,7 +35,6 @@ function pli(
     s1ph::Vector{Float64},
     s2ph::Vector{Float64},
 }
-
     # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
@@ -96,7 +95,6 @@ function pli(
     s1ph::Array{Float64, 3},
     s2ph::Array{Float64, 3},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
@@ -143,8 +141,8 @@ function pli(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         pli_data = pli(
-            @view(viewobj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(viewobj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
         pv[ch_idx, ep_idx] = pli_data.pv
         sd[ch_idx, :, ep_idx] = pli_data.sd
@@ -174,7 +172,6 @@ function pli(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Array{Float64, 3}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

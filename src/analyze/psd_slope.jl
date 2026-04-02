@@ -34,7 +34,7 @@ Named tuple:
 
 - `lf::Vector{Float64}`: linear fit
 - `ls::Float64`: slopes of linear fit
-- `pf::Vector{Float64}`: range of frequencies for the linear fit
+- `f::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
     s::AbstractVector;
@@ -52,10 +52,12 @@ function psd_slope(
 )::@NamedTuple{
     lf::Vector{Float64},
     ls::Float64,
-    pf::Vector{Float64},
+    f::Vector{Float64},
 }
+    # validate
     _check_tuple(flim, (0, fs / 2), "flim")
 
+    # dry run
     psd_data = psd(
         s;
         fs = fs,
@@ -70,18 +72,18 @@ function psd_slope(
         demean = demean,
     )
     pw = psd_data.p
-    pf = psd_data.f
+    f = psd_data.f
 
-    f1_idx = vsearch(flim[1], pf)
-    f2_idx = vsearch(flim[2], pf)
-    pf = pf[f1_idx:f2_idx]
+    f1_idx = vsearch(flim[1], f)
+    f2_idx = vsearch(flim[2], f)
+    f = f[f1_idx:f2_idx]
     pw = pw[f1_idx:f2_idx]
 
-    lr = NeuroAnalyzer.linreg(pf, pw)
+    lr = NeuroAnalyzer.linreg(f, pw)
     lf = lr.lf
     ls = lf[2] - lf[1]
 
-    return (; lf, ls, pf)
+    return (; lf, ls, f)
 end
 
 """
@@ -118,7 +120,7 @@ Named tuple:
 
 - `lf::Array{Float64, 3}`: linear fit
 - `ls::Matrix{Float64}`: slope of linear fit
-- `pf::Vector{Float64}`: range of frequencies for the linear fit
+- `f::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
     s::AbstractArray;
@@ -136,9 +138,8 @@ function psd_slope(
 )::@NamedTuple{
     lf::Array{Float64, 3},
     ls::Matrix{Float64},
-    pf::Vector{Float64},
+    f::Vector{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -147,7 +148,8 @@ function psd_slope(
     # number of epochs
     ep_n = size(s, 3)
 
-    lf = psd_slope(
+    # dry run
+    psd_data = psd_slope(
         s[1, :, 1];
         fs = fs,
         flim = flim,
@@ -160,7 +162,9 @@ function psd_slope(
         ncyc = ncyc,
         gw = gw,
         demean = demean,
-    ).lf
+    )
+    lf = psd_data.lf
+    f = psd_data.f
 
     # pre-allocate outputs
     lf = zeros(ch_n, length(lf), ep_n)
@@ -187,7 +191,7 @@ function psd_slope(
         ls[ch_idx, ep_idx] = psd_slope_data.ls
     end
 
-    return (; lf, ls, pf)
+    return (; lf, ls, f)
 end
 
 """
@@ -224,7 +228,7 @@ Named tuple:
 
 - `lf::Array{Float64, 3}`: linear fit
 - `ls::Matrix{Float64}`: slope of linear fit
-- `pf::Vector{Float64}`: range of frequencies for the linear fit
+- `f::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(
     obj::NeuroAnalyzer.NEURO;
@@ -242,9 +246,8 @@ function psd_slope(
 )::@NamedTuple{
     lf::Array{Float64, 3},
     ls::Matrix{Float64},
-    pf::Vector{Float64},
+    f::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

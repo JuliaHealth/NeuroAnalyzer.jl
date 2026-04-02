@@ -148,7 +148,7 @@ function mdiff(
     p = zeros(ep_n)
 
     # calculate over epochs
-    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
+    for ep_idx in 1:ep_n
         mdiff_data = mdiff(
             @view(s1[:, :, ep_idx]),
             @view(s2[:, :, ep_idx]),

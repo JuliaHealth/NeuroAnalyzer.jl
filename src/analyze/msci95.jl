@@ -183,12 +183,12 @@ function msci95(
     ll = zeros(ep_n, ep_len)
 
     # calculate over epochs
-    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
+    for ep_idx in 1:ep_n
         msci_data = msci95(@view(s[:, :, ep_idx]), n = n, method = method)
         sm[ep_idx, :] = msci_data.sm
         se[ep_idx, :] = msci_data.se
-        ul[ep_idx, :] = msci_data.ul
         ll[ep_idx, :] = msci_data.ll
+        ul[ep_idx, :] = msci_data.ul
     end
 
     return (; sm, se, ll, ul)
@@ -229,9 +229,9 @@ function msci95(
     sm = mean(s1) - mean(s2)
     s1_se = std(s1) / sqrt(length(s1))
     s2_se = std(s2) / sqrt(length(s2))
-    ss = sqrt(s1_se^2 + s2_se^2)
-    ul = sm + 1.96 * ss
-    ll = sm - 1.96 * ss
+    se = sqrt(s1_se^2 + s2_se^2)
+    ll = sm - 1.96 * se
+    ul = sm + 1.96 * se
 
     return (; sm, se, ll, ul)
 end
@@ -276,8 +276,8 @@ function msci95(
     # pre-allocate outputs
     sm = zeros(ch_n, ep_n)
     se = zeros(ch_n, ep_n)
-    ul = zeros(ch_n, ep_n)
     ll = zeros(ch_n, ep_n)
+    ul = zeros(ch_n, ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -287,9 +287,9 @@ function msci95(
             @view(s2[ch_idx, :, ep_idx])
         )
         sm[ch_idx, ep_idx] = result.sm
-        ss[ch_idx, ep_idx] = result.ss
-        ul[ch_idx, ep_idx] = result.ul
+        se[ch_idx, ep_idx] = result.se
         ll[ch_idx, ep_idx] = result.ll
+        ul[ch_idx, ep_idx] = result.ul
     end
 
     return (; sm, se, ll, ul)
@@ -324,8 +324,8 @@ function msci95(
 )::@NamedTuple{
     sm::Matrix{Float64},
     se::Matrix{Float64},
-    ul::Matrix{Float64},
     ll::Matrix{Float64},
+    ul::Matrix{Float64},
 }
 
     # resolve channel names to integer indices, optionally skipping bad channels

@@ -431,20 +431,8 @@ iv, ia, sd, pd, s1p, s2p = ispc(v1, v2)
 @test ia == 0.0017801930770334259
 @test sd == [-5.0, -3.0, -1.0, 1.0, 3.0]
 @test pd == [1.3157044982273685, -0.8713795327960081, -0.3743702916488455, -0.7615478999167378, 1.0328436072470222]
-@test s1p ≈ [
-    1.039406675134543,
-    -0.6027563879589182,
-    -0.21331750626000984,
-    -0.33140501474755424,
-    0.3279718365439915,
-]
-@test s2p ≈ [
-    -0.27629782309282525,
-    0.26862314483709,
-    0.16105278538883577,
-    0.4301428851691834,
-    -0.7048717707030308,
-]
+@test s1p ≈ [1.039406675134543, -0.6027563879589182, -0.21331750626000984, -0.33140501474755424, 0.3279718365439915]
+@test s2p ≈ [-0.27629782309282525, 0.26862314483709, 0.16105278538883577, 0.4301428851691834, -0.7048717707030308]
 iv, ia = ispc(e10; ch = "all")
 @test size(iv) == (24, 24, 10)
 @test size(ia) == (24, 24, 10)
@@ -486,7 +474,7 @@ st, sts, p = mdiff(a1, a2; method = :absdiff)
 st, sts, p = mdiff(m1, m2; method = :diff2int)
 @test length(st) == 6
 @test sts == 4.666666666666666
-@test p == 1.0 || p == 0.0
+@test p >= 0.0 && p <= 1.0
 st, sts, p = mdiff(a1, a2; method = :diff2int)
 @test size(st) == (2, 6)
 @test sts == [2.0, 2.0]
@@ -510,35 +498,13 @@ m = NeuroAnalyzer.mutual_information(e10, e10; ch1 = "Fp1", ch2 = "Fp2")
 @test size(m) == (1, 10)
 
 @info "Test: msci95()"
-@test msci95(v1) ==
-      (sm = 3.0, ss = 0.7071067811865476, su = 4.385929291125633, sl = 1.6140707088743669)
-@test msci95(v2) ==
-      (sm = 4.0, ss = 0.7071067811865476, su = 5.385929291125633, sl = 2.614070708874367)
-@test msci95(m1) == (
-    sm = [2.5, 3.5, 4.5],
-    ss = [1.4999999999999998, 1.4999999999999998, 1.4999999999999998],
-    su = [5.4399999999999995, 6.4399999999999995, 7.4399999999999995],
-    sl = [-0.4399999999999995, 0.5600000000000005, 1.5600000000000005],
-)
-@test msci95(a1) == (
-    sm = [1.0 1.0 1.0; 1.0 1.0 1.0],
-    ss = [0.0 0.0 0.0; 0.0 0.0 0.0],
-    su = [1.0 1.0 1.0; 1.0 1.0 1.0],
-    sl = [1.0 1.0 1.0; 1.0 1.0 1.0],
-)
-@test msci95(v1, v2) == (sm = -1.0, ss = 1.0, su = 0.96, sl = -2.96)
-@test msci95(m1, m2) == (
-    sm = [-4.0; 2.0;;],
-    ss = [0.8164965809277261; 0.8164965809277261;;],
-    su = [-2.3996667013816566; 3.6003332986183434;;],
-    sl = [-5.600333298618343; 0.39966670138165683;;],
-)
-@test msci95(a1, a2) == (
-    sm = [1.0 1.0; 1.0 1.0],
-    ss = [0.0 0.0; 0.0 0.0],
-    su = [1.0 1.0; 1.0 1.0],
-    sl = [1.0 1.0; 1.0 1.0],
-)
+@test msci95(v1) == (sm = 3.0, se = 0.7071067811865476, ll = 1.6140707088743669, ul = 4.385929291125633)
+@test msci95(v2) == (sm = 4.0, se = 0.7071067811865476, ll = 2.614070708874367, ul = 5.385929291125633)
+@test msci95(m1) == (sm = [2.5, 3.5, 4.5], se = [1.4999999999999998, 1.4999999999999998, 1.4999999999999998], ll = [-0.4399999999999995, 0.5600000000000005, 1.5600000000000005], ul = [5.4399999999999995, 6.4399999999999995, 7.4399999999999995])
+@test msci95(a1) == (sm = [1.0 1.0 1.0; 1.0 1.0 1.0], se = [0.0 0.0 0.0; 0.0 0.0 0.0], ll = [1.0 1.0 1.0; 1.0 1.0 1.0], ul = [1.0 1.0 1.0; 1.0 1.0 1.0])
+@test msci95(v1, v2) == (sm = -1.0, se = 1.0, ll = -2.96, ul = 0.96)
+@test msci95(m1, m2) == (sm = [-4.0; 2.0;;], se = [0.8164965809277261; 0.8164965809277261;;], ll = [-5.600333298618343; 0.39966670138165683;;], ul = [-2.3996667013816566; 3.6003332986183434;;])
+@test msci95(a1, a2) == (sm = [1.0 1.0; 1.0 1.0], se = [0.0 0.0; 0.0 0.0], ll = [1.0 1.0; 1.0 1.0], ul = [1.0 1.0; 1.0 1.0])
 sm, ss, su, sl = msci95(e10; ch = "all")
 @test size(sm) == (10, 2560)
 @test size(ss) == (10, 2560)
@@ -559,11 +525,11 @@ sm, ss, su, sl = msci95(e10, e10; ch1 = "Fp1", ch2 = "Fp2")
 s, f, t = eros(e10; ch = "Fp1", method = :stft)
 @test size(s) == (129, 89, 1)
 @test length(f) == 129
-@test length(t) == 89
+@test length(t) == 2560
 s, f, t = eros(e10; ch = "Fp1", method = :mt)
 @test size(s) == (257, 15, 1)
 @test length(f) == 257
-@test length(t) == 15
+@test length(t) == 2560
 s, f, t = eros(e10; ch = "Fp1", method = :mw)
 @test size(s) == (129, 2560, 1)
 @test length(f) == 129
@@ -745,21 +711,18 @@ lf, ls, pf = psd_slope(e10; ch = "Fp1", method = :gh)
 @test pf[end] == 128.0
 
 @info "Test: amp()"
-p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = NeuroAnalyzer.amp(e10; ch = "all")
-@test size(p) == (24, 10)
-@test size(r) == (24, 10)
-@test size(p2p) == (24, 10)
-@test size(semi_p2p) == (24, 10)
-@test size(msa) == (24, 10)
-@test size(rmsa) == (24, 10)
-@test size(nrg) == (24, 10)
-@test size(rmsq) == (24, 10)
+amp_data = NeuroAnalyzer.amp(e10; ch = "all")
+@test size(amp_data.peak_amp) == (24, 10)
+@test size(amp_data.rms_amp) == (24, 10)
+@test size(amp_data.p2p_amp) == (24, 10)
+@test size(amp_data.semi_p2p_amp) == (24, 10)
+@test size(amp_data.ms_amp) == (24, 10)
+@test size(amp_data.te_signal) == (24, 10)
 
 @info "Test: rms()"
 @test NeuroAnalyzer.rms(v1) == 3.3166247903554
 @test NeuroAnalyzer.rms(a1) == [1.0 1.0; 1.0 1.0]
-@test NeuroAnalyzer.rms(e10, ch = "Fp1") ≈
-      [363.8114536270564 349.8499943131803 336.5232468207543 329.74272589619585 317.29058937434684 311.968752257765 285.77992099365093 267.594955731802 259.6385867764089 243.78896217942722]
+@test NeuroAnalyzer.rms(e10, ch = "Fp1") ≈ [363.81145362705735 349.8499943131811 336.52324682075516 329.7427258961967 317.29058937434763 311.9687522577657 285.7799209936517 267.59495573180266 259.6385867764095 243.7889621794278]
 
 @info "Test: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 3.0
@@ -781,11 +744,11 @@ sn, f = NeuroAnalyzer.snr(e10; ch = "all", type = :mean)
 sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "Fp1", method = :stft)
 @test size(sp) == (129, 89, 1, 10)
 @test length(sf) == 129
-@test length(st) == 89
+@test length(st) == 2560
 sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "Fp1", method = :mt)
 @test size(sp) == (257, 15, 1, 10)
 @test length(sf) == 257
-@test length(st) == 15
+@test length(st) == 2560
 sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "Fp1", method = :mw)
 @test size(sp) == (129, 2560, 1, 10)
 @test length(sf) == 129

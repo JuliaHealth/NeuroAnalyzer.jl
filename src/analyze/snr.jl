@@ -51,11 +51,11 @@ Calculate RMS-based SNR for a 1-D signal vector.
 
 # Returns
 
-- `Float64`: SNR
+- `Float64`: SNR value
 """
 function snr2(s::AbstractVector)::Float64
     a = amp(s)
-    return (maximum(s) - minimum(s)) / a.rmsq
+    return (maximum(s) - minimum(s)) / a.rms_amp
 end
 
 """
