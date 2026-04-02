@@ -47,7 +47,7 @@ function entropy(
 
     # Freedman-Diaconis rule: optimal bin width = 2·IQR·N^(−1/3).
     maxmin_range = maximum(s) - minimum(s)
-    fd_bins = ceil(Int64, maxmin_range / (2.0 * iqr(s) * n^(-1 / 3)))
+    fd_bins = ceil(Int64, maxmin_range / (2.0 * StatsKit.iqr(s) * n^(-1 / 3)))
 
     # fit histogram and convert bin counts to probabilities
     h = StatsKit.fit(Histogram, s; nbins = fd_bins)
@@ -64,6 +64,7 @@ function entropy(
     kde_model = kde(s)
     points = range(minimum(s); stop = maximum(s), length = 1000)
     pdf_values = pdf(kde_model, points)
+    pdf_values[pdf_values .< 0] .= 0
     # calculate differential entropy in bits
     dent = -trapz(points, pdf_values .* log2.(pdf_values .+ eps()))
 
@@ -114,7 +115,6 @@ function entropy(
     nsent::Matrix{Float64},
     dent::Matrix{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -180,7 +180,6 @@ function entropy(
     nsent::Matrix{Float64},
     dent::Matrix{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -215,7 +214,6 @@ function negentropy(
     norm::Bool = true,
     type::Symbol = :diff,
 )::Float64
-
     # validate
     _check_var(type, [:diff, :shannon, :sample], "type")
 
@@ -265,7 +263,6 @@ function negentropy(
     norm::Bool = true,
     type::Symbol = :diff,
 )::Matrix{Float64}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -277,6 +274,15 @@ function negentropy(
     # pre-allocate output
     ne = zeros(ch_n, ep_n)
 
+    # initialize progress bar
+    progbar = Progress(
+        ch_n * ep_n;
+        dt = 1,
+        barlen = 20,
+        color = :white,
+        enabled = progress_bar,
+    )
+
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
@@ -286,6 +292,8 @@ function negentropy(
             norm = norm,
             type = type,
         )
+        # update progress bar
+        progress_bar && next!(progbar)
     end
 
     return ne
@@ -317,7 +325,6 @@ function negentropy(
     norm::Bool = true,
     type::Symbol = :diff,
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

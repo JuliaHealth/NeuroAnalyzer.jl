@@ -32,7 +32,6 @@ function plinterpolate_channel(
     imethod::Symbol = :sh,
     ifactor::Int64 = 100,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel type to integer indices
     channels = get_channel(obj; type = datatype(obj))
     length(channels) > 1 ||
@@ -47,7 +46,6 @@ function plinterpolate_channel(
     # validate
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj)
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)[1]
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -61,15 +59,17 @@ function plinterpolate_channel(
     delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
     delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
 
-    locs_x1 = obj_tmp.locs[!, :loc_x]
-    locs_y1 = obj_tmp.locs[!, :loc_y]
+    locs_x1 = obj_tmp.locs.loc_x
+    locs_y1 = obj_tmp.locs.loc_y
 
     delete_channel!(obj_tmp; ch = labels(obj_tmp)[ch])
-    locs_x2 = obj_tmp.locs[!, :loc_x]
-    locs_y2 = obj_tmp.locs[!, :loc_y]
+    locs_x2 = obj_tmp.locs.loc_x
+    locs_y2 = obj_tmp.locs.loc_y
     chs = get_channel(obj_tmp; ch = get_channel(obj_tmp; type = datatype(obj_tmp)))
 
+    # number of epochs
     ep_n = length(ep)
+    # epoch length
     ep_len = epoch_len(obj_tmp)
 
     s_interpolated = zeros(Float64, length(ch), ep_len, ep_n)
@@ -78,7 +78,7 @@ function plinterpolate_channel(
     progbar =
         Progress(ep_n * ep_len; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    @inbounds Threads.@threads :dynamic for ep_idx in eachindex(ep)
+    @inbounds Threads.@threads :static for ep_idx in eachindex(ep)
         for length_idx in 1:ep_len
             s_tmp, x, y = _interpolate2d(
                 @view(obj_tmp.data[chs, length_idx, ep[ep_idx]]),

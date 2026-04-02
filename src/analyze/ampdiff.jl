@@ -22,6 +22,7 @@ function ampdiff(
 
     # number of channels
     ch_n = size(s, 1)
+    ch = 1:ch_n
     # number of epochs
     ep_n = size(s, 3)
 

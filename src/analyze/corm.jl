@@ -71,7 +71,6 @@ Calculate correlation matrix for a 3-D signal array.
 - `Array{Float64, 3}`: correlation matrix for each epoch, shape (channels, channels, epochs)
 """
 function corm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 

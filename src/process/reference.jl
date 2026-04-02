@@ -33,7 +33,6 @@ function reference_ce(
     ch::Union{String, Vector{String}, Regex},
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
-
     # validate
     _check_datatype(obj, "eeg")
 
@@ -149,6 +148,7 @@ function reference_avg(
     med::Bool = false,
     weighted::Bool = false,
 )::NeuroAnalyzer.NEURO
+    # validate
     _check_datatype(obj, "eeg")
 
     # channels that will be referenced
@@ -373,6 +373,7 @@ function reference_a(
     type::Symbol = :l,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
+    # validate
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
     "A1" in labels(obj) || throw(ArgumentError("OBJ does not contain A1 channel."))
@@ -503,6 +504,7 @@ function reference_m(
     type::Symbol = :l,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
+    # validate
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
     "M1" in labels(obj) || throw(ArgumentError("OBJ does not contain M1 channel."))
@@ -623,7 +625,7 @@ function _laplacian_reference(
     loc_x::Vector{Float64},
     loc_y::Vector{Float64},
     loc_z::Union{Nothing, Vector{Float64}} = nothing,
-)::Matrix{Float64}
+)::Array{Float64, 3}
     ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
     s = @view obj.data[ch, :, :]
     ch_n, ep_n = size(s, 1), size(s, 3)
@@ -633,7 +635,8 @@ function _laplacian_reference(
         nn_idx[idx, :] = sortperm(d[idx, :])[1:nn]
     end
 
-    s_ref = zeros(ch_n, size(s, 2), ep_n)
+    # pre-allocate output
+    s_ref = similar(s)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -654,30 +657,11 @@ function _laplacian_reference(
             end
             w = 1 .- normalize_n(w)
             ref_ch =
-                med ? vec(
-                    median(
-                        w .* ref_chs, dims
-                        = 1,
-                    ),
-                ) :
-                vec(
-                    mean(
-                        w .* ref_chs, dims
-                        = 1,
-                    ),
-                )
+                med ? vec(median(w .* ref_chs, dims = 1)) :
+                      vec(mean(w .* ref_chs, dims = 1))
         else
-            ref_ch = med ? vec(
-                median(
-                    ref_chs, dims
-                    = 1,
-                ),
-            ) : vec(
-                mean(
-                    ref_chs, dims
-                    = 1,
-                ),
-            )
+            ref_ch = med ? vec(median(ref_chs, dims = 1)) :
+                           vec(mean(ref_chs, dims = 1))
         end
         @inbounds s_ref[ch_idx, :, ep_idx] = s[ch_idx, :, ep_idx] .- ref_ch
     end
@@ -705,6 +689,7 @@ function reference_plap(
     weighted::Bool = false,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
+    # validate
     _check_datatype(obj, "eeg")
     _has_locs(obj)
 
@@ -717,8 +702,8 @@ function reference_plap(
     nn >= 1 || throw(ArgumentError("nn must be ≥ 1."))
     nn < ch_n - 1 || throw(ArgumentError("nn must be < $(ch_n - 1)."))
 
-    loc_x = locs[!, :loc_x]
-    loc_y = locs[!, :loc_y]
+    loc_x = locs.loc_x
+    loc_y = locs.loc_y
 
     # Euclidean distances
     d = [euclidean([loc_x[i], loc_y[i]], [loc_x[j], loc_y[j]]) for i in 1:ch_n, j in 1:ch_n]
@@ -737,6 +722,7 @@ function reference_plap(
     obj_new.locs[ch_locs, :label] .*= suffix
     obj_new.header.recording[:reference] =
         weighted ? "weighted planar Laplacian ($nn)" : "planar Laplacian ($nn)"
+
     push!(obj_new.history, "reference_plap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
 
     return obj_new
@@ -795,21 +781,22 @@ function reference_slap(
     weighted::Bool = false,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
+    # validate
     _check_datatype(obj, "eeg")
     _has_locs(obj)
 
     ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+    _check_ch_locs(ch, labels(obj), obj.locs.label)
     ch_n = length(ch)
 
     nn >= 1 || throw(ArgumentError("nn must be ≥ 1."))
     nn < ch_n - 1 || throw(ArgumentError("nn must be < $(ch_n - 1)."))
 
-    loc_x = locs[!, :loc_x]
-    loc_y = locs[!, :loc_y]
-    loc_z = locs[!, :loc_z]
+    loc_x = locs.loc_x
+    loc_y = locs.loc_y
+    loc_z = locs.loc_z
 
     # Euclidean distance
     d = [

@@ -102,7 +102,7 @@ function delete_channel(
     )
     obj_new.data = obj_new.data[setdiff(_c(ch_n), ch_idx), :, :]
  
-    push!(obj_new.history, "delete_channel(obj; ch=$(sort(ch_idx)))")
+    push!(obj_new.history, "delete_channel(obj; ch=$(labels(obj)[sort(ch_idx)]))")
  
     return obj_new
 end
@@ -127,15 +127,11 @@ function delete_channel!(
     ch::Union{String, Vector{String}, Regex},
     del_opt::Bool = false,
 )::Nothing
-    # validate
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-
     obj_new = delete_channel(obj; ch = ch, del_opt = del_opt)
-    obj.header = obj_new.header
-    obj.data = obj_new.data
+    obj.header  = obj_new.header
+    obj.data    = obj_new.data
     obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj.locs    = obj_new.locs
 
     return nothing
 end
@@ -158,6 +154,7 @@ function keep_channel(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::NeuroAnalyzer.NEURO
+    # number of channels
     ch_n = nchannels(obj)
 
     # resolve channel names to integer indices
@@ -194,15 +191,11 @@ function keep_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Nothing
-    # validate
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-
     obj_new = keep_channel(obj; ch = ch)
-    obj.header = obj_new.header
-    obj.data = obj_new.data
+    obj.header  = obj_new.header
+    obj.data    = obj_new.data
     obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj.locs    = obj_new.locs
 
     return nothing
 end

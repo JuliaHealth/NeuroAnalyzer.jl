@@ -26,7 +26,6 @@ function cph(
     ph::Vector{Float64},
     f::Vector{Float64},
 }
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
@@ -69,7 +68,6 @@ function cph(
     ph::Array{Float64, 4},
     f::Vector{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -144,7 +142,6 @@ function cph(
     ph::Array{Float64, 3},
     f::Vector{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
@@ -161,7 +158,7 @@ function cph(
     f = cph_data.f
 
     # pre-allocate output
-    ph = zeros(ch_n, ch_n, length(f), ep_n)
+    ph = zeros(ch_n, length(f), ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -200,7 +197,6 @@ function cph(
     ph::Array{Float64, 4},
     f::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -240,7 +236,6 @@ function cph(
     ep1::Union{Int64, Vector{Int64}, UnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, UnitRange{Int64}} = _c(nepochs(obj2)),
 )::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
-
     # validate
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))

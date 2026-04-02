@@ -32,7 +32,6 @@ function ica_decompose(
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
 }
-
     # validate
     _check_var(f, [:tanh, :gaus], "f")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -52,7 +51,7 @@ function ica_decompose(
     _warn("Signal should be artifact-cleaned and HP filtered (1-2 Hz) before ICA.")
     _info("Attempting to calculate $n components across $(length(tols)) tolerance levels")
     _info(
-        "Training will end when W change = $(tol[end]) or after $(iter * length(tol)) steps",
+        "Training will end when W change = $(tols[end]) or after $(iter * length(tols)) steps",
     )
     _info("Data will be demeaned and pre-whitened")
 
@@ -60,7 +59,7 @@ function ica_decompose(
 
     # initialize progress bar
     progbar = Progress(
-        iter * length(tol);
+        iter * length(tols);
         dt = 1,
         barlen = 20,
         color = :white,
@@ -79,7 +78,8 @@ function ica_decompose(
             # if it's not a convergence error, rethrow it; otherwise, update progress and continue
             !(err isa MultivariateStats.ConvergenceException) && rethrow(err)
             # skip progress for failed tolerance bracket
-            update!(progbar, iter)
+            # update progress bar
+            progress_bar && next!(progbar)
         end
     end
 
@@ -128,7 +128,6 @@ function ica_decompose(
     ic_mw::Matrix{Float64},
     ic_var::Vector{Float64},
 }
-
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("ica_decompose() must be applied to continuous object."))
@@ -190,20 +189,20 @@ function ica_reconstruct(;
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     keep::Bool = false,
 )::Matrix{Float64}
-
     # validate
     size(ic, 1) == size(ic_mw, 2) || throw(
         ArgumentError(
             "Dimension mismatch between ic ($(size(ic)))and ic_mw ($size(ic_mw))).",
         ),
     )
-
     # bounds check
-    all(1 .<= idx_vec .<= size(ic_mw, 2)) ||
+    all(1 .<= ic_idx .<= size(ic_mw, 2)) ||
         throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
 
     # determine which indices to actually use for reconstruction
-    target_idx = keep ? idx_vec : setdiff(1:size(ic_mw, 2), idx_vec)
+    target_idx = keep ? ic_idx : setdiff(1:size(ic_mw, 2), ic_idx)
+    # in case a single target_idx
+    target_idx = _n2v(target_idx)
 
     # reconstruction: signal = MixingMatrix[:, target] * Components[target, :]
     return ic_mw[:, target_idx] * ic[target_idx, :]
@@ -234,7 +233,6 @@ function ica_reconstruct(
     ic_mw::Matrix{Float64},
     keep::Bool = false,
 )::NeuroAnalyzer.NEURO
-
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("ica_reconstruct() must be applied to continuous object."))
@@ -314,7 +312,6 @@ function ica_remove(
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
 )::NeuroAnalyzer.NEURO
-
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("ica_remove() must be applied to continuous object."))
@@ -333,11 +330,11 @@ function ica_remove(
 
     # calculate over components and channels
     @inbounds Threads.@threads :static for idx in CartesianIndices((ic_n, ch_n))
-        ic_idx, ch_idx = idx[1], idx[2]
+        i_idx, ch_idx = idx[1], idx[2]
         obj_tmp = ica_reconstruct(
             obj,
             ch = labels(obj)[ch[ch_idx]],
-            ic_idx = ic_idx[ica_idx],
+            ic_idx = ic_idx[i_idx],
             ic = ic,
             ic_mw = ic_mw,
             keep = true,

@@ -47,8 +47,8 @@ function csd(
     ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     isempty(ch) && throw(ArgumentError("No channels selected."))
     locs =
-        Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
-    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+        Base.filter(:label => in(intersect(obj.locs.label, labels(obj)[ch])), obj.locs)
+    _check_ch_locs(ch, labels(obj), obj.locs.label)
 
     # number of channels
     ch_n = DataFrames.nrow(locs)
@@ -57,7 +57,7 @@ function csd(
 
     G, H = gh(locs; m = m, n = n)
 
-    # regularised G matrix and its inverse
+    # regularized G matrix and its inverse
     Gs = G + I(ch_n) * lambda
     Gs_inv = inv(Gs)
 
@@ -79,8 +79,7 @@ function csd(
 
         # solve Gs * C_unconstrained = data for each time point
         # (samples × ch_n): spline coefficients (unconstrained)
-        dataGs = (Gs \ data')'
-
+        dataGs = (Gs \ data)'
         # enforce the zero-sum constraint on the coefficients
         # C[t, i] = dataGs[t, i] - (Σ_j dataGs[t, j] * Gs_rs[j]) / Gs_inv_sum * Gs_rs[i]
         # (samples,)
@@ -176,7 +175,7 @@ function gh(
     H = zeros(ch_n, ch_n)
 
     # normalize electrode coordinates to the unit sphere
-    x, y, z = _locs_norm(locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z])
+    x, y, z = _locs_norm(locs.loc_x, locs.loc_y, locs.loc_z)
 
     # --- cosine distances between all electrode pairs ---
     cosdist = zeros(ch_n, ch_n)

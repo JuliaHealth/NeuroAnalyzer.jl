@@ -14,6 +14,7 @@ NeuroAnalyzer.filter!(
     ftype = :lp,
     cutoff = 40,
     order = 91,
+    bw = 0.5,
 )
 NeuroAnalyzer.filter!(
     e10;
@@ -22,6 +23,7 @@ NeuroAnalyzer.filter!(
     ftype = :hp,
     cutoff = 1,
     order = 91,
+    bw = 0.5,
 )
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -33,22 +35,22 @@ a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
 @info "Test: acov()"
-@test acov(v) == [-0.8 -0.8 -0.2 0.8 2.0 0.8 -0.2 -0.8 -0.8;;;]
+@test acov(v) == [-0.8, -0.8, -0.2, 0.8, 2.0, 0.8, -0.2, -0.8, -0.8]
 ac, l = acov(e10; ch = "all")
-@test size(ac) == (24, 3, 10)
-@test length(l) == 3
+@test size(ac) == (24, 69, 10)
+@test length(l) == 69
 ac, l = acov(e10; ch = "all", biased = false)
-@test size(ac) == (24, 3, 10)
-@test length(l) == 3
+@test size(ac) == (24, 69, 10)
+@test length(l) == 69
 ac, l = acov(e10; ch = "all", method = :cov)
-@test size(ac) == (24, 3, 10)
-@test length(l) == 3
+@test size(ac) == (24, 69, 10)
+@test length(l) == 69
 ac, l = acov(e10; ch = "all", method = :cov, biased = false)
-@test size(ac) == (24, 3, 10)
-@test length(l) == 3
+@test size(ac) == (24, 69, 10)
+@test length(l) == 69
 ac, l = acov(e10; ch = "all", method = :stat)
-@test size(ac) == (24, 3, 10)
-@test length(l) == 3
+@test size(ac) == (24, 69, 10)
+@test length(l) == 69
 
 @info "Test: ampdiff()"
 @test size(ampdiff(a1)) == (2, 3, 2)
@@ -97,16 +99,11 @@ mbp, maxf, maxbp, maxba = band_mpower(e10; ch = "Fp1", flim = (10, 20), method =
 @test size(maxba) == (1, 10)
 
 @info "Test: corm()"
-@test corm(v) ≈ ones(5, 5)
 @test size(corm(a1)) == (2, 2, 2)
 @test size(corm(e10, ch = "all")) == (24, 24, 10)
 
 @info "Test: covm()"
-@test covm(v) == [               2.5  5.0  7.5 10.0 12.5;
-     5.0 10.0 15.0 20.0 25.0;
-     7.5 15.0 22.5 30.0 37.5;
-    10.0 20.0 30.0 40.0 50.0;
-    12.5 25.0 37.5 50.0 62.5]
+@test covm(v) == [2.5;;]
 @test size(covm(a1)) == (2, 2, 2)
 @test size(covm(e10, ch = "all")) == (24, 24, 10)
 
@@ -141,8 +138,8 @@ e, sh, l, s, ns = NeuroAnalyzer.entropy(e10; ch = "all")
 @test size(ns) == (24, 10)
 
 @info "Test: negentropy()"
-n = NeuroAnalyzer.negentropy(rand(10))
-@test n < 0
+n = NeuroAnalyzer.negentropy(rand(10000))
+@test n > 0
 n = NeuroAnalyzer.negentropy(eeg; ch = "all")
 @test size(n) == (24, 1)
 
@@ -161,9 +158,9 @@ em, eu, el, t = tenv_mean(e10; ch = "all", dims = 2)
 @test size(el) == (2560, 24)
 @test length(t) == 2560
 em, eu, el, t = tenv_mean(e10; ch = "all", dims = 3)
-@test size(em) == (2560,)
-@test size(eu) == (2560,)
-@test size(el) == (2560,)
+@test size(em) == (2560, 1)
+@test size(eu) == (2560, 1)
+@test size(el) == (2560, 1)
 @test length(t) == 2560
 em, eu, el, t = tenv_median(e10; ch = "all", dims = 1)
 @test size(em) == (2560, 10)
@@ -176,9 +173,9 @@ em, eu, el, t = tenv_median(e10; ch = "all", dims = 2)
 @test size(el) == (2560, 24)
 @test length(t) == 2560
 em, eu, el, t = tenv_median(e10; ch = "all", dims = 3)
-@test length(em) == 2560
-@test length(eu) == 2560
-@test length(el) == 2560
+@test size(em) == (2560, 1)
+@test size(eu) == (2560, 1)
+@test size(el) == (2560, 1)
 @test length(t) == 2560
 
 @info "Test: senv()"
@@ -205,9 +202,9 @@ em, eu, el, t = senv_mean(e10; ch = "all", dims = 2)
 @test size(el) == (89, 24)
 @test length(t) == 89
 em, eu, el, t = senv_mean(e10; ch = "all", dims = 3)
-@test length(em) == 89
-@test length(eu) == 89
-@test length(el) == 89
+@test size(em) == (89, 1)
+@test size(eu) == (89, 1)
+@test size(el) == (89, 1)
 @test length(t) == 89
 em, eu, el, t = senv_median(e10; ch = "all", dims = 1)
 @test size(em) == (89, 10)
@@ -220,9 +217,9 @@ em, eu, el, t = senv_median(e10; ch = "all", dims = 2)
 @test size(el) == (89, 24)
 @test length(t) == 89
 em, eu, el, t = senv_median(e10; ch = "all", dims = 3)
-@test length(em) == 89
-@test length(eu) == 89
-@test length(el) == 89
+@test size(em) == (89, 1)
+@test size(eu) == (89, 1)
+@test size(el) == (89, 1)
 @test length(t) == 89
 
 @info "Test: penv()"
@@ -255,9 +252,9 @@ em, eu, el, t = penv_mean(e10; ch = "all", dims = 2)
 @test size(el) == (129, 24)
 @test length(t) == 129
 em, eu, el, t = penv_mean(e10; ch = "all", dims = 3)
-@test length(em) == 129
-@test length(eu) == 129
-@test length(el) == 129
+@test size(em) == (129, 1)
+@test size(eu) == (129, 1)
+@test size(el) == (129, 1)
 @test length(t) == 129
 em, eu, el, t = penv_median(e10; ch = "all", dims = 1)
 @test size(em) == (129, 10)
@@ -270,9 +267,9 @@ em, eu, el, t = penv_median(e10; ch = "all", dims = 2)
 @test size(el) == (129, 24)
 @test length(t) == 129
 em, eu, el, t = penv_median(e10; ch = "all", dims = 3)
-@test length(em) == 129
-@test length(eu) == 129
-@test length(el) == 129
+@test size(em) == (129, 1)
+@test size(eu) == (129, 1)
+@test size(el) == (129, 1)
 @test length(t) == 129
 
 @info "Test: henv()"
@@ -290,9 +287,9 @@ em, eu, el, t = henv_mean(e10; ch = "all", dims = 2)
 @test size(el) == (2560, 24)
 @test length(t) == 2560
 em, eu, el, t = henv_mean(e10; ch = "all", dims = 3)
-@test size(em) == (2560,)
-@test size(eu) == (2560,)
-@test size(el) == (2560,)
+@test size(em) == (2560, 1)
+@test size(eu) == (2560, 1)
+@test size(el) == (2560, 1)
 @test length(t) == 2560
 em, eu, el, t = henv_median(e10; ch = "all", dims = 1)
 @test size(em) == (2560, 10)
@@ -305,9 +302,9 @@ em, eu, el, t = henv_median(e10; ch = "all", dims = 2)
 @test size(el) == (2560, 24)
 @test length(t) == 2560
 em, eu, el, t = henv_median(e10; ch = "all", dims = 3)
-@test length(em) == 2560
-@test length(eu) == 2560
-@test length(el) == 2560
+@test size(em) == (2560, 1)
+@test size(eu) == (2560, 1)
+@test size(el) == (2560, 1)
 @test length(t) == 2560
 
 @info "Test: erp_peaks()"

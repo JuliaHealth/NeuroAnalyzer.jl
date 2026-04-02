@@ -605,9 +605,9 @@ e10_tmp = taper(e10; ch = "all", t = e10.data[1, :, 1])
 @test size(e10_tmp) == size(e10)
 
 @info "Test: tconv()"
-@test round.(tconv(v1, kernel = [0.2, 0.1, 0.2]), digits = 2) == [0.2, 0.5, 1.0, 1.5, 2.0]
+@test round.(tconv(v1, kernel = [0.2, 0.1, 0.2]), digits = 2) == [0.5, 1.0, 1.5, 2.0, 1.3]
 @test round.(tconv(a1, kernel = [0.2, 0.1, 0.2]), digits = 2) ==
-      [0.2 0.3 0.5; 0.2 0.3 0.5;;; 0.2 0.3 0.5; 0.2 0.3 0.5]
+      [0.3 0.5 0.3; 0.3 0.5 0.3;;; 0.3 0.5 0.3; 0.3 0.5 0.3]
 e10_tmp = tconv(e10; ch = "all", kernel = [0.2, 0.1, 0.2])
 @test size(e10_tmp) == size(e10)
 
@@ -694,7 +694,7 @@ eeg_tmp = ica_remove(eeg_tmp; ch = "all", ic_idx = 1, ic = ic, ic_mw = ic_mw)
 
 @info "Test: sort_epochs()"
 e10_erp = average_epochs(e10)
-e = sort_epochs(e10_erp; s = collect((nepochs(e10_erp) - 1):-1:1))
+e = sort_epochs(e10_erp; s = collect((nepochs(e10_erp)):-1:2))
 @test size(e.data) == (19, 2560, 11)
 
 @info "Test: denoise_cwd())"

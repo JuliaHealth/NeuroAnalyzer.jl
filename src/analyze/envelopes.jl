@@ -32,7 +32,6 @@ Calculate upper cubic-spline envelope from local maxima for a 1-D signal vector.
 - `Vector{Float64}`: upper envelope (zeros if fewer than 2 peaks found)
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
-
     # validate
     length(s) == length(x) || throw(
         ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."),
@@ -75,7 +74,6 @@ Calculate lower cubic-spline envelope from local minima for a 1-D signal vector.
 - `Vector{Float64}`: lower envelope (zeros if fewer than 2 troughs found)
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64 = 32)::Vector{Float64}
-
     # validate
     length(s) == length(x) || throw(
         ArgumentError("Lengths of s ($(length(s))) and x ($(length(x))) must be equal."),
@@ -173,7 +171,6 @@ function tenv(
     e::Array{Float64, 3},
     t::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -232,7 +229,6 @@ function tenv_mean(
     eu::Matrix{Float64},
     t::Vector{Float64},
 }
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -329,7 +325,6 @@ function tenv_median(
     eu::Matrix{Float64},
     t::Vector{Float64},
 }
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -438,7 +433,6 @@ function penv(
     e::Array{Float64, 3},
     f::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -542,7 +536,6 @@ function penv_mean(
     eu::Matrix{Float64},
     f::Vector{Float64},
 }
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -674,7 +667,6 @@ function penv_median(
     eu::Matrix{Float64},
     f::Vector{Float64},
 }
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -816,7 +808,6 @@ function senv(
     e::Array{Float64, 3},
     t::Vector{Float64},
 } where {T <: CWT}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -961,7 +952,7 @@ function senv(
         end
 
         # for each time bin find the frequency with maximum power
-        f_idx = zeros(length(st))
+        f_idx = zeros(length(t))
         m = vec(maximum(sp_loc, dims = 1))
         for idx2 in eachindex(m)
             f_idx[idx2] = sf_loc[vsearch(m[idx2], @view(sp_loc[:, idx2]))]
@@ -1032,7 +1023,6 @@ function senv_mean(
     eu::Matrix{Float64},
     t::Vector{Float64},
 } where {T <: CWT}
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -1188,7 +1178,6 @@ function senv_median(
     eu::Matrix{Float64},
     t::Vector{Float64},
 } where {T <: CWT}
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -1379,7 +1368,6 @@ function henv_mean(
     el::Matrix{Float64},
     t::Vector{Float64},
 }
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -1476,7 +1464,6 @@ function henv_median(
     eu::Matrix{Float64},
     t::Vector{Float64},
 }
-
     # validate
     if dims == 1
         nchannels(obj) >= 2 || throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -1566,7 +1553,6 @@ function env_cor(
     env1::Array{Float64, 3},
     env2::Array{Float64, 3},
 )::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
-
     # validate
     size(env1) == size(env2) ||
         throw(ArgumentError("Both envelopes must have the same size."))
