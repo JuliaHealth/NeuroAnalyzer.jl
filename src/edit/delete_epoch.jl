@@ -13,7 +13,7 @@ Markers within deleted epochs are dropped; markers after deleted epochs are shif
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to remove
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch numbers to remove
 
 # Returns
 
@@ -21,7 +21,7 @@ Markers within deleted epochs are dropped; markers after deleted epochs are shif
 """
 function delete_epoch(
     obj::NeuroAnalyzer.NEURO;
-    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
     # validate
     nepochs(obj) > 1 || throw(ArgumentError("You cannot delete the last epoch."))
@@ -61,14 +61,14 @@ Delete epoch(s) in-place.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to remove
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch numbers to remove
 
 # Returns
 
 - `Nothing`
 """
 function delete_epoch!(
-    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
     obj_new = delete_epoch(obj; ep = ep)
     obj.header = obj_new.header
@@ -91,7 +91,7 @@ Implemented by computing the complement set and delegating to `delete_epoch`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to keep
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch numbers to keep
 
 # Returns
 
@@ -99,7 +99,7 @@ Implemented by computing the complement set and delegating to `delete_epoch`.
 """
 function keep_epoch(
     obj::NeuroAnalyzer.NEURO;
-    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
     # validate
     nepochs(obj) > 1 || throw(ArgumentError("OBJ contains only one epoch."))
@@ -122,14 +122,14 @@ Keep only the specified epoch(s) in-place.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch numbers to keep
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch numbers to keep
 
 # Returns
 
 - `Nothing`
 """
 function keep_epoch!(
-    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
     obj_new = keep_epoch(obj; ep = ep)
     obj.header = obj_new.header

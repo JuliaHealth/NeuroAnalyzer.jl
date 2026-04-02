@@ -898,7 +898,8 @@ function senv(
                 w = w,
             )
             sp_loc = spec_data.p
-            sp_loc = spec_data.f
+            sf_loc = spec_data.f
+
         elseif method === :mt
             spec_data = NeuroAnalyzer.spectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
@@ -911,7 +912,8 @@ function senv(
                 w = w,
             )
             sp_loc = spec_data.p
-            sp_loc = spec_data.f
+            sf_loc = spec_data.f
+
         elseif method === :mw
             spec_data = NeuroAnalyzer.mwspectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
@@ -922,7 +924,8 @@ function senv(
                 w = w,
             )
             sp_loc = spec_data.p
-            sp_loc = spec_data.f
+            sf_loc = spec_data.f
+
         elseif method === :gh
             spec_data = NeuroAnalyzer.ghtspectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
@@ -932,7 +935,8 @@ function senv(
                 w = w,
             )
             sp_loc = spec_data.p
-            sp_loc = spec_data.f
+            sf_loc = spec_data.f
+
         elseif method === :cwt
             spec_data = NeuroAnalyzer.cwtspectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
@@ -940,11 +944,13 @@ function senv(
                 fs = fs,
             )
             sp_loc = spec_data.m
-            sp_loc = spec_data.f
+            sf_loc = spec_data.f
+
         end
 
         # optionally zero out powers above the threshold, then reverse so the
         # highest sub-threshold power becomes the "dominant" frequency
+        @show threshold
         if !isnothing(threshold)
             sp_loc[sp_loc .> threshold] .= 0
             reverse!(sp_loc)
@@ -958,7 +964,7 @@ function senv(
             f_idx[idx2] = sf_loc[vsearch(m[idx2], @view(sp_loc[:, idx2]))]
         end
 
-        e[ch_idx, :, ep_idx] = env_up(f_idx, st, d = d)
+        e[ch_idx, :, ep_idx] = env_up(f_idx, t, d = d)
     end
 
     return (; e, t)

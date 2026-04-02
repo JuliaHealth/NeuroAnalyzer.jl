@@ -196,7 +196,7 @@ Return the time segment in seconds spanning a contiguous range of epoch indices.
 """
 function e2t(
     obj::NeuroAnalyzer.NEURO;
-    ep::Union{Int64, UnitRange{Int64}, Vector{Int64}},
+    ep::Union{Int64, AbstractUnitRange{Int64}, Vector{Int64}},
 )::Tuple{Real, Real}
     ep isa Int64 && (ep = [ep])
 

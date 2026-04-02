@@ -76,7 +76,7 @@ Throws `ArgumentError` if any channel index is out of bounds or its label is abs
 - `locsl::Vector{String}`: labels present in the locations table
 """
 function _check_ch_locs(
-    ch::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     objl::Vector{String},
     locsl::Vector{String},
 )::Nothing
@@ -104,7 +104,7 @@ Accepts integer channel indices.
 """
 _loc_idx(
     obj::NeuroAnalyzer.NEURO,
-    ch::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Union{Int64, Vector{Int64}} = _find_bylabel(obj.locs, labels(obj)[ch])
 
 """
@@ -126,7 +126,7 @@ Return the location label(s) in `obj.locs` corresponding to channel index/indice
 """
 _idx2lab(
     obj::NeuroAnalyzer.NEURO,
-    ch::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Union{String, Vector{String}} = obj.locs[
     _loc_idx(obj, ch), :label,
 ]
@@ -152,7 +152,7 @@ Accepts integer indices.
 """
 function _ch_locs(
     obj::NeuroAnalyzer.NEURO,
-    ch::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::DataFrame
     chl  = labels(obj)[ch]
     chs  = intersect(obj.locs[!, :label], chl)

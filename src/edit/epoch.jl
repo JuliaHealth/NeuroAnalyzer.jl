@@ -51,7 +51,7 @@ function epoch(
         _check_markers(obj, marker)
         isnothing(ep_len) && throw(ArgumentError("ep_len must be specified for marker-based epoching."))
  
-        mrk_idx   = findall(obj_new.markers[!, :value] .== marker)
+        mrk_idx   = findall(obj_new.markers.value .== marker)
         mrk_start = obj_new.markers[mrk_idx, :start]
         mrk_len   = obj_new.markers[mrk_idx, :length]
  
@@ -239,7 +239,7 @@ function subepoch(
     ep_tps[2, :] = ep_tps[1, :] .+ ep_end
     ep_tps[1, :] .+= ep_start
  
-    mrk_start  = obj.markers[!, :start]
+    mrk_start  = obj.markers.start
     mrk_epoch  = _markers_epochs(obj)
  
     # remove markers outside the retained window
@@ -252,14 +252,14 @@ function subepoch(
     end
  
     # shift remaining marker timestamps to align with the trimmed epochs
-    mrk_start_new = deepcopy(obj_new.markers[!, :start])
+    mrk_start_new = deepcopy(obj_new.markers.start)
     for mrk_idx in eachindex(mrk_start_new)
         ep = mrk_epoch[mrk_idx]
         mrk_start_new[mrk_idx] -= (
             ep_start + (ep - 1) * (ep_start + (obj.time_pts[epoch_len(obj)] - ep_end))
         )
     end
-    obj_new.markers[!, :start] = round.(mrk_start_new; digits = 3)
+    obj_new.markers.start = round.(mrk_start_new; digits = 3)
  
     push!(obj_new.history, "subepoch(obj; ep_start=$ep_start, ep_end=$ep_end)")
  

@@ -47,8 +47,10 @@ end
 
 Wrap a scalar number in a single-element vector, or return the vector unchanged.
 """
-_n2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = s isa Number ? [s] : s
-
+function _n2v(s::Union{<:Number, Vector{<:Number}, AbstractUnitRange{Int64}})::Vector{<:Number}
+    s isa AbstractUnitRange{Int64} && return collect(s)
+    return s isa Number ? [s] : s
+end
 """
     _v2s(v)
 

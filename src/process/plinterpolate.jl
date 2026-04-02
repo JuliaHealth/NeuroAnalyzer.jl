@@ -11,7 +11,7 @@ Interpolate channel using planar interpolation.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch number(s) within to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -28,7 +28,7 @@ Interpolate channel using planar interpolation.
 function plinterpolate_channel(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
-    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     imethod::Symbol = :sh,
     ifactor::Int64 = 100,
 )::NeuroAnalyzer.NEURO
@@ -118,7 +118,7 @@ Interpolate channel using planar interpolation.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
-- `ep::Union{Int64, Vector{Int64}, UnitRange{Int64}}`: epoch number(s) within to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 - `ifactor::Int64=100`: interpolation quality
 
@@ -129,7 +129,7 @@ Interpolate channel using planar interpolation.
 function plinterpolate_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
-    ep::Union{Int64, Vector{Int64}, UnitRange{Int64}},
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     imethod::Symbol = :shepard,
     ifactor::Int64 = 100,
 )::Nothing
