@@ -52,7 +52,6 @@ function coherence(
     msc::Vector{Float64},
     f::Vector{Float64},
 }
-
     # validate
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)

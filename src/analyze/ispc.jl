@@ -88,7 +88,6 @@ function ispc(
     ispcv::Array{Float64, 3},
     ispca::Array{Float64, 3},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

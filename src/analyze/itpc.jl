@@ -201,7 +201,6 @@ function itpc_spec(
     itpca::Vector{Float64},
     itpcph::Matrix{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
     size(s, 1) == 1 || throw(ArgumentError("s must have 1 channel."))
@@ -258,7 +257,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 - `ch::String`: channel to analyze
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
 - `nfrq::Int64=_tlength(flim)`: number of frequencies
-- `frq::Symbol=:log`: frequency scaling - `:lin` or `:log`
+- `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
@@ -274,14 +273,13 @@ function itpc_spec(
     ch::String,
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
     nfrq::Int64 = _tlength(flim),
-    frq::Symbol = :log,
+    frq::Symbol = :lin,
     w::Union{Vector{<:Real}, Nothing} = nothing,
 )::@NamedTuple{
     itpcs::Matrix{Float64},
     itpczs::Matrix{Float64},
     f::Vector{Float64},
 }
-
     # validate
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(flim, (0, sr(obj) / 2), "flim")
@@ -302,6 +300,7 @@ function itpc_spec(
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 
     # number of channels
     ch_n = length(ch)
@@ -317,19 +316,18 @@ function itpc_spec(
 
     # initialize progress bar
     progbar = Progress(nfrq; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
-
-    Threads.@threads :static for frq_idx in 1:nfrq
-
+    @inbounds Threads.@threads :static for frq_idx in 1:nfrq
         # build Morlet wavelet and compute half-kernel offset for trimming
         kernel = generate_morlet(sr(obj), f[frq_idx], 1, ncyc = 10)
+        kernel = generate_morlet(256, 0, 1, ncyc = 10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
 
         # convolve each epoch with the Morlet kernel
         s_conv = zeros(Float64, 1, ep_len, ep_n)
         @inbounds for ep_idx in 1:ep_n
             s_conv[1, :, ep_idx] = DSP.conv(
-                @view(obj.data[ch, :, ep_idx]),
-                kernel,
+                @view(obj.data[ch[1], :, ep_idx]),
+                kernel
             )[(half_kernel - 1):(end - half_kernel)]
         end
 

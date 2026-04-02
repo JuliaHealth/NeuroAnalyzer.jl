@@ -47,7 +47,6 @@ function cpsd(
     pxy::Vector{ComplexF64},
     f::Vector{Float64},
 }
-
     # validate
     _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
@@ -94,7 +93,6 @@ function cpsd(
         # segment the signals into overlapping windows
         chunks_idx = _fchunks(length(s1); wlen = wlen, wstep = wstep)
         pxy = zeros(ComplexF64, nextpow(2, wlen + 1))
-
         # apply Hanning window (or unit window)
         win = w ? hanning(wlen) : ones(wlen)
 
@@ -108,8 +106,8 @@ function cpsd(
             end
             # FFT each segment
             # zero-pad to next power of 2, normalize by window length
-            ss1 = fft0(s1_tmp .* win, nextfastfft(wlen) - wlen) / length(s1_tmp)
-            ss2 = fft0(s2_tmp .* win, nextfastfft(wlen) - wlen) / length(s2_tmp)
+            ss1 = fft0(s1_tmp .* win, nextpow(2, wlen + 1) - wlen) / length(s1_tmp)
+            ss2 = fft0(s2_tmp .* win, nextpow(2, wlen + 1) - wlen) / length(s2_tmp)
             # accumulate: CPSD = conj(S1) * S2 for each segment
             pxy .+= conj.(ss1) .* ss2
         end
@@ -200,7 +198,6 @@ function cpsd(
     pxy::Array{ComplexF64, 3},
     f::Vector{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
     _chk3d(s2)
@@ -303,7 +300,6 @@ function cpsd(
     pxy::Array{ComplexF64, 3},
     f::Vector{Float64},
 }
-
     # validate
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
