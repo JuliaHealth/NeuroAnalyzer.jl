@@ -166,12 +166,12 @@ Calculate spectrogram for a NEURO object.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pad::Int64=0`: number of zeros to append
 - `method::Symbol=:stft`: spectrogram estimation method:
-- `:stft`: short-time Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian and Hilbert transform
-- `:cwt`: continuous wavelet transformation
-- `:hht`: Hilbert-Huang transform
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+    - `:hht`: Hilbert-Huang transform
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `gw::Real=10`: Gaussian width in Hz
@@ -224,8 +224,6 @@ function spectrogram(
     ep_n = nepochs(obj)
     # sampling rate
     fs = sr(obj)
-    # time points
-    t = obj.epoch_time
 
     # pilot call to determine output dimensions
     if method === :stft
@@ -239,6 +237,7 @@ function spectrogram(
             w = w,
         )
         f = spec_data.f
+        t = spec_data.t
         p_tmp = spec_data.p
 
     elseif method === :mt
@@ -253,6 +252,7 @@ function spectrogram(
             w = w,
         )
         f = spec_data.f
+        t = spec_data.t
         p_tmp = spec_data.p
 
     elseif method === :mw
@@ -265,6 +265,7 @@ function spectrogram(
             w = w,
         )
         f = spec_data.f
+        t = spec_data.t
         p_tmp = spec_data.p
 
     elseif method === :gh
@@ -276,11 +277,13 @@ function spectrogram(
             w = w,
         )
         f = spec_data.f
+        t = spec_data.t
         p_tmp = spec_data.p
 
     elseif method === :cwt
         spec_data = NeuroAnalyzer.cwtspectrogram(@view(obj.data[1, :, 1]); fs = fs, wt = wt)
         f = spec_data.f
+        t = spec_data.t
         # cwtspectrogram returns field .m not .p
         p_tmp = spec_data.m
 
@@ -288,11 +291,12 @@ function spectrogram(
         spec_data =
             NeuroAnalyzer.hhtspectrogram(@view(obj.data[1, :, 1]), t; fs = fs, db = db)
         f = spec_data.f
+        t = spec_data.t
         p_tmp = spec_data.p
     end
 
     # pre-allocate outputs
-    p = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
+    p = zeros(length(f), length(t), ch_n, ep_n)
 
     # initialize progress bar
     progbar =
@@ -360,7 +364,7 @@ function spectrogram(
             p[:, :, ch_local, ep_idx] =
                 NeuroAnalyzer.hhtspectrogram(
                     @view(obj.data[ch_idx, :, ep_idx]),
-                    t,
+                    obj.epoch_time,
                     fs = fs,
                     db = db,
                 ).p
@@ -370,7 +374,7 @@ function spectrogram(
     end
 
     f = round.(f; digits = 2)
-    t = round.(t; digits = 3)
+    t = round.(t; digits = 4)
     t .+= obj.epoch_time[1]
 
     return (; p, f, t)

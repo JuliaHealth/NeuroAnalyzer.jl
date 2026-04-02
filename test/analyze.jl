@@ -525,11 +525,11 @@ sm, ss, su, sl = msci95(e10, e10; ch1 = "Fp1", ch2 = "Fp2")
 s, f, t = eros(e10; ch = "Fp1", method = :stft)
 @test size(s) == (129, 89, 1)
 @test length(f) == 129
-@test length(t) == 2560
+@test length(t) == 89
 s, f, t = eros(e10; ch = "Fp1", method = :mt)
 @test size(s) == (257, 15, 1)
 @test length(f) == 257
-@test length(t) == 2560
+@test length(t) == 15
 s, f, t = eros(e10; ch = "Fp1", method = :mw)
 @test size(s) == (129, 2560, 1)
 @test length(f) == 129
@@ -744,11 +744,11 @@ sn, f = NeuroAnalyzer.snr(e10; ch = "all", type = :mean)
 sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "Fp1", method = :stft)
 @test size(sp) == (129, 89, 1, 10)
 @test length(sf) == 129
-@test length(st) == 2560
+@test length(st) == 89
 sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "Fp1", method = :mt)
 @test size(sp) == (257, 15, 1, 10)
 @test length(sf) == 257
-@test length(st) == 2560
+@test length(st) == 15
 sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "Fp1", method = :mw)
 @test size(sp) == (129, 2560, 1, 10)
 @test length(sf) == 129
@@ -763,7 +763,8 @@ sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "Fp1", method = :cwt)
 @test length(st) == 2560
 
 @info "Test: spec_seg()"
-sp, sf, st = NeuroAnalyzer.spectrogram(e10; ch = "all")
+spec_data = NeuroAnalyzer.spectrogram(e10; ch = "Fp1")
+sp, sf, st = spec_data.p, spec_data.f, spec_data.t
 sp, sst, t, f = spec_seg(sp, sf, st; ch = 1, t = (0, 1), f = (0, 10))
 @test size(sp) == (11, 10, 10)
 @test t == (1, 10)

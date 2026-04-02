@@ -20,7 +20,7 @@ Return spectrogram segment.
 Named tuple:
 
 - `segp::Matrix{Float64}`: powers
-- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
@@ -79,7 +79,7 @@ Return spectrogram segment.
 Named tuple:
 
 - `segp::Array{Float64, 3}`: segment of powers
-- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
