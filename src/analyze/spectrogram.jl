@@ -289,7 +289,7 @@ function spectrogram(
 
     elseif method === :hht
         spec_data =
-            NeuroAnalyzer.hhtspectrogram(@view(obj.data[1, :, 1]), t; fs = fs, db = db)
+            NeuroAnalyzer.hhtspectrogram(@view(obj.data[1, :, 1]), obj.epoch_time; fs = fs, db = db)
         f = spec_data.f
         t = spec_data.t
         p_tmp = spec_data.p
@@ -764,7 +764,7 @@ Calculate spectrogram using Hilbert-Huang transform.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `t::AbstractVector`: time points (required for EMD)
+- `tps::AbstractVector`: time points (required for EMD)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 
@@ -778,7 +778,7 @@ Named tuple:
 """
 function hhtspectrogram(
     s::AbstractVector,
-    t::AbstractVector;
+    tps::AbstractVector;
     fs::Int64,
     db::Bool = true,
 )::@NamedTuple{
@@ -786,11 +786,11 @@ function hhtspectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 }
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     # pre-allocate outputs
+    t = tps
     imf_p = Vector{Vector{Float64}}()
     imf_fi = Vector{Vector{Float64}}()
 
@@ -838,7 +838,7 @@ Calculate spectrogram using Hilbert-Huang transform.
 # Arguments
 
 - `s::AbstractMatrix`: signal matrix
-- `t::AbstractVector`: time points (required for EMD)
+- `tps::AbstractVector`: time points (required for EMD)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 
@@ -852,7 +852,7 @@ Named tuple:
 """
 function hhtspectrogram(
     s::AbstractMatrix,
-    t::AbstractVector;
+    tps::AbstractVector;
     fs::Int64,
     db::Bool = true,
 )::@NamedTuple{
@@ -860,11 +860,11 @@ function hhtspectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 }
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     # pre-allocate outputs
+    t = tps
     imf_p = Vector{Vector{Float64}}()
     imf_fi = Vector{Vector{Float64}}()
 

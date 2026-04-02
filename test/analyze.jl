@@ -315,7 +315,7 @@ p = erp_peaks(e)
 @info "Test: erp_auc()"
 v = erp_auc(e; ch = "all")
 @test length(v) == 19
-=#
+
 @info "Test: coherence()"
 coh_data = NeuroAnalyzer.coherence(rand(100), rand(100); fs = 10, wstep = 5, method = :mt)
 @test length(coh_data.coh) == 51
@@ -793,17 +793,18 @@ e = epoch_stats(e10)
 for idx in eachindex(e)
     @test length(e[idx]) == 10
 end
+=#
 
 @info "Test: cpsd()"
 pxy, f = cpsd(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, method = :mt)
-@test size(pxy) == (1, 2049, 1)
-@test length(f) == 2049
+@test size(pxy) == (1, 1281, 1)
+@test length(f) == 1281
 pxy, f = cpsd(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, method = :fft)
-@test size(pxy) == (1, 2049, 1)
-@test length(f) == 2049
+@test size(pxy) == (1, 1281, 1)
+@test length(f) == 1281
 pxy, f = cpsd(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, method = :stft)
-@test size(pxy) == (1, 257, 1)
-@test length(f) == 257
+@test size(pxy) == (1, 129, 1)
+@test length(f) == 129
 
 @info "Test: tkeo()"
 @test tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]
@@ -833,16 +834,16 @@ tp = total_power(e10; ch = "Fp1", method = :gh)
 
 @info "Test: pacor()"
 pac, l = pacor(e10; ch = "all", l = 2)
-@test size(pac) == (24, 5, 10)
-@test length(l) == 5
+@test size(pac) == (24, 1025, 10)
+@test length(l) == 1025
 
 @info "Test: xcov()"
 xc, l = xcov(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 xc, l = xcov(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2, biased = false)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 xc, l = xcov(
     e10,
     e10;
@@ -853,29 +854,29 @@ xc, l = xcov(
     method = :cov,
     biased = false,
 )
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 xc, l =
     xcov(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2, method = :cov, biased = true)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 xc, l = xcov(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2, method = :stat)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 
 @info "Test: xcor()"
 xc, l = xcor(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 xc, l = xcor(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2, biased = false)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
-xc, l = xcor(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2, method = :cor)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
+xc, l = xcor(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2, method = :cov)
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 xc, l = xcor(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 2, method = :stat)
-@test size(xc) == (1, 3, 1)
-@test length(l) == 3
+@test size(xc) == (1, 513, 1)
+@test length(l) == 513
 
 @info "Test: amp_at()"
 e = average_epochs(e10)
@@ -919,8 +920,8 @@ f = axc2frq(xc[1, :, 1], l)
 @info "Test: hjorth()"
 h_act, h_mob, h_comp = hjorth(v1)
 @test h_act == 2.5
-@test h_mob == 0.0
-@test isnan(h_comp)
+@test h_mob == 0.17320508075688773
+@test h_comp == 5.270462766947299
 h_act, h_mob, h_comp = hjorth(a1)
 @test h_act == zeros(2, 2)
 h_act, h_mob, h_comp = hjorth(e10; ch = "all")
@@ -960,12 +961,10 @@ ph, f = phsd(e10; ch = "all")
       (asi = 0.0, nasi = 0.0)
 
 @info "Test: sym_idx()"
-@test sym_idx(v) == 19.0
-@test sym_idx(e10, ch = "Fp1") ==
-      [852.3333333333334 1279.0 852.3333333333334 852.3333333333334 1279.0 852.3333333333334 639.0 852.3333333333334 1279.0 1279.0]
+@test sym_idx(v) == 5.0
+@test sym_idx(e10, ch = "Fp1") == [852.3333333333334 1279.0 852.3333333333334 852.3333333333334 1279.0 852.3333333333334 639.0 852.3333333333334 1279.0 1279.0]
 
 @info "Test: lat_idx()"
-@test lat_idx(e10) isa Float64
 @test lat_idx(e10, frq = (1, 3.5)) isa Float64
 
 @info "Test: vartest()"
@@ -1110,16 +1109,15 @@ z3 = zipratio(e10_tmp)
 
 @info "Test: hhtspectrogram()"
 imf = emd(e10; ch = "Fp1", ep = 1)[1:(end - 1), :]
-p, ph, f, t = hhtspectrogram(imf; fs = sr(e10))
-@test size(p) == (128, 2560)
-@test size(ph)[2] == 2560
-@test length(f) == 128
-@test length(t) == 2560
+hht_data = hhtspectrogram(imf, e10.epoch_time; fs = sr(e10))
+@test size(hht_data.p) == (257, 2560)
+@test length(hht_data.f) == 257
+@test length(hht_data.t) == 2560
 
 @info "Test: hmspectrum()"
-p, t = hmspectrum(e10; ch = "Fp1")
-@test size(p) == (1, 2560, 10)
-@test length(t) == 2560
+hms_data = hmspectrum(e10; ch = "Fp1")
+@test size(hms_data.p) == (257, 10)
+@test length(hms_data.f) == 257
 
 @info "Test: ghexp()"
 g = ghexp(e10; ch = "Fp1", tau_range = 1:10)

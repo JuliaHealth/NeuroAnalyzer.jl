@@ -290,7 +290,7 @@ function xcor(
         xc = @views xcor(
             reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)),
             reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)),
-            l = l,
+            l = l_samples,
             demean = demean,
             biased = biased,
             method = method,
@@ -298,8 +298,12 @@ function xcor(
         xc = cat(mean(xc; dims = 3), xc; dims = 3)
     else
         xc = @views xcor(
-            obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l = l, demean = demean,
-            biased = biased, method = method,
+            obj1.data[ch1, :, ep1],
+            obj2.data[ch2, :, ep2],
+            l = l_samples,
+            demean = demean,
+            biased = biased,
+            method = method,
         )
     end
 
