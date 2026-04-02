@@ -240,11 +240,11 @@ function tenv_mean(
     end
 
     tenv_data = tenv(obj; ch = ch, d = d)
-    s_a = tenv_data.e
+    a = tenv_data.e
     t = tenv_data.t
 
-    ch_n = size(s_a, 1)
-    ep_n = size(s_a, 3)
+    ch_n = size(a, 1)
+    ep_n = size(a, 3)
 
     if dims == 1
 
@@ -256,7 +256,7 @@ function tenv_mean(
         el = zeros(length(t), ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            em[:, ep_idx] = dropdims(mean(@view(s_a[:, :, ep_idx]), dims = 1), dims = 1)
+            em[:, ep_idx] = dropdims(mean(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
             ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
             eu[:, ep_idx] = em[:, ep_idx] .+ ci
             el[:, ep_idx] = em[:, ep_idx] .- ci
@@ -272,7 +272,7 @@ function tenv_mean(
         el = zeros(length(t), ch_n)
 
         @inbounds for ch_idx in 1:ch_n
-            em[:, ch_idx] = dropdims(mean(@view(s_a[ch_idx, :, :]), dims = 2), dims = 2)
+            em[:, ch_idx] = dropdims(mean(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
             ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
             eu[:, ch_idx] = em[:, ch_idx] .+ ci
             el[:, ch_idx] = em[:, ch_idx] .- ci
@@ -336,11 +336,11 @@ function tenv_median(
     end
 
     tenv_data = tenv(obj; ch = ch, d = d)
-    s_a = tenv_data.e
+    a = tenv_data.e
     t = tenv_data.t
 
-    ch_n = size(s_a, 1)
-    ep_n = size(s_a, 3)
+    ch_n = size(a, 1)
+    ep_n = size(a, 3)
 
     if dims == 1
 
@@ -352,9 +352,9 @@ function tenv_median(
         el = zeros(length(t), ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            em[:, ep_idx] = dropdims(median(@view(s_a[:, :, ep_idx]), dims = 1), dims = 1)
+            em[:, ep_idx] = dropdims(median(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
             for m_idx in eachindex(t)
-                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(@view(s_a[:, m_idx, ep_idx]))
+                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(@view(a[:, m_idx, ep_idx]))
             end
         end
 
@@ -368,9 +368,9 @@ function tenv_median(
         el = zeros(length(t), ch_n)
 
         @inbounds for ch_idx in 1:ch_n
-            em[:, ch_idx] = dropdims(median(@view(s_a[ch_idx, :, :]), dims = 2), dims = 2)
+            em[:, ch_idx] = dropdims(median(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
             for m_idx in eachindex(t)
-                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(s_a[ch_idx, m_idx, :]))
+                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(a[ch_idx, m_idx, :]))
             end
         end
 
@@ -383,6 +383,7 @@ function tenv_median(
         em = median(tenv_data.em; dims = 2)
         eu = median(tenv_data.eu; dims = 2)
         el = median(tenv_data.el; dims = 2)
+
     end
 
     return (; em, el, eu, t)
@@ -462,7 +463,7 @@ function penv(
     f = psd_data.f
 
     # pre-allocate output
-    e = zeros(ch_n, length(pw), ep_n)
+    e = zeros(ch_n, length(f), ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -611,6 +612,7 @@ function penv_mean(
         em = mean(penv_data.em; dims = 2)
         eu = mean(penv_data.eu; dims = 2)
         el = mean(penv_data.el; dims = 2)
+
     end
 
     return (; em, el, eu, f)
@@ -750,6 +752,7 @@ function penv_median(
         em = median(penv_data.em; dims = 2)
         eu = median(penv_data.eu; dims = 2)
         el = median(penv_data.el; dims = 2)
+
     end
 
     return (; em, el, eu, f)
@@ -950,7 +953,6 @@ function senv(
 
         # optionally zero out powers above the threshold, then reverse so the
         # highest sub-threshold power becomes the "dominant" frequency
-        @show threshold
         if !isnothing(threshold)
             sp_loc[sp_loc .> threshold] .= 0
             reverse!(sp_loc)
@@ -1012,7 +1014,7 @@ function senv_mean(
     ch::Union{String, Vector{String}, Regex},
     dims::Int64,
     d::Int64 = 2,
-    t::Union{Real, Nothing} = nothing,
+    threshold::Union{Real, Nothing} = nothing,
     method::Symbol = :stft,
     pad::Int64 = 0,
     db::Bool = true,
@@ -1059,9 +1061,9 @@ function senv_mean(
     t = env_data.t
 
     # number of channels
-    ch_n = size(pw, 1)
+    ch_n = size(sp, 1)
     # number of epochs
-    ep_n = size(pw, 3)
+    ep_n = size(sp, 3)
 
     if dims == 1
 
@@ -1120,6 +1122,7 @@ function senv_mean(
         em = mean(env_data.em; dims = 2)
         eu = mean(env_data.eu; dims = 2)
         el = mean(env_data.el; dims = 2)
+
     end
 
     return (; em, el, eu, t)
@@ -1214,9 +1217,9 @@ function senv_median(
     t = senv_data.t
 
     # number of channels
-    ch_n = size(pw, 1)
+    ch_n = size(sp, 1)
     # number of epochs
-    ep_n = size(pw, 3)
+    ep_n = size(sp, 3)
 
     if dims == 1
 
@@ -1278,6 +1281,7 @@ function senv_median(
         em = median(senv_data.em; dims = 2)
         eu = median(senv_data.eu; dims = 2)
         el = median(senv_data.el; dims = 2)
+
     end
 
     return (; em, el, eu, t)
@@ -1320,16 +1324,15 @@ function henv(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    henv_data = htransform(@view(obj.data[ch, :, :]))
-    a = henv_data.a
+    a = htransform(@view(obj.data[ch, :, :])).a
 
     # number of channels
-    ch_n = size(hamp, 1)
+    ch_n = size(a, 1)
     # number of epochs
-    ep_n = size(hamp, 3)
+    ep_n = size(a, 3)
 
     # pre-allocate output
-    e = similar(hamp, Float64)
+    e = similar(a, Float64)
 
     # epoch time points
     t = obj.epoch_time
@@ -1337,7 +1340,7 @@ function henv(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        e[ch_idx, :, ep_idx] = env_up(@view(hamp[ch_idx, :, ep_idx]), t, d = d)
+        e[ch_idx, :, ep_idx] = env_up(@view(a[ch_idx, :, ep_idx]), t, d = d)
     end
 
     return (; e, t)
@@ -1370,8 +1373,8 @@ function henv_mean(
     dims::Int64, d::Int64 = 32,
 )::@NamedTuple{
     em::Matrix{Float64},
-    eu::Matrix{Float64},
     el::Matrix{Float64},
+    eu::Matrix{Float64},
     t::Vector{Float64},
 }
     # validate
@@ -1385,13 +1388,13 @@ function henv_mean(
     end
 
     henv_data = henv(obj; ch = ch, d = d)
-    s_a = henv_data.a
+    a = henv_data.e
     t = henv_data.t
 
     # number of channels
-    ch_n = size(s_a, 1)
+    ch_n = size(a, 1)
     # number of epochs
-    ep_n = size(s_a, 3)
+    ep_n = size(a, 3)
 
     if dims == 1
 
@@ -1403,7 +1406,7 @@ function henv_mean(
         el = zeros(length(t), ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            em[:, ep_idx] = dropdims(mean(@view(s_a[:, :, ep_idx]), dims = 1), dims = 1)
+            em[:, ep_idx] = dropdims(mean(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
             ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
             eu[:, ep_idx] = em[:, ep_idx] .+ ci
             el[:, ep_idx] = em[:, ep_idx] .- ci
@@ -1418,7 +1421,7 @@ function henv_mean(
         el = zeros(length(t), ch_n)
 
         @inbounds for ch_idx in 1:ch_n
-            em[:, ch_idx] = dropdims(mean(@view(s_a[ch_idx, :, :]), dims = 2), dims = 2)
+            em[:, ch_idx] = dropdims(mean(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
             ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
             eu[:, ch_idx] = em[:, ch_idx] .+ ci
             el[:, ch_idx] = em[:, ch_idx] .- ci
@@ -1430,9 +1433,10 @@ function henv_mean(
         # then average the result over epochs (dims=2 of the intermediate matrix)
 
         henv_data = henv_mean(obj; ch = ch, dims = 1, d = d)
-        em = vec(mean(henv_data.em; dims = 2))
-        eu = vec(mean(henv_data.eu; dims = 2))
-        el = vec(mean(henv_data.el; dims = 2))
+        em = mean(henv_data.em; dims = 2)
+        eu = mean(henv_data.eu; dims = 2)
+        el = mean(henv_data.el; dims = 2)
+
     end
 
     return (; em, el, eu, t)
@@ -1455,8 +1459,8 @@ Calculate Hilbert spectrum amplitude envelope (median and 95% CI) for a NEURO ob
 Named tuple:
 
 - `em::Matrix{Float64}`: median Hilbert spectrum amplitude envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
-- `eu::Matrix{Float64}`: 95% CI upper bound
 - `el::Matrix{Float64}`: 95% CI lower bound
+- `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
 """
 function henv_median(
@@ -1481,13 +1485,13 @@ function henv_median(
     end
 
     henv_data = henv(obj; ch = ch, d = d)
-    s_a = henv_data.a
+    a = henv_data.e
     t = henv_data.t
 
     # number of channels
-    ch_n = size(s_a, 1)
+    ch_n = size(a, 1)
     # number of epochs
-    ep_n = size(s_a, 3)
+    ep_n = size(a, 3)
 
     if dims == 1
 
@@ -1498,9 +1502,9 @@ function henv_median(
         el = zeros(length(t), ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            em[:, ep_idx] = median(@view(s_a[:, :, ep_idx]), dims = 1)
+            em[:, ep_idx] = median(@view(a[:, :, ep_idx]), dims = 1)
             for m_idx in eachindex(t)
-                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(s_a[:, m_idx, ep_idx])
+                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(a[:, m_idx, ep_idx])
             end
         end
 
@@ -1513,9 +1517,9 @@ function henv_median(
         el = zeros(length(t), ch_n)
 
         @inbounds for ch_idx in 1:ch_n
-            em[:, ch_idx] = median(s_a[ch_idx, :, :], dims = 2)
+            em[:, ch_idx] = median(a[ch_idx, :, :], dims = 2)
             for m_idx in eachindex(t)
-                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(s_a[ch_idx, m_idx, :])
+                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(a[ch_idx, m_idx, :])
             end
         end
 
@@ -1523,16 +1527,11 @@ function henv_median(
 
         # median over channels and epochs
 
-        henv_median_data = henv_median(obj; ch = ch, dims = 1, d = d)
-        em = henv_median_data.em
-        eu = henv_median_data.eu
-        el = henv_median_data.el
-        em = median(em; dims = 2)
-        eu = median(eu; dims = 2)
-        el = median(el; dims = 2)
-        em = reshape(em, size(em, 1))
-        eu = reshape(eu, size(eu, 1))
-        el = reshape(el, size(el, 1))
+        henv_data = henv_median(obj; ch = ch, dims = 1, d = d)
+        em = median(henv_data.em; dims = 2)
+        eu = median(henv_data.eu; dims = 2)
+        el = median(henv_data.el; dims = 2)
+
     end
 
     return (; em, el, eu, t)

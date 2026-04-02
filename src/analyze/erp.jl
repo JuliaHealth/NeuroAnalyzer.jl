@@ -316,10 +316,11 @@ function erp_auc(
     t1 = vsearch(seg[1], obj.epoch_time)
     t2 = vsearch(seg[2], obj.epoch_time)
 
-    # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] :
-        get_channel(obj; ch = ch, exclude = "")[1]
+        exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
+        get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # pre-allocate output

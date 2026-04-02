@@ -23,7 +23,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -44,7 +44,7 @@ function coherence(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
     coh::Vector{ComplexF64},
@@ -60,15 +60,15 @@ function coherence(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     wlen <= length(s1) || throw(ArgumentError("wlen must be ≤ $(length(s1))."))
     wlen >= 2 || throw(ArgumentError("wlen must be ≥ 2."))
-    woverlap < wlen || throw(ArgumentError("woverlap must be < $(wlen)."))
-    woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
+    wstep < wlen || throw(ArgumentError("wstep must be < $(wlen)."))
+    wstep >= 0 || throw(ArgumentError("wstep must be ≥ 0."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # shared kwargs for all three cpsd calls - defined once to keep them in sync
     cpsd_kwargs = (
         fs = fs,
         wlen = wlen,
-        woverlap = woverlap,
+        wstep = wstep,
         w = w,
         demean = demean,
         method = method,
@@ -118,7 +118,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -139,7 +139,7 @@ function coherence(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
     coh::Array{ComplexF64, 3},
@@ -169,7 +169,7 @@ function coherence(
         demean = demean,
         nt = nt,
         wlen = wlen,
-        woverlap = woverlap,
+        wstep = wstep,
         w = w,
     )
     f = coh_data.f
@@ -191,7 +191,7 @@ function coherence(
             demean = demean,
             nt = nt,
             wlen = wlen,
-            woverlap = woverlap,
+            wstep = wstep,
             w = w,
         )
         coh[ch_idx, :, ep_idx] = coh_data.coh
@@ -229,7 +229,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -253,7 +253,7 @@ function coherence(
     demean::Bool = false,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj1),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
     coh::Array{ComplexF64, 3},
@@ -306,7 +306,7 @@ function coherence(
         demean = demean,
         nt = nt,
         wlen = wlen,
-        woverlap = woverlap,
+        wstep = wstep,
         w = w,
     )
 end
