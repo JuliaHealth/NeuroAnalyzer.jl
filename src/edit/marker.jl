@@ -12,7 +12,7 @@ export add_markers!
 
 # Expected column schema for a markers DataFrame
 const _MARKER_COLS = ["id", "start", "length", "value", "channel"]
- 
+
 """
     _check_marker_cols(markers)
 
@@ -20,9 +20,11 @@ Throw `ArgumentError` if `markers` does not have the expected column schema.
 """
 function _check_marker_cols(markers::DataFrame)::Nothing
     names(markers) == _MARKER_COLS ||
-        throw(ArgumentError(
-            "Markers DataFrame must have columns: $(_MARKER_COLS); got $(names(markers)).",
-        ))
+        throw(
+            ArgumentError(
+                "Markers DataFrame must have columns: $(_MARKER_COLS); got $(names(markers)).",
+            ),
+        )
     return nothing
 end
 
@@ -43,18 +45,18 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
     isempty(obj.markers) && throw(ArgumentError("OBJ has no markers."))
 
     println(
-        rpad("n",          5)  *
-        rpad("ID",         24) *
-        rpad("start [s]",  12) *
+        rpad("n", 5) *
+        rpad("ID", 24) *
+        rpad("start [s]", 12) *
         rpad("length [s]", 12) *
-        rpad("value",      24) *
-        rpad("channel",    1),
+        rpad("value", 24) *
+        rpad("channel", 1),
     )
     for i in 1:DataFrames.nrow(obj.markers)
         println(
             rpad(string(i), 5) *
-            rpad("'" * obj.markers[i, :id]    * "'", 24) *
-            rpad(string(round(obj.markers[i, :start];  digits = 3)), 12) *
+            rpad("'" * obj.markers[i, :id] * "'", 24) *
+            rpad(string(round(obj.markers[i, :start]; digits = 3)), 12) *
             rpad(string(round(obj.markers[i, :length]; digits = 3)), 12) *
             rpad("'" * obj.markers[i, :value] * "'", 24) *
             rpad(string(obj.markers[i, :channel]), 1),
@@ -89,7 +91,7 @@ function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
     deleteat!(obj_new.markers, n)
 
     push!(obj_new.history, "delete_marker(obj; n=$n)")
- 
+
     return obj_new
 end
 
@@ -143,7 +145,7 @@ function add_marker(
 )::NeuroAnalyzer.NEURO
     # validate
     start >= 0 || throw(ArgumentError("start must be ≥ 0."))
-    len   >  0 || throw(ArgumentError("len must be > 0."))
+    len > 0 || throw(ArgumentError("len must be > 0."))
     start < obj.time_pts[end] ||
         throw(ArgumentError("start must be < $(obj.time_pts[end])."))
     start + len <= obj.time_pts[end] ||
@@ -153,12 +155,21 @@ function add_marker(
     obj_new = deepcopy(obj)
     append!(
         obj_new.markers,
-        DataFrame(:id => id, :start => start, :length => len, :value => value, :channel => ch),
+        DataFrame(
+            :id => id,
+            :start => start,
+            :length => len,
+            :value => value,
+            :channel => ch,
+        ),
     )
     sort!(obj_new.markers, :start)
 
-    push!(obj_new.history, "add_marker(obj; id=$id, start=$start, len=$len, value=$value, ch=$ch)")
- 
+    push!(
+        obj_new.history,
+        "add_marker(obj; id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+    )
+
     return obj_new
 end
 
@@ -333,38 +344,40 @@ function channel2marker(
 
     ev_segs = diff(ev_ch)
 
-    ev_start = findall(ev_segs .==  v)
+    ev_start = findall(ev_segs .== v)
     ev_end   = findall(ev_segs .== -v)
 
     # does the signal start with an active event?
     !isempty(ev_end) && !isempty(ev_start) && ev_end[1] < ev_start[1] &&
         pushfirst!(ev_start, 1)
- 
+
     # does the signal end with an active event?
     !isempty(ev_start) && !isempty(ev_end) && ev_end[end] < ev_start[end] &&
         push!(ev_end, length(ev_ch))
- 
+
     length(ev_start) == length(ev_end) || throw(
-        ArgumentError("Mismatched event start/end edges in channel $(labels(obj)[ch_idx])."),
+        ArgumentError(
+            "Mismatched event start/end edges in channel $(labels(obj)[ch_idx]).",
+        ),
     )
- 
+
     ev_len = ev_end .- ev_start
- 
+
     ch_label = labels(obj)[ch_idx]
-    ev_desc  = fill(value == "" ? ch_label : value, length(ev_start))
+    ev_desc = fill(value == "" ? ch_label : value, length(ev_start))
     id_prefix = id == "" ? ch_label * "_" : id
-    ev_id    = ["$id_prefix$i" for i in eachindex(ev_start)]
-    ev_ch_v  = zeros(Int64, length(ev_start))
- 
+    ev_id = ["$id_prefix$i" for i in eachindex(ev_start)]
+    ev_ch_v = zeros(Int64, length(ev_start))
+
     _info("$(length(ev_start)) events found and added as markers.")
- 
+
     obj_new = deepcopy(obj)
     append!(
         obj_new.markers,
         DataFrame(
             :id      => ev_id,
             :start   => ev_start ./ sr(obj),
-            :length  => ev_len   ./ sr(obj),
+            :length  => ev_len ./ sr(obj),
             :value   => ev_desc,
             :channel => ev_ch_v,
         ),
@@ -372,7 +385,7 @@ function channel2marker(
     sort!(obj_new.markers, :start)
 
     push!(obj_new.history, "channel2marker(obj; ch=$ch, v=$v, id=$id, value=$value)")
- 
+
     return obj_new
 end
 
@@ -426,13 +439,13 @@ The provided DataFrame must have exactly the columns: `id`, `start`, `length`, `
 function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyzer.NEURO
     # validate
     _check_marker_cols(markers)
- 
+
     # create new dataset
     obj_new         = deepcopy(obj)
     obj_new.markers = markers
 
     push!(obj_new.history, "add_markers(obj; markers)")
- 
+
     return obj_new
 end
 

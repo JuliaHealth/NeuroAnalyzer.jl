@@ -25,7 +25,27 @@ set_channel_type!(e10_tmp; ch = "F3", type = "eeg")
 @test channel_type(e10_tmp, ch = "F3") == "eeg"
 
 @info "Test: get_channel()"
-@test get_channel(e10, type = "eeg") == ["C3", "C4", "Cz", "F3", "F4", "F7", "F8", "Fp1", "Fp2", "Fz", "O1", "O2", "P3", "P4", "Pz", "T3", "T4", "T5", "T6"]
+@test get_channel(e10, type = "eeg") == [
+    "C3",
+    "C4",
+    "Cz",
+    "F3",
+    "F4",
+    "F7",
+    "F8",
+    "Fp1",
+    "Fp2",
+    "Fz",
+    "O1",
+    "O2",
+    "P3",
+    "P4",
+    "Pz",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+]
 
 @info "Test: rename_channel()"
 e10_tmp = rename_channel(e10; ch = "Fp1", name = "FP1")
@@ -49,7 +69,7 @@ add_label!(e10_tmp; clabels = l)
 @info "Test: delete_channel()"
 e10_tmp = delete_channel(e10; ch = "F3")
 @test nchannels(e10_tmp) == nchannels(e10) - 1
-@test_throws ArgumentError  delete_channel(e10; ch = String[])
+@test_throws ArgumentError delete_channel(e10; ch = String[])
 
 @info "Test: delete_channel!()"
 e10_copy = deepcopy(e10)

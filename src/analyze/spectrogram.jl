@@ -63,7 +63,6 @@ function spectrogram(
     elseif method === :mt
         win = w ? hanning(length(s)) : ones(length(s))
         spec_data = DSP.mt_spectrogram(s .* win; fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
-
     end
 
     p = spec_data.power
@@ -288,7 +287,12 @@ function spectrogram(
 
     elseif method === :hht
         spec_data =
-            NeuroAnalyzer.hhtspectrogram(@view(obj.data[1, :, 1]), obj.epoch_time; fs = fs, db = db)
+            NeuroAnalyzer.hhtspectrogram(
+                @view(obj.data[1, :, 1]),
+                obj.epoch_time;
+                fs = fs,
+                db = db,
+            )
         f = spec_data.f
         t = spec_data.t
         p_tmp = spec_data.p

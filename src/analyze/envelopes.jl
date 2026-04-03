@@ -381,7 +381,6 @@ function tenv_median(
         em = median(tenv_data.em; dims = 2)
         eu = median(tenv_data.eu; dims = 2)
         el = median(tenv_data.el; dims = 2)
-
     end
 
     return (; em, el, eu, t)
@@ -610,7 +609,6 @@ function penv_mean(
         em = mean(penv_data.em; dims = 2)
         eu = mean(penv_data.eu; dims = 2)
         el = mean(penv_data.el; dims = 2)
-
     end
 
     return (; em, el, eu, f)
@@ -750,7 +748,6 @@ function penv_median(
         em = median(penv_data.em; dims = 2)
         eu = median(penv_data.eu; dims = 2)
         el = median(penv_data.el; dims = 2)
-
     end
 
     return (; em, el, eu, f)
@@ -946,7 +943,6 @@ function senv(
             )
             sp_loc = spec_data.m
             sf_loc = spec_data.f
-
         end
 
         # optionally zero out powers above the threshold, then reverse so the
@@ -1120,7 +1116,6 @@ function senv_mean(
         em = mean(env_data.em; dims = 2)
         eu = mean(env_data.eu; dims = 2)
         el = mean(env_data.el; dims = 2)
-
     end
 
     return (; em, el, eu, t)
@@ -1279,7 +1274,6 @@ function senv_median(
         em = median(senv_data.em; dims = 2)
         eu = median(senv_data.eu; dims = 2)
         el = median(senv_data.el; dims = 2)
-
     end
 
     return (; em, el, eu, t)
@@ -1311,7 +1305,9 @@ function henv(
     e::Array{Float64, 3},
     t::Vector{Float64},
 }
-    _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
+    _warn(
+        "henv() uses Hilbert transform, the signal should be narrowband for best results.",
+    )
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
@@ -1432,7 +1428,6 @@ function henv_mean(
         em = mean(henv_data.em; dims = 2)
         eu = mean(henv_data.eu; dims = 2)
         el = mean(henv_data.el; dims = 2)
-
     end
 
     return (; em, el, eu, t)
@@ -1527,7 +1522,6 @@ function henv_median(
         em = median(henv_data.em; dims = 2)
         eu = median(henv_data.eu; dims = 2)
         el = median(henv_data.el; dims = 2)
-
     end
 
     return (; em, el, eu, t)

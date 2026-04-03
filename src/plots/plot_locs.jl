@@ -39,7 +39,7 @@ function _draw_connection!(
                 ys;
                 linewidth = lw,
                 alpha = al,
-                color = mono ? :black : :red
+                color = mono ? :black : :red,
             )
         elseif val < 0
             GLMakie.lines!(
@@ -48,7 +48,7 @@ function _draw_connection!(
                 linewidth = lw,
                 alpha = al,
                 color = mono ? :black : :blue,
-                linestyle = mono ? :dot : :solid
+                linestyle = mono ? :dot : :solid,
             )
         end
     else
@@ -56,7 +56,7 @@ function _draw_connection!(
             xs,
             ys;
             linewidth = 0.2,
-            color = :black
+            color = :black,
         )
     end
 end
@@ -320,7 +320,7 @@ function plot_locs(
                         val,
                         m_tmp[idx1, idx2],
                         mono,
-                        use_weights
+                        use_weights,
                     )
                 end
             end

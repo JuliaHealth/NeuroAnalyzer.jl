@@ -118,24 +118,24 @@ function rename_channel(
 )::NeuroAnalyzer.NEURO
     clabels = obj.header.recording[:label]
     name in clabels && throw(ArgumentError("Channel \"$name\" already exists."))
- 
+
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
- 
+
     obj_new = deepcopy(obj)
     obj_new.header.recording[:label][ch] = name
- 
+
     # update matching locs entry if present.
     l_result = _find_bylabel(obj_new.locs, labels(obj)[ch])
     if !isempty(l_result)
         l_idx = l_result isa Int64 ? l_result : l_result[1]
         obj_new.locs[l_idx, :label] = name
     end
- 
+
     push!(obj_new.history, "rename_channel(obj; ch=$ch, name=$name)")
- 
+
     return obj_new
 end
 
@@ -389,8 +389,8 @@ function add_channel(
 
     # normalize to vectors for uniform handling below
     label_v = label isa String ? [label] : label
-    type_v  = type  isa String ? [type]  : type
-    unit_v  = unit  isa String ? [unit]  : unit
+    type_v  = type isa String ? [type] : type
+    unit_v  = unit isa String ? [unit] : unit
 
     # validate
     if length(obj.data) > 0
@@ -406,13 +406,19 @@ function add_channel(
         )
     end
     length(label_v) == ch_n || throw(
-        ArgumentError("Number of labels ($(length(label_v))) must equal number of new channels ($ch_n)."),
+        ArgumentError(
+            "Number of labels ($(length(label_v))) must equal number of new channels ($ch_n).",
+        ),
     )
     length(type_v) == ch_n || throw(
-        ArgumentError("Number of types ($(length(type_v))) must equal number of new channels ($ch_n)."),
+        ArgumentError(
+            "Number of types ($(length(type_v))) must equal number of new channels ($ch_n).",
+        ),
     )
     length(unit_v) == ch_n || throw(
-        ArgumentError("Number of units ($(length(unit_v))) must equal number of new channels ($ch_n)."),
+        ArgumentError(
+            "Number of units ($(length(unit_v))) must equal number of new channels ($ch_n).",
+        ),
     )
 
     for t in type_v
@@ -426,11 +432,11 @@ function add_channel(
     obj_new = deepcopy(obj)
 
     if length(obj.data) > 0
-        obj_new.data = cat(obj.data, data; dims = 1)
-        obj_new.header.recording[:label]        = vcat(obj.header.recording[:label],        label_v)
+        obj_new.data                            = cat(obj.data, data; dims = 1)
+        obj_new.header.recording[:label]        = vcat(obj.header.recording[:label], label_v)
         obj_new.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], string.(type_v))
-        obj_new.header.recording[:unit]         = vcat(obj.header.recording[:unit],         unit_v)
-        obj_new.header.recording[:bad_channel]  = vcat(obj.header.recording[:bad_channel],  zeros(Bool, ch_n))
+        obj_new.header.recording[:unit]         = vcat(obj.header.recording[:unit], unit_v)
+        obj_new.header.recording[:bad_channel]  = vcat(obj.header.recording[:bad_channel], zeros(Bool, ch_n))
 
         max_ord = maximum(obj_new.header.recording[:channel_order])
         obj_new.header.recording[:channel_order] = vcat(
@@ -438,7 +444,7 @@ function add_channel(
             collect((max_ord + 1):(max_ord + ch_n)),
         )
     else
-        obj_new.data = data
+        obj_new.data                             = data
         obj_new.header.recording[:label]         = label_v
         obj_new.header.recording[:channel_type]  = string.(type_v)
         obj_new.header.recording[:unit]          = unit_v
@@ -446,7 +452,10 @@ function add_channel(
         obj_new.header.recording[:bad_channel]   = zeros(Bool, ch_n)
     end
 
-    push!(obj_new.history, "add_channel(obj; data, label=$label_v, type=$type_v, unit=$unit_v)")
+    push!(
+        obj_new.history,
+        "add_channel(obj; data, label=$label_v, type=$type_v, unit=$unit_v)",
+    )
 
     return obj_new
 end

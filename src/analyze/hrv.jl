@@ -23,7 +23,7 @@ function hrv_detect(
     obj::NeuroAnalyzer.NEURO,
 )::@NamedTuple{
     nn_seg::Vector{Float64},
-    r_idx::Vector{Int64}
+    r_idx::Vector{Int64},
 }
     # validate
     "ecg" in obj.header.recording[:channel_type] ||

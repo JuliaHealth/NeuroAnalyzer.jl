@@ -658,10 +658,10 @@ function _laplacian_reference(
             w = 1 .- normalize_n(w)
             ref_ch =
                 med ? vec(median(w .* ref_chs, dims = 1)) :
-                      vec(mean(w .* ref_chs, dims = 1))
+                vec(mean(w .* ref_chs, dims = 1))
         else
             ref_ch = med ? vec(median(ref_chs, dims = 1)) :
-                           vec(mean(ref_chs, dims = 1))
+                     vec(mean(ref_chs, dims = 1))
         end
         @inbounds s_ref[ch_idx, :, ep_idx] = s[ch_idx, :, ep_idx] .- ref_ch
     end

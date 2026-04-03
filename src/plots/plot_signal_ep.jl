@@ -108,7 +108,7 @@ function plot_ep(
     # get signal matrix
     s = obj.data[ch, :, :][ch_order, 1:res:end, :]
     s = reshape(s, :, size(s, 2) * size(s, 3), 1)
-    s = dropdims(s, dims=3)
+    s = dropdims(s; dims = 3)
 
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Epochs", "", "")
 
@@ -123,7 +123,7 @@ function plot_ep(
         nch      = Observable(n_channels)
         ch1      = Observable(1)
         ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
-        clabels = labels(obj)[ch][ch_order]
+        clabels  = labels(obj)[ch][ch_order]
     else
         ch_n     = length(ctypes_uni)
         ch1      = Observable(1)
@@ -241,7 +241,7 @@ function plot_ep(
                     colormap   = pal,
                     colorrange = 1:size(s, 1),
                     linewidth  = 0.5,
-                    alpha = 1.0,
+                    alpha      = 1.0,
                 )
             end
             if avg
@@ -425,7 +425,7 @@ function plot_ep(
 
         # mouse events
         on(events(fig).mousebutton) do event
-                if event.action == Mouse.press
+            if event.action == Mouse.press
                 ax1_x = mouseposition(ax1)[1]
                 ax1_y = mouseposition(ax1)[2]
                 ax2_x = mouseposition(ax2)[1]

@@ -240,7 +240,9 @@ function plot_filter(;
                 w = DSP.hamming(order)
             end
             length(w) == order ||
-                throw(ArgumentError("Length of w ($(length(w))) must equal order ($order)."))
+                throw(
+                    ArgumentError("Length of w ($(length(w))) must equal order ($order)."),
+                )
         end
 
         # --- :firls / :remez / :iirnotch bw validation ---
@@ -294,8 +296,10 @@ function plot_filter(;
 
         # --- order and ftype required for these prototypes ---
         if fprototype in [:firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-            isnothing(order) && throw(ArgumentError("order must be specified for $fprototype."))
-            isnothing(ftype) && throw(ArgumentError("ftype must be specified for $fprototype."))
+            isnothing(order) &&
+                throw(ArgumentError("order must be specified for $fprototype."))
+            isnothing(ftype) &&
+                throw(ArgumentError("ftype must be specified for $fprototype."))
         end
 
         # --- :iirnotch specifics ---
@@ -313,7 +317,9 @@ function plot_filter(;
                     throw(ArgumentError("For :$ftype, cutoff must be a scalar."))
             elseif ftype in [:bp, :bs]
                 length(cutoff) == 2 ||
-                    throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
+                    throw(
+                        ArgumentError("For :$ftype, cutoff must specify two frequencies."),
+                    )
             end
         end
 

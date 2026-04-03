@@ -54,8 +54,9 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 Uses the Hilbert transform; best results for narrowband signals. Broadband signals produce meaningless instantaneous frequencies.
 """
 function frqinst(s::AbstractArray)::Array{Float64, 3}
-    _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
-
+    _warn(
+        "frqinst() uses Hilbert transform, the signal should be narrowband for best results.",
+    )
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 

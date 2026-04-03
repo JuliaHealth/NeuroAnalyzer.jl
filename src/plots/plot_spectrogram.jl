@@ -630,7 +630,6 @@ function plot_spectrogram(
 
     # calculate spectrogram
     if length(ch) == 1 || type === :topo
-
         if method === :stft
             spec_data = NeuroAnalyzer.spectrogram(
                 signal; fs = fs, db = false, method = :stft,
@@ -674,7 +673,6 @@ function plot_spectrogram(
             title == "default" && (title = "Spectrogram (Hilbert-Huang)$ep_suffix")
         end
     elseif length(ch) > 1 && type === :normal
-
         if method === :stft
             psd_data = psd(
                 signal; fs = fs, db = db, method = :stft,
@@ -767,7 +765,6 @@ function plot_spectrogram(
         )
 
     elseif length(ch) > 1 && type === :normal
-
         ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         fig = plot_spectrogram(

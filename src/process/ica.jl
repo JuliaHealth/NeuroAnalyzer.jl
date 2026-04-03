@@ -249,7 +249,8 @@ function ica_remove(
     # create new dataset
     obj_new = deepcopy(obj)
 
-    obj_new.data[ch, :, 1] = ica_remove(; ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)
+    obj_new.data[ch, :, 1] =
+        ica_remove(; ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)
 
     push!(obj_new.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 

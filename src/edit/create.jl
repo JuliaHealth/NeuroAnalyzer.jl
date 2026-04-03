@@ -34,7 +34,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
     time_pts = Float64[]
     ep_time  = Float64[]
     data     = Array{Float64, 3}(undef, 0, 0, 0)
- 
+
     s = _create_subject(;
         id                 = "",
         first_name         = "",
@@ -45,7 +45,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         weight             = -1,
         height             = -1,
     )
- 
+
     # common fields shared by most recording types
     _common = (
         file_name       = "",
@@ -62,40 +62,40 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         sampling_rate   = 0,
         bad_channels    = Bool[],
     )
- 
+
     if data_type == "eeg"
         r = _create_recording_eeg(;
-            data_type    = "eeg",
+            data_type = "eeg",
             _common...,
-            reference    = "",
-            transducers  = String[],
+            reference = "",
+            transducers = String[],
             prefiltering = String[],
             line_frequency = 50,
-            gain         = Float64[],
+            gain = Float64[],
         )
     elseif data_type == "seeg"
         r = _create_recording_seeg(;
-            data_type    = "seeg",
+            data_type = "seeg",
             _common...,
-            reference    = "",
-            transducers  = String[],
+            reference = "",
+            transducers = String[],
             prefiltering = String[],
             line_frequency = 50,
-            gain         = Float64[],
+            gain = Float64[],
         )
     elseif data_type == "ecog"
         r = _create_recording_ecog(;
-            data_type    = "ecog",
+            data_type = "ecog",
             _common...,
-            reference    = "",
-            transducers  = String[],
+            reference = "",
+            transducers = String[],
             prefiltering = String[],
             line_frequency = 50,
-            gain         = Float64[],
+            gain = Float64[],
         )
     elseif data_type == "meg"
         r = _create_recording_meg(;
-            data_type      = "meg",
+            data_type = "meg",
             _common...,
             reference      = "",
             prefiltering   = String[],
@@ -109,7 +109,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         )
     elseif data_type == "nirs"
         r = _create_recording_nirs(;
-            data_type        = "nirs",
+            data_type = "nirs",
             _common...,
             wavelengths      = Float64[],
             wavelength_index = Int64[],
@@ -120,13 +120,13 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         )
     elseif data_type == "sensors"
         r = _create_recording_sensors(;
-            data_type    = "sensors",
+            data_type = "sensors",
             _common...,
             prefiltering = String[],
         )
     elseif data_type == "mep"
         r = _create_recording_mep(;
-            data_type             = "mep",
+            data_type = "mep",
             _common...,
             stimulation_intensity = Int64[],
             coil_type             = String[],
@@ -136,22 +136,22 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         )
     elseif data_type == "eda"
         r = _create_recording_eda(;
-            data_type    = "eda",
+            data_type = "eda",
             _common...,
             prefiltering = String[],
         )
     elseif data_type == "tpt"
         r = _create_recording_tpt(;
-            data_type    = "tpt",
+            data_type = "tpt",
             _common...,
             prefiltering = String[],
         )
     end
- 
-    e   = _create_experiment(; name = "", notes = "", design = "")
+
+    e = _create_experiment(; name = "", notes = "", design = "")
     hdr = _create_header(; subject = s, recording = r, experiment = e)
     locs = _initialize_locs()
- 
+
     return NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, ep_time, data)
 end
 
@@ -248,19 +248,19 @@ function create_data(
 
     # channel labels
     clabels = ["ch-$i" for i in 1:ch_n]
- 
+
     # create new dataset
-    obj_new = deepcopy(obj)
-    obj_new.data                                    = data
-    obj_new.header.recording[:label]                = clabels
-    obj_new.header.recording[:channel_type]         = fill(type, ch_n)
-    obj_new.header.recording[:unit]                 = fill(_ch_units(type), ch_n)
-    obj_new.header.recording[:channel_order]        = collect(1:ch_n)
-    obj_new.header.recording[:bad_channel]          = zeros(Bool, ch_n)
-    obj_new.header.recording[:sampling_rate]        = fs
-    obj_new.time_pts, obj_new.epoch_time            = _get_t(obj_new)
+    obj_new                                  = deepcopy(obj)
+    obj_new.data                             = data
+    obj_new.header.recording[:label]         = clabels
+    obj_new.header.recording[:channel_type]  = fill(type, ch_n)
+    obj_new.header.recording[:unit]          = fill(_ch_units(type), ch_n)
+    obj_new.header.recording[:channel_order] = collect(1:ch_n)
+    obj_new.header.recording[:bad_channel]   = zeros(Bool, ch_n)
+    obj_new.header.recording[:sampling_rate] = fs
+    obj_new.time_pts, obj_new.epoch_time     = _get_t(obj_new)
     push!(obj_new.history, "create_data(obj; data, fs=$fs, type=$type)")
- 
+
     return obj_new
 end
 

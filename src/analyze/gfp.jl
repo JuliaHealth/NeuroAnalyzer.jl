@@ -25,7 +25,6 @@ GFP(t) = std_channels( s[:, t] )
 This is used internally by diss() to make amplitudes comparable.
 """
 function erp_gfp(s::AbstractMatrix)::Vector{Float64}
-
     # GFP = population std across channels at each time point
     # dropdims removes the trailing singleton dimension left by std(..., dims=1) without allocating a copy
     g = dropdims(std(s; dims = 1); dims = 1)
@@ -91,7 +90,6 @@ function erp_gfp(
     ch::Union{String, Vector{String}, Regex},
     norm::Bool = false,
 )::Union{Vector{Float64}, Matrix{Float64}}
-
     # validate
     _check_datatype(obj, ["erp", "erf"])
 

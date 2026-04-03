@@ -29,7 +29,7 @@ function bpsplit(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     order::Int64 = 91,
-    bw::Real=0.5,
+    bw::Real = 0.5,
     w::Union{Nothing, AbstractVector, <:Real} = nothing,
 )::@NamedTuple{
     s::Array{Float64, 4},

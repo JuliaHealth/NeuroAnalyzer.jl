@@ -143,7 +143,7 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
     me = 3.0,
     q3 = 4.0,
     mx = 5.1,
-    mo = 1.0
+    mo = 1.0,
 )
 @test NeuroAnalyzer.summary(rand(10, 3), g = ["g1", "g2", "g3"], d = 2) isa DataFrame
 @test NeuroAnalyzer.summary(rand(10), rand(11), rand(12), g = ["g1", "g2", "g3"], d = 2) isa

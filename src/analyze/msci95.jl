@@ -183,7 +183,7 @@ function msci95(
 
     # calculate over epochs
     for ep_idx in 1:ep_n
-        msci_data = msci95(@view(s[:, :, ep_idx]), n = n, method = method)
+        msci_data = msci95(@view(s[:, :, ep_idx]); n = n, method = method)
         sm[ep_idx, :] = msci_data.sm
         se[ep_idx, :] = msci_data.se
         ll[ep_idx, :] = msci_data.ll

@@ -196,7 +196,7 @@ Return start/stop index pairs for complete windows only. Trailing partial window
 # Returns
  
 - `Matrix{Int64}`: Nx2 matrix of `[start stop]` index pairs (1-based, inclusive)
-""" 
+"""
 _fchunks(
     s::AbstractVector;
     wlen::Int64,

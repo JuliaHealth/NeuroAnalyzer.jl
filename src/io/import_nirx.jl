@@ -303,7 +303,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     clabels = repeat([""], ch_n)
     [
-        clabels[idx] =
+        clabels[idx] in
         src_labels[opt_pairs[idx, :][1]] *
         "_" *
         det_labels[opt_pairs[idx, :][2]] *

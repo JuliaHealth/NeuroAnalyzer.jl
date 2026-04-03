@@ -378,11 +378,37 @@ x2, f2 = areduce(x, f)
 @info "Test: iir_order()"
 @test iir_order(eeg; fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2) == 199
 @test iir_order(eeg; fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2) == 199
-@test iir_order(eeg; fprototype = :butterworth, ftype = :bp, cutoff = (12, 15), bw = 0.2) == 28
-@test iir_order(eeg; fprototype = :butterworth, ftype = :bs, cutoff = (12, 15), bw = 0.2) == 28
-@test iir_order(; fprototype = :butterworth, ftype = :lp, cutoff = 12, bw = 0.2, fs = 256) == 199
-@test iir_order(; fprototype = :butterworth, ftype = :hp, cutoff = 12, bw = 0.2, fs = 256) == 199
-@test iir_order(; fprototype = :butterworth, ftype = :bp, cutoff = (12, 15), bw = 0.2, fs = 256) == 28
-@test iir_order(; fprototype = :butterworth, ftype = :bs, cutoff = (12, 15), bw = 0.2, fs = 256) == 28
+@test iir_order(eeg; fprototype = :butterworth, ftype = :bp, cutoff = (12, 15), bw = 0.2) ==
+      28
+@test iir_order(eeg; fprototype = :butterworth, ftype = :bs, cutoff = (12, 15), bw = 0.2) ==
+      28
+@test iir_order(;
+    fprototype = :butterworth,
+    ftype = :lp,
+    cutoff = 12,
+    bw = 0.2,
+    fs = 256,
+) == 199
+@test iir_order(;
+    fprototype = :butterworth,
+    ftype = :hp,
+    cutoff = 12,
+    bw = 0.2,
+    fs = 256,
+) == 199
+@test iir_order(;
+    fprototype = :butterworth,
+    ftype = :bp,
+    cutoff = (12, 15),
+    bw = 0.2,
+    fs = 256,
+) == 28
+@test iir_order(;
+    fprototype = :butterworth,
+    ftype = :bs,
+    cutoff = (12, 15),
+    bw = 0.2,
+    fs = 256,
+) == 28
 
 true

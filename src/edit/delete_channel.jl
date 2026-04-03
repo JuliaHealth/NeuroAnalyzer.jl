@@ -58,31 +58,33 @@ function delete_channel(
         elseif !isempty(loc_idx)
             deleteat!(obj_new.locs, loc_idx[1])
         end
- 
+
         # remove from universal header vectors
-        deleteat!(obj_new.header.recording[:label],        idx)
+        deleteat!(obj_new.header.recording[:label], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
-        deleteat!(obj_new.header.recording[:bad_channel],  idx)
-        deleteat!(obj_new.header.recording[:unit],         idx)
- 
+        deleteat!(obj_new.header.recording[:bad_channel], idx)
+        deleteat!(obj_new.header.recording[:unit], idx)
+
         # remove from type-specific header vectors
         dt = obj_new.header.recording[:data_type]
         if dt == "eeg" || dt == "seeg" || dt == "ecog"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
-            deleteat!(obj_new.header.recording[:transducers],  idx)
-            deleteat!(obj_new.header.recording[:gain],         idx)
+            deleteat!(obj_new.header.recording[:transducers], idx)
+            deleteat!(obj_new.header.recording[:gain], idx)
         elseif dt == "meg"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
-            deleteat!(obj_new.header.recording[:coil_type],    idx)
+            deleteat!(obj_new.header.recording[:coil_type], idx)
             for field in (:gradiometers, :magnetometers)
                 tmp = findfirst(isequal(idx), obj_new.header.recording[field])
                 isnothing(tmp) || deleteat!(obj_new.header.recording[field], tmp)
             end
         elseif dt == "nirs"
             if !del_opt && idx in eachindex(obj_new.header.recording[:optode_labels])
-                throw(ArgumentError(
-                    "NIRS signal channels must be deleted using delete_optode().",
-                ))
+                throw(
+                    ArgumentError(
+                        "NIRS signal channels must be deleted using delete_optode().",
+                    ),
+                )
             end
             if idx in eachindex(obj_new.header.recording[:wavelength_index])
                 deleteat!(obj_new.header.recording[:wavelength_index], idx)
@@ -96,14 +98,14 @@ function delete_channel(
             end
         end
     end
- 
+
     obj_new.header.recording[:channel_order] = _sort_channels(
         obj_new.header.recording[:channel_type],
     )
     obj_new.data = obj_new.data[setdiff(_c(ch_n), ch_idx), :, :]
- 
+
     push!(obj_new.history, "delete_channel(obj; ch=$(labels(obj)[sort(ch_idx)]))")
- 
+
     return obj_new
 end
 
@@ -127,7 +129,7 @@ function delete_channel!(
     ch::Union{String, Vector{String}, Regex},
     del_opt::Bool = false,
 )::Nothing
-    obj_new = delete_channel(obj; ch = ch, del_opt = del_opt)
+    obj_new     = delete_channel(obj; ch = ch, del_opt = del_opt)
     obj.header  = obj_new.header
     obj.data    = obj_new.data
     obj.history = obj_new.history
@@ -169,7 +171,7 @@ function keep_channel(
             "the total number of channels ($ch_n).",
         ),
     )
- 
+
     return delete_channel(obj; ch = chs_to_remove)
 end
 
@@ -191,7 +193,7 @@ function keep_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Nothing
-    obj_new = keep_channel(obj; ch = ch)
+    obj_new     = keep_channel(obj; ch = ch)
     obj.header  = obj_new.header
     obj.data    = obj_new.data
     obj.history = obj_new.history

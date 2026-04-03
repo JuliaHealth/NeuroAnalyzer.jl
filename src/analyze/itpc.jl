@@ -325,7 +325,7 @@ function itpc_spec(
         @inbounds for ep_idx in 1:ep_n
             s_conv[1, :, ep_idx] = DSP.conv(
                 @view(obj.data[ch[1], :, ep_idx]),
-                kernel
+                kernel,
             )[(half_kernel - 1):(end - half_kernel)]
         end
 

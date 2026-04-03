@@ -149,7 +149,7 @@ function mdiff(
     for ep_idx in 1:ep_n
         mdiff_data = mdiff(
             @view(s1[:, :, ep_idx]),
-            @view(s2[:, :, ep_idx]),
+            @view(s2[:, :, ep_idx]);
             n = n,
             method = method,
         )

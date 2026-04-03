@@ -1174,7 +1174,7 @@ function plot_icatopo(
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = axes(ic, 1),
-tpos::Union{Nothing, Real, AbstractVector},
+    tpos::Union{Nothing, Real, AbstractVector},
     imethod::Symbol = :sh,
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
@@ -1185,11 +1185,11 @@ tpos::Union{Nothing, Real, AbstractVector},
     for idx in eachindex(ic_idx)
         obj_tmp = ica_remove(
             obj;
-            ch         = ch,
-            ic         = ic,
-            ic_mw      = ic_mw,
-            ic_idx     = idx,
-            keep       = true,
+            ch     = ch,
+            ic     = ic,
+            ic_mw  = ic_mw,
+            ic_idx = idx,
+            keep   = true,
         )
         fig_tmp = plot_topo(
             obj_tmp;

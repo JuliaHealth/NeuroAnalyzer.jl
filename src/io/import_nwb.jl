@@ -55,7 +55,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
         exp_notes = "Instructions" in k ? header["Instructions"] : ""
         "RecordingType" in k &&
-            header["RecordingType"] == "continuous" ||
+        header["RecordingType"] == "continuous" ||
             throw(
                 ArgumentError(
                     "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",

@@ -173,7 +173,7 @@ function stationarity(
             window_idx, ep_idx = idx[1], idx[2]
             cov_mat[:, :, window_idx, ep_idx] = cov(
                 @view(obj.data[ch, window_idx, ep_idx]) *
-                @view(obj.data[ch, window_idx, ep_idx])'
+                @view(obj.data[ch, window_idx, ep_idx])',
             )
         end
 

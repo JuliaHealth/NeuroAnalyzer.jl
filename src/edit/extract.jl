@@ -123,7 +123,7 @@ function extract_data(
     ep = _n2v(ep)
 
     data = obj.data[ch, :, ep]
- 
+
     if !time && !etime
         return data
     elseif time && !etime
@@ -133,5 +133,4 @@ function extract_data(
     else
         return data, obj.time_pts, obj.epoch_time
     end
-
 end

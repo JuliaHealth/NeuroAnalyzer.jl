@@ -82,7 +82,7 @@ function f1(;
 )::@NamedTuple{
     f1_score::Float64,
     prec::Float64,
-    rec::Float64
+    rec::Float64,
 }
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))

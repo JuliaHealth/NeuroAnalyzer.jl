@@ -91,9 +91,9 @@ function eros(
     s = spec_data.p
 
     if datatype(obj) in ["erp", "erf"]
-        s = cat(s[:, :, :, 1], mean(s[:, :, 1, 2:end]; dims = 3); dims=3)
+        s = cat(s[:, :, :, 1], mean(s[:, :, 1, 2:end]; dims = 3); dims = 3)
     else
-        s = dropdims(mean(s; dims = 4); dims= 4)
+        s = dropdims(mean(s; dims = 4); dims = 4)
     end
 
     return (; s, f, t)

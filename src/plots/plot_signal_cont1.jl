@@ -86,8 +86,8 @@ function plot_cont(
     else
         ch_order = collect(1:ch_n)
     end
-    ctypes  = obj.header.recording[:channel_type][ch][ch_order]
-    cunits  = obj.header.recording[:unit][ch][ch_order]
+    ctypes = obj.header.recording[:channel_type][ch][ch_order]
+    cunits = obj.header.recording[:unit][ch][ch_order]
 
     # order by ctypes
     # and markers for ax3
@@ -119,7 +119,7 @@ function plot_cont(
         nch      = Observable(n_channels)
         ch1      = Observable(1)
         ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
-        clabels = labels(obj)[ch][ch_order]
+        clabels  = labels(obj)[ch][ch_order]
     else
         ch_n     = length(ctypes_uni)
         ch1      = Observable(1)
@@ -230,7 +230,7 @@ function plot_cont(
                     colormap   = pal,
                     colorrange = 1:size(s, 1),
                     linewidth  = 0.5,
-                    alpha = 1.0,
+                    alpha      = 1.0,
                 )
             end
             if avg

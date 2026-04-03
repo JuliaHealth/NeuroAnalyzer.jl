@@ -459,11 +459,11 @@ function plot_erp_stack(
         )
     if !isnothing(rt)
         length(rt) == size(s, 1) ||
-        throw(
-            ArgumentError(
-                "Length of the rt vector must equal number of ERP epochs ($(size(s, 1))).",
-            ),
-        )
+            throw(
+                ArgumentError(
+                    "Length of the rt vector must equal number of ERP epochs ($(size(s, 1))).",
+                ),
+            )
     end
 
     # select color palette

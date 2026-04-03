@@ -133,7 +133,19 @@ function summary(
         ],
     )
 
-    return (n=n, ms=st.ms, m=st.m, v=st.v, s=st.s, mn=st.mn, q1=st.q1, me=st.me, q3=st.q3, mx=st.mx, mo=st.mo)
+    return (
+        n = n,
+        ms = st.ms,
+        m = st.m,
+        v = st.v,
+        s = st.s,
+        mn = st.mn,
+        q1 = st.q1,
+        me = st.me,
+        q3 = st.q3,
+        mx = st.mx,
+        mo = st.mo,
+    )
 end
 
 """

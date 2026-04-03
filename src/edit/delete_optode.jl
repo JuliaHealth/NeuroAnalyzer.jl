@@ -28,7 +28,8 @@ function delete_optode(
     opt_n   = length(obj.header.recording[:optode_labels])
 
     for idx in opt_vec
-        idx in 1:opt_n || throw(ArgumentError("opt index $idx is out of range [1, $opt_n]."))
+        idx in 1:opt_n ||
+            throw(ArgumentError("opt index $idx is out of range [1, $opt_n]."))
     end
     length(opt_vec) < opt_n || throw(
         ArgumentError(
@@ -42,7 +43,7 @@ function delete_optode(
 
     # remove channel locations
     for idx in opt_vec
-        lbl    = optode_labels(obj)[idx] # use original obj - obj_new changes each iteration
+        lbl = optode_labels(obj)[idx] # use original obj - obj_new changes each iteration
         loc_result = _find_bylabel(obj_new.locs, lbl)
         if loc_result isa Int64
             deleteat!(obj_new.locs, loc_result)
@@ -65,7 +66,7 @@ function delete_optode(
                 obj_new.header.recording[:src_labels] .== ol,
             )
             chp[chp .== idx] .= 0
-            chp[chp .>  idx] .-= 1
+            chp[chp .> idx] .-= 1
             obj_new.header.recording[:optode_pairs][:, 1] = chp
 
         elseif ol in detector_labels(obj_new)
@@ -76,7 +77,7 @@ function delete_optode(
                 obj_new.header.recording[:det_labels] .== ol,
             )
             chp[chp .== idx] .= 0
-            chp[chp .>  idx] .-= 1
+            chp[chp .> idx] .-= 1
             obj_new.header.recording[:optode_pairs][:, 2] = chp
         end
     end
@@ -108,7 +109,7 @@ function delete_optode!(
     obj::NeuroAnalyzer.NEURO;
     opt::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
-    obj_new = delete_optode(obj; opt = opt)
+    obj_new     = delete_optode(obj; opt = opt)
     obj.header  = obj_new.header
     obj.data    = obj_new.data
     obj.history = obj_new.history
