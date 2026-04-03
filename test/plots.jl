@@ -346,8 +346,7 @@ p = NeuroAnalyzer.plot(eeg, eeg; ch = "all", gui = false)
 @info "Test: plot_icatopo()"
 eeg_new = keep_epoch(e10; ep = 1)
 ica_data = ica_decompose(eeg_new; ch = "eeg", iter = 10)
-ic, ic_mw, ic_var = ica_data.ic, ica_data.ic_mw, ica_data.ic_var
-p = plot_icatopo(eeg_new; ch = "eeg", ic = ic, ic_mw = ic_mw, ic_idx = 1:3, tpos = 0)
+p = plot_icatopo(eeg_new; ch = "eeg", ic = ica_data.ic, ic_mw = ica_data.ic_mw, ic_idx = 2:3, tpos = 8.01)
 @test p isa GLMakie.Figure
 
 @info "Test: add_pl()"

@@ -639,13 +639,20 @@ remove_powerline!(e10_tmp; pl_frq = 50, ch = "Fp1")
 @test size(e10_tmp) == (24, 2560, 1)
 
 @info "Test: ica_decompose()"
-ic, ic_mw = ica_decompose(rand(10, 1000); n = 5)
-@test size(ic) == (5, 1000)
-@test size(ic_mw) == (10, 5)
-ic, ic_mw, ic_var = ica_decompose(eeg; ch = "all", n = 5, iter = 10)
-@test size(ic) == (5, 308480)
-@test size(ic_mw) == (24, 5)
-@test length(ic_var) == 5
+ica_data = ica_decompose(rand(10, 1000); n = 5)
+@test size(ica_data.ic) == (5, 1000)
+@test size(ica_data.ic_mw) == (10, 5)
+ica_data = ica_decompose(eeg; ch = "all", n = 5, iter = 10)
+@test size(ica_data.ic) == (5, 308480)
+@test size(ica_data.ic_mw) == (24, 5)
+@test length(ica_data.ic_var) == 5
+
+@info "Test: ica_remove()"
+ica_data = ica_decompose(eeg; ch = "all", n = 5, iter = 10)
+eeg_tmp = ica_remove(eeg; ch = "all", ic_idx = 1:2, ic = ica_data.ic, ic_mw = ica_data.ic_mw)
+@test size(eeg_tmp) == size(eeg)
+eeg_tmp = ica_remove(eeg; ch = "all", ic_idx = 1:2, ic = ica_data.ic, ic_mw = ica_data.ic_mw, keep=true)
+@test size(eeg_tmp) == size(eeg)
 
 @info "Test: pca_decompose()"
 pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2); n = 2)
@@ -668,25 +675,6 @@ e10_rec = pca_reconstruct(e10; ch = "all", pc = pc, pc_model = pc_model)
 @info "Test: reference_custom()"
 e10_tmp = reference_custom(e10)
 @test size(e10_tmp) == (23, 2560, 10)
-
-@info "Test: ica_reconstruct()"
-ic, ic_mw = ica_decompose(rand(10, 1000); n = 5)
-s = ica_reconstruct(; ic = ic, ic_mw = ic_mw, ic_idx = 5)
-@test size(s) == (10, 1000)
-ic, ic_mw = ica_decompose(eeg; ch = "all", n = 5, iter = 10)
-eeg_tmp = ica_reconstruct(eeg; ch = "all", ic = ic, ic_mw = ic_mw, ic_idx = 1)
-@test size(eeg_tmp) == size(eeg)
-eeg_tmp = deepcopy(eeg)
-eeg_tmp = ica_reconstruct(eeg_tmp; ch = "all", ic_idx = 1, ic = ic, ic_mw = ic_mw);
-@test size(eeg_tmp) == size(eeg)
-
-@info "Test: ica_remove()"
-ic, ic_mw = ica_decompose(eeg; ch = "all", n = 5, iter = 10)
-eeg_tmp = ica_remove(eeg; ch = "all", ic_idx = 1, ic = ic, ic_mw = ic_mw)
-@test size(eeg_tmp) == size(eeg)
-eeg_tmp = deepcopy(eeg)
-eeg_tmp = ica_remove(eeg_tmp; ch = "all", ic_idx = 1, ic = ic, ic_mw = ic_mw)
-@test size(eeg_tmp) == size(eeg)
 
 @info "Test: normpower()"
 @test round.(normpower(1:10)) == [6.0, 12.0, 19.0, 25.0, 31.0, 37.0, 43.0, 50.0, 56.0, 62.0]

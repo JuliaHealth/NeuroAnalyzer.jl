@@ -1184,14 +1184,19 @@ tpos::Union{Nothing, Real, AbstractVector},
 )::GLMakie.Figure
     fig_topo = GLMakie.Figure[]
     for idx in eachindex(ic_idx)
-        obj_tmp = ica_reconstruct(
-            obj; ch = ch, ic = ic, ic_mw = ic_mw, ic_idx = idx, keep = true,
+        obj_tmp = ica_remove(
+            obj;
+            ch         = ch,
+            ic         = ic,
+            ic_mw      = ic_mw,
+            ic_idx     = idx,
+            keep       = true,
         )
         fig_tmp = plot_topo(
             obj_tmp;
             ch         = ch,
             tpos       = tpos,
-            title      = "IC $idx",
+            title      = "IC $(ic_idx[idx])",
             imethod    = imethod,
             nmethod    = nmethod,
             contours   = contours,
