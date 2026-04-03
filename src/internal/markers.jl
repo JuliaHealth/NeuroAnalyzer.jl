@@ -36,9 +36,6 @@ function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
     return markers, markers_channel
 end
 
-_has_markers(obj::NeuroAnalyzer.NEURO)::Bool =
-    DataFrames.nrow(obj.markers) > 0 ? true : false
-
 function _a2df(annotations::Vector{String})::DataFrame
     # convert EDF/BDF annotations to markers DataFrame
     mrk = replace.(annotations, "\x14\x14\0" => "|")
