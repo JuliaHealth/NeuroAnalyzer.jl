@@ -313,8 +313,8 @@ p = erp_peaks(e)
 @test size(p) == (19, 2)
 
 @info "Test: erp_auc()"
-v = erp_auc(e; ch = "all")
-@test length(v) == 19
+auc_data = erp_auc(e; ch = "all")
+@test length(auc_data) == 19
 
 @info "Test: coherence()"
 coh_data = NeuroAnalyzer.coherence(rand(100), rand(100); fs = 10, wstep = 5, method = :mt)
