@@ -89,7 +89,7 @@ Plot multi-channel Phase Spectral Density (PHSD) with customizable visualization
 
 - `f::Vector{Float64}`: vector of frequency values in Hz
 - `ph::Matrix{Float64}`: matrix of phase values, shape (channels, frequencies)
-- `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
+- `clabels::Vector{String}=string.(1:size(ph, 1))`: channel labels
 - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plots
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -130,7 +130,7 @@ function plot_phsd(
     pal = mono ? :grays : :darktest
 
     # number of channels
-    ch_n = size(p, 1)
+    ch_n = size(ph, 1)
 
     # frequency limits
     f1 = vsearch(flim[1], f)
@@ -186,7 +186,7 @@ function plot_phsd(
             Makie.lines!(
                 ax,
                 f[f1:f2],
-                p[idx, f1:f2];
+                ph[idx, f1:f2];
                 color = cmap[idx],
                 colormap = pal,
                 colorrange = 1:ch_n,
@@ -197,7 +197,7 @@ function plot_phsd(
 
         # draw averaged channels
         if avg
-            s = mean(p[f1:f2]; dims = 1)[:]
+            s = mean(ph[f1:f2]; dims = 1)[:]
             GLMakie.lines!(ax, f[f1:f2], s; linewidth = 4, color = :black)
         end
 
@@ -415,7 +415,7 @@ function plot_phsd_topo(
     # prepare PHSD plots
     fig_vec      = GLMakie.Figure[]
     fig_full_vec = GLMakie.Figure[]
-    for idx in axes(p, 1)
+    for idx in axes(ph, 1)
         fig_mini = GLMakie.Figure(; size = marker_size, figure_padding = 0)
         ax = GLMakie.Axis(
             fig_mini[1, 1];
@@ -467,7 +467,7 @@ function plot_phsd_topo(
     # draw head outline
     head && _draw_head_outline!(ax; lw = 3)
 
-    for idx in axes(p, 1)
+    for idx in axes(ph, 1)
         io = IOBuffer()
         show(io, MIME"image/png"(), fig_vec[idx])
         pp = FileIO.load(io)
@@ -596,7 +596,7 @@ function plot_phsd(
 
     # calculate PHSD
     phsd_data = phsd(signal; fs = fs)
-    sp, sf = phsd_data.sp, phsd_data.sf
+    ph, f = phsd_data.ph, phsd_data.f
 
     # factor out repeated title suffix pattern
     ep_suffix = ep != 0 ? "\n[epoch: $ep]" : "\n[time window: $t_s1:$t_s2]"
@@ -607,7 +607,7 @@ function plot_phsd(
         ylabel == "default" && (ylabel = "Phase [rad]")
         if length(ch) == 1
             fig = plot_phsd(
-                sf, sp;
+                f, ph;
                 xlabel = xlabel,
                 ylabel = ylabel,
                 title  = title,
@@ -616,7 +616,7 @@ function plot_phsd(
             )
         else
             fig = plot_phsd(
-                sf, sp;
+                f, ph;
                 xlabel  = xlabel,
                 ylabel  = "",
                 clabels = clabels,
@@ -631,7 +631,7 @@ function plot_phsd(
         end
 
     elseif type in [:w3d, :s3d]
-        ndims(sp) >= 2 ||
+        ndims(ph) >= 2 ||
             throw(
                 ArgumentError("For type=:$type plot the signal must contain ≥ 2 channels."),
             )
@@ -639,7 +639,7 @@ function plot_phsd(
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
         fig = plot_phsd_3d(
-            sf, sp;
+            f, ph;
             clabels = clabels,
             xlabel  = xlabel,
             ylabel  = ylabel,
@@ -664,9 +664,9 @@ function plot_phsd(
         _has_locs(obj)
         chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
-        ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
+        ndims(ph) == 1 && (ph = reshape(ph, 1, length(ph)))
         fig = plot_phsd_topo(
-            locs, sf, sp;
+            locs, f, ph;
             xlabel = xlabel,
             ylabel = ylabel,
             title  = title,

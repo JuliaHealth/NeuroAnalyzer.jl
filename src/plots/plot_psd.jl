@@ -397,16 +397,16 @@ function plot_psd_topo(
     end
 
     # get locations
-    if !cart
+    if cart
+        loc_x = locs.loc_x
+        loc_y = locs.loc_y
+    else
         loc_x = zeros(DataFrames.nrow(locs))
         loc_y = zeros(DataFrames.nrow(locs))
         for idx in axes(locs, 1)
             loc_x[idx], loc_y[idx] =
                 pol2cart(locs.loc_radius[idx], locs.loc_theta[idx])
         end
-    else
-        loc_x = locs.loc_x
-        loc_y = locs.loc_y
     end
 
     # prepare PSD plots

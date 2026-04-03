@@ -345,12 +345,13 @@ p = NeuroAnalyzer.plot(eeg, eeg; ch = "all", gui = false)
 
 @info "Test: plot_icatopo()"
 eeg_new = keep_epoch(e10; ep = 1)
-ic, ic_mw, ic_var = ica_decompose(eeg_new; ch = "eeg", iter = 10)
+ica_data = ica_decompose(eeg_new; ch = "eeg", iter = 10)
+ic, ic_mw, ic_var = ica_data.ic, ica_data.ic_mw, ica_data.ic_var
 p = plot_icatopo(eeg_new; ch = "eeg", ic = ic, ic_mw = ic_mw, ic_idx = 1:3, tpos = 0)
 @test p isa GLMakie.Figure
 
 @info "Test: add_pl()"
-p = NeuroAnalyzer.plot(e10; ep = 1)
+p = NeuroAnalyzer.plot(e10; ep = 1, gui = false)
 pl = plot_locs(eeg; ch = "eeg", sch = "eeg", ps = :s, gui = false)
 pp = add_pl(p, pl)
 @test pp isa GLMakie.Figure
@@ -368,7 +369,7 @@ c = plot2canvas(p)
 
 @info "Test: add_to_canvas()"
 c = plot2canvas(p)
-@test add_to_canvas(c, c, x = 0, y = 0, view = false) isa Cairo.CairoSurfaceBase{UInt32}
+@test add_to_canvas(c, c, x = 0, y = 0) isa Cairo.CairoSurfaceBase{UInt32}
 
 @info "Test: plot_mep()"
 mep = import_duomag(joinpath(testfiles_path, "mep-duomag.m"))
@@ -378,7 +379,7 @@ p = plot_mep(mep; ch = ["MEP1", "MEP2"], avg = true)
 @test p isa GLMakie.Figure
 p = plot_mep(mep; ch = ["MEP1", "MEP2"], avg = false)
 @test p isa GLMakie.Figure
-p = plot_mep(mep; ch = ["MEP1", "MEP2"], ci95 = true)
+p = plot_mep(mep; ch = ["MEP1", "MEP2"], avg = false, ci95 = true)
 @test p isa GLMakie.Figure
 p = plot_mep(mep; ch = "all", type = :stack)
 @test p isa GLMakie.Figure

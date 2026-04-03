@@ -374,16 +374,16 @@ function plot_spectrogram_topo(
     end
 
     # get locations
-    if !cart
+    if cart
+        loc_x = locs.loc_x
+        loc_y = locs.loc_y
+    else
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in axes(locs, 1)
             loc_x[idx], loc_y[idx] =
                 pol2cart(locs.loc_radius[idx], locs.loc_theta[idx])
         end
-    else
-        loc_x = locs.loc_x
-        loc_y = locs.loc_y
     end
 
     # apply Gaussian filter if requested

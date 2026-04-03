@@ -114,7 +114,6 @@ Overlay a locations plot `pl` onto the top-right corner of `fig`, making the whi
 - `GLMakie.Figure`: the plotted figure: `fig` with the locations overlay applied in-place
 """
 function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
-
     # render the locations figure to an in-memory PNG stream
     io = IOBuffer()
     show(io, MIME"image/png"(), pl)

@@ -86,7 +86,6 @@ function resize_canvas(
     c::Cairo.CairoSurfaceBase{UInt32};
     r::Real,
 )::Cairo.CairoSurfaceBase{UInt32}
-
     # use round consistently for both axes to get the nearest integer size.
     new_w = round(Int64, c.width * r)
     new_h = round(Int64, c.height * r)
@@ -171,7 +170,6 @@ function add_to_canvas(
     title::String = "",
     file_name::String = "",
 )::Cairo.CairoSurfaceBase{UInt32}
-
     # create output canvas matching c1's size, paint c1 as background, then composite c2 at the requested position
     c = CairoRGBSurface(c1.width, c1.height)
     cr = CairoContext(c)
@@ -201,8 +199,6 @@ function add_to_canvas(
         isfile(file_name) && _warn("File $file_name will be overwritten.")
         Cairo.write_to_png(c, file_name)
     end
-
-    view && iview_plot(c)
 
     return c
 end

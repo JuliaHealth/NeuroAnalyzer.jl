@@ -577,6 +577,8 @@ function epoch_reject(
     ch_n = length(ch)
     # number of epochs
     ep_n = nepochs(obj)
+    # epoch length
+    ep_len = epoch_len(obj)
 
     # validate
     for m in (:rmse, :rmsd, :euclid)

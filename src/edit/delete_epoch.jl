@@ -25,6 +25,7 @@ function delete_epoch(
 )::NeuroAnalyzer.NEURO
     # validate
     nepochs(obj) > 1 || throw(ArgumentError("You cannot delete the last epoch."))
+    ep = _n2v(ep)
     ep_sorted = sort(collect(ep); rev = true)
     length(ep_sorted) < nepochs(obj) || throw(
         ArgumentError(

@@ -65,21 +65,21 @@ function plot_locs3d(
     pal = mono ? :grays : :darktest
     effective_alpha = mesh_type === :head ? 1.0 : mesh_alpha
 
-    if !cart
+    if cart
+        loc_x = locs.loc_x
+        loc_y = locs.loc_y
+        loc_z = locs.loc_z
+    else
         loc_x = zeros(DataFrames.nrow(locs))
         loc_y = zeros(DataFrames.nrow(locs))
         loc_z = zeros(DataFrames.nrow(locs))
         for idx in axes(locs, 1)
             loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(
-                locs.loc_radius_sph,
-                locs.loc_theta_sph,
-                locs.loc_phi_sph,
+                locs.loc_radius_sph[idx],
+                locs.loc_theta_sph[idx],
+                locs.loc_phi_sph[idx],
             )
         end
-    else
-        loc_x = locs.loc_x
-        loc_y = locs.loc_y
-        loc_z = locs.loc_z
     end
 
     if maximum(abs.(locs.loc_x)) <= 1.2 &&

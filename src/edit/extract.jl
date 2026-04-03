@@ -122,7 +122,7 @@ function extract_data(
     _check_epochs(obj, ep)
     ep = _n2v(ep)
 
-    data = obj.data[ch_idx, :, ep]
+    data = obj.data[ch, :, ep]
  
     if !time && !etime
         return data

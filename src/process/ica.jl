@@ -248,7 +248,7 @@ function ica_reconstruct(
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, 1] =
-        ica_reconstruct(; ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)[ch, :]
+        ica_reconstruct(; ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)#[ch, :]
     push!(obj_new.history, "ica_reconstruct(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
     return obj_new
