@@ -434,6 +434,7 @@ function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyze
     push!(obj_new.history, "add_markers(obj; markers)")
  
     return obj_new
+end
 
 """
     add_markers!(obj; <keyword arguments>)
