@@ -18,7 +18,6 @@ Expand signal by adding reflected signal before the signal and after the signal,
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function reflect(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
-
     # add up to one epoch
     n > epoch_len(obj) && (n = epoch_len(obj))
 
@@ -87,7 +86,6 @@ Reduce signal by removing reflected signal before the signal and after the signa
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function chop(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
-
     # add up to one epoch
     n > epoch_len(obj) && (n = epoch_len(obj))
 

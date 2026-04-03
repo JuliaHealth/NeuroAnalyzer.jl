@@ -190,12 +190,12 @@ Default method is Welch's periodogram.
 - `db::Bool=false`: if `true`, convert power to dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram (default)
-- `:fft`: plain FFT periodogram
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform averaged over segments
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -290,12 +290,12 @@ Default method is Welch's periodogram.
 - `db::Bool=false`: if `true`, convert power to dB
 - `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram (default)
-- `:fft`: plain FFT periodogram
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform averaged over segments
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples

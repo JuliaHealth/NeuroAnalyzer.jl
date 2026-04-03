@@ -24,7 +24,7 @@ Show markers.
 - `Nothing`
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
-    !(_has_markers(obj)) && throw(ArgumentError("OBJ has no markers."))
+    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
 
     println(
         rpad("n", 5) *

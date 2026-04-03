@@ -152,10 +152,10 @@ Calculate peak frequency within a frequency band for a NEURO object.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -349,10 +349,10 @@ Calculate amplitude at peak frequency within a frequency band for a NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -545,10 +545,10 @@ Calculate power at peak frequency within a frequency band for a NEURO object.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram
-- `:fft`: fast Fourier transform
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform
+    - `:welch`: Welch's periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples

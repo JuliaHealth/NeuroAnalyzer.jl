@@ -14,12 +14,12 @@ Default method is Welch's periodogram.
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: if `true`, convert power to dB
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram (default)
-- `:fft`: plain FFT periodogram
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform averaged over segments
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -100,12 +100,12 @@ Default method is Welch's periodogram.
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: if `true`, convert power to dB
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram (default)
-- `:fft`: plain FFT periodogram
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform averaged over segments
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
@@ -208,12 +208,12 @@ Default method is Welch's periodogram.
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range flim[1] to flim[2]
 - `db::Bool=false`: if `true`, convert power to dB
 - `method::Symbol=:welch`: PSD estimation method:
-- `:welch`: Welch's periodogram (default)
-- `:fft`: plain FFT periodogram
-- `:mt`: multi-tapered periodogram
-- `:stft`: short-time Fourier transform averaged over segments
-- `:mw`: Morlet wavelet convolution
-- `:gh`: Gaussian filter + Hilbert transform
+    - `:welch`: Welch's periodogram (default)
+    - `:fft`: plain FFT periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short-time Fourier transform averaged over segments
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
