@@ -19,6 +19,7 @@ function remove_dc(
     s::AbstractVector,
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Vector{Float64}
+    # validate
     if isa(n, Int64)
         n >= 0 || throw(ArgumentError("n must be ≥ 0."))
         n <= length(s) || throw(ArgumentError("n must be ≤ $(length(s))."))
@@ -77,12 +78,18 @@ function remove_dc(
     s::AbstractArray,
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Array{Float64, 3}
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     s_new = similar(s, Float64)
 
+    # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] = remove_dc(@view(s[ch_idx, :, ep_idx]), n)
@@ -111,7 +118,6 @@ function remove_dc(
     ch::Union{String, Vector{String}, Regex},
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

@@ -18,7 +18,10 @@ Standardize channels of a 3-D signal array.
 function standardize(
     s::AbstractArray,
 )::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
+    # validate
     _chk3d(s)
+
+    # number of epochs
     ep_n = size(s, 3)
 
     scaler = Vector{ZScoreTransform{Float64, Vector{Float64}}}()
@@ -51,7 +54,6 @@ function standardize(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

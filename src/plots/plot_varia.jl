@@ -149,7 +149,6 @@ function plot_xac(
     ylabel::String = "",
     title::String = "",
 )::GLMakie.Figure
-
     # prepare plot
     GLMakie.activate!(; title = "plot_xac()")
     fig = GLMakie.Figure(; size = (800, 300))
@@ -1617,7 +1616,6 @@ function plot_polezero(
     title::String = "default",
     mono::Bool = false,
 )::GLMakie.Figure
-
     # prepare plot
     GLMakie.activate!(; title = "plot_polezero()")
     fig = GLMakie.Figure(; size = (600, 600))

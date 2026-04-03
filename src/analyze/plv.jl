@@ -34,6 +34,7 @@ function plv(
     s1ph::Vector{Float64},
     s2ph::Vector{Float64},
 }
+    # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
 
@@ -96,7 +97,6 @@ function plv(
     s1ph::Array{Float64, 3},
     s2ph::Array{Float64, 3},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
@@ -174,6 +174,7 @@ function plv(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Array{Float64, 3}
+    # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
         get_channel(obj; ch = ch, exclude = "bad") :

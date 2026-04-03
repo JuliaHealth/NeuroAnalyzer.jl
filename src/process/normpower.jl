@@ -32,7 +32,6 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 - `Array{Float64, 3}`
 """
 function normpower(s::AbstractArray)::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -44,6 +43,7 @@ function normpower(s::AbstractArray)::Array{Float64, 3}
     # pre-allocate output
     s_new = similar(s, Float64)
 
+    # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] = normpower(@view(s[ch_idx, :, ep_idx]))
@@ -70,7 +70,6 @@ function normpower(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

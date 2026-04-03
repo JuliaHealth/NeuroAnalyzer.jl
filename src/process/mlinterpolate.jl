@@ -28,7 +28,6 @@ function mlinterpolate_channel(
     ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(_c(nepochs(obj)), ep),
     model::T,
 )::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
-
     # resolve channel names to integer indices
     channels = get_channel(obj; type = datatype(obj))
     channel_labels = labels(obj)[channels]

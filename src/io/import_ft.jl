@@ -23,7 +23,6 @@ function import_ft(
     type::Symbol,
     detect_type::Bool = false,
 )::Union{NeuroAnalyzer.NEURO, DataFrame}
-
     # validate
     _check_var(type, [:eeg, :meg, :nirs, :events], "type")
     isfile(file_name) ||

@@ -23,7 +23,6 @@ function trim(
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
 )::Vector{Float64}
-
     # validate
     _check_segment(v, seg[1], seg[2])
 
@@ -54,7 +53,6 @@ function trim(
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
 )::Matrix{Float64}
-
     # validate
     _check_segment(m[1, :], seg[1], seg[2])
 
@@ -85,7 +83,6 @@ function trim(
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(a)
 
@@ -120,7 +117,6 @@ function trim(
     seg::Tuple{Real, Real},
     keep::Bool = false,
 )::NeuroAnalyzer.NEURO
-
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("trim() must be applied to continuous object."))
@@ -185,6 +181,7 @@ function trim!(
     seg::Tuple{Real, Real},
     keep::Bool = false,
 )::Nothing
+    # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("trim!() must be applied to continuous object."))
 
@@ -213,6 +210,7 @@ Crop signal by removing parts of the signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function crop(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::NeuroAnalyzer.NEURO
+    # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("crop() must be applied to continuous object."))
 

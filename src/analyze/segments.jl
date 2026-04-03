@@ -16,6 +16,7 @@ Calculate mean of a segment (e.g. spectrogram).
 - `Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)::Vector{Float64}
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(seg)
 
     return reshape(mean(mean(seg; dims = 1); dims = 2), size(seg, 3))
@@ -137,6 +138,7 @@ function seg_extract(
     idx::Vector{CartesianIndex{2}},
     bm::Matrix{Bool},
 }
+    # validate
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
 
     if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
@@ -204,6 +206,7 @@ function seg_select(
     Tuple{Int64, Int64, Int64, Int64},
     Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}},
 }
+    # validate
     _check_var(shape, [:r, :p, :c], "shape")
 
     size_x = size(m, 2)

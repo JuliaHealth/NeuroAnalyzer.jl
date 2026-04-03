@@ -21,7 +21,6 @@ where `Ī` is the mean absolute intensity across the sample (time) dimension. Th
 - `od::AbstractArray`: optical density array, same shape as `s`
 """
 function intensity2od(s::AbstractArray)::AbstractArray
-
     # compute the reference level: mean absolute intensity over the sample dimension (dim 2)
     # result shape is (ch × 1 × epochs)
     sm = mean(abs.(s); dims = 2)
@@ -50,7 +49,6 @@ function intensity2od(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

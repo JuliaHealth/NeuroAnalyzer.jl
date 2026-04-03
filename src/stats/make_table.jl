@@ -22,7 +22,6 @@ The header row is prepended to the data and printed as a single table body with 
 - Integer elements in `data` are converted to `String` in-place to ensure uniform display.
 """
 function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
-
     # validate
     size(header, 1) == 1 || throw(ArgumentError("header must be a single-row matrix."))
     size(header, 2) == size(data, 2) ||

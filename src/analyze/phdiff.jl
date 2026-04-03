@@ -60,7 +60,6 @@ function phdiff(
     pad::Int64 = 0,
     h::Bool = false,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -137,7 +136,6 @@ function phdiff(
     pad::Int64 = 0,
     h::Bool = false,
 )::Array{Float64, 3}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

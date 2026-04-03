@@ -28,10 +28,7 @@ Annotation-only channels (EDF+ TAL) are automatically detected, parsed into even
 3. https://www.edfplus.info/specs/
 """
 function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
-
-    # ------------------------------------------------------------------ #
-    # validate file                                                      #
-    # ------------------------------------------------------------------ #
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".edf" ||

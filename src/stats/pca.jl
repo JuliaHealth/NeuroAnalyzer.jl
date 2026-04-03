@@ -58,7 +58,6 @@ function pcacomp(
     pcp::Matrix{Float64},
     pc_model::MultivariateStats.PCA{Float64},
 }
-
     # validate
     size(m, 1) >= 2 || throw(ArgumentError("m must have at least 2 observations (rows)."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -138,7 +137,6 @@ function pcacomp(
     pcp::Matrix{Float64},
     pc_model::MultivariateStats.PCA{Float64},
 }
-
     # validate
     length(vars) >= 2 ||
         throw(ArgumentError("vars must contain at least 2 variable names."))
@@ -287,6 +285,7 @@ Calculate the recommended number of principal components (PCs).
 - `Int64`: recommended number of PCs (≥ 1)
 """
 function npca(m::Matrix{Float64}; zstd::Bool = true, type::Symbol, value::Real)::Int64
+    # validate
     _check_var(type, [:var, :eig], "type")
     if type === :var
         _in(value, (0, 1), "value")

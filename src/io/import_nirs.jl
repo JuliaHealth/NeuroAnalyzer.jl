@@ -20,6 +20,7 @@ The NIRS format is a MATLAB `.mat` file containing raw intensity data (`d`), a t
 1. https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """
 function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".nirs" ||

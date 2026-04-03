@@ -24,7 +24,6 @@ function phsd(
     ph::Vector{Float64},
     f::Vector{Float64},
 }
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
@@ -97,7 +96,6 @@ function phsd(
     ph::Array{Float64, 3},
     f::Vector{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -144,7 +142,6 @@ function phsd(
     ph::Array{Float64, 3},
     f::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

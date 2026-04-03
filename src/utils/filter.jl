@@ -20,7 +20,6 @@ The formula is: `n = round((a × fs) / (22 × bw))`, where 22 is the Harris empi
 - `Int64`: estimated FIR filter order
 """
 function fir_order_bw(; bw::Real, a::Real = 60, fs::Int64)::Int64
-
     # validate
     bw > 0 || throw(ArgumentError("bw must be > 0."))
     a > 0 || throw(ArgumentError("a must be > 0."))
@@ -67,7 +66,6 @@ The rule of thumb is that the filter should span 4–5 full cycles of the lowest
 - `Tuple{Int64, Int64}`: recommended filter order range (lower_order, upper_order)
 """
 function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
-
     # validate
     fs > 0 || throw(ArgumentError("fs must be > 0."))
     f > 0 || throw(ArgumentError("f must be > 0."))
@@ -142,7 +140,6 @@ function iir_order(;
     rs::Union{Nothing, Real} = nothing,
     fs::Int64,
 )::Int64
-
     # validate
     _check_var(
         fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype",

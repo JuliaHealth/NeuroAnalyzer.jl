@@ -22,7 +22,6 @@ Returns `NaN` for `n = 1` (prediction interval is undefined for a single observa
 For `n > 20` the result is approximate and a diagnostic warning is issued.
 """
 function pred_int(n::Int64)::Float64
-
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 

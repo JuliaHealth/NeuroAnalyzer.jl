@@ -26,7 +26,6 @@ Convert a confidence level to the corresponding Z-score.
 - One-tailed (`twotailed=false`): the CI is `(−∞, z)` (upper bound) or equivalently `(−z, +∞)` (lower bound) depending on direction
 """
 function cl2z(cl::Float64; twotailed::Bool = true)::Float64
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
 
@@ -57,7 +56,6 @@ function cim(
     d::Symbol = :t,
     twotailed::Bool = true,
 )::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     _check_var(d, [:t, :z], "d")
@@ -94,7 +92,6 @@ Uses the order-statistic method: the CI bounds are `x[j]` and `x[k]` where `j` a
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
 function cimd(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
 
@@ -131,7 +128,6 @@ Column medians are computed, sorted, and the order-statistic CI method is applie
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
 function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     size(x, 2) >= 2 || throw(ArgumentError("x must have at least 2 columns."))
@@ -172,7 +168,6 @@ Calculate the confidence interval for a proportion using the normal approximatio
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
 function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     _in(p, (0.0, 1.0), "p")
@@ -204,7 +199,6 @@ function cir(
     y::AbstractVector;
     cl::Float64 = 0.95,
 )::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
@@ -231,7 +225,6 @@ Transforms `r` to `z = arctanh(r)`, applies the normal CI, then back-transforms 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)` in correlation units
 """
 function cir(; r::Float64, n::Int64, cl::Float64 = 0.95)::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     _in(r, (-1.0, 1.0), "r")
@@ -264,7 +257,6 @@ Calculate the confidence interval for the standard deviation using the chi-squar
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
 function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
@@ -297,7 +289,6 @@ Calculate the confidence interval for the variance using the chi-squared distrib
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
 function civ(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))

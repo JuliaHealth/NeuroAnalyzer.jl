@@ -42,7 +42,6 @@ function export_csv(
     history::Bool = false,
     overwrite::Bool = false,
 )::Nothing
-
     # internal guard: throw if the file already exists and overwriting is not permitted
     # defined once here to avoid repeating the condition
     check_overwrite(path) =

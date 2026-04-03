@@ -172,7 +172,6 @@ function total_power(
     gw::Real = 5,
     demean::Bool = true,
 )
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

@@ -57,7 +57,6 @@ Convert spherical coordinates to Cartesian.
 - `Float64`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 """
 function cart2sph(x::Real, y::Real, z::Real)::Tuple{Float64, Float64, Float64}
-
     # radius = sqrt(x^2 + y^2 + z^2)
     radius = hypot(x, y, z)
     # theta = tan^-1(x, y)

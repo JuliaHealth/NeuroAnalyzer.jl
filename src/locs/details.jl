@@ -40,7 +40,6 @@ function locs_details(
     radius_sph::Float64,
     phi_sph::Float64,
 }
-
     # validate
     length(get_channel(obj; ch = ch)) == 1 ||
         throw(ArgumentError("ch must resolve to exactly one channel."))

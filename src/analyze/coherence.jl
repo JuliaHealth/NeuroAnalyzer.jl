@@ -146,7 +146,6 @@ function coherence(
     msc::Array{Float64, 3},
     f::Vector{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
     _chk3d(s2)
@@ -158,7 +157,7 @@ function coherence(
     # number of epochs
     ep_n = size(s1, 3)
 
-    # pre-compute the frequency vector with a single pilot call on the first channel/epoch pair
+    # dry run to pre-compute the frequency vector
     coh_data = NeuroAnalyzer.coherence(
         @view(s1[1, :, 1]),
         @view(s2[1, :, 1]);
@@ -260,7 +259,6 @@ function coherence(
     msc::Array{Float64, 3},
     f::Vector{Float64},
 }
-
     # validate
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))

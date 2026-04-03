@@ -97,7 +97,9 @@ Return an empty `GLMakie.Figure`, useful for padding a grid of plots.
 
 - `GLMakie.Figure`: the plotted figure
 """
-plot_empty()::GLMakie.Figure = GLMakie.Figure()
+function plot_empty()::GLMakie.Figure
+    return GLMakie.Figure()
+end
 
 """
     add_pl(fig, pl; <keyword arguments>)

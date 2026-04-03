@@ -27,6 +27,7 @@ function import_cnt(
     data_format::Symbol = :i32,
     detect_type::Bool = true,
 )::NeuroAnalyzer.NEURO
+    # validate
     _check_var(data_format, [:i32, :i16], "data_format")
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))

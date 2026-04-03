@@ -86,7 +86,6 @@ function snr(
     sn::Matrix{Float64},
     f::Vector{Float64},
 }
-
     # validate
     _check_var(type, [:mean, :rms], "type")
 
@@ -153,7 +152,6 @@ function snr(
     sn::Matrix{Float64},
     f::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

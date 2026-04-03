@@ -183,7 +183,6 @@ function plinterpolate(
     int_x::Vector{Float64},
     int_y::Vector{Float64},
 }
-
     # validate
     ch in axes(s, 1) || throw(ArgumentError("ch must be in [1, $(size(s, 1))"))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")

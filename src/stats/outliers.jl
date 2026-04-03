@@ -38,7 +38,6 @@ Detect outliers in a vector using a selected method.
 - Outlier indices are tracked relative to the **original** vector, so deletion from the working copy does not affect index mapping.
 """
 function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     _check_var(method, [:iqr, :z, :g], "method")
@@ -132,7 +131,6 @@ The critical value is derived from the t-distribution with `df = n − 2`.
 Grubbs FE. Procedures for detecting outlying observations in samples. Technometrics. 1969;11(1):1–21.
 """
 function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
-
     # validate
     length(x) >= 7 || throw(ArgumentError("x must contain at least 7 elements."))
     alpha > 0.0 || throw(ArgumentError("alpha must be > 0."))

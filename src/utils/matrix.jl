@@ -53,7 +53,6 @@ Rows are appended to the bottom and columns to the right as needed. At least one
 - `AbstractMatrix`: matrix of size `r × c` padded with zeros of the same element type as `m`
 """
 function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
-
     # Tuple comparison in Julia is lexicographic, not element-wise; check each dimension independently to avoid a silent false-positive assertion.
     r >= size(m, 1) || throw(ArgumentError("r ($r) must be ≥ size(m, 1) ($(size(m, 1)))."))
     c >= size(m, 2) || throw(ArgumentError("c ($c) must be ≥ size(m, 2) ($(size(m, 2)))."))
@@ -89,7 +88,6 @@ Return the sorting permutation indices of a matrix column-wise or row-wise.
 - `Matrix{Int64}`: index matrix of the same size as `m`; each column (or row) contains the permutation that would sort that column (or row)
 """
 function m_sortperm(m::AbstractMatrix; rev::Bool = false, dims::Int64 = 1)::AbstractMatrix
-
     # validate
     dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
 
@@ -131,6 +129,7 @@ function m_sort(
     rev::Bool = false,
     dims::Int64 = 1,
 )::AbstractMatrix
+    # validate
     dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
 
     # copy to avoid mutating the caller's index vector
@@ -166,7 +165,6 @@ Normalize an array by the number of columns minus one (`size(m, 2) - 1`).
 - `AbstractArray`: array divided element-wise by `size(m, 2) - 1`
 """
 function m_norm(m::AbstractArray)::AbstractArray
-
     # validate
     size(m, 2) >= 2 || throw(
         ArgumentError("m must have at least 2 columns (size(m, 2) - 1 would be zero)."),
@@ -193,7 +191,6 @@ The vector is divided into `⌊length(x) / wlen⌋` non-overlapping segments of 
 - `AbstractMatrix`: matrix of shape (n_segments, wlen)
 """
 function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatrix
-
     # validate
     wlen >= 1 || throw(ArgumentError("wlen must be ≥ 1."))
     woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
@@ -226,7 +223,6 @@ Reshape a 3-D array of shape `(1, samples, epochs)` into a `(epochs, samples)` m
 - `AbstractMatrix`: matrix of shape (size(x, 3), size(x, 2))
 """
 function arr2mat(x::AbstractArray)::AbstractMatrix
-
     # validate
     size(x, 1) == 1 ||
         throw(ArgumentError("First dimension of x must be 1; got $(size(x, 1))."))

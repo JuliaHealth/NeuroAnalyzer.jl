@@ -43,7 +43,6 @@ function itpc(
     itpca::Float64,
     itpcph::Vector{Float64},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -122,7 +121,6 @@ function itpc(
     itpca::Vector{Float64},
     itpcph::Matrix{Float64},
 }
-
     # number of epochs
     ep_n = nepochs(obj)
     ep_n >= 2 || throw(ArgumentError("OBJ must contain ≥ 2 epochs."))

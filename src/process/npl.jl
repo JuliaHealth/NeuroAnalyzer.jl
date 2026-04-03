@@ -15,7 +15,6 @@ Calculate non-phase-locked signal.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
-
     # validate
     datatype(obj) in ["erp", "erf"] || throw(ArgumentError("OBJ must be ERP/ERF."))
 

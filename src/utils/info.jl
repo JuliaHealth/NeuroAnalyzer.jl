@@ -74,7 +74,6 @@ Return the number of channels of a given type.
 - `Int64`: number of channels of the requested type
 """
 function nchannels(obj::NeuroAnalyzer.NEURO; type::String = "all")::Int64
-
     # validate
     _check_var(type, channel_types, "type")
     length(obj.header.recording[:channel_type]) != 0 ||
@@ -203,7 +202,6 @@ Return channel labels.
 - `Vector{String}`: channel label strings
 """
 function labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
-
     # validate
     length(obj.header.recording[:label]) > 0 ||
         throw(ArgumentError("OBJ has no channel labels."))
@@ -224,7 +222,6 @@ Return optode labels (NIRS objects only).
 - `Vector{String}`: optode label strings
 """
 function optode_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
-
     # validate
     _check_datatype(obj, "nirs")
     length(obj.header.recording[:optode_labels]) > 0 ||
@@ -247,7 +244,6 @@ Return source labels (NIRS objects only).
 - `Vector{String}`: source label strings
 """
 function source_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
-
     # validate
     _check_datatype(obj, "nirs")
     length(obj.header.recording[:src_labels]) > 0 ||
@@ -270,7 +266,6 @@ Return detector labels (NIRS objects only).
 - `Vector{String}`: detector label strings
 """
 function detector_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
-
     # validate
     _check_datatype(obj, "nirs")
     length(obj.header.recording[:det_labels]) > 0 ||
@@ -293,7 +288,6 @@ Return channel type strings.
 - `Vector{String}`: channel type strings (one per channel)
 """
 function chtypes(obj::NeuroAnalyzer.NEURO)::Vector{String}
-
     # validate
     length(obj.header.recording[:channel_type]) > 0 ||
         throw(ArgumentError("OBJ has no channel types."))
@@ -508,7 +502,6 @@ function channel_info(
     ch::String,
     pr::Bool = true,
 )::Union{Nothing, String}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -574,7 +567,6 @@ function channel_pick(
     obj::NeuroAnalyzer.NEURO;
     pick::Union{Symbol, Vector{Symbol}},
 )::Vector{String}
-
     # validate
     _check_datatype(obj, "eeg")
     length(labels(obj)) != 0 || throw(ArgumentError("OBJ does not contain channel labels."))
@@ -686,7 +678,6 @@ Return channel names belonging to a predefined spatial cluster.
 - `Vector{String}`: channel names present in the object that belong to the cluster
 """
 function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
-
     # validate
     length(labels(obj)) != 0 || throw(ArgumentError("OBJ does not contain channel labels."))
     _check_var(cluster, [:f1, :f2, :t1, :t2, :c1, :c2, :p1, :p2, :o], "cluster")
@@ -770,7 +761,6 @@ When `band = :list`, the available band names are printed to stdout and the func
 - `Tuple{Float64, Float64}`: `(low_Hz, high_Hz)` limits, clamped to the Nyquist frequency if necessary
 """
 function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)::Tuple{Float64, Float64}
-
     # validate
     bands = [
         :list, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher,
@@ -823,7 +813,6 @@ When `band = :list`, the available band names are printed to stdout and the func
 - `Tuple{Float64, Float64}`: `(low_Hz, high_Hz)` limits, clamped to the Nyquist frequency if necessary
 """
 function band_frq(fs::Int64; band::Symbol)::Tuple{Float64, Float64}
-
     # validate
     bands = [
         :list, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher,

@@ -23,6 +23,7 @@ function tkeo(
     t::AbstractVector = collect(1:length(s));
     method::Symbol = :pow,
 )::Vector{Float64}
+    # validate
     _check_var(method, [:pow, :der, :amp], "method")
 
     tk = nothing
@@ -109,7 +110,6 @@ function tkeo(
     ch::Union{String, Vector{String}, Regex},
     method::Symbol = :pow,
 )::Array{Float64, 3}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

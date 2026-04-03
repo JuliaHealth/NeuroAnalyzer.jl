@@ -76,7 +76,6 @@ function plot(
     snap::Bool = true,
     gui::Bool = true,
 )::GLMakie.Figure
-
     # validate and clamp n_channels/n_epochs to object dimensions
     n_channels > nchannels(obj) && (n_channels = nchannels(obj))
     n_epochs > nepochs(obj) && (n_epochs = nepochs(obj))
@@ -212,7 +211,6 @@ function plot(
     res::Int64 = 1,
     gui::Bool = true,
 )::GLMakie.Figure
-
     # validate
     datatype(obj1) in ["eeg", "meg"] ||
         throw(ArgumentError("This function works for continuous EEG and MEG objects."))

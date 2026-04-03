@@ -97,7 +97,6 @@ function filter_mavg(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -144,7 +143,6 @@ function filter_mavg(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

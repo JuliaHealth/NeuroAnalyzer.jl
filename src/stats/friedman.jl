@@ -30,7 +30,6 @@ Named tuple:
 Friedman M. The use of ranks to avoid the assumption of normality implicit in the analysis of variance. Journal of the American Statistical Association. 1937;32(200):675–701.
 """
 function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Float64}
-
     # number of observations (blocks)
     n = size(m, 1)
     n >= 2 || throw(ArgumentError("m must have at least 2 observations (rows)."))

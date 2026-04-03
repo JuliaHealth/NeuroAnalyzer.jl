@@ -14,7 +14,7 @@ Create model of TES stimulation.
 
 # Returns
 
-- `Plots.Plot{Plots.GRBackend}`
+- `GLMakie.Figure`
 
 # Notes
 
@@ -29,7 +29,7 @@ function tes_model(
     cathode::String,
     anode_curr::Real = 2.0,
     cathode_curr::Real = -2.0,
-)::Plots.Plot{Plots.GRBackend}
+)::GLMakie.Figure
     _wip()
 
     locs = import_locs(joinpath(NeuroAnalyzer.PATH, "locs", "standard-10-10-cap47.ced"))

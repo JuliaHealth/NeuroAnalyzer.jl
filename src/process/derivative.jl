@@ -19,7 +19,6 @@ For the boundary samples the one-sided half-difference is used so that the outpu
 - `Vector{Float64}`: derivative signal of the same length as `s`
 """
 function derivative(s::AbstractVector)::AbstractVector
-
     # validate
     length(s) > 2 || throw(ArgumentError("Signal length must be > 2."))
 
@@ -54,7 +53,6 @@ For the boundary samples the one-sided half-difference is used so that the outpu
 - `Array{Float64, 3}`: derivative array of the same shape as `s`
 """
 function derivative(s::AbstractArray)::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -93,7 +91,6 @@ function derivative(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

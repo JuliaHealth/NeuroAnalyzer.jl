@@ -21,7 +21,6 @@ Calculate the indices of the full-width at half-maximum (FWHM) points of a Gauss
 - For noisy or non-unimodal signals, `vsearch` may return the index of the closest sample to 0.5 rather than a true half-maximum crossing.
 """
 function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
-
     # validate
     length(s) >= 2 || throw(ArgumentError("s must contain at least 2 elements."))
 

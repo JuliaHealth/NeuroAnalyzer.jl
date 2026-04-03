@@ -32,7 +32,6 @@ Named tuple:
 - `k2::Float64`: sturges' extended estimate
 """
 function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
-
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
@@ -54,7 +53,6 @@ Calculate the slope of the line passing through two points.
 - `Float64`: slope `(y₂ − y₁) / (x₂ − x₁)`
 """
 function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
-
     # validate
     p2[1] != p1[1] || throw(
         ArgumentError("p2[1] and p1[1] must not be equal (vertical line has no slope)."),
@@ -108,7 +106,6 @@ function count_thresh(
     t::Real,
     t_type::Symbol = :g,
 )::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
-
     # validate
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
 
@@ -145,7 +142,6 @@ Calculate the proportion of elements in a statistic distribution that are greate
 - `Float64`: proportion of elements satisfying the condition
 """
 function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float64
-
     # validate
     _check_var(type, [:g, :l], "type")
     length(stat_dist) > 0 || throw(ArgumentError("stat_dist must not be empty."))
@@ -174,7 +170,6 @@ Each permutation randomly selects a split point and rotates the vector (moves th
 - `Matrix{Float64}`: matrix, shape (n, length(s))
 """
 function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
-
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     length(s) >= 2 || throw(ArgumentError("s must contain at least 2 elements."))
@@ -207,7 +202,6 @@ Each permutation randomly selects a split point along the second axis and rotate
 - `Array{Float64, 4}`: shape (n × size(s,1) × size(s,2) × size(s,3)) for 3-D input
 """
 function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
-
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     2 <= ndims(s) <= 3 ||
@@ -266,7 +260,6 @@ Computed as `log(p / (1 − p))`. Returns `−Inf` for `p = 0` and `+Inf` for `p
 - `Float64`: log-odds `log(p / (1 − p))`
 """
 function logit(p::Float64)::Float64
-
     # validate
     _in(p, (0.0, 1.0), "p")
 
@@ -289,7 +282,6 @@ Computed as `Σ(xᵢ − x̄)²`.
 - `Float64`: sum of squared deviations
 """
 function sumsq(x::AbstractVector)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
@@ -312,7 +304,6 @@ Return a copy of `x` with all `NaN` and `Missing` values removed.
 - `Vector{Float64}`: filtered vector converted to `Float64`
 """
 function rmna(x::AbstractVector)::Vector{Float64}
-
     # filter missing first (type-level), then NaN (value-level)
     x_clean = collect(skipmissing(x))
 
@@ -333,7 +324,6 @@ Calculate the degrees of freedom for a vector (`length(x) − 1`).
 - `Int64`: degrees of freedom `length(x) − 1`
 """
 function df(x::AbstractVector)::Int64
-
     # validate
     length(x) >= 1 || throw(ArgumentError("x must not be empty."))
 
@@ -354,7 +344,6 @@ Center a vector by subtracting its mean.
 - `Vector{Float64}`: mean-centered vector `x .- mean(x)`
 """
 function center(x::AbstractVector)::Vector{Float64}
-
     # validate
     length(x) >= 1 || throw(ArgumentError("x must not be empty."))
 

@@ -27,6 +27,7 @@ function dwd(
     type::Symbol,
     l::Int64 = maxtransformlevels(s),
 )::Matrix{Float64} where {T <: DiscreteWavelet}
+    # validate
     _check_var(type, [:sdwt, :acdwt], "type")
 
     l <= maxtransformlevels(s) ||
@@ -69,7 +70,6 @@ function dwd(
     type::Symbol,
     l::Int64 = maxtransformlevels(s[1, :, 1]),
 )::Array{Float64, 4} where {T <: DiscreteWavelet}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -166,6 +166,7 @@ function idwd(
     type::Symbol,
     c::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = axes(dc, 1),
 )::Vector{Float64} where {T <: DiscreteWavelet}
+    # validate
     _check_var(type, [:sdwt, :acdwt], "type")
 
     # validate and normalize coefficient index selection

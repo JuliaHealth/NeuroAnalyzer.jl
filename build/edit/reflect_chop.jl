@@ -1,0 +1,135 @@
+export reflect
+export reflect!
+export chop
+export chop!
+
+"""
+    reflect(obj; <keyword arguments>)
+
+Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `n::Int64=sr(obj)`: number of samples to add, default is 1 second
+
+# Returns
+
+- `NeuroAnalyzer.NEURO`: output NEURO object
+"""
+function reflect(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
+    # add up to one epoch
+    n > epoch_len(obj) && (n = epoch_len(obj))
+
+    # create new dataset
+    obj_new = deepcopy(obj)
+
+    ch_n = nchannels(obj)
+    ep_n = nepochs(obj)
+    s = zeros(ch_n, epoch_len(obj) + 2 * n, ep_n)
+
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s1 = obj_new.data[:, 1:n, ep_idx]
+        s2 = obj_new.data[:, end:-1:(end - n + 1), ep_idx]
+        s[ch_idx, :, ep_idx] = _reflect(
+            @view(obj.data[ch_idx, :, ep_idx]), @view(s1[ch_idx, :]),
+            @view(s2[ch_idx, :])
+        )
+    end
+
+    obj_new.data = s
+    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+
+    push!(obj_new.history, "reflect(OBJ, n=$n)")
+
+    return obj_new
+end
+
+"""
+    reflect!(obj; <keyword arguments>)
+
+Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `n::Int64=sr(obj)`: number of samples to add, default is 1 second
+
+# Returns
+
+- `Nothing`
+"""
+function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::nothing
+    obj_new = reflect(obj; n = n)
+    obj.header = obj_new.header
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
+
+    return nothing
+end
+
+"""
+    chop(obj; <keyword arguments>)
+
+Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `n::Int64=sr(obj)`: number of samples to remove, default is 1 second
+
+# Returns
+
+- `NeuroAnalyzer.NEURO`: output NEURO object
+"""
+function chop(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
+    # add up to one epoch
+    n > epoch_len(obj) && (n = epoch_len(obj))
+
+    # create new dataset
+    obj_new = deepcopy(obj)
+
+    ch_n = nchannels(obj)
+    ep_n = nepochs(obj)
+    s = zeros(ch_n, epoch_len(obj) - 2 * n, ep_n)
+
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        s[ch_idx, :, ep_idx] = _chop(@view(obj.data[ch_idx, :, ep_idx]), n)
+    end
+
+    obj_new.data = s
+    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+
+    push!(obj_new.history, "chop(OBJ, n=$n)")
+
+    return obj_new
+end
+
+"""
+    chop!(obj; <keyword arguments>)
+
+Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `n::Int64=sr(obj)`: number of samples to remove, default is 1 second
+
+# Returns
+
+- `Nothing`
+"""
+function chop!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
+    obj_new = chop(obj; n = n)
+    obj.header = obj_new.header
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
+
+    return nothing
+end

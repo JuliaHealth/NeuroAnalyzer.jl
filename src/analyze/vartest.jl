@@ -24,7 +24,6 @@ function vartest(
     f::Array{Float64, 3},
     p::Array{Float64, 3},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -90,6 +89,7 @@ function vartest(
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
 )::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
+    # validate
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(

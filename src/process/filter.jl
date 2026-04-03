@@ -56,7 +56,8 @@ function filter_create(;
     ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
     Biquad{:z, Float64},
 }
-    !(fs >= 1) && throw(ArgumentError("fs must be ≥ 1."))
+    # validate
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     nqf = div(fs, 2)
 
     # check parameters
@@ -335,6 +336,7 @@ function filter_apply(
     },
     dir::Symbol = :twopass,
 )::Vector{Float64}
+    # validate
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
     if dir === :onepass
@@ -379,7 +381,6 @@ function filter_apply(
     },
     dir::Symbol = :twopass,
 )::NeuroAnalyzer.NEURO
-
     # validate
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 

@@ -50,7 +50,6 @@ function lat_idx(
     gw::Real = 5,
     demean::Bool = true,
 )::Float64
-
     # validate
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
 

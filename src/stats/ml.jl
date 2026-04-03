@@ -33,7 +33,6 @@ MCC's value ranges from -1 to 1, depending on:
 https://finnstats.com/index.php/2022/09/06/assess-performance-of-the-classification-model/
 """
 function mcc(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::Float64
-
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
     tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))
@@ -85,7 +84,6 @@ function f1(;
     prec::Float64,
     rec::Float64
 }
-
     # validate
     tp >= 0 || throw(ArgumentError("tp must be ≥ 0."))
     tn >= 0 || throw(ArgumentError("tn must be ≥ 0."))

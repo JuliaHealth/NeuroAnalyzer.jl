@@ -18,6 +18,7 @@ Channel locations are read from the `[Coordinates]` section of the header when a
 - `NeuroAnalyzer.NEURO`
 """
 function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) in (".vhdr", ".ahdr") ||

@@ -1,0 +1,206 @@
+export spec_seg
+export spec_flim
+export spec_tlim
+
+"""
+    spec_seg(sp, st, sf; <keyword arguments>)
+
+Return spectrogram segment.
+
+# Arguments
+
+- `sp::Matrix{Float64}`: spectrogram powers
+- `sf::Vector{Float64}`: spectrogram frequencies
+- `st::Vector{Float64}`: spectrogram time
+- `t::Tuple{Real, Real}`: time bounds
+- `f::Tuple{Real, Real}`: frequency limits
+
+# Returns
+
+Named tuple:
+
+- `segp::Matrix{Float64}`: powers
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates
+- `tidx::Tuple{Real, Real}`: time indices
+- `fidx::Tuple{Real, Real}`: frequency indices
+"""
+function spec_seg(
+    sp::Matrix{Float64},
+    sf::Vector{Float64},
+    st::Vector{Float64};
+    t::Tuple{Real, Real},
+    f::Tuple{Real, Real},
+)::@NamedTuple{
+    segp::Matrix{Float64},
+    segs::Vector{Tuple{Float64, Float64}},
+    tidx::Tuple{Real, Real},
+    fidx::Tuple{Real, Real},
+}
+    _check_tuple(t, (st[1], st[end]), "t")
+    _check_tuple(f, (sf[1], sf[end]), "f")
+
+    fidx1 = vsearch(f[1], sf)
+    fidx2 = vsearch(f[2], sf)
+    tidx1 = vsearch(t[1], st)
+    tidx2 = vsearch(t[2], st)
+
+    segp = sp[fidx1:fidx2, tidx1:tidx2]
+    segs = (
+        [
+        (st[tidx1], sf[fidx1]),
+        (st[tidx2], sf[fidx1]),
+        (st[tidx2], sf[fidx2]),
+        (st[tidx1], sf[fidx2]),
+    ]
+    )
+
+    tidx = (tidx1, tidx2)
+    fidx = (fidx1, fidx2)
+
+    return (; segp, segs, tidx, fidx)
+end
+
+"""
+    spec_seg(sp, sf, st; <keyword arguments>)
+
+Return spectrogram segment.
+
+# Arguments
+
+- `sp::AbstractArray`: spectrogram powers
+- `sf::AbstractVector`: spectrogram frequencies
+- `st::AbstractVector`: spectrogram time
+- `ch::Int64`: channel
+- `t::Tuple{Real, Real}`: time bounds
+- `f::Tuple{Real, Real}`: frequency limits
+
+# Returns
+
+Named tuple:
+
+- `segp::Array{Float64, 3}`: segment of powers
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates
+- `tidx::Tuple{Real, Real}`: time indices
+- `fidx::Tuple{Real, Real}`: frequency indices
+"""
+function spec_seg(
+    sp::AbstractArray,
+    sf::AbstractVector,
+    st::AbstractVector;
+    ch::Int64,
+    t::Tuple{Real, Real},
+    f::Tuple{Real, Real},
+)::@NamedTuple{
+    segp::Array{Float64, 3},
+    segs::Vector{Tuple{Float64, Float64}},
+    tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real},
+}
+    _check_tuple(t, (st[1], st[end]), "t")
+    _check_tuple(f, (sf[1], sf[end]), "f")
+    ch in axes(sp, 3) || throw(ArgumentError("ch must be in [1, $(size(sp, 3))]."))
+
+    fidx1 = vsearch(f[1], sf)
+    fidx2 = vsearch(f[2], sf)
+    tidx1 = vsearch(t[1], st)
+    tidx2 = vsearch(t[2], st)
+    segp = sp[fidx1:fidx2, tidx1:tidx2, ch, :]
+    segs = (
+        [
+        (st[tidx1], sf[fidx1]),
+        (st[tidx2], sf[fidx1]),
+        (st[tidx2], sf[fidx2]),
+        (st[tidx1], sf[fidx2]),
+    ]
+    )
+
+    tidx = (tidx1, tidx2)
+    fidx = (fidx1, fidx2)
+
+    return (; segp, segs, tidx, fidx)
+end
+
+"""
+    spec_flim(p, f; <keyword arguments>)
+
+Trim power spectrum or spectrogram array to a range of frequencies.
+
+# Arguments
+
+- `p::AbstractArray`: powers
+- `f::AbstractVector`: frequencies
+- `spec_flim::Tuple{Real, Real}`: frequency limits
+
+# Returns
+
+Named tuple:
+
+- `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
+- `f::Vector{Float64}`: frequencies
+"""
+function spec_flim(
+    p::AbstractArray,
+    f::AbstractVector;
+    flim::Tuple{Real, Real},
+)::@NamedTuple{
+    p::Union{Array{Float64, 3}, Array{Float64, 4}},
+    f::Vector{Float64},
+}
+    ndims(p) in [3, 4] || throw(
+        ArgumentError(
+            "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions.",
+        ),
+    )
+
+    _check_tuple(flim, (f[1], f[end]), "flim")
+
+    f1_idx = vsearch(flim[1], f)
+    f2_idx = vsearch(flim[2], f)
+    f = f[f1_idx:f2_idx]
+
+    if ndims(p) == 3
+        # power spectrum
+        p = p[:, f1_idx:f2_idx, :]
+    else
+        # spectrogram
+        p = p[f1_idx:f2_idx, :, :, :]
+    end
+
+    return (; p, f)
+end
+
+"""
+    spec_tlim(p, f; <keyword arguments>)
+
+Trim spectrogram array to a range of time points.
+
+# Arguments
+
+- `p::AbstractArray`: powers
+- `t::AbstractVector`: time points
+- `seg::Tuple{Real, Real}`: time segment
+
+# Returns
+
+Named tuple:
+
+- `p::Array{Float64, 4}`: powers
+- `t::Vector{Float64}`: time points
+"""
+function spec_tlim(
+    p::AbstractArray,
+    t::AbstractVector;
+    seg::Tuple{Real, Real},
+)::@NamedTuple{
+    p::Array{Float64, 4},
+    t::Vector{Float64},
+}
+    _chk4d(p)
+    _check_tuple(seg, (t[1], t[end]), "seg")
+
+    t1_idx = vsearch(seg[1], t)
+    t2_idx = vsearch(seg[2], t)
+    t = t[t1_idx:t2_idx]
+    p = p[:, t1_idx:t2_idx, :, :]
+
+    return (; p, t)
+end

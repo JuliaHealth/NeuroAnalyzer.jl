@@ -30,7 +30,6 @@ function efield2d(
     ex::Matrix{Float64},
     ey::Matrix{Float64},
 }
-
     # validate
     length(qx) == length(q) ||
         throw(ArgumentError("Length of qx and number of charges must be equal."))

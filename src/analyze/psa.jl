@@ -15,6 +15,7 @@ Calculate Phase Synchronization Analysis for two 1-D signal vectors.
 - `Float64`: PSA value
 """
 function psa(s1::AbstractVector, s2::AbstractVector)::Float64
+    # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
 
@@ -53,7 +54,6 @@ function psa(
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
@@ -122,7 +122,6 @@ function psa(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Array{Float64, 3}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

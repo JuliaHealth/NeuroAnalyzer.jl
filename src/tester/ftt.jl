@@ -498,7 +498,7 @@ function ftt(
     tap_t_int::Vector{Vector{Float64}},
     tap_d_int::Vector{Vector{Float64}},
 }
-    !(!(port_name != "" && gpio == -1)) &&
+    (port_name != "" && gpio != -1) ||
         throw(ArgumentError("If serial port is used, GPIO must be specified."))
 
     sp = nothing

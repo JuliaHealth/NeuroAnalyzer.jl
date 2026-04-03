@@ -21,7 +21,6 @@ Sample numbering starts at 1: `t = 0` maps to sample 1, and any positive time is
 - `Int64`: sample number (≥ 1)
 """
 function t2s(t::Real, fs::Int64)::Int64
-
     # validate
     t >= 0 || throw(ArgumentError("t must be ≥ 0."))
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -46,7 +45,6 @@ Sample numbering starts at 1: sample 1 maps to `t = 0.0`. Passing `s = 0` is inv
 - `Float64`: time in seconds (rounded to 4 decimal places)
 """
 function s2t(s::Real, fs::Int64)::Float64
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     s >= 0 || throw(ArgumentError("s must be ≥ 0."))
@@ -109,7 +107,6 @@ Return a copy of a markers DataFrame with `:start` and `:length` columns convert
 - `DataFrame`: new DataFrame with `:start` and `:length` expressed in seconds
 """
 function markers_s2t(m::DataFrame; fs::Int64)::DataFrame
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     m_new = deepcopy(m)
@@ -134,7 +131,6 @@ Convert `:start` and `:length` columns of a markers DataFrame from sample number
 - `Nothing`
 """
 function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
@@ -198,7 +194,7 @@ function e2t(
     obj::NeuroAnalyzer.NEURO;
     ep::Union{Int64, AbstractUnitRange{Int64}, Vector{Int64}},
 )::Tuple{Real, Real}
-    ep isa Int64 && (ep = [ep])
+    ep = _n2v(ep)
 
     # validate
     _check_epochs(obj, ep)

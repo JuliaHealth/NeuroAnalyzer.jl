@@ -209,7 +209,7 @@ function cpsd(
     # number of epochs
     ep_n = size(s1, 3)
 
-    # pre-compute the frequency vector with a single pilot call on the first channel/epoch pair
+    # fry run to pre-compute the frequency vector
     cpsd_data = cpsd(
         @view(s1[1, :, 1]),
         @view(s2[1, :, 1]);

@@ -24,6 +24,7 @@ function cbp(
     frq::Real,
     fs::Int64,
 )::Vector{Float64}
+    # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
     frq > 0 || throw(ArgumentError("frq must be > 0."))
@@ -57,7 +58,6 @@ function cbp(
     pad::Int64 = 0,
     frq::Real,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

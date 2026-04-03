@@ -19,7 +19,6 @@ Ties receive the same rank. Results are returned in the original element order.
 - `Vector{Float64}`: percentile ranks ∈ `[0, 1)`, in the same order as `x`
 """
 function prank(x::AbstractVector)::Vector{Float64}
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     n = length(x)
@@ -47,7 +46,6 @@ function dranks(
     x::AbstractArray,
     nbins::Int64 = ceil(Int64, 1 + log2(length(x))),
 )::Array{Int64}
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     nbins >= 1 || throw(ArgumentError("nbins must be ≥ 1."))

@@ -20,7 +20,7 @@ function itpt(;
     port_name::String = "/dev/ttyUSB0",
 )::NeuroAnalyzer.NEURO
     sp = _serial_open(port_name; baudrate = 19200)
-    @assert !isnothing(sp) _info("Serial port $port_name is not available")
+    isnothing(sp) && throw(ArgumentError("Serial port $port_name is not available"))
 
     img1 = read_from_png(joinpath(res_path, "finger_nopinch.png"))
     img2 = read_from_png(joinpath(res_path, "finger_pinch.png"))
@@ -163,7 +163,7 @@ function tpt(;
     port_name::String = "/dev/ttyUSB0",
 )::NeuroAnalyzer.NEURO
     sp = _serial_open(port_name; baudrate = 19200)
-    !(!isnothing(sp)) && throw(ArgumentError("Serial port $port_name is not available"))
+    isnothing(sp) && throw(ArgumentError("Serial port $port_name is not available"))
 
     println("NeuroTester: TPT")
     println("================")

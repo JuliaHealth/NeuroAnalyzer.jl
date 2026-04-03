@@ -58,7 +58,6 @@ Computes `1000 / t`, rounded to 2 decimal places.
 - `Float64`: frequency in Hz
 """
 function t2f(t::Real)::Float64
-
     # validate
     t > 0 || throw(ArgumentError("t must be > 0."))
 
@@ -81,7 +80,6 @@ Computes `1000 / f`, rounded to 2 decimal places.
 - `Float64`: cycle length in ms
 """
 function f2t(f::Real)::Float64
-
     # validate
     f > 0 || throw(ArgumentError("f must be > 0."))
 
@@ -109,7 +107,6 @@ function freqs(
     t::Union{AbstractVector, AbstractRange};
     nf::Bool = false,
 )::Tuple{Vector{Float64}, Float64}
-
     # validate
     length(t) >= 2 || throw(ArgumentError("t must contain at least 2 elements."))
 
@@ -150,7 +147,6 @@ function freqs(
     fs::Int64;
     nf::Bool = false,
 )::Tuple{Vector{Float64}, Float64}
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
@@ -185,7 +181,6 @@ function freqs(
     fs::Int64;
     nf::Bool = false,
 )::Tuple{Vector{Float64}, Float64}
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 

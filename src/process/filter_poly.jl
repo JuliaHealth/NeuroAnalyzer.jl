@@ -23,6 +23,7 @@ function filter_poly(
     order::Int64 = 8,
     window::Int64 = 10,
 )::Vector{Float64}
+    # validate
     order >= 2 || throw(ArgumentError("order must be ≥ 2."))
     (window >= 1 && window <= length(s)) ||
         throw(ArgumentError("window must be in [1, $(length(s))]."))
@@ -94,7 +95,6 @@ function filter_poly(
     order::Int64 = 8,
     window::Int64 = 10,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -141,7 +141,6 @@ function filter_poly(
     order::Int64 = 8,
     window::Int64 = 10,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

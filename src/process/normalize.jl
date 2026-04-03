@@ -215,7 +215,6 @@ function normalize(
     bych::Bool = false,
     n::Real = 1,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -342,7 +341,6 @@ Normalize by z-score across the whole array, or per channel when `bych=true`.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_zscore(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_zscore() only works for arrays of ≤ 3 dimensions."))
@@ -386,7 +384,6 @@ Normalize in [-n, +n]. Constant signals are mapped to `+n`.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_minmax(s::AbstractVector, n::Real = 1)::AbstractVector
-
     # replace negative zero to avoid unexpected behavior with extrema
     s = replace(s, -0.0 => 0.0)
 
@@ -414,7 +411,6 @@ Normalize to `[−n, +n]` across the array, or per channel when `bych=true`. Con
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_minmax(s::AbstractArray, n::Real = 1; bych::Bool = false)::AbstractArray
-
     # replace negative zero to avoid unexpected behavior with extrema
     s = replace(s, -0.0 => 0.0)
     length(unique(s)) == 1 && return ones(size(s)) .* n
@@ -456,7 +452,6 @@ Normalize to `[0, n]` (default `[0, 1]`). Constant signals map to `n`.
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_n(s::AbstractVector, n::Real = 1)::AbstractVector
-
     # replace negative zero to avoid unexpected behavior with extrema
     s = replace(s, -0.0 => 0.0)
 
@@ -484,6 +479,7 @@ Normalize to `[0, n]`, or per channel when `bych=true`.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_n(s::AbstractArray, n::Real = 1; bych::Bool = false)::AbstractArray
+    # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_n() only works for arrays of ≤ 3 dimensions."))
 
@@ -547,7 +543,6 @@ Normalize using log-transformation.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_log(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_log() only works for arrays of ≤ 3 dimensions."))
@@ -604,7 +599,6 @@ Normalize to Gaussian via rank-based inverse normal transform (Fisher–Yates): 
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_gauss() only works for arrays of ≤ 3 dimensions."))
@@ -661,7 +655,6 @@ Log₁₀-normalize: `log10(x + 1 + |min(x)|)`.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_log10(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_log10() only works for arrays of ≤ 3 dimensions."))
@@ -752,7 +745,6 @@ Shift signal to `(−∞, 0]` by subtracting the maximum.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_neg(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_neg() only works for arrays of ≤ 3 dimensions."))
@@ -806,7 +798,6 @@ Shift signal to `[0, +∞)` by adding `|min(x)|`.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_pos(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_pos() only works for arrays of ≤ 3 dimensions."))
@@ -862,7 +853,6 @@ Normalize to percentages: `(x − min) / (max − min)`. Constant signals produc
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_perc(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_perc() only works for arrays of ≤ 3 dimensions."))
@@ -922,7 +912,6 @@ Inverse-root normalize: `1 / √x`. Exact zeros are replaced with `eps()` to avo
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_invroot(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_invroot() only works for arrays of ≤ 3 dimensions."))
@@ -1027,7 +1016,6 @@ The `1.4826` factor is the standard consistency constant for a normal distributi
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_mad() only works for arrays of ≤ 3 dimensions."))
@@ -1092,7 +1080,6 @@ Normalize using tied ranks (result is in `[1, n]`).
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
-
     # validate
     length(unique(s)) == 1 && return ones(length(s))
 

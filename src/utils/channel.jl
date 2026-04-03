@@ -24,8 +24,6 @@ function get_channel(
     wl::Real = 0,
     exclude::Union{String, Vector{String}, Regex} = "",
 )::Union{Vector{String}, Vector{Int64}}
-#    (isempty(ch) && isempty(type)) && throw(ArgumentError("ch resolved to no channels."))
-    # return physical channel numbers
     if ch != ""
         exclude = _ch_idx(obj, exclude)
         ch = _ch_idx(obj, ch)

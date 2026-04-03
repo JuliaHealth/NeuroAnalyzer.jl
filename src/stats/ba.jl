@@ -41,7 +41,6 @@ function ba(
     ll::Float64,
     ul::Float64,
 }
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))

@@ -31,6 +31,7 @@ function detrend(
     order::Int64 = 1,
     f::Float64 = 1.0,
 )::Vector{Float64}
+    # validate
     _check_var(type, [:ls, :linear, :mean, :constant, :poly, :loess], "type")
     f > 0 || throw(ArgumentError("f must be > 0."))
     order >= 1 || throw(ArgumentError("order must be ≥ 1."))
@@ -105,7 +106,6 @@ function detrend(
     order::Int64 = 1,
     f::Float64 = 1.0,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -164,7 +164,6 @@ function detrend(
     order::Int64 = 1,
     f::Float64 = 1.0,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

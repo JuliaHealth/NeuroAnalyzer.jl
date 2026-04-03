@@ -16,7 +16,6 @@ Computed as `(xᵢ − mean(x)) / std(x)`.
 - `Vector{Float64}`: Z-scores with mean ≈ 0 and SD ≈ 1
 """
 function zscore(x::AbstractVector)::Vector{Float64}
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     m = mean(x)
@@ -44,7 +43,6 @@ Computed as `(x − m) / sd`.
 - `Float64`: Z-score
 """
 function zscore(x::Real, m::Real, sd::Real)::Float64
-
     # validate
     sd != 0 || throw(ArgumentError("sd must not be zero."))
 

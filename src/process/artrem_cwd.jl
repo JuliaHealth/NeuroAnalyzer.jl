@@ -34,7 +34,6 @@ function artrem_cwd(
     fseg::Tuple{Real, Real},
     type::Symbol = :nd,
 )::Vector{Float64} where {T <: CWT}
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))   # was: !(fs >= 1) && throw(...)
 
@@ -90,7 +89,6 @@ function artrem_cwd(
     fseg::Tuple{Real, Real},
     type::Symbol = :nd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

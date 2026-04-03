@@ -43,7 +43,6 @@ function add_signal(
     ch::Union{String, Vector{String}, Regex},
     s::AbstractVector,
 )::NeuroAnalyzer.NEURO
-
     # validate s length against epoch length before any allocation
     length(s) == epoch_len(obj) ||
         throw(ArgumentError("Length of s must equal epoch_len(obj) ($(epoch_len(obj)))."))

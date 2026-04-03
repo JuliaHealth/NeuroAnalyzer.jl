@@ -18,6 +18,7 @@ Nothing
 - `Nothing`
 """
 function na_plugins_reload()::Nothing
+    # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
@@ -51,6 +52,7 @@ Nothing
 - `Nothing`
 """
 function na_plugins_list()::Nothing
+    # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
@@ -77,6 +79,7 @@ Remove NeuroAnalyzer plugin.
 - `Nothing`
 """
 function na_plugins_remove(plugin::String)::Nothing
+    # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
@@ -147,6 +150,7 @@ Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.Z
 - `Nothing`
 """
 function na_plugins_install(plugin::String)::Nothing
+    # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
@@ -171,6 +175,7 @@ end
 
 """Helper: update plugin from a git repository"""
 function _update_plugin(plugin_path::String)::Nothing
+    # validate
     name = basename(plugin_path)
     isdir(joinpath(plugin_path, ".git")) ||
         (_warn("Skipping $name: not a git repository."); return nothing)
@@ -197,6 +202,7 @@ Update NeuroAnalyzer plugin(s).
 - `Nothing`
 """
 function na_plugins_update(plugin::String = "")::Nothing
+    # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 

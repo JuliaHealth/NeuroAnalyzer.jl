@@ -18,7 +18,6 @@ Computed as `σ / μ`, where `σ = std(x)` and `μ = mean(x)`. Expresses the sta
 - `Float64`: coefficient of variation (dimensionless ratio)
 """
 function cvm(x::AbstractVector)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     m = mean(x)
@@ -43,7 +42,6 @@ Uses the robust formula `(Q3 − Q1) / 2 / median(x)`, where `Q1` and `Q3` are t
 - `Float64`: robust coefficient of variation (dimensionless ratio)
 """
 function cvmd(x::AbstractVector)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     md = median(x)
@@ -68,7 +66,6 @@ Computed as `σ² / μ`, where `σ² = var(x)` and `μ = mean(x)`. The Fano fact
 - `Float64`: Fano factor (units of `x`)
 """
 function fano(x::AbstractVector)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     m = mean(x)

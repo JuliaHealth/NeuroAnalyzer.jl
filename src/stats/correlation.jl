@@ -23,7 +23,6 @@ Applies `z = atanh(r)`. Because `atanh(±1)` is infinite, the boundary values `r
 - For values strictly inside `(−1, 1)` the result equals `atanh(r)` exactly.
 """
 function rfz(r::Float64)::Float64
-
     # validate
     _in(r, (-1.0, 1.0), "r")
 
@@ -57,7 +56,6 @@ The test statistic is: `z = (atanh(r1) − atanh(r2)) / √(1/(n1 − 3) + 1/(n2
 Both samples must have `n > 3` for the Fisher Z standard error `1/√(n − 3)` to be defined. The original guards (`n > 0`) were insufficient.
 """
 function r1r2_zscore(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)::Float64
-
     # validate
     _in(r1, (-1.0, 1.0), "r1")
     _in(r2, (-1.0, 1.0), "r2")
@@ -104,7 +102,6 @@ function cor_test(
     df::Int64,
     p::Float64,
 }
-
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
     length(s1) > 3 ||

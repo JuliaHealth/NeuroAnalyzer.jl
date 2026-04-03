@@ -39,6 +39,7 @@ function remove_pops(
         r_seg::Int64,
     }
 }
+    # validate
     length(s) >= 2 * r + 1 || throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
 
     s_m = mean(s)
@@ -243,7 +244,6 @@ function remove_pops(
     Tuple{NeuroAnalyzer.NEURO, Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
     Tuple{Vector{Vector{Int64}}, Vector{Int64}, Vector{Int64}},
 }
-
     # validate
     nepochs(obj) == 1 || throw(ArgumentError("pop() must be applied to continuous object."))
 

@@ -35,7 +35,6 @@ function bootstrap_ci(
     ll::Vector{Float64},
     ul::Vector{Float64},
 }
-
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     n1 > 0 || throw(ArgumentError("n1 must be > 0."))
@@ -115,7 +114,6 @@ function bootstrap_stat(
     n2::Int64 = 1000,
     f::String,
 )::AbstractVector
-
     # validate
     n1 > 0 || throw(ArgumentError("n1 must be > 0."))
     n2 > 0 || throw(ArgumentError("n2 must be > 0."))

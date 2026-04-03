@@ -41,7 +41,6 @@ function peak_frq(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Float64
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -109,7 +108,6 @@ function peak_frq(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Matrix{Float64}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -179,7 +177,6 @@ function peak_frq(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -240,7 +237,6 @@ function peak_amp(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Float64
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -306,7 +302,6 @@ function peak_amp(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Matrix{Float64}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -376,7 +371,6 @@ function peak_amp(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -437,7 +431,6 @@ function peak_pow(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Float64
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -502,7 +495,6 @@ function peak_pow(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Matrix{Float64}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -572,7 +564,6 @@ function peak_pow(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

@@ -18,6 +18,7 @@ Load NIRX file and return `NeuroAnalyzer.NEURO` object.
  1. https://nirx.net/file-formats
 """
 function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".hdr" ||

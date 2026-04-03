@@ -16,6 +16,7 @@ Both file formats carry metadata (subject, recording info, stimulation parameter
 - `NeuroAnalyzer.NEURO`
 """
 function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 

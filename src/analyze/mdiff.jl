@@ -36,7 +36,6 @@ function mdiff(
     sts::Float64,
     p::Float64,
 }
-
     # validate
     _check_var(method, [:absdiff, :diff2int], "method")
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
@@ -128,7 +127,6 @@ function mdiff(
     sts::Vector{Float64},
     p::Vector{Float64},
 }
-
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -203,7 +201,6 @@ function mdiff(
     sts::Vector{Float64},
     p::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :

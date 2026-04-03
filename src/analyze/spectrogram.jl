@@ -44,6 +44,7 @@ function spectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 }
+    # validate
     _check_var(method, [:stft, :mt], "method")
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     wlen <= length(s) || throw(ArgumentError("wlen must be ≤ $(length(s))."))
@@ -118,8 +119,7 @@ function spectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 }
-
-    # pilot call to determine output frequency vector length
+    # dry run to determine output frequency vector length
     spec_data = NeuroAnalyzer.spectrogram(
         @view(s[1, :]);
         fs = fs,
@@ -207,7 +207,6 @@ function spectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 } where {T <: CWT}
-
     # validate
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
 
@@ -225,7 +224,7 @@ function spectrogram(
     # sampling rate
     fs = sr(obj)
 
-    # pilot call to determine output dimensions
+    # dry run to determine output dimensions
     if method === :stft
         spec_data = NeuroAnalyzer.spectrogram(
             @view(obj.data[1, :, 1]);
@@ -418,7 +417,6 @@ function mwspectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 }
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be > 1."))
 
@@ -564,7 +562,6 @@ function ghtspectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 }
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
@@ -630,8 +627,7 @@ function ghtspectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 }
-
-    # pilot call to determine output dimensions
+    # dry run to determine output dimensions
     ght_data = ghtspectrogram(
         @view(s[1, :]);
         fs = fs,
@@ -690,7 +686,6 @@ function cwtspectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 } where {T <: CWT}
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
@@ -738,8 +733,7 @@ function cwtspectrogram(
     f::Vector{Float64},
     t::Vector{Float64},
 } where {T <: CWT}
-
-    # pilot call to determine output dimensions
+    # dry run to determine output dimensions
     cwt_data = cwtspectrogram(@view(s[1, :]); fs = fs, wt = wt)
     f = cwt_data.f
     t = cwt_data.t

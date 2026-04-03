@@ -39,7 +39,6 @@ function ftransform(
     p::Vector{Float64},
     ph::Vector{Float64},
 }
-
     # number of samples
     n = length(s)
 
@@ -97,7 +96,6 @@ function ftransform(
     p::Array{Float64, 3},
     ph::Array{Float64, 3},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -106,7 +104,7 @@ function ftransform(
     # number of epochs
     ep_n = size(s, 3)
 
-    # pilot call to determine output length (depends on pad and nf)
+    # dry run to determine output length (depends on pad and nf)
     fft_tmp = ftransform(
         @view(s[1, :, 1]);
         pad = pad,
@@ -163,7 +161,6 @@ function htransform(
     p::Vector{Float64},
     ph::Vector{Float64},
 }
-
     # compute the analytic signal via the Hilbert transform
     c = DSP.hilbert(s)
 
@@ -208,7 +205,6 @@ function htransform(
     p::Array{Float64, 3},
     ph::Array{Float64, 3},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -275,7 +271,6 @@ function transform(
     p::Array{Float64, 3},
     ph::Array{Float64, 3},
 }
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -324,7 +319,6 @@ function transform(
     p::Array{Float64, 3},
     ph::Array{Float64, 3},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -375,7 +369,6 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 - `Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -417,7 +410,6 @@ function hanalytic(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Array{ComplexF64, 3}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

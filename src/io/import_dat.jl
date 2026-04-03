@@ -16,6 +16,7 @@ The DAT format has a 20-line text header followed by space-separated data rows w
 - `DataFrame`: table with columns `:event`, `:trial`, `:response`, `:type`, `:correct`
 """
 function import_dat(file_name)::DataFrame
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".dat" ||

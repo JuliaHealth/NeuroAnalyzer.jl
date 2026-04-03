@@ -41,16 +41,22 @@ function tconv(
     s::AbstractArray;
     kernel::AbstractVector,
 )::Union{Array{Float64, 3}, Array{ComplexF64, 3}}
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     s_new = zeros(eltype(kernel), size(s))
 
     # initialize progress bar
     progbar =
         Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
+    # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] = tconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel)
@@ -81,7 +87,6 @@ function tconv(
     ch::Union{String, Vector{String}, Regex},
     kernel::AbstractVector,
 )::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

@@ -37,7 +37,6 @@ Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates t
 - `Matrix{Float64}`: symmetry index
 """
 function sym_idx(s::AbstractArray)::Matrix{Float64}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -75,7 +74,6 @@ function sym_idx(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

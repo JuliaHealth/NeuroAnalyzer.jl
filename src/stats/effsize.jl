@@ -25,7 +25,6 @@ function efs(
     x1::AbstractVector,
     x2::AbstractVector,
 )::@NamedTuple{d::Float64, g::Float64, delta::Float64}
-
     # validate
     length(x1) >= 2 || throw(ArgumentError("x1 must contain at least 2 elements."))
     length(x2) >= 2 || throw(ArgumentError("x2 must contain at least 2 elements."))
@@ -57,6 +56,7 @@ Computes the arcsine-transformed proportion `φ = 2 × arcsin(√p)`, which stab
 - `Float64`: transformed value `φ = 2 × arcsin(√p)`
 """
 function efs_p1g(p::Float64)::Float64
+    # validate
     _in(p, (0.0, 1.0), "p")
 
     return 2 * asin(sqrt(p))
@@ -80,6 +80,7 @@ Computed as `h = 2arcsin(√p1) − 2arcsin(√p2)`. The two proportions are **i
 - `Float64`: Cohen's h (signed, or absolute if `nd=true`)
 """
 function efs_p2g(p1::Float64, p2::Float64; nd::Bool = false)::Float64
+    # validate
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
 
@@ -105,7 +106,6 @@ Calculate the pooled standard deviation from two sample vectors.
 - `Float64`: pooled standard deviation
 """
 function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol = :cohen)::Float64
-
     # validate
     length(x1) > 0 || throw(ArgumentError("Length of x1 cannot be 0."))
     length(x1) >= 2 || throw(ArgumentError("x1 must contain at least 2 elements."))
@@ -143,7 +143,6 @@ Calculate the pooled standard deviation from summary statistics when group sizes
 - `Float64`: pooled standard deviation
 """
 function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol = :cohen)::Float64
-
     # validate
     s1 >= 0 || throw(ArgumentError("s1 must be ≥ 0."))
     s2 >= 0 || throw(ArgumentError("s2 must be ≥ 0."))
@@ -176,7 +175,6 @@ Computed as `√((s1² + s2²) / 2)`.
 - `Float64`: pooled standard deviation
 """
 function stdp(s1::Real, s2::Real)::Float64
-
     # validate
     s1 >= 0 || throw(ArgumentError("s1 must be ≥ 0."))
     s2 >= 0 || throw(ArgumentError("s2 must be ≥ 0."))

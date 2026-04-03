@@ -26,6 +26,7 @@ BDF is BioSemi's 24-bit extension of the EDF format. Each sample is stored as a 
 1. https://www.biosemi.com/faq/file_format.htm
 """
 function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".bdf" ||

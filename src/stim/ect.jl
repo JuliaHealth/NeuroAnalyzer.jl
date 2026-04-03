@@ -23,7 +23,6 @@ so a factor of `10⁻³` is applied to convert the raw product to mC.
 - `Float64`: total charge in mC
 """
 function ect_charge(; pw::Real, pint::Real, pf::Real, duration::Real)::Float64
-
     # validate
     pw > 0 || throw(ArgumentError("pw must be > 0."))
     pint > 0 || throw(ArgumentError("pint must be > 0."))

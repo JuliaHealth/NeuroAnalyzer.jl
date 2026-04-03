@@ -22,6 +22,7 @@ function fconv(
     kernel::AbstractVector,
     norm::Bool = true,
 )::Vector{ComplexF64}
+    # validate
     isempty(kernel) &&
         throw(ArgumentError("kernel must be non-empty."))
 
@@ -67,6 +68,7 @@ function fconv(
     kernel::AbstractVector,
     norm::Bool = true,
 )::Array{ComplexF64, 3}
+    # validate
     isempty(kernel) &&
         throw(ArgumentError("kernel must be non-empty."))
 
@@ -120,7 +122,6 @@ function fconv(
     kernel::AbstractVector,
     norm::Bool = true,
 )::Array{ComplexF64, 3}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

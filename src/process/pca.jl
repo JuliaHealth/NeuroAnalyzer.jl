@@ -30,6 +30,7 @@ function pca_decompose(
     pcm::Vector{Float64},
     pc_model::MultivariateStats.PCA{Float64},
 }
+    # validate
     _chk3d(s)
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     n <= size(s, 1) || throw(ArgumentError("n must be ≤ $(size(s, 1))."))
@@ -108,7 +109,6 @@ function pca_decompose(
     pcm::Vector{Float64},
     pc_model::MultivariateStats.PCA{Float64},
 }
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -136,9 +136,14 @@ function pca_reconstruct(
     pc::AbstractArray,
     pc_model::MultivariateStats.PCA{Float64},
 )::Array{Float64, 3}
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
-    s_new = similar(s, Float64)
+
+    # number of epochs
     ep_n = size(s, 3)
+
+    # pre-allocate output
+    s_new = similar(s, Float64)
 
     @inbounds for ep_idx in 1:ep_n
         s_new[:, :, ep_idx] =
@@ -170,7 +175,6 @@ function pca_reconstruct(
     pc::Array{Float64, 3},
     pc_model::MultivariateStats.PCA{Float64},
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

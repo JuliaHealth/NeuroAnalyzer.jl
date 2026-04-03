@@ -23,7 +23,6 @@ function average_epochs(
     bl::Tuple{Real, Real} = (0, 0),
     blfirst::Bool = false,
 )::NeuroAnalyzer.NEURO
-
     # validate
     _check_datatype(obj, ["eeg", "meg"])
 
@@ -127,6 +126,7 @@ Sort epochs 2:end of an ERP/ERF object according to a permutation vector. Epoch 
 - `NeuroAnalyzer.NEURO`
 """
 function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.NEURO
+    # validate
     _check_datatype(obj, ["erp", "erf"])
     length(s) == nepochs(obj) - 1 ||
         throw(

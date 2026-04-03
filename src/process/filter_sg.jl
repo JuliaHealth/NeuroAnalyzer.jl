@@ -23,6 +23,7 @@ function filter_sg(
     order::Int64 = 6,
     window::Int64 = 11,
 )::Vector{Float64}
+    # validate
     (window >= 1 && window <= length(s)) ||
         throw(ArgumentError("window must be in [1, $(length(s))]."))
     isodd(window) || throw(ArgumentError("window must be odd."))
@@ -52,7 +53,6 @@ function filter_sg(
     order::Int64 = 6,
     window::Int64 = 11,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -96,7 +96,6 @@ function filter_sg(
     order::Int64 = 6,
     window::Int64 = 11,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

@@ -22,7 +22,7 @@ Plot a 3D dipole inside a schematic brain model.
 - The dipole position is marked with a red dot.
 - If `project=true`, dashed lines show the dipole's projection onto the coordinate planes.
 """
-function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)
+function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)::GLMakie.Figure
     _wip()
 
     # validate

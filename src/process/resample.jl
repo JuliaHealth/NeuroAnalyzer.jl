@@ -21,7 +21,6 @@ Resample to `new_sr` sampling frequency.
 - `Vector{Float64}`
 """
 function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float64}
-
     # validate
     old_sr >= 1 || throw(ArgumentError("old_sr must be ≥ 1."))
     new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
@@ -51,7 +50,6 @@ Resamples all channels and time vector `t` to `new_sr` sampling frequency for a 
 - `Array{Float64, 3}`
 """
 function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -90,7 +88,6 @@ Resample (up- or down-sample).
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
-
     # validate
     new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
 
@@ -143,6 +140,7 @@ Upsample.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
+    # validate
     new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn(
         "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.",
     )
@@ -199,6 +197,7 @@ Downsample.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
+    # validate
     new_sr < sr(obj) && _warn(
         "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(sr(obj) / 2) Hz).",
     )

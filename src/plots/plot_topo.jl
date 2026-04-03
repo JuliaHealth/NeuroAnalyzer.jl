@@ -443,6 +443,7 @@ function plot_topo(
 
     # TO DO: vector of tpos:
     # generate separate plots, put them in nr × nc matrix and add one shared colorbar
+
     if !isnothing(tpos) && tpos isa AbstractVector && length(tpos) > 1
         if nr == 1
             nc = length(tpos)

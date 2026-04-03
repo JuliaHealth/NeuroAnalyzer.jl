@@ -30,7 +30,6 @@ function filter_mmed(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::Vector{Float64}
-
     # check k
     _in(k, (1, length(s) - 1), "k")
     # check weighting window
@@ -97,7 +96,6 @@ function filter_mmed(
     k::Int64 = 8,
     t::Real = 0, ww::AbstractVector = ones(2 * k + 1),
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -144,7 +142,6 @@ function filter_mmed(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

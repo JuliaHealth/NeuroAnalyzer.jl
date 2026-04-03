@@ -77,7 +77,6 @@ function pacor(
     demean::Bool = true,
     method::Symbol = :yw,
 )::Array{Float64, 3}
-
     # number of epochs
     ep_n = size(s, 2)
 
@@ -119,7 +118,6 @@ function pacor(
     demean::Bool = true,
     method::Symbol = :yw,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -182,7 +180,6 @@ function pacor(
     pac::Array{Float64, 3},
     lags::Vector{Float64},
 }
-
     # validate
     (method === :yw && l > 1) || throw(ArgumentError("For method=:yw, l must be > 1."))
 

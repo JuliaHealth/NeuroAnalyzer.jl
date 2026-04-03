@@ -18,7 +18,6 @@ The zip ratio is defined as the size of the maximally compressed file (`zip -9`)
 - `Float64`: ratio of compressed to uncompressed data size, in the range (0, 1]
 """
 function zipratio(obj::NeuroAnalyzer.NEURO)::Float64
-
     # determine the platform-appropriate zip executable name
     zip_cmd = Sys.iswindows() ? "zip.exe" : "zip"
     Sys.which(zip_cmd) === nothing &&

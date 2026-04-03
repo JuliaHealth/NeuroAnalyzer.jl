@@ -108,7 +108,6 @@ function summary(
     mx::Float64,
     mo::Float64,
 }
-
     # remove NaNs
     x_clean = rmna(x)
     # validate

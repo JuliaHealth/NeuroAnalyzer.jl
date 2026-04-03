@@ -30,7 +30,6 @@ function plot_coherence(
     frq::Symbol = :lin,
     mono::Bool = false,
 )::GLMakie.Figure
-
     # validate
     length(coh) == length(f) ||
         throw(
@@ -134,7 +133,6 @@ function plot_coherence(
     leg::Bool = true,
     mono::Bool = false,
 )::GLMakie.Figure
-
     # validate
     size(coh, 2) == length(f) ||
         throw(

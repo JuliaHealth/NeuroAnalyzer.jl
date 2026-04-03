@@ -25,7 +25,6 @@ function vsearch(
     Int64,
     Nothing,
 }
-
     # findfirst already returns nothing on no match
     return findfirst(isequal(y), x)
 end
@@ -54,7 +53,6 @@ function vsearch(
     Int64,
     Tuple{Int64, Real},
 }
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
@@ -87,7 +85,6 @@ function vsearch(
     AbstractVector,
     Tuple{AbstractVector, AbstractVector},
 }
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(y) <= length(x) || throw(ArgumentError("length(y) must be ≤ length(x)."))
@@ -116,7 +113,6 @@ Split a vector into contiguous pieces of equal length `n`.
 - `Vector{AbstractVector}`: vector of `length(x) ÷ n` sub-vectors, each of length `n`
 """
 function vsplit(x::AbstractVector, n::Int64 = 1)::Vector{AbstractVector}
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -144,7 +140,6 @@ Find the minimum value of `x` and return the corresponding value from `y` at tha
 - `Int64`: index of the minimum value in `x`
 """
 function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(y) > 0 || throw(ArgumentError("y must not be empty."))
@@ -171,7 +166,6 @@ Find the maximum value of `x` and return the corresponding value from `y` at tha
 - `Int64`: index of the maximum value in `x`
 """
 function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(y) > 0 || throw(ArgumentError("y must not be empty."))
@@ -205,7 +199,6 @@ function vreduce(
     f::AbstractVector;
     n::Float64 = 0.5,
 )::Tuple{AbstractVector, AbstractVector}
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(f) > 0 || throw(ArgumentError("f must not be empty."))

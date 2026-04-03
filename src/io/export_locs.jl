@@ -29,7 +29,6 @@ function export_locs(
     file_name::String,
     overwrite::Bool = false,
 )::Nothing
-
     # the .csv branch is only available via the NEURO method (full locs table)
     # all other formats are handled by delegating to the DataFrame method
     if splitext(file_name)[2] == ".csv"
@@ -76,7 +75,6 @@ function export_locs(
     file_name::String,
     overwrite::Bool = false,
 )::Nothing
-
     # guard against accidental overwrites before doing any work
     isfile(file_name) && !overwrite &&
         throw(

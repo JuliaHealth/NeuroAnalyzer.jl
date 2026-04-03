@@ -33,6 +33,7 @@ function import_montage(
     ref_list::Vector{String},
     ref_name::String,
 }
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 

@@ -28,7 +28,6 @@ function plot_efield2d(
     qy::Vector{Float64},
     d::Int64 = 2,
 )::GLMakie.Figure
-
     # validate
     length(q) == length(qx) == length(qy) ||
         throw(

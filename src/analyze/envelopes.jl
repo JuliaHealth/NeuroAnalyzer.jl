@@ -119,8 +119,7 @@ Calculate upper amplitude envelope using the Hilbert transform for a 1-D signal 
 The Hilbert transform works best for narrowband signals (energy concentrated around a single frequency).
 """
 function henv_up(s::AbstractVector)::Vector{Float64}
-    h = htransform(s)
-    return h.a
+    return htransform(s).a
 end
 
 """
@@ -141,8 +140,7 @@ Calculate lower amplitude envelope using the Hilbert transform for a 1-D signal 
 The Hilbert transform works best for narrowband signals (energy concentrated around a single frequency).
 """
 function henv_lo(s::AbstractVector)::Vector{Float64}
-    h = htransform(-s)
-    return h.a
+    return htransform(-s).a
 end
 
 """
@@ -448,7 +446,7 @@ function penv(
     # sampling rate
     fs = sr(obj)
 
-    # pilot call to determine the frequency vector length
+    # dry run to determine the frequency vector length
     psd_data = psd(
         @view(obj.data[ch[1], :, 1]);
         fs = fs,
@@ -825,7 +823,7 @@ function senv(
     # sampling rate
     fs = sr(obj)
 
-    # pilot call to determine the spectrogram time vector
+    # dry run to determine the spectrogram time vector
     if method === :stft
         spec_data = NeuroAnalyzer.spectrogram(
             @view(obj.data[ch[1], :, 1]);
@@ -1313,9 +1311,7 @@ function henv(
     e::Array{Float64, 3},
     t::Vector{Float64},
 }
-    _warn(
-        "henv() uses Hilbert transform, the signal should be narrowband for best results.",
-    )
+    _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =

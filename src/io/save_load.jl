@@ -19,6 +19,7 @@ Nothing
 function save(
     obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false,
 )::Nothing
+    # validate
     (isfile(file_name) && !overwrite) && throw(
         ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."),
     )
@@ -52,6 +53,7 @@ Load `NeuroAnalyzer.NEURO` object from `file_name` file (HDF5-based).
 - `NeuroAnalyzer.NEURO`
 """
 function load(file_name::String)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     obj = JLD2.load_object(file_name)

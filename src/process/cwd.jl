@@ -21,7 +21,6 @@ function cwd(
     s::AbstractVector;
     wt::T = wavelet(Morlet(2π), β = 2),
 )::Matrix{Float64} where {T <: CWT}
-
     # ContinuousWavelets.cwt returns (samples × scales); transpose to (scales × samples)
     return Matrix(real.(ContinuousWavelets.cwt(s, wt))')
 
@@ -48,7 +47,6 @@ function cwd(
     s::AbstractArray;
     wt::T = wavelet(Morlet(2π), β = 2),
 )::Array{Float64, 4} where {T <: CWT}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -93,7 +91,6 @@ function cwd(
     ch::Union{String, Vector{String}, Regex},
     wt::T = wavelet(Morlet(2π), β = 2),
 )::Array{Float64, 4} where {T <: CWT}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -126,6 +123,7 @@ function icwd(
     wt::T = wavelet(Morlet(2π), β = 2),
     type::Symbol = :pd,
 )::Vector{Float64} where {T <: CWT}
+    # validate
     _check_var(type, [:nd, :pd, :df], "type")
 
     # transpose back from (scales × samples) to the (samples × scales) layout expected by ContinuousWavelets.icwt

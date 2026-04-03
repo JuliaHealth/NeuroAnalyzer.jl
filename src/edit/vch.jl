@@ -15,7 +15,6 @@ Calculate a virtual channel using formula `f`.
 - `Array{Float64, 3}`: shape (1, time, epochs)
 """
 function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
-
     # number of epochs
     ep_n = nepochs(obj)
 

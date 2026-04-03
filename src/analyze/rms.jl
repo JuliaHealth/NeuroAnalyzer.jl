@@ -17,7 +17,6 @@ RMS = √( mean(s²) ) = norm(s) / √length(s)
 - `Float64`: RMS value
 """
 function rms(s::AbstractVector)::Float64
-
     # equivalent to sqrt(mean(s.^2)) but avoids an intermediate allocation
     return norm(s) / sqrt(length(s))
 end
@@ -36,7 +35,6 @@ Calculate Root Mean Square (RMS) for a 3-D signal array.
 - `Matrix{Float64}`: RMS values, shape (channels, epochs)
 """
 function rms(s::AbstractArray)::Matrix{Float64}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -76,7 +74,6 @@ function rms(
     ch::Union{String, Vector{String}, Regex},
     ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -105,7 +102,6 @@ Calculate Root Mean Square Error (RMSE).
 - `Float64`: RMSE
 """
 function rmse(s1::AbstractVector, s2::AbstractVector)::Float64
-
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
@@ -127,7 +123,6 @@ Calculate Root Mean Square Error (RMSE) for two 3-D signal arrays.
 - `Matrix{Float64}`: RMSE
 """
 function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
-
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
@@ -175,7 +170,6 @@ function rmse(
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :

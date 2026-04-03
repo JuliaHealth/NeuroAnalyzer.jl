@@ -35,7 +35,6 @@ function csd(
     n::Int64 = 8,
     lambda::Float64 = 10^-5,
 )::NeuroAnalyzer.NEURO
-
     # validate
     _check_datatype(obj, "eeg")
     _has_locs(obj)

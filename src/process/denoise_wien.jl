@@ -21,7 +21,6 @@ For each epoch, the cross-channel mean signal is used as the reference, and a no
 - The noise estimate is random (`rand`); results are not reproducible unless a random seed is set by the caller
 """
 function denoise_wien(s::AbstractArray)::AbstractArray
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -68,7 +67,6 @@ function denoise_wien(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

@@ -24,6 +24,7 @@ Gzip-compressed files (`.csv.gz`) are decompressed automatically by `CSV.jl`.
 - `NeuroAnalyzer.NEURO`
 """
 function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 

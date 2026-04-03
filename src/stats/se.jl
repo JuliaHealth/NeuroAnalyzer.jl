@@ -24,7 +24,6 @@ Computed as `std(x) / √n`.
 - `Float64`: standard error of the mean
 """
 function sem(x::AbstractVector)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
@@ -47,7 +46,6 @@ Approximated as `1.253 × std(x) / √n` (valid for large normal samples).
 - `Float64`: standard error of the median
 """
 function semd(x::AbstractVector)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
@@ -70,7 +68,6 @@ Computed as `√(p(1 − p) / n)`.
 - `Float64`: standard error of the proportion
 """
 function sep(p::Float64, n::Int64)::Float64
-
     # validate
     _in(p, (0.0, 1.0), "p")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -92,7 +89,6 @@ Calculate the standard error of a count (`√n`).
 - `Float64`: √n.
 """
 function sen(n::Int64)::Float64
-
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
@@ -118,7 +114,6 @@ For unequal-length vectors: pooled SD × `√(1/n1 + 1/n2)`.
 - `Float64`: standard error of the mean difference
 """
 function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     length(y) >= 2 || throw(ArgumentError("y must contain at least 2 elements."))
@@ -153,7 +148,6 @@ function sep_diff(
     n1::Int64,
     n2::Int64,
 )::Float64
-
     # validate
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
@@ -180,7 +174,6 @@ Computed as `√(n1 + n2)`.
 - `Float64`: `√(n1 + n2)`
 """
 function sen_diff(n1::Int64, n2::Int64)::Float64
-
     # validate
     n1 >= 1 || throw(ArgumentError("n1 must be ≥ 1."))
     n2 >= 1 || throw(ArgumentError("n2 must be ≥ 1."))
@@ -206,7 +199,6 @@ Requires `n ≥ 3` so that the denominator is non-zero.
 - `Float64`: standard error of skewness
 """
 function ses(x::AbstractVector)::Float64
-
     # validate
     n = length(x)
     n >= 3 || throw(ArgumentError("x must contain at least 3 elements."))
@@ -228,7 +220,6 @@ Calculate the standard error of skewness for a sample of size `n`.
 - `Float64`: standard error of skewness
 """
 function ses(n::Int64)::Float64
-
     # validate
     n >= 3 || throw(ArgumentError("n must be ≥ 3."))
 
@@ -253,7 +244,6 @@ Requires `n ≥ 4` so that the `(n−3)` term in the denominator is non-zero.
 - `Float64`: standard error of kurtosis
 """
 function sek(x::AbstractVector)::Float64
-
     # validate
     n = length(x)
     n >= 4 || throw(ArgumentError("x must contain at least 4 elements."))
@@ -277,7 +267,6 @@ Computed as `2 × (n−1) × √(6n / ((n−2)(n−3)(n+3)(n+5)))`.
 - `Float64`: standard error of kurtosis
 """
 function sek(n::Int64)::Float64
-
     # validate
     n >= 4 || throw(ArgumentError("n must be ≥ 4."))
 

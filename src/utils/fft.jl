@@ -22,7 +22,6 @@ Appends `n` zeros to `x` before computing the FFT. When `n = 0` the input is tra
 - `Vector{ComplexF64}`: two-sided Fourier coefficients of length `L + n`.
 """
 function fft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
-
     # validate
     n >= 0 || throw(ArgumentError("n must be ≥ 0."))
 
@@ -47,7 +46,6 @@ If a signal of length `L` was zero-padded by `n` samples before the forward FFT,
 - `Vector{ComplexF64}`: reconstructed signal of length `length(x) - n`
 """
 function ifft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
-
     # validate
     n >= 0 || throw(ArgumentError("n must be ≥ 0."))
     n < length(x) ||
@@ -76,7 +74,6 @@ Zero-padding to a power-of-2 length maximizes FFT efficiency (radix-2 algorithm)
 - `Vector{ComplexF64}`: two-sided Fourier coefficients of length `nextpow2(L)`
 """
 function fft2(x::AbstractVector)::Vector{ComplexF64}
-
     # compute the number of zeros needed to reach the next power of 2
     n = nextpow2(length(x)) - length(x)
 
@@ -123,7 +120,6 @@ Appends `n` zeros to `x` before computing `rfft`, returning only the positive-fr
 - `Vector{ComplexF64}`: one-sided Fourier coefficients of length `(L + n) ÷ 2 + 1`
 """
 function rfft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
-
     # validate
     n >= 0 || throw(ArgumentError("n must be ≥ 0."))
 
@@ -147,7 +143,6 @@ Zero-padding to a power-of-2 length maximizes FFT efficiency (radix-2 algorithm)
 - `Vector{ComplexF64}`: one-sided Fourier coefficients of length `nextpow2(L) ÷ 2 + 1`
 """
 function rfft2(x::AbstractVector)::Vector{ComplexF64}
-
     # number of zeros needed to reach the next power-of-2 length
     n = nextpow2(length(x)) - length(x)
 

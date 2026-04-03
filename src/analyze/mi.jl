@@ -37,7 +37,6 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 - `Matrix{Float64}`: mutual information matrix, shape (channels, epochs)
 """
 function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
-
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
@@ -81,7 +80,6 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 - `Array{Float64, 3}`: symmetric mutual information matrix, shape `(channels, channels, epochs)`
 """
 function mutual_information(s::AbstractArray)::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -133,7 +131,6 @@ function mutual_information(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Array{Float64, 3}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -172,7 +169,6 @@ function mutual_information(
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
 )::Matrix{Float64}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :

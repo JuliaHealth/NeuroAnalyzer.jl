@@ -35,7 +35,6 @@ function res_norm(
     adt_p::Vector{Float64},
     ks_p::Vector{Float64},
 }
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(x) == length(g) || throw(ArgumentError("x and g must have the same length."))

@@ -25,7 +25,6 @@ Critical regions:
 - Two-tailed:       `(−∞, −z] ∪ [z, +∞)`
 """
 function crit_z(alpha::Float64 = 0.05; twotailed::Bool = true)::Float64
-
     # validate
     alpha > 0.0 || throw(ArgumentError("alpha must be > 0."))
     alpha < 1.0 || throw(ArgumentError("alpha must be < 1."))
@@ -57,7 +56,6 @@ Critical regions:
 - Two-tailed:       `(−∞, −t] ∪ [t, +∞)`
 """
 function crit_t(df::Real, alpha::Float64 = 0.05; twotailed::Bool = true)::Float64
-
     # validate
     alpha > 0.0 || throw(ArgumentError("alpha must be > 0."))
     alpha < 1.0 || throw(ArgumentError("alpha must be < 1."))
@@ -86,7 +84,6 @@ Calculate the critical χ² value for a given degrees of freedom and significanc
 To obtain the upper-tail critical value (i.e. `P(X > chi) = alpha`) pass `1 − alpha` as the `alpha` argument.
 """
 function crit_chi(df::Real, alpha::Float64 = 0.05)::Float64
-
     # validate
     alpha > 0.0 || throw(ArgumentError("alpha must be > 0."))
     alpha < 1.0 || throw(ArgumentError("alpha must be < 1."))

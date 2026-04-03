@@ -165,7 +165,6 @@ function ispc(
     s1ph::Array{Float64, 3},
     s2ph::Array{Float64, 3},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :

@@ -21,7 +21,6 @@ function scale(
     ch::Union{String, Vector{String}, Regex},
     factor::Real,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

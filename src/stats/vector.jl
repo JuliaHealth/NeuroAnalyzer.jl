@@ -17,7 +17,6 @@ Computed as `x × yᵀ`, producing a matrix of shape `(length(x) × length(y))`.
 - `Matrix`: outer product matrix of shape `(length(x), length(y))`
 """
 function op(x::AbstractVector, y::AbstractVector)::AbstractMatrix
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(y) > 0 || throw(ArgumentError("y must not be empty."))

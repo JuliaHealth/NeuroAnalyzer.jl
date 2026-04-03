@@ -537,7 +537,6 @@ function plot_locs(
     weights::Union{Bool, Vector{<:Real}} = true,
     gui::Bool = true,
 )::Union{GLMakie.Figure, Nothing}
-
     # validate
     datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
 

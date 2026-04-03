@@ -23,7 +23,6 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 - `Float64`: L1 distance between `a1` and `a2`
 """
 function l1(a1::AbstractArray, a2::AbstractArray)::Float64
-
     # validate
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 must have the same size."))
 
@@ -49,7 +48,6 @@ Suitable for comparing spectrograms, feature maps, or any same-shaped numeric ar
 - `Float64`: L2 distance between `a1` and `a2`.
 """
 function l2(a1::AbstractArray, a2::AbstractArray)::Float64
-
     # validate
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 must have the same size."))
 
@@ -86,7 +84,6 @@ function perm_cmp(
     zmap::Matrix{Float64},
     bm::BitMatrix,
 }
-
     # validate
     size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
     perm_n > 0 || throw(ArgumentError("perm_n must be > 0."))
@@ -144,7 +141,6 @@ Average a 3-dimensional signal array across the trial (third) dimension.
 - `AbstractArray`: mean across epochs, shape `(channels, samples, 1)`
 """
 function tavg(s::AbstractArray)::AbstractArray
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -174,7 +170,6 @@ function areduce(
     f::AbstractVector;
     n::Float64 = 0.5,
 )::Tuple{AbstractArray, AbstractVector}
-
     # validate
     ndims(a) <= 3 ||
         throw(ArgumentError("areduce() only works for 2- and 3-dimensional arrays."))

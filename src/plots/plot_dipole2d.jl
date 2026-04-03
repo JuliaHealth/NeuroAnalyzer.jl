@@ -21,7 +21,6 @@ Plot a 3D dipole in 2D views (top, side, front).
 - The dipole position is marked with a red dot, and its magnitude is shown as a red line.
 """
 function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
-
     # validate
     all(-1.0 .≤ d.pos .≤ 1.0) ||
         throw(ArgumentError("Position must be within [-1.0, 1.0]."))

@@ -26,6 +26,7 @@ function filter_g(
     f::Real,
     gw::Real = 5,
 )::Vector{Float64}
+    # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
     f >= 0 || throw(ArgumentError("f must be ≥ 0."))
@@ -72,7 +73,6 @@ function filter_g(
     f::Real,
     gw::Real = 5,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -123,7 +123,6 @@ function filter_g(
     f::Real,
     gw::Real = 5,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

@@ -47,6 +47,7 @@ function import_recording(
     sampling_rate::Union{Nothing, Int64} = nothing,
     n::Int64 = 0,
 )::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 

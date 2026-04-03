@@ -23,7 +23,6 @@ Computed as `n × p`.
 - `Float64`: expected count `n × p`
 """
 function meanp(p::Float64, n::Int64)::Float64
-
     # validate
     _in(p, (0.0, 1.0), "p")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -48,7 +47,6 @@ Computed as `Σ(g × x) / Σx`.
 - `Float64`: weighted categorical mean
 """
 function meanc(g::Vector{Int64}, x::Vector{Int64})::Float64
-
     # validate
     length(g) > 0 || throw(ArgumentError("g must not be empty."))
     length(g) == length(x) || throw(ArgumentError("g and x must have the same length."))
@@ -73,7 +71,6 @@ Computed as `exp(mean(log.(x)))`, which is numerically stable for large vectors 
 - `Float64`: geometric mean
 """
 function meang(x::AbstractVector)::Float64
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     all(>(0), x) || throw(ArgumentError("All elements of x must be > 0."))
@@ -98,7 +95,6 @@ Computed as `n / Σ(1/xᵢ)`. All elements must be non-zero.
 - `Float64`: harmonic mean
 """
 function meanh(x::AbstractVector)::Float64
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     any(iszero, x) && throw(ArgumentError("x must not contain zeros."))
@@ -123,7 +119,6 @@ Computed as `Σ(xᵢ × wᵢ) / Σwᵢ`.
 - `Float64`: weighted mean
 """
 function meanw(x::AbstractVector, w::AbstractVector)::Float64
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(x) == length(w) || throw(ArgumentError("x and w must have the same length."))
@@ -149,7 +144,6 @@ Uses the two-argument arctangent of the mean sine and cosine components.
 - `Float64`: circular mean in the same unit as the input (radians or degrees)
 """
 function meancirc(x::AbstractVector; rad::Bool = false)::Float64
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
@@ -177,7 +171,6 @@ Sorts `x` and removes the bottom and top `n × 100 %` of values before computing
 - `Float64`: trimmed mean
 """
 function meant(x::AbstractVector; n::Float64 = 0.1)::Float64
-
     # validate
     n > 0.0 && n < 0.5 || throw(ArgumentError("n must be in (0, 0.5)."))
     xs = sort(x)

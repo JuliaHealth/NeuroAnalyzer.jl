@@ -20,7 +20,6 @@ Calculate summed similarity using an exponential decay model between two 1-D sig
 Values of `ss` are in the range [0, 1]; higher value indicates larger similarity.
 """
 function sumsim(s1::AbstractVector, s2::AbstractVector; theta::Real)::Float64
-
     # validate
     length(s1) == length(s2) ||
         throw(
@@ -54,7 +53,6 @@ Calculate summed similarity using an exponential decay model between two 3-D sig
 Values of `ss` are in the range [0, 1]; higher value indicates larger similarity.
 """
 function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float64}
-
     # validate
     size(s1) == size(s2) || throw(
         ArgumentError("Sizes of s1 ($(size(s1))) and s2 ($(size(s2))) must be equal."),
@@ -111,7 +109,6 @@ function sumsim(
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
     theta::Real,
 )::Matrix{Float64}
-
     # validate
     length(ch1) == length(ch2) ||
         throw(

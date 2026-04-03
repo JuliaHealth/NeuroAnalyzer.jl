@@ -34,7 +34,6 @@ function plot_connectivity_circle(
     threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     threshold_type::Symbol = :neq,
 )::GLMakie.Figure
-
     # validate
     size(m, 1) == length(clabels) ||
         throw(

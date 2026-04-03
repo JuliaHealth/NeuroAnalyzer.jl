@@ -19,8 +19,9 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
  1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
 function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".set") &&
+    lowercase(splitext(file_name)[2]) == ".set" ||
         throw(ArgumentError("This is not SET file."))
 
     file_type = "SET"
@@ -43,7 +44,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             error("File $data_src cannot be loaded.")
         end
         samples_per_channel = length(dataset["times"])
-        !(filesize(data_src) == ch_n * samples_per_channel * 4) &&
+        filesize(data_src) == ch_n * samples_per_channel * 4 ||
             throw(ArgumentError("Incorrect file size."))
         data_tmp = Float64[]
         for ch_idx in 1:ch_n

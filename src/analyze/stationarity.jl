@@ -39,7 +39,6 @@ Signal is split into `window`-long windows and averaged across windows.
 - `Vector{Float64}`
 """
 function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
-
     # validate
     window >= 1 || throw(ArgumentError("window must be ≥ 1."))
     window <= length(s) || throw(ArgumentError("window must be ≤ $(length(s))."))
@@ -69,7 +68,6 @@ Signal is split into `window`-long windows and variance is calculated across win
 - `Vector{Float64}`
 """
 function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
-
     # validate
     window >= 1 || throw(ArgumentError("window must be ≥ 1."))
     window <= length(s) || throw(ArgumentError("window must be ≤ $(length(s))."))
@@ -109,7 +107,6 @@ function stationarity(
     window::Int64 = 10,
     method::Symbol = :hilbert,
 )::Union{Matrix{Float64}, Array{Float64, 3}}
-
     # validate
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     window >= 1 || throw(ArgumentError("window must be ≥ 1."))

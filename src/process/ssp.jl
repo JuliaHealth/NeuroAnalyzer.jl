@@ -28,7 +28,6 @@ function generate_ssp_projectors(
     ssp_projectors::Matrix{Float64},
     U::Matrix{Float64},
 }
-
     # validate
     _check_datatype(obj, "meg")
     :ssp_data in keys(obj.header.recording) ||
@@ -97,6 +96,7 @@ function apply_ssp_projectors(
     obj::NeuroAnalyzer.NEURO;
     pidx::Union{Int64, Vector{Int64}} = 0,
 )::NeuroAnalyzer.NEURO
+    # validate
     _check_datatype(obj, "meg")
 
     # create new dataset

@@ -24,7 +24,6 @@ Named tuple:
 Green DM, Swets JA. Signal Detection Theory and Psychophysics. Wiley; 1966.
 """
 function dprime(p1::Real, p2::Real)::@NamedTuple{dp::Float64, rb::Float64}
-
     # validate
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")

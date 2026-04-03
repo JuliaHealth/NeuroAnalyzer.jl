@@ -35,7 +35,6 @@ function msci95(
     ll::Float64,
     ul::Float64,
 }
-
     # validate
     _check_var(method, [:normal, :boot], "method")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -105,7 +104,6 @@ function msci95(
     ll::Vector{Float64},
     ul::Vector{Float64},
 }
-
     # validate
     _check_var(method, [:normal, :boot], "method")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -169,6 +167,7 @@ function msci95(
     ll::Matrix{Float64},
     ul::Matrix{Float64},
 }
+    # validate
     _check_var(method, [:normal, :boot], "method")
 
     # epoch lengths
@@ -222,7 +221,6 @@ function msci95(
     ll::Float64,
     ul::Float64,
 }
-
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
@@ -264,7 +262,6 @@ function msci95(
     ll::Matrix{Float64},
     ul::Matrix{Float64},
 }
-
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
@@ -327,7 +324,6 @@ function msci95(
     ll::Matrix{Float64},
     ul::Matrix{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?
@@ -374,7 +370,6 @@ function msci95(
     ll::Matrix{Float64},
     ul::Matrix{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :

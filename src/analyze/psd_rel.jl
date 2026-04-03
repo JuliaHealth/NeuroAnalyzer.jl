@@ -328,7 +328,6 @@ function psd_rel(
     p::Array{Float64, 3},
     f::Vector{Float64},
 }
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

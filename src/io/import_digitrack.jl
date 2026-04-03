@@ -20,6 +20,7 @@ function import_digitrack(
     file_name::String;
     detect_type::Bool = true,
 )::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 

@@ -22,7 +22,6 @@ function cwtfrq(
     fs::Int64,
     wt::T = wavelet(Morlet(2π), β = 2),
 ) where {T <: CWT}
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 

@@ -21,8 +21,9 @@ Load EEG data from Neurodata Without Borders (NWB) file and return `NeuroAnalyze
 function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
     _wip()
 
+    # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".nwb") &&
+    lowercase(splitext(file_name)[2]) == ".nwb" ||
         throw(ArgumentError("This is not NWB file."))
 
     file_type = "NWB"
@@ -54,7 +55,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
         exp_notes = "Instructions" in k ? header["Instructions"] : ""
         "RecordingType" in k &&
-            !(header["RecordingType"] == "continuous") &&
+            header["RecordingType"] == "continuous" ||
             throw(
                 ArgumentError(
                     "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
@@ -223,7 +224,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         )
     end
 
-    !(isfile(file_json)) && throw(ArgumentError("$file_json not found."))
+    isfile(file_json) || throw(ArgumentError("$file_json not found."))
     f = open(file_json, "r")
     s = read(f, String)
     close(f)

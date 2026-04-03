@@ -25,7 +25,6 @@ function wbp(
     fs::Int64,
     ncyc::Int64 = 6,
 )::Vector{Float64}
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     frq > 0 || throw(ArgumentError("frq must be > 0."))
@@ -64,15 +63,18 @@ function wbp(
     fs::Int64,
     ncyc::Int64 = 6,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
+    # number of channels
     ch_n = size(s, 1)
+    # number of epochs
     ep_n = size(s, 3)
 
+    # pre-allocate output
     s_new = similar(s, Float64)
 
+    # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] = wbp(
@@ -111,7 +113,6 @@ function wbp(
     frq::Real,
     ncyc::Int64 = 6,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

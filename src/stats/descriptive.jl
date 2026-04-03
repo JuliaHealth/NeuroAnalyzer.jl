@@ -24,7 +24,6 @@ Computed as `p × (1 − p) / n` (the variance of a binomial proportion estimato
 - `Float64`: variance of the proportion
 """
 function varp(p::Float64, n::Int64)::Float64
-
     # validate
     _in(p, (0.0, 1.0), "p")
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
@@ -71,7 +70,6 @@ Calculate the variance of categorical data using group labels and counts.
 Formula: `(Σ(g² × x) − (Σ(g × x))² / Σx) / (Σx − 1)`
 """
 function varc(g::Vector{Int64}, x::Vector{Int64})::Float64
-
     # validate
     length(g) > 0 || throw(ArgumentError("g must not be empty."))
     length(g) == length(x) || throw(ArgumentError("g and x must have the same length."))
@@ -130,7 +128,6 @@ Calculate the midrange of an array: `(maximum(x) − minimum(x)) / 2`.
 - `Float64`: midrange of `x`.
 """
 function mrng(x::AbstractArray)::Float64
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
@@ -153,7 +150,6 @@ Computed as `1 / √n` (the standard error of a proportion at `p = 0.5`).
 - `Float64`: margin of error
 """
 function moe(n::Int64)::Float64
-
     # validate
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
@@ -176,7 +172,6 @@ Computed as `1 / √length(x)`.
 - `Float64`: margin of error
 """
 function moe(x::AbstractArray)::Float64
-
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 

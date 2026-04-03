@@ -26,6 +26,7 @@ function psi(
     fs::Int64,
     flim::Tuple{Real, Real} = (1, fs / 2 - 1),
 )::Tuple{Float64, Float64}
+    # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
     _check_tuple(flim, (1, fs / 2 - 1), "flim")
@@ -82,7 +83,6 @@ function psi(
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
     flim::Tuple{Real, Real} = (1, sr(obj1) / 2 - 1),
 )::Matrix{Tuple{Float64, Float64}}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch1 =
         exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
@@ -151,7 +151,6 @@ function psi(
     ch::Union{String, Vector{String}, Regex},
     flim::Tuple{Real, Real} = (1, sr(obj) / 2 - 1),
 )::Array{Tuple{Float64, Float64}, 3}
-
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
         exclude_bads ?

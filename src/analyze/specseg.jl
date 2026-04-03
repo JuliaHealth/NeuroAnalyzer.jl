@@ -145,6 +145,7 @@ function spec_flim(
     p::Union{Array{Float64, 3}, Array{Float64, 4}},
     f::Vector{Float64},
 }
+    # validate
     ndims(p) in [3, 4] || throw(
         ArgumentError(
             "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions.",
@@ -194,6 +195,7 @@ function spec_tlim(
     p::Array{Float64, 4},
     t::Vector{Float64},
 }
+    # validate
     _chk4d(p)
     _check_tuple(seg, (t[1], t[end]), "seg")
 

@@ -574,7 +574,6 @@ function plot_spectrogram(
     cart::Bool = false,
     head::Bool = true,
 )::GLMakie.Figure where {T <: CWT}
-
     # validate
     _check_var(type, [:normal, :topo], "type")
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")

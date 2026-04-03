@@ -56,7 +56,6 @@ function psd(
     p::Vector{Float64},
     f::Vector{Float64},
 }
-
     # validate
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
     nt >= 1 || throw(ArgumentError("nt must be ≥ 1."))
@@ -161,8 +160,7 @@ function psd(
     p::Matrix{Float64},
     f::Vector{Float64},
 }
-
-    # pilot call to determine output frequency vector length
+    # dry run to determine output frequency vector length
     f = psd(
         @view(s[1, :]);
         fs = fs,
@@ -257,7 +255,7 @@ function psd(
     # number of epochs
     ep_n = size(s, 3)
 
-    # pilot call to determine output frequency vector length
+    # dry run to determine output frequency vector length
     f = psd(
         @view(s[1, :, 1]);
         fs = fs,

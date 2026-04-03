@@ -76,7 +76,7 @@ function cph(
     # number of epochs
     ep_n = size(s, 3)
 
-    # pilot call to determine the frequency vector length - uses the first
+    # dry run to determine the frequency vector length - uses the first
     # channel pair
     # f is independent of signal values.
     cph_data = cph(@view(s[1, :, 1]), @view(s[1, :, 1]); fs = fs)
@@ -152,7 +152,7 @@ function cph(
     # number of epochs
     ep_n = size(s1, 3)
 
-    # pilot call to determine the frequency vector length - uses the first channel pair
+    # dry run to determine the frequency vector length - uses the first channel pair
     # f is independent of signal values.
     cph_data = cph(@view(s1[1, :, 1]), @view(s2[1, :, 1]); fs = fs)
     f = cph_data.f

@@ -15,11 +15,11 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 - `NeuroAnalyzer.NEURO`
 """
 function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    !(lowercase(splitext(file_name)[2]) == ".npy") &&
+    lowercase(splitext(file_name)[2]) == ".npy" ||
         throw(ArgumentError("This is not NPY file."))
-
-    !(sampling_rate > 1) && throw(ArgumentError("Sampling rate must be ≥ 1."))
+    sampling_rate > 1 || throw(ArgumentError("Sampling rate must be ≥ 1."))
 
     file_type = "NPY"
 

@@ -28,6 +28,7 @@ Supported formats: CED, ELC, LOCS, TSV, SFP, CSD, GEO, MAT, TXT, DAT, ASC, CSV.
 - `DataFrame`
 """
 function import_locs(file_name::String)::DataFrame
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -91,6 +92,7 @@ Load channel locations from a CED (EEGLAB) file.
 - `DataFrame`
 """
 function import_locs_ced(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".ced" ||
         throw(ArgumentError("$file_name is not a CED file."))
@@ -162,6 +164,7 @@ Load channel locations from an EEGLAB LOCS file.
 - `DataFrame`
 """
 function import_locs_locs(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".locs" ||
         throw(ArgumentError("$file_name is not a LOCS file."))
@@ -215,6 +218,7 @@ Load channel locations from an ELC file.
 - `DataFrame`
 """
 function import_locs_elc(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".elc" ||
         throw(ArgumentError("$file_name is not an ELC file."))
@@ -282,6 +286,7 @@ Load channel locations from a TSV (BIDS-style) file.
 - `DataFrame`
 """
 function import_locs_tsv(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".tsv" ||
         throw(ArgumentError("$file_name is not a TSV file."))
@@ -363,6 +368,7 @@ Load channel locations from an SFP file.
 - `DataFrame`
 """
 function import_locs_sfp(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".sfp" ||
         throw(ArgumentError("$file_name is not an SFP file."))
@@ -447,6 +453,7 @@ Load channel locations from a CSD file.
 - `DataFrame`
 """
 function import_locs_csd(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".csd" ||
         throw(ArgumentError("$file_name is not a CSD file."))
@@ -512,6 +519,7 @@ Load channel locations from a GEO file.
 - `DataFrame`
 """
 function import_locs_geo(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".geo" ||
         throw(ArgumentError("$file_name is not a GEO file."))
@@ -579,6 +587,7 @@ Load channel locations from a MATLAB MAT file.
 - `DataFrame`
 """
 function import_locs_mat(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".mat" ||
         throw(ArgumentError("$file_name is not a MAT file."))
@@ -631,6 +640,7 @@ Load channel locations from a TXT file (spherical theta/phi format).
 - `DataFrame`
 """
 function import_locs_txt(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".txt" ||
         throw(ArgumentError("$file_name is not a TXT file."))
@@ -699,6 +709,7 @@ Load channel locations from a DAT file.
 - `DataFrame`
 """
 function import_locs_dat(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".dat" ||
         throw(ArgumentError("$file_name is not a DAT file."))
@@ -776,6 +787,7 @@ Load channel locations from an ASC file.
 - `DataFrame`
 """
 function import_locs_asc(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".asc" ||
         throw(ArgumentError("$file_name is not an ASC file."))
@@ -834,6 +846,7 @@ Load channel locations from a NeuroAnalyzer standard CSV file.
 - `DataFrame`
 """
 function import_locs_csv(file_name::String)::DataFrame
+    # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".csv" ||
         throw(ArgumentError("$file_name is not a CSV file."))

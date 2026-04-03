@@ -16,6 +16,7 @@ This function is intended for EDF+ files whose `data_records_duration` header fi
 - `DataFrame` with columns `:id`, `:start`, `:length`, `:value`, `:channel`
 """
 function import_edf_annotations(file_name::String)::DataFrame
+    # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     lowercase(splitext(file_name)[2]) == ".edf" ||

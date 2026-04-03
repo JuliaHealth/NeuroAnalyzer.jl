@@ -29,6 +29,7 @@ function denoise_fft(
     s::Vector{Float64},
     f_idx::BitVector,
 }
+    # validate
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
 
     # compute FFT and power spectrum
@@ -66,7 +67,6 @@ function denoise_fft(
     pad::Int64 = 0,
     t::Real = 0,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -110,7 +110,6 @@ function denoise_fft(
     pad::Int64 = 0,
     t::Int64 = 0,
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

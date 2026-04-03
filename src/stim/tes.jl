@@ -35,7 +35,6 @@ function tdcs_dose(;
     current_density::Float64,
     charge_density::Float64,
 }
-
     # validate
     current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
@@ -94,6 +93,7 @@ function tacs_dose(;
     current_density::Float64,
     charge_density::Float64,
 }
+    # validate
     current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
     duration > 0 || throw(ArgumentError("duration must be > 0."))
@@ -155,6 +155,7 @@ function tpcs_dose(;
     current_density::Float64,
     charge_density::Float64,
 }
+    # validate
     current > 0 || throw(ArgumentError("current must be > 0."))
     pad_area > 0 || throw(ArgumentError("pad_area must be > 0."))
     duration > 0 || throw(ArgumentError("duration must be > 0."))

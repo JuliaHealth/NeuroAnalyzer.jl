@@ -23,7 +23,6 @@ function lrinterpolate_channel(
     ep::Int64,
     ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(_c(nepochs(obj)), ep),
 )::NeuroAnalyzer.NEURO
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)[1]
     isempty(ch) && throw(ArgumentError("No channels selected."))

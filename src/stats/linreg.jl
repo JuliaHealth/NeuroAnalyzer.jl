@@ -45,7 +45,6 @@ function linreg(
     bic::Float64,
     lf::Vector{Float64},
 }
-
     # validate
     length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
     length(x) >= 3 || throw(ArgumentError("x and y must contain at least 3 elements."))
@@ -94,7 +93,6 @@ function infcrit(
     aic::Float64,
     bic::Float64,
 } where {T <: StatsModels.TableRegressionModel}
-
     # number of predictors (excluding intercept)
     k = length(GLM.coef(m)) - 1
     # number of observations

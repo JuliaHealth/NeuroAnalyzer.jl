@@ -34,7 +34,6 @@ function denoise_cwd(
     w::Int64 = 5,
     type::Symbol = :nd,
 )::Vector{Float64} where {T <: CWT}
-
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     nf >= 1 || throw(ArgumentError("nf must be ≥ 1."))
@@ -80,7 +79,6 @@ function denoise_cwd(
     w::Int64 = 5,
     type::Symbol = :nd,
 )::Array{Float64, 3} where {T <: CWT}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -153,7 +151,6 @@ function denoise_cwd(
     w::Int64 = 5,
     type::Symbol = :nd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
-
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -235,6 +232,7 @@ function denoise_dwd(
     dnt::T2 = RelErrorShrink(SoftTH()),
     smooth::Symbol = :regular,
 )::Vector{Float64} where {T1 <: DiscreteWavelet, T2 <: DNFT}
+    # validate
     _check_var(smooth, [:regular, :undersmooth], "smooth")
 
     l <= maxtransformlevels(s) ||
@@ -276,7 +274,6 @@ function denoise_dwd(
     dnt::T2 = RelErrorShrink(SoftTH()),
     smooth::Symbol = :regular,
 )::Array{Float64, 3} where {T1 <: DiscreteWavelet, T2 <: DNFT}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 

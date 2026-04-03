@@ -29,7 +29,6 @@ function xcov(
     biased::Bool = true,
     method::Symbol = :sum,
 )::Array{Float64, 3}
-
     # validate
     _check_var(method, [:sum, :cov, :stat], "method")
     length(s1) == length(s2) ||
@@ -121,7 +120,6 @@ function xcov(
     biased::Bool = true,
     method::Symbol = :sum,
 )::Array{Float64, 3}
-
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
@@ -174,7 +172,6 @@ function xcov(
     biased::Bool = true,
     method::Symbol = :sum,
 )::Array{Float64, 3}
-
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s1)
     _chk3d(s2)

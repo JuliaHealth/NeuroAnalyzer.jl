@@ -42,7 +42,6 @@ function size_c2g(;
     alpha::Float64 = 0.05,
     power::Float64 = 0.8,
 )::@NamedTuple{n1::Int64, n2::Int64}
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -85,7 +84,6 @@ function size_c1g(;
     power::Float64 = 0.8,
     iter::Bool = false,
 )::Int64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -130,7 +128,6 @@ function size_p2g(;
     alpha::Float64 = 0.05,
     power::Float64 = 0.8,
 )::@NamedTuple{n1::Int64, n2::Int64}
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -180,7 +177,6 @@ function size_p1g(;
     alpha::Float64 = 0.05,
     power::Float64 = 0.8,
 )::Int64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(power, (0, 1.0), "power")
@@ -227,7 +223,6 @@ function power_c2g(;
     n2::Int64,
     alpha::Float64 = 0.05,
 )::Float64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     s1 > 0 || throw(ArgumentError("s1 must be > 0."))
@@ -265,7 +260,6 @@ function power_c1g(;
     n::Int64,
     alpha::Float64 = 0.05,
 )::Float64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     s > 0 || throw(ArgumentError("s must be > 0."))
@@ -304,7 +298,6 @@ function power_p2g(;
     n2::Int64,
     alpha::Float64 = 0.05,
 )::Float64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(p1, (0.0, 1.0), "p1")
@@ -349,7 +342,6 @@ function power_p1g(;
     n1::Int64,
     alpha::Float64 = 0.05,
 )::Float64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(p1, (0.0, 1.0), "p1")
@@ -390,7 +382,6 @@ function size_c1diff(;
     twotailed::Bool = true,
     power::Float64 = 0.8,
 )::Int64
-
     # validate
     _in(power, (0, 1.0), "power")
     s2 != 0 || throw(ArgumentError("s2 must not be zero."))
@@ -458,7 +449,6 @@ function size_p1diff(;
     p2::Float64,
     power::Float64 = 0.8,
 )::Int64
-
     # validate
     _in(power, (0, 1.0), "power")
     _in(p1, (0.0, 1.0), "p1")
@@ -532,7 +522,6 @@ function mde(;
     beta::Float64 = 0.2,
     verbose::Bool = true,
 )::Float64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     _in(beta, (0, 1.0), "beta")
@@ -568,7 +557,6 @@ function size_p(;
     alpha::Float64 = 0.05,
     E::Float64,
 )::Int64
-
     # validate
     _in(E, (0, 1.0), "E")
     _in(alpha, (0, 1.0), "alpha")
@@ -603,7 +591,6 @@ function size_m(;
     alpha::Float64 = 0.05,
     E::Real,
 )::Int64
-
     # validate
     _in(alpha, (0, 1.0), "alpha")
     sigma > 0 || throw(ArgumentError("sigma must be > 0."))

@@ -21,7 +21,6 @@ Computed as `H = (mean(x) − median(x)) / std(x)`. Values of `|H| < 0.2` indica
 The criterion `|H| < 0.2` is checked (not just `H < 0.2`) because a negative mean–median difference also indicates asymmetry if its magnitude is ≥ 0.2.
 """
 function hildebrand_rule(x::AbstractVector; verbose::Bool = true)::Float64
-
     # validate
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     s = std(x)

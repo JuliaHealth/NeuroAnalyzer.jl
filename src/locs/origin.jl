@@ -19,9 +19,9 @@ Move locs origin ([0, 0, 0]) along the axes.
 """
 function locs_origin(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::DataFrame
     locs_new = deepcopy(locs)
-    locs_new[:, :loc_x] .+= x
-    locs_new[:, :loc_y] .+= y
-    locs_new[:, :loc_z] .+= z
+    locs_new.loc_x .+= x
+    locs_new.loc_y .+= y
+    locs_new.loc_z .+= z
     locs_cart2sph!(locs_new)
     locs_cart2pol!(locs_new)
 

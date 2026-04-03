@@ -16,7 +16,6 @@ Iterates over the `:subject`, `:recording`, and `:experiment` sub-dictionaries o
 - `Nothing`
 """
 function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
-
     # print the top-level header field names (struct fields, not dict keys)
     fields = Base.join(fieldnames(typeof(obj.header)), ", ")
     println("Header fields: $fields")
