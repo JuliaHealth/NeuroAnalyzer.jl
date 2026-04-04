@@ -100,7 +100,7 @@ Calculate spectrogram for each channel of a matrix.
 
 Named tuple:
 
-- `p::Array{Float64, 3}`: powers, shape `(freq, time, channels)`
+- `p::Array{Float64, 3}`: powers, shape (freq, time, channels)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
@@ -614,8 +614,8 @@ Calculate spectrogram using Gaussian and Hilbert transform for each channel of a
 
 Named tuple:
 
-- `p::Array{Float64, 3}`: powers, shape `(freq, time, channels)`
-- `ph::Array{Float64, 3}`: phases, shape `(freq, time, channels)`
+- `p::Array{Float64, 3}`: powers, shape (freq, time, channels)
+- `ph::Array{Float64, 3}`: phases, shape (freq, time, channels)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """

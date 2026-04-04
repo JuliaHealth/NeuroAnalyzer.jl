@@ -20,10 +20,6 @@ function _get_t(from::Int64, to::Int64, fs::Int64)::Vector{Float64}
     t = collect((from / fs):(1 / fs):(to / fs))
     t .-= t[1]
     return t = round.(t; digits = 4)
-    #t = t[1:(end - 1)]
-    #t[1] = floor(t[1], digits=2)
-    #t[2:(end - 1)] = round.(t[2:(end - 1)], digits=3)
-    #t[end] = ceil(t[end], digits=2)
 end
 
 function _convert_t(t1::Float64, t2::Float64)::Tuple{Float64, String, Float64, String}
