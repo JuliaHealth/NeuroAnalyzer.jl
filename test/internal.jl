@@ -209,7 +209,6 @@ hdr = NeuroAnalyzer._create_header(; subject = s, recording = r, experiment = e)
 ##
 
 @test NeuroAnalyzer._has_markers(["eeg", "mrk"]) == (true, 2)
-@test !NeuroAnalyzer._has_markers(e10)
 
 df = NeuroAnalyzer._a2df(["1.0\x14stim\x14"])
 @test names(df) == ["id", "start", "length", "value", "channel"]

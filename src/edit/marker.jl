@@ -42,7 +42,7 @@ Print a formatted table of all markers.
 - `Nothing`
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
-    isempty(obj.markers) && throw(ArgumentError("OBJ has no markers."))
+    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
 
     println(
         rpad("n", 5) *
@@ -80,7 +80,7 @@ Delete a marker.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
-    isempty(obj.markers) && throw(ArgumentError("OBJ has no markers."))
+    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
 
     nn = DataFrames.nrow(obj.markers)
     _in(n, (1, nn), "n")
@@ -234,7 +234,7 @@ function edit_marker(
     value::String,
     ch::Int64 = 0,
 )::NeuroAnalyzer.NEURO
-    isempty(obj.markers) && throw(ArgumentError("OBJ has no markers."))
+    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
     start > 0 || throw(ArgumentError("start must be > 0."))
     len > 0 || throw(ArgumentError("len must be > 0."))
     start < signal_len(obj) / sr(obj) ||

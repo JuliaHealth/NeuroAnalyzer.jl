@@ -1,7 +1,7 @@
 @info "Generating HTML documentation"
 
 using Pkg
-Pkg.add(; url = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git")
+Pkg.add(; url = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl")
 Pkg.instantiate()
 using Documenter
 using NeuroAnalyzer

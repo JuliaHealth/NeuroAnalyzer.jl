@@ -47,7 +47,7 @@ function epoch(
 
     if marker != ""
         # marker-based epoching
-        isempty(obj.markers) && throw(ArgumentError("OBJ does not contain markers."))
+        _has_markers(obj) || throw(ArgumentError("OBJ does not contain markers."))
         _check_markers(obj, marker)
         isnothing(ep_len) &&
             throw(ArgumentError("ep_len must be specified for marker-based epoching."))

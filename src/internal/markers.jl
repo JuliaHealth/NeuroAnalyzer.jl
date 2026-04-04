@@ -36,6 +36,8 @@ function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
     return markers, markers_channel
 end
 
+_has_markers(obj::NeuroAnalyzer.NEURO)::Bool = isempty(obj.markers)
+
 function _a2df(annotations::Vector{String})::DataFrame
     # convert EDF/BDF annotations to markers DataFrame
     mrk = replace.(annotations, "\x14\x14\0" => "|")
@@ -64,7 +66,9 @@ function _a2df(annotations::Vector{String})::DataFrame
                 push!(a_event, strip(s[idx + 2]))
             end
         else
+
             # TO DO: use offset if provided
+
             offset = parse(Float64, strip(s[1]))
             deleteat!(s, 1)
             for idx in 1:3:(length(s) ÷ 3)
