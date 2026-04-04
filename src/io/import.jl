@@ -56,7 +56,7 @@ function import_recording(
     # special case: double extension .csv.gz
     if ext == ".gz"
         inner_ext = lowercase(splitext(splitext(file_name)[1])[2])
-        inner_ext == ".csv" && return import_csv(file_name, detect_type)
+        inner_ext == ".csv" && return import_csv(file_name; detect_type = detect_type)
         throw(
             ArgumentError(
                 "Unsupported compressed format \"$inner_ext.gz\" in $file_name.",
@@ -65,17 +65,17 @@ function import_recording(
     end
 
     # dispatch table - each branch returns immediately on a match
-    ext == ".edf" && return import_edf(file_name, detect_type)
-    ext == ".bdf" && return import_bdf(file_name, detect_type)
-    ext == ".gdf" && return import_gdf(file_name, detect_type)
+    ext == ".edf" && return import_edf(file_name; detect_type = detect_type)
+    ext == ".bdf" && return import_bdf(file_name; detect_type = detect_type)
+    ext == ".gdf" && return import_gdf(file_name; detect_type = detect_type)
     # .vhdr and .ahdr are both BrainVision header formats
-    ext in (".vhdr", ".ahdr") && return import_bv(file_name, detect_type)
-    ext == ".csv" && return import_csv(file_name, detect_type)
-    ext == ".set" && return import_set(file_name, detect_type)
+    ext in (".vhdr", ".ahdr") && return import_bv(file_name; detect_type = detect_type)
+    ext == ".csv" && return import_csv(file_name; detect_type = detect_type)
+    ext == ".set" && return import_set(file_name; detect_type = detect_type)
     # .npy stores raw signal data only - sampling rate must be supplied
     ext == ".npy" && return import_npy(file_name; sampling_rate)
     ext == ".xdf" && return import_xdf(file_name)
-    ext == ".nwb" && return import_nwb(file_name, detect_type)
+    ext == ".nwb" && return import_nwb(file_name; detect_type = detect_type)
     ext == ".ncs" && return import_ncs(file_name)
     # .fif and .fiff are both valid FIFF extensions
     ext in (".fif", ".fiff") && return import_fiff(file_name)
