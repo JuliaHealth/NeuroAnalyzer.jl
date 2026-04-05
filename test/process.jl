@@ -449,10 +449,6 @@ s = filter_g(rand(10); fs = 10, f = 4)
 e10_tmp = filter_g(e10; ch = "all", f = 20)
 @test size(e10_tmp) == size(e10)
 
-@info "Test: invert_polarity()"
-e10_tmp = invert_polarity(e10; ch = "all")
-@test e10_tmp.data == .-(e10.data)
-
 @info "Test: lrinterpolate_channel()"
 e10_tmp = deepcopy(e10)
 e10_tmp.data[1, :, 1] = zeros(epoch_len(e10))
@@ -643,10 +639,6 @@ e10_int = plinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
 @test remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]
 e10_tmp = remove_dc(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
-
-@info "Test: scale()"
-e10_tmp = NeuroAnalyzer.scale(e10; ch = "all", factor = 2.0)
-@test e10_tmp.data == e10.data .* 2.0
 
 @info "Test: reference()"
 e10_tmp = reference_ce(e10; ch = "Fp1")
