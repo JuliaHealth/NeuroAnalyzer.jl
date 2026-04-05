@@ -18,6 +18,21 @@ You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags
 
 Note: this toolbox is under active development and is subject to change without prior notice.
 
+## Installation / Getting Started
+
+NeuroAnalyzer can be installed using the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+
+```julia
+pkg> add NeuroAnalyzer
+```
+
+Or, equivalently, via the `Pkg` API:
+
+```julia
+using Pkg
+Pkg.add("NeuroAnalyzer")
+```
+
 ## Quickstart
 
 Start NeuroAnalyzer:
