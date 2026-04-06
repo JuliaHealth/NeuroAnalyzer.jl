@@ -86,7 +86,7 @@ end
     extract_data(obj; <keyword arguments>)
 
 Extract signal data for specified channels and epochs.
- 
+
 Optionally return the corresponding time vectors alongside the data.
 
 # Arguments

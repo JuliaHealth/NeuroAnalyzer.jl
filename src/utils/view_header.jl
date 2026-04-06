@@ -10,7 +10,7 @@ Iterates over the `:subject`, `:recording`, and `:experiment` sub-dictionaries o
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-    
+   
 # Returns
 
 - `Nothing`

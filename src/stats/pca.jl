@@ -274,7 +274,7 @@ Calculate the recommended number of principal components (PCs).
 # Arguments
 
 - `m::Matrix{Float64}`: data matrix `(observations × variables)`; must have ≥ 2 rows and ≥ 1 column
-- `zstd::Bool=true`: if `true`, Z-score standardise each variable before PCA. 
+- `zstd::Bool=true`: if `true`, Z-score standardise each variable before PCA.
 - `type::Symbol`: selection criterion:
     - `:var`: keep enough PCs to explain at least `value` fraction of total variance
     - `:eig`: keep PCs whose eigenvalue exceeds `value`

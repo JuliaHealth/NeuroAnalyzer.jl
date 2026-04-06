@@ -175,7 +175,7 @@ function _serial_recorder(
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     t >= 0 || throw(ArgumentError("t must be ≥ 0."))
     blocks >= 1 || throw(ArgumentError("blocks must be ≥ 1."))
- 
+
     local sp
     try
         sp = LibSerialPort.open(port_name, baudrate; mode = m)
@@ -184,10 +184,10 @@ function _serial_recorder(
         throw(ErrorException("Serial port $port_name cannot be opened: $err"))
     end
     isopen(sp) || throw(ArgumentError("Serial port $port_name is not open."))
- 
+
     tp = Float64[]
     tmp_data = String[]
- 
+
     _beep()
     if t == 0
         _info("Recording $blocks data-blocks from $port_name ($n record(s) per block)")
@@ -211,16 +211,16 @@ function _serial_recorder(
     _beep()
     _info("Recording finished")
     close(sp)
- 
+
     # recalculate timestamps relative to recording start, one per block
     tp .-= tp[1]
     tp = tp[1:n:end]
- 
+
     # estimate sampling rate from the last inter-block interval
     fs = round(Int64, (blocks - 1) / tp[end])
     _info("Sampling rate: $fs Hz")
     tp = round.(tp; digits = 4)
- 
+
     # parse channel names from the first block
     col_names = ["time"]
     for idx in 1:n

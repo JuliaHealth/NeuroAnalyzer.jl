@@ -88,11 +88,11 @@ Threshold a matrix and count the number of elements satisfying the condition.
 - `x::AbstractMatrix`: input matrix
 - `t::Real`: threshold value
 - `t_type::Symbol=:g`: thresholding rule:
-  - `:eq`:  `x == t`
-  - `:geq`: `x ≥ t`
-  - `:leq`: `x ≤ t`
-  - `:g`:   `x > t`
-  - `:l`:   `x < t`
+    - `:eq`:  `x == t`
+    - `:geq`: `x ≥ t`
+    - `:leq`: `x ≤ t`
+    - `:g`:   `x > t`
+    - `:l`:   `x < t`
 
 # Returns
 

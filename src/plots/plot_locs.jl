@@ -484,7 +484,7 @@ Preview channel locations from a NEURO object with customizable 2D/3D visualizat
 - `ch_labels::Bool=true`: plot channel labels
 - `src_labels::Bool=false`: if `true`, plot source labels (for NIRS data)
 - `det_labels::Bool=false`: if `true`, plot detector labels (for NIRS data)
-- `opt_labels::Bool=false`: if `true`, plot optode type (S for source, D for detector) and number 
+- `opt_labels::Bool=false`: if `true`, plot optode type (S for source, D for detector) and number
 - `head::Bool=true`: if `true`, draw head outline
 - `head_labels::Bool=false`: if `true`, draw head labels
 - `mono::Bool=false`: if `true`, use a monochrome palette

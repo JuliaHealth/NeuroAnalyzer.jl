@@ -149,7 +149,7 @@ Rename one channel in-place.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
 - `name::String`: new name (must not already exist)
- 
+
 # Returns
 
 - `Nothing`

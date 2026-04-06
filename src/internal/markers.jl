@@ -115,25 +115,25 @@ function _a2df(annotations::Vector{String})::DataFrame
         "\0"         => "",
         r"\|$"       => "",
     )
- 
+
     # remove entries that are empty or contain no pipe separators
     for idx in length(mrk):-1:1
         if isempty(mrk[idx]) || !occursin('|', mrk[idx])
             deleteat!(mrk, idx)
         end
     end
- 
+
     a_start  = Float64[]
     a_length = Float64[]
     a_event  = String[]
- 
+
     if length(mrk) == 1
         s = split(mrk[1], "|")
- 
+
         for idx in length(s):-1:1
             s[idx] == "" && deleteat!(s, idx)
         end
- 
+
         if length(s) % 3 == 0
             for idx in 1:3:(length(s) - 2)
                 push!(a_start,  parse(Float64, strip(s[idx])))
@@ -151,13 +151,13 @@ function _a2df(annotations::Vector{String})::DataFrame
                 push!(a_event,  strip(s[idx + 2]))
             end
         end
- 
+
     else
         for idx in eachindex(mrk)
             s = split(mrk[idx], "|")
             # drop leading annotation-number column when both first two tokens start with '+'
             length(s) >= 2 && s[1][1] == '+' && s[2][1] == '+' && (s = s[2:end])
- 
+
             if length(s) == 3
                 push!(a_start,  parse(Float64, strip(s[1])))
                 push!(a_length, parse(Float64, strip(s[2])))
@@ -169,7 +169,7 @@ function _a2df(annotations::Vector{String})::DataFrame
             end
         end
     end
- 
+
     isempty(a_event) && return DataFrame(
         :id      => String[],
         :start   => Float64[],
@@ -177,14 +177,14 @@ function _a2df(annotations::Vector{String})::DataFrame
         :value   => String[],
         :channel => Int64[],
     )
- 
+
     all(isascii.(a_event)) || _warn("Unicode labels were not converted.")
- 
+
     # build numeric IDs: each unique event label gets one integer ID, shared by all occurrences of that label
     unique_events = unique(a_event)
     event_id_map = Dict(ev => i for (i, ev) in enumerate(unique_events))
     id = [event_id_map[ev] for ev in a_event]
- 
+
     return DataFrame(
         :id      => string.(id),
         :start   => a_start,

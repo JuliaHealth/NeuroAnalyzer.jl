@@ -10,12 +10,12 @@ Perform 2D scattered interpolation of signal data on a regular grid.
 - `loc_y::Vector{Float64}`: y-coordinates of data points
 - `ifactor::Int64=100`: interpolation factor determining grid density
 - `imethod::Symbol=:sh`: interpolation method:
-  - `:sh`: Shepard interpolation
-  - `:mq`: Multiquadratic interpolation
-  - `:imq`: Inverse Multiquadratic interpolation
-  - `:tp`: Thin Plate Spline interpolation
-  - `:nn`: Nearest Neighbor interpolation
-  - `:ga`: Gaussian interpolation
+    - `:sh`: Shepard interpolation
+    - `:mq`: Multiquadratic interpolation
+    - `:imq`: Inverse Multiquadratic interpolation
+    - `:tp`: Thin Plate Spline interpolation
+    - `:nn`: Nearest Neighbor interpolation
+    - `:ga`: Gaussian interpolation
 - `nmethod::Symbol=:minmax`: normalization method for output
 
 # Returns
@@ -24,6 +24,7 @@ Perform 2D scattered interpolation of signal data on a regular grid.
     - Interpolated signal matrix, shape (`ifactor`, `ifactor`)
     - x-coordinates of the interpolation grid
     - y-coordinates of the interpolation grid
+
 # Notes
 
 - The interpolation creates a regular grid covering the area containing all electrodes.

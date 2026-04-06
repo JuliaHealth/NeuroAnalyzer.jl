@@ -7,7 +7,7 @@ MMA7660 accelemeter;
 
 void setup()
 {
-	accelemeter.init();  
+	accelemeter.init(); 
 	Serial.begin(19200);
 }
 
@@ -35,7 +35,7 @@ void loop()
   az *= g;
 
   Serial.print("tpt: ");
-  Serial.print(x); 
+  Serial.print(x);
   Serial.print(" ");
   Serial.print(y);
   Serial.print(" ");

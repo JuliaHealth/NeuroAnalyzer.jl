@@ -52,26 +52,26 @@ function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64 = 1)
     # nose
     GLMakie.lines!(ax, [-0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
     GLMakie.lines!(ax, [0.2,  0.0], [0.98, 1.08]; linewidth = lw, color = :black)
- 
+
     # left ear
     left_ear_x  = [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
     left_ear_y  = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
     GLMakie.lines!(ax, left_ear_x, left_ear_y; linewidth = lw, color = :black)
- 
+
     # right ear
     right_ear_x = [0.995, 1.03, 1.06, 1.1, 1.12, 1.1, 1.13, 1.09, 1.02, 0.98, 0.975]
     right_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
     GLMakie.lines!(ax, right_ear_x, right_ear_y; linewidth = lw, color = :black)
- 
+
     # head circle
     GLMakie.arc!(ax, Point2f(0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
- 
+
     return nothing
 end
 
 """
     _xlims(t)
- 
+
 Return `(floor(t[1], digits=2), ceil(t[end], digits=2))` as axis x-limits.
 """
 _xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} =
@@ -86,19 +86,19 @@ The magnitude `m` is derived from the signal's peak absolute value, rounded to a
 """
 function _ylims(s::Union{AbstractVector, AbstractMatrix})::Tuple{Real, Real}
     peak = maximum(abs, s)
- 
+
     n = peak > 100 ? 2 : peak >= 10 ? 1 : 0
- 
+
     hi = ceil(Int64,  round(maximum(s); digits = n))
     lo = floor(Int64, round(minimum(s); digits = n))
- 
+
     # all-zero signal: provide a unit range
     hi == 0 && lo == 0 && return (-1.0, 1.0)
- 
+
     # one bound is zero: make the range symmetric around zero
     lo == 0 && return (-abs(hi), abs(hi))
     hi == 0 && return (-abs(lo), abs(lo))
- 
+
     # general case: use the larger absolute bound
     m = max(abs(hi), abs(lo))
     return (-m, m)
@@ -193,7 +193,7 @@ function _bernstein_poly(
     n = length(px) - 1
     length(px) == length(py) ||
         throw(ArgumentError("px and py must have the same length."))
- 
+
     b = [_bernstein(i, n; steps = steps) for i in 0:n]
     x_vals = [sum(px[k] * b[k][t] for k in 1:(n + 1)) for t in 1:steps]
     y_vals = [sum(py[k] * b[k][t] for k in 1:(n + 1)) for t in 1:steps]

@@ -376,7 +376,7 @@ Plot a topographical map of signal values from a NEURO object with customizable 
 - `cb::Bool=true`: if `true`, show colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
 - `amethod::Symbol=:mean`: averaging method for matrix data:
-    - `:mean`: mean averaging 
+    - `:mean`: mean averaging
     - `:median`: median averaging
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard

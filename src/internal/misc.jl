@@ -213,11 +213,11 @@ end
 
 """
     _fread(fid, n, t)
- 
+
 Read `n` values of type `t` from an open IO stream `fid`, returning the result as `Int64`, `Float64`, or `Vector{Int64}`.
- 
+
 # Type symbols
- 
+
 | Symbol   | Meaning                          |
 |----------|----------------------------------|
 | `:s`     | string of `n` bytes (→ `Vector`) |

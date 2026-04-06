@@ -191,8 +191,8 @@ end
 # Arguments
 - `filter_order::Integer`   : the order of the FIR filter.
 - `knotpoints_DW::Vector`   : a vector of size `(N,)` which contains frequency knotpoints, spanning [0, fs/2].
-- `D::Vector`               : a vector of size `(N,)` which contains amplitude response values for the frequency knotpoints in `knotpoints_DW`. 
-- `W::Vector`               : a vector of size `(N,)` which contains weighting function values for the frequency knotpoints in `knotpoints_DW`. 
+- `D::Vector`               : a vector of size `(N,)` which contains amplitude response values for the frequency knotpoints in `knotpoints_DW`.
+- `W::Vector`               : a vector of size `(N,)` which contains weighting function values for the frequency knotpoints in `knotpoints_DW`.
 - `antisymmetric::Bool`     : a Boolean that signifies whether the filter coefficients will be anti-symmetric, as used in type III and IV FIR filters.
 - `fs::Real`                : the sampling frequency.
 - `solver::Function`        : the function that is called to solve the equation ``Qa = b``, with the function call: `solver(Q,b)` which returns `a`.
@@ -539,7 +539,7 @@ idx2n_b(i, fir_type::Union{FIR_I, FIR_III}) = n = i - 1.0
 @doc raw"""
     idx2n_b(idx, fir_type::Union{FIR_II,FIR_IV})
 
-Determine the value of ``n`` based on the index in the b-vector, Where ``n`` is used in 
+Determine the value of ``n`` based on the index in the b-vector, Where ``n`` is used in
 For type II and IV FIR filters the following holds: ``n = i - 1/2``.
 Based on page 11 and 13 of [this](https://eeweb.engineering.nyu.edu/iselesni/EL713/zoom/linphase.pdf).
 
@@ -557,8 +557,8 @@ idx2n_b(i, fir_type::Union{FIR_II, FIR_IV}) = n = i - 0.5
 @doc raw"""
     bn!(_bn, n, k, _αn, _βn², γ, _δn, fir_type)
 
-Calculates the elements of the b-vector, which are equal to: 
-```math 
+Calculates the elements of the b-vector, which are equal to:
+```math
 b[i] = \frac{2}{f_s} \int_0^{f_s/2} W(f) D(f) cos(\pi \frac{2}{f_s} n f) df, \quad i = 1, 2, \cdots, M+1
 ```
 
@@ -572,13 +572,13 @@ Where:
 * ``c_j`` and ``d_j`` are the parameters of the linear function that describes the error weighting function in the ``j^{th}`` frequency band.
 
 The antiderivative of ``g(f,n)`` is equal to:
-```math 
+```math
 G_j(f,n) = \frac{1}{\pi^3 k^3 n^3} \bigg(\sin\big(\alpha(f) n\big)\Big(\beta_j(f) n^2 + \gamma_j(f)\Big) + \delta_j(f) n \cos\big(\alpha(f) n\big)\bigg) + constants
 ```
 Where:
-*  ``\alpha(f) = \pi kf``, 
-* ``\beta(f) = \pi^2 k^2 \big(acf^2 + (ad+bc)f + bd\big)``, 
-* ``\gamma(f) = -2ac``, 
+*  ``\alpha(f) = \pi kf``,
+* ``\beta(f) = \pi^2 k^2 \big(acf^2 + (ad+bc)f + bd\big)``,
+* ``\gamma(f) = -2ac``,
 * ``\delta(f) = \pi k\big(2acf + ad + bc\big)``.
 Note that the subscripts have been dropped here for clarity.
 
@@ -615,7 +615,7 @@ end
     bn!(_bn, k, f, a, b, c, d)
 
 Special case for when ``n = 0``, since then the integral is simplified:
-```math 
+```math
 g_j(f,0) = (c_j f+d_j) (a_j f+b_j) \cos(\pi k f 0) = (c_j f+d_j) (a_j f+b_j)
 ```
 And the antiderivative becomes:
@@ -661,7 +661,7 @@ Updates the argument of the trigonometric functions in [`bn!`](@ref) by multiply
 _update_trig_arg_b!(_αn, n, fir_type::Union{FIR_I, FIR_II}) = _αn .*= n
 @doc raw"""
     _update_trig_arg_b!(_αn, n, fir_type::Union{FIR_III,FIR_IV})
-    
+   
 Updates the argument of the trigonometric functions in [`bn!`](@ref) by multiplying with ``n`` and subtracting ``\pi``.
 The subtraction of ``\pi`` is necessary because when the filter is antisymmetric (type III and IV FIR filters), the filter response is a sum of sines instead of cosines and ``\sin(x) = \cos(x - \pi/2)`` (see page 12 and 13 of [this](https://eeweb.engineering.nyu.edu/iselesni/EL713/zoom/linphase.pdf)).
 
@@ -684,7 +684,7 @@ Creates a linear phase FIR filter based on `fir_type` and the coefficients in ve
 
 ...
 # Arguments
--`a`::Vector      : a vector of size `(M+1,)` with coefficients.   
+-`a`::Vector      : a vector of size `(M+1,)` with coefficients.  
 - `fir_type::FIR` : indicates the type of FIR filter.
 
 # Outputs

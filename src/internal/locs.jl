@@ -282,7 +282,7 @@ end
 
 """
     _check_locs_cols(locs)
- 
+
 Throw `ArgumentError` if any expected coordinate column is absent from `locs`.
 """
 function _check_locs_cols(locs::DataFrame)::Nothing

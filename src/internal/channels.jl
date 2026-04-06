@@ -1,3 +1,4 @@
+"""Convert a vector to range."""
 function _v2r(v::Vector{Int64})::Union{AbstractUnitRange{Int64}, Vector{Int64}}
     sv = sort(v)
     # return a contiguous range only if the sorted vector equals its own range
@@ -10,6 +11,7 @@ end
 _v2r(v::AbstractRange)::AbstractRange = v
 _v2r(v::Int64)::Int64 = v
 
+"""Get channel names from their types."""
 function _ch_rename(ch_type::String)::String
     ct = lowercase(ch_type)
     ct == "eeg" && return "EEG"
@@ -32,6 +34,7 @@ function _ch_rename(ch_type::String)::String
     return ch_type
 end
 
+"""Set default y axis label based on channel type and units."""
 function _def_ylabel(ch_type::String, u::String)::String
     ct = lowercase(ch_type)
     ct == "nirs_int" && return "Intensity [$u]"
@@ -42,6 +45,7 @@ function _def_ylabel(ch_type::String, u::String)::String
     return "Amplitude [$u]"
 end
 
+"""Get channel units based on channel type."""
 function _ch_units(ch_type::String)::String
     ct = lowercase(ch_type)
     ct == "eeg" && return "μV"
@@ -72,6 +76,7 @@ function _ch_units(ch_type::String)::String
     return ""
 end
 
+"""Get channel units from the object header."""
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String =
     _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
@@ -85,6 +90,7 @@ const _NIRS_TYPES = [
     "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux",
 ]
 
+"""Get integer indices from channel names."""
 function _ch_idx(
     cl::Union{String, Vector{String}},
     l::Union{String, Vector{String}, Regex},
@@ -107,6 +113,7 @@ function _ch_idx(
     return unique(ch)
 end
 
+"""Get integer indices from channel names."""
 function _ch_idx(
     obj::NeuroAnalyzer.NEURO,
     l::Union{String, Vector{String}, Regex},
@@ -173,6 +180,7 @@ function _ch_idx(
     return unique(ch)
 end
 
+"""Set channel types based on their names."""
 function _set_channel_types(
     clabels::Vector{String},
     default::String = "other",
@@ -269,6 +277,7 @@ function _set_channel_types(
     return channel_type
 end
 
+"""Sort channel names based on their types."""
 function _sort_channels(ch_t::Vector{String})::Vector{Int64}
     # map each channel type to a sort-priority string (lower string = sorted first)
     priority = Dict(
@@ -287,6 +296,6 @@ function _sort_channels(ch_t::Vector{String})::Vector{Int64}
         "nirs_aux" => "4", "accel" => "1", "magfld" => "2",
         "orient" => "3", "angvel" => "4",
     )
-    ch_order = [get(priority, t, "8") for t in ch_t]   # default to "8" for unknowns
+    ch_order = [get(priority, t, "8") for t in ch_t] # default to "8" for unknowns
     return sortperm(ch_order)
 end

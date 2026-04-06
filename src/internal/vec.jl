@@ -29,7 +29,7 @@ _zeros(s::AbstractVector)::Int64 = count(abs.(diff(sign.(s))) .!= 0)
 Return start/end index pairs for a sliding window over a signal of length `n`.
 
 # Arguments
- 
+
 - `n::Int64`: total signal length
 - `wlen::Int64`: window length in samples
 - `wstep::Int64`: step between window starts (the overlap between consecutive windows is `wlen - wstep`)
@@ -74,9 +74,9 @@ The last window may be shorter than `wlen` if the signal length is not an exact 
 - `s::AbstractVector`: input signal
 - `wlen::Int64`: window length in samples
 - `wstep::Int64=round(Int64, wlen * 0.9)`: step between window starts
- 
+
 # Returns
- 
+
 - `Vector{Vector{Float64}}`: vector of windows, each of length ≤ `wlen`
 """
 function _split(
@@ -192,9 +192,9 @@ Return start/stop index pairs for complete windows only. Trailing partial window
 - `s::AbstractVector`: input signal
 - `wlen::Int64`: window length in samples
 - `wstep::Int64=round(Int64, wlen * 0.9)`: step between window starts
- 
+
 # Returns
- 
+
 - `Matrix{Int64}`: Nx2 matrix of `[start stop]` index pairs (1-based, inclusive)
 """
 _fchunks(

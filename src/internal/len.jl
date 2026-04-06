@@ -1,7 +1,7 @@
 """
     _len(obj::NeuroAnalyzer.NEURO, len::Int64, def_l::Int64)::Int64
 
-Determine appropriate segment length for analysis, returning either the requested length or a default length based on the object's epoch duration.  
+Determine appropriate segment length for analysis, returning either the requested length or a default length based on the object's epoch duration. 
 
 # Arguments
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object

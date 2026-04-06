@@ -57,7 +57,7 @@ The code is based on SciPy v1.7.1: https://github.com/scipy/scipy/blob/v1.7.1/sc
 - `dx::Real`, optional : spacing of integration points along axis of `x`. Only used when `x` is nothing. Default is 1.0.
 - `even::Symbol[:avg, :first, :last]`, optional
     :avg, default : Average two results:
-    1) use the first N-2 intervals with a trapezoidal rule on the last interval and 
+    1) use the first N-2 intervals with a trapezoidal rule on the last interval and
     2) use the last N-2 intervals with a trapezoidal rule on the first interval.
     :first : Use Simpson's rule for the first N-2 intervals with a trapezoidal rule on the last interval.
     :last : Use Simpson's rule for the last N-2 intervals with a trapezoidal rule on the first interval.

@@ -46,7 +46,7 @@ None.
 
 # Returns
 
-`Nothing`
+- `Nothing`
 """
 function iavh()::Nothing
 
