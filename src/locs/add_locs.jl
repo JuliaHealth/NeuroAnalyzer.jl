@@ -46,7 +46,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEUR
     locs_idx = indexin(obj_new.locs[:, :label], labels(obj_new))
     obj_new.locs = obj_new.locs[sortperm(locs_idx), :]
 
-    push!(obj_new.history, "add_locs(OBJ, locs)")
+    push!(obj_new.history, "add_locs(obj, locs)")
 
     return obj_new
 end

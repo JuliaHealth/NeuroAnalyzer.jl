@@ -25,7 +25,7 @@ function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
         obj_new.data[:, :, ep_idx] =
             @view(obj_new.data[:, :, ep_idx]) - @view(obj_new.data[:, :, 1])
     end
-    push!(obj_new.history, "npl(OBJ)")
+    push!(obj_new.history, "npl(obj)")
 
     return obj_new
 end

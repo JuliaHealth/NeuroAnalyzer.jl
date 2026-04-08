@@ -18,7 +18,7 @@ Standardize channels of a 3-D signal array.
 function standardize(
     s::AbstractArray,
 )::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
-    # validate
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
     # number of epochs
@@ -62,7 +62,7 @@ function standardize(
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
-    push!(obj_new.history, "standardize(OBJ)")
+    push!(obj_new.history, "standardize(obj)")
 
     return obj_new, scaler
 end

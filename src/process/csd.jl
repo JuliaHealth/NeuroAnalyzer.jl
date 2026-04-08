@@ -95,7 +95,7 @@ function csd(
     obj_new.header.recording[:channel_type][ch] .= "csd"
     obj_new.header.recording[:unit][ch] .= "µV/m²"
 
-    push!(obj_new.history, "csd(OBJ, m=$m, n=$n, lambda=$lambda)")
+    push!(obj_new.history, "csd(obj, m=$m, n=$n, lambda=$lambda)")
 
     return obj_new
 end

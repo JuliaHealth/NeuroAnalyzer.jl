@@ -13,7 +13,7 @@ Remove mean value (DC offset).
 
 # Returns
 
-- `Vector{Float64}`
+- `Vector{Float64}`: output signal vector
 """
 function remove_dc(
     s::AbstractVector,
@@ -43,7 +43,7 @@ Remove mean value (DC offset).
 
 # Returns
 
-- `Matrix{Float64}`
+- `Matrix{Float64}`: output signal matrix, shape (channels, samples)
 """
 function remove_dc(
     s::AbstractMatrix,
@@ -72,7 +72,7 @@ Remove mean value (DC offset) for a 3-D signal array.
 
 # Returns
 
-- `Array{Float64, 3}`
+- `Array{Float64, 3}`: output signal array, shape (channels, samples, epochs)
 """
 function remove_dc(
     s::AbstractArray,

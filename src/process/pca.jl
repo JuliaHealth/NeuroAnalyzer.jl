@@ -30,8 +30,9 @@ function pca_decompose(
     pcm::Vector{Float64},
     pc_model::MultivariateStats.PCA{Float64},
 }
-    # validate
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     n <= size(s, 1) || throw(ArgumentError("n must be ≤ $(size(s, 1))."))
 

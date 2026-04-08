@@ -257,7 +257,7 @@ function reference_avg(
     end
     push!(
         obj_new.history,
-        "reference_avg(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)",
+        "reference_avg(obj, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)",
     )
 
     return obj_new
@@ -444,7 +444,7 @@ function reference_a(
         :i => "auricular (ipsilateral)",
         :c => "auricular (contralateral)",
     )[type]
-    push!(obj_new.history, "reference_a(OBJ, type=$type, med=$med)")
+    push!(obj_new.history, "reference_a(obj, type=$type, med=$med)")
 
     return obj_new
 end
@@ -575,7 +575,7 @@ function reference_m(
         :i => "mastoid (ipsilateral)",
         :c => "mastoid (contralateral)",
     )[type]
-    push!(obj_new.history, "reference_m(OBJ, type=$type, med=$med)")
+    push!(obj_new.history, "reference_m(obj, type=$type, med=$med)")
 
     return obj_new
 end
@@ -723,7 +723,7 @@ function reference_plap(
     obj_new.header.recording[:reference] =
         weighted ? "weighted planar Laplacian ($nn)" : "planar Laplacian ($nn)"
 
-    push!(obj_new.history, "reference_plap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
+    push!(obj_new.history, "reference_plap(obj, nn=$nn, weighted=$weighted, med=$med)")
 
     return obj_new
 end
@@ -818,7 +818,7 @@ function reference_slap(
     obj_new.locs[ch_locs, :label] .*= suffix
     obj_new.header.recording[:reference] =
         weighted ? "weighted spherical Laplacian ($nn)" : "spherical Laplacian ($nn)"
-    push!(obj_new.history, "reference_slap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
+    push!(obj_new.history, "reference_slap(obj, nn=$nn, weighted=$weighted, med=$med)")
 
     return obj_new
 end
@@ -945,7 +945,7 @@ function reference_custom(
 
     # TODO: update obj_new.locs for the new montage channels
 
-    push!(obj_new.history, "reference_custom(OBJ, ref_list=$ref_list, ref_name=$ref_name)")
+    push!(obj_new.history, "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name)")
 
     return obj_new
 end

@@ -488,7 +488,7 @@ function locs_generate(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
     locs = locs_generate(obj.locs)
     obj_new.locs = locs
-    push!(obj_new.history, "locs_generate(OBJ)")
+    push!(obj_new.history, "locs_generate(obj)")
 
     return obj_new
 end

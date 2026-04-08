@@ -16,7 +16,7 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 
 Named tuple:
 
-- `s::Vector{Float64}`
+- `s::Vector{Float64}`: repaired signal
 - `pop_loc::Int64`: sample number in the signal
 - `l_seg::Int64`: length of segment before the pop that starts when signal crosses 0
 - `r_seg::Int64`: length of segment after the pop that ends when signal crosses 0

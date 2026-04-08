@@ -156,7 +156,7 @@ function trim(
         obj_new.markers = unique(obj_new.markers)
     end
 
-    push!(obj_new.history, "trim(OBJ, seg=$seg, keep=$keep")
+    push!(obj_new.history, "trim(obj, seg=$seg, keep=$keep")
 
     return obj_new
 end

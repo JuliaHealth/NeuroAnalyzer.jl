@@ -43,7 +43,7 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyz
         )
     )
 
-    push!(obj_new.history, "join(OBJ1, OBJ2)")
+    push!(obj_new.history, "join(obj1, obj2)")
 
     return obj_new
 end

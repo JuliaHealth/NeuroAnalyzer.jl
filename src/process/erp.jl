@@ -75,7 +75,7 @@ function average_epochs(
     end
     obj_new.markers[!, :start] .+= ep_len
 
-    push!(obj_new.history, "average_epochs(OBJ, bl=$bl, blfirst=$blfirst)")
+    push!(obj_new.history, "average_epochs(obj, bl=$bl, blfirst=$blfirst)")
 
     return obj_new
 end
@@ -147,7 +147,7 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
 
     obj_new.data[:, :, 2:end] = obj.data[:, :, s]
     _warn("Markers are not sorted when epochs are reordered.")
-    push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
+    push!(obj_new.history, "sort_epochs(obj, s=$s)")
 
     return obj_new
 end

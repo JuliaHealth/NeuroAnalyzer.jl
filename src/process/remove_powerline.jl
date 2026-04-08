@@ -341,6 +341,7 @@ end
     detect_powerline!(obj)
 
 Detect power line noise and store the median detected frequency in the object header in-place.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; `header.recording[:line_frequency]` is updated in-place
