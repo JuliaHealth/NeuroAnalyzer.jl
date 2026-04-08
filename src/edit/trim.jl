@@ -10,89 +10,89 @@ Remove segment from the signal.
 
 # Arguments
 
-- `v::AbstractVector`
+- `s::AbstractVector`: signal vector
 - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-- `keep::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if `true`, keep the segment
 
 # Returns
 
 - `Vector{Float64}`
 """
 function trim(
-    v::AbstractVector;
+    s::AbstractVector;
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
 )::Vector{Float64}
     # validate
-    _check_segment(v, seg[1], seg[2])
+    _check_segment(s, seg[1], seg[2])
 
     if keep
-        return v[seg[1]:seg[2]]
+        return s[seg[1]:seg[2]]
     else
-        return vcat(v[1:(seg[1] - 1)], v[(seg[2] + 1):end])
+        return vcat(s[1:(seg[1] - 1)], s[(seg[2] + 1):end])
     end
 end
 
 """
-    trim(m; <keyword arguments>)
+    trim(s; <keyword arguments>)
 
 Remove segment from the signal.
 
 # Arguments
 
-- `m::AbstractMatrix`
+- `s::AbstractMatrix`: signal matrix, shape (channel, samples)
 - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-- `keep::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if `true`, keep the segment
 
 # Returns
 
 - `Matrix{Float64}`
 """
 function trim(
-    m::AbstractMatrix;
+    s::AbstractMatrix;
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
 )::Matrix{Float64}
     # validate
-    _check_segment(m[1, :], seg[1], seg[2])
+    _check_segment(s[1, :], seg[1], seg[2])
 
     if keep
-        return m[:, seg[1]:seg[2]]
+        return s[:, seg[1]:seg[2]]
     else
-        return hcat(m[:, 1:(seg[1] - 1)], m[:, (seg[2] + 1):end])
+        return hcat(s[:, 1:(seg[1] - 1)], s[:, (seg[2] + 1):end])
     end
 end
 
 """
-    trim(a; <keyword arguments>)
+    trim(s; <keyword arguments>)
 
 Remove segment from a 3-D signal array.
 
 # Arguments
 
-- `a::AbstractArray`: signal array, shape (channels, samples, epochs)
+- `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-- `keep::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if `true`, keep the segment
 
 # Returns
 
 - `Array{Float64, 3}`
 """
 function trim(
-    a::AbstractArray;
+    s::AbstractArray;
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
 )::Array{Float64, 3}
-    # validate that the input is a proper 3-D array (channels, samples, epochs)
-    _chk3d(a)
+    # validate that the input is s proper 3-D array (channels, samples, epochs)
+    _chk3d(s)
 
     # validate
-    _check_segment(a[1, :, 1], seg[1], seg[2])
+    _check_segment(s[1, :, 1], seg[1], seg[2])
 
     if keep
-        return a[:, seg[1]:seg[2], :]
+        return s[:, seg[1]:seg[2], :]
     else
-        return hcat(a[:, 1:(seg[1] - 1), :], a[:, (seg[2] + 1):end, :])
+        return hcat(s[:, 1:(seg[1] - 1), :], s[:, (seg[2] + 1):end, :])
     end
 end
 
@@ -105,8 +105,8 @@ Trim signal by removing parts of the signal.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
-- `keep::Bool=false`: if true, keep the segment
-- `remove_epochs::Bool=false`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
+- `keep::Bool=false`: if `true`, keep the segment
+- `remove_epochs::Bool=false`: if `true`, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 
 # Returns
 
@@ -170,7 +170,7 @@ Trim signal by removing parts of the signal.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
-- `keep::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if `true`, keep the segment
 
 # Returns
 
