@@ -231,9 +231,9 @@ function seg_select(
         yrectzoom = false,
     )
     hidedecorations!(ax)
-    hm = GLMakie.heatmap!(m[end:-1:1, :]'; colormap = :darktest)
+    hm = GLMakie.heatmap!(m'; colormap = :darktest)
 
-    poins = nothing
+    points = nothing
     if shape in [:p, :r]
         points = Observable(Point2i[])
     else
