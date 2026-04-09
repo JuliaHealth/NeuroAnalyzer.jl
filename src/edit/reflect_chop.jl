@@ -41,7 +41,7 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NE
     obj_new.data = s
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
-    push!(obj_new.history, "reflect(OBJ, n=$n)")
+    push!(obj_new.history, "reflect(obj, n=$n)")
 
     return obj_new
 end
@@ -104,7 +104,7 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
     obj_new.data = s
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
-    push!(obj_new.history, "chop(OBJ, n=$n)")
+    push!(obj_new.history, "chop(obj, n=$n)")
 
     return obj_new
 end

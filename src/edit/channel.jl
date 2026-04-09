@@ -332,7 +332,7 @@ function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnal
     obj_new = deepcopy(obj)
 
     obj_new.header.recording[:label] = clabels
-    push!(obj_new.history, "add_label(OBJ, clabels=$clabels)")
+    push!(obj_new.history, "add_label(obj, clabels=$clabels)")
 
     return obj_new
 end

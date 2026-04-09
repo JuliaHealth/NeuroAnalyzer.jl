@@ -108,7 +108,7 @@ function apply_ssp_projectors(
 
     ssp_mask = obj.header.recording[:ssp_channels]
     obj_new.data[ssp_mask, :, 1] = ssp_projectors * obj.data[ssp_mask, :, 1]
-    push!(obj_new.history, "apply_ssp_projectors(OBJ, pidx=$pidx)")
+    push!(obj_new.history, "apply_ssp_projectors(obj, pidx=$pidx)")
 
     return obj_new
 end

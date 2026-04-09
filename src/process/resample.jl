@@ -56,11 +56,16 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64
     # validate
     new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
 
+    # number of channels and epochs
     ch_n, _, ep_n = size(s)
 
-    s_new = NeuroAnalyzer.resample(s[1, :, 1]; old_sr = old_sr, new_sr = new_sr)
-    s_new = zeros(ch_n, length(s_new), ep_n)
+    # dry run
+    s_tmp = NeuroAnalyzer.resample(s[1, :, 1]; old_sr = old_sr, new_sr = new_sr)
 
+    # pre-allocate output
+    s_new = zeros(ch_n, length(s_tmp), ep_n)
+
+    # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] = NeuroAnalyzer.resample(
@@ -76,12 +81,12 @@ end
 """
     resample(obj; <keyword arguments>)
 
-Resample (up- or down-sample).
+Resample all channels to `new_sr` sampling frequency.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `old_sr::Int64`: old sampling rate - `new_sr::Int64`: new sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
@@ -103,7 +108,7 @@ end
 """
     resample!(obj; <keyword arguments>)
 
-Resample (up- or down-sample).
+Resample all channels to `new_sr` sampling frequency in-place.
 
 # Arguments
 
@@ -128,7 +133,7 @@ end
 """
     upsample(obj; <keyword arguments>)
 
-Upsample.
+Upsample all channels to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -152,7 +157,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     obj_new.header.recording[:sampling_rate] = new_sr
-    push!(obj_new.history, "upsample(OBJ, new_sr=$new_sr)")
+    push!(obj_new.history, "upsample(obj, new_sr=$new_sr)")
 
     return obj_new
 end
@@ -160,7 +165,7 @@ end
 """
     upsample!(obj; <keyword arguments>)
 
-Upsample.
+Upsample all channels to `new_sr` sampling frequency in-place.
 
 # Arguments
 
@@ -185,7 +190,7 @@ end
 """
     downsample(obj; <keyword arguments>)
 
-Downsample.
+Downsample all channels to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -215,7 +220,7 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEUR
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     obj_new.header.recording[:sampling_rate] = new_sr
-    push!(obj_new.history, "downsample(OBJ, new_sr=$new_sr)")
+    push!(obj_new.history, "downsample(obj, new_sr=$new_sr)")
 
     return obj_new
 end
@@ -223,7 +228,7 @@ end
 """
     downsample!(obj; <keyword arguments>)
 
-Downsample.
+Downsample all channels to `new_sr` sampling frequency in-place.
 
 # Arguments
 
