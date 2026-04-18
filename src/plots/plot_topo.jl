@@ -24,7 +24,8 @@ Plot a topographical map of signal values across channel locations.
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
-- `electrodes::Bools=true`: if `true`, plot electrode locations over topography
+- `electrodes::Bool=true`: if `true`, plot electrode locations over topography
+- `ch_labels::Bool=true`: if `true`, plot electrode labels over topography
 - `ps::Symbol`: plot size:
     - `:l`: large (800×800 px)
     - `:m`: medium (300×300 px)
@@ -64,6 +65,7 @@ function plot_topo(
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
     electrodes::Bool = true,
+    ch_labels::Bool = true,
     ps::Symbol = :l,
     head::Bool = true,
     cart::Bool = false,
@@ -135,6 +137,7 @@ function plot_topo(
         cb_title    = ""
         lw          = 1
         sw          = 1
+        ch_labels   = false
     end
 
     # interpolate signal
@@ -332,6 +335,32 @@ function plot_topo(
         end
     end
 
+    if electrodes
+        label_offset_x = 0.0
+        label_offset_y = -0.08
+    else
+        label_offset_x = 0.0
+        label_offset_y = 0.0
+    end
+
+    # draw labels
+    if ch_labels
+        ch_set = Set(ch)
+        for idx in eachindex(local_locs.label)
+            if idx in ch_set
+                local_i = findfirst(==(idx), collect(ch))
+                isnothing(local_i) && continue
+                GLMakie.text!(
+                    loc_x[local_i] + label_offset_x,
+                    loc_y[local_i] + label_offset_y;
+                    text     = local_locs.label[idx],
+                    align    = (:center, :center),
+                    fontsize = font_size,
+                )
+            end
+        end
+    end
+
     # draw mask to crop interpolation outside the head circle
     head12 && GLMakie.arc!(ax, Point2f(0, 0), r, -pi, pi; linewidth = 5, color = :white)
 
@@ -387,7 +416,8 @@ Plot a topographical map of signal values from a NEURO object with customizable 
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
-- `electrodes::Bools=true`: if `true`, plot electrode locations over topography
+- `electrodes::Bool=true`: if `true`, plot electrode locations over topography
+- `ch_labels::Bool=true`: if `true`, plot electrode labels over topography
 - `ps::Symbol`: plot size:
     - `:l`: large (800×800 px)
     - `:m`: medium (300×300 px)
@@ -431,6 +461,7 @@ function plot_topo(
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
     electrodes::Bool = true,
+    ch_labels::Bool=true,
     ps::Symbol = :l,
     head::Bool = true,
     cart::Bool = false,
@@ -543,6 +574,7 @@ function plot_topo(
         nmethod          = nmethod,
         contours         = contours,
         electrodes       = electrodes,
+        ch_labels        = ch_labels,
         ps               = ps,
         head             = head,
         cart             = cart,
