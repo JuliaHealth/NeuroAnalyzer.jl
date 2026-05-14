@@ -40,7 +40,7 @@ https://discourse.julialang.org/t/how-to-detect-key-down-events/95011/2
 function _kbd_listener(c::Channel)::Nothing
     t = REPL.TerminalMenus.terminal
     while true
-        REPL.Terminals.raw!(t, true)  || error("Unable to switch to raw mode.")
+        REPL.Terminals.raw!(t, true) || error("Unable to switch to raw mode.")
         keypress = Char(REPL.TerminalMenus.readkey(t.in_stream))
         REPL.Terminals.raw!(t, false) || error("Unable to switch back from raw mode.")
         put!(c, keypress)
@@ -82,7 +82,7 @@ Open a serial port and return the `SerialPort` handle.
 function _serial_open(
     port_name::String = "/dev/ttyACM0";
     baudrate::Int64   = 115200,
-    m = LibSerialPort.SP_MODE_READ,
+    m                 = LibSerialPort.SP_MODE_READ,
 )::SerialPort
     # validate
     port_name in LibSerialPort.get_port_list() ||
@@ -113,7 +113,7 @@ Read one line from `sp` if bytes are available, otherwise return `nothing`.
 """
 function _serial_listener(sp::LibSerialPort.SerialPort)::Union{String, Nothing}
     !isopen(sp) && return nothing
-    bytesavailable(sp) > 0 ? String(readline(sp)) : nothing
+    return bytesavailable(sp) > 0 ? String(readline(sp)) : nothing
 end
 
 """
@@ -164,10 +164,10 @@ Each "block" consists of `n` colon-separated `"key:value"` records. Recording st
 function _serial_recorder(
     port_name::String = "/dev/ttyUSB0";
     baudrate::Int64   = 115200,
-    m = LibSerialPort.SP_MODE_READ,
-    blocks::Int64 = 256,
-    n::Int64      = 1,
-    t::Real       = 0,
+    m                 = LibSerialPort.SP_MODE_READ,
+    blocks::Int64     = 256,
+    n::Int64          = 1,
+    t::Real           = 0,
 )::DataFrame
     port_name in LibSerialPort.get_port_list() ||
         throw(ArgumentError("Serial port $port_name does not exist."))
@@ -192,7 +192,7 @@ function _serial_recorder(
     if t == 0
         _info("Recording $blocks data-blocks from $port_name ($n record(s) per block)")
         for _ in 1:(blocks * n)
-            push!(tp,       time())
+            push!(tp, time())
             push!(tmp_data, String(readline(sp)))
             sleep(0.01)
         end
@@ -201,7 +201,7 @@ function _serial_recorder(
         t_start = time()
         while time() < t_start + t
             for _ in 1:n
-                push!(tp,       time())
+                push!(tp, time())
                 push!(tmp_data, String(readline(sp)))
                 sleep(0.01)
             end

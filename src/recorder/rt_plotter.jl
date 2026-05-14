@@ -20,7 +20,6 @@ function rt_plotter(;
     l::Int64 = 5,
     duration::Int64 = 20,
 )::Plots.Plot{Plots.GRBackend}
-
     _wip()
 
     t = 0:(1 / fs):l

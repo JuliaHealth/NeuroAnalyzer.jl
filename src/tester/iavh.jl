@@ -53,16 +53,16 @@ function iavh()::Nothing
     # =========================================================================
     # configuration - named locals used in place of magic numbers throughout
     # =========================================================================
-    vol_step          = 0.1   # volume increment / decrement per button press
-    vol_min           = 0.1   # minimum allowed volume
-    vol_max           = 1.0   # maximum allowed volume
-    dist_exponent     = 4     # power applied to (1 - distance) for attenuation
-    channel_gain      = 0.25  # master scalar applied to both channel amplitudes
-    lateral_atten     = 0.75  # quieter-ear reduction when sound is lateralized
-    ear_l_x           = -0.05 # left-ear x position in normalized [-0.5, 0.5] space
-    ear_r_x           =  0.05 # right-ear x position in normalized [-0.5, 0.5] space
-    min_dist          = 0.1   # inside this radius the sound is treated as "in-head"
-    canvas_size       = 800   # canvas width and height in pixels
+    vol_step      = 0.1   # volume increment / decrement per button press
+    vol_min       = 0.1   # minimum allowed volume
+    vol_max       = 1.0   # maximum allowed volume
+    dist_exponent = 4     # power applied to (1 - distance) for attenuation
+    channel_gain  = 0.25  # master scalar applied to both channel amplitudes
+    lateral_atten = 0.75  # quieter-ear reduction when sound is lateralized
+    ear_l_x       = -0.05 # left-ear x position in normalized [-0.5, 0.5] space
+    ear_r_x       = 0.05 # right-ear x position in normalized [-0.5, 0.5] space
+    min_dist      = 0.1   # inside this radius the sound is treated as "in-head"
+    canvas_size   = 800   # canvas width and height in pixels
 
     # voice file index ranges - 15 files per language×gender set, 5 per valence
     idx_negative = 1:5
@@ -98,7 +98,10 @@ function iavh()::Nothing
     end
 
     # keyed by (language_code, gender_string) for O(1) lookup in signal handlers
-    voices = Dict{Tuple{String,String}, Vector{Tuple{Matrix{Float64},Float32,UInt16,Vector{WAVChunk}}}}(
+    voices = Dict{
+        Tuple{String, String},
+        Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}},
+    }(
         ("EN", "male")   => _load_voices("en_m"),
         ("EN", "female") => _load_voices("en_w"),
         ("DE", "male")   => _load_voices("de_m"),
@@ -150,7 +153,7 @@ function iavh()::Nothing
         snd_out = deepcopy(snd_raw)
         snd_out[1][:, 1] = snd_raw[1][:, 1] .* (vol * (d_l * channel_gain))
         snd_out[1][:, 2] = snd_raw[1][:, 2] .* (vol * (d_r * channel_gain))
-        wavplay(snd_out[1], snd_out[2])
+        return wavplay(snd_out[1], snd_out[2])
     end
 
     # =========================================================================
@@ -158,11 +161,11 @@ function iavh()::Nothing
     # returns (type, lang, character, gender) as plain lowercase strings
     # =========================================================================
     function _get_ui_state(combo_type, combo_lang, combo_character, combo_gender,
-                           types, langs, characters, genders)
-        type      = types[Int64(combo_type.active)      + 1]
-        lang      = langs[Int64(combo_lang.active)      + 1]
+        types, langs, characters, genders)
+        type      = types[Int64(combo_type.active) + 1]
+        lang      = langs[Int64(combo_lang.active) + 1]
         character = characters[Int64(combo_character.active) + 1]
-        gender    = genders[Int64(combo_gender.active)  + 1]
+        gender    = genders[Int64(combo_gender.active) + 1]
         return type, lang, character, gender
     end
 
@@ -174,7 +177,7 @@ function iavh()::Nothing
         Gtk4.default_size(win, 1100, 820)
 
         # canvas that renders the head diagram and the clicked sound-source marker
-        can = GtkCanvas()
+        can                = GtkCanvas()
         can.content_width  = canvas_size
         can.content_height = canvas_size
 
@@ -182,77 +185,92 @@ function iavh()::Nothing
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 10
-        g.row_spacing    = 10
-        g.margin_start   = 5
-        g.margin_end     = 5
-        g.margin_top     = 5
-        g.margin_bottom  = 5
+        g.row_spacing = 10
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
         # inner grid for all control widgets
         g_opts = GtkGrid()
         g_opts.column_homogeneous = false
         g_opts.column_spacing = 10
-        g_opts.row_spacing    = 10
-        g_opts.margin_start   = 5
-        g_opts.margin_end     = 5
-        g_opts.margin_top     = 5
-        g_opts.margin_bottom  = 5
+        g_opts.row_spacing = 10
+        g_opts.margin_start = 5
+        g_opts.margin_end = 5
+        g_opts.margin_top = 5
+        g_opts.margin_bottom = 5
 
         # --- language selector ---
-        lab_lang   = GtkLabel("Language"); lab_lang.halign = 2
-        langs      = ["EN", "DE", "SP", "PL"]
+        lab_lang = GtkLabel("Language");
+        lab_lang.halign = 2
+        langs = ["EN", "DE", "SP", "PL"]
         combo_lang = GtkComboBoxText()
         foreach(l -> push!(combo_lang, l), langs)
         combo_lang.active       = 0
         combo_lang.tooltip_text = "Language of AVH speech samples"
 
         # --- sound type selector ---
-        lab_type   = GtkLabel("Type"); lab_type.halign = 2
-        types      = ["voice", "whisper", "noise", "ringing"]
+        lab_type = GtkLabel("Type");
+        lab_type.halign = 2
+        types = ["voice", "whisper", "noise", "ringing"]
         combo_type = GtkComboBoxText()
         foreach(t -> push!(combo_type, uppercase(t)), types)
         combo_type.active       = 0
         combo_type.tooltip_text = "Hallucination sound type"
 
         # --- voice gender selector (speech only) ---
-        lab_gender   = GtkLabel("Gender"); lab_gender.halign = 2
-        genders      = ["male", "female"]
+        lab_gender = GtkLabel("Gender");
+        lab_gender.halign = 2
+        genders = ["male", "female"]
         combo_gender = GtkComboBoxText()
         foreach(g -> push!(combo_gender, uppercase(g)), genders)
         combo_gender.active       = 0
         combo_gender.tooltip_text = "Voice gender (speech only)"
 
         # --- emotional aspect selector (speech only) ---
-        lab_character   = GtkLabel("Emotional aspect"); lab_character.halign = 2
-        characters      = ["negative", "neutral", "positive"]
+        lab_character = GtkLabel("Emotional aspect");
+        lab_character.halign = 2
+        characters = ["negative", "neutral", "positive"]
         combo_character = GtkComboBoxText()
         foreach(c -> push!(combo_character, uppercase(c)), characters)
         combo_character.active       = 0
         combo_character.tooltip_text = "Emotional valence of AVH content (speech only)"
 
         # --- volume controls ---
-        lab_vol_up  = GtkLabel("Volume"); lab_vol_up.halign  = 2
-        lab_vol_down = GtkLabel("Volume"); lab_vol_down.halign = 2
-        bt_vol_up   = GtkButton("+")
+        lab_vol_up = GtkLabel("Volume");
+        lab_vol_up.halign = 2
+        lab_vol_down = GtkLabel("Volume");
+        lab_vol_down.halign = 2
+        bt_vol_up = GtkButton("+")
         bt_vol_down = GtkButton("-")
         # initialise sensitivity: at max vol the up button is disabled
-        bt_vol_up.sensitive   = (vol < vol_max) ? 1 : 0
-        bt_vol_down.sensitive = (vol > vol_min) ? 1 : 0
+        bt_vol_up.sensitive      = (vol < vol_max) ? 1 : 0
+        bt_vol_down.sensitive    = (vol > vol_min) ? 1 : 0
         bt_vol_up.tooltip_text   = "Increase volume (step $(vol_step))"
         bt_vol_down.tooltip_text = "Decrease volume (step $(vol_step))"
 
         # --- action buttons ---
-        bt_play  = GtkButton("Play");  bt_play.tooltip_text  = "Play the sound with current settings"
-        bt_save  = GtkButton("Save");  bt_save.tooltip_text  = "Export session settings to CSV"
-        bt_close = GtkButton("Close"); bt_close.tooltip_text = "Close this window"
+        bt_play               = GtkButton("Play");
+        bt_play.tooltip_text  = "Play the sound with current settings"
+        bt_save               = GtkButton("Save");
+        bt_save.tooltip_text  = "Export session settings to CSV"
+        bt_close              = GtkButton("Close");
+        bt_close.tooltip_text = "Close this window"
 
         # --- populate options grid ---
-        g_opts[1, 1]  = lab_lang;       g_opts[2, 1]  = combo_lang
-        g_opts[1, 2]  = lab_type;       g_opts[2, 2]  = combo_type
-        g_opts[1, 3]  = lab_gender;     g_opts[2, 3]  = combo_gender
-        g_opts[1, 4]  = lab_character;  g_opts[2, 4]  = combo_character
-        g_opts[1, 5]  = lab_vol_up;     g_opts[2, 5]  = bt_vol_up
-        g_opts[1, 6]  = lab_vol_down;   g_opts[2, 6]  = bt_vol_down
+        g_opts[1, 1]    = lab_lang;
+        g_opts[2, 1]    = combo_lang
+        g_opts[1, 2]    = lab_type;
+        g_opts[2, 2]    = combo_type
+        g_opts[1, 3]    = lab_gender;
+        g_opts[2, 3]    = combo_gender
+        g_opts[1, 4]    = lab_character;
+        g_opts[2, 4]    = combo_character
+        g_opts[1, 5]    = lab_vol_up;
+        g_opts[2, 5]    = bt_vol_up
+        g_opts[1, 6]    = lab_vol_down;
+        g_opts[2, 6]    = bt_vol_down
         g_opts[1:2, 7]  = GtkLabel("")
         g_opts[1:2, 8]  = bt_play
         g_opts[1:2, 9]  = GtkLabel("")
@@ -280,7 +298,7 @@ function iavh()::Nothing
             Cairo.set_source_rgb(ctx, 1, 1, 1)
             Cairo.fill(ctx)
             Cairo.set_source_surface(ctx, img, 1, 1)
-            Cairo.paint(ctx)
+            return Cairo.paint(ctx)
         end
 
         # -----------------------------------------------------------------------
@@ -291,52 +309,52 @@ function iavh()::Nothing
         function _on_speech_setting_changed()
             type, lang, character, gender = _get_ui_state(
                 combo_type, combo_lang, combo_character, combo_gender,
-                types, langs, characters, genders
+                types, langs, characters, genders,
             )
-            snd = _select_sound(type, lang, character, gender)
+            return snd = _select_sound(type, lang, character, gender)
         end
 
         # --- signal: sound type changed ---
         # enable/disable speech-only controls depending on whether "voice" is active
         signal_connect(combo_type, "changed") do widget
-            type     = types[Int64(combo_type.active) + 1]
-            is_voice = (type == "voice")
+            type                      = types[Int64(combo_type.active) + 1]
+            is_voice                  = (type == "voice")
             combo_lang.sensitive      = is_voice ? 1 : 0
             combo_character.sensitive = is_voice ? 1 : 0
             combo_gender.sensitive    = is_voice ? 1 : 0
-            _on_speech_setting_changed()
+            return _on_speech_setting_changed()
         end
 
         # --- signal: language changed (was missing in original) ---
         signal_connect(combo_lang, "changed") do widget
-            _on_speech_setting_changed()
+            return _on_speech_setting_changed()
         end
 
         # --- signal: voice gender changed ---
         signal_connect(combo_gender, "changed") do widget
-            _on_speech_setting_changed()
+            return _on_speech_setting_changed()
         end
 
         # --- signal: emotional aspect changed ---
         signal_connect(combo_character, "changed") do widget
-            _on_speech_setting_changed()
+            return _on_speech_setting_changed()
         end
 
         # --- signal: volume up ---
         # previews the *current* sound at the new volume without re-randomizing
         signal_connect(bt_vol_up, "clicked") do widget
-            vol = round(min(vol + vol_step, vol_max); digits = 1)
+            vol                   = round(min(vol + vol_step, vol_max); digits = 1)
             bt_vol_up.sensitive   = (vol < vol_max) ? 1 : 0
             bt_vol_down.sensitive = 1  # definitely above minimum after an increase
-            _play(snd)
+            return _play(snd)
         end
 
         # --- signal: volume down ---
         signal_connect(bt_vol_down, "clicked") do widget
-            vol = round(max(vol - vol_step, vol_min); digits = 1)
+            vol                   = round(max(vol - vol_step, vol_min); digits = 1)
             bt_vol_down.sensitive = (vol > vol_min) ? 1 : 0
             bt_vol_up.sensitive   = 1  # definitely below maximum after a decrease
-            _play(snd)
+            return _play(snd)
         end
 
         # --- signal: play button ---
@@ -344,10 +362,10 @@ function iavh()::Nothing
         signal_connect(bt_play, "clicked") do widget
             type, lang, character, gender = _get_ui_state(
                 combo_type, combo_lang, combo_character, combo_gender,
-                types, langs, characters, genders
+                types, langs, characters, genders,
             )
             snd = _select_sound(type, lang, character, gender)
-            _play(snd)
+            return _play(snd)
         end
 
         # -----------------------------------------------------------------------
@@ -380,12 +398,12 @@ function iavh()::Nothing
                     Gtk4.arc(ctx, x_px, y_px, 10, 0, 2π)
                     Gtk4.set_source_rgb(ctx, 1, 0, 0)
                     Gtk4.stroke(ctx)
-                    Gtk4.reveal(widget)
+                    return Gtk4.reveal(widget)
                 end
 
                 # map pixel coordinates to normalized [-0.5, 0.5] space
-                x_norm = round(x_px / canvas_size - 0.5,     digits = 2)
-                y_norm = round(0.5   - y_px / canvas_size,    digits = 2)
+                x_norm = round(x_px / canvas_size - 0.5, digits = 2)
+                y_norm = round(0.5 - y_px / canvas_size, digits = 2)
 
                 # euclidean distances from the sound source to each simulated ear
                 dist_l = sqrt((x_norm - ear_l_x)^2 + y_norm^2)
@@ -414,7 +432,7 @@ function iavh()::Nothing
                 # re-randomize and play with the updated spatial weights
                 type, lang, character, gender = _get_ui_state(
                     combo_type, combo_lang, combo_character, combo_gender,
-                    types, langs, characters, genders
+                    types, langs, characters, genders,
                 )
                 snd = _select_sound(type, lang, character, gender)
                 _play(snd)
@@ -433,7 +451,7 @@ function iavh()::Nothing
 
                 type, lang, character, gender = _get_ui_state(
                     combo_type, combo_lang, combo_character, combo_gender,
-                    types, langs, characters, genders
+                    types, langs, characters, genders,
                 )
 
                 try
@@ -451,7 +469,7 @@ function iavh()::Nothing
                         end
                         println(f, "\"distance L\",$d_l")
                         println(f, "\"distance R\",$d_r")
-                        print(f,   "\"volume\",$vol")
+                        return print(f, "\"volume\",$vol")
                     end
                 catch
                     warn_dialog(_nill, "File cannot be saved!", win)
@@ -461,7 +479,7 @@ function iavh()::Nothing
 
         # --- signal: Close button ---
         return signal_connect(bt_close, "clicked") do widget
-            close(win)
+            return close(win)
         end
     end # _activate
 

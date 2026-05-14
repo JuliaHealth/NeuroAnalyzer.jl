@@ -66,15 +66,15 @@ function _dedup_taps!(
     counts::Vector{Int64},
 )::Nothing
     for idx in eachindex(t_vec)
-        keep = if length(unique(t_vec[idx])) != length(t_vec[idx])
+        keep        = if length(unique(t_vec[idx])) != length(t_vec[idx])
             # Keep only the first occurrence of each time point
             unique(i -> t_vec[idx][i], eachindex(t_vec[idx]))
         else
             collect(eachindex(t_vec[idx]))  # no duplicates - keep all
         end
-        counts[idx]  = length(keep)
-        t_vec[idx]   = t_vec[idx][keep]
-        d_vec[idx]   = d_vec[idx][keep]
+        counts[idx] = length(keep)
+        t_vec[idx]  = t_vec[idx][keep]
+        d_vec[idx]  = d_vec[idx][keep]
     end
     return nothing
 end
@@ -139,7 +139,9 @@ function iftt(;
     if port_name != ""
         sp = _serial_open(port_name)
         if sp === nothing
-            _info("Serial port $port_name is not available - keyboard SPACEBAR will be used")
+            _info(
+                "Serial port $port_name is not available - keyboard SPACEBAR will be used",
+            )
             port_name = ""
         else
             _serial_close(sp)
@@ -150,18 +152,18 @@ function iftt(;
     img_press = read_from_png(joinpath(res_path, "finger_click.png"))
 
     # per-trial accumulators
-    result       = zeros(Int64, trials)   # tap count per trial
-    int_result   = zeros(Int64, trials)   # tap count per interval
+    result     = zeros(Int64, trials)   # tap count per trial
+    int_result = zeros(Int64, trials)   # tap count per interval
 
     # keyboard-mode: nested per-trial vectors (pushed as each trial completes)
-    t_kp         = Vector{Vector{Float64}}()
-    d_kp         = Vector{Vector{Float64}}()
-    int_t_kp     = Vector{Vector{Float64}}()
-    int_d_kp     = Vector{Vector{Float64}}()
+    t_kp     = Vector{Vector{Float64}}()
+    d_kp     = Vector{Vector{Float64}}()
+    int_t_kp = Vector{Vector{Float64}}()
+    int_d_kp = Vector{Vector{Float64}}()
 
     # serial-mode: flat chronological vectors (restructured in post-processing)
-    t_kp_flat    = Vector{Float64}()
-    d_kp_flat    = Vector{Float64}()
+    t_kp_flat = Vector{Float64}()
+    d_kp_flat = Vector{Float64}()
     int_t_kp_flat = Vector{Float64}()
     int_d_kp_flat = Vector{Float64}()
 
@@ -175,7 +177,7 @@ function iftt(;
     int_t_kp_tmp = Vector{Float64}()
     int_d_kp_tmp = Vector{Float64}()
 
-    key_pressed  = false  # debounce flag shared across key handlers
+    key_pressed = false  # debounce flag shared across key handlers
 
     # =========================================================================
     function _activate(app)
@@ -183,33 +185,42 @@ function iftt(;
         Gtk4.default_size(win, Int64(img_idle.width), Int64(img_idle.height) + 100)
 
         # canvas that shows the finger graphic (idle or pressed)
-        can = GtkCanvas()
+        can                = GtkCanvas()
         can.content_width  = Int64(img_idle.width)
         can.content_height = Int64(img_idle.height)
 
         g1 = GtkGrid()
         g1.column_homogeneous = true
         g1.column_spacing = 20
-        g1.row_spacing    = 20
-        g1.margin_start   = 5
-        g1.margin_end     = 5
-        g1.margin_top     = 5
-        g1.margin_bottom  = 5
+        g1.row_spacing = 20
+        g1.margin_start = 5
+        g1.margin_end = 5
+        g1.margin_top = 5
+        g1.margin_bottom = 5
 
-        bt_start      = GtkButton("START")
+        bt_start = GtkButton("START")
         bt_start.tooltip_text = "Start the test"
 
-        lb_status1    = GtkLabel("Status:");        lb_status1.halign = 2
-        lb_status2    = GtkLabel("READY TO START"); lb_status2.halign = 1
-        lb_trial1     = GtkLabel("Trial #:");       lb_trial1.halign  = 2
-        lb_trial2     = GtkLabel("-");              lb_trial2.halign  = 1
-        lb_interval1  = GtkLabel("Interval #:");    lb_interval1.halign = 2
-        lb_interval2  = GtkLabel("-");              lb_interval2.halign = 1
+        lb_status1 = GtkLabel("Status:");
+        lb_status1.halign = 2
+        lb_status2 = GtkLabel("READY TO START");
+        lb_status2.halign = 1
+        lb_trial1 = GtkLabel("Trial #:");
+        lb_trial1.halign = 2
+        lb_trial2 = GtkLabel("-");
+        lb_trial2.halign = 1
+        lb_interval1 = GtkLabel("Interval #:");
+        lb_interval1.halign = 2
+        lb_interval2 = GtkLabel("-");
+        lb_interval2.halign = 1
 
         g1[1:3, 1] = can
-        g1[1, 2]   = lb_status1;  g1[3, 2] = lb_status2
-        g1[1, 3]   = lb_trial1;   g1[3, 3] = lb_trial2
-        g1[1, 4]   = lb_interval1; g1[3, 4] = lb_interval2
+        g1[1, 2]   = lb_status1;
+        g1[3, 2]   = lb_status2
+        g1[1, 3]   = lb_trial1;
+        g1[3, 3]   = lb_trial2
+        g1[1, 4]   = lb_interval1;
+        g1[3, 4]   = lb_interval2
         g1[1:3, 5] = GtkLabel("")
         g1[1:3, 6] = bt_start
 
@@ -222,7 +233,7 @@ function iftt(;
         @guarded draw(can) do widget
             ctx = getgc(can)
             Cairo.set_source_surface(ctx, img_idle, 0, 0)
-            Cairo.paint(ctx)
+            return Cairo.paint(ctx)
         end
 
         # --- keyboard event handlers (active only during TEST / INTERVAL phases) ---
@@ -273,10 +284,10 @@ function iftt(;
                         @idle_add @guarded draw(can) do widget
                             ctx = getgc(can)
                             Cairo.set_source_surface(ctx, img_press, 0, 0)
-                            Cairo.paint(ctx)
+                            return Cairo.paint(ctx)
                         end
-                        @idle_add lb_status2.label  = "TEST"
-                        @idle_add lb_trial2.label   = strip("$idx of $trials")
+                        @idle_add lb_status2.label = "TEST"
+                        @idle_add lb_trial2.label = strip("$idx of $trials")
                         @idle_add lb_interval2.label = "-"
 
                         push!(t_trial_start, time())
@@ -293,7 +304,7 @@ function iftt(;
                             @idle_add @guarded draw(can) do widget
                                 ctx = getgc(can)
                                 Cairo.set_source_surface(ctx, img_idle, 0, 0)
-                                Cairo.paint(ctx)
+                                return Cairo.paint(ctx)
                             end
                             @idle_add lb_status2.label   = "INTERVAL"
                             @idle_add lb_trial2.label    = "-"
@@ -318,7 +329,7 @@ function iftt(;
                         @idle_add @guarded draw(can) do widget
                             ctx = getgc(can)
                             Cairo.set_source_surface(ctx, img_press, 0, 0)
-                            Cairo.paint(ctx)
+                            return Cairo.paint(ctx)
                         end
                         @idle_add lb_status2.label   = "TEST"
                         @idle_add lb_trial2.label    = strip("$idx of $trials")
@@ -353,7 +364,7 @@ function iftt(;
                             @idle_add @guarded draw(can) do widget
                                 ctx = getgc(can)
                                 Cairo.set_source_surface(ctx, img_idle, 0, 0)
-                                Cairo.paint(ctx)
+                                return Cairo.paint(ctx)
                             end
                             @idle_add lb_status2.label   = "INTERVAL"
                             @idle_add lb_interval2.label = strip("$idx of $trials")
@@ -406,22 +417,22 @@ function iftt(;
         for idx in 1:trials
             if length(t_kp[idx]) != length(d_kp[idx])
                 l = min(length(t_kp[idx]), length(d_kp[idx]))
-                t_kp[idx]  = t_kp[idx][1:l]
-                d_kp[idx]  = d_kp[idx][1:l]
+                t_kp[idx] = t_kp[idx][1:l]
+                d_kp[idx] = d_kp[idx][1:l]
                 result[idx] = l
             end
             if length(int_t_kp[idx]) != length(int_d_kp[idx])
                 l = min(length(int_t_kp[idx]), length(int_d_kp[idx]))
-                int_t_kp[idx]  = int_t_kp[idx][1:l]
-                int_d_kp[idx]  = int_d_kp[idx][1:l]
+                int_t_kp[idx] = int_t_kp[idx][1:l]
+                int_d_kp[idx] = int_d_kp[idx][1:l]
                 int_result[idx] = l
             end
 
             # convert absolute epoch times → duration since trial/interval start [ms]
-            d_kp[idx]     = round.((d_kp[idx]     .- t_kp[idx])          .* 1000; digits = 1)
-            t_kp[idx]     = round.((t_kp[idx]     .- t_trial_start[idx]) .* 1000; digits = 1)
-            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx])      .* 1000; digits = 1)
-            int_t_kp[idx] = round.((int_t_kp[idx] .- t_int_start[idx])   .* 1000; digits = 1)
+            d_kp[idx]     = round.((d_kp[idx] .- t_kp[idx]) .* 1000; digits = 1)
+            t_kp[idx]     = round.((t_kp[idx] .- t_trial_start[idx]) .* 1000; digits = 1)
+            int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000; digits = 1)
+            int_t_kp[idx] = round.((int_t_kp[idx] .- t_int_start[idx]) .* 1000; digits = 1)
         end
 
         # remove taps that slipped past the trial/interval end boundary
@@ -437,25 +448,32 @@ function iftt(;
         # ---- serial path: flat vectors need restructuring into per-trial ----
 
         # convert raw seconds → milliseconds and compute durations from press times
-        d_kp_flat     = round.((d_kp_flat     .- t_kp_flat)     .* 1000; digits = 1)
+        d_kp_flat     = round.((d_kp_flat .- t_kp_flat) .* 1000; digits = 1)
         int_d_kp_flat = round.((int_d_kp_flat .- int_t_kp_flat) .* 1000; digits = 1)
-        t_kp_flat     = round.(t_kp_flat     .* 1000; digits = 1)
+        t_kp_flat     = round.(t_kp_flat .* 1000; digits = 1)
         int_t_kp_flat = round.(int_t_kp_flat .* 1000; digits = 1)
 
         # pack flat vectors into per-trial nested vectors
-        t_keypressed, d_keypressed = _pack_taps(t_kp_flat,     d_kp_flat,     result)
-        int_t_keypressed, int_d_keypressed = _pack_taps(int_t_kp_flat, int_d_kp_flat, int_result)
+        t_keypressed, d_keypressed = _pack_taps(t_kp_flat, d_kp_flat, result)
+        int_t_keypressed, int_d_keypressed =
+            _pack_taps(int_t_kp_flat, int_d_kp_flat, int_result)
 
         _trim_taps!(t_keypressed, d_keypressed, result, Float64(duration * 1000))
-        _trim_taps!(int_t_keypressed, int_d_keypressed, int_result, Float64(interval * 1000))
+        _trim_taps!(
+            int_t_keypressed,
+            int_d_keypressed,
+            int_result,
+            Float64(interval * 1000),
+        )
 
         # remove any duplicate time points introduced by serial-port bounce
         _dedup_taps!(t_keypressed, d_keypressed, result)
         _dedup_taps!(int_t_keypressed, int_d_keypressed, int_result)
 
         return (
-            taps     = result,     tap_t     = t_keypressed,     tap_d     = d_keypressed,
-            taps_int = int_result, tap_t_int = int_t_keypressed, tap_d_int = int_d_keypressed,
+            taps      = result, tap_t     = t_keypressed, tap_d     = d_keypressed,
+            taps_int  = int_result, tap_t_int = int_t_keypressed,
+            tap_d_int = int_d_keypressed,
         )
     end
 end
@@ -533,7 +551,9 @@ function ftt(;
         # serial port mode
         sp = _serial_open(port_name)
         if sp === nothing
-            _info("Serial port $port_name is not available - keyboard SPACEBAR will be used")
+            _info(
+                "Serial port $port_name is not available - keyboard SPACEBAR will be used",
+            )
             port_name = ""
         else
             _serial_close(sp)
@@ -597,10 +617,10 @@ function ftt(;
     result     = zeros(Int64, trials)
     int_result = zeros(Int64, trials)
 
-    t_kp      = Vector{Float64}()
-    d_kp      = Vector{Float64}()
-    int_t_kp  = Vector{Float64}()
-    int_d_kp  = Vector{Float64}()
+    t_kp     = Vector{Float64}()
+    d_kp     = Vector{Float64}()
+    int_t_kp = Vector{Float64}()
+    int_d_kp = Vector{Float64}()
 
     key_pressed = false
 
@@ -703,19 +723,24 @@ function ftt(;
                 t = time() - t_trial
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1" && !key_pressed
-                    push!(t_kp, t);  result[idx] += 1;  key_pressed = true
+                    push!(t_kp, t);
+                    result[idx] += 1;
+                    key_pressed = true
                 elseif serial_key == "$gpio:0" && key_pressed
-                    push!(d_kp, t);  key_pressed = false
+                    push!(d_kp, t);
+                    key_pressed = false
                 end
                 sleep(0.1)
             end
             _serial_close(sp)
             _beep()
             if length(d_kp) < sum(result)
-                pop!(t_kp);  result[idx] -= 1
+                pop!(t_kp);
+                result[idx] -= 1
             end
 
-            println(); println()
+            println();
+            println()
             print("Interval $idx: DO NOT press the BUTTON")
 
             key_pressed = false
@@ -725,15 +750,19 @@ function ftt(;
                 t = time() - t_int
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1" && !key_pressed
-                    push!(int_t_kp, t);  int_result[idx] += 1;  key_pressed = true
+                    push!(int_t_kp, t);
+                    int_result[idx] += 1;
+                    key_pressed = true
                 elseif serial_key == "$gpio:0" && key_pressed
-                    push!(int_d_kp, t);  key_pressed = false
+                    push!(int_d_kp, t);
+                    key_pressed = false
                 end
                 sleep(0.1)
             end
             _serial_close(sp)
             if length(int_d_kp) < sum(int_result)
-                pop!(int_t_kp);  int_result[idx] -= 1
+                pop!(int_t_kp);
+                int_result[idx] -= 1
             end
             println()
         end
@@ -761,7 +790,8 @@ function ftt(;
                 if (time() * 1000 - last_debounce_ms) > debounce_ms && rpi_key != key_state
                     key_state = rpi_key
                     if key_state == 1
-                        push!(t_kp, t);  result[idx] += 1
+                        push!(t_kp, t);
+                        result[idx] += 1
                     else
                         push!(d_kp, t)
                     end
@@ -772,10 +802,12 @@ function ftt(;
 
             _beep()
             if length(d_kp) < sum(result)
-                pop!(t_kp);  result[idx] -= 1
+                pop!(t_kp);
+                result[idx] -= 1
             end
 
-            println(); println()
+            println();
+            println()
             print("Interval $idx: DO NOT press the BUTTON")
 
             key_state        = 0
@@ -790,7 +822,8 @@ function ftt(;
                     t = time() - t_int
                     key_state = rpi_key
                     if key_state == 1
-                        push!(int_t_kp, t);  int_result[idx] += 1
+                        push!(int_t_kp, t);
+                        int_result[idx] += 1
                     else
                         push!(int_d_kp, t)
                     end
@@ -800,7 +833,8 @@ function ftt(;
             end
 
             if length(int_d_kp) < sum(int_result)
-                pop!(int_t_kp);  int_result[idx] -= 1
+                pop!(int_t_kp);
+                int_result[idx] -= 1
             end
             println()
         end
@@ -816,9 +850,9 @@ function ftt(;
     # convert raw seconds → ms and compute durations (RPi / serial paths only;
     # keyboard path already stores ms and fixed 100 ms durations)
     if rpi isa PiGPIO.Pi || !isnothing(sp)
-        d_kp     = round.((d_kp     .- t_kp)     .* 1000; digits = 1)
+        d_kp     = round.((d_kp .- t_kp) .* 1000; digits = 1)
         int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits = 1)
-        t_kp     = round.(t_kp     .* 1000; digits = 1)
+        t_kp     = round.(t_kp .* 1000; digits = 1)
         int_t_kp = round.(int_t_kp .* 1000; digits = 1)
     end
 
@@ -839,7 +873,7 @@ function ftt(;
         end
     end
 
-    _trim_taps!(t_keypressed,     d_keypressed,     result,     Float64(duration * 1000))
+    _trim_taps!(t_keypressed, d_keypressed, result, Float64(duration * 1000))
     _trim_taps!(int_t_keypressed, int_d_keypressed, int_result, Float64(interval * 1000))
 
     # Remove duplicate time points (can arise from serial bounce)

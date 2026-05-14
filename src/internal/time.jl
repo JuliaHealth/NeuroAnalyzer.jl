@@ -27,9 +27,9 @@ function _get_t(obj::NeuroAnalyzer.NEURO)::Tuple{Vector{Float64}, Vector{Float64
     # per-epoch timeline, optionally shifted by the stored epoch-start offset
     t_offset   = isempty(obj.epoch_time) ? 0.0 : obj.epoch_time[1]
     epoch_time = round.(
-        collect(range(t_offset; step = 1.0 / fs, length = n_smps));
-        digits = 4,
-    )
+    collect(range(t_offset; step = 1.0 / fs, length = n_smps));
+    digits = 4
+)
 
     return time_pts, epoch_time
 end
@@ -105,12 +105,12 @@ function _s2epoch(
     from::Int64,
     to::Int64,
 )::Union{Int64, AbstractUnitRange{Int64}}
-    from >=0 || throw(ArgumentError("from must be ≥ 0."))
+    from >= 0 || throw(ArgumentError("from must be ≥ 0."))
     to <= size(obj, 2) || throw(ArgumentError("to must be ≤ $(size(obj, 2))."))
     el = epoch_len(obj)
 
     ep_first = floor(Int64, from / el)
-    ep_last  = ceil(Int64,  to   / el)
+    ep_last  = ceil(Int64, to / el)
 
     # if `from` is strictly inside an epoch (not on a boundary), the bounding
     # epoch starts one step later — the partial epoch is excluded
@@ -139,6 +139,6 @@ This is the inverse of `_s2epoch`.
 function _epoch2s(obj::NeuroAnalyzer.NEURO, ep::Int64)::Tuple{Int64, Int64}
     el = epoch_len(obj)
     t1 = (ep - 1) * el + 1    # first sample of this epoch (1-based)
-    t2 =  ep      * el        # last  sample of this epoch (1-based)
+    t2 = ep * el        # last  sample of this epoch (1-based)
     return t1, t2
 end

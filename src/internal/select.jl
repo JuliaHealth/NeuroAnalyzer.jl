@@ -33,9 +33,9 @@ The effective default is derived from `default`:
 - Out-of-range indices in a vector input are **not** validated; that is the caller's responsibility.
 """
 function _select_indices(
-    input   ::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
-    n_total ::Int64,
-    default ::Int64 = 0,
+    input::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+    n_total::Int64,
+    default::Int64 = 0,
 )::Union{Int64, Vector{Int64}}
 
     # resolve the effective upper bound for "select all" expansion
@@ -67,13 +67,13 @@ Resolve a channel selection for `obj`.
 - `Union{Int64, Vector{Int64}}`: channel index/indices
 """
 function _select_channels(
-    obj     ::NeuroAnalyzer.NEURO,
-    channel ::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
-    def_chn ::Int64 = 0,
+    obj::NeuroAnalyzer.NEURO,
+    channel::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+    def_chn::Int64 = 0,
 )::Union{Int64, Vector{Int64}}
     return _select_indices(channel, nchannels(obj), def_chn)
 end
- 
+
 """
     _select_epochs(obj, input, n_total, def_ep)
 
@@ -86,10 +86,9 @@ Resolve an epoch selection for `obj`.
 - `Union{Int64, Vector{Int64}}`: epoch index/indices
 """
 function _select_epochs(
-    obj    ::NeuroAnalyzer.NEURO,
-    epoch  ::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
-    def_ep ::Int64 = 0,
+    obj::NeuroAnalyzer.NEURO,
+    epoch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+    def_ep::Int64 = 0,
 )::Union{Int64, Vector{Int64}}
     return _select_indices(epoch, nepochs(obj), def_ep)
 end
- 

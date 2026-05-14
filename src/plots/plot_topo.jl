@@ -461,7 +461,7 @@ function plot_topo(
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
     electrodes::Bool = true,
-    ch_labels::Bool=true,
+    ch_labels::Bool = true,
     ps::Symbol = :l,
     head::Bool = true,
     cart::Bool = false,

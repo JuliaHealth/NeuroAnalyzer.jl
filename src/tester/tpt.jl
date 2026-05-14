@@ -14,7 +14,8 @@ const _TPT_N_CAPTURES  = 7      # expected capture groups in the serial data reg
 # Expected serial line format from the Arduino firmware:
 #   "tpt: X Y Z AX AY AZ"
 # where X/Y/Z are raw orientation ints and AX/AY/AZ are computed acceleration floats.
-const _TPT_SERIAL_REGEX = r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)"
+const _TPT_SERIAL_REGEX =
+    r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)"
 
 """
     _parse_tpt_sample(line) -> NamedTuple | nothing
@@ -134,20 +135,22 @@ function itpt(;
         win = GtkApplicationWindow(app, "NeuroAnalyzer: itpt()")
         Gtk4.default_size(win, Int64(img_idle.width), Int64(img_idle.height) + 100)
 
-        can = GtkCanvas()
+        can                = GtkCanvas()
         can.content_width  = Int64(img_idle.width)
         can.content_height = Int64(img_idle.height)
 
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
-        g.row_spacing    = 5
+        g.row_spacing = 5
 
         bt_record = GtkButton("RECORD")
         bt_record.tooltip_text = "Start recording"
 
-        lb_status1 = GtkLabel("Status:"); lb_status1.halign = 2
-        lb_status2 = GtkLabel("READY TO START"); lb_status2.halign = 1
+        lb_status1 = GtkLabel("Status:");
+        lb_status1.halign = 2
+        lb_status2 = GtkLabel("READY TO START");
+        lb_status2.halign = 1
 
         g[1:2, 1] = can
         g[1:2, 2] = bt_record
@@ -163,7 +166,7 @@ function itpt(;
         @guarded draw(can) do widget
             ctx = getgc(can)
             Cairo.set_source_surface(ctx, img_idle, 0, 0)
-            Cairo.paint(ctx)
+            return Cairo.paint(ctx)
         end
 
         # --- RECORD button ---
@@ -180,7 +183,7 @@ function itpt(;
                     @idle_add @guarded draw(can) do widget
                         ctx = getgc(can)
                         Cairo.set_source_surface(ctx, img_pinch, 0, 0)
-                        Cairo.paint(ctx)
+                        return Cairo.paint(ctx)
                     end
                     @idle_add lb_status2.label = "RECORDING"
 
@@ -197,7 +200,7 @@ function itpt(;
                                 tpt_ch_accx[idx] = sample.accx
                                 tpt_ch_accy[idx] = sample.accy
                                 tpt_ch_accz[idx] = sample.accz
-                                idx += 1
+                                idx              += 1
                             end
                         end
                     end
@@ -208,7 +211,7 @@ function itpt(;
                     @idle_add @guarded draw(can) do widget
                         ctx = getgc(can)
                         Cairo.set_source_surface(ctx, img_idle, 0, 0)
-                        Cairo.paint(ctx)
+                        return Cairo.paint(ctx)
                     end
                     sleep(2)
                     @idle_add close(win)
@@ -226,7 +229,14 @@ function itpt(;
     Gtk4.GLib.stop_main_loop()
     Gtk4.run(app)
 
-    return _build_tpt_object(tpt_ch_x, tpt_ch_y, tpt_ch_z, tpt_ch_accx, tpt_ch_accy, tpt_ch_accz)
+    return _build_tpt_object(
+        tpt_ch_x,
+        tpt_ch_y,
+        tpt_ch_z,
+        tpt_ch_accx,
+        tpt_ch_accy,
+        tpt_ch_accz,
+    )
 end
 
 """
@@ -308,15 +318,23 @@ function tpt(;
                 tpt_ch_accx[idx] = sample.accx
                 tpt_ch_accy[idx] = sample.accy
                 tpt_ch_accz[idx] = sample.accz
-                idx += 1
+                idx              += 1
             end
         end
     end
 
     _serial_close(sp)
     _beep()
-    println(); println()
+    println();
+    println()
     println("Testing completed")
 
-    return _build_tpt_object(tpt_ch_x, tpt_ch_y, tpt_ch_z, tpt_ch_accx, tpt_ch_accy, tpt_ch_accz)
+    return _build_tpt_object(
+        tpt_ch_x,
+        tpt_ch_y,
+        tpt_ch_z,
+        tpt_ch_accx,
+        tpt_ch_accy,
+        tpt_ch_accz,
+    )
 end

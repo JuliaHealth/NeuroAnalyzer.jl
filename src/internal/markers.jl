@@ -136,9 +136,9 @@ function _a2df(annotations::Vector{String})::DataFrame
 
         if length(s) % 3 == 0
             for idx in 1:3:(length(s) - 2)
-                push!(a_start,  parse(Float64, strip(s[idx])))
+                push!(a_start, parse(Float64, strip(s[idx])))
                 push!(a_length, parse(Float64, strip(s[idx + 1])))
-                push!(a_event,  strip(s[idx + 2]))
+                push!(a_event, strip(s[idx + 2]))
             end
         else
 
@@ -146,9 +146,9 @@ function _a2df(annotations::Vector{String})::DataFrame
 
             _offset = parse(Float64, strip(s[1]))
             for idx in 2:3:(length(s) - 1)
-                push!(a_start,  parse(Float64, strip(s[idx])))
+                push!(a_start, parse(Float64, strip(s[idx])))
                 push!(a_length, parse(Float64, strip(s[idx + 1])))
-                push!(a_event,  strip(s[idx + 2]))
+                push!(a_event, strip(s[idx + 2]))
             end
         end
 
@@ -159,13 +159,13 @@ function _a2df(annotations::Vector{String})::DataFrame
             length(s) >= 2 && s[1][1] == '+' && s[2][1] == '+' && (s = s[2:end])
 
             if length(s) == 3
-                push!(a_start,  parse(Float64, strip(s[1])))
+                push!(a_start, parse(Float64, strip(s[1])))
                 push!(a_length, parse(Float64, strip(s[2])))
-                push!(a_event,  strip(s[3]))
+                push!(a_event, strip(s[3]))
             elseif length(s) == 2
-                push!(a_start,  parse(Float64, strip(s[1])))
+                push!(a_start, parse(Float64, strip(s[1])))
                 push!(a_length, 0.0)
-                push!(a_event,  strip(s[2]))
+                push!(a_event, strip(s[2]))
             end
         end
     end

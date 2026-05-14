@@ -5,7 +5,11 @@ function _reflect(s::AbstractVector)::AbstractVector
 end
 
 """Reflect the signal: s2(reversed):s1:s3(reversed)."""
-function _reflect(s1::AbstractVector, s2::AbstractVector, s3::AbstractVector)::AbstractVector
+function _reflect(
+    s1::AbstractVector,
+    s2::AbstractVector,
+    s3::AbstractVector,
+)::AbstractVector
     isempty(s1) && throw(ArgumentError("s1 cannot be empty."))
     isempty(s2) && throw(ArgumentError("s2 cannot be empty."))
     isempty(s3) && throw(ArgumentError("s3 cannot be empty."))

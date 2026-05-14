@@ -12,7 +12,7 @@ Draw fiducial point labels (NAS, IN, LPA, RPA) onto a 2-D axis.
 function _draw_head_labels!(
     ax::GLMakie.Axis;
     plane::Symbol = :xy,
-    font_size::Int64 = 8
+    font_size::Int64 = 8,
 )::Nothing
     _check_var(plane, [:xy, :xz, :yz], "plane")
     fid_names = ["NAS", "IN", "LPA", "RPA"]
@@ -51,11 +51,11 @@ The head is assumed to have unit radius centered at the origin.
 function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64 = 1)
     # nose
     GLMakie.lines!(ax, [-0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax, [0.2,  0.0], [0.98, 1.08]; linewidth = lw, color = :black)
+    GLMakie.lines!(ax, [0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
 
     # left ear
-    left_ear_x  = [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
-    left_ear_y  = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
+    left_ear_x = [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
+    left_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
     GLMakie.lines!(ax, left_ear_x, left_ear_y; linewidth = lw, color = :black)
 
     # right ear
@@ -89,7 +89,7 @@ function _ylims(s::Union{AbstractVector, AbstractMatrix})::Tuple{Real, Real}
 
     n = peak > 100 ? 2 : peak >= 10 ? 1 : 0
 
-    hi = ceil(Int64,  round(maximum(s); digits = n))
+    hi = ceil(Int64, round(maximum(s); digits = n))
     lo = floor(Int64, round(minimum(s); digits = n))
 
     # all-zero signal: provide a unit range
@@ -116,8 +116,8 @@ The step size is chosen based on the total range:
 - > 50: step 10
 """
 function _ticks(t::Union{AbstractVector, AbstractRange, Tuple{Real, Real}})::AbstractVector
-    t1  = t isa Tuple ? t[1] : t[1]
-    t2  = t isa Tuple ? t[2] : t[end]
+    t1 = t isa Tuple ? t[1] : t[1]
+    t2 = t isa Tuple ? t[2] : t[end]
     rng = t2 - t1
     step = rng > 50 ? 10 : rng > 20 ? 5 : rng > 10 ? 2 : 1
     return collect(t1:step:t2)
@@ -130,7 +130,9 @@ Return a tick vector suitable for ERP plots: 3 ticks from `floor(t[1])` to 0, th
 
 Accepts either a vector/range or a `Tuple{Real, Real}`.
 """
-function _erpticks(t::Union{AbstractVector, AbstractRange, Tuple{Real, Real}})::AbstractVector
+function _erpticks(
+    t::Union{AbstractVector, AbstractRange, Tuple{Real, Real}},
+)::AbstractVector
     t1 = t isa Tuple ? t[1] : t[1]
     t2 = t isa Tuple ? t[2] : t[end]
     return vcat(
@@ -150,7 +152,7 @@ Replace any `"default"` placeholder in `xl`, `yl`, `tt` with the corresponding f
 """
 function _set_defaults(
     xl::String, yl::String, tt::String,
-    x::String,  y::String,  t::String,
+    x::String, y::String, t::String,
 )::Tuple{String, String, String}
     xl == "default" && (xl = x)
     yl == "default" && (yl = y)

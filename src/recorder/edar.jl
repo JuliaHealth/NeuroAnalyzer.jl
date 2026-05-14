@@ -47,7 +47,7 @@ function iedar(;
         win = GtkApplicationWindow(app, "NeuroRecorder: iedar()")
         Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 40)
 
-        can              = GtkCanvas()
+        can                = GtkCanvas()
         can.content_width  = p.attr[:size][1]
         can.content_height = p.attr[:size][2]
 
@@ -72,7 +72,7 @@ function iedar(;
         g[1:2, 2] = bt_record
         g[1, 3]   = lb_status1
         g[2, 3]   = lb_status2
-        vbox = GtkBox(:v)
+        vbox      = GtkBox(:v)
         push!(vbox, g)
         push!(win, vbox)
         Gtk4.show(win)
@@ -95,15 +95,15 @@ function iedar(;
                 xtickfontsize  = 8,
                 ytickfontsize  = 8,
             )
-            io  = IOBuffer()
+            io = IOBuffer()
             ctx = getgc(can)
             withenv("GKSwstype" => "100") do
-                png(p_draw, io)
+                return png(p_draw, io)
             end
             seek(io, 0)
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
-            Cairo.paint(ctx)
+            return Cairo.paint(ctx)
         end
 
         return @guarded signal_connect(bt_record, "clicked") do widget
