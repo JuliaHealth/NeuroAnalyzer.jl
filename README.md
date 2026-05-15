@@ -53,7 +53,7 @@ See [Requirements](https://neuroanalyzer.org/requirements.html) for more details
 
 ## What's next
 
-This [roadmap](neuroanalyzer.org/roadmap.html) gives an overview of where NeuroAnalyzer is headed. It is not exhaustive, and the order of items does not reflect implementation priority.
+This [roadmap](https://neuroanalyzer.org/roadmap.html) gives an overview of where NeuroAnalyzer is headed. It is not exhaustive, and the order of items does not reflect implementation priority.
 
 You are encouraged to add new functions required for your study. You may also submit a feature request using Codeberg [NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) repository page.
 
