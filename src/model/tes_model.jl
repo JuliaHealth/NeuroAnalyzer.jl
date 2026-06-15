@@ -63,6 +63,7 @@ function tes_model(
         r[idx, 1] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), anode_pos)
         r[idx, 2] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), cathode_pos)
     end
+
     # replace distance for anode and cathode with 1 (should be 0, but it would result in division by 0 error)
     r[anode_ch, :] = [1, 1]
     r[cathode_ch, :] = [1, 1]

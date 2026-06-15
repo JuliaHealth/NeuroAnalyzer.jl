@@ -53,8 +53,6 @@ function _select_indices(
     return result
 end
 
-# ─────────────────────────────────────────────────────────────────────────────
-
 """
     _select_channels(obj, input, n_total, def_chn)
 

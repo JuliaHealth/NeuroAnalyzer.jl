@@ -52,6 +52,7 @@ end
     _check_dialout()
 
 On Unix systems, verify that the current user belongs to the `dialout` group.
+
 Throws `ArgumentError` if not. No-op on non-Unix platforms.
 """
 function _check_dialout()::Nothing
