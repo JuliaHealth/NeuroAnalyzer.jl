@@ -94,7 +94,7 @@ Convenience wrapper that reads the sampling rate from `obj`.
 - `Tuple{Int64, Int64}`: `(lower_order, upper_order)` recommended filter order range
 """
 function fir_order_f(obj::NeuroAnalyzer.NEURO; f::Real)::Tuple{Int64, Int64}
-    return fir_order_f(; f = f, fs = sr(obj))
+    return fir_order_f(; fs = sr(obj), f = f)
 end
 
 """
