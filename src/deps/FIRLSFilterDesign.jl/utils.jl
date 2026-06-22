@@ -53,7 +53,7 @@ function to_hankel(
 end
 
 function nan2zero!(x::Array{T}) where {T}
-    for idx in 1:length(x)
+    for idx in eachindex(x)
         if isnan(x[idx])
             x[idx] = zero(T)
         end

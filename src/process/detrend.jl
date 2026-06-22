@@ -37,12 +37,10 @@ function detrend(
     order >= 1 || throw(ArgumentError("order must be ≥ 1."))
 
     if type === :loess
-        t = collect(1.0:length(s))
         model = Loess.loess(t, Vector{Float64}(s); span = f)
         return s .- Loess.predict(model, t)
 
     elseif type === :poly
-        t = collect(1:length(s))
         p = Polynomials.fit(t, s, order)
         trend = [p(ti) for ti in t]
         return s .- trend
@@ -66,9 +64,8 @@ function detrend(
         return s .- A * (Rinv * (A' * s))
 
     elseif type === :linear
-
-        # Least-squares linear fit using the backslash operator
-        t = collect(1.0:length(s))
+        # least-squares linear fit using the backslash operator
+        t = 1.0:length(s)
         A = hcat(t, ones(length(s)))
         coef = A \ s
         trend = A * coef

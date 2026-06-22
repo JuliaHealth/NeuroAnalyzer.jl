@@ -91,7 +91,7 @@ function iview_ica(
         push!(ica_set, cx_tmp)
     end
     ica_can_set = Vector{Gtk4.GtkCanvas}()
-    for idx in 1:length(ic_idx)
+    for idx in eachindex(ic_idx)
         push!(ica_can_set, GtkCanvas(Int64(ica_set[1].width), Int64(ica_set[1].height)))
     end
     for idx in ic_idx
