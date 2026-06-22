@@ -276,7 +276,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     )
 
     # ------------------------------------------------------------------ #
-    # assemble NEURO object                                               #
+    # assemble NEURO object                                              #
     # ------------------------------------------------------------------ #
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
