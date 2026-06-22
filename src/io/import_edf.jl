@@ -117,7 +117,6 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         else
             sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
         end
-        # FIX: `markers_channel` was computed but never used - removed
 
         # ------------------------------------------------------------ #
         # determine sampling rate(s)                                   #

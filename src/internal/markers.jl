@@ -155,14 +155,20 @@ function _a2df(annotations::Vector{String})::DataFrame
     else
         for idx in eachindex(mrk)
             s = split(mrk[idx], "|")
+            # drop empty tokens
+            for s_idx in reverse(eachindex(s))
+                s[s_idx] == "" && deleteat!(s, s_idx)
+            end
             # drop leading annotation-number column when both first two tokens start with '+'
             length(s) >= 2 && s[1][1] == '+' && s[2][1] == '+' && (s = s[2:end])
 
             if length(s) == 3
+                # markers with 2 tokens must have start, length and name
                 push!(a_start, parse(Float64, strip(s[1])))
                 push!(a_length, parse(Float64, strip(s[2])))
                 push!(a_event, strip(s[3]))
             elseif length(s) == 2
+                # markers with 2 tokens only have start and name
                 push!(a_start, parse(Float64, strip(s[1])))
                 push!(a_length, 0.0)
                 push!(a_event, strip(s[2]))
