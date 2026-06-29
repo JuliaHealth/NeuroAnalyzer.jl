@@ -108,6 +108,7 @@ using Cairo
 using ColorSchemes
 using ComplexityMeasures
 using ContinuousWavelets
+using CovarianceEstimation
 using Crayons.Box
 using Dates
 using Deconvolution
@@ -545,6 +546,7 @@ include("analyze/psd.jl")
 include("analyze/psd_rel.jl")
 include("analyze/psd_slope.jl")
 include("analyze/rms.jl")
+include("analyze/scovm.jl")
 include("analyze/sef.jl")
 include("analyze/segments.jl")
 include("analyze/snr.jl")
