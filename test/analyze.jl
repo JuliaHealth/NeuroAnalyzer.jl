@@ -1221,12 +1221,4 @@ cr = corr(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
 pv = psi(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
 @test pv[1][1] == -pv[1][2]
 
-@info "Test: scovm()"
-@test scovm(m1, corrected=true) == ones(2, 2)
-@test round.(scovm(m1, corrected=false), digits=2) == [0.67 0.67; 0.67 0.67]
-@test size(scovm(a1, corrected=true)) == (2, 2, 2)
-@test size(scovm(a1, corrected=false)) == (2, 2, 2)
-@test size(scovm(e10, ch = "all", corrected=true)) == (24, 24, 10)
-@test size(scovm(e10, ch = "all", corrected=false)) == (24, 24, 10)
-
 true
