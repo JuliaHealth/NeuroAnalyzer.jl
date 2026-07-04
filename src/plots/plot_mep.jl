@@ -390,13 +390,13 @@ function plot_mep(
                 color      = mono ? :black : :blue,
                 markersize = 15,
             )
-            _info("Positive peak time: $(round(t[pp[ch, 1]][1] * 1000; digits=0)) ms")
+            _info("Positive peak time: $(round(t[pp[ch, 1]][1] * 1000; digits = 0)) ms")
             _info(
-                "Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1]; digits=2)) $units",
+                "Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1]; digits = 2)) $units",
             )
-            _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000; digits=0)) ms")
+            _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000; digits = 0)) ms")
             _info(
-                "Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1]; digits=2)) $units",
+                "Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1]; digits = 2)) $units",
             )
 
         elseif length(ch) > 1 && type === :normal
@@ -416,10 +416,10 @@ function plot_mep(
                 color      = mono ? :black : :blue,
                 markersize = 15,
             )
-            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000; digits=0)) ms")
-            _info("Positive peak amplitude: $(round(mep_tmp[pp[1, 1]]; digits=2)) $units")
-            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000; digits=0)) ms")
-            _info("Negative peak amplitude: $(round(mep_tmp[pp[1, 2]]; digits=2)) $units")
+            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000; digits = 0)) ms")
+            _info("Positive peak amplitude: $(round(mep_tmp[pp[1, 1]]; digits = 2)) $units")
+            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000; digits = 0)) ms")
+            _info("Negative peak amplitude: $(round(mep_tmp[pp[1, 2]]; digits = 2)) $units")
         end
     end
 
