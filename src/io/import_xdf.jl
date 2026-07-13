@@ -93,7 +93,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
                 Dict(
                     :id => string.(data[idx][:, data_idx]),
                     :start => (time[idx] .- time[idx][1]),
-                    :length => ones(length(time[idx])),
+                    :length => zeros(length(time[idx])),
                     :value => repeat(["marker"], length(time[idx])),
                     :channel => zeros(Int64, length(time[idx])),
                 ),

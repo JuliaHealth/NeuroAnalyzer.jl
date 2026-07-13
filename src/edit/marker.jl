@@ -357,13 +357,13 @@ function channel2marker(
 
     length(ev_start) == length(ev_end) || throw(
         ArgumentError(
-            "Mismatched event start/end edges in channel $(labels(obj)[ch_idx]).",
+            "Mismatched event start/end edges in channel $(labels(obj)[ch]).",
         ),
     )
 
     ev_len = ev_end .- ev_start
 
-    ch_label = labels(obj)[ch_idx]
+    ch_label = labels(obj)[ch]
     ev_desc = fill(value == "" ? ch_label : value, length(ev_start))
     id_prefix = id == "" ? ch_label * "_" : id
     ev_id = ["$id_prefix$i" for i in eachindex(ev_start)]

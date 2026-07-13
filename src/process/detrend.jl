@@ -36,6 +36,9 @@ function detrend(
     f > 0 || throw(ArgumentError("f must be > 0."))
     order >= 1 || throw(ArgumentError("order must be ≥ 1."))
 
+    # synthetic time points
+    t = 1.0:length(s)
+
     if type === :loess
         model = Loess.loess(t, Vector{Float64}(s); span = f)
         return s .- Loess.predict(model, t)
@@ -65,7 +68,6 @@ function detrend(
 
     elseif type === :linear
         # least-squares linear fit using the backslash operator
-        t = 1.0:length(s)
         A = hcat(t, ones(length(s)))
         coef = A \ s
         trend = A * coef

@@ -26,7 +26,8 @@ function cwtfrq(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     _log_off()
-    f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs); digits = 2)
+    Ŵ, ω = computeWavelets(length(s), wt)
+    f = round.(getMeanFreq(Ŵ, fs); digits = 2)
     _log_on()
 
     # lowest scale returns a non-physical frequency; replace with DC (0 Hz)

@@ -277,7 +277,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         DataFrame(
             :id => stim_id,
             :start => stim_onset,
-            :length => repeat([1], length(stim_id)),
+            :length => repeat([0], length(stim_id)),
             :value => repeat(["stim"], length(stim_id)),
             :channel => zeros(Int64, length(stim_id)),
         )
@@ -303,7 +303,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     clabels = repeat([""], ch_n)
     [
-        clabels[idx] in
+        clabels[idx] =
         src_labels[opt_pairs[idx, :][1]] *
         "_" *
         det_labels[opt_pairs[idx, :][2]] *
