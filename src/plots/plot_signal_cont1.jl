@@ -77,6 +77,8 @@ function plot_cont(
         _check_segment(obj, seg)
     end
 
+    # store original list of channels
+    ch_tmp = ch
     # check channels and meta data
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -526,7 +528,7 @@ function plot_cont(
                             close(screen)
                             NeuroAnalyzer.plot(
                                 obj;
-                                ch         = ch,
+                                ch         = ch_tmp,
                                 seg        = (ax1.limits[][1][1], ax1.limits[][1][1] + seg_len),
                                 xlabel     = xlabel,
                                 ylabel     = ylabel,
