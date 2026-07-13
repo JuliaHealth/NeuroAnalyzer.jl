@@ -11,7 +11,7 @@ VERSION >= v"1.11.0" ||
 
 # set constants
 
-const VER = v"0.26.4"
+const VER = v"0.26.7"
 # false for the stable branch, true for the devel branch
 const allow_wip = occursin("dev", string(VER))
 const data_types = [
