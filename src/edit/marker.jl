@@ -127,7 +127,7 @@ Append a new marker.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `id::String`: marker ID
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
-- `len::Real=1.0`: marker duration in seconds (must be > 0)
+- `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
 - `ch::Int64=0`: channel number; `0` means the marker applies to all channels
 
@@ -139,15 +139,15 @@ function add_marker(
     obj::NeuroAnalyzer.NEURO;
     id::String,
     start::Real,
-    len::Real = 1.0,
+    len::Real = 0.0,
     value::String,
     ch::Int64 = 0,
 )::NeuroAnalyzer.NEURO
     # validate
     start >= 0 || throw(ArgumentError("start must be ≥ 0."))
-    len > 0 || throw(ArgumentError("len must be > 0."))
-    start < obj.time_pts[end] ||
-        throw(ArgumentError("start must be < $(obj.time_pts[end])."))
+    len >= 0 || throw(ArgumentError("len must be ≥ 0."))
+    start <= obj.time_pts[end] ||
+        throw(ArgumentError("start must be ≤ $(obj.time_pts[end])."))
     start + len <= obj.time_pts[end] ||
         throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
 
@@ -183,7 +183,7 @@ Add a marker in-place.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `id::String`: marker ID
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
-- `len::Real=1.0`: marker duration in seconds (must be > 0)
+- `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
 - `ch::Int64=0`: channel number; `0` means the marker applies to all channels
 
@@ -195,7 +195,7 @@ function add_marker!(
     obj::NeuroAnalyzer.NEURO;
     id::String,
     start::Real,
-    len::Real = 1.0,
+    len::Real = 0.0,
     value::String,
     ch::Int64 = 0,
 )::Nothing
@@ -217,7 +217,7 @@ Edit a marker.
 - `n::Int64`: marker number to edit
 - `id::String`: marker ID
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
-- `len::Real=1.0`: marker duration in seconds (must be > 0)
+- `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
 - `ch::Int64=0`: channel number; `0` means the marker applies to all channels
 
@@ -230,13 +230,13 @@ function edit_marker(
     n::Int64,
     id::String,
     start::Real,
-    len::Real = 1.0,
+    len::Real = 0.0,
     value::String,
     ch::Int64 = 0,
 )::NeuroAnalyzer.NEURO
     _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
-    start > 0 || throw(ArgumentError("start must be > 0."))
-    len > 0 || throw(ArgumentError("len must be > 0."))
+    start >= 0 || throw(ArgumentError("start must be > 0."))
+    len >= 0 || throw(ArgumentError("len must be ≥ 0."))
     start < signal_len(obj) / sr(obj) ||
         throw(ArgumentError("start must be < $(signal_len(obj) / sr(obj))."))
     start + len <= signal_len(obj) / sr(obj) ||
@@ -271,7 +271,7 @@ Edit a marker in-place.
 - `n::Int64`: marker number to edit
 - `id::String`: marker ID
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
-- `len::Real=1.0`: marker duration in seconds (must be > 0)
+- `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
 - `ch::Int64=0`: channel number; `0` means the marker applies to all channels
 
@@ -284,7 +284,7 @@ function edit_marker!(
     n::Int64,
     id::String,
     start::Real,
-    len::Real = 1.0,
+    len::Real = 0.0,
     value::String,
     ch::Int64 = 0,
 )::Nothing

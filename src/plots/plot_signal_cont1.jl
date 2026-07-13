@@ -526,10 +526,14 @@ function plot_cont(
                             trim!(obj; seg = (marker_range[][1], marker_range[][2]))
                             screen = display(fig)
                             close(screen)
+                            new_seg = (ax1.limits[][1][1], ax1.limits[][1][1] + seg_len)
+                            if new_seg[2] > obj.time_pts[end]
+                                new_seg = (obj.time_pts[end] - seg_len, obj.time_pts[end])
+                            end
                             NeuroAnalyzer.plot(
                                 obj;
                                 ch         = ch_tmp,
-                                seg        = (ax1.limits[][1][1], ax1.limits[][1][1] + seg_len),
+                                seg        = new_seg,
                                 xlabel     = xlabel,
                                 ylabel     = ylabel,
                                 title      = title,
