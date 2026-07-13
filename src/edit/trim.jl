@@ -120,7 +120,7 @@ function trim(
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("trim() must be applied to continuous object."))
-    _check_segment(obj, seg)
+    NeuroAnalyzer._check_segment(obj, seg)
 
     s_idx = vsearch(seg[1], obj.time_pts)
     seg_tpos = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
@@ -150,10 +150,18 @@ function trim(
     end
 
     if !keep
-        add_marker!(
-            obj_new; id = "NA", start = obj_new.time_pts[s_idx], value = "DELETED",
-        )
-        obj_new.markers = unique(obj_new.markers)
+        if s_idx <= length(obj_new.time_pts)
+            add_marker!(
+                obj_new; id = "NA", start = obj_new.time_pts[s_idx], len = 0.0, value = "DELETED",
+            )
+            obj_new.markers = unique(obj_new.markers)
+        else
+            # if the terminal part is removed the marker is placed on the time point
+            add_marker!(
+                obj_new; id = "NA", start = obj_new.time_pts[s_idx - 1], len = 0.0, value = "DELETED",
+            )
+            obj_new.markers = unique(obj_new.markers)
+        end
     end
 
     push!(obj_new.history, "trim(obj, seg=$seg, keep=$keep")
