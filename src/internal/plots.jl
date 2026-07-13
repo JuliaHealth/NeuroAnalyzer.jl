@@ -54,7 +54,8 @@ function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64 = 1)
     GLMakie.lines!(ax, [0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
 
     # left ear
-    left_ear_x = [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
+    left_ear_x =
+        [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
     left_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
     GLMakie.lines!(ax, left_ear_x, left_ear_y; linewidth = lw, color = :black)
 

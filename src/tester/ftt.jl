@@ -471,8 +471,8 @@ function iftt(;
         _dedup_taps!(int_t_keypressed, int_d_keypressed, int_result)
 
         return (
-            taps      = result, tap_t     = t_keypressed, tap_d     = d_keypressed,
-            taps_int  = int_result, tap_t_int = int_t_keypressed,
+            taps = result, tap_t = t_keypressed, tap_d = d_keypressed,
+            taps_int = int_result, tap_t_int = int_t_keypressed,
             tap_d_int = int_d_keypressed,
         )
     end
