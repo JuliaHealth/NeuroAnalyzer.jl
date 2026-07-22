@@ -28,11 +28,11 @@ function save(
 
     obj.header.recording[:file_name] = file_name
 
-    JLD2.save_object("/tmp/$(basename(file_name))", obj)
+    JLD2.save_object(joinpath(tempdir(), basename(file_name)), obj)
     obj.header.recording[:file_size_mb] = round(
-        filesize("/tmp/$(basename(file_name))") / 1024; digits = 2,
+        filesize(joinpath(tempdir(), basename(file_name))) / 1024; digits = 2,
     )
-    rm("/tmp/$(basename(file_name))")
+    rm(joinpath(tempdir(), basename(file_name)))
 
     JLD2.save_object(file_name, obj)
 
