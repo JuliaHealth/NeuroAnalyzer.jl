@@ -52,7 +52,7 @@ function average_epochs(
     obj_new.data = cat(
         mean(
             obj_new.data; dims
-            = 3,
+        = 3,
         ), obj_new.data; dims = 3,
     )
 

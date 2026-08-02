@@ -366,7 +366,7 @@ function plot_filter(;
                         horizontal = true,
                     )
                     on(sl_rp.value) do val
-                        rp[] = round(val; digits = 1);
+                        rp[] = round(val; digits = 1)
                         return notify(rp)
                     end
                 end

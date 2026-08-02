@@ -20,7 +20,7 @@ The first frequency bin is set to `0.0` Hz because `getMeanFreq` returns a non-p
 function cwtfrq(
     s::AbstractVector;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
 ) where {T <: CWT}
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -56,7 +56,7 @@ Delegates to the vector method using the first channel and first epoch `s[1, :, 
 function cwtfrq(
     s::AbstractArray;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
 ) where {T <: CWT}
 
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -84,7 +84,7 @@ Uses the first channel and first epoch to determine the wavelet frequency grid.
 """
 function cwtfrq(
     obj::NeuroAnalyzer.NEURO;
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
 ) where {T <: CWT}
     return cwtfrq(@view(obj.data[1, :, 1]); fs = sr(obj), wt = wt)
 end

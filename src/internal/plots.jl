@@ -76,7 +76,7 @@ end
 Return `(floor(t[1], digits=2), ceil(t[end], digits=2))` as axis x-limits.
 """
 _xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} =
-    floor(t[1], digits = 2), ceil(t[end], digits = 2)
+    floor(t[1]; digits = 2), ceil(t[end]; digits = 2)
 
 """
     _ylims(s)

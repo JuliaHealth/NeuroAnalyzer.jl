@@ -64,7 +64,7 @@ function csd(
     Gs_rs = vec(
         sum(
             Gs_inv; dims
-            = 2,
+        = 2,
         ),
     )
     Gs_inv_sum = sum(Gs_rs)

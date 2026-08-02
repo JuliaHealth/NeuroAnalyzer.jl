@@ -36,7 +36,7 @@ function pad0(
         # cat along dim 2 is safer than hcat for 3-D arrays
         return cat(
             x, zeros(eltype(x), size(x, 1), n, size(x, 3)); dims
-            = 2,
+        = 2,
         )
     end
 end
@@ -73,7 +73,7 @@ function pad2(
         # cat along dim 2 is safer than hcat for 3-D arrays
         return n == 0 ? x : cat(
             x, zeros(eltype(x), size(x, 1), n, size(x, 3)); dims
-            = 2,
+        = 2,
         )
     end
 end
@@ -115,18 +115,18 @@ function padm(
     elseif ndims(x) == 2
         m = mode === :all ? mean(x) : mean(
             x; dims
-            = 2,
+        = 2,
         )
         return hcat(x, m .* ones(eltype(x), size(x, 1), n))
     else
         m = mode === :all ? mean(x) : mean(
             x; dims
-            = 2,
+        = 2,
         )
         # cat along dim 2 is safer than hcat for 3-D arrays
         return cat(
             x, m .* ones(eltype(x), size(x, 1), n, size(x, 3)); dims
-            = 2,
+        = 2,
         )
     end
 end

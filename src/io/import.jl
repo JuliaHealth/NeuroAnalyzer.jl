@@ -86,7 +86,7 @@ function import_recording(
     # .ascii and .m are both DuoMAG TMS MEP formats
     ext in (".ascii", ".m") && return import_duomag(file_name)
 
-    throw(
+    return throw(
         ArgumentError(
             "Unsupported file format \"$ext\" in $file_name. " *
             "Supported extensions: .edf, .bdf, .gdf, .vhdr, .ahdr, .csv, .csv.gz, " *

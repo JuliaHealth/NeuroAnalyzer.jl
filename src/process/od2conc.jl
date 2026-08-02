@@ -20,7 +20,7 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 """
 function od2conc(
     obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
     ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
 )::NeuroAnalyzer.NEURO
     # validate
@@ -150,7 +150,7 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 """
 function od2conc!(
     obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_od"),
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
     ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
 )::Nothing
     obj_new = od2conc(obj; ch = ch, ppf = ppf)

@@ -136,7 +136,7 @@ function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
         vec(
             median(
                 x; dims
-                = 1,
+            = 1,
             ),
         ),
     )

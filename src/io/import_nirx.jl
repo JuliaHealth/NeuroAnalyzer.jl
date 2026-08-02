@@ -304,11 +304,11 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     clabels = repeat([""], ch_n)
     [
         clabels[idx] =
-        src_labels[opt_pairs[idx, :][1]] *
-        "_" *
-        det_labels[opt_pairs[idx, :][2]] *
-        " " *
-        string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
+            src_labels[opt_pairs[idx, :][1]] *
+            "_" *
+            det_labels[opt_pairs[idx, :][2]] *
+            " " *
+            string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
     ]
     clabels = replace.(clabels, ".0" => "")
 

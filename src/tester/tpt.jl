@@ -147,9 +147,9 @@ function itpt(;
         bt_record = GtkButton("RECORD")
         bt_record.tooltip_text = "Start recording"
 
-        lb_status1 = GtkLabel("Status:");
+        lb_status1 = GtkLabel("Status:")
         lb_status1.halign = 2
-        lb_status2 = GtkLabel("READY TO START");
+        lb_status2 = GtkLabel("READY TO START")
         lb_status2.halign = 1
 
         g[1:2, 1] = can
@@ -325,7 +325,7 @@ function tpt(;
 
     _serial_close(sp)
     _beep()
-    println();
+    println()
     println()
     println("Testing completed")
 

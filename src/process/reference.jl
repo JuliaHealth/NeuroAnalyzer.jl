@@ -67,12 +67,12 @@ function reference_ce(
             med ? vec(
                 median(
                     src, dims
-                    = 1,
+                = 1,
                 ),
             ) : vec(
                 mean(
                     src, dims
-                    = 1,
+                = 1,
                 ),
             )
         end
@@ -204,13 +204,13 @@ function reference_avg(
                 med ? vec(
                     median(
                         w_sub .* ref_chs, dims
-                        = 1,
+                    = 1,
                     ),
                 ) :
                 vec(
                     mean(
                         w_sub .* ref_chs, dims
-                        = 1,
+                    = 1,
                     ),
                 )
         else
@@ -219,19 +219,19 @@ function reference_avg(
                 med ? vec(
                     median(
                         ref_chs, dims
-                        = 1,
+                    = 1,
                     ),
                 ) : vec(
                     mean(
                         ref_chs, dims
-                        = 1,
+                    = 1,
                     ),
                 )
             else
                 vec(
                     sum(
                         ref_chs, dims
-                        = 1,
+                    = 1,
                     ),
                 )
             end

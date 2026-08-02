@@ -106,7 +106,8 @@ function _s2epoch(
     to::Int64,
 )::Union{Int64, AbstractUnitRange{Int64}}
     from >= 0 || throw(ArgumentError("from must be ≥ 0."))
-    to <= length(obj.time_pts) || throw(ArgumentError("to must be ≤ $(length(obj.time_pts))."))
+    to <= length(obj.time_pts) ||
+        throw(ArgumentError("to must be ≤ $(length(obj.time_pts))."))
     el = epoch_len(obj)
 
     ep_first = floor(Int64, from / el)

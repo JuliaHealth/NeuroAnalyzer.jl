@@ -58,7 +58,7 @@ function eros(
     db::Bool = true,
     gw::Real = 5,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
 )::@NamedTuple{
     s::Array{Float64, 3},
     f::Vector{Float64},

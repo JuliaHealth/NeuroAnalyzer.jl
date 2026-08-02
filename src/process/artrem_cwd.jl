@@ -29,7 +29,7 @@ function artrem_cwd(
     s::AbstractVector,
     t::AbstractVector;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
     type::Symbol = :nd,
@@ -84,7 +84,7 @@ function artrem_cwd(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     ep::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
     type::Symbol = :nd,
@@ -143,7 +143,7 @@ function artrem_cwd!(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     ep::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
     type::Symbol = :nd,

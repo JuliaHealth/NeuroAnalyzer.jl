@@ -556,7 +556,7 @@ function plot_spectrogram(
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
     gw::Real = 10,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     frq::Symbol = :lin,
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,

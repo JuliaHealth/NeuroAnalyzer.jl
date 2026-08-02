@@ -452,8 +452,8 @@ function plot_cont(
                             vmarker1[] = NaN
                             vmarker2[] = NaN
                             marker_range[] = [NaN, NaN]
-                            notify(vmarker1);
-                            notify(vmarker2);
+                            notify(vmarker1)
+                            notify(vmarker2)
                             notify(marker_range)
                         end
                     end
@@ -480,8 +480,8 @@ function plot_cont(
                             vmarker1[] > t[end] && (vmarker1[] = t[end])
                             vmarker2[] > t[end] && (vmarker2[] = t[end])
                             marker_range[] = [vmarker1[], vmarker2[]]
-                            notify(vmarker1);
-                            notify(vmarker2);
+                            notify(vmarker1)
+                            notify(vmarker2)
                             notify(marker_range)
                         end
                     end

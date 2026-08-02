@@ -47,7 +47,7 @@ Convert NIRS intensity (RAW) channels to optical density (OD) and append the OD 
 """
 function intensity2od(
     obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_int"),
 )::NeuroAnalyzer.NEURO
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -139,7 +139,7 @@ Convert NIRS intensity channels to optical density in-place.
 """
 function intensity2od!(
     obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj, type = "nirs_int"),
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_int"),
 )::Nothing
     obj_new = intensity2od(obj; ch = ch)
     obj.data = obj_new.data

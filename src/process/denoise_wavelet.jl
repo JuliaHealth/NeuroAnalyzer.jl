@@ -29,7 +29,7 @@ Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, th
 function denoise_cwd(
     s::AbstractVector;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
     w::Int64 = 5,
     type::Symbol = :nd,
@@ -74,7 +74,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain f
 function denoise_cwd(
     s::AbstractArray;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
     w::Int64 = 5,
     type::Symbol = :nd,
@@ -146,7 +146,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain o
 function denoise_cwd(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
     w::Int64 = 5,
     type::Symbol = :nd,
@@ -195,7 +195,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain i
 function denoise_cwd!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
     type::Symbol = :nd,
 )::Nothing where {T <: CWT}

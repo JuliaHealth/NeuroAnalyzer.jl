@@ -59,7 +59,7 @@ function bootstrap_ci(
         s_boot[idx1, :] = vec(
             mean(
                 s_tmp, dims
-                = 2,
+            = 2,
             ),
         )
         progress_bar && next!(progbar)

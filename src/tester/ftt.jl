@@ -201,25 +201,25 @@ function iftt(;
         bt_start = GtkButton("START")
         bt_start.tooltip_text = "Start the test"
 
-        lb_status1 = GtkLabel("Status:");
+        lb_status1 = GtkLabel("Status:")
         lb_status1.halign = 2
-        lb_status2 = GtkLabel("READY TO START");
+        lb_status2 = GtkLabel("READY TO START")
         lb_status2.halign = 1
-        lb_trial1 = GtkLabel("Trial #:");
+        lb_trial1 = GtkLabel("Trial #:")
         lb_trial1.halign = 2
-        lb_trial2 = GtkLabel("-");
+        lb_trial2 = GtkLabel("-")
         lb_trial2.halign = 1
-        lb_interval1 = GtkLabel("Interval #:");
+        lb_interval1 = GtkLabel("Interval #:")
         lb_interval1.halign = 2
-        lb_interval2 = GtkLabel("-");
+        lb_interval2 = GtkLabel("-")
         lb_interval2.halign = 1
 
         g1[1:3, 1] = can
-        g1[1, 2]   = lb_status1;
+        g1[1, 2]   = lb_status1
         g1[3, 2]   = lb_status2
-        g1[1, 3]   = lb_trial1;
+        g1[1, 3]   = lb_trial1
         g1[3, 3]   = lb_trial2
-        g1[1, 4]   = lb_interval1;
+        g1[1, 4]   = lb_interval1
         g1[3, 4]   = lb_interval2
         g1[1:3, 5] = GtkLabel("")
         g1[1:3, 6] = bt_start
@@ -723,11 +723,11 @@ function ftt(;
                 t = time() - t_trial
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1" && !key_pressed
-                    push!(t_kp, t);
-                    result[idx] += 1;
+                    push!(t_kp, t)
+                    result[idx] += 1
                     key_pressed = true
                 elseif serial_key == "$gpio:0" && key_pressed
-                    push!(d_kp, t);
+                    push!(d_kp, t)
                     key_pressed = false
                 end
                 sleep(0.1)
@@ -735,11 +735,11 @@ function ftt(;
             _serial_close(sp)
             _beep()
             if length(d_kp) < sum(result)
-                pop!(t_kp);
+                pop!(t_kp)
                 result[idx] -= 1
             end
 
-            println();
+            println()
             println()
             print("Interval $idx: DO NOT press the BUTTON")
 
@@ -750,18 +750,18 @@ function ftt(;
                 t = time() - t_int
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1" && !key_pressed
-                    push!(int_t_kp, t);
-                    int_result[idx] += 1;
+                    push!(int_t_kp, t)
+                    int_result[idx] += 1
                     key_pressed = true
                 elseif serial_key == "$gpio:0" && key_pressed
-                    push!(int_d_kp, t);
+                    push!(int_d_kp, t)
                     key_pressed = false
                 end
                 sleep(0.1)
             end
             _serial_close(sp)
             if length(int_d_kp) < sum(int_result)
-                pop!(int_t_kp);
+                pop!(int_t_kp)
                 int_result[idx] -= 1
             end
             println()
@@ -790,7 +790,7 @@ function ftt(;
                 if (time() * 1000 - last_debounce_ms) > debounce_ms && rpi_key != key_state
                     key_state = rpi_key
                     if key_state == 1
-                        push!(t_kp, t);
+                        push!(t_kp, t)
                         result[idx] += 1
                     else
                         push!(d_kp, t)
@@ -802,11 +802,11 @@ function ftt(;
 
             _beep()
             if length(d_kp) < sum(result)
-                pop!(t_kp);
+                pop!(t_kp)
                 result[idx] -= 1
             end
 
-            println();
+            println()
             println()
             print("Interval $idx: DO NOT press the BUTTON")
 
@@ -822,7 +822,7 @@ function ftt(;
                     t = time() - t_int
                     key_state = rpi_key
                     if key_state == 1
-                        push!(int_t_kp, t);
+                        push!(int_t_kp, t)
                         int_result[idx] += 1
                     else
                         push!(int_d_kp, t)
@@ -833,7 +833,7 @@ function ftt(;
             end
 
             if length(int_d_kp) < sum(int_result)
-                pop!(int_t_kp);
+                pop!(int_t_kp)
                 int_result[idx] -= 1
             end
             println()

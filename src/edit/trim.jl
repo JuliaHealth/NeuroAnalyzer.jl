@@ -152,13 +152,15 @@ function trim(
     if !keep
         if s_idx <= length(obj_new.time_pts)
             add_marker!(
-                obj_new; id = "NA", start = obj_new.time_pts[s_idx], len = 0.0, value = "DELETED",
+                obj_new; id = "NA", start = obj_new.time_pts[s_idx], len = 0.0,
+                value = "DELETED",
             )
             obj_new.markers = unique(obj_new.markers)
         else
             # if the terminal part is removed the marker is placed on the time point
             add_marker!(
-                obj_new; id = "NA", start = obj_new.time_pts[s_idx - 1], len = 0.0, value = "DELETED",
+                obj_new; id = "NA", start = obj_new.time_pts[s_idx - 1], len = 0.0,
+                value = "DELETED",
             )
             obj_new.markers = unique(obj_new.markers)
         end

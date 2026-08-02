@@ -202,7 +202,7 @@ function iavh()::Nothing
         g_opts.margin_bottom = 5
 
         # --- language selector ---
-        lab_lang = GtkLabel("Language");
+        lab_lang = GtkLabel("Language")
         lab_lang.halign = 2
         langs = ["EN", "DE", "SP", "PL"]
         combo_lang = GtkComboBoxText()
@@ -211,7 +211,7 @@ function iavh()::Nothing
         combo_lang.tooltip_text = "Language of AVH speech samples"
 
         # --- sound type selector ---
-        lab_type = GtkLabel("Type");
+        lab_type = GtkLabel("Type")
         lab_type.halign = 2
         types = ["voice", "whisper", "noise", "ringing"]
         combo_type = GtkComboBoxText()
@@ -220,7 +220,7 @@ function iavh()::Nothing
         combo_type.tooltip_text = "Hallucination sound type"
 
         # --- voice gender selector (speech only) ---
-        lab_gender = GtkLabel("Gender");
+        lab_gender = GtkLabel("Gender")
         lab_gender.halign = 2
         genders = ["male", "female"]
         combo_gender = GtkComboBoxText()
@@ -229,7 +229,7 @@ function iavh()::Nothing
         combo_gender.tooltip_text = "Voice gender (speech only)"
 
         # --- emotional aspect selector (speech only) ---
-        lab_character = GtkLabel("Emotional aspect");
+        lab_character = GtkLabel("Emotional aspect")
         lab_character.halign = 2
         characters = ["negative", "neutral", "positive"]
         combo_character = GtkComboBoxText()
@@ -238,9 +238,9 @@ function iavh()::Nothing
         combo_character.tooltip_text = "Emotional valence of AVH content (speech only)"
 
         # --- volume controls ---
-        lab_vol_up = GtkLabel("Volume");
+        lab_vol_up = GtkLabel("Volume")
         lab_vol_up.halign = 2
-        lab_vol_down = GtkLabel("Volume");
+        lab_vol_down = GtkLabel("Volume")
         lab_vol_down.halign = 2
         bt_vol_up = GtkButton("+")
         bt_vol_down = GtkButton("-")
@@ -251,25 +251,25 @@ function iavh()::Nothing
         bt_vol_down.tooltip_text = "Decrease volume (step $(vol_step))"
 
         # --- action buttons ---
-        bt_play               = GtkButton("Play");
+        bt_play               = GtkButton("Play")
         bt_play.tooltip_text  = "Play the sound with current settings"
-        bt_save               = GtkButton("Save");
+        bt_save               = GtkButton("Save")
         bt_save.tooltip_text  = "Export session settings to CSV"
-        bt_close              = GtkButton("Close");
+        bt_close              = GtkButton("Close")
         bt_close.tooltip_text = "Close this window"
 
         # --- populate options grid ---
-        g_opts[1, 1]    = lab_lang;
+        g_opts[1, 1]    = lab_lang
         g_opts[2, 1]    = combo_lang
-        g_opts[1, 2]    = lab_type;
+        g_opts[1, 2]    = lab_type
         g_opts[2, 2]    = combo_type
-        g_opts[1, 3]    = lab_gender;
+        g_opts[1, 3]    = lab_gender
         g_opts[2, 3]    = combo_gender
-        g_opts[1, 4]    = lab_character;
+        g_opts[1, 4]    = lab_character
         g_opts[2, 4]    = combo_character
-        g_opts[1, 5]    = lab_vol_up;
+        g_opts[1, 5]    = lab_vol_up
         g_opts[2, 5]    = bt_vol_up
-        g_opts[1, 6]    = lab_vol_down;
+        g_opts[1, 6]    = lab_vol_down
         g_opts[2, 6]    = bt_vol_down
         g_opts[1:2, 7]  = GtkLabel("")
         g_opts[1:2, 8]  = bt_play

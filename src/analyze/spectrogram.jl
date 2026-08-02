@@ -197,7 +197,7 @@ function spectrogram(
     nt::Int64 = 7,
     gw::Real = 10,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
     wlen::Int64 = sr(obj),
     woverlap::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
@@ -684,7 +684,7 @@ Named tuple:
 function cwtspectrogram(
     s::AbstractVector;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
 )::@NamedTuple{
     m::Matrix{Float64},
     f::Vector{Float64},
@@ -731,7 +731,7 @@ Named tuple:
 function cwtspectrogram(
     s::AbstractMatrix;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π), β = 2),
+    wt::T = wavelet(Morlet(2π); β = 2),
 )::@NamedTuple{
     m::Array{Float64, 3},
     f::Vector{Float64},

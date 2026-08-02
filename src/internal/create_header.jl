@@ -238,9 +238,9 @@ function _create_recording_prefiltered(;
     )
     merge!(
         d, Dict(
-            :prefiltering => prefiltering,
-            :epoch_id => "",
-        ),
+        :prefiltering => prefiltering,
+        :epoch_id => "",
+    ),
     )
     return d
 end
