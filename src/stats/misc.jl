@@ -1,65 +1,8 @@
-export k_categories
-export slope
 export distance
 export count_thresh
 export cmp_stat
 export permute
-export logit
-export sumsq
 export rmna
-export df
-export center
-
-"""
-    k_categories(n)
-
-Calculate the recommended number of histogram categories for a sample of size `n`.
-
-Returns two common rules:
-
-- Square-root choice: `k1 = √n`
-- Sturges' extended rule: `k2 = 1 + 3.222 × log₁₀(n)`
-
-# Arguments
-
-- `n::Int64`: sample size; must be ≥ 1
-
-# Returns
-
-Named tuple:
-
-- `k1::Float64`: square-root estimate
-- `k2::Float64`: sturges' extended estimate
-"""
-function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
-    # validate
-    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
-
-    return (k1 = sqrt(n), k2 = 1 + 3.222 * log10(n))
-end
-
-"""
-    slope(p1, p2)
-
-Calculate the slope of the line passing through two points.
-
-# Arguments
-
-- `p1::Tuple{Real, Real}`: first point `(x₁, y₁)`
-- `p2::Tuple{Real, Real}`: second point `(x₂, y₂)`; `x₂ ≠ x₁`
-
-# Returns
-
-- `Float64`: slope `(y₂ − y₁) / (x₂ − x₁)`
-"""
-function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
-    # validate
-    p2[1] != p1[1] || throw(
-        ArgumentError("p2[1] and p1[1] must not be equal (vertical line has no slope)."),
-    )
-
-    return (p2[2] - p1[2]) / (p2[1] - p1[1])
-end
 
 """
     distance(p1, p2)
@@ -245,52 +188,6 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
 end
 
 """
-    logit(p)
-
-Convert a proportion to its logit (log-odds).
-
-Computed as `log(p / (1 − p))`. Returns `−Inf` for `p = 0` and `+Inf` for `p = 1`.
-
-# Arguments
-
-- `p::Float64`: proportion; must be in `[0, 1]`
-
-# Returns
-
-- `Float64`: log-odds `log(p / (1 − p))`
-"""
-function logit(p::Float64)::Float64
-    # validate
-    _in(p, (0.0, 1.0), "p")
-
-    return log(p / (1 - p))
-end
-
-"""
-    sumsq(x)
-
-Calculate the sum of squared deviations from the mean.
-
-Computed as `Σ(xᵢ − x̄)²`.
-
-# Arguments
-
-- `x::AbstractVector`: input vector; must contain at least 2 elements
-
-# Returns
-
-- `Float64`: sum of squared deviations
-"""
-function sumsq(x::AbstractVector)::Float64
-    # validate
-    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
-
-    m = mean(x)
-
-    return sum((x .- m) .^ 2)
-end
-
-"""
     rmna(x)
 
 Return a copy of `x` with all `NaN` and `Missing` values removed.
@@ -308,44 +205,4 @@ function rmna(x::AbstractVector)::Vector{Float64}
     x_clean = collect(skipmissing(x))
 
     return Float64.(Base.filter(!isnan, x_clean))
-end
-
-"""
-    df(x)
-
-Calculate the degrees of freedom for a vector (`length(x) − 1`).
-
-# Arguments
-
-- `x::AbstractVector`: input vector; must contain at least 1 element
-
-# Returns
-
-- `Int64`: degrees of freedom `length(x) − 1`
-"""
-function df(x::AbstractVector)::Int64
-    # validate
-    length(x) >= 1 || throw(ArgumentError("x must not be empty."))
-
-    return length(x) - 1
-end
-
-"""
-    center(x)
-
-Center a vector by subtracting its mean.
-
-# Arguments
-
-- `x::AbstractVector`: input vector; must contain at least 1 element
-
-# Returns
-
-- `Vector{Float64}`: mean-centered vector `x .- mean(x)`
-"""
-function center(x::AbstractVector)::Vector{Float64}
-    # validate
-    length(x) >= 1 || throw(ArgumentError("x must not be empty."))
-
-    return x .- mean(x)
 end
