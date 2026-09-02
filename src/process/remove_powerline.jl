@@ -51,7 +51,7 @@ function remove_powerline(
     clabels = labels(obj)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # pre-allocate outputs
     pl_best_bw = Float64[]
@@ -79,7 +79,7 @@ function remove_powerline(
             ch_label = clabels[ch_idx]
 
             # --- detect and validate the fundamental power line peak ---
-            psd_data = psd(obj_new; ch = ch_label, db = true)
+            psd_data = psd(obj_tmp; ch = ch_label, db = true)
             f = psd_data.f
             p = psd_data.p[:]
             f_band = vsearch(pl_frq - d, f):vsearch(pl_frq + d, f)
@@ -104,7 +104,7 @@ function remove_powerline(
             v = [
                 begin
                     obj_tmp = NeuroAnalyzer.filter(
-                        obj_new;
+                        obj_tmp;
                         ch = ch_label,
                         fprototype = :iirnotch,
                         cutoff = pl_frq,
@@ -119,7 +119,7 @@ function remove_powerline(
             push!(pl_best_bw, best_bw)
 
             NeuroAnalyzer.filter!(
-                obj_new;
+                obj_tmp;
                 ch = ch_label,
                 fprototype = :iirnotch,
                 cutoff = pl_frq,
@@ -127,7 +127,7 @@ function remove_powerline(
             )
 
             # --- detect harmonics above the fundamental ---
-            p, f = psd(obj_new; ch = ch_label, db = true)
+            p, f = psd(obj_tmp; ch = ch_label, db = true)
             p = p[:]
             f_above = vsearch(2 * pl_frq - 2 * d, f)
             p_above = p[f_above:end]
@@ -159,7 +159,7 @@ function remove_powerline(
                     vh = [
                         begin
                             obj_tmp = NeuroAnalyzer.filter(
-                                obj_new; ch = ch_label, fprototype = :iirnotch,
+                                obj_tmp; ch = ch_label, fprototype = :iirnotch,
                                 cutoff = pks_frq[peak_idx], bw = bw,
                             )
                             p2, f2 = psd(obj_tmp; ch = ch_label, db = true)
@@ -176,7 +176,7 @@ function remove_powerline(
                 end
                 for peak_idx in eachindex(pks_frq)
                     NeuroAnalyzer.filter!(
-                        obj_new; ch = ch_label, fprototype = :iirnotch,
+                        obj_tmp; ch = ch_label, fprototype = :iirnotch,
                         cutoff = pks_frq[peak_idx], bw = best_bw_harm[peak_idx],
                     )
                 end
@@ -209,11 +209,11 @@ function remove_powerline(
 
     NeuroAnalyzer.verbose = verbose_tmp
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)",
     )
 
-    return obj_new, df
+    return obj_tmp, df
 end
 
 """
@@ -244,7 +244,7 @@ function remove_powerline!(
     d::Real = 5.0,
     q::Real = 0.1,
 )::DataFrame
-    obj_new, df = remove_powerline(
+    obj_tmp, df = remove_powerline(
         obj;
         ch = ch,
         pl_frq = pl_frq,
@@ -253,8 +253,8 @@ function remove_powerline!(
         d = d,
         q = q,
     )
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
 
     return df
 end

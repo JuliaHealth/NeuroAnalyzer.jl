@@ -168,9 +168,9 @@ function detrend(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = detrend(
+    obj_tmp.data[ch, :, :] = detrend(
         @view(obj.data[ch, :, :]);
         type = type,
         offset = offset,
@@ -178,11 +178,11 @@ function detrend(
         f = f,
     )
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "detrend(obj; ch=$ch, type=$type, offset=$offset, order=$order, f=$f)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -217,9 +217,10 @@ function detrend!(
     order::Int64 = 1,
     f::Float64 = 1.0,
 )::Nothing
-    obj_new = detrend(obj; ch = ch, type = type, offset = offset, order = order, f = f)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = detrend(obj; ch = ch, type = type, offset = offset, order = order, f = f)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

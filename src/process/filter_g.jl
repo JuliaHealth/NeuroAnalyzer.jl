@@ -128,18 +128,18 @@ function filter_g(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = filter_g(
+    obj_tmp.data[ch, :, :] = filter_g(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         pad = pad,
         f = f,
         gw = gw,
     )
-    push!(obj_new.history, "filter_g(obj; ch=$ch, pad=$pad, f=$f)")
+    push!(obj_tmp.history, "filter_g(obj; ch=$ch, pad=$pad, f=$f)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -166,9 +166,10 @@ function filter_g!(
     f::Real,
     gw::Real = 5,
 )::Nothing
-    obj_new = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

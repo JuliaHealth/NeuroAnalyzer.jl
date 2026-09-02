@@ -146,16 +146,16 @@ function filter_poly(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = filter_poly(
+    obj_tmp.data[ch, :, :] = filter_poly(
         @view(obj.data[ch, :, :]);
         order = order,
         window = window,
     )
-    push!(obj_new.history, "filter_poly(obj; ch=$ch, order=$order, window=$window)")
+    push!(obj_tmp.history, "filter_poly(obj; ch=$ch, order=$order, window=$window)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -180,9 +180,10 @@ function filter_poly!(
     order::Int64 = 8,
     window::Int64 = 10,
 )::Nothing
-    obj_new = filter_poly(obj; ch = ch, order = order, window = window)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = filter_poly(obj; ch = ch, order = order, window = window)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

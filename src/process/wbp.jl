@@ -118,13 +118,13 @@ function wbp(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] =
+    obj_tmp.data[ch, :, :] =
         wbp(@view(obj.data[ch, :, :]); pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
-    push!(obj_new.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
+    push!(obj_tmp.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -151,9 +151,10 @@ function wbp!(
     frq::Real,
     ncyc::Int64 = 6,
 )::Nothing
-    obj_new = wbp(obj; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = wbp(obj; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

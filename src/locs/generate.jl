@@ -465,6 +465,7 @@ function locs_generate!(locs::DataFrame)::Nothing
     )
         locs[:, col] = locs_tmp[:, col]
     end
+    locs_tmp = nothing
 
     return nothing
 end
@@ -484,13 +485,13 @@ Generate spherical coordinates according to the 10/10 system for all channels in
 """
 function locs_generate(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     locs = locs_generate(obj.locs)
-    obj_new.locs = locs
-    push!(obj_new.history, "locs_generate(obj)")
+    obj_tmp.locs = locs
+    push!(obj_tmp.history, "locs_generate(obj)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -507,9 +508,10 @@ Generate spherical coordinates according to the 10/10 system, modifying `locs` i
 - `Nothing`
 """
 function locs_generate!(obj::NeuroAnalyzer.NEURO)::Nothing
-    obj_new = locs_generate(obj)
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = locs_generate(obj)
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end

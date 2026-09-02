@@ -247,14 +247,14 @@ function ica_remove(
     # reconstruction
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, 1] =
+    obj_tmp.data[ch, :, 1] =
         ica_remove(; ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)
 
-    push!(obj_new.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
+    push!(obj_tmp.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -283,9 +283,10 @@ function ica_remove!(
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     keep::Bool = false,
 )::Nothing
-    obj_new = ica_remove(obj; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = ica_remove(obj; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

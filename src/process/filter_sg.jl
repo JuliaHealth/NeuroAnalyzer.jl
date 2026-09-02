@@ -101,12 +101,12 @@ function filter_sg(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :]; order = order, window = window)
-    push!(obj_new.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
+    obj_tmp.data[ch, :, :] = filter_sg(obj.data[ch, :, :]; order = order, window = window)
+    push!(obj_tmp.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -131,9 +131,10 @@ function filter_sg!(
     order::Int64 = 6,
     window::Int64 = 11,
 )::Nothing
-    obj_new = filter_sg(obj; ch = ch, order = order, window = window)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = filter_sg(obj; ch = ch, order = order, window = window)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

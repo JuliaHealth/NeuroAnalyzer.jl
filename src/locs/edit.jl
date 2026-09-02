@@ -46,30 +46,30 @@ function edit_locs(
     ch = ch[1]
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
     length(loc_idx) > 0 ||
         throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
 
-    name != "" && rename_channel!(obj_new; ch = labels(obj)[ch], name = name)
-    type != "" && channel_type!(obj_new; ch = labels(obj)[ch], type = type)
+    name != "" && rename_channel!(obj_tmp; ch = labels(obj)[ch], name = name)
+    type != "" && channel_type!(obj_tmp; ch = labels(obj)[ch], type = type)
 
-    x !== nothing && (obj_new.locs[loc_idx, :loc_x] = x)
-    y !== nothing && (obj_new.locs[loc_idx, :loc_y] = y)
-    z !== nothing && (obj_new.locs[loc_idx, :loc_z] = z)
-    theta !== nothing && (obj_new.locs[loc_idx, :loc_theta] = theta)
-    radius !== nothing && (obj_new.locs[loc_idx, :loc_radius] = radius)
-    theta_sph !== nothing && (obj_new.locs[loc_idx, :loc_theta_sph] = theta_sph)
-    radius_sph !== nothing && (obj_new.locs[loc_idx, :loc_radius_sph] = radius_sph)
-    phi_sph !== nothing && (obj_new.locs[loc_idx, :loc_phi_sph] = phi_sph)
+    x !== nothing && (obj_tmp.locs[loc_idx, :loc_x] = x)
+    y !== nothing && (obj_tmp.locs[loc_idx, :loc_y] = y)
+    z !== nothing && (obj_tmp.locs[loc_idx, :loc_z] = z)
+    theta !== nothing && (obj_tmp.locs[loc_idx, :loc_theta] = theta)
+    radius !== nothing && (obj_tmp.locs[loc_idx, :loc_radius] = radius)
+    theta_sph !== nothing && (obj_tmp.locs[loc_idx, :loc_theta_sph] = theta_sph)
+    radius_sph !== nothing && (obj_tmp.locs[loc_idx, :loc_radius_sph] = radius_sph)
+    phi_sph !== nothing && (obj_tmp.locs[loc_idx, :loc_phi_sph] = phi_sph)
 
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "edit_locs(obj; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -110,7 +110,7 @@ function edit_locs!(
     name::String = "",
     type::String = "",
 )::Nothing
-    obj_new = edit_locs(
+    obj_tmp = edit_locs(
         obj;
         ch = ch,
         x = x,
@@ -124,8 +124,9 @@ function edit_locs!(
         name = name,
         type = type,
     )
-    obj.locs = obj_new.locs
-    obj.history = obj_new.history
+    obj.locs = obj_tmp.locs
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

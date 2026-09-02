@@ -59,12 +59,12 @@ function standardize(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
-    push!(obj_new.history, "standardize(obj)")
+    obj_tmp.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
+    push!(obj_tmp.history, "standardize(obj)")
 
-    return obj_new, scaler
+    return obj_tmp, scaler
 end
 
 """
@@ -84,9 +84,9 @@ Standardize channels.
 function standardize!(
     obj::NeuroAnalyzer.NEURO,
 )::Vector{ZScoreTransform{Float64, Vector{Float64}}}
-    obj_new, scaler = standardize(obj; ch = ch)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp, scaler = standardize(obj; ch = ch)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
 
     return scaler
 end

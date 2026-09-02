@@ -92,15 +92,15 @@ function tconv(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
     _info("Group delay: $(_group_delay(kernel)) samples")
 
     if eltype(kernel) == ComplexF64
         return tconv(obj.data[ch, :, :]; kernel = kernel)
     else
-        obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :]; kernel = kernel)
-        push!(obj_new.history, "tconv(obj; ch=$ch, kernel=kernel)")
-        return obj_new
+        obj_tmp.data[ch, :, :] = tconv(obj.data[ch, :, :]; kernel = kernel)
+        push!(obj_tmp.history, "tconv(obj; ch=$ch, kernel=kernel)")
+        return obj_tmp
     end
 end
 
@@ -123,9 +123,10 @@ function tconv!(
     if eltype(kernel) == ComplexF64
         return tconv(obj.data; ch = ch, kernel = kernel)
     else
-        obj_new = tconv(obj; ch = ch, kernel = kernel)
-        obj.data = obj_new.data
-        obj.history = obj_new.history
+        obj_tmp = tconv(obj; ch = ch, kernel = kernel)
+        obj.data = obj_tmp.data
+        obj.history = obj_tmp.history
+        obj_tmp = nothing
         return nothing
     end
 end

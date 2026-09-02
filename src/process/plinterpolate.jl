@@ -54,7 +54,7 @@ function plinterpolate_channel(
     ep = _n2v(ep)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
     obj_tmp = deepcopy(obj)
     delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
     delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
@@ -99,14 +99,14 @@ function plinterpolate_channel(
         end
     end
 
-    obj_new.data[ch, :, ep] = s_interpolated
+    obj_tmp.data[ch, :, ep] = s_interpolated
 
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "plinterpolate_channel(obj; ch=$ch, ep=$ep, imethod=$imethod, ifactor=$ifactor)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -133,10 +133,11 @@ function plinterpolate_channel!(
     imethod::Symbol = :shepard,
     ifactor::Int64 = 100,
 )::Nothing
-    obj_new =
+    obj_tmp =
         plinterpolate_channel(obj; ch = ch, ep = ep, imethod = imethod, ifactor = ifactor)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

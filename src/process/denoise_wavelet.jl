@@ -156,9 +156,9 @@ function denoise_cwd(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = denoise_cwd(
+    obj_tmp.data[ch, :, :] = denoise_cwd(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         wt = wt,
@@ -166,9 +166,9 @@ function denoise_cwd(
         w = w,
         type = type,
     )
-    push!(obj_new.history, "denoise_cwd(obj; ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
+    push!(obj_tmp.history, "denoise_cwd(obj; ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -199,9 +199,10 @@ function denoise_cwd!(
     nf::Real,
     type::Symbol = :nd,
 )::Nothing where {T <: CWT}
-    obj_new = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, type = type)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, type = type)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
@@ -338,16 +339,16 @@ function denoise_dwd(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] =
+    obj_tmp.data[ch, :, :] =
         @views denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -378,9 +379,10 @@ function denoise_dwd!(
     dnt::T2 = RelErrorShrink(SoftTH()),
     smooth::Symbol = :regular,
 )::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
-    obj_new = denoise_dwd(obj; ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = denoise_dwd(obj; ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

@@ -35,20 +35,20 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEUR
     locs = Base.filter(:label => in(labels(obj)), locs)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     for idx in 1:DataFrames.nrow(locs)
-        lidx = findfirst(isequal(locs[idx, :label]), obj_new.locs[!, :label])
-        isa(lidx, Int64) && (obj_new.locs[lidx, :] = locs[idx, :])
+        lidx = findfirst(isequal(locs[idx, :label]), obj_tmp.locs[!, :label])
+        isa(lidx, Int64) && (obj_tmp.locs[lidx, :] = locs[idx, :])
     end
 
     # keep order consistent with labels
-    locs_idx = indexin(obj_new.locs[:, :label], labels(obj_new))
-    obj_new.locs = obj_new.locs[sortperm(locs_idx), :]
+    locs_idx = indexin(obj_tmp.locs[:, :label], labels(obj_tmp))
+    obj_tmp.locs = obj_tmp.locs[sortperm(locs_idx), :]
 
-    push!(obj_new.history, "add_locs(obj, locs)")
+    push!(obj_tmp.history, "add_locs(obj, locs)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -78,9 +78,10 @@ Electrode locations:
 - `Nothing`
 """
 function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::Nothing
-    obj_new = add_locs(obj; locs = locs)
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = add_locs(obj; locs = locs)
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end

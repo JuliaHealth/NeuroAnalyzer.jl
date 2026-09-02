@@ -37,7 +37,7 @@ function od2conc(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     ep_len = epoch_len(obj)
     ep_n = nepochs(obj)
@@ -57,7 +57,7 @@ function od2conc(
     dc = zeros(3, ep_len, length(lst), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        dod = @view(obj_new.data[ch, :, ep_idx])
+        dod = @view(obj_tmp.data[ch, :, ep_idx])
 
         for idx in eachindex(lst)
             idx1 = lst[idx]
@@ -91,19 +91,19 @@ function od2conc(
 
     # add channels
     for dc_idx in axes(dc, 3)
-        obj_new.data = vcat(obj_new.data, dc[:, :, dc_idx, :])
+        obj_tmp.data = vcat(obj_tmp.data, dc[:, :, dc_idx, :])
     end
 
     # update header
-    obj_new.header.recording[:channel_type] = vcat(
+    obj_tmp.header.recording[:channel_type] = vcat(
         obj.header.recording[:channel_type],
         repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)),
     )
-    obj_new.header.recording[:unit] =
+    obj_tmp.header.recording[:unit] =
         vcat(obj.header.recording[:unit], repeat(["μM/mm"], 3 * size(dc, 3)))
     for idx in axes(dc, 3)
-        obj_new.header.recording[:label] = vcat(
-            obj_new.header.recording[:label],
+        obj_tmp.header.recording[:label] = vcat(
+            obj_tmp.header.recording[:label],
             [
                 "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO",
                 "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR",
@@ -111,24 +111,24 @@ function od2conc(
             ],
         )
     end
-    obj_new.header.recording[:channel_order] = vcat(
-        obj_new.header.recording[:channel_order],
-        collect((obj_new.header.recording[:channel_order][end] + 1):size(obj_new.data, 1)),
+    obj_tmp.header.recording[:channel_order] = vcat(
+        obj_tmp.header.recording[:channel_order],
+        collect((obj_tmp.header.recording[:channel_order][end] + 1):size(obj_tmp.data, 1)),
     )
-    obj_new.header.recording[:label] =
-        replace.(obj_new.header.recording[:label], ".0" => "")
-    obj_new.header.recording[:bad_channel] = zeros(Bool, size(obj_new.data, 1))
+    obj_tmp.header.recording[:label] =
+        replace.(obj_tmp.header.recording[:label], ".0" => "")
+    obj_tmp.header.recording[:bad_channel] = zeros(Bool, size(obj_tmp.data, 1))
 
     #=
     for idx in axes(dc, 3)
-        obj_new.header.recording[:optode_pairs] = vcat(obj_new.header.recording[:optode_pairs], repeat(chp[unique(chp), :][idx, :]', 3))
+        obj_tmp.header.recording[:optode_pairs] = vcat(obj_tmp.header.recording[:optode_pairs], repeat(chp[unique(chp), :][idx, :]', 3))
     end
-    obj_new.header.recording[:wavelength_index] = vcat(obj_new.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
+    obj_tmp.header.recording[:wavelength_index] = vcat(obj_tmp.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
     =#
 
-    push!(obj_new.history, "od2conc(obj; ch=$ch)")
+    push!(obj_tmp.history, "od2conc(obj; ch=$ch)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -153,10 +153,11 @@ function od2conc!(
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
     ppf::Vector{<:Real} = ones(length(obj.header.recording[:wavelengths])),
 )::Nothing
-    obj_new = od2conc(obj; ch = ch, ppf = ppf)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
+    obj_tmp = od2conc(obj; ch = ch, ppf = ppf)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

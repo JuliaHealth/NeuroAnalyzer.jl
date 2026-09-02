@@ -252,8 +252,8 @@ function remove_pops(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
-    s = @view(obj_new.data[ch, :, :])
+    obj_tmp = deepcopy(obj)
+    s = @view(obj_tmp.data[ch, :, :])
 
     pop_loc = Vector{Vector{Int64}}()
     l_seg = Vector{Int64}()
@@ -267,7 +267,7 @@ function remove_pops(
     @inbounds for ch_idx in 1:ch_n
         for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
             p = remove_pops(
-                obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair = repair, r = r,
+                obj_tmp.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair = repair, r = r,
             )
             if !isnothing(p)
                 if repair
@@ -281,9 +281,9 @@ function remove_pops(
     end
 
     if repair
-        obj_new.data[ch, :, :] = s
-        push!(obj_new.history, "remove_pops(obj; ch=$ch, repair=true, window=$window)")
-        return obj_new, pop_loc, l_seg, r_seg
+        obj_tmp.data[ch, :, :] = s
+        push!(obj_tmp.history, "remove_pops(obj; ch=$ch, repair=true, window=$window)")
+        return obj_tmp, pop_loc, l_seg, r_seg
     else
         return pop_loc, l_seg, r_seg
     end
@@ -319,11 +319,11 @@ function remove_pops!(
     Vector{Int64},
     Vector{Int64},
 }
-    obj_new, pop_loc, l_seg, r_seg =
+    obj_tmp, pop_loc, l_seg, r_seg =
         remove_pops(obj; ch = ch, repair = true, window = window, r = r)
     if repair
-        obj.data = obj_new.data
-        obj.history = obj_new.history
+        obj.data = obj_tmp.data
+        obj.history = obj_tmp.history
     end
 
     return pop_loc, l_seg, r_seg

@@ -130,45 +130,45 @@ function trim(
     )
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data = trim(obj_new.data; seg = seg_tpos, keep = keep)
+    obj_tmp.data = trim(obj_tmp.data; seg = seg_tpos, keep = keep)
 
     if keep
-        obj_new.time_pts = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
-        obj_new.epoch_time = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
+        obj_tmp.time_pts = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
+        obj_tmp.epoch_time = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
     else
-        obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+        obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
     end
 
-    obj_new.markers = _delete_markers(obj_new.markers, seg)
-    obj_new.markers = _shift_markers(obj_new.markers, seg)
+    obj_tmp.markers = _delete_markers(obj_tmp.markers, seg)
+    obj_tmp.markers = _shift_markers(obj_tmp.markers, seg)
 
     if keep
-        obj_new.time_pts = obj.time_pts[1:size(obj_new.data, 2)]
-        obj_new.epoch_time = obj.time_pts[1:size(obj_new.data, 2)]
+        obj_tmp.time_pts = obj.time_pts[1:size(obj_tmp.data, 2)]
+        obj_tmp.epoch_time = obj.time_pts[1:size(obj_tmp.data, 2)]
     end
 
     if !keep
-        if s_idx <= length(obj_new.time_pts)
+        if s_idx <= length(obj_tmp.time_pts)
             add_marker!(
-                obj_new; id = "NA", start = obj_new.time_pts[s_idx], len = 0.0,
+                obj_tmp; id = "NA", start = obj_tmp.time_pts[s_idx], len = 0.0,
                 value = "DELETED",
             )
-            obj_new.markers = unique(obj_new.markers)
+            obj_tmp.markers = unique(obj_tmp.markers)
         else
             # if the terminal part is removed the marker is placed on the time point
             add_marker!(
-                obj_new; id = "NA", start = obj_new.time_pts[s_idx - 1], len = 0.0,
+                obj_tmp; id = "NA", start = obj_tmp.time_pts[s_idx - 1], len = 0.0,
                 value = "DELETED",
             )
-            obj_new.markers = unique(obj_new.markers)
+            obj_tmp.markers = unique(obj_tmp.markers)
         end
     end
 
-    push!(obj_new.history, "trim(obj, seg=$seg, keep=$keep")
+    push!(obj_tmp.history, "trim(obj, seg=$seg, keep=$keep")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -195,12 +195,14 @@ function trim!(
     nepochs(obj) == 1 ||
         throw(ArgumentError("trim!() must be applied to continuous object."))
 
-    obj_new = trim(obj; seg = seg, keep = keep)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
-    obj.markers = obj_new.markers
+    obj_tmp = trim(obj; seg = seg, keep = keep)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
+    obj_tmp = nothing
 
     return nothing
 end
@@ -224,9 +226,9 @@ function crop(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::NeuroAnalyzer.N
     nepochs(obj) == 1 ||
         throw(ArgumentError("crop() must be applied to continuous object."))
 
-    obj_new = trim(obj; seg = seg, keep = true)
+    obj_tmp = trim(obj; seg = seg, keep = true)
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -247,12 +249,14 @@ function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
     nepochs(obj) == 1 ||
         throw(ArgumentError("crop!() must be applied to continuous object."))
 
-    obj_new = trim(obj; seg = seg, keep = true)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
-    obj.markers = obj_new.markers
+    obj_tmp = trim(obj; seg = seg, keep = true)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
+    obj_tmp = nothing
 
     return nothing
 end

@@ -26,26 +26,26 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyz
     nepochs(obj1) == nepochs(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same number of epochs."))
 
-    obj_new = deepcopy(obj1)
+    obj_tmp = deepcopy(obj1)
 
     # merge data
-    obj_new.data = hcat(obj1.data, obj2.data)
+    obj_tmp.data = hcat(obj1.data, obj2.data)
 
     # regenerate time points
-    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
     # merge markers
     DataFrames.nrow(obj2.markers) > 0 &&
-        (obj_new.markers = vcat(obj1.markers, obj2.markers))
+        (obj_tmp.markers = vcat(obj1.markers, obj2.markers))
     DataFrames.nrow(obj1.markers) > 0 && (
-        obj_new.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (
+        obj_tmp.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (
             signal_len(obj1) / sr(obj1)
         )
     )
 
-    push!(obj_new.history, "join(obj1, obj2)")
+    push!(obj_tmp.history, "join(obj1, obj2)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -63,12 +63,13 @@ Join two NeuroAnalyzer objects into the first object. Each `obj2` epoch are hori
 - `Nothing`
 """
 function join!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
-    obj_new = NeuroAnalyzer.join(obj1, obj2)
-    obj1.data = obj_new.data
-    obj1.history = obj_new.history
-    obj1.time_pts = obj_new.time_pts
-    obj1.epoch_time = obj_new.epoch_time
-    obj1.markers = obj_new.markers
+    obj_tmp = NeuroAnalyzer.join(obj1, obj2)
+    obj1.data = obj_tmp.data
+    obj1.history = obj_tmp.history
+    obj1.time_pts = obj_tmp.time_pts
+    obj1.epoch_time = obj_tmp.epoch_time
+    obj1.markers = obj_tmp.markers
+    obj_tmp = nothing
 
     return nothing
 end

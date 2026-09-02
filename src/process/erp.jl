@@ -29,7 +29,7 @@ function average_epochs(
     nchannels(obj) > length(get_channel(obj; type = datatype(obj))) &&
         _warn("Non-signal channels will be removed.")
 
-    obj_new = if datatype(obj) == "eeg"
+    obj_tmp = if datatype(obj) == "eeg"
         keep_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     else
         keep_channel(obj; ch = ["meg", "mag", "grad"])
@@ -45,23 +45,23 @@ function average_epochs(
 
     # subtract baseline from each epoch before averaging (pre-average correction)
     if blfirst && !isnothing(bl_samples)
-        obj_new.data[:, :, :] = remove_dc(obj_new.data[:, :, :], bl_samples)
+        obj_tmp.data[:, :, :] = remove_dc(obj_tmp.data[:, :, :], bl_samples)
     end
 
     # prepend the trial average as epoch 1; original epochs follow
-    obj_new.data = cat(
+    obj_tmp.data = cat(
         mean(
-            obj_new.data; dims
+            obj_tmp.data; dims
         = 3,
-        ), obj_new.data; dims = 3,
+        ), obj_tmp.data; dims = 3,
     )
 
-    obj_new.header.recording[:data_type] = datatype(obj) == "eeg" ? "erp" : "erf"
-    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    obj_tmp.header.recording[:data_type] = datatype(obj) == "eeg" ? "erp" : "erf"
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
     # subtract baseline from the averaged epoch only (post-average correction)
     if !blfirst && !isnothing(bl_samples)
-        obj_new.data[:, :, 1] = remove_dc(obj_new.data[:, :, [1]], bl_samples)
+        obj_tmp.data[:, :, 1] = remove_dc(obj_tmp.data[:, :, [1]], bl_samples)
     end
 
     # ------------------------------------------------------------------ #
@@ -69,15 +69,15 @@ function average_epochs(
     # remove markers that fall outside the remaining data and shift the  #
     # remaining ones to account for the prepended average epoch.         #
     # ------------------------------------------------------------------ #
-    ep_len = size(obj_new.data, 2)
-    for idx in DataFrames.nrow(obj_new.markers):-1:1
-        obj_new.markers[idx, :start] > ep_len && deleteat!(obj_new.markers, idx)
+    ep_len = size(obj_tmp.data, 2)
+    for idx in DataFrames.nrow(obj_tmp.markers):-1:1
+        obj_tmp.markers[idx, :start] > ep_len && deleteat!(obj_tmp.markers, idx)
     end
-    obj_new.markers[!, :start] .+= ep_len
+    obj_tmp.markers[!, :start] .+= ep_len
 
-    push!(obj_new.history, "average_epochs(obj, bl=$bl, blfirst=$blfirst)")
+    push!(obj_tmp.history, "average_epochs(obj, bl=$bl, blfirst=$blfirst)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -100,13 +100,14 @@ function average_epochs!(
     bl::Tuple{Real, Real} = (0, 0),
     blfirst::Bool = false,
 )::Nothing
-    obj_new = average_epochs(obj; bl = bl, blfirst = blfirst)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
-    obj.header = obj_new.header
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
-    obj.markers = obj_new.markers
+    obj_tmp = average_epochs(obj; bl = bl, blfirst = blfirst)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj.header = obj_tmp.header
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
 
     return nothing
 end
@@ -143,13 +144,13 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
         )
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[:, :, 2:end] = obj.data[:, :, s]
+    obj_tmp.data[:, :, 2:end] = obj.data[:, :, s]
     _warn("Markers are not sorted when epochs are reordered.")
-    push!(obj_new.history, "sort_epochs(obj, s=$s)")
+    push!(obj_tmp.history, "sort_epochs(obj, s=$s)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -167,10 +168,11 @@ Sort epochs 2:end in-place of an ERP/ERF object according to a permutation vecto
 - `Nothing`
 """
 function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
-    obj_new = sort_epochs(obj; s = s)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
-    obj.markers = obj_new.markers
+    obj_tmp = sort_epochs(obj; s = s)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
 
     return nothing
 end

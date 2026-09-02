@@ -72,12 +72,12 @@ function denoise_wien(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = denoise_wien(@view(obj.data[ch, :, :]))
-    push!(obj_new.history, "denoise_wien(obj; ch=$ch)")
+    obj_tmp.data[ch, :, :] = denoise_wien(@view(obj.data[ch, :, :]))
+    push!(obj_tmp.history, "denoise_wien(obj; ch=$ch)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -98,9 +98,10 @@ function denoise_wien!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Nothing
-    obj_new = denoise_wien(obj; ch = ch)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = denoise_wien(obj; ch = ch)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

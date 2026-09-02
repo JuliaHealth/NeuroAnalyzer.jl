@@ -70,22 +70,22 @@ function cbp(
     fs = sr(obj)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        obj_new.data[ch[ch_idx], :, ep_idx] = cbp(
-            @view(obj_new.data[ch[ch_idx], :, ep_idx]),
+        obj_tmp.data[ch[ch_idx], :, ep_idx] = cbp(
+            @view(obj_tmp.data[ch[ch_idx], :, ep_idx]),
             pad = pad,
             frq = frq,
             fs = fs,
         )
     end
 
-    push!(obj_new.history, "cbp(obj; ch=$ch, pad=$pad, frq=$frq)")
+    push!(obj_tmp.history, "cbp(obj; ch=$ch, pad=$pad, frq=$frq)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -110,9 +110,10 @@ function cbp!(
     pad::Int64 = 0,
     frq::Real,
 )::Nothing
-    obj_new = cbp(obj; ch = ch, pad = pad, frq = frq)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = cbp(obj; ch = ch, pad = pad, frq = frq)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

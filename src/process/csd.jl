@@ -70,7 +70,7 @@ function csd(
     Gs_inv_sum = sum(Gs_rs)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     @inbounds for ep_idx in 1:ep_n
         # data: (ch_n × samples)
@@ -88,16 +88,16 @@ function csd(
 
         # surface Laplacian via H matrix
         # back to (ch_n × samples)
-        obj_new.data[ch, :, ep_idx] = (C * H')'
+        obj_tmp.data[ch, :, ep_idx] = (C * H')'
     end
 
-    obj_new.header.recording[:data_type] = "csd"
-    obj_new.header.recording[:channel_type][ch] .= "csd"
-    obj_new.header.recording[:unit][ch] .= "µV/m²"
+    obj_tmp.header.recording[:data_type] = "csd"
+    obj_tmp.header.recording[:channel_type][ch] .= "csd"
+    obj_tmp.header.recording[:unit][ch] .= "µV/m²"
 
-    push!(obj_new.history, "csd(obj, m=$m, n=$n, lambda=$lambda)")
+    push!(obj_tmp.history, "csd(obj, m=$m, n=$n, lambda=$lambda)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -127,10 +127,11 @@ function csd!(
     n::Int64 = 8,
     lambda::Float64 = 10^-5,
 )::Nothing
-    obj_new = csd(obj; m = m, n = n, lambda = lambda)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
+    obj_tmp = csd(obj; m = m, n = n, lambda = lambda)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

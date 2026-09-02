@@ -398,7 +398,7 @@ function filter_apply(
     dir === :twopass && _info("Two-pass filtering: effective order is doubled.")
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # initialize progress bar
     progbar = Progress(
@@ -412,7 +412,7 @@ function filter_apply(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        obj_new.data[ch[ch_idx], :, ep_idx] = filter_apply(
+        obj_tmp.data[ch[ch_idx], :, ep_idx] = filter_apply(
             @view(obj.data[ch[ch_idx], :, ep_idx]),
             flt = flt,
             dir = dir,
@@ -421,9 +421,9 @@ function filter_apply(
         progress_bar && next!(progbar)
     end
 
-    push!(obj_new.history, "filter_apply(obj; ch=$ch, dir=$dir)")
+    push!(obj_tmp.history, "filter_apply(obj; ch=$ch, dir=$dir)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -457,9 +457,10 @@ function filter_apply!(
     },
     dir::Symbol = :twopass,
 )::Nothing
-    obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = filter_apply(obj; ch = ch, flt = flt, dir = dir)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
@@ -551,9 +552,9 @@ function filter(
             bw = bw,
             w = w,
         )
-        obj_new = filter_apply(obj; ch = ch, flt = flt, dir = dir)
+        obj_tmp = filter_apply(obj; ch = ch, flt = flt, dir = dir)
 
-        return obj_new
+        return obj_tmp
     end
 end
 
@@ -635,7 +636,7 @@ function filter!(
         )
     end
 
-    obj_new = NeuroAnalyzer.filter(
+    obj_tmp = NeuroAnalyzer.filter(
         obj;
         ch = ch,
         fprototype = fprototype,
@@ -649,8 +650,9 @@ function filter!(
         w = w,
     )
 
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

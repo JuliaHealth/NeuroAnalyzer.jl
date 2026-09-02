@@ -115,12 +115,12 @@ function denoise_fft(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
-    push!(obj_new.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
+    obj_tmp.data[ch, :, :] = denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
+    push!(obj_tmp.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -145,9 +145,10 @@ function denoise_fft!(
     pad::Int64 = 0,
     t::Int64 = 0,
 )::Nothing
-    obj_new = denoise_fft(obj; ch = ch, pad = pad, t = t)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = denoise_fft(obj; ch = ch, pad = pad, t = t)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

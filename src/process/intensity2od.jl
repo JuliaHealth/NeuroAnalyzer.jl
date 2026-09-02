@@ -60,7 +60,7 @@ function intensity2od(
     _check_channels(get_channel(obj; type = "nirs_int"), ch)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # index of non-selected channels (kept as-is in the output)
     other_ch = setdiff(axes(obj.data, 1), ch)
@@ -68,7 +68,7 @@ function intensity2od(
     # ------------------------------------------------------------------ #
     # Signal data: [original intensity | new OD | remaining channels]    #
     # ------------------------------------------------------------------ #
-    obj_new.data = vcat(
+    obj_tmp.data = vcat(
         obj.data[ch, :, :],
         reshape(
             intensity2od(@view(obj.data[ch, :, :])),
@@ -83,44 +83,44 @@ function intensity2od(
     # ------------------------------------------------------------------ #
 
     # wavelength index: replicate for OD channels; pass through for others
-    obj_new.header.recording[:wavelength_index] = vcat(
+    obj_tmp.header.recording[:wavelength_index] = vcat(
         obj.header.recording[:wavelength_index][ch],        # intensity
         obj.header.recording[:wavelength_index][ch],        # OD (same wavelength)
     )
 
     # optode pairs: same fix as wavelength_index
-    obj_new.header.recording[:optode_pairs] = vcat(
+    obj_tmp.header.recording[:optode_pairs] = vcat(
         obj.header.recording[:optode_pairs][ch, :],   # intensity
         obj.header.recording[:optode_pairs][ch, :],   # OD (same pairs)
     )
 
     # channel type: OD channels get the "nirs_od" type string
-    obj_new.header.recording[:channel_type] = vcat(
+    obj_tmp.header.recording[:channel_type] = vcat(
         obj.header.recording[:channel_type][ch],
         repeat(["nirs_od"], length(ch)),
         obj.header.recording[:channel_type][other_ch],
     )
 
     # channel labels: append " OD" suffix to distinguish from the raw channels
-    obj_new.header.recording[:label] = vcat(
+    obj_tmp.header.recording[:label] = vcat(
         obj.header.recording[:label][ch],              # intensity
         obj.header.recording[:label][ch] .* " OD",     # OD (same pairs)
         obj.header.recording[:label][other_ch],
     )
 
     # units: OD channels inherit the same unit string as their source channels
-    obj_new.header.recording[:unit] = vcat(
+    obj_tmp.header.recording[:unit] = vcat(
         obj.header.recording[:unit][ch],              # intensity
         repeat([""], length(ch)),                     # OD (same pairs)
         obj.header.recording[:unit][other_ch],
     )
 
     # reset bad-channel flags to match the new channel count
-    obj_new.header.recording[:bad_channel] = zeros(Bool, size(obj_new.data, 1))
+    obj_tmp.header.recording[:bad_channel] = zeros(Bool, size(obj_tmp.data, 1))
 
-    push!(obj_new.history, "intensity2od(obj; ch=$ch)")
+    push!(obj_tmp.history, "intensity2od(obj; ch=$ch)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -141,10 +141,11 @@ function intensity2od!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_int"),
 )::Nothing
-    obj_new = intensity2od(obj; ch = ch)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
+    obj_tmp = intensity2od(obj; ch = ch)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

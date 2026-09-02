@@ -78,7 +78,7 @@ function lrinterpolate_channel(
     # predict
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     df = DataFrame(
         hcat(
@@ -87,11 +87,11 @@ function lrinterpolate_channel(
         ),
         :auto,
     )
-    obj_new.data[ch, :, ep] = GLM.predict(linear_regressor, df)
+    obj_tmp.data[ch, :, ep] = GLM.predict(linear_regressor, df)
 
-    push!(obj_new.history, "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref)")
+    push!(obj_tmp.history, "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -119,9 +119,10 @@ function lrinterpolate_channel!(
         ep,
     ),
 )::Nothing
-    obj_new = lrinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = lrinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

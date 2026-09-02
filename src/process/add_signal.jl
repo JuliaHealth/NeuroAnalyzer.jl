@@ -57,18 +57,18 @@ function add_signal(
     ep_n = nepochs(obj)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        obj_new.data[ch[ch_idx], :, ep_idx] =
+        obj_tmp.data[ch[ch_idx], :, ep_idx] =
             add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)
     end
 
-    push!(obj_new.history, "add_signal(obj; ch=$ch)")
+    push!(obj_tmp.history, "add_signal(obj; ch=$ch)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -91,9 +91,10 @@ function add_signal!(
     ch::Union{String, Vector{String}, Regex},
     s::AbstractVector,
 )::Nothing
-    obj_new = add_signal(obj; ch = ch, s = s)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = add_signal(obj; ch = ch, s = s)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

@@ -98,9 +98,9 @@ function artrem_cwd(
     _check_epochs(obj, ep)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, ep] = artrem_cwd(
+    obj_tmp.data[ch, :, ep] = artrem_cwd(
         @view(obj.data[ch, :, ep]),
         obj.epoch_time;
         fs = sr(obj),
@@ -110,11 +110,11 @@ function artrem_cwd(
         type = type,
     )
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "artrem_cwd(obj; ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -148,10 +148,11 @@ function artrem_cwd!(
     fseg::Tuple{Real, Real},
     type::Symbol = :nd,
 )::Nothing where {T <: CWT}
-    obj_new =
+    obj_tmp =
         artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

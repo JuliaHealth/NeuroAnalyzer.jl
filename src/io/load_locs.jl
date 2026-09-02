@@ -231,20 +231,20 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
     )
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.locs = Base.filter(:label => in(labels(obj)), locs)
+    obj_tmp.locs = Base.filter(:label => in(labels(obj)), locs)
 
-    _locs_round!(obj_new.locs)
-    _locs_remove_nans!(obj_new.locs)
+    _locs_round!(obj_tmp.locs)
+    _locs_remove_nans!(obj_tmp.locs)
 
     # keep order consistent with labels
-    locs_idx = indexin(obj_new.locs[:, :label], labels(obj_new))
-    obj_new.locs = obj_new.locs[sortperm(locs_idx), :]
+    locs_idx = indexin(obj_tmp.locs[:, :label], labels(obj_tmp))
+    obj_tmp.locs = obj_tmp.locs[sortperm(locs_idx), :]
 
-    push!(obj_new.history, "load_locs(obj, file_name=$file_name)")
+    push!(obj_tmp.history, "load_locs(obj, file_name=$file_name)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -289,6 +289,7 @@ Channel locations:
 function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
     obj_tmp = load_locs(obj; file_name = file_name)
     obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end

@@ -91,18 +91,18 @@ function mlinterpolate_channel(
     # ------------------------------------------------------------------ #
     # Predict the interpolated epoch                                     #
     # ------------------------------------------------------------------ #
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # feature matrix for the epoch to reconstruct: same other-channel layout
     x_pred = MLJBase.table(obj.data[ch_ref, :, ep]')
-    obj_new.data[ch_idx, :, ep] = MLJ.predict(mach, x_pred)
+    obj_tmp.data[ch_idx, :, ep] = MLJ.predict(mach, x_pred)
 
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "mlinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, model=$(typeof(model)))",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -132,9 +132,10 @@ function mlinterpolate_channel!(
     ),
     model::T,
 )::Nothing where {T <: MLJ.Model}
-    obj_new = mlinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref, model = model)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = mlinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref, model = model)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

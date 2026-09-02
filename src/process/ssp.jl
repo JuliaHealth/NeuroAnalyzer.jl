@@ -100,17 +100,17 @@ function apply_ssp_projectors(
     _check_datatype(obj, "meg")
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # generate the projector matrix and the noise-subspace basis U
     ssp_projectors, U = generate_ssp_projectors(obj; pidx = pidx)
     _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
 
     ssp_mask = obj.header.recording[:ssp_channels]
-    obj_new.data[ssp_mask, :, 1] = ssp_projectors * obj.data[ssp_mask, :, 1]
-    push!(obj_new.history, "apply_ssp_projectors(obj, pidx=$pidx)")
+    obj_tmp.data[ssp_mask, :, 1] = ssp_projectors * obj.data[ssp_mask, :, 1]
+    push!(obj_tmp.history, "apply_ssp_projectors(obj, pidx=$pidx)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -131,9 +131,10 @@ function apply_ssp_projectors!(
     obj::NeuroAnalyzer.NEURO;
     pidx::Union{Int64, Vector{Int64}} = 0,
 )::Nothing
-    obj_new = apply_ssp_projectors(obj; pidx = pidx)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = apply_ssp_projectors(obj; pidx = pidx)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

@@ -223,31 +223,31 @@ function normalize(
     ep_n = nepochs(obj)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     if bych
         # normalize each (channel, epoch) slice independently
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(
-                @view(obj_new.data[ch[ch_idx], :, ep_idx]),
+            obj_tmp.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(
+                @view(obj_tmp.data[ch[ch_idx], :, ep_idx]),
                 n,
                 method = method,
             )
         end
     else
         # normalize the entire selected channel block at once
-        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(
-            obj_new.data[ch, :, :],
+        obj_tmp.data[ch, :, :] = NeuroAnalyzer.normalize(
+            obj_tmp.data[ch, :, :],
             n;
             method = method,
             bych = false,
         )
     end
 
-    push!(obj_new.history, "normalize(obj; ch=$ch, method=$method, n=$n)")
+    push!(obj_tmp.history, "normalize(obj; ch=$ch, method=$method, n=$n)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -291,9 +291,10 @@ function normalize!(
     bych::Bool = false,
     n::Real = 1,
 )::Nothing
-    obj_new = NeuroAnalyzer.normalize(obj; ch = ch, method = method, bych = bych, n = n)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = NeuroAnalyzer.normalize(obj; ch = ch, method = method, bych = bych, n = n)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

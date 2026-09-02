@@ -83,12 +83,12 @@ function taper(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = taper(obj.data[ch, :, :]; t = t)
-    push!(obj_new.history, "taper(obj; ch=$ch), t=$t")
+    obj_tmp.data[ch, :, :] = taper(obj.data[ch, :, :]; t = t)
+    push!(obj_tmp.history, "taper(obj; ch=$ch), t=$t")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -111,9 +111,10 @@ function taper!(
     ch::Union{String, Vector{String}, Regex},
     t::Vector{<:Real},
 )::Nothing
-    obj_new = taper(obj; ch = ch, t = t)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = taper(obj; ch = ch, t = t)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

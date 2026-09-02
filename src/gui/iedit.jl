@@ -31,7 +31,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
     # TO DO: other recording types
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     if nchannels(obj) < 1
         _warn("OBJ must contain ≥ 1 channel.")
@@ -40,23 +40,23 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         return nothing
     end
 
-    ch_types = obj_new.header.recording[:channel_type]
-    ch_units = obj_new.header.recording[:unit]
-    ch_labels = labels(obj_new)
+    ch_types = obj_tmp.header.recording[:channel_type]
+    ch_units = obj_tmp.header.recording[:unit]
+    ch_labels = labels(obj_tmp)
 
     # resolve channel names to integer indices
     ch_signal = get_channel(
-        obj_new;
-        ch = get_channel(obj_new; type = ["mag", "grad", "eeg", "eog", "ref"]),
+        obj_tmp;
+        ch = get_channel(obj_tmp; type = ["mag", "grad", "eeg", "eog", "ref"]),
     )
     isempty(ch_signal) && throw(ArgumentError("No channels selected."))
 
-    if DataFrames.nrow(obj_new.locs) > 0
-        chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
-        locs = Base.filter(:label => in(chs), obj_new.locs)
+    if DataFrames.nrow(obj_tmp.locs) > 0
+        chs = intersect(labels(obj_tmp)[ch_signal], obj_tmp.locs[!, :label])
+        locs = Base.filter(:label => in(chs), obj_tmp.locs)
     else
-        _initialize_locs!(obj_new)
-        locs = Base.filter(:label => in(chs), obj_new.locs)
+        _initialize_locs!(obj_tmp)
+        locs = Base.filter(:label => in(chs), obj_tmp.locs)
     end
 
     # Gtk canvas / Cairo context should be scaled only once
@@ -157,7 +157,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         lab_chn = GtkLabel("Channel number:")
         lab_chn.halign = 2
-        entry_ch = GtkSpinButton(1, nchannels(obj_new), 1)
+        entry_ch = GtkSpinButton(1, nchannels(obj_tmp), 1)
         entry_ch.value = current_channel
         entry_ch.climb_rate = 0.1
         entry_ch.tooltip_text = "Channel number"
@@ -187,7 +187,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         entry_label.text = ch_labels[current_channel]
 
         bt_delete = GtkButton("Delete channel")
-        nchannels(obj_new) == 0 && (bt_delete.sensitive = false)
+        nchannels(obj_tmp) == 0 && (bt_delete.sensitive = false)
 
         lab_loc_x = GtkLabel("Cartesian X")
         entry_loc_x = GtkSpinButton(-2.0, 2.0, 0.01)
@@ -415,7 +415,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 current_channel in ch_signal &&
                     (sch = _find_bylabel(locs, ch_labels[current_channel]))
                 sch == Int64[] && (sch = 0)
-                obj_new.locs = locs
+                obj_tmp.locs = locs
                 p = plot_locs(
                     locs, sch = sch, ch_labels = false, head_labels = hdlab,
                     cart = cart, plane = :xz, grid = true,
@@ -504,7 +504,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         end
 
         signal_connect(bt_end, "clicked") do widget
-            current_channel = nchannels(obj_new)
+            current_channel = nchannels(obj_tmp)
             return entry_ch.value = current_channel
         end
 
@@ -527,21 +527,21 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
             ch = ch_labels[current_channel]
             ask_dialog("Delete channel $ch ?") do ans
                 if ans
-                    delete_channel!(obj_new; ch = ch)
-                    current_channel > nchannels(obj_new) &&
-                        (current_channel = nchannels(obj_new))
-                    ch_types = obj_new.header.recording[:channel_type]
-                    ch_units = obj_new.header.recording[:unit]
-                    ch_labels = labels(obj_new)
+                    delete_channel!(obj_tmp; ch = ch)
+                    current_channel > nchannels(obj_tmp) &&
+                        (current_channel = nchannels(obj_tmp))
+                    ch_types = obj_tmp.header.recording[:channel_type]
+                    ch_units = obj_tmp.header.recording[:unit]
+                    ch_labels = labels(obj_tmp)
                     ch_signal = get_channel(
-                        obj_new;
+                        obj_tmp;
                         ch = get_channel(
-                            obj_new;
+                            obj_tmp;
                             type = ["mag", "grad", "eeg", "eog", "ref"],
                         ),
                     )
-                    chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
-                    locs = Base.filter(:label => in(chs), obj_new.locs)
+                    chs = intersect(labels(obj_tmp)[ch_signal], obj_tmp.locs[!, :label])
+                    locs = Base.filter(:label => in(chs), obj_tmp.locs)
                     entry_ch.value = current_channel
                     entry_label.text = ch_labels[current_channel]
                     combo_chtype.active =
@@ -573,8 +573,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
             ch_types[current_channel] =
                 string(NeuroAnalyzer.channel_types[combo_chtype.active + 2])
             ch_signal = get_channel(
-                obj_new;
-                ch = get_channel(obj_new; type = ["mag", "grad", "eeg", "eog", "ref"]),
+                obj_tmp;
+                ch = get_channel(obj_tmp; type = ["mag", "grad", "eeg", "eog", "ref"]),
             )
             isempty(ch_signal) && throw(ArgumentError("No channels selected."))
             combo_chunits.active =
@@ -673,7 +673,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         signal_connect(bt_flip, "clicked") do widget
             # do not modify "ref" and "eog" channels
-            obj_tmp = deepcopy(obj_new)
+            obj_tmp = deepcopy(obj_tmp)
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
             locs_tmp = obj_tmp.locs
@@ -704,7 +704,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         signal_connect(bt_ax_rot, "clicked") do widget
             # do not modify "ref" and "eog" channels
-            obj_tmp = deepcopy(obj_new)
+            obj_tmp = deepcopy(obj_tmp)
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
             locs_tmp = obj_tmp.locs
@@ -743,7 +743,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         signal_connect(bt_scale, "clicked") do widget
             # do not modify "ref" and "eog" channels
-            obj_tmp = deepcopy(obj_new)
+            obj_tmp = deepcopy(obj_tmp)
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
             locs_tmp = obj_tmp.locs
@@ -763,7 +763,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         signal_connect(bt_normalize, "clicked") do widget
             # do not modify "ref" and "eog" channels
-            obj_tmp = deepcopy(obj_new)
+            obj_tmp = deepcopy(obj_tmp)
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
             locs_tmp = obj_tmp.locs
@@ -805,7 +805,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
 
         signal_connect(bt_swapxy, "clicked") do widget
             # do not modify "ref" and "eog" channels
-            obj_tmp = deepcopy(obj_new)
+            obj_tmp = deepcopy(obj_tmp)
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
             delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
             locs_tmp = obj_tmp.locs
@@ -823,7 +823,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
         end
 
         signal_connect(bt_generate, "clicked") do widget
-            locs_generate!(obj_new.locs)
+            locs_generate!(obj_tmp.locs)
             refresh = false
             _refresh_locs()
             refresh = true
@@ -839,11 +839,11 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                     ask_dialog("Replace channel locations ?", win) do ans
                         if ans
                             try
-                                load_locs!(obj_new; file_name = file_name)
+                                load_locs!(obj_tmp; file_name = file_name)
                             catch
                                 warn_dialog(_nill, "File could not be opened!", win)
                             end
-                            locs = obj_new.locs
+                            locs = obj_tmp.locs
                             refresh = false
                             _refresh_locs()
                             refresh = true
@@ -865,7 +865,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 if file_name != ""
                     if splitext(file_name)[2] in [".ced", ".locs", ".tsv"]
                         try
-                            export_locs(obj_new; file_name = file_name, overwrite = true)
+                            export_locs(obj_tmp; file_name = file_name, overwrite = true)
                         catch
                             warn_dialog(_nill, "File cannot be saved!", win)
                         end
@@ -882,11 +882,11 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String = labels(obj)[1])::Nothing
                 win,
             ) do ans
                 if ans
-                    obj.header = obj_new.header
-                    obj.data = obj_new.data
+                    obj.header = obj_tmp.header
+                    obj.data = obj_tmp.data
                     obj.locs = locs
-                    obj.history = obj_new.history
-                    obj.markers = obj_new.markers
+                    obj.history = obj_tmp.history
+                    obj.markers = obj_tmp.markers
                     close(win)
                     return nothing
                 end

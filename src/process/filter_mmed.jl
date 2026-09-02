@@ -151,14 +151,14 @@ function filter_mmed(
     _info("Window length: $wlen samples")
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = filter_mmed(
+    obj_tmp.data[ch, :, :] = filter_mmed(
         @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
     )
-    push!(obj_new.history, "filter_mmed(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
+    push!(obj_tmp.history, "filter_mmed(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -186,9 +186,10 @@ function filter_mmed!(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::Nothing
-    obj_new = filter_mmed(obj; ch = ch, k = k, t = t, ww = ww)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = filter_mmed(obj; ch = ch, k = k, t = t, ww = ww)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

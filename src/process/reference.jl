@@ -49,7 +49,7 @@ function reference_ce(
     ep_n = nepochs(obj)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -76,21 +76,21 @@ function reference_ce(
                 ),
             )
         end
-        obj_new.data[s_ch, :, ep_idx] .-= ref
+        obj_tmp.data[s_ch, :, ep_idx] .-= ref
     end
 
     suffix = length(ref_ch_idx) == 1 ? "-$(labels(obj)[ref_ch_idx[1]])" : "-cavg"
-    obj_new.header.recording[:label][sig_ch_idx] .*= suffix
-    obj_new.locs[:, :label][sig_ch_idx] .*= suffix
+    obj_tmp.header.recording[:label][sig_ch_idx] .*= suffix
+    obj_tmp.locs[:, :label][sig_ch_idx] .*= suffix
 
-    obj_new.header.recording[:reference] = if length(ref_ch_idx) == 1
+    obj_tmp.header.recording[:reference] = if length(ref_ch_idx) == 1
         "common ($(labels(obj)[ref_ch_idx[1]]))"
     else
         "common ($(Base.join(labels(obj)[ref_ch_idx], ", ")) averaged)"
     end
-    push!(obj_new.history, "reference_ce(obj; ch=$ch, med=$med)")
+    push!(obj_tmp.history, "reference_ce(obj; ch=$ch, med=$med)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -113,11 +113,12 @@ function reference_ce!(
     ch::Union{String, Vector{String}, Regex},
     med::Bool = false,
 )::Nothing
-    obj_new = reference_ce(obj; ch = ch, med = med)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = reference_ce(obj; ch = ch, med = med)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end
@@ -241,26 +242,26 @@ function reference_avg(
     end
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[sig_ch_idx, :, :] = dst
+    obj_tmp.data[sig_ch_idx, :, :] = dst
 
     suffix = average ? (weighted ? "-wavg" : "-avg") : (weighted ? "-wsum" : "-sum")
-    obj_new.header.recording[:label][sig_ch_idx] .*= suffix
+    obj_tmp.header.recording[:label][sig_ch_idx] .*= suffix
     ch_locs = _find_bylabel(obj.locs, labels(obj)[sig_ch_idx])
-    obj_new.locs[ch_locs, :label] .*= suffix
+    obj_tmp.locs[ch_locs, :label] .*= suffix
 
-    obj_new.header.recording[:reference] = if average
+    obj_tmp.header.recording[:reference] = if average
         weighted ? "average (weighted)" : "average"
     else
         weighted ? "sum (weighted)" : "sum"
     end
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "reference_avg(obj, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -288,7 +289,7 @@ function reference_avg!(
     med::Bool = false,
     weighted::Bool = false,
 )::Nothing
-    obj_new = reference_avg(
+    obj_tmp = reference_avg(
         obj;
         exclude_fpo = exclude_fpo,
         exclude_current = exclude_current,
@@ -296,10 +297,11 @@ function reference_avg!(
         med = med,
         weighted = weighted,
     )
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end
@@ -382,9 +384,9 @@ function reference_a(
     ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    s = obj_new.data[ch, :, :]
+    s = obj_tmp.data[ch, :, :]
     a1 = extract_channel(obj; ch = "A1")
     a2 = extract_channel(obj; ch = "A2")
     ch_n = size(s, 1)
@@ -435,18 +437,18 @@ function reference_a(
         )
     end
 
-    obj_new.data[ch, :, :] = s_ref
-    obj_new.header.recording[:label][ch] .*= ref_label
+    obj_tmp.data[ch, :, :] = s_ref
+    obj_tmp.header.recording[:label][ch] .*= ref_label
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
-    obj_new.locs[ch_locs, :label] .*= ref_label
-    obj_new.header.recording[:reference] = Dict(
+    obj_tmp.locs[ch_locs, :label] .*= ref_label
+    obj_tmp.header.recording[:reference] = Dict(
         :l => "auricular (linked)",
         :i => "auricular (ipsilateral)",
         :c => "auricular (contralateral)",
     )[type]
-    push!(obj_new.history, "reference_a(obj, type=$type, med=$med)")
+    push!(obj_tmp.history, "reference_a(obj, type=$type, med=$med)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -472,11 +474,12 @@ function reference_a!(
     type::Symbol = :l,
     med::Bool = false,
 )::Nothing
-    obj_new = reference_a(obj; type = type, med = med)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = reference_a(obj; type = type, med = med)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end
@@ -513,9 +516,9 @@ function reference_m(
     ch = get_channel(obj; ch = get_channel(obj; type = "eeg"))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    s = obj_new.data[ch, :, :]
+    s = obj_tmp.data[ch, :, :]
     m1 = extract_channel(obj; ch = "M1")
     m2 = extract_channel(obj; ch = "M2")
     ch_n = size(s, 1)
@@ -566,18 +569,18 @@ function reference_m(
         )
     end
 
-    obj_new.data[ch, :, :] = s_ref
-    obj_new.header.recording[:label][ch] .*= ref_label
+    obj_tmp.data[ch, :, :] = s_ref
+    obj_tmp.header.recording[:label][ch] .*= ref_label
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
-    obj_new.locs[ch_locs, :label] .*= ref_label
-    obj_new.header.recording[:reference] = Dict(
+    obj_tmp.locs[ch_locs, :label] .*= ref_label
+    obj_tmp.header.recording[:reference] = Dict(
         :l => "mastoid (linked)",
         :i => "mastoid (ipsilateral)",
         :c => "mastoid (contralateral)",
     )[type]
-    push!(obj_new.history, "reference_m(obj, type=$type, med=$med)")
+    push!(obj_tmp.history, "reference_m(obj, type=$type, med=$med)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -603,11 +606,12 @@ function reference_m!(
     type::Symbol = :l,
     med::Bool = false,
 )::Nothing
-    obj_new = reference_m(obj; type = type, med = med)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = reference_m(obj; type = type, med = med)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end
@@ -713,19 +717,19 @@ function reference_plap(
     s_ref = _laplacian_reference(obj, d, nn, weighted, med, loc_x, loc_y)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = s_ref
+    obj_tmp.data[ch, :, :] = s_ref
     suffix = weighted ? "-wplap" : "-plap"
-    obj_new.header.recording[:label][ch] .*= suffix
+    obj_tmp.header.recording[:label][ch] .*= suffix
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
-    obj_new.locs[ch_locs, :label] .*= suffix
-    obj_new.header.recording[:reference] =
+    obj_tmp.locs[ch_locs, :label] .*= suffix
+    obj_tmp.header.recording[:reference] =
         weighted ? "weighted planar Laplacian ($nn)" : "planar Laplacian ($nn)"
 
-    push!(obj_new.history, "reference_plap(obj, nn=$nn, weighted=$weighted, med=$med)")
+    push!(obj_tmp.history, "reference_plap(obj, nn=$nn, weighted=$weighted, med=$med)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -750,11 +754,12 @@ function reference_plap!(
     weighted::Bool = false,
     med::Bool = false,
 )::Nothing
-    obj_new = reference_plap(obj; nn = nn, weighted = weighted, med = med)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = reference_plap(obj; nn = nn, weighted = weighted, med = med)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end
@@ -809,18 +814,18 @@ function reference_slap(
     s_ref = _laplacian_reference(obj, d, nn, weighted, med, loc_x, loc_y, loc_z)
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = s_ref
+    obj_tmp.data[ch, :, :] = s_ref
     suffix = weighted ? "-wslap" : "-slap"
-    obj_new.header.recording[:label][ch] .*= suffix
+    obj_tmp.header.recording[:label][ch] .*= suffix
     ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
-    obj_new.locs[ch_locs, :label] .*= suffix
-    obj_new.header.recording[:reference] =
+    obj_tmp.locs[ch_locs, :label] .*= suffix
+    obj_tmp.header.recording[:reference] =
         weighted ? "weighted spherical Laplacian ($nn)" : "spherical Laplacian ($nn)"
-    push!(obj_new.history, "reference_slap(obj, nn=$nn, weighted=$weighted, med=$med)")
+    push!(obj_tmp.history, "reference_slap(obj, nn=$nn, weighted=$weighted, med=$med)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -845,11 +850,12 @@ function reference_slap!(
     weighted::Bool = false,
     med::Bool = false,
 )::Nothing
-    obj_new = reference_slap(obj; nn = nn, weighted = weighted, med = med)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = reference_slap(obj; nn = nn, weighted = weighted, med = med)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end
@@ -924,10 +930,10 @@ function reference_custom(
         end
     end
 
-    obj_new = delete_channel(obj; ch = get_channel(obj; type = "eeg"))
-    obj_new.data = vcat(s, obj_new.data)
-    rec = obj_new.header.recording
-    rec[:label] = vcat(ref_list, labels(obj_new))
+    obj_tmp = delete_channel(obj; ch = get_channel(obj; type = "eeg"))
+    obj_tmp.data = vcat(s, obj_tmp.data)
+    rec = obj_tmp.header.recording
+    rec[:label] = vcat(ref_list, labels(obj_tmp))
     rec[:reference] = ref_name
     rec[:channel_type] = vcat(fill("eeg", length(ref_list)), rec[:channel_type])
     rec[:unit] = vcat(fill("μV", length(ref_list)), rec[:unit])
@@ -941,13 +947,13 @@ function reference_custom(
     )
     rec[:gain] = vcat(fill(obj.header.recording[:gain][1], length(ref_list)), rec[:gain])
     _info("Bad channels matrix will be reset.")
-    rec[:bad_channel] = falses(size(obj_new.data, 1))   # was: zeros - Bool is more appropriate
+    rec[:bad_channel] = falses(size(obj_tmp.data, 1))   # was: zeros - Bool is more appropriate
 
-    # TODO: update obj_new.locs for the new montage channels
+    # TODO: update obj_tmp.locs for the new montage channels
 
-    push!(obj_new.history, "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name)")
+    push!(obj_tmp.history, "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -986,11 +992,12 @@ function reference_custom!(
     ],
     ref_name::String = "longitudinal-BIP",
 )::Nothing
-    obj_new = reference_custom(obj; ref_list = ref_list, ref_name = ref_name)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = reference_custom(obj; ref_list = ref_list, ref_name = ref_name)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end

@@ -56,7 +56,7 @@ function iview_ica(
         )
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     obj_edited = false
 
@@ -280,7 +280,7 @@ function iview_ica(
             current_ic = Int64(entry_ic.value)
             if plot_sig_type == 0
                 p_sig = NeuroAnalyzer.plot(
-                    obj_new,
+                    obj_tmp,
                     ch = cl[chn[ch_idx]],
                     seg = (time1, time2),
                     mono = true,
@@ -288,7 +288,7 @@ function iview_ica(
                 )
             elseif plot_sig_type == 1
                 p_sig = NeuroAnalyzer.plot(
-                    obj_new,
+                    obj_tmp,
                     obj_reconstructed[current_ic],
                     ch = cl[chn[ch_idx]],
                     seg = (time1, time2),
@@ -296,7 +296,7 @@ function iview_ica(
                 )
             elseif plot_sig_type == 2
                 p_sig = NeuroAnalyzer.plot(
-                    obj_new,
+                    obj_tmp,
                     obj_removed[current_ic],
                     ch = cl[chn[ch_idx]],
                     seg = (time1, time2),
@@ -304,7 +304,7 @@ function iview_ica(
                 )
             elseif plot_sig_type == 3
                 p_sig = NeuroAnalyzer.plot(
-                    obj_new,
+                    obj_tmp,
                     ic,
                     ch = ch,
                     c_idx = current_ic,
@@ -334,7 +334,7 @@ function iview_ica(
             current_ic = Int64(entry_ic.value)
             if plot_psd_type == 0
                 p_psd = NeuroAnalyzer.plot_psd(
-                    obj_new,
+                    obj_tmp,
                     ch = cl[chn[ch_idx]],
                     seg = (time1, time2),
                     mono = true,
@@ -358,7 +358,7 @@ function iview_ica(
                 )
             elseif plot_psd_type == 3
                 p_psd = NeuroAnalyzer.plot_psd(
-                    obj_new,
+                    obj_tmp,
                     ic,
                     ch = ch,
                     c_idx = current_ic,
@@ -502,7 +502,7 @@ function iview_ica(
                             "Reconstructing the signal using the IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))",
                         )
                         ica_reconstruct!(
-                            obj_new,
+                            obj_tmp,
                             ic,
                             ic_mw;
                             ch = ch,
@@ -540,7 +540,7 @@ function iview_ica(
                             "Removing IC$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))",
                         )
                         ica_reconstruct!(
-                            obj_new,
+                            obj_tmp,
                             ic,
                             ic_mw;
                             ch = ch,
@@ -572,11 +572,11 @@ function iview_ica(
                     win,
                 ) do ans
                     if ans
-                        obj.header = obj_new.header
-                        obj.data = obj_new.data
-                        obj.locs = obj_new.locs
-                        obj.history = obj_new.history
-                        obj.markers = obj_new.markers
+                        obj.header = obj_tmp.header
+                        obj.data = obj_tmp.data
+                        obj.locs = obj_tmp.locs
+                        obj.history = obj_tmp.history
+                        obj.markers = obj_tmp.markers
                         close(win)
                         return nothing
                     end

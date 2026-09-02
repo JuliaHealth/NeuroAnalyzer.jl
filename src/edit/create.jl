@@ -178,13 +178,13 @@ function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
     fs > 0 || throw(ArgumentError("fs must be > 0."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.header.recording[:sampling_rate] = fs
-    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
-    push!(obj_new.history, "create_time(obj, fs=$fs)")
+    obj_tmp.header.recording[:sampling_rate] = fs
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
+    push!(obj_tmp.history, "create_time(obj, fs=$fs)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -202,11 +202,12 @@ Build time vectors from a specified sampling rate in-place.
 - `Nothing`
 """
 function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
-    obj_new = create_time(obj; fs = fs)
-    obj.header = obj_new.header
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
-    obj.history = obj_new.history
+    obj_tmp = create_time(obj; fs = fs)
+    obj.header = obj_tmp.header
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
@@ -250,18 +251,18 @@ function create_data(
     clabels = ["ch-$i" for i in 1:ch_n]
 
     # create new dataset
-    obj_new                                  = deepcopy(obj)
-    obj_new.data                             = data
-    obj_new.header.recording[:label]         = clabels
-    obj_new.header.recording[:channel_type]  = fill(type, ch_n)
-    obj_new.header.recording[:unit]          = fill(_ch_units(type), ch_n)
-    obj_new.header.recording[:channel_order] = collect(1:ch_n)
-    obj_new.header.recording[:bad_channel]   = zeros(Bool, ch_n)
-    obj_new.header.recording[:sampling_rate] = fs
-    obj_new.time_pts, obj_new.epoch_time     = _get_t(obj_new)
-    push!(obj_new.history, "create_data(obj; data, fs=$fs, type=$type)")
+    obj_tmp                                  = deepcopy(obj)
+    obj_tmp.data                             = data
+    obj_tmp.header.recording[:label]         = clabels
+    obj_tmp.header.recording[:channel_type]  = fill(type, ch_n)
+    obj_tmp.header.recording[:unit]          = fill(_ch_units(type), ch_n)
+    obj_tmp.header.recording[:channel_order] = collect(1:ch_n)
+    obj_tmp.header.recording[:bad_channel]   = zeros(Bool, ch_n)
+    obj_tmp.header.recording[:sampling_rate] = fs
+    obj_tmp.time_pts, obj_tmp.epoch_time     = _get_t(obj_tmp)
+    push!(obj_tmp.history, "create_data(obj; data, fs=$fs, type=$type)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -286,12 +287,13 @@ function create_data!(
     fs::Int64,
     type::String,
 )::Nothing
-    obj_new = create_data(obj; data = data, fs = fs, type = type)
-    obj.header = obj_new.header
-    obj.data = obj_new.data
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
-    obj.history = obj_new.history
+    obj_tmp = create_data(obj; data = data, fs = fs, type = type)
+    obj.header = obj_tmp.header
+    obj.data = obj_tmp.data
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

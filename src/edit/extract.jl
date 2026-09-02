@@ -48,13 +48,13 @@ function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)::NeuroAnalyzer.NEURO
     _check_epochs(obj, ep)
 
     # create new dataset
-    obj_new = deepcopy(obj)
-    obj_new.data = reshape(obj.data[:, :, ep], nchannels(obj), epoch_len(obj), 1)
-    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    obj_tmp = deepcopy(obj)
+    obj_tmp.data = reshape(obj.data[:, :, ep], nchannels(obj), epoch_len(obj), 1)
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
-    push!(obj_new.history, "extract_epoch(obj; ep=$ep)")
+    push!(obj_tmp.history, "extract_epoch(obj; ep=$ep)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -72,12 +72,13 @@ Extract epoch.
 - `Nothing`
 """
 function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
-    obj_new = extract_epoch(obj; ep = ep)
-    obj.header = obj_new.header
-    obj.data = obj_new.data
-    obj.history = obj_new.history
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
+    obj_tmp = extract_epoch(obj; ep = ep)
+    obj.header = obj_tmp.header
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj_tmp = nothing
 
     return nothing
 end

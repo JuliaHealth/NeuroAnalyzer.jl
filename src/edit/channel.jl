@@ -65,12 +65,12 @@ function set_channel_type(
     ch = ch[1]
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.header.recording[:channel_type][ch] = type
-    push!(obj_new.history, "set_channel_type(obj; ch=$ch, type=$type)")
+    obj_tmp.header.recording[:channel_type][ch] = type
+    push!(obj_tmp.history, "set_channel_type(obj; ch=$ch, type=$type)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -89,9 +89,10 @@ Set the type of one channel in-place.
 - `Nothing`
 """
 function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::Nothing
-    obj_new = set_channel_type(obj; ch = ch, type = type)
-    obj.header = obj_new.header
-    obj.history = obj_new.history
+    obj_tmp = set_channel_type(obj; ch = ch, type = type)
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
@@ -124,19 +125,19 @@ function rename_channel(
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
-    obj_new = deepcopy(obj)
-    obj_new.header.recording[:label][ch] = name
+    obj_tmp = deepcopy(obj)
+    obj_tmp.header.recording[:label][ch] = name
 
     # update matching locs entry if present.
-    l_result = _find_bylabel(obj_new.locs, labels(obj)[ch])
+    l_result = _find_bylabel(obj_tmp.locs, labels(obj)[ch])
     if !isempty(l_result)
         l_idx = l_result isa Int64 ? l_result : l_result[1]
-        obj_new.locs[l_idx, :label] = name
+        obj_tmp.locs[l_idx, :label] = name
     end
 
-    push!(obj_new.history, "rename_channel(obj; ch=$ch, name=$name)")
+    push!(obj_tmp.history, "rename_channel(obj; ch=$ch, name=$name)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -155,10 +156,11 @@ Rename one channel in-place.
 - `Nothing`
 """
 function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::Nothing
-    obj_new = rename_channel(obj; ch = ch, name = name)
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.locs = obj_new.locs
+    obj_tmp = rename_channel(obj; ch = ch, name = name)
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj_tmp = nothing
 
     return nothing
 end
@@ -197,12 +199,12 @@ function edit_channel(
     ch = ch[1]
 
     # create new dataset
-    obj_new = deepcopy(obj)
-    obj_new.header.recording[field][ch] = value
+    obj_tmp = deepcopy(obj)
+    obj_tmp.header.recording[field][ch] = value
 
-    push!(obj_new.history, "edit_channel(obj; ch=$ch, field=$field, value=$value)")
+    push!(obj_tmp.history, "edit_channel(obj; ch=$ch, field=$field, value=$value)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -227,9 +229,10 @@ function edit_channel!(
     field::Symbol,
     value::String,
 )::Nothing
-    obj_new = edit_channel(obj; ch = ch, field = field, value = value)
-    obj.header = obj_new.header
-    obj.history = obj_new.history
+    obj_tmp = edit_channel(obj; ch = ch, field = field, value = value)
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
@@ -273,12 +276,12 @@ function replace_channel(
     ch = ch[1]
 
     # create new dataset
-    obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = s
+    obj_tmp = deepcopy(obj)
+    obj_tmp.data[ch, :, :] = s
 
-    push!(obj_new.history, "replace_channel(obj; ch=$ch, s)")
+    push!(obj_tmp.history, "replace_channel(obj; ch=$ch, s)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -301,10 +304,11 @@ function replace_channel!(
     ch::String,
     s::Array{Float64, 3},
 )::Nothing
-    obj_new = replace_channel(obj; ch = ch, s = s)
-    obj.header = obj_new.header
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = replace_channel(obj; ch = ch, s = s)
+    obj.header = obj_tmp.header
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
@@ -329,12 +333,12 @@ function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnal
         throw(ArgumentError("clabels length must be $(nchannels(obj))."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.header.recording[:label] = clabels
-    push!(obj_new.history, "add_label(obj, clabels=$clabels)")
+    obj_tmp.header.recording[:label] = clabels
+    push!(obj_tmp.history, "add_label(obj, clabels=$clabels)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -352,9 +356,10 @@ Replace channel labels in-place.
 - `Nothing`
 """
 function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
-    obj_new = add_label(obj; clabels = clabels)
-    obj.header = obj_new.header
-    obj.history = obj_new.history
+    obj_tmp = add_label(obj; clabels = clabels)
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
@@ -429,35 +434,35 @@ function add_channel(
         _warn("OBJ contains SSP projections data; apply them before modifying data.")
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
     if length(obj.data) > 0
-        obj_new.data                            = cat(obj.data, data; dims = 1)
-        obj_new.header.recording[:label]        = vcat(obj.header.recording[:label], label_v)
-        obj_new.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], string.(type_v))
-        obj_new.header.recording[:unit]         = vcat(obj.header.recording[:unit], unit_v)
-        obj_new.header.recording[:bad_channel]  = vcat(obj.header.recording[:bad_channel], zeros(Bool, ch_n))
+        obj_tmp.data                            = cat(obj.data, data; dims = 1)
+        obj_tmp.header.recording[:label]        = vcat(obj.header.recording[:label], label_v)
+        obj_tmp.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], string.(type_v))
+        obj_tmp.header.recording[:unit]         = vcat(obj.header.recording[:unit], unit_v)
+        obj_tmp.header.recording[:bad_channel]  = vcat(obj.header.recording[:bad_channel], zeros(Bool, ch_n))
 
-        max_ord = maximum(obj_new.header.recording[:channel_order])
-        obj_new.header.recording[:channel_order] = vcat(
+        max_ord = maximum(obj_tmp.header.recording[:channel_order])
+        obj_tmp.header.recording[:channel_order] = vcat(
             obj.header.recording[:channel_order],
             collect((max_ord + 1):(max_ord + ch_n)),
         )
     else
-        obj_new.data                             = data
-        obj_new.header.recording[:label]         = label_v
-        obj_new.header.recording[:channel_type]  = string.(type_v)
-        obj_new.header.recording[:unit]          = unit_v
-        obj_new.header.recording[:channel_order] = collect(1:ch_n)
-        obj_new.header.recording[:bad_channel]   = zeros(Bool, ch_n)
+        obj_tmp.data                             = data
+        obj_tmp.header.recording[:label]         = label_v
+        obj_tmp.header.recording[:channel_type]  = string.(type_v)
+        obj_tmp.header.recording[:unit]          = unit_v
+        obj_tmp.header.recording[:channel_order] = collect(1:ch_n)
+        obj_tmp.header.recording[:bad_channel]   = zeros(Bool, ch_n)
     end
 
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "add_channel(obj; data, label=$label_v, type=$type_v, unit=$unit_v)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -484,12 +489,13 @@ function add_channel!(
     type::Union{String, Vector{String}},
     unit::Union{String, Vector{String}},
 )::Nothing
-    obj_new = add_channel(obj; data = data, label = label, type = type, unit = unit)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
-    obj.history = obj_new.history
+    obj_tmp = add_channel(obj; data = data, label = label, type = type, unit = unit)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

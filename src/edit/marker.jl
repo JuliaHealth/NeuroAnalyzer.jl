@@ -86,13 +86,13 @@ function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
     _in(n, (1, nn), "n")
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    deleteat!(obj_new.markers, n)
+    deleteat!(obj_tmp.markers, n)
 
-    push!(obj_new.history, "delete_marker(obj; n=$n)")
+    push!(obj_tmp.history, "delete_marker(obj; n=$n)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -110,9 +110,10 @@ Delete a marker in-place.
 - `Nothing`
 """
 function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
-    obj_new = delete_marker(obj; n = n)
-    obj.history = obj_new.history
-    obj.markers = obj_new.markers
+    obj_tmp = delete_marker(obj; n = n)
+    obj.history = obj_tmp.history
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
 
     return nothing
 end
@@ -152,9 +153,9 @@ function add_marker(
         throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
     append!(
-        obj_new.markers,
+        obj_tmp.markers,
         DataFrame(
             :id => id,
             :start => start,
@@ -163,14 +164,14 @@ function add_marker(
             :channel => ch,
         ),
     )
-    sort!(obj_new.markers, :start)
+    sort!(obj_tmp.markers, :start)
 
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "add_marker(obj; id=$id, start=$start, len=$len, value=$value, ch=$ch)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -199,9 +200,10 @@ function add_marker!(
     value::String,
     ch::Int64 = 0,
 )::Nothing
-    obj_new = add_marker(obj; id = id, start = start, len = len, value = value, ch = ch)
-    obj.history = obj_new.history
-    obj.markers = obj_new.markers
+    obj_tmp = add_marker(obj; id = id, start = start, len = len, value = value, ch = ch)
+    obj.history = obj_tmp.history
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
 
     return nothing
 end
@@ -246,18 +248,18 @@ function edit_marker(
     n < 1 || n > nn && throw(ArgumentError("n must be in [1, $nn]."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.markers[n, :] = Dict(
+    obj_tmp.markers[n, :] = Dict(
         :id => id, :start => start, :length => len, :value => value, :channel => ch,
     )
-    sort!(obj_new.markers, :start)
+    sort!(obj_tmp.markers, :start)
     push!(
-        obj_new.history,
+        obj_tmp.history,
         "edit_marker(obj, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
     )
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -288,11 +290,12 @@ function edit_marker!(
     value::String,
     ch::Int64 = 0,
 )::Nothing
-    obj_new = edit_marker(
+    obj_tmp = edit_marker(
         obj; n = n, id = id, start = start, len = len, value = value, ch = ch,
     )
-    obj.history = obj_new.history
-    obj.markers = obj_new.markers
+    obj.history = obj_tmp.history
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
 
     return nothing
 end
@@ -371,9 +374,9 @@ function channel2marker(
 
     _info("$(length(ev_start)) events found and added as markers.")
 
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
     append!(
-        obj_new.markers,
+        obj_tmp.markers,
         DataFrame(
             :id      => ev_id,
             :start   => ev_start ./ sr(obj),
@@ -382,11 +385,11 @@ function channel2marker(
             :channel => ev_ch_v,
         ),
     )
-    sort!(obj_new.markers, :start)
+    sort!(obj_tmp.markers, :start)
 
-    push!(obj_new.history, "channel2marker(obj; ch=$ch, v=$v, id=$id, value=$value)")
+    push!(obj_tmp.history, "channel2marker(obj; ch=$ch, v=$v, id=$id, value=$value)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -413,9 +416,10 @@ function channel2marker!(
     id::String = "",
     value::String = "",
 )::Nothing
-    obj_new = channel2marker(obj; ch = ch, v = v, id = id, value = value)
-    obj.history = obj_new.history
-    obj.markers = obj_new.markers
+    obj_tmp = channel2marker(obj; ch = ch, v = v, id = id, value = value)
+    obj.history = obj_tmp.history
+    obj.markers = obj_tmp.markers
+    obj_tmp = nothing
 
     return nothing
 end
@@ -441,12 +445,12 @@ function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyze
     _check_marker_cols(markers)
 
     # create new dataset
-    obj_new         = deepcopy(obj)
-    obj_new.markers = markers
+    obj_tmp         = deepcopy(obj)
+    obj_tmp.markers = markers
 
-    push!(obj_new.history, "add_markers(obj; markers)")
+    push!(obj_tmp.history, "add_markers(obj; markers)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """

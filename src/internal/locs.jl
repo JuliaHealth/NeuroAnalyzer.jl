@@ -447,9 +447,9 @@ Normalize location coordinates to the [0, 1] range using min-max scaling.
 """
 function _locs_norm(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     # create new dataset
-    obj_new = deepcopy(obj)
-    _locs_norm!(obj_new.locs)
-    return obj_new
+    obj_tmp = deepcopy(obj)
+    _locs_norm!(obj_tmp.locs)
+    return obj_tmp
 end
 
 """

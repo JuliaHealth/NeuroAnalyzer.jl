@@ -120,12 +120,13 @@ Resample all channels to `new_sr` sampling frequency in-place.
 - `Nothing`
 """
 function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
-    obj_new = resample(obj; new_sr = new_sr)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
+    obj_tmp = resample(obj; new_sr = new_sr)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj_tmp = nothing
 
     return nothing
 end
@@ -151,15 +152,15 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     )
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
-    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    obj_tmp.data = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
-    obj_new.header.recording[:sampling_rate] = new_sr
-    push!(obj_new.history, "upsample(obj, new_sr=$new_sr)")
+    obj_tmp.header.recording[:sampling_rate] = new_sr
+    push!(obj_tmp.history, "upsample(obj, new_sr=$new_sr)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -177,12 +178,13 @@ Upsample all channels to `new_sr` sampling frequency in-place.
 - `Nothing`
 """
 function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
-    obj_new = upsample(obj; new_sr = new_sr)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
+    obj_tmp = upsample(obj; new_sr = new_sr)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj_tmp = nothing
 
     return nothing
 end
@@ -212,17 +214,17 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEUR
     )
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
     s_new = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
 
-    obj_new.data = s_new
+    obj_tmp.data = s_new
 
-    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
-    obj_new.header.recording[:sampling_rate] = new_sr
-    push!(obj_new.history, "downsample(obj, new_sr=$new_sr)")
+    obj_tmp.header.recording[:sampling_rate] = new_sr
+    push!(obj_tmp.history, "downsample(obj, new_sr=$new_sr)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -240,12 +242,13 @@ Downsample all channels to `new_sr` sampling frequency in-place.
 - `Nothing`
 """
 function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
-    obj_new = downsample(obj; new_sr = new_sr)
-    obj.data = obj_new.data
-    obj.header = obj_new.header
-    obj.history = obj_new.history
-    obj.time_pts = obj_new.time_pts
-    obj.epoch_time = obj_new.epoch_time
+    obj_tmp = downsample(obj; new_sr = new_sr)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
+    obj.time_pts = obj_tmp.time_pts
+    obj.epoch_time = obj_tmp.epoch_time
+    obj_tmp = nothing
 
     return nothing
 end

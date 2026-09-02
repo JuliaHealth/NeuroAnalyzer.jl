@@ -123,12 +123,12 @@ function remove_dc(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] = remove_dc(@view(obj.data[ch, :, :]), n)
-    push!(obj_new.history, "remove_dc(obj; ch=$ch, n=$n)")
+    obj_tmp.data[ch, :, :] = remove_dc(@view(obj.data[ch, :, :]), n)
+    push!(obj_tmp.history, "remove_dc(obj; ch=$ch, n=$n)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -151,9 +151,10 @@ function remove_dc!(
     ch::Union{String, Vector{String}, Regex},
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Nothing
-    obj_new = remove_dc(obj; ch = ch, n = n)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = remove_dc(obj; ch = ch, n = n)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end

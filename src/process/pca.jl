@@ -181,13 +181,13 @@ function pca_reconstruct(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # create new dataset
-    obj_new = deepcopy(obj)
+    obj_tmp = deepcopy(obj)
 
-    obj_new.data[ch, :, :] =
-        pca_reconstruct(@view(obj_new.data[ch, :, :]); pc = pc, pc_model = pc_model)
-    push!(obj_new.history, "pca_reconstruct(obj; ch=$ch)")
+    obj_tmp.data[ch, :, :] =
+        pca_reconstruct(@view(obj_tmp.data[ch, :, :]); pc = pc, pc_model = pc_model)
+    push!(obj_tmp.history, "pca_reconstruct(obj; ch=$ch)")
 
-    return obj_new
+    return obj_tmp
 end
 
 """
@@ -212,9 +212,10 @@ function pca_reconstruct!(
     pc::Array{Float64, 3},
     pc_model::MultivariateStats.PCA{Float64},
 )::Nothing
-    obj_new = pca_reconstruct(obj; ch = ch, pc = pc, pc_model = pc_model)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
+    obj_tmp = pca_reconstruct(obj; ch = ch, pc = pc, pc_model = pc_model)
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj_tmp = nothing
 
     return nothing
 end
