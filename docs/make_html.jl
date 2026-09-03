@@ -1,7 +1,9 @@
 @info "Generating HTML documentation"
 
 using Pkg
+@info "Activating packages..."
 Pkg.add(; url = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl")
+Pkg.add("Documenter")
 Pkg.instantiate()
 using Documenter
 using NeuroAnalyzer
