@@ -49,7 +49,7 @@ function filter_mavg(
     s_filtered = copy(s) .* 1.0 # convert to floats
 
     # left edge: truncated window [1 … idx]
-    @inbounds for idx in 1:k
+    @inbounds for idx = 1:k
         _needs_filter(s[idx]) || continue
         s_tmp = @view s[1:idx]
         w_tmp = @view ww[1:idx]
@@ -57,14 +57,14 @@ function filter_mavg(
     end
 
     # interior: full centered window [idx-k … idx+k]
-    @inbounds for idx in (k + 1):(length(s) - k)
+    @inbounds for idx = (k + 1):(length(s) - k)
         _needs_filter(s[idx]) || continue
         s_tmp = @view s[(idx - k):(idx + k)]
         s_filtered[idx] = mean(s_tmp .* ww)
     end
 
     # right edge: truncated window [idx … end]
-    @inbounds for idx in (length(s) - k + 1):length(s)
+    @inbounds for idx = (length(s) - k + 1):length(s)
         _needs_filter(s[idx]) || continue
         s_tmp = @view s[idx:end]
         w_tmp = @view ww[(end - length(s_tmp) + 1):end]
@@ -154,7 +154,7 @@ function filter_mavg(
     wlen = 2 * k + 1
     _info("Window length: $wlen samples")
     _info("Approximate cutoff: $(round(0.442947 / sqrt(wlen^2 - 1) * fs, digits = 2)) Hz")
-    for z in 1:4
+    for z = 1:4
         _info("Zero $z at: $(round(z * fs / k, digits = 2)) Hz")
     end
 

@@ -6,7 +6,7 @@ export grubbs
 function _original_index(local_idx::Int, removed::Vector{Int}, n::Int)::Int
     pos = 0
     count = 0
-    for i in 1:n
+    for i = 1:n
         i in removed && continue
         count += 1
         count == local_idx && return i
@@ -66,7 +66,7 @@ function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
         x_tmp = collect(Float64, x)
         # original indices already removed
         removed = Int[]
-        for _ in (length(x_tmp)):-1:7
+        for _ = (length(x_tmp)):-1:7
             m_idx_local = argmax(x_tmp)
             if grubbs(x_tmp; t = 1)
                 # map local index back to the original index
@@ -83,7 +83,7 @@ function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
         # lower-tail pass: reset working copy and repeat for the minimum
         x_tmp = collect(Float64, x)
         removed = Int[]
-        for _ in (length(x_tmp)):-1:7
+        for _ = (length(x_tmp)):-1:7
             m_idx_local = argmin(x_tmp)
             if grubbs(x_tmp; t = -1)
                 orig_idx = _original_index(m_idx_local, removed, length(x))

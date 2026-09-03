@@ -30,7 +30,7 @@ end
 function _check_accuracy()::Nothing
     ac = zeros(100)
     n = LinRange(0.01, 1.0, 100)
-    for idx in 1:100
+    for idx = 1:100
         t = n[idx]
         tt = @elapsed sleep(t)
         t1 = round(t - tt; digits = length(string(t)))

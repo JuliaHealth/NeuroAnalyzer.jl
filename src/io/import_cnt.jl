@@ -270,7 +270,7 @@ function import_cnt(
         crectify = Int64[]
         ccalib = Float64[]
 
-        for _ in 1:ch_n
+        for _ = 1:ch_n
             push!(clabels, _vint2str(_fread(fid, 10, :c)))
             push!(creference, _fread(fid, 1, :c))
             push!(cskip, _fread(fid, 1, :c))
@@ -317,14 +317,14 @@ function import_cnt(
         seek(fid, begdata)
         # CNT stores samples in multiplexed order: ch1_s1, ch2_s1, ..., chN_s1, ch1_s2, ...
         # read into a flat buffer then reshape - avoids millions of individual _fread calls
-        raw = [_fread(fid, 1, data_format) for _ in 1:(nums * ch_n)]
+        raw = [_fread(fid, 1, data_format) for _ = 1:(nums * ch_n)]
         data = zeros(ch_n, nums)
-        @inbounds for s in 1:nums, ch in 1:ch_n
+        @inbounds for s = 1:nums, ch = 1:ch_n
             data[ch, s] = raw[(s - 1) * ch_n + ch]
         end
 
         # scale to μV: value_μV = (raw - baseline) × sensitivity × (calibration / 204.8)
-        @inbounds for idx in 1:ch_n
+        @inbounds for idx = 1:ch_n
             mf = csenstivity[idx] * (ccalib[idx] / 204.8)
             data[idx, :] = @views (data[idx, :] .- cbaseline[idx]) .* mf
         end
@@ -353,7 +353,7 @@ function import_cnt(
 
         if teeg == 2
             nevents = Int(et_fsize ÷ sizeEvent2)
-            for _ in 1:nevents
+            for _ = 1:nevents
                 push!(evt_stimtype, _fread(fid, 1, :ui16))
                 _fread(fid, 1, :c)
                 _fread(fid, 1, :ui8)
@@ -369,7 +369,7 @@ function import_cnt(
         elseif teeg == 3
             # type 3: offset field encodes the global sample frame directly
             nevents = Int(et_fsize ÷ sizeEvent3)
-            for _ in 1:nevents
+            for _ = 1:nevents
                 push!(evt_stimtype, _fread(fid, 1, :ui16))
                 _fread(fid, 1, :c)
                 _fread(fid, 1, :ui8)
@@ -385,7 +385,7 @@ function import_cnt(
 
         elseif teeg == 1
             nevents = Int(et_fsize ÷ sizeEvent1)
-            for _ in 1:nevents
+            for _ = 1:nevents
                 push!(evt_stimtype, _fread(fid, 1, :ui16))
                 _fread(fid, 1, :c)
                 _fread(fid, 1, :ui8)
@@ -400,7 +400,7 @@ function import_cnt(
         # initial_offset = 900-byte global header + 75-byte-per-channel header
         if nevents > 0
             initial_offset = 900 + (ch_n * 75)
-            @inbounds for idx in 1:nevents
+            @inbounds for idx = 1:nevents
                 evt_offset[idx] = if teeg == 3
                     evt_offset[idx] ÷ (bytes_per_samp * ch_n)
                 else
@@ -431,7 +431,7 @@ function import_cnt(
     # channel types and units                                            #
     # ------------------------------------------------------------------ #
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
     # ------------------------------------------------------------------ #
     # build markers DataFrame from parsed event table                    #
@@ -447,11 +447,11 @@ function import_cnt(
     else
         DataFrame(
             :id => [
-                isempty(evt_stimtype) ? "mrk" : string(evt_stimtype[i]) for i in 1:nevents
+                isempty(evt_stimtype) ? "mrk" : string(evt_stimtype[i]) for i = 1:nevents
             ],
             :start => evt_offset ./ sampling_rate,
             :length => fill(0.0, nevents),
-            :value => [isempty(evt_code) ? "" : string(evt_code[i]) for i in 1:nevents],
+            :value => [isempty(evt_code) ? "" : string(evt_code[i]) for i = 1:nevents],
             :channel => fill(0, nevents),
         )
     end

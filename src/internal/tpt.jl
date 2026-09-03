@@ -9,7 +9,7 @@ function _tpt_peaks(x::AbstractVector)::Vector{Int64}
     wlen = 25
     n = round(Int64, length(x) / (50 * 0.5))
     p_idx = Int64[]
-    for idx in 1:n
+    for idx = 1:n
         w = ((idx - 1) * wlen + 1):(idx * wlen)
         t1 = w[1]
         t2 = w[end]

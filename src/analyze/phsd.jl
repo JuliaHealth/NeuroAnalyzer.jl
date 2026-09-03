@@ -64,7 +64,7 @@ function phsd(
 
     ph = zeros(ch_n, length(f))
 
-    @inbounds for ch_idx in 1:ch_n
+    @inbounds for ch_idx = 1:ch_n
         phsd_data = phsd(@view(s[ch_idx, :]), fs = fs)
         ph[ch_idx, :] = phsd_data.ph
     end

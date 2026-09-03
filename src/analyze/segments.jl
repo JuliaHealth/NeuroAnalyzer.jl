@@ -328,7 +328,7 @@ function seg_select(
                 end
             end
             if event.button == Mouse.right && event.action == Mouse.press
-                for _ in length(points[]):-1:1
+                for _ = length(points[]):-1:1
                     pop!(points[])
                 end
                 notify(points)

@@ -40,7 +40,7 @@ function acov(
         n = length(s)
         # hoist the biased branch: denominator formula is the only difference
         denom = biased ? (idx -> n) : (idx -> n - idx)
-        @inbounds for idx in 0:l
+        @inbounds for idx = 0:l
             # dot avoids allocating the intermediate product array
             autocov[idx + 1] =
                 dot(
@@ -54,7 +54,7 @@ function acov(
         # similar to :sum but uses a covariance-based approach internally
         demean && (s = remove_dc(s))
         corrected = !biased
-        @inbounds for idx in 0:l
+        @inbounds for idx = 0:l
             autocov[idx + 1] = cov(
                 @view(s[1:(end - idx)]),
                 @view(s[(1 + idx):end]),

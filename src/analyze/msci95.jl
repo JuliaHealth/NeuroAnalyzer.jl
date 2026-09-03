@@ -49,7 +49,7 @@ function msci95(
         n_boot = length(s) * n
         s_tmp1 = zeros(n_boot)
 
-        @inbounds Threads.@threads :static for idx1 in 1:n_boot
+        @inbounds Threads.@threads :static for idx1 = 1:n_boot
             s_tmp2 = zeros(length(s))
             sample_idx = rand(1:length(s), length(s))
             @inbounds for idx2 in eachindex(s)
@@ -118,7 +118,7 @@ function msci95(
         n_boot = size(s, 1) * n
         s_tmp1 = zeros(n_boot, size(s, 2))
 
-        @inbounds Threads.@threads :static for idx1 in 1:n_boot
+        @inbounds Threads.@threads :static for idx1 = 1:n_boot
             s_tmp2 = zeros(size(s))
             sample_idx = rand(axes(s, 1), size(s, 1))
             @inbounds for idx2 in axes(s, 1)
@@ -182,7 +182,7 @@ function msci95(
     ll = zeros(ep_n, ep_len)
 
     # calculate over epochs
-    for ep_idx in 1:ep_n
+    for ep_idx = 1:ep_n
         msci_data = msci95(@view(s[:, :, ep_idx]); n = n, method = method)
         sm[ep_idx, :] = msci_data.sm
         se[ep_idx, :] = msci_data.se

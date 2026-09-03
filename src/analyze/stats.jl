@@ -52,7 +52,7 @@ function epoch_stats(
     e_max_dif = zeros(ep_n)
     e_dev_mean = zeros(ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         e_mean[ep_idx] = mean(@view(obj.data[:, :, ep_idx]))
         e_median[ep_idx] = median(@view(obj.data[:, :, ep_idx]))
         e_std[ep_idx] = std(@view(obj.data[:, :, ep_idx]))

@@ -309,7 +309,7 @@ function plot_locs(
         use_weights = weights === true
 
         for idx1 in axes(connections, 1)
-            for idx2 in (idx1 + 1):size(connections, 1)
+            for idx2 = (idx1 + 1):size(connections, 1)
                 val = connections[idx1, idx2]
                 if _passes_threshold(val, threshold, threshold_type)
                     _draw_connection!(
@@ -402,7 +402,7 @@ function plot_locs(
     # draw connection weight labels
     if !isnothing(connections)
         for idx1 in axes(connections, 1)
-            for idx2 in (idx1 + 1):size(connections, 1)
+            for idx2 = (idx1 + 1):size(connections, 1)
                 val = connections[idx1, idx2]
                 if _passes_threshold(val, threshold, threshold_type)
                     _draw_connection_label!(

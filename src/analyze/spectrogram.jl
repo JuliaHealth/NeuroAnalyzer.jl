@@ -138,7 +138,7 @@ function spectrogram(
     # pre-allocate output
     p = zeros(length(f), length(t), ch_n)
 
-    @inbounds Threads.@threads :static for ch_idx in 1:ch_n
+    @inbounds Threads.@threads :static for ch_idx = 1:ch_n
         p[:, :, ch_idx] = NeuroAnalyzer.spectrogram(
             @view(s[ch_idx, :]),
             fs = fs,
@@ -449,7 +449,7 @@ function mwspectrogram(
         ncyc = round.(Int64, logspace(ncyc[1], ncyc[2], nfrq))
     end
 
-    @inbounds for frq_idx in 1:nfrq
+    @inbounds for frq_idx = 1:nfrq
         kernel = generate_morlet(fs, f[frq_idx], 1, ncyc = ncyc[frq_idx], complex = true)
         cs[frq_idx, :] = fconv(s .* win, kernel = kernel, norm = true)
         p[frq_idx, :] = abs2.(@view(cs[frq_idx, :]))
@@ -796,7 +796,7 @@ function hhtspectrogram(
     imfs = emd(s, t)
     imfs_n = size(imfs, 1)
     # last IMF is a residual, ignore it
-    for idx2 in 1:(imfs_n - 1)
+    for idx2 = 1:(imfs_n - 1)
         # get instantaneous frequencies of IMF
         push!(imf_fi, frqinst(imfs[idx2, :]) .* fs)
         # perform Hilbert transform and get instantaneous powers of IMF
@@ -871,7 +871,7 @@ function hhtspectrogram(
         imfs = emd(s[idx1, :], t)
         imfs_n = size(imfs, 1)
         # last IMF is a residual, ignore it
-        for idx2 in 1:(imfs_n - 1)
+        for idx2 = 1:(imfs_n - 1)
             # get instantaneous frequencies of IMF
             push!(imf_fi, frqinst(imfs[idx2, :]) .* fs)
             # perform Hilbert transform and get instantaneous powers of IMF

@@ -34,13 +34,13 @@ function denoise_wien(s::AbstractArray)::AbstractArray
 
     # thread over epochs; the inner channel loop must remain sequential because
     # s_m and noise are shared across all channels of the same epoch.
-    Threads.@threads :static for ep_idx in 1:ep_n
+    Threads.@threads :static for ep_idx = 1:ep_n
         # cross-channel mean for this epoch: shape (samples,)
         s_m = vec(mean(@view(s[:, :, ep_idx]), dims = 1))
         m = mean(s_m)
         # Noise estimate: white noise at mean signal power
         noise = rand(Float64, length(s_m)) .* m
-        for ch_idx in 1:ch_n
+        for ch_idx = 1:ch_n
             @inbounds s_new[ch_idx, :, ep_idx] =
                 wiener(@view(s[ch_idx, :, ep_idx]), s_m, noise)
         end

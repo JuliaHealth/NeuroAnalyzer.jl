@@ -103,7 +103,7 @@ function perm_cmp(
 
     # build null distribution via random epoch label permutations
     perm_maps = zeros(size(a1, 1), size(a1, 2), perm_n)
-    @inbounds for perm_idx in 1:perm_n
+    @inbounds for perm_idx = 1:perm_n
         rand_idx = sample(1:ep_n, ep_n; replace = false)
         rand_spec = @view(spec_all[:, :, rand_idx])
         # difference between the two random halves → one null sample

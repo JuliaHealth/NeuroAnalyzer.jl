@@ -132,7 +132,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     clabels = repeat([""], ch_n)
     ref_chs = repeat([""], ch_n)
 
-    for idx in 1:ch_n
+    for idx = 1:ch_n
         fields = split(split(vhdr[idx + channels_idx], '=')[2], ',')
         clabels[idx] = replace(fields[1], "\1" => ",")
         ref_chs[idx] = length(fields) >= 2 ? fields[2] : ""
@@ -165,13 +165,13 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     # now that ch_type is defined, apply any overrides from the sidecar
     if soft_filt !== false
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             lowercase(soft_filt[idx, :type]) in ("eeg", "eog", "ecg", "emg") &&
                 (ch_type[idx] = lowercase(soft_filt[idx, :type]))
         end
     end
 
-    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
     # ------------------------------------------------------------------ #
     # channel locations from [Coordinates]                               #
@@ -187,7 +187,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     locs = _initialize_locs()
 
     if locs_idx != 0
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             l =
                 occursin('=', vhdr[locs_idx + idx]) ?
                 split(vhdr[locs_idx + idx], '=')[2] : vhdr[locs_idx + idx]
@@ -329,7 +329,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             rem != 0 && (signal = signal[1:(end - rem)])
             n_samples = length(signal) ÷ ch_n
             data = zeros(ch_n, n_samples, 1)
-            @inbounds for s in 1:n_samples
+            @inbounds for s = 1:n_samples
                 data[:, s, 1] = signal[((s - 1) * ch_n + 1):(s * ch_n)]
             end
         else
@@ -355,7 +355,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # ------------------------------------------------------------------ #
     # unit conversion: nV / mV → μV                                      #
     # ------------------------------------------------------------------ #
-    @inbounds for idx in 1:ch_n
+    @inbounds for idx = 1:ch_n
         units[idx] == "" && (units[idx] = "μV")
         ch_type[idx] == "eeg" || continue
         if lowercase(units[idx]) == "mv"

@@ -109,7 +109,7 @@ function import_ft(
     clabels = if length(hdr["label"][:]) > 0 && length(vec(hdr["label"])) == ch_n
         string.(strip.(string.(hdr["label"])))[:]
     else
-        ["ch_$idx" for idx in 1:ch_n]
+        ["ch_$idx" for idx = 1:ch_n]
     end
 
     ch_type, units = if detect_type
@@ -118,7 +118,7 @@ function import_ft(
         u =
             "chanunit" in keys(hdr) ?
             replace.(strip.(string.(hdr["chanunit"][:])), "uV" => "μV") :
-            [_ch_units(ct[i]) for i in 1:ch_n]
+            [_ch_units(ct[i]) for i = 1:ch_n]
         ct, u
     else
         ct =
@@ -150,7 +150,7 @@ function import_ft(
     ep_n = size(dataset["trial"], 2)
     ep_len = size(dataset["trial"][1], 2)
     data = zeros(ch_n, ep_len, ep_n)
-    for idx in 1:ep_n
+    for idx = 1:ep_n
         data[:, :, idx] = dataset["trial"][idx]
     end
 
@@ -208,7 +208,7 @@ function import_ft(
             _detect_montage(clabels, ch_type, data_type)
         end
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             if units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg", "emg", "eog", "ref")
                 data[ch_idx, :, 1] .*= 1.0e6
                 units[ch_idx] = "μV"
@@ -269,7 +269,7 @@ function import_ft(
         ch_type[occursin.("sti", lowercase.(clabels))] .= "mrk"
         ch_type[occursin.("sys", lowercase.(clabels))] .= "other"
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             if units[ch_idx] == "T"
                 data[ch_idx, :, 1] .*= 1.0e15
                 units[ch_idx] = "fT"

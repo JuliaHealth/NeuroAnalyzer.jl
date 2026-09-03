@@ -93,7 +93,7 @@ function iavh()::Nothing
     function _load_voices(prefix::String)
         return [
             wavread(joinpath(res_path, "avh/wav/$(prefix)_$(lpad(i, 2, '0')).wav"))
-            for i in 1:15
+            for i = 1:15
         ]
     end
 

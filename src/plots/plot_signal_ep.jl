@@ -76,7 +76,7 @@ function plot_ep(
     ep_n = Observable(nepochs(obj))
     ep_n[] > 1 || throw(ArgumentError("Use plot_cont() for continuous object."))
     seg = (0, n_epochs * ep_len)
-    epmarkers = [(idx - 1) * (epoch_len(obj) / sr(obj)) for idx in 1:ep_n[]]
+    epmarkers = [(idx - 1) * (epoch_len(obj) / sr(obj)) for idx = 1:ep_n[]]
     ep_selected = zeros(Bool, ep_n[])
 
     # check channels and meta data
@@ -211,7 +211,7 @@ function plot_ep(
 
     # draw channels
     if type === :normal
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             line_color = @lift($bad_ch[idx] ? :lightgray : :black)
             GLMakie.lines!(ax1, t, s[idx, :]; linewidth = 1.5, color = line_color)
         end
@@ -268,7 +268,7 @@ function plot_ep(
     if scale
         if type === :normal
             idx2 = 1
-            for idx1 in 1:ch_n
+            for idx1 = 1:ch_n
                 if ctypes_uni_pos[idx1] == 1
                     s_rectangle = lift(seg_pos) do sp
                         return Rect(sp, (idx1 - 0.49), 0.01, 0.98)

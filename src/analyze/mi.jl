@@ -98,7 +98,7 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 in 1:(ch_idx1 - 1)
+        for ch_idx2 = 1:(ch_idx1 - 1)
             mi[ch_idx1, ch_idx2, ep_idx] = mutual_information(
                 @view(s[ch_idx1, :, ep_idx]),
                 @view(s[ch_idx2, :, ep_idx]),

@@ -29,7 +29,7 @@ function to_toeplitz(
     vals_total = zeros(promote_type(T1, T2), N_rows + N_cols - 1)
     vals_total[1:N_cols] .= @view(vals_top[end:-1:1])
     vals_total[(N_rows + 1):end] .= @view(vals_left[2:end])
-    for j in 1:N_cols
+    for j = 1:N_cols
         A[:, j] .= @view(vals_total[(end - N_rows + 2 - j):(end + 1 - j)])
     end
     return A
@@ -46,7 +46,7 @@ function to_hankel(
     vals_total = zeros(promote_type(T1, T2), N_rows + N_cols - 1)
     vals_total[1:N_rows] .= vals_left
     vals_total[(N_rows + 1):end] .= @view(vals_bottom[2:end])
-    for j in 1:N_cols
+    for j = 1:N_cols
         A[:, j] .= @view(vals_total[j:(j + N_rows - 1)])
     end
     return A

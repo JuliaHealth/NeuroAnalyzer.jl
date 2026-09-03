@@ -74,7 +74,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     clabels = repeat([""], ch_n)
     ch_type = repeat(["eeg"], ch_n)
     units = repeat(["μV"], ch_n)
-    for idx in 1:ch_n
+    for idx = 1:ch_n
         clabels[idx] = streams[s_names[eeg_idx]]["name"] * "-$idx"
     end
 
@@ -87,7 +87,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     )
     for idx in other_idx
         length(streams[s_names[idx]]["data"]) == 0 && break
-        for data_idx in 1:streams[s_names[idx]]["nchannels"]
+        for data_idx = 1:streams[s_names[idx]]["nchannels"]
             append!(
                 markers,
                 Dict(

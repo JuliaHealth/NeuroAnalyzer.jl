@@ -65,7 +65,7 @@ function itpc(
 
     # compute instantaneous phase for every epoch
     s_phase = zeros(size(s, 2), ep_n)
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         s_phase[:, ep_idx] = htransform(@view(s[1, :, ep_idx])).ph
     end
 
@@ -144,7 +144,7 @@ function itpc(
     itpca = zeros(ch_n)
     itpcph = zeros(ch_n, ep_n)
 
-    Threads.@threads :static for ch_idx in 1:ch_n
+    Threads.@threads :static for ch_idx = 1:ch_n
         @inbounds begin
             itpc_data = itpc(
                 reshape(
@@ -221,7 +221,7 @@ function itpc_spec(
     itpca = zeros(size(s, 2))
     itpcz = zeros(size(s, 2))
 
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         itpcph[:, ep_idx] = htransform(@view(s[1, :, ep_idx])).ph
     end
 
@@ -314,7 +314,7 @@ function itpc_spec(
 
     # initialize progress bar
     progbar = Progress(nfrq; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
-    @inbounds Threads.@threads :static for frq_idx in 1:nfrq
+    @inbounds Threads.@threads :static for frq_idx = 1:nfrq
         # build Morlet wavelet and compute half-kernel offset for trimming
         kernel = generate_morlet(sr(obj), f[frq_idx], 1, ncyc = 10)
         kernel = generate_morlet(256, 0, 1, ncyc = 10)
@@ -322,7 +322,7 @@ function itpc_spec(
 
         # convolve each epoch with the Morlet kernel
         s_conv = zeros(Float64, 1, ep_len, ep_n)
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             s_conv[1, :, ep_idx] = DSP.conv(
                 @view(obj.data[ch[1], :, ep_idx]),
                 kernel,

@@ -79,7 +79,7 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             buf = zeros(UInt8, ch_n * width)
             readbytes!(fid, buf, ch_n * width)
             s = String(Char.(buf))
-            [parse_fn(strip(s[(1 + (i - 1) * width):(i * width)])) for i in 1:ch_n]
+            [parse_fn(strip(s[(1 + (i - 1) * width):(i * width)])) for i = 1:ch_n]
         end
 
         clabels = read_fields(16)
@@ -105,7 +105,7 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             t[clabels .== "Status"] .= "mrk"
             t
         end
-        units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+        units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
         # BDF:  last channel is always the Status (markers) channel
         # BDF+: last channel is Status + possible extra annotation channels
@@ -139,7 +139,7 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         data = zeros(ch_n, samples_per_datarecord[signal_chs[1]] * data_records, 1)
         annotations = String[]
 
-        @inbounds for rec in 1:data_records, ch in 1:ch_n
+        @inbounds for rec = 1:data_records, ch = 1:ch_n
             n = samples_per_datarecord[ch]
             raw24 = zeros(UInt8, n * 3)
             readbytes!(fid, raw24, n * 3)
@@ -201,7 +201,7 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # ------------------------------------------------------------------ #
     # unit conversion: nV / mV → μV                                      #
     # ------------------------------------------------------------------ #
-    @inbounds for idx in 1:ch_n
+    @inbounds for idx = 1:ch_n
         units[idx] == "" && (units[idx] = "μV")
         ch_type[idx] == "eeg" || continue
         if lowercase(units[idx]) == "mv"

@@ -146,7 +146,7 @@ function ica_decompose(
     total_var = var(@view(obj.data[ch, :, 1]))
     ic_var = Vector{Float64}(undef, n)
 
-    for idx in 1:n
+    for idx = 1:n
         # reconstruct signal using only the i-th component
         ic_back = @views ic_mw[:, idx] * ic[idx, :]'
         # VAF formula: 100 * (1 - var(residual) / var(original))
@@ -159,7 +159,7 @@ function ica_decompose(
     ic_var = ic_var[p]
     ic_mw = ic_mw[:, p]
 
-    for i in 1:n
+    for i = 1:n
         _info("Component $(lpad(i, 2)): VAF = $(round(ic_var[i], digits = 2))%")
     end
 

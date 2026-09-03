@@ -72,7 +72,7 @@ function csd(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         # data: (ch_n × samples)
         data = @view obj.data[ch, :, ep_idx]
 
@@ -180,16 +180,16 @@ function gh(
     # --- cosine distances between all electrode pairs ---
     cosdist = zeros(ch_n, ch_n)
     # thread over rows; each thread writes to a unique row - no contention
-    Threads.@threads :static for i in 1:ch_n
-        @inbounds for j in 1:ch_n
+    Threads.@threads :static for i = 1:ch_n
+        @inbounds for j = 1:ch_n
             cosdist[i, j] = 1 - ((x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2) / 2
         end
     end
 
     # --- Legendre polynomials for each order up to n ---
     legpoly = zeros(n, ch_n, ch_n)
-    Threads.@threads :static for idx1 in 1:n
-        @inbounds for idx2 in 1:ch_n
+    Threads.@threads :static for idx1 = 1:n
+        @inbounds for idx2 = 1:ch_n
             legpoly[idx1, idx2, :] = legendre.(cosdist[idx2, :], idx1)
         end
     end
@@ -197,11 +197,11 @@ function gh(
     # --- G and H matrices from the spline formula (Perrin et al. 1989, eq. 3–4) ---
     G = zeros(ch_n, ch_n)
     H = zeros(ch_n, ch_n)
-    Threads.@threads :static for i in 1:ch_n
-        @inbounds for j in 1:ch_n
+    Threads.@threads :static for i = 1:ch_n
+        @inbounds for j = 1:ch_n
             g = 0.0
             h = 0.0
-            for k in 1:n
+            for k = 1:n
                 denom_g = (k * (k + 1))^m
                 denom_h = (k * (k + 1))^(m - 1)
                 lp = legpoly[k, i, j]

@@ -14,7 +14,7 @@ Return a copy of `markers` with all entries whose start time falls within `[seg[
 """
 function _delete_markers(markers::DataFrame, seg::Tuple{Real, Real})::DataFrame
     markers_new = copy(markers)
-    for idx in DataFrames.nrow(markers_new):-1:1
+    for idx = DataFrames.nrow(markers_new):-1:1
         if markers_new[idx, :start] >= seg[1] && markers_new[idx, :start] <= seg[2]
             deleteat!(markers_new, idx)
         end
@@ -39,7 +39,7 @@ Return a copy of `markers` with all entries whose start time is after `seg[2]` s
 function _shift_markers(markers::DataFrame, seg::Tuple{Real, Real})::DataFrame
     markers_new = copy(markers)
     duration = seg[2] - seg[1]
-    for idx in 1:DataFrames.nrow(markers_new)
+    for idx = 1:DataFrames.nrow(markers_new)
         if markers_new[idx, :start] > seg[2]
             markers_new[idx, :start] -= duration
         end
@@ -117,7 +117,7 @@ function _a2df(annotations::Vector{String})::DataFrame
     )
 
     # remove entries that are empty or contain no pipe separators
-    for idx in length(mrk):-1:1
+    for idx = length(mrk):-1:1
         if isempty(mrk[idx]) || !occursin('|', mrk[idx])
             deleteat!(mrk, idx)
         end
@@ -130,12 +130,12 @@ function _a2df(annotations::Vector{String})::DataFrame
     if length(mrk) == 1
         s = split(mrk[1], "|")
 
-        for idx in length(s):-1:1
+        for idx = length(s):-1:1
             s[idx] == "" && deleteat!(s, idx)
         end
 
         if length(s) % 3 == 0
-            for idx in 1:3:(length(s) - 2)
+            for idx = 1:3:(length(s) - 2)
                 push!(a_start, parse(Float64, strip(s[idx])))
                 push!(a_length, parse(Float64, strip(s[idx + 1])))
                 push!(a_event, strip(s[idx + 2]))
@@ -145,7 +145,7 @@ function _a2df(annotations::Vector{String})::DataFrame
             # TODO: use offset if provided
 
             _offset = parse(Float64, strip(s[1]))
-            for idx in 2:3:(length(s) - 1)
+            for idx = 2:3:(length(s) - 1)
                 push!(a_start, parse(Float64, strip(s[idx])))
                 push!(a_length, parse(Float64, strip(s[idx + 1])))
                 push!(a_event, strip(s[idx + 2]))

@@ -197,8 +197,8 @@ function _bernstein_poly(
     length(px) == length(py) ||
         throw(ArgumentError("px and py must have the same length."))
 
-    b = [_bernstein(i, n; steps = steps) for i in 0:n]
-    x_vals = [sum(px[k] * b[k][t] for k in 1:(n + 1)) for t in 1:steps]
-    y_vals = [sum(py[k] * b[k][t] for k in 1:(n + 1)) for t in 1:steps]
+    b = [_bernstein(i, n; steps = steps) for i = 0:n]
+    x_vals = [sum(px[k] * b[k][t] for k = 1:(n + 1)) for t = 1:steps]
+    y_vals = [sum(py[k] * b[k][t] for k = 1:(n + 1)) for t = 1:steps]
     return x_vals, y_vals
 end

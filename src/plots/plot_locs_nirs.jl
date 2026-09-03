@@ -191,7 +191,7 @@ function plot_locs_nirs(
 
     # draw source markers or labels
     if src_labels
-        for idx in 1:src_n
+        for idx = 1:src_n
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
                 loc_y[idx] + label_offset_y;
@@ -212,7 +212,7 @@ function plot_locs_nirs(
 
     # draw detector markers or labels
     if det_labels
-        for idx in (src_n + 1):(src_n + det_n)
+        for idx = (src_n + 1):(src_n + det_n)
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
                 loc_y[idx] + label_offset_y;
@@ -233,7 +233,7 @@ function plot_locs_nirs(
 
     # draw S/D type labels
     if opt_labels
-        for idx in 1:src_n
+        for idx = 1:src_n
             GLMakie.text!(
                 loc_x[idx] + label_offset_x,
                 loc_y[idx] + label_offset_y;
@@ -242,7 +242,7 @@ function plot_locs_nirs(
                 fontsize = font_size,
             )
         end
-        for idx in 1:det_n
+        for idx = 1:det_n
             GLMakie.text!(
                 loc_x[src_n + idx] + label_offset_x,
                 loc_y[src_n + idx] + label_offset_y;

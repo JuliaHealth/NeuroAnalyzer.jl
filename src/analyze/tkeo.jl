@@ -32,7 +32,7 @@ function tkeo(
         tk = zeros(length(s))
         tk[1] = s[1]
         tk[end] = s[end]
-        @inbounds for idx in 2:(length(s) - 1)
+        @inbounds for idx = 2:(length(s) - 1)
             tk[idx] = s[idx]^2 - (s[idx - 1] * s[idx + 1])
         end
     elseif method === :der

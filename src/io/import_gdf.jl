@@ -77,7 +77,7 @@ function import_gdf(
             ),
             '\0' => "",
         )
-        for _ in 1:n
+        for _ = 1:n
     ]
 
     # helper: read n_ch fixed-width binary fields with a given reinterpret type
@@ -88,7 +88,7 @@ function import_gdf(
                 reinterpret(T, b)[1]
             end
         )
-        for _ in 1:n
+        for _ = 1:n
     ]
 
     (
@@ -125,7 +125,7 @@ function import_gdf(
             transducers = read_str_fields(fid, ch_n, 80)
 
             units = String[]
-            for _ in 1:ch_n
+            for _ = 1:ch_n
                 buf = UInt8[]
                 readbytes!(fid, buf, 8)
                 push!(units, replace(strip(String(Char.(buf))), '\0' => "", '\x10' => ""))
@@ -166,7 +166,7 @@ function import_gdf(
             transducers = read_str_fields(fid, ch_n, 80)
 
             # obsolete physical units (6 bytes each) - consumed to advance position
-            for _ in 1:ch_n
+            for _ = 1:ch_n
                 buf = UInt8[]
                 readbytes!(fid, buf, 6)
             end
@@ -213,7 +213,7 @@ function import_gdf(
                 24 => "z",
                 25 => "y",
             )
-            for idx in 1:ch_n
+            for idx = 1:ch_n
                 base_code =
                     parse(Int, "0b" * bitstring(units_code[idx])[1:(end - 5)] * "00000")
                 dec_factor =
@@ -250,7 +250,7 @@ function import_gdf(
             # combine LP/HP into prefiltering strings (overrides the obsolete field)
             prefiltering = [
                 "LP: $(prefiltering_lp[i]) Hz; HP: $(prefiltering_hp[i]) Hz"
-                for i in 1:ch_n
+                for i = 1:ch_n
             ]
 
             samples_per_datarecord = read_bin_fields(fid, ch_n, 4, Int32)
@@ -260,7 +260,7 @@ function import_gdf(
             loc_x = Float32[]
             loc_y = Float32[]
             loc_z = Float32[]
-            for _ in 1:ch_n
+            for _ = 1:ch_n
                 buf = UInt8[]
                 readbytes!(fid, buf, 4)
                 push!(loc_x, reinterpret(Float32, buf)[1])
@@ -276,7 +276,7 @@ function import_gdf(
             # impedances (format differs between GDF 2.19+ and earlier)
             if file_type_ver >= 2.19
                 imp = zeros(Float64, ch_n)
-                for idx in 1:ch_n
+                for idx = 1:ch_n
                     buf = UInt8[]
                     readbytes!(fid, buf, 20)
                     (unit_val[idx] == 4256 || unit_val[idx] == 4288) &&
@@ -286,7 +286,7 @@ function import_gdf(
             else
                 # GDF 1.x encodes impedance as a single byte; scale as 2^(byte/8)
                 imp = zeros(Float64, ch_n)
-                for idx in 1:ch_n
+                for idx = 1:ch_n
                     buf = UInt8[]
                     readbytes!(fid, buf, 1)
                     imp[idx] = Float64(2^(buf[1] / 8))
@@ -355,7 +355,7 @@ function import_gdf(
         end
 
         # read each channel's raw bytes for all records at once.
-        for ch in 1:ch_n
+        for ch = 1:ch_n
             n_samp = Int(samples_per_datarecord[ch]) * data_records
             type_id = gdf_type[ch]
             if !haskey(gdf_type_map, type_id)
@@ -374,7 +374,7 @@ function import_gdf(
     # reassemble: GDF interleaves samples across channels within each record.
     n_samp_ch1 = Int(samples_per_datarecord[1]) * data_records
     data = zeros(ch_n, n_samp_ch1, 1)
-    for ch in 1:ch_n
+    for ch = 1:ch_n
         data[ch, :, 1] = ch_signals[ch]
     end
 
@@ -436,23 +436,23 @@ function import_gdf(
             value = String[]
             ch = Int[]
 
-            for _ in 1:etp_number
+            for _ = 1:etp_number
                 push!(id, "event")
                 push!(start, Float64(reinterpret(Int32, etp[1:4])[1]))
                 push!(len, 0.0)
                 push!(ch, 0)
                 etp = etp[5:end]
             end
-            for _ in 1:etp_number
+            for _ = 1:etp_number
                 push!(value, _gdf_etp(etp[1:2]))
                 etp = etp[3:end]
             end
             if etp_mode == 3
-                for _ in 1:etp_number
+                for _ = 1:etp_number
                     push!(ch, Int64(reinterpret(Int16, etp[1:2])[1]))
                     etp = etp[3:end]
                 end
-                for _ in 1:etp_number
+                for _ = 1:etp_number
                     push!(len, Float64(reinterpret(Float32, etp[1:4])[1]))
                     etp = etp[5:end]
                 end
@@ -476,7 +476,7 @@ function import_gdf(
     # ------------------------------------------------------------------ #
     clabels = _clean_labels(string.(clabels))
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)

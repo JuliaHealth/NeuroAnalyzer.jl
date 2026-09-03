@@ -220,7 +220,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     src_module_index = Int64[]
     detector_module_index = Int64[]
 
-    for ch_idx in 1:ch_n
+    for ch_idx = 1:ch_n
         # source index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/sourceIndex"
         k in keys(nirs) && push!(source_index, Int.(nirs[k][1]))
@@ -377,7 +377,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     # collect channels
     opt_pairs = zeros(Int64, ch_n, 2)
     clabels = repeat([""], ch_n)
-    for idx in 1:ch_n
+    for idx = 1:ch_n
         opt_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
         if length(wavelength_index) == ch_n
             clabels[idx] =
@@ -453,7 +453,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         )
         # generate unique IDs
         value = unique(markers[!, :value])
-        for idx1 in 1:DataFrames.nrow(markers), idx2 in eachindex(value)
+        for idx1 = 1:DataFrames.nrow(markers), idx2 in eachindex(value)
             markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
         end
     else

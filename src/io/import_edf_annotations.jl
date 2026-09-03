@@ -74,7 +74,7 @@ function import_edf_annotations(file_name::String)::DataFrame
             buf = zeros(UInt8, ch_n * width)
             readbytes!(fid, buf, ch_n * width)
             s = String(Char.(buf))
-            [parse_fn(strip(s[(1 + (i - 1) * width):(i * width)])) for i in 1:ch_n]
+            [parse_fn(strip(s[(1 + (i - 1) * width):(i * width)])) for i = 1:ch_n]
         end
 
         clabels = read_fields(16)
@@ -105,7 +105,7 @@ function import_edf_annotations(file_name::String)::DataFrame
         seek(fid, data_offset)
         annotations = String[]
 
-        for _ in 1:data_records, ch in 1:ch_n
+        for _ = 1:data_records, ch = 1:ch_n
             raw = zeros(UInt8, samples_per_datarecord[ch] * 2)
             readbytes!(fid, raw, samples_per_datarecord[ch] * 2)
             ch in annotation_channels && push!(annotations, String(Char.(raw)))

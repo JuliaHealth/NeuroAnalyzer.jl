@@ -25,7 +25,7 @@ function _fir_response(
     n = length(w)
     h = Vector{ComplexF64}(undef, n)
 
-    for i in 1:n
+    for i = 1:n
         h[i] = sum(f[j] * exp(-im * w[i] * (j - 1)) for j in eachindex(f))
     end
 

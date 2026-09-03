@@ -47,13 +47,13 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         filesize(data_src) == ch_n * samples_per_channel * 4 ||
             throw(ArgumentError("Incorrect file size."))
         data_tmp = Float64[]
-        for ch_idx in 1:ch_n
+        for ch_idx = 1:ch_n
             buf = UInt8[]
             readbytes!(fid, buf, samples_per_channel * 4)
             append!(data_tmp, Float64.(reinterpret(Float32, buf)))
         end
         data = zeros(ch_n, samples_per_channel)
-        for idx in 1:samples_per_channel
+        for idx = 1:samples_per_channel
             data[:, idx] = @view(data_tmp[(idx * ch_n - ch_n + 1):(idx * ch_n)])
         end
     else
@@ -76,7 +76,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         clabels = String.(dataset["chanlocs"]["labels"][:])
     else
         clabels = String[]
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             push!(clabels, "ch_$idx")
         end
     end
@@ -84,7 +84,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     clabels = _clean_labels(string.(clabels))
     if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
-        units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+        units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
     else
         if length(dataset["chanlocs"]) > 0 &&
            string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
@@ -93,7 +93,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         else
             length(dataset["chanlocs"]) > 0 &&
                 (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
-            units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+            units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
         end
     end
     ref = dataset["ref"]
@@ -125,7 +125,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # EEGLAB metadata
     patient = dataset["subject"]
     note = dataset["comments"]
-    for idx in length(note):-1:1
+    for idx = length(note):-1:1
         note[idx] == "" && deleteat!(note, idx)
     end
     note = string(note)
@@ -134,7 +134,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     history = split(dataset["history"], "\n")
     # remove first two entries, 1st is empty, second is EEGLAB version
     length(history) > 2 && (history = history[3:end])
-    for idx in length(history):-1:1
+    for idx = length(history):-1:1
         history[idx] == "" && deleteat!(history, idx)
     end
     history = string.(history)
@@ -153,7 +153,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         phi_sph = zeros(ch_n)
         radius_sph = zeros(ch_n)
         theta_sph = zeros(ch_n)
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             chanlocs["X"][:][idx] isa Float64 && (x[idx] = chanlocs["X"][:][idx])
             chanlocs["Y"][:][idx] isa Float64 && (y[idx] = chanlocs["Y"][:][idx])
             chanlocs["Z"][:][idx] isa Float64 && (z[idx] = chanlocs["Z"][:][idx])
@@ -180,7 +180,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :loc_theta_sph => theta_sph,
             :loc_phi_sph => phi_sph,
         )
-        for idx in DataFrames.nrow(locs):-1:1
+        for idx = DataFrames.nrow(locs):-1:1
             (
                 chanlocs["X"][:][idx] isa Float64 &&
                 chanlocs["Y"][:][idx] isa Float64 &&

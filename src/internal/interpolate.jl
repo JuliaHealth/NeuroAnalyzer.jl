@@ -84,8 +84,8 @@ function _interpolate2d(
     end
 
     # perform interpolation on each grid point
-    @inbounds for idx1 in 1:ifactor
-        for idx2 in 1:ifactor
+    @inbounds for idx1 = 1:ifactor
+        for idx2 = 1:ifactor
             x_val, y_val =
                 interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
             s_interpolated[idx1, idx2] =

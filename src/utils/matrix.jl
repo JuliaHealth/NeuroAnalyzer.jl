@@ -201,7 +201,7 @@ function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatri
     seg = length(x) ÷ wlen
     m = zeros(eltype(x), seg, wlen)
     m[1, :] = x[1:wlen]
-    for idx in 2:seg
+    for idx = 2:seg
         start = (idx - 1) * wlen + 1 - woverlap
         m[idx, :] = x[start:(start + wlen - 1)]
     end
@@ -261,9 +261,9 @@ function meshgrid(
     yn = length(y)
 
     # mx: each of the yn rows is the full x vector
-    mx = [copy(x) for _ in 1:yn]
+    mx = [copy(x) for _ = 1:yn]
     # my: each of the yn rows is a constant vector equal to y[i]
-    my = [fill(y[i], xn) for i in 1:yn]
+    my = [fill(y[i], xn) for i = 1:yn]
 
     return (mx, my)
 end

@@ -192,7 +192,7 @@ function reference_avg(
 
         if weighted
             w = zeros(ch_n)
-            for w_idx in 1:ch_n
+            for w_idx = 1:ch_n
                 w[w_idx] = euclidean(
                     [loc_x[ch_idx], loc_y[ch_idx]],
                     [loc_x[w_idx], loc_y[w_idx]],
@@ -320,7 +320,7 @@ function _apply_paired_reference!(
     ep_n::Int64,
     med::Bool,
 )
-    for ep_idx in 1:ep_n
+    for ep_idx = 1:ep_n
         ref_ch =
             med ? vec(median(ref_data[:, :, ep_idx]; dims = 1)) :
             vec(mean(ref_data[:, :, ep_idx]; dims = 1))
@@ -342,7 +342,7 @@ function _apply_single_reference!(
     suffix::String,
     ep_n::Int64,
 )
-    for ep_idx in 1:ep_n
+    for ep_idx = 1:ep_n
         ref_ch = vec(ref_data[:, :, ep_idx])
         Threads.@threads :dynamic for ch_idx in picks
             @inbounds s_ref[ch_idx, :, ep_idx] = s[ch_idx, :, ep_idx] .- ref_ch
@@ -635,7 +635,7 @@ function _laplacian_reference(
     ch_n, ep_n = size(s, 1), size(s, 3)
 
     nn_idx = zeros(Int64, ch_n, nn)
-    for idx in 1:ch_n
+    for idx = 1:ch_n
         nn_idx[idx, :] = sortperm(d[idx, :])[1:nn]
     end
 
@@ -649,7 +649,7 @@ function _laplacian_reference(
 
         if weighted
             w = zeros(nn)
-            for w_idx in 1:nn
+            for w_idx = 1:nn
                 ni = nn_idx[ch_idx, w_idx]
                 w[w_idx] =
                     isnothing(loc_z) ?
@@ -710,7 +710,7 @@ function reference_plap(
     loc_y = locs.loc_y
 
     # Euclidean distances
-    d = [euclidean([loc_x[i], loc_y[i]], [loc_x[j], loc_y[j]]) for i in 1:ch_n, j in 1:ch_n]
+    d = [euclidean([loc_x[i], loc_y[i]], [loc_x[j], loc_y[j]]) for i = 1:ch_n, j = 1:ch_n]
     # eliminate auto-referencing
     d[d .== 0] .= Inf
 
@@ -806,7 +806,7 @@ function reference_slap(
     # Euclidean distance
     d = [
         _sph_distance_cart(loc_x[i], loc_y[i], loc_z[i], loc_x[j], loc_y[j], loc_z[j])
-        for i in 1:ch_n, j in 1:ch_n
+        for i = 1:ch_n, j = 1:ch_n
     ]
     # eliminate auto-referencing
     d[d .== 0] .= Inf
@@ -916,7 +916,7 @@ function reference_custom(
     ep_n = nepochs(obj)
     s = zeros(length(ref_list), epoch_len(obj), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         for (ref_idx, ref) in enumerate(ref_list)
             if '-' in ref
                 m = match(r"(.+)-(.+)", ref)

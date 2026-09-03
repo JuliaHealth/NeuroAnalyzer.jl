@@ -49,10 +49,10 @@ function bootstrap_ci(
     progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     s_boot = zeros(n1, tp_n)
-    @inbounds for idx1 in 1:n1
+    @inbounds for idx1 = 1:n1
         s_tmp = zeros(tp_n, n2)
 
-        for idx2 in 1:n2
+        for idx2 = 1:n2
             s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
         end
 
@@ -138,11 +138,11 @@ function bootstrap_stat(
     # initialize progress bar
     progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    @inbounds for idx1 in 1:n1
+    @inbounds for idx1 = 1:n1
 
         # draw n2 epochs with replacement and average to one trace
         s_tmp = zeros(tp_n, n2)
-        for idx2 in 1:n2
+        for idx2 = 1:n2
             s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
         end
         s_boot[idx1, :] = vec(mean(s_tmp, dims = 2))

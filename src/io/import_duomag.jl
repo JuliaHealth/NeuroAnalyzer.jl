@@ -145,7 +145,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             popfirst!(sti)
             stim_intens = Int64[]
             coil_type = String[]
-            for idx in 2:2:(2 * signal_count)
+            for idx = 2:2:(2 * signal_count)
                 push!(stim_intens, parse(Int64, split(sti[idx], ' ')[1]))
                 push!(coil_type, split(sti[idx], ' ')[2])
             end
@@ -165,7 +165,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
             markers_neg = zeros(Int64, signal_count) # negative (A-) peak
             markers_pos = zeros(Int64, signal_count) # positive (A+) peak
 
-            for idx in 2:2:length(mk)
+            for idx = 2:2:length(mk)
                 tmp = split(mk[idx], ' ')
                 length(tmp) < 3 && continue
                 stim_number = parse(Int64, tmp[3])
@@ -214,7 +214,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     # channel labels                                                      #
     # ------------------------------------------------------------------ #
     ch_n = signal_count
-    clabels = ["MEP$idx" for idx in 1:ch_n]
+    clabels = ["MEP$idx" for idx = 1:ch_n]
 
     # ------------------------------------------------------------------ #
     # time axis - zero-aligned to the stimulation sample                  #

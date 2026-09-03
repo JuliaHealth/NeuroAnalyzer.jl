@@ -61,7 +61,7 @@ function import_digitrack(
             clabels = Vector{String}(undef, ch_n)
             prefiltering = Vector{String}(undef, ch_n)
 
-            for idx in 1:ch_n
+            for idx = 1:ch_n
                 fields = split(channels[idx], "\t")
                 clabels[idx] = fields[1]
                 prefiltering[idx] = fields[2]
@@ -95,7 +95,7 @@ function import_digitrack(
     ch_n = length(clabels)
     clabels = _clean_labels(string.(clabels))
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
     markers = DataFrame(
         :id => String[],

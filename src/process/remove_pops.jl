@@ -82,13 +82,13 @@ function remove_pops(
 
     zero_1 = 1
     zero_2 = length(s)
-    for idx in (pop_loc - 5):-1:2
+    for idx = (pop_loc - 5):-1:2
         if sign(s[idx]) != sign(s[idx - 1])
             zero_1 = idx
             break
         end
     end
-    for idx in (pop_loc + 5):(length(s) - 1)
+    for idx = (pop_loc + 5):(length(s) - 1)
         if sign(s[idx]) != sign(s[idx + 1])
             zero_2 = idx
             break
@@ -264,7 +264,7 @@ function remove_pops(
         throw(ArgumentError("window must be ≤ $(signal_len(obj) / sr(obj))."))
     ch_n = size(s, 1)
 
-    @inbounds for ch_idx in 1:ch_n
+    @inbounds for ch_idx = 1:ch_n
         for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
             p = remove_pops(
                 obj_tmp.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair = repair, r = r,

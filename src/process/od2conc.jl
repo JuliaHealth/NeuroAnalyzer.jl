@@ -56,7 +56,7 @@ function od2conc(
     lst = findall(wl_idx .== 1)
     dc = zeros(3, ep_len, length(lst), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         dod = @view(obj_tmp.data[ch, :, ep_idx])
 
         for idx in eachindex(lst)

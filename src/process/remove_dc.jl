@@ -53,7 +53,7 @@ function remove_dc(
     ch_n = size(s, 1)
 
     s_new = similar(s, Float64)
-    Threads.@threads :static for ch_idx in 1:ch_n
+    Threads.@threads :static for ch_idx = 1:ch_n
         s_new[ch_idx, :] = remove_dc(@view(s[ch_idx, :]), n)
     end
 

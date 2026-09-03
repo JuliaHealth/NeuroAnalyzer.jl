@@ -49,7 +49,7 @@ function filter_mmed(
     s_filtered = copy(s) .* 1.0 # convert to floats
 
     # left edge: truncated window [1 … idx]
-    @inbounds for idx in 1:k
+    @inbounds for idx = 1:k
         needs_filter(s[idx]) || continue
         s_tmp = @view s[1:idx]
         w_tmp = @view ww[1:idx]
@@ -57,14 +57,14 @@ function filter_mmed(
     end
 
     # interior: full centered window [idx-k … idx+k]
-    @inbounds for idx in (k + 1):(length(s) - k)
+    @inbounds for idx = (k + 1):(length(s) - k)
         needs_filter(s[idx]) || continue
         s_tmp = @view s[(idx - k):(idx + k)]
         s_filtered[idx] = median(s_tmp .* ww)
     end
 
     # right edge: truncated window [idx … end]
-    @inbounds for idx in (length(s) - k + 1):length(s)
+    @inbounds for idx = (length(s) - k + 1):length(s)
         needs_filter(s[idx]) || continue
         s_tmp = @view s[idx:end]
         w_tmp = @view ww[(end - length(s_tmp) + 1):end]

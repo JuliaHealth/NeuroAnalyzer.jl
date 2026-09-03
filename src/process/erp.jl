@@ -70,7 +70,7 @@ function average_epochs(
     # remaining ones to account for the prepended average epoch.         #
     # ------------------------------------------------------------------ #
     ep_len = size(obj_tmp.data, 2)
-    for idx in DataFrames.nrow(obj_tmp.markers):-1:1
+    for idx = DataFrames.nrow(obj_tmp.markers):-1:1
         obj_tmp.markers[idx, :start] > ep_len && deleteat!(obj_tmp.markers, idx)
     end
     obj_tmp.markers[!, :start] .+= ep_len

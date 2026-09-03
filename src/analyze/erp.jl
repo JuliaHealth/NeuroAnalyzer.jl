@@ -28,7 +28,7 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
     #  pre-allocate output
     p = zeros(ch_n, 2)
 
-    @inbounds Threads.@threads :static for ch_idx in 1:ch_n
+    @inbounds Threads.@threads :static for ch_idx = 1:ch_n
         s = @view obj.data[ch_idx, :, 1]
         # positive peak: sample index of maximum
         p[ch_idx, 1] = argmax(s)
@@ -92,7 +92,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
         # pre-allocate output
         p = zeros(ch_n, 1)
 
-        @inbounds Threads.@threads :static for ch_idx in 1:ch_n
+        @inbounds Threads.@threads :static for ch_idx = 1:ch_n
             p[ch_idx, 1] = obj.data[ch_idx, t_idx, 1]
         end
     end
@@ -152,7 +152,7 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         # pre-allocate output
         p = zeros(ch_n, 1)
 
-        @inbounds Threads.@threads :static for ch_idx in 1:ch_n
+        @inbounds Threads.@threads :static for ch_idx = 1:ch_n
             p[ch_idx, 1] = mean(@view(obj.data[ch_idx, t_idx1:t_idx2, 1]))
         end
     end
@@ -212,7 +212,7 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         # pre-allocate output
         p = zeros(ch_n, 1)
 
-        @inbounds Threads.@threads :static for ch_idx in 1:ch_n
+        @inbounds Threads.@threads :static for ch_idx = 1:ch_n
             p[ch_idx, 1] = maximum(@view(obj.data[ch_idx, t_idx1:t_idx2, 1]))
         end
     end
@@ -272,7 +272,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         # pre-allocate output
         p = zeros(ch_n, 1)
 
-        @inbounds Threads.@threads :static for ch_idx in 1:ch_n
+        @inbounds Threads.@threads :static for ch_idx = 1:ch_n
             p[ch_idx, 1] = minimum(@view(obj.data[ch_idx, t_idx1:t_idx2, 1]))
         end
     end

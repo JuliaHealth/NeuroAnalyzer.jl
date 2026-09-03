@@ -202,7 +202,7 @@ function plot_cont(
 
     # draw channels
     if type === :normal
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             line_color = @lift($bad_ch[idx] ? :lightgray : :black)
             GLMakie.lines!(ax1, t, s[idx, :]; linewidth = 1.5, color = line_color)
         end
@@ -249,7 +249,7 @@ function plot_cont(
     if scale
         if type === :normal
             idx2 = 1
-            for idx1 in 1:ch_n
+            for idx1 = 1:ch_n
                 if ctypes_uni_pos[idx1] == 1
                     s_rectangle = lift(seg_pos) do sp
                         return Rect(sp, (idx1 - 0.49), 0.01, 0.98)
@@ -277,7 +277,7 @@ function plot_cont(
                 end
             end
         elseif type === :butterfly
-            for idx in 1:ch_n
+            for idx = 1:ch_n
                 s_rectangle = lift(seg_pos) do sp
                     return Rect(sp, (idx - 0.475), 0.01, 0.975)
                 end

@@ -1410,9 +1410,9 @@ function plot_imf(
 
     idx  = 1
     cidx = 1
-    for idx1 in 1:nr
+    for idx1 = 1:nr
         cidx = 1
-        for idx2 in 1:2
+        for idx2 = 1:2
             if idx <= n + 1
                 label = idx == n + 1 ? "Residual" : "IMF: $idx"
                 # create axis with customizable properties
@@ -1701,9 +1701,9 @@ function plot_dwc(
     # dc[1, :] is the original signal; coefficients start at dc[2, :]
     idx  = 2
     cidx = 1
-    for idx1 in 1:nr
+    for idx1 = 1:nr
         cidx = 1
-        for idx2 in 1:2
+        for idx2 = 1:2
             if idx < n + 2
                 ax = GLMakie.Axis(
                     fig[idx1, idx2];

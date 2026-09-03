@@ -55,10 +55,10 @@ function efield2d(
 
     qq = Vector{Vector{Float64}}()
 
-    @inbounds for idx in 1:nq
+    @inbounds for idx = 1:nq
         push!(qq, [x[qy[idx]], y[qx[idx]]])
-        for idx1 in 1:n
-            for idx2 in 1:m
+        for idx1 = 1:n
+            for idx2 = 1:m
                 denom = ((idx1 - qy[idx])^2 + (idx2 - qx[idx])^2)^1.5
                 if denom != 0
                     ex[idx1, idx2] += q[idx] * (idx2 - qx[idx]) / denom

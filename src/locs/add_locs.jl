@@ -37,7 +37,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEUR
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    for idx in 1:DataFrames.nrow(locs)
+    for idx = 1:DataFrames.nrow(locs)
         lidx = findfirst(isequal(locs[idx, :label]), obj_tmp.locs[!, :label])
         isa(lidx, Int64) && (obj_tmp.locs[lidx, :] = locs[idx, :])
     end

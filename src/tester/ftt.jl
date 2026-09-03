@@ -21,11 +21,11 @@ function _pack_taps(
     n = length(counts)
     t_packed = Vector{Vector{Float64}}(undef, n)
     d_packed = Vector{Vector{Float64}}(undef, n)
-    for idx in n:-1:1
+    for idx = n:-1:1
         # Pop `counts[idx]` entries; popping from the back gives reverse order,
         # so reverse before storing.
-        tk = [pop!(flat_t) for _ in 1:counts[idx]]
-        td = [pop!(flat_d) for _ in 1:counts[idx]]
+        tk = [pop!(flat_t) for _ = 1:counts[idx]]
+        td = [pop!(flat_d) for _ = 1:counts[idx]]
         t_packed[idx] = round.(reverse!(tk); digits = 1)
         d_packed[idx] = round.(reverse!(td); digits = 1)
     end
@@ -44,7 +44,7 @@ function _trim_taps!(
     max_ms::Float64,
 )::Nothing
     for idx1 in eachindex(t_vec)
-        for idx2 in length(t_vec[idx1]):-1:1
+        for idx2 = length(t_vec[idx1]):-1:1
             if t_vec[idx1][idx2] > max_ms
                 deleteat!(t_vec[idx1], idx2)
                 deleteat!(d_vec[idx1], idx2)
@@ -272,7 +272,7 @@ function iftt(;
             if port_name == ""
                 # ---- keyboard input path ----
                 Threads.@spawn begin
-                    for idx in 1:trials
+                    for idx = 1:trials
                         # reset intra-trial buffers for this trial
                         t_kp_tmp     = Vector{Float64}()
                         d_kp_tmp     = Vector{Float64}()
@@ -324,7 +324,7 @@ function iftt(;
             else
                 # ---- serial port input path ----
                 Threads.@spawn begin
-                    for idx in 1:trials
+                    for idx = 1:trials
                         _beep()
                         @idle_add @guarded draw(can) do widget
                             ctx = getgc(can)
@@ -414,7 +414,7 @@ function iftt(;
         # ---- keyboard path: t_kp/d_kp are already nested per-trial ----
 
         # align press/release counts (a tap released after window end has no release)
-        for idx in 1:trials
+        for idx = 1:trials
             if length(t_kp[idx]) != length(d_kp[idx])
                 l = min(length(t_kp[idx]), length(d_kp[idx]))
                 t_kp[idx] = t_kp[idx][1:l]
@@ -636,7 +636,7 @@ function ftt(;
         l_seg      = duration + interval                            # length of one trial+interval block
         n_segs     = 2 * trials + 1
         t_segments = zeros(n_segs)
-        for idx in 1:trials
+        for idx = 1:trials
             t_segments[(idx * 2) - 1] = l_seg * (idx - 1)           # trial start
             t_segments[idx * 2]       = (l_seg * idx) - interval    # trial end / interval start
         end
@@ -690,7 +690,7 @@ function ftt(;
         # assign each key press to a trial or interval based on its timestamp
         t_raw = round.(t_raw .* 1000; digits = 3)
         for press_ms in t_raw
-            for seg in 1:(2 * trials)
+            for seg = 1:(2 * trials)
                 if t_segments[seg] <= press_ms <= t_segments[seg + 1]
                     if iseven(seg + 1)       # odd segment index → trial
                         idx3 = (seg + 1) ÷ 2
@@ -711,7 +711,7 @@ function ftt(;
     elseif !isnothing(sp)
         # ---- serial input path ----
         println()
-        for idx in 1:trials
+        for idx = 1:trials
             _beep()
             println()
             print("   Trial $idx: press the BUTTON as quickly as possible")
@@ -771,7 +771,7 @@ function ftt(;
         # ---- Raspberry Pi direct GPIO path ----
         debounce_ms = 50   # minimum time between state changes to count as new event [ms]
         println()
-        for idx in 1:trials
+        for idx = 1:trials
             _beep()
             println()
             print("   Trial $idx: press the BUTTON as quickly as possible")

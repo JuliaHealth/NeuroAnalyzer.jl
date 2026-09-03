@@ -340,7 +340,7 @@ function _print_header(obj::NeuroAnalyzer.NEURO)
             println("       SSP projection: $(ssp_labels[1])")
         elseif length(ssp_labels) > 1
             print("        SSP projections: ")
-            for idx in 1:(length(ssp_labels) - 1)
+            for idx = 1:(length(ssp_labels) - 1)
                 print("$(ssp_labels[idx]), ")
             end
             println("$(ssp_labels[end])")
@@ -624,7 +624,7 @@ function channel_pick(
             (idx === :left || idx === :l) && (pat = r"[z02468]$")
         end
         if pat isa Regex
-            for idx in length(clabels_filtered):-1:1
+            for idx = length(clabels_filtered):-1:1
                 !isnothing(match(pat, clabels_filtered[idx])) && deleteat!(ch, idx)
             end
         end
@@ -703,7 +703,7 @@ end
 # internal helper: print the :list of available bands
 function _band_list(bands::Vector{Symbol})
     print("Available band names: ")
-    for x in 2:(length(bands) - 1)
+    for x = 2:(length(bands) - 1)
         print(":$(bands[x]), ")
     end
     return println(":$(bands[end])")
@@ -851,7 +851,7 @@ Statistics reported: range, mean, SD, minimum, Q1 (25th percentile), median, Q3 
 """
 function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFrame}
     d = zeros(8, nchannels(obj))
-    @inbounds for idx in 1:nchannels(obj)
+    @inbounds for idx = 1:nchannels(obj)
         d[1, idx] = round(rng(obj.data[idx, :, :]), digits = 2)
         d[2, idx] = round(mean(obj.data[idx, :, :]), digits = 2)
         d[3, idx] = round(std(obj.data[idx, :, :]), digits = 2)
@@ -892,7 +892,7 @@ function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, Da
             rpad("min", 10) * rpad("Q1", 10) * rpad("median", 10) *
             rpad("Q3", 10) * rpad("max", 10)
         println(hdr)
-        for idx in 1:nchannels(obj)
+        for idx = 1:nchannels(obj)
             println(
                 rpad(string(idx), 4) *
                 rpad(labels(obj)[idx], 16) *

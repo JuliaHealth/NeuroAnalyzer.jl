@@ -436,7 +436,7 @@ function mwpsd(
     end
 
     p = zeros(length(f))
-    @inbounds for frq_idx in 1:nfrq
+    @inbounds for frq_idx = 1:nfrq
         kernel = generate_morlet(fs, f[frq_idx], 1, ncyc = ncyc[frq_idx], complex = true)
         w_conv = fconv(s .* w, kernel = kernel, norm = false)
         p[frq_idx] = median(abs2.(w_conv))

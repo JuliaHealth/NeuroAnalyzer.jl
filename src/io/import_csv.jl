@@ -77,7 +77,7 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # ------------------------------------------------------------------ #
     clabels = _clean_labels(clabels_tmp)
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
     markers = DataFrame(
         :id => String[],

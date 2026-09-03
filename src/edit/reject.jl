@@ -14,11 +14,11 @@ outside the 95 % confidence interval of the per-channel RMSE distribution.
 function detect_rmse(s::AbstractMatrix)::Vector{Bool}
     ch_n    = size(s, 1)
     ch_m    = vec(median(s; dims = 1))   # cross-channel median reference signal
-    rmse_ch = [rmse(@view(s[i, :]), ch_m) for i in 1:ch_n]
+    rmse_ch = [rmse(@view(s[i, :]), ch_m) for i = 1:ch_n]
 
     # compute CI once; was called twice per iteration (wasted allocation)
     ci = HypothesisTests.confint(OneSampleTTest(rmse_ch))
-    return [rmse_ch[i] < ci[1] || rmse_ch[i] > ci[2] for i in 1:ch_n]
+    return [rmse_ch[i] < ci[1] || rmse_ch[i] > ci[2] for i = 1:ch_n]
 end
 
 """
@@ -28,9 +28,9 @@ outside the 95 % CI of the per-channel RMSD distribution.
 function detect_rmsd(s::AbstractMatrix)::Vector{Bool}
     ch_n    = size(s, 1)
     ch_m    = vec(median(s; dims = 1))
-    rmsd_ch = [Distances.rmsd(@view(s[i, :]), ch_m) for i in 1:ch_n]
+    rmsd_ch = [Distances.rmsd(@view(s[i, :]), ch_m) for i = 1:ch_n]
     ci      = HypothesisTests.confint(OneSampleTTest(rmsd_ch))
-    return [rmsd_ch[i] < ci[1] || rmsd_ch[i] > ci[2] for i in 1:ch_n]
+    return [rmsd_ch[i] < ci[1] || rmsd_ch[i] > ci[2] for i = 1:ch_n]
 end
 
 """
@@ -40,16 +40,16 @@ median lies outside the 95 % CI of the per-channel distance distribution.
 function detect_euclid(s::AbstractMatrix)::Vector{Bool}
     ch_n  = size(s, 1)
     ch_m  = vec(median(s; dims = 1))
-    ed_ch = [Distances.euclidean(@view(s[i, :]), ch_m) for i in 1:ch_n]
+    ed_ch = [Distances.euclidean(@view(s[i, :]), ch_m) for i = 1:ch_n]
     ci    = HypothesisTests.confint(OneSampleTTest(ed_ch))
-    return [ed_ch[i] < ci[1] || ed_ch[i] > ci[2] for i in 1:ch_n]
+    return [ed_ch[i] < ci[1] || ed_ch[i] > ci[2] for i = 1:ch_n]
 end
 
 """
 Return true for each channel whose peak amplitude exceeds ±`amp_t`.
 """
 function detect_amp(s::AbstractMatrix; amp_t::Real = 400.0)::Vector{Bool}
-    return [maximum(s[i, :]) > amp_t || minimum(s[i, :]) < -amp_t for i in 1:size(s, 1)]
+    return [maximum(s[i, :]) > amp_t || minimum(s[i, :]) < -amp_t for i = 1:size(s, 1)]
 end
 
 """
@@ -66,10 +66,10 @@ function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector
     bad_chs = zeros(Bool, ch_n)
     p_z     = quantile(Distributions.Normal(), p)
 
-    for ch_idx in 1:ch_n
+    for ch_idx = 1:ch_n
         v = @view s[ch_idx, :]
         # sliding-window means
-        sm = [mean(@view v[idx:(idx + w)]) for idx in 1:w:(length(v) - w)]
+        sm = [mean(@view v[idx:(idx + w)]) for idx = 1:w:(length(v) - w)]
         p2p = round.(diff(sm); digits = -2)
 
         s_m = mean(v)
@@ -95,7 +95,7 @@ function detect_tkeo(
     bad_chs = zeros(Bool, ch_n)
     thresh  = cl2z(p)
 
-    for ch_idx in 1:ch_n
+    for ch_idx = 1:ch_n
         stkeo    = tkeo(@view(s[ch_idx, :]), t; method = tkeo_method)
         z_signal = vec(NeuroAnalyzer.zscore(s[ch_idx, :]))
         z_tkeo   = vec(NeuroAnalyzer.zscore(stkeo))
@@ -104,7 +104,7 @@ function detect_tkeo(
         # substantially exceeds TKEO z-score (indicative of an artefact)
         w = max(1, length(stkeo) ÷ 10)
         bad_windows = 0
-        for idx in 1:w:length(stkeo)
+        for idx = 1:w:length(stkeo)
             i2 = min(idx + w - 1, length(stkeo))
             count(abs.(z_signal[idx:i2]) .- abs.(z_tkeo[idx:i2]) .> thresh) > 1 &&
                 (bad_windows += 1)
@@ -135,13 +135,13 @@ function detect_ransac(
 
     # bild pairwise Euclidean distance matrix between electrode positions
     d = zeros(ch_n, ch_n)
-    @inbounds for i in 1:ch_n, j in 1:ch_n
+    @inbounds for i = 1:ch_n, j = 1:ch_n
         d[i, j] = euclidean([loc_x[i], loc_y[i]], [loc_x[j], loc_y[j]])
     end
     # prevent a channel from being its own nearest neighbour
     d[d .== 0] .= Inf
 
-    @inbounds for ch_idx in 1:ch_n
+    @inbounds for ch_idx = 1:ch_n
         _, nearest_idx = findmin(d[ch_idx, :])
         y = @view s[ch_idx, :]
         x = @view s[nearest_idx, :]
@@ -155,7 +155,7 @@ function detect_ransac(
         yc  = y[idx]
 
         # windowed Pearson correlation
-        c = [cor(@view(xc[i:(i + w)]), @view(yc[i:(i + w)])) for i in 1:w:(length(xc) - w)]
+        c = [cor(@view(xc[i:(i + w)]), @view(yc[i:(i + w)])) for i = 1:w:(length(xc) - w)]
         bad_chs[ch_idx] = sum(c .< ransac_r) / length(c) > ransac_tr
     end
 
@@ -276,12 +276,12 @@ function channel_reject(
         bad_chs = zeros(Bool, ch_n, ep_n)   # was: 1-D, then indexed as 2-D
         n_samples = size(obj.data, 2)
 
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             sm = [
                 mean(@view obj.data[ch[ci], idx_w:(idx_w + w), ei])
-                for idx_w in 1:w:(n_samples - w)
+                for idx_w = 1:w:(n_samples - w)
             ]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
             @inbounds bad_chs[ci, ei] = r > flat_fr
@@ -293,7 +293,7 @@ function channel_reject(
 
     if :rmse in method
         _info("Using :rmse method")
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             bad_chs = detect_rmse(@view(obj.data[ch, :, ep_idx]))
             bc[ch] = bc[ch] .|| bad_chs
         end
@@ -302,7 +302,7 @@ function channel_reject(
     # -----------------------------------------------------------------------
     if :rmse in method
         _info("Using :rmse method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_rmse(@view obj.data[ch, :, ep_idx])
             bc[ch]  = bc[ch] .|| bad_chs
         end
@@ -311,7 +311,7 @@ function channel_reject(
     # -----------------------------------------------------------------------
     if :rmsd in method
         _info("Using :rmsd method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_rmsd(@view obj.data[ch, :, ep_idx])
             bc[ch]  = bc[ch] .|| bad_chs
         end
@@ -320,7 +320,7 @@ function channel_reject(
     # -----------------------------------------------------------------------
     if :euclid in method
         _info("Using :euclid method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_euclid(@view obj.data[ch, :, ep_idx])
             bc[ch]  = bc[ch] .|| bad_chs
         end
@@ -339,7 +339,7 @@ function channel_reject(
     # -----------------------------------------------------------------------
     if :p2p in method
         _info("Using :p2p method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_p2p(@view(obj.data[ch, :, ep_idx]); w = w, p = p)
             bc[ch]  = bc[ch] .|| bad_chs
         end
@@ -348,7 +348,7 @@ function channel_reject(
     # -----------------------------------------------------------------------
     if :tkeo in method
         _info("Using :tkeo method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_tkeo(
                 obj.data[ch, :, ep_idx], obj.time_pts; tkeo_method = tkeo_method, p = p,
             )
@@ -363,7 +363,7 @@ function channel_reject(
 
         # Kurtosis per (channel, epoch), then z-scored globally
         k = zeros(ch_n, ep_n)
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             @inbounds k[ci, ei] = kurtosis(@view obj.data[ch[ci], :, ei])
@@ -382,7 +382,7 @@ function channel_reject(
         s_z     = normalize_zscore(obj.data[ch, :, :]; bych = false)
         above_z = abs.(s_z) .> z
         k       = zeros(ch_n, ep_n)
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             @inbounds k[ci, ei] = count(above_z[ci, :, ei]) / size(above_z, 2)
@@ -392,7 +392,7 @@ function channel_reject(
         # pass 2 - per-channel z-score threshold (z + 1 to be stricter)
         above_z2 = abs.(normalize_zscore(obj.data[ch, :, :]; bych = false)) .> (z + 1)
         k2       = zeros(ch_n, ep_n)
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             @inbounds k2[ci, ei] = count(above_z2[ci, :, ei]) / size(above_z2, 2)
@@ -412,7 +412,7 @@ function channel_reject(
         chs  = intersect(obj.locs[!, :label], ch_list)
         locs = Base.filter(:label => in(chs), obj.locs)
 
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_ransac(
                 obj.data[ch, :, ep_idx];
                 loc_x = locs[!, :loc_x], loc_y = locs[!, :loc_y],
@@ -425,7 +425,7 @@ function channel_reject(
     # -----------------------------------------------------------------------
     if :amp in method
         _info("Using :amp method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_amp(@view(obj.data[ch, :, ep_idx]); amp_t = amp_t)
             bc[ch]  = bc[ch] .|| bad_chs
         end
@@ -643,12 +643,12 @@ function epoch_reject(
         bad_chs   = zeros(Bool, ch_n, ep_n)
         n_samples = size(obj.data, 2)
 
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             sm = [
                 mean(@view obj.data[ch[ci], idx_w:(idx_w + w), ei])
-                for idx_w in 1:w:(n_samples - w)
+                for idx_w = 1:w:(n_samples - w)
             ]
             r = count(abs.(diff(sm)) .< flat_tol) / length(sm)
             @inbounds bad_chs[ci, ei] = r > flat_fr
@@ -661,7 +661,7 @@ function epoch_reject(
     # -----------------------------------------------------------------------
     if :rmse in method
         _info("Using :rmse method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_rmse(@view obj.data[ch, :, ep_idx])
             bc[ch]  = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
@@ -671,7 +671,7 @@ function epoch_reject(
     # -----------------------------------------------------------------------
     if :rmsd in method
         _info("Using :rmsd method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_rmsd(@view obj.data[ch, :, ep_idx])
             bc[ch]  = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
@@ -683,7 +683,7 @@ function epoch_reject(
         _info("Using :euclid method")
         # each column of bad_mat is written by exactly one thread - no race condition
         bad_mat = zeros(Bool, ch_n, ep_n)
-        Threads.@threads :static for ep_idx in 1:ep_n
+        Threads.@threads :static for ep_idx = 1:ep_n
             @inbounds bad_mat[:, ep_idx] = detect_euclid(@view obj.data[ch, :, ep_idx])
         end
         bc[ch] = bc[ch] .|| vec(any(bad_mat; dims = 2))
@@ -703,7 +703,7 @@ function epoch_reject(
     if :p2p in method
         _info("Using :p2p method")
         # sequential: bc[ch] and be are shared - cannot parallelise safely here
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_p2p(@view(obj.data[ch, :, ep_idx]); w = w, p = p)
             bc[ch]  = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
@@ -713,7 +713,7 @@ function epoch_reject(
     # -----------------------------------------------------------------------
     if :tkeo in method
         _info("Using :tkeo method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_tkeo(
                 obj.data[ch, :, ep_idx], obj.time_pts; tkeo_method = tkeo_method, p = p,
             )
@@ -728,7 +728,7 @@ function epoch_reject(
         z > 0 || throw(ArgumentError("z must be > 0."))
 
         k = zeros(ch_n, ep_n)
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             @inbounds k[ci, ei] = kurtosis(@view obj.data[ch[ci], :, ei])
@@ -748,7 +748,7 @@ function epoch_reject(
         s_z     = normalize_zscore(obj.data[ch, :, :]; bych = false)
         above_z = abs.(s_z) .> z
         k       = zeros(ch_n, ep_n)
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             @inbounds k[ci, ei] = count(above_z[ci, :, ei]) / size(above_z, 2)
@@ -760,7 +760,7 @@ function epoch_reject(
         # pass 2 - per-channel threshold (z + 1)
         above_z2 = abs.(normalize_zscore(obj.data[ch, :, :]; bych = false)) .> (z + 1)
         k2       = zeros(ch_n, ep_n)
-        Threads.@threads :static for linear_idx in 1:(ch_n * ep_n)
+        Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
             ei = (linear_idx - 1) ÷ ch_n + 1
             @inbounds k2[ci, ei] = count(above_z2[ci, :, ei]) / size(above_z2, 2)
@@ -782,7 +782,7 @@ function epoch_reject(
         chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
 
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_ransac(
                 obj.data[ch, :, ep_idx];
                 loc_x = locs[!, :loc_x], loc_y = locs[!, :loc_y],
@@ -796,7 +796,7 @@ function epoch_reject(
     # -----------------------------------------------------------------------
     if :amp in method
         _info("Using :amp method")
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             bad_chs = detect_amp(@view(obj.data[ch, :, ep_idx]); amp_t = amp_t)
             bc[ch]  = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)

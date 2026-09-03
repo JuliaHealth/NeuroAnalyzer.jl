@@ -119,7 +119,7 @@ function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
 
     # pre-allocate output
     s_new = zeros(n, length(s))
-    for idx in 1:n
+    for idx = 1:n
         x = rand(2:length(s))
         s_new[idx, :] = vcat(s[x:end], s[1:(x - 1)])
     end
@@ -175,7 +175,7 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
         # the two inner loops are sequential (short; threading would add overhead)
         @inbounds Threads.@threads :static for idx in CartesianIndices((n, ep_n))
             idx1, ep_idx = idx[1], idx[2]
-            for idx2 in 1:nrows
+            for idx2 = 1:nrows
                 x = rand(2:ncols)
                 s_new[idx1, idx2, 1:(ncols - x + 1), ep_idx] .= @view s[idx2, x:end, ep_idx]
                 s_new[idx1, idx2, (ncols - x + 2):end, ep_idx] .=

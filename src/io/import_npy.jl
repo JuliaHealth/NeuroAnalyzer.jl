@@ -27,7 +27,7 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
     data = reshape(data, size(data, 1), :, 1)
     ch_n = size(data, 1)
     clabels = String[]
-    for idx in 1:ch_n
+    for idx = 1:ch_n
         push!(clabels, "ch_$idx")
     end
 

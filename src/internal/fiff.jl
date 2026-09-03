@@ -777,14 +777,14 @@ function _fiff_matrix(
     if fs_mask == 0x00000000   # scalar value
         d = Float64[]
         if df == "float"
-            for idx in 1:4:length(buf)
+            for idx = 1:4:length(buf)
                 push!(d, _f32f64(buf[idx:(idx + 3)]))
             end
         elseif df == "old_pack"
             # packed format: values stored as Int16, scaled by a and shifted by b
             a = _f32f64(buf[1:4])
             b = _f32f64(buf[5:8])
-            for idx in 9:2:length(buf)
+            for idx = 9:2:length(buf)
                 push!(d, _i16f64(buf[idx:(idx + 1)]))
             end
             d = a .* (d .+ b)
@@ -805,7 +805,7 @@ function _fiff_matrix(
 
             # parse dimension sizes and reverse to row-major order
             dim = Int64[]
-            for dim_idx in 1:4:length(dims_buf)
+            for dim_idx = 1:4:length(dims_buf)
                 push!(dim, _i32i32(dims_buf[dim_idx:(dim_idx + 3)]))
             end
             reverse!(dim)
@@ -815,17 +815,17 @@ function _fiff_matrix(
             d = Float64[]
 
             if df == "float"
-                for idx in 1:4:length(tmp)
+                for idx = 1:4:length(tmp)
                     push!(d, _f32f64(tmp[idx:(idx + 3)]))
                 end
             elseif df == "int32"
-                for idx in 1:4:length(tmp)
+                for idx = 1:4:length(tmp)
                     push!(d, _i32f64(tmp[idx:(idx + 3)]))
                 end
             elseif df == "old_pack"
                 a = _f32f64(tmp[1:4])
                 b = _f32f64(tmp[5:8])
-                for idx in 9:2:length(tmp)
+                for idx = 9:2:length(tmp)
                     push!(d, _i16f64(tmp[idx:(idx + 1)]))
                 end
                 d = a .* (d .+ b)
@@ -843,7 +843,7 @@ function _fiff_matrix(
             n = _i32i32(buf[(end - 3):end])
             dims_buf = buf[(end - 5 * n - 1):(end - 4)]
             dim = Int64[]
-            for dim_idx in 1:4:length(dims_buf)
+            for dim_idx = 1:4:length(dims_buf)
                 push!(dim, _i32i32(dims_buf[dim_idx:(dim_idx + 3)]))
             end
             reverse!(dim)
@@ -858,7 +858,7 @@ function _fiff_matrix(
             # --- parse column start indices (dim[2] Int32 values) ---
             cs_buf = tmp[(end + 1 - dim[2] * 4):end]
             col_start_idx = Int64[]
-            for idx in 1:4:length(cs_buf)
+            for idx = 1:4:length(cs_buf)
                 push!(col_start_idx, _i32i32(cs_buf[idx:(idx + 3)]))
             end
             col_start_idx .+= 1   # convert 0-based → 1-based
@@ -867,7 +867,7 @@ function _fiff_matrix(
             tmp = buf[1:(end - length(cs_buf) - length(dims_buf) - 12)]
             ri_buf = tmp[(end + 1 - nz * 4):end]
             row_idx = Int64[]
-            for idx in 1:4:length(ri_buf)
+            for idx = 1:4:length(ri_buf)
                 push!(row_idx, _i32i32(ri_buf[idx:(idx + 3)]))
             end
             row_idx .+= 1   # convert 0-based → 1-based
@@ -876,7 +876,7 @@ function _fiff_matrix(
             # --- parse non-zero values and fill the dense output matrix ---
             if df == "float"
                 m = Float64[]
-                for idx in 1:4:length(tmp)
+                for idx = 1:4:length(tmp)
                     push!(m, _f32f64(tmp[idx:(idx + 3)]))
                 end
                 d = zeros(dim[1], dim[2])

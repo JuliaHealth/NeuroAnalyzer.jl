@@ -21,7 +21,7 @@ function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    for ep_idx in 2:nepochs(obj_tmp)
+    for ep_idx = 2:nepochs(obj_tmp)
         obj_tmp.data[:, :, ep_idx] =
             @view(obj_tmp.data[:, :, ep_idx]) - @view(obj_tmp.data[:, :, 1])
     end

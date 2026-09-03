@@ -123,7 +123,7 @@ function locs_flipx(
     end
 
     if polar
-        for idx in 1:DataFrames.nrow(locs)
+        for idx = 1:DataFrames.nrow(locs)
             t = locs[idx, :loc_theta]
             q = _angle_quadrant(t)
             q == 1 && (t = 90 + (90 - t))

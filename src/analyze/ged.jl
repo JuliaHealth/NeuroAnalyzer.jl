@@ -138,7 +138,7 @@ function ged(
     ress = zeros(ch_n, ep_n)
     ress_norm = zeros(ch_n, ep_n)
 
-    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :static for ep_idx = 1:ep_n
         ged_data = ged(
             @view(obj1.data[ch1, :, ep1[ep_idx]]),
             @view(obj2.data[ch2, :, ep2[ep_idx]])

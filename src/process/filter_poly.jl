@@ -37,7 +37,7 @@ function filter_poly(
     window_last = length(s) - window_n * window
 
     # --- fit and replace interior windows (all except the last) ---
-    @inbounds for window_idx in 1:(window_n - 1)
+    @inbounds for window_idx = 1:(window_n - 1)
         i1 = (window_idx - 1) * window + 1
         i2 = window_idx * window
         s_tmp = s[i1:i2]
@@ -57,7 +57,7 @@ function filter_poly(
     # --- smooth window junctions with Loess to suppress discontinuities ---
     # half-width of the junction smoothing region
     half = window ÷ 4
-    @inbounds for junction in window:window:(window * (window_n - 1))
+    @inbounds for junction = window:window:(window * (window_n - 1))
         j1 = max(1, junction - half)
         j2 = min(length(s), junction + half - 1)   # was: no bounds check - could exceed signal length
         s_tmp = s_filtered[j1:j2]

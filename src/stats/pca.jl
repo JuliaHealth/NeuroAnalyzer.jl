@@ -92,7 +92,7 @@ function pcacomp(
         MultivariateStats.var(pc_model) .* 100
 
     scores = Matrix(MultivariateStats.predict(pc_model, Matrix(m'))')
-    pc = DataFrame(scores, ["PC$i" for i in 1:n])
+    pc = DataFrame(scores, ["PC$i" for i = 1:n])
 
     return (
         pc = pc,
@@ -195,7 +195,7 @@ function biplot(
     GLMakie.scatter!(ax, pca.pc[:, "PC1"], pca.pc[:, "PC2"]; markersize = 10)
 
     cmap = GLMakie.resample_cmap(:darktest, n_pc)
-    for idx in 1:n_pc
+    for idx = 1:n_pc
         # scale loading vector by 2 for visibility; pcp is (variables × PCs)
         GLMakie.arrows2d!(
             (0, 0),
@@ -233,7 +233,7 @@ function screeplot(
 )::GLMakie.Figure
     pca = pcacomp(df, vars; n = n, zstd = zstd)
     n_pc = length(pca.pc_model.prinvars)
-    xl = ["PC$i" for i in 1:n_pc]
+    xl = ["PC$i" for i = 1:n_pc]
 
     fig = GLMakie.Figure()
     ax1 = GLMakie.Axis(
@@ -248,7 +248,7 @@ function screeplot(
     GLMakie.ylims!(ax1, (0, 100))
 
     cmap = GLMakie.resample_cmap(:darktest, n_pc)
-    for idx in 1:n_pc
+    for idx = 1:n_pc
         GLMakie.barplot!(ax1, idx, pca.pcv[idx]; color = cmap[idx])
     end
 

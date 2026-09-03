@@ -107,7 +107,7 @@ function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
     cm = zeros(ch_n, ch_n, ep_n)
 
     # calculate over epochs
-    @inbounds Threads.@threads :static for ep_idx in 1:ep_n
+    @inbounds Threads.@threads :static for ep_idx = 1:ep_n
         cm[:, :, ep_idx] = covm(@view(s[:, :, ep_idx]), norm = norm)
     end
 

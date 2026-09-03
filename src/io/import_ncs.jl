@@ -77,7 +77,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         data_size = filesize(file_name) - HEADER_SIZE
         n_blocks = div(data_size, BLOCK_SIZE)
 
-        for _ in 1:n_blocks
+        for _ = 1:n_blocks
             push!(qwTimeStamp, _fread(fid, 1, :ui64))
             push!(dwChannelNumber, _fread(fid, 1, :ui32))
             push!(dwSampleFreq, _fread(fid, 1, :ui32))
@@ -107,7 +107,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     # use ADChannel number in label; fall back to "Ch0" if header was absent
     clabels = [isnothing(ADChannel) ? "Ch0" : "Ch$ADChannel"]
     ch_type = repeat(["ieeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]  # "μV" for ieeg
+    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]  # "μV" for ieeg
 
     filter_str =
         (AmpLowCut != 0 && AmpHiCut != 0) ?

@@ -92,7 +92,7 @@ function cph(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 in 1:ch_idx1
+        for ch_idx2 = 1:ch_idx1
             # @view avoids copying the (samples,) slices per thread.
             ph[ch_idx1, ch_idx2, :, ep_idx], _ = cph(
                 @view(s[ch_idx1, :, ep_idx]),
@@ -106,8 +106,8 @@ function cph(
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     @inbounds Threads.@threads :static for idx in CartesianIndices((length(f), ep_n))
         f_idx, ep_idx = idx[1], idx[2]
-        for ch_idx1 in 1:(ch_n - 1)
-            for ch_idx2 in (ch_idx1 + 1):ch_n
+        for ch_idx1 = 1:(ch_n - 1)
+            for ch_idx2 = (ch_idx1 + 1):ch_n
                 ph[ch_idx1, ch_idx2, f_idx, ep_idx] = ph[ch_idx2, ch_idx1, f_idx, ep_idx]
             end
         end

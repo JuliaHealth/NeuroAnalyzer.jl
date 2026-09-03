@@ -41,7 +41,7 @@ function tes_model(
     if !cart
         loc_x = zeros(DataFrames.nrow(locs))
         loc_y = zeros(DataFrames.nrow(locs))
-        for idx in 1:DataFrames.nrow(locs)
+        for idx = 1:DataFrames.nrow(locs)
             loc_x[idx], loc_y[idx] =
                 pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
@@ -59,7 +59,7 @@ function tes_model(
     # 1st column: distance from anode
     # 2nd column: distance from cathode
     r = zeros(DataFrames.nrow(locs), 2)
-    for idx in 1:DataFrames.nrow(locs)
+    for idx = 1:DataFrames.nrow(locs)
         r[idx, 1] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), anode_pos)
         r[idx, 2] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), cathode_pos)
     end
@@ -70,7 +70,7 @@ function tes_model(
     r .+= 1
 
     E = zeros(DataFrames.nrow(locs))
-    for idx in 1:DataFrames.nrow(locs)
+    for idx = 1:DataFrames.nrow(locs)
         E[idx] = ((kₑ * anode_curr) / r[idx, 1]) + ((kₑ * cathode_curr) / r[idx, 2])
     end
     E[anode_ch] = anode_curr

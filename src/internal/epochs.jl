@@ -63,7 +63,7 @@ function _make_epochs_bymarkers(
 
     # remove epochs that fall (even partially) outside the signal
     # iterate backwards to allow safe deleteat!
-    for idx in mrk_n:-1:1
+    for idx = mrk_n:-1:1
         if ep_start[idx] < 1 || ep_end[idx] > sig_len
             deleteat!(ep_start, idx)
             deleteat!(ep_end, idx)
@@ -73,7 +73,7 @@ function _make_epochs_bymarkers(
     mrk_n = length(ep_start)
     epochs = zeros(size(s, 1), ep_len, mrk_n)
 
-    @inbounds for mrk_idx in 1:mrk_n
+    @inbounds for mrk_idx = 1:mrk_n
         # flatten the epoch dimension of s before slicing (s is 3-D with 1 epoch)
         epochs[:, :, mrk_idx] = reshape(
             s[:, ep_start[mrk_idx]:ep_end[mrk_idx], :],
@@ -82,10 +82,10 @@ function _make_epochs_bymarkers(
     end
 
     # remove markers that lie outside all extracted epoch windows
-    @inbounds for mrk_idx in DataFrames.nrow(markers):-1:1
+    @inbounds for mrk_idx = DataFrames.nrow(markers):-1:1
         within = any(
             _in(markers[mrk_idx, :start] * fs, (ep_start[ep_idx], ep_end[ep_idx]))
-            for ep_idx in 1:mrk_n
+            for ep_idx = 1:mrk_n
         )
         !within && deleteat!(markers, mrk_idx)
     end
@@ -96,7 +96,7 @@ function _make_epochs_bymarkers(
 
     if DataFrames.nrow(mrk_tmp) > 0
         mrk_tmp[1, :start] = offset / fs
-        for idx in 2:DataFrames.nrow(mrk_tmp)
+        for idx = 2:DataFrames.nrow(mrk_tmp)
             mrk_tmp[idx, :start] = mrk_tmp[idx - 1, :start] + ep_len / fs
         end
     end
@@ -129,7 +129,7 @@ function _markers_epochs(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     for mrk_idx in eachindex(mrk_start)
         # cache: avoids repeated indexing in the inner loop
         t = mrk_start[mrk_idx]
-        for ep_idx in 1:ep_n
+        for ep_idx = 1:ep_n
             if t >= ep_tps[1, ep_idx] && t <= ep_tps[2, ep_idx]
                 mrk_epoch[mrk_idx] = ep_idx
                 break # a marker belongs to exactly one epoch; no need to continue

@@ -147,7 +147,7 @@ function aecor(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 in 1:ch_idx1
+        for ch_idx2 = 1:ch_idx1
             aec[ch_idx1, ch_idx2, ep_idx] = aecor(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
@@ -302,7 +302,7 @@ function escor(
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 in 1:ch_idx1
+        for ch_idx2 = 1:ch_idx1
             esc[ch_idx1, ch_idx2, ep_idx] = escor(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])

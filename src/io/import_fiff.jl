@@ -81,7 +81,7 @@ function load_fiff(
             rr = Float64[]
             [
                 push!(rr, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
-                idx in 13:4:length(buf_tmp)
+                idx = 13:4:length(buf_tmp)
             ]
             d = (kind, ident, np, rr)
 
@@ -120,27 +120,27 @@ function load_fiff(
             from = @views _i32i64(buf_tmp[1:4])
             to = @views _i32i64(buf_tmp[5:8])
             rot = zeros(3, 3)
-            for row in 1:3
+            for row = 1:3
                 d_row = Float64[]
                 [
                     push!(d_row, @views _f32f64(buf_tmp[(8 + col):(8 + col + 3)])) for
-                    col in 1:4:9
+                    col = 1:4:9
                 ]
                 rot[row, :] = d_row
             end
             move = Float64[]
-            [push!(move, @views _f32f64(buf_tmp[(44 + i):(44 + i + 3)])) for i in 1:4:9]
+            [push!(move, @views _f32f64(buf_tmp[(44 + i):(44 + i + 3)])) for i = 1:4:9]
             invrot = zeros(3, 3)
-            for row in 1:3
+            for row = 1:3
                 d_row = Float64[]
                 [
                     push!(d_row, @views _f32f64(buf_tmp[(56 + col):(56 + col + 3)])) for
-                    col in 1:4:9
+                    col = 1:4:9
                 ]
                 invrot[row, :] = d_row
             end
             invmove = Float64[]
-            [push!(invmove, @views _f32f64(buf_tmp[(92 + i):(92 + i + 3)])) for i in 1:4:9]
+            [push!(invmove, @views _f32f64(buf_tmp[(92 + i):(92 + i + 3)])) for i = 1:4:9]
             d = (from, to, rot, move, invrot, invmove)
 
         elseif tag_type in [300]
@@ -150,17 +150,17 @@ function load_fiff(
             if df == "dau_pack16" || df == "int16"
                 [
                     push!(d, @views _i16f64(buf_tmp[idx:(idx + 1)])) for
-                    idx in 1:2:length(buf_tmp)
+                    idx = 1:2:length(buf_tmp)
                 ]
             elseif df == "int32"
                 [
                     push!(d, @views _i32f64(buf_tmp[idx:(idx + 3)])) for
-                    idx in 1:4:length(buf_tmp)
+                    idx = 1:4:length(buf_tmp)
                 ]
             elseif df == "float"
                 [
                     push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
-                    idx in 1:4:length(buf_tmp)
+                    idx = 1:4:length(buf_tmp)
                 ]
             else
                 _warn(
@@ -242,7 +242,7 @@ function load_fiff(
             d = Int64[]
             [
                 push!(d, @views _i32i64(buf_tmp[idx:(idx + 3)])) for
-                idx in 1:4:length(buf_tmp)
+                idx = 1:4:length(buf_tmp)
             ]
 
         elseif tag_type in [276]
@@ -259,7 +259,7 @@ function load_fiff(
             d = Float64[]
             [
                 push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
-                idx in 1:4:length(buf_tmp)
+                idx = 1:4:length(buf_tmp)
             ]
 
         elseif tag_type in [100, 103, 109, 110, 116, 120]
@@ -492,7 +492,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     clabels = _clean_meg_labels(clabels)
 
     # convert to standard units
-    @inbounds for ch_idx in 1:ch_n
+    @inbounds for ch_idx = 1:ch_n
         if units[ch_idx] == "T"
             @views data[ch_idx, :, 1] .*= 1.0e15
             units[ch_idx] = "fT"
@@ -512,7 +512,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     magnetometers = Int64[]
     gradiometers = Int64[]
     eeg_chs = Int64[]
-    @inbounds for ch_idx in 1:ch_n
+    @inbounds for ch_idx = 1:ch_n
         ct = coil_type[ch_idx]
         if ct in ("vv_planar_w", "vv_planar_t1", "vv_planar_t2", "vv_planar_t3")
             coil_type[ch_idx] = "pgrad"

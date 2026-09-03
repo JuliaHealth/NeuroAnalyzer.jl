@@ -63,7 +63,7 @@ function mdiff(
     # each thread needs its own buffers to avoid races
     # allocate inside the loop per iteration since Threads.@threads
     # does not provide thread-local storage here
-    Threads.@threads :static for idx in 1:n_boot
+    Threads.@threads :static for idx = 1:n_boot
 
         # sample two independent bootstrap groups from the pooled data
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
@@ -146,7 +146,7 @@ function mdiff(
     p = zeros(ep_n)
 
     # calculate over epochs
-    for ep_idx in 1:ep_n
+    for ep_idx = 1:ep_n
         mdiff_data = mdiff(
             @view(s1[:, :, ep_idx]),
             @view(s2[:, :, ep_idx]);

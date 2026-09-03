@@ -162,7 +162,7 @@ function plot_cont(
     _style_axis!(ax1)
 
     # draw channels
-    for idx in 1:ch_n
+    for idx = 1:ch_n
         GLMakie.lines!(
             ax1,
             t[1:res:end],
@@ -184,7 +184,7 @@ function plot_cont(
     # TO DO: place scale values on the left side, below channel label
     if scale
         idx2 = 1
-        for idx1 in 1:ch_n
+        for idx1 = 1:ch_n
             if ctypes_uni_pos[idx1] == 1
                 s_rectangle = lift(seg_pos) do seg_pos
                     return Rect(seg_pos, (idx1 - 0.49), 0.01, 0.98)

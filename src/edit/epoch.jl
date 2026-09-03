@@ -57,7 +57,7 @@ function epoch(
         mrk_len   = obj_tmp.markers[mrk_idx, :length]
 
         # remove markers that would begin before the signal start
-        for idx in length(mrk_start):-1:1
+        for idx = length(mrk_start):-1:1
             if mrk_start[idx] - offset < obj.time_pts[1]
                 deleteat!(mrk_start, idx)
                 deleteat!(mrk_len, idx)
@@ -100,7 +100,7 @@ function epoch(
         epochs = _make_epochs(obj.data; ep_len = ep_len)
 
         # remove markers that fall outside the new epoch grid
-        for marker_idx in DataFrames.nrow(obj_tmp.markers):-1:1
+        for marker_idx = DataFrames.nrow(obj_tmp.markers):-1:1
             round(Int64, sr(obj) * obj_tmp.markers[marker_idx, :start]) in
             0:(size(epochs, 2) * size(epochs, 3)) ||
                 deleteat!(obj_tmp.markers, marker_idx)
@@ -248,7 +248,7 @@ function subepoch(
     mrk_epoch = _markers_epochs(obj)
 
     # remove markers outside the retained window
-    for mrk_idx in length(mrk_start):-1:1
+    for mrk_idx = length(mrk_start):-1:1
         ep = mrk_epoch[mrk_idx]
         if mrk_start[mrk_idx] < ep_tps[1, ep] || mrk_start[mrk_idx] > ep_tps[2, ep]
             deleteat!(obj_tmp.markers, mrk_idx)

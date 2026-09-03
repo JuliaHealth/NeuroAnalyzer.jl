@@ -483,7 +483,7 @@ function import_locs_csd(file_name::String)::DataFrame
 
     radius = zeros(n)
     theta = zeros(n)
-    for idx in 1:n
+    for idx = 1:n
         radius[idx], theta[idx] = sph2pol(radius_sph[idx], theta_sph[idx], phi_sph[idx])
     end
 
@@ -539,7 +539,7 @@ function import_locs_geo(file_name::String)::DataFrame
     y = zeros(n)
     z = zeros(n)
     p = r"(.+)(\(.+\)){(.+)}"
-    for idx in 1:n
+    for idx = 1:n
         m = match(p, entries[idx])
         clabels[idx] = replace(m[3], "\"" => "")
         tmp = replace(replace(m[2], "(" => ""), ")" => "")

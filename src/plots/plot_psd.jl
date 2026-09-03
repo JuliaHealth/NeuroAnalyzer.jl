@@ -179,7 +179,7 @@ function plot_psd(
         GLMakie.lines!(ax, f[f1:f2], s_m; color = :black, linewidth = 2)
     else
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             Makie.lines!(
                 ax,
                 f[f1:f2],
@@ -304,7 +304,7 @@ function plot_psd_3d(
     # plot powers
     if variant === :w
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             GLMakie.lines!(
                 f,
                 ones(length(f)) .* idx,

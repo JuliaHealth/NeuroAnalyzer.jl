@@ -121,7 +121,7 @@ function vsplit(x::AbstractVector, n::Int64 = 1)::Vector{AbstractVector}
     n_pieces = length(x) ÷ n
 
     # pre-allocate and fill
-    return [x[((i - 1) * n + 1):(i * n)] for i in 1:n_pieces]
+    return [x[((i - 1) * n + 1):(i * n)] for i = 1:n_pieces]
 end
 
 """

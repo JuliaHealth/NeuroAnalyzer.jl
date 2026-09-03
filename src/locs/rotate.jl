@@ -120,7 +120,7 @@ function locs_roty(
     locs_new = deepcopy(locs)
 
     if cart
-        for idx in 1:DataFrames.nrow(locs)
+        for idx = 1:DataFrames.nrow(locs)
             locs_new[idx, :loc_x] =
                 locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
             locs_new[idx, :loc_z] =
@@ -131,7 +131,7 @@ function locs_roty(
     if spherical
         locs_tmp = deepcopy(locs)
         locs_sph2cart!(locs_tmp)
-        for idx in 1:DataFrames.nrow(locs)
+        for idx = 1:DataFrames.nrow(locs)
             locs_tmp[idx, :loc_x] =
                 locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
             locs_tmp[idx, :loc_z] =
@@ -208,7 +208,7 @@ function locs_rotx(
     locs_new = deepcopy(locs)
 
     if cart
-        for idx in 1:DataFrames.nrow(locs)
+        for idx = 1:DataFrames.nrow(locs)
             locs_new[idx, :loc_y] =
                 locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
             locs_new[idx, :loc_z] =
@@ -219,7 +219,7 @@ function locs_rotx(
     if spherical
         locs_tmp = deepcopy(locs)
         locs_sph2cart!(locs_tmp)
-        for idx in 1:DataFrames.nrow(locs)
+        for idx = 1:DataFrames.nrow(locs)
             locs_tmp[idx, :loc_y] =
                 locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
             locs_tmp[idx, :loc_z] =

@@ -188,7 +188,7 @@ function plot_erp(
     else
         # plot individual channels
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             GLMakie.lines!(
                 ax,
                 t,

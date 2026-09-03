@@ -147,7 +147,7 @@ function plot_mep(
         GLMakie.lines!(ax, t, s_m; color = :black, linewidth = 2)
     else
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             GLMakie.lines!(
                 ax, t, s[idx, :];
                 color      = cmap[idx],

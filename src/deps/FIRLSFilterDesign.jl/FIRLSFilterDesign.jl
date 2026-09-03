@@ -398,7 +398,7 @@ function get_q(M, f, W, fir_type)
     _αn, _βn⁻¹, _γ⁻² = copy(α), copy(β), copy(γ)
     q_out, _qn = allocate_q(M, fir_type), zeros(size(f))
     q_out[1] = qn!(_qn, k, f, a, b)
-    for idx in 2:length(q_out)
+    for idx = 2:length(q_out)
         _αn .= α
         _βn⁻¹ .= β
         _γ⁻² .= γ
@@ -471,7 +471,7 @@ function get_b(M, f, D, W, fir_type)
     b_out, _bn = zeros(M + 1), zeros(size(f))
     b_out[1] =
         bn_n0!(_bn, idx2n_b(1, fir_type), k, f, a, b, c, d, _αn, _βn², γ, _δn, fir_type)
-    for idx in 2:length(b_out)
+    for idx = 2:length(b_out)
         _αn .= α
         _βn² .= β
         _δn .= δ

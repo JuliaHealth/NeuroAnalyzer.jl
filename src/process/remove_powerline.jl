@@ -196,9 +196,9 @@ function remove_powerline(
             n_pk = length(pks_frq)
             pks_frq_m = zeros(n_ch, n_pk)
             pks_bw_m = zeros(n_ch, n_pk)
-            peak_frq_names = ["peak $i frequency" for i in 1:n_pk]
-            peak_bw_names = ["peak $i bandwidth" for i in 1:n_pk]
-            for i in 1:n_ch
+            peak_frq_names = ["peak $i frequency" for i = 1:n_pk]
+            peak_bw_names = ["peak $i bandwidth" for i = 1:n_pk]
+            for i = 1:n_ch
                 pks_frq_m[i, :] = pks_frq
                 pks_bw_m[i, :] = pks_best_bw[i]
             end
@@ -283,7 +283,7 @@ function detect_powerline(s::AbstractVector; fs::Int64)::Float64
     t = range(0, n / fs; length = n)
 
     noise_power = zeros(fs ÷ 2)
-    for freq in 1:(fs ÷ 2)
+    for freq = 1:(fs ÷ 2)
         df = DataFrame(
             :signal => s,
             :b0 => ones(n),

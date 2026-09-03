@@ -178,9 +178,9 @@ function stationarity(
         end
 
         # calculate Euclidean distance between adjacent matrices
-        @inbounds Threads.@threads :dynamic for ep_idx in 1:ep_n
+        @inbounds Threads.@threads :dynamic for ep_idx = 1:ep_n
             w_idx = 1
-            for window_idx in 2:window:window_n
+            for window_idx = 2:window:window_n
                 s[w_idx, ep_idx] = euclidean(
                     @view(cov_mat[:, :, window_idx - 1, ep_idx]),
                     @view(cov_mat[:, :, window_idx, ep_idx])
@@ -205,8 +205,8 @@ function stationarity(
         )
 
         # perform Augmented Dickey–Fuller test
-        @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :dynamic for ch_idx in 1:ch_n
+        @inbounds for ep_idx = 1:ep_n
+            Threads.@threads :dynamic for ch_idx = 1:ch_n
                 adf = HypothesisTests.ADFTest(@view(obj.data[ch_idx, :, ep_idx]), :none, 1)
                 a = adf.stat
                 p = pvalue(adf)

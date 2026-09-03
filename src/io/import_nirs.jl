@@ -60,8 +60,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # optode labels: sources first, then detectors
     n_src = Int(probes["nSrcs"])
     n_det = Int(probes["nDets"])
-    src_labels = ["S$i" for i in 1:n_src]
-    det_labels = ["D$i" for i in 1:n_det]
+    src_labels = ["S$i" for i = 1:n_src]
+    det_labels = ["D$i" for i = 1:n_det]
     opt_labels = vcat(src_labels, det_labels)
 
     # channel labels: "S<src>_D<det> <wavelength_nm>"
@@ -70,7 +70,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
             "S$(meas[i, 1])_D$(meas[i, 2]) $(wavelengths[wavelength_index[i]])",
             ".0" => "",
         )
-        for i in 1:ch_n
+        for i = 1:ch_n
     ]
 
     # ------------------------------------------------------------------ #
@@ -102,7 +102,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
             :value => String[],
             :channel => Int64[],
         )
-        for col in 1:s_n
+        for col = 1:s_n
             for samp in findall(!iszero, stim[:, col])
                 push!(df, ("", time_pts[samp], 0.0, "stim", 0))
             end

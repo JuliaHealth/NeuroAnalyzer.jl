@@ -192,7 +192,7 @@ function _serial_recorder(
     _beep()
     if t == 0
         _info("Recording $blocks data-blocks from $port_name ($n record(s) per block)")
-        for _ in 1:(blocks * n)
+        for _ = 1:(blocks * n)
             push!(tp, time())
             push!(tmp_data, String(readline(sp)))
             sleep(0.01)
@@ -201,7 +201,7 @@ function _serial_recorder(
         _info("Recording for $t seconds from $port_name ($n record(s) per block)")
         t_start = time()
         while time() < t_start + t
-            for _ in 1:n
+            for _ = 1:n
                 push!(tp, time())
                 push!(tmp_data, String(readline(sp)))
                 sleep(0.01)
@@ -224,7 +224,7 @@ function _serial_recorder(
 
     # parse channel names from the first block
     col_names = ["time"]
-    for idx in 1:n
+    for idx = 1:n
         push!(col_names, split(tmp_data[idx], ':')[1])
     end
 

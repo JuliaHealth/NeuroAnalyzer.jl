@@ -253,7 +253,7 @@ function tenv_mean(
         eu = zeros(length(t), ep_n)
         el = zeros(length(t), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = dropdims(mean(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
             ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
             eu[:, ep_idx] = em[:, ep_idx] .+ ci
@@ -269,7 +269,7 @@ function tenv_mean(
         eu = zeros(length(t), ch_n)
         el = zeros(length(t), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = dropdims(mean(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
             ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
             eu[:, ch_idx] = em[:, ch_idx] .+ ci
@@ -349,7 +349,7 @@ function tenv_median(
         eu = zeros(length(t), ep_n)
         el = zeros(length(t), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = dropdims(median(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
             for m_idx in eachindex(t)
                 eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(@view(a[:, m_idx, ep_idx]))
@@ -365,7 +365,7 @@ function tenv_median(
         eu = zeros(length(t), ch_n)
         el = zeros(length(t), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = dropdims(median(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
             for m_idx in eachindex(t)
                 eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(a[ch_idx, m_idx, :]))
@@ -565,7 +565,7 @@ function penv_mean(
         eu = zeros(length(f), ep_n)
         el = zeros(length(f), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = dropdims(mean(@view(pw[:, :, ep_idx]), dims = 1), dims = 1)
             ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(f))
             eu[:, ep_idx] = em[:, ep_idx] .+ ci
@@ -581,7 +581,7 @@ function penv_mean(
         eu = zeros(length(f), ch_n)
         el = zeros(length(f), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = dropdims(mean(@view(pw[ch_idx, :, :]), dims = 2), dims = 2)
             ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(f))
             eu[:, ch_idx] = em[:, ch_idx] .+ ci
@@ -704,7 +704,7 @@ function penv_median(
         eu = zeros(length(f), ep_n)
         el = zeros(length(f), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = dropdims(median(@view(pw[:, :, ep_idx]), dims = 1), dims = 1)
             for m_idx in eachindex(f)
                 eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(@view(pw[:, m_idx, ep_idx]))
@@ -720,7 +720,7 @@ function penv_median(
         eu = zeros(length(f), ch_n)
         el = zeros(length(f), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = dropdims(median(@view(pw[ch_idx, :, :]), dims = 2), dims = 2)
             for m_idx in eachindex(f)
                 eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(pw[ch_idx, m_idx, :]))
@@ -1068,7 +1068,7 @@ function senv_mean(
         eu = zeros(length(t), ep_n)
         el = zeros(length(t), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = dropdims(mean(@view(sp[:, :, ep_idx]), dims = 1), dims = 1)
             ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
             eu[:, ep_idx] = em[:, ep_idx] .+ ci
@@ -1084,7 +1084,7 @@ function senv_mean(
         eu = zeros(length(t), ch_n)
         el = zeros(length(t), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = dropdims(mean(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
             ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
             eu[:, ch_idx] = em[:, ch_idx] .+ ci
@@ -1223,7 +1223,7 @@ function senv_median(
         eu = zeros(length(t), ep_n)
         el = zeros(length(t), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = median(@view(sp[:, :, ep_idx]), dims = 1)
             for m_idx in eachindex(t)
                 eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(sp[:, m_idx, ep_idx])
@@ -1239,7 +1239,7 @@ function senv_median(
         eu = zeros(length(t), ch_n)
         el = zeros(length(t), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = dropdims(median(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
             for m_idx in eachindex(t)
                 # BUG FIX: was `cimd(sp[ch_idx, :, :])` - passed the entire
@@ -1397,7 +1397,7 @@ function henv_mean(
         eu = zeros(length(t), ep_n)
         el = zeros(length(t), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = dropdims(mean(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
             ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
             eu[:, ep_idx] = em[:, ep_idx] .+ ci
@@ -1412,7 +1412,7 @@ function henv_mean(
         eu = zeros(length(t), ch_n)
         el = zeros(length(t), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = dropdims(mean(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
             ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
             eu[:, ch_idx] = em[:, ch_idx] .+ ci
@@ -1492,7 +1492,7 @@ function henv_median(
         eu = zeros(length(t), ep_n)
         el = zeros(length(t), ep_n)
 
-        @inbounds for ep_idx in 1:ep_n
+        @inbounds for ep_idx = 1:ep_n
             em[:, ep_idx] = median(@view(a[:, :, ep_idx]), dims = 1)
             for m_idx in eachindex(t)
                 eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(a[:, m_idx, ep_idx])
@@ -1507,7 +1507,7 @@ function henv_median(
         eu = zeros(length(t), ch_n)
         el = zeros(length(t), ch_n)
 
-        @inbounds for ch_idx in 1:ch_n
+        @inbounds for ch_idx = 1:ch_n
             em[:, ch_idx] = median(a[ch_idx, :, :], dims = 2)
             for m_idx in eachindex(t)
                 eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(a[ch_idx, m_idx, :])
@@ -1560,7 +1560,7 @@ function env_cor(
     p = zeros(ep_n)
 
     # compare envelopes per epochs
-    for ep_idx in 1:ep_n
+    for ep_idx = 1:ep_n
         ctest = CorrelationTest(vec(env1[:, :, ep_idx]), vec(env2[:, :, ep_idx]))
         @inbounds ec[ep_idx] = ctest.r
         @inbounds p[ep_idx] = pvalue(ctest)

@@ -72,7 +72,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         # ------------------------------------------------------------ #
         read_fields(width, parse_fn = identity) = begin
             buf = _v2s(_fread(fid, ch_n * width, :s))
-            [parse_fn(strip(buf[(1 + (i - 1) * width):(i * width)])) for i in 1:ch_n]
+            [parse_fn(strip(buf[(1 + (i - 1) * width):(i * width)])) for i = 1:ch_n]
         end
 
         clabels = read_fields(16)
@@ -93,7 +93,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         clabels = _clean_labels(string.(clabels))
         ch_type =
             detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-        units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+        units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
         annotation_channels = if file_type == "EDF"
             Int64[]
@@ -134,7 +134,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
             d = zeros(ch_n, samples_per_datarecord[1] * true_data_records, 1)
 
-            @inbounds for rec in 1:true_data_records, ch in 1:ch_n
+            @inbounds for rec = 1:true_data_records, ch = 1:ch_n
                 raw = zeros(UInt8, samples_per_datarecord[ch] * 2)
                 readbytes!(fid, raw, samples_per_datarecord[ch] * 2)
                 if ch in annotation_channels
@@ -163,7 +163,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
 
             pos = 1
 
-            @inbounds for rec in 1:true_data_records, ch in 1:ch_n
+            @inbounds for rec = 1:true_data_records, ch = 1:ch_n
                 n = samples_per_datarecord[ch]
                 tmp = Float64.(signal[pos:(pos + n - 1)])
                 pos += n
@@ -212,7 +212,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     # ------------------------------------------------------------------ #
     # unit conversion: nV / mV → μV                                      #
     # ------------------------------------------------------------------ #
-    @inbounds for idx in 1:ch_n
+    @inbounds for idx = 1:ch_n
         units[idx] == "" && (units[idx] = "μV")
         ch_type[idx] == "eeg" || continue
         if lowercase(units[idx]) == "mv"

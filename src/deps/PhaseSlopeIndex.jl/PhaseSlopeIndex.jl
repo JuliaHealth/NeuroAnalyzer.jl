@@ -438,12 +438,12 @@ function data2psi(
 
         if method == "jackknife"
             cs_jack = cs2cs_(eposeg, cs_full, fband, nep, segave, subave, "jackknife")
-            for e in 1:nep
+            for e = 1:nep
                 cs_jack_se = (nep * cs_psi - view(cs_jack, :, e, :, :)) / (nep + 1)
                 psi_est[:, :, f, e] = cs2ps(cs_jack_se)
             end
         elseif method == "bootstrap"
-            for e in 1:nboot
+            for e = 1:nboot
                 cs_boot = cs2cs_(eposeg, cs_full, fband, nep, segave, subave, "bootstrap")
                 psi_est[:, :, f, e] = cs2ps(cs_boot)
             end

@@ -50,7 +50,7 @@ function xcov(
 
     if method === :sum
         # ---- positive lags: s1 leads s2 by idx samples ---------------
-        for idx in 0:l
+        for idx = 0:l
             # shift s1 forward by idx: align s1[1+idx:end] with s2[1:end-idx]
             xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
             # normalize: biased divides by n; unbiased by (n − lag) to
@@ -58,19 +58,19 @@ function xcov(
             xc[idx + 1] /= biased ? length(s1) : (length(s1) - idx)
         end
         # ---- negative lags: s2 leads s1 by idx samples ---------------
-        for idx in 0:l
+        for idx = 0:l
             xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
             xc_neg[idx + 1] /= biased ? length(s1) : (length(s1) - idx)
         end
     elseif method === :cov
         # Julia's `cov` uses Bessel's correction (÷ n−1) when `corrected=true`,
         # which is the # UNBIASED estimator; we must invert: biased → corrected=false
-        for idx in 0:l
+        for idx = 0:l
             xc[idx + 1] = @views cov(
                 s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)], corrected = !biased,
             )
         end
-        for idx in 0:l
+        for idx = 0:l
             xc_neg[idx + 1] = @views cov(
                 s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end], corrected = !biased,
             )
@@ -129,7 +129,7 @@ function xcov(
     # pre-allocate output
     xc = zeros(1, length((-l):l), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         xc[1, :, ep_idx] = @views xcov(
             s1[:, ep_idx],
             s2[:, ep_idx];

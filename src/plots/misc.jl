@@ -47,7 +47,7 @@ function plot_compose(
 
     # pad the vector with empty plots to fill every grid cell
     n_empty = layout[1] * layout[2] - length(vfig)
-    for _ in 1:n_empty
+    for _ = 1:n_empty
         push!(vfig, plot_empty())
     end
 
@@ -57,7 +57,7 @@ function plot_compose(
     gl = pc[1, 1] = GridLayout(layout[1], layout[2])
 
     p_idx = 1
-    for idx1 in 1:layout[1], idx2 in 1:layout[2]
+    for idx1 = 1:layout[1], idx2 = 1:layout[2]
         # render each sub-figure to a temporary PNG, load it as a raster image,
         # then display it in a decoration-free axis.
         fname = tempname() * ".png"

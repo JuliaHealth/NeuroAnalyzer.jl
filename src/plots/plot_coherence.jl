@@ -205,7 +205,7 @@ function plot_coherence(
         cmap = GLMakie.resample_cmap(pal, ch_n)
 
         # plot each channel's coherence
-        for idx in 1:ch_n
+        for idx = 1:ch_n
             GLMakie.lines!(
                 f,
                 coh[idx, :];

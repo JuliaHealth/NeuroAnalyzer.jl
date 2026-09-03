@@ -52,7 +52,7 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
         rpad("value", 24) *
         rpad("channel", 1),
     )
-    for i in 1:DataFrames.nrow(obj.markers)
+    for i = 1:DataFrames.nrow(obj.markers)
         println(
             rpad(string(i), 5) *
             rpad("'" * obj.markers[i, :id] * "'", 24) *

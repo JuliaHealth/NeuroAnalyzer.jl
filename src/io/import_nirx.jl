@@ -167,14 +167,14 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         opt_pairs[idx, :] in [
             parse(Int64, split(pairs[idx], "-")[1]),
             parse(Int64, split(split(pairs[idx], "-")[2], ":")[1]),
-        ] for idx in 1:ch_n
+        ] for idx = 1:ch_n
     ]
     ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
     masks = hdr[(ch_mask_start + 1):(ch_mask_start + sources)]
     masks = split.(masks, '\t')
     ch_masks = zeros(Int64, sources * detectors)
     idx = 1
-    for idx1 in 1:sources, idx2 in 1:detectors
+    for idx1 = 1:sources, idx2 = 1:detectors
         ch_masks[idx] = parse(Int64, masks[idx1][idx2])
         idx += 1
     end
@@ -209,7 +209,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     wavelength_index = repeat([1], ch_n)
     data_type_label = repeat(["nirs_int"], ch_n)
     data_unit = repeat(["V"], ch_n)
-    for idx in 2:length(wavelengths)
+    for idx = 2:length(wavelengths)
         nirs_int = vcat(
             nirs_int,
             Matrix(
@@ -308,7 +308,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
             "_" *
             det_labels[opt_pairs[idx, :][2]] *
             " " *
-            string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n
+            string(wavelengths[wavelength_index[idx]]) for idx = 1:ch_n
     ]
     clabels = replace.(clabels, ".0" => "")
 

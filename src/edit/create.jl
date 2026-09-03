@@ -248,7 +248,7 @@ function create_data(
     ch_n = size(data, 1)
 
     # channel labels
-    clabels = ["ch-$i" for i in 1:ch_n]
+    clabels = ["ch-$i" for i = 1:ch_n]
 
     # create new dataset
     obj_tmp                                  = deepcopy(obj)

@@ -83,7 +83,7 @@ function pacor(
     # allocate output
     pac = zeros(1, length((-l):l), ep_n)
 
-    @inbounds for ep_idx in 1:ep_n
+    @inbounds for ep_idx = 1:ep_n
         pac[1, :, ep_idx] =
             vec(pacor(@view(s[:, ep_idx]), l = l, demean = demean, method = method))
     end

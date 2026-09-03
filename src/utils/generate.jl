@@ -85,7 +85,7 @@ function generate_window(
 
         # symmetric triangle: ramp up to the midpoint, then ramp down
         w = zeros(n)
-        @inbounds for idx in 1:((n ÷ 2) + 1)
+        @inbounds for idx = 1:((n ÷ 2) + 1)
             w[idx] = @. (idx * (idx + 1)) / 2
         end
         w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
@@ -97,13 +97,13 @@ function generate_window(
         # symmetric exponential: decaying from center outwards
         w = ones(n)
         if mod(n, 2) == 0
-            @inbounds for idx in 1:(n ÷ 2)
+            @inbounds for idx = 1:(n ÷ 2)
                 w[idx] = 1 / idx
             end
             w[1:((n ÷ 2))] = reverse(w[1:((n ÷ 2))])
             w[((n ÷ 2) + 1):n] = reverse(w[1:(n ÷ 2)])
         else
-            @inbounds for idx in 1:((n ÷ 2) + 1)
+            @inbounds for idx = 1:((n ÷ 2) + 1)
                 w[idx] = 1 / idx
             end
             w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])

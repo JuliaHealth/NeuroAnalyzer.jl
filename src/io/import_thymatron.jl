@@ -70,12 +70,12 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         # img_bin = Bool.(img_bin)
         img_bin = Int.(img_bin)
         # fill in discontinuities
-        for idx in 2:dimx
+        for idx = 2:dimx
             c = img_bin[:, idx]
             sum(c) == 0 && (img_bin[:, idx] = img_bin[:, idx - 1])
         end
         # thinning
-        for idx in 1:dimy
+        for idx = 1:dimy
             c = img_bin[:, idx]
             l = Int64(div(sum(c), 2))
             l_idx = findfirst(isequal(1), c)
@@ -87,12 +87,12 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         # TODO: input argument for user-defined px_uv and px_s
         t = 1:dimy
         signal = zeros(Int64, dimy)
-        for idx in 1:dimy
+        for idx = 1:dimy
             signal[idx] = dimx - findfirst(isequal(1), img_bin[:, idx])
         end
         s = round.(Int64, cubic_spline_interpolation(t, signal))
         img_bin = zeros(Int64, size(img_bin))
-        for idx in 1:dimy
+        for idx = 1:dimy
             img_bin[(dimx - s[idx]), idx] = 1
         end
 
@@ -102,7 +102,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         px_s = 0.00025 * px_cm                       # 2.5 cm = 1 s => convert to pixels
         eeg_signal = zeros(dimy)
         eeg_time = zeros(dimy)
-        for idx in 1:dimy
+        for idx = 1:dimy
             eeg_signal[idx] =
                 px_uv * ((dimx ÷ 2) - findfirst(isequal(1), img_bin[:, idx]))
             eeg_time[idx] = idx * px_s
@@ -121,7 +121,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
 
     ch_n = size(data, 1)
     clabels = repeat(["ch"], ch_n)
-    for idx in 1:ch_n
+    for idx = 1:ch_n
         clabels[idx] *= string(idx)
     end
     time_pts = round.(

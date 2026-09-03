@@ -47,8 +47,8 @@ function plot_connectivity_circle(
 
     # calculate polar coordinates for each channel
     t = range(π, -π; length = size(m, 1) + 1)
-    pos_x = [cos(t[idx]) for idx in 1:size(m, 1)]
-    pos_y = [sin(t[idx]) for idx in 1:size(m, 1)]
+    pos_x = [cos(t[idx]) for idx = 1:size(m, 1)]
+    pos_y = [sin(t[idx]) for idx = 1:size(m, 1)]
 
     # normalize connectivity matrix for visualization
     m_norm = normalize_minmax(m)
@@ -82,8 +82,8 @@ function plot_connectivity_circle(
     m_norm = normalize_minmax(m)
     c = (0.0, 0.0)
     s = size(m, 1)
-    for idx1 in 1:s
-        for idx2 in (idx1 + 1):s
+    for idx1 = 1:s
+        for idx2 = (idx1 + 1):s
             # apply thresholding if specified
             if !isnothing(threshold)
                 if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
@@ -136,7 +136,7 @@ function plot_connectivity_circle(
     end
 
     # draw channel markers
-    for idx in 1:s
+    for idx = 1:s
         GLMakie.scatter!(
             ax,
             pos_x[idx],

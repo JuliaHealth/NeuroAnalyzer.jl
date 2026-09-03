@@ -287,7 +287,7 @@ function plot_topo(
     if electrodes
         if (isnothing(threshold) && isnothing(sch)) ||
            (!isnothing(threshold) && threshold_method === :reg)
-            for idx in 1:ch_n
+            for idx = 1:ch_n
                 GLMakie.scatter!(
                     ax, loc_x[idx], loc_y[idx];
                     markersize = marker_size,
@@ -296,7 +296,7 @@ function plot_topo(
             end
 
         elseif threshold_method === :loc
-            for idx in 1:ch_n
+            for idx = 1:ch_n
                 if idx in threshold_idx
                     GLMakie.scatter!(
                         ax, loc_x[idx], loc_y[idx];
@@ -315,7 +315,7 @@ function plot_topo(
             end
 
         elseif !isnothing(sch)
-            for idx in 1:ch_n
+            for idx = 1:ch_n
                 if idx in sch
                     GLMakie.scatter!(
                         ax, loc_x[idx], loc_y[idx];
