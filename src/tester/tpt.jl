@@ -6,10 +6,10 @@ export tpt
 # =============================================================================
 
 # Serial communication constants
-const _TPT_BAUDRATE    = 19200  # MMA7660 Arduino firmware baud rate
-const _TPT_FS          = 50     # accelerometer sampling rate [Hz]
-const _TPT_WARMUP_SECS = 2      # seconds to flush stale serial data before recording
-const _TPT_N_CAPTURES  = 7      # expected capture groups in the serial data regex
+const _TPT_BAUDRATE = 19200 # MMA7660 Arduino firmware baud rate
+const _TPT_FS = 50 # accelerometer sampling rate [Hz]
+const _TPT_WARMUP_SECS = 2 # seconds to flush stale serial data before recording
+const _TPT_N_CAPTURES = 7 # expected capture groups in the serial data regex
 
 # Expected serial line format from the Arduino firmware:
 #   "tpt: X Y Z AX AY AZ"
@@ -33,9 +33,9 @@ function _parse_tpt_sample(line::String)
     isnothing(m) && return nothing
     length(m.captures) == _TPT_N_CAPTURES || return nothing
     return (
-        x    = parse(Float64, m.captures[2]),
-        y    = parse(Float64, m.captures[3]),
-        z    = parse(Float64, m.captures[4]),
+        x = parse(Float64, m.captures[2]),
+        y = parse(Float64, m.captures[3]),
+        z = parse(Float64, m.captures[4]),
         accx = parse(Float64, m.captures[5]),
         accy = parse(Float64, m.captures[6]),
         accz = parse(Float64, m.captures[7]),
@@ -76,8 +76,8 @@ function _build_tpt_object(
         obj;
         data  = signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
-        type  = ["orient", "orient", "orient", "accel", "accel", "accel"],
-        unit  = ["", "", "", "m/s²", "m/s²", "m/s²"],
+        type = ["orient", "orient", "orient", "accel", "accel", "accel"],
+        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
     )
     create_time!(obj; fs = _TPT_FS)
     return obj
@@ -119,13 +119,13 @@ function itpt(;
     sp = _serial_open(port_name; baudrate = _TPT_BAUDRATE)
     isnothing(sp) && throw(ArgumentError("Serial port $port_name is not available"))
 
-    img_idle  = read_from_png(joinpath(res_path, "finger_nopinch.png"))
+    img_idle = read_from_png(joinpath(res_path, "finger_nopinch.png"))
     img_pinch = read_from_png(joinpath(res_path, "finger_pinch.png"))
 
-    n_samples   = duration * _TPT_FS
-    tpt_ch_x    = zeros(n_samples)
-    tpt_ch_y    = zeros(n_samples)
-    tpt_ch_z    = zeros(n_samples)
+    n_samples = duration * _TPT_FS
+    tpt_ch_x = zeros(n_samples)
+    tpt_ch_y = zeros(n_samples)
+    tpt_ch_z = zeros(n_samples)
     tpt_ch_accx = zeros(n_samples)
     tpt_ch_accy = zeros(n_samples)
     tpt_ch_accz = zeros(n_samples)
@@ -135,8 +135,8 @@ function itpt(;
         win = GtkApplicationWindow(app, "NeuroAnalyzer: itpt()")
         Gtk4.default_size(win, Int64(img_idle.width), Int64(img_idle.height) + 100)
 
-        can                = GtkCanvas()
-        can.content_width  = Int64(img_idle.width)
+        can = GtkCanvas()
+        can.content_width = Int64(img_idle.width)
         can.content_height = Int64(img_idle.height)
 
         g = GtkGrid()
@@ -194,13 +194,13 @@ function itpt(;
                         if !isnothing(line)
                             sample = _parse_tpt_sample(line)
                             if !isnothing(sample)
-                                tpt_ch_x[idx]    = sample.x
-                                tpt_ch_y[idx]    = sample.y
-                                tpt_ch_z[idx]    = sample.z
+                                tpt_ch_x[idx] = sample.x
+                                tpt_ch_y[idx] = sample.y
+                                tpt_ch_z[idx] = sample.z
                                 tpt_ch_accx[idx] = sample.accx
                                 tpt_ch_accy[idx] = sample.accy
                                 tpt_ch_accz[idx] = sample.accz
-                                idx              += 1
+                                idx += 1
                             end
                         end
                     end
@@ -297,10 +297,10 @@ function tpt(;
     _beep()
     print("   Pinch the thumb and the index finger as quickly as possible")
 
-    n_samples   = duration * _TPT_FS
-    tpt_ch_x    = zeros(n_samples)
-    tpt_ch_y    = zeros(n_samples)
-    tpt_ch_z    = zeros(n_samples)
+    n_samples = duration * _TPT_FS
+    tpt_ch_x = zeros(n_samples)
+    tpt_ch_y = zeros(n_samples)
+    tpt_ch_z = zeros(n_samples)
     tpt_ch_accx = zeros(n_samples)
     tpt_ch_accy = zeros(n_samples)
     tpt_ch_accz = zeros(n_samples)
@@ -312,13 +312,13 @@ function tpt(;
         if !isnothing(line)
             sample = _parse_tpt_sample(line)
             if !isnothing(sample)
-                tpt_ch_x[idx]    = sample.x
-                tpt_ch_y[idx]    = sample.y
-                tpt_ch_z[idx]    = sample.z
+                tpt_ch_x[idx] = sample.x
+                tpt_ch_y[idx] = sample.y
+                tpt_ch_z[idx] = sample.z
                 tpt_ch_accx[idx] = sample.accx
                 tpt_ch_accy[idx] = sample.accy
                 tpt_ch_accz[idx] = sample.accz
-                idx              += 1
+                idx += 1
             end
         end
     end

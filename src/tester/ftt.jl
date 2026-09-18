@@ -66,15 +66,15 @@ function _dedup_taps!(
     counts::Vector{Int64},
 )::Nothing
     for idx in eachindex(t_vec)
-        keep        = if length(unique(t_vec[idx])) != length(t_vec[idx])
-            # Keep only the first occurrence of each time point
+        keep = if length(unique(t_vec[idx])) != length(t_vec[idx])
+            # keep only the first occurrence of each time point
             unique(i -> t_vec[idx][i], eachindex(t_vec[idx]))
         else
             collect(eachindex(t_vec[idx]))  # no duplicates - keep all
         end
         counts[idx] = length(keep)
-        t_vec[idx]  = t_vec[idx][keep]
-        d_vec[idx]  = d_vec[idx][keep]
+        t_vec[idx] = t_vec[idx][keep]
+        d_vec[idx] = d_vec[idx][keep]
     end
     return nothing
 end
@@ -117,10 +117,10 @@ A `NamedTuple` with fields:
 All times are relative to the **start of their respective trial or interval**.
 """
 function iftt(;
-    duration::Int64   = 20,
-    trials::Int64     = 2,
-    interval::Int64   = 2,
-    gpio::Int64       = -1,
+    duration::Int64 = 20,
+    trials::Int64 = 2,
+    interval::Int64 = 2,
+    gpio::Int64 = -1,
     port_name::String = "",
 )::@NamedTuple{
     taps::Vector{Int64},
@@ -148,16 +148,16 @@ function iftt(;
         end
     end
 
-    img_idle  = read_from_png(joinpath(res_path, "finger_noclick.png"))
+    img_idle = read_from_png(joinpath(res_path, "finger_noclick.png"))
     img_press = read_from_png(joinpath(res_path, "finger_click.png"))
 
     # per-trial accumulators
-    result     = zeros(Int64, trials)   # tap count per trial
+    result = zeros(Int64, trials)   # tap count per trial
     int_result = zeros(Int64, trials)   # tap count per interval
 
     # keyboard-mode: nested per-trial vectors (pushed as each trial completes)
-    t_kp     = Vector{Vector{Float64}}()
-    d_kp     = Vector{Vector{Float64}}()
+    t_kp = Vector{Vector{Float64}}()
+    d_kp = Vector{Vector{Float64}}()
     int_t_kp = Vector{Vector{Float64}}()
     int_d_kp = Vector{Vector{Float64}}()
 
@@ -169,11 +169,11 @@ function iftt(;
 
     # trial/interval start times (keyboard mode - used for relative time offsets)
     t_trial_start = Vector{Float64}()
-    t_int_start   = Vector{Float64}()
+    t_int_start = Vector{Float64}()
 
     # intra-trial buffers (keyboard mode - swapped out at the start of each trial)
-    t_kp_tmp     = Vector{Float64}()
-    d_kp_tmp     = Vector{Float64}()
+    t_kp_tmp = Vector{Float64}()
+    d_kp_tmp = Vector{Float64}()
     int_t_kp_tmp = Vector{Float64}()
     int_d_kp_tmp = Vector{Float64}()
 
@@ -185,7 +185,7 @@ function iftt(;
         Gtk4.default_size(win, Int64(img_idle.width), Int64(img_idle.height) + 100)
 
         # canvas that shows the finger graphic (idle or pressed)
-        can                = GtkCanvas()
+        can = GtkCanvas()
         can.content_width  = Int64(img_idle.width)
         can.content_height = Int64(img_idle.height)
 
@@ -215,12 +215,12 @@ function iftt(;
         lb_interval2.halign = 1
 
         g1[1:3, 1] = can
-        g1[1, 2]   = lb_status1
-        g1[3, 2]   = lb_status2
-        g1[1, 3]   = lb_trial1
-        g1[3, 3]   = lb_trial2
-        g1[1, 4]   = lb_interval1
-        g1[3, 4]   = lb_interval2
+        g1[1, 2] = lb_status1
+        g1[3, 2] = lb_status2
+        g1[1, 3] = lb_trial1
+        g1[3, 3] = lb_trial2
+        g1[1, 4] = lb_interval1
+        g1[3, 4] = lb_interval2
         g1[1:3, 5] = GtkLabel("")
         g1[1:3, 6] = bt_start
 
@@ -274,8 +274,8 @@ function iftt(;
                 Threads.@spawn begin
                     for idx = 1:trials
                         # reset intra-trial buffers for this trial
-                        t_kp_tmp     = Vector{Float64}()
-                        d_kp_tmp     = Vector{Float64}()
+                        t_kp_tmp = Vector{Float64}()
+                        d_kp_tmp = Vector{Float64}()
                         int_t_kp_tmp = Vector{Float64}()
                         int_d_kp_tmp = Vector{Float64}()
 
@@ -306,8 +306,8 @@ function iftt(;
                                 Cairo.set_source_surface(ctx, img_idle, 0, 0)
                                 return Cairo.paint(ctx)
                             end
-                            @idle_add lb_status2.label   = "INTERVAL"
-                            @idle_add lb_trial2.label    = "-"
+                            @idle_add lb_status2.label = "INTERVAL"
+                            @idle_add lb_trial2.label = "-"
                             @idle_add lb_interval2.label = strip("$idx of $trials")
 
                             push!(t_int_start, time())
@@ -331,8 +331,8 @@ function iftt(;
                             Cairo.set_source_surface(ctx, img_press, 0, 0)
                             return Cairo.paint(ctx)
                         end
-                        @idle_add lb_status2.label   = "TEST"
-                        @idle_add lb_trial2.label    = strip("$idx of $trials")
+                        @idle_add lb_status2.label = "TEST"
+                        @idle_add lb_trial2.label = strip("$idx of $trials")
                         @idle_add lb_interval2.label = "-"
 
                         key_pressed = false
@@ -366,9 +366,9 @@ function iftt(;
                                 Cairo.set_source_surface(ctx, img_idle, 0, 0)
                                 return Cairo.paint(ctx)
                             end
-                            @idle_add lb_status2.label   = "INTERVAL"
+                            @idle_add lb_status2.label = "INTERVAL"
                             @idle_add lb_interval2.label = strip("$idx of $trials")
-                            @idle_add lb_trial2.label    = "-"
+                            @idle_add lb_trial2.label = "-"
 
                             key_pressed = false
                             sp = _serial_open(port_name)
@@ -429,8 +429,8 @@ function iftt(;
             end
 
             # convert absolute epoch times → duration since trial/interval start [ms]
-            d_kp[idx]     = round.((d_kp[idx] .- t_kp[idx]) .* 1000; digits = 1)
-            t_kp[idx]     = round.((t_kp[idx] .- t_trial_start[idx]) .* 1000; digits = 1)
+            d_kp[idx] = round.((d_kp[idx] .- t_kp[idx]) .* 1000; digits = 1)
+            t_kp[idx] = round.((t_kp[idx] .- t_trial_start[idx]) .* 1000; digits = 1)
             int_d_kp[idx] = round.((int_d_kp[idx] .- int_t_kp[idx]) .* 1000; digits = 1)
             int_t_kp[idx] = round.((int_t_kp[idx] .- t_int_start[idx]) .* 1000; digits = 1)
         end
@@ -448,9 +448,9 @@ function iftt(;
         # ---- serial path: flat vectors need restructuring into per-trial ----
 
         # convert raw seconds → milliseconds and compute durations from press times
-        d_kp_flat     = round.((d_kp_flat .- t_kp_flat) .* 1000; digits = 1)
+        d_kp_flat = round.((d_kp_flat .- t_kp_flat) .* 1000; digits = 1)
         int_d_kp_flat = round.((int_d_kp_flat .- int_t_kp_flat) .* 1000; digits = 1)
-        t_kp_flat     = round.(t_kp_flat .* 1000; digits = 1)
+        t_kp_flat = round.(t_kp_flat .* 1000; digits = 1)
         int_t_kp_flat = round.(int_t_kp_flat .* 1000; digits = 1)
 
         # pack flat vectors into per-trial nested vectors
@@ -519,10 +519,10 @@ A `NamedTuple` with fields:
 All times are relative to the **start of their respective trial or interval**.
 """
 function ftt(;
-    duration::Int64   = 20,
-    trials::Int64     = 2,
-    interval::Int64   = 2,
-    gpio::Int64       = -1,
+    duration::Int64 = 20,
+    trials::Int64 = 2,
+    interval::Int64 = 2,
+    gpio::Int64 = -1,
     port_name::String = "",
 )::@NamedTuple{
     taps::Vector{Int64},
@@ -614,11 +614,11 @@ function ftt(;
     # =========================================================================
     # per-run accumulators
     # =========================================================================
-    result     = zeros(Int64, trials)
+    result = zeros(Int64, trials)
     int_result = zeros(Int64, trials)
 
-    t_kp     = Vector{Float64}()
-    d_kp     = Vector{Float64}()
+    t_kp = Vector{Float64}()
+    d_kp = Vector{Float64}()
     int_t_kp = Vector{Float64}()
     int_d_kp = Vector{Float64}()
 
@@ -633,23 +633,23 @@ function ftt(;
 
         # build a timeline of segment boundaries [ms] for all trials + intervals
         # odd segments (1, 3, 5, …) are trials; even segments (2, 4, 6, …) are intervals
-        l_seg      = duration + interval                            # length of one trial+interval block
-        n_segs     = 2 * trials + 1
+        l_seg = duration + interval # length of one trial+interval block
+        n_segs = 2 * trials + 1
         t_segments = zeros(n_segs)
         for idx = 1:trials
-            t_segments[(idx * 2) - 1] = l_seg * (idx - 1)           # trial start
-            t_segments[idx * 2]       = (l_seg * idx) - interval    # trial end / interval start
+            t_segments[(idx * 2) - 1] = l_seg * (idx - 1) # trial start
+            t_segments[idx * 2] = (l_seg * idx) - interval # trial end / interval start
         end
         t_segments .*= 1000
         t_segments[end] = ((trials * duration) + (trials * interval)) * 1000  # total end
 
         channel = Channel(_kbd_listener, 1024)   # async keyboard event producer
-        stop    = false
-        r       = 0
-        t_raw   = Float64[]    # raw key-press times relative to t_s [ms]
-        seg_idx = 1            # pointer into t_segments for the next segment boundary
-        trial_n = 1            # trial counter for status printing
-        int_n   = 1            # interval counter for status printing
+        stop = false
+        r = 0
+        t_raw = Float64[] # raw key-press times relative to t_s [ms]
+        seg_idx = 1 # pointer into t_segments for the next segment boundary
+        trial_n = 1 # trial counter for status printing
+        int_n = 1 # interval counter for status printing
 
         t_s = time()
         while !stop
@@ -692,12 +692,12 @@ function ftt(;
         for press_ms in t_raw
             for seg = 1:(2 * trials)
                 if t_segments[seg] <= press_ms <= t_segments[seg + 1]
-                    if iseven(seg + 1)       # odd segment index → trial
+                    if iseven(seg + 1) # odd segment index → trial
                         idx3 = (seg + 1) ÷ 2
                         result[idx3] += 1
                         push!(t_kp, press_ms)
-                        push!(d_kp, 100.0)   # keyboard: duration fixed at 100 ms
-                    else                     # even segment index → interval
+                        push!(d_kp, 100.0) # keyboard: duration fixed at 100 ms
+                    else # even segment index → interval
                         idx3 = seg ÷ 2
                         int_result[idx3] += 1
                         push!(int_t_kp, press_ms)
@@ -776,13 +776,13 @@ function ftt(;
             println()
             print("   Trial $idx: press the BUTTON as quickly as possible")
 
-            key_state        = 0
-            key_last_state   = 0
+            key_state = 0
+            key_last_state = 0
             last_debounce_ms = 0.0
 
             t_trial = time()
             while time() <= t_trial + duration
-                t       = time() - t_trial
+                t = time() - t_trial
                 rpi_key = PiGPIO.read(rpi, gpio)
 
                 rpi_key != key_last_state && (last_debounce_ms = time() * 1000)
@@ -810,8 +810,8 @@ function ftt(;
             println()
             print("Interval $idx: DO NOT press the BUTTON")
 
-            key_state        = 0
-            key_last_state   = 0
+            key_state = 0
+            key_last_state = 0
             last_debounce_ms = 0.0
 
             t_int = time()
@@ -850,9 +850,9 @@ function ftt(;
     # convert raw seconds → ms and compute durations (RPi / serial paths only;
     # keyboard path already stores ms and fixed 100 ms durations)
     if rpi isa PiGPIO.Pi || !isnothing(sp)
-        d_kp     = round.((d_kp .- t_kp) .* 1000; digits = 1)
+        d_kp = round.((d_kp .- t_kp) .* 1000; digits = 1)
         int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000; digits = 1)
-        t_kp     = round.(t_kp .* 1000; digits = 1)
+        t_kp = round.(t_kp .* 1000; digits = 1)
         int_t_kp = round.(int_t_kp .* 1000; digits = 1)
     end
 

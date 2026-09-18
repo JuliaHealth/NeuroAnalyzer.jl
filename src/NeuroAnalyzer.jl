@@ -587,6 +587,7 @@ include("recorder/rt_plotter.jl")
 include("tester/ftt.jl")
 include("tester/iavh.jl")
 include("tester/tpt.jl")
+include("tester/test_run.jl")
 
 # stim
 include("stim/ect.jl")
