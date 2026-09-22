@@ -411,4 +411,10 @@ x2, f2 = areduce(x, f)
     fs = 256,
 ) == 28
 
+@info "Test: anonymize()"
+eeg_tmp = anonymize(eeg)
+@test eeg_tmp.header.subject[:first_name] == ""
+@test eeg_tmp.header.subject[:middle_name] == ""
+@test eeg_tmp.header.subject[:last_name] == ""
+
 true

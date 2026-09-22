@@ -21,6 +21,8 @@ export describe
 export size
 export datatype
 export channel_order
+export anonymize
+export anonymize!
 
 # internal helper: shared band-frequency table lookup
 # returns the raw (bf_low, bf_high) tuple, or nothing for :list
@@ -977,4 +979,48 @@ Return the channel order indices stored in the object header.
 """
 function channel_order(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     return obj.header.recording[:channel_order]
+end
+
+"""
+    anonymize(obj)
+
+Remove subject's data from the header.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+
+# Returns
+
+- `NeuroAnalyzer.NEURO`: new NEURO object without subject's data
+"""
+function anonymize(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
+    # create new dataset
+    obj_tmp = deepcopy(obj)
+    obj_tmp.header.subject[:first_name] = ""
+    obj_tmp.header.subject[:middle_name] = ""
+    obj_tmp.header.subject[:last_name] = ""
+
+    return obj_tmp
+end
+
+"""
+    anonymize!(obj)
+
+Remove subject's data from the header in-place..
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+
+# Returns
+
+- `Nothing`
+"""
+function anonymize!(obj::NeuroAnalyzer.NEURO)::Nothing
+    obj.header.subject[:first_name] = ""
+    obj.header.subject[:middle_name] = ""
+    obj.header.subject[:last_name] = ""
+
+    return nothing
 end
