@@ -109,7 +109,7 @@ function epoch(
 
     obj_tmp.data = epochs
     obj_tmp.header.recording[:epoch_id] = epoch_id
-    obj_tmp.header.recording[:bad_channel] = zeros(Bool, size(obj_tmp.data, 1))
+    obj_tmp.header.recording[:bad_channel] = obj.header.recording[:bad_channel]
     obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
     obj_tmp.epoch_time .-= offset
 
