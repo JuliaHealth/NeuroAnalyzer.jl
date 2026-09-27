@@ -29,13 +29,13 @@ export anonymize!
 function _band_table(band::Symbol, nqf::Float64)::Union{Tuple{Float64, Float64}, Nothing}
     band === :list && return nothing
     band === :total && return (0.1, round(nqf; digits = 1))
-    band === :delta && return (0.1, 4.0)
+    band === :delta && return (0.5, 4.0)
     band === :theta && return (4.0, 8.0)
     band === :alpha && return (8.0, 13.0)
     band === :alpha_lower && return (8.0, 10.5)
     band === :alpha_higher && return (10.5, 13.0)
-    band === :beta && return (14.0, 30.0)
-    band === :beta_lower && return (14.0, 25.0)
+    band === :beta && return (13.0, 30.0)
+    band === :beta_lower && return (13.0, 25.0)
     band === :beta_higher && return (25.0, 30.0)
     band === :gamma && return (30.0, 150.0)
     band === :gamma_1 && return (30.0, 40.0)
@@ -746,11 +746,11 @@ When `band = :list`, the available band names are printed to stdout and the func
     - `:total`
     - `:delta`: 0.1-4.0 Hz
     - `:theta`: 4.0-8.0 Hz
-    - `:alpha`: 8.0-3.0 Hz
+    - `:alpha`: 8.0-13.0 Hz
     - `:alpha_lower`: 8.0-10.5 Hz
     - `:alpha_higher`: 10.5-13.0 Hz
-    - `:beta`: 14.0-30.0 Hz
-    - `:beta_lower`: 14.0-25.0 Hz
+    - `:beta`: 13.0-30.0 Hz
+    - `:beta_lower`: 13.0-25.0 Hz
     - `:beta_higher`: 25.0-30.0 Hz
     - `:gamma`: 30.0-150.0 Hz
     - `:gamma_1`: 30.0-40.0 Hz
@@ -798,11 +798,11 @@ When `band = :list`, the available band names are printed to stdout and the func
     - `:total`
     - `:delta`: 0.1-4.0 Hz
     - `:theta`: 4.0-8.0 Hz
-    - `:alpha`: 8.0-3.0 Hz
+    - `:alpha`: 8.0-13.0 Hz
     - `:alpha_lower`: 8.0-10.5 Hz
     - `:alpha_higher`: 10.5-13.0 Hz
-    - `:beta`: 14.0-30.0 Hz
-    - `:beta_lower`: 14.0-25.0 Hz
+    - `:beta`: 13.0-30.0 Hz
+    - `:beta_lower`: 13.0-25.0 Hz
     - `:beta_higher`: 25.0-30.0 Hz
     - `:gamma`: 30.0-150.0 Hz
     - `:gamma_1`: 30.0-40.0 Hz
