@@ -736,7 +736,7 @@ end
 
 Return the frequency limits for a named EEG band.
 
-When `band = :list`, the available band names are printed to stdout and the function returns `(0.0, 0.0)` as a sentinel (rather than `nothing`, which would violate the declared return type).
+When `band = :list`, the available band names are printed to stdout and the function returns `(0.0, sr(obj) / 2)` as a sentinel (rather than `nothing`, which would violate the declared return type).
 
 # Arguments
 
@@ -777,7 +777,7 @@ function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)::Tuple{Float64, Float6
     if isnothing(bf)
         _band_list(bands)
         # sentinel: caller should check for :list before using the result
-        return (0.0, 0.0)
+        return (0.0, sr(obj) / 2)
     end
 
     return _clamp_band(bf, nqf, band, "obj")
@@ -788,7 +788,7 @@ end
 
 Return the frequency limits for a named EEG band.
 
-When `band = :list`, the available band names are printed to stdout and the function returns `(0.0, 0.0)` as a sentinel.
+When `band = :list`, the available band names are printed to stdout and the function returns `(0.0, fs / 2)` as a sentinel (rather than `nothing`, which would violate the declared return type).
 
 # Arguments
 
@@ -829,7 +829,7 @@ function band_frq(fs::Int64; band::Symbol)::Tuple{Float64, Float64}
     if isnothing(bf)
         _band_list(bands)
         # sentinel: caller should check for :list before using the result
-        return (0.0, 0.0)
+        return (0.0, fs / 2)
     end
 
     return _clamp_band(bf, nqf, band, "fs=$fs")
