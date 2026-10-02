@@ -6,7 +6,8 @@ export coherence
 Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two 1-D signal vectors.
 
 For two signals `s1`, `s2` and their cross-power spectra:
-- coh = S12 / √(S11 · S22) (complex coherence)
+
+- coh = s1s2 / √(s1s1 · s2s2) (complex coherence)
 - imcoh = Im(coh) (imaginary part - insensitive to zero-lag volume conduction)
 - msc = |coh|² (magnitude-squared coherence ∈ [0,1])
 
@@ -75,13 +76,13 @@ function coherence(
     )
 
     # compute the three cross-power spectra needed for coherence
-    # S11 = auto-spectrum of s1, S12 = cross-spectrum, S22 = auto-spectrum of s2.
+    # s1s1 = auto-spectrum of s1, s1s2 = cross-spectrum, s2s2 = auto-spectrum of s2
     s1s1, f = cpsd(s1, s1; cpsd_kwargs...)
     # f is the same for all three calls
     s1s2, _ = cpsd(s1, s2; cpsd_kwargs...)
     s2s2, _ = cpsd(s2, s2; cpsd_kwargs...)
 
-    # complex coherence: S12 / √(S11 · S22).
+    # complex coherence: s1s2 / √(s1s1 · s2s2)
     coh = @. s1s2 / sqrt(s1s1 * s2s2)
 
     # imaginary coherence: insensitive to instantaneous zero-lag coupling
@@ -100,7 +101,8 @@ end
 Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two 3-D signal arrays.
 
 For two signals `s1`, `s2` and their cross-power spectra:
-- coh = S12 / √(S11 · S22) (complex coherence)
+
+- coh = s1s2 / √(s1s1 · s2s2) (complex coherence)
 - imcoh = Im(coh) (imaginary part - insensitive to zero-lag volume conduction)
 - msc = |coh|² (magnitude-squared coherence ∈ [0,1])
 
@@ -124,9 +126,9 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 Named tuple:
 
-- `coh::Array{ComplexF64, 3}`: coherence, shape `(channels, frequencies, epochs)`
-- `imcoh::Array{Float64, 3}`: imaginary part of coherence, shape `(channels, frequencies, epochs)`
-- `msc::Array{Float64, 3}`: magnitude-squared coherence, shape `(channels, frequencies, epochs)`
+- `coh::Array{ComplexF64, 2}`: coherence, shape `(channels, frequencies)`
+- `imcoh::Array{Float64, 2}`: imaginary part of coherence, shape `(channels, frequencies)`
+- `msc::Array{Float64, 2}`: magnitude-squared coherence, shape `(channels, frequencies)`
 - `f::Vector{Float64}`: frequencies in Hz
 """
 function coherence(
@@ -141,9 +143,9 @@ function coherence(
     wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
-    coh::Array{ComplexF64, 3},
-    imcoh::Array{Float64, 3},
-    msc::Array{Float64, 3},
+    coh::Array{ComplexF64, 2},
+    imcoh::Array{Float64, 2},
+    msc::Array{Float64, 2},
     f::Vector{Float64},
 }
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -157,45 +159,49 @@ function coherence(
     # number of epochs
     ep_n = size(s1, 3)
 
-    # dry run to pre-compute the frequency vector
-    coh_data = NeuroAnalyzer.coherence(
-        @view(s1[1, :, 1]),
-        @view(s2[1, :, 1]);
-        method = method,
+    # shared kwargs for all three cpsd calls - defined once to keep them in sync
+    cpsd_kwargs = (
         fs = fs,
-        flim = flim,
-        demean = demean,
-        nt = nt,
         wlen = wlen,
         wstep = wstep,
         w = w,
+        demean = demean,
+        method = method,
+        flim = flim,
     )
-    f = coh_data.f
+
+    # dry run to pre-compute the frequency vector
+    _, f = cpsd(
+        @view(s1[1, :, 1]),
+        @view(s2[1, :, 1]);
+        cpsd_kwargs...
+    )
 
     # pre-allocate outputs
-    coh = zeros(ComplexF64, ch_n, length(f), ep_n)
-    imcoh = zeros(ch_n, length(f), ep_n)
-    msc = zeros(ch_n, length(f), ep_n)
+    coh = zeros(ComplexF64, ch_n, length(f))
+    imcoh = zeros(ch_n, length(f))
+    msc = zeros(ch_n, length(f))
 
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
-        ch_idx, ep_idx = idx[1], idx[2]
-        coh_data = coherence(
-            @view(s1[ch_idx, :, ep_idx]),
-            @view(s2[ch_idx, :, ep_idx]),
-            method = method,
-            fs = fs,
-            flim = flim,
-            demean = demean,
-            nt = nt,
-            wlen = wlen,
-            wstep = wstep,
-            w = w,
-        )
-        coh[ch_idx, :, ep_idx] = coh_data.coh
-        imcoh[ch_idx, :, ep_idx] = coh_data.imcoh
-        msc[ch_idx, :, ep_idx] = coh_data.msc
-    end
+    # compute the three cross-power spectra needed for coherence
+    # s1s1 = auto-spectrum of s1, s1s2 = cross-spectrum, s2s2 = auto-spectrum of s2
+    s1s1, _ = cpsd(s1, s1; cpsd_kwargs...)
+    s1s2, _ = cpsd(s1, s2; cpsd_kwargs...)
+    s2s2, _ = cpsd(s2, s2; cpsd_kwargs...)
+
+    # average across epochs
+    s1s1_avg = mean(s1s1, dims=3)[:, :]
+    s1s2_avg = mean(s1s2, dims=3)[:, :]
+    s2s2_avg = mean(s2s2, dims=3)[:, :]
+
+    # complex coherence: s1s2 / √(s1s1 · s2s2)
+    coh = @. s1s2_avg / sqrt(s1s1_avg * s2s2_avg)
+
+    # imaginary coherence: insensitive to instantaneous zero-lag coupling
+    # (e.g. volume conduction), captures only time-lagged interactions
+    imcoh = imag.(coh)
+
+    # magnitude-squared coherence: real-valued, bounded on [0, 1].
+    msc = abs2.(coh)
 
     return (; coh, imcoh, msc, f)
 end
@@ -206,7 +212,8 @@ end
 Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two NEURO objects.
 
 For two signals `s1`, `s2` and their cross-power spectra:
-- coh = S12 / √(S11 · S22) (complex coherence)
+
+- coh = s1s2 / √(s1s1 · s2s2) (complex coherence)
 - imcoh = Im(coh) (imaginary part - insensitive to zero-lag volume conduction)
 - msc = |coh|² (magnitude-squared coherence ∈ [0,1])
 
@@ -234,9 +241,9 @@ For two signals `s1`, `s2` and their cross-power spectra:
 
 Named tuple:
 
-- `coh::Array{ComplexF64, 3}`: coherence, shape `(channels, frequencies, epochs)`
-- `imcoh::Array{Float64, 3}`: imaginary part of coherence, shape `(channels, frequencies, epochs)`
-- `msc::Array{Float64, 3}`: magnitude-squared coherence, shape `(channels, frequencies, epochs)`
+- `coh::Array{ComplexF64, 2}`: coherence, shape `(channels, frequencies)`
+- `imcoh::Array{Float64, 2}`: imaginary part of coherence, shape `(channels, frequencies)`
+- `msc::Array{Float64, 2}`: magnitude-squared coherence, shape `(channels, frequencies)`
 - `f::Vector{Float64}`: frequencies
 """
 function coherence(
@@ -254,9 +261,9 @@ function coherence(
     wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
 )::@NamedTuple{
-    coh::Array{ComplexF64, 3},
-    imcoh::Array{Float64, 3},
-    msc::Array{Float64, 3},
+    coh::Array{ComplexF64, 2},
+    imcoh::Array{Float64, 2},
+    msc::Array{Float64, 2},
     f::Vector{Float64},
 }
     # validate

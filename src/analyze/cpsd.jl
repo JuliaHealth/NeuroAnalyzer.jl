@@ -23,7 +23,7 @@ Calculate the complex cross power spectral density (CPSD) between two 1-D signal
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window; ignored for `method  =:mt`
 
 # Returns
 
@@ -62,11 +62,10 @@ function cpsd(
 
     if method === :mt
 
-        # apply Hanning window (or unit window)
-        win = w ? DSP.hanning(n_samples) : ones(n_samples)
-
+        # ignore Hanning window (DPSS Slepian tapers will be applied)
+        
         # stack signals as rows
-        s = hcat(s1 .* win, s2 .* win)'
+        s = hcat(s1, s2)'
 
         # compute the full cross-power spectra matrix.
         pxy_mt = DSP.mt_cross_power_spectra(
@@ -92,22 +91,19 @@ function cpsd(
 
         # segment the signals into overlapping windows
         chunks_idx = _fchunks(length(s1); wlen = wlen, wstep = wstep)
-        pxy = zeros(ComplexF64, nextpow(2, wlen + 1))
+        nfft = nextpow(2, wlen)
+        pxy = zeros(ComplexF64, nfft)
         # apply Hanning window (or unit window)
-        win = w ? hanning(wlen) : ones(wlen)
+        win  = w ? hanning(wlen) : ones(wlen)
 
         for idx in axes(chunks_idx, 1)
-            if demean
-                s1_tmp = remove_dc(@view(s1[chunks_idx[idx, 1]:chunks_idx[idx, 2]]))
-                s2_tmp = remove_dc(@view(s2[chunks_idx[idx, 1]:chunks_idx[idx, 2]]))
-            else
-                s1_tmp = @view s1[chunks_idx[idx, 1]:chunks_idx[idx, 2]]
-                s2_tmp = @view s2[chunks_idx[idx, 1]:chunks_idx[idx, 2]]
-            end
+            r = chunks_idx[idx, 1]:chunks_idx[idx, 2]
+            s1_tmp = demean ? remove_dc(@view(s1[r])) : @view(s1[r])
+            s2_tmp = demean ? remove_dc(@view(s2[r])) : @view(s2[r])
             # FFT each segment
             # zero-pad to next power of 2, normalize by window length
-            ss1 = fft0(s1_tmp .* win, nextpow(2, wlen + 1) - wlen) / length(s1_tmp)
-            ss2 = fft0(s2_tmp .* win, nextpow(2, wlen + 1) - wlen) / length(s2_tmp)
+            ss1 = fft0(s1_tmp .* win, nfft - wlen) / wlen
+            ss2 = fft0(s2_tmp .* win, nfft - wlen) / wlen
             # accumulate: CPSD = conj(S1) * S2 for each segment
             pxy .+= conj.(ss1) .* ss2
         end
@@ -115,7 +111,7 @@ function cpsd(
         # average cross-power over all segments
         pxy /= size(chunks_idx, 1)
 
-        f = freqs(nextfastfft(wlen), fs)[1]
+        f = freqs(nfft, fs)[1]
 
         # trim to the requested frequency band
         f1_idx = vsearch(flim[1], f)
