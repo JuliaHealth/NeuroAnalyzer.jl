@@ -223,8 +223,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
-- `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))` epoch number(s)
-- `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))` epoch number(s)
+- `ep1::Union{Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))` epoch number
+- `ep2::Union{Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))` epoch number
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
@@ -251,8 +251,8 @@ function coherence(
     obj2::NeuroAnalyzer.NEURO;
     ch1::Union{String, Vector{String}, Regex},
     ch2::Union{String, Vector{String}, Regex},
-    ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
-    ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
+    ep1::Union{Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
+    ep2::Union{Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
     method::Symbol = :mt,
     flim::Tuple{Real, Real} = (0, sr(obj1) / 2),
     demean::Bool = false,
@@ -289,13 +289,16 @@ function coherence(
     # validate epoch indices and ensure both objects have matching epoch structure
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    # normalize scalar epoch arguments to vectors so indexing is uniform
-    ep1 = _n2v(ep1)
-    ep2 = _n2v(ep2)
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
                 "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
+            ),
+        )
+    length(ep1) == 1 ||
+        throw(
+            ArgumentError(
+                "Lengths of ep1 and ep2 must be > 1.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||
