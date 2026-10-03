@@ -4,16 +4,108 @@ export plot_filter
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-# Create a standard filter-response Axis with shared lock/style settings.
+# complex frequency response at frequencies f (Hz)
+function _filter_freqz(flt, f::AbstractVector, fs::Real)
+    ω = 2π .* f ./ fs
+    return flt isa Vector{Float64} ? freqresp(PolynomialRatio(flt, [1.0]), ω) : freqresp(flt, ω)
+end
+
+# group delay in samples: τ = -dφ/dω = -Im(H'/H); no phase unwrapping needed, NaN where |H| ≈ 0
+function _group_delay(H::AbstractVector, f::AbstractVector, fs::Real)
+    ω = 2π .* f ./ fs
+    hmax = maximum(abs.(H))
+    τ = fill(NaN, length(H))
+    for i in 2:(length(H) - 1)
+        abs(H[i]) > 1e-6 * hmax || continue
+        τ[i] = -imag((H[i + 1] - H[i - 1]) / ((ω[i + 1] - ω[i - 1]) * H[i]))
+    end
+    return τ
+end
+
+# magnitude (dB), phase (deg) and group delay (samples) of the filter as applied in direction `dir`
+function _filter_response(flt, f::AbstractVector, fs::Real, dir::Symbol)
+    H = _filter_freqz(flt, f, fs)
+    g = 20 .* log10.(max.(abs.(H), floatmin(Float64)))
+    # two-pass: |H|², zero phase, zero delay
+    dir === :twopass && return (2 .* g, zeros(length(f)), zeros(length(f)))
+    phi = rad2deg.(DSP.unwrap(angle.(H)))
+    tau = _group_delay(H, f, fs)
+    # reverse pass: conj(H), i.e. negated phase and delay
+    dir === :reverse && return (g, -phi, -tau)
+    return (g, phi, tau)
+end
+
+# transition width the design actually has
+function _bw_effective(flt, fprototype::Symbol, fs::Real, window::Symbol, custom_w::Bool, bw)
+    if fprototype === :fir
+        return custom_w ? nothing : _FIR_WINDOWS[window].k * fs / length(flt)
+    elseif fprototype in (:firls, :remez, :iirnotch)
+        return bw
+    end
+    return nothing
+end
+
+_fmt(x::Real) = string(round(x; digits = 2))
+_fmt(x::Tuple) = "(" * Base.join(_fmt.(x), ", ") * ")"
+_fmt(x::AbstractVector) = isempty(x) ? "not reached" : Base.join(_fmt.(x), ", ")
+
+function _filter_title(flt; fprototype, ftype, cutoff, order, bw, bw_eff, rp, rs, fs, dir, window, custom_w, status)
+    names = Dict(
+        :fir => "FIR (window)",
+        :firls => "FIR (least squares)",
+        :remez => "FIR (Remez)",
+        :butterworth => "Butterworth",
+        :chebyshev1 => "Chebyshev I",
+        :chebyshev2 => "Chebyshev II",
+        :elliptic => "Elliptic",
+        :iirnotch => "IIR notch",
+    )
+    s = "Filter: $(names[fprototype])"
+    !isnothing(ftype) && (s *= ", type: $(uppercase(String(ftype)))")
+    s *= ", cutoff: $(_fmt(cutoff)) Hz"
+    if flt isa Vector{Float64}
+        s *= ", taps: $(length(flt))"
+        fprototype === :fir && (s *= ", window: $(custom_w ? "custom" : String(window))")
+    elseif fprototype !== :iirnotch
+        s *= ", order: $order"
+    end
+    !isnothing(bw) && (s *= ", bw: $(_fmt(bw)) Hz")
+    !isnothing(bw_eff) && fprototype === :fir && (s *= " (effective ≈ $(_fmt(bw_eff)) Hz)")
+    isnothing(bw) && !isnothing(bw_eff) && (s *= ", bw ≈ $(_fmt(bw_eff)) Hz")
+    !isnothing(rp) && fprototype in (:chebyshev1, :elliptic) && (s *= ", RP: $(_fmt(rp)) dB")
+    !isnothing(rs) && fprototype in (:chebyshev2, :elliptic) && (s *= ", RS: $(_fmt(rs)) dB")
+    s *= ", fs: $fs Hz, $(dir === :twopass ? "two-pass (|H|²)" : String(dir))"
+
+    # measured response
+    r = filter_report(
+        flt;
+        fs = fs,
+        dir = dir,
+        ftype = fprototype === :iirnotch ? nothing : ftype,
+        cutoff = cutoff,
+        bw = bw_eff,
+        n = 2^14,
+        verbose = false,
+    )
+    m = "−3 dB: $(_fmt(r.crossings[-3.0])) Hz; −6 dB: $(_fmt(r.crossings[-6.0])) Hz; 0 Hz: $(_fmt(r.gain_dc)) dB"
+    !isnothing(r.stop_att) && (m *= "; stop-band ≥ $(_fmt(r.stop_att)) dB")
+    !isnothing(r.pass_dev) && (m *= "; pass-band ≤ $(_fmt(r.pass_dev)) dB")
+    !isnothing(r.kernel_s) && (m *= "; kernel: $(_fmt(r.kernel_s)) s")
+    s *= "\n" * m
+    !isempty(status) && (s *= "\n⚠ $status — showing last valid filter")
+    return s * "\n\nFrequency response"
+end
+
+# standard filter-response axis
 function _filter_axis(fig, pos, title, ylabel, flim)
     ax = GLMakie.Axis(
         fig[pos...];
-        xlabel             = "Frequency [Hz]",
-        ylabel             = ylabel,
-        title              = title,
-        xticks             = length(flim[1]:0.1:flim[2]) > 20 ? LinearTicks(10) : LinearTicks(20),
+        xlabel = "Frequency [Hz]",
+        ylabel = ylabel,
+        title = title,
+        xticks = LinearTicks(10),
         xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
+        xminorticks = IntervalsBetween(10),
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, flim)
@@ -21,110 +113,47 @@ function _filter_axis(fig, pos, title, ylabel, flim)
     return ax
 end
 
-# Add a labeled cutoff Slider (single or interval) to a grid layout row.
+# labeled slider writing to an Observable; current value shown on the right
+function _add_slider!(grid, row, label, rng, start, obs)
+    Label(grid[row, 1], label; fontsize = 15, halign = :right)
+    sl = Slider(grid[row, 2]; range = rng, startvalue = start, horizontal = true)
+    Label(grid[row, 3], lift(x -> string(x), sl.value); fontsize = 15, halign = :left)
+    on(sl.value) do val
+        obs[] = Float64(val)
+    end
+    return sl
+end
+
 function _add_cutoff_slider!(grid, row, cutoff, nqf, is_interval)
-    Label(grid[row, 1], "Cutoff [Hz]"; fontsize = 15, halign = :right)
+    rng = 0.1:0.1:(floor(10 * nqf) / 10 - 0.1)
     if is_interval
-        sl = IntervalSlider(
-            grid[row, 2];
-            range       = 0.1:0.1:(nqf - 0.1),
-            startvalues = cutoff[],
-            horizontal  = true,
-        )
+        Label(grid[row, 1], "Cutoff [Hz]"; fontsize = 15, halign = :right)
+        sl = IntervalSlider(grid[row, 2]; range = rng, startvalues = cutoff[], horizontal = true)
+        Label(grid[row, 3], lift(x -> _fmt(Float64.(x)), sl.interval); fontsize = 15, halign = :left)
         on(sl.interval) do val
-            cutoff[] = round.(val; digits = 1)
-            cutoff[][1] == cutoff[][2] && (cutoff[] = (cutoff[][1], cutoff[][1] + 0.1))
-            cutoff[][1] > cutoff[][2] && (cutoff[] = (cutoff[][2], cutoff[][1]))
-            return notify(cutoff)
+            a, b = Float64.(val)
+            a == b && (b = a + 0.1)
+            cutoff[] = (min(a, b), max(a, b))
         end
+        return sl
     else
-        sl = Slider(
-            grid[row, 2];
-            range      = 0.5:0.1:(nqf - 0.1),
-            startvalue = cutoff[],
-            horizontal = true,
-        )
-        on(sl.value) do val
-            cutoff[] = round(val; digits = 1)
-            return notify(cutoff)
-        end
+        return _add_slider!(grid, row, "Cutoff [Hz]", rng, cutoff[], cutoff)
     end
-    return sl
 end
 
-# Add a labeled order Slider to a grid layout row.
-function _add_order_slider!(grid, row, order, ftype)
-    Label(grid[row, 1], "Order [taps]"; fontsize = 15, halign = :right)
-    rng = (ftype === :lp) ? (1:1:1000) : (1:2:1001)
-    sl  = Slider(
-    grid[row, 2];
-    range      = rng,
-    startvalue = order[],   # FIX: was `order` (Observable) in :firls branch
-    horizontal = true
-)
-    on(sl.value) do val
-        order[] = val
-        return notify(order)
+# cutoff (dashed) and transition-band edges (dotted) on all axes
+function _draw_cutoff_vlines!(axes, cutoff, bw_eff, mono)
+    cs = lift(c -> collect(Float64, c isa Tuple ? c : (c,)), cutoff)
+    edges = lift(cutoff, bw_eff) do c, b
+        isnothing(b) && return [NaN]
+        cc = collect(Float64, c isa Tuple ? c : (c,))
+        return vcat(cc .- b / 2, cc .+ b / 2)
     end
-    return sl
-end
-
-# Add a labeled bandwidth Slider to a grid layout row, with dynamic range linked to cutoff.
-function _add_bw_slider!(grid, row, bw, cutoff_ref)
-    Label(grid[row, 1], "Band width [Hz]"; fontsize = 15, halign = :right)
-    sl = Slider(
-        grid[row, 2];
-        range      = cutoff_ref > 10 ? (0.1:0.1:10) : (0.1:0.1:(cutoff_ref - 0.1)),
-        startvalue = bw[],
-        horizontal = true,
-    )
-    on(sl.value) do val
-        bw[] = round(val; digits = 1)
-        return notify(bw)
+    for ax in axes
+        GLMakie.vlines!(ax, cs; linestyle = :dash, linewidth = 1, color = mono ? :black : :red)
+        GLMakie.vlines!(ax, edges; linestyle = :dot, linewidth = 0.75, color = :black)
     end
-    return sl
-end
-
-# Draw reactive cutoff vlines on three axes, handling single vs. two-frequency cutoff.
-function _draw_cutoff_vlines!(ax1, ax2, ax3, cutoff, bw, ftype, mono)
-    vl_kwargs = (linestyle = :dash, linewidth = 1)
-    thin_kwargs = (linestyle = :dash, linewidth = 0.25, color = :black)
-
-    if length(cutoff[]) == 1
-        color = mono ? :black : :red
-        for ax in (ax1, ax2, ax3)
-            GLMakie.vlines!(ax, cutoff; vl_kwargs..., color = color)
-        end
-        if isa(bw, Observable{Float64})
-            f_pass = ftype === :lp ?
-                     @lift($cutoff - ($bw / 2)) : @lift($cutoff + ($bw / 2))
-            f_stop = ftype === :lp ?
-                     @lift($cutoff + ($bw / 2)) : @lift($cutoff - ($bw / 2))
-            for ax in (ax1, ax2, ax3)
-                GLMakie.vlines!(ax, f_pass; thin_kwargs...)
-                GLMakie.vlines!(ax, f_stop; thin_kwargs...)
-            end
-        end
-    else
-        c1 = @lift($cutoff[1])
-        c2 = @lift($cutoff[2])
-        for ax in (ax1, ax2, ax3)
-            GLMakie.vlines!(ax, c1; vl_kwargs..., color = mono ? :black : :red)
-            GLMakie.vlines!(ax, c2; vl_kwargs..., color = mono ? :black : :green)
-        end
-        if isa(bw, Observable{Float64})
-            f_pass =
-                ftype === :bp ?
-                @lift($cutoff[2] + ($bw / 2)) : @lift($cutoff[1] - ($bw / 2))
-            f_stop =
-                ftype === :bp ?
-                @lift($cutoff[1] - ($bw / 2)) : @lift($cutoff[2] + ($bw / 2))
-            for ax in (ax1, ax2, ax3)
-                GLMakie.vlines!(ax, f_pass; thin_kwargs...)
-                GLMakie.vlines!(ax, f_stop; thin_kwargs...)
-            end
-        end
-    end
+    return nothing
 end
 
 # ---------------------------------------------------------------------------
@@ -132,50 +161,34 @@ end
 """
     plot_filter(; <keyword arguments>)
 
-Plot filter response with interactive controls for various filter types.
+Plot the frequency, phase and group-delay response of a filter, with interactive controls.
+
+The filter is designed with `filter_create` (same validation, automatic FIR order from `bw`), and the response is shown as applied in direction `dir` (for `:twopass`: |H|², zero phase, zero delay). The title reports the design parameters and the measured response (see `filter_report`).
 
 # Arguments
 
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `fprototype::Symbol`: filter prototype:
-    - `:fir`: FIR filter
-    - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
-    - `:butterworth`: IIR filter
-    - `:chebyshev1` IIR filter
-    - `:chebyshev2` IIR filter
-    - `:elliptic` IIR filter
-    - `:iirnotch`: second-order IIR notch filter
-- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
-    - `:lp`: low pass
-    - `:hp`: high pass
-    - `:bp`: band pass
-    - `:bs`: band stop
+- `fprototype::Symbol`: filter prototype (`:fir`, `:firls`, `:remez`, `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic`, `:iirnotch`)
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type (`:lp`, `:hp`, `:bp`, `:bs`); ignored for `:iirnotch`
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz
     - for `:lp`/`:hp`: single frequency
     - for `:bp`/`:bs`: frequency range (f1, f2)
-- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR)
-- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.5 dB
-- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 20 dB
-- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-- `flim::Tuple{Real, Real} = (0, fs / 2)`: frequency limits
+- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR); FIR: if `nothing`, calculated from `bw` and the GUI shows a `bw` slider instead of an order slider
+- `rp::Union{Nothing, Real}=nothing`: pass-band ripple in dB (default 0.5 dB)
+- `rs::Union{Nothing, Real}=nothing`: stop-band attenuation in dB (default 20 dB for IIR)
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz
+- `w::Union{Nothing, AbstractVector}=nothing`: window vector for `:fir` or weight vector for `:firls`
+- `window::Symbol=:hamming`: window for `:fir` (`:rect`, `:hann`, `:hamming`, `:blackman`)
+- `dir::Symbol=:twopass`: filtering direction (`:twopass`, `:onepass`, `:reverse`)
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits of the plot
+- `n::Int64=4096`: number of frequency points within `flim`
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `gui::Bool=true`: if `true`, keep window open and interactive
+- `gui::Bool=true`: if `true`, show an interactive window and wait until it is closed
 
 # Returns
 
-- `GLMakie.Figure`: the plotted figure, if `gui = false`
-- `Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: returns the filter object, if `gui=true`
-
-# Notes
-
-- For IIR filters (`:butterworth`, `:chebyshev1`, etc.), default ripple values are:
-    - Passband ripple (`rp`): 0.5 dB
-    - Stopband attenuation (`rs`): 20 dB
-- For `:elliptic` filters, defaults are 0.5 dB and 40 dB respectively.
-- For FIR filters, window length must be odd.
-- Bandwidth (`bw`) is required for `:firls`, `:remez`, and `:iirnotch` filters.
+- `Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: the last valid filter, if `gui=true`
+- `GLMakie.Figure`: the figure, if `gui=false`
 """
 function plot_filter(;
     fs::Int64,
@@ -187,398 +200,186 @@ function plot_filter(;
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
+    window::Symbol = :hamming,
+    dir::Symbol = :twopass,
     flim::Tuple{Real, Real} = (0, fs / 2),
+    n::Int64 = 4096,
     mono::Bool = false,
     gui::Bool = true,
-)::Union{
-    GLMakie.Figure,
-    Vector{Float64},
-    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-    Biquad{:z, Float64},
-}
+)::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
     # validate
-    _check_tuple(flim, (0, fs / 2), "flim")
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    _check_tuple(flim, (0, fs / 2), "flim")
+    _check_var(dir, [:twopass, :onepass, :reverse], "dir")
+    n >= 16 || throw(ArgumentError("n must be ≥ 16."))
+    nqf = fs / 2    # Nyquist (not limited by flim)
 
-    # set verbose to false during calculations
+    is_fir = fprototype in (:fir, :firls, :remez)
+    is_iir = fprototype in (:butterworth, :chebyshev1, :chebyshev2, :elliptic)
+    fprototype === :iirnotch && (ftype = nothing)
+    is_interval = ftype in (:bp, :bs)
+    custom_w = fprototype === :fir && !isnothing(w)
+
+    # FIR without order/window vector: order follows bw
+    order_auto = is_fir && isnothing(order) && isnothing(w)
+    order_auto && isnothing(bw) && throw(ArgumentError("bw or order must be specified for $fprototype."))
+
+    # IIR ripple defaults (as in filter_create), so that sliders can start from them
+    if fprototype in (:chebyshev1, :chebyshev2, :elliptic)
+        isnothing(rp) && (rp = 0.5)
+        isnothing(rs) && (rs = 20)
+    end
+
+    cutoff isa Tuple && cutoff[1] > cutoff[2] && (cutoff = (cutoff[2], cutoff[1]))
+
+    design(c, o, b, p, s) = filter_create(;
+        fprototype = fprototype,
+        ftype = ftype,
+        cutoff = c,
+        fs = fs,
+        order = (order_auto || fprototype === :iirnotch || custom_w) ? nothing : (isnothing(o) ? nothing : round(Int64, o)),
+        rp = p,
+        rs = s,
+        bw = b,
+        w = w,
+        window = window,
+    )
+
+    # validate the initial design with the full filter_create checks (warnings shown)
+    flt0 = design(cutoff, order, bw, rp, rs)
+
     v = NeuroAnalyzer.verbose
     NeuroAnalyzer.verbose = false
 
-    # check parameters
     try
-        # Nyquist frequency
-        nqf = div(fs, 2)
-        nqf > flim[2] && (nqf = flim[2])
+        # reactive parameters
+        cutoff_obs = Observable{Any}(cutoff isa Tuple ? Float64.(cutoff) : Float64(cutoff))
+        order0 = flt0 isa Vector{Float64} ? length(flt0) : order
+        order_obs = Observable{Union{Nothing, Float64}}(isnothing(order0) ? nothing : Float64(order0))
+        bw_obs = Observable{Union{Nothing, Float64}}(isnothing(bw) ? nothing : Float64(bw))
+        rp_obs = Observable{Union{Nothing, Float64}}(isnothing(rp) ? nothing : Float64(rp))
+        rs_obs = Observable{Union{Nothing, Float64}}(isnothing(rs) ? nothing : Float64(rs))
+        status = Observable("")
+        flt = Observable{Any}(flt0)
 
-        _check_var(
-            fprototype,
-            [
-                :fir,
-                :firls,
-                :remez,
-                :butterworth,
-                :chebyshev1,
-                :chebyshev2,
-                :elliptic,
-                :iirnotch,
-            ],
-            "fprototype",
-        )
-        !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-
-        # --- :fir parameter validation ---
-        if fprototype === :fir
-            isnothing(bw) && throw(ArgumentError("bw must be specified for $fprototype."))
-            if !isnothing(w)
-                ftype in (:hp, :bp, :bs) && mod(length(w), 2) == 0 &&
-                    throw(ArgumentError("Length of w must be odd for :hp/:bp/:bs filters."))
-                length(w) >= 1 || throw(ArgumentError("Length of w must be ≥ 1."))
-                order = length(w)
-            elseif !isnothing(order)
-                ftype in (:hp, :bp, :bs) && mod(order, 2) == 0 &&
-                    throw(ArgumentError("order must be odd for :hp/:bp/:bs filters."))
-                w = DSP.hamming(order)
+        # redesign on any change; invalid combinations keep the last valid filter
+        onany(cutoff_obs, order_obs, bw_obs, rp_obs, rs_obs) do c, o, b, p, s
+            try
+                flt[] = design(c, o, b, p, s)
+                status[] = ""
+            catch e
+                status[] = e isa ArgumentError ? e.msg : sprint(showerror, e)
             end
-            length(w) == order ||
-                throw(
-                    ArgumentError("Length of w ($(length(w))) must equal order ($order)."),
-                )
+            return nothing
         end
 
-        # --- :firls / :remez / :iirnotch bw validation ---
-        if fprototype in [:firls, :remez, :iirnotch]
-            isnothing(bw) && throw(ArgumentError("bw must be specified for $fprototype."))
-            bw > 0 || throw(ArgumentError("bw must be > 0."))
-            bw <= 10 || throw(ArgumentError("bw must be ≤ 10."))
-            if length(cutoff) == 1
-                if bw >= cutoff
-                    bw = round(cutoff - 0.1; digits = 1)
-                    _info("bw truncated to $bw Hz")
-                end
-            else
-                if bw >= cutoff[2]
-                    bw = round(cutoff[2] - 0.1; digits = 1)
-                    _info("bw truncated to $bw Hz")
-                end
-            end
+        # frequency grid within flim
+        f = collect(range(flim[1], flim[2]; length = n))
+        resp = lift(x -> _filter_response(x, f, fs, dir), flt)
+        H = lift(r -> r[1], resp)
+        phi = lift(r -> r[2], resp)
+        tau = lift(r -> r[3], resp)
+        bw_eff = lift((x, b) -> _bw_effective(x, fprototype, fs, window, custom_w, b), flt, bw_obs)
+
+        title1 = lift(flt, cutoff_obs, order_obs, bw_obs, bw_eff, rp_obs, rs_obs, status) do x, c, o, b, be, p, s, st
+            _filter_title(
+                x;
+                fprototype = fprototype,
+                ftype = ftype,
+                cutoff = c,
+                order = isnothing(o) ? "" : round(Int64, o),
+                bw = (fprototype === :fir && !order_auto) ? nothing : b,
+                bw_eff = be,
+                rp = p,
+                rs = s,
+                fs = fs,
+                dir = dir,
+                window = window,
+                custom_w = custom_w,
+                status = st,
+            )
         end
 
-        # --- :firls weight vector defaults ---
-        if fprototype === :firls
-            if ftype in [:bp, :bs]
-                if !isnothing(w)
-                    !(length(w) == 6) &&
-                        throw(ArgumentError("Length of w must be 6 for :bp/:bs filter."))
-                else
-                    w = ones(6)
-                end
-            elseif ftype in [:lp, :hp]
-                if !isnothing(w)
-                    !(length(w) == 4) &&
-                        throw(ArgumentError("Length of w must be 4 for :lp/:hp filter."))
-                else
-                    w = ones(4)
-                end
-            end
-        end
-
-        # --- ripple defaults for equiripple IIR prototypes ---
-        if fprototype in [:chebyshev1, :chebyshev2, :elliptic]
-            if isnothing(rp)
-                rp = 0.5
-                _info("rp set at $rp Hz.")
-            end
-            if isnothing(rs)
-                rs = 20
-                _info("rs set at $rs Hz.")
-            end
-        end
-
-        # --- order and ftype required for these prototypes ---
-        if fprototype in [:firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-            isnothing(order) &&
-                throw(ArgumentError("order must be specified for $fprototype."))
-            isnothing(ftype) &&
-                throw(ArgumentError("ftype must be specified for $fprototype."))
-        end
-
-        # --- :iirnotch specifics ---
-        if fprototype === :iirnotch
-            !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
-            !isnothing(order) && _info("For :iirnotch filter order is ignored")
-            length(cutoff) == 1 ||
-                throw(ArgumentError("cutoff must be a scalar for :iirnotch."))
-        end
-
-        # --- cutoff arity check ---
-        if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
-            if ftype in [:lp, :hp]
-                length(cutoff) == 1 ||
-                    throw(ArgumentError("For :$ftype, cutoff must be a scalar."))
-            elseif ftype in [:bp, :bs]
-                length(cutoff) == 2 ||
-                    throw(
-                        ArgumentError("For :$ftype, cutoff must specify two frequencies."),
-                    )
-            end
-        end
-
-        # --- cutoff value checks and normalization ---
-        if length(cutoff) == 1
-            cutoff > 0 || throw(ArgumentError("cutoff must be > 0 Hz."))
-            cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz (Nyquist)."))
-        else
-            if cutoff[1] == cutoff[2]
-                cutoff = (cutoff[1], cutoff[1] + 0.1)
-            elseif cutoff[1] > cutoff[2]
-                cutoff = (cutoff[2], cutoff[1])
-            end
-        end
-
-        # wrap parameters in Observables for reactive updates
-        cutoff = Observable(float.(cutoff))
-        order  = Observable(order)
-        fprototype in [:chebyshev1, :elliptic] &&
-            !isnothing(rp) && (rp = Observable(float(rp)))
-        fprototype in [:chebyshev2, :elliptic] &&
-            !isnothing(rs) && (rs = Observable(float(rs)))
-        !isnothing(bw) && (bw = Observable(float(bw)))
-
-        # prepare plot
+        # figure
         GLMakie.activate!(; title = "plot_filter()")
-        fig = GLMakie.Figure(; size = gui ? (1200, 900) : (1200, 800))
+        fig = GLMakie.Figure(; size = gui ? (1200, 950) : (1200, 850))
+
+        ax1 = _filter_axis(fig, (1, 1), title1, "Magnitude [dB]", flim)
+        GLMakie.ylims!(ax1, (-120, 10))
+        GLMakie.hlines!(ax1, [-3, -6]; linestyle = :dot, linewidth = 0.75, color = :gray)
+        GLMakie.lines!(ax1, f, H; color = mono ? :black : :blue)
+
+        ax2 = _filter_axis(fig, (2, 1), "Phase response", "Phase [deg]", flim)
+        GLMakie.lines!(ax2, f, phi; color = mono ? :black : :blue)
+
+        ax3 = _filter_axis(fig, (3, 1), "Group delay", "Group delay [samples]", flim)
+        GLMakie.lines!(ax3, f, tau; color = mono ? :black : :blue)
+        on(tau) do t
+            ft = Base.filter(isfinite, t)
+            isempty(ft) || GLMakie.ylims!(ax3, (min(0, minimum(ft)) - 1, max(0, maximum(ft)) + 1))
+        end
+        notify(tau)
+
+        _draw_cutoff_vlines!((ax1, ax2, ax3), cutoff_obs, bw_eff, mono)
 
         # GUI sliders
         if gui
-            grid        = fig[4, 1] = GridLayout()
-            is_interval = !isnothing(ftype) && ftype in [:bp, :bs]
+            grid = fig[4, 1] = GridLayout()
+            row = 1
+            _add_cutoff_slider!(grid, row, cutoff_obs, nqf, is_interval)
+            row += 1
 
-            if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-                sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
-                sl_order  = _add_order_slider!(grid, 2, order, isnothing(ftype) ? :lp : ftype)
-
-                if isa(rp, Observable{Float64})
-                    Label(grid[3, 1], "RP [dB]"; fontsize = 15, halign = :right)
-                    sl_rp = Slider(
-                        grid[3, 2];
-                        range      = 0.1:0.1:(isa(rs, Observable{Float64}) ? rs[] : 10.0),
-                        startvalue = rp[],
-                        horizontal = true,
-                    )
-                    on(sl_rp.value) do val
-                        rp[] = round(val; digits = 1)
-                        return notify(rp)
-                    end
-                end
-
-                if isa(rs, Observable{Float64})
-                    rs_row = fprototype === :chebyshev2 ? 3 : 4
-                    Label(grid[rs_row, 1], "RS [dB]"; fontsize = 15, halign = :right)
-                    sl_rs = Slider(
-                        grid[rs_row, 2];
-                        range      = 1:1:100,
-                        startvalue = rs[],
-                        horizontal = true,
-                    )
-                    on(sl_rs.value) do val
-                        rs[] = round(val; digits = 1)
-                        isa(rp, Observable{Float64}) && (sl_rp.range = 0.1:0.1:(rs[] - 0.1))
-                        return notify(rs)
-                    end
-                end
-
-            elseif fprototype === :remez
-                sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
-                sl_order  = _add_order_slider!(grid, 2, order, isnothing(ftype) ? :lp : ftype)
-                _add_bw_slider!(grid, 3, bw, cutoff[][is_interval ? 1 : 1])
-
-            elseif fprototype === :fir
-                sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
-                isnothing(w) &&
-                    _add_order_slider!(grid, 2, order, isnothing(ftype) ? :lp : ftype)
-
-            elseif fprototype === :firls
-                sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, is_interval)
-                on(sl_cutoff.value) do val  # update bw range when cutoff changes
-                    c = is_interval ? cutoff[][1] : cutoff[]
-                    if !isnothing(bw)
-                        if c > 10
-                            sl_bw.range = 0.1:0.1:10
-                        else
-                            bw[] >= c && (bw[] = c - 0.1; set_close_to!(sl_bw, bw[]))
-                            sl_bw.range = 0.1:0.1:(c - 0.1)
-                        end
-                    end
-                end
-                sl_bw = _add_bw_slider!(grid, 2, bw, is_interval ? cutoff[][1] : cutoff[])
-                isnothing(w) &&
-                    _add_order_slider!(grid, 3, order, isnothing(ftype) ? :lp : ftype)
-
-            elseif fprototype === :iirnotch
-                sl_cutoff = _add_cutoff_slider!(grid, 1, cutoff, nqf, false)
-                on(sl_cutoff.value) do val
-                    c = cutoff[]
-                    if !isnothing(bw)
-                        if c > 10
-                            sl_bw.range = 0.1:0.1:10
-                        else
-                            bw[] >= c && (bw[] = c - 0.1; set_close_to!(sl_bw, bw[]))
-                            sl_bw.range = 0.1:0.1:(c - 0.1)
-                        end
-                    end
-                end
-                sl_bw = _add_bw_slider!(grid, 2, bw, cutoff[])
-            end
-        end
-
-        # create filter observable
-        flt = @lift(
-            filter_create(
-                fprototype = fprototype,
-                ftype      = ftype,
-                cutoff     = $cutoff,
-                fs         = fs,
-                order      = $order,
-                rp         = !isnothing(rp) ? $rp : nothing,
-                rs         = !isnothing(rs) ? $rs : nothing,
-                bw         = !isnothing(bw) ? $bw : nothing,
-                w          = w,
-            )
-        )
-
-        # draw frequency, phase, and group-delay response plots
-        if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
-            fresp = lift(DSP.freqresp, flt)
-            H     = @lift(real.(20 * log10.(abs.($fresp[1]))))
-            f_hz  = @lift(round.($fresp[2] .* fs / 2 / pi; digits = 1))
-
-            if fprototype !== :iirnotch
-                fname = titlecase(String(fprototype))
-                title1 = if fprototype in [:chebyshev1, :chebyshev2, :elliptic]
-                    @lift(
-                        "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order), RP: $($rp) dB, RS: $($rs) dB\n\nFrequency response"
-                    )
-                else
-                    @lift(
-                        "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order)\n\nFrequency response"
-                    )
-                end
-            else
-                title1 = @lift(
-                    "Filter: IIR notch, cutoff: $(round.($cutoff; digits=1)) Hz, bw: $(round($bw; digits=1)) Hz\n\nFrequency response"
-                )
+            # order: IIR always; FIR only when set manually (no window vector)
+            if is_iir
+                _add_slider!(grid, row, "Order", 1:1:max(20, order), order, order_obs)
+                row += 1
+            elseif is_fir && !order_auto && !custom_w
+                odd = ftype in (:hp, :bp, :bs)
+                omax = max(2001, 2 * order + 1)
+                _add_slider!(grid, row, "Order [taps]", odd ? (1:2:omax) : (1:1:omax), order, order_obs)
+                row += 1
             end
 
-            ax1 = _filter_axis(fig, (1, 1), title1, "Magnitude [dB]", flim)
-            GLMakie.ylims!(ax1, (-100, 20))
-            GLMakie.lines!(ax1, f_hz, H; color = mono ? :black : :blue)
-
-            phresp = lift(DSP.phaseresp, flt)
-            phi    = @lift($phresp[1])
-            f_ph   = @lift(round.($phresp[2] .* fs / 2 / pi; digits = 1))
-            tau    = @lift(-derivative(rad2deg.($phresp[1])))
-
-            ax2 = _filter_axis(fig, (2, 1), "Phase response", "Phase [rad]", flim)
-            GLMakie.lines!(
-                ax2,
-                f_ph,
-                phi;
-                color = mono ? :black : :blue,
-                nan_color = mono ? :black : :blue,
-            )
-
-            ax3 = _filter_axis(fig, (3, 1), "Group delay", "Group delay [samples]", flim)
-            GLMakie.lines!(ax3, f_ph, tau; color = mono ? :black : :blue)
-
-        else  # FIR family
-            fresp = lift(_fir_response, flt)
-            H     = @lift(amp2db.(abs.($fresp)))
-            phi   = @lift(rad2deg.(-atan.(imag($fresp), real($fresp))))
-            tau   = @lift(-derivative(rad2deg.(-atan.(imag($fresp), real($fresp)))))
-            f_fir = range(0; stop = pi, length = 1024) .* fs / 2 / pi
-
-            title1 = if fprototype === :fir
-                @lift(
-                    "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, order: $($order)\n\nFrequency response"
-                )
-            elseif fprototype === :firls
-                @lift(
-                    "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, bw: $($bw) Hz, order: $($order)\n\nFrequency response"
-                )
-            else  # :remez
-                @lift(
-                    "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.($cutoff; digits=1)) Hz, bw: $($bw) Hz, order: $($order)\n\nFrequency response"
-                )
+            # bw: FIR with automatic order, :firls, :remez, :iirnotch
+            if !isnothing(bw) && (fprototype !== :fir || order_auto)
+                bmax = min(max(2 * bw, 10.0), nqf / 2)
+                _add_slider!(grid, row, "Band width [Hz]", 0.05:0.05:bmax, bw, bw_obs)
+                row += 1
             end
 
-            ax1 = _filter_axis(fig, (1, 1), title1, "Magnitude [dB]", flim)
-            GLMakie.ylims!(ax1, (-100, 20))
-            GLMakie.lines!(ax1, f_fir, H; color = mono ? :black : :blue)
+            if fprototype in (:chebyshev1, :elliptic)
+                _add_slider!(grid, row, "RP [dB]", 0.1:0.1:10.0, rp, rp_obs)
+                row += 1
+            end
+            if fprototype in (:chebyshev2, :elliptic)
+                _add_slider!(grid, row, "RS [dB]", 1:1:100, rs, rs_obs)
+                row += 1
+            end
 
-            ax2 = _filter_axis(fig, (2, 1), "Phase response", "Phase [deg]", flim)
-            GLMakie.lines!(ax2, f_fir, phi; color = mono ? :black : :blue)
-
-            ax3 = _filter_axis(fig, (3, 1), "Group delay", "Group delay [samples]", flim)
-            GLMakie.lines!(ax3, f_fir, tau; color = mono ? :black : :blue)
-        end
-
-        # draw cutoff indicator lines
-        _draw_cutoff_vlines!(ax1, ax2, ax3, cutoff, bw, ftype, mono)
-
-        if gui
             wait(display(fig))
-            NeuroAnalyzer.verbose = v
             return flt[]
         else
-            NeuroAnalyzer.verbose = v
             return fig
         end
-
-    catch
+    finally
         NeuroAnalyzer.verbose = v
-        rethrow()
     end
 end
 
 """
-    plot_filter(obj, <keyword arguments>)
+    plot_filter(obj; <keyword arguments>)
 
-Plot the frequency response of a digital filter with customizable visualization options.
+Plot the frequency response of a filter for the sampling rate of a NEURO object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object (used only for sampling rate information)
-- `n::Int64`: signal length in samples for frequency response calculation
-- `fprototype::Symbol`: filter prototype:
-    - `:fir`: FIR filter
-    - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
-    - `:butterworth`: IIR filter
-    - `:chebyshev1` IIR filter
-    - `:chebyshev2` IIR filter
-    - `:elliptic` IIR filter
-    - `:iirnotch`: second-order IIR notch filter
-- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
-    - `:lp`: low pass
-    - `:hp`: high pass
-    - `:bp`: band pass
-    - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz
-    - for `:lp`/`:hp`: single frequency
-    - for `:bp`/`:bs`: frequency range (f1, f2)
-- `order::Union{Nothing, Int64}=nothing`: filter order (number of taps for FIR, filter order for IIR)
-- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
-- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
-- `flim::Tuple{Real, Real}=(0, sr(obj) / 2): frequency limit
-- `mono::Bool=false`: if `true`, use a monochrome palette
-- `gui::Bool=true`: if `true`, keep window open and interactive
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object (used only for the sampling rate)
+- other arguments as in [`plot_filter`](@ref); `flim` defaults to `(0, sr(obj) / 2)`
 
 # Returns
 
-- `GLMakie.Figure`: the plotted figure, if `gui=true`
-- `Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: the filter object, if `gui=false`
+- `Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: the last valid filter, if `gui=true`
+- `GLMakie.Figure`: the figure, if `gui=false`
 """
 function plot_filter(
     obj::NeuroAnalyzer.NEURO;
@@ -590,27 +391,28 @@ function plot_filter(
     rs::Union{Nothing, Real} = nothing,
     bw::Union{Nothing, Real} = nothing,
     w::Union{Nothing, AbstractVector} = nothing,
+    window::Symbol = :hamming,
+    dir::Symbol = :twopass,
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    n::Int64 = 4096,
     mono::Bool = false,
     gui::Bool = true,
-)::Union{
-    GLMakie.Figure,
-    Vector{Float64},
-    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
-    Biquad{:z, Float64},
-}
+)::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
     return plot_filter(;
-        fs         = sr(obj),
+        fs = sr(obj),
         fprototype = fprototype,
-        ftype      = ftype,
-        cutoff     = cutoff,
-        order      = order,
-        rp         = rp,
-        rs         = rs,
-        bw         = bw,
-        w          = w,
-        flim       = flim,
-        mono       = mono,
-        gui        = gui,
+        ftype = ftype,
+        cutoff = cutoff,
+        order = order,
+        rp = rp,
+        rs = rs,
+        bw = bw,
+        w = w,
+        window = window,
+        dir = dir,
+        flim = flim,
+        n = n,
+        mono = mono,
+        gui = gui,
     )
 end
