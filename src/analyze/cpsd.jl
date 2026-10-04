@@ -23,7 +23,7 @@ Calculate the complex cross power spectral density (CPSD) between two 1-D signal
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second)
 - `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
-- `w::Bool=true`: if `true`, apply Hanning window; ignored for `method  =:mt`
+- `w::Bool=true`: if `true`, apply Hanning window; ignored when `method=:mt`
 
 # Returns
 
