@@ -417,8 +417,6 @@ coh, imcoh, mscoh, f = coherence(
     e10;
     ch1 = ["Fp1", "Fp2"],
     ch2 = ["Fp1", "Fp2"],
-    ep1 = 1,
-    ep2 = 1,
     flim = (15, 25),
 )
 p = plot_coherence(abs.(coh[1, :, 1]), f)

@@ -29,7 +29,7 @@ function _fir_window(window::Symbol, n::Int64)::Vector{Float64}
     throw(ArgumentError("Unknown window: $window"))
 end
 
-# transition band(s) centred on the cutoff(s)
+# transition band(s) centered on the cutoff(s)
 function _transition_edges(ftype::Symbol, cutoff, bw::Real)
     if ftype in (:lp, :hp)
         return [(cutoff[1] - bw / 2, cutoff[1] + bw / 2)]
@@ -42,11 +42,16 @@ end
 function _check_edges(ftype::Symbol, cutoff, bw::Real, nqf::Real; strict::Bool)::Nothing
     tr = _transition_edges(ftype, cutoff, bw)
     msg = String[]
+    if length(tr) == 1
+        tr = [(round.(tr[1][1], digits = 3), round.(tr[1][2], digits = 3))]
+    else
+        tr = [(round.(tr[1][1], digits = 3), round.(tr[1][2], digits = 3)), (round.(tr[2][1], digits = 3), round.(tr[2][2], digits = 3))]
+    end
     tr[1][1] <= 0 && push!(msg, "transition band ($(tr[1][1])–$(tr[1][2]) Hz) reaches 0 Hz")
     tr[end][2] >= nqf && push!(msg, "transition band ($(tr[end][1])–$(tr[end][2]) Hz) reaches Nyquist ($nqf Hz)")
     length(tr) == 2 && tr[1][2] >= tr[2][1] && push!(msg, "transition bands overlap")
     isempty(msg) && return nothing
-    m = Base.join(msg, "; ") * " (cutoff=$cutoff Hz, bw=$bw Hz)"
+    m = Base.join(msg, "; ") * " (cutoff=$cutoff Hz, bw=$(round(bw, digits = 3)) Hz)"
     if strict
         throw(ArgumentError(m * ". Reduce bw."))
     else
@@ -161,6 +166,7 @@ function filter_create(;
     _check_var(window, collect(keys(_FIR_WINDOWS)), "window")
     !isnothing(order) && order < 1 && throw(ArgumentError("order must be ≥ 1."))
     !isnothing(bw) && bw <= 0 && throw(ArgumentError("bw must be > 0."))
+    !isnothing(bw) && (bw = round(bw, digits = 3))
 
     # --- ftype required (all except :iirnotch) ---
     if fprototype !== :iirnotch
@@ -200,10 +206,11 @@ function filter_create(;
                 _info("order calculated from bw=$bw Hz ($window window): $order taps")
             else
                 bw_eff = _FIR_WINDOWS[window].k * fs / order
+                bw_eff = round(bw_eff, digits = 3)
                 if !isnothing(bw) && abs(bw_eff - bw) / bw > 0.1
                     _warn(
-                        "order=$order gives a transition width of ≈$(round(bw_eff; digits = 2)) Hz " *
-                        "($window window), not bw=$bw Hz; bw=$bw Hz needs ≈$(filter_order(; fprototype = :fir, fs = fs, bw = bw, window = window)) taps.",
+                        "order=$order gives a transition width of ≈$bw_eff) Hz " *
+                        "($(titlecase(string(window))) window), not bw=$bw Hz; bw=$bw Hz needs ≈$(filter_order(; fprototype = :fir, fs = fs, bw = bw, window = window)) taps.",
                     )
                 end
             end
@@ -437,7 +444,7 @@ function filter_report(
     gain_at = Dict{Float64, Float64}()
     for fc in fcheck
         (0 <= fc <= nqf) || throw(ArgumentError("fcheck frequencies must be within [0, $nqf] Hz."))
-        gain_at[fc] = round(g[clamp(round(Int64, fc / nqf * (n - 1)) + 1, 1, n)]; digits = 2)
+        gain_at[fc] = round(g[clamp(round(Int64, fc / nqf * (n - 1)) + 1, 1, n)]; digits = 3)
     end
 
     # pass-band deviation and stop-band attenuation
@@ -472,7 +479,7 @@ function filter_report(
         for t in thr
             _info("  $t dB at: $(isempty(crossings[t]) ? "not reached" : Base.join(crossings[t], ", ") * " Hz")")
         end
-        _info("  gain at 0 Hz: $(round(g[1]; digits = 2)) dB; at Nyquist: $(round(g[end]; digits = 2)) dB")
+        _info("  gain at 0 Hz: $(round(g[1]; digits = 3)) dB; at Nyquist: $(round(g[end]; digits = 3)) dB")
         for fc in fcheck
             _info("  gain at $fc Hz: $(gain_at[fc]) dB")
         end
@@ -484,7 +491,7 @@ function filter_report(
         "$kind" * (isnothing(taps) ? ", order=$iir_order" : ", taps=$taps") * ", dir=:$dir" *
         "; -3 dB at $(isempty(crossings[-3.0]) ? "n/a" : Base.join(crossings[-3.0], ", ")) Hz" *
         "; -6 dB at $(isempty(crossings[-6.0]) ? "n/a" : Base.join(crossings[-6.0], ", ")) Hz" *
-        "; 0 Hz: $(round(g[1]; digits = 2)) dB" *
+        "; 0 Hz: $(round(g[1]; digits = 3)) dB" *
         (isnothing(pass_dev) ? "" : "; pass-band dev ≤ $pass_dev dB") *
         (isnothing(stop_att) ? "" : "; stop-band att ≥ $stop_att dB") *
         Base.join(["; $fc Hz: $(gain_at[fc]) dB" for fc in fcheck])
@@ -806,7 +813,7 @@ function filter(
 
     # effective transition width
     bw_eff = if fprototype === :fir && isnothing(w)
-        _FIR_WINDOWS[window].k * fs / length(flt)
+        round(_FIR_WINDOWS[window].k * fs / length(flt), digits = 3)
     elseif fprototype in (:firls, :remez, :iirnotch)
         bw
     else
@@ -819,7 +826,7 @@ function filter(
         ", cutoff=$cutoff, fs=$fs" *
         (isnothing(order) ? "" : ", order=$order ($order_src)") *
         (isnothing(bw) ? "" : ", bw=$bw") *
-        (isnothing(bw_eff) ? "" : ", bw_effective=$(round(bw_eff; digits = 3))") *
+        (isnothing(bw_eff) ? "" : ", bw_effective=$bw_eff") *
         (fprototype === :fir ? ", window=$(isnothing(w) ? ":$window" : "custom")" : "") *
         (isnothing(rp) ? "" : ", rp=$rp") *
         (isnothing(rs) ? "" : ", rs=$rs") *

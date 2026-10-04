@@ -328,17 +328,15 @@ coh_data = NeuroAnalyzer.coherence(rand(100), rand(100); fs = 10, wstep = 5, met
 @test length(coh_data.msc) == 51
 @test length(coh_data.f) == 51
 coh_data = NeuroAnalyzer.coherence(rand(100), rand(100); fs = 10, wstep = 5, method = :stft)
-@test length(coh_data.coh) == 6
-@test length(coh_data.imcoh) == 6
-@test length(coh_data.msc) == 6
-@test length(coh_data.f) == 6
+@test length(coh_data.coh) == 9
+@test length(coh_data.imcoh) == 9
+@test length(coh_data.msc) == 9
+@test length(coh_data.f) == 9
 coh_data = NeuroAnalyzer.coherence(
     e10,
     e10;
     ch1 = "Fp1",
     ch2 = "Fp2",
-    ep1 = 1,
-    ep2 = 1,
     method = :mt,
 )
 @test size(coh_data.coh) == (1, 1281, 1)
@@ -350,8 +348,6 @@ coh_data = NeuroAnalyzer.coherence(
     e10;
     ch1 = "Fp1",
     ch2 = "Fp2",
-    ep1 = 1,
-    ep2 = 1,
     method = :fft,
 )
 @test size(coh_data.coh) == (1, 1281, 1)
@@ -363,8 +359,6 @@ coh_data = NeuroAnalyzer.coherence(
     e10;
     ch1 = "Fp1",
     ch2 = "Fp2",
-    ep1 = 1,
-    ep2 = 1,
     method = :stft,
 )
 @test size(coh_data.coh) == (1, 129, 1)

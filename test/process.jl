@@ -378,7 +378,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :firls,
     ftype = :hp,
     cutoff = 10,
-    order = 32,
+    order = 31,
     bw = 2,
 )
 @test size(eeg_tmp) == size(e10)
@@ -388,8 +388,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :firls,
     ftype = :bs,
     cutoff = (49, 51),
-    order = 32,
-    bw = 2,
+    bw = 0.5,
 )
 @test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(
@@ -398,8 +397,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :firls,
     ftype = :bp,
     cutoff = (49, 51),
-    order = 32,
-    bw = 2,
+    bw = 0.5,
 )
 @test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(
@@ -418,7 +416,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :remez,
     ftype = :hp,
     cutoff = 10,
-    order = 32,
+    order = 31,
     bw = 0.5,
 )
 @test size(eeg_tmp) == size(e10)
@@ -428,7 +426,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :remez,
     ftype = :bs,
     cutoff = (49, 51),
-    order = 32,
+    order = 31,
     bw = 0.1,
 )
 @test size(eeg_tmp) == size(e10)
@@ -438,7 +436,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :remez,
     ftype = :bp,
     cutoff = (49, 51),
-    order = 32,
+    order = 31,
     bw = 0.5,
 )
 @test size(eeg_tmp) == size(e10)

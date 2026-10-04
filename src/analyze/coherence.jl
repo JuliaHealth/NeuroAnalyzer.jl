@@ -295,7 +295,7 @@ function coherence(
                 "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
-    length(ep1) == 1 ||
+    length(ep1) > 1 ||
         throw(
             ArgumentError(
                 "Lengths of ep1 and ep2 must be > 1.",
