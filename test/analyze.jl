@@ -485,7 +485,7 @@ st, sts, p = mdiff(a1, a2; method = :absdiff)
 @test p == [0.0, 0.0]
 st, sts, p = mdiff(m1, m2; method = :diff2int)
 @test length(st) == 6
-@test sts == 4.6666666666
+@test sts ≈ 4.6666666666
 @test p >= 0.0 && p <= 1.0
 st, sts, p = mdiff(a1, a2; method = :diff2int)
 @test size(st) == (2, 6)
