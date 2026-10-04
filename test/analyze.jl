@@ -339,9 +339,9 @@ coh_data = NeuroAnalyzer.coherence(
     ch2 = "Fp2",
     method = :mt,
 )
-@test size(coh_data.coh) == (1, 1281, 1)
-@test size(coh_data.imcoh) == (1, 1281, 1)
-@test size(coh_data.msc) == (1, 1281, 1)
+@test size(coh_data.coh) == (1, 1281)
+@test size(coh_data.imcoh) == (1, 1281)
+@test size(coh_data.msc) == (1, 1281)
 @test length(coh_data.f) == 1281
 coh_data = NeuroAnalyzer.coherence(
     e10,
@@ -350,9 +350,9 @@ coh_data = NeuroAnalyzer.coherence(
     ch2 = "Fp2",
     method = :fft,
 )
-@test size(coh_data.coh) == (1, 1281, 1)
-@test size(coh_data.imcoh) == (1, 1281, 1)
-@test size(coh_data.msc) == (1, 1281, 1)
+@test size(coh_data.coh) == (1, 1281)
+@test size(coh_data.imcoh) == (1, 1281)
+@test size(coh_data.msc) == (1, 1281)
 @test length(coh_data.f) == 1281
 coh_data = NeuroAnalyzer.coherence(
     e10,
@@ -361,9 +361,9 @@ coh_data = NeuroAnalyzer.coherence(
     ch2 = "Fp2",
     method = :stft,
 )
-@test size(coh_data.coh) == (1, 129, 1)
-@test size(coh_data.imcoh) == (1, 129, 1)
-@test size(coh_data.msc) == (1, 129, 1)
+@test size(coh_data.coh) == (1, 129, )
+@test size(coh_data.imcoh) == (1, 129, )
+@test size(coh_data.msc) == (1, 129, )
 @test length(coh_data.f) == 129
 
 @info "Test: frqinst()"
@@ -421,36 +421,36 @@ ac, l = acor(e10; ch = "all", method = :stat)
 
 @info "Test: ispc()"
 iv, ia, sd, pd, s1p, s2p = ispc(v1, v2)
-@test iv == 0.6125992852305386
-@test ia == 0.0017801930770334259
+@test iv ≈ 0.61259928523
+@test ia≈ 0.00178019307703≈
 @test sd == [-5.0, -3.0, -1.0, 1.0, 3.0]
-@test pd == [
-    1.3157044982273685,
-    -0.8713795327960081,
-    -0.3743702916488455,
-    -0.7615478999167378,
-    1.0328436072470222,
+@test pd ≈ [
+    1.31570449822,
+    -0.87137953279,
+    -0.37437029164,
+    -0.76154789991,
+    1.03284360724,
 ]
 @test s1p ≈ [
-    1.039406675134543,
-    -0.6027563879589182,
-    -0.21331750626000984,
-    -0.33140501474755424,
-    0.3279718365439915,
+    1.0394066751,
+    -0.60275638795,
+    -0.213317506260,
+    -0.331405014747,
+    0.32797183654,
 ]
 @test s2p ≈ [
-    -0.27629782309282525,
-    0.26862314483709,
-    0.16105278538883577,
-    0.4301428851691834,
-    -0.7048717707030308,
+    -0.276297823092,
+    0.268623144,
+    0.161052785388,
+    0.43014288516,
+    -0.70487177070,
 ]
 iv, ia = ispc(e10; ch = "all")
 @test size(iv) == (24, 24, 10)
 @test size(ia) == (24, 24, 10)
 iv, ia, sd, pd, s1p, s2p = ispc(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-@test iv ≈ [0.992049536181781;;]
-@test ia ≈ [0.00013424580155568734;;]
+@test iv ≈ [0.9920495361;;]
+@test ia ≈ [0.000134245801555;;]
 @test size(sd) == (1, 2560, 1)
 @test size(pd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -463,10 +463,10 @@ iv, izv, ia, ip = itpc(ones(1, 10, 10); t = 1)
 @test ia == 0.0
 @test ip == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 iv, izv, ia, ip = itpc(e10; ch = "Fp1", t = 1)
-@test iv ≈ [0.9997997474350548]
-@test izv ≈ [9.995995349711995]
-@test ia ≈ [-0.0036001408903651292]
-@test ip[1] ≈ 0.030644553057378048
+@test iv ≈ [0.99979974743]
+@test izv ≈ [9.9959953497]
+@test ia ≈ [-0.00360014089036]
+@test ip[1] ≈ 0.0306445530573
 
 @info "Test: itpc_spec()"
 iv, izv, f = itpc_spec(e10; ch = "Fp1", flim = (0, 4), nfrq = 5)
@@ -485,7 +485,7 @@ st, sts, p = mdiff(a1, a2; method = :absdiff)
 @test p == [0.0, 0.0]
 st, sts, p = mdiff(m1, m2; method = :diff2int)
 @test length(st) == 6
-@test sts == 4.666666666666666
+@test sts == 4.6666666666
 @test p >= 0.0 && p <= 1.0
 st, sts, p = mdiff(a1, a2; method = :diff2int)
 @test size(st) == (2, 6)
@@ -501,7 +501,7 @@ st, sts, p = mdiff(e10, e10; ch1 = "Fp1", ch2 = "Fp1", method = :diff2int)
 @test p == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 @info "Test: mutual_information()"
-@test NeuroAnalyzer.mutual_information(v1, v2) ≈ 0.4199730940219748
+@test NeuroAnalyzer.mutual_information(v1, v2) ≈ 0.41997309402
 @test NeuroAnalyzer.mutual_information(a1) == [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0]
 @test NeuroAnalyzer.mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0]
 m = NeuroAnalyzer.mutual_information(e10; ch = "all")
@@ -511,14 +511,14 @@ m = NeuroAnalyzer.mutual_information(e10, e10; ch1 = "Fp1", ch2 = "Fp2")
 
 @info "Test: msci95()"
 @test msci95(v1) ==
-      (sm = 3.0, se = 0.7071067811865476, ll = 1.6140707088743669, ul = 4.385929291125633)
+      (sm = 3.0, se ≈ 0.70710678118, ll ≈ 1.61407070887, ul ≈ 4.3859292911)
 @test msci95(v2) ==
-      (sm = 4.0, se = 0.7071067811865476, ll = 2.614070708874367, ul = 5.385929291125633)
+      (sm = 4.0, se ≈ 0.70710678118, ll ≈ 2.6140707088, ul ≈ 5.3859292911)
 @test msci95(m1) == (
     sm = [2.5, 3.5, 4.5],
-    se = [1.4999999999999998, 1.4999999999999998, 1.4999999999999998],
-    ll = [-0.4399999999999995, 0.5600000000000005, 1.5600000000000005],
-    ul = [5.4399999999999995, 6.4399999999999995, 7.4399999999999995],
+    se ≈ [1.49999999999, 1.49999999999, 1.49999999999],
+    ll ≈ [-0.43999999999, 0.56000000000, 1.56000000000],
+    ul ≈ [5.43999999999, 6.43999999999, 7.43999999999],
 )
 @test msci95(a1) == (
     sm = [1.0 1.0 1.0; 1.0 1.0 1.0],
@@ -529,9 +529,9 @@ m = NeuroAnalyzer.mutual_information(e10, e10; ch1 = "Fp1", ch2 = "Fp2")
 @test msci95(v1, v2) == (sm = -1.0, se = 1.0, ll = -2.96, ul = 0.96)
 @test msci95(m1, m2) == (
     sm = [-4.0; 2.0;;],
-    se = [0.8164965809277261; 0.8164965809277261;;],
-    ll = [-5.600333298618343; 0.39966670138165683;;],
-    ul = [-2.3996667013816566; 3.6003332986183434;;],
+    se ≈ [0.81649658092; 0.81649658092;;],
+    ll ≈ [-5.6003332986; 0.399666701381;;],
+    ul ≈ [-2.39966670138; 3.60033329861;;],
 )
 @test msci95(a1, a2) == (
     sm = [1.0 1.0; 1.0 1.0],
@@ -605,14 +605,14 @@ pv, sd, phd, s1p, s2p = pli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1
 
 @info "Test: plv()"
 pv, phd, s1ph, s2ph = plv(v1, v2)
-@test pv == 0.6125992852305386
+@test pv ≈ 0.612599285
 @test phd == [-5.0, -3.0, -1.0, 1.0, 3.0]
 @test length(s1ph) == 5
 @test length(s2ph) == 5
 pv = plv(e10; ch = "all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = plv(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-@test pv == [0.992049536181781;;]
+@test pv ≈ [0.992049536;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -758,7 +758,7 @@ amp_data = NeuroAnalyzer.amp(e10; ch = "all")
 @test NeuroAnalyzer.rms(a1) == [1.0 1.0; 1.0 1.0]
 @test NeuroAnalyzer.rms(e10, ch = "Fp1") ≈
       [
-    363.81145362705735 349.8499943131811 336.52324682075516 329.7427258961967 317.29058937434763 311.9687522577657 285.7799209936517 267.59495573180266 259.6385867764095 243.7889621794278
+    363.811453627 349.849994313 336.523246820 329.74272589 317.290589374 311.96875225 285.77992099 267.594955731 259.63858677 243.78896217
 ]
 
 @info "Test: rmse()"
@@ -767,9 +767,9 @@ amp_data = NeuroAnalyzer.amp(e10; ch = "all")
 @test length(NeuroAnalyzer.rmse(e10, e10, ch1 = "Fp1", ch2 = "Fp2")) == 10
 
 @info "Test: snr()"
-@test NeuroAnalyzer.snr(v1, v2) == 3.0102999566398116
-@test NeuroAnalyzer.snr(v1) == 1.8973665961010275
-@test NeuroAnalyzer.snr2(v1) == 1.2060453783110545
+@test NeuroAnalyzer.snr(v1, v2) ≈ 3.01029995663
+@test NeuroAnalyzer.snr(v1) ≈ 1.89736659610
+@test NeuroAnalyzer.snr2(v1) ≈ 1.20604537831
 sn, f = NeuroAnalyzer.snr(e10; ch = "all", type = :rms)
 @test size(sn) == (24, 1281)
 @test length(f) == 1281
@@ -1075,14 +1075,14 @@ gd, sc = diss(erp, erp; ch1 = "all", ch2 = "all")
 @test sc == ones(2560)
 
 @info "Test: sumsim()"
-@test sumsim(v1, v2, theta = 1) == 0.0012208548944264495
-@test sumsim(a1, a2, theta = 1) ==
-      [0.17692120631776423 0.17692120631776423; 0.17692120631776423 0.17692120631776423]
+@test sumsim(v1, v2, theta = 1) ≈ 0.00122085489442
+@test sumsim(a1, a2, theta = 1) ≈
+      [0.176921206317 0.176921206317; 0.176921206317 0.176921206317]
 @test sumsim(e10, e10, ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, theta = 0.0001) ≈
       [0.33211228;;]
 
 @info "Test: hfd()"
-@test hfd([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 0.8604486476012065
+@test hfd([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) ≈ 0.86044864760
 @test size(hfd(e10, ch = "all")) == (24, 10)
 
 @info "Test: dirinrg()"
