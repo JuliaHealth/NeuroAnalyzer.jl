@@ -76,8 +76,8 @@ function _build_tpt_object(
         obj;
         data  = signal,
         label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
-        type = ["orient", "orient", "orient", "accel", "accel", "accel"],
-        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
+        type  = ["orient", "orient", "orient", "accel", "accel", "accel"],
+        unit  = ["", "", "", "m/s²", "m/s²", "m/s²"],
     )
     create_time!(obj; fs = _TPT_FS)
     return obj

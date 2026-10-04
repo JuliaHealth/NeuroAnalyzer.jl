@@ -6,7 +6,8 @@ function test_run(file_name::String)::Nothing
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     # read test structure
-    test_structure = JSON.parsefile(file_name; dicttype = Dict, inttype = Int64, use_mmap = true)
+    test_structure =
+        JSON.parsefile(file_name; dicttype = Dict, inttype = Int64, use_mmap = true)
 
     # parse test structure
     # test for all required properties
@@ -40,7 +41,7 @@ function test_run(file_name::String)::Nothing
 
     @async begin
         try
-            for structure_idx = eachindex(test_structure)
+            for structure_idx in eachindex(test_structure)
                 object = test_structure[structure_idx]
                 object_type = object[:type]
                 if object_type == "delay"

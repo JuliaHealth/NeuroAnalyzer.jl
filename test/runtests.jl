@@ -6,7 +6,6 @@ global testfiles_path =
     joinpath(artifact"NeuroAnalyzer_test-files", "neuroanalyzer-test-files")
 
 @testset "NeuroAnalyzer.jl" failfast=true begin
-
     @info "Running internal.jl tests"
     @test include("internal.jl")
 
@@ -36,5 +35,4 @@ global testfiles_path =
 
     @info "Running stim.jl tests"
     @test include("stim.jl")
-
 end

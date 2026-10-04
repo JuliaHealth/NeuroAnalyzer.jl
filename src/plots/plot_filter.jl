@@ -7,7 +7,8 @@ export plot_filter
 # complex frequency response at frequencies f (Hz)
 function _filter_freqz(flt, f::AbstractVector, fs::Real)
     ω = 2π .* f ./ fs
-    return flt isa Vector{Float64} ? freqresp(PolynomialRatio(flt, [1.0]), ω) : freqresp(flt, ω)
+    return flt isa Vector{Float64} ? freqresp(PolynomialRatio(flt, [1.0]), ω) :
+           freqresp(flt, ω)
 end
 
 # group delay in samples: τ = -dφ/dω = -Im(H'/H); no phase unwrapping needed, NaN where |H| ≈ 0
@@ -15,7 +16,7 @@ function _group_delay(H::AbstractVector, f::AbstractVector, fs::Real)
     ω = 2π .* f ./ fs
     hmax = maximum(abs.(H))
     τ = fill(NaN, length(H))
-    for i in 2:(length(H) - 1)
+    for i = 2:(length(H) - 1)
         abs(H[i]) > 1e-6 * hmax || continue
         τ[i] = -imag((H[i + 1] - H[i - 1]) / ((ω[i + 1] - ω[i - 1]) * H[i]))
     end
@@ -36,7 +37,14 @@ function _filter_response(flt, f::AbstractVector, fs::Real, dir::Symbol)
 end
 
 # transition width the design actually has
-function _bw_effective(flt, fprototype::Symbol, fs::Real, window::Symbol, custom_w::Bool, bw)
+function _bw_effective(
+    flt,
+    fprototype::Symbol,
+    fs::Real,
+    window::Symbol,
+    custom_w::Bool,
+    bw,
+)
     if fprototype === :fir
         return custom_w ? nothing : _FIR_WINDOWS[window].k * fs / length(flt)
     elseif fprototype in (:firls, :remez, :iirnotch)
@@ -49,7 +57,22 @@ _fmt(x::Real) = string(round(x; digits = 2))
 _fmt(x::Tuple) = "(" * Base.join(_fmt.(x), ", ") * ")"
 _fmt(x::AbstractVector) = isempty(x) ? "not reached" : Base.join(_fmt.(x), ", ")
 
-function _filter_title(flt; fprototype, ftype, cutoff, order, bw, bw_eff, rp, rs, fs, dir, window, custom_w, status)
+function _filter_title(
+    flt;
+    fprototype,
+    ftype,
+    cutoff,
+    order,
+    bw,
+    bw_eff,
+    rp,
+    rs,
+    fs,
+    dir,
+    window,
+    custom_w,
+    status,
+)
     names = Dict(
         :fir => "FIR (window)",
         :firls => "FIR (least squares)",
@@ -72,8 +95,10 @@ function _filter_title(flt; fprototype, ftype, cutoff, order, bw, bw_eff, rp, rs
     !isnothing(bw) && (s *= ", bw: $(_fmt(bw)) Hz")
     !isnothing(bw_eff) && fprototype === :fir && (s *= " (effective ≈ $(_fmt(bw_eff)) Hz)")
     isnothing(bw) && !isnothing(bw_eff) && (s *= ", bw ≈ $(_fmt(bw_eff)) Hz")
-    !isnothing(rp) && fprototype in (:chebyshev1, :elliptic) && (s *= ", RP: $(_fmt(rp)) dB")
-    !isnothing(rs) && fprototype in (:chebyshev2, :elliptic) && (s *= ", RS: $(_fmt(rs)) dB")
+    !isnothing(rp) && fprototype in (:chebyshev1, :elliptic) &&
+        (s *= ", RP: $(_fmt(rp)) dB")
+    !isnothing(rs) && fprototype in (:chebyshev2, :elliptic) &&
+        (s *= ", RS: $(_fmt(rs)) dB")
     s *= ", fs: $fs Hz, $(dir === :twopass ? "two-pass (|H|²)" : String(dir))"
 
     # measured response
@@ -119,7 +144,7 @@ function _add_slider!(grid, row, label, rng, start, obs)
     sl = Slider(grid[row, 2]; range = rng, startvalue = start, horizontal = true)
     Label(grid[row, 3], lift(x -> string(x), sl.value); fontsize = 15, halign = :left)
     on(sl.value) do val
-        obs[] = Float64(val)
+        return obs[] = Float64(val)
     end
     return sl
 end
@@ -128,12 +153,22 @@ function _add_cutoff_slider!(grid, row, cutoff, nqf, is_interval)
     rng = 0.1:0.1:(floor(10 * nqf) / 10 - 0.1)
     if is_interval
         Label(grid[row, 1], "Cutoff [Hz]"; fontsize = 15, halign = :right)
-        sl = IntervalSlider(grid[row, 2]; range = rng, startvalues = cutoff[], horizontal = true)
-        Label(grid[row, 3], lift(x -> _fmt(Float64.(x)), sl.interval); fontsize = 15, halign = :left)
+        sl = IntervalSlider(
+            grid[row, 2];
+            range = rng,
+            startvalues = cutoff[],
+            horizontal = true,
+        )
+        Label(
+            grid[row, 3],
+            lift(x -> _fmt(Float64.(x)), sl.interval);
+            fontsize = 15,
+            halign = :left,
+        )
         on(sl.interval) do val
             a, b = Float64.(val)
             a == b && (b = a + 0.1)
-            cutoff[] = (min(a, b), max(a, b))
+            return cutoff[] = (min(a, b), max(a, b))
         end
         return sl
     else
@@ -150,7 +185,13 @@ function _draw_cutoff_vlines!(axes, cutoff, bw_eff, mono)
         return vcat(cc .- b / 2, cc .+ b / 2)
     end
     for ax in axes
-        GLMakie.vlines!(ax, cs; linestyle = :dash, linewidth = 1, color = mono ? :black : :red)
+        GLMakie.vlines!(
+            ax,
+            cs;
+            linestyle = :dash,
+            linewidth = 1,
+            color = mono ? :black : :red,
+        )
         GLMakie.vlines!(ax, edges; linestyle = :dot, linewidth = 0.75, color = :black)
     end
     return nothing
@@ -206,7 +247,12 @@ function plot_filter(;
     n::Int64 = 4096,
     mono::Bool = false,
     gui::Bool = true,
-)::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+)::Union{
+    GLMakie.Figure,
+    Vector{Float64},
+    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+    Biquad{:z, Float64},
+}
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
@@ -222,7 +268,8 @@ function plot_filter(;
 
     # FIR without order/window vector: order follows bw
     order_auto = is_fir && isnothing(order) && isnothing(w)
-    order_auto && isnothing(bw) && throw(ArgumentError("bw or order must be specified for $fprototype."))
+    order_auto && isnothing(bw) &&
+        throw(ArgumentError("bw or order must be specified for $fprototype."))
 
     # IIR ripple defaults (as in filter_create), so that sliders can start from them
     if fprototype in (:chebyshev1, :chebyshev2, :elliptic)
@@ -237,7 +284,8 @@ function plot_filter(;
         ftype = ftype,
         cutoff = c,
         fs = fs,
-        order = (order_auto || fprototype === :iirnotch || custom_w) ? nothing : (isnothing(o) ? nothing : round(Int64, o)),
+        order = (order_auto || fprototype === :iirnotch || custom_w) ? nothing :
+                (isnothing(o) ? nothing : round(Int64, o)),
         rp = p,
         rs = s,
         bw = b,
@@ -255,7 +303,9 @@ function plot_filter(;
         # reactive parameters
         cutoff_obs = Observable{Any}(cutoff isa Tuple ? Float64.(cutoff) : Float64(cutoff))
         order0 = flt0 isa Vector{Float64} ? length(flt0) : order
-        order_obs = Observable{Union{Nothing, Float64}}(isnothing(order0) ? nothing : Float64(order0))
+        order_obs = Observable{Union{Nothing, Float64}}(
+            isnothing(order0) ? nothing : Float64(order0),
+        )
         bw_obs = Observable{Union{Nothing, Float64}}(isnothing(bw) ? nothing : Float64(bw))
         rp_obs = Observable{Union{Nothing, Float64}}(isnothing(rp) ? nothing : Float64(rp))
         rs_obs = Observable{Union{Nothing, Float64}}(isnothing(rs) ? nothing : Float64(rs))
@@ -279,10 +329,23 @@ function plot_filter(;
         H = lift(r -> r[1], resp)
         phi = lift(r -> r[2], resp)
         tau = lift(r -> r[3], resp)
-        bw_eff = lift((x, b) -> _bw_effective(x, fprototype, fs, window, custom_w, b), flt, bw_obs)
+        bw_eff = lift(
+            (x, b) -> _bw_effective(x, fprototype, fs, window, custom_w, b),
+            flt,
+            bw_obs,
+        )
 
-        title1 = lift(flt, cutoff_obs, order_obs, bw_obs, bw_eff, rp_obs, rs_obs, status) do x, c, o, b, be, p, s, st
-            _filter_title(
+        title1 = lift(
+            flt,
+            cutoff_obs,
+            order_obs,
+            bw_obs,
+            bw_eff,
+            rp_obs,
+            rs_obs,
+            status,
+        ) do x, c, o, b, be, p, s, st
+            return _filter_title(
                 x;
                 fprototype = fprototype,
                 ftype = ftype,
@@ -316,7 +379,8 @@ function plot_filter(;
         GLMakie.lines!(ax3, f, tau; color = mono ? :black : :blue)
         on(tau) do t
             ft = Base.filter(isfinite, t)
-            isempty(ft) || GLMakie.ylims!(ax3, (min(0, minimum(ft)) - 1, max(0, maximum(ft)) + 1))
+            return isempty(ft) ||
+                   GLMakie.ylims!(ax3, (min(0, minimum(ft)) - 1, max(0, maximum(ft)) + 1))
         end
         notify(tau)
 
@@ -336,7 +400,14 @@ function plot_filter(;
             elseif is_fir && !order_auto && !custom_w
                 odd = ftype in (:hp, :bp, :bs)
                 omax = max(2001, 2 * order + 1)
-                _add_slider!(grid, row, "Order [taps]", odd ? (1:2:omax) : (1:1:omax), order, order_obs)
+                _add_slider!(
+                    grid,
+                    row,
+                    "Order [taps]",
+                    odd ? (1:2:omax) : (1:1:omax),
+                    order,
+                    order_obs,
+                )
                 row += 1
             end
 
@@ -397,7 +468,12 @@ function plot_filter(
     n::Int64 = 4096,
     mono::Bool = false,
     gui::Bool = true,
-)::Union{GLMakie.Figure, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+)::Union{
+    GLMakie.Figure,
+    Vector{Float64},
+    ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64},
+    Biquad{:z, Float64},
+}
     return plot_filter(;
         fs = sr(obj),
         fprototype = fprototype,

@@ -26,7 +26,7 @@ function _fir_window(window::Symbol, n::Int64)::Vector{Float64}
     window === :hann && return DSP.hanning(n)
     window === :blackman && return DSP.blackman(n)
     window === :rect && return DSP.rect(n)
-    throw(ArgumentError("Unknown window: $window"))
+    return throw(ArgumentError("Unknown window: $window"))
 end
 
 # transition band(s) centered on the cutoff(s)
@@ -34,7 +34,10 @@ function _transition_edges(ftype::Symbol, cutoff, bw::Real)
     if ftype in (:lp, :hp)
         return [(cutoff[1] - bw / 2, cutoff[1] + bw / 2)]
     else
-        return [(cutoff[1] - bw / 2, cutoff[1] + bw / 2), (cutoff[2] - bw / 2, cutoff[2] + bw / 2)]
+        return [
+            (cutoff[1] - bw / 2, cutoff[1] + bw / 2),
+            (cutoff[2] - bw / 2, cutoff[2] + bw / 2),
+        ]
     end
 end
 
@@ -43,19 +46,28 @@ function _check_edges(ftype::Symbol, cutoff, bw::Real, nqf::Real; strict::Bool):
     tr = _transition_edges(ftype, cutoff, bw)
     msg = String[]
     if length(tr) == 1
-        tr = [(round.(tr[1][1], digits = 3), round.(tr[1][2], digits = 3))]
+        tr = [(round.(tr[1][1]; digits = 3), round.(tr[1][2]; digits = 3))]
     else
-        tr = [(round.(tr[1][1], digits = 3), round.(tr[1][2], digits = 3)), (round.(tr[2][1], digits = 3), round.(tr[2][2], digits = 3))]
+        tr = [
+            (round.(tr[1][1]; digits = 3), round.(tr[1][2]; digits = 3)),
+            (round.(tr[2][1]; digits = 3), round.(tr[2][2]; digits = 3)),
+        ]
     end
     tr[1][1] <= 0 && push!(msg, "transition band ($(tr[1][1])–$(tr[1][2]) Hz) reaches 0 Hz")
-    tr[end][2] >= nqf && push!(msg, "transition band ($(tr[end][1])–$(tr[end][2]) Hz) reaches Nyquist ($nqf Hz)")
+    tr[end][2] >= nqf && push!(
+        msg,
+        "transition band ($(tr[end][1])–$(tr[end][2]) Hz) reaches Nyquist ($nqf Hz)",
+    )
     length(tr) == 2 && tr[1][2] >= tr[2][1] && push!(msg, "transition bands overlap")
     isempty(msg) && return nothing
     m = Base.join(msg, "; ") * " (cutoff=$cutoff Hz, bw=$(round(bw, digits = 3)) Hz)"
     if strict
         throw(ArgumentError(m * ". Reduce bw."))
     else
-        _warn(m * ": the nominal stop-band attenuation will not be reached; reduce bw (increase order). Check filter_report().")
+        _warn(
+            m *
+            ": the nominal stop-band attenuation will not be reached; reduce bw (increase order). Check filter_report().",
+        )
     end
     return nothing
 end
@@ -159,14 +171,23 @@ function filter_create(;
 
     _check_var(
         fprototype,
-        [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch],
+        [
+            :fir,
+            :firls,
+            :remez,
+            :butterworth,
+            :chebyshev1,
+            :chebyshev2,
+            :elliptic,
+            :iirnotch,
+        ],
         "fprototype",
     )
     !isnothing(ftype) && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     _check_var(window, collect(keys(_FIR_WINDOWS)), "window")
     !isnothing(order) && order < 1 && throw(ArgumentError("order must be ≥ 1."))
     !isnothing(bw) && bw <= 0 && throw(ArgumentError("bw must be > 0."))
-    !isnothing(bw) && (bw = round(bw, digits = 3))
+    !isnothing(bw) && (bw = round(bw; digits = 3))
 
     # --- ftype required (all except :iirnotch) ---
     if fprototype !== :iirnotch
@@ -175,12 +196,15 @@ function filter_create(;
 
     # --- cutoff arity, values and normalization ---
     if fprototype === :iirnotch || ftype in (:lp, :hp)
-        length(cutoff) == 1 || throw(ArgumentError("For :$(something(ftype, fprototype)), cutoff must be a scalar."))
+        length(cutoff) == 1 || throw(
+            ArgumentError("For :$(something(ftype, fprototype)), cutoff must be a scalar."),
+        )
         cutoff = cutoff[1]
         cutoff > 0 || throw(ArgumentError("cutoff must be > 0 Hz."))
         cutoff < nqf || throw(ArgumentError("cutoff must be < $nqf Hz (Nyquist)."))
     else
-        length(cutoff) == 2 || throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
+        length(cutoff) == 2 ||
+            throw(ArgumentError("For :$ftype, cutoff must specify two frequencies."))
         if cutoff[1] > cutoff[2]
             cutoff = (cutoff[2], cutoff[1])
             _warn("cutoff frequencies swapped to $cutoff Hz.")
@@ -196,17 +220,22 @@ function filter_create(;
         if custom_w
             length(w) >= 1 || throw(ArgumentError("Length of w must be ≥ 1."))
             !isnothing(order) && order != length(w) &&
-                throw(ArgumentError("Length of w ($(length(w))) must equal order ($order)."))
+                throw(
+                    ArgumentError("Length of w ($(length(w))) must equal order ($order)."),
+                )
             order = length(w)
-            _info("Custom window: order = length(w) = $order taps; transition width not estimated, check filter_report()")
+            _info(
+                "Custom window: order = length(w) = $order taps; transition width not estimated, check filter_report()",
+            )
         else
             if isnothing(order)
-                isnothing(bw) && throw(ArgumentError("bw or order must be specified for :fir."))
+                isnothing(bw) &&
+                    throw(ArgumentError("bw or order must be specified for :fir."))
                 order = filter_order(; fprototype = :fir, fs = fs, bw = bw, window = window)
                 _info("order calculated from bw=$bw Hz ($window window): $order taps")
             else
                 bw_eff = _FIR_WINDOWS[window].k * fs / order
-                bw_eff = round(bw_eff, digits = 3)
+                bw_eff = round(bw_eff; digits = 3)
                 if !isnothing(bw) && abs(bw_eff - bw) / bw > 0.1
                     _warn(
                         "order=$order gives a transition width of ≈$bw_eff) Hz " *
@@ -219,7 +248,13 @@ function filter_create(;
         ftype in (:hp, :bp, :bs) && iseven(order) &&
             throw(ArgumentError("order must be odd for :hp/:bp/:bs filters."))
         # edge check with the transition width the design actually has (standard windows only)
-        custom_w || _check_edges(ftype, cutoff, _FIR_WINDOWS[window].k * fs / order, nqf; strict = false)
+        custom_w || _check_edges(
+            ftype,
+            cutoff,
+            _FIR_WINDOWS[window].k * fs / order,
+            nqf;
+            strict = false,
+        )
     end
 
     # --- :firls / :remez: bw required, order from bw (automatic) or manual ---
@@ -228,7 +263,9 @@ function filter_create(;
         _check_edges(ftype, cutoff, bw, nqf; strict = true)
         if isnothing(order)
             order = filter_order(; fprototype = fprototype, fs = fs, bw = bw, rs = rs)
-            _info("order calculated from bw=$bw Hz (target attenuation $(isnothing(rs) ? 53 : rs) dB): $order taps")
+            _info(
+                "order calculated from bw=$bw Hz (target attenuation $(isnothing(rs) ? 53 : rs) dB): $order taps",
+            )
         end
         ftype in (:hp, :bs) && iseven(order) &&
             throw(ArgumentError("order must be odd for :hp/:bs filters."))
@@ -240,20 +277,26 @@ function filter_create(;
         !isnothing(ftype) && _info("For :iirnotch filter ftype is ignored")
         !isnothing(order) && _info("For :iirnotch filter order is ignored")
         (cutoff - bw / 2 > 0 && cutoff + bw / 2 < nqf) ||
-            throw(ArgumentError("Notch band ($(cutoff - bw / 2)–$(cutoff + bw / 2) Hz) must lie within (0, $nqf) Hz."))
+            throw(
+                ArgumentError(
+                    "Notch band ($(cutoff - bw / 2)–$(cutoff + bw / 2) Hz) must lie within (0, $nqf) Hz.",
+                ),
+            )
     end
 
     # --- IIR: order required; bw not used ---
     if fprototype in (:butterworth, :chebyshev1, :chebyshev2, :elliptic)
         isnothing(order) && throw(ArgumentError("order must be specified for $fprototype."))
-        !isnothing(bw) && _info("bw is not used for $fprototype (order must be set manually)")
+        !isnothing(bw) &&
+            _info("bw is not used for $fprototype (order must be set manually)")
     end
 
     # --- :firls weight vector defaults ---
     if fprototype === :firls
         nw = ftype in (:bp, :bs) ? 6 : 4
         if !isnothing(w)
-            length(w) == nw || throw(ArgumentError("Length of w must be $nw for :$ftype filter."))
+            length(w) == nw ||
+                throw(ArgumentError("Length of w must be $nw for :$ftype filter."))
         else
             w = ones(nw)
         end
@@ -296,26 +339,41 @@ function filter_create(;
             flt_shape = [0, 0, 1, 1, 0, 0]
             flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, nqf]
             _info("Creating BP FIRLS filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
+            _info(
+                "  Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]",
+            )
         elseif ftype === :bs
             f1_pass, f1_stop = cutoff[1] - bw / 2, cutoff[1] + bw / 2
             f2_stop, f2_pass = cutoff[2] - bw / 2, cutoff[2] + bw / 2
             flt_shape = [1, 1, 0, 0, 1, 1]
             flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, nqf]
             _info("Creating BS FIRLS filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: pass=[0,$f1_pass], stop=[$f1_stop,$f2_stop], pass=[$f2_pass,$nqf]")
+            _info(
+                " Bands: pass=[0,$f1_pass], stop=[$f1_stop,$f2_stop], pass=[$f2_pass,$nqf]",
+            )
         elseif ftype === :lp
             f_pass, f_stop = cutoff - bw / 2, cutoff + bw / 2
             flt_shape = [1, 1, 0, 0]
             flt_frq = [0, f_pass, f_stop, nqf]
-            _info("Creating LP FIRLS filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
+            _info(
+                "Creating LP FIRLS filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)",
+            )
         elseif ftype === :hp
             f_stop, f_pass = cutoff - bw / 2, cutoff + bw / 2
             flt_shape = [0, 0, 1, 1]
             flt_frq = [0, f_stop, f_pass, nqf]
-            _info("Creating HP FIRLS filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
+            _info(
+                "Creating HP FIRLS filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)",
+            )
         end
-        return FIRLSFilterDesign.firls_design(order - 1, flt_frq, flt_shape, w, true; fs = fs)
+        return FIRLSFilterDesign.firls_design(
+            order - 1,
+            flt_frq,
+            flt_shape,
+            w,
+            true;
+            fs = fs,
+        )
     end
 
     if fprototype === :remez
@@ -324,21 +382,29 @@ function filter_create(;
             f2_pass, f2_stop = cutoff[2] - bw / 2, cutoff[2] + bw / 2
             w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, nqf) => 0]
             _info("Creating BP Remez filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]")
+            _info(
+                " Bands: stop=[0,$f1_stop], pass=[$f1_pass,$f2_pass], stop=[$f2_stop,$nqf]",
+            )
         elseif ftype === :bs
             f1_pass, f1_stop = cutoff[1] - bw / 2, cutoff[1] + bw / 2
             f2_stop, f2_pass = cutoff[2] - bw / 2, cutoff[2] + bw / 2
             w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, nqf) => 1]
             _info("Creating BS Remez filter ($order taps, bw=$bw Hz)")
-            _info(" Bands: pass=[0,$f1_pass], stop=[$f1_stop,$f2_stop], pass=[$f2_pass,$nqf]")
+            _info(
+                " Bands: pass=[0,$f1_pass], stop=[$f1_stop,$f2_stop], pass=[$f2_pass,$nqf]",
+            )
         elseif ftype === :lp
             f_pass, f_stop = cutoff - bw / 2, cutoff + bw / 2
             w = [(0, f_pass) => 1, (f_stop, nqf) => 0]
-            _info("Creating LP Remez filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)")
+            _info(
+                "Creating LP Remez filter ($order taps, bw=$bw Hz, pass=$f_pass, stop=$f_stop)",
+            )
         elseif ftype === :hp
             f_stop, f_pass = cutoff - bw / 2, cutoff + bw / 2
             w = [(0, f_stop) => 0, (f_pass, nqf) => 1]
-            _info("Creating HP Remez filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)")
+            _info(
+                "Creating HP Remez filter ($order taps, bw=$bw Hz, stop=$f_stop, pass=$f_pass)",
+            )
         end
         return remez(order, w; Hz = fs, maxiter = 100)
     end
@@ -424,7 +490,9 @@ function filter_report(
     nqf = fs / 2
     f = collect(range(0, nqf; length = n))
     ω = 2π .* f ./ fs
-    h = flt isa Vector{Float64} ? freqresp(PolynomialRatio(flt, [1.0]), ω) : freqresp(flt, ω)
+    h =
+        flt isa Vector{Float64} ? freqresp(PolynomialRatio(flt, [1.0]), ω) :
+        freqresp(flt, ω)
     g = 20 .* log10.(max.(abs.(h), floatmin(Float64)))
     dir === :twopass && (g .*= 2)
 
@@ -433,7 +501,7 @@ function filter_report(
     crossings = Dict{Float64, Vector{Float64}}()
     for t in thr
         x = Float64[]
-        for i in 1:(n - 1)
+        for i = 1:(n - 1)
             if (g[i] - t) * (g[i + 1] - t) < 0
                 push!(x, f[i] + (t - g[i]) * (f[i + 1] - f[i]) / (g[i + 1] - g[i]))
             end
@@ -443,8 +511,10 @@ function filter_report(
 
     gain_at = Dict{Float64, Float64}()
     for fc in fcheck
-        (0 <= fc <= nqf) || throw(ArgumentError("fcheck frequencies must be within [0, $nqf] Hz."))
-        gain_at[fc] = round(g[clamp(round(Int64, fc / nqf * (n - 1)) + 1, 1, n)]; digits = 3)
+        (0 <= fc <= nqf) ||
+            throw(ArgumentError("fcheck frequencies must be within [0, $nqf] Hz."))
+        gain_at[fc] =
+            round(g[clamp(round(Int64, fc / nqf * (n - 1)) + 1, 1, n)]; digits = 3)
     end
 
     # pass-band deviation and stop-band attenuation
@@ -470,16 +540,27 @@ function filter_report(
     iir_order = flt isa Vector{Float64} ? nothing : (flt isa Biquad ? 2 : length(flt.p))
     kind = flt isa Vector{Float64} ? "FIR" : (flt isa Biquad ? "IIR biquad" : "IIR")
     kernel_s = isnothing(taps) ? nothing : round((taps - 1) / fs; digits = 3)
-    delay_s = dir === :twopass ? 0.0 : (isnothing(taps) ? nothing : round((taps - 1) / 2 / fs; digits = 3))
+    delay_s =
+        dir === :twopass ? 0.0 :
+        (isnothing(taps) ? nothing : round((taps - 1) / 2 / fs; digits = 3))
 
     if verbose
-        _info("$kind filter response ($(dir === :twopass ? "two-pass, |H|²" : String(dir))), fs=$fs Hz")
-        !isnothing(taps) && _info("  taps: $taps; kernel length: $kernel_s s; group delay: $delay_s s")
-        !isnothing(iir_order) && _info("  order: $iir_order$(dir === :twopass ? " (effective $(2 * iir_order) two-pass)" : "")")
+        _info(
+            "$kind filter response ($(dir === :twopass ? "two-pass, |H|²" : String(dir))), fs=$fs Hz",
+        )
+        !isnothing(taps) &&
+            _info("  taps: $taps; kernel length: $kernel_s s; group delay: $delay_s s")
+        !isnothing(iir_order) && _info(
+            "  order: $iir_order$(dir === :twopass ? " (effective $(2 * iir_order) two-pass)" : "")",
+        )
         for t in thr
-            _info("  $t dB at: $(isempty(crossings[t]) ? "not reached" : Base.join(crossings[t], ", ") * " Hz")")
+            _info(
+                "  $t dB at: $(isempty(crossings[t]) ? "not reached" : Base.join(crossings[t], ", ") * " Hz")",
+            )
         end
-        _info("  gain at 0 Hz: $(round(g[1]; digits = 3)) dB; at Nyquist: $(round(g[end]; digits = 3)) dB")
+        _info(
+            "  gain at 0 Hz: $(round(g[1]; digits = 3)) dB; at Nyquist: $(round(g[end]; digits = 3)) dB",
+        )
         for fc in fcheck
             _info("  gain at $fc Hz: $(gain_at[fc]) dB")
         end
@@ -488,7 +569,8 @@ function filter_report(
     end
 
     summary =
-        "$kind" * (isnothing(taps) ? ", order=$iir_order" : ", taps=$taps") * ", dir=:$dir" *
+        "$kind" * (isnothing(taps) ? ", order=$iir_order" : ", taps=$taps") *
+        ", dir=:$dir" *
         "; -3 dB at $(isempty(crossings[-3.0]) ? "n/a" : Base.join(crossings[-3.0], ", ")) Hz" *
         "; -6 dB at $(isempty(crossings[-6.0]) ? "n/a" : Base.join(crossings[-6.0], ", ")) Hz" *
         "; 0 Hz: $(round(g[1]; digits = 3)) dB" *
@@ -553,7 +635,16 @@ function filter_apply(
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
     if report
         isnothing(fs) && throw(ArgumentError("fs must be specified when report=true."))
-        filter_report(flt; fs = fs, dir = dir, ftype = ftype, cutoff = cutoff, bw = bw, fcheck = fcheck, verbose = true)
+        filter_report(
+            flt;
+            fs = fs,
+            dir = dir,
+            ftype = ftype,
+            cutoff = cutoff,
+            bw = bw,
+            fcheck = fcheck,
+            verbose = true,
+        )
     end
 
     if flt isa Vector{Float64} && length(s) <= 3 * (length(flt) - 1)
@@ -635,7 +726,8 @@ function filter_apply(
 
     ep_n > 1 && _warn("filter_apply() should preferably be used on a continuous signal.")
     _info("Taper the signal before filtering to reduce edge artifacts")
-    dir === :twopass && _info("Two-pass filtering: magnitude response is squared (gains in dB doubled)")
+    dir === :twopass &&
+        _info("Two-pass filtering: magnitude response is squared (gains in dB doubled)")
     if flt isa Vector{Float64} && size(obj.data, 2) <= 3 * (length(flt) - 1)
         _warn(
             "Epoch length ($(size(obj.data, 2)) samples) is short relative to the filter ($(length(flt)) taps): " *
@@ -647,7 +739,8 @@ function filter_apply(
     obj_tmp = deepcopy(obj)
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar =
+        Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
@@ -663,7 +756,13 @@ function filter_apply(
 end
 
 # per-channel/epoch worker (avoids repeating the length warning in every thread)
-function _filter_one(obj::NeuroAnalyzer.NEURO, ch_idx::Int64, ep_idx::Int64, flt::_FLT_TYPES, dir::Symbol)
+function _filter_one(
+    obj::NeuroAnalyzer.NEURO,
+    ch_idx::Int64,
+    ep_idx::Int64,
+    flt::_FLT_TYPES,
+    dir::Symbol,
+)
     s = @view(obj.data[ch_idx, :, ep_idx])
     dir === :onepass && return filt(flt, s)
     dir === :twopass && return filtfilt(flt, s)
@@ -790,8 +889,15 @@ function filter(
 
     # resolve FIR order here so that its source can be reported
     order_src = isnothing(order) ? "auto" : "manual"
-    if fprototype in (:fir, :firls, :remez) && isnothing(order) && isnothing(w) && !isnothing(bw)
-        order = filter_order(; fprototype = fprototype, fs = fs, bw = bw, window = window, rs = rs)
+    if fprototype in (:fir, :firls, :remez) && isnothing(order) && isnothing(w) &&
+       !isnothing(bw)
+        order = filter_order(;
+            fprototype = fprototype,
+            fs = fs,
+            bw = bw,
+            window = window,
+            rs = rs,
+        )
         order_src = "calculated from bw"
     elseif fprototype === :fir && !isnothing(w)
         order = length(w)
@@ -813,7 +919,7 @@ function filter(
 
     # effective transition width
     bw_eff = if fprototype === :fir && isnothing(w)
-        round(_FIR_WINDOWS[window].k * fs / length(flt), digits = 3)
+        round(_FIR_WINDOWS[window].k * fs / length(flt); digits = 3)
     elseif fprototype in (:firls, :remez, :iirnotch)
         bw
     else

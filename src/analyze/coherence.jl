@@ -174,7 +174,7 @@ function coherence(
     _, f = cpsd(
         @view(s1[1, :, 1]),
         @view(s2[1, :, 1]);
-        cpsd_kwargs...
+        cpsd_kwargs...,
     )
 
     # pre-allocate outputs
@@ -189,9 +189,9 @@ function coherence(
     s2s2, _ = cpsd(s2, s2; cpsd_kwargs...)
 
     # average across epochs
-    s1s1_avg = mean(s1s1, dims=3)[:, :]
-    s1s2_avg = mean(s1s2, dims=3)[:, :]
-    s2s2_avg = mean(s2s2, dims=3)[:, :]
+    s1s1_avg = mean(s1s1; dims = 3)[:, :]
+    s1s2_avg = mean(s1s2; dims = 3)[:, :]
+    s2s2_avg = mean(s2s2; dims = 3)[:, :]
 
     # complex coherence: s1s2 / √(s1s1 · s2s2)
     coh = @. s1s2_avg / sqrt(s1s1_avg * s2s2_avg)

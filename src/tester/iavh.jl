@@ -177,7 +177,7 @@ function iavh()::Nothing
         Gtk4.default_size(win, 1100, 820)
 
         # canvas that renders the head diagram and the clicked sound-source marker
-        can = GtkCanvas()
+        can                = GtkCanvas()
         can.content_width  = canvas_size
         can.content_height = canvas_size
 
@@ -251,11 +251,11 @@ function iavh()::Nothing
         bt_vol_down.tooltip_text = "Decrease volume (step $(vol_step))"
 
         # --- action buttons ---
-        bt_play = GtkButton("Play")
+        bt_play               = GtkButton("Play")
         bt_play.tooltip_text  = "Play the sound with current settings"
-        bt_save = GtkButton("Save")
+        bt_save               = GtkButton("Save")
         bt_save.tooltip_text  = "Export session settings to CSV"
-        bt_close = GtkButton("Close")
+        bt_close              = GtkButton("Close")
         bt_close.tooltip_text = "Close this window"
 
         # --- populate options grid ---

@@ -63,7 +63,7 @@ function cpsd(
     if method === :mt
 
         # ignore Hanning window (DPSS Slepian tapers will be applied)
-        
+
         # stack signals as rows
         s = hcat(s1, s2)'
 
@@ -94,7 +94,7 @@ function cpsd(
         nfft = nextpow(2, wlen)
         pxy = zeros(ComplexF64, nfft)
         # apply Hanning window (or unit window)
-        win  = w ? hanning(wlen) : ones(wlen)
+        win = w ? hanning(wlen) : ones(wlen)
 
         for idx in axes(chunks_idx, 1)
             r = chunks_idx[idx, 1]:chunks_idx[idx, 2]

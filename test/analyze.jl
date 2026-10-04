@@ -361,9 +361,9 @@ coh_data = NeuroAnalyzer.coherence(
     ch2 = "Fp2",
     method = :stft,
 )
-@test size(coh_data.coh) == (1, 129, )
-@test size(coh_data.imcoh) == (1, 129, )
-@test size(coh_data.msc) == (1, 129, )
+@test size(coh_data.coh) == (1, 129)
+@test size(coh_data.imcoh) == (1, 129)
+@test size(coh_data.msc) == (1, 129)
 @test length(coh_data.f) == 129
 
 @info "Test: frqinst()"
@@ -422,7 +422,7 @@ ac, l = acor(e10; ch = "all", method = :stat)
 @info "Test: ispc()"
 iv, ia, sd, pd, s1p, s2p = ispc(v1, v2)
 @test iv ≈ 0.61259928523
-@test ia≈ 0.00178019307703≈
+@test ia ≈ 0.00178019307703
 @test sd == [-5.0, -3.0, -1.0, 1.0, 3.0]
 @test pd ≈ [
     1.31570449822,

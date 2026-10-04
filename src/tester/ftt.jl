@@ -185,7 +185,7 @@ function iftt(;
         Gtk4.default_size(win, Int64(img_idle.width), Int64(img_idle.height) + 100)
 
         # canvas that shows the finger graphic (idle or pressed)
-        can = GtkCanvas()
+        can                = GtkCanvas()
         can.content_width  = Int64(img_idle.width)
         can.content_height = Int64(img_idle.height)
 
