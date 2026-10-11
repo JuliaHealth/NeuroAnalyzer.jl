@@ -30,7 +30,9 @@ r = fooof(rand(10, 1000, 10), fs = 100)
 @test size(r.r2) == (10, 10)
 @test r.f[1] == 1.0
 @test r.f[end] == 50.0
-@test_throws AssertionError fooof(rand(10, 1000, 10), fs = 100, method = :stft)
+r = fooof(rand(10, 1000, 10), fs = 100, method = :stft)
+@test size(r.ap) == (10, 3, 10)
+@test r.f[1] == 1.0
 r = fooof(e10, ch = "Fp1")
 @test size(r.ap) == (1, 3, 10)
 @test size(r.model) == (1, length(r.f), 10)
@@ -60,12 +62,16 @@ const _FOOOF_TOL = 1e-5                     # convergence tolerance
 
 # model functions (power in log10)
 
+# log10 returning NaN instead of throwing DomainError (as numpy does); needed because the solver may
+# try knee < -f^exponent, which must be rejected as a bad step, not abort the fit
+_log10nan(x::Real)::Float64 = x > 0 ? log10(x) : NaN
+
 function _fooof_ap(f::AbstractVector{<:Real}, p::AbstractVector{<:Real})::Vector{Float64}
     # fixed: [offset, exponent]; knee: [offset, knee, exponent]
     if length(p) == 2
-        return p[1] .- log10.(f .^ p[2])
+        return p[1] .- p[2] .* log10.(f)
     else
-        return p[1] .- log10.(p[2] .+ f .^ p[3])
+        return p[1] .- _log10nan.(p[2] .+ f .^ p[3])
     end
 end
 
@@ -225,10 +231,20 @@ function _fooof_fit_peaks(
         # data-driven SD guess from the shorter half-width at half-maximum
         # note: as in fooof, the left-side search excludes the first frequency bin
         hh = 0.5 * max_h
-        le_idx = findfirst(i -> flat_iter[i] <= hh, (max_idx - 1):-1:2)
-        le_idx = isnothing(le_idx) ? nothing : (max_idx - 1) - le_idx + 1
-        ri_idx = findfirst(i -> flat_iter[i] <= hh, (max_idx + 1):length(flat_iter))
-        ri_idx = isnothing(ri_idx) ? nothing : max_idx + ri_idx
+        le_idx = nothing
+        for i in (max_idx - 1):-1:2
+            if flat_iter[i] <= hh
+                le_idx = i
+                break
+            end
+        end
+        ri_idx = nothing
+        for i in (max_idx + 1):length(flat_iter)
+            if flat_iter[i] <= hh
+                ri_idx = i
+                break
+            end
+        end
         sides = [abs(i - max_idx) for i in (le_idx, ri_idx) if !isnothing(i)]
         if isempty(sides)
             g_sd = mean(peak_width_limits)
@@ -312,8 +328,8 @@ Named tuple containing:
 If fitting fails, all parameters are `NaN` and `pe` / `gp` are empty.
 """
 function fooof(
-        f::AbstractVector,
-        p::AbstractVector;
+        f::AbstractVector{<:Real},
+        p::AbstractVector{<:Real};
         flim::Tuple{Real, Real} = (f[1], f[end]),
         peak_width_limits::Tuple{Real, Real} = (0.5, 12.0),
         max_n_peaks::Int64 = typemax(Int64),
@@ -334,23 +350,85 @@ function fooof(
 
     _check_var(aperiodic_mode, [:fixed, :knee], "aperiodic_mode")
     @assert length(f) == length(p) "f and p must have the same length."
-    _check_tuple(flim, (f[1], f[end]), "flim")
     @assert flim[1] > 0 "flim[1] must be > 0 (log10 of 0 Hz is undefined)."
+    _check_tuple(flim, (f[1], f[end]), "flim")
     _check_tuple(peak_width_limits, (0, Inf), "peak_width_limits")
+    @assert peak_width_limits[1] > 0 "peak_width_limits[1] must be > 0."
     @assert max_n_peaks >= 0 "max_n_peaks must be ≥ 0."
     @assert peak_threshold > 0 "peak_threshold must be > 0."
-    @assert all(isreal, p) "p must be real."
 
-    f1_idx = vsearch(flim[1], f)
-    f2_idx = vsearch(flim[2], f)
-    f = Float64.(f[f1_idx:f2_idx])
-    p = Float64.(p[f1_idx:f2_idx])
+    # inclusive frequency range, as in fooof
+    f_idx = (f .>= flim[1]) .& (f .<= flim[2])
+    f = Float64.(f[f_idx])
+    p = Float64.(p[f_idx])
+    _fooof_check(f, p)
+    _fooof_width_warn(f, peak_width_limits)
+
+    return _fooof(
+        f,
+        p;
+        peak_width_limits = peak_width_limits,
+        max_n_peaks = max_n_peaks,
+        min_peak_height = min_peak_height,
+        peak_threshold = peak_threshold,
+        aperiodic_mode = aperiodic_mode,
+        verbose = true,
+    )
+
+end
+
+function _fooof_nan(f::Vector{Float64}, p::Vector{Float64})
+    nans = fill(NaN, length(f))
+    pl = all(p .> 0) ? log10.(p) : copy(nans)
+    return (
+        ap = fill(NaN, 3),
+        pe = zeros(0, 3),
+        gp = zeros(0, 3),
+        r2 = NaN,
+        err = NaN,
+        f = f,
+        p = pl,
+        model = nans,
+        ap_fit = copy(nans),
+    )
+end
+
+function _fooof_check(f::Vector{Float64}, p::Vector{Float64})::Nothing
     @assert length(f) >= 4 "At least 4 frequency bins are required within flim."
     @assert all(x -> isapprox(x, f[2] - f[1]), diff(f)) "Frequencies must be evenly spaced."
+    @assert all(isfinite, p) "p must not contain NaN or Inf values."
     @assert all(p .> 0) "p must be > 0 (power in linear scale, not dB)."
+    return nothing
+end
 
+function _fooof_width_warn(f::Vector{Float64}, peak_width_limits::Tuple{Real, Real})::Nothing
     fres = f[2] - f[1]
-    peak_width_limits[1] < 2 * fres && _warn("Lower peak width limit ($(peak_width_limits[1]) Hz) is < 2 × frequency resolution ($(round(2 * fres, digits = 3)) Hz); this may lead to overfitting of narrow peaks.")
+    peak_width_limits[1] < 2 * fres && _warn(
+        "Lower peak width limit ($(peak_width_limits[1]) Hz) is < 2 × frequency resolution ($(round(2 * fres, digits = 3)) Hz); this may lead to overfitting of narrow peaks."
+    )
+    return nothing
+end
+
+function _fooof(
+        f::Vector{Float64},
+        p::Vector{Float64};
+        peak_width_limits::Tuple{Real, Real},
+        max_n_peaks::Int64,
+        min_peak_height::Real,
+        peak_threshold::Real,
+        aperiodic_mode::Symbol,
+        verbose::Bool = true,
+    )::@NamedTuple{
+        ap::Vector{Float64},
+        pe::Matrix{Float64},
+        gp::Matrix{Float64},
+        r2::Float64,
+        err::Float64,
+        f::Vector{Float64},
+        p::Vector{Float64},
+        model::Vector{Float64},
+        ap_fit::Vector{Float64},
+    }
 
     pl = log10.(p)
     knee = aperiodic_mode === :knee
@@ -378,19 +456,8 @@ function fooof(
         ap = knee ? ap : [ap[1], 0.0, ap[2]]
         return (ap = ap, pe = pe, gp = gp, r2 = r2, err = err, f = f, p = pl, model = model, ap_fit = ap_fit)
     catch e
-        _warn("FOOOF model fitting failed: $(sprint(showerror, e))")
-        nans = fill(NaN, length(f))
-        return (
-            ap = fill(NaN, 3),
-            pe = zeros(0, 3),
-            gp = zeros(0, 3),
-            r2 = NaN,
-            err = NaN,
-            f = f,
-            p = pl,
-            model = nans,
-            ap_fit = copy(nans),
-        )
+        verbose && _warn("FOOOF model fitting failed: $(sprint(showerror, e))")
+        return _fooof_nan(f, p)
     end
 
 end
@@ -409,11 +476,12 @@ Parameterize power spectra into aperiodic and periodic (peak) components using t
       + `:welch`: Welch's periodogram
       + `:fft`: fast Fourier transform
       + `:mt`: multi-tapered periodogram
+      + `:stft`: short time Fourier transform
       + `:mw`: Morlet wavelet convolution
       + `:gh`: Gaussian and Hilbert transform
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=fs`: window length (in samples), default is 1 second
-  - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap (in samples)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
   - `gw::Real=5`: Gaussian width in Hz
@@ -442,7 +510,7 @@ function fooof(
         method::Symbol = :welch,
         nt::Int64 = 7,
         wlen::Int64 = fs,
-        woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
@@ -461,10 +529,15 @@ function fooof(
         ap_fit::Array{Float64, 3},
     }
 
-    # :stft is excluded: psd(method = :stft) returns magnitude, not power
-    _check_var(method, [:welch, :fft, :mt, :mw, :gh], "method")
+    _check_var(method, [:welch, :fft, :mt, :stft, :mw, :gh], "method")
     _chk3d(s)
     _check_tuple(flim, (0, fs / 2), "flim")
+    @assert flim[1] > 0 "flim[1] must be > 0 (log10 of 0 Hz is undefined)."
+    _check_var(aperiodic_mode, [:fixed, :knee], "aperiodic_mode")
+    _check_tuple(peak_width_limits, (0, Inf), "peak_width_limits")
+    @assert peak_width_limits[1] > 0 "peak_width_limits[1] must be > 0."
+    @assert max_n_peaks >= 0 "max_n_peaks must be ≥ 0."
+    @assert peak_threshold > 0 "peak_threshold must be > 0."
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -472,16 +545,20 @@ function fooof(
         s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw
     )
 
+    f_idx = (pf .>= flim[1]) .& (pf .<= flim[2])
+    f = Float64.(pf[f_idx])
+    _fooof_check(f, ones(length(f)))
+    _fooof_width_warn(f, peak_width_limits)
+
     kw = (
-        flim = flim,
         peak_width_limits = peak_width_limits,
         max_n_peaks = max_n_peaks,
         min_peak_height = min_peak_height,
         peak_threshold = peak_threshold,
         aperiodic_mode = aperiodic_mode,
+        verbose = false,
     )
 
-    f = fooof(pf, pw[1, :, 1]; kw...).f
     ap = zeros(ch_n, 3, ep_n)
     pe = Matrix{Matrix{Float64}}(undef, ch_n, ep_n)
     r2 = zeros(ch_n, ep_n)
@@ -491,7 +568,9 @@ function fooof(
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            r = fooof(pf, pw[ch_idx, :, ep_idx]; kw...)
+            p = Float64.(pw[ch_idx, f_idx, ep_idx])
+            # invalid spectra (e.g. flat / zero-power channels) are not fitted, results are NaN
+            r = all(isfinite, p) && all(p .> 0) ? _fooof(f, p; kw...) : _fooof_nan(f, p)
             ap[ch_idx, :, ep_idx] = r.ap
             pe[ch_idx, ep_idx] = r.pe
             r2[ch_idx, ep_idx] = r.r2
@@ -500,6 +579,9 @@ function fooof(
             ap_fit[ch_idx, :, ep_idx] = r.ap_fit
         end
     end
+
+    n_fail = count(isnan, r2)
+    n_fail > 0 && _warn("FOOOF model fitting failed for $n_fail of $(length(r2)) spectra (parameters set to NaN).")
 
     return (ap = ap, pe = pe, r2 = r2, err = err, f = f, model = model, ap_fit = ap_fit)
 
@@ -515,10 +597,10 @@ Parameterize power spectra into aperiodic and periodic (peak) components using t
   - `obj::NeuroAnalyzer.NEURO`
   - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
   - `flim::Tuple{Real, Real}=(1, sr(obj) / 2)`: frequency range to fit
-  - `method::Symbol=:welch`: method used to calculate PSD (`:welch`, `:fft`, `:mt`, `:mw`, `:gh`)
+  - `method::Symbol=:welch`: method used to calculate PSD (`:welch`, `:fft`, `:mt`, `:stft`, `:mw`, `:gh`)
   - `nt::Int64=7`: number of Slepian tapers
   - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-  - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap (in samples)
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
   - `w::Bool=true`: if true, apply Hanning window
   - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
   - `gw::Real=5`: Gaussian width in Hz
@@ -547,7 +629,7 @@ function fooof(
         method::Symbol = :welch,
         nt::Int64 = 7,
         wlen::Int64 = sr(obj),
-        woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
+        woverlap::Int64 = round(Int64, wlen * 0.9),
         w::Bool = true,
         ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
         gw::Real = 5,
