@@ -23,8 +23,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `wstep::Int64=min(round(Int64, wlen * 0.90), wlen - 1)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -118,8 +118,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `wstep::Int64=min(round(Int64, wlen * 0.90), wlen - 1)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -233,8 +233,8 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `flim::Tuple{Real, Real}=(0, fs / 2)`: frequency limits
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `wstep::Int64=round(Int64, wlen * 0.90)`: step between window starts
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `wstep::Int64=min(round(Int64, wlen * 0.90), wlen - 1)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns

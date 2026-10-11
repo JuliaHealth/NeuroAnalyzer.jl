@@ -24,8 +24,8 @@ For a given frequency band, computes four descriptors:
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -47,7 +47,7 @@ function band_mpower(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -120,8 +120,8 @@ For a given frequency band, computes four descriptors:
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -143,7 +143,7 @@ function band_mpower(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -217,8 +217,8 @@ For a given frequency band, computes four descriptors:
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -240,7 +240,7 @@ function band_mpower(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,

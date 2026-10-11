@@ -14,7 +14,6 @@ NeuroAnalyzer.filter!(
     ftype = :lp,
     cutoff = 40,
     order = 91,
-    bw = 0.5,
 )
 NeuroAnalyzer.filter!(
     e10;
@@ -23,7 +22,6 @@ NeuroAnalyzer.filter!(
     ftype = :hp,
     cutoff = 1,
     order = 91,
-    bw = 0.5,
 )
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -236,8 +234,8 @@ e, t = penv(e10; ch = "Fp1", method = :mt)
 @test size(e) == (1, 1281, 10)
 @test length(t) == 1281
 e, t = penv(e10; ch = "Fp1", method = :mw)
-@test size(e) == (1, 129, 10)
-@test length(t) == 129
+@test size(e) == (1, 128, 10)
+@test length(t) == 128
 e, t = penv(e10; ch = "Fp1", method = :gh)
 @test size(e) == (1, 129, 10)
 @test length(t) == 129
@@ -398,8 +396,8 @@ p, f = erop(e10; ch = "Fp1", method = :mt)
 @test size(p) == (1281, 1)
 @test length(f) == 1281
 p, f = erop(e10; ch = "Fp1", method = :mw)
-@test size(p) == (129, 1)
-@test length(f) == 129
+@test size(p) == (128, 1)
+@test length(f) == 128
 p, f = erop(e10; ch = "Fp1", method = :gh)
 @test size(p) == (129, 1)
 @test length(f) == 129
@@ -648,8 +646,8 @@ p, f = NeuroAnalyzer.psd(e10; ch = "Fp1", method = :mt)
 @test size(p) == (1, 1281, 10)
 @test round.(f, digits = 3) == 0.0:0.1:128.0
 p, f = NeuroAnalyzer.psd(e10; ch = "Fp1", method = :mw)
-@test size(p) == (1, 129, 10)
-@test round.(f, digits = 3) == 0.0:1.0:128.0
+@test size(p) == (1, 128, 10)
+@test round.(f, digits = 3) == 1.0:1.0:128.0
 p, f = NeuroAnalyzer.psd(e10; ch = "Fp1", method = :gh)
 @test size(p) == (1, 129, 10)
 @test round.(f, digits = 3) == 0.0:1.0:128.0
@@ -700,8 +698,8 @@ p, f = psd_rel(e10; ch = "Fp1", method = :stft, flim = (0, 1))
 @test f[1] == 0.0
 @test f[end] == 128.0
 p, f = psd_rel(e10; ch = "Fp1", method = :mw, flim = (0, 1))
-@test size(p) == (1, 129, 10)
-@test f[1] == 0.0
+@test size(p) == (1, 128, 10)
+@test f[1] == 1.0
 @test f[end] == 128.0
 p, f = psd_rel(e10; ch = "Fp1", method = :gh, flim = (0, 1))
 @test size(p) == (1, 129, 10)
@@ -736,9 +734,9 @@ lf, ls, pf = psd_slope(e10; ch = "Fp1", method = :mt)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
 lf, ls, pf = psd_slope(e10; ch = "Fp1", method = :mw)
-@test size(lf) == (1, 129, 10)
+@test size(lf) == (1, 128, 10)
 @test size(ls) == (1, 10)
-@test pf[1] == 0.0
+@test pf[1] == 1.0
 @test pf[end] == 128.0
 lf, ls, pf = psd_slope(e10; ch = "Fp1", method = :gh)
 @test size(lf) == (1, 129, 10)

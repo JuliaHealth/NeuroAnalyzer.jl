@@ -23,8 +23,8 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -45,7 +45,7 @@ function psd_rel(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -103,8 +103,8 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -125,7 +125,7 @@ function psd_rel(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -134,12 +134,11 @@ function psd_rel(
     p::Matrix{Float64},
     f::Vector{Float64},
 }
-
     # number of channels
     ch_n = size(s, 1)
 
-    f = psd_rel(
-        @view(s[1, :]);
+    _psd_rel(x) = psd_rel(
+        x;
         fs = fs,
         db = db,
         flim = flim,
@@ -151,26 +150,17 @@ function psd_rel(
         ncyc = ncyc,
         gw = gw,
         demean = demean,
-    ).f
+    )
 
+    # first channel also determines the frequency vector
+    r1 = _psd_rel(@view(s[1, :]))
+    f = r1.f
     # pre-allocate output
     p = zeros(ch_n, length(f))
+    p[1, :] = r1.p
 
-    @inbounds for ch_idx = 1:ch_n
-        p[ch_idx, :] = psd_rel(
-            @view(s[ch_idx, :]),
-            fs = fs,
-            db = db,
-            flim = flim,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            gw = gw,
-            demean = demean,
-        ).p
+    @inbounds for ch_idx = 2:ch_n
+        p[ch_idx, :] = _psd_rel(@view(s[ch_idx, :])).p
     end
 
     return (; p, f)
@@ -197,8 +187,8 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -219,7 +209,7 @@ function psd_rel(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -237,11 +227,11 @@ function psd_rel(
     # number of epochs
     ep_n = size(s, 3)
 
-    # probe the frequency axis length using the first (channel, epoch) slice
-    f = psd_rel(
-        @view(s[1, :, 1]);
+    _psd_rel(x) = psd_rel(
+        x;
         fs = fs,
         db = db,
+        flim = flim,
         method = method,
         nt = nt,
         wlen = wlen,
@@ -250,27 +240,20 @@ function psd_rel(
         ncyc = ncyc,
         gw = gw,
         demean = demean,
-    ).f
+    )
 
+    # first channel/epoch also determines the frequency vector
+    psd_data = _psd_rel(@view(s[1, :, 1]))
+    f = psd_data.f
     # pre-allocate output
     p = zeros(ch_n, length(f), ep_n)
+    p[1, :, 1] = psd_data.p
 
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+    # calculate over channels and epochs (skipping the one already done)
+    idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]
+    @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        p[ch_idx, :, ep_idx] = psd_rel(
-            @view(s[ch_idx, :, ep_idx]),
-            fs = fs,
-            db = db,
-            flim = flim,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            gw = gw,
-            demean = demean,
-        ).p
+        p[ch_idx, :, ep_idx] = _psd_rel(@view(s[ch_idx, :, ep_idx])).p
     end
 
     return (; p, f)
@@ -297,10 +280,10 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
@@ -319,7 +302,7 @@ function psd_rel(
     nt::Int64 = 7,
     flim::Union{Tuple{Real, Real}, Nothing} = nothing,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -349,4 +332,5 @@ function psd_rel(
         gw = gw,
         demean = demean,
     )
+
 end

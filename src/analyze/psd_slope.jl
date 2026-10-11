@@ -21,8 +21,8 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -44,7 +44,7 @@ function psd_slope(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -107,8 +107,8 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
@@ -130,7 +130,7 @@ function psd_slope(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
@@ -148,9 +148,8 @@ function psd_slope(
     # number of epochs
     ep_n = size(s, 3)
 
-    # dry run
-    psd_data = psd_slope(
-        s[1, :, 1];
+    _psd_slope(x) = psd_slope(
+        x;
         fs = fs,
         flim = flim,
         db = db,
@@ -163,30 +162,21 @@ function psd_slope(
         gw = gw,
         demean = demean,
     )
-    lf = psd_data.lf
+
+    # first channel/epoch also determines the output data
+    psd_data = _psd_slope(@view(s[1, :, 1]))
+    # pre-allocate outputs
+    lf = zeros(ch_n, length(psd_data.lf), ep_n)
+    ls = zeros(ch_n, ep_n)
+    lf[1, :, 1] = psd_data.lf
+    ls[1, 1] = psd_data.ls
     f = psd_data.f
 
-    # pre-allocate outputs
-    lf = zeros(ch_n, length(lf), ep_n)
-    ls = zeros(ch_n, ep_n)
-
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+    # calculate over channel and epochs (skipping the one already done)
+    idxs = CartesianIndices((ch_n, ep_n))[2:end]
+    @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        psd_slope_data = psd_slope(
-            @view(s[ch_idx, :, ep_idx]),
-            fs = fs,
-            flim = flim,
-            db = db,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            gw = gw,
-            demean = demean,
-        )
+        psd_slope_data = _psd_slope(@view(s[ch_idx, :, ep_idx]))
         lf[ch_idx, :, ep_idx] = psd_slope_data.lf
         ls[ch_idx, ep_idx] = psd_slope_data.ls
     end
@@ -215,10 +205,10 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
@@ -238,7 +228,7 @@ function psd_slope(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,

@@ -19,8 +19,8 @@ Calculate peak frequency within a frequency band for a 1-D signal vector.
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `demean::Bool=true`: subtract DC component before estimating PSD
@@ -36,7 +36,7 @@ function peak_frq(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -86,8 +86,8 @@ Calculate peak frequency within a frequency band for a 3-D signal array.
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `demean::Bool=true`: subtract DC component before estimating PSD
@@ -103,7 +103,7 @@ function peak_frq(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -155,10 +155,10 @@ Calculate peak frequency within a frequency band for a NEURO object.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
@@ -172,7 +172,7 @@ function peak_frq(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -215,8 +215,8 @@ Calculate amplitude at the peak frequency within a frequency band.
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `demean::Bool=true`: subtract DC component before estimating PSD
@@ -232,7 +232,7 @@ function peak_amp(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -280,8 +280,8 @@ Calculate amplitude at peak frequency within a frequency band for a 3-D signal a
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `demean::Bool=true`: subtract DC component before estimating PSD
@@ -297,7 +297,7 @@ function peak_amp(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -349,10 +349,10 @@ Calculate amplitude at peak frequency within a frequency band for a NEURO object
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
@@ -366,7 +366,7 @@ function peak_amp(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -409,8 +409,8 @@ Calculate power at the peak frequency within a frequency band.
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `demean::Bool=true`: subtract DC component before estimating PSD
@@ -426,7 +426,7 @@ function peak_pow(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -473,8 +473,8 @@ Calculate power at peak frequency within a frequency band for a 3-D signal array
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=fs`: window length in samples (default = 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `demean::Bool=true`: subtract DC component before estimating PSD
@@ -490,7 +490,7 @@ function peak_pow(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = fs,
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
@@ -542,10 +542,10 @@ Calculate power at peak frequency within a frequency band for a NEURO object.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
@@ -559,7 +559,7 @@ function peak_pow(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,

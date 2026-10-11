@@ -76,28 +76,30 @@ function cph(
     # number of epochs
     ep_n = size(s, 3)
 
-    # dry run to determine the frequency vector length - uses the first
-    # channel pair
-    # f is independent of signal values.
-    cph_data = cph(@view(s[1, :, 1]), @view(s[1, :, 1]); fs = fs)
-    f = cph_data.f
+    _cph(x1, x2) = cph(x1,
+                       x2; 
+                       fs = fs)
 
-    # pre-allocate
+    # first channel/epoch also determines the output data
+    cph_data = _cph(@view(s[1, :, 1]), @view(s[1, :, 1]))
+    f = cph_data.f
+    # pre-allocate output
     ph = zeros(ch_n, ch_n, length(f), ep_n)
+    ph[1, 1, :, 1] = cph_data.ph
 
     # initialize progress bar
     progbar =
         Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+    # calculate over channel and epochs (skipping the one already done)
+    idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]
+    @inbounds Threads.@threads :static for idx in idxs
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
             # @view avoids copying the (samples,) slices per thread.
-            ph[ch_idx1, ch_idx2, :, ep_idx], _ = cph(
+            ph[ch_idx1, ch_idx2, :, ep_idx], _ = _cph(
                 @view(s[ch_idx1, :, ep_idx]),
-                @view(s[ch_idx2, :, ep_idx]),
-                fs = fs,
+                @view(s[ch_idx2, :, ep_idx])
             )
         end
         progress_bar && next!(progbar)
@@ -152,16 +154,20 @@ function cph(
     # number of epochs
     ep_n = size(s1, 3)
 
-    # dry run to determine the frequency vector length - uses the first channel pair
-    # f is independent of signal values.
-    cph_data = cph(@view(s1[1, :, 1]), @view(s2[1, :, 1]); fs = fs)
-    f = cph_data.f
+    _cph(x1, x2) = cph(x1,
+                       x2; 
+                       fs = fs)
 
+    # first channel/epoch also determines the frequency vector
+    cph_data = _cph(@view(s1[1, :, 1],), @view(s2[1, :, 1]))
+    f = cph_data.f
     # pre-allocate output
     ph = zeros(ch_n, length(f), ep_n)
+    ph[1, :, 1] = cph_data.ph
 
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+    # calculate over channel and epochs (skipping the one already done)
+    idxs = CartesianIndices((ch_n, ep_n))[2:end]
+    @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
         ph[ch_idx, :, ep_idx] = cph(
             @view(s1[ch_idx, :, ep_idx]),

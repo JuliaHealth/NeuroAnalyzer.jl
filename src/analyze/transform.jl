@@ -104,26 +104,29 @@ function ftransform(
     # number of epochs
     ep_n = size(s, 3)
 
-    # dry run to determine output length (depends on pad and nf)
-    fft_tmp = ftransform(
-        @view(s[1, :, 1]);
+    _ftransform(x) = ftransform(
+        x;
         pad = pad,
         db = db,
         nf = nf,
     )
-    c = zeros(ComplexF64, ch_n, length(fft_tmp.c), ep_n)
-    a = zeros(Float64, ch_n, length(fft_tmp.a), ep_n)
-    p = zeros(Float64, ch_n, length(fft_tmp.p), ep_n)
-    ph = zeros(Float64, ch_n, length(fft_tmp.ph), ep_n)
 
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+    # first channel/epoch also determines the output data
+    fft_tmp = _ftransform(@view(s[1, :, 1]))
+    c = zeros(ComplexF64, ch_n, length(fft_tmp.c), ep_n)
+    c[1, :, 1] = fft_tmp.c
+    a = zeros(Float64, ch_n, length(fft_tmp.a), ep_n)
+    a[1, :, 1] = fft_tmp.a
+    p = zeros(Float64, ch_n, length(fft_tmp.p), ep_n)
+    p[1, :, 1] = fft_tmp.p
+    ph = zeros(Float64, ch_n, length(fft_tmp.ph), ep_n)
+    ph[1, :, 1] = fft_tmp.ph
+
+    # calculate over channel and epochs (skipping the one already done)
+    idxs = CartesianIndices((ch_n, ep_n))[2:end]
+    @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        ftransform_data = ftransform(
-            @view(s[ch_idx, :, ep_idx]),
-            pad = pad,
-            db = db,
-            nf = nf,
-        )
+        ftransform_data = _ftransform(@view(s[ch_idx, :, ep_idx]))
         c[ch_idx, :, ep_idx] = ftransform_data.c
         a[ch_idx, :, ep_idx] = ftransform_data.a
         p[ch_idx, :, ep_idx] = ftransform_data.p

@@ -402,11 +402,13 @@ Calculate power spectrum (in dB) envelope for a NEURO object.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window length in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
@@ -423,9 +425,10 @@ function penv(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
     demean::Bool = true,
 )::@NamedTuple{
     e::Array{Float64, 3},
@@ -445,9 +448,8 @@ function penv(
     # sampling rate
     fs = sr(obj)
 
-    # dry run to determine the frequency vector length
-    psd_data = psd(
-        @view(obj.data[ch[1], :, 1]);
+    _psd(x) = psd(
+        x;
         fs = fs,
         method = method,
         nt = nt,
@@ -455,28 +457,22 @@ function penv(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
+        gw = gw,
         demean = demean,
     )
-    f = psd_data.f
 
+    # first channel/epoch also determines the output data
+    psd_data = _psd(@view(obj.data[ch[1], :, 1]))
+    f = psd_data.f
     # pre-allocate output
     e = zeros(ch_n, length(f), ep_n)
+    e[1, :, 1] = env_up(psd_data.p, f, d = d)
 
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+    # calculate over channel and epochs (skipping the one already done)
+    idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]
+    @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        psd_data = psd(
-            @view(obj.data[ch[ch_idx], :, ep_idx]),
-            fs = fs,
-            db = true,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            demean = demean,
-        )
+        psd_data = _psd(@view(obj.data[ch[ch_idx], :, ep_idx]))
         e[ch_idx, :, ep_idx] = env_up(psd_data.p, f, d = d)
     end
 
@@ -500,11 +496,13 @@ Calculate power spectrum (in dB) envelope (mean and 95% CI) for a NEURO object.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window length in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
@@ -524,9 +522,10 @@ function penv_mean(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
     demean::Bool = true,
 )::@NamedTuple{
     em::Matrix{Float64},
@@ -545,8 +544,17 @@ function penv_mean(
     end
 
     penv_data = penv(
-        obj; ch = ch, d = d, method = method, nt = nt, wlen = wlen,
-        woverlap = woverlap, w = w, ncyc = ncyc, demean = demean,
+        obj;
+        ch = ch,
+        d = d,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+        demean = demean,
     )
     pw = penv_data.e
     f = penv_data.f
@@ -631,11 +639,13 @@ Calculate power spectrum (in dB) envelope (median and 95% CI) for a NEURO object
     - `:mt`: multi-tapered periodogram
     - `:stft`: short-time Fourier transform
     - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window length in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns
@@ -655,9 +665,10 @@ function penv_median(
     method::Symbol = :welch,
     nt::Int64 = 7,
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
     demean::Bool = true,
 )::@NamedTuple{
     em::Matrix{Float64},
@@ -685,6 +696,7 @@ function penv_median(
         woverlap = woverlap,
         w = w,
         ncyc = ncyc,
+        gw = gw,
         demean = demean,
     )
     pw = penv_data.e
@@ -774,10 +786,10 @@ Calculate spectral envelope (dominant frequency over time) for a NEURO object.
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window length in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -800,7 +812,7 @@ function senv(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     wt::T = wavelet(Morlet(2π); β = 2),
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
 )::@NamedTuple{
     e::Array{Float64, 3},
@@ -988,10 +1000,10 @@ Calculate spectral envelope (mean and 95% CI) for a NEURO object.
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window length in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -1017,7 +1029,7 @@ function senv_mean(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     wt::T = wavelet(Morlet(2π); β = 2),
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
 )::@NamedTuple{
     em::Matrix{Float64},
@@ -1143,10 +1155,10 @@ Calculate spectral envelope (median and 95% CI) for a NEURO object.
 - `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles; for a tuple, cycles vary per frequency: `ncyc = linspace(ncyc[1], ncyc[2], nfrq)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `wlen::Int64=sr(obj)`: window length in samples (default is 1 second)
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window length in samples
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window length in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 
 # Returns
@@ -1172,7 +1184,7 @@ function senv_median(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     wt::T = wavelet(Morlet(2π); β = 2),
     wlen::Int64 = sr(obj),
-    woverlap::Int64 = round(Int64, wlen * 0.9),
+    woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
 )::@NamedTuple{
     em::Matrix{Float64},
