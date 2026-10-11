@@ -179,6 +179,10 @@ Re-reference EEG channels to a common electrode in-place. Only EEG-type channels
 # Returns
 
 - `Nothing`
+
+# Notes
+
+- Reference channels that are EEG channels are re-referenced too; with a single reference electrode that channel becomes flat (zero).
 """
 function reference_ce!(
     obj::NeuroAnalyzer.NEURO;
@@ -332,6 +336,11 @@ Re-reference EEG channels to the common average reference in-place. Only EEG-typ
 # Returns
 
 - `Nothing`
+
+# Notes
+
+- Weighted reference: `Σ wᵢxᵢ / Σ wᵢ` with `wᵢ = 1/dᵢ`; with `average=false` this is multiplied by the number of reference channels (weighted analogue of the sum).
+- With `weighted=true` the current channel (distance 0) and co-located channels always get weight 0.
 """
 function reference_avg!(
     obj::NeuroAnalyzer.NEURO;
@@ -469,6 +478,10 @@ Re-reference EEG channels to auricular electrodes in-place. Only EEG-type channe
 # Returns
 
 - `Nothing`
+
+# Notes
+
+- For `:i`/`:c`, midline channels and channels not classified as left/right use the linked reference (a warning lists the unclassified ones).
 """
 function reference_a!(
     obj::NeuroAnalyzer.NEURO;
@@ -528,6 +541,10 @@ Re-reference EEG channels to mastoid electrodes in-place. Only EEG-type channels
 # Returns
 
 - `Nothing`
+
+# Notes
+
+- For `:i`/`:c`, midline channels and channels not classified as left/right use the linked reference (a warning lists the unclassified ones).
 """
 function reference_m!(
     obj::NeuroAnalyzer.NEURO;
@@ -619,6 +636,7 @@ Re-reference EEG channels using the planar (2-D Euclidean) Laplacian. Only EEG-t
 - `med::Bool=false`: use median instead of mean (weighted median when `weighted=true`)
 
 # Returns
+
 - `NeuroAnalyzer.NEURO`: new re-referenced object
 """
 function reference_plap(
@@ -854,7 +872,16 @@ Re-reference EEG channels using a custom montage in-place.
 
 # Notes
 
-See `reference_custom`.
+- `"Ch1-Ch2"` → output = amplitude(Ch1) − amplitude(Ch2).
+- A montage channel is marked bad if any of its source channels was marked bad.
+- Montage channels have no locations; locations of the replaced EEG channels are removed (TODO).
+
+Examples of montages:
+
+- bipolar transverse: ["Fp2-Fp1", "F8-Fp2", "F8-F4", "F4-Fz", "Fz-F3", "F3-F7", "Fp1-F7", "T4-C4", "C4-Cz", "Cz-C3", "C3-T3", "T6-P4", "P4-Pz", "Pz-P3", "P3-T5", "O2-O1"], "transverse-BIP"
+- bipolar longitudinal: ["Fz-Cz", "Cz-Pz", "Pz-Oz", "Fp1-F7", "Fp1-F3", "F7-T7", "F7-T3", "T7-P7", "T7-T5", "T3-P7", "T3-T5", "P7-O1", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "F8-T8", "F8-T4", "T8-P8", "T8-T6", "T4-P8", "T4-T6", "T6-O2", "P8-O2", "Fp2-F4", "F4-C4", "C4-P4", "P4-O2"], "longitudinal-BIP"
+- bipolar longitudinal: ["Fz", "Cz", "Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], "longitudinal-BIP"
+- bipolar longitudinal: ["FPz-Fz", "Fz-Cz", "Cz-Pz", "Pz-Oz", "Fp1-F7", "Fp1-F3", "F7-T7", "F7-T3", "T7-P7", "T7-T5", "T3-P7", "T3-T5", "P7-O1", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "F8-T8", "F8-T4", "T8-P8", "T8-T6", "T4-P8", "T4-T6", "T6-O2", "P8-O2", "Fp2-F4", "F4-C4", "C4-P4", "P4-O2"], "longitudinal-BIP"
 """
 function reference_custom!(
     obj::NeuroAnalyzer.NEURO;
