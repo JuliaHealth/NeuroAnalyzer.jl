@@ -74,8 +74,8 @@ function plot_psd(
         p[f1:f2];
         linewidth = 2,
         color = :black,
-    )
-
+    
+)
     return fig
 end
 
@@ -331,22 +331,26 @@ end
 
 Plot a topographical map of Power Spectral Density (PSD) across channel locations.
 
+On GLMakie, left-clicking a PSD opens a full plot of that channel in a new window.
+
 # Arguments
 
 - `locs::DataFrame`: channel location data
 - `f::Vector{Float64}`: vector of frequency values in Hz
 - `p::Matrix{Float64}`: matrix of power spectral density values, shape (channels, frequencies)
-- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits for the plot
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plot
+- `xlabel::String=""`: x-axis label (full plot opened on click)
+- `ylabel::String=""`: y-axis label (full plot opened on click)
 - `title::String=""`: plot title
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: if `true`, draw head outline
+- `border::Bool=true`: if `true`, draw a border around each PSD
+- `pclip::Real=0.99`: upper y limit shared by all channels, as a quantile of all plotted power values; larger values are clamped (use `1.0` for no clipping)
 
 # Returns
 
-- `GLMakie.Figure`: the plotted figure
+- `Makie.Figure`: the plotted figure
 """
 function plot_psd_topo(
     locs::DataFrame,
@@ -380,20 +384,20 @@ function plot_psd_topo(
     # plot parameters
     ch_n = size(p, 1)
     if ch_n <= 64
-        plot_size   = (1000, 1000)
+        plot_size = (1000, 1000)
         marker_size = (150, 75)
-        xl          = 1.2
-        yl          = 1.2
+        xl = 1.2
+        yl = 1.2
     elseif ch_n <= 100
-        plot_size   = (1200, 1200)
+        plot_size = (1200, 1200)
         marker_size = (110, 55)
-        xl          = 1.5
-        yl          = 1.5
+        xl = 1.5
+        yl = 1.5
     else
-        plot_size   = (1400, 1400)
+        plot_size = (1400, 1400)
         marker_size = (90, 45)
-        xl          = 1.5
-        yl          = 1.5
+        xl = 1.5
+        yl = 1.5
     end
 
     # get locations
@@ -410,7 +414,7 @@ function plot_psd_topo(
     end
 
     # prepare PSD plots
-    fig_vec      = GLMakie.Figure[]
+    fig_vec = GLMakie.Figure[]
     fig_full_vec = GLMakie.Figure[]
     for idx in axes(p, 1)
         fig_mini = GLMakie.Figure(; size = marker_size, figure_padding = 0)
@@ -472,8 +476,9 @@ function plot_psd_topo(
             loc_x[idx],
             loc_y[idx];
             marker = pp,
-            markersize = marker_size,
-            markerspace = :pixel,
+            markersize = (0.3, 0.15), # data units; matches your loc_x_range/loc_y_range
+            markerspace = :data,
+            # markerspace = :pixel,
         )
     end
 
@@ -770,10 +775,10 @@ function plot_psd(
             xlabel = xlabel,
             ylabel = ylabel,
             title  = title,
-            flim   = flim,
-            frq    = frq,
-            cart   = cart,
-            head   = head,
+            flim = flim,
+            frq = frq,
+            cart = cart,
+            head = head,
         )
     end
 

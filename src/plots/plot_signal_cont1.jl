@@ -177,13 +177,13 @@ function plot_cont(
     # create axis with customizable properties
     ax1 = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = "",
-        ylabel             = yl,
-        title              = tt,
-        xticks             = LinearTicks(10),
+        xlabel = "",
+        ylabel = yl,
+        title = tt,
+        xticks = LinearTicks(10),
         xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
-        yticks             = (1:ch_n, clabels),
+        xminorticks = IntervalsBetween(10),
+        yticks = (1:ch_n, clabels),
         # TO DO: yticklabelcolor = ytc
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
