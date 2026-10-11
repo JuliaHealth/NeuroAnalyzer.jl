@@ -194,7 +194,7 @@ function plot_psd(
 
         # draw averaged channels
         if avg
-            s = mean(p[f1:f2]; dims = 1)[:]
+            s = mean(p[:, f1:f2]; dims = 1)[:]
             GLMakie.lines!(ax, f[f1:f2], s; linewidth = 4, color = :black)
         end
 
