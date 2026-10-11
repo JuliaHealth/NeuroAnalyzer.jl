@@ -205,7 +205,7 @@ function ntapers(
 
     # epoch duration in seconds
     n = epoch_len(obj) / sr(obj)
-    nt = round(Int64, df * n) - 1
+    nt = floor(Int64, df * n) - 1
 
     # guard: the formula can yield 0 or negative for very coarse resolution
     return max(nt, 1)
