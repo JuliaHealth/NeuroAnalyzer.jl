@@ -1,11 +1,11 @@
-export plot_phsd
-export plot_phsd_3d
-export plot_phsd_topo
+export plot_phs
+export plot_phs_3d
+export plot_phs_topo
 
 """
-    plot_phsd(f, ph; <keyword arguments>)
+    plot_phs(f, ph; <keyword arguments>)
 
-Plot PHSD (phase spectral density).
+Plot phase spectrum.
 
 # Arguments
 
@@ -21,7 +21,7 @@ Plot PHSD (phase spectral density).
 
 - `GLMakie.Figure`: the plotted figure
 """
-function plot_phsd(
+function plot_phs(
     f::Vector{Float64},
     ph::Vector{Float64};
     flim::Tuple{Real, Real} = (f[1], f[end]),
@@ -48,7 +48,7 @@ function plot_phsd(
     f2 = vsearch(flim[2], f)
 
     # prepare plot
-    GLMakie.activate!(; title = "plot_phsd()")
+    GLMakie.activate!(; title = "plot_phs()")
     plot_size = (900, 450)
     fig = GLMakie.Figure(; size = plot_size)
 
@@ -58,8 +58,9 @@ function plot_phsd(
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
+        xticks = LinearTicks(15),
         xminorticksvisible = true,
-        xminorticks = IntervalsBetween(5),
+        xminorticks = IntervalsBetween(10),
         xscale = frq === :lin ? identity : log,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0.1, 0.1),
@@ -81,9 +82,9 @@ function plot_phsd(
 end
 
 """
-    plot_phsd(f, ph; <keyword arguments>)
+    plot_phs(f, ph; <keyword arguments>)
 
-Plot multi-channel Phase Spectral Density (PHSD) with customizable visualization options.
+Plot multi-channel phase spectrum with customizable visualization options.
 
 # Arguments
 
@@ -96,15 +97,15 @@ Plot multi-channel Phase Spectral Density (PHSD) with customizable visualization
 - `title::String=""`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
-- `avg::Bool=false`: if `true`, plot averaged PHSD
-- `ci95::Bool=false`: if `true`, plot mean and ±95% CI of averaged PHSDs
+- `avg::Bool=false`: if `true`, plot averaged phs
+- `ci95::Bool=false`: if `true`, plot mean and ±95% CI of averaged phss
 - `leg::Bool=true`: if `true`, add legend with channel labels
 
 # Returns
 
 - `GLMakie.Figure`: the plotted figure
 """
-function plot_phsd(
+function plot_phs(
     f::Vector{Float64},
     ph::Matrix{Float64};
     clabels::Vector{String} = string.(1:size(ph, 1)),
@@ -145,22 +146,22 @@ function plot_phsd(
     end
 
     # prepare plot
-    GLMakie.activate!(; title = "plot_phsd()")
+    GLMakie.activate!(; title = "plot_phs()")
     plot_size = (900, 450)
     fig = GLMakie.Figure(; size = plot_size)
 
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = xlabel,
-        ylabel             = ylabel,
-        title              = title,
-        xticks             = LinearTicks(15),
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title = title,
+        xticks = LinearTicks(15),
         xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
-        xscale             = frq === :lin ? identity : log,
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0.1, 0.1),
+        xminorticks = IntervalsBetween(10),
+        xscale = frq === :lin ? identity : log,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0.1, 0.1),
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.autolimits!(ax)
@@ -209,9 +210,9 @@ function plot_phsd(
 end
 
 """
-    plot_phsd_3d(f, ph; <keyword arguments>)
+    plot_phs_3d(f, ph; <keyword arguments>)
 
-Plot a 3D representation of multi-channel Phase Spectral Density (PHSD).
+Plot a 3D representation of multi-channel phase spectrum.
 
 # Arguments
 
@@ -234,7 +235,7 @@ Plot a 3D representation of multi-channel Phase Spectral Density (PHSD).
 
 - `GLMakie.Figure`: the plotted figure
 """
-function plot_phsd_3d(
+function plot_phs_3d(
     f::Vector{Float64},
     ph::Matrix{Float64};
     clabels::Vector{String} = string.(1:size(ph, 1)),
@@ -288,9 +289,9 @@ function plot_phsd_3d(
         zlabel = zlabel,
         title = title,
         xticks = LinearTicks(15),
-        # xminorticksvisible=true,
-        # xminorticks=IntervalsBetween(10),
-        # xscale=frq === :lin ? identity : log,
+        #xminorticksvisible=true,
+        #xminorticks=IntervalsBetween(10),
+        #xscale=frq === :lin ? identity : log,
         yticks = (1:yts:ch_n, clabels[1:yts:end]),
         zoommode = :disable,
         xtranslationlock = true,
@@ -330,9 +331,9 @@ function plot_phsd_3d(
 end
 
 """
-    plot_phsd_topo(locs, f, ph; <keyword arguments>)
+    plot_phs_topo(locs, f, ph; <keyword arguments>)
 
-Plot a topographical map of Phase Spectral Density (PHSD) across channel locations.
+Plot a topographical map of phase spectrum across channel locations.
 
 # Arguments
 
@@ -351,7 +352,7 @@ Plot a topographical map of Phase Spectral Density (PHSD) across channel locatio
 
 - `GLMakie.Figure`: the plotted figure
 """
-function plot_phsd_topo(
+function plot_phs_topo(
     locs::DataFrame,
     f::Vector{Float64},
     ph::Matrix{Float64};
@@ -412,7 +413,7 @@ function plot_phsd_topo(
         end
     end
 
-    # prepare PHSD plots
+    # prepare phs plots
     fig_vec      = GLMakie.Figure[]
     fig_full_vec = GLMakie.Figure[]
     for idx in axes(ph, 1)
@@ -444,7 +445,7 @@ function plot_phsd_topo(
     end
 
     # prepare plot
-    GLMakie.activate!(; title = "plot_phsd_topo()")
+    GLMakie.activate!(; title = "plot_phs_topo()")
     fig = GLMakie.Figure(; size = plot_size, figure_padding = 0)
 
     # create axis with customizable properties
@@ -480,7 +481,7 @@ function plot_phsd_topo(
         )
     end
 
-    # PHSD positions
+    # phs positions
     loc_x_range = [(loc_x[i] - 0.15, loc_x[i] + 0.15) for i in eachindex(loc_x)]
     loc_y_range = [(loc_y[i] - 0.1, loc_y[i] + 0.1) for i in eachindex(loc_y)]
 
@@ -507,9 +508,9 @@ function plot_phsd_topo(
 end
 
 """
-    plot_phsd(obj; <keyword arguments>)
+    plot_phs(obj; <keyword arguments>)
 
-Plot Phase Spectral Density (PHSD) using various estimation methods with customizable visualization.
+Plot phase spectrum using various estimation methods with customizable visualization.
 
 # Arguments
 
@@ -522,7 +523,7 @@ Plot Phase Spectral Density (PHSD) using various estimation methods with customi
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is Phase [rad]
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]
-- `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
+- `title::String="default"`: plot title, default is phs [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `type::Symbol=:normal`: plot type:
     - `:normal` single channel or butterfly for multichannel
@@ -539,7 +540,7 @@ Plot Phase Spectral Density (PHSD) using various estimation methods with customi
 
 - `GLMakie.Figure`: the plotted figure
 """
-function plot_phsd(
+function plot_phs(
     obj::NeuroAnalyzer.NEURO;
     seg::Tuple{Real, Real} = (0, 10),
     ep::Int64 = 0,
@@ -590,43 +591,44 @@ function plot_phsd(
     # channel labels
     clabels = labels(obj)[ch]
 
-    # frequency limits
+    # calculate phs
     fs = sr(obj)
-    _check_tuple(flim, (0, sr(obj) / 2), "flim")
+    phs_data = phs(signal; fs = fs)
+    ph, f = phs_data.ph, phs_data.f
 
-    # calculate PHSD
-    phsd_data = phsd(signal; fs = fs)
-    ph, f = phsd_data.ph, phsd_data.f
+    # frequency limits
+    flim[2] > f[end] && (flim = (flim[1], f[end]))
+    _check_tuple(flim, (f[1], f[end]), "flim")
 
     # factor out repeated title suffix pattern
     ep_suffix = ep != 0 ? "\n[epoch: $ep]" : "\n[time window: $t_s1:$t_s2]"
-    title == "default" && (title = "PHSD$ep_suffix")
+    title == "default" && (title = "Phase spectrum$ep_suffix")
 
     if type === :normal
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Phase [rad]")
         if length(ch) == 1
-            fig = plot_phsd(
+            fig = plot_phs(
                 f, ph;
                 xlabel = xlabel,
                 ylabel = ylabel,
-                title  = title,
-                flim   = flim,
-                frq    = frq,
+                title = title,
+                flim = flim,
+                frq = frq,
             )
         else
-            fig = plot_phsd(
+            fig = plot_phs(
                 f, ph;
-                xlabel  = xlabel,
-                ylabel  = "",
+                xlabel = xlabel,
+                ylabel = "",
                 clabels = clabels,
-                title   = title,
-                flim    = flim,
-                frq     = frq,
-                avg     = avg,
-                ci95    = ci95,
-                leg     = leg,
-                mono    = mono,
+                title = title,
+                flim = flim,
+                frq = frq,
+                avg = avg,
+                ci95 = ci95,
+                leg = leg,
+                mono = mono,
             )
         end
 
@@ -638,16 +640,16 @@ function plot_phsd(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
-        fig = plot_phsd_3d(
+        fig = plot_phs_3d(
             f, ph;
             clabels = clabels,
-            xlabel  = xlabel,
-            ylabel  = ylabel,
-            zlabel  = zlabel,
-            title   = title,
-            flim    = flim,
-            frq     = frq,
-            mono    = mono,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            zlabel = zlabel,
+            title = title,
+            flim = flim,
+            frq = frq,
+            mono = mono,
             variant = type === :w3d ? :w : :s,
         )
 
@@ -665,15 +667,15 @@ function plot_phsd(
         chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         ndims(ph) == 1 && (ph = reshape(ph, 1, length(ph)))
-        fig = plot_phsd_topo(
+        fig = plot_phs_topo(
             locs, f, ph;
             xlabel = xlabel,
             ylabel = ylabel,
-            title  = title,
-            flim   = flim,
-            frq    = frq,
-            cart   = cart,
-            head   = head,
+            title = title,
+            flim = flim,
+            frq = frq,
+            cart = cart,
+            head = head,
         )
     end
 

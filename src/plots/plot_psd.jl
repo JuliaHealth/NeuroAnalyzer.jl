@@ -150,15 +150,15 @@ function plot_psd(
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = xlabel,
-        ylabel             = ylabel,
-        title              = title,
-        xticks             = LinearTicks(15),
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title = title,
+        xticks = LinearTicks(15),
         xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
-        xscale             = frq === :lin ? identity : log,
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0.1, 0.1),
+        xminorticks = IntervalsBetween(10),
+        xscale = frq === :lin ? identity : log,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0.1, 0.1),
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.autolimits!(ax)
@@ -416,10 +416,10 @@ function plot_psd_topo(
         fig_mini = GLMakie.Figure(; size = marker_size, figure_padding = 0)
         ax = GLMakie.Axis(
             fig_mini[1, 1];
-            xlabel           = "",
-            ylabel           = "",
-            title            = locs[idx, :label],
-            xscale           = frq === :lin ? identity : log,
+            xlabel = "",
+            ylabel = "",
+            title = locs[idx, :label],
+            xscale = frq === :lin ? identity : log,
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0.1, 0.1),
         )
@@ -433,9 +433,9 @@ function plot_psd_topo(
             f, p[idx, f1:f2];
             xlabel = xlabel,
             ylabel = ylabel,
-            title  = locs[idx, :label] * ": " * title,
-            flim   = flim,
-            frq    = frq,
+            title = locs[idx, :label] * ": " * title,
+            flim = flim,
+            frq = frq,
         )
         push!(fig_full_vec, fig_full)
     end
@@ -652,7 +652,6 @@ function plot_psd(
     # frequency limits
     fs = sr(obj)
     ref !== :abs && (flim = band_frq(obj; band = ref))
-    _check_tuple(flim, (0, sr(obj) / 2), "flim")
 
     # factor out repeated title fragments
     _method_label = Dict(
@@ -690,6 +689,8 @@ function plot_psd(
     else
         p, f = psd_rel(signal; flim = flim, _common_kwargs...)
     end
+
+    _check_tuple(flim, (f[1], f[end]), "flim")
 
     title == "default" && (title = default_title)
 

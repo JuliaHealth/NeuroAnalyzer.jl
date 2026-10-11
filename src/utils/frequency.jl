@@ -87,15 +87,15 @@ function f2t(f::Real)::Float64
 end
 
 """
-    freqs(t; nf)
+    freqs(t; <keyword arguments>)
 
 Return the frequency vector and Nyquist frequency for a time vector.
 
-The sampling rate is inferred as `1 / (t[2] - t[1])`.
+The sampling rate is inferred from the mean sampling interval, `(t[end] - t[1]) / (length(t) - 1)`, and rounded to an integer.
 
 # Arguments
 
-- `t::AbstractVector, AbstractRange}`: time vector; must contain at least 2 elements
+- `t::AbstractVector`: uniformly sampled, increasing time vector in seconds; must contain at least 2 elements
 - `nf::Bool=false`: if `true`, return both negative and positive frequencies (via `fftfreq` + `fftshift`); if `false`, return positive frequencies only (via `rfftfreq`)
 
 # Returns
@@ -103,27 +103,18 @@ The sampling rate is inferred as `1 / (t[2] - t[1])`.
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
 """
-function freqs(
-    t::Union{AbstractVector, AbstractRange};
-    nf::Bool = false,
-)::Tuple{Vector{Float64}, Float64}
+function freqs(t::AbstractVector; nf::Bool = false)::Tuple{Vector{Float64}, Float64}
     # validate
-    length(t) >= 2 || throw(ArgumentError("t must contain at least 2 elements."))
+    n = length(t)
+    n >= 2 || throw(ArgumentError("t must contain at least 2 elements."))
 
-    # materialize ranges so indexing is always valid
-    t = collect(t)
-
-    # infer sampling rate from the interval between the first two samples
-    dt = t[2] - t[1]
+    # mean sampling interval (more robust to floating-point steps than t[2] - t[1])
+    dt = (t[end] - t[1]) / (n - 1)
+    dt > 0 || throw(ArgumentError("t must be increasing."))
     fs = round(Int64, 1 / dt)
-    # Nyquist frequency
-    nqf = fs / 2
-    # frequency vector
-    hz =
-        nf ? fftshift(round.(Vector(fftfreq(length(t), fs)); digits = 3)) :
-        round.(Vector(rfftfreq(length(t), fs)); digits = 3)
+    fs >= 1 || throw(ArgumentError("Sampling rate inferred from t is < 1 Hz."))
 
-    return hz, nqf
+    return freqs(n, fs; nf = nf)
 end
 
 """
@@ -147,17 +138,7 @@ function freqs(
     fs::Int64;
     nf::Bool = false,
 )::Tuple{Vector{Float64}, Float64}
-    # validate
-    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
-
-    # Nyquist frequency
-    nqf = fs / 2
-    # frequency vector
-    hz =
-        nf ? fftshift(round.(Vector(fftfreq(length(s), fs)); digits = 3)) :
-        round.(Vector(rfftfreq(length(s), fs)); digits = 3)
-
-    return hz, nqf
+    return freqs(length(s), fs; nf = nf)
 end
 
 """
@@ -175,6 +156,10 @@ Return the frequency vector and Nyquist frequency for a signal of `n` samples.
 
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
+
+# Notes
+
+Bins are at `k × fs / n`. For odd `n` there is no bin at the Nyquist frequency; the highest positive bin is `fs/2 − fs/(2n)`.
 """
 function freqs(
     n::Int64,
@@ -182,6 +167,7 @@ function freqs(
     nf::Bool = false,
 )::Tuple{Vector{Float64}, Float64}
     # validate
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     # Nyquist frequency
@@ -199,7 +185,7 @@ end
 
 Return the frequency vector and Nyquist frequency for a NEURO object.
 
-Uses the first channel and first epoch of `obj` to infer signal length, and reads the sampling rate via `sr(obj)`.
+Uses the epoch length and sampling rate of `obj`.
 
 # Arguments
 
@@ -211,9 +197,6 @@ Uses the first channel and first epoch of `obj` to infer signal length, and read
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
 """
-function freqs(
-    obj::NeuroAnalyzer.NEURO;
-    nf::Bool = false,
-)::Tuple{Vector{Float64}, Float64}
-    return freqs(obj.data[1, :, 1], sr(obj); nf = nf)
+function freqs(obj::NeuroAnalyzer.NEURO; nf::Bool = false)::Tuple{Vector{Float64}, Float64}
+    return freqs(epoch_len(obj), sr(obj); nf = nf)
 end

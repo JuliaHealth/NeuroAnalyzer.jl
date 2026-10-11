@@ -397,18 +397,18 @@ s_avg, s_l, s_u = NeuroAnalyzer.bootstrap_ci(s; cl = 0.95)
 p = plot_ci(s_avg, s_l, s_u, t)
 @test p isa GLMakie.Figure
 
-@info "Test: plot_phsd()"
-p = plot_phsd(e10; ep = 1, ch = "Fp1")
+@info "Test: plot_phs()"
+p = plot_phs(e10; ep = 1, ch = "Fp1")
 @test p isa GLMakie.Figure
-p = plot_phsd(e10; ep = 1, ch = "eeg", avg = true)
+p = plot_phs(e10; ep = 1, ch = "eeg", avg = true)
 @test p isa GLMakie.Figure
-p = plot_phsd(e10; ep = 1, ch = "eeg", avg = false)
+p = plot_phs(e10; ep = 1, ch = "eeg", avg = false)
 @test p isa GLMakie.Figure
-p = plot_phsd(e10; ep = 1, ch = "eeg", ci95 = true)
+p = plot_phs(e10; ep = 1, ch = "eeg", ci95 = true)
 @test p isa GLMakie.Figure
-p = plot_phsd(e10; ep = 1, ch = "eeg", type = :w3d)
+p = plot_phs(e10; ep = 1, ch = "eeg", type = :w3d)
 @test p isa GLMakie.Figure
-p = plot_phsd(e10; ep = 1, ch = "eeg", type = :topo)
+p = plot_phs(e10; ep = 1, ch = "eeg", type = :topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_coherence()"

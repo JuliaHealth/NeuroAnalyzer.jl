@@ -977,8 +977,8 @@ pa = peak_amp(e10; ch = "all", flim = (8, 13))
 pp = peak_pow(e10; ch = "all", flim = (8, 13))
 @test size(pp) == (24, 10)
 
-@info "Test: phsd()"
-ph, f = phsd(e10; ch = "all")
+@info "Test: phs()"
+ph, f = phs(e10; ch = "all")
 @test size(ph) == (24, 1281, 10)
 @test length(f) == 1281
 
