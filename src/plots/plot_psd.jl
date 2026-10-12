@@ -345,8 +345,7 @@ On GLMakie, left-clicking a PSD opens a full plot of that channel in a new windo
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: if `true`, draw head outline
-- `border::Bool=true`: if `true`, draw a border around each PSD
-- `pclip::Real=0.99`: upper y limit shared by all channels, as a quantile of all plotted power values; larger values are clamped (use `1.0` for no clipping)
+- `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
@@ -363,6 +362,7 @@ function plot_psd_topo(
     frq::Symbol = :lin,
     cart::Bool = false,
     head::Bool = true,
+    gui::Bool = true,
 )::GLMakie.Figure
     # validate
     size(p, 2) == length(f) || throw(
@@ -381,23 +381,42 @@ function plot_psd_topo(
     f1 = vsearch(flim[1], f)
     f2 = vsearch(flim[2], f)
 
-    # plot parameters
+    # number of channels
     ch_n = size(p, 1)
+
+    # plot parameters
     if ch_n <= 64
-        plot_size = (1000, 1000)
-        marker_size = (150, 75)
         xl = 1.2
         yl = 1.2
     elseif ch_n <= 100
-        plot_size = (1200, 1200)
-        marker_size = (110, 55)
         xl = 1.5
         yl = 1.5
     else
-        plot_size = (1400, 1400)
-        marker_size = (90, 45)
         xl = 1.5
         yl = 1.5
+    end
+    if gui
+        if ch_n <= 64
+            plot_size = (1000, 1000)
+            marker_size = (150, 75)
+        elseif ch_n <= 100
+            plot_size = (1200, 1200)
+            marker_size = (110, 55)
+        else
+            plot_size = (1400, 1400)
+            marker_size = (90, 45)
+        end
+    else
+        if ch_n <= 64
+            plot_size = (500, 500)
+            marker_size = (70, 35)
+        elseif ch_n <= 100
+            plot_size = (700, 700)
+            marker_size = (60, 30)
+        else
+            plot_size = (900, 900)
+            marker_size = (70, 35)
+        end
     end
 
     # get locations
@@ -414,12 +433,13 @@ function plot_psd_topo(
     end
 
     # prepare PSD plots
-    fig_vec = GLMakie.Figure[]
-    fig_full_vec = GLMakie.Figure[]
+    pp_vec = GLMakie.Figure[]
+    pp_full_vec = GLMakie.Figure[]
     for idx in axes(p, 1)
-        fig_mini = GLMakie.Figure(; size = marker_size, figure_padding = 0)
+        pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
+        gl = GridLayout(pp[1, 1], alignmode = Outside(5))
         ax = GLMakie.Axis(
-            fig_mini[1, 1];
+            gl[1, 1];
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -428,12 +448,22 @@ function plot_psd_topo(
             yautolimitmargin = (0.1, 0.1),
         )
         hidedecorations!(ax)
-        GLMakie.autolimits!(ax)
         ax.titlesize = 8
-        GLMakie.lines!(ax, f, p[idx, f1:f2]; linewidth = 1, color = :black)
-        push!(fig_vec, fig_mini)
+        GLMakie.autolimits!(ax)
 
-        fig_full = plot_psd(
+        # plot PSD
+        GLMakie.lines!(ax, f, p[idx, f1:f2]; linewidth = 1, color = :black)
+
+        # draw black box around the entire figure
+        GLMakie.Box(pp[:, :], 
+            color = :transparent, 
+            strokecolor = :black, 
+            strokewidth = 1.5
+        )
+
+        push!(pp_vec, pp)
+
+        pp_full = plot_psd(
             f, p[idx, f1:f2];
             xlabel = xlabel,
             ylabel = ylabel,
@@ -441,7 +471,7 @@ function plot_psd_topo(
             flim = flim,
             frq = frq,
         )
-        push!(fig_full_vec, fig_full)
+        push!(pp_full_vec, pp_full)
     end
 
     # prepare plot
@@ -463,14 +493,14 @@ function plot_psd_topo(
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
     hidedecorations!(ax)
-    ax.titlesize = 18
+    ax.titlesize = gui ? 18 : 12
 
     # draw head outline
-    head && _draw_head_outline!(ax; lw = 3)
+    head && _draw_head_outline!(ax; lw = 2)
 
     for idx in axes(p, 1)
         io = IOBuffer()
-        show(io, MIME"image/png"(), fig_vec[idx])
+        show(io, MIME"image/png"(), pp_vec[idx])
         pp = FileIO.load(io)
         GLMakie.scatter!(
             loc_x[idx],
@@ -482,27 +512,32 @@ function plot_psd_topo(
         )
     end
 
-    # PSD positions
-    loc_x_range = [(loc_x[i] - 0.15, loc_x[i] + 0.15) for i in eachindex(loc_x)]
-    loc_y_range = [(loc_y[i] - 0.1, loc_y[i] + 0.1) for i in eachindex(loc_y)]
+    if gui
 
-    # mouse events
-    on(events(fig).mousebutton) do event
-        if event.button == Mouse.left
-            if event.action == Mouse.press
-                ax_x = mouseposition(ax)[1]
-                ax_y = mouseposition(ax)[2]
-                for idx in eachindex(loc_x)
-                    if ax_x >= loc_x_range[idx][1] &&
-                       ax_x <= loc_x_range[idx][2] &&
-                       ax_y >= loc_y_range[idx][1] &&
-                       ax_y <= loc_y_range[idx][2]
-                        display(GLMakie.Screen(), fig_full_vec[idx])
-                        break
+        # generate clickable areas
+        loc_x_range = [(loc_x[i] - 0.15, loc_x[i] + 0.15) for i in eachindex(loc_x)]
+        loc_y_range = [(loc_y[i] - 0.1, loc_y[i] + 0.1) for i in eachindex(loc_y)]
+
+        # mouse events
+        on(events(fig).mousebutton) do event
+            if event.button == Mouse.left
+                if event.action == Mouse.press
+                    ax_x = mouseposition(ax)[1]
+                    ax_y = mouseposition(ax)[2]
+                    for idx in eachindex(loc_x)
+                        if ax_x >= loc_x_range[idx][1] &&
+                           ax_x <= loc_x_range[idx][2] &&
+                           ax_y >= loc_y_range[idx][1] &&
+                           ax_y <= loc_y_range[idx][2]
+                            display(GLMakie.Screen(), pp_full_vec[idx])
+                            break
+                        end
                     end
                 end
             end
         end
+
+        wait(display(fig))
     end
 
     return fig
@@ -564,6 +599,7 @@ Plot Power Spectral Density (PSD) using various estimation methods with customiz
 - `leg::Bool=true`: if `true`, add legend with channel labels
 - `avg::Bool=false`: if `true`, plot averaged PSD across channels
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged PSDs
+- `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
@@ -597,6 +633,7 @@ function plot_psd(
     leg::Bool = true,
     avg::Bool = false,
     ci95::Bool = false,
+    gui::Bool=true,
 )::GLMakie.Figure
     # validate
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
@@ -779,6 +816,7 @@ function plot_psd(
             frq = frq,
             cart = cart,
             head = head,
+            gui = gui,
         )
     end
 

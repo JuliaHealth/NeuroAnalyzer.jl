@@ -118,15 +118,15 @@ function plot_cont(
     seg_len = Float64(seg[2]) - Float64(seg[1])
 
     if type === :normal
-        nch      = Observable(n_channels)
-        ch1      = Observable(1)
+        nch = Observable(n_channels)
+        ch1 = Observable(1)
         ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
-        clabels  = labels(obj)[ch][ch_order]
+        clabels = labels(obj)[ch][ch_order]
     else
-        ch_n     = length(ctypes_uni)
-        ch1      = Observable(1)
+        ch_n = length(ctypes_uni)
+        ch1 = Observable(1)
         ch2_init = length(ctypes_uni)
-        nch      = Observable(ch_n)
+        nch = Observable(ch_n)
         clabels  = uppercase.(ctypes_uni)
     end
 
@@ -228,11 +228,11 @@ function plot_cont(
             for idx in axes(s, 1)
                 GLMakie.lines!(
                     ax1, t, s[idx, :];
-                    color      = mono ? :black : cmap[idx],
-                    colormap   = pal,
+                    color = mono ? :black : cmap[idx],
+                    colormap = pal,
                     colorrange = 1:size(s, 1),
-                    linewidth  = 0.5,
-                    alpha      = 1.0,
+                    linewidth = 0.5,
+                    alpha = 1.0,
                 )
             end
             if avg
@@ -326,28 +326,28 @@ function plot_cont(
         end
     end
 
-    vmarker1     = Observable(NaN)
-    vmarker2     = Observable(NaN)
+    vmarker1 = Observable(NaN)
+    vmarker2 = Observable(NaN)
     marker_range = Observable([NaN, NaN])
 
     if gui
         # time bar
         ax2 = GLMakie.Axis(
             fig[2, 1];
-            xlabel           = xl,
-            ylabel           = "",
-            title            = "",
-            xticks           = LinearTicks(25),
-            yticksvisible    = false,
+            xlabel = xl,
+            ylabel = "",
+            title = "",
+            xticks = LinearTicks(25),
+            yticksvisible = false,
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
-            backgroundcolor  = :white,
-            xzoomlock        = true,
-            yzoomlock        = true,
-            xpanlock         = true,
-            ypanlock         = true,
-            xrectzoom        = false,
-            yrectzoom        = false,
+            backgroundcolor = :white,
+            xzoomlock = true,
+            yzoomlock = true,
+            xpanlock = true,
+            ypanlock = true,
+            xrectzoom = false,
+            yrectzoom = false,
         )
         GLMakie.xlims!(ax2, t[1], t[end])
         GLMakie.ylims!(ax2, 0, 1)
@@ -379,22 +379,22 @@ function plot_cont(
         if type === :normal
             ax3 = GLMakie.Axis(
                 fig[1, 2];
-                xlabel           = "",
-                ylabel           = "",
-                title            = "",
-                yticks           = 1:ch_n,
-                xticksvisible    = false,
-                yticksvisible    = false,
-                yreversed        = true,
+                xlabel = "",
+                ylabel = "",
+                title = "",
+                yticks = 1:ch_n,
+                xticksvisible = false,
+                yticksvisible = false,
+                yreversed = true,
                 xautolimitmargin = (0, 0),
                 yautolimitmargin = (0, 0),
-                backgroundcolor  = :white,
-                xzoomlock        = true,
-                yzoomlock        = true,
-                xpanlock         = true,
-                ypanlock         = true,
-                xrectzoom        = false,
-                yrectzoom        = false,
+                backgroundcolor = :white,
+                xzoomlock = true,
+                yzoomlock = true,
+                xpanlock = true,
+                ypanlock = true,
+                xrectzoom = false,
+                yrectzoom = false,
             )
             ch_n > 1 && GLMakie.ylims!(ax3, ch_n, 1)
             hidedecorations!(ax3)
@@ -532,18 +532,18 @@ function plot_cont(
                             end
                             NeuroAnalyzer.plot(
                                 obj;
-                                ch         = ch_tmp,
-                                seg        = new_seg,
-                                xlabel     = xlabel,
-                                ylabel     = ylabel,
-                                title      = title,
-                                markers    = markers,
-                                scale      = scale,
-                                group_ch   = group_ch,
+                                ch = ch_tmp,
+                                seg = new_seg,
+                                xlabel = xlabel,
+                                ylabel = ylabel,
+                                title = title,
+                                markers = markers,
+                                scale = scale,
+                                group_ch = group_ch,
                                 n_channels = n_channels,
-                                mono       = mono,
-                                res        = res,
-                                gui        = gui,
+                                mono = mono,
+                                res = res,
+                                gui = gui,
                             )
                         end
                     end

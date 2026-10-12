@@ -47,7 +47,7 @@ p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], type = :stack)
 @test p isa GLMakie.Figure
 p = plot_erp(e10_erp; ch = "Fp1", type = :stack)
 @test p isa GLMakie.Figure
-p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], type = :topo)
+p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], type = :topo, gui = false)
 @test p isa GLMakie.Figure
 p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], type = :gfp)
 @test p isa GLMakie.Figure
@@ -172,7 +172,7 @@ p = plot_psd(e10; db = true, ep = 1, ch = ["Fp1", "Fp2"], type = :w3d)
 @test p isa GLMakie.Figure
 p = plot_psd(e10; db = true, ep = 1, ch = ["Fp1", "Fp2"], type = :s3d)
 @test p isa GLMakie.Figure
-p = plot_psd(e10; db = true, ep = 1, ch = ["Fp1", "Fp2"], type = :topo)
+p = plot_psd(e10; db = true, ep = 1, ch = ["Fp1", "Fp2"], type = :topo, gui = false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_save()"
@@ -225,7 +225,7 @@ p = plot_spectrogram(e10; db = true, ep = 1, ch = "Fp1", method = :hht)
 @test p isa GLMakie.Figure
 p = plot_spectrogram(e10; db = true, ep = 1, ch = ["Fp1", "Fp2"])
 @test p isa GLMakie.Figure
-p = plot_spectrogram(e10; db = true, ep = 1, ch = "eeg", type = :topo)
+p = plot_spectrogram(e10; db = true, ep = 1, ch = "eeg", type = :topo, gui = false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_topo()"
@@ -408,7 +408,7 @@ p = plot_phs(e10; ep = 1, ch = "eeg", ci95 = true)
 @test p isa GLMakie.Figure
 p = plot_phs(e10; ep = 1, ch = "eeg", type = :w3d)
 @test p isa GLMakie.Figure
-p = plot_phs(e10; ep = 1, ch = "eeg", type = :topo)
+p = plot_phs(e10; ep = 1, ch = "eeg", type = :topo, gui = false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_coherence()"

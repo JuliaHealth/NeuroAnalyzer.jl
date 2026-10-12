@@ -298,6 +298,7 @@ Plot a topographical map of spectrogram data across channel locations with custo
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: if `true`, draw head outline
+- `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
@@ -322,6 +323,7 @@ function plot_spectrogram_topo(
     frq::Symbol = :lin,
     cart::Bool = false,
     head::Bool = true,
+    gui::Bool=true,
 )::GLMakie.Figure
     # validate
     size(sp, 3) == DataFrames.nrow(locs) || throw(
@@ -353,24 +355,40 @@ function plot_spectrogram_topo(
     end
 
     # number of channels
-    ch_n = size(sp, 1)
-
+    ch_n = size(sp, 3)
     # plot parameters
     if ch_n <= 64
-        plot_size   = (1000, 1000)
-        marker_size = (150, 75)
-        xl          = 1.2
-        yl          = 1.2
+        xl = 1.2
+        yl = 1.2
     elseif ch_n <= 100
-        plot_size   = (1200, 1200)
-        marker_size = (110, 55)
-        xl          = 1.5
-        yl          = 1.5
+        xl = 1.5
+        yl = 1.5
     else
-        plot_size   = (1400, 1400)
-        marker_size = (90, 45)
-        xl          = 1.5
-        yl          = 1.5
+        xl = 1.5
+        yl = 1.5
+    end
+    if gui
+        if ch_n <= 64
+            plot_size = (1000, 1000)
+            marker_size = (150, 75)
+        elseif ch_n <= 100
+            plot_size = (1200, 1200)
+            marker_size = (110, 55)
+        else
+            plot_size = (1400, 1400)
+            marker_size = (90, 45)
+        end
+    else
+        if ch_n <= 64
+            plot_size = (500, 500)
+            marker_size = (70, 35)
+        elseif ch_n <= 100
+            plot_size = (700, 700)
+            marker_size = (60, 30)
+        else
+            plot_size = (900, 900)
+            marker_size = (70, 35)
+        end
     end
 
     # get locations
@@ -390,38 +408,49 @@ function plot_spectrogram_topo(
     smooth && (sp = imfilter(sp, Kernel.gaussian(ks)))
 
     # prepare spectrogram plots
-    pp_vec      = GLMakie.Figure[]
+    pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(sp, 3)
         pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
+        gl = GridLayout(pp[1, 1], alignmode = Outside(5))
         ax = GLMakie.Axis(
-            pp[1, 1];
-            xlabel           = "",
-            ylabel           = "",
-            aspect           = nothing,
-            title            = locs[idx, :label],
+            gl[1, 1];
+            xlabel = "",
+            ylabel = "",
+            aspect = nothing,
+            title = locs[idx, :label],
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
         )
         hidedecorations!(ax)
-        GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
+        GLMakie.xlims!(ax, flim)
+
+        # plot spectrogram
         GLMakie.heatmap!(ax, sf, st, sp[:, :, idx]'; colormap = pal)
+
+        # draw black box around the entire figure
+        GLMakie.Box(pp[:, :], 
+            color = :transparent, 
+            strokecolor = :black, 
+            strokewidth = 1.5
+        )
+
         push!(pp_vec, pp)
 
         pp_full = plot_spectrogram(
             st, sf, sp[:, :, idx];
-            db       = db,
-            frq      = frq,
-            flim     = flim,
-            xlabel   = xlabel,
-            ylabel   = ylabel,
-            title    = locs[idx, :label] * ": " * title,
-            mono     = mono,
-            units    = units,
-            smooth   = smooth,
-            ks       = ks,
-            cb       = cb,
+            db = db,
+            frq = frq,
+            flim = flim,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            title = locs[idx, :label] * ": " * title,
+            mono = mono,
+            units = units,
+            smooth = smooth,
+            ks = ks,
+            cb = cb,
             cb_title = cb_title,
         )
         push!(pp_full_vec, pp_full)
@@ -430,22 +459,26 @@ function plot_spectrogram_topo(
     # prepare plot
     GLMakie.activate!(; title = "plot_spectrogram_topo()")
     fig = GLMakie.Figure(; size = plot_size, figure_padding = 0)
+
+    # create axis with customizable properties
     ax  = GLMakie.Axis(
-    fig[1, 1];
-    xlabel = "",
-    ylabel = "",
-    title  = title,
-    aspect = 1,
-    _AXIS_LOCK_KWARGS...
-)
+        fig[1, 1];
+        xlabel = "",
+        ylabel = "",
+        title = title,
+        aspect = 1,
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        _AXIS_LOCK_KWARGS...
+    )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
     hidedecorations!(ax)
-    ax.titlesize = 18
+    ax.titlesize = gui ? 18 : 12
 
     # draw head outline
-    head && _draw_head_outline!(ax; lw = 3)
+    head && _draw_head_outline!(ax; lw = 2)
 
     for idx in axes(sp, 3)
         io = IOBuffer()
@@ -454,33 +487,38 @@ function plot_spectrogram_topo(
         GLMakie.scatter!(
             loc_x[idx],
             loc_y[idx];
-            marker      = pp,
-            markersize  = marker_size,
-            markerspace = :pixel,
+            marker = pp,
+            markersize = (0.3, 0.15), # data units; matches your loc_x_range/loc_y_range
+            markerspace = :data,
+            # markerspace = :pixel,
         )
     end
 
-    # spectrogram positions
-    loc_x_range = [(loc_x[idx] - 0.15, loc_x[idx] + 0.15) for idx in eachindex(loc_x)]
-    loc_y_range = [(loc_y[idx] - 0.1, loc_y[idx] + 0.1) for idx in eachindex(loc_y)]
+    if gui
+        # generate clickable areas
+        loc_x_range = [(loc_x[idx] - 0.15, loc_x[idx] + 0.15) for idx in eachindex(loc_x)]
+        loc_y_range = [(loc_y[idx] - 0.1, loc_y[idx] + 0.1) for idx in eachindex(loc_y)]
 
-    # mouse events
-    on(events(fig).mousebutton) do event
-        if event.button == Mouse.left
-            if event.action == Mouse.press
-                ax_x = mouseposition(ax)[1]
-                ax_y = mouseposition(ax)[2]
-                for idx in eachindex(loc_x)
-                    if ax_x >= loc_x_range[idx][1] &&
-                       ax_x <= loc_x_range[idx][2] &&
-                       ax_y >= loc_y_range[idx][1] &&
-                       ax_y <= loc_y_range[idx][2]
-                        display(GLMakie.Screen(), pp_full_vec[idx])
-                        break
+        # mouse events
+        on(events(fig).mousebutton) do event
+            if event.button == Mouse.left
+                if event.action == Mouse.press
+                    ax_x = mouseposition(ax)[1]
+                    ax_y = mouseposition(ax)[2]
+                    for idx in eachindex(loc_x)
+                        if ax_x >= loc_x_range[idx][1] &&
+                           ax_x <= loc_x_range[idx][2] &&
+                           ax_y >= loc_y_range[idx][1] &&
+                           ax_y <= loc_y_range[idx][2]
+                            display(GLMakie.Screen(), pp_full_vec[idx])
+                            break
+                        end
                     end
                 end
             end
         end
+
+        wait(display(fig))
     end
 
     return fig
@@ -539,6 +577,7 @@ Plot a spectrogram or scalogram using various time-frequency analysis methods.
     - `:topo`: topographical map of spectrograms
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: if `true`, draw head outline
+- `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
@@ -573,6 +612,7 @@ function plot_spectrogram(
     type::Symbol = :normal,
     cart::Bool = false,
     head::Bool = true,
+    gui::Bool=true,
 )::GLMakie.Figure where {T <: CWT}
     # validate
     _check_var(type, [:normal, :topo], "type")
@@ -748,19 +788,19 @@ function plot_spectrogram(
         ylabel == "default" && (ylabel = "Frequency [Hz]")
         fig = plot_spectrogram(
             st, sf, sp;
-            db             = db,
-            frq            = frq,
-            flim           = flim,
-            xlabel         = xlabel,
-            ylabel         = ylabel,
-            title          = title,
-            mono           = mono,
-            units          = units,
-            smooth         = smooth,
-            ks             = ks,
-            cb             = cb,
-            cb_title       = cb_title,
-            threshold      = threshold,
+            db = db,
+            frq = frq,
+            flim = flim,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            title = title,
+            mono = mono,
+            units = units,
+            smooth = smooth,
+            ks = ks,
+            cb = cb,
+            cb_title = cb_title,
+            threshold = threshold,
             threshold_type = threshold_type,
         )
 
@@ -769,20 +809,20 @@ function plot_spectrogram(
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         fig = plot_spectrogram(
             sf, sp;
-            clabels        = clabels,
-            db             = db,
-            frq            = frq,
-            flim           = flim,
-            xlabel         = xlabel,
-            ylabel         = ylabel,
-            title          = title,
-            mono           = mono,
-            units          = units,
-            smooth         = smooth,
-            ks             = ks,
-            cb             = cb,
-            cb_title       = cb_title,
-            threshold      = threshold,
+            clabels = clabels,
+            db = db,
+            frq = frq,
+            flim = flim,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            title = title,
+            mono = mono,
+            units = units,
+            smooth = smooth,
+            ks = ks,
+            cb = cb,
+            cb_title = cb_title,
+            threshold = threshold,
             threshold_type = threshold_type,
         )
 
@@ -801,19 +841,20 @@ function plot_spectrogram(
         ndims(sp) == 1 && (sp = reshape(sp, 1, 1, length(sp)))
         fig = plot_spectrogram_topo(
             locs, st, sf, sp;
-            frq      = frq,
-            flim     = flim,
-            xlabel   = xlabel,
-            ylabel   = ylabel,
-            title    = title,
-            mono     = mono,
-            units    = units,
-            cart     = cart,
-            smooth   = smooth,
-            ks       = ks,
-            cb       = cb,
+            frq = frq,
+            flim = flim,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            title = title,
+            mono = mono,
+            units = units,
+            cart = cart,
+            smooth = smooth,
+            ks = ks,
+            cb = cb,
             cb_title = cb_title,
-            head     = head,
+            head = head,
+            gui = gui,
         )
     end
 

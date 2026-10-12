@@ -239,6 +239,7 @@ Plot topographical maps of Event-Related Potentials/Fields.
 - `head::Bool=true`: if `true`, draw head outline
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
+- `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
@@ -258,6 +259,7 @@ function plot_erp_topo(
     head::Bool = true,
     zl::Bool = true,
     mono::Bool = false,
+    gui::Bool=true,
 )::GLMakie.Figure
     # validate
     size(s, 2) == length(t) ||
@@ -270,22 +272,42 @@ function plot_erp_topo(
     # select color palette
     pal = mono ? :grays : :darktest
 
-    # determine plot size and marker size based on number of channels
-    if size(s, 1) <= 64
-        plot_size = (1000, 1000)
-        marker_size = (150, 75)
+    # number of channels
+    ch_n = size(s, 1)
+
+    # plot parameters
+    if ch_n <= 64
         xl = 1.2
         yl = 1.2
-    elseif _in(size(s, 1), (64, 100))
-        plot_size = (1200, 1200)
-        marker_size = (110, 55)
+    elseif ch_n <= 100
         xl = 1.5
         yl = 1.5
     else
-        plot_size = (1400, 1400)
-        marker_size = (90, 45)
         xl = 1.5
         yl = 1.5
+    end
+    if gui
+        if ch_n <= 64
+            plot_size = (1000, 1000)
+            marker_size = (150, 75)
+        elseif ch_n <= 100
+            plot_size = (1200, 1200)
+            marker_size = (110, 55)
+        else
+            plot_size = (1400, 1400)
+            marker_size = (90, 45)
+        end
+    else
+        if ch_n <= 64
+            plot_size = (500, 500)
+            marker_size = (70, 35)
+        elseif ch_n <= 100
+            plot_size = (700, 700)
+            marker_size = (60, 30)
+        else
+            plot_size = (900, 900)
+            marker_size = (70, 35)
+        end
     end
 
     # get locations
@@ -305,8 +327,9 @@ function plot_erp_topo(
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(s, 1)
         pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
+        gl = GridLayout(pp[1, 1], alignmode = Outside(5))
         ax = GLMakie.Axis(
-            pp[1, 1];
+            gl[1, 1];
             xlabel = "",
             ylabel = "",
             title = locs[idx, :label],
@@ -316,6 +339,7 @@ function plot_erp_topo(
         )
         hidedecorations!(ax)
         ax.titlesize = 8
+        GLMakie.autolimits!(ax)
 
         # plot ERP with zero line
         GLMakie.hlines!(ax, 0; color = :black, linewidth = 1)
@@ -326,6 +350,14 @@ function plot_erp_topo(
         if !isnothing(rt) && rt / 1000 ∈ t
             GLMakie.vlines!(ax, rt / 1000; linewidth = 1.5, color = mono ? :black : :red)
         end
+
+        # draw black box around the entire figure
+        GLMakie.Box(pp[:, :], 
+            color = :transparent, 
+            strokecolor = :black, 
+            strokewidth = 1.5
+        )
+
         push!(pp_vec, pp)
         pp_full = plot_erp(
             t,
@@ -361,10 +393,10 @@ function plot_erp_topo(
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
     hidedecorations!(ax)
-    ax.titlesize = 18
+    ax.titlesize = gui ? 18 : 12
 
     # draw head outline if requested
-    head && _draw_head_outline!(ax)
+    head && _draw_head_outline!(ax; lw = 2)
 
     # draw channel markers with embedded ERP plots
     for (idx, (x, y)) in enumerate(zip(loc_x, loc_y))
@@ -375,36 +407,41 @@ function plot_erp_topo(
             ax,
             x, y;
             marker = marker_img,
-            markersize = marker_size,
-            markerspace = :pixel,
+            markersize = (0.3, 0.15), # data units; matches your loc_x_range/loc_y_range
+            markerspace = :data,
+            # markerspace = :pixel,
         )
     end
 
-    # generate clickable areas
-    loc_x_range = Tuple{Float64, Float64}[]
-    loc_y_range = Tuple{Float64, Float64}[]
-    for idx in eachindex(loc_x)
-        push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
-        push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
-    end
+    if gui
+        # generate clickable areas
+        loc_x_range = Tuple{Float64, Float64}[]
+        loc_y_range = Tuple{Float64, Float64}[]
+        for idx in eachindex(loc_x)
+            push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
+            push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
+        end
 
-    # mouse events
-    on(events(fig).mousebutton) do event
-        if event.button == Mouse.left
-            if event.action == Mouse.press
-                ax_x = mouseposition(ax)[1]
-                ax_y = mouseposition(ax)[2]
-                for idx in eachindex(loc_x)
-                    if ax_x >= loc_x_range[idx][1] &&
-                       ax_x <= loc_x_range[idx][2] &&
-                       ax_y >= loc_y_range[idx][1] &&
-                       ax_y <= loc_y_range[idx][2]
-                        display(GLMakie.Screen(), pp_full_vec[idx])
-                        break
+        # mouse events
+        on(events(fig).mousebutton) do event
+            if event.button == Mouse.left
+                if event.action == Mouse.press
+                    ax_x = mouseposition(ax)[1]
+                    ax_y = mouseposition(ax)[2]
+                    for idx in eachindex(loc_x)
+                        if ax_x >= loc_x_range[idx][1] &&
+                           ax_x <= loc_x_range[idx][2] &&
+                           ax_y >= loc_y_range[idx][1] &&
+                           ax_y <= loc_y_range[idx][2]
+                            display(GLMakie.Screen(), pp_full_vec[idx])
+                            break
+                        end
                     end
                 end
             end
         end
+
+        wait(display(fig))
     end
 
     return fig
@@ -632,7 +669,7 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `sort_epochs::Bool=false`:: sort epochs by rt vector
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `gui::Bool=false`: ignored
+- `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
@@ -659,7 +696,7 @@ function plot_erp(
     sort_epochs::Bool = false,
     zl::Bool = true,
     mono::Bool = false,
-    gui::Bool = false,
+    gui::Bool = true,
 )::GLMakie.Figure
     # validate
     _check_datatype(obj, ["erp", "erf"])
@@ -689,12 +726,12 @@ function plot_erp(
     ep_n = nepochs(obj) - 1
     if length(ch) == 1
         if type === :stack
-            s = obj.data[ch[1], :, 2:end]'  # transpose for stacked plot
+            s = obj.data[ch[1], :, 2:end]' # transpose for stacked plot
         else
-            s = obj.data[ch, :, 1][:]       # single channel data
+            s = obj.data[ch, :, 1][:] # single channel data
         end
     else
-        s = obj.data[ch, :, 1]              # multi-channel data
+        s = obj.data[ch, :, 1] # multi-channel data
     end
 
     # get time vector
@@ -863,6 +900,7 @@ function plot_erp(
             yrev = yrev,
             mono = mono,
             zl = zl,
+            gui = gui,
         )
     end
 
