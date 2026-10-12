@@ -311,7 +311,7 @@ Detect the dominant power line noise frequency for each channel and epoch.
 
 - `Float64`: noise frequency in Hz
 """
-function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
+function detect_powerline(obj::NeuroAnalyzer.NEURO)::Float64
     # number of channels
     ch_n = size(obj, 1)
     # number of epochs
