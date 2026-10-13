@@ -23,6 +23,7 @@ BDF is BioSemi's 24-bit extension of the EDF format. Each sample is stored as a 
 - `value = (raw − digital_min) × gain + physical_min`
 
 # References
+
 1. https://www.biosemi.com/faq/file_format.htm
 """
 function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO

@@ -21,7 +21,7 @@ Named tuple:
 
 # References
 
-Huang et al. (1998), "The empirical mode decomposition and the Hilbert spectrum for nonlinear and non-stationary time series analysis."
+1. Huang et al. (1998), "The empirical mode decomposition and the Hilbert spectrum for nonlinear and non-stationary time series analysis."
 """
 function hmspectrum(
     obj::NeuroAnalyzer.NEURO;

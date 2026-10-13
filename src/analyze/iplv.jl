@@ -28,7 +28,7 @@ Named tuple:
 
 # References
 
-Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
+1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function iplv(
     s1::AbstractVector,
@@ -92,7 +92,7 @@ Named tuple:
 
 # References
 
-Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
+1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function iplv(
     obj1::NeuroAnalyzer.NEURO,
@@ -190,7 +190,7 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 # References
 
-Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
+1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function iplv(
     obj::NeuroAnalyzer.NEURO;

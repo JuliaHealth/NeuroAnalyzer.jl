@@ -34,7 +34,7 @@ Calculate mean-based SNR for a 1-D signal vector.
 
 # References
 
-D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
+1. D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
 function snr(s::AbstractVector)::Float64
     return mean(s) / std(s)

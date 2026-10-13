@@ -128,7 +128,7 @@ The critical value is derived from the t-distribution with `df = n − 2`.
 
 # References
 
-Grubbs FE. Procedures for detecting outlying observations in samples. Technometrics. 1969;11(1):1–21.
+1. Grubbs FE. Procedures for detecting outlying observations in samples. Technometrics. 1969;11(1):1–21.
 """
 function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
     # validate

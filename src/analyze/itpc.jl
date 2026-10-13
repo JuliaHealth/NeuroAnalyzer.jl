@@ -31,7 +31,7 @@ Named tuple:
 
 # References
 
-Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
+1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
 function itpc(
     s::AbstractArray;

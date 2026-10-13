@@ -175,7 +175,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 # References
 
-Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequency signals among visual cortical areas in human subdural recordings. International Journal of Psychophysiology, 51(2), 97-116.
+1. Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequency signals among visual cortical areas in human subdural recordings. International Journal of Psychophysiology, 51(2), 97-116.
 """
 function escor(s1::AbstractVector, s2::AbstractVector)::Float64
     # validate

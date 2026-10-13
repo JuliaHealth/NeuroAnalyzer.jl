@@ -23,6 +23,7 @@ Annotation-only channels (EDF+ TAL) are automatically detected, parsed into even
 - `value = (raw_value - digital_min) × gain + physical_min`
 
 # References
+
 1. Kemp B et al. A simple format for exchange of digitized polygraphic recordings. *EEG Clin Neurophysiol*. 1992;82(5):391-3.
 2. Kemp B, Olivan J. European data format 'plus' (EDF+). *Clin Neurophysiol*. 2003;114:1755-61.
 3. https://www.edfplus.info/specs/

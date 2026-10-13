@@ -16,7 +16,7 @@ Evaluates `H(ω) = Σₖ f[k] × exp(−im × ω × (k−1))` for each frequency
 
 # References
 
-Based on Matti Pastell, "FIR filter design with Julia".
+1. Based on Matti Pastell, "FIR filter design with Julia".
 """
 function _fir_response(
     f::Vector{<:Real},

@@ -22,7 +22,8 @@ Applies the Brett affine transformation:
 - `Vector{Float64}`: Talairach `[X, Y, Z]` coordinates
 
 # References
-Brett M. https://www.brainmap.org/training/BrettTransform.html
+
+1. Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function aff_mni2tal(pts::Vector{<:Number})::Vector{Float64}
 
@@ -57,7 +58,7 @@ Applies the inverse of the Brett affine transformation:
 
 # References
 
-Brett M. https://www.brainmap.org/training/BrettTransform.html
+1. Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function aff_tal2mni(pts::Vector{<:Number})::Vector{Float64}
 
@@ -92,7 +93,7 @@ The transform is piecewise-linear in z:
 
 # References
 
-Brett M. https://www.brainmap.org/training/BrettTransform.html
+1. Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function mni2tal(pts::Vector{<:Number})::Vector{Float64}
 
@@ -142,7 +143,7 @@ z < 0 - inverse of the lower matrix `[[0.9688, 0.042], [−0.0485, 0.839]]` (det
 
 # References
 
-Brett M. https://www.brainmap.org/training/BrettTransform.html
+1. Brett M. https://www.brainmap.org/training/BrettTransform.html
 """
 function tal2mni(pts::Vector{<:Number})::Vector{Float64}
 

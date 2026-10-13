@@ -31,9 +31,9 @@ To convert to absorption coefficient (cm⁻¹):
 
 where c is concentration in g/L and 66,500 g/mol is the molecular weight of hemoglobin.
 
-# Source
+# References
 
-Wray, S., Cope, M., Delpy, D., Wyatt, J., Reynolds, E. (1988). Characterization of the near infrared absorption spectra of cytochrome aa3 and haemoglobin for the non-invasive monitoring of cerebral oxygenation Biochimica et Biophysica Acta (BBA) - Bioenergetics 933(1), 184-192. https://dx.doi.org/10.1016/0005-2728(88)90069-2
+1. Wray, S., Cope, M., Delpy, D., Wyatt, J., Reynolds, E. (1988). Characterization of the near infrared absorption spectra of cytochrome aa3 and haemoglobin for the non-invasive monitoring of cerebral oxygenation Biochimica et Biophysica Acta (BBA) - Bioenergetics 933(1), 184-192. https://dx.doi.org/10.1016/0005-2728(88)90069-2
 """
 function _wl2ext(wl::Real)::Vector{Float64}
     hemoglobin_extinction_data = [

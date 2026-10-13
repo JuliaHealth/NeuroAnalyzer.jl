@@ -402,7 +402,7 @@ Uses the FWHM-based Gaussian envelope `exp(−4 ln 2 × t² / h²)` instead of a
 
 # References
 
-Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
+1. Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
 """
 function generate_morlet_fwhm(
     fs::Int64,

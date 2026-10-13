@@ -16,7 +16,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 # References
 
- 1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
+1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
 function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
     # validate

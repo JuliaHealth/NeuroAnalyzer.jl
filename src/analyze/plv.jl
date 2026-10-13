@@ -22,7 +22,7 @@ Named tuple:
 
 # References
 
- 1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
+1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
 function plv(
     s1::AbstractVector,
