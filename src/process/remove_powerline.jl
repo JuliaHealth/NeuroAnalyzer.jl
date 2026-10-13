@@ -273,7 +273,7 @@ Fits a sine + cosine model at each integer frequency from 1 to `fs÷2` Hz and re
 
 # Returns
 
-- `Float64`: dominant noise frequency in Hz
+- `Float64`: noise frequency in Hz
 """
 function detect_powerline(s::AbstractVector; fs::Int64)::Float64
     # validate
@@ -309,9 +309,9 @@ Detect the dominant power line noise frequency for each channel and epoch.
 
 # Returns
 
-- `Array{Float64, 2}`: noise frequency in Hz; shape `(channels,  epochs)`
+- `Float64`: noise frequency in Hz
 """
-function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
+function detect_powerline(obj::NeuroAnalyzer.NEURO)::Float64
     # number of channels
     ch_n = size(obj, 1)
     # number of epochs
@@ -334,7 +334,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
         progress_bar && next!(progbar)
     end
 
-    return noise_frq
+    return median(noise_frq)
 end
 
 """
