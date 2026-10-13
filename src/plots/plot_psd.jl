@@ -566,7 +566,7 @@ Plot Power Spectral Density (PSD) using various estimation methods with customiz
 - `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
-- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits for the plots
+- `flim::Tuple{Real, Real}=(method === :mw ? 1 : 0, sr(obj) / 2)`: frequency limits for the plots
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `ref::Symbol=:abs`: PSD reference type:
@@ -616,7 +616,7 @@ function plot_psd(
     wlen::Int64 = sr(obj),
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
-    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    flim::Tuple{Real, Real} = (method === :mw ? 1 : 0, sr(obj) / 2),
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     ref::Symbol = :abs,
@@ -698,11 +698,11 @@ function plot_psd(
     # factor out repeated title fragments
     _method_label = Dict(
         :welch => "Welch's periodogram",
-        :fft   => "fast Fourier transform",
-        :stft  => "short-time Fourier transform",
-        :mt    => "multi-taper",
-        :mw    => "Morlet wavelet convolution",
-        :gh    => "Gaussian and Hilbert transform",
+        :fft => "fast Fourier transform",
+        :stft => "short-time Fourier transform",
+        :mt => "multi-taper",
+        :mw => "Morlet wavelet convolution",
+        :gh => "Gaussian and Hilbert transform",
     )
     method_label = _method_label[method]
     ep_suffix = ep != 0 ? "\n[epoch: $ep]" : "\n[time window: $t_s1:$t_s2]"

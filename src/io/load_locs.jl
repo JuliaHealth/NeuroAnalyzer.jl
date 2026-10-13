@@ -227,7 +227,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
 
     no_match = setdiff(labels(obj), locs[!, :label])
     length(no_match) > 0 && _warn(
-        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name",
+        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS file.",
     )
 
     # create new dataset
