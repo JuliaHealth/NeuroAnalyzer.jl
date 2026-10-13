@@ -34,6 +34,28 @@ function _locs_ch_order(obj::NeuroAnalyzer.NEURO, ch::Vector{Int64})::DataFrame
     return obj.locs[rows, :]
 end
 
+# 2-D (topographic) electrode positions from polar coordinates, as used for plotting
+function _locs_polar_xy(locs::DataFrame)::Tuple{Vector{Float64}, Vector{Float64}}
+    r = Float64.(locs[!, :loc_radius])
+    θ = Float64.(locs[!, :loc_theta])
+    all(iszero, r) &&
+        throw(ArgumentError("Polar coordinates are not available, use locs_cart2pol() first."))
+    return r .* cosd.(θ), r .* sind.(θ)
+end
+
+# great-circle distances (radians) between electrode positions projected onto the unit sphere
+function _locs_gc_dist(locs::DataFrame)::Matrix{Float64}
+    xyz = hcat(Float64.(locs[!, :loc_x]), Float64.(locs[!, :loc_y]), Float64.(locs[!, :loc_z]))
+    r = sqrt.(sum(abs2, xyz; dims = 2))
+    any(iszero, r) && throw(
+        ArgumentError("Some channels have no Cartesian coordinates, use locs_sph2cart() first."),
+    )
+    xyz ./= r
+    n = size(xyz, 1)
+    # atan(|a×b|, a⋅b) is exact for identical and nearby positions (acos(a⋅b) is not)
+    return [atan(norm(cross(xyz[i, :], xyz[j, :])), dot(xyz[i, :], xyz[j, :])) for i = 1:n, j = 1:n]
+end
+
 # inverse-distance weights; zero/non-finite distances get weight 0 (excluded)
 function _inv_dist_weights(d::AbstractMatrix{Float64})::Matrix{Float64}
     return [(isfinite(x) && x > 0) ? 1 / x : 0.0 for x in d]
@@ -81,7 +103,7 @@ function _wmedian_cols(
         for m = 1:k
             c += w[p[m]]
             if c >= half - tol
-                out[j] =
+                global out[j] =
                     (abs(c - half) <= tol && m < k) ? (v[p[m]] + v[p[m + 1]]) / 2 :
                     v[p[m]]
                 break
@@ -205,7 +227,7 @@ Re-reference EEG channels to the common average reference (CAR). Only EEG-type c
 - `exclude_current::Bool=false`: exclude the current channel from its own CAR calculation
 - `average::Bool=true`: subtract the mean (or median) reference; if `false`, subtract the sum
 - `med::Bool=false`: use median instead of mean (weighted median when `weighted=true`); ignored when `average=false`
-- `weighted::Bool=false`: weight reference channels by inverse planar distance (requires channel locations)
+- `weighted::Bool=false`: weight reference channels by inverse planar distance in the 2-D topographic (polar) projection of electrode positions (requires polar channel locations)
 
 # Returns
 
@@ -246,12 +268,8 @@ function reference_avg(
     # inverse-distance weight matrix (row i: weights for channel i)
     W = Matrix{Float64}(undef, 0, 0)
     if weighted
-        locs = _locs_ch_order(obj, sig_ch_idx)
-        loc_x, loc_y = locs[!, :loc_x], locs[!, :loc_y]
-        d = [
-            euclidean([loc_x[i], loc_y[i]], [loc_x[j], loc_y[j]]) for i = 1:ch_n,
-            j = 1:ch_n
-        ]
+        x, y = _locs_polar_xy(_locs_ch_order(obj, sig_ch_idx))
+        d = [hypot(x[i] - x[j], y[i] - y[j]) for i = 1:ch_n, j = 1:ch_n]
         W = _inv_dist_weights(d)
     end
 
@@ -331,7 +349,7 @@ Re-reference EEG channels to the common average reference in-place. Only EEG-typ
 - `exclude_current::Bool=false`: exclude the current channel from its own CAR calculation
 - `average::Bool=true`: subtract the mean (or median) reference; if `false`, subtract the sum
 - `med::Bool=false`: use median instead of mean (weighted median when `weighted=true`); ignored when `average=false`
-- `weighted::Bool=false`: weight reference channels by inverse planar distance (requires channel locations)
+- `weighted::Bool=false`: weight reference channels by inverse planar distance in the 2-D topographic (polar) projection of electrode positions (requires polar channel locations)
 
 # Returns
 
@@ -577,17 +595,16 @@ function _laplacian_reference(
 
     # locations in channel order
     locs = _locs_ch_order(obj, ch)
-    loc_x, loc_y = locs[!, :loc_x], locs[!, :loc_y]
     d = if spherical
-        loc_z = locs[!, :loc_z]
-        [
-            _sph_distance_cart(loc_x[i], loc_y[i], loc_z[i], loc_x[j], loc_y[j], loc_z[j])
-            for i = 1:ch_n, j = 1:ch_n
-        ]
+        _locs_gc_dist(locs)
     else
-        [euclidean([loc_x[i], loc_y[i]], [loc_x[j], loc_y[j]]) for i = 1:ch_n, j = 1:ch_n]
+        x, y = _locs_polar_xy(locs)
+        [hypot(x[i] - x[j], y[i] - y[j]) for i = 1:ch_n, j = 1:ch_n]
     end
     # eliminate auto-referencing (and co-located electrodes)
+    for i = 1:ch_n
+        d[i, i] = Inf
+    end
     d[d .== 0] .= Inf
 
     lbl = labels(obj)[ch]
@@ -626,11 +643,11 @@ _lap_name(kind::String, nn::Int64, weighted::Bool, med::Bool)::String =
 """
     reference_plap(obj; <keyword arguments>)
 
-Re-reference EEG channels using the planar (2-D Euclidean) Laplacian. Only EEG-type channels are modified.
+Re-reference EEG channels using the planar Laplacian. Neighbours and distances are calculated in the 2-D topographic (polar) projection of electrode positions, as used for plotting. Only EEG-type channels are modified.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must have channel locations; must be of type `"eeg"`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must have channel locations (polar coordinates); must be of type `"eeg"`
 - `nn::Int64=4`: number of nearest-neighbour electrodes; must satisfy `1 ≤ nn ≤ nch-1`
 - `weighted::Bool=false`: weight neighbours by inverse distance (`Σ wᵢxᵢ / Σ wᵢ`, `wᵢ = 1/dᵢ`)
 - `med::Bool=false`: use median instead of mean (weighted median when `weighted=true`)
@@ -687,11 +704,11 @@ end
 """
     reference_slap(obj; <keyword arguments>)
 
-Re-reference EEG channels using the spherical Laplacian. Neighbours are selected by 3-D (chord) distance between electrode positions; for electrodes on a spherical head model this ranks neighbours identically to great-circle distance. Only EEG-type channels are modified.
+Re-reference EEG channels using the spherical Laplacian. Neighbours and distances are calculated as great-circle distances between electrode positions projected onto the unit sphere. Only EEG-type channels are modified.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must have channel locations; must be of type `"eeg"`
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must have channel locations (Cartesian coordinates); must be of type `"eeg"`
 - `nn::Int64=4`: number of nearest-neighbour electrodes; must satisfy `1 ≤ nn ≤ nch-1`
 - `weighted::Bool=false`: weight neighbours by inverse distance (`Σ wᵢxᵢ / Σ wᵢ`, `wᵢ = 1/dᵢ`)
 - `med::Bool=false`: use median instead of mean (weighted median when `weighted=true`)

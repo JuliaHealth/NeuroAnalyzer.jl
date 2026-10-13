@@ -52,6 +52,26 @@ a2 = zeros(2, 3, 4)
 
 @test NeuroAnalyzer._select_channels(e10, 1) == 1
 
+l = labels(e10)
+@test NeuroAnalyzer._ch_idx(e10, l[2]) == [2]
+@test NeuroAnalyzer._ch_idx(e10, "") == Int64[]
+@test NeuroAnalyzer._ch_idx(e10, "all") == collect(1:length(l))
+@test NeuroAnalyzer._ch_idx(e10, "eeg") ==
+      NeuroAnalyzer._ch_idx(e10, get_channel(e10; type = "eeg"))
+# regex selects full labels matching anywhere
+@test NeuroAnalyzer._ch_idx(e10, r"Fp") == findall(occursin.(r"Fp", l))
+@test NeuroAnalyzer._ch_idx(e10, r"^Fp1$") == [findfirst(isequal("Fp1"), l)]
+@test NeuroAnalyzer._ch_idx(e10, r"no_such_channel") == Int64[]
+@test NeuroAnalyzer._ch_idx(l, r"Fp") == findall(occursin.(r"Fp", l))
+@test NeuroAnalyzer._ch_idx(l, "all") == collect(1:length(l))
+# keywords are expanded in place, every occurrence
+e10_tmp = deepcopy(e10)
+e10_tmp.header.recording[:bad_channel][[3, 5]] .= true
+@test NeuroAnalyzer._ch_idx(e10_tmp, [l[1], "bad", l[2]]) == [1, 3, 5, 2]
+@test NeuroAnalyzer._ch_idx(e10_tmp, ["bad", "bad"]) == [3, 5]
+@test NeuroAnalyzer._ch_idx(e10, "bad") == Int64[]
+@test_throws ArgumentError NeuroAnalyzer._ch_idx(e10, "no_such_channel")
+
 ##
 ## Epoch Operations
 ##

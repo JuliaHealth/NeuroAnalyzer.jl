@@ -645,6 +645,24 @@ e10_tmp = reference_ce(e10; ch = labels(e10)[1:5])
 @test size(e10_tmp) == size(e10)
 e10_tmp = reference_ce(e10; ch = "Fp1", med = true)
 @test size(e10_tmp) == size(e10)
+ch_eeg = get_channel(e10; ch = get_channel(e10; type = "eeg"))
+fp1 = get_channel(e10; ch = "Fp1")[1]
+e10_tmp = reference_ce(e10; ch = "Fp1")
+@test e10_tmp.data[ch_eeg, :, :] ≈ e10.data[ch_eeg, :, :] .- e10.data[fp1:fp1, :, :]
+@test all(iszero, e10_tmp.data[fp1, :, :])
+@test labels(e10_tmp)[ch_eeg[1]] == labels(e10)[ch_eeg[1]] * "-Fp1"
+@test e10_tmp.header.recording[:reference] == "common (Fp1)"
+r5 = get_channel(e10; ch = labels(e10)[1:5])
+e10_tmp = reference_ce(e10; ch = labels(e10)[1:5])
+@test e10_tmp.data[ch_eeg, :, :] ≈
+      e10.data[ch_eeg, :, :] .- NeuroAnalyzer.mean(e10.data[r5, :, :]; dims = 1)
+e10_tmp = reference_ce(e10; ch = labels(e10)[1:5], med = true)
+@test e10_tmp.data[ch_eeg, :, :] ≈
+      e10.data[ch_eeg, :, :] .- NeuroAnalyzer.median(e10.data[r5, :, :]; dims = 1)
+# regex selects all matching labels (Fp1, Fp2)
+fp = get_channel(e10; ch = r"^Fp")
+@test length(fp) == 2
+@test reference_ce(e10; ch = r"^Fp").data ≈ reference_ce(e10; ch = labels(e10)[fp]).data
 
 @info "Test: reference_a()"
 e10_tmp = reference_a(e10)
@@ -679,6 +697,32 @@ e10_tmp = reference_avg(e10; average = false)
 @test size(e10_tmp) == size(e10)
 e10_tmp = reference_avg(e10; weighted = true)
 @test size(e10_tmp) == size(e10)
+# weighted CAR: locs row order does not matter; constant signal → 0
+e10_shuf = deepcopy(e10)
+e10_shuf.locs = e10_shuf.locs[reverse(1:size(e10_shuf.locs, 1)), :]
+for md in (false, true)
+    @test reference_avg(e10_shuf; weighted = true, med = md).data ≈
+          reference_avg(e10; weighted = true, med = md).data
+end
+ch_eeg = get_channel(e10; ch = get_channel(e10; type = "eeg"))
+e10_sim = deepcopy(e10)
+e10_sim.data[ch_eeg, :, :] .= 5.0
+@test all(isapprox.(reference_avg(e10_sim; weighted = true).data[ch_eeg, :, :], 0; atol = 1e-10))
+# weights follow the polar (topographic) layout: out_i = x_i - Σ_j w_ij x_j / Σ_j w_ij, w_ij = 1/d_ij
+e10_sim.data[ch_eeg, :, :] .= 0.0
+e10_sim.data[ch_eeg[1], :, :] .= 1.0
+out = reference_avg(e10_sim; weighted = true).data[ch_eeg, 1, 1]
+locs = e10.locs[NeuroAnalyzer._find_bylabel(e10.locs, labels(e10)[ch_eeg]), :]
+px = locs[!, :loc_radius] .* cosd.(locs[!, :loc_theta])
+py = locs[!, :loc_radius] .* sind.(locs[!, :loc_theta])
+n = length(ch_eeg)
+w = [i == j ? 0.0 : 1 / hypot(px[i] - px[j], py[i] - py[j]) for i in 1:n, j in 1:n]
+w[.!isfinite.(w)] .= 0.0
+expected = [(i == 1 ? 1.0 : 0.0) - w[i, 1] / sum(w[i, :]) for i in 1:n]
+@test out ≈ expected
+e10_nopol = deepcopy(e10)
+e10_nopol.locs[!, :loc_radius] .= 0.0
+@test_throws ArgumentError reference_avg(e10_nopol; weighted = true)
 
 @info "Test: reference_plap()"
 e10_tmp = reference_plap(e10)
@@ -691,6 +735,28 @@ e10_tmp = reference_slap(e10)
 @test size(e10_tmp) == size(e10)
 e10_tmp = reference_slap(e10; weighted = true)
 @test size(e10_tmp) == size(e10)
+# Laplacian: result does not depend on the order of rows in locs
+e10_shuf = deepcopy(e10)
+e10_shuf.locs = e10_shuf.locs[reverse(1:size(e10_shuf.locs, 1)), :]
+for f in (reference_plap, reference_slap), wt in (false, true), md in (false, true)
+    @test f(e10_shuf; weighted = wt, med = md).data ≈ f(e10; weighted = wt, med = md).data
+end
+# constant signal → 0; impulse at one channel → 1 there, 0 or -1/nn elsewhere
+ch_eeg = get_channel(e10; ch = get_channel(e10; type = "eeg"))
+e10_sim = deepcopy(e10)
+e10_sim.data[ch_eeg, :, :] .= 5.0
+for f in (reference_plap, reference_slap)
+    @test all(isapprox.(f(e10_sim; nn = 3).data[ch_eeg, :, :], 0; atol = 1e-10))
+end
+e10_sim.data[ch_eeg, :, :] .= 0.0
+e10_sim.data[ch_eeg[1], :, :] .= 1.0
+for f in (reference_plap, reference_slap)
+    out = f(e10_sim; nn = 3).data[ch_eeg, 1, 1]
+    @test out[1] ≈ 1.0
+    @test all(v -> isapprox(v, 0; atol = 1e-12) || isapprox(v, -1 / 3), out[2:end])
+    @test any(v -> isapprox(v, -1 / 3), out[2:end])
+end
+@test_throws ArgumentError reference_slap(e10; nn = length(ch_eeg))
 
 @info "Test: csd()"
 g, h = gh(e10.locs)

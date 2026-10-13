@@ -90,24 +90,34 @@ const _NIRS_TYPES = [
     "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux",
 ]
 
+# channel type groups expanded to their member types
+const _CH_TYPE_GROUPS = Dict(
+    "meg" => ["mag", "grad"],
+    "nirs" => ["nirs_int"; _NIRS_TYPES],
+    "sensors" => ["accel", "magfld", "orient", "angvel"],
+)
+
+"""Labels from `cl` matched by a regex anywhere in the label (use `^...\$` for exact matches)."""
+_ch_regex(cl::Vector{String}, l::Regex)::Vector{String} = cl[occursin.(l, cl)]
+
 """Get integer indices from channel names."""
 function _ch_idx(
     cl::Union{String, Vector{String}},
     l::Union{String, Vector{String}, Regex},
 )::Vector{Int64}
-    if isa(l, Regex)
-        matches = Base.filter(!isnothing, match.(l, cl))
-        l = [m.match for m in matches]
-        length(l) == 0 && return Int64[]
-    end
-    l == "" && return Int64[]
-    isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [cl])
-    any(isequal("all"), l) && (l = cl)
+    if isa(l, Regex)
+        l = _ch_regex(cl, l)
+    elseif isa(l, String)
+        l == "" && return Int64[]
+        l = [l]
+    end
+    isempty(l) && return Int64[]
+    any(isequal("all"), l) && return collect(1:length(cl))
     _check_channels(cl, l)
     ch = Int64[]
     for label in l
-        !(label in cl) && throw(ArgumentError("$label does not match signal labels."))
+        label in cl || throw(ArgumentError("$label does not match signal labels."))
         push!(ch, findfirst(isequal(label), cl))
     end
     return unique(ch)
@@ -121,48 +131,25 @@ function _ch_idx(
     cl = labels(obj)
 
     if isa(l, Regex)
-        matches = Base.filter(!isnothing, match.(l, cl))
-        l = [m.match for m in matches]
-        length(l) == 0 && return Int64[]
+        l = _ch_regex(cl, l)
+    elseif isa(l, String)
+        l == "" && return Int64[]
+        l = [l]
     end
+    isempty(l) && return Int64[]
 
-    l == "" && return Int64[]
-    isa(l, String) && (l = [l])
-    isa(cl, String) && (cl = [cl])
+    any(isequal("all"), l) && return collect(1:length(cl))
 
-    any(isequal("all"), l) && (l = cl)
-
-    # expand "meg" → ["mag", "grad"]
-    if any(isequal("meg"), l)
-        idx = findfirst(isequal("meg"), l)
-        l = [l[1:(idx - 1)]; "mag"; "grad"; l[(idx + 1):end]]
-    end
-
-    # expand "nirs" → all NIRS sub-types
-    if any(isequal("nirs"), l)
-        idx = findfirst(isequal("nirs"), l)
-        l = [l[1:(idx - 1)]; "nirs_int"; _NIRS_TYPES; l[(idx + 1):end]]
-    end
-
-    # expand "sensors" → ["accel", "magfld", "orient", "angvel"]
-    if any(isequal("sensors"), l)
-        idx = findfirst(isequal("sensors"), l)
-        l = [l[1:(idx - 1)]; "accel"; "magfld"; "orient"; "angvel"; l[(idx + 1):end]]
-    end
-
-    # expand "bad" → labels of channels flagged as bad
-    if any(isequal("bad"), l)
-        idx = findfirst(isequal("bad"), l)
-        bads = labels(obj)[obj.header.recording[:bad_channel] .== true]
-        l = [l[1:(idx - 1)]; bads; l[(idx + 1):end]]
-    end
-
-    length(l) == 0 && return Int64[]
-
-    # replace channel-type tokens with the matching channel labels
+    # expand every keyword token (group, "bad", channel type) in place, preserving order
     l_tmp = String[]
     for token in l
-        if token in NeuroAnalyzer.channel_types
+        if token == "bad"
+            append!(l_tmp, cl[obj.header.recording[:bad_channel] .== true])
+        elseif haskey(_CH_TYPE_GROUPS, token)
+            for type in _CH_TYPE_GROUPS[token]
+                append!(l_tmp, get_channel(obj; type = type))
+            end
+        elseif token in NeuroAnalyzer.channel_types
             append!(l_tmp, get_channel(obj; type = token))
         else
             push!(l_tmp, token)
@@ -170,6 +157,7 @@ function _ch_idx(
     end
     l = l_tmp
 
+    isempty(l) && return Int64[]
     _check_channels(cl, l)
 
     ch = Int64[]
