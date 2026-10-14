@@ -140,6 +140,7 @@ Default method is Welch's periodogram.
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
+- `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `demean::Bool=true`: subtract DC component before estimating PSD
 
 # Returns

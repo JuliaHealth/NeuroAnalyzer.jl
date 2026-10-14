@@ -2,6 +2,7 @@ using NeuroAnalyzer
 using Test
 using Wavelets
 using ContinuousWavelets
+using DSP
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -1218,5 +1219,50 @@ cr = corr(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
 @info "Test: psi()"
 pv = psi(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
 @test pv[1][1] == -pv[1][2]
+
+@info "Test: fooof()"
+# reference values from fooof 1.1.0 (Python) on the same noise-free spectra:
+#   fixed: ap = [1.00846, 1.50140], peaks = [10.0016 0.78872 2.91857; 22.0024 0.38969 3.80960], R² = 0.99986
+#   knee:  ap = [1.0, 25.0, 2.0], no peaks
+f = collect(1:0.5:40)
+p = 10 .^ (1 .- 1.5 .* log10.(f) .+ 0.8 .* exp.(-(f .- 10) .^ 2 ./ (2 * 1.5^2)) .+ 0.4 .* exp.(-(f .- 22) .^ 2 ./ (2 * 2.0^2)))
+r = fooof(f, p)
+@test isapprox(r.ap, [1.00846, 0.0, 1.50140]; atol = 1e-3)
+@test size(r.pe) == (2, 3)
+@test isapprox(r.pe, [10.0016 0.78872 2.91857; 22.0024 0.38969 3.80960]; atol = 1e-3)
+@test isapprox(r.r2, 0.99986; atol = 1e-4)
+@test length(r.model) == length(r.f) == length(f)
+pk = 10 .^ (1 .- log10.(25 .+ f .^ 2))
+r = fooof(f, pk; aperiodic_mode = :knee)
+@test isapprox(r.ap, [1.0, 25.0, 2.0]; rtol = 1e-3)
+@test size(r.pe) == (0, 3)
+r = fooof(f, p; flim = (2, 30), max_n_peaks = 1)
+@test r.f[1] == 2.0
+@test r.f[end] == 30.0
+@test size(r.pe, 1) == 1
+@test_throws ArgumentError fooof(f, DSP.pow2db.(p))
+@test_throws ArgumentError fooof(vcat(0.0, f), vcat(1.0, p); flim = (0, 40))
+@test_throws ArgumentError fooof(f, p; aperiodic_mode = :foo)
+r = fooof(rand(10, 1000, 10); fs = 100)
+@test size(r.ap) == (10, 3, 10)
+@test size(r.pe) == (10, 10)
+@test size(r.r2) == (10, 10)
+@test r.f[1] == 1.0
+@test r.f[end] == 50.0
+r = fooof(rand(10, 1000, 10); fs = 100, method = :stft)
+@test size(r.ap) == (10, 3, 10)
+@test r.f[1] == 1.0
+# non-integer resolution: psd() rounds frequencies to 3 decimals
+r = fooof(rand(2, 2500, 2); fs = 250, wlen = 256)
+@test size(r.ap) == (2, 3, 2)
+# flat channel: NaN result instead of an error
+s = rand(3, 1000, 2)
+s[2, :, :] .= 0
+r = fooof(s; fs = 100)
+@test all(isnan, r.ap[2, :, :])
+@test !any(isnan, r.ap[1, :, :])
+r = fooof(e10; ch = "Fp1")
+@test size(r.ap) == (1, 3, 10)
+@test size(r.model) == (1, length(r.f), 10)
 
 true

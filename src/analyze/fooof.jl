@@ -1,64 +1,5 @@
 export fooof
 
-@info "Test: fooof()"
-# reference values from fooof 1.1.0 (Python) on the same noise-free spectra:
-#   fixed: ap = [1.00846, 1.50140], peaks = [10.0016 0.78872 2.91857; 22.0024 0.38969 3.80960], R² = 0.99986
-#   knee:  ap = [1.0, 25.0, 2.0], no peaks
-f = collect(1:0.5:40)
-p = 10 .^ (1 .- 1.5 .* log10.(f) .+ 0.8 .* exp.(-(f .- 10) .^ 2 ./ (2 * 1.5^2)) .+ 0.4 .* exp.(-(f .- 22) .^ 2 ./ (2 * 2.0^2)))
-r = fooof(f, p)
-@test isapprox(r.ap, [1.00846, 0.0, 1.50140]; atol = 1e-3)
-@test size(r.pe) == (2, 3)
-@test isapprox(r.pe, [10.0016 0.78872 2.91857; 22.0024 0.38969 3.80960]; atol = 1e-3)
-@test isapprox(r.r2, 0.99986; atol = 1e-4)
-@test length(r.model) == length(r.f) == length(f)
-pk = 10 .^ (1 .- log10.(25 .+ f .^ 2))
-r = fooof(f, pk; aperiodic_mode = :knee)
-@test isapprox(r.ap, [1.0, 25.0, 2.0]; rtol = 1e-3)
-@test size(r.pe) == (0, 3)
-r = fooof(f, p; flim = (2, 30), max_n_peaks = 1)
-@test r.f[1] == 2.0
-@test r.f[end] == 30.0
-@test size(r.pe, 1) == 1
-@test_throws ArgumentError fooof(f, pow2db.(p))
-@test_throws ArgumentError fooof(vcat(0.0, f), vcat(1.0, p); flim = (0, 40))
-@test_throws ArgumentError fooof(f, p; aperiodic_mode = :foo)
-r = fooof(rand(10, 1000, 10); fs = 100)
-@test size(r.ap) == (10, 3, 10)
-@test size(r.pe) == (10, 10)
-@test size(r.r2) == (10, 10)
-@test r.f[1] == 1.0
-@test r.f[end] == 50.0
-r = fooof(rand(10, 1000, 10); fs = 100, method = :stft)
-@test size(r.ap) == (10, 3, 10)
-@test r.f[1] == 1.0
-# non-integer resolution: psd() rounds frequencies to 3 decimals
-r = fooof(rand(2, 2500, 2); fs = 250, wlen = 256)
-@test size(r.ap) == (2, 3, 2)
-# flat channel: NaN result instead of an error
-s = rand(3, 1000, 2)
-s[2, :, :] .= 0
-r = fooof(s; fs = 100)
-@test all(isnan, r.ap[2, :, :])
-@test !any(isnan, r.ap[1, :, :])
-r = fooof(e10; ch = "Fp1")
-@test size(r.ap) == (1, 3, 10)
-@test size(r.model) == (1, length(r.f), 10)
-
-# FOOOF / specparam: parameterizing neural power spectra into aperiodic and periodic components
-#
-# Reference:
-#   Donoghue T, Haller M, Peterson EJ, et al. Parameterizing neural power spectra into periodic
-#   and aperiodic components. Nat Neurosci. 2020;23(12):1655-1665. doi:10.1038/s41593-020-00744-x
-#
-# Re-implementation of the fitting algorithm of fooof 1.1.0 / specparam 2.0.0rc (the core
-# algorithm and its default settings are identical in both), with these differences:
-#   - curve fitting uses an internal box-constrained Levenberg-Marquardt solver instead of
-#     scipy.optimize.curve_fit; results agree with the Python reference to within fitting
-#     tolerance, but are not bit-identical
-#   - for `aperiodic_mode = :fixed` the knee is reported as 0 (the fixed model is the knee model
-#     with knee = 0), so that the output always has 3 aperiodic parameters
-
 # private settings (as in fooof/specparam)
 const _FOOOF_AP_PERCENTILE_THRESH = 0.025   # percentile (not fraction!), as passed to np.percentile()
 const _FOOOF_BW_STD_EDGE = 1.0              # drop peaks closer to the edge than this × gaussian SD
@@ -77,7 +18,8 @@ _fooof_fres(f::AbstractVector{<:Real})::Float64 = (f[end] - f[1]) / (length(f) -
 # model functions (power in log10)
 
 function _fooof_ap(f::AbstractVector{<:Real}, p::AbstractVector{<:Real})::Vector{Float64}
-    # fixed: [offset, exponent]; knee: [offset, knee, exponent]
+    # fixed: [offset, exponent]
+    # knee: [offset, knee, exponent]
     if length(p) == 2
         return p[1] .- p[2] .* log10.(f)
     else
@@ -461,7 +403,14 @@ Named tuple:
 
 # Notes
 
+- Re-implementation of the fitting algorithm of fooof 1.1.0 / specparam 2.0.0rc (the core algorithm and its default settings are identical in both), with these differences:
+    - curve fitting uses an internal box-constrained Levenberg-Marquardt solver instead of scipy.optimize.curve_fit; results agree with the Python reference to within fitting tolerance, but are not bit-identical,
+    - for `aperiodic_mode = :fixed` the knee is reported as 0 (the fixed model is the knee model with knee = 0), so that the output always has 3 aperiodic parameters.
 - If fitting fails, all parameters are `NaN` and `pe` / `gp` are empty.
+
+# Reference
+
+Donoghue T, Haller M, Peterson EJ, et al. Parameterizing neural power spectra into periodic and aperiodic components. Nat Neurosci. 2020;23(12):1655-1665. doi:10.1038/s41593-020-00744-x
 """
 function fooof(
     f::AbstractVector{<:Real},
