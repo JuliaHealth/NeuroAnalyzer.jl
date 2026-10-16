@@ -199,12 +199,12 @@ function plot_locs(
     loc_y = _n2v(loc_y)
 
     head12 =
-        maximum(abs.(locs.loc_x)) <= 1.2 &&
-        maximum(abs.(locs.loc_y)) <= 1.2 &&
-        maximum(abs.(locs.loc_z)) <= 1.5
+        maximum(abs.(locs.loc_x)) < 1.2 &&
+        maximum(abs.(locs.loc_y)) < 1.2 &&
+        maximum(abs.(locs.loc_z)) < 1.2
 
-    xl = head12 ? (-1.2, 1.2) : (-1.6, 1.6)
-    yl = head12 ? (-1.2, 1.2) : (-1.6, 1.6)
+    xl = head12 ? (-1.2, 1.2) : (-1.4, 1.4)
+    yl = head12 ? (-1.2, 1.2) : (-1.4, 1.4)
 
     # plot parameters
     if ps === :l
@@ -357,7 +357,7 @@ function plot_locs(
     end
 
     label_offset_x = 0.0
-    label_offset_y = -0.08
+    label_offset_y = -0.04
 
     # draw labels
     if ch_labels

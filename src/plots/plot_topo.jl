@@ -111,33 +111,33 @@ function plot_topo(
 
     # plot parameters
     if ps === :l
-        plot_size   = (800, 800)
+        plot_size = (900, 900)
         marker_size = length(ch) > 64 ? 8 : 16
-        iter        = 512
-        font_size   = 20
-        lw          = 3
-        sw          = 4
+        iter = 512
+        font_size = 20
+        lw = 2
+        sw = 4
         !occursin("\n", title) && title !== "" && (title *= "\n")
     elseif ps === :m
-        plot_size   = (300, 300)
+        plot_size = (300, 300)
         marker_size = length(ch) > 64 ? 2 : 4
-        iter        = 256
-        font_size   = 10
-        cb_title    = ""
-        lw          = 2
-        sw          = 2
+        iter = 256
+        font_size = 10
+        cb_title = ""
+        lw = 1
+        sw = 2
     elseif ps === :s
-        plot_size   = (100, 100)
+        plot_size = (100, 100)
         marker_size = length(ch) > 64 ? 1 : 2
-        iter        = 128
+        iter = 128
         font_size   = 5
-        title       = ""
-        cb          = false
-        contours    = 0
-        cb_title    = ""
-        lw          = 1
-        sw          = 1
-        ch_labels   = false
+        title = ""
+        cb = false
+        contours = 0
+        cb_title = ""
+        lw = 1
+        sw = 1
+        ch_labels = false
     end
 
     # interpolate signal
@@ -192,18 +192,18 @@ function plot_topo(
     end
 
     head12 =
-        maximum(abs.(local_locs.loc_x)) <= 1.2 &&
-        maximum(abs.(local_locs.loc_y)) <= 1.2 &&
-        maximum(abs.(local_locs.loc_z)) <= 1.5
+        maximum(abs.(local_locs.loc_x)) < 1.2 &&
+        maximum(abs.(local_locs.loc_y)) < 1.2 &&
+        maximum(abs.(local_locs.loc_z)) < 1.2
 
     if head12
         xl = (-1.2, 1.2)
         yl = (-1.2, 1.2)
         r  = 1.2
     else
-        xl = (-1.6, 1.6)
-        yl = (-1.6, 1.6)
-        r  = 1.6
+        xl = (-1.4, 1.4)
+        yl = (-1.4, 1.4)
+        r  = 1.4
     end
 
     if head12
@@ -223,7 +223,7 @@ function plot_topo(
     GLMakie.activate!(; title = "plot_topo()")
     fig = GLMakie.Figure(;
         size = plot_size,
-        figure_padding = ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0), # L R B T
+        figure_padding = ps in [:l, :m] ? (20, 20, 20, 20) : (0, 0, 0, 0), # L R B T
     )
 
     # create axis with customizable properties
@@ -274,9 +274,9 @@ function plot_topo(
             interpolated_y,
             s_interpolated;
             linestyle = :dash,
-            levels    = contours,
+            levels = contours,
             linewidth = 0.5,
-            color     = :black,
+            color = :black,
         )
     end
 
@@ -291,7 +291,7 @@ function plot_topo(
                 GLMakie.scatter!(
                     ax, loc_x[idx], loc_y[idx];
                     markersize = marker_size,
-                    color      = :black,
+                    color = :black,
                 )
             end
 
@@ -301,7 +301,7 @@ function plot_topo(
                     GLMakie.scatter!(
                         ax, loc_x[idx], loc_y[idx];
                         markersize  = marker_size * 2,
-                        color       = :gray,
+                        color = :gray,
                         strokewidth = sw,
                         strokecolor = :black,
                     )
@@ -309,7 +309,7 @@ function plot_topo(
                     GLMakie.scatter!(
                         ax, loc_x[idx], loc_y[idx];
                         markersize = marker_size,
-                        color      = :black,
+                        color = :black,
                     )
                 end
             end
@@ -337,11 +337,14 @@ function plot_topo(
 
     if electrodes
         label_offset_x = 0.0
-        label_offset_y = -0.08
+        label_offset_y = -0.04
     else
         label_offset_x = 0.0
         label_offset_y = 0.0
     end
+
+    # draw mask to crop interpolation outside the head circle
+    head12 && GLMakie.arc!(ax, Point2f(0, 0), r, -pi, pi; linewidth = 5, color = :white)
 
     # draw labels
     if ch_labels
@@ -353,16 +356,13 @@ function plot_topo(
                 GLMakie.text!(
                     loc_x[local_i] + label_offset_x,
                     loc_y[local_i] + label_offset_y;
-                    text     = local_locs.label[idx],
-                    align    = (:center, :center),
+                    text = local_locs.label[idx],
+                    align = (:center, :center),
                     fontsize = font_size,
                 )
             end
         end
     end
-
-    # draw mask to crop interpolation outside the head circle
-    head12 && GLMakie.arc!(ax, Point2f(0, 0), r, -pi, pi; linewidth = 5, color = :white)
 
     # draw colorbar
     if cb
@@ -372,8 +372,8 @@ function plot_topo(
             label = cb_title,
             labelsize = font_size - 4,
             ticklabelsize = font_size - 4,
-            height = div(plot_size[2], 2),
-            width = ps === :l ? 25 : 10,
+            height = round(Int64, plot_size[2] * 0.8),
+            width = ps === :l ? 20 : 10,
             tellheight = false,
         )
         rowsize!(fig.layout, 1, ax.scene.viewport[].widths[2])

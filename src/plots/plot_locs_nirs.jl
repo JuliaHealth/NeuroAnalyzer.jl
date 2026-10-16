@@ -187,7 +187,7 @@ function plot_locs_nirs(
     end
 
     label_offset_x = 0.0
-    label_offset_y = -0.08
+    label_offset_y = -0.04
 
     # draw source markers or labels
     if src_labels

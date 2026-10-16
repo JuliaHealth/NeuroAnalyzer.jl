@@ -4,7 +4,7 @@ export read_fine_calibration
 export read_cross_talk
 
 # ===========================================================================
-# Signal-space separation (SSS), temporal SSS (tSSS) and movement
+# Signal-space separation (SSS), temporal SSS (tSSS) and movement 
 # compensation for Neuromag/MEGIN Vectorview/TRIUX data.
 #
 # Implementation follows the published method (Taulu & Kajola 2005, Taulu &
@@ -584,7 +584,7 @@ function maxwell_filter(
         n_found < n_meg && _warn(
             "Fine calibration: $(n_meg - n_found) of $n_meg MEG channels not found in $calibration.",
         )
-        _info("Fine calibration applied to $n_found channels.")
+        _info("Fine calibration applied to $n_found channels")
     end
 
     # ------------------------------------------------------------------ #
@@ -606,7 +606,7 @@ function maxwell_filter(
         d_ct = zeros(length(ct.ch_names), size(data, 2))
         d_ct[ci, :] = data[have, :]
         data[have, :] = (ct.decoupler*d_ct)[ci, :]
-        _info("Cross-talk compensation applied.")
+        _info("Cross-talk compensation applied")
     end
 
     coil_scale = [m ? Float64(mag_scale) : 1.0 for m in is_mag]
@@ -660,7 +660,7 @@ function maxwell_filter(
     keep = vcat(in_keep, collect((n_in + 1):(n_in + n_out)))
     n_keep_in = length(in_keep)
     _info(
-        "SSS: using $n_keep_in/$n_in internal and $n_out/$n_out external components (int_order = $int_order, ext_order = $ext_order).",
+        "SSS: using $n_keep_in/$n_in internal and $n_out/$n_out external components (int_order = $int_order, ext_order = $ext_order)",
     )
 
     # operators for one head position: decomposition pinv and reconstruction
@@ -702,7 +702,7 @@ function maxwell_filter(
             end
             last_T = Tn
         end
-        _info("Movement compensation: $(length(seg_start)) head position(s).")
+        _info("Movement compensation: $(length(seg_start)) head position(s)")
     end
     seg_end = vcat(seg_start[2:end] .- 1, n_s)
 
@@ -738,7 +738,7 @@ function maxwell_filter(
             size(P, 2) > 0 && (out[:, b1:b2] .-= (out[:, b1:b2] * P) * P')
         end
         _info(
-            "tSSS: $(length(starts)) buffer(s) of $(st_duration) s, $(n_proj_total) temporal component(s) removed in total.",
+            "tSSS: $(length(starts)) buffer(s) of $(st_duration) s, $(n_proj_total) temporal component(s) removed in total",
         )
     end
 
@@ -758,7 +758,7 @@ function maxwell_filter(
 
     # pre-SSS projectors are no longer valid
     if haskey(r, :ssp_data) && !isempty(r[:ssp_data])
-        _info("$(size(r[:ssp_data], 1)) SSP projector(s) removed (not valid after SSS).")
+        _info("$(size(r[:ssp_data], 1)) SSP projector(s) removed (not valid after SSS)")
         r[:ssp_data] = Matrix{Float64}(undef, 0, 0)
         r[:ssp_channels] = zeros(Bool, length(r[:ssp_channels]))
         r[:ssp_labels] = String[]

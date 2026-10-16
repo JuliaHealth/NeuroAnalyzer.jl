@@ -82,16 +82,16 @@ function plot_locs3d(
         end
     end
 
-    if maximum(abs.(locs.loc_x)) <= 1.2 &&
-       maximum(abs.(locs.loc_y)) <= 1.2 &&
-       maximum(abs.(locs.loc_z)) <= 1.5
-        x_lim = (-1.5, 1.5)
-        y_lim = (-1.5, 1.5)
-        z_lim = (-1.5, 1.5)
+    if maximum(abs.(locs.loc_x)) < 1.2 &&
+       maximum(abs.(locs.loc_y)) < 1.2 &&
+       maximum(abs.(locs.loc_z)) < 1.2
+        x_lim = (-1.4, 1.4)
+        y_lim = (-1.4, 1.4)
+        z_lim = (-1.4, 1.4)
     else
-        x_lim = (-2.0, 2.0)
-        y_lim = (-2.0, 2.0)
-        z_lim = (-2.0, 2.0)
+        x_lim = (-1.6, 1.6)
+        y_lim = (-1.6, 1.6)
+        z_lim = (-1.6, 1.6)
     end
 
     plot_size   = (850, 850)

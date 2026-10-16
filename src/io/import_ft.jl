@@ -303,7 +303,7 @@ function import_ft(
             locs_normalize!(meg_locs)
             locs_cart2sph!(meg_locs)
             locs_sph2pol!(meg_locs)
-            locs_scale!(meg_locs; r = 1.5)
+            locs_scale!(meg_locs; r = 1.2)
             locs = meg_locs
         else
             locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
@@ -327,7 +327,7 @@ function import_ft(
             locs_normalize!(eeg_locs)
             locs_cart2sph!(eeg_locs)
             locs_sph2pol!(eeg_locs)
-            locs_scale!(eeg_locs; r = 1.5)
+            locs_scale!(eeg_locs; r = 1.0)
             locs = vcat(locs, eeg_locs)
         end
 
