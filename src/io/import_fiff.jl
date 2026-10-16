@@ -6,8 +6,8 @@ export import_locs_fiff
 # internal helpers
 # ---------------------------------------------------------------------------
 
-# all decoded values of a tag, optionally restricted to a block type and/or
-# block instance; fiff_object entries: (index, tag, block, data, instance)
+# all decoded values of a tag, optionally restricted to a block type and/or block instance
+# fiff_object entries: (index, tag, block, data, instance)
 function _fiff_getall(
     fo::Vector{Any},
     tag::String;
@@ -44,8 +44,8 @@ _fiff_vec(x) = isnothing(x) ? Any[] : (x isa AbstractVector ? x : [x])
 
 _fiff_nan2nothing(x) = (x isa Real && isnan(x)) ? nothing : x
 
-# channel labels as used in NEURO objects: ch_name (or kind + logical number
-# when empty), normalized with _clean_meg_labels()
+# channel labels as used in NEURO objects: ch_name (or kind + logical number when empty)
+# normalized with _clean_meg_labels()
 function _fiff_labels(mi::Dict{Symbol, Any})::Vector{String}
     labels = [
         isempty(n) ? uppercase(_find_fiff_chtype(ch.kind)) * " " * string(ch.log_no) : n for
@@ -64,8 +64,8 @@ function _fiff_fit_sphere(p::AbstractMatrix{<:Real})::Tuple{Vector{Float64}, Flo
     return c, sqrt(sol[4] + sum(abs2, c))
 end
 
-# head-shape digitization points (head frame, m): EEG (kind 3) and extra
-# (kind 4) points, nose/face region (z < 0, y > 0) excluded as in MNE-Python
+# head-shape digitization points (head frame, m):
+# EEG (kind 3) and extra (kind 4) points, nose/face region (z < 0, y > 0) excluded as in MNE-Python
 _fiff_hsp(mi::Dict{Symbol, Any})::Vector{Vector{Float64}} = [
     [d[3], d[4], d[5]] for
     d in mi[:dig] if d isa Tuple && d[1] in (3, 4) && !(d[5] < 0 && d[4] > 0)
@@ -79,10 +79,10 @@ function _fiff_head_origin(mi::Dict{Symbol, Any})::Vector{Float64}
     return first(_fiff_fit_sphere(permutedims(reduce(hcat, hsp))))
 end
 
-# cHPI coil frequencies (Hz) and digitized coil positions (head frame, m),
-# matched by coil number
+# cHPI coil frequencies (Hz) and digitized coil positions (head frame, m), matched by coil number
 function _fiff_hpi(mi::Dict{Symbol, Any})::Dict{Symbol, Any}
-    coils = mi[:hpi_coils]                      # (coil number, frequency)
+    # (coil number, frequency)
+    coils = mi[:hpi_coils]
     dig = [(d[2], [d[3], d[4], d[5]]) for d in mi[:dig] if d isa Tuple && d[1] == 2]
     (isempty(coils) || isempty(dig)) && return Dict{Symbol, Any}()
     sort!(coils; by = first)
@@ -133,9 +133,9 @@ Build a NeuroAnalyzer `locs` DataFrame from FIFF channel information.
 - MEG sensor positions (`ch_info.loc[1:3]`, device frame) are transformed to the head frame using the device → head transform; without it (e.g. empty-room data) they stay in the device frame.
 - EEG/sEEG/ECoG/DBS electrode positions are stored in the head frame.
 - Reference MEG sensors and channels without a position (stim, misc, ...) are skipped.
-- Coordinates are centred on a sphere fitted to the head-shape digitisation points (extra and EEG points, nose region excluded, as in MNE-Python) or, if fewer than 10 such points exist, to the channel positions, and scaled so that the outermost channel has radius 1.
+- With at least 10 head-shape digitisation points (extra and EEG points, nose region excluded, as in MNE-Python), coordinates are centred on the fitted head sphere and divided by its radius: the head surface (EEG electrodes) is at radius ≈ 1 and MEG sensors are at their true relative distance. Otherwise coordinates are centred on a sphere fitted to the channel positions and scaled so that the outermost MEG sensor has radius 1.2 and the outermost electrode radius 1.0.
 
-Both FIFF head and device frames are RAS (x → right, y → anterior, z → superior), matching NeuroAnalyzer.
+Both FIFF head and device frames are RAS (x → right, y → anterior, z → superior).
 """
 function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
     chs = mi[:ch_info]
@@ -149,6 +149,7 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
 
     idx = Int64[]
     pos = Vector{Vector{Float64}}()
+    is_meg = Bool[]
     for (i, ch) in enumerate(chs)
         r0 = ch.loc[1:3]
         (all(isfinite, r0) && !all(iszero, r0)) || continue
@@ -160,6 +161,7 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
         end
         push!(idx, i)
         push!(pos, r0)
+        push!(is_meg, k in meg_kinds)
     end
 
     l = DataFrame(
@@ -177,20 +179,28 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
         _info("FIFF data contain no channel positions.")
         return l
     end
-    p = permutedims(reduce(hcat, pos))   # n × 3
+    # n × 3
+    p = permutedims(reduce(hcat, pos))
 
     # head-shape points: kind 3 = EEG, 4 = extra; exclude nose/face (z < 0, y > 0)
     hsp = _fiff_hsp(mi)
-    c = if length(hsp) >= 10 && (!has_meg || !isnothing(t))
-        first(_fiff_fit_sphere(permutedims(reduce(hcat, hsp))))
-    elseif size(p, 1) >= 4
-        first(_fiff_fit_sphere(p))
+    if length(hsp) >= 10 && (!has_meg || !isnothing(t))
+        # head sphere: head surface at radius 1, sensors at their true relative distance
+        c, r_head = _fiff_fit_sphere(permutedims(reduce(hcat, hsp)))
+        p = (p .- c') ./ r_head
     else
-        zeros(3)
+        # no usable head shape: center on the channels
+        # outermost MEG sensor at radius 1.2 and outermost electrode at radius 1.0
+        c = size(p, 1) >= 4 ? first(_fiff_fit_sphere(p)) : zeros(3)
+        p = p .- c'
+        r = vec(sqrt.(sum(p .^ 2; dims = 2)))
+        for (mask, r_out) in ((is_meg, 1.2), (.!is_meg, 1.0))
+            any(mask) || continue
+            rmax = maximum(r[mask])
+            rmax > 0 && (p[mask, :] .*= r_out / rmax)
+        end
+        _info("Fewer than 10 head-shape points: channel locations scaled to fixed radii (MEG 1.2, EEG 1.0).")
     end
-    p = p .- c'
-    rmax = maximum(sqrt.(sum(p .^ 2; dims = 2)))
-    rmax > 0 && (p ./= rmax)
 
     for (j, i) in enumerate(idx)
         push!(l, (labels[i], 0.0, 0.0, p[j, 1], p[j, 2], p[j, 3], 0.0, 0.0, 0.0))
@@ -204,10 +214,8 @@ end
 """
     _fiff_raw_data(buf, fb, insts, raw_inst, nchan)
 
-Assemble the continuous data matrix (channels × samples) from the data buffers
-of one raw-data block. Handles `first_sample`, `data_skip` (in buffers) and
-`data_skip_samp` (in samples). Skips before the first buffer advance
-`first_samp` (as MNE-Python does); later skips are filled with zeros.
+Assemble the continuous data matrix (channels × samples) from the data buffers of one raw-data block. Handles `first_sample`, `data_skip` (in buffers) and `data_skip_samp` (in samples). Skips before the first buffer advance `first_samp` (as MNE-Python does); later skips are filled with zeros.
+
 Data are returned uncalibrated (raw ADC units).
 """
 function _fiff_raw_data(
@@ -226,7 +234,8 @@ function _fiff_raw_data(
     pending_skip = 0
     seen_buffer = false
     orig_format = ""
-    segs = Tuple{Int64, Int64}[]   # (tag index or 0 = zeros, n samples)
+    # (tag index or 0 = zeros, n samples)
+    segs = Tuple{Int64, Int64}[]
 
     for i in findall(isequal(raw_inst), insts)
         kind = fb[i, 2]
@@ -289,7 +298,8 @@ end
 function _fiff_next_file(fo::Vector{Any}, file_name::String)::Union{Nothing, String}
     for inst in _fiff_instances(fo, "ref")
         role = _fiff_get(fo, "ref_role"; inst = inst)
-        role == 2 || continue                                  # FIFFV_ROLE_NEXT_FILE
+        # FIFFV_ROLE_NEXT_FILE
+        role == 2 || continue
         name = _fiff_get(fo, "ref_file_name"; inst = inst)
         num = _fiff_get(fo, "ref_file_num"; inst = inst)
         if !isnothing(name) && !isempty(name)
@@ -309,7 +319,9 @@ end
 
 Load an Elekta/MEGIN Neuromag FIFF (Functional Image File Format) file and return the parsed FIFF structure.
 
-Tags are decoded according to their data type, so unknown tag kinds do not abort reading. Raw data are read from `raw_data`, `continuous_data` or MaxShield (`maxshield_raw_data`) blocks; skips and `first_sample` are handled. Gzip-compressed files (`.fif.gz`) are not supported - decompress them first.
+Tags are decoded according to their data type, so unknown tag kinds do not abort reading. Raw data are read from `raw_data`, `continuous_data` or MaxShield (`maxshield_raw_data`) blocks; skips and `first_sample` are handled. 
+
+Gzip-compressed files (`.fif.gz`) are not supported - decompress them first.
 
 # Arguments
 
@@ -402,8 +414,8 @@ function load_fiff(
     length(ch_info) == nchan ||
         throw(ArgumentError("$file_name: nchan = $nchan but $(length(ch_info)) ch_info records found."))
 
-    # channel names: ch_info struct holds max. 15 characters; MNE stores
-    # longer names in per-channel ch_info blocks (FIFF_NAME tag)
+    # channel names: ch_info struct holds max. 15 characters
+    # MNE stores longer names in per-channel ch_info blocks (FIFF_NAME tag)
     ch_names = String[ch.ch_name for ch in ch_info]
     ext_names = _fiff_getall(fiff_object, "name"; block = "ch_info")
     if length(ext_names) == nchan && all(x -> x isa String && !isempty(x), ext_names)
@@ -576,8 +588,7 @@ function load_fiff(
             "$file_name contains no continuous raw data (evoked / epochs FIFF files are not supported by this importer).",
         ),
     )
-    # IAS (MaxShield) raw data are flagged here; import_fiff() decides whether
-    # to accept them
+    # IAS (MaxShield) raw data are flagged here; import_fiff() decides whether to accept them
     meas_info[:maxshield] = maxshield
 
     raw_data = if read_data
@@ -604,9 +615,13 @@ end
 
 Load an Elekta/MEGIN Neuromag FIFF raw file (MEG and/or EEG) and return a `NeuroAnalyzer.NEURO` object.
 
-Supports Vectorview/TRIUX raw and MaxFilter-processed files, MNE-Python-saved raw files (including long channel names, bad channels and annotations) and split files (`*_raw.fif`, `*_raw-1.fif`, ...). Signals are calibrated as `raw × range × cal` (as in MNE-Python) and converted to fT, fT/cm and μV.
+Supports Vectorview/TRIUX raw and MaxFilter-processed files, MNE-Python-saved raw files (including long channel names, bad channels and annotations) and split files (`*_raw.fif`, `*_raw-1.fif`, ...).
 
-Files recorded with internal active shielding (IAS, "MaxShield") are refused by default, as in MNE-Python: the compensation coils distort the measured field and the data must be processed with SSS (e.g. MaxFilter) before analysis. When accepted with `allow_maxshield = true`, the recording header contains `:maxshield => true`.
+Signals are calibrated as `raw × range × cal` (as in MNE-Python) and converted to fT, fT/cm and μV.
+
+Files recorded with internal active shielding (IAS, "MaxShield") are refused by default, as in MNE-Python: the compensation coils distort the measured field and the data must be processed with SSS (e.g. MaxFilter) before analysis. 
+
+When accepted with `allow_maxshield = true`, the recording header contains `:maxshield => true`.
 
 # Arguments
 
@@ -626,6 +641,7 @@ function import_fiff(
     allow_maxshield::Bool = false,
     channel_locs::Symbol = :fiff,
 )::NeuroAnalyzer.NEURO
+    # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     channel_locs in (:fiff, :layout, :none) ||
         throw(ArgumentError("channel_locs must be :fiff, :layout or :none."))
@@ -723,7 +739,6 @@ function import_fiff(
         @views data[idx, :, 1] .*= (ch.range * ch.cal)
     end
 
-
     # convert to standard units
     for idx = 1:ch_n
         if units[idx] == "T"
@@ -815,8 +830,7 @@ function import_fiff(
         end
     end
 
-    # MNE annotations: onsets are relative to meas_date when it is stored,
-    # i.e. they include first_samp / sfreq
+    # MNE annotations: onsets are relative to meas_date when it is stored, i.e. they include first_samp / sfreq
     for an in mi[:annotations]
         t0 = an[:has_orig_time] ? first_samp / sfreq : 0.0
         for k in eachindex(an[:onset])
@@ -842,7 +856,8 @@ function import_fiff(
     # ------------------------------------------------------------------ #
     ssp_labels = String[]
     ssp_channels = zeros(Bool, ch_n)
-    ssp_rows = Vector{Vector{Float64}}()   # full-length (ch_n) vectors
+    # full-length (ch_n) vectors
+    ssp_rows = Vector{Vector{Float64}}()
 
     for (item_idx, item) in enumerate(mi[:ssp])
         vecs = item[:vectors]
@@ -1035,7 +1050,7 @@ function import_fiff(
         add_locs!(obj; locs = l)
     elseif channel_locs !== :none && is_306
         # the bundled layout describes the 306-channel Vectorview/TRIUX helmet only
-        channel_locs === :fiff && _info("Using the bundled 306-channel layout.")
+        channel_locs === :fiff && _info("Using the bundled 306-channel Vectorview/TRIUX layout.")
         add_locs!(obj; locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv")))
     elseif channel_locs !== :none
         _info("No channel locations available; OBJ.locs left empty.")
@@ -1056,7 +1071,11 @@ end
 
 Load channel locations from a FIFF file (raw, evoked or any file with measurement info).
 
-MEG sensor positions are transformed from the device to the head frame (when the device → head transform is present), EEG electrode positions are taken from the head frame. Coordinates are centred on a sphere fitted to the head-shape digitisation (or to the channel positions) and scaled so that the outermost channel has radius 1. Reference MEG sensors and channels without positions are omitted. Sensor orientations (coil normals) are not stored.
+MEG sensor positions are transformed from the device to the head frame (when the device → head transform is present), EEG electrode positions are taken from the head frame.
+
+Coordinates are centred on a sphere fitted to the head-shape digitisation (or to the channel positions) and scaled so that the outermost channel has radius 1.2. Reference MEG sensors and channels without positions are omitted.
+
+Sensor orientations (coil normals) are not stored.
 
 # Arguments
 

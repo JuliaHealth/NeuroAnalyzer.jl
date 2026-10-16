@@ -360,12 +360,9 @@ function plot_spectrogram_topo(
     if ch_n <= 64
         xl = 1.2
         yl = 1.2
-    elseif ch_n <= 100
-        xl = 1.5
-        yl = 1.5
     else
-        xl = 1.5
-        yl = 1.5
+        xl = 1.3
+        yl = 1.3
     end
     if gui
         if ch_n <= 64
