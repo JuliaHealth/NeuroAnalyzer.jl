@@ -1,615 +1,899 @@
 export load_fiff
 export import_fiff
+export import_locs_fiff
+
+# ---------------------------------------------------------------------------
+# internal helpers
+# ---------------------------------------------------------------------------
+
+# all decoded values of a tag, optionally restricted to a block type and/or
+# block instance; fiff_object entries: (index, tag, block, data, instance)
+function _fiff_getall(
+    fo::Vector{Any},
+    tag::String;
+    block::Union{Nothing, String} = nothing,
+    inst::Union{Nothing, Int64} = nothing,
+)::Vector{Any}
+    return Any[
+        x[4] for x in fo if x[2] == tag &&
+        (isnothing(block) || x[3] == block) &&
+        (isnothing(inst) || x[5] == inst)
+    ]
+end
+
+function _fiff_get(
+    fo::Vector{Any},
+    tag::String;
+    block::Union{Nothing, String} = nothing,
+    inst::Union{Nothing, Int64} = nothing,
+)
+    v = _fiff_getall(fo, tag; block = block, inst = inst)
+    return isempty(v) ? nothing : v[1]
+end
+
+# instance numbers of all occurrences of a block type, in file order
+_fiff_instances(fo::Vector{Any}, block::String)::Vector{Int64} =
+    unique(Int64[x[5] for x in fo if x[3] == block])
+
+# colon-separated FIFF name list; MNE escapes literal colons as {COLON}
+_fiff_name_list(s)::Vector{String} =
+    (isnothing(s) || isempty(s)) ? String[] :
+    [replace(String(v), "{COLON}" => ":") for v in split(s, ':')]
+
+_fiff_vec(x) = isnothing(x) ? Any[] : (x isa AbstractVector ? x : [x])
+
+_fiff_nan2nothing(x) = (x isa Real && isnan(x)) ? nothing : x
+
+# channel labels as used in NEURO objects: ch_name (or kind + logical number
+# when empty), normalized with _clean_meg_labels()
+function _fiff_labels(mi::Dict{Symbol, Any})::Vector{String}
+    labels = [
+        isempty(n) ? uppercase(_find_fiff_chtype(ch.kind)) * " " * string(ch.log_no) : n for
+        (n, ch) in zip(mi[:ch_names], mi[:ch_info])
+    ]
+    return _clean_meg_labels(labels)
+end
+
+# least-squares sphere fit to points (n × 3); returns center and radius
+function _fiff_fit_sphere(p::AbstractMatrix{<:Real})::Tuple{Vector{Float64}, Float64}
+    size(p, 1) >= 4 || throw(ArgumentError("At least 4 points are required to fit a sphere."))
+    a = hcat(2 .* p, ones(size(p, 1)))
+    b = vec(sum(p .^ 2; dims = 2))
+    sol = a \ b
+    c = Vector{Float64}(sol[1:3])
+    return c, sqrt(sol[4] + sum(abs2, c))
+end
+
+# head-shape digitization points (head frame, m): EEG (kind 3) and extra
+# (kind 4) points, nose/face region (z < 0, y > 0) excluded as in MNE-Python
+_fiff_hsp(mi::Dict{Symbol, Any})::Vector{Vector{Float64}} = [
+    [d[3], d[4], d[5]] for
+    d in mi[:dig] if d isa Tuple && d[1] in (3, 4) && !(d[5] < 0 && d[4] > 0)
+]
+
+# head origin (center of a sphere fitted to head-shape points, head frame, m);
+# empty if fewer than 10 points are available
+function _fiff_head_origin(mi::Dict{Symbol, Any})::Vector{Float64}
+    hsp = _fiff_hsp(mi)
+    length(hsp) >= 10 || return Float64[]
+    return first(_fiff_fit_sphere(permutedims(reduce(hcat, hsp))))
+end
+
+# cHPI coil frequencies (Hz) and digitized coil positions (head frame, m),
+# matched by coil number
+function _fiff_hpi(mi::Dict{Symbol, Any})::Dict{Symbol, Any}
+    coils = mi[:hpi_coils]                      # (coil number, frequency)
+    dig = [(d[2], [d[3], d[4], d[5]]) for d in mi[:dig] if d isa Tuple && d[1] == 2]
+    (isempty(coils) || isempty(dig)) && return Dict{Symbol, Any}()
+    sort!(coils; by = first)
+    sort!(dig; by = first)
+    pos = Vector{Vector{Float64}}()
+    for (no, _) in coils
+        i = findfirst(d -> d[1] == no, dig)
+        isnothing(i) && break
+        push!(pos, dig[i][2])
+    end
+    if length(pos) != length(coils)
+        # coil numbers do not match digitization identifiers: fall back to order
+        length(dig) == length(coils) || begin
+            _warn("Number of digitized HPI coils ($(length(dig))) differs from cHPI coils ($(length(coils))); cHPI information not stored.")
+            return Dict{Symbol, Any}()
+        end
+        _warn("HPI coil numbers do not match digitization identifiers; coils matched by order.")
+        pos = [d[2] for d in dig]
+    end
+    return Dict{Symbol, Any}(
+        :coil_no => [first(c) for c in coils],
+        :freqs => Float64[last(c) for c in coils],
+        :dig => permutedims(reduce(hcat, pos)),
+    )
+end
+
+# device → head rigid transform (rotation, translation) or nothing
+function _fiff_dev_head_t(mi::Dict{Symbol, Any})
+    candidates = Any[mi[:dev_head_t]]
+    hr = mi[:hpi][:hpi_result]
+    for (k, v) in hr
+        startswith(string(k), "coord_trans") && push!(candidates, v)
+    end
+    for t in candidates
+        t isa Tuple && length(t) == 6 || continue
+        # FIFFV_COORD_DEVICE = 1, FIFFV_COORD_HEAD = 4
+        t[1] == 1 && t[2] == 4 && return (t[3], t[4])
+        t[1] == 4 && t[2] == 1 && return (t[5], t[6])
+    end
+    return nothing
+end
+
+"""
+    _fiff_locs(mi, labels)
+
+Build a NeuroAnalyzer `locs` DataFrame from FIFF channel information.
+
+- MEG sensor positions (`ch_info.loc[1:3]`, device frame) are transformed to the head frame using the device → head transform; without it (e.g. empty-room data) they stay in the device frame.
+- EEG/sEEG/ECoG/DBS electrode positions are stored in the head frame.
+- Reference MEG sensors and channels without a position (stim, misc, ...) are skipped.
+- Coordinates are centred on a sphere fitted to the head-shape digitisation points (extra and EEG points, nose region excluded, as in MNE-Python) or, if fewer than 10 such points exist, to the channel positions, and scaled so that the outermost channel has radius 1.
+
+Both FIFF head and device frames are RAS (x → right, y → anterior, z → superior), matching NeuroAnalyzer.
+"""
+function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
+    chs = mi[:ch_info]
+    t = _fiff_dev_head_t(mi)
+    meg_kinds = ("meg",)
+    el_kinds = ("eeg", "seeg", "ecog", "dbs")
+    has_meg = any(ch -> _find_fiff_chtype(ch.kind) in meg_kinds, chs)
+    has_meg && isnothing(t) && _info(
+        "No device → head transform found; MEG sensor locations are given in the device frame.",
+    )
+
+    idx = Int64[]
+    pos = Vector{Vector{Float64}}()
+    for (i, ch) in enumerate(chs)
+        r0 = ch.loc[1:3]
+        (all(isfinite, r0) && !all(iszero, r0)) || continue
+        k = _find_fiff_chtype(ch.kind)
+        if k in meg_kinds
+            !isnothing(t) && (r0 = t[1] * r0 .+ t[2])
+        elseif !(k in el_kinds)
+            continue
+        end
+        push!(idx, i)
+        push!(pos, r0)
+    end
+
+    l = DataFrame(
+        :label => String[],
+        :loc_radius => Float64[],
+        :loc_theta => Float64[],
+        :loc_x => Float64[],
+        :loc_y => Float64[],
+        :loc_z => Float64[],
+        :loc_radius_sph => Float64[],
+        :loc_theta_sph => Float64[],
+        :loc_phi_sph => Float64[],
+    )
+    if isempty(idx)
+        _info("FIFF data contain no channel positions.")
+        return l
+    end
+    p = permutedims(reduce(hcat, pos))   # n × 3
+
+    # head-shape points: kind 3 = EEG, 4 = extra; exclude nose/face (z < 0, y > 0)
+    hsp = _fiff_hsp(mi)
+    c = if length(hsp) >= 10 && (!has_meg || !isnothing(t))
+        first(_fiff_fit_sphere(permutedims(reduce(hcat, hsp))))
+    elseif size(p, 1) >= 4
+        first(_fiff_fit_sphere(p))
+    else
+        zeros(3)
+    end
+    p = p .- c'
+    rmax = maximum(sqrt.(sum(p .^ 2; dims = 2)))
+    rmax > 0 && (p ./= rmax)
+
+    for (j, i) in enumerate(idx)
+        push!(l, (labels[i], 0.0, 0.0, p[j, 1], p[j, 2], p[j, 3], 0.0, 0.0, 0.0))
+    end
+    locs_cart2sph!(l)
+    locs_cart2pol!(l)
+
+    return l
+end
+
+"""
+    _fiff_raw_data(buf, fb, insts, raw_inst, nchan)
+
+Assemble the continuous data matrix (channels × samples) from the data buffers
+of one raw-data block. Handles `first_sample`, `data_skip` (in buffers) and
+`data_skip_samp` (in samples). Skips before the first buffer advance
+`first_samp` (as MNE-Python does); later skips are filled with zeros.
+Data are returned uncalibrated (raw ADC units).
+"""
+function _fiff_raw_data(
+    buf::Vector{Vector{UInt8}},
+    fb::Matrix{Int64},
+    insts::Vector{Int64},
+    raw_inst::Int64,
+    nchan::Int64,
+)::Tuple{Matrix{Float64}, Int64, String}
+    k_first = _find_fiff_tag("first_sample")
+    k_skip = _find_fiff_tag("data_skip")
+    k_skip_samp = _find_fiff_tag("data_skip_samp")
+    k_buf = _find_fiff_tag("data_buffer")
+
+    first_samp = 0
+    pending_skip = 0
+    seen_buffer = false
+    orig_format = ""
+    segs = Tuple{Int64, Int64}[]   # (tag index or 0 = zeros, n samples)
+
+    for i in findall(isequal(raw_inst), insts)
+        kind = fb[i, 2]
+        if kind == k_first && !seen_buffer
+            first_samp = _i32i64(buf[i][1:4])
+        elseif kind == k_skip
+            pending_skip += _i32i64(buf[i][1:4])
+        elseif kind == k_skip_samp
+            n = _i32i64(buf[i][1:4])
+            n > 0 && push!(segs, (0, n))
+        elseif kind == k_buf
+            (fb[i, 3] & 0xFFFF0000) != 0 &&
+                throw(ArgumentError("Matrix-coded FIFF data buffers are not supported."))
+            t = fb[i, 3] & 0x0000FFFF
+            nb = t in (2, 16) ? 2 : t in (3, 4) ? 4 : t == 5 ? 8 : 0
+            nb == 0 && throw(
+                ArgumentError(
+                    "FIFF data buffers of type $(_find_fiff_dt(t)) are not supported; please send this file to adam.wysokinski@neuroanalyzer.org",
+                ),
+            )
+            isempty(orig_format) && (orig_format = _find_fiff_dt(t))
+            sz = length(buf[i])
+            sz % (nb * nchan) == 0 || throw(
+                ArgumentError(
+                    "FIFF data buffer size ($sz bytes) is not a multiple of $nchan channels × $nb bytes.",
+                ),
+            )
+            ns = sz ÷ (nb * nchan)
+            if pending_skip > 0
+                if seen_buffer
+                    push!(segs, (0, pending_skip * ns))
+                else
+                    first_samp += pending_skip * ns
+                end
+                pending_skip = 0
+            end
+            push!(segs, (i, ns))
+            seen_buffer = true
+        end
+    end
+
+    seen_buffer || throw(ArgumentError("FIFF raw data block contains no data buffers."))
+
+    data = zeros(Float64, nchan, sum(last, segs))
+    col = 0
+    for (i, ns) in segs
+        if i > 0
+            t = fb[i, 3] & 0x0000FFFF
+            T = t in (2, 16) ? Int16 : t == 3 ? Int32 : t == 4 ? Float32 : Float64
+            # each buffer is sample-major: all channels of sample 1, then sample 2, ...
+            @views data[:, (col + 1):(col + ns)] .= reshape(_be(T, buf[i]), nchan, ns)
+        end
+        col += ns
+    end
+
+    return data, first_samp, orig_format
+end
+
+# path of the next part of a split FIFF file (or nothing)
+function _fiff_next_file(fo::Vector{Any}, file_name::String)::Union{Nothing, String}
+    for inst in _fiff_instances(fo, "ref")
+        role = _fiff_get(fo, "ref_role"; inst = inst)
+        role == 2 || continue                                  # FIFFV_ROLE_NEXT_FILE
+        name = _fiff_get(fo, "ref_file_name"; inst = inst)
+        num = _fiff_get(fo, "ref_file_num"; inst = inst)
+        if !isnothing(name) && !isempty(name)
+            return joinpath(dirname(file_name), basename(name))
+        elseif !isnothing(num)
+            # MNE default naming: xxx_raw.fif → xxx_raw-1.fif → xxx_raw-2.fif ...
+            m = match(r"^(.*?)(-\d+)?(\.fif(?:f)?)$"i, file_name)
+            isnothing(m) && return nothing
+            return m.captures[1] * "-$num" * m.captures[3]
+        end
+    end
+    return nothing
+end
 
 """
     load_fiff(file_name)
 
-Load an Elekta-Neuromag FIFF (Functional Image File Format) file and return the parsed FIFF structure.
+Load an Elekta/MEGIN Neuromag FIFF (Functional Image File Format) file and return the parsed FIFF structure.
+
+Tags are decoded according to their data type, so unknown tag kinds do not abort reading. Raw data are read from `raw_data`, `continuous_data` or MaxShield (`maxshield_raw_data`) blocks; skips and `first_sample` are handled. Gzip-compressed files (`.fif.gz`) are not supported - decompress them first.
 
 # Arguments
 
 - `file_name::String`: path to the `.fif` or `.fiff` file
+- `read_data::Bool=true`: read raw data buffers; if `false`, only measurement info is read (`:raw_data` is `nothing`) and files without raw data (e.g. evoked) are accepted
 
 # Returns
 
-- `Dict{Symbol, Dict{Any, Any}}`: FIFF structure
-- `Vector{Any}`: FIFF object
-- `Matrix{Int64}`: FIFF blocks
+- `Dict{Symbol, Any}`: FIFF structure (`:meas_info`, `:raw_data`)
+- `Vector{Any}`: FIFF object (one `(index, tag, block, data, block_instance)` tuple per tag; data buffers are not decoded here)
+- `Matrix{Int64}`: FIFF blocks (tag position, kind, data type, size, block level, block type)
 
 # References
 
 1. Elekta Neuromag: Functional Image File Format Description. FIFF v1.3, 2011.
+2. MNE-Python FIFF reader (mne/_fiff), used as the reference implementation.
 """
 function load_fiff(
-    file_name::String,
-)::Tuple{
-    Dict{Symbol, Dict{Any, Any}},
-    Vector{Any},
-    Matrix{Int64},
-}
-    buf, fiff_blocks = open(file_name, "r") do fid
+    file_name::String;
+    read_data::Bool = true,
+)::Tuple{Dict{Symbol, Any}, Vector{Any}, Matrix{Int64}}
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    endswith(lowercase(file_name), ".gz") && throw(
+        ArgumentError("Gzip-compressed FIFF files are not supported; decompress $file_name first."),
+    )
 
-        # verify first tag is file_id (required by the FIFF spec).
-        tag_kind, tag_type, tag_size, data, tag_next =
-            try
-                _read_fiff_tag(fid)
-            catch
-                throw(ArgumentError("$file_name: first FIFF tag cannot be read."))
-            end
+    buf, fiff_blocks, insts = open(file_name, "r") do fid
+        # the first tag must be file_id (id_t, 20 bytes)
+        tag_kind, tag_type, tag_size, _, _ = try
+            _read_fiff_tag(fid)
+        catch
+            throw(ArgumentError("$file_name: first FIFF tag cannot be read."))
+        end
         tag_kind == _find_fiff_tag("file_id") ||
             throw(ArgumentError("$file_name is not a FIFF file."))
-        tag_size == 20 ||
-            throw(
-                ArgumentError(
-                    "$file_name is not a valid FIFF file (unexpected file_id size).",
-                ),
-            )
-
-        buf, fiff_blocks = _create_fiff_block(fid)
-        return buf, fiff_blocks # returned from do block
+        (tag_type == 31 && tag_size == 20) ||
+            throw(ArgumentError("$file_name is not a valid FIFF file (malformed file_id)."))
+        return _create_fiff_block(fid)
     end
-    # file closed here in all cases
 
+    # ------------------------------------------------------------------ #
+    # decode all tags (by data type)                                     #
+    # ------------------------------------------------------------------ #
+    k_buf = _find_fiff_tag("data_buffer")
     fiff_object = Any[]
-    @inbounds for block_idx in eachindex(buf)
-        tag_type = fiff_blocks[block_idx, 2]
-        tag_dt = fiff_blocks[block_idx, 3]
-        buf_tmp = @views buf[block_idx]
-        d = nothing
-
-        if tag_type in [107, 108]
-            # void
-
-        elseif tag_type in [210]
-            d = _find_fiff_aspect(_i32i64(buf_tmp))
-
-        elseif tag_type in [264]
-            d = _find_fiff_sss_job(_i32i64(buf_tmp))
-
-        elseif tag_type in [270, 271, 273, 274, 275, 302, 800, 3415]
-            d = @views _fiff_matrix(tag_dt, buf_tmp)
-
-        elseif tag_type in [115]
-            d = @views _i32i64(buf_tmp)
-            d = d == 1 ? "prev_file" : "next_file"
-
-        elseif tag_type in [234]
-            # dig_string
-            kind = @views _i32i64(buf_tmp[1:4])
-            ident = @views _i32i64(buf_tmp[5:8])
-            np = @views _i32f64(buf_tmp[9:12])
-            rr = Float64[]
-            [
-                push!(rr, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
-                idx = 13:4:length(buf_tmp)
-            ]
-            d = (kind, ident, np, rr)
-
-        elseif tag_type in [255]
-            # ch_pos: 12 × 4-byte floats starting at byte 5
-            coil_type = @views _i32i64(buf_tmp[1:4])
-            r0_1 = @views _f32f64(buf_tmp[5:8])
-            r0_2 = @views _f32f64(buf_tmp[9:12])
-            r0_3 = @views _f32f64(buf_tmp[13:16])
-            ex_1 = @views _f32f64(buf_tmp[17:20])
-            ex_2 = @views _f32f64(buf_tmp[21:24])
-            ex_3 = @views _f32f64(buf_tmp[25:28])
-            ey_1 = @views _f32f64(buf_tmp[29:32])
-            ey_2 = @views _f32f64(buf_tmp[33:36])
-            ey_3 = @views _f32f64(buf_tmp[37:40])
-            ez_1 = @views _f32f64(buf_tmp[41:44])
-            ez_2 = @views _f32f64(buf_tmp[45:48])
-            ez_3 = @views _f32f64(buf_tmp[49:52])
-            d = (
-                coil_type, r0_1, r0_2, r0_3,
-                ex_1, ex_2, ex_3, ey_1, ey_2, ey_3, ez_1, ez_2, ez_3,
-            )
-
-        elseif tag_type in [404, 405, 406]
-            d = @views _i32i64(buf_tmp)
-            tag_type == 404 && (d = unix2datetime(d))
-
-        elseif tag_type in [242]
-            d = @views _ui32i32(buf_tmp)
-
-        elseif tag_type in [222]
-            # coord_trans: rotation (3×3 Float32), translation (3 Float32),
-            # inverse rotation (3×3 Float32), inverse translation (3 Float32).
-            # FIX: original used _i16f64 (reads 2-byte Int16) for all fields
-            # here - these are 4-byte Float32; must use _f32f64.
-            from = @views _i32i64(buf_tmp[1:4])
-            to = @views _i32i64(buf_tmp[5:8])
-            rot = zeros(3, 3)
-            for row = 1:3
-                d_row = Float64[]
-                [
-                    push!(d_row, @views _f32f64(buf_tmp[(8 + col):(8 + col + 3)])) for
-                    col = 1:4:9
-                ]
-                rot[row, :] = d_row
+    for idx in eachindex(buf)
+        kind = fiff_blocks[idx, 2]
+        dtype = fiff_blocks[idx, 3]
+        d = kind == k_buf ? nothing : _fiff_decode(dtype, buf[idx])
+        # code → name conversions for enumerated tags
+        if d isa Integer
+            if kind == 210
+                d = _find_fiff_aspect(d)
+            elseif kind == 264
+                d = _find_fiff_sss_job(d)
+            elseif kind == 252
+                d = _find_fiff_chtype(d)
+            elseif kind == 256
+                d = _find_fiff_unit(d)
+            elseif kind == 3411
+                d = _find_fiff_proj_item(d)
+            elseif kind == 280
+                d = _find_fiff_gantry_type(d)
             end
-            move = Float64[]
-            [push!(move, @views _f32f64(buf_tmp[(44 + i):(44 + i + 3)])) for i = 1:4:9]
-            invrot = zeros(3, 3)
-            for row = 1:3
-                d_row = Float64[]
-                [
-                    push!(d_row, @views _f32f64(buf_tmp[(56 + col):(56 + col + 3)])) for
-                    col = 1:4:9
-                ]
-                invrot[row, :] = d_row
-            end
-            invmove = Float64[]
-            [push!(invmove, @views _f32f64(buf_tmp[(92 + i):(92 + i + 3)])) for i = 1:4:9]
-            d = (from, to, rot, move, invrot, invmove)
-
-        elseif tag_type in [300]
-            # data_buffer
-            df = @views _find_fiff_dt(tag_dt)
-            d = Float64[]
-            if df == "dau_pack16" || df == "int16"
-                [
-                    push!(d, @views _i16f64(buf_tmp[idx:(idx + 1)])) for
-                    idx = 1:2:length(buf_tmp)
-                ]
-            elseif df == "int32"
-                [
-                    push!(d, @views _i32f64(buf_tmp[idx:(idx + 3)])) for
-                    idx = 1:4:length(buf_tmp)
-                ]
-            elseif df == "float"
-                [
-                    push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
-                    idx = 1:4:length(buf_tmp)
-                ]
-            else
-                _warn(
-                    "Data type $df not implemented; please send this file to adam.wysokinski@neuroanalyzer.org",
-                )
-            end
-
-        elseif tag_type in [213]
-            # dig_point
-            kind = @views _i32i64(buf_tmp[1:4])
-            ident = @views _i32i64(buf_tmp[5:8])
-            r_1 = @views _f32f64(buf_tmp[9:12])
-            r_2 = @views _f32f64(buf_tmp[13:16])
-            r_3 = @views _f32f64(buf_tmp[17:20])
-            d = (kind, ident, r_1, r_2, r_3)
-
-        elseif tag_type in [252]
-            d = @views _find_fiff_chtype(_i32i64(buf_tmp))
-        elseif tag_type in [256]
-            d = _find_fiff_unit(_i32i64(buf_tmp))
-        elseif tag_type in [3411]
-            d = _find_fiff_proj_item(_i32i64(buf_tmp))
-        elseif tag_type in [3416]
-            d = _find_fiff_proj_by(_i32i64(buf_tmp))
-        elseif tag_type in [280]
-            d = _find_fiff_gantry_type(_i32i64(buf_tmp))
-
-        elseif tag_type in [203]
-            # ch_info (75-byte record)
-            scan_no = @views _i32i64(buf_tmp[1:4])
-            log_no = @views _i32i64(buf_tmp[5:8])
-            kind = @views _find_fiff_chtype(_i32i64(buf_tmp[9:12]))
-            range_val = @views _f32f64(buf_tmp[13:16])
-            cal = @views _f32f64(buf_tmp[17:20])
-            coil_type = @views _i32i64(buf_tmp[21:24])
-            r0_1 = @views _f32f64(buf_tmp[25:28])
-            r0_2 = @views _f32f64(buf_tmp[29:32])
-            r0_3 = @views _f32f64(buf_tmp[33:36])
-            ex_1 = @views _f32f64(buf_tmp[37:40])
-            ex_2 = @views _f32f64(buf_tmp[41:44])
-            ex_3 = @views _f32f64(buf_tmp[45:48])
-            ey_1 = @views _f32f64(buf_tmp[49:52])
-            ey_2 = @views _f32f64(buf_tmp[53:56])
-            ey_3 = @views _f32f64(buf_tmp[57:60])
-            ez_1 = @views _f32f64(buf_tmp[61:64])
-            ez_2 = @views _f32f64(buf_tmp[65:68])
-            ez_3 = @views _f32f64(buf_tmp[69:72])
-            unit = @views _find_fiff_unit(_i32i64(buf_tmp[73:76]))
-            unit_mul = @views _find_fiff_mul(_i32i64(buf_tmp[77:80]))
-            d = (
-                scan_no, log_no, kind, range_val, cal, coil_type,
-                r0_1, r0_2, r0_3, ex_1, ex_2, ex_3,
-                ey_1, ey_2, ey_3, ez_1, ez_2, ez_3, unit, unit_mul,
-            )
-
-        elseif tag_type in [214]
-            # ch_pos_vec (obsolete)
-
-        elseif tag_type in [
-            111, 112, 113, 114, 118, 150, 151, 205, 206, 212, 227, 233,
-            237, 258, 281, 401, 402, 403, 409, 410, 501, 502, 503, 504,
-            602, 2020, 3102, 3300, 3406, 3407, 3417, 3501,
-        ]
-            d = @views _v2s(string.(Char.(buf_tmp)))
-
-        elseif tag_type in [282]
-            d = _i8i8(buf_tmp[1:4])
-
-        elseif tag_type in [
-            101, 102, 104, 105, 106, 117, 200, 202, 204, 207, 208, 209,
-            211, 216, 217, 221, 228, 230, 231, 245, 250, 251, 257, 263,
-            266, 267, 268, 277, 278, 301, 303, 400, 500, 701, 702, 703,
-            2004, 2010, 2012, 2014, 2023, 2032, 3013, 3104, 3414,
-        ]
-            d = @views _i32i64(buf_tmp[1:4])
-            tag_type == 204 && (d = unix2datetime(d))
-
-        elseif tag_type in [220, 232, 225, 246, 247, 269, 304, 305, 600, 601, 603, 3413]
-            d = Int64[]
-            [
-                push!(d, @views _i32i64(buf_tmp[idx:(idx + 3)])) for
-                idx = 1:4:length(buf_tmp)
-            ]
-
-        elseif tag_type in [276]
-            d = @views _f32f64(buf_tmp[1:4])
-
-        elseif tag_type in [
-            201, 218, 219, 223, 229, 235, 236, 240, 241, 243, 244,
-            253, 254, 272, 279, 407, 408, 2005, 2009, 2011, 2013,
-            2015, 2016, 2018, 2019, 2024, 2040, 3109, 3113, 3405, 3412,
-        ]
-            d = @views _f32f64(buf_tmp[1:4])
-
-        elseif tag_type in [215, 224, 226, 265]
-            d = Float64[]
-            [
-                push!(d, @views _f32f64(buf_tmp[idx:(idx + 3)])) for
-                idx = 1:4:length(buf_tmp)
-            ]
-
-        elseif tag_type in [100, 103, 109, 110, 116, 120]
-            # id_t
-            fiff_v_major = @views _i16i64(buf_tmp[1:2])
-            fiff_v_minor = @views _i16i64(buf_tmp[3:4])
-            mach_id1 = @views _i32i64(buf_tmp[5:8])
-            mach_id2 = @views _i32i64(buf_tmp[9:12])
-            time_sec = @views _i32i64(buf_tmp[13:16])
-            id_creation_date = unix2datetime(time_sec)
-            time_usec = @views _i32i64(buf_tmp[17:20])
-            d = (
-                fiff_v_major,
-                fiff_v_minor,
-                mach_id1,
-                mach_id2,
-                id_creation_date,
-                time_usec,
-            )
-
-        else
-            _warn(
-                "Tag $tag_type not implemented; please send this file to adam.wysokinski@neuroanalyzer.org",
-            )
         end
         push!(
             fiff_object,
-            (
-                block_idx,
-                _find_fiff_tag(fiff_blocks[block_idx, 2]),
-                _find_fiff_block(fiff_blocks[block_idx, end]),
-                d,
-            ),
+            (idx, _find_fiff_tag(kind), _find_fiff_block(fiff_blocks[idx, 6]), d, insts[idx]),
         )
     end
 
     # ------------------------------------------------------------------ #
-    # process blocks into structured Dicts                               #
+    # measurement info                                                   #
     # ------------------------------------------------------------------ #
-    bidx, btypes = _get_blocks(fiff_blocks)
+    # main meas_info block = first one that defines nchan (processing
+    # history records may contain other blocks of the same type)
+    mi_inst = nothing
+    for inst in _fiff_instances(fiff_object, "meas_info")
+        if !isnothing(_fiff_get(fiff_object, "nchan"; inst = inst))
+            mi_inst = inst
+            break
+        end
+    end
+    isnothing(mi_inst) &&
+        throw(ArgumentError("$file_name: no measurement info (meas_info block with nchan) found."))
+    mi(tag) = _fiff_get(fiff_object, tag; inst = mi_inst)
 
-    project_info = Dict()
-    for f in ["proj_id", "proj_name"]
-        tmp = fiff_object[[fiff_object[idx][2] for idx in eachindex(fiff_object)] .== f]
-        push!(project_info, Symbol(f) => isempty(tmp) ? nothing : tmp[1][4])
+    nchan = mi("nchan")
+    ch_info = _fiff_getall(fiff_object, "ch_info"; inst = mi_inst)
+    length(ch_info) == nchan ||
+        throw(ArgumentError("$file_name: nchan = $nchan but $(length(ch_info)) ch_info records found."))
+
+    # channel names: ch_info struct holds max. 15 characters; MNE stores
+    # longer names in per-channel ch_info blocks (FIFF_NAME tag)
+    ch_names = String[ch.ch_name for ch in ch_info]
+    ext_names = _fiff_getall(fiff_object, "name"; block = "ch_info")
+    if length(ext_names) == nchan && all(x -> x isa String && !isempty(x), ext_names)
+        ch_names = String.(ext_names)
     end
 
-    ref = Dict()
-    for f in ["ref_role", "ref_file_id", "ref_file_num", "ref_file_name", "ref_block_id"]
-        tmp = fiff_object[[fiff_object[idx][2] for idx in eachindex(fiff_object)] .== f]
-        push!(ref, Symbol(f) => isempty(tmp) ? nothing : tmp[1][4])
+    meas_date = mi("meas_date")
+    if !isnothing(meas_date)
+        md = _fiff_vec(meas_date)
+        secs = Int64(md[1])
+        usecs = length(md) > 1 ? Int64(md[2]) : 0
+        # (0, 2^31 - 1) is MNE's "no date" sentinel
+        meas_date =
+            (secs == 0 && usecs == typemax(Int32)) ? nothing :
+            unix2datetime(secs + usecs / 1e6)
     end
-    !isnothing(ref[:ref_role]) && _warn(
-        "Data split into multiple files is not implemented yet; please send this file to adam.wysokinski@neuroanalyzer.org",
+
+    meas_info = Dict{Symbol, Any}(
+        :nchan => nchan,
+        :sfreq => mi("sfreq"),
+        :lowpass => _fiff_nan2nothing(mi("lowpass")),
+        :highpass => _fiff_nan2nothing(mi("highpass")),
+        :line_freq => _fiff_nan2nothing(mi("line_freq")),
+        :gantry_angle => mi("gantry_angle"),
+        :data_pack => mi("data_pack"),
+        :meas_date => meas_date,
+        :experimenter => mi("experimenter"),
+        :description => mi("description"),
+        :ch_info => ch_info,
+        :ch_names => ch_names,
+        :bad_chs => _fiff_get(fiff_object, "bad_chs"; block = "meas_info"),
     )
+    isnothing(meas_info[:sfreq]) && throw(ArgumentError("$file_name: sampling frequency not found."))
 
-    meas_info = Dict()
-    for f in [
-        "sfreq",
-        "lowpass",
-        "highpass",
-        "data_pack",
-        "line_freq",
-        "gantry_angle",
-        "bad_chs",
-    ]
-        tmp = fiff_object[[fiff_object[idx][2] for idx in eachindex(fiff_object)] .== f]
-        push!(meas_info, Symbol(f) => isempty(tmp) ? nothing : tmp[1][4])
+    # bad channels (MNE convention: bad_channels block, colon-separated names)
+    bads = String[]
+    for s in _fiff_getall(fiff_object, "mne_ch_name_list"; block = "bad_channels")
+        append!(bads, _fiff_name_list(s))
     end
+    meas_info[:bads] = unique(bads)
 
-    ch_info = Dict()
-    block_idx = [fiff_object[idx][2] for idx in eachindex(fiff_object)] .== "ch_info"
-    tmp = fiff_object[block_idx][
-        [
-        fiff_object[block_idx][idx][2] for idx in eachindex(fiff_object[block_idx])
-    ] .== "ch_info",
-    ]
-    if length(tmp) == 1
-        push!(ch_info, Symbol("ch_info") => tmp[1][4])
-    elseif length(tmp) > 1
-        [push!(ch_info, Symbol("ch_info_$n") => tmp[n][4]) for n in eachindex(tmp)]
-    else
-        push!(ch_info, Symbol("ch_info") => nothing)
-    end
-    push!(meas_info, :ch_info => ch_info)
-
-    subject_info = _pack_fiff_blocks(
+    meas_info[:subject_info] = _pack_fiff_blocks(
         fiff_object,
         "subject",
         [
             "subj_id", "subj_his_id", "subj_last_name", "subj_first_name",
             "subj_middle_name", "subj_birth_day", "subj_sex", "subj_hand",
-            "subj_weight", "subj_height", "comment",
+            "subj_weight", "subj_height", "subj_comment",
         ],
     )
-
-    hpi_result = _pack_fiff_blocks(
-        fiff_object, "hpi_result",
-        [
-            "dig_point", "hpi_digitization_order", "hpi_coils_used",
-            "hpi_coil_moments", "hpi_fit_goodness", "hpi_fit_good_limit",
-            "hpi_fit_dist_limit", "hpi_fit_accept", "coord_trans",
-        ],
+    meas_info[:project_info] = Dict{Symbol, Any}(
+        Symbol(f) => _fiff_get(fiff_object, f; block = "project") for
+        f in ["proj_id", "proj_name", "proj_aim", "proj_persons", "proj_comment"]
     )
-    hpi_coil = _pack_fiff_blocks(
-        fiff_object, "hpi_coil",
-        ["hpi_coil_no", "epoch", "hpi_slopes", "hpi_corr_coeff", "hpi_coil_freq"],
+
+    # digitization / HPI
+    meas_info[:dig] = _fiff_getall(fiff_object, "dig_point"; block = "isotrak")
+    meas_info[:hpi] = Dict(
+        :hpi_result => _pack_fiff_blocks(
+            fiff_object,
+            "hpi_result",
+            [
+                "dig_point", "hpi_digitization_order", "hpi_coils_used",
+                "hpi_coil_moments", "hpi_fit_goodness", "hpi_fit_good_limit",
+                "hpi_fit_dist_limit", "hpi_fit_accept", "coord_trans",
+            ],
+        ),
+        :hpi_coil => _pack_fiff_blocks(
+            fiff_object,
+            "hpi_coil",
+            ["hpi_coil_no", "epoch", "hpi_slopes", "hpi_corr_coeff", "hpi_coil_freq", "event_bits"],
+        ),
+        :hpi_subsystem =>
+            _pack_fiff_blocks(fiff_object, "hpi_subsystem", ["hpi_ncoil", "event_channel"]),
     )
-    isotrak = _pack_fiff_blocks(fiff_object, "isotrak", ["dig_point"])
-    hpi = Dict(:hpi_result => hpi_result, :hpi_coil => hpi_coil, :isotrak => isotrak)
+    meas_info[:dev_head_t] = _fiff_get(fiff_object, "coord_trans"; inst = mi_inst)
 
-    hpi_coil2 = _pack_fiff_blocks(fiff_object, "hpi_coil", ["event_bits"])
-    hpi_subsystem =
-        _pack_fiff_blocks(fiff_object, "hpi_subsystem", ["hpi_ncoil", "event_channel"])
-    hpi_subsystem = Dict(:hpi_subsystem => hpi_subsystem, :hpi_coil => hpi_coil2)
+    # cHPI coils: (coil number, frequency) from hpi_coil blocks that define a frequency
+    hpi_coils = Tuple{Int64, Float64}[]
+    for inst in _fiff_instances(fiff_object, "hpi_coil")
+        f = _fiff_get(fiff_object, "hpi_coil_freq"; inst = inst)
+        f isa Real || continue
+        no = _fiff_get(fiff_object, "hpi_coil_no"; inst = inst)
+        push!(hpi_coils, (no isa Integer ? Int64(no) : length(hpi_coils) + 1, Float64(f)))
+    end
+    # the same coils may be described in several hpi_meas blocks; keep the first
+    meas_info[:hpi_coils] = unique(first, hpi_coils)
 
-    xfit_proj_item = _pack_fiff_blocks(
-        fiff_object,
-        "xfit_proj_item",
-        [
-            "description", "proj_item_kind", "nchan", "proj_item_ch_name_list",
-            "proj_item_time", "proj_item_nvec", "proj_item_vectors",
-        ],
-    )
-    nchan = _pack_fiff_blocks(fiff_object, "xfit_proj_item", ["nchan"])
-    xfit_proj = Dict(:nchan => nchan, :xfit_proj_item => xfit_proj_item)
+    # SSP projectors - one entry per projection item block
+    ssp = Dict{Symbol, Any}[]
+    for inst in _fiff_instances(fiff_object, "xfit_proj_item")
+        g = tag -> _fiff_get(fiff_object, tag; inst = inst)
+        desc = g("description")
+        isnothing(desc) && (desc = g("name"))
+        vecs = g("proj_item_vectors")
+        vecs isa AbstractVector && (vecs = reshape(vecs, 1, :))
+        push!(
+            ssp,
+            Dict{Symbol, Any}(
+                :description => isnothing(desc) ? "" : desc,
+                :kind => g("proj_item_kind"),
+                :nvec => g("proj_item_nvec"),
+                :active => g("mne_proj_item_active"),
+                :ch_names => _fiff_name_list(g("proj_item_ch_name_list")),
+                :vectors => vecs,
+            ),
+        )
+    end
+    meas_info[:ssp] = ssp
 
-    events = _pack_fiff_blocks(fiff_object, "events", ["event_channels", "event_list"])
+    # DACQ events table
+    events = Dict{Symbol, Any}[]
+    for inst in _fiff_instances(fiff_object, "events")
+        push!(
+            events,
+            Dict{Symbol, Any}(
+                :channels => _fiff_get(fiff_object, "event_channels"; inst = inst),
+                :list => _fiff_get(fiff_object, "event_list"; inst = inst),
+            ),
+        )
+    end
+    meas_info[:events] = events
+
+    # MNE annotations
+    annotations = Dict{Symbol, Any}[]
+    for inst in _fiff_instances(fiff_object, "mne_annotations")
+        g = tag -> _fiff_get(fiff_object, tag; inst = inst)
+        onset = Float64.(_fiff_vec(g("mne_baseline_min")))
+        offset = Float64.(_fiff_vec(g("mne_baseline_max")))
+        desc = _fiff_name_list(g("description"))
+        (length(onset) == length(offset) == length(desc)) || begin
+            _warn("Inconsistent MNE annotations block; ignored.")
+            continue
+        end
+        push!(
+            annotations,
+            Dict{Symbol, Any}(
+                :onset => onset,
+                :duration => offset .- onset,
+                :description => desc,
+                :has_orig_time => !isnothing(g("meas_date")),
+            ),
+        )
+    end
+    meas_info[:annotations] = annotations
+
     dacq_pars = _pack_fiff_blocks(fiff_object, "dacq_pars", ["dacq_pars", "dacq_stim"])
-    dacq_pars[:dacq_pars] = split(dacq_pars[:dacq_pars], "\n")
-    dacq_pars[:dacq_pars][end] == "" &&
-        deleteat!(dacq_pars[:dacq_pars], lastindex(dacq_pars[:dacq_pars]))
-    dacq_pars[:dacq_pars] = split.(rstrip.(dacq_pars[:dacq_pars]), ' ')
+    if dacq_pars[:dacq_pars] isa AbstractString
+        lines = rstrip.(split(dacq_pars[:dacq_pars], '\n'))
+        dacq_pars[:dacq_pars] = split.(Base.filter(!isempty, lines), ' ')
+    end
+    meas_info[:dacq_pars] = dacq_pars
 
-    meas_info = merge(
-        meas_info,
-        _pack_fiff_blocks(
-            fiff_object, "meas_info",
-            ["experimenter", "description", "meas_date"],
+    # ------------------------------------------------------------------ #
+    # raw data                                                           #
+    # ------------------------------------------------------------------ #
+    maxshield = false
+    raw_inst = nothing
+    for b in ("raw_data", "continuous_data", "maxshield_raw_data")
+        i = _fiff_instances(fiff_object, b)
+        if !isempty(i)
+            raw_inst = i[1]
+            maxshield = b == "maxshield_raw_data"
+            length(i) > 1 && _warn("$file_name contains $(length(i)) $b blocks; only the first one is read.")
+            break
+        end
+    end
+    read_data && isnothing(raw_inst) && throw(
+        ArgumentError(
+            "$file_name contains no continuous raw data (evoked / epochs FIFF files are not supported by this importer).",
         ),
     )
+    # IAS (MaxShield) raw data are flagged here; import_fiff() decides whether
+    # to accept them
+    meas_info[:maxshield] = maxshield
 
-    push!(meas_info, :subject_info => subject_info)
-    push!(meas_info, :project_info => project_info)
-    push!(meas_info, :hpi => hpi)
-    push!(meas_info, :ssp => xfit_proj)
-    push!(meas_info, :events => events)
-    push!(meas_info, :dacq_pars => dacq_pars)
-    push!(meas_info, :nchan => length(ch_info))
-    meas_info[:sfreq] = round(Int64, meas_info[:sfreq])
-
-    raw_data_tmp1 =
-        sort(collect(_pack_fiff_blocks(fiff_object, "raw_data", ["data_buffer"])))
-    buffer_length = length(raw_data_tmp1[1][2])
-    raw_data_flat = Float64[]
-    for item in raw_data_tmp1
-        append!(raw_data_flat, item[2])
-    end
-    raw_data = Dict(:raw_data => raw_data_flat)
-    packed_fiff_blocks = _pack_fiff_blocks(
-        fiff_object, "raw_data",
-        ["first_samp", "data_skip", "data_skip_samp"],
-    )
-    raw_data = merge(
-        raw_data,
-        packed_fiff_blocks,
-    )
-    isnothing(raw_data[:data_skip_samp]) && (raw_data[:data_skip_samp] = 0)
-    isnothing(raw_data[:data_skip]) && (raw_data[:data_skip] = 0)
-    if isnothing(raw_data[:first_samp])
-        raw_data[:first_samp] = 0
+    raw_data = if read_data
+        data, first_samp, orig_format =
+            _fiff_raw_data(buf, fiff_blocks, insts, raw_inst, nchan)
+        Dict{Symbol, Any}(
+            :data => data,
+            :first_samp => first_samp,
+            :first_time => first_samp / meas_info[:sfreq],
+            :orig_format => orig_format,
+            :next_file => _fiff_next_file(fiff_object, file_name),
+        )
     else
-        raw_data[:first_samp] /= meas_info[:sfreq]
+        nothing
     end
-    raw_data[:data_skip] > 0 && _warn(
-        "data_skip not implemented; please send this file to adam.wysokinski@neuroanalyzer.org",
-    )
-    raw_data[:data_skip_samp] > 0 && _warn(
-        "data_skip_samp not implemented; please send this file to adam.wysokinski@neuroanalyzer.org",
-    )
 
-    fiff = Dict(:meas_info => meas_info, :raw_data => raw_data)
+    fiff = Dict{Symbol, Any}(:meas_info => meas_info, :raw_data => raw_data)
 
     return fiff, fiff_object, fiff_blocks
 end
 
 """
-    import_fiff(file_name)
+    import_fiff(file_name; <keyword arguments>)
 
-Load an Elekta-Neuromag FIFF file (MEG or EEG) and return a `NeuroAnalyzer.NEURO` object.
+Load an Elekta/MEGIN Neuromag FIFF raw file (MEG and/or EEG) and return a `NeuroAnalyzer.NEURO` object.
+
+Supports Vectorview/TRIUX raw and MaxFilter-processed files, MNE-Python-saved raw files (including long channel names, bad channels and annotations) and split files (`*_raw.fif`, `*_raw-1.fif`, ...). Signals are calibrated as `raw × range × cal` (as in MNE-Python) and converted to fT, fT/cm and μV.
+
+Files recorded with internal active shielding (IAS, "MaxShield") are refused by default, as in MNE-Python: the compensation coils distort the measured field and the data must be processed with SSS (e.g. MaxFilter) before analysis. When accepted with `allow_maxshield = true`, the recording header contains `:maxshield => true`.
 
 # Arguments
 
-- `file_name::String`: path to the `.fif` or `.fiff` file
+- `file_name::String`: path to the `.fif` or `.fiff` file (first part of a split recording)
+- `allow_maxshield::Bool=false`: import IAS (MaxShield) raw data instead of throwing an error
+- `channel_locs::Symbol=:fiff`: source of channel locations in `OBJ.locs`:
+    - `:fiff`: sensor/electrode positions stored in the file (see `import_locs_fiff()`); falls back to the bundled 306-channel layout if the file has no positions
+    - `:layout`: bundled flattened 306-channel Vectorview/TRIUX layout (`meg_306flattened.csv`)
+    - `:none`: no locations
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`
 """
-function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
-    # validate
-    isfile(file_name) ||
-        throw(ArgumentError("File $file_name cannot be loaded."))
+function import_fiff(
+    file_name::String;
+    allow_maxshield::Bool = false,
+    channel_locs::Symbol = :fiff,
+)::NeuroAnalyzer.NEURO
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    channel_locs in (:fiff, :layout, :none) ||
+        throw(ArgumentError("channel_locs must be :fiff, :layout or :none."))
 
     fiff, _, _ = load_fiff(file_name)
+    mi = fiff[:meas_info]
+    maxshield = mi[:maxshield]
+    data = fiff[:raw_data][:data]
+    first_samp = fiff[:raw_data][:first_samp]
 
-    sampling_rate = fiff[:meas_info][:sfreq]
-    ch_n = fiff[:meas_info][:nchan]
-    data = reshape(fiff[:raw_data][:raw_data], ch_n, :, 1)
-
-    units = repeat([""], ch_n)
-    ch_type = repeat([""], ch_n)
-    coil_type = repeat([""], ch_n)
-    clabels = repeat([""], ch_n)
-
-    @inbounds for (k, v) in fiff[:meas_info][:ch_info]
-        ch = v[1]
-        ch_type[ch] = v[3]
-        ch_type[ch] == "stim" && (ch_type[ch] = "mrk")
-        ch_type[ch] in ("ias", "syst") && (ch_type[ch] = "other")
-        range_val = v[4]
-        cal = v[5]
-        coil_type[ch] = _find_fiff_coiltype(v[6])
-        units[ch] = v[19]
-        unit_mul = v[20] != "none" ? 10^v[20] : 1
-        clabels[ch] = uppercase(v[3]) * " " * string(v[2])
-        @views data[ch, :, 1] .*= (range_val * cal * unit_mul)
+    # ------------------------------------------------------------------ #
+    # split files                                                        #
+    # ------------------------------------------------------------------ #
+    next_file = fiff[:raw_data][:next_file]
+    expected = first_samp + size(data, 2)
+    visited = Set([abspath(file_name)])
+    while !isnothing(next_file)
+        if abspath(next_file) in visited
+            _warn("Circular split-file reference to $next_file; stopping.")
+            break
+        end
+        if !isfile(next_file)
+            _warn("Next part of split FIFF file not found: $next_file; data are incomplete.")
+            break
+        end
+        push!(visited, abspath(next_file))
+        part, _, _ = load_fiff(next_file)
+        (
+            part[:meas_info][:nchan] == mi[:nchan] &&
+            part[:meas_info][:sfreq] == mi[:sfreq] &&
+            part[:meas_info][:ch_names] == mi[:ch_names]
+        ) || throw(ArgumentError("$next_file does not match channels / sampling rate of $file_name."))
+        part[:raw_data][:first_samp] != expected && _warn(
+            "$next_file starts at sample $(part[:raw_data][:first_samp]), expected $expected; parts are concatenated without gap filling.",
+        )
+        maxshield |= part[:meas_info][:maxshield]
+        data = hcat(data, part[:raw_data][:data])
+        expected = part[:raw_data][:first_samp] + size(part[:raw_data][:data], 2)
+        next_file = part[:raw_data][:next_file]
     end
 
-    clabels = _clean_meg_labels(clabels)
+    # ------------------------------------------------------------------ #
+    # IAS (MaxShield)                                                    #
+    # ------------------------------------------------------------------ #
+    if maxshield
+        allow_maxshield || throw(
+            ArgumentError(
+                "$file_name contains raw MaxShield data (internal active shielding was on). These data must be processed with SSS (e.g. MaxFilter) before analysis. Use allow_maxshield = true to import them anyway.",
+            ),
+        )
+        _warn(
+            "$file_name contains raw MaxShield data (internal active shielding was on); without SSS processing these data are not suitable for analysis.",
+        )
+    end
+
+    # ------------------------------------------------------------------ #
+    # sampling rate                                                      #
+    # ------------------------------------------------------------------ #
+    sfreq = mi[:sfreq]
+    sampling_rate = round(Int64, sfreq)
+    isapprox(sfreq, sampling_rate; atol = 1e-6) || _warn(
+        "Sampling rate $sfreq Hz is not an integer; stored as $sampling_rate Hz - time axis and marker positions will be slightly off.",
+    )
+
+    # ------------------------------------------------------------------ #
+    # channels                                                           #
+    # ------------------------------------------------------------------ #
+    chs = mi[:ch_info]
+    ch_n = mi[:nchan]
+    data = reshape(data, ch_n, :, 1)
+
+    units = Vector{String}(undef, ch_n)
+    ch_type = Vector{String}(undef, ch_n)
+    fiff_kind = Vector{String}(undef, ch_n)
+    coil_type = Vector{String}(undef, ch_n)
+    clabels = _fiff_labels(mi)
+
+    any(ch -> ch.unit_mul != 0, chs) && _info(
+        "Some channels define a non-zero unit multiplier; as in MNE-Python it is not applied to the data.",
+    )
+
+    for (idx, ch) in enumerate(chs)
+        fiff_kind[idx] = _find_fiff_chtype(ch.kind)
+        ch_type[idx] = fiff_kind[idx]
+        ch_type[idx] == "stim" && (ch_type[idx] = "mrk")
+        ch_type[idx] in (
+            "ias", "syst", "exci", "quat0", "quat1", "quat2", "quat3", "quat4",
+            "quat5", "quat6", "hpi_goodness", "hpi_error", "hpi_movement",
+            "dipole_wave", "goodness_fit",
+        ) && (ch_type[idx] = "other")
+        startswith(ch_type[idx], "unknown_") && (ch_type[idx] = "other")
+        coil_type[idx] = _find_fiff_coiltype(ch.coil_type)
+        units[idx] = _find_fiff_unit(ch.unit)
+        # calibration: physical value = raw × range × cal
+        @views data[idx, :, 1] .*= (ch.range * ch.cal)
+    end
+
 
     # convert to standard units
-    @inbounds for ch_idx = 1:ch_n
-        if units[ch_idx] == "T"
-            @views data[ch_idx, :, 1] .*= 1.0e15
-            units[ch_idx] = "fT"
-        elseif units[ch_idx] == "T/m"
-            @views data[ch_idx, :, 1] .*= (1.0e15 / 100)
-            units[ch_idx] = "fT/cm"
-        elseif units[ch_idx] == "T/cm"
-            @views data[ch_idx, :, 1] .*= 1.0e15
-            units[ch_idx] = "fT/cm"
-        elseif units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg", "emg", "eog", "ref")
-            @views data[ch_idx, :, 1] .*= 1.0e6
-            units[ch_idx] = "μV"
+    for idx = 1:ch_n
+        if units[idx] == "T"
+            @views data[idx, :, 1] .*= 1.0e15
+            units[idx] = "fT"
+        elseif units[idx] == "T/m"
+            @views data[idx, :, 1] .*= (1.0e15 / 100)
+            units[idx] = "fT/cm"
+        elseif units[idx] == "V" && ch_type[idx] in ("eeg", "emg", "eog", "ref")
+            @views data[idx, :, 1] .*= 1.0e6
+            units[idx] = "μV"
         end
     end
 
-    # classify coil types
+    # classify MEG sensors (reference sensors are not counted)
+    planar = (
+        "nm_122", "vv_planar_w", "vv_planar_t1", "vv_planar_t2", "vv_planar_t3",
+        "vv_planar_t4",
+    )
+    axial = (
+        "axial_grad_5cm", "ctf_grad", "magnes_grad", "kit_grad", "baby_grad",
+        "artemis123_grad", "kriss_grad", "compumedics_adult_grad",
+        "compumedics_pediatric_grad",
+    )
+    mags = (
+        "point_magnetometer", "nm_24", "vv_mag_w", "vv_mag_t1", "vv_mag_t2",
+        "vv_mag_t3", "vv_mag_t4", "magnes_mag", "baby_mag", "quspin_zfopm_mag",
+        "quspin_zfopm_mag2", "fieldline_opm_mag_gen1", "kernel_opm_mag_gen1",
+    )
     magnetometers = Int64[]
     gradiometers = Int64[]
     eeg_chs = Int64[]
-    @inbounds for ch_idx = 1:ch_n
-        ct = coil_type[ch_idx]
-        if ct in ("vv_planar_w", "vv_planar_t1", "vv_planar_t2", "vv_planar_t3")
-            coil_type[ch_idx] = "pgrad"
-            ch_type[ch_idx] = "grad"
-            push!(gradiometers, ch_idx)
-        elseif ct in ("magnes_grad",)
-            coil_type[ch_idx] = "grad"
-            ch_type[ch_idx] = "grad"
-            push!(gradiometers, ch_idx)
-        elseif ct in ("axial_grad_5cm", "ctf_grad")
-            coil_type[ch_idx] = "agrad"
-            ch_type[ch_idx] = "grad"
-            push!(gradiometers, ch_idx)
-        elseif ct in (
-            "point_magnetometer", "vv_mag_w", "vv_mag_t1",
-            "vv_mag_t2", "vv_mag_t3", "magnes_mag",
-        )
-            coil_type[ch_idx] = "mag"
-            ch_type[ch_idx] = "mag"
-            push!(magnetometers, ch_idx)
-        elseif ct == "eeg"
-            push!(eeg_chs, ch_idx)
+    for idx = 1:ch_n
+        ct = coil_type[idx]
+        if fiff_kind[idx] == "meg"
+            if ct in planar
+                coil_type[idx] = "pgrad"
+                ch_type[idx] = "grad"
+                push!(gradiometers, idx)
+            elseif ct in axial
+                coil_type[idx] = "agrad"
+                ch_type[idx] = "grad"
+                push!(gradiometers, idx)
+            elseif ct in mags
+                coil_type[idx] = "mag"
+                ch_type[idx] = "mag"
+                push!(magnetometers, idx)
+            else
+                _warn("Channel $(clabels[idx]): unknown MEG coil type $ct.")
+            end
+        elseif fiff_kind[idx] == "eeg"
+            push!(eeg_chs, idx)
         end
     end
 
+    # bad channels
     bad_channels = zeros(Bool, ch_n)
-    !isnothing(fiff[:meas_info][:bad_chs]) && _warn(
-        "bad_channels tag not implemented; please send this file to adam.wysokinski@neuroanalyzer.org",
+    for b in mi[:bads]
+        i = findfirst(isequal(b), mi[:ch_names])
+        isnothing(i) ? _warn("Bad channel $b not found in channel list.") : (bad_channels[i] = true)
+    end
+    !isnothing(mi[:bad_chs]) && _warn(
+        "Legacy bad_chs tag found and ignored (as in MNE-Python); please send this file to adam.wysokinski@neuroanalyzer.org",
     )
 
-    # HPI digitization points
-    id = Int64[]
-    p = Int64[]
-    x = Float64[]
-    y = Float64[]
-    z = Float64[]
-    for (k, v) in fiff[:meas_info][:hpi][:isotrak]
-        push!(id, parse(Int64, match(r"(.+)_(\d+)", string(k)).captures[2]))
-        push!(p, v[2])
-        push!(x, v[3])
-        push!(y, v[4])
-        push!(z, v[5])
-    end
-    hpi = sort(DataFrame(:id => id, :p => p, :x => x, :y => y, :z => z), :id)
-
     # ------------------------------------------------------------------ #
-    # build markers from event table                                     #
+    # markers                                                            #
     # ------------------------------------------------------------------ #
-    events_ch = fiff[:meas_info][:events][:event_channels]
-    event_list = fiff[:meas_info][:events][:event_list]
+    m_id = String[]
+    m_start = Float64[]
+    m_len = Float64[]
+    m_val = String[]
+    m_ch = Int64[]
 
-    markers = if isnothing(event_list) || isempty(event_list)
-        DataFrame(
-            :id => String[], :start => Float64[],
-            :length => Float64[], :value => String[], :channel => Int64[],
-        )
-    else
-        evts = reshape(event_list, 3, :)' # columns: sample, before, after
-        n_ev = size(evts, 1)
-        DataFrame(
-            :id => fill("mrk", n_ev),
-            :start => Float64.(evts[:, 1]) ./ sampling_rate,
-            :length => fill(0.0, n_ev),
-            :value => string.(evts[:, 3]), # "after" encodes the event code
-            :channel => fill(0, n_ev),
-        )
-    end
-
-    # SSP projectors
-    ssp_labels = String[]
-    ssp_channels = zeros(Bool, ch_n)
-    ssp_data = Matrix{Float64}(undef, 0, 0)
-
-    if :ssp in keys(fiff[:meas_info])
-        ssp = fiff[:meas_info][:ssp]
-        if !isnothing(ssp[:nchan][:nchan])
-            xfit_proj_item = ssp[:xfit_proj_item]
-            xfit_proj_vecs = Vector{Vector{Float64}}()
-            idx = 1
-            while Symbol("proj_item_vectors_$idx") in keys(xfit_proj_item)
-                push!(xfit_proj_vecs, xfit_proj_item[Symbol("proj_item_vectors_$idx")][:])
-                idx += 1
-            end
-            raw_ssp_labels = string.(split(xfit_proj_item[:proj_item_ch_name_list_1], ':'))
-            raw_ssp_labels = _clean_meg_labels(raw_ssp_labels)
-            ssp_data = zeros(length(xfit_proj_vecs), length(xfit_proj_vecs[1]))
-            for (i, v) in enumerate(xfit_proj_vecs)
-                ssp_data[i, :] = v
-            end
-            ssp_sorting_idx = [findfirst(isequal(l), clabels) for l in raw_ssp_labels]
-            ssp_channels[filter(!isnothing, ssp_sorting_idx)] .= true
-            ssp_labels = ["PCA-v$(lpad(i, 2, '0'))" for i in eachindex(xfit_proj_vecs)]
+    # DACQ event table: (sample, before, after) triplets
+    for ev in mi[:events]
+        isnothing(ev[:list]) && continue
+        lst = _fiff_vec(ev[:list])
+        length(lst) % 3 == 0 || (_warn("Malformed FIFF event list; ignored."); continue)
+        evts = permutedims(reshape(Int64.(lst), 3, :))
+        # sample numbers are normally absolute (include first_samp)
+        offset = all(>=(first_samp), evts[:, 1]) ? first_samp : 0
+        for row in axes(evts, 1)
+            push!(m_id, "mrk")
+            push!(m_start, (evts[row, 1] - offset) / sfreq)
+            push!(m_len, 0.0)
+            push!(m_val, string(evts[row, 3]))
+            push!(m_ch, 0)
         end
     end
 
+    # MNE annotations: onsets are relative to meas_date when it is stored,
+    # i.e. they include first_samp / sfreq
+    for an in mi[:annotations]
+        t0 = an[:has_orig_time] ? first_samp / sfreq : 0.0
+        for k in eachindex(an[:onset])
+            push!(m_id, "annotation")
+            push!(m_start, an[:onset][k] - t0)
+            push!(m_len, an[:duration][k])
+            push!(m_val, an[:description][k])
+            push!(m_ch, 0)
+        end
+    end
+
+    markers = DataFrame(
+        :id => m_id,
+        :start => m_start,
+        :length => m_len,
+        :value => m_val,
+        :channel => m_ch,
+    )
+    sort!(markers, :start)
+
     # ------------------------------------------------------------------ #
-    # data type detection                                                  #
+    # SSP projectors                                                     #
+    # ------------------------------------------------------------------ #
+    ssp_labels = String[]
+    ssp_channels = zeros(Bool, ch_n)
+    ssp_rows = Vector{Vector{Float64}}()   # full-length (ch_n) vectors
+
+    for (item_idx, item) in enumerate(mi[:ssp])
+        vecs = item[:vectors]
+        isnothing(vecs) && continue
+        names = _clean_meg_labels(item[:ch_names])
+        if size(vecs, 2) != length(names)
+            _warn("SSP item $item_idx: $(size(vecs, 2)) vector elements but $(length(names)) channel names; ignored.")
+            continue
+        end
+        ch_idx = [findfirst(isequal(l), clabels) for l in names]
+        any(isnothing, ch_idx) && _warn(
+            "SSP item $item_idx: $(count(isnothing, ch_idx)) channel(s) not found in the recording; their weights are dropped.",
+        )
+        for row in axes(vecs, 1)
+            full = zeros(Float64, ch_n)
+            for (j, ci) in enumerate(ch_idx)
+                isnothing(ci) && continue
+                full[ci] = real(vecs[row, j])
+                ssp_channels[ci] = true
+            end
+            push!(ssp_rows, full)
+            label = isempty(item[:description]) ? "PCA-v$(lpad(length(ssp_rows), 2, '0'))" : item[:description]
+            size(vecs, 1) > 1 && (label *= "-$row")
+            push!(ssp_labels, label)
+        end
+    end
+    ssp_data = if isempty(ssp_rows)
+        Matrix{Float64}(undef, 0, 0)
+    else
+        # rows = projection vectors, columns = SSP channels in recording order
+        permutedims(reduce(hcat, ssp_rows))[:, ssp_channels]
+    end
+
+    # ------------------------------------------------------------------ #
+    # sensor geometry                                                    #
+    # ------------------------------------------------------------------ #
+    # ch_info.loc: r0, ex, ey, ez (12 values, metres / unit vectors);
+    # MEG in the device frame, EEG in the head frame
+    coil_loc = Matrix{Float64}(permutedims(reduce(hcat, [ch.loc for ch in chs])))
+    t = _fiff_dev_head_t(mi)
+    dev_head_t = if isnothing(t)
+        Matrix{Float64}(undef, 0, 0)
+    else
+        [t[1] t[2]; 0.0 0.0 0.0 1.0]
+    end
+    coil_id = Int64[ch.coil_type for ch in chs]
+    head_origin = _fiff_head_origin(mi)
+    hpi_info = _fiff_hpi(mi)
+
+    # ------------------------------------------------------------------ #
+    # data type                                                          #
     # ------------------------------------------------------------------ #
     data_type = if !isempty(magnetometers) || !isempty(gradiometers)
         "meg"
@@ -625,21 +909,24 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
-    epoch_time =
-        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
-    # subject / recording metadata
-    get_field(d, k) = begin
-        v = d[k]
-        isnothing(v) ? "" : string(v)
-    end
-    get_num(d, k) = begin
-        v = d[k]
-        isnothing(v) ? -1 : v
-    end
-    si = fiff[:meas_info][:subject_info]
+    # ------------------------------------------------------------------ #
+    # subject / recording metadata                                       #
+    # ------------------------------------------------------------------ #
+    get_field(d, k) = (v = get(d, k, nothing); isnothing(v) ? "" : string(v))
+    get_num(d, k) = (v = get(d, k, nothing); v isa Real ? v : -1)
+    si = mi[:subject_info]
 
-    date = fiff[:meas_info][:meas_date]
+    hand = get(si, :subj_hand, nothing)
+    handedness =
+        hand == 1 ? "right" : hand == 2 ? "left" : hand == 3 ? "ambidextrous" :
+        isnothing(hand) ? "" : string(hand)
+
+    subj_id = get_field(si, :subj_id)
+    isempty(subj_id) && (subj_id = get_field(si, :subj_his_id))
+
+    date = mi[:meas_date]
     rec_d, rec_t = if isnothing(date)
         "", ""
     else
@@ -651,15 +938,9 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         )
     end
 
-    lp =
-        isnothing(fiff[:meas_info][:lowpass]) ? 0 :
-        round(fiff[:meas_info][:lowpass]; digits = 1)
-    hp =
-        isnothing(fiff[:meas_info][:highpass]) ? 0 :
-        round(fiff[:meas_info][:highpass]; digits = 1)
-    lf =
-        isnothing(fiff[:meas_info][:line_freq]) ? 0 :
-        round(fiff[:meas_info][:line_freq]; digits = 1)
+    lp = isnothing(mi[:lowpass]) ? 0 : round(mi[:lowpass]; digits = 1)
+    hp = isnothing(mi[:highpass]) ? 0 : round(mi[:highpass]; digits = 1)
+    lf = isnothing(mi[:line_freq]) ? 0 : round(mi[:line_freq]; digits = 1)
 
     # ------------------------------------------------------------------ #
     # assemble NEURO object                                              #
@@ -667,42 +948,79 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     s = _create_subject(;
-        id = get_field(si, :subj_id),
+        id = subj_id,
         first_name = get_field(si, :subj_first_name),
         middle_name = get_field(si, :subj_middle_name),
         last_name = get_field(si, :subj_last_name),
         head_circumference = -1,
-        handedness = get_field(si, :subj_hand),
+        handedness = handedness,
         weight = get_num(si, :subj_weight),
         height = get_num(si, :subj_height),
     )
-    r = _create_recording_meg(;
-        data_type = data_type,
-        file_name = file_name,
-        file_size_mb = file_size_mb,
-        file_type = "FIFF",
-        recording = get_field(fiff[:meas_info], :description),
-        recording_date = rec_d,
-        recording_time = rec_t,
-        recording_notes = "",
-        channel_type = ch_type,
-        channel_order = _sort_channels(ch_type),
-        reference = "",
-        clabels = clabels,
-        units = units,
-        prefiltering = repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
-        line_frequency = lf,
-        sampling_rate = sampling_rate,
-        magnetometers = magnetometers,
-        gradiometers = gradiometers,
-        coil_type = coil_type,
-        bad_channels = bad_channels,
-        ssp_labels = ssp_labels,
-        ssp_channels = ssp_channels,
-        ssp_data = ssp_data,
-    )
+
+    recording = isnothing(mi[:description]) ? "" : string(mi[:description])
+    prefiltering = repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n)
+
+    r = if data_type == "meg"
+        _create_recording_meg(;
+            data_type = data_type,
+            file_name = file_name,
+            file_size_mb = file_size_mb,
+            file_type = "FIFF",
+            recording = recording,
+            recording_date = rec_d,
+            recording_time = rec_t,
+            recording_notes = "",
+            channel_type = ch_type,
+            channel_order = _sort_channels(ch_type),
+            reference = "",
+            clabels = clabels,
+            units = units,
+            prefiltering = prefiltering,
+            line_frequency = lf,
+            sampling_rate = sampling_rate,
+            magnetometers = magnetometers,
+            gradiometers = gradiometers,
+            coil_type = coil_type,
+            bad_channels = bad_channels,
+            ssp_labels = ssp_labels,
+            ssp_channels = ssp_channels,
+            ssp_data = ssp_data,
+            maxshield = maxshield,
+            coil_loc = coil_loc,
+            dev_head_t = dev_head_t,
+            coil_id = coil_id,
+            head_origin = head_origin,
+            hpi = hpi_info,
+        )
+    else
+        isempty(ssp_rows) ||
+            _info("SSP projectors (e.g. EEG average reference) are not stored for EEG-only data.")
+        _create_recording_eeg(;
+            data_type = data_type,
+            file_name = file_name,
+            file_size_mb = file_size_mb,
+            file_type = "FIFF",
+            recording = recording,
+            recording_date = rec_d,
+            recording_time = rec_t,
+            recording_notes = "",
+            channel_type = ch_type,
+            channel_order = _sort_channels(ch_type),
+            reference = "",
+            clabels = clabels,
+            transducers = repeat([""], ch_n),
+            units = units,
+            prefiltering = prefiltering,
+            line_frequency = lf,
+            sampling_rate = sampling_rate,
+            gain = ones(ch_n),
+            bad_channels = bad_channels,
+        )
+    end
+
     e = _create_experiment(;
-        name = get_field(fiff[:meas_info][:project_info], :proj_name),
+        name = get_field(mi[:project_info], :proj_name),
         notes = "",
         design = "",
     )
@@ -711,8 +1029,17 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     _initialize_locs!(obj)
-    l = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
-    add_locs!(obj; locs = l)
+    is_306 = length(magnetometers) == 102 && length(gradiometers) == 204
+    l = channel_locs === :fiff ? _fiff_locs(mi, clabels) : nothing
+    if !isnothing(l) && nrow(l) > 0
+        add_locs!(obj; locs = l)
+    elseif channel_locs !== :none && is_306
+        # the bundled layout describes the 306-channel Vectorview/TRIUX helmet only
+        channel_locs === :fiff && _info("Using the bundled 306-channel layout.")
+        add_locs!(obj; locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv")))
+    elseif channel_locs !== :none
+        _info("No channel locations available; OBJ.locs left empty.")
+    end
 
     _info(
         "Imported: " *
@@ -722,4 +1049,25 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     )
 
     return obj
+end
+
+"""
+    import_locs_fiff(file_name)
+
+Load channel locations from a FIFF file (raw, evoked or any file with measurement info).
+
+MEG sensor positions are transformed from the device to the head frame (when the device → head transform is present), EEG electrode positions are taken from the head frame. Coordinates are centred on a sphere fitted to the head-shape digitisation (or to the channel positions) and scaled so that the outermost channel has radius 1. Reference MEG sensors and channels without positions are omitted. Sensor orientations (coil normals) are not stored.
+
+# Arguments
+
+- `file_name::String`: path to the `.fif` or `.fiff` file
+
+# Returns
+
+- `DataFrame`: channel locations (`label`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`); labels match those created by `import_fiff()`
+"""
+function import_locs_fiff(file_name::String)::DataFrame
+    fiff, _, _ = load_fiff(file_name; read_data = false)
+    mi = fiff[:meas_info]
+    return _fiff_locs(mi, _fiff_labels(mi))
 end

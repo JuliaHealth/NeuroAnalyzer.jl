@@ -138,7 +138,28 @@ function _create_recording_meg(;
     ssp_labels::Vector{String},
     ssp_channels::Vector{Bool},
     ssp_data::Matrix{Float64},
+    maxshield::Bool = false,
+    coil_loc::Matrix{Float64} = Matrix{Float64}(undef, 0, 12),
+    dev_head_t::Matrix{Float64} = Matrix{Float64}(undef, 0, 0),
+    coil_id::Vector{Int64} = Int64[],
+    head_origin::Vector{Float64} = Float64[],
+    hpi::Dict{Symbol, Any} = Dict{Symbol, Any}(),
 )::Dict
+    # sensor geometry (FIFF/MNE `loc` convention), one row per channel:
+    # r0 (1:3, m), ex (4:6), ey (7:9), ez (10:12; coil normal)
+    # MEG channels: device frame; EEG channels: head frame (4:6 = reference electrode)
+    (isempty(coil_loc) || size(coil_loc) == (length(clabels), 12)) || throw(
+        ArgumentError("coil_loc must be an n_channels × 12 matrix."),
+    )
+    (isempty(dev_head_t) || size(dev_head_t) == (4, 4)) ||
+        throw(ArgumentError("dev_head_t must be a 4 × 4 matrix."))
+    # FIFF coil type code per channel (selects coil integration points)
+    (isempty(coil_id) || length(coil_id) == length(clabels)) ||
+        throw(ArgumentError("coil_id must have one entry per channel."))
+    # head origin (sphere fitted to digitization, head frame, m)
+    (isempty(head_origin) || length(head_origin) == 3) ||
+        throw(ArgumentError("head_origin must have 3 elements."))
+    # hpi: :freqs (Hz), :dig (n_coils × 3, head frame, m), :coil_no
     # normalize time separator (MEG files sometimes use '.' instead of ':')
     recording_time = replace(recording_time, '.' => ':')
     d = _common_recording_fields(;
@@ -158,6 +179,14 @@ function _create_recording_meg(;
             :ssp_labels => ssp_labels,
             :ssp_channels => ssp_channels,
             :ssp_data => ssp_data,
+            :maxshield => maxshield,
+            :coil_loc => coil_loc,
+            :dev_head_t => dev_head_t,
+            :coil_id => coil_id,
+            :head_origin => head_origin,
+            :hpi => hpi,
+            :sss => false,
+            :tsss => false,
             :epoch_id => "",
         ),
     )

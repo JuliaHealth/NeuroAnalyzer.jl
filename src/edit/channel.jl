@@ -12,6 +12,46 @@ export add_label!
 export add_channel
 export add_channel!
 
+# ---------------------------------------------------------------------------
+# internal helpers
+# ---------------------------------------------------------------------------
+
+# resolve a channel name that must match exactly one channel
+function _single_channel(obj::NeuroAnalyzer.NEURO, ch::String)::Int64
+    idx = get_channel(obj; ch = ch)
+    idx isa Integer && return Int64(idx)
+    isempty(idx) && throw(ArgumentError("No channels selected."))
+    length(idx) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    return Int64(idx[1])
+end
+
+# true if the object holds (not yet applied) SSP projection vectors
+_has_ssp(obj::NeuroAnalyzer.NEURO)::Bool =
+    datatype(obj) == "meg" &&
+    haskey(obj.header.recording, :ssp_data) &&
+    !isempty(obj.header.recording[:ssp_data])
+
+# rename a label in OBJ.locs (all matching rows)
+function _rename_locs!(locs::DataFrame, old::String, new::String)::Nothing
+    nrow(locs) == 0 && return nothing
+    locs[locs[!, :label] .== old, :label] .= new
+    return nothing
+end
+
+# keep MEG sensor index lists consistent with a channel's type
+function _update_meg_sensor_lists!(rec::Dict, ch::Int64, type::String)::Nothing
+    for field in (:magnetometers, :gradiometers)
+        haskey(rec, field) || continue
+        rec[field] = Base.filter(!isequal(ch), rec[field])
+    end
+    if type == "mag"
+        rec[:magnetometers] = sort(push!(get(rec, :magnetometers, Int64[]), ch))
+    elseif type == "grad"
+        rec[:gradiometers] = sort(push!(get(rec, :gradiometers, Int64[]), ch))
+    end
+    return nothing
+end
+
 """
     channel_type(obj; <keyword arguments>)
 
@@ -27,17 +67,13 @@ Return the type string of a single channel.
 - `String`: channel type (e.g. `"eeg"`, `"eog"`)
 """
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-
-    return obj.header.recording[:channel_type][ch[1]]
+    return obj.header.recording[:channel_type][_single_channel(obj, ch)]
 end
 
 """
     set_channel_type(obj; <keyword arguments>)
 
-Return a copy of `obj` with the type of one channel changed.
+Return a copy of `obj` with the type of one channel changed. Channel order is recomputed; for MEG data the magnetometer/gradiometer index lists are updated.
 
 # Arguments
 
@@ -57,18 +93,17 @@ function set_channel_type(
     # validate
     type = lowercase(type)
     _check_var(type, string.(channel_types), "type")
-
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-    ch = ch[1]
+    ch_idx = _single_channel(obj, ch)
 
     # create new dataset
     obj_tmp = deepcopy(obj)
+    rec = obj_tmp.header.recording
 
-    obj_tmp.header.recording[:channel_type][ch] = type
-    push!(obj_tmp.history, "set_channel_type(obj; ch=$ch, type=$type)")
+    rec[:channel_type][ch_idx] = type
+    rec[:channel_order] = _sort_channels(rec[:channel_type])
+    datatype(obj) == "meg" && _update_meg_sensor_lists!(rec, ch_idx, type)
+
+    push!(obj_tmp.history, "set_channel_type(obj; ch=$(labels(obj)[ch_idx]), type=$type)")
 
     return obj_tmp
 end
@@ -92,7 +127,6 @@ function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::
     obj_tmp = set_channel_type(obj; ch = ch, type = type)
     obj.header = obj_tmp.header
     obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end
@@ -100,13 +134,13 @@ end
 """
     rename_channel(obj; <keyword arguments>)
 
-Return a copy of `obj` with one channel renamed. Also updates the matching entry in `obj.locs` if one exists.
+Return a copy of `obj` with one channel renamed. Also updates the matching entries in `obj.locs`.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
-- `name::String`: new name (must not already exist)
+- `name::String`: new name (must not be empty or already exist)
 
 # Returns
 
@@ -117,25 +151,16 @@ function rename_channel(
     ch::String,
     name::String,
 )::NeuroAnalyzer.NEURO
-    clabels = obj.header.recording[:label]
-    name in clabels && throw(ArgumentError("Channel \"$name\" already exists."))
-
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-    ch = ch[1]
+    isempty(name) && throw(ArgumentError("name cannot be empty."))
+    name in labels(obj) && throw(ArgumentError("Channel \"$name\" already exists."))
+    ch_idx = _single_channel(obj, ch)
+    old = labels(obj)[ch_idx]
 
     obj_tmp = deepcopy(obj)
-    obj_tmp.header.recording[:label][ch] = name
+    obj_tmp.header.recording[:label][ch_idx] = name
+    _rename_locs!(obj_tmp.locs, old, name)
 
-    # update matching locs entry if present.
-    l_result = _find_bylabel(obj_tmp.locs, labels(obj)[ch])
-    if !isempty(l_result)
-        l_idx = l_result isa Int64 ? l_result : l_result[1]
-        obj_tmp.locs[l_idx, :label] = name
-    end
-
-    push!(obj_tmp.history, "rename_channel(obj; ch=$ch, name=$name)")
+    push!(obj_tmp.history, "rename_channel(obj; ch=$old, name=$name)")
 
     return obj_tmp
 end
@@ -149,7 +174,7 @@ Rename one channel in-place.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
-- `name::String`: new name (must not already exist)
+- `name::String`: new name (must not be empty or already exist)
 
 # Returns
 
@@ -160,7 +185,6 @@ function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::No
     obj.header = obj_tmp.header
     obj.history = obj_tmp.history
     obj.locs = obj_tmp.locs
-    obj_tmp = nothing
 
     return nothing
 end
@@ -168,7 +192,7 @@ end
 """
     edit_channel(obj; <keyword arguments>)
 
-Return a copy of `obj` with one field of one channel's header entry changed.
+Return a copy of `obj` with one field of one channel's header entry changed. Editing `:label` behaves as `rename_channel()`, editing `:channel_type` as `set_channel_type()`.
 
 # Arguments
 
@@ -187,22 +211,20 @@ function edit_channel(
     field::Symbol,
     value::String,
 )::NeuroAnalyzer.NEURO
-
     # validate
     isempty(value) && throw(ArgumentError("value cannot be empty."))
     _check_var(field, [:channel_type, :label], "field")
+    ch_idx = _single_channel(obj, ch)
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-    ch = ch[1]
+    obj_tmp = if field == :label
+        rename_channel(obj; ch = ch, name = value)
+    else
+        set_channel_type(obj; ch = ch, type = value)
+    end
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.header.recording[field][ch] = value
-
-    push!(obj_tmp.history, "edit_channel(obj; ch=$ch, field=$field, value=$value)")
+    # record the user's call instead of the delegated one
+    obj_tmp.history[end] =
+        "edit_channel(obj; ch=$(labels(obj)[ch_idx]), field=$field, value=$value)"
 
     return obj_tmp
 end
@@ -232,7 +254,7 @@ function edit_channel!(
     obj_tmp = edit_channel(obj; ch = ch, field = field, value = value)
     obj.header = obj_tmp.header
     obj.history = obj_tmp.history
-    obj_tmp = nothing
+    obj.locs = obj_tmp.locs
 
     return nothing
 end
@@ -259,27 +281,21 @@ function replace_channel(
 )::NeuroAnalyzer.NEURO
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
+    size(s) == (1, epoch_len(obj), nepochs(obj)) || throw(
+        ArgumentError(
+            "data size ($(size(s, 1)) × $(size(s, 2)) × $(size(s, 3))) must be 1 × $(epoch_len(obj)) × $(nepochs(obj)).",
+        ),
+    )
+    ch_idx = _single_channel(obj, ch)
 
-    size(s) == (1, epoch_len(obj), nepochs(obj)) ||
-        throw(
-            ArgumentError(
-                "data size ($(size(s, 2)) × $(size(s, 3))) must be the same as channel size ($(size(obj, 2)) × $(size(obj, 3))).",
-            ),
-        )
-    datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,) &&
-        _warn("OBJ contains SSP projections data; apply them before modifying data.")
-
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-    ch = ch[1]
+    _has_ssp(obj) && obj.header.recording[:ssp_channels][ch_idx] &&
+        _warn("Channel is part of SSP projections; apply them before modifying data.")
 
     # create new dataset
     obj_tmp = deepcopy(obj)
-    obj_tmp.data[ch, :, :] = s
+    obj_tmp.data[ch_idx, :, :] = s
 
-    push!(obj_tmp.history, "replace_channel(obj; ch=$ch, s)")
+    push!(obj_tmp.history, "replace_channel(obj; ch=$(labels(obj)[ch_idx]), s)")
 
     return obj_tmp
 end
@@ -293,22 +309,17 @@ Replace one channel's data in-place.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
-- `s::Array{Float64, 3}`: replacement data, shape (1, epoch_len, nepochs)
+- `s::AbstractArray`: replacement data, shape (1, epoch_len, nepochs)
 
 # Returns
 
 - `Nothing`
 """
-function replace_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    s::Array{Float64, 3},
-)::Nothing
+function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)::Nothing
     obj_tmp = replace_channel(obj; ch = ch, s = s)
     obj.header = obj_tmp.header
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end
@@ -316,12 +327,12 @@ end
 """
     add_label(obj; <keyword arguments>)
 
-Return a copy of `obj` with channel labels replaced.
+Return a copy of `obj` with channel labels replaced. Labels in `obj.locs` are renamed accordingly.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `clabels::Vector{String}`: new labels; must have length equal to `nchannels(obj)`
+- `clabels::Vector{String}`: new labels; must be unique, non-empty and have length equal to `nchannels(obj)`
 
 # Returns
 
@@ -331,11 +342,20 @@ function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnal
     # validate
     length(clabels) == nchannels(obj) ||
         throw(ArgumentError("clabels length must be $(nchannels(obj))."))
+    any(isempty, clabels) && throw(ArgumentError("clabels cannot contain empty labels."))
+    allunique(clabels) || throw(ArgumentError("clabels must be unique."))
 
     # create new dataset
     obj_tmp = deepcopy(obj)
+    old = labels(obj)
+    obj_tmp.header.recording[:label] = copy(clabels)
 
-    obj_tmp.header.recording[:label] = clabels
+    # rename locs in one pass (avoids clashes when labels are permuted)
+    if nrow(obj_tmp.locs) > 0
+        mapping = Dict(zip(old, clabels))
+        obj_tmp.locs[!, :label] = [get(mapping, l, l) for l in obj_tmp.locs[!, :label]]
+    end
+
     push!(obj_tmp.history, "add_label(obj, clabels=$clabels)")
 
     return obj_tmp
@@ -349,7 +369,7 @@ Replace channel labels in-place.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `clabels::Vector{String}`: new labels; must have length equal to `nchannels(obj)`
+- `clabels::Vector{String}`: new labels; must be unique, non-empty and have length equal to `nchannels(obj)`
 
 # Returns
 
@@ -359,7 +379,7 @@ function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
     obj_tmp = add_label(obj; clabels = clabels)
     obj.header = obj_tmp.header
     obj.history = obj_tmp.history
-    obj_tmp = nothing
+    obj.locs = obj_tmp.locs
 
     return nothing
 end
@@ -369,7 +389,9 @@ end
 
 Return a copy of `obj` with new channel(s) appended.
 
-If `obj.data` is empty the object is initialized with the provided data; otherwise the new channels are concatenated along the first (channel) dimension.
+If `obj.data` is empty the object is initialized with the provided data (time axes are created from the sampling rate); otherwise the new channels are concatenated along the first (channel) dimension.
+
+All per-channel header fields are extended with defaults: `""` for prefiltering, transducers and coil type, `1.0` for gain, a zero row for MEG sensor geometry (`:coil_loc`) and `0` for its coil code (`:coil_id`), `false` for SSP channel mask, `0` for MEP stimulation intensity. New MEG channels of type `"mag"`/`"grad"` are added to the magnetometer/gradiometer lists. NIRS channels must be added with optode functions.
 
 # Arguments
 
@@ -391,17 +413,24 @@ function add_channel(
     unit::Union{String, Vector{String}},
 )::NeuroAnalyzer.NEURO
     ch_n = size(data, 1)
+    ch_n > 0 || throw(ArgumentError("data must contain at least one channel."))
 
     # normalize to vectors for uniform handling below
-    label_v = label isa String ? [label] : label
-    type_v  = type isa String ? [type] : type
-    unit_v  = unit isa String ? [unit] : unit
+    label_v = label isa String ? [label] : copy(label)
+    type_v = lowercase.(type isa String ? [type] : type)
+    unit_v = unit isa String ? [unit] : copy(unit)
+
+    rec = obj.header.recording
+    dt = rec[:data_type]
+    dt == "nirs" &&
+        throw(ArgumentError("NIRS channels must be added using optode functions."))
 
     # validate
-    if length(obj.data) > 0
-        signal_len(obj) == size(data, 2) || throw(
+    has_data = length(obj.data) > 0
+    if has_data
+        epoch_len(obj) == size(data, 2) || throw(
             ArgumentError(
-                "Epoch length mismatch: new data has $(size(data, 2)), object has $(signal_len(obj)).",
+                "Epoch length mismatch: new data has $(size(data, 2)), object has $(epoch_len(obj)).",
             ),
         )
         nepochs(obj) == size(data, 3) || throw(
@@ -410,51 +439,81 @@ function add_channel(
             ),
         )
     end
-    length(label_v) == ch_n || throw(
-        ArgumentError(
-            "Number of labels ($(length(label_v))) must equal number of new channels ($ch_n).",
-        ),
-    )
-    length(type_v) == ch_n || throw(
-        ArgumentError(
-            "Number of types ($(length(type_v))) must equal number of new channels ($ch_n).",
-        ),
-    )
-    length(unit_v) == ch_n || throw(
-        ArgumentError(
-            "Number of units ($(length(unit_v))) must equal number of new channels ($ch_n).",
-        ),
-    )
-
-    for t in type_v
-        t in channel_types || throw(ArgumentError("Unknown channel type \"$t\"."))
+    for (name, v) in (("labels", label_v), ("types", type_v), ("units", unit_v))
+        length(v) == ch_n || throw(
+            ArgumentError(
+                "Number of $name ($(length(v))) must equal number of new channels ($ch_n).",
+            ),
+        )
     end
-
-    datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,) &&
-        _warn("OBJ contains SSP projections data; apply them before modifying data.")
+    any(isempty, label_v) && throw(ArgumentError("Labels cannot be empty."))
+    allunique(label_v) || throw(ArgumentError("New labels must be unique."))
+    old_labels = has_data ? labels(obj) : String[]
+    dup = intersect(label_v, old_labels)
+    isempty(dup) || throw(ArgumentError("Channel(s) $dup already exist."))
+    for t in type_v
+        t in string.(channel_types) || throw(ArgumentError("Unknown channel type \"$t\"."))
+    end
 
     # create new dataset
     obj_tmp = deepcopy(obj)
+    r = obj_tmp.header.recording
+    n_old = has_data ? nchannels(obj) : 0
 
-    if length(obj.data) > 0
-        obj_tmp.data                            = cat(obj.data, data; dims = 1)
-        obj_tmp.header.recording[:label]        = vcat(obj.header.recording[:label], label_v)
-        obj_tmp.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], string.(type_v))
-        obj_tmp.header.recording[:unit]         = vcat(obj.header.recording[:unit], unit_v)
-        obj_tmp.header.recording[:bad_channel]  = vcat(obj.header.recording[:bad_channel], zeros(Bool, ch_n))
+    # extend a per-channel field (or create it for an empty object)
+    function _extend!(field::Symbol, default)
+        old = (has_data && haskey(r, field)) ? r[field] : typeof(default)[]
+        r[field] = vcat(old, fill(default, ch_n))
+        return nothing
+    end
 
-        max_ord = maximum(obj_tmp.header.recording[:channel_order])
-        obj_tmp.header.recording[:channel_order] = vcat(
-            obj.header.recording[:channel_order],
-            collect((max_ord + 1):(max_ord + ch_n)),
-        )
-    else
-        obj_tmp.data                             = data
-        obj_tmp.header.recording[:label]         = label_v
-        obj_tmp.header.recording[:channel_type]  = string.(type_v)
-        obj_tmp.header.recording[:unit]          = unit_v
-        obj_tmp.header.recording[:channel_order] = collect(1:ch_n)
-        obj_tmp.header.recording[:bad_channel]   = zeros(Bool, ch_n)
+    obj_tmp.data = has_data ? cat(obj.data, data; dims = 1) : Array{Float64}(data)
+    r[:label] = vcat(old_labels, label_v)
+    r[:channel_type] = vcat(has_data ? r[:channel_type] : String[], type_v)
+    r[:unit] = vcat(has_data ? r[:unit] : String[], unit_v)
+    _extend!(:bad_channel, false)
+
+    if dt in ("eeg", "seeg", "ecog")
+        _extend!(:prefiltering, "")
+        _extend!(:transducers, "")
+        _extend!(:gain, 1.0)
+
+    elseif dt in ("sensors", "eda", "tpt")
+        _extend!(:prefiltering, "")
+
+    elseif dt == "mep"
+        _extend!(:stimulation_intensity, 0)
+        _extend!(:coil_type, "")
+
+    elseif dt == "meg"
+        _extend!(:prefiltering, "")
+        _extend!(:coil_type, "")
+        _extend!(:ssp_channels, false)
+        if haskey(r, :coil_loc) && !isempty(r[:coil_loc])
+            r[:coil_loc] = vcat(r[:coil_loc], zeros(ch_n, 12))
+        end
+        if haskey(r, :coil_id) && !isempty(r[:coil_id])
+            r[:coil_id] = vcat(r[:coil_id], zeros(Int64, ch_n))
+        end
+        for field in (:magnetometers, :gradiometers)
+            has_data && haskey(r, field) || (r[field] = Int64[])
+        end
+        for (i, t) in enumerate(type_v)
+            t == "mag" && push!(r[:magnetometers], n_old + i)
+            t == "grad" && push!(r[:gradiometers], n_old + i)
+        end
+    end
+
+    r[:channel_order] = _sort_channels(r[:channel_type])
+
+    # time axes for a previously empty object
+    if !has_data
+        fs = r[:sampling_rate]
+        fs > 0 || throw(ArgumentError("Sampling rate must be set to initialize an empty object."))
+        n_s = size(data, 2)
+        n_e = size(data, 3)
+        obj_tmp.time_pts = round.(range(0; step = 1 / fs, length = n_s * n_e); digits = 4)
+        obj_tmp.epoch_time = round.(range(0; step = 1 / fs, length = n_s); digits = 4)
     end
 
     push!(
@@ -495,7 +554,6 @@ function add_channel!(
     obj.time_pts = obj_tmp.time_pts
     obj.epoch_time = obj_tmp.epoch_time
     obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end

@@ -20,7 +20,9 @@ end
 
 Generate SSP (Signal-Space Projection) projectors from the SSP data embedded in a MEG recording.
 
-Following MNE-Python (`_make_projector`), the selected projection vectors are restricted to good channels (bad channel entries are set to zero), normalized to unit length, re-orthogonalised via SVD, and linearly dependent vectors are discarded (relative singular-value threshold 0.01). The projector `P = I - U Uᵀ` is built in SI units (T, T/m, V), in which the vectors are defined, and is returned converted to the units of the data: `D P D⁻¹`, where `D` holds the per-channel unit scaling (e.g. 10¹⁵ for fT, 10¹³ for fT/cm). This keeps the projection correct for projectors that span sensors of different types.
+Following MNE-Python (`_make_projector`), the selected projection vectors are restricted to good channels (bad channel entries are set to zero), normalized to unit length, re-orthogonalised via SVD, and linearly dependent vectors are discarded (relative singular-value threshold 0.01).
+
+The projector `P = I - U Uᵀ` is built in SI units (T, T/m, V), in which the vectors are defined, and is returned converted to the units of the data: `D P D⁻¹`, where `D` holds the per-channel unit scaling (e.g. 10¹⁵ for fT, 10¹³ for fT/cm). This keeps the projection correct for projectors that span sensors of different types.
 
 # Arguments
 
@@ -46,11 +48,17 @@ function generate_ssp_projectors(
     rec = obj.header.recording
     (:ssp_data in keys(rec) && :ssp_channels in keys(rec)) ||
         throw(ArgumentError("OBJ does not contain SSP projections."))
+    # SSP cannot correct the field distortion caused by internal active shielding; IAS data require SSS first
+    get(rec, :maxshield, false) && throw(
+        ArgumentError(
+            "OBJ contains raw MaxShield (IAS) data; SSP projectors cannot be applied before SSS processing.",
+        ),
+    )
     ssp_data = rec[:ssp_data]
     ssp_mask = rec[:ssp_channels]
     n_proj = size(ssp_data, 1)
     n_proj > 0 || throw(ArgumentError("OBJ does not contain SSP projections."))
- 
+
     # consistency between SSP data and the current channel list
     length(ssp_mask) == size(obj.data, 1) || throw(
         ArgumentError(
@@ -161,7 +169,7 @@ end
 """
     apply_ssp_projectors!(obj; <keyword arguments>)
 
-Apply SSP projectors from embedded projections.
+Apply SSP projectors from embedded projections. All epochs are processed.
 
 # Arguments
 
