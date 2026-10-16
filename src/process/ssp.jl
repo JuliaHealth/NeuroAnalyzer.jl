@@ -2,12 +2,25 @@ export generate_ssp_projectors
 export apply_ssp_projectors
 export apply_ssp_projectors!
 
+# scaling factor from SI units (T, T/m, V) to the units stored in NEURO data
+function _ssp_unit_scale(u::String)::Float64
+    u in ("T", "T/m", "V") && return 1.0
+    u == "fT" && return 1.0e15
+    # T/m → fT/cm: 1e15 / 100
+    u == "fT/cm" && return 1.0e13
+    u == "μV" && return 1.0e6
+    u == "nV" && return 1.0e9
+    u == "mV" && return 1.0e3
+    u == "pT" && return 1.0e12
+    throw(ArgumentError("Unsupported unit for SSP channel: $u."))
+end
+
 """
     generate_ssp_projectors(obj; <keyword arguments>)
 
 Generate SSP (Signal-Space Projection) projectors from the SSP data embedded in a MEG recording.
 
-The projectors are constructed by extracting the selected projection vectors, re-orthogonalising them via SVD, discarding linearly dependent vectors (relative singular-value threshold 0.01, following MNE-Python), and forming `I - U Uᵀ` to project the data onto the space orthogonal to the noise subspace.
+Following MNE-Python (`_make_projector`), the selected projection vectors are restricted to good channels (bad channel entries are set to zero), normalized to unit length, re-orthogonalised via SVD, and linearly dependent vectors are discarded (relative singular-value threshold 0.01). The projector `P = I - U Uᵀ` is built in SI units (T, T/m, V), in which the vectors are defined, and is returned converted to the units of the data: `D P D⁻¹`, where `D` holds the per-channel unit scaling (e.g. 10¹⁵ for fT, 10¹³ for fT/cm). This keeps the projection correct for projectors that span sensors of different types.
 
 # Arguments
 
@@ -18,8 +31,8 @@ The projectors are constructed by extracting the selected projection vectors, re
 
 Named tuple:
 
-- `ssp_projectors::Matrix{Float64}`: projection operator `I − U Uᵀ`
-- `U::Matrix{Float64}}`: SVD U matrix (orthonormal basis of the noise subspace)
+- `ssp_projectors::Matrix{Float64}`: projection operator to be applied to the data of SSP channels (in data units)
+- `U::Matrix{Float64}`: orthonormal basis of the noise subspace (in SI units)
 """
 function generate_ssp_projectors(
     obj::NeuroAnalyzer.NEURO;
@@ -30,50 +43,77 @@ function generate_ssp_projectors(
 }
     # validate
     _check_datatype(obj, "meg")
-    :ssp_data in keys(obj.header.recording) ||
+    rec = obj.header.recording
+    (:ssp_data in keys(rec) && :ssp_channels in keys(rec)) ||
         throw(ArgumentError("OBJ does not contain SSP projections."))
-    n_proj = size(obj.header.recording[:ssp_data], 1)
-    n_proj > 0 ||
-        throw(ArgumentError("OBJ does not contain SSP projections."))
+    ssp_data = rec[:ssp_data]
+    ssp_mask = rec[:ssp_channels]
+    n_proj = size(ssp_data, 1)
+    n_proj > 0 || throw(ArgumentError("OBJ does not contain SSP projections."))
+ 
+    # consistency between SSP data and the current channel list
+    length(ssp_mask) == size(obj.data, 1) || throw(
+        ArgumentError(
+            "SSP channel mask ($(length(ssp_mask))) does not match the number of channels ($(size(obj.data, 1))); channels were probably added or removed after import.",
+        ),
+    )
+    n_ssp_ch = count(ssp_mask)
+    size(ssp_data, 2) == n_ssp_ch || throw(
+        ArgumentError(
+            "SSP vectors have $(size(ssp_data, 2)) elements but $n_ssp_ch SSP channels are marked.",
+        ),
+    )
 
     # resolve the projection selection
-    if pidx isa Int64 && pidx == 0
-        # default: use all available projections
-        pidx = collect(1:n_proj)
-    elseif pidx isa Int64
-        # single projection index — validate range then wrap in a vector
-        # so the rest of the function works uniformly on Vector{Int64}
-        (1 <= pidx <= n_proj) ||
-            throw(ArgumentError("pidx must be in [1, $n_proj]."))
-        pidx = [pidx]
+    if pidx isa Int64
+        if pidx == 0
+            pidx = collect(1:n_proj)
+        else
+            (1 <= pidx <= n_proj) || throw(ArgumentError("pidx must be in [1, $n_proj]."))
+            pidx = [pidx]
+        end
     else
-        # multiple projection indices — sort ascending, then validate range
-        pidx = sort(pidx)
+        isempty(pidx) && throw(ArgumentError("pidx must not be empty."))
+        pidx = sort(unique(pidx))
         (pidx[1] >= 1 && pidx[end] <= n_proj) ||
             throw(ArgumentError("pidx must be in [1, $n_proj]."))
     end
 
-    # Extract the selected projection vectors.
-    # ssp_data is stored as (n_projections × n_channels)
-    # transpose to (n_channels × n_selected) so each column is one projection vector
-    ssp_vecs = obj.header.recording[:ssp_data][pidx, :]' # n_ch × n_sel
+    # n_ch × n_sel: each column is one projection vector (SI units)
+    ssp_vecs = Matrix{Float64}(permutedims(ssp_data[pidx, :]))
 
-    # re-orthogonalise the projection vectors via SVD
-    # U contains orthonormal columns spanning the same subspace as ssp_vecs
-    # S contains the singular values ordered largest to smallest
+    # exclude bad channels: their entries are set to zero (as in MNE-Python)
+    bads = rec[:bad_channel][ssp_mask]
+    norm_orig = [norm(ssp_vecs[:, k]) for k in axes(ssp_vecs, 2)]
+    ssp_vecs[bads, :] .= 0
+
+    # normalize each vector to unit length
+    for k in axes(ssp_vecs, 2)
+        n = norm(ssp_vecs[:, k])
+        n > 0 || continue
+        # warn when excluding bad channels removed a sizeable part of the vector
+        norm_orig[k] > 0 && n / norm_orig[k] < 0.9 && _warn(
+            "Projection vector $(pidx[k]) lost $(round(100 * (1 - n / norm_orig[k]); digits = 1))% of its norm after excluding bad channels.",
+        )
+        ssp_vecs[:, k] ./= n
+    end
+
+    # re-orthogonalise via SVD and discard linearly dependent vectors
     U, S, _ = svd(ssp_vecs)
-
-    # discard linearly dependent vectors using a relative singular-value
-    # threshold of 0.01 (1 % of the largest singular value)
-    # this matches the implementation in proj.py of the MNE-Python project
-    n_keep = sum(S ./ S[1] .> 0.01)
+    (isempty(S) || S[1] == 0) &&
+        throw(ArgumentError("All selected projection vectors are zero."))
+    n_keep = count(S ./ S[1] .> 0.01)
+    n_keep < n_ssp_ch || throw(
+        ArgumentError(
+            "Number of independent projection vectors ($n_keep) equals the number of channels; the projector would remove all signal.",
+        ),
+    )
     U = U[:, 1:n_keep]
 
-    # build the orthogonal projector: I − UUᵀ
-    # multiplying a signal by this matrix removes its component in the
-    # noise subspace spanned by U (i.e. the SSP projections)
-    n_ssp_ch = size(U, 1)
-    ssp_projectors = Matrix{Float64}(I(n_ssp_ch)) .- (U * U')
+    # projector in SI units, then converted to data units: D P D⁻¹
+    P = Matrix{Float64}(I(n_ssp_ch)) .- (U * U')
+    d = [_ssp_unit_scale(u) for u in rec[:unit][ssp_mask]]
+    ssp_projectors = d .* P ./ d'
 
     return (; ssp_projectors, U)
 end
@@ -81,7 +121,7 @@ end
 """
     apply_ssp_projectors(obj; <keyword arguments>)
 
-Apply SSP projectors generated from embedded projections to a MEG object.
+Apply SSP projectors generated from embedded projections to a MEG object. All epochs are processed.
 
 # Arguments
 
@@ -99,15 +139,20 @@ function apply_ssp_projectors(
     # validate
     _check_datatype(obj, "meg")
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
     # generate the projector matrix and the noise-subspace basis U
     ssp_projectors, U = generate_ssp_projectors(obj; pidx = pidx)
     _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
 
-    ssp_mask = obj.header.recording[:ssp_channels]
-    obj_tmp.data[ssp_mask, :, 1] = ssp_projectors * obj.data[ssp_mask, :, 1]
+    # create new dataset
+    obj_tmp = deepcopy(obj)
+
+    # project all samples of all epochs at once: (n_ssp_ch × n_samples·n_epochs)
+    ssp_idx = findall(obj.header.recording[:ssp_channels])
+    n_s = size(obj.data, 2)
+    n_e = size(obj.data, 3)
+    x = reshape(obj.data[ssp_idx, :, :], length(ssp_idx), n_s * n_e)
+    obj_tmp.data[ssp_idx, :, :] = reshape(ssp_projectors * x, length(ssp_idx), n_s, n_e)
+
     push!(obj_tmp.history, "apply_ssp_projectors(obj, pidx=$pidx)")
 
     return obj_tmp

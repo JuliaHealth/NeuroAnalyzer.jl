@@ -657,7 +657,7 @@ function channel_pick(
 end
 
 """
-    channels_cluster(obj; <keyword arguments>)
+    channel_cluster(obj; <keyword arguments>)
 
 Return channel names belonging to a predefined spatial cluster.
 

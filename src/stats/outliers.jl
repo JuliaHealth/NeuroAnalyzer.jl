@@ -116,7 +116,7 @@ The critical value is derived from the t-distribution with `df = n − 2`.
 
 # Arguments
 - `x::AbstractVector`: input vector; must contain at least 7 elements
-- `alpha::Float64=0.95`: confidence level (not significance level); must be in `(0, 1)`; default 0.95 corresponds to a 5 % significance level
+- `alpha::Float64=0.05`: significance level; must be in `(0, 1)`
 - `t::Int64=0`: test type:
     - `0`: two-tailed (tests both extremes)
     - `1`: upper one-tailed (tests maximum)
@@ -130,7 +130,7 @@ The critical value is derived from the t-distribution with `df = n − 2`.
 
 1. Grubbs FE. Procedures for detecting outlying observations in samples. Technometrics. 1969;11(1):1–21.
 """
-function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
+function grubbs(x::AbstractVector; alpha::Float64 = 0.05, t::Int64 = 0)::Bool
     # validate
     length(x) >= 7 || throw(ArgumentError("x must contain at least 7 elements."))
     alpha > 0.0 || throw(ArgumentError("alpha must be > 0."))
@@ -151,7 +151,7 @@ function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
     end
 
     # significance level for the t-distribution lookup
-    p = two_tailed ? (1 - alpha) / (2 * n) : (1 - alpha) / n
+    p = two_tailed ? alpha / (2 * n) : alpha / n
     t_crit = quantile(TDist(df), 1 - p)
     threshold = (n - 1) / sqrt(n) * sqrt(t_crit^2 / (df + t_crit^2))
 

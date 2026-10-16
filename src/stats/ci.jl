@@ -9,7 +9,7 @@ export civ
 """
     cl2z(ci; <keyword arguments>)
 
-Convert a confidence level to the corresponding Z-score.
+Calculate Z-score of confidence level.
 
 # Arguments
 
@@ -18,12 +18,7 @@ Convert a confidence level to the corresponding Z-score.
 
 # Returns
 
-- `Float64`: critical Z-score
-
-# Notes
-
-- Two-tailed (`twotailed=true`): the CI is `(−z, +z)`
-- One-tailed (`twotailed=false`): the CI is `(−∞, z)` (upper bound) or equivalently `(−z, +∞)` (lower bound) depending on direction
+- `Float64`: corresponding Z-score
 """
 function cl2z(cl::Float64; twotailed::Bool = true)::Float64
     # validate
