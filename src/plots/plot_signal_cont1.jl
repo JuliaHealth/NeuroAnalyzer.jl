@@ -247,15 +247,19 @@ function plot_cont(
     # draw scale bars
     # TO DO: place scale values on the left side, below channel label
     if scale
+        # scale bar width as a fixed fraction of the displayed segment, so its
+        # on-screen width does not depend on the segment length
+        # (equals the former 0.01 s at the default 10 s segment)
+        sb_w = seg_len / 1000
         if type === :normal
             idx2 = 1
             for idx1 = 1:ch_n
                 if ctypes_uni_pos[idx1] == 1
                     s_rectangle = lift(seg_pos) do sp
-                        return Rect(sp, (idx1 - 0.49), 0.01, 0.98)
+                        return Rect(sp, (idx1 - 0.49), sb_w, 0.98)
                     end
                     l_pos = lift(seg_pos) do sp
-                        return (sp + 0.01, idx1 + 0.49)
+                        return (sp + sb_w, idx1 + 0.49)
                     end
                     GLMakie.poly!(
                         ax1,
@@ -279,7 +283,7 @@ function plot_cont(
         elseif type === :butterfly
             for idx = 1:ch_n
                 s_rectangle = lift(seg_pos) do sp
-                    return Rect(sp, (idx - 0.475), 0.01, 0.975)
+                    return Rect(sp, (idx - 0.475), sb_w, 0.975)
                 end
                 l_pos = lift(seg_pos) do sp
                     return (sp, idx + 0.5)
