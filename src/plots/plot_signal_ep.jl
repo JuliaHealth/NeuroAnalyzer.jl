@@ -122,7 +122,7 @@ function plot_ep(
     if type === :normal
         nch      = Observable(n_channels)
         ch1      = Observable(1)
-        ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
+        ch2_init = ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
         clabels  = labels(obj)[ch][ch_order]
     else
         ch_n     = length(ctypes_uni)
@@ -202,7 +202,7 @@ function plot_ep(
         end,
     )
     GLMakie.xlims!(ax1, seg)
-    if gui && ch_n > nch[]
+    if ch_n > nch[]
         GLMakie.ylims!(ax1, ch2_init + 0.5, ch2_init - nch[] + 0.5)
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
@@ -266,15 +266,20 @@ function plot_ep(
     # draw scale bars
     # TO DO: place scale values on the left side, below channel label
     if scale
+        # scale bar width as a fixed fraction of the displayed segment, so its
+        # on-screen width does not depend on the segment length
+        # (equals the former 0.01 s for a 10 s segment)
+        sb_w = seg_len / 1000
+        # seg_pos is in epochs, ax1 x-axis is in seconds
         if type === :normal
             idx2 = 1
             for idx1 = 1:ch_n
                 if ctypes_uni_pos[idx1] == 1
                     s_rectangle = lift(seg_pos) do sp
-                        return Rect(sp, (idx1 - 0.49), 0.01, 0.98)
+                        return Rect(sp * ep_len, (idx1 - 0.49), sb_w, 0.98)
                     end
                     l_pos = lift(seg_pos) do sp
-                        return (sp + 0.01, idx1 + 0.49)
+                        return (sp * ep_len + sb_w, idx1 + 0.49)
                     end
                     GLMakie.poly!(
                         ax1,
@@ -298,10 +303,10 @@ function plot_ep(
         elseif type === :butterfly
             for idx in eachindex(ctypes_uni)
                 s_rectangle = lift(seg_pos) do sp
-                    return Rect(sp, (idx - 0.475), 0.01, 0.975)
+                    return Rect(sp * ep_len, (idx - 0.475), sb_w, 0.975)
                 end
                 l_pos = lift(seg_pos) do sp
-                    return (sp, idx + 0.5)
+                    return (sp * ep_len, idx + 0.5)
                 end
                 GLMakie.poly!(
                     ax1,

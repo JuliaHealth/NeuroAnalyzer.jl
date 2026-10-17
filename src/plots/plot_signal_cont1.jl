@@ -120,7 +120,7 @@ function plot_cont(
     if type === :normal
         nch = Observable(n_channels)
         ch1 = Observable(1)
-        ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
+        ch2_init = ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
         clabels = labels(obj)[ch][ch_order]
     else
         ch_n = length(ctypes_uni)
@@ -193,7 +193,7 @@ function plot_cont(
         end,
     )
     GLMakie.xlims!(ax1, seg)
-    if gui && ch_n > nch[]
+    if ch_n > nch[]
         GLMakie.ylims!(ax1, ch2_init + 0.5, ch2_init - nch[] + 0.5)
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)

@@ -100,7 +100,7 @@ function plot_cont(
 
     nch      = Observable(n_channels)
     ch1      = Observable(1)
-    ch2_init = gui && ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
+    ch2_init = ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
 
     # get ranges of the original signal for the scales
     # normalize in groups by channel type
@@ -150,12 +150,8 @@ function plot_cont(
         end,
     )
     GLMakie.xlims!(ax1, seg)
-    if gui
-        if ch_n > nch[]
-            GLMakie.ylims!(ax1, ch2_init + 0.5, ch2_init - nch[] + 0.5)
-        else
-            GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
-        end
+    if ch_n > nch[]
+        GLMakie.ylims!(ax1, ch2_init + 0.5, ch2_init - nch[] + 0.5)
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
     end
