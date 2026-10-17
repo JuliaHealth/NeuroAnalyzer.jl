@@ -27,6 +27,8 @@ function import_ft(
     _check_var(type, [:eeg, :ecog, :seeg, :ieeg, :meg, :nirs, :events], "type")
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
+    detect_format(file_name) === :ft ||
+        throw(ArgumentError("$file_name is not FieldTrip file."))
 
     file_type = "FT"
     data_type = String(type)

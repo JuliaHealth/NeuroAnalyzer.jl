@@ -21,8 +21,8 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".set" ||
-        throw(ArgumentError("This is not SET file."))
+    detect_format(file_name) === :set ||
+        throw(ArgumentError("$file_name is not SET file."))
 
     file_type = "SET"
 

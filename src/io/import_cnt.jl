@@ -3,8 +3,7 @@ export import_cnt
 """
     import_cnt(file_name; <keyword arguments>)
 
-Load a Neuroscan continuous signal (CNT) file and return a
-`NeuroAnalyzer.NEURO` object.
+Load a Neuroscan continuous signal (CNT) file and return a `NeuroAnalyzer.NEURO` object.
 
 CNT files store a fixed 900-byte global header, a per-channel header block (75 bytes × number of channels), multiplexed signal data, and an event table. Three event-table variants are supported (TEEG types 1, 2, and 3).
 

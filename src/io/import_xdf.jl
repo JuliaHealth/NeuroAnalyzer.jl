@@ -16,8 +16,8 @@ Load Extensible Data Format (XDF) and return `NeuroAnalyzer.NEURO` object.
 function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".xdf" ||
-        throw(ArgumentError("This is not XDF file."))
+    detect_format(file_name) === :xdf ||
+        throw(ArgumentError("$file_name is not XDF file."))
 
     streams = nothing
     try

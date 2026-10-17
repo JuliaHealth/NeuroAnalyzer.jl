@@ -21,8 +21,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".hdr" ||
-        throw(ArgumentError("$file_name is not a NIRXfile."))
+    detect_format(file_name) === :nirx ||
+        throw(ArgumentError("$file_name is not NIRX file."))
 
     hdr = nothing
     try

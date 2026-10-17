@@ -38,7 +38,7 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
         patient = strip(header[9:88])
         recording = strip(header[89:168])
         occursin("Alice 4", recording) ||
-            throw(ArgumentError("$file_name is not an Alice 4 EDF file."))
+            throw(ArgumentError("$file_name is not a valid Alice 4 EDF file."))
 
         recording_date = header[169:176]
         recording_time = header[177:184]

@@ -33,34 +33,34 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
 
     time_pts = Float64[]
     ep_time  = Float64[]
-    data     = Array{Float64, 3}(undef, 0, 0, 0)
+    data = Array{Float64, 3}(undef, 0, 0, 0)
 
     s = _create_subject(;
-        id                 = "",
-        first_name         = "",
-        middle_name        = "",
-        last_name          = "",
-        handedness         = "",
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = "",
+        handedness = "",
         head_circumference = -1,
-        weight             = -1,
-        height             = -1,
+        weight = -1,
+        height = -1,
     )
 
     # common fields shared by most recording types
     _common = (
-        file_name       = "",
-        file_size_mb    = 0,
-        file_type       = "",
-        recording       = "",
-        recording_date  = "",
-        recording_time  = "",
+        file_name = "",
+        file_size_mb = 0,
+        file_type = "",
+        recording = "",
+        recording_date = "",
+        recording_time = "",
         recording_notes = "",
-        channel_type    = String[],
-        channel_order   = Int64[],
-        clabels         = String[],
-        units           = String[],
-        sampling_rate   = 0,
-        bad_channels    = Bool[],
+        channel_type = String[],
+        channel_order = Int64[],
+        clabels = String[],
+        units = String[],
+        sampling_rate = 0,
+        bad_channels = Bool[],
     )
 
     if data_type == "eeg"
@@ -97,26 +97,26 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         r = _create_recording_meg(;
             data_type = "meg",
             _common...,
-            reference      = "",
-            prefiltering   = String[],
+            reference = "",
+            prefiltering = String[],
             line_frequency = 50,
-            magnetometers  = Int[],
-            gradiometers   = Int[],
-            coil_type      = String[],
-            ssp_labels     = String[],
-            ssp_channels   = Bool[],
-            ssp_data       = Matrix{Float64}(undef, 0, 0),
+            magnetometers = Int[],
+            gradiometers = Int[],
+            coil_type = String[],
+            ssp_labels = String[],
+            ssp_channels = Bool[],
+            ssp_data = Matrix{Float64}(undef, 0, 0),
         )
     elseif data_type == "nirs"
         r = _create_recording_nirs(;
             data_type = "nirs",
             _common...,
-            wavelengths      = Float64[],
+            wavelengths = Float64[],
             wavelength_index = Int64[],
-            optode_pairs     = Matrix{Int64}(undef, 0, 0),
-            src_labels       = String[],
-            det_labels       = String[],
-            opt_labels       = String[],
+            optode_pairs = Matrix{Int64}(undef, 0, 0),
+            src_labels = String[],
+            det_labels = String[],
+            opt_labels = String[],
         )
     elseif data_type == "sensors"
         r = _create_recording_sensors(;
@@ -129,10 +129,10 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             data_type = "mep",
             _common...,
             stimulation_intensity = Int64[],
-            coil_type             = String[],
-            stimulation_sample    = Int64[],
-            markers_pos           = Int64[],
-            markers_neg           = Int64[],
+            coil_type = String[],
+            stimulation_sample = Int64[],
+            markers_pos = Int64[],
+            markers_neg = Int64[],
         )
     elseif data_type == "eda"
         r = _create_recording_eda(;
@@ -160,7 +160,7 @@ end
 
 Return a copy of `obj` with time vectors built from a specified sampling rate.
 
-`obj` must already contain data and must not already have time points assigned.
+`obj` must already contain data.
 
 # Arguments
 
@@ -174,7 +174,6 @@ Return a copy of `obj` with time vectors built from a specified sampling rate.
 function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
     # validate
     length(obj.data) > 0 || throw(ArgumentError("OBJ does not contain data."))
-    length(obj.time_pts) == 0 || throw(ArgumentError("OBJ already has time points."))
     fs > 0 || throw(ArgumentError("fs must be > 0."))
 
     # create new dataset

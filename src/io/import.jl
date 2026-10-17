@@ -1,4 +1,5 @@
 export import_recording
+export detect_format
 
 # ---------------------------------------------------------------------------
 # format detection
@@ -7,9 +8,9 @@ export import_recording
 # all formats import_recording() can dispatch to
 const _FORMATS = (
     :edf, :bdf, :gdf, :bv, :csv, :csv_gz, :set, :npy, :xdf, :nwb, :ncs,
-    :fiff, :ft, :snirf, :nirs, :duomag,
+    :fiff, :ft, :snirf, :nirs, :nirx, :duomag,
 )
-
+ 
 # extension → format
 const _EXT_FORMAT = Dict{String, Symbol}(
     ".edf"   => :edf,
@@ -28,13 +29,14 @@ const _EXT_FORMAT = Dict{String, Symbol}(
     ".mat"   => :ft,
     ".snirf" => :snirf,
     ".nirs"  => :nirs,
+    ".hdr"   => :nirx,
     ".ascii" => :duomag,
     ".m"     => :duomag,
 )
 
 # formats whose leading bytes identify them unambiguously: content wins over extension
-const _UNIQUE_SIGNATURE = (:edf, :bdf, :gdf, :bv, :npy, :xdf, :ncs, :fiff)
-
+const _UNIQUE_SIGNATURE = (:edf, :bdf, :gdf, :bv, :npy, :xdf, :ncs, :fiff, :nirx)
+ 
 # generic containers → formats that may legitimately use them (extension disambiguates)
 const _CONTAINER_FORMATS = Dict{Symbol, Tuple{Vararg{Symbol}}}(
     :mat5  => (:ft, :set, :nirs),
@@ -43,7 +45,7 @@ const _CONTAINER_FORMATS = Dict{Symbol, Tuple{Vararg{Symbol}}}(
     :gzip  => (:csv_gz,),
     :text  => (:csv, :duomag),
 )
-
+ 
 const _SIG_DESCRIPTION = Dict{Symbol, String}(
     :mat5    => "a MATLAB v5 MAT-file",
     :mat73   => "a MATLAB v7.3 MAT-file",
@@ -52,14 +54,14 @@ const _SIG_DESCRIPTION = Dict{Symbol, String}(
     :text    => "a plain-text file",
     :unknown => "an unrecognized binary file",
 )
-
+ 
 _hasprefix(buf::AbstractVector{UInt8}, p::AbstractVector{UInt8}) =
     length(buf) >= length(p) && view(buf, 1:length(p)) == p
 _hasprefix(buf::AbstractVector{UInt8}, p::String) = _hasprefix(buf, codeunits(p))
-
+ 
 """
     _sniff_format(file_name)
-
+ 
 Identify file format from its leading bytes. Returns a format symbol, a container symbol (`:mat5`, `:mat73`, `:hdf5`, `:gzip`, `:text`), `:unknown` or `:empty`.
 """
 function _sniff_format(file_name::String)::Symbol
@@ -77,23 +79,29 @@ function _sniff_format(file_name::String)::Symbol
     _hasprefix(buf, "XDF:") && return :xdf
     _hasprefix(buf, UInt8[0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a]) && return :hdf5
     _hasprefix(buf, "MATLAB 5.0 MAT-file") && return :mat5
-    _hasprefix(buf, "MATLAB 7.3 MAT-file") && return :mat73            # HDF5 with 512 B userblock
-
+    # HDF5 with 512 B userblock
+    _hasprefix(buf, "MATLAB 7.3 MAT-file") && return :mat73
+ 
     # FIFF: big-endian; first tag must be FIFF_FILE_ID (100), FIFFT_ID_STRUCT (31), size 20
     if length(buf) >= 12
         kind, typ, sz = ntoh.(reinterpret(Int32, buf[1:12]))
         (kind, typ, sz) == (100, 31, 20) && return :fiff
     end
+ 
     # text-based headers (strip UTF-8 BOM)
     txt = chopprefix(String(buf[1:min(end, 256)]), "\ufeff")
     occursin(r"^Brain ?Vision Data Exchange Header File", txt) && return :bv
     startswith(txt, "########") && occursin("Neuralynx", txt) && return :ncs
+    # NIRx (NIRStar / Aurora) header: INI-style, [GeneralInfo] is the first section
+    occursin(r"^\s*\[GeneralInfo\]"m, chopprefix(String(copy(buf)), "\ufeff")) &&
+        return :nirx
+ 
     return 0x00 in buf ? :unknown : :text
 end
-
+ 
 """
     _ext_format(file_name)
-
+ 
 Map file extension to format symbol (`nothing` if unknown).
 """
 function _ext_format(file_name::String)::Union{Nothing, Symbol}
@@ -105,10 +113,10 @@ function _ext_format(file_name::String)::Union{Nothing, Symbol}
     end
     return get(_EXT_FORMAT, ext, nothing)
 end
-
+ 
 """
     _hdf5_flavor(file_name)
-
+ 
 Distinguish NWB from SNIRF by inspecting HDF5 root contents. Returns `:nwb`, `:snirf` or `nothing`.
 """
 function _hdf5_flavor(file_name::String)::Union{Nothing, Symbol}
@@ -124,10 +132,10 @@ function _hdf5_flavor(file_name::String)::Union{Nothing, Symbol}
         return nothing
     end
 end
-
+ 
 """
     _sibling_hint(file_name)
-
+ 
 Suggest the correct companion file when a data/marker file was passed instead of its header.
 """
 function _sibling_hint(file_name::String)::String
@@ -137,6 +145,9 @@ function _sibling_hint(file_name::String)::String
         (".vhdr", ".VHDR", ".ahdr", ".AHDR")
     elseif ext == ".fdt"
         (".set", ".SET")
+    elseif ext in (".wl1", ".wl2", ".wl3", ".wl4", ".evt", ".inf", ".tpl", ".set")
+        # NIRx data/aux files; note NIRStar also writes a (text) .set settings file
+        (".hdr", ".HDR")
     else
         ()
     end
@@ -147,7 +158,7 @@ function _sibling_hint(file_name::String)::String
 end
 
 """
-    _detect_format(file_name)
+    detect_format(file_name)
 
 Determine file format using content signature first and extension second.
 
@@ -155,8 +166,16 @@ Determine file format using content signature first and extension second.
 - HDF5: NWB/SNIRF identified by content when possible, otherwise by extension
 - MATLAB / gzip / text containers: extension picks the format, but must be compatible with the container
 - no conclusive signature: falls back to extension (with a warning if the format should have been recognizable)
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `ext_fmt::Symbol`
 """
-function _detect_format(file_name::String)::Symbol
+function detect_format(file_name::String)::Symbol
     sig = _sniff_format(file_name)
     sig === :empty && throw(ArgumentError("File $file_name is empty."))
     ext_fmt = _ext_format(file_name)
@@ -166,6 +185,7 @@ function _detect_format(file_name::String)::Symbol
             @warn "$file_name has a :$ext_fmt extension, but its contents are :$sig. Importing as :$sig."
         return sig
     end
+ 
     if sig === :hdf5
         flavor = _hdf5_flavor(file_name)
         if flavor !== nothing
@@ -174,6 +194,7 @@ function _detect_format(file_name::String)::Symbol
             return flavor
         end
     end
+ 
     allowed = get(_CONTAINER_FORMATS, sig, ())
     ext_fmt in allowed && return ext_fmt
  
@@ -183,6 +204,7 @@ function _detect_format(file_name::String)::Symbol
             @warn "Contents of $file_name do not match the expected :$ext_fmt signature (detected: $(_SIG_DESCRIPTION[sig])). Trying the :$ext_fmt importer anyway."
         return ext_fmt
     end
+
     desc = _SIG_DESCRIPTION[sig]
     msg = if ext_fmt === nothing
         "Cannot determine the format of $file_name (contents: $desc)."
@@ -197,11 +219,11 @@ end
     import_recording(file_name; <keyword arguments>)
 
 Load a recording file and return a `NeuroAnalyzer.NEURO` object.
-
+ 
 This is a meta-function: it detects the file format and delegates to the appropriate `import_*()` function. Detection inspects the file contents (magic bytes / header signature) first and the extension second, so misnamed or extensionless files are handled where the format is identifiable. A warning is shown if the extension and contents disagree. The signal data type (EEG, MEG, fNIRS, …) is auto-detected where possible and stored in `obj.header.recording[:data_type]`.
 
 Supported formats:
-
+ 
 |             Format             |    Extension(s)   |   `format`  | Content detection             |
 | ------------------------------ | ----------------- | ----------- | ----------------------------- |
 | EDF / EDF+                     | `.edf`            | `:edf`      | yes                           |
@@ -219,21 +241,22 @@ Supported formats:
 | FieldTrip MATLAB               | `.mat`            | `:ft`       | MAT-file only                 |
 | SNIRF                          | `.snirf`          | `:snirf`    | yes                           |
 | NIRS                           | `.nirs`           | `:nirs`     | MAT-file only                 |
+| NIRx (NIRStar / Aurora)        | `.hdr`            | `:nirx`     | yes                           |
 | DuoMAG TMS MEP                 | `.ascii`, `.m`    | `:duomag`   | no                            |
 
 "MAT-file only" / "text only" means the container is verified, but the extension (or `format`) decides which importer is used.
-
+ 
 # Arguments
-
+ 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: infer channel type from channel label
-- `type::Union{Nothing, Symbol}=nothing`: data type for FieldTrip (`.mat`) files, where auto-detection is not possible; one of `:eeg`, `:ecog`, `:ecog`, `:seeg`, `:ieeg`,`:meg`, `:nirs`, `:events`
+- `type::Union{Nothing, Symbol}=nothing`: data type for FieldTrip (`.mat`) files, where auto-detection is not possible; one of `:eeg`, `:meg`, `:nirs`, `:events`
 - `sampling_rate::Union{Nothing, Int64}=nothing`: sampling rate for `.npy` files, which store only raw signal data with no embedded metadata
 - `n::Int64=0`: subject index to extract from multi-subject SNIRF files
 - `format::Union{Nothing, Symbol}=nothing`: force a specific format (see table), skipping detection
-
+ 
 # Returns
-
+ 
 - `NeuroAnalyzer.NEURO`: for EEG, MEG, and fNIRS data
 - `DataFrame`: when `type = :events` (FieldTrip `.mat` files)
 """
@@ -246,12 +269,11 @@ function import_recording(
     format::Union{Nothing, Symbol} = nothing,
 )::Union{NeuroAnalyzer.NEURO, DataFrame}
     # validate
-    !isnothing(type) && _check_var(type, [:eeg, :ecog, :seeg, :ieeg, :meg, :nirs, :events], "type")
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-
+ 
     fmt = if format === nothing
-        _detect_format(file_name)
+        detect_format(file_name)
     else
         format in _FORMATS || throw(
             ArgumentError(
@@ -260,9 +282,7 @@ function import_recording(
         )
         format
     end
-
-    fmt === :ft && isnothing(type) && throw(ArgumentError("For FieldTrip files type must be specified."))
-
+ 
     fmt === :edf && return import_edf(file_name; detect_type = detect_type)
     fmt === :bdf && return import_bdf(file_name; detect_type = detect_type)
     fmt === :gdf && return import_gdf(file_name; detect_type = detect_type)
@@ -279,8 +299,9 @@ function import_recording(
     fmt === :ft && return import_ft(file_name; type)
     fmt === :snirf && return import_snirf(file_name; n)
     fmt === :nirs && return import_nirs(file_name)
+    fmt === :nirx && return import_nirx(file_name)
     fmt === :duomag && return import_duomag(file_name)
-
+ 
     # unreachable: every member of _FORMATS is handled above
     throw(ErrorException("Internal error: unhandled format :$fmt."))
 end

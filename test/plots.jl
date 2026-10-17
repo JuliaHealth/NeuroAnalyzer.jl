@@ -412,7 +412,7 @@ p = plot_phs(e10; ep = 1, ch = "eeg", type = :topo, gui = false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_coherence()"
-coh, imcoh, mscoh, f = coherence(
+coh, imcoh, mscoh, f = NeuroAnalyzer.coherence(
     e10,
     e10;
     ch1 = ["Fp1", "Fp2"],

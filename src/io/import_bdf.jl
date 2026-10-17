@@ -30,8 +30,8 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".bdf" ||
-        throw(ArgumentError("$file_name does not have a .bdf extension."))
+    detect_format(file_name) === :bdf ||
+        throw(ArgumentError("$file_name is not an BDF file."))
 
     # ------------------------------------------------------------------ #
     # parse fixed-length global header (256 bytes)                       #

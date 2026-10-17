@@ -2,8 +2,6 @@
 
 # types by colors
 # time format (SS:MS HH:MM:SS)
-# select epoch
-# delete epoch
 # change scaling
 
 export plot_ep
@@ -76,8 +74,8 @@ function plot_ep(
     ep_n = Observable(nepochs(obj))
     ep_n[] > 1 || throw(ArgumentError("Use plot_cont() for continuous object."))
     seg = (0, n_epochs * ep_len)
-    epmarkers = [(idx - 1) * (epoch_len(obj) / sr(obj)) for idx = 1:ep_n[]]
-    ep_selected = zeros(Bool, ep_n[])
+    epmarkers = @lift([(idx - 1) * ep_len for idx = 1:$ep_n])
+    ep_selected = Observable(zeros(Bool, ep_n[]))
 
     # check channels and meta data
     ch = get_channel(obj; ch = ch)
@@ -103,8 +101,8 @@ function plot_ep(
     ctypes_uni_pos = zeros(Int64, ch_n)
     ctypes_uni_pos[ctypes_pos] .= 1
 
-    # get time points vector
-    t = obj.time_pts[1:res:end]
+    # get time points vector (resampled per epoch, matching the signal matrix)
+    t = reshape(obj.time_pts, :, ep_n[])[1:res:end, :][:]
     # get signal matrix
     s = obj.data[ch, :, :][ch_order, 1:res:end, :]
     s = reshape(s, :, size(s, 2) * size(s, 3), 1)
@@ -118,18 +116,20 @@ function plot_ep(
     # displayed segment
     seg_pos = Observable(seg[1])
     seg_len = (seg[2] - seg[1])
+    # last valid segment position (in epochs), so that no empty space is shown after the last epoch
+    seg_pos_max() = Float64(max(ep_n[] - n_epochs, 0))
 
     if type === :normal
-        nch      = Observable(n_channels)
-        ch1      = Observable(1)
+        nch = Observable(n_channels)
+        ch1 = Observable(1)
         ch2_init = ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
-        clabels  = labels(obj)[ch][ch_order]
+        clabels = labels(obj)[ch][ch_order]
     else
-        ch_n     = length(ctypes_uni)
-        ch1      = Observable(1)
+        ch_n = length(ctypes_uni)
+        ch1 = Observable(1)
         ch2_init = length(ctypes_uni)
-        nch      = Observable(ch_n)
-        clabels  = uppercase.(ctypes_uni)
+        nch = Observable(ch_n)
+        clabels = uppercase.(ctypes_uni)
     end
 
     # get ranges of the original signal for the scales
@@ -152,6 +152,12 @@ function plot_ep(
         end
     end
 
+    # signal is observable so that deleted epochs can be removed from the plot
+    ep_cols = size(s, 2) ÷ ep_n[]
+    s = Observable(s)
+    # time points matching the (possibly shortened) signal
+    _pts(v) = Point2.(view(t, 1:length(v)), v)
+
     # y-axis labels colors
     if type === :normal
         ytc = repeat([:black], nchannels(obj))
@@ -162,9 +168,7 @@ function plot_ep(
 
     # prepare markers
     if markers
-        markers_pos = obj.markers[!, :start]
-        markers_id = obj.markers[!, :id]
-        markers_desc = obj.markers[!, :value]
+        markers_pos = Observable(obj.markers[!, :start])
     end
 
     # prepare plot
@@ -186,13 +190,13 @@ function plot_ep(
     # create axis with customizable properties
     ax1 = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = "",
-        ylabel             = yl,
-        title              = tt,
-        xticks             = LinearTicks(10),
+        xlabel = "",
+        ylabel = yl,
+        title = tt,
+        xticks = LinearTicks(10),
         xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
-        yticks             = (1:ch_n, clabels),
+        xminorticks = IntervalsBetween(10),
+        yticks = (1:ch_n, clabels),
         # TO DO: yticklabelcolor=ytc[1:end],
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
@@ -209,45 +213,51 @@ function plot_ep(
     end
     _style_axis!(ax1)
 
+    # highlight selected epochs (drawn first so that signal stays on top)
+    ep_sel_color = mono ? (:black, 0.15) : (:orange, 0.25)
+    ep_sel_rect1 = lift(ep_selected) do v
+        return Rect2d[Rect2d((idx - 1) * ep_len, 0, ep_len, ch_n + 1) for idx in findall(v)]
+    end
+    GLMakie.poly!(ax1, ep_sel_rect1; color = ep_sel_color)
+
     # draw channels
     if type === :normal
         for idx = 1:ch_n
             line_color = @lift($bad_ch[idx] ? :lightgray : :black)
-            GLMakie.lines!(ax1, t, s[idx, :]; linewidth = 1.5, color = line_color)
+            GLMakie.lines!(ax1, @lift(_pts($s[idx, :])); linewidth = 1.5, color = line_color)
         end
 
     elseif type === :butterfly
         if ci95
             for idx in eachindex(ctypes_uni)
-                msci95_data = NeuroAnalyzer.msci95(s[ctypes .== ctypes_uni[idx], :])
-                s_m = msci95_data.sm
-                s_u = msci95_data.ul
-                s_l = msci95_data.ll
+                msci95_data = @lift(NeuroAnalyzer.msci95($s[ctypes .== ctypes_uni[idx], :]))
                 GLMakie.band!(
-                    ax1, t, s_u, s_l;
+                    ax1, @lift(_pts($msci95_data.ul)), @lift(_pts($msci95_data.ll));
                     alpha = 0.25,
                     color = :grey,
                     strokewidth = 0.5,
                 )
-                GLMakie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
+                GLMakie.lines!(
+                    ax1, @lift(_pts($msci95_data.sm)); color = :black, linewidth = 2,
+                )
             end
 
         else
-            !mono && (cmap = GLMakie.resample_cmap(pal, size(s, 1)))
-            for idx in axes(s, 1)
+            !mono && (cmap = GLMakie.resample_cmap(pal, size(s[], 1)))
+            for idx in axes(s[], 1)
                 GLMakie.lines!(
-                    ax1, t, s[idx, :];
-                    color      = mono ? :black : cmap[idx],
-                    colormap   = pal,
-                    colorrange = 1:size(s, 1),
-                    linewidth  = 0.5,
-                    alpha      = 1.0,
+                    ax1, @lift(_pts($s[idx, :]));
+                    color = mono ? :black : cmap[idx],
+                    colormap = pal,
+                    colorrange = 1:size(s[], 1),
+                    linewidth = 0.5,
+                    alpha = 1.0,
                 )
             end
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
-                    GLMakie.lines!(ax1, t, s_avg; linewidth = 2, color = :black)
+                    s_avg = @lift(_pts(mean($s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]))
+                    GLMakie.lines!(ax1, s_avg; linewidth = 2, color = :black)
                 end
             end
         end
@@ -291,11 +301,11 @@ function plot_ep(
                     GLMakie.text!(
                         ax1, l_pos;
                         markerspace = :pixel,
-                        text        = string(r[][idx2]) * " " * cunits[idx1],
-                        fontsize    = 10,
-                        color       = :red,
-                        align       = (:left, :bottom),
-                        offset      = (5, 0),
+                        text = string(r[][idx2]) * " " * cunits[idx1],
+                        fontsize = 10,
+                        color = :red,
+                        align = (:left, :bottom),
+                        offset = (5, 0),
                     )
                     idx2 += 1
                 end
@@ -317,12 +327,12 @@ function plot_ep(
                 )
                 GLMakie.text!(
                     ax1, l_pos;
-                    text        = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
+                    text = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
                     markerspace = :pixel,
-                    fontsize    = 10,
-                    color       = :red,
-                    align       = (:left, :bottom),
-                    offset      = (5, 0),
+                    fontsize = 10,
+                    color = :red,
+                    align = (:left, :bottom),
+                    offset = (5, 0),
                 )
             end
         end
@@ -331,23 +341,24 @@ function plot_ep(
     # draw event markers
     if markers
         GLMakie.vlines!(ax1, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
-        for idx in eachindex(markers_pos)
-            markers_ypos = lift(ch1, nch) do v1, v2
-                return (markers_pos[idx], v1 + (v2 - 1) + 0.5)
-            end
-            GLMakie.textlabel!(
-                ax1, markers_ypos;
-                text           = "$(markers_id[idx]) / $(markers_desc[idx])",
-                text_align     = (:left, :center),
-                fontsize       = 8,
-                cornerradius   = 0,
-                cornervertices = 2,
-                padding        = 2,
-                strokewidth    = 1,
-                offset         = (0, 5),
-                text_rotation  = pi / 2,
-            )
+        markers_ypos = lift(markers_pos, ch1, nch) do mp, v1, v2
+            return [Point2(p, v1 + (v2 - 1) + 0.5) for p in mp]
         end
+        # labels are redrawn (not updated) after epoch deletion:
+        # textlabel!() leaves stale backgrounds when its positions become empty
+        draw_marker_labels() = isempty(obj.markers) ? nothing : GLMakie.textlabel!(
+            ax1, markers_ypos;
+            text = string.(obj.markers[!, :id], " / ", obj.markers[!, :value]),
+            text_align = (:left, :center),
+            fontsize = 8,
+            cornerradius = 0,
+            cornervertices = 2,
+            padding = 2,
+            strokewidth = 1,
+            offset = (0, 5),
+            text_rotation = pi / 2,
+        )
+        markers_labels = draw_marker_labels()
     end
 
     if gui
@@ -356,14 +367,14 @@ function plot_ep(
         # time/epoch bar
         ax2 = GLMakie.Axis(
             fig[2, 1];
-            xlabel           = xl,
-            ylabel           = "",
-            title            = "",
-            xticks           = LinearTicks(25),
-            yticksvisible    = false,
+            xlabel = xl,
+            ylabel = "",
+            title = "",
+            xticks = LinearTicks(25),
+            yticksvisible = false,
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0, 0),
-            backgroundcolor  = :white,
+            backgroundcolor = :white,
             _AXIS_LOCK_KWARGS...,
         )
         GLMakie.xlims!(ax2, 0, ep_n[])
@@ -372,8 +383,16 @@ function plot_ep(
         hidexdecorations!(ax2; label = false, ticks = false, ticklabels = false)
         ax2.xticklabelsize = 12
 
+        # selected epochs
+        ep_sel_rect2 = lift(ep_selected) do v
+            return Rect2d[Rect2d(idx - 1, 0, 1, 1) for idx in findall(v)]
+        end
+        GLMakie.poly!(ax2, ep_sel_rect2; color = ep_sel_color)
+
         # epoch markers
-        GLMakie.vlines!(ax2, 1:ep_n[]; linestyle = :dash, linewidth = 1, color = :black)
+        GLMakie.vlines!(
+            ax2, @lift(collect(1:$ep_n)); linestyle = :dash, linewidth = 1, color = :black,
+        )
 
         # time line marker
         # define a square: Rect(x, y, width, height)
@@ -393,16 +412,16 @@ function plot_ep(
         if type === :normal
             ax3 = GLMakie.Axis(
                 fig[1, 2];
-                xlabel           = "",
-                ylabel           = "",
-                title            = "",
-                yticks           = 1:ch_n,
-                xticksvisible    = false,
-                yticksvisible    = false,
-                yreversed        = true,
+                xlabel = "",
+                ylabel = "",
+                title = "",
+                yticks = 1:ch_n,
+                xticksvisible = false,
+                yticksvisible = false,
+                yreversed = true,
                 xautolimitmargin = (0, 0),
                 yautolimitmargin = (0, 0),
-                backgroundcolor  = :white,
+                backgroundcolor = :white,
                 _AXIS_LOCK_KWARGS...,
             )
             ch_n > 1 && (GLMakie.ylims!(ax3, ch_n, 1))
@@ -464,19 +483,19 @@ function plot_ep(
                     end
 
                     # select / deselect epochs
-                    if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
+                    if is_mouseinside(ax1)
                         nep = ceil(Int64, ax1_x / ep_len)
                         if 1 <= nep <= ep_n[]
-                            ep_selected[nep] = !ep_selected[nep]
+                            ep_selected[][nep] = !ep_selected[][nep]
+                            notify(ep_selected)
                         end
                     end
 
                     # change displayed epoch window
                     if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
-                        nep = clamp(round(Int64, ax2_x), 1, ep_n[])
-                        seg = ((nep - 1) * ep_len, (nep + n_epochs - 1) * ep_len)
+                        seg_pos[] = clamp(Float64(round(Int64, ax2_x) - 1), 0.0, seg_pos_max())
+                        seg = (seg_pos[] * ep_len, (seg_pos[] + n_epochs) * ep_len)
                         ax1.limits[] = (seg, ax1.limits[][2])
-                        seg_pos[] = Float64(nep - 1)
                     end
 
                     # change channels window
@@ -526,12 +545,36 @@ function plot_ep(
                         end
                     end
                 end
+                # delete selected epochs
+                if event.key == Keyboard.d && event.action == Keyboard.press &&
+                   any(ep_selected[])
+                    ep_del = findall(ep_selected[])
+                    if length(ep_del) == ep_n[]
+                        _warn("Cannot delete all epochs.")
+                    else
+                        delete_epoch!(obj; ep = ep_del)
+                        ep_keep = setdiff(1:ep_n[], ep_del)
+                        cols = reduce(vcat, [((e - 1) * ep_cols + 1):(e * ep_cols) for e in ep_keep])
+                        ep_selected[] = zeros(Bool, length(ep_keep))
+                        ep_n[] = length(ep_keep)
+                        s[] = s[][:, cols]
+                        if markers
+                            # delete labels before updating positions, so they never receive an empty vector
+                            !isnothing(markers_labels) && delete!(ax1, markers_labels)
+                            markers_pos[] = obj.markers[!, :start]
+                            markers_labels = draw_marker_labels()
+                        end
+                        GLMakie.xlims!(ax2, 0, ep_n[])
+                        seg_pos[] = clamp(seg_pos[], 0.0, seg_pos_max())
+                        update_ax2 = true
+                    end
+                end
                 if event.key == Keyboard.home
                     seg_pos[] = 0.0
                     update_ax2 = true
                 end
                 if event.key == Keyboard._end
-                    seg_pos[] = Float64(ep_n[] - n_epochs)
+                    seg_pos[] = seg_pos_max()
                     update_ax2 = true
                 end
                 if event.key == Keyboard.left && seg_pos[] > 0
@@ -540,16 +583,16 @@ function plot_ep(
                 end
                 if ispressed(fig, Keyboard.left_shift & Keyboard.left)
                     seg_pos[] =
-                        clamp(seg_pos[] - (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
+                        clamp(seg_pos[] - (n_epochs - 1), 0.0, seg_pos_max())
                     update_ax2 = true
                 end
-                if event.key == Keyboard.right && seg_pos[] < ep_n[] - n_epochs
+                if event.key == Keyboard.right && seg_pos[] < seg_pos_max()
                     seg_pos[] += 1.0
                     update_ax2 = true
                 end
                 if ispressed(fig, Keyboard.left_shift & Keyboard.right)
                     seg_pos[] =
-                        clamp(seg_pos[] + (n_epochs - 1), 0.0, Float64(ep_n[] - n_epochs))
+                        clamp(seg_pos[] + (n_epochs - 1), 0.0, seg_pos_max())
                     update_ax2 = true
                 end
                 if update_ax2
@@ -565,7 +608,9 @@ function plot_ep(
         type === :normal && colsize!(fig.layout, 2, GLMakie.Fixed(20))
         rowsize!(fig.layout, 2, GLMakie.Fixed(20))
 
-        wait(display(fig))
+        screen = display(fig)
+        GLMakie.GLFW.MaximizeWindow(screen.glscreen)
+        wait(screen)
     end
 
     return fig

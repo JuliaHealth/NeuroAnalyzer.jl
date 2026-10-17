@@ -65,7 +65,6 @@ function plot_cont(
         throw(ArgumentError("n_channels must be ≤ $(nchannels(obj))."))
     _check_var(type, [:normal, :butterfly], "type")
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
-    !_has_markers(obj) && (markers = false)
 
     # set color palette
     pal = mono ? :grays : :darktest
@@ -77,8 +76,6 @@ function plot_cont(
         _check_segment(obj, seg)
     end
 
-    # store original list of channels
-    ch_tmp = ch
     # check channels and meta data
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -101,11 +98,6 @@ function plot_cont(
     # ctypes_uni_pos contains a list of ticks where scale has to be drawn
     ctypes_uni_pos = zeros(Int64, ch_n)
     ctypes_uni_pos[ctypes_pos] .= 1
-
-    # get time points vector
-    t = obj.time_pts[1:res:end]
-    # get signal matrix
-    s = obj.data[ch, :, 1][ch_order, 1:res:end]
 
     # set defaults
     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "")
@@ -130,25 +122,45 @@ function plot_cont(
         clabels  = uppercase.(ctypes_uni)
     end
 
-    # get ranges of the original signal for the scales
-    # normalize in groups by channel type
-    # between -0.5 and +0.5 and shift so all channels are visible
-    r = Observable(Float64[])
-    for idx in eachindex(ctypes_uni)
-        group = s[ctypes .== ctypes_uni[idx], :]
-        push!(r[], round(_get_range(group)))
-        # remove per-channel DC offset
-        group = group .- mean(group; dims = 2)
-        # map to [-0.5, 0.5]
-        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych = true)
-    end
-    if type === :normal
-        s .+= collect(1:ch_n)
-    elseif type === :butterfly
+    # signal-dependent data, recomputed after the signal is modified
+    local t, s, r, markers_pos, markers_id, markers_desc
+    markers_init = markers
+    function _prepare_data!()
+        # get time points vector
+        t = obj.time_pts[1:res:end]
+        # get signal matrix
+        s = obj.data[ch, :, 1][ch_order, 1:res:end]
+
+        # get ranges of the original signal for the scales
+        # normalize in groups by channel type
+        # between -0.5 and +0.5 and shift so all channels are visible
+        r = Float64[]
         for idx in eachindex(ctypes_uni)
-            s[ctypes .== ctypes_uni[idx], :] .+= idx
+            group = s[ctypes .== ctypes_uni[idx], :]
+            push!(r, round(_get_range(group)))
+            # remove per-channel DC offset
+            group = group .- mean(group; dims = 2)
+            # map to [-0.5, 0.5]
+            s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych = true)
         end
+        if type === :normal
+            s .+= collect(1:ch_n)
+        elseif type === :butterfly
+            for idx in eachindex(ctypes_uni)
+                s[ctypes .== ctypes_uni[idx], :] .+= idx
+            end
+        end
+
+        # prepare markers
+        markers = markers_init && _has_markers(obj)
+        if markers
+            markers_pos  = obj.markers[!, :start]
+            markers_id   = obj.markers[!, :id]
+            markers_desc = obj.markers[!, :value]
+        end
+        return nothing
     end
+    _prepare_data!()
 
     # y-axis labels colors
     if type === :normal
@@ -156,13 +168,6 @@ function plot_cont(
         ytc[bad_ch[]] .= :lightgray
     else
         ytc = repeat([:black], ch_n)
-    end
-
-    # prepare markers
-    if markers
-        markers_pos  = obj.markers[!, :start]
-        markers_id   = obj.markers[!, :id]
-        markers_desc = obj.markers[!, :value]
     end
 
     # prepare plot
@@ -200,136 +205,6 @@ function plot_cont(
     end
     _style_axis!(ax1)
 
-    # draw channels
-    if type === :normal
-        for idx = 1:ch_n
-            line_color = @lift($bad_ch[idx] ? :lightgray : :black)
-            GLMakie.lines!(ax1, t, s[idx, :]; linewidth = 1.5, color = line_color)
-        end
-
-    elseif type === :butterfly
-        if ci95
-            for idx in eachindex(ctypes_uni)
-                msci95_data = NeuroAnalyzer.msci95(s[ctypes .== ctypes_uni[idx], :])
-                s_m = msci95_data.sm
-                s_u = msci95_data.ul
-                s_l = msci95_data.ll
-                GLMakie.band!(
-                    ax1, t, s_u, s_l;
-                    alpha = 0.25,
-                    color = :grey,
-                    strokewidth = 0.5,
-                )
-                GLMakie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
-            end
-
-        else
-            !mono && (cmap = GLMakie.resample_cmap(pal, size(s, 1)))
-            for idx in axes(s, 1)
-                GLMakie.lines!(
-                    ax1, t, s[idx, :];
-                    color = mono ? :black : cmap[idx],
-                    colormap = pal,
-                    colorrange = 1:size(s, 1),
-                    linewidth = 0.5,
-                    alpha = 1.0,
-                )
-            end
-            if avg
-                for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
-                    GLMakie.lines!(ax1, t, s_avg; linewidth = 2, color = :black)
-                end
-            end
-        end
-    end
-
-    # draw scale bars
-    # TO DO: place scale values on the left side, below channel label
-    if scale
-        # scale bar width as a fixed fraction of the displayed segment, so its
-        # on-screen width does not depend on the segment length
-        # (equals the former 0.01 s at the default 10 s segment)
-        sb_w = seg_len / 1000
-        if type === :normal
-            idx2 = 1
-            for idx1 = 1:ch_n
-                if ctypes_uni_pos[idx1] == 1
-                    s_rectangle = lift(seg_pos) do sp
-                        return Rect(sp, (idx1 - 0.49), sb_w, 0.98)
-                    end
-                    l_pos = lift(seg_pos) do sp
-                        return (sp + sb_w, idx1 + 0.49)
-                    end
-                    GLMakie.poly!(
-                        ax1,
-                        s_rectangle;
-                        color = :red,
-                        strokecolor = :red,
-                        strokewidth = 2,
-                    )
-                    GLMakie.text!(
-                        ax1, l_pos;
-                        markerspace = :pixel,
-                        text        = string(r[][idx2]) * " " * cunits[idx1],
-                        fontsize    = 10,
-                        color       = :red,
-                        align       = (:left, :bottom),
-                        offset      = (5, 0),
-                    )
-                    idx2 += 1
-                end
-            end
-        elseif type === :butterfly
-            for idx = 1:ch_n
-                s_rectangle = lift(seg_pos) do sp
-                    return Rect(sp, (idx - 0.475), sb_w, 0.975)
-                end
-                l_pos = lift(seg_pos) do sp
-                    return (sp, idx + 0.5)
-                end
-                GLMakie.poly!(
-                    ax1,
-                    s_rectangle;
-                    color = :red,
-                    strokecolor = :red,
-                    strokewidth = 2,
-                )
-                GLMakie.text!(
-                    ax1, l_pos;
-                    text        = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
-                    markerspace = :pixel,
-                    fontsize    = 10,
-                    color       = :red,
-                    align       = (:left, :bottom),
-                    offset      = (5, 0),
-                )
-            end
-        end
-    end
-
-    # draw event markers
-    if markers
-        GLMakie.vlines!(ax1, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
-        for idx in eachindex(markers_pos)
-            markers_ypos = lift(ch1, nch) do v1, v2
-                return (markers_pos[idx], v1 + (v2 - 1) + 0.5)
-            end
-            GLMakie.textlabel!(
-                ax1, markers_ypos;
-                text = "$(markers_id[idx]) / $(markers_desc[idx])",
-                text_align = (:left, :center),
-                fontsize = 8,
-                cornerradius = 0,
-                cornervertices = 2,
-                padding = 2,
-                strokewidth = 1,
-                offset = (0, 5),
-                text_rotation = pi / 2,
-            )
-        end
-    end
-
     vmarker1 = Observable(NaN)
     vmarker2 = Observable(NaN)
     marker_range = Observable([NaN, NaN])
@@ -353,31 +228,9 @@ function plot_cont(
             xrectzoom = false,
             yrectzoom = false,
         )
-        GLMakie.xlims!(ax2, t[1], t[end])
-        GLMakie.ylims!(ax2, 0, 1)
         hideydecorations!(ax2)
         hidexdecorations!(ax2; label = false, ticks = false, ticklabels = false)
         ax2.xticklabelsize = 12
-
-        markers && GLMakie.vlines!(
-            ax2,
-            markers_pos;
-            linestyle = :dash,
-            linewidth = 1,
-            color = :black,
-        )
-
-        t_rectangle = lift(seg_pos) do v
-            return Rect(v, 0, seg_len, 1)
-        end
-        GLMakie.poly!(
-            ax2,
-            t_rectangle;
-            color = :darkgrey,
-            strokecolor = :black,
-            strokewidth = 2,
-            alpha = 0.5,
-        )
 
         # channel bar (normal type only)
         if type === :normal
@@ -418,11 +271,182 @@ function plot_cont(
                 alpha       = 0.25,
             )
         end
+    end
 
-        GLMakie.vlines!(ax1, vmarker1; color = (:blue, 0.8), linewidth = 1)
-        GLMakie.vlines!(ax1, vmarker2; color = (:blue, 0.8), linewidth = 1)
-        GLMakie.band!(ax1, marker_range, 0.5, ch_n + 0.5; color = (:blue, 0.1))
+    # listeners of observables lifted by _draw!(), removed before redrawing
+    draw_listeners = GLMakie.Makie.Observables.ObserverFunction[]
+    function _draw_lift(f, obs...)
+        out = Observable(f(map(o -> o[], obs)...))
+        append!(draw_listeners, onany((v...) -> (out[] = f(v...)), obs...))
+        return out
+    end
 
+    # draw signal-dependent elements; called again after the signal is modified
+    function _draw!()
+        foreach(off, draw_listeners)
+        empty!(draw_listeners)
+        # draw channels
+        if type === :normal
+            for idx = 1:ch_n
+                line_color = _draw_lift(b -> b[idx] ? :lightgray : :black, bad_ch)
+                GLMakie.lines!(ax1, t, s[idx, :]; linewidth = 1.5, color = line_color)
+            end
+
+        elseif type === :butterfly
+            if ci95
+                for idx in eachindex(ctypes_uni)
+                    msci95_data = NeuroAnalyzer.msci95(s[ctypes .== ctypes_uni[idx], :])
+                    s_m = msci95_data.sm
+                    s_u = msci95_data.ul
+                    s_l = msci95_data.ll
+                    GLMakie.band!(
+                        ax1, t, s_u, s_l;
+                        alpha = 0.25,
+                        color = :grey,
+                        strokewidth = 0.5,
+                    )
+                    GLMakie.lines!(ax1, t, s_m; color = :black, linewidth = 2)
+                end
+
+            else
+                !mono && (cmap = GLMakie.resample_cmap(pal, size(s, 1)))
+                for idx in axes(s, 1)
+                    GLMakie.lines!(
+                        ax1, t, s[idx, :];
+                        color = mono ? :black : cmap[idx],
+                        colormap = pal,
+                        colorrange = 1:size(s, 1),
+                        linewidth = 0.5,
+                        alpha = 1.0,
+                    )
+                end
+                if avg
+                    for idx in eachindex(ctypes_uni)
+                        s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
+                        GLMakie.lines!(ax1, t, s_avg; linewidth = 2, color = :black)
+                    end
+                end
+            end
+        end
+
+        # draw scale bars
+        # TO DO: place scale values on the left side, below channel label
+        if scale
+            # scale bar width as a fixed fraction of the displayed segment, so its
+            # on-screen width does not depend on the segment length
+            # (equals the former 0.01 s at the default 10 s segment)
+            sb_w = seg_len / 1000
+            if type === :normal
+                idx2 = 1
+                for idx1 = 1:ch_n
+                    if ctypes_uni_pos[idx1] == 1
+                        s_rectangle = _draw_lift(seg_pos) do sp
+                            return Rect(sp, (idx1 - 0.49), sb_w, 0.98)
+                        end
+                        l_pos = _draw_lift(seg_pos) do sp
+                            return (sp + sb_w, idx1 + 0.49)
+                        end
+                        GLMakie.poly!(
+                            ax1,
+                            s_rectangle;
+                            color = :red,
+                            strokecolor = :red,
+                            strokewidth = 2,
+                        )
+                        GLMakie.text!(
+                            ax1, l_pos;
+                            markerspace = :pixel,
+                            text        = string(r[idx2]) * " " * cunits[idx1],
+                            fontsize    = 10,
+                            color       = :red,
+                            align       = (:left, :bottom),
+                            offset      = (5, 0),
+                        )
+                        idx2 += 1
+                    end
+                end
+            elseif type === :butterfly
+                for idx = 1:ch_n
+                    s_rectangle = _draw_lift(seg_pos) do sp
+                        return Rect(sp, (idx - 0.475), sb_w, 0.975)
+                    end
+                    l_pos = _draw_lift(seg_pos) do sp
+                        return (sp, idx + 0.5)
+                    end
+                    GLMakie.poly!(
+                        ax1,
+                        s_rectangle;
+                        color = :red,
+                        strokecolor = :red,
+                        strokewidth = 2,
+                    )
+                    GLMakie.text!(
+                        ax1, l_pos;
+                        text        = string(r[idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
+                        markerspace = :pixel,
+                        fontsize    = 10,
+                        color       = :red,
+                        align       = (:left, :bottom),
+                        offset      = (5, 0),
+                    )
+                end
+            end
+        end
+
+        # draw event markers
+        if markers
+            GLMakie.vlines!(ax1, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
+            for idx in eachindex(markers_pos)
+                markers_ypos = _draw_lift(ch1, nch) do v1, v2
+                    return (markers_pos[idx], v1 + (v2 - 1) + 0.5)
+                end
+                GLMakie.textlabel!(
+                    ax1, markers_ypos;
+                    text = "$(markers_id[idx]) / $(markers_desc[idx])",
+                    text_align = (:left, :center),
+                    fontsize = 8,
+                    cornerradius = 0,
+                    cornervertices = 2,
+                    padding = 2,
+                    strokewidth = 1,
+                    offset = (0, 5),
+                    text_rotation = pi / 2,
+                )
+            end
+        end
+
+        if gui
+            GLMakie.xlims!(ax2, t[1], t[end])
+            GLMakie.ylims!(ax2, 0, 1)
+            markers && GLMakie.vlines!(
+                ax2,
+                markers_pos;
+                linestyle = :dash,
+                linewidth = 1,
+                color = :black,
+            )
+
+            t_rectangle = _draw_lift(seg_pos) do v
+                return Rect(v, 0, seg_len, 1)
+            end
+            GLMakie.poly!(
+                ax2,
+                t_rectangle;
+                color = :darkgrey,
+                strokecolor = :black,
+                strokewidth = 2,
+                alpha = 0.5,
+            )
+
+            GLMakie.vlines!(ax1, vmarker1; color = (:blue, 0.8), linewidth = 1)
+            GLMakie.vlines!(ax1, vmarker2; color = (:blue, 0.8), linewidth = 1)
+            GLMakie.band!(ax1, marker_range, 0.5, ch_n + 0.5; color = (:blue, 0.1))
+        end
+        return nothing
+    end
+    _draw!()
+
+    if gui
         # mouse events
         on(events(fig).mousebutton) do event
             ax1_x = mouseposition(ax1)[1]
@@ -528,27 +552,17 @@ function plot_cont(
                     if event.key == Keyboard.d
                         if !isnan(vmarker1[]) && !isnan(vmarker2[])
                             trim!(obj; seg = (marker_range[][1], marker_range[][2]))
-                            screen = display(fig)
-                            close(screen)
-                            new_seg = (ax1.limits[][1][1], ax1.limits[][1][1] + seg_len)
-                            if new_seg[2] > obj.time_pts[end]
-                                new_seg = (obj.time_pts[end] - seg_len, obj.time_pts[end])
-                            end
-                            NeuroAnalyzer.plot(
-                                obj;
-                                ch = ch_tmp,
-                                seg = new_seg,
-                                xlabel = xlabel,
-                                ylabel = ylabel,
-                                title = title,
-                                markers = markers,
-                                scale = scale,
-                                group_ch = group_ch,
-                                n_channels = n_channels,
-                                mono = mono,
-                                res = res,
-                                gui = gui,
-                            )
+                            # clear selection
+                            vmarker1[] = NaN
+                            vmarker2[] = NaN
+                            marker_range[] = [NaN, NaN]
+                            # redraw modified signal in place
+                            _prepare_data!()
+                            empty!(ax1)
+                            empty!(ax2)
+                            _draw!()
+                            seg_pos[] > t[end] - seg_len && (seg_pos[] = max(t[1], t[end] - seg_len))
+                            update_ax2 = true
                         end
                     end
 
@@ -616,7 +630,9 @@ function plot_cont(
         type === :normal && colsize!(fig.layout, 2, GLMakie.Fixed(20))
         rowsize!(fig.layout, 2, GLMakie.Fixed(20))
 
-        wait(display(fig))
+        screen = display(fig)
+        GLMakie.GLFW.MaximizeWindow(screen.glscreen)
+        wait(screen)
     end
 
     return fig

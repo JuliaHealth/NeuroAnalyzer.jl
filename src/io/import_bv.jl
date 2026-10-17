@@ -21,6 +21,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
+    detect_format(file_name) === :bv ||
+        throw(ArgumentError("$file_name is not BrainVision file."))
     lowercase(splitext(file_name)[2]) in (".vhdr", ".ahdr") ||
         throw(ArgumentError("file_name must be a .vhdr or .ahdr file."))
 

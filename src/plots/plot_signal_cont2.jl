@@ -387,7 +387,9 @@ function plot_cont(
         colsize!(fig.layout, 2, GLMakie.Fixed(20))
         rowsize!(fig.layout, 2, GLMakie.Fixed(20))
 
-        wait(display(fig))
+        screen = display(fig)
+        GLMakie.GLFW.MaximizeWindow(screen.glscreen)
+        wait(screen)
     end
 
     return fig

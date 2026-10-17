@@ -27,6 +27,8 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
+    detect_format(file_name) in [:csv, :csv_gz] ||
+        throw(ArgumentError("$file_name is not CSV file."))
 
     file_type = "CSV"
 

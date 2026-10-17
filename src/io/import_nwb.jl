@@ -23,8 +23,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".nwb" ||
-        throw(ArgumentError("This is not NWB file."))
+    detect_format(file_name) === :nwb ||
+        throw(ArgumentError("$file_name is not an NWB file."))
 
     file_type = "NWB"
 

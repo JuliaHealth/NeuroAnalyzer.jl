@@ -643,6 +643,8 @@ function import_fiff(
 )::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    detect_format(file_name) === :fiff ||
+        throw(ArgumentError("$file_name is not FIFF file."))
     channel_locs in (:fiff, :layout, :none) ||
         throw(ArgumentError("channel_locs must be :fiff, :layout or :none."))
 
@@ -1086,6 +1088,8 @@ Sensor orientations (coil normals) are not stored.
 - `DataFrame`: channel locations (`label`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`); labels match those created by `import_fiff()`
 """
 function import_locs_fiff(file_name::String)::DataFrame
+    detect_format(file_name) === :fiff ||
+        throw(ArgumentError("$file_name is not FIFF file."))
     fiff, _, _ = load_fiff(file_name; read_data = false)
     mi = fiff[:meas_info]
     return _fiff_locs(mi, _fiff_labels(mi))

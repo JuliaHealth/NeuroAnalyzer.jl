@@ -535,7 +535,9 @@ function plot_phs_topo(
             end
         end
 
-        wait(display(fig))
+        screen = display(fig)
+        GLMakie.GLFW.MaximizeWindow(screen.glscreen)
+        wait(screen)
     end
 
     return fig

@@ -23,8 +23,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".nirs" ||
-        throw(ArgumentError("$file_name is not a NIRS file."))
+    detect_format(file_name) === :nirs ||
+        throw(ArgumentError("$file_name is not an NIRS file."))
 
     nirs = try
         matread(file_name)

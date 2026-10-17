@@ -42,10 +42,14 @@ function delete_epoch(
     obj_tmp = deepcopy(obj)
     obj_tmp.data = obj_tmp.data[:, :, setdiff(1:nepochs(obj), ep_sorted)]
 
-    epoch_ranges = [_epoch2s(obj, e) for e in sort(collect(ep_sorted))]
-    for (t1, t2) in reverse(epoch_ranges) # process latest epochs first to preserve offsets
-        obj_tmp.markers = _delete_markers(obj_tmp.markers, (t1, t2))
-        obj_tmp.markers = _shift_markers(obj_tmp.markers, (t1, t2))
+    # marker times are in seconds; epoch e spans [(e - 1) * ep_dur, e * ep_dur)
+    ep_dur = epoch_duration(obj)
+    # process latest epochs first to preserve offsets
+    for e in ep_sorted
+        t1 = (e - 1) * ep_dur
+        t2 = e * ep_dur
+        deleteat!(obj_tmp.markers, t1 .<= obj_tmp.markers.start .< t2)
+        obj_tmp.markers[obj_tmp.markers.start .>= t2, :start] .-= ep_dur
     end
 
     obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)

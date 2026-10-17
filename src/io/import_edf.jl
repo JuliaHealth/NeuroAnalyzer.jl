@@ -32,8 +32,8 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".edf" ||
-        throw(ArgumentError("$file_name is not an EDF file (wrong extension)."))
+    detect_format(file_name) === :edf ||
+        throw(ArgumentError("$file_name is not EDF file."))
 
     # ------------------------------------------------------------------ #
     # parse fixed-length global header (256 bytes)                       #

@@ -19,11 +19,11 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
+    detect_format(file_name) === :duomag ||
+        throw(ArgumentError("$file_name is not DuoMAG file."))
 
     # extract extension once - used in every branch below.
     ext = splitext(file_name)[2]
-    ext in (".ascii", ".m") ||
-        throw(ArgumentError("$file_name is not a DuoMAG file (expected .ascii or .m)."))
 
     # ------------------------------------------------------------------ #
     # parse format-specific header and signal data                       #

@@ -19,8 +19,8 @@ function import_edf_annotations(file_name::String)::DataFrame
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".edf" ||
-        throw(ArgumentError("$file_name is not an EDF file."))
+    detect_format(file_name) === :edf ||
+        throw(ArgumentError("$file_name is not EDF file."))
 
     # ------------------------------------------------------------------ #
     # parse header - single open/close via `do` block                    #

@@ -35,8 +35,8 @@ function import_gdf(
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".gdf" ||
-        throw(ArgumentError("$file_name is not a GDF file."))
+    detect_format(file_name) === :gdf ||
+        throw(ArgumentError("$file_name is not GDF file."))
 
     # --------------------------------------------------------------------------- #
     # all reads share open/close via `do` blocks - guaranteed close on exception  #

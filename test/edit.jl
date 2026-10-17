@@ -224,6 +224,7 @@ e10_tmp = NeuroAnalyzer.join(e10, e10)
 
 @info "Test: add_channel()"
 e = create_object(; data_type = "ecog")
+e.header.recording[:sampling_rate] = 10
 add_channel!(
     e;
     data = rand(2, 10, 1),
@@ -234,8 +235,17 @@ add_channel!(
 @test size(e.data) == (2, 10, 1)
 
 @info "Test: create_time()"
-create_time!(e; fs = 1)
-@test e.header.recording[:sampling_rate] == 1
+e = create_object(; data_type = "ecog")
+e.header.recording[:sampling_rate] = 10
+add_channel!(
+    e;
+    data = rand(2, 10, 1),
+    label = ["ecog1", "ecog2"],
+    type = repeat(["ecog"], 2),
+    unit = repeat(["µV"], 2),
+)
+create_time!(e; fs = 5)
+@test e.header.recording[:sampling_rate] == 5
 @test length(e.time_pts) == 10
 
 @info "Test: delete_optode()"

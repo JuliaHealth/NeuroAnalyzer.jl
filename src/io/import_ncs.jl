@@ -20,7 +20,7 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
-    lowercase(splitext(file_name)[2]) == ".ncs" ||
+    detect_format(file_name) === :ncs ||
         throw(ArgumentError("$file_name is not an NCS file."))
 
     file_type = "CSC"
