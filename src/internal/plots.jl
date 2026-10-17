@@ -37,35 +37,73 @@ function _draw_head_labels!(
 end
 
 """
+    _smooth_path(x, y; <keyword arguments>)
+
+Interpolate a polyline with a Catmull-Rom spline (passes through every input point).
+
+# Arguments
+
+- `x::Vector{<:Real}`: x coordinates
+- `y::Vector{<:Real}`: y coordinates
+- `n::Int64=8`: number of interpolated points per segment
+
+# Returns
+
+- `Vector{Point2f}`
+"""
+function _smooth_path(x::Vector{<:Real}, y::Vector{<:Real}; n::Int64 = 8)
+    # Catmull-Rom on a single coordinate vector
+    function cr(v::Vector{Float32})
+        w = [v[1]; v; v[end]]  # duplicate endpoints
+        out = Float32[]
+        for k in 1:(length(v) - 1)
+            v0, v1, v2, v3 = w[k], w[k + 1], w[k + 2], w[k + 3]
+            for t in range(0.0f0, 1.0f0; length = n + 1)[1:n]
+                push!(
+                    out,
+                    0.5f0 * (
+                        2.0f0 * v1 +
+                        (v2 - v0) * t +
+                        (2.0f0 * v0 - 5.0f0 * v1 + 4.0f0 * v2 - v3) * t^2 +
+                        (3.0f0 * v1 - v0 - 3.0f0 * v2 + v3) * t^3
+                    ),
+                )
+            end
+        end
+        push!(out, v[end])
+        return out
+    end
+    return Point2f.(cr(Float32.(x)), cr(Float32.(y)))
+end
+
+"""
     _draw_head_outline!(ax; <keyword arguments>)
 
 Draw a schematic head outline (circle, nose, ears) onto a 2-D axis.
 
-The head is assumed to have unit radius centered at the origin.
+The head is assumed to have unit radius centered at the origin. Set `ax.aspect = DataAspect()` on the axis, otherwise the head is drawn as an ellipse.
 
 # Arguments
 
 - `ax::GLMakie.Axis`: target axis
-- `lw::Int64=1`: line width in points
+- `lw::Real=1`: line width
+- `color=:black`: line color
 """
-function _draw_head_outline!(ax::GLMakie.Axis; lw::Int64 = 1)
-    # nose
-    GLMakie.lines!(ax, [-0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
-    GLMakie.lines!(ax, [0.2, 0.0], [0.98, 1.08]; linewidth = lw, color = :black)
-
-    # left ear
-    left_ear_x =
-        [-0.995, -1.03, -1.06, -1.1, -1.12, -1.1, -1.13, -1.09, -1.02, -0.98, -0.975]
-    left_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
-    GLMakie.lines!(ax, left_ear_x, left_ear_y; linewidth = lw, color = :black)
-
-    # right ear
-    right_ear_x = [0.995, 1.03, 1.06, 1.1, 1.12, 1.1, 1.13, 1.09, 1.02, 0.98, 0.975]
-    right_ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
-    GLMakie.lines!(ax, right_ear_x, right_ear_y; linewidth = lw, color = :black)
+function _draw_head_outline!(ax::GLMakie.Axis; lw::Real = 1, color = :black)::Nothing
+    kw = (linewidth = lw, color = color)
 
     # head circle
-    GLMakie.arc!(ax, Point2f(0, 0), 1, 0, 2pi; linewidth = lw, color = :black)
+    θ = range(0, 2π; length = 181)
+    GLMakie.lines!(ax, Point2f.(cos.(θ), sin.(θ)); kw...)
+
+    # nose: one polyline so the tip gets a proper join
+    GLMakie.lines!(ax, Point2f[(-0.2, 0.98), (0.0, 1.1), (0.2, 0.98)]; kw...)
+
+    # ears: right ear mirrors the left, so they cannot drift apart
+    ear_x = [0.995, 1.03, 1.06, 1.1, 1.12, 1.1, 1.13, 1.09, 1.02, 0.98, 0.975]
+    ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
+    GLMakie.lines!(ax, _smooth_path(-ear_x, ear_y); kw...)
+    GLMakie.lines!(ax, _smooth_path(ear_x, ear_y); kw...)
 
     return nothing
 end
