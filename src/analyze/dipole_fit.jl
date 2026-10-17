@@ -63,24 +63,32 @@ end
 """
     _leadfield(r0, U, R, σ; nmax=400, tol=1e-10)
 
-Lead field (n_channels × 3) for a dipole at `r0` (3-vector, relative to sphere
-center, same length unit as `R`). `U` is n×3 matrix of unit vectors toward the
-electrodes. V = L * q.
+Lead field (n_channels × 3) for a dipole at `r0` (3-vector, relative to sphere center, same length unit as `R`). `U` is n×3 matrix of unit vectors toward the electrodes. V = L * q.
 """
-function _leadfield(r0::AbstractVector{<:Real}, U::AbstractMatrix{<:Real},
-                    R::Real, σ::Real; nmax::Int=400, tol::Real=1e-10)
+function _leadfield(
+    r0::AbstractVector{<:Real},
+    U::AbstractMatrix{<:Real},
+    R::Real,
+    σ::Real;
+    nmax::Int=400,
+    tol::Real=1e-10
+)::Matrix{Float64}
     nch = size(U, 1)
     ρ = norm(r0)
     L = zeros(nch, 3)
     r̂0 = ρ > 1e-12 ? r0 ./ ρ : zeros(3)
     for i in 1:nch
         u = U[i, :]
-        g = 3 .* u                       # n = 1 term (independent of r̂0)
+        # n = 1 term (independent of r̂0)
+        g = 3 .* u
         if ρ > 1e-12
             c = clamp(dot(u, r̂0), -1.0, 1.0)
-            t = u .- c .* r̂0             # tangential part
-            Pm, P = 1.0, c               # P_0, P_1
-            dPm, dP = 0.0, 1.0           # P_0', P_1'
+            # tangential part
+            t = u .- c .* r̂0
+            # P_0, P_1
+            Pm, P = 1.0, c
+            # P_0', P_1'
+            dPm, dP = 0.0, 1.0
             for n in 1:(nmax - 1)
                 Pn = ((2n + 1) * c * P - n * Pm) / (n + 1)
                 dPn = dPm + (2n + 1) * P
@@ -116,10 +124,12 @@ end
 Fit a single current dipole to EEG data.
 
 # Arguments
+
 - `s::AbstractMatrix{<:Real}`: channels × time points (signal units, e.g. µV)
 - `locs::DataFrame`: columns `loc_x`, `loc_y`, `loc_z`, one row per channel (same order as `s`)
-- `mode::Symbol=:fixed`: `:fixed` = one position for all time points, moment varies with time;
-  `:moving` = independent fit per time point
+- `mode::Symbol=:fixed`:
+    - `:fixed`: one position for all time points, moment varies with time;
+    - `:moving`: independent fit per time point
 - `σ::Real=0.33`: conductivity [S/m]
 - `loc_scale::Real=1e-3`: factor converting `locs` units to meters (1e-3 = locs in mm)
 - `ρmax::Real=0.95`: max dipole eccentricity (fraction of sphere radius)
@@ -127,13 +137,26 @@ Fit a single current dipole to EEG data.
 - `n_starts::Int=5`: best grid points refined by Nelder-Mead
 
 # Returns
-Named tuple: `pos` (n×3 for `:moving`, else 1×3, in `locs` units, original coordinates),
-`q` (3 × time points), `gof` (goodness of fit, 0–1, per fit), `sphere_center`, `sphere_radius`.
-"""
-function dipole_fit(s::AbstractMatrix{<:Real}, locs::DataFrame;
-                    mode::Symbol=:fixed, σ::Real=0.33, loc_scale::Real=1e-3,
-                    ρmax::Real=0.95, n_grid::Int=7, n_starts::Int=5)
 
+Named tuple:
+
+- `pos` (n×3 for `:moving`, else 1×3, in `locs` units, original coordinates)
+- `q` (3 × time points)
+- `gof` (goodness of fit, 0–1, per fit)
+- `sphere_center`
+- `sphere_radius`.
+"""
+function dipole_fit(
+    s::AbstractMatrix{<:Real},
+    locs::DataFrame;
+    mode::Symbol=:fixed,
+    σ::Real=0.33,
+    loc_scale::Real=1e-3,
+    ρmax::Real=0.95,
+    n_grid::Int=7,
+    n_starts::Int=5
+)
+    # validate
     @assert mode in (:fixed, :moving) "mode must be :fixed or :moving."
     nch, nt = size(s)
     @assert nrow(locs) == nch "number of rows in locs must equal number of channels."
@@ -143,11 +166,13 @@ function dipole_fit(s::AbstractMatrix{<:Real}, locs::DataFrame;
     P = Matrix{Float64}(locs[:, [:loc_x, :loc_y, :loc_z]])
     c, R_loc = _fit_sphere(P)
     U = P .- c'
-    U ./= sqrt.(sum(abs2, U; dims=2))      # project electrodes to sphere surface
+    # project electrodes to sphere surface
+    U ./= sqrt.(sum(abs2, U; dims=2))
     R = R_loc * loc_scale
 
     H = _avgref(nch)
-    D = H * Float64.(s)                    # average-referenced data
+    # average-referenced data
+    D = H * Float64.(s)
 
     # candidate grid inside the sphere (in meters)
     ax = range(-ρmax, ρmax, length=n_grid) .* R

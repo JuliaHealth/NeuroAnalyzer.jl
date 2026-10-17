@@ -6,22 +6,6 @@ export na_set_colors
 export na_set_exclude_bads
 export na_version
 
-const _NA_REQUIRED_PACKAGES = [
-    "Cairo", "ColorSchemes", "ComplexityMeasures", "ContinuousWavelets",
-    "Crayons", "CSV", "DataFrames", "Deconvolution", "DICOM",
-    "Dierckx", "Distances", "DSP", "Einsum", "FFTW", "FileIO", "FilePaths",
-    "FindPeaks1D", "FourierTools", "FractalDimensions", "GeometryBasics", "Git",
-    "GLM", "GLMakie", "GR", "Gtk4", "Hurst", "HypothesisTests", "Images",
-    "ImageBinarization", "ImageMorphology", "InformationMeasures",
-    "Interpolations", "Jacobi", "JLD2", "JSON", "KernelDensity",
-    "LibSerialPort", "LinRegOutliers", "Loess", "MAT", "MLJ",
-    "MultivariateStats", "NPZ", "PiGPIO", "Plots", "Polynomials",
-    "Preferences", "PrettyTables", "ProgressMeter", "SavitzkyGolay",
-    "ScatteredInterpolation", "StatsFuns", "StatsKit", "StatsModels",
-    "StatsPlots", "Suppressor", "TimeZones", "TOML", "Trapz", "WAV",
-    "Wavelets", "WaveletsExt", "XDF",
-]
-
 """Helper: print NA settings"""
 function _print_na_settings()::Nothing
     println("     NeuroAnalyzer: $(NeuroAnalyzer.VER)")

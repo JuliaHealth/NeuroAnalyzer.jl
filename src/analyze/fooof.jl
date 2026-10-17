@@ -1,12 +1,18 @@
 export fooof
 
 # private settings (as in fooof/specparam)
-const _FOOOF_AP_PERCENTILE_THRESH = 0.025   # percentile (not fraction!), as passed to np.percentile()
-const _FOOOF_BW_STD_EDGE = 1.0              # drop peaks closer to the edge than this × gaussian SD
-const _FOOOF_GAUSS_OVERLAP_THRESH = 0.75    # drop the lower of two peaks overlapping by this × SD
-const _FOOOF_CF_BOUND = 1.5                 # CF bounds: ± 2 × cf_bound × gaussian SD
-const _FOOOF_MAXFEV = 5000                  # maximum number of model evaluations per fit
-const _FOOOF_TOL = 1e-5                     # convergence tolerance
+# percentile (not fraction!), as passed to np.percentile()
+const _FOOOF_AP_PERCENTILE_THRESH = 0.025
+# drop peaks closer to the edge than this × gaussian SD
+const _FOOOF_BW_STD_EDGE = 1.0
+# drop the lower of two peaks overlapping by this × SD
+const _FOOOF_GAUSS_OVERLAP_THRESH = 0.75
+# CF bounds: ± 2 × cf_bound × gaussian SD
+const _FOOOF_CF_BOUND = 1.5
+# maximum number of model evaluations per fit
+const _FOOOF_MAXFEV = 5000
+# convergence tolerance
+const _FOOOF_TOL = 1e-5
 
 # log10 returning NaN instead of throwing DomainError (as numpy does); needed because the solver
 # may try knee < -f^exponent, which must be rejected as a bad step, not abort the fit

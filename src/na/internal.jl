@@ -7,7 +7,7 @@ _log_on() = Logging.disable_logging(Logging.Debug)
 function _info(s::String)::Nothing
     if verbose
         if colors
-            println(LIGHT_CYAN_FG("[ Info: "), s)
+            println(Crayons.Box.LIGHT_CYAN_FG("[ Info: "), s)
         else
             println("[ Info: $s")
         end
@@ -19,7 +19,7 @@ end
 function _warn(s::String)::Nothing
     if verbose
         if colors
-            println(YELLOW_FG("[ Warning: "), s)
+            println(Crayons.Box.YELLOW_FG("[ Warning: "), s)
         else
             println("[ Warning: $s")
         end
@@ -31,7 +31,7 @@ end
 function _error(s::String)::Nothing
     if verbose
         if colors
-            println(RED_FG("[ Error: "), s)
+            println(Crayons.Box.RED_FG("[ Error: "), s)
         else
             println("[ Error: $s")
         end
@@ -43,7 +43,7 @@ end
 function _deprecated(s::String)::Nothing
     if verbose
         if colors
-            println(RED_FG("[ Error: "), "Function $s() is deprecated.")
+            println(Crayons.Box.RED_FG("[ Error: "), "Function $s() is deprecated.")
         else
             println("[ Error: Function $s() is deprecated.")
         end
@@ -56,7 +56,7 @@ function _deprecated(s1::String, s2::String)::Nothing
     if verbose
         if colors
             println(
-                RED_FG("[ Error: "),
+                Crayons.Box.RED_FG("[ Error: "),
                 "Function $s1() is deprecated, please use $s2() instead.",
             )
         else
@@ -72,7 +72,7 @@ function _wip()::Nothing
         if allow_wip
             if colors
                 println(
-                    YELLOW_FG("[ Warning: "),
+                    Crayons.Box.YELLOW_FG("[ Warning: "),
                     "This function has the WIP (Work In Progress) status and is not ready for production use.",
                 )
             else
@@ -83,7 +83,7 @@ function _wip()::Nothing
         else
             if colors
                 println(
-                    RED_FG("[ Error: "),
+                    Crayons.Box.RED_FG("[ Error: "),
                     "This function has the WIP (Work In Progress) status and is not ready for production use.",
                 )
             else

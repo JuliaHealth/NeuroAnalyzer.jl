@@ -5,9 +5,9 @@ export cpsd
 
 Calculate the complex cross power spectral density (CPSD) between two 1-D signal vectors via one of three estimators:
 
-- `:mt` – multi-taper (DSP.mt_cross_power_spectra)
-- `:fft` – single-window FFT
-- `:stft` – segmented FFT averaged over overlapping windows
+- `:mt`: multi-taper (DSP.mt_cross_power_spectra)
+- `:fft`: single-window FFT
+- `:stft`: segmented FFT averaged over overlapping windows
 
 # Arguments
 
@@ -152,9 +152,9 @@ end
 
 Calculate the complex cross power spectral density (CPSD) between two 3-D signal arrays via one of three estimators:
 
-- `:mt` – multi-taper (DSP.mt_cross_power_spectra)
-- `:fft` – single-window FFT
-- `:stft` – segmented FFT averaged over overlapping windows
+- `:mt`: multi-taper (DSP.mt_cross_power_spectra)
+- `:fft`: single-window FFT
+- `:stft`: segmented FFT averaged over overlapping windows
 
 # Arguments
 
@@ -248,9 +248,9 @@ end
 
 Calculate the complex cross power spectral density (CPSD) between paired channels of two NEURO objects via one of three estimators:
 
-- `:mt` – multi-taper (DSP.mt_cross_power_spectra)
-- `:fft` – single-window FFT
-- `:stft` – segmented FFT averaged over overlapping windows
+- `:mt`: multi-taper (DSP.mt_cross_power_spectra)
+- `:fft`: single-window FFT
+- `:stft`: segmented FFT averaged over overlapping windows
 
 # Arguments
 

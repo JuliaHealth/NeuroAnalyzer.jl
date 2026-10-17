@@ -5,7 +5,7 @@ export dirinrg
 
 Calculate Dirichlet energy for a 1-D signal vector.
 
-It measures the "roughness" of a discrete signal by summing the squared differences between consecutive samples: E(s) = Σ (s[i+1] - s[i])²  =  ‖diff(s)‖²
+It measures the "roughness" of a discrete signal by summing the squared differences between consecutive samples: E(s) = Σ (s[i+1] - s[i])² = ‖diff(s)‖²
 
 A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly oscillating signal has high energy.
 

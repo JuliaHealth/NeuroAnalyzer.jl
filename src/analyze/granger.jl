@@ -93,6 +93,7 @@ Time-domain Granger causality between all channel pairs.
 # Returns
 
 Named tuple:
+
 - `gc`: ch × ch matrix, `gc[i, j]` = ln(RSS_restricted / RSS_full), i → j
 - `f`, `p`, `p_adj`: F statistic, p-value, BH-FDR adjusted p-value (same layout)
 - `order`: model order used
@@ -212,6 +213,7 @@ Spectral Granger causality (Geweke 1982, 1984; formulation of Ding, Chen & Bress
 # Returns
 
 Named tuple:
+
 - `gc::Array{Float64, 3}`: ch × ch × nfrq, `gc[i, j, k]` = i → j at `frq[k]`
 - `frq::Vector{Float64}`: frequencies in Hz
 - `order`: model order used

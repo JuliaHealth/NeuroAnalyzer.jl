@@ -31,48 +31,48 @@ function iedar(;
     eda_signal = fill(NaN, length(t))
 
     p = Plots.plot(;
-        ylims          = (0, 10),
-        xlims          = (t[1], t[end]),
-        legend         = false,
-        palette        = :darktest,
-        size           = (800, 400),
-        margins        = 20Plots.px,
+        ylims = (0, 10),
+        xlims = (t[1], t[end]),
+        legend = false,
+        palette = :darktest,
+        size = (800, 400),
+        margins = 20Plots.PlotMeasures.px,
         xlabelfontsize = 8,
         ylabelfontsize = 8,
-        xtickfontsize  = 8,
-        ytickfontsize  = 8,
+        xtickfontsize = 8,
+        ytickfontsize = 8,
     )
 
     function _activate(app)
         win = GtkApplicationWindow(app, "NeuroRecorder: iedar()")
         Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 40)
 
-        can                = GtkCanvas()
-        can.content_width  = p.attr[:size][1]
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
         can.content_height = p.attr[:size][2]
 
-        g                    = GtkGrid()
+        g = GtkGrid()
         g.column_homogeneous = false
-        g.column_spacing     = 5
-        g.row_spacing        = 5
-        g.margin_start       = 5
-        g.margin_end         = 5
-        g.margin_top         = 5
-        g.margin_bottom      = 5
+        g.column_spacing = 5
+        g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
-        bt_record              = GtkButton("RECORD")
+        bt_record = GtkButton("RECORD")
         bt_record.tooltip_text = "Start recording"
 
-        lb_status1        = GtkLabel("Status:")
-        lb_status2        = GtkLabel("READY TO START")
+        lb_status1 = GtkLabel("Status:")
+        lb_status2 = GtkLabel("READY TO START")
         lb_status1.halign = 2
         lb_status2.halign = 1
 
         g[1:2, 1] = can
         g[1:2, 2] = bt_record
-        g[1, 3]   = lb_status1
-        g[2, 3]   = lb_status2
-        vbox      = GtkBox(:v)
+        g[1, 3] = lb_status1
+        g[2, 3] = lb_status2
+        vbox = GtkBox(:v)
         push!(vbox, g)
         push!(win, vbox)
         Gtk4.show(win)
@@ -80,20 +80,20 @@ function iedar(;
         @guarded draw(can) do widget
             p_draw = Plots.plot(
                 t, eda_signal;
-                mc             = :black,
-                ms             = 0.5,
-                lw             = 0.5,
-                lc             = :black,
-                ylims          = (0, 10),
-                xlims          = (t[1], t[end]),
-                legend         = false,
-                palette        = :darktest,
-                size           = (800, 400),
-                margins        = 20Plots.px,
+                mc = :black,
+                ms = 0.5,
+                lw = 0.5,
+                lc = :black,
+                ylims = (0, 10),
+                xlims = (t[1], t[end]),
+                legend = false,
+                palette = :darktest,
+                size = (800, 400),
+                margins = 20Plots.PlotMeasures.px,
                 xlabelfontsize = 8,
                 ylabelfontsize = 8,
-                xtickfontsize  = 8,
-                ytickfontsize  = 8,
+                xtickfontsize = 8,
+                ytickfontsize = 8,
             )
             io = IOBuffer()
             ctx = getgc(can)
@@ -176,7 +176,7 @@ Nominal sampling rate is 50 Hz.
 - `NeuroAnalyzer.NEURO`: output NEURO object (EDA) with one channel at 50 Hz
 """
 function edar(;
-    duration::Int64   = 20,
+    duration::Int64 = 20,
     port_name::String = "/dev/ttyUSB0",
 )::NeuroAnalyzer.NEURO
     sp = _serial_open(port_name; baudrate = 19200)
@@ -213,7 +213,7 @@ function edar(;
     eda_signal = zeros(length(t))
 
     idx = 1
-    ts  = time()
+    ts = time()
     while idx <= length(eda_signal)
         sp_signal = _serial_listener(sp)
         if !isnothing(sp_signal)

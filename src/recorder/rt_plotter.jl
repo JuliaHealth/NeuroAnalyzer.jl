@@ -55,7 +55,7 @@ function rt_plotter(;
                     title = "dsfdsf",
                     palette = :darktest,
                     size = (800, 400),
-                    margins = 20Plots.px,
+                    margins = 20Plots.PlotMeasures.px,
                     titlefontsize = 10,
                     xlabelfontsize = 8,
                     ylabelfontsize = 8,
