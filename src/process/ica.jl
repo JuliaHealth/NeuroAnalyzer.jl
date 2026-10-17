@@ -13,6 +13,7 @@ Decompose a signal into Independent Components (ICs) using the FastICA algorithm
 - `n::Int`: number of independent components to extract
 - `iter::Int=100`: max iterations per tolerance level
 - `f::Symbol=:tanh`: nonlinear function for neg-entropy approximation (`:tanh` or `:gaus`)
+- `rng::Int64=42`: seed for random initialization in FastICA
 
 # Returns
 
@@ -24,8 +25,9 @@ Named tuple:
 function ica_decompose(
     s::AbstractMatrix;
     n::Int64,
-    iter::Int64 = 100,
-    f::Symbol = :tanh,
+    iter::Int64=100,
+    f::Symbol=:tanh,
+    rng::Int64=42,
 )::@NamedTuple{
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
@@ -39,7 +41,7 @@ function ica_decompose(
     functor = f === :tanh ? MultivariateStats.Tanh(1.0) : MultivariateStats.Gaus()
 
     # ensure reproducibility for the random initialization in FastICA
-    Random.seed!(1234)
+    Random.seed!(rng)
 
     # tolerance schedule: try strictest first, fallback to looser if convergence fails
     tols = [1.0e-6, 1.0e-5, 1.0e-4, 1.0e-3, 1.0e-2, 0.1, 0.5, 0.9, 0.99]
@@ -106,6 +108,7 @@ Decompose selected channels of a NEURO object into Independent Components (ICs) 
 - `n::Int`: number of independent components to extract
 - `iter::Int=100`: max iterations per tolerance level
 - `f::Symbol=:tanh`: nonlinear function for neg-entropy approximation (`:tanh` or `:gaus`)
+- `rng::Int64=42`: seed for random initialization in FastICA
 
 # Returns
 
@@ -121,6 +124,7 @@ function ica_decompose(
     n::Int64 = length(ch),
     iter::Int64 = 100,
     f::Symbol = :tanh,
+    rng::Int64=42,
 )::@NamedTuple{
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
@@ -138,7 +142,7 @@ function ica_decompose(
     length(ch) == 1 && (ch = ch[1])
 
     # perform decomposition on the selected slice
-    ica_data = ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f)
+    ica_data = ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f, rng=rng)
     ic = ica_data.ic
     ic_mw = ica_data.ic_mw
 
