@@ -1073,7 +1073,7 @@ Load channel locations from a FIFF file (raw, evoked or any file with measuremen
 
 MEG sensor positions are transformed from the device to the head frame (when the device → head transform is present), EEG electrode positions are taken from the head frame.
 
-Coordinates are centred on a sphere fitted to the head-shape digitisation (or to the channel positions) and scaled so that the outermost channel has radius 1.2. Reference MEG sensors and channels without positions are omitted.
+Coordinates are centered on a sphere fitted to the head-shape digitization (or to the channel positions) and scaled so that the outermost channel has radius 1.2. Reference MEG sensors and channels without positions are omitted.
 
 Sensor orientations (coil normals) are not stored.
 
