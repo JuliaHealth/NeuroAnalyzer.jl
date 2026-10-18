@@ -34,26 +34,13 @@ function locs_flipy(
     end
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        locs_tmp[!, :loc_y] = -locs_tmp[!, :loc_y]
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # y → −y: θ → −θ (exact, no conversion)
+        locs_new[!, :loc_theta_sph] = _wrap180(-locs[!, :loc_theta_sph])
     end
 
     if polar
-        for idx in eachindex(locs[!, :label])
-            t = locs[idx, :loc_theta]
-            q = _angle_quadrant(t)
-            q == 1 && (t = 360 - t)
-            q == 2 && (t = 180 + (180 - t))
-            q == 3 && (t = 180 - (t - 180))
-            q == 4 && (t = 360 - t)
-            t = mod(t, 360)
-            locs_new[idx, :loc_theta] = t
-        end
+        # mirror across the x axis: θ → −θ
+        locs_new[!, :loc_theta] = mod.(-locs[!, :loc_theta], 360)
     end
 
     _locs_round!(locs_new)
@@ -113,25 +100,13 @@ function locs_flipx(
     cart && (locs_new[!, :loc_x] = -locs[!, :loc_x])
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        locs_tmp[!, :loc_x] = -locs_tmp[!, :loc_x]
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # x → −x: θ → 180° − θ (exact, no conversion)
+        locs_new[!, :loc_theta_sph] = _wrap180(180 .- locs[!, :loc_theta_sph])
     end
 
     if polar
-        for idx = 1:DataFrames.nrow(locs)
-            t = locs[idx, :loc_theta]
-            q = _angle_quadrant(t)
-            q == 1 && (t = 90 + (90 - t))
-            q == 2 && (t = 90 - (t - 90))
-            q == 3 && (t = 270 + (270 - t))
-            q == 4 && (t = 270 - (t - 270))
-            locs_new[idx, :loc_theta] = t % 360
-        end
+        # mirror across the y axis: θ → 180° − θ
+        locs_new[!, :loc_theta] = mod.(180 .- locs[!, :loc_theta], 360)
     end
 
     _locs_round!(locs_new)
@@ -196,13 +171,8 @@ function locs_flipz(
     end
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        locs_tmp[!, :loc_z] = -locs_tmp[!, :loc_z]
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # z → −z: elevation φ → −φ (exact, no conversion)
+        locs_new[!, :loc_phi_sph] = -locs[!, :loc_phi_sph]
     end
 
     polar &&

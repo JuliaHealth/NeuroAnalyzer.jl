@@ -20,9 +20,9 @@ add_locs!(eeg; locs = locs)
     x = -0.31,
     y = 0.95,
     z = -0.03,
-    theta_sph = 108.02,
+    theta_sph = 108.0,
     radius_sph = 1.0,
-    phi_sph = -1.72,
+    phi_sph = -2.0,
 )
 
 @info "Test: cart2pol()"
@@ -105,9 +105,9 @@ eeg_tmp = deepcopy(eeg)
     x = -0.31,
     y = 0.95,
     z = -0.03,
-    theta_sph = 108.02,
+    theta_sph = 108.0,
     radius_sph = 1.0,
-    phi_sph = -1.72,
+    phi_sph = -2.0,
 )
 eeg_tmp = edit_locs(eeg_tmp; ch = "Fp1", x = 0.5)
 @test locs_details(eeg_tmp, ch = "Fp1", out = false) == (
@@ -117,9 +117,9 @@ eeg_tmp = edit_locs(eeg_tmp; ch = "Fp1", x = 0.5)
     x = 0.5,
     y = 0.95,
     z = -0.03,
-    theta_sph = 108.02,
+    theta_sph = 108.0,
     radius_sph = 1.0,
-    phi_sph = -1.72,
+    phi_sph = -2.0,
 )
 edit_locs!(eeg_tmp; ch = "Fp1", x = 0.5)
 @test locs_details(eeg_tmp, ch = "Fp1", out = false) == (
@@ -129,9 +129,9 @@ edit_locs!(eeg_tmp; ch = "Fp1", x = 0.5)
     x = 0.5,
     y = 0.95,
     z = -0.03,
-    theta_sph = 108.02,
+    theta_sph = 108.0,
     radius_sph = 1.0,
-    phi_sph = -1.72,
+    phi_sph = -2.0,
 )
 
 @info "Test: locs_flipx()"
@@ -165,43 +165,43 @@ locs2 = locs_normalize(locs)
 
 @info "Test: locs_swapxy()"
 @test locs[1, :loc_theta] == 108.0
-@test locs2[1, :loc_theta_sph] == 108.02
+@test locs2[1, :loc_theta_sph] == 108.0
 locs2 = locs_swapxy(locs)
 @test locs2[1, :loc_theta] == 198.0
-@test locs2[1, :loc_theta_sph] == -161.93
+@test locs2[1, :loc_theta_sph] == -162.0
 
 @info "Test: locs_rotx()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
-@test locs[1, :loc_theta_sph] == 108.02
-@test locs[1, :loc_phi_sph] == -1.72
+@test locs[1, :loc_theta_sph] == 108.0
+@test locs[1, :loc_phi_sph] == -2.0
 locs2 = locs_rotx(locs; a = 20)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_theta] == 108.0
-@test locs2[1, :loc_theta_sph] == 108.95
-@test locs2[1, :loc_phi_sph] == 17.27
+@test locs2[1, :loc_theta_sph] == 108.84
+@test locs2[1, :loc_phi_sph] == 16.99
 
 @info "Test: locs_roty()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
-@test locs[1, :loc_theta_sph] == 108.02
-@test locs[1, :loc_phi_sph] == -1.72
+@test locs[1, :loc_theta_sph] == 108.0
+@test locs[1, :loc_phi_sph] == -2.0
 locs2 = locs_roty(locs; a = 20)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_theta] == 108.0
-@test locs2[1, :loc_theta_sph] == 107.61
-@test locs2[1, :loc_phi_sph] == 4.47
+@test locs2[1, :loc_theta_sph] == 107.63
+@test locs2[1, :loc_phi_sph] == 4.18
 
 @info "Test: locs_rotz()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
-@test locs[1, :loc_theta_sph] == 108.02
-@test locs[1, :loc_phi_sph] == -1.72
+@test locs[1, :loc_theta_sph] == 108.0
+@test locs[1, :loc_phi_sph] == -2.0
 locs2 = locs_rotz(locs; a = 20)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_theta] == 128.0
-@test locs2[1, :loc_theta_sph] == 132.1
-@test locs2[1, :loc_phi_sph] == -1.87
+@test locs2[1, :loc_theta_sph] == 128.0
+@test locs2[1, :loc_phi_sph] == -2.0
 
 @info "Test: locs_generate()"
 locs_tmp = locs_generate(locs_tmp)

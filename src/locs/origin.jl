@@ -8,7 +8,7 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `locs::DataFrame`: channel location data
 - `x::Real=0`: move origin along X axis
 - `y::Real=0`: move origin along Y axis
 - `z::Real=0`: move origin along Z axis
@@ -29,7 +29,7 @@ function locs_origin(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::Da
 end
 
 """
-    locs_origin!(locs; <keyword arguments>)
+    locs_origin!(obj; <keyword arguments>)
 
 Move locs origin ([0, 0, 0]) along the axes.
 

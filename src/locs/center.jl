@@ -24,29 +24,23 @@ function locs_center(
     spherical::Bool = true,
 )::DataFrame
     locs_new = deepcopy(locs)
-    # search for central line channels (Fz, Cz, Pz)
-    cl = nothing
-    x_offset = 0
-    findfirst(lowercase.(locs[!, :label]) .== "fz") !== nothing &&
-        (cl = findfirst(lowercase.(locs[!, :label]) .== "fz"))
-    findfirst(lowercase.(locs[!, :label]) .== "cz") !== nothing &&
-        (cl = findfirst(lowercase.(locs[!, :label]) .== "cz"))
-    findfirst(lowercase.(locs[!, :label]) .== "pz") !== nothing &&
-        (cl = findfirst(lowercase.(locs[!, :label]) .== "pz"))
-    isnothing(cl) && throw(ArgumentError("Central line channels could not be find."))
+    lab = lowercase.(locs[!, :label])
+    # row of the first channel of `names` present in locs (in order of preference)
+    pick(names) = (n = findfirst(in(lab), names); isnothing(n) ? nothing : findfirst(==(names[n]), lab))
+
+    # x offset: a midline channel (Cz preferred, then Fz, Pz)
+    cl = pick(["cz", "fz", "pz"])
+    isnothing(cl) && throw(ArgumentError("Central line channels (Cz, Fz, Pz) could not be found."))
     x_offset = locs[cl, :loc_x]
 
-    cl = nothing
-    y_offset = 0
-    findfirst(lowercase.(locs[!, :label]) .== "cz") !== nothing &&
-        (cl = findfirst(lowercase.(locs[!, :label]) .== "cz"))
-    findfirst(lowercase.(locs[!, :label]) .== "c1") !== nothing &&
-        (cl = findfirst(lowercase.(locs[!, :label]) .== "c1"))
-    findfirst(lowercase.(locs[!, :label]) .== "c2") !== nothing &&
-        (cl = findfirst(lowercase.(locs[!, :label]) .== "c2"))
-    cl === nothing &&
-        _warn("Cz/C1/C2 electrodes could not be find, cannot center along Y axis")
-    y_offset = locs[cl, :loc_y]
+    # y offset: a channel of the central coronal line (Cz preferred, then C1, C2)
+    cl = pick(["cz", "c1", "c2"])
+    y_offset = if isnothing(cl)
+        _warn("Cz/C1/C2 electrodes could not be found, cannot center along Y axis.")
+        0.0
+    else
+        locs[cl, :loc_y]
+    end
 
     if cart
         locs_new[!, :loc_x] = locs[!, :loc_x] .- x_offset
@@ -54,17 +48,20 @@ function locs_center(
     end
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        locs_new[!, :loc_x] = locs[!, :loc_x] .- x_offset
-        locs_new[!, :loc_y] = locs[!, :loc_y] .- y_offset
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # shift the Cartesian coordinates derived from the spherical ones (unrounded)
+        r, t, p = _sph_transform(locs, (x, y, z) -> (x .- x_offset, y .- y_offset, z))
+        locs_new[!, :loc_radius_sph], locs_new[!, :loc_theta_sph], locs_new[!, :loc_phi_sph] = r, t, p
     end
 
-    polar && locs_rotz!(locs_new; a = 90, polar = true, cart = false, spherical = false)
+    if polar
+        # polar coordinates of the shifted Cartesian coordinates
+        locs_tmp = deepcopy(locs)
+        locs_tmp[!, :loc_x] .-= x_offset
+        locs_tmp[!, :loc_y] .-= y_offset
+        locs_cart2pol!(locs_tmp)
+        locs_new[!, :loc_radius] = locs_tmp[!, :loc_radius]
+        locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
+    end
 
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)

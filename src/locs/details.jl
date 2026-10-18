@@ -44,19 +44,20 @@ function locs_details(
     length(get_channel(obj; ch = ch)) == 1 ||
         throw(ArgumentError("ch must resolve to exactly one channel."))
 
-    ch = intersect(obj.locs[!, :label], [ch])
-    locs = Base.filter(:label => in(ch), obj.locs)
-    DataFrames.nrow(locs) == 1 || throw(ArgumentError("Channel has no location details."))
+    # location row of the channel (labels are matched case-insensitively)
+    loc_idx = _find_bylabel(obj.locs, ch)
+    loc_idx isa Int64 || throw(ArgumentError("Channel has no location details."))
+    loc = obj.locs[loc_idx, :]
 
-    label = obj.locs[1, :label]
-    x = obj.locs[1, :loc_x]
-    y = obj.locs[1, :loc_y]
-    z = obj.locs[1, :loc_z]
-    theta_pl = obj.locs[1, :loc_theta]
-    radius_pl = obj.locs[1, :loc_radius]
-    theta_sph = obj.locs[1, :loc_theta_sph]
-    radius_sph = obj.locs[1, :loc_radius_sph]
-    phi_sph = obj.locs[1, :loc_phi_sph]
+    label = loc[:label]
+    x = loc[:loc_x]
+    y = loc[:loc_y]
+    z = loc[:loc_z]
+    theta_pl = loc[:loc_theta]
+    radius_pl = loc[:loc_radius]
+    theta_sph = loc[:loc_theta_sph]
+    radius_sph = loc[:loc_radius_sph]
+    phi_sph = loc[:loc_phi_sph]
 
     if out
         println("  Label: $label")

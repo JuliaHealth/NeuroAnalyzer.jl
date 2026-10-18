@@ -502,3 +502,41 @@ Return the midpoint between two 2-D points as `(xm, ym)`.
 """
 _midxy(x1::Real, y1::Real, x2::Real, y2::Real)::Tuple{Float64, Float64} =
     (x1 + ((x2 - x1) / 2), y1 + ((y2 - y1) / 2))
+
+"""
+    _wrap180(a)
+
+Wrap angle(s) `a` (degrees) to `[-180, 180)`, the range of the spherical horizontal angle.
+"""
+_wrap180(a) = @. mod(a + 180, 360) - 180
+
+"""
+    _sph2cart_raw(r, theta, phi)
+
+Spherical (radius, horizontal angle, elevation; degrees) → Cartesian, without rounding (unlike `sph2cart`), for chained transformations.
+"""
+_sph2cart_raw(r, theta, phi) =
+    (@. r * cosd(phi) * cosd(theta)), (@. r * cosd(phi) * sind(theta)), (@. r * sind(phi))
+
+"""
+    _cart2sph_raw(x, y, z)
+
+Cartesian → spherical (radius, horizontal angle, elevation; degrees), without rounding (unlike `cart2sph`), for chained transformations.
+"""
+function _cart2sph_raw(x, y, z)
+    r = @. hypot(x, y, z)
+    theta = @. atand(y, x)
+    # clamp: rounding can push |z / r| marginally above 1
+    phi = @. ifelse(r == 0, 0.0, asind(clamp(z / r, -1, 1)))
+    return r, theta, phi
+end
+
+"""
+    _sph_transform(locs, f)
+
+Apply the Cartesian transformation `f(x, y, z) -> (x, y, z)` to the spherical coordinates of `locs` (via unrounded conversions) and return the new `(radius, theta, phi)` columns.
+"""
+function _sph_transform(locs::DataFrame, f::Function)
+    x, y, z = _sph2cart_raw(locs[!, :loc_radius_sph], locs[!, :loc_theta_sph], locs[!, :loc_phi_sph])
+    return _cart2sph_raw(f(x, y, z)...)
+end

@@ -49,7 +49,7 @@ function locs_generate(locs::DataFrame)::DataFrame
         "fc1", "fc3", "fc5", "fc7", "ft7", "fc9", "ft9",
         "fz", "f2", "f4", "f6", "f8", "f10",
         "f1", "f3", "f5", "f7", "f9",
-        "afz", "af2", "af4", "af6", "af1", "af3", "af7",
+        "afz", "af2", "af4", "af6", "af8", "af1", "af3", "af5", "af7",
         "fpz", "fp2", "fp1",
         "cpz", "cp2", "cp4", "cp6", "cp8", "tp8", "tp10",
         "tp9", "cp1", "cp3", "cp5", "cp7", "tp7",
@@ -69,9 +69,11 @@ function locs_generate(locs::DataFrame)::DataFrame
     #                                                                    #
     # Convention: sph2cart(radius, azimuth_deg, elevation_deg)           #
     #   - radius 1.0 for mid-sagittal and equatorial electrodes          #
-    #   - radius cosd(θ) for electrodes at latitude θ above the equator  #
-    #   - y-offset ±cosd(θ) shifts the ring to the correct AP position   #
-    #   - phi=0 → right hemisphere; phi=180 → left hemisphere            #
+    #   - row at latitude θ (anterior/posterior of the C row): a ring of #
+    #     radius cosd(θ) in the xz plane, shifted to y = ±sind(θ), so    #
+    #     that all electrodes lie on the unit sphere                      #
+    #   - ring angle 0 → right, 90 → top, 180 → left; electrodes of the  #
+    #     inferior row (9/10) are 22.5° below the ring ends (-22.5/202.5)#
     # ------------------------------------------------------------------ #
 
     # central row (C strip): equatorial plane, z = sin(elevation)
@@ -102,7 +104,7 @@ function locs_generate(locs::DataFrame)::DataFrame
         y[mask] .= yi
         z[mask] .= zi
     end
-    let (xi, yi, zi) = sph2cart(1.0, -22.5, 0)
+    let (xi, yi, zi) = sph2cart(1.0, 0, -22.5)
         x[lab .== "t10"] .= xi
         y[lab .== "t10"] .= yi
         z[lab .== "t10"] .= zi
@@ -128,15 +130,15 @@ function locs_generate(locs::DataFrame)::DataFrame
         y[mask] .= yi
         z[mask] .= zi
     end
-    let (xi, yi, zi) = sph2cart(1.0, -22.5, 180)
+    let (xi, yi, zi) = sph2cart(1.0, 0, 202.5)
         x[lab .== "t9"] .= xi
         y[lab .== "t9"] .= yi
         z[lab .== "t9"] .= zi
     end
 
-    # FC row: latitude 22.5° anterior; radius = cosd(22.5), y-offset = +cosd(22.5)
-    let r = cosd(22.5), off = cosd(22.5)
-        let (xi, yi, zi) = sph2cart(r, 90, 67.5)
+    # FC row: latitude 22.5° anterior; radius = cosd(22.5), y-offset = +sind(22.5)
+    let r = cosd(22.5), off = sind(22.5)
+        let (xi, yi, zi) = sph2cart(1.0, 90, 67.5)
             x[lab .== "fcz"] .= xi
             y[lab .== "fcz"] .= yi
             z[lab .== "fcz"] .= zi
@@ -154,7 +156,7 @@ function locs_generate(locs::DataFrame)::DataFrame
             y[mask] .= off .+ yi
             z[mask] .= zi
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 0)
+        let (xi, yi, zi) = sph2cart(r, 0, -22.5)
             mask = lab .== "fc10" .|| lab .== "ft10"
             x[mask] .= xi
             y[mask] .= off .+ yi
@@ -173,7 +175,7 @@ function locs_generate(locs::DataFrame)::DataFrame
             y[mask] .= off .+ yi
             z[mask] .= zi
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 180)
+        let (xi, yi, zi) = sph2cart(r, 0, 202.5)
             mask = lab .== "fc9" .|| lab .== "ft9"
             x[mask] .= xi
             y[mask] .= off .+ yi
@@ -181,8 +183,8 @@ function locs_generate(locs::DataFrame)::DataFrame
         end
     end
 
-    # F row: latitude 45° anterior; radius = cosd(45), y-offset = +cosd(45)
-    let r = cosd(45), off = cosd(45)
+    # F row: latitude 45° anterior; radius = cosd(45), y-offset = +sind(45)
+    let r = cosd(45), off = sind(45)
         let (xi, yi, zi) = sph2cart(1.0, 90, 45)
             x[lab .== "fz"] .= xi
             y[lab .== "fz"] .= yi
@@ -195,7 +197,7 @@ function locs_generate(locs::DataFrame)::DataFrame
                 z[lab .== lbl] .= zi
             end
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 0)
+        let (xi, yi, zi) = sph2cart(r, 0, -22.5)
             x[lab .== "f10"] .= xi
             y[lab .== "f10"] .= off .+ yi
             z[lab .== "f10"] .= zi
@@ -207,23 +209,23 @@ function locs_generate(locs::DataFrame)::DataFrame
                 z[lab .== lbl] .= zi
             end
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 180)
+        let (xi, yi, zi) = sph2cart(r, 0, 202.5)
             x[lab .== "f9"] .= xi
             y[lab .== "f9"] .= off .+ yi
             z[lab .== "f9"] .= zi
         end
     end
 
-    # AF row: latitude 67.5° anterior; radius = cosd(67.5), y-offset = +cosd(67.5)
-    let r = cosd(67.5), off = cosd(67.5)
-        let (xi, yi, zi) = sph2cart(1.0, 90, 67.5)
+    # AF row: latitude 67.5° anterior; radius = cosd(67.5), y-offset = +sind(67.5)
+    let r = cosd(67.5), off = sind(67.5)
+        let (xi, yi, zi) = sph2cart(1.0, 90, 22.5)
             x[lab .== "afz"] .= xi
             y[lab .== "afz"] .= yi
             z[lab .== "afz"] .= zi
         end
         for (lbl, phi) in [
-            ("af2", 67.5), ("af4", 45), ("af6", 22.5),
-            ("af1", 112.5), ("af3", 135), ("af7", 157.5),
+            ("af2", 67.5), ("af4", 45), ("af6", 22.5), ("af8", 0),
+            ("af1", 112.5), ("af3", 135), ("af5", 157.5), ("af7", 180),
         ]
             let (xi, yi, zi) = sph2cart(r, 0, phi)
                 x[lab .== lbl] .= xi
@@ -250,8 +252,8 @@ function locs_generate(locs::DataFrame)::DataFrame
         z[lab .== "fp1"] .= zi
     end
 
-    # CP row: latitude 22.5° posterior; y-offset = −cosd(67.5)
-    let r = cosd(22.5), off = -cosd(67.5)
+    # CP row: latitude 22.5° posterior; y-offset = −sind(22.5)
+    let r = cosd(22.5), off = -sind(22.5)
         let (xi, yi, zi) = sph2cart(1.0, 270, 67.5)
             x[lab .== "cpz"] .= xi
             y[lab .== "cpz"] .= yi
@@ -270,12 +272,12 @@ function locs_generate(locs::DataFrame)::DataFrame
             y[mask] .= off .+ yi
             z[mask] .= zi
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 0)
+        let (xi, yi, zi) = sph2cart(r, 0, -22.5)
             x[lab .== "tp10"] .= xi
             y[lab .== "tp10"] .= off .+ yi
             z[lab .== "tp10"] .= zi
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 180)
+        let (xi, yi, zi) = sph2cart(r, 0, 202.5)
             x[lab .== "tp9"] .= xi
             y[lab .== "tp9"] .= off .+ yi
             z[lab .== "tp9"] .= zi
@@ -295,8 +297,8 @@ function locs_generate(locs::DataFrame)::DataFrame
         end
     end
 
-    # P row: latitude 45° posterior; y-offset = −cosd(45)
-    let r = cosd(45), off = -cosd(45)
+    # P row: latitude 45° posterior; y-offset = −sind(45)
+    let r = cosd(45), off = -sind(45)
         let (xi, yi, zi) = sph2cart(1.0, 270, 45)
             x[lab .== "pz"] .= xi
             y[lab .== "pz"] .= yi
@@ -315,7 +317,7 @@ function locs_generate(locs::DataFrame)::DataFrame
             y[mask] .= off .+ yi
             z[mask] .= zi
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 0)
+        let (xi, yi, zi) = sph2cart(r, 0, -22.5)
             x[lab .== "p10"] .= xi
             y[lab .== "p10"] .= off .+ yi
             z[lab .== "p10"] .= zi
@@ -333,15 +335,15 @@ function locs_generate(locs::DataFrame)::DataFrame
             y[mask] .= off .+ yi
             z[mask] .= zi
         end
-        let (xi, yi, zi) = sph2cart(r, -22.5, 180)
+        let (xi, yi, zi) = sph2cart(r, 0, 202.5)
             x[lab .== "p9"] .= xi
             y[lab .== "p9"] .= off .+ yi
             z[lab .== "p9"] .= zi
         end
     end
 
-    # PO row: latitude 67.5° posterior; y-offset = −cosd(67.5)
-    let r = cosd(67.5), off = -cosd(67.5)
+    # PO row: latitude 67.5° posterior; y-offset = −sind(67.5)
+    let r = cosd(67.5), off = -sind(67.5)
         let (xi, yi, zi) = sph2cart(1.0, 270, 22.5)
             x[lab .== "poz"] .= xi
             y[lab .== "poz"] .= yi

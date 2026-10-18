@@ -42,7 +42,7 @@ end
 """
     cart2sph(x, y, z)
 
-Convert spherical coordinates to Cartesian.
+Convert Cartesian coordinates to spherical.
 
 # Arguments
 
@@ -75,8 +75,8 @@ Convert polar coordinates to Cartesian.
 
 # Arguments
 
-- `radius::Real`: polar radius, the distance from the origin to the point, in degrees
-- `theta::Real`: polar angle
+- `radius::Real`: polar radius, the distance from the origin to the point
+- `theta::Real`: polar angle, in degrees
 
 # Returns
 
@@ -97,8 +97,8 @@ Convert polar coordinates to spherical.
 
 # Arguments
 
-- `radius::Real`: polar radius, the distance from the origin to the point, in degrees
-- `theta::Real`: polar angle
+- `radius::Real`: polar radius, the distance from the origin to the point
+- `theta::Real`: polar angle, in degrees
 
 # Returns
 
@@ -343,7 +343,7 @@ end
 """
     locs_sph2pol!(locs)
 
-Convert Cartesian coordinates to polar.
+Convert spherical coordinates to polar.
 
 # Arguments
 

@@ -4,7 +4,7 @@ export locs_swapxy!
 """
     locs_swapxy(locs; <keyword arguments>)
 
-Swap channel locations x and y axes.
+Swap channel locations x and y axes: `(x, y) → (−y, x)`, i.e. a 90° rotation about the z axis (so that nose direction +X becomes +Y).
 
 # Arguments
 
@@ -15,7 +15,7 @@ Swap channel locations x and y axes.
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: output NEURO object
+- `DataFrame`: modified channel location data
 """
 function locs_swapxy(
     locs::DataFrame;
@@ -32,14 +32,8 @@ function locs_swapxy(
     end
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        locs_tmp[!, :loc_x], locs_tmp[!, :loc_y] = locs[!, :loc_y], locs[!, :loc_x]
-        locs_tmp[!, :loc_x] = -locs_tmp[!, :loc_x]
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # a 90° rotation about z only changes the horizontal angle (exact, no conversion)
+        locs_new[!, :loc_theta_sph] = _wrap180(locs[!, :loc_theta_sph] .+ 90)
     end
 
     polar && locs_rotz!(locs_new; a = 90, polar = true, cart = false, spherical = false)

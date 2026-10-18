@@ -41,21 +41,11 @@ function locs_rotz(
     end
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        for idx in eachindex(locs[!, :label])
-            locs_tmp[idx, :loc_x] =
-                locs_tmp[idx, :loc_x] * cosd(a) - locs_tmp[idx, :loc_y] * sind(a)
-            locs_tmp[idx, :loc_y] =
-                locs_tmp[idx, :loc_x] * sind(a) + locs_tmp[idx, :loc_y] * cosd(a)
-        end
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # rotation about z only changes the horizontal angle (exact, no conversion)
+        locs_new[!, :loc_theta_sph] = _wrap180(locs[!, :loc_theta_sph] .+ a)
     end
 
-    polar && locs_new[!, :loc_theta] .+= a % 360
+    polar && (locs_new[!, :loc_theta] = mod.(locs[!, :loc_theta] .+ a, 360))
 
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
@@ -129,18 +119,11 @@ function locs_roty(
     end
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        for idx = 1:DataFrames.nrow(locs)
-            locs_tmp[idx, :loc_x] =
-                locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
-            locs_tmp[idx, :loc_z] =
-                -locs[idx, :loc_x] * sind(a) + locs[idx, :loc_z] * cosd(a)
-        end
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # rotate the Cartesian coordinates derived from the spherical ones (unrounded)
+        r, t, p = _sph_transform(
+            locs, (x, y, z) -> ((@. x * cosd(a) + z * sind(a)), y, (@. -x * sind(a) + z * cosd(a))),
+        )
+        locs_new[!, :loc_radius_sph], locs_new[!, :loc_theta_sph], locs_new[!, :loc_phi_sph] = r, t, p
     end
 
     polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
@@ -217,18 +200,11 @@ function locs_rotx(
     end
 
     if spherical
-        locs_tmp = deepcopy(locs)
-        locs_sph2cart!(locs_tmp)
-        for idx = 1:DataFrames.nrow(locs)
-            locs_tmp[idx, :loc_y] =
-                locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
-            locs_tmp[idx, :loc_z] =
-                locs[idx, :loc_y] * sind(a) + locs[idx, :loc_z] * cosd(a)
-        end
-        locs_cart2sph!(locs_tmp)
-        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
-        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
-        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+        # rotate the Cartesian coordinates derived from the spherical ones (unrounded)
+        r, t, p = _sph_transform(
+            locs, (x, y, z) -> (x, (@. y * cosd(a) - z * sind(a)), (@. y * sind(a) + z * cosd(a))),
+        )
+        locs_new[!, :loc_radius_sph], locs_new[!, :loc_theta_sph], locs_new[!, :loc_phi_sph] = r, t, p
     end
 
     polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
