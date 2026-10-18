@@ -36,7 +36,7 @@ function cart2pol(x::Real, y::Real)::Tuple{Float64, Float64}
     radius = hypot(x, y)
     theta = atand(y, x)
 
-    return round(radius; digits = 2), round(theta; digits = 2)
+    return radius, theta
 end
 
 """
@@ -63,9 +63,9 @@ function cart2sph(x::Real, y::Real, z::Real)::Tuple{Float64, Float64, Float64}
     theta = atand(y, x)
     # phi = cos^-1(z / sqrt(x^2 + y^2 + z^2))
     # phi = round(acosd(z / radius), digits=2)
-    phi = 90 - acosd(z / radius)
+    phi = radius == 0 ? 0.0 : asind(clamp(z / radius, -1, 1))
 
-    return round(radius; digits = 2), round(theta; digits = 2), round(phi; digits = 2)
+    return radius, theta, phi
 end
 
 """
@@ -87,7 +87,7 @@ function pol2cart(radius::Real, theta::Real)::Tuple{Float64, Float64}
     x = radius * cosd(theta)
     y = radius * sind(theta)
 
-    return round(x; digits = 2), round(y; digits = 2)
+    return x, y
 end
 
 """
@@ -107,7 +107,7 @@ Convert polar coordinates to spherical.
 - `Float64`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 """
 function pol2sph(radius::Real, theta::Real)::Tuple{Float64, Float64, Float64}
-    return round(radius; digits = 2), round(theta; digits = 2), 0
+    return Float64(radius), Float64(theta), 0.0
 end
 
 """
@@ -132,7 +132,7 @@ function sph2cart(radius::Real, theta::Real, phi::Real)::Tuple{Float64, Float64,
     y = radius * sind(90 - phi) * sind(theta)
     z = radius * cosd(90 - phi)
 
-    return round(x; digits = 2), round(y; digits = 2), round(z; digits = 2)
+    return x, y, z
 end
 
 """
@@ -154,7 +154,7 @@ Convert spherical coordinates to polar.
 function sph2pol(radius::Real, theta::Real, phi::Real)::Tuple{Float64, Float64}
     radius = radius * abs(cosd(phi))
 
-    return round(radius; digits = 2), round(theta; digits = 2)
+    return radius, Float64(theta)
 end
 
 """
@@ -182,7 +182,6 @@ function locs_pol2cart(locs::DataFrame)::DataFrame
     end
 
     _locs_norm!(locs_new)
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -232,7 +231,6 @@ function locs_pol2sph(locs::DataFrame)::DataFrame
         locs_new[idx, :loc_phi_sph] = p
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -284,7 +282,6 @@ function locs_sph2cart(locs::DataFrame)::DataFrame
     end
 
     # _locs_norm!(locs_new)
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -334,7 +331,6 @@ function locs_sph2pol(locs::DataFrame)::DataFrame
         locs_new[idx, :loc_theta] = t_pol
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -385,7 +381,6 @@ function locs_cart2sph(locs::DataFrame)::DataFrame
         locs_new[idx, :loc_phi_sph] = p
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -434,7 +429,6 @@ function locs_cart2pol(locs::DataFrame)::DataFrame
         locs_new[idx, :loc_theta] = t
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new

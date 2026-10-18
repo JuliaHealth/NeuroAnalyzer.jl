@@ -153,10 +153,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         sampling_rate = round(Int64, (length(timepts) - 1) / (timepts[end] - timepts[1]))
     end
 
-    time_pts = round.(
-        range(0; step = 1 / sampling_rate, length = size(data, 2) * size(data, 3)); digits = 4,
-    )
-    epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
+    epoch_time = _time_axis(size(data, 2), sampling_rate)
 
     # channel metadata (not read from the NWB electrodes table yet)
     data_type == "" && (data_type = "eeg")
@@ -187,7 +185,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         else
             Float64.(events[!, :sample]) ./ sampling_rate
         end
-        event_length = round.(Float64.(coalesce.(events[!, :duration], 0.0)); digits = 4)
+        event_length = Float64.(coalesce.(events[!, :duration], 0.0))
         event_channel = zeros(Int64, DataFrames.nrow(events))
         markers = DataFrame(
             :id => event_id,

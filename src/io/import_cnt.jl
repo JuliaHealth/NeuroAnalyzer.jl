@@ -457,7 +457,7 @@ function import_cnt(
     nums = size(data, 2)
     # FIX: original had identical expressions for time_pts and epoch_time;
     # they are only equal because the data has a single epoch. Unified.
-    time_pts = round.(range(0; step = 1 / sampling_rate, length = nums); digits = 4)
+    time_pts = _time_axis(nums, sampling_rate)
     epoch_time = time_pts   # single epoch → identical
 
     # ------------------------------------------------------------------ #

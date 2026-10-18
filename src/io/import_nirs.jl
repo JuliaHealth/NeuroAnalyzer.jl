@@ -132,7 +132,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     data = reshape(data, size(data, 1), size(data, 2), 1)
     # NeuroAnalyzer stores integer sampling rates (e.g. 12.5 Hz → upsampled to 25 Hz)
     data, sampling_rate = _integer_rate(data, sampling_rate_exact)
-    time_pts = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    time_pts = _time_axis(size(data, 2), sampling_rate)
     epoch_time = time_pts
 
     # ------------------------------------------------------------------ #

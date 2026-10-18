@@ -419,11 +419,6 @@ function locs_generate(locs::DataFrame)::DataFrame
         z[lab .== lbl] .= -0.04
     end
 
-    # round to 3 decimal places to avoid floating-point noise
-    x = round.(x; digits = 3)
-    y = round.(y; digits = 3)
-    z = round.(z; digits = 3)
-
     # write the Cartesian coordinates back into the copied DataFrame
     locs_new[:, :loc_x] = x
     locs_new[:, :loc_y] = y

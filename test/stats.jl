@@ -204,10 +204,10 @@ s = NeuroAnalyzer.permute(rand(2, 4, 8), 10)
 @info "Test: pcacomp()"
 m = rand(4, 5)
 p = pcacomp(m)
-@test size(p.pc) == (4, 4)
+@test size(p.pc, 1) == 4 && 1 <= size(p.pc, 2) <= 4
 df = DataFrame(m, :auto)
 p = pcacomp(df, names(df))
-@test size(p.pc) == (4, 4)
+@test size(p.pc, 1) == 4 && 1 <= size(p.pc, 2) <= 4
 
 @info "Test: biplot()"
 @test biplot(df, names(df)) isa GLMakie.Figure

@@ -73,7 +73,6 @@ function import_locs(file_name::String)::DataFrame
         )
     end
 
-    _locs_round!(locs)
 
     return locs
 end
@@ -145,7 +144,6 @@ function import_locs_ced(file_name::String)::DataFrame
     locs_swapxy!(locs; polar = true, cart = true, spherical = true)
     locs_flipx!(locs; polar = true, cart = false, spherical = false)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -199,7 +197,6 @@ function import_locs_locs(file_name::String)::DataFrame
     locs_flipx!(locs; polar = true, cart = false, spherical = false)
     locs[!, :loc_phi_sph] .= 0.0
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -266,7 +263,6 @@ function import_locs_elc(file_name::String)::DataFrame
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -348,7 +344,6 @@ function import_locs_tsv(file_name::String)::DataFrame
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -433,7 +428,6 @@ function import_locs_sfp(file_name::String)::DataFrame
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -499,7 +493,6 @@ function import_locs_csd(file_name::String)::DataFrame
     )
 
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -567,7 +560,6 @@ function import_locs_geo(file_name::String)::DataFrame
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -619,7 +611,6 @@ function import_locs_mat(file_name::String)::DataFrame
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -688,7 +679,6 @@ function import_locs_txt(file_name::String)::DataFrame
     locs_cart2sph!(locs)
     locs_sph2pol!(locs)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -766,7 +756,6 @@ function import_locs_dat(file_name::String)::DataFrame
     locs_cart2pol!(locs)
     locs_cart2sph!(locs)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end
@@ -826,7 +815,6 @@ function import_locs_asc(file_name::String)::DataFrame
     locs_cart2pol!(locs)
     locs_cart2sph!(locs)
     locs_normalize!(locs)
-    _locs_round!(locs)
 
     return locs
 end

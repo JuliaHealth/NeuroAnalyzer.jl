@@ -127,9 +127,9 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     # time axes (6-digit precision - NCS timestamps are microsecond-based) #
     # -------------------------------------------------------------------- #
     n_samples = size(data, 2) * size(data, 3)
-    time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 6)
+    time_pts = _time_axis(n_samples, sampling_rate)
     epoch_time =
-        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 6)
+        _time_axis(size(data, 2), sampling_rate)
 
     # ------------------------------------------------------------------ #
     # assemble NEURO object                                              #

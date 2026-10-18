@@ -218,7 +218,6 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
 
     obj_tmp.locs = Base.filter(:label => in(labels(obj)), locs)
 
-    _locs_round!(obj_tmp.locs)
     _locs_remove_nans!(obj_tmp.locs)
 
     # keep order consistent with labels

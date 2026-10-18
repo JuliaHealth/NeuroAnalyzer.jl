@@ -60,15 +60,17 @@ function locs_details(
     phi_sph = loc[:loc_phi_sph]
 
     if out
+        # values are rounded for display only; the returned values are exact
+        r2(v) = round(v; digits = 2)
         println("  Label: $label")
-        println("  Theta: $theta_pl (polar)")
-        println(" Radius: $radius_pl (polar)")
-        println("      X: $x (spherical)")
-        println("      Y: $y (spherical)")
-        println("      Z: $z (spherical)")
-        println(" Radius: $radius_sph (spherical)")
-        println("  Theta: $theta_sph (spherical)")
-        println("    Phi: $phi_sph (spherical)")
+        println("  Theta: $(r2(theta_pl)) (polar)")
+        println(" Radius: $(r2(radius_pl)) (polar)")
+        println("      X: $(r2(x)) (spherical)")
+        println("      Y: $(r2(y)) (spherical)")
+        println("      Z: $(r2(z)) (spherical)")
+        println(" Radius: $(r2(radius_sph)) (spherical)")
+        println("  Theta: $(r2(theta_sph)) (spherical)")
+        println("    Phi: $(r2(phi_sph)) (spherical)")
     end
 
     return (; label, theta_pl, radius_pl, x, y, z, theta_sph, radius_sph, phi_sph)

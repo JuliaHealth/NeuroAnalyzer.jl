@@ -1,4 +1,19 @@
 """
+    _time_axis(n, fs; t0 = 0.0)
+
+Exact time axis of `n` samples at `fs` Hz starting at `t0` seconds: sample `k` lies at `t0 + (k - 1) / fs`.
+
+Each time point is a single, correctly rounded division (no accumulated step error, no rounding to a fixed number of decimals), so `_time_axis(n, fs)[s] == s2t(s, fs)` and times that are exact multiples of `1 / fs` compare equal to their decimal literals (e.g. `1.5`, `0.1`). Values are rounded only for presentation.
+"""
+function _time_axis(n::Integer, fs::Real; t0::Real = 0.0)::Vector{Float64}
+    n >= 0 || throw(ArgumentError("n must be ≥ 0."))
+    fs > 0 || throw(ArgumentError("fs must be > 0."))
+    t = collect(0:(n - 1)) ./ fs
+    t0 == 0 || (t .+= t0)
+    return t
+end
+
+"""
     _get_t(obj::NeuroAnalyzer.NEURO)
 
 Compute time axes for a NEURO recording.
@@ -10,8 +25,7 @@ Compute time axes for a NEURO recording.
 
 # Notes
 
-- Both vectors contain `n_samples × n_epochs` and `n_samples` points respectively, rounded to 4 decimal places.
-- Using `range(...; length=n)` instead of `collect(a:step:b)[1:end-1]` avoids the off-by-one issue and is allocation-friendlier.
+- Both vectors contain `n_samples × n_epochs` and `n_samples` points respectively (exact, see [`_time_axis`](@ref)).
 """
 function _get_t(obj::NeuroAnalyzer.NEURO)::Tuple{Vector{Float64}, Vector{Float64}}
     fs       = sr(obj)
@@ -19,17 +33,11 @@ function _get_t(obj::NeuroAnalyzer.NEURO)::Tuple{Vector{Float64}, Vector{Float64
     n_epochs = size(obj.data, 3)   # number of epochs
 
     # global timeline: n_smps * n_epochs points, step = 1/fs seconds
-    time_pts = round.(
-        collect(range(0.0; step = 1.0 / fs, length = n_smps * n_epochs));
-        digits = 4,
-    )
+    time_pts = _time_axis(n_smps * n_epochs, fs)
 
     # per-epoch timeline, optionally shifted by the stored epoch-start offset
     t_offset   = isempty(obj.epoch_time) ? 0.0 : obj.epoch_time[1]
-    epoch_time = round.(
-        collect(range(t_offset; step = 1.0 / fs, length = n_smps));
-        digits = 4,
-    )
+    epoch_time = _time_axis(n_smps, fs; t0 = t_offset)
 
     return time_pts, epoch_time
 end
@@ -39,7 +47,7 @@ end
 
 Build a zero-based time vector for samples `from:to` at sampling rate `fs`.
 
-The resulting vector has `to - from + 1` elements, starts at `0.0`, and is rounded to 4 decimal places.
+The resulting vector has `to - from + 1` elements and starts at `0.0` (exact, see [`_time_axis`](@ref)).
 
 # Arguments
 
@@ -52,11 +60,7 @@ The resulting vector has `to - from + 1` elements, starts at `0.0`, and is round
 - `Vector{Float64}`: time points
 """
 function _get_t(from::Int64, to::Int64, fs::Int64)::Vector{Float64}
-    # `length = to - from + 1` is exact; avoids floating-point creep in step-based ranges
-    return round.(
-        collect(range(0.0; step = 1.0 / fs, length = to - from + 1));
-        digits = 4,
-    )
+    return _time_axis(to - from + 1, fs)
 end
 
 """

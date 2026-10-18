@@ -477,8 +477,8 @@ function import_gdf(
             sr_denom = etp_sr == 0 ? Float64(sampling_rate) : Float64(etp_sr)
             return markers = DataFrame(
                 :id => id,
-                :start => round.((start .- 1) ./ sr_denom; digits = 4),
-                :length => round.(len ./ sr_denom; digits = 4),
+                :start => (start .- 1) ./ sr_denom,
+                :length => len ./ sr_denom,
                 :value => value,
                 :channel => ch,
             )
@@ -491,9 +491,9 @@ function import_gdf(
     # channel metadata and NEURO object assembly                         #
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
-    time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
+    time_pts = _time_axis(n_samples, sampling_rate)
     epoch_time =
-        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+        _time_axis(size(data, 2), sampling_rate)
 
     data_type = "eeg"
     "meg" in ch_type && (data_type = "meg")

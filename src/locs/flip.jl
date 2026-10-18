@@ -43,7 +43,6 @@ function locs_flipy(
         locs_new[!, :loc_theta] = mod.(-locs[!, :loc_theta], 360)
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -109,7 +108,6 @@ function locs_flipx(
         locs_new[!, :loc_theta] = mod.(180 .- locs[!, :loc_theta], 360)
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -178,7 +176,6 @@ function locs_flipz(
     polar &&
         _warn("For polar coordinates this is a lossy conversion and will be ignored.")
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new

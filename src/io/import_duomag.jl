@@ -222,10 +222,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     # time axis - zero-aligned to the stimulation sample                  #
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
-    time_pts = round.(
-        range(0; step = 1 / sampling_rate, length = n_samples) .-
-        (stim_sample[1] / sampling_rate); digits = 4,
-    )
+    time_pts = _time_axis(n_samples, sampling_rate; t0 = -stim_sample[1] / sampling_rate)
     epoch_time = time_pts
 
     # convert .ascii marker positions (ms) to sample indices

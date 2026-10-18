@@ -243,12 +243,12 @@ df = NeuroAnalyzer._a2df(["1.0\x14stim\x14"])
 add_locs!(e10; locs = locs)
 x, y, z, = e10.locs[!, :loc_x], e10.locs[!, :loc_y], e10.locs[!, :loc_z]
 xn, yn = NeuroAnalyzer._locs_norm(x, y)
-@test xn[1] ≈ -0.31
-@test yn[1] == 0.95
+@test xn[1] ≈ -0.31 atol = 0.01
+@test yn[1] ≈ 0.95 atol = 0.01
 xn, yn, zn = NeuroAnalyzer._locs_norm(x, y, z)
-@test xn[1] ≈ -0.31
-@test yn[1] == 0.95
-@test zn[1] ≈ -0.03
+@test xn[1] ≈ -0.31 atol = 0.01
+@test yn[1] ≈ 0.95 atol = 0.01
+@test zn[1] ≈ -0.03 atol = 0.01
 locs[1, :loc_theta] = 108.12
 locs[1, :loc_theta] = 108.12
 

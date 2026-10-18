@@ -212,7 +212,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     # NeuroAnalyzer stores integer sampling rates (e.g. 12.5 Hz → upsampled to 25 Hz)
     data, sampling_rate = _integer_rate(data, sampling_rate_exact)
 
-    time_pts = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    time_pts = _time_axis(size(data, 2), sampling_rate)
     epoch_time = time_pts
 
     # events: [Markers] Events= table in the header ("time  code  frame"), otherwise the .evt file
@@ -248,7 +248,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     markers = DataFrame(
         :id => stim_id,
-        :start => round.(stim_frame ./ sampling_rate_exact; digits = 4),
+        :start => stim_frame ./ sampling_rate_exact,
         :length => zeros(length(stim_id)),
         :value => repeat(["stim"], length(stim_id)),
         :channel => zeros(Int64, length(stim_id)),

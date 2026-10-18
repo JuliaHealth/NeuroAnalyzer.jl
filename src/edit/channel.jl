@@ -512,8 +512,8 @@ function add_channel(
         fs > 0 || throw(ArgumentError("Sampling rate must be set to initialize an empty object."))
         n_s = size(data, 2)
         n_e = size(data, 3)
-        obj_tmp.time_pts = round.(range(0; step = 1 / fs, length = n_s * n_e); digits = 4)
-        obj_tmp.epoch_time = round.(range(0; step = 1 / fs, length = n_s); digits = 4)
+        obj_tmp.time_pts = _time_axis(n_s * n_e, fs)
+        obj_tmp.epoch_time = _time_axis(n_s, fs)
     end
 
     push!(

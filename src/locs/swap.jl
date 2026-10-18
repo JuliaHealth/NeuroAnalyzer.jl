@@ -38,7 +38,6 @@ function locs_swapxy(
 
     polar && locs_rotz!(locs_new; a = 90, polar = true, cart = false, spherical = false)
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new

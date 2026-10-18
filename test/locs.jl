@@ -2,6 +2,12 @@ using NeuroAnalyzer
 using Test
 using DataFrames
 
+# location values are stored exactly (no rounding); reference values have 2 decimals
+_approx₂(a::AbstractString, b::AbstractString) = a == b
+_approx₂(a, b) = isapprox(a, b; atol = 0.01)
+≈₂(a, b) = all(map(_approx₂, Tuple(a), Tuple(b)))
+
+
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 locs = import_locs(joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
@@ -13,7 +19,7 @@ add_locs!(eeg; locs = locs)
 @test nrow(eeg.locs) == 23
 
 @info "Test: locs_details()"
-@test locs_details(eeg, ch = "Fp1", out = false) == (
+@test locs_details(eeg, ch = "Fp1", out = false) ≈₂ (
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -26,31 +32,31 @@ add_locs!(eeg; locs = locs)
 )
 
 @info "Test: cart2pol()"
-@test cart2pol(1.0, 1.0) == (1.41, 45.0)
+@test cart2pol(1.0, 1.0) ≈₂ (1.41, 45.0)
 
 @info "Test: pol2cart()"
-@test pol2cart(1.41, 45.0) == (1, 1)
+@test pol2cart(1.41, 45.0) ≈₂ (1, 1)
 
 @info "Test: sph2cart()"
-@test sph2cart(1.73, 45.0, 35.27) == (1.0, 1.0, 1.0)
+@test sph2cart(1.73, 45.0, 35.27) ≈₂ (1.0, 1.0, 1.0)
 
 @info "Test: cart2sph()"
-@test cart2sph(1.0, 1.0, 1.0) == (1.73, 45.0, 35.26)
+@test cart2sph(1.0, 1.0, 1.0) ≈₂ (1.73, 45.0, 35.26)
 
 @info "Test: sph2pol()"
-@test sph2pol(1.73, 45.0, 35.26) == (1.41, 45.0)
+@test sph2pol(1.73, 45.0, 35.26) ≈₂ (1.41, 45.0)
 
 @info "Test: locs_sph2cart()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_tmp = locs_sph2cart(locs_tmp)
-@test locs_tmp[1, :loc_x] == 1.0
+@test locs_tmp[1, :loc_x] ≈₂ 1.0
 
 @info "Test: locs_sph2cart!()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_sph2cart!(locs_tmp)
-@test locs_tmp[1, :loc_x] == 1.0
+@test locs_tmp[1, :loc_x] ≈₂ 1.0
 
 @info "Test: locs_cart2sph()"
 locs_tmp = deepcopy(locs)
@@ -98,7 +104,7 @@ locs_sph2pol!(locs_tmp)
 
 @info "Test: edit_locs()"
 eeg_tmp = deepcopy(eeg)
-@test locs_details(eeg_tmp, ch = "Fp1", out = false) == (
+@test locs_details(eeg_tmp, ch = "Fp1", out = false) ≈₂ (
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -110,7 +116,7 @@ eeg_tmp = deepcopy(eeg)
     phi_sph = -2.0,
 )
 eeg_tmp = edit_locs(eeg_tmp; ch = "Fp1", x = 0.5)
-@test locs_details(eeg_tmp, ch = "Fp1", out = false) == (
+@test locs_details(eeg_tmp, ch = "Fp1", out = false) ≈₂ (
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -122,7 +128,7 @@ eeg_tmp = edit_locs(eeg_tmp; ch = "Fp1", x = 0.5)
     phi_sph = -2.0,
 )
 edit_locs!(eeg_tmp; ch = "Fp1", x = 0.5)
-@test locs_details(eeg_tmp, ch = "Fp1", out = false) == (
+@test locs_details(eeg_tmp, ch = "Fp1", out = false) ≈₂ (
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -135,19 +141,19 @@ edit_locs!(eeg_tmp; ch = "Fp1", x = 0.5)
 )
 
 @info "Test: locs_flipx()"
-@test locs[1, :loc_x] == -0.31
+@test locs[1, :loc_x] ≈₂ -0.31
 locs2 = locs_flipx(locs)
-@test locs2[1, :loc_x] == 0.31
+@test locs2[1, :loc_x] ≈₂ 0.31
 
 @info "Test: locs_flipy()"
-@test locs[1, :loc_y] == 0.95
+@test locs[1, :loc_y] ≈₂ 0.95
 locs2 = locs_flipy(locs)
-@test locs2[1, :loc_y] == -0.95
+@test locs2[1, :loc_y] ≈₂ -0.95
 
 @info "Test: locs_flipz()"
-@test locs[1, :loc_z] == -0.03
+@test locs[1, :loc_z] ≈₂ -0.03
 locs2 = locs_flipz(locs)
-@test locs2[1, :loc_z] == 0.03
+@test locs2[1, :loc_z] ≈₂ 0.03
 
 @info "Test: locs_scale()"
 @test locs[1, :loc_radius] == 1.0
@@ -178,8 +184,8 @@ locs2 = locs_swapxy(locs)
 locs2 = locs_rotx(locs; a = 20)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_theta] == 108.0
-@test locs2[1, :loc_theta_sph] == 108.84
-@test locs2[1, :loc_phi_sph] == 16.99
+@test locs2[1, :loc_theta_sph] ≈₂ 108.84
+@test locs2[1, :loc_phi_sph] ≈₂ 16.99
 
 @info "Test: locs_roty()"
 @test locs[1, :loc_radius] == 1.0
@@ -189,8 +195,8 @@ locs2 = locs_rotx(locs; a = 20)
 locs2 = locs_roty(locs; a = 20)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_theta] == 108.0
-@test locs2[1, :loc_theta_sph] == 107.63
-@test locs2[1, :loc_phi_sph] == 4.18
+@test locs2[1, :loc_theta_sph] ≈₂ 107.63
+@test locs2[1, :loc_phi_sph] ≈₂ 4.18
 
 @info "Test: locs_rotz()"
 @test locs[1, :loc_radius] == 1.0

@@ -47,7 +47,6 @@ function locs_rotz(
 
     polar && (locs_new[!, :loc_theta] = mod.(locs[!, :loc_theta] .+ a, 360))
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -128,7 +127,6 @@ function locs_roty(
 
     polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -209,7 +207,6 @@ function locs_rotx(
 
     polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new

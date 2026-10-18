@@ -164,26 +164,16 @@ function import_ft(
     if "time" in keys(dataset)
         if ep_n == 1
             raw_t = Float64.(dataset["time"][1][:])
-            epoch_time = round.(raw_t .- raw_t[1]; digits = 4)
+            epoch_time = raw_t .- raw_t[1]
             time_pts = epoch_time
         else
-            epoch_time = round.(Float64.(dataset["time"][1][:]); digits = 4)
-            time_pts = round.(
-                range(
-                    0; step = 1 / sampling_rate,
-                    length = size(data, 2) * size(data, 3),
-                ); digits = 4,
-            )
+            # FieldTrip trial time (relative to the trigger), as stored in the file
+            epoch_time = Float64.(dataset["time"][1][:])
+            time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
         end
     else
-        epoch_time =
-            round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
-        time_pts = round.(
-            range(
-                0; step = 1 / sampling_rate,
-                length = size(data, 2) * size(data, 3),
-            ); digits = 4,
-        )
+        epoch_time = _time_axis(size(data, 2), sampling_rate)
+        time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
     end
 
     _info(

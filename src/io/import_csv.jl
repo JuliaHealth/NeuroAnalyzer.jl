@@ -75,9 +75,9 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # Reconstruct a canonical time axis (in seconds) starting at 0       #
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
-    time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
+    time_pts = _time_axis(n_samples, sampling_rate)
     epoch_time =
-        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+        _time_axis(size(data, 2), sampling_rate)
 
     # ------------------------------------------------------------------ #
     # channel metadata                                                   #

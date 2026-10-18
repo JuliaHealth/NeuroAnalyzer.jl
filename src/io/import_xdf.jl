@@ -76,7 +76,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     # NeuroAnalyzer stores integer sampling rates (non-integer rates are resampled)
     eeg_data, sampling_rate = _integer_rate(eeg_data, srate)
     # regular time axis (LSL time stamps jitter)
-    time_pts = round.(range(0; step = 1 / sampling_rate, length = size(eeg_data, 2)); digits = 4)
+    time_pts = _time_axis(size(eeg_data, 2), sampling_rate)
     epoch_time = time_pts
     ch_n = size(eeg_data, 1)
     clabels = repeat([""], ch_n)
@@ -101,7 +101,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
                 markers,
                 Dict(
                     :id => repeat([stream_name[idx]], length(time[idx])),
-                    :start => round.(time[idx] .- time_pts0; digits = 4),
+                    :start => time[idx] .- time_pts0,
                     :length => zeros(length(time[idx])),
                     :value => string.(data[idx][:, data_idx]),
                     :channel => zeros(Int64, length(time[idx])),

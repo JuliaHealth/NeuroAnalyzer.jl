@@ -44,7 +44,6 @@ function locs_scale(
             locs_tmp[!, :loc_z]
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new
@@ -132,7 +131,6 @@ function locs_normalize(
             locs_tmp[!, :loc_z]
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new

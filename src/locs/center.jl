@@ -63,7 +63,6 @@ function locs_center(
         locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
     end
 
-    _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new

@@ -125,14 +125,8 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     for idx = 1:ch_n
         clabels[idx] *= string(idx)
     end
-    time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
-        digits = 4,
-    )
-    epoch_time = round.(
-        (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-        digits = 4,
-    )
+    time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
+    epoch_time = _time_axis(size(data, 2), sampling_rate)
 
     s = _create_subject(;
         id = "",

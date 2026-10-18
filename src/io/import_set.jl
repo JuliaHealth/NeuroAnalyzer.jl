@@ -198,10 +198,10 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         events = dataset["event"]
         if length(keys(events)) > 0
             # EEGLAB latencies are 1-based (fractional) sample numbers of the concatenated data
-            start = round.((Float64.(events["latency"][:]) .- 1) ./ sampling_rate; digits = 4)
+            start = (Float64.(events["latency"][:]) .- 1) ./ sampling_rate
             # durations are in samples (optional field)
             len = if haskey(events, "duration")
-                [d isa Real ? round(d / sampling_rate; digits = 4) : 0.0 for d in events["duration"][:]]
+                [d isa Real ? d / sampling_rate : 0.0 for d in events["duration"][:]]
             else
                 zeros(length(start))
             end
@@ -221,13 +221,10 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # dataset["urevent"]
     # dataset["condition"]
 
-    time_pts = round.(
-        range(0; step = 1 / sampling_rate, length = size(data, 2) * size(data, 3));
-        digits = 4,
-    )
+    time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
     # epoch time axis starts at EEG.xmin (in seconds; EEG.times is the same axis in ms)
     t0 = ep_n > 1 && dataset["xmin"] isa Real ? Float64(dataset["xmin"]) : 0.0
-    epoch_time = round.(range(t0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    epoch_time = _time_axis(size(data, 2), sampling_rate; t0 = t0)
 
     if data_src isa String
         file_size_mb = round(filesize(data_src) / 1024^2; digits = 2)
