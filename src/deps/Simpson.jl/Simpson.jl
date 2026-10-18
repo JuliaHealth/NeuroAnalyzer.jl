@@ -13,30 +13,28 @@ function basic_simpson(
     slice1 = (start + 1):2:(stop + 1)
     slice2 = (start + 2):2:(stop + 2)
 
+    y0, y1, y2 = @views y[slice0], y[slice1], y[slice2]
+
     if isnothing(x)
         # even-spaced Simpson's rule
-        integral = sum(collect(y[slice0] .+ 4 .* y[slice1] .+ y[slice2]))
-        integral *= dx / 3.0
+        integral = sum(y0 .+ 4 .* y1 .+ y2; init = 0.0) * dx / 3.0
     else
         # account for possibly different spacings
         # Simpson's rule changes a bit
         h = diff(x)
-        sl0 = start:2:stop
-        sl1 = (start + 1):2:(stop + 1)
-        h0 = h[sl0]
-        h1 = h[sl1]
-        hsum = h0 .+ h1
-        hprod = h0 .* h1
-        h0divh1 = h0 ./ h1
-        tmp = @. hsum / 6.0 .* (
-            y[slice0] * (2 - 1.0 / h0divh1) +
-            y[slice1] * (hsum * hsum / hprod) +
-            y[slice2] * (2 - h0divh1)
+        h0 = @view h[slice0]
+        h1 = @view h[slice1]
+        integral = sum(
+            @. (h0 + h1) / 6.0 * (
+                y0 * (2 - h1 / h0) +
+                y1 * (h0 + h1)^2 / (h0 * h1) +
+                y2 * (2 - h0 / h1)
+            );
+            init = 0.0,
         )
-        integral = sum(tmp)
     end
 
-    return convert(Float64, integral[1])
+    return convert(Float64, integral)
 end
 
 """
@@ -72,12 +70,11 @@ function simpson(
     dx::Real = 1.0,
     even::Symbol = :avg,
 )
-    isnothing(x) || (
-        length(x) != length(y) &&
+    isnothing(x) || length(x) == length(y) ||
         throw(ArgumentError("If given, length of x must be the same as y."))
-    )
     even in (:avg, :last, :first) ||
         throw(ArgumentError("""Parameter "even" must be :avg, :last, or :first."""))
+    isempty(y) && throw(ArgumentError("y must not be empty."))
 
     N = length(y)
     last_dx = dx

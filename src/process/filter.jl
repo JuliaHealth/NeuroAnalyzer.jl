@@ -371,7 +371,7 @@ function filter_create(;
             flt_frq,
             flt_shape,
             w,
-            true;
+            false;
             fs = fs,
         )
     end

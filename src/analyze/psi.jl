@@ -43,7 +43,7 @@ function psi(
     fs > length(s1) && (fs = length(s1))
     seglen = fs             # segment length (1 second) or signal length
     nboot = 256             # number of bootstrap iterations
-    method = "boostrap"     # standard deviation estimation method
+    method = "bootstrap"    # standard deviation estimation method
     detrend = true          # performs a 0th-order detrend across raw segments
 
     pv, _ = PhaseSlopeIndex.data2psi(

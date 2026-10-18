@@ -7,11 +7,6 @@ using FFTW
 export data2psi
 
 """
-    int(x) = trunc(Int, x)
-"""
-int(x) = trunc(Int, x)
-
-"""
     dropmean(X, d) = dropdims(mean(X, dims=d), dims=d)
 """
 function dropmean(X, d)
@@ -84,7 +79,7 @@ Extracts and builds a named tuple of parameters.
 - `segshift::Integer`: number of bins by which neighboring segments are shifted (e.g. `segshift = seglen / 2` makes overlapping segments)
 - `eplen::Integer`: length of epochs
 - `freqlist::AbstractArray`: a UnitRange or 2D-Array where each column is a frequency band
-- `method::String`: standard deviation estimation method
+- `method::String`: standard deviation estimation method (`"jackknife"`, `"bootstrap"` or `"none"`)
 - `subave::Bool`: if `true`, subtract average from CS segments (for continuous data, `subave = false`).
 - `verbose::Bool`: if `true`, warnings and info logs would be echoed.
 
@@ -107,21 +102,26 @@ function data2para(
     if ndims(data) != 2
         data = squeeze(data)
         ndims(data) != 2 && throw(DimensionMismatch("Data must be a 2D-array!"))
-        verbose && @info "Data is squeezed to a 2D-array)"
+        verbose && @info "Data is squeezed to a 2D-array"
     end
     if size(data, 1) < size(data, 2)
         verbose && @info "Data is transposed to (#samples, #channels)"
-        data = reshape(data, size(data, 2), size(data, 1))
+        data = permutedims(data)
     end
+    seglen > 0 || throw(ArgumentError("seglen must be > 0."))
     if size(data, 1) < seglen
-        throw(DimensionMismatch("seglen must be smaller than number of samples!"))
+        throw(DimensionMismatch("seglen must not be larger than the number of samples!"))
     end
+    segshift >= 0 || throw(ArgumentError("segshift must be ≥ 0."))
+    eplen >= 0 || throw(ArgumentError("eplen must be ≥ 0."))
 
     # number of samples per channel and number of channels
     nsamples, nchannels = size(data)
 
     # method shall always be lowercase
     method = lowercase(method)
+    method in ("jackknife", "bootstrap", "none") ||
+        throw(ArgumentError("method must be \"jackknife\", \"bootstrap\" or \"none\"."))
     if eplen == 0
         verbose && @warn "Epoch length = 0 => No estimation of standard deviation."
         method = "none"
@@ -129,31 +129,38 @@ function data2para(
 
     # if eplen = nsamples: continuous recording
     eplen == 0 && (eplen = nsamples)
-    nep = int(nsamples / eplen)  # number of epochs
+    seglen <= eplen <= nsamples ||
+        throw(ArgumentError("eplen must be between seglen and the number of samples."))
+    nep = nsamples ÷ eplen  # number of epochs
+
+    if nep < 2 && method == "jackknife"
+        verbose && @warn "Jackknife requires ≥ 2 epochs => No estimation of standard deviation."
+        method = "none"
+    end
 
     if nep == 1 && subave == true
         subave = false
         verbose && @warn "subave is set to false for continuous data (nep = 1)"
     end
 
-    segshift == 0 && (segshift = int(seglen / 2))
-    nseg = int((eplen - seglen) / segshift) + 1
+    segshift == 0 && (segshift = max(1, seglen ÷ 2))
+    nseg = (eplen - seglen) ÷ segshift + 1
 
     # size(freqlist) = (freqs, nfbands)
     if length(freqlist) == 0
-        freqlist = reshape(1:((int(seglen / 2)) - 1), :, 1)
+        freqlist = reshape(1:(seglen ÷ 2 - 1), :, 1)
     elseif ndims(freqlist) == 1
         freqlist = reshape(freqlist, :, 1)
     elseif ndims(freqlist) > 2
-        throw("freqlist must be a UnitRange or a 2D-Array!")
+        throw(ArgumentError("freqlist must be a UnitRange or a 2D-Array!"))
     elseif size(freqlist, 1) < size(freqlist, 2)
         freqlist = freqlist'
         verbose && @info "freqlist is transposed to (#freq, #nfbands)"
     end
-    if maximum(freqlist) >= int(seglen / 2)
-        throw("Maximum frequency for freqlist is larger than the Nyquist frequency!")
+    if maximum(freqlist) >= seglen ÷ 2
+        throw(ArgumentError("Maximum frequency for freqlist must be below the Nyquist frequency (seglen / 2)!"))
     elseif minimum(freqlist) < 1
-        throw("Minimum frequency for freqlist is 0 or negative!")
+        throw(ArgumentError("Minimum frequency for freqlist is 0 or negative!"))
     end
     maxfreq = maximum(freqlist)  # max frequency of all frequency bands
     nfbands = size(freqlist, 2)  # number of frequency bands
@@ -183,6 +190,7 @@ Partitioning data into epochs and segments
 
 - `data::AbstractArray`: NxM array for N data points in M channels.
 - `seglen::Integer`: segment length
+- `eplen::Integer`: epoch length
 - `nep::Integer`: number of epochs
 - `nseg::Integer`: number of segments per epoch
 - `nchan::Integer`: number of channels
@@ -194,7 +202,7 @@ Partitioning data into epochs and segments
 
 # Notes
 
-Returned Array may have more data entries than input data.
+Returned Array may have more data entries than input data (overlapping segments).
 """
 function make_eposeg(
     data::AbstractArray,
@@ -209,9 +217,11 @@ function make_eposeg(
     # preallocation
     epseg = Array{Float64}(undef, seglen, nep, nseg, nchan)
 
-    for (i, e) in zip(1:nep, 1:eplen:(nep * eplen))
-        for (j, s) in zip(1:nseg, 1:segshift:(nseg * seglen))
-            @views epseg[:, i, j, :] = data[e:(e + eplen - 1), :][s:(s + seglen - 1), :]
+    for i = 1:nep
+        e = (i - 1) * eplen
+        for j = 1:nseg
+            s = e + (j - 1) * segshift
+            @views epseg[:, i, j, :] = data[(s + 1):(s + seglen), :]
         end
     end
 
@@ -233,8 +243,8 @@ where:
 C_{ij}(f) = \\frac{S_{ij}(f)}{\\sqrt{S_{ii}(f)~S_{jj}(f)}}
 ```
 
-is the complext coherency, and \$S\$ is the cross spectral matrix
-(returnd by `data2cs` function), \$\\delta f\$ is the frequency resolution,
+is the complex coherency, and \$S\$ is the cross spectral matrix
+(returned by `data2cs` function), \$\\delta f\$ is the frequency resolution,
 and \$\\mathfrak{I}\$ denotes taking the imaginary part.
 
 ### Arguments
@@ -256,16 +266,19 @@ function cs2ps(cs::AbstractArray)
     @einsum coh[f, i, j] := cs[f, i, j] / sqrt(cs[f, i, i] * cs[f, j, j])
 
     # phase slope (Eq. 3)
-    return @views imag.(sum(conj(coh[1:(end - 1), :, :]) .* coh[2:end, :, :], dims = 1))
+    return @views dropdims(
+        imag.(sum(conj.(coh[1:(end - 1), :, :]) .* coh[2:end, :, :]; dims = 1));
+        dims = 1,
+    )
 end
 
 """
-    data2ps(data)
+    data2cs(data)
 
 Segmented data to Cross Spectra based on Eq. 2 [Nolte et al. 2008]:
 
 ```math
-S_{ij}(f) = \\langle \\hat{y}_i(f) \\hat{y}_i^*(f)\\rangle .
+S_{ij}(f) = \\langle \\hat{y}_i(f) \\hat{y}_j^*(f)\\rangle .
 ```
 
 ### Arguments
@@ -337,20 +350,16 @@ function cs2cs_(
         end
     end
 
-    if subave
-        if method == "bootstrap" || method == "psi"
-            @einsum av_ij[f, i, j] := av_[f, i] * conj(av_[f, j])
-        elseif method == "jackknife"
-            @einsum av_ij[f, e, i, j] := av_[f, e, i] * conj(av_[f, e, j])
-        end
-        _cs_ = squeeze(cs_ - av_ij)
+    # no squeezing: singleton dimensions (e.g. a single epoch) must be preserved
+    subave || return cs_
+
+    if method == "bootstrap" || method == "psi"
+        @einsum av_ij[f, i, j] := av_[f, i] * conj(av_[f, j])
     else
-        if method == "bootstrap" || method == "psi" || method == "jackknife"
-            _cs_ = squeeze(cs_)
-        end
+        @einsum av_ij[f, e, i, j] := av_[f, e, i] * conj(av_[f, e, j])
     end
 
-    return _cs_
+    return cs_ - av_ij
 end
 
 """
@@ -369,7 +378,7 @@ Calculates phase slope index (PSI)
 - `freqlist::AbstractArray`: a UnitRange or 2D-Array where each column is a frequency band
     (default is full range). Note that the DC component (0th frequency of FFT)
     is discarded, and `freqlist` shall only include integer values.
-- `method::String`: standard deviation estimation method (default is `"jackknife"`)
+- `method::String`: standard deviation estimation method: `"jackknife"` (default, requires ≥ 2 epochs), `"bootstrap"` or `"none"`
 - `subave::Bool`: if `true`, subtract average across Cross Spectra segments (default is `false`)
 - `segave::Bool`: if `true`, average across Cross Spectra segments (default is `true`)
 - `nboot::Integer`: number of bootstrap resampling iterations (default is `100`)
@@ -430,7 +439,7 @@ function data2psi(
     elseif method == "bootstrap"
         psi_est = Array{Float64}(undef, nchan, nchan, nfbands, nboot)
     end
-    for (f, fband) in enumerate(eachrow(freqlist'))
+    for (f, fband) in enumerate(eachcol(freqlist))
         cs_full = data2cs(view(eposeg, fband, :, :, :))
 
         cs_psi = cs2cs_(eposeg, cs_full, fband, nep, segave, subave, "psi")
@@ -439,7 +448,8 @@ function data2psi(
         if method == "jackknife"
             cs_jack = cs2cs_(eposeg, cs_full, fband, nep, segave, subave, "jackknife")
             for e = 1:nep
-                cs_jack_se = (nep * cs_psi - view(cs_jack, :, e, :, :)) / (nep + 1)
+                # leave-one-out average
+                cs_jack_se = (nep * cs_psi - view(cs_jack, :, e, :, :)) / (nep - 1)
                 psi_est[:, :, f, e] = cs2ps(cs_jack_se)
             end
         elseif method == "bootstrap"
@@ -451,9 +461,9 @@ function data2psi(
     end
 
     if method == "jackknife"
-        psi_std = sqrt(nep) * squeeze(std(psi_est; corrected = true, dims = 4))
+        psi_std = sqrt(nep) * dropdims(std(psi_est; corrected = true, dims = 4); dims = 4)
     elseif method == "bootstrap"
-        psi_std = squeeze(std(psi_est; corrected = true, dims = 4))
+        psi_std = dropdims(std(psi_est; corrected = true, dims = 4); dims = 4)
     else
         psi_std = fill(NaN, (nchan, nchan, nfbands))
     end

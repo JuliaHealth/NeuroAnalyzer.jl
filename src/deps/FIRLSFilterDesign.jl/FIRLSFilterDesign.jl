@@ -519,6 +519,8 @@ end
 function bn_n0!(_bn, n, k, f, a, b, c, d, _αn, _βn², γ, _δn, fir_type::FIR_I)
     return bn!(_bn, k, f, a, b, c, d)
 end
+# for type III filters n = 0 corresponds to sin(0) = 0, so b[1] = 0 (the generic formula would divide by n³ = 0)
+bn_n0!(_bn, n, k, f, a, b, c, d, _αn, _βn², γ, _δn, fir_type::FIR_III) = zero(float(k))
 
 @doc raw"""
     idx2n_b(idx, fir_type::Union{FIR_I,FIR_III})
@@ -662,7 +664,7 @@ _update_trig_arg_b!(_αn, n, fir_type::Union{FIR_I, FIR_II}) = _αn .*= n
 @doc raw"""
     _update_trig_arg_b!(_αn, n, fir_type::Union{FIR_III,FIR_IV})
    
-Updates the argument of the trigonometric functions in [`bn!`](@ref) by multiplying with ``n`` and subtracting ``\pi``.
+Updates the argument of the trigonometric functions in [`bn!`](@ref) by multiplying with ``n`` and subtracting ``\pi/2``.
 The subtraction of ``\pi`` is necessary because when the filter is antisymmetric (type III and IV FIR filters), the filter response is a sum of sines instead of cosines and ``\sin(x) = \cos(x - \pi/2)`` (see page 12 and 13 of [this](https://eeweb.engineering.nyu.edu/iselesni/EL713/zoom/linphase.pdf)).
 
 ...
