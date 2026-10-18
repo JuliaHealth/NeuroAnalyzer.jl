@@ -3,7 +3,6 @@ export cim
 export cimd
 export cip
 export cir
-export cis
 export civ
 
 """
@@ -38,22 +37,27 @@ Calculate the confidence interval for the mean.
 
 - `x::AbstractVector`: data vector; must contain at least 2 elements
 - `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
-- `d::Symbol=:t`: istribution used for the critical value; `:t` (Student's t, recommended for small samples) or `:z` (standard normal)
-- `twotailed::Bool=true`: if `true`, compute a two-sided interval
+- `d::Symbol=:t`: distribution used for the critical value; `:t` (Student's t, recommended for small samples) or `:z` (standard normal)
+- `twotailed::Bool=true`: if `true`, compute a two-sided interval; if `false`, a one-sided interval (see `tail`)
+- `tail::Symbol=:lower`: one-sided interval (`twotailed=false`):
+    - `:lower`: lower confidence bound, interval `(m − e, Inf)`
+    - `:upper`: upper confidence bound, interval `(-Inf, m + e)`
 
 # Returns
 
-- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
+- `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`; the interval covers the mean with probability `cl`
 """
 function cim(
     x::AbstractVector;
     cl::Float64 = 0.95,
     d::Symbol = :t,
     twotailed::Bool = true,
+    tail::Symbol = :lower,
 )::Tuple{Float64, Float64}
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     _check_var(d, [:t, :z], "d")
+    _check_var(tail, [:lower, :upper], "tail")
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
 
     n = length(x)
@@ -67,7 +71,20 @@ function cim(
         crit_z(1 - cl; twotailed = twotailed) * s
     end
 
-    return (m - e, m + e)
+    twotailed && return (m - e, m + e)
+
+    return tail === :lower ? (m - e, Inf) : (-Inf, m + e)
+end
+
+# order-statistic confidence interval for the median of n sorted values:
+# ranks n/2 − z√n/2 (rounded down) and 1 + n/2 + z√n/2 (rounded up)
+function _cimd_sorted(x_sorted::AbstractVector, cl::Float64)::Tuple{Float64, Float64}
+    n = length(x_sorted)
+    q = 0.5
+    hw = cl2z(cl) * sqrt(n * q * (1 - q))
+    j = clamp(floor(Int64, n * q - hw), 1, n)
+    k = clamp(ceil(Int64, 1 + n * q + hw), 1, n)
+    return (Float64(x_sorted[j]), Float64(x_sorted[k]))
 end
 
 """
@@ -75,11 +92,11 @@ end
 
 Calculate the confidence interval for the median of a 1-D vector.
 
-Uses the order-statistic method: the CI bounds are `x[j]` and `x[k]` where `j` and `k` are quantile-derived indices from the sorted data.
+Uses the order-statistic (binomial, normal approximation) method: the bounds are the sorted values of rank `⌊n/2 − z√n/2⌋` and `⌈1 + n/2 + z√n/2⌉`, clamped to `[1, n]`.
 
 # Arguments
 
-- `x::AbstractVector`: data vector; must contain enough elements so that the derived indices `j` and `k` fall within `[1, n]`
+- `x::AbstractVector`: data vector; must not be empty
 - `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
@@ -89,21 +106,9 @@ Uses the order-statistic method: the CI bounds are `x[j]` and `x[k]` where `j` a
 function cimd(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     # validate
     _bin(cl, (0.0, 1.0), "cl")
+    isempty(x) && throw(ArgumentError("x must not be empty."))
 
-    x_sorted = sort(x)
-    n = length(x)
-    # median quantile
-    q = 0.5
-    z = cl2z(cl)
-    # half-width of the index interval
-    hw = z * sqrt(n * q * (1 - q))
-
-    # clamp to avoid index < 1
-    j = max(1, ceil(Int64, n * q - hw))
-    # clamp to avoid index > n
-    k = min(n, ceil(Int64, n * q + hw))
-
-    return (x_sorted[j], x_sorted[k])
+    return _cimd_sorted(sort(x), cl)
 end
 
 """
@@ -111,11 +116,11 @@ end
 
 Calculate the confidence interval for the median of a multi-dimensional array.
 
-Column medians are computed, sorted, and the order-statistic CI method is applied across columns.
+Medians are taken along the first dimension; the order-statistic CI method (see the vector method) is applied to all resulting medians.
 
 # Arguments
 
-- `x::AbstractArray`: data array; medians are taken along `dims=1` (across rows per column); must have at least 2 columns
+- `x::AbstractArray`: data array; medians are taken along `dims=1`; must yield at least 2 medians
 - `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
@@ -125,32 +130,16 @@ Column medians are computed, sorted, and the order-statistic CI method is applie
 function cimd(x::AbstractArray; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     # validate
     _bin(cl, (0.0, 1.0), "cl")
-    size(x, 2) >= 2 || throw(ArgumentError("x must have at least 2 columns."))
+    md = vec(median(x; dims = 1))
+    length(md) >= 2 || throw(ArgumentError("x must have at least 2 columns."))
 
-    x_sorted = sort(
-        vec(
-            median(
-                x; dims
-            = 1,
-            ),
-        ),
-    )
-    n = size(x, 2)
-    # the quantile of interest; for a median, we will use q = 0.5
-    q = 0.5
-    z = cl2z(cl)
-    hw = z * sqrt(n * q * (1 - q))
-
-    j = max(1, ceil(Int64, n * q - hw))
-    k = min(n, ceil(Int64, n * q + hw))
-
-    return (x_sorted[j], x_sorted[k])
+    return _cimd_sorted(sort(md), cl)
 end
 
 """
     cip(p, n; <keyword arguments>)
 
-Calculate the confidence interval for a proportion using the normal approximation (Wald interval).
+Calculate the confidence interval for a proportion using the normal approximation (Wald interval), truncated to `[0, 1]`.
 
 # Arguments
 
@@ -171,7 +160,7 @@ function cip(p::Float64, n::Int64; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     z = cl2z(cl)
     hw = z * sqrt((p * (1 - p)) / n)
 
-    return (p - hw, p + hw)
+    return (max(0.0, p - hw), min(1.0, p + hw))
 end
 
 """
@@ -242,6 +231,8 @@ end
 
 Calculate the confidence interval for the standard deviation using the chi-squared distribution.
 
+This is a method of `Base.cis()` (for a number, `cis(x)` is still `exp(im * x)`).
+
 # Arguments
 
 - `x::AbstractVector`: data vector; must contain at least 2 elements
@@ -251,7 +242,7 @@ Calculate the confidence interval for the standard deviation using the chi-squar
 
 - `Tuple{Float64, Float64}`: `(lower_bound, upper_bound)`
 """
-function cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
+function Base.cis(x::AbstractVector; cl::Float64 = 0.95)::Tuple{Float64, Float64}
     # validate
     _bin(cl, (0.0, 1.0), "cl")
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))

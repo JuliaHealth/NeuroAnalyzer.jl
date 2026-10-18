@@ -1,7 +1,7 @@
 export wpli
 
 """
-    wpli(s1, s2; <keyword arguments>)
+    _wpli(s1, s2; <keyword arguments>)
 
 Calculate weighted PLI (Phase Locking Index) for two 1-D signal vectors.
 
@@ -21,7 +21,7 @@ Named tuple:
 - `s1ph::Vector{Float64}`: signal 1 phase
 - `s2ph::Vector{Float64}`: signal 2 phase
 """
-function wpli(
+function _wpli(
     s1::AbstractVector,
     s2::AbstractVector;
     debiased::Bool = false,
@@ -38,12 +38,12 @@ function wpli(
 
     # CPSD
     n = length(s1)
-    ss1 = fft(detrend(s1; type = :mean) .* DSP.hanning(n)) / n
-    ss2 = fft(detrend(s2; type = :mean) .* DSP.hanning(n)) / n
+    ss1 = fft(_detrend(s1; type = :mean) .* DSP.hanning(n)) / n
+    ss2 = fft(_detrend(s2; type = :mean) .* DSP.hanning(n)) / n
     pxy = conj.(ss1) .* ss2
     im_pxy = imag.(pxy)
 
-    pli_data = pli(s1, s2)
+    pli_data = _pli(s1, s2)
     sd = pli_data.sd
     phd = pli_data.phd
     s1ph = pli_data.s1ph
@@ -143,7 +143,7 @@ function wpli(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        wpli_data = wpli(
+        wpli_data = _wpli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
             debiased = debiased,
@@ -196,7 +196,7 @@ function wpli(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            pv[ch_idx1, ch_idx2, ep_idx] = wpli(
+            pv[ch_idx1, ch_idx2, ep_idx] = _wpli(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx]),
                 debiased = debiased,

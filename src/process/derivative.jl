@@ -2,7 +2,7 @@ export derivative
 export derivative!
 
 """
-    derivative(s)
+    _derivative(s)
 
 Return the derivative of a discrete signal using the symmetric difference quotient.
 
@@ -18,7 +18,7 @@ For the boundary samples the one-sided half-difference is used so that the outpu
 
 - `Vector{Float64}`: derivative signal of the same length as `s`
 """
-function derivative(s::AbstractVector)::AbstractVector
+function _derivative(s::AbstractVector)::AbstractVector
     # validate
     length(s) > 2 || throw(ArgumentError("Signal length must be > 2."))
 
@@ -36,7 +36,7 @@ function derivative(s::AbstractVector)::AbstractVector
 end
 
 """
-    derivative(s)
+    _derivative(s)
 
 Return the derivative of a discrete signal using the symmetric difference quotient.
 
@@ -52,7 +52,7 @@ For the boundary samples the one-sided half-difference is used so that the outpu
 
 - `Array{Float64, 3}`: derivative array of the same shape as `s`
 """
-function derivative(s::AbstractArray)::Array{Float64, 3}
+function _derivative(s::AbstractArray)::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -67,7 +67,7 @@ function derivative(s::AbstractArray)::Array{Float64, 3}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = derivative(@view(s[ch_idx, :, ep_idx]))
+        s_new[ch_idx, :, ep_idx] = _derivative(@view(s[ch_idx, :, ep_idx]))
     end
 
     return s_new
@@ -98,7 +98,7 @@ function derivative(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = derivative(obj.data[ch, :, :])
+    obj_tmp.data[ch, :, :] = _derivative(obj.data[ch, :, :])
     push!(obj_tmp.history, "derivative(obj; ch=$ch)")
 
     return obj_tmp

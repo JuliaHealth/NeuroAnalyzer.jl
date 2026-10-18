@@ -1,8 +1,8 @@
 """Return pinch indices in TPT signal."""
 function _tpt_peaks(x::AbstractVector)::Vector{Int64}
     _wip()
-    x = detrend(x; type = :loess)
-    x = derivative(x)
+    x = _detrend(x; type = :loess)
+    x = _derivative(x)
     # number of windows
     # 50 is sampling rate
     # 0.5 is window length in second, 25 in samples

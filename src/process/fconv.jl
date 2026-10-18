@@ -1,7 +1,7 @@
 export fconv
 
 """
-    fconv(s; <keyword arguments>)
+    _fconv(s; <keyword arguments>)
 
 Perform convolution in the frequency domain.
 
@@ -17,7 +17,7 @@ Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1`
 
 - `Vector{ComplexF64}`: convolved signal (same length as `s`)
 """
-function fconv(
+function _fconv(
     s::AbstractVector;
     kernel::AbstractVector,
     norm::Bool = true,
@@ -47,7 +47,7 @@ function fconv(
 end
 
 """
-    fconv(s; <keyword arguments>)
+    _fconv(s; <keyword arguments>)
 
 Perform convolution in the frequency domain for a 3-D signal array.
 
@@ -63,7 +63,7 @@ Both `s` and `kernel` are zero-padded to length `length(s) + length(kernel) - 1`
 
 - `Array{ComplexF64, 3}`: convolved signal, same shape as `s`
 """
-function fconv(
+function _fconv(
     s::AbstractArray;
     kernel::AbstractVector,
     norm::Bool = true,
@@ -91,7 +91,7 @@ function fconv(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_new[ch_idx, :, ep_idx] =
-            fconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel, norm = norm)
+            _fconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel, norm = norm)
 
         # update progress bar
         progress_bar && next!(progbar)
@@ -128,5 +128,5 @@ function fconv(
 
     _info("Group delay: $(_group_delay(kernel)) samples")
 
-    return fconv(@view(obj.data[ch, :, :]); kernel = kernel, norm = norm)
+    return _fconv(@view(obj.data[ch, :, :]); kernel = kernel, norm = norm)
 end

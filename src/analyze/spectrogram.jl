@@ -5,7 +5,7 @@ export cwtspectrogram
 export hhtspectrogram
 
 """
-    spectrogram(s; <keyword arguments>)
+    _spectrogram(s; <keyword arguments>)
 
 Calculate spectrogram using STFT or multi-tapered method for a 1-D signal vector.
 
@@ -30,7 +30,7 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(
+function _spectrogram(
     s::AbstractVector;
     fs::Int64,
     db::Bool = true,
@@ -79,7 +79,7 @@ function spectrogram(
 end
 
 """
-    spectrogram(s; <keyword arguments>)
+    _spectrogram(s; <keyword arguments>)
 
 Calculate spectrogram for each channel of a matrix.
 
@@ -104,7 +104,7 @@ Named tuple:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(
+function _spectrogram(
     s::AbstractMatrix;
     fs::Int64,
     db::Bool = true,
@@ -119,7 +119,7 @@ function spectrogram(
     t::Vector{Float64},
 }
     # dry run to determine output frequency vector length
-    spec_data = NeuroAnalyzer.spectrogram(
+    spec_data = NeuroAnalyzer._spectrogram(
         @view(s[1, :]);
         fs = fs,
         db = db,
@@ -139,7 +139,7 @@ function spectrogram(
     p = zeros(length(f), length(t), ch_n)
 
     @inbounds Threads.@threads :static for ch_idx = 1:ch_n
-        p[:, :, ch_idx] = NeuroAnalyzer.spectrogram(
+        p[:, :, ch_idx] = NeuroAnalyzer._spectrogram(
             @view(s[ch_idx, :]),
             fs = fs,
             db = db,
@@ -225,7 +225,7 @@ function spectrogram(
 
     # dry run to determine output dimensions
     if method === :stft
-        spec_data = NeuroAnalyzer.spectrogram(
+        spec_data = NeuroAnalyzer._spectrogram(
             @view(obj.data[1, :, 1]);
             fs = fs,
             db = db,
@@ -239,7 +239,7 @@ function spectrogram(
         p_tmp = spec_data.p
 
     elseif method === :mt
-        spec_data = NeuroAnalyzer.spectrogram(
+        spec_data = NeuroAnalyzer._spectrogram(
             @view(obj.data[1, :, 1]);
             fs = fs,
             db = db,
@@ -311,7 +311,7 @@ function spectrogram(
         ch_idx = ch[ch_local]   # resolve local index to actual channel number
 
         if method === :stft
-            p[:, :, ch_local, ep_idx] = NeuroAnalyzer.spectrogram(
+            p[:, :, ch_local, ep_idx] = NeuroAnalyzer._spectrogram(
                 @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
                 db = db,
@@ -322,7 +322,7 @@ function spectrogram(
             ).p
 
         elseif method === :mt
-            p[:, :, ch_local, ep_idx] = NeuroAnalyzer.spectrogram(
+            p[:, :, ch_local, ep_idx] = NeuroAnalyzer._spectrogram(
                 @view(obj.data[ch_idx, :, ep_idx]),
                 fs = fs,
                 db = db,
@@ -451,7 +451,7 @@ function mwspectrogram(
 
     @inbounds for frq_idx = 1:nfrq
         kernel = generate_morlet(fs, f[frq_idx], 1, ncyc = ncyc[frq_idx], complex = true)
-        cs[frq_idx, :] = fconv(s .* win, kernel = kernel, norm = true)
+        cs[frq_idx, :] = _fconv(s .* win, kernel = kernel, norm = true)
         p[frq_idx, :] = abs2.(@view(cs[frq_idx, :]))
         ph[frq_idx, :] = DSP.angle.(@view(cs[frq_idx, :]))
     end
@@ -581,7 +581,7 @@ function ghtspectrogram(
     ph = zeros(length(f), length(s))
 
     @inbounds for frq_idx in eachindex(f)
-        swg = filter_g(sw, fs = fs, f = f[frq_idx], gw = gw)
+        swg = _filter_g(sw, fs = fs, f = f[frq_idx], gw = gw)
         h_data = htransform(swg)
         p[frq_idx, :] = h_data.p
         ph[frq_idx, :] = h_data.ph
@@ -696,7 +696,7 @@ function cwtspectrogram(
     m = abs.(ContinuousWavelets.cwt(s, wt)')
 
     # frequencies
-    f = cwtfrq(s; fs = fs, wt = wt)
+    f = _cwtfrq(s; fs = fs, wt = wt)
 
     # sort frequencies in ascending order
     f_idx = sortperm(f)
@@ -793,12 +793,12 @@ function hhtspectrogram(
     imf_fi = Vector{Vector{Float64}}()
 
     # perform EMD
-    imfs = emd(s, t)
+    imfs = _emd(s, t)
     imfs_n = size(imfs, 1)
     # last IMF is a residual, ignore it
     for idx2 = 1:(imfs_n - 1)
         # get instantaneous frequencies of IMF
-        push!(imf_fi, frqinst(imfs[idx2, :]) .* fs)
+        push!(imf_fi, _frqinst(imfs[idx2, :]) .* fs)
         # perform Hilbert transform and get instantaneous powers of IMF
         push!(imf_p, htransform(imfs[idx2, :]).p)
     end
@@ -868,12 +868,12 @@ function hhtspectrogram(
 
     # perform EMD
     @inbounds for idx1 in axes(s, 1)
-        imfs = emd(s[idx1, :], t)
+        imfs = _emd(s[idx1, :], t)
         imfs_n = size(imfs, 1)
         # last IMF is a residual, ignore it
         for idx2 = 1:(imfs_n - 1)
             # get instantaneous frequencies of IMF
-            push!(imf_fi, frqinst(imfs[idx2, :]) .* fs)
+            push!(imf_fi, _frqinst(imfs[idx2, :]) .* fs)
             # perform Hilbert transform and get instantaneous powers of IMF
             push!(imf_p, htransform(imfs[idx2, :]).p)
         end

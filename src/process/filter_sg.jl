@@ -2,7 +2,7 @@ export filter_sg
 export filter_sg!
 
 """
-    filter_sg(s; <keyword arguments>)
+    _filter_sg(s; <keyword arguments>)
 
 Filter a signal using a Savitzky-Golay smoothing filter.
 
@@ -18,7 +18,7 @@ Fits a polynomial of degree `order` to successive overlapping windows of `window
 
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
-function filter_sg(
+function _filter_sg(
     s::AbstractVector;
     order::Int64 = 6,
     window::Int64 = 11,
@@ -34,7 +34,7 @@ function filter_sg(
 end
 
 """
-    filter_sg(s; <keyword arguments>)
+    _filter_sg(s; <keyword arguments>)
 
 Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal array.
 
@@ -48,7 +48,7 @@ Apply a Savitzky-Golay filter to every channel × epoch slice of a 3-D signal ar
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
-function filter_sg(
+function _filter_sg(
     s::AbstractArray;
     order::Int64 = 6,
     window::Int64 = 11,
@@ -68,7 +68,7 @@ function filter_sg(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_filtered[ch_idx, :, ep_idx] =
-            filter_sg(@view(s[ch_idx, :, ep_idx]); order = order, window = window)
+            _filter_sg(@view(s[ch_idx, :, ep_idx]); order = order, window = window)
     end
 
     return s_filtered
@@ -103,7 +103,7 @@ function filter_sg(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = filter_sg(obj.data[ch, :, :]; order = order, window = window)
+    obj_tmp.data[ch, :, :] = _filter_sg(obj.data[ch, :, :]; order = order, window = window)
     push!(obj_tmp.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
 
     return obj_tmp

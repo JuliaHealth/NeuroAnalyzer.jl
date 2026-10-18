@@ -295,7 +295,7 @@ function plot_cont(
         elseif type === :butterfly
             if ci95
                 for idx in eachindex(ctypes_uni)
-                    msci95_data = NeuroAnalyzer.msci95(s[ctypes .== ctypes_uni[idx], :])
+                    msci95_data = NeuroAnalyzer._msci95(s[ctypes .== ctypes_uni[idx], :])
                     s_m = msci95_data.sm
                     s_u = msci95_data.ul
                     s_l = msci95_data.ll

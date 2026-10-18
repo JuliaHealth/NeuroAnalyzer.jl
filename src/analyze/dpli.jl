@@ -1,7 +1,7 @@
 export dpli
 
 """
-    dpli(s1, s2)
+    _dpli(s1, s2)
 
 Calculate Directed Phase Lag Index (dPLI) for two 1-D signal vectors.
 
@@ -32,7 +32,7 @@ Named tuple:
 
 1. Stam, C. J., & van Straaten, E. C. W. (2012). Go with the flow: Use of a directed phase lag index (dPLI) to characterize patterns of phase relations in a large-scale model of brain dynamics. NeuroImage, 62(3), 1415–1428.
 """
-function dpli(
+function _dpli(
     s1::AbstractVector,
     s2::AbstractVector,
 )::@NamedTuple{
@@ -171,7 +171,7 @@ function dpli(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        dpli_data = dpli(
+        dpli_data = _dpli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -234,7 +234,7 @@ function dpli(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            pv[ch_idx1, ch_idx2, ep_idx] = dpli(
+            pv[ch_idx1, ch_idx2, ep_idx] = _dpli(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             ).pv

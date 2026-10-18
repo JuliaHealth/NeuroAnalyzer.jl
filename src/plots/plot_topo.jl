@@ -156,11 +156,11 @@ function plot_topo(
             else
                 length(threshold) == 2 ||
                     throw(ArgumentError("threshold must contain two values."))
-                s_norm = normalize(s; method = nmethod)
+                s_norm = _normalize(s; method = nmethod)
                 _check_tuple(threshold, extrema(s_norm), "threshold")
             end
 
-            s_norm = normalize(s; method = nmethod)
+            s_norm = _normalize(s; method = nmethod)
 
             if threshold_type === :eq
                 threshold_idx = findall(x -> x == threshold, s_norm)

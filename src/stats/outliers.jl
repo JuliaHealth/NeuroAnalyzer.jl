@@ -4,12 +4,11 @@ export grubbs
 # internal helper: given a local index in the shortened vector, recover the
 # original index in x by accounting for previously deleted positions.
 function _original_index(local_idx::Int, removed::Vector{Int}, n::Int)::Int
-    pos = 0
-    count = 0
+    k = 0
     for i = 1:n
         i in removed && continue
-        count += 1
-        count == local_idx && return i
+        k += 1
+        k == local_idx && return i
     end
     # fallback (should not be reached)
     return local_idx
@@ -53,8 +52,10 @@ function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
         o .= (x .< lo) .| (x .> hi)
 
     elseif method === :z
-        z = z_score(x)
-        o .= (z .< -3) .| (z .> 3)
+        # constant data: no outliers
+        if length(x) >= 2 && std(x) > 0
+            o .= abs.(zscore(x)) .> 3
+        end
 
     elseif method === :g
 

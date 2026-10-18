@@ -1,7 +1,7 @@
 export tkeo
 
 """
-    tkeo(s, t; <keyword arguments>)
+    _tkeo(s, t; <keyword arguments>)
 
 Calculate Teager-Kaiser energy-tracking operator for a 1-D signal vector.
 
@@ -18,7 +18,7 @@ Calculate Teager-Kaiser energy-tracking operator for a 1-D signal vector.
 
 - `Vector{Float64}`
 """
-function tkeo(
+function _tkeo(
     s::AbstractVector,
     t::AbstractVector = collect(1:length(s));
     method::Symbol = :pow,
@@ -36,8 +36,8 @@ function tkeo(
             tk[idx] = s[idx]^2 - (s[idx - 1] * s[idx + 1])
         end
     elseif method === :der
-        d1 = derivative(s)
-        d2 = derivative(d1)
+        d1 = _derivative(s)
+        d2 = _derivative(d1)
         tk = @. d1 - s * d2
     else
         tk = env_up(s, t; d = 8) .^ 2
@@ -47,7 +47,7 @@ function tkeo(
 end
 
 """
-    tkeo(s, t; <keyword arguments>)
+    _tkeo(s, t; <keyword arguments>)
 
 Calculate Teager-Kaiser energy-tracking operator for a 3-D signal array.
 
@@ -64,7 +64,7 @@ Calculate Teager-Kaiser energy-tracking operator for a 3-D signal array.
 
 - `Array{Float64, 3}`
 """
-function tkeo(
+function _tkeo(
     s::AbstractArray,
     t::AbstractVector = collect(1:length(s));
     method::Symbol = :pow,
@@ -81,7 +81,7 @@ function tkeo(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        tk[ch_idx, :, ep_idx] = tkeo(@view(s[ch_idx, :, ep_idx]), t, method = method)
+        tk[ch_idx, :, ep_idx] = _tkeo(@view(s[ch_idx, :, ep_idx]), t, method = method)
     end
 
     return tk
@@ -117,5 +117,5 @@ function tkeo(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return tkeo(@view(obj.data[ch, :, :]), obj.epoch_time; method = method)
+    return _tkeo(@view(obj.data[ch, :, :]), obj.epoch_time; method = method)
 end

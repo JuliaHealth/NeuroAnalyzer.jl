@@ -260,7 +260,7 @@ function remove_powerline!(
 end
 
 """
-    detect_powerline(s; <keyword arguments>)
+    _detect_powerline(s; <keyword arguments>)
 
 Detect the dominant power line noise frequency in a signal.
 
@@ -275,7 +275,7 @@ Fits a sine + cosine model at each integer frequency from 1 to `fs÷2` Hz and re
 
 - `Float64`: noise frequency in Hz
 """
-function detect_powerline(s::AbstractVector; fs::Int64)::Float64
+function _detect_powerline(s::AbstractVector; fs::Int64)::Float64
     # validate
     fs >= 2 || throw(ArgumentError("fs must be ≥ 2."))
 
@@ -328,7 +328,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Float64
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         noise_frq[ch_idx, ep_idx] =
-            detect_powerline(@view(obj.data[ch_idx, :, ep_idx]); fs = sr(obj))
+            _detect_powerline(@view(obj.data[ch_idx, :, ep_idx]); fs = sr(obj))
 
         # update progress bar
         progress_bar && next!(progbar)

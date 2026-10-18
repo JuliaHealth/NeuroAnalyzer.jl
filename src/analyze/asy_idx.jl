@@ -74,8 +74,8 @@ function asy_idx(
         demean = demean,
     )
 
-    bp1 = band_power(@view(obj.data[ch1, :, :]); bp_kwargs...)
-    bp2 = band_power(@view(obj.data[ch2, :, :]); bp_kwargs...)
+    bp1 = _band_power(@view(obj.data[ch1, :, :]); bp_kwargs...)
+    bp2 = _band_power(@view(obj.data[ch2, :, :]); bp_kwargs...)
 
     # compute mean band power
     m1 = mean(bp1)

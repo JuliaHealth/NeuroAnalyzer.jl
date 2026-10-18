@@ -1,7 +1,8 @@
 export filter_g
+export filter_g!
 
 """
-    filter_g(s; <keyword arguments>)
+    _filter_g(s; <keyword arguments>)
 
 Filter a signal by multiplying its FFT spectrum with a Gaussian kernel centered at frequency `f`.
 
@@ -19,7 +20,7 @@ The Gaussian is normalized to unit gain at its peak. Taking the absolute value o
 
 - `Vector{Float64}`: filtered signal of length `length(s)`
 """
-function filter_g(
+function _filter_g(
     s::AbstractVector;
     fs::Int64,
     pad::Int64 = 0,
@@ -50,7 +51,7 @@ function filter_g(
 end
 
 """
-    filter_g(s; <keyword arguments>)
+    _filter_g(s; <keyword arguments>)
 
 Filter a 3-dimensional signal array using a Gaussian kernel in the frequency domain for a 3-D signal array.
 
@@ -66,7 +67,7 @@ Filter a 3-dimensional signal array using a Gaussian kernel in the frequency dom
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
-function filter_g(
+function _filter_g(
     s::AbstractArray;
     fs::Int64,
     pad::Int64 = 0,
@@ -87,7 +88,7 @@ function filter_g(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = filter_g(
+        s_new[ch_idx, :, ep_idx] = _filter_g(
             @views(s[ch_idx, :, ep_idx]),
             fs = fs,
             pad = pad,
@@ -130,7 +131,7 @@ function filter_g(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = filter_g(
+    obj_tmp.data[ch, :, :] = _filter_g(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         pad = pad,

@@ -322,7 +322,7 @@ function _fooof_nan(
 end
 
 # fit one validated spectrum (f in Hz, p in linear power)
-function _fooof(
+function _fooof_fit(
     f::Vector{Float64},
     p::Vector{Float64};
     peak_width_limits::Tuple{Real, Real},
@@ -374,7 +374,7 @@ function _fooof(
 end
 
 """
-    fooof(f, p; <keyword arguments>)
+    _fooof(f, p; <keyword arguments>)
 
 Parameterize a power spectrum into aperiodic and periodic (peak) components using the FOOOF / specparam algorithm (Donoghue et al., 2020).
 
@@ -418,7 +418,7 @@ Named tuple:
 
 Donoghue T, Haller M, Peterson EJ, et al. Parameterizing neural power spectra into periodic and aperiodic components. Nat Neurosci. 2020;23(12):1655-1665. doi:10.1038/s41593-020-00744-x
 """
-function fooof(
+function _fooof(
     f::AbstractVector{<:Real},
     p::AbstractVector{<:Real};
     flim::Tuple{Real, Real} = (f[1], f[end]),
@@ -452,7 +452,7 @@ function fooof(
     _fooof_check_p(p)
     _fooof_width_warn(f, peak_width_limits)
 
-    return _fooof(
+    return _fooof_fit(
         f,
         p;
         peak_width_limits = peak_width_limits,
@@ -465,7 +465,7 @@ function fooof(
 end
 
 """
-    fooof(s; <keyword arguments>)
+    _fooof(s; <keyword arguments>)
 
 Parameterize power spectra of a 3-D signal array into aperiodic and periodic (peak) components using the FOOOF / specparam algorithm (Donoghue et al., 2020).
 
@@ -513,7 +513,7 @@ Named tuple:
 - Spectra that cannot be fitted (e.g. flat channels, failed convergence) are returned as `NaN`.
 - `:mw` and `:gh` return band power (units²) rather than density (units²/Hz); this changes the offset, not the exponent or peak parameters.
 """
-function fooof(
+function _fooof(
     s::AbstractArray;
     fs::Int64,
     flim::Tuple{Real, Real} = (1, fs / 2),
@@ -551,7 +551,7 @@ function fooof(
     ep_n = size(s, 3)
 
     # power in linear scale
-    psd_data = psd(
+    psd_data = _psd(
         s;
         fs = fs,
         db = false,
@@ -572,7 +572,7 @@ function fooof(
 
     _fit(x) =
         all(isfinite, x) && all(x .> 0) ?
-        _fooof(
+        _fooof_fit(
             f,
             x;
             peak_width_limits = peak_width_limits,
@@ -689,7 +689,7 @@ function fooof(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return fooof(
+    return _fooof(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,

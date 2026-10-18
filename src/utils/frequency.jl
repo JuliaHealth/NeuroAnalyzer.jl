@@ -87,7 +87,7 @@ function f2t(f::Real)::Float64
 end
 
 """
-    freqs(t; <keyword arguments>)
+    _freqs(t; <keyword arguments>)
 
 Return the frequency vector and Nyquist frequency for a time vector.
 
@@ -103,7 +103,7 @@ The sampling rate is inferred from the mean sampling interval, `(t[end] - t[1]) 
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
 """
-function freqs(t::AbstractVector; nf::Bool = false)::Tuple{Vector{Float64}, Float64}
+function _freqs(t::AbstractVector; nf::Bool = false)::Tuple{Vector{Float64}, Float64}
     # validate
     n = length(t)
     n >= 2 || throw(ArgumentError("t must contain at least 2 elements."))
@@ -118,7 +118,7 @@ function freqs(t::AbstractVector; nf::Bool = false)::Tuple{Vector{Float64}, Floa
 end
 
 """
-    freqs(s, fs; <keyword arguments>)
+    _freqs(s, fs; <keyword arguments>)
 
 Return the frequency vector and Nyquist frequency for a signal vector.
 
@@ -133,7 +133,7 @@ Return the frequency vector and Nyquist frequency for a signal vector.
 - `Vector{Float64}`: frequency vector in Hz, rounded to 3 decimal places
 - `Float64`: Nyquist frequency in Hz
 """
-function freqs(
+function _freqs(
     s::AbstractVector,
     fs::Int64;
     nf::Bool = false,

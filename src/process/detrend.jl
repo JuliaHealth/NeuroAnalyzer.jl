@@ -2,7 +2,7 @@ export detrend
 export detrend!
 
 """
-    detrend(s; <keyword arguments>)
+    _detrend(s; <keyword arguments>)
 
 Remove a trend.
 
@@ -24,7 +24,7 @@ Remove a trend.
 
 - `Vector{Float64}`: detrended signal of the same length as `s`
 """
-function detrend(
+function _detrend(
     s::AbstractVector;
     type::Symbol = :linear,
     offset::Real = 0,
@@ -76,7 +76,7 @@ function detrend(
 end
 
 """
-    detrend(s; <keyword arguments>)
+    _detrend(s; <keyword arguments>)
 
 Remove a trend in a 3-D signal array.
 
@@ -98,7 +98,7 @@ Remove a trend in a 3-D signal array.
 
 - `Array{Float64, 3}`: detrended array of the same shape as `s`
 """
-function detrend(
+function _detrend(
     s::AbstractArray;
     type::Symbol = :linear,
     offset::Real = 0,
@@ -119,7 +119,7 @@ function detrend(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = detrend(
+        s_new[ch_idx, :, ep_idx] = _detrend(
             @view(s[ch_idx, :, ep_idx]),
             type = type,
             offset = offset,
@@ -170,7 +170,7 @@ function detrend(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = detrend(
+    obj_tmp.data[ch, :, :] = _detrend(
         @view(obj.data[ch, :, :]);
         type = type,
         offset = offset,

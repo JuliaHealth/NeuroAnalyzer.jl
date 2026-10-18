@@ -2,7 +2,7 @@ export wbp
 export wbp!
 
 """
-    wbp(s; <keyword arguments>)
+    _wbp(s; <keyword arguments>)
 
 Perform wavelet band-pass filtering.
 
@@ -18,7 +18,7 @@ Perform wavelet band-pass filtering.
 
 - `Vector{Float64}`
 """
-function wbp(
+function _wbp(
     s::AbstractVector;
     pad::Int64 = 0,
     frq::Real,
@@ -36,11 +36,11 @@ function wbp(
 
     kernel = generate_morlet(fs, frq, 1; ncyc = ncyc, complex = true)
 
-    return real.(fconv(s; kernel = kernel, norm = true))
+    return real.(_fconv(s; kernel = kernel, norm = true))
 end
 
 """
-    wbp(s; <keyword arguments>)
+    _wbp(s; <keyword arguments>)
 
 Perform wavelet band-pass filtering for a 3-D signal array.
 
@@ -56,7 +56,7 @@ Perform wavelet band-pass filtering for a 3-D signal array.
 
 - `Array{Float64, 3}`
 """
-function wbp(
+function _wbp(
     s::AbstractArray;
     pad::Int64 = 0,
     frq::Real,
@@ -77,7 +77,7 @@ function wbp(
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = wbp(
+        s_new[ch_idx, :, ep_idx] = _wbp(
             @view(s[ch_idx, :, ep_idx]),
             pad = pad,
             frq = frq,
@@ -121,7 +121,7 @@ function wbp(
     obj_tmp = deepcopy(obj)
 
     obj_tmp.data[ch, :, :] =
-        wbp(@view(obj.data[ch, :, :]); pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
+        _wbp(@view(obj.data[ch, :, :]); pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
     push!(obj_tmp.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
 
     return obj_tmp

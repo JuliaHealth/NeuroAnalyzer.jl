@@ -1,7 +1,7 @@
 export pacor
 
 """
-    pacor(s; <keyword arguments>)
+    _pacor(s; <keyword arguments>)
 
 Computes the partial auto-correlation function (PACF) of a 1-D signal vector over symmetric lags −l … l using one of two methods:
 
@@ -25,7 +25,7 @@ Computes the partial auto-correlation function (PACF) of a 1-D signal vector ove
 
 If you get `ERROR: PosDefException: matrix is not positive definite; Cholesky factorization failed.`, try lowering `l` value or change method to `:yw`.
 """
-function pacor(
+function _pacor(
     s::AbstractVector;
     l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
     demean::Bool = true,
@@ -37,7 +37,7 @@ function pacor(
     method === :reg && (method = :regression)
     method === :yw && (method = :yulewalker)
 
-    s_tmp = demean ? remove_dc(s) : s
+    s_tmp = demean ? _remove_dc(s) : s
 
     # positive and negative lags computed separately (reverse trick for negative)
     pac = pacf(s_tmp, collect(0:l); method = method)
@@ -51,7 +51,7 @@ function pacor(
 end
 
 """
-    pacor(s; <keyword arguments>)
+    _pacor(s; <keyword arguments>)
 
 Calculate partial auto-correlation function (PACF) for each epoch of a matrix over symmetric lags −l … l using one of two methods:
 
@@ -71,7 +71,7 @@ Calculate partial auto-correlation function (PACF) for each epoch of a matrix ov
 
 - `Array{Float64, 3}`
 """
-function pacor(
+function _pacor(
     s::AbstractMatrix;
     l::Int64 = round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))),
     demean::Bool = true,
@@ -85,14 +85,14 @@ function pacor(
 
     @inbounds for ep_idx = 1:ep_n
         pac[1, :, ep_idx] =
-            vec(pacor(@view(s[:, ep_idx]), l = l, demean = demean, method = method))
+            vec(_pacor(@view(s[:, ep_idx]), l = l, demean = demean, method = method))
     end
 
     return pac
 end
 
 """
-    pacor(s; <keyword arguments>)
+    _pacor(s; <keyword arguments>)
 
 Calculate partial auto-correlation function (PACF) for a 3-D signal array over lags −l … l using one of two methods:
 
@@ -112,7 +112,7 @@ Calculate partial auto-correlation function (PACF) for a 3-D signal array over l
 
 - `Array{Float64, 3}`: shape `(channels, 2l+1, epochs)`
 """
-function pacor(
+function _pacor(
     s::AbstractArray;
     l::Int64 = round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))),
     demean::Bool = true,
@@ -133,7 +133,7 @@ function pacor(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         pac[ch_idx, :, ep_idx] = vec(
-            pacor(
+            _pacor(
                 @view(s[ch_idx, :, ep_idx]),
                 l = l, demean = demean, method = method,
             ),
@@ -199,7 +199,7 @@ function pacor(
     l_samp >= 0 || throw(ArgumentError("l must be >= 0."))
 
     if datatype(obj) == "erp"
-        pac = pacor(
+        pac = _pacor(
             @view(obj.data[ch, :, 2:end]);
             l = l_samp,
             demean = demean,
@@ -208,7 +208,7 @@ function pacor(
         pac = cat(mean(pac; dims = 3), pac; dims = 3)
 
     else
-        pac = pacor(
+        pac = _pacor(
             @view(obj.data[ch, :, :]);
             l = l_samp,
             demean = demean,

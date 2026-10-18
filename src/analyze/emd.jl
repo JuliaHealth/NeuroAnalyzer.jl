@@ -1,7 +1,7 @@
 export emd
 
 """
-    emd(s, x; <keyword arguments>)
+    _emd(s, x; <keyword arguments>)
 
 Perform Empirical Mode Decomposition (EMD) for a 1-D signal vector.
 
@@ -28,7 +28,7 @@ Returns a matrix whose rows are IMFs (1..end-1) and the final residue (end).
 
 - `Matrix{Float64}`: intrinsic mode functions (IMF) by rows, with the residue as the last row; returns an empty `0×0` matrix if no IMFs found
 """
-function emd(
+function _emd(
     s::AbstractVector,
     x::AbstractVector;
     epsilon::Real = 0.3,
@@ -155,7 +155,7 @@ function emd(
     # validate
     _check_epochs(obj, ep)
 
-    imf = emd(@view(obj.data[ch, :, ep]), obj.epoch_time; epsilon = epsilon)
+    imf = _emd(@view(obj.data[ch, :, ep]), obj.epoch_time; epsilon = epsilon)
 
     # report how many IMFs (excluding the residue) were found
     size(imf, 1) > 0 && _info("$(size(imf, 1) - 1) IMFs were calculated")

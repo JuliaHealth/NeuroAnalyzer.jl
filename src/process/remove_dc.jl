@@ -2,7 +2,7 @@ export remove_dc
 export remove_dc!
 
 """
-    remove_dc(s, n)
+    _remove_dc(s, n)
 
 Remove mean value (DC offset).
 
@@ -15,7 +15,7 @@ Remove mean value (DC offset).
 
 - `Vector{Float64}`: output signal vector
 """
-function remove_dc(
+function _remove_dc(
     s::AbstractVector,
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Vector{Float64}
@@ -32,7 +32,7 @@ function remove_dc(
 end
 
 """
-    remove_dc(s, n)
+    _remove_dc(s, n)
 
 Remove mean value (DC offset).
 
@@ -45,7 +45,7 @@ Remove mean value (DC offset).
 
 - `Matrix{Float64}`: output signal matrix, shape (channels, samples)
 """
-function remove_dc(
+function _remove_dc(
     s::AbstractMatrix,
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Matrix{Float64}
@@ -54,14 +54,14 @@ function remove_dc(
 
     s_new = similar(s, Float64)
     Threads.@threads :static for ch_idx = 1:ch_n
-        s_new[ch_idx, :] = remove_dc(@view(s[ch_idx, :]), n)
+        s_new[ch_idx, :] = _remove_dc(@view(s[ch_idx, :]), n)
     end
 
     return s_new
 end
 
 """
-    remove_dc(s, n)
+    _remove_dc(s, n)
 
 Remove mean value (DC offset) for a 3-D signal array.
 
@@ -74,7 +74,7 @@ Remove mean value (DC offset) for a 3-D signal array.
 
 - `Array{Float64, 3}`: output signal array, shape (channels, samples, epochs)
 """
-function remove_dc(
+function _remove_dc(
     s::AbstractArray,
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Array{Float64, 3}
@@ -92,7 +92,7 @@ function remove_dc(
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = remove_dc(@view(s[ch_idx, :, ep_idx]), n)
+        s_new[ch_idx, :, ep_idx] = _remove_dc(@view(s[ch_idx, :, ep_idx]), n)
     end
 
     return s_new
@@ -125,7 +125,7 @@ function remove_dc(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = remove_dc(@view(obj.data[ch, :, :]), n)
+    obj_tmp.data[ch, :, :] = _remove_dc(@view(obj.data[ch, :, :]), n)
     push!(obj_tmp.history, "remove_dc(obj; ch=$ch, n=$n)")
 
     return obj_tmp

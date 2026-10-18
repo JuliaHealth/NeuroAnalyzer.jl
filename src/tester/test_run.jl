@@ -1,20 +1,65 @@
 export test_run
 
-# file_name = homedir() * "/Documents/Code/test.json"
+"""
+    test_run(file_name)
 
+Run a test described in a JSON file: a full-screen window shows the test objects in order.
+
+The file holds an array of objects, each with a `"type"`:
+
+- `"delay"`: wait `"duration"` milliseconds
+- `"image"`: show the image `"file"`
+
+Press `ESC` to close the window. Work in progress.
+
+# Arguments
+
+- `file_name::String`: JSON file with the test structure
+
+# Returns
+
+- `Nothing`
+
+# Example test file
+
+```json
+[
+    {"type": "image", "file": "/path/to/fixation.png"},
+    {"type": "delay", "duration": 500},
+    {"type": "image", "file": "/path/to/stimulus.png"},
+    {"type": "delay", "duration": 1000}
+]
+```
+"""
 function test_run(file_name::String)::Nothing
+    _wip()
+
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    # read test structure
-    test_structure =
-        JSON.parsefile(file_name; dicttype = Dict, inttype = Int64, use_mmap = true)
-
-    # parse test structure
-    # test for all required properties
-    # test properties data types and ranges
-    # test if external objects are available
-
-    # preload external objects
+    # read and validate the test structure
+    test_structure = try
+        JSON.parsefile(file_name)
+    catch err
+        throw(ArgumentError("File $file_name cannot be parsed: $err"))
+    end
+    test_structure isa AbstractVector ||
+        throw(ArgumentError("$file_name must contain an array of test objects."))
+    for (idx, object) in enumerate(test_structure)
+        object isa AbstractDict && haskey(object, "type") ||
+            throw(ArgumentError("Test object $idx must be an object with a \"type\"."))
+        if object["type"] == "delay"
+            d = object["duration"]
+            # duration may be given as a number or a numeric string
+            d = d isa Real ? Float64(d) : parse(Float64, string(d))
+            d >= 0 || throw(ArgumentError("Test object $idx: duration must be ≥ 0."))
+            object["duration"] = d
+        elseif object["type"] == "image"
+            isfile(object["file"]) ||
+                throw(ArgumentError("Test object $idx: file $(object["file"]) not found."))
+        else
+            throw(ArgumentError("Test object $idx: unknown type \"$(object["type"])\"."))
+        end
+    end
 
     css = """
     window {
@@ -31,33 +76,26 @@ function test_run(file_name::String)::Nothing
 
     eck = GtkEventControllerKey(win)
     signal_connect(eck, "key-pressed") do controller, keyval, keycode, state
-        if keyval == 0xff1b
-            close(win)
-        end
+        # ESC
+        keyval == 0xff1b && close(win)
+        return nothing
     end
 
-    show(win)
-    fullscreen(win)
+    Gtk4.show(win)
+    Gtk4.fullscreen(win)
 
     @async begin
         try
-            for structure_idx in eachindex(test_structure)
-                object = test_structure[structure_idx]
-                object_type = object[:type]
-                if object_type == "delay"
-                    delay_duration = parse(Float64, object[:duration])
-                    sleep(delay_duration / 1000)
-                    continue
-                end
-                if object_type == "image"
-                    img = object[:file]
-                    win.child = GtkPicture(img)
-                    continue
+            for object in test_structure
+                if object["type"] == "delay"
+                    sleep(object["duration"] / 1000)
+                elseif object["type"] == "image"
+                    win.child = GtkPicture(object["file"])
                 end
             end
             close(win)
         catch e
-            @error "Timer task failed!" exception=(e, catch_backtrace())
+            @error "Test run failed!" exception = (e, catch_backtrace())
         end
     end
 

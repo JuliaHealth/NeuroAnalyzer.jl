@@ -1,4 +1,5 @@
 export normalize
+export normalize!
 export normalize_zscore
 export normalize_minmax
 export normalize_n
@@ -22,7 +23,7 @@ export normalize_fisher
 # ------------------------------------------------------------------ #
 
 """
-    normalize(s, n; <keyword arguments>)
+    _normalize(s, n; <keyword arguments>)
 
 Normalize.
 
@@ -53,7 +54,7 @@ Normalize.
 
 - `normalized::AbstractVector`
 """
-function normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVector
+function _normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVector
     _check_var(
         method,
         [
@@ -99,7 +100,7 @@ function normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVect
 end
 
 """
-    normalize(s, n; <keyword arguments>)
+    _normalize(s, n; <keyword arguments>)
 
 Normalize a signal array using the specified method.
 
@@ -129,7 +130,7 @@ Normalize a signal array using the specified method.
 
 - `AbstractArray`: normalized signal, same shape as `s`
 """
-function normalize(
+function _normalize(
     s::AbstractArray,
     n::Real = 1;
     bych::Bool = false,
@@ -229,7 +230,7 @@ function normalize(
         # normalize each (channel, epoch) slice independently
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            obj_tmp.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(
+            obj_tmp.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer._normalize(
                 @view(obj_tmp.data[ch[ch_idx], :, ep_idx]),
                 n,
                 method = method,
@@ -237,7 +238,7 @@ function normalize(
         end
     else
         # normalize the entire selected channel block at once
-        obj_tmp.data[ch, :, :] = NeuroAnalyzer.normalize(
+        obj_tmp.data[ch, :, :] = NeuroAnalyzer._normalize(
             obj_tmp.data[ch, :, :],
             n;
             method = method,

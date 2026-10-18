@@ -1,10 +1,10 @@
 export hjorth
 
 # internal helper: Hjorth mobility = sqrt( var(s') / var(s) )
-_h_mob(s::AbstractVector)::Float64 = sqrt(var(derivative(s)) / var(s))
+_h_mob(s::AbstractVector)::Float64 = sqrt(var(_derivative(s)) / var(s))
 
 """
-    hjorth(s)
+    _hjorth(s)
 
 Calculate Hjorths parameters for a 1-D signal vector.
 
@@ -27,7 +27,7 @@ Named tuple:
 - `h_mob::Float64`: mobility
 - `h_comp::Float64`: complexity
 """
-function hjorth(
+function _hjorth(
     s::AbstractVector,
 )::@NamedTuple{
     h_act::Float64,
@@ -36,13 +36,13 @@ function hjorth(
 }
     h_act = var(s)
     h_mob = _h_mob(s)
-    h_comp = _h_mob(derivative(s)) / h_mob
+    h_comp = _h_mob(_derivative(s)) / h_mob
 
     return (; h_act, h_mob, h_comp)
 end
 
 """
-    hjorth(s)
+    _hjorth(s)
 
 Calculate Hjorths parameters for a 3-D signal array.
 
@@ -65,7 +65,7 @@ Named tuple:
 - `h_mob::Matrix{Float64}`: mobility, shape (channels, epochs)
 - `h_comp::Matrix{Float64}`: complexity, shape (channels, epochs)
 """
-function hjorth(
+function _hjorth(
     s::AbstractArray,
 )::@NamedTuple{
     h_act::Matrix{Float64},
@@ -87,7 +87,7 @@ function hjorth(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        hjorth_data = hjorth(@view(s[ch_idx, :, ep_idx]))
+        hjorth_data = _hjorth(@view(s[ch_idx, :, ep_idx]))
         h_act[ch_idx, ep_idx] = hjorth_data.h_act
         h_mob[ch_idx, ep_idx] = hjorth_data.h_mob
         h_comp[ch_idx, ep_idx] = hjorth_data.h_comp
@@ -136,5 +136,5 @@ function hjorth(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return hjorth(@view(obj.data[ch, :, :]))
+    return _hjorth(@view(obj.data[ch, :, :]))
 end

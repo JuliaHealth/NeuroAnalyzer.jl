@@ -2,7 +2,7 @@ export add_signal
 export add_signal!
 
 """
-    add_signal(s1, s2)
+    _add_signal(s1, s2)
 
 Add two equal-length signal vectors element-wise.
 
@@ -15,7 +15,7 @@ Add two equal-length signal vectors element-wise.
 
 - `AbstractVector`: element-wise sum `s1 .+ s2`
 """
-function add_signal(s1::AbstractVector, s2::AbstractVector)::AbstractVector
+function _add_signal(s1::AbstractVector, s2::AbstractVector)::AbstractVector
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
     return s1 .+ s2
@@ -63,7 +63,7 @@ function add_signal(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         obj_tmp.data[ch[ch_idx], :, ep_idx] =
-            add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)
+            _add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)
     end
 
     push!(obj_tmp.history, "add_signal(obj; ch=$ch)")

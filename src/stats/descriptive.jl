@@ -121,17 +121,21 @@ end
 """
     mrng(x)
 
-Calculate the midrange of an array: `(maximum(x) − minimum(x)) / 2`.
+Calculate the midrange of an array: `(maximum(x) + minimum(x)) / 2`.
 
 # Arguments
 
-- `Float64`: midrange of `x`.
+- `x::AbstractArray`: input array; must not be empty
+
+# Returns
+
+- `Float64`: midrange of `x`
 """
 function mrng(x::AbstractArray)::Float64
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
-    return Float64((maximum(x) - minimum(x)) / 2)
+    return Float64((maximum(x) + minimum(x)) / 2)
 end
 
 """
@@ -139,7 +143,7 @@ end
 
 Calculate the margin of error for a given sample size.
 
-Computed as `1 / √n` (the standard error of a proportion at `p = 0.5`).
+Computed as `1 / √n`: the conservative (`p = 0.5`) 95% margin of error of a proportion, `1.96 × √(0.25 / n) ≈ 1 / √n`.
 
 # Arguments
 
@@ -192,8 +196,8 @@ Calculate absolute and relative frequencies for a categorical variable.
 
 - `Matrix{Float64}`: a `(3 × (k + 1))` matrix where `k = length(unique(x))`:
     - row 1: absolute frequencies per category, total in last column
-    - row 2: relative frequencies as proportions (rounded to 3 d.p.), total = 1.0
-    - row 3: relative frequencies as percentages (rounded to 2 d.p.), total = 100.0
+    - row 2: relative frequencies as proportions, total = 1.0
+    - row 3: relative frequencies as percentages, total = 100.0
 """
 function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
     x = df[!, var]
@@ -207,8 +211,8 @@ function arf(df::DataFrame, var::Union{Symbol, String})::Matrix{Float64}
     for (idx, val) in enumerate(uvals)
         abs_freq = count(==(val), x)
         m[1, idx] = abs_freq
-        m[2, idx] = round(abs_freq / n; digits = 3)
-        m[3, idx] = round(m[2, idx] * 100; digits = 2)
+        m[2, idx] = abs_freq / n
+        m[3, idx] = 100 * abs_freq / n
     end
 
     # totals column

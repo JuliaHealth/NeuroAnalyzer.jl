@@ -1,7 +1,7 @@
 export total_power
 
 """
-    total_power(s; <keyword arguments>)
+    _total_power(s; <keyword arguments>)
 
 Calculate total power for a 1-D signal vector.
 
@@ -28,7 +28,7 @@ Calculate total power for a 1-D signal vector.
 
 - `Float64`: total power
 """
-function total_power(
+function _total_power(
     s::AbstractVector;
     fs::Int64,
     method::Symbol = :welch,
@@ -40,7 +40,7 @@ function total_power(
     gw::Real = 5,
     demean::Bool = true,
 )
-    pw, pf = psd(
+    pw, pf = _psd(
         s;
         fs = fs,
         db = false,
@@ -62,7 +62,7 @@ function total_power(
 end
 
 """
-    total_power(s; <keyword arguments>)
+    _total_power(s; <keyword arguments>)
 
 Calculate total power for a 3-D signal array.
 
@@ -89,7 +89,7 @@ Calculate total power for a 3-D signal array.
 
 - `Matrix{Float64}`: total power
 """
-function total_power(
+function _total_power(
     s::AbstractArray;
     fs::Int64,
     method::Symbol = :welch,
@@ -115,7 +115,7 @@ function total_power(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        tp[ch_idx, ep_idx] = total_power(
+        tp[ch_idx, ep_idx] = _total_power(
             @view(s[ch_idx, :, ep_idx]),
             fs = fs,
             method = method,
@@ -179,7 +179,7 @@ function total_power(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return total_power(
+    return _total_power(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         method = method,

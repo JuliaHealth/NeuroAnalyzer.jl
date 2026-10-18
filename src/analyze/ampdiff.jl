@@ -1,7 +1,7 @@
 export ampdiff
 
 """
-    ampdiff(s)
+    _ampdiff(s)
 
 Calculate amplitude difference to reference mean: amplitude difference between each channel and mean amplitude of reference channels.
 
@@ -13,7 +13,7 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 
 - `Array{Float64, 3}`: amplitude difference, shape (channels, samples, epochs)
 """
-function ampdiff(
+function _ampdiff(
     s::AbstractArray,
 )::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -64,5 +64,5 @@ function ampdiff(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return ampdiff(@view(obj.data[ch, :, :]))
+    return _ampdiff(@view(obj.data[ch, :, :]))
 end

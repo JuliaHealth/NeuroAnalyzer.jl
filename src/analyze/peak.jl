@@ -3,7 +3,7 @@ export peak_amp
 export peak_pow
 
 """
-    peak_frq(s; <keyword arguments>)
+    _peak_frq(s; <keyword arguments>)
 
 Calculate peak frequency within a frequency band for a 1-D signal vector.
 
@@ -29,7 +29,7 @@ Calculate peak frequency within a frequency band for a 1-D signal vector.
 
 - `Float64`: peak frequency
 """
-function peak_frq(
+function _peak_frq(
     s::AbstractVector;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -45,7 +45,7 @@ function peak_frq(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    psd_data = psd(
+    psd_data = _psd(
         s;
         fs = fs,
         db = false,
@@ -70,7 +70,7 @@ function peak_frq(
 end
 
 """
-    peak_frq(s; <keyword arguments>)
+    _peak_frq(s; <keyword arguments>)
 
 Calculate peak frequency within a frequency band for a 3-D signal array.
 
@@ -96,7 +96,7 @@ Calculate peak frequency within a frequency band for a 3-D signal array.
 
 - `Matrix{Float64}`: peak frequency, shape (channels, epochs)
 """
-function peak_frq(
+function _peak_frq(
     s::AbstractArray;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -122,7 +122,7 @@ function peak_frq(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        pf[ch_idx, ep_idx] = peak_frq(
+        pf[ch_idx, ep_idx] = _peak_frq(
             @view(s[ch_idx, :, ep_idx]),
             fs = fs,
             flim = flim,
@@ -184,7 +184,7 @@ function peak_frq(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return peak_frq(
+    return _peak_frq(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
@@ -199,7 +199,7 @@ function peak_frq(
 end
 
 """
-    peak_amp(s; <keyword arguments>)
+    _peak_amp(s; <keyword arguments>)
 
 Calculate amplitude at the peak frequency within a frequency band.
 
@@ -225,7 +225,7 @@ Calculate amplitude at the peak frequency within a frequency band.
 
 - `Float64`: amplitude at peak frequency
 """
-function peak_amp(
+function _peak_amp(
     s::AbstractVector;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -241,7 +241,7 @@ function peak_amp(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    psd_data = psd(
+    psd_data = _psd(
         s;
         fs = fs,
         db = false,
@@ -264,7 +264,7 @@ function peak_amp(
 end
 
 """
-    peak_amp(s; <keyword arguments>)
+    _peak_amp(s; <keyword arguments>)
 
 Calculate amplitude at peak frequency within a frequency band for a 3-D signal array.
 
@@ -290,7 +290,7 @@ Calculate amplitude at peak frequency within a frequency band for a 3-D signal a
 
 - `Matrix{Float64}`: amplitude at peak frequency, shape (channels, epochs)
 """
-function peak_amp(
+function _peak_amp(
     s::AbstractArray;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -316,7 +316,7 @@ function peak_amp(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        pa[ch_idx, ep_idx] = peak_amp(
+        pa[ch_idx, ep_idx] = _peak_amp(
             @view(s[ch_idx, :, ep_idx]),
             fs = fs,
             flim = flim,
@@ -378,7 +378,7 @@ function peak_amp(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return peak_amp(
+    return _peak_amp(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,
@@ -393,7 +393,7 @@ function peak_amp(
 end
 
 """
-    peak_pow(s; <keyword arguments>)
+    _peak_pow(s; <keyword arguments>)
 
 Calculate power at the peak frequency within a frequency band.
 
@@ -419,7 +419,7 @@ Calculate power at the peak frequency within a frequency band.
 
 - `Float64`: power at peak frequency
 """
-function peak_pow(
+function _peak_pow(
     s::AbstractVector;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -435,7 +435,7 @@ function peak_pow(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(flim, (0, fs / 2), "flim")
 
-    psd_data = psd(
+    psd_data = _psd(
         s;
         fs = fs,
         db = false,
@@ -457,7 +457,7 @@ function peak_pow(
 end
 
 """
-    peak_pow(s; <keyword arguments>)
+    _peak_pow(s; <keyword arguments>)
 
 Calculate power at peak frequency within a frequency band for a 3-D signal array.
 
@@ -483,7 +483,7 @@ Calculate power at peak frequency within a frequency band for a 3-D signal array
 
 - `pp::Matrix{Float64}`: peak power, shape (channels, epochs)
 """
-function peak_pow(
+function _peak_pow(
     s::AbstractArray;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -509,7 +509,7 @@ function peak_pow(
     # compute over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        pp[ch_idx, ep_idx] = peak_pow(
+        pp[ch_idx, ep_idx] = _peak_pow(
             @view(s[ch_idx, :, ep_idx]),
             fs = fs,
             flim = flim,
@@ -571,7 +571,7 @@ function peak_pow(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return peak_pow(
+    return _peak_pow(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,

@@ -1,8 +1,6 @@
 export filter_create
 export filter_apply
 export filter_apply!
-export filter
-export filter!
 export filter_order
 export filter_report
 
@@ -599,7 +597,7 @@ function filter_report(
 end
 
 """
-    filter_apply(s; <keyword arguments>)
+    _filter_apply(s; <keyword arguments>)
 
 Apply a pre-designed IIR or FIR filter to a signal vector.
 
@@ -620,7 +618,7 @@ Apply a pre-designed IIR or FIR filter to a signal vector.
 
 - `Vector{Float64}`: filtered signal of the same length as `s`
 """
-function filter_apply(
+function _filter_apply(
     s::AbstractVector;
     flt::_FLT_TYPES,
     dir::Symbol = :twopass,

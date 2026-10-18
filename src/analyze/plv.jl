@@ -1,7 +1,7 @@
 export plv
 
 """
-    plv(s1, s2)
+    _plv(s1, s2)
 
 Calculate Phase Locking Value (PLV) for two 1-D signal vectors.
 
@@ -24,7 +24,7 @@ Named tuple:
 
 1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
-function plv(
+function _plv(
     s1::AbstractVector,
     s2::AbstractVector,
 )::@NamedTuple{
@@ -142,7 +142,7 @@ function plv(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        plv_data = plv(
+        plv_data = _plv(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -192,7 +192,7 @@ function plv(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            pv[ch_idx1, ch_idx2, ep_idx] = plv(
+            pv[ch_idx1, ch_idx2, ep_idx] = _plv(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             ).pv

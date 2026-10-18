@@ -12,7 +12,7 @@ const _QRange = Union{
 }
 
 """
-    ghexp(s; tau_range, q_range)
+    _ghexp(s; tau_range, q_range)
 
 Calculate the Generalised Hurst Exponent(s) of a 1-D signal vector by analysing how the q-th moment of the absolute increments |s(t+τ) − s(t)|^q scales with lag τ.
 
@@ -30,7 +30,7 @@ Two modes:
 
 - `Matrix{Float64}`: shape `(1, 2)` when `q_range=nothing`, otherwise `(length(q_range), 2)` - columns are (exponent, goodness-of-fit)
 """
-function ghexp(
+function _ghexp(
     s::AbstractVector;
     tau_range::UnitRange{Int64},
     q_range::_QRange = nothing,
@@ -53,7 +53,7 @@ function ghexp(
 end
 
 """
-    ghexp(s)
+    _ghexp(s)
 
 Calculate the Generalised Hurst Exponents (GHEs) for a 3-D signal array.
 
@@ -67,7 +67,7 @@ Calculate the Generalised Hurst Exponents (GHEs) for a 3-D signal array.
 
 - `Array{Float64, 4}`: shape (channels, q, 2, epochs) where `q` is 1 when `q_range=nothing`, otherwise `length(q_range)`
 """
-function ghexp(
+function _ghexp(
     s::AbstractArray;
     tau_range::UnitRange{Int64},
     q_range::_QRange = nothing,
@@ -87,7 +87,7 @@ function ghexp(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ghe[ch_idx, :, :, ep_idx] = ghexp(
+        ghe[ch_idx, :, :, ep_idx] = _ghexp(
             @view(s[ch_idx, :, ep_idx]),
             tau_range = tau_range,
             q_range = q_range,
@@ -126,5 +126,5 @@ function ghexp(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return ghexp(@view(obj.data[ch, :, :]); tau_range = tau_range, q_range = q_range)
+    return _ghexp(@view(obj.data[ch, :, :]); tau_range = tau_range, q_range = q_range)
 end

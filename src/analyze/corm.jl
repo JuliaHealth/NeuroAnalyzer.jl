@@ -1,7 +1,7 @@
 export corm
 
 """
-    corm(s1, s2; <keyword arguments>)
+    _corm(s1, s2; <keyword arguments>)
 
 Computes the channel × channel Pearson correlation matrix for two 1-D signal vectors.
 
@@ -15,7 +15,7 @@ Computes the channel × channel Pearson correlation matrix for two 1-D signal ve
 
 - `Matrix{Float64}`: 2×2 correlation matrix
 """
-function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
+function _corm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
@@ -30,7 +30,7 @@ function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matri
 end
 
 """
-    corm(s; <keyword arguments>)
+    _corm(s; <keyword arguments>)
 
 Calculate corelation matrix of channels × time points matrix.
 
@@ -43,7 +43,7 @@ Calculate corelation matrix of channels × time points matrix.
 
 - `Matrix{Float64}`: correlation matrix, shape (channels × channels)
 """
-function corm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
+function _corm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
     # transpose so columns are channels
     # Statistics.cor then returns the channels × channels Pearson correlation matrix
     cm = Statistics.cor(s')
@@ -55,7 +55,7 @@ function corm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
 end
 
 """
-    corm(s; <keyword arguments>)
+    _corm(s; <keyword arguments>)
 
 Calculate correlation matrix for a 3-D signal array.
 
@@ -68,7 +68,7 @@ Calculate correlation matrix for a 3-D signal array.
 
 - `Array{Float64, 3}`: correlation matrix for each epoch, shape (channels, channels, epochs)
 """
-function corm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
+function _corm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -82,7 +82,7 @@ function corm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
     # calculate over epochs
     @inbounds Threads.@threads :static for ep_idx = 1:ep_n
-        cm[:, :, ep_idx] = corm(@view(s[:, :, ep_idx]), norm = norm)
+        cm[:, :, ep_idx] = _corm(@view(s[:, :, ep_idx]), norm = norm)
     end
 
     return cm
@@ -115,5 +115,5 @@ function corm(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return corm(@view(obj.data[ch, :, :]); norm = norm)
+    return _corm(@view(obj.data[ch, :, :]); norm = norm)
 end

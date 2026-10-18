@@ -1,7 +1,7 @@
 export acor
 
 """
-    acor(s; <keyword arguments>)
+    _acor(s; <keyword arguments>)
 
 Calculate auto-correlation for a 1-D signal vector.
 
@@ -20,7 +20,7 @@ Calculate auto-correlation for a 1-D signal vector.
 
 - `Vector{Float64}`: auto-correlation of length `2l + 1`
 """
-function acor(
+function _acor(
     s::AbstractVector;
     l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
     demean::Bool = true,
@@ -34,7 +34,7 @@ function acor(
 
         # compute raw autocovariance via element-wise products, then divide by
         # the signal variance to obtain a correlation-scale (unitless) result
-        autocor = acov(
+        autocor = _acov(
             s;
             l = l,
             demean = demean,
@@ -48,7 +48,7 @@ function acor(
 
         # similar to :sum but uses a covariance-based approach internally;
         # the final normalization step is the same
-        autocor = acov(
+        autocor = _acov(
             s;
             l = l,
             demean = demean,
@@ -75,7 +75,7 @@ function acor(
 end
 
 """
-    acor(s; <keyword arguments>)
+    _acor(s; <keyword arguments>)
 
 Calculate auto-correlation for a 3-D signal array.
 
@@ -94,7 +94,7 @@ Calculate auto-correlation for a 3-D signal array.
 
 - `Array{Float64, 3}`: auto-correlations, shape (channels, 2l+1, epochs)
 """
-function acor(
+function _acor(
     s::AbstractArray;
     l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
     demean::Bool = true,
@@ -115,7 +115,7 @@ function acor(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        autocor[ch_idx, :, ep_idx] = acor(
+        autocor[ch_idx, :, ep_idx] = _acor(
             @view(s[ch_idx, :, ep_idx]),
             l = l,
             demean = demean,
@@ -180,7 +180,7 @@ function acor(
         # epoch 1 is the pre-computed average; epochs 2:end are individual trials
         # compute per-trial auto-correlations first, then prepend the mean across
         # trials as epoch 1 of the output (preserving the ERP convention)
-        autocor = acor(
+        autocor = _acor(
             @view(obj.data[ch, :, 2:end]);
             l = l,
             demean = demean,
@@ -190,7 +190,7 @@ function acor(
         autocor = cat(mean(autocor; dims = 3), autocor; dims = 3)
 
     else
-        autocor = acor(
+        autocor = _acor(
             @view(obj.data[ch, :, :]);
             l = l,
             demean = demean,

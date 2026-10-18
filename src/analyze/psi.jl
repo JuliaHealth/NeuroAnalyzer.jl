@@ -1,7 +1,7 @@
 export psi
 
 """
-    psi(s1, s2; <keyword arguments>)
+    _psi(s1, s2; <keyword arguments>)
 
 Calculate Phase Slope Index (PSI) for two 1-D signal vectors.
 
@@ -20,7 +20,7 @@ Calculate Phase Slope Index (PSI) for two 1-D signal vectors.
 
 1. Nolte, G., Ziehe, A., Nikulin, V. V., Schlögl, A., Krämer, N., Brismar, T., & Müller, K.-R. (2008). Robustly Estimating the Flow Direction of Information in Complex Physical Systems. Physical Review Letters. 2008; 100(23).
 """
-function psi(
+function _psi(
     s1::AbstractVector,
     s2::AbstractVector;
     fs::Int64,
@@ -120,7 +120,7 @@ function psi(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        pv[ch_idx, ep_idx] = psi(
+        pv[ch_idx, ep_idx] = _psi(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
             fs = sr(obj1),
@@ -169,7 +169,7 @@ function psi(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            pv[ch_idx1, ch_idx2, ep_idx] = psi(
+            pv[ch_idx1, ch_idx2, ep_idx] = _psi(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx]),
                 fs = sr(obj), flim = flim,

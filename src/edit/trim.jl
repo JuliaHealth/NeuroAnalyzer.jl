@@ -4,7 +4,7 @@ export crop
 export crop!
 
 """
-    trim(s; <keyword arguments>)
+    _trim(s; <keyword arguments>)
 
 Remove segment from the signal.
 
@@ -18,7 +18,7 @@ Remove segment from the signal.
 
 - `Vector{Float64}`
 """
-function trim(
+function _trim(
     s::AbstractVector;
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
@@ -34,7 +34,7 @@ function trim(
 end
 
 """
-    trim(s; <keyword arguments>)
+    _trim(s; <keyword arguments>)
 
 Remove segment from the signal.
 
@@ -48,7 +48,7 @@ Remove segment from the signal.
 
 - `Matrix{Float64}`
 """
-function trim(
+function _trim(
     s::AbstractMatrix;
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
@@ -64,7 +64,7 @@ function trim(
 end
 
 """
-    trim(s; <keyword arguments>)
+    _trim(s; <keyword arguments>)
 
 Remove segment from a 3-D signal array.
 
@@ -78,7 +78,7 @@ Remove segment from a 3-D signal array.
 
 - `Array{Float64, 3}`
 """
-function trim(
+function _trim(
     s::AbstractArray;
     seg::Tuple{Int64, Int64},
     keep::Bool = false,
@@ -131,7 +131,7 @@ function trim(
 
     # create new dataset
     obj_tmp = deepcopy(obj)
-    obj_tmp.data = trim(obj_tmp.data; seg = (s1, s2), keep = keep)
+    obj_tmp.data = _trim(obj_tmp.data; seg = (s1, s2), keep = keep)
     obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
     fs = sr(obj)

@@ -2,7 +2,7 @@ export dwd
 export idwd
 
 """
-    dwd(s; <keyword arguments>)
+    _dwd(s; <keyword arguments>)
 
 Perform discrete wavelet decomposition (DWD).
 
@@ -21,7 +21,7 @@ Returns the decomposition coefficient matrix. Each row corresponds to one subspa
 
 - `Matrix{Float64}`: DWD coefficient matrix of shape `((1 + Σ 2^k for k=1..l), length(s))`
 """
-function dwd(
+function _dwd(
     s::AbstractVector;
     wt::T = wavelet(WT.haar),
     type::Symbol,
@@ -43,7 +43,7 @@ function dwd(
 end
 
 """
-    dwd(s; <keyword arguments>)
+    _dwd(s; <keyword arguments>)
 
 Perform discrete wavelet decomposition (DWD).
 
@@ -64,7 +64,7 @@ Each row corresponds to one subspace node; each column corresponds to one time s
 
 - `Array{Float64, 4}`: DWD coefficients of shape `(channels, n_nodes, samples, epochs)`
 """
-function dwd(
+function _dwd(
     s::AbstractArray;
     wt::T = wavelet(WT.haar),
     type::Symbol,
@@ -89,7 +89,7 @@ function dwd(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        dc[ch_idx, :, :, ep_idx] = dwd(
+        dc[ch_idx, :, :, ep_idx] = _dwd(
             @view(s[ch_idx, :, ep_idx]),
             wt = wt,
             type = type,
@@ -137,7 +137,7 @@ function dwd(
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return dwd(@view(obj.data[ch, :, :]); wt = wt, type = type, l = l)
+    return _dwd(@view(obj.data[ch, :, :]); wt = wt, type = type, l = l)
 end
 
 """

@@ -136,7 +136,7 @@ function plot_psd(
 
     # get mean and 95%CI
     if ci95
-        msci95_data = NeuroAnalyzer.msci95(p[:, f1:f2])
+        msci95_data = NeuroAnalyzer._msci95(p[:, f1:f2])
         s_m = msci95_data.sm
         s_l = msci95_data.ll
         s_u = msci95_data.ul
@@ -724,11 +724,11 @@ function plot_psd(
     )
 
     if ref === :abs
-        p, f = psd(signal; _common_kwargs...)
+        p, f = _psd(signal; _common_kwargs...)
     elseif ref === :total
-        p, f = psd_rel(signal; _common_kwargs...)
+        p, f = _psd_rel(signal; _common_kwargs...)
     else
-        p, f = psd_rel(signal; flim = flim, _common_kwargs...)
+        p, f = _psd_rel(signal; flim = flim, _common_kwargs...)
     end
 
     _check_tuple(flim, (f[1], f[end]), "flim")

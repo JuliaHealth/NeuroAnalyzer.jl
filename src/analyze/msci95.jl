@@ -1,7 +1,7 @@
 export msci95
 
 """
-    msci95(s; <keyword arguments>)
+    _msci95(s; <keyword arguments>)
 
 Calculate mean, standard error and 95% CI for a 1-D signal vector.
 
@@ -25,7 +25,7 @@ Named tuple:
 - `ll::Float64`: lower 95% CI
 - `ul::Float64`: upper 95% CI
 """
-function msci95(
+function _msci95(
     s::AbstractVector;
     n::Int64 = 3,
     method::Symbol = :normal,
@@ -70,7 +70,7 @@ function msci95(
 end
 
 """
-    msci95(s; <keyword arguments>)
+    _msci95(s; <keyword arguments>)
 
 Calculate mean, standard error and 95% CI across rows.
 
@@ -94,7 +94,7 @@ Named tuple:
 - `ll::Vector{Float64}`: lower 95% CI per sample
 - `ul::Vector{Float64}`: upper 95% CI per sample
 """
-function msci95(
+function _msci95(
     s::AbstractMatrix;
     n::Int64 = 3,
     method::Symbol = :normal,
@@ -138,7 +138,7 @@ function msci95(
 end
 
 """
-    msci95(s; <keyword arguments>)
+    _msci95(s; <keyword arguments>)
 
 Calculate mean, standard error and 95% CI for a 3-D signal array.
 
@@ -157,7 +157,7 @@ Named tuple:
 - `ll::Matrix{Float64}`: lower 95% CI, shape (epochs, samples)
 - `ul::Matrix{Float64}`: upper 95% CI, shape (epochs, samples)
 """
-function msci95(
+function _msci95(
     s::AbstractArray;
     n::Int64 = 3,
     method::Symbol = :normal,
@@ -183,7 +183,7 @@ function msci95(
 
     # calculate over epochs
     for ep_idx = 1:ep_n
-        msci_data = msci95(@view(s[:, :, ep_idx]); n = n, method = method)
+        msci_data = _msci95(@view(s[:, :, ep_idx]); n = n, method = method)
         sm[ep_idx, :] = msci_data.sm
         se[ep_idx, :] = msci_data.se
         ll[ep_idx, :] = msci_data.ll
@@ -194,7 +194,7 @@ function msci95(
 end
 
 """
-    msci95(s1, s2)
+    _msci95(s1, s2)
 
 Calculate mean difference, standard error and 95% CI between two vectors.
 
@@ -212,7 +212,7 @@ Named tuple:
 - `ll::Float64`: lower 95% CI
 - `ul::Float64`: upper 95% CI
 """
-function msci95(
+function _msci95(
     s1::AbstractVector,
     s2::AbstractVector,
 )::@NamedTuple{
@@ -235,7 +235,7 @@ function msci95(
 end
 
 """
-    msci95(s1, s2)
+    _msci95(s1, s2)
 
 Calculate mean difference, standard error and 95% CI per channel and epoch for a 3-D signal array.
 
@@ -253,7 +253,7 @@ Named tuple:
 - `ll::Matrix{Float64}`: lower 95% CI, shape (channels, epochs)
 - `ul::Matrix{Float64}`: upper 95% CI, shape (channels, epochs)
 """
-function msci95(
+function _msci95(
     s1::AbstractArray,
     s2::AbstractArray,
 )::@NamedTuple{
@@ -279,7 +279,7 @@ function msci95(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        result = msci95(
+        result = _msci95(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx])
         )
@@ -331,7 +331,7 @@ function msci95(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return NeuroAnalyzer.msci95(@view(obj.data[ch, :, :]); n = n, method = method)
+    return NeuroAnalyzer._msci95(@view(obj.data[ch, :, :]); n = n, method = method)
 end
 
 """
@@ -399,7 +399,7 @@ function msci95(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return NeuroAnalyzer.msci95(
+    return NeuroAnalyzer._msci95(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2])
     )

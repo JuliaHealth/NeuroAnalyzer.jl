@@ -448,7 +448,7 @@ function penv(
     # sampling rate
     fs = sr(obj)
 
-    _psd(x) = psd(
+    psd_1(x) = _psd(
         x;
         fs = fs,
         method = method,
@@ -462,7 +462,7 @@ function penv(
     )
 
     # first channel/epoch also determines the output data
-    psd_data = _psd(@view(obj.data[ch[1], :, 1]))
+    psd_data = psd_1(@view(obj.data[ch[1], :, 1]))
     f = psd_data.f
     # pre-allocate output
     e = zeros(ch_n, length(f), ep_n)
@@ -472,7 +472,7 @@ function penv(
     idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]
     @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        psd_data = _psd(@view(obj.data[ch[ch_idx], :, ep_idx]))
+        psd_data = psd_1(@view(obj.data[ch[ch_idx], :, ep_idx]))
         e[ch_idx, :, ep_idx] = env_up(psd_data.p, f, d = d)
     end
 
@@ -834,7 +834,7 @@ function senv(
 
     # dry run to determine the spectrogram time vector
     if method === :stft
-        spec_data = NeuroAnalyzer.spectrogram(
+        spec_data = NeuroAnalyzer._spectrogram(
             @view(obj.data[ch[1], :, 1]);
             fs = fs,
             db = db,
@@ -845,7 +845,7 @@ function senv(
         )
         sp = spec_data.p
     elseif method === :mt
-        spec_data = NeuroAnalyzer.spectrogram(
+        spec_data = NeuroAnalyzer._spectrogram(
             @view(obj.data[ch[1], :, 1]);
             fs = fs,
             db = db,
@@ -898,7 +898,7 @@ function senv(
         # compute spectrogram for this channel/epoch
         local sp_loc, sf_loc
         if method === :stft
-            spec_data = NeuroAnalyzer.spectrogram(
+            spec_data = NeuroAnalyzer._spectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
                 fs = fs,
                 db = db,
@@ -911,7 +911,7 @@ function senv(
             sf_loc = spec_data.f
 
         elseif method === :mt
-            spec_data = NeuroAnalyzer.spectrogram(
+            spec_data = NeuroAnalyzer._spectrogram(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
                 fs = fs,
                 db = db,

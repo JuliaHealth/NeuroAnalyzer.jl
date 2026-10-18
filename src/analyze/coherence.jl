@@ -1,7 +1,7 @@
 export coherence
 
 """
-    coherence(s1, s2; <keyword arguments>)
+    _coherence(s1, s2; <keyword arguments>)
 
 Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two 1-D signal vectors.
 
@@ -36,7 +36,7 @@ Named tuple:
 - `msc::Vector{Float64}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
-function coherence(
+function _coherence(
     s1::AbstractVector,
     s2::AbstractVector;
     method::Symbol = :mt,
@@ -77,10 +77,10 @@ function coherence(
 
     # compute the three cross-power spectra needed for coherence
     # s1s1 = auto-spectrum of s1, s1s2 = cross-spectrum, s2s2 = auto-spectrum of s2
-    s1s1, f = cpsd(s1, s1; cpsd_kwargs...)
+    s1s1, f = _cpsd(s1, s1; cpsd_kwargs...)
     # f is the same for all three calls
-    s1s2, _ = cpsd(s1, s2; cpsd_kwargs...)
-    s2s2, _ = cpsd(s2, s2; cpsd_kwargs...)
+    s1s2, _ = _cpsd(s1, s2; cpsd_kwargs...)
+    s2s2, _ = _cpsd(s2, s2; cpsd_kwargs...)
 
     # complex coherence: s1s2 / √(s1s1 · s2s2)
     coh = @. s1s2 / sqrt(s1s1 * s2s2)
@@ -96,7 +96,7 @@ function coherence(
 end
 
 """
-    coherence(s1, s2; <keyword arguments>)
+    _coherence(s1, s2; <keyword arguments>)
 
 Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC) for two 3-D signal arrays.
 
@@ -131,7 +131,7 @@ Named tuple:
 - `msc::Array{Float64, 2}`: magnitude-squared coherence, shape `(channels, frequencies)`
 - `f::Vector{Float64}`: frequencies in Hz
 """
-function coherence(
+function _coherence(
     s1::AbstractArray,
     s2::AbstractArray;
     method::Symbol = :mt,
@@ -171,7 +171,7 @@ function coherence(
     )
 
     # dry run to pre-compute the frequency vector
-    _, f = cpsd(
+    _, f = _cpsd(
         @view(s1[1, :, 1]),
         @view(s2[1, :, 1]);
         cpsd_kwargs...,
@@ -184,9 +184,9 @@ function coherence(
 
     # compute the three cross-power spectra needed for coherence
     # s1s1 = auto-spectrum of s1, s1s2 = cross-spectrum, s2s2 = auto-spectrum of s2
-    s1s1, _ = cpsd(s1, s1; cpsd_kwargs...)
-    s1s2, _ = cpsd(s1, s2; cpsd_kwargs...)
-    s2s2, _ = cpsd(s2, s2; cpsd_kwargs...)
+    s1s1, _ = _cpsd(s1, s1; cpsd_kwargs...)
+    s1s2, _ = _cpsd(s1, s2; cpsd_kwargs...)
+    s2s2, _ = _cpsd(s2, s2; cpsd_kwargs...)
 
     # average across epochs
     s1s1_avg = mean(s1s1; dims = 3)[:, :]
@@ -304,7 +304,7 @@ function coherence(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return coherence(
+    return _coherence(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]);
         method = method,

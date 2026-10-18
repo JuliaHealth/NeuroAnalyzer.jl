@@ -9,7 +9,6 @@ export tpt
 const _TPT_BAUDRATE = 19200 # MMA7660 Arduino firmware baud rate
 const _TPT_FS = 50 # accelerometer sampling rate [Hz]
 const _TPT_WARMUP_SECS = 2 # seconds to flush stale serial data before recording
-const _TPT_N_CAPTURES = 7 # expected capture groups in the serial data regex
 
 # Expected serial line format from the Arduino firmware:
 #   "tpt: X Y Z AX AY AZ"
@@ -31,7 +30,6 @@ Expected format: `"tpt: <x> <y> <z> <accx> <accy> <accz>"`
 function _parse_tpt_sample(line::String)
     m = match(_TPT_SERIAL_REGEX, line)
     isnothing(m) && return nothing
-    length(m.captures) == _TPT_N_CAPTURES || return nothing
     return (
         x = parse(Float64, m.captures[2]),
         y = parse(Float64, m.captures[3]),
@@ -40,19 +38,6 @@ function _parse_tpt_sample(line::String)
         accy = parse(Float64, m.captures[6]),
         accz = parse(Float64, m.captures[7]),
     )
-end
-
-"""
-    _serial_flush(sp, seconds)
-
-Drain the serial port `sp` for `seconds` seconds, discarding all incoming data. Used to discard stale buffered samples before recording begins.
-"""
-function _serial_flush(sp, seconds::Real)::Nothing
-    t0 = time()
-    while time() - t0 <= seconds
-        _serial_listener(sp)
-    end
-    return nothing
 end
 
 """
@@ -116,8 +101,8 @@ function itpt(;
     duration::Int64 = 20,
     port_name::String = "/dev/ttyUSB0",
 )::NeuroAnalyzer.NEURO
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
     sp = _serial_open(port_name; baudrate = _TPT_BAUDRATE)
-    isnothing(sp) && throw(ArgumentError("Serial port $port_name is not available"))
 
     img_idle = read_from_png(joinpath(res_path, "finger_nopinch.png"))
     img_pinch = read_from_png(joinpath(res_path, "finger_pinch.png"))
@@ -129,6 +114,9 @@ function itpt(;
     tpt_ch_accx = zeros(n_samples)
     tpt_ch_accy = zeros(n_samples)
     tpt_ch_accz = zeros(n_samples)
+    n_rec = 0 # number of recorded samples
+    aborted = false # set when the window is closed
+    rec_task = nothing # recording task (started by RECORD)
 
     # =========================================================================
     function _activate(app)
@@ -162,6 +150,12 @@ function itpt(;
         push!(win, vbox)
         Gtk4.show(win)
 
+        # closing the window stops the recording
+        signal_connect(win, "close-request") do widget
+            aborted = true
+            return false
+        end
+
         # initial canvas draw — idle (unpinched) finger image
         @guarded draw(can) do widget
             ctx = getgc(can)
@@ -172,7 +166,7 @@ function itpt(;
         # --- RECORD button ---
         @guarded signal_connect(bt_record, "clicked") do widget
             bt_record.sensitive = false
-            Threads.@spawn begin
+            rec_task = Threads.@spawn begin
                 try
                     # flush stale serial data before recording begins
                     @idle_add lb_status2.label = "PREPARING"
@@ -187,23 +181,22 @@ function itpt(;
                     end
                     @idle_add lb_status2.label = "RECORDING"
 
-                    # collect exactly n_samples valid samples
-                    idx = 1
-                    while idx <= n_samples
+                    # collect n_samples valid samples (or until the window is closed)
+                    while n_rec < n_samples && !aborted
                         line = _serial_listener(sp)
-                        if !isnothing(line)
-                            sample = _parse_tpt_sample(line)
-                            if !isnothing(sample)
-                                tpt_ch_x[idx] = sample.x
-                                tpt_ch_y[idx] = sample.y
-                                tpt_ch_z[idx] = sample.z
-                                tpt_ch_accx[idx] = sample.accx
-                                tpt_ch_accy[idx] = sample.accy
-                                tpt_ch_accz[idx] = sample.accz
-                                idx += 1
-                            end
+                        isnothing(line) && (sleep(0.001); continue)
+                        sample = _parse_tpt_sample(line)
+                        if !isnothing(sample)
+                            n_rec += 1
+                            tpt_ch_x[n_rec] = sample.x
+                            tpt_ch_y[n_rec] = sample.y
+                            tpt_ch_z[n_rec] = sample.z
+                            tpt_ch_accx[n_rec] = sample.accx
+                            tpt_ch_accy[n_rec] = sample.accy
+                            tpt_ch_accz[n_rec] = sample.accz
                         end
                     end
+                    aborted && return nothing
 
                     # finalize
                     _beep()
@@ -215,6 +208,8 @@ function itpt(;
                     end
                     sleep(2)
                     @idle_add close(win)
+                catch err
+                    @error "TPT recording failed" exception = (err, catch_backtrace())
                 finally
                     # ensure the port is always closed, even if the task errors
                     _serial_close(sp)
@@ -229,13 +224,19 @@ function itpt(;
     Gtk4.GLib.stop_main_loop()
     Gtk4.run(app)
 
+    # the window is closed: stop the recording task (if any) and release the port
+    aborted = true
+    isnothing(rec_task) || wait(rec_task)
+    _serial_close(sp)
+
+    r = 1:n_rec
     return _build_tpt_object(
-        tpt_ch_x,
-        tpt_ch_y,
-        tpt_ch_z,
-        tpt_ch_accx,
-        tpt_ch_accy,
-        tpt_ch_accz,
+        tpt_ch_x[r],
+        tpt_ch_y[r],
+        tpt_ch_z[r],
+        tpt_ch_accx[r],
+        tpt_ch_accy[r],
+        tpt_ch_accz[r],
     )
 end
 
@@ -268,34 +269,8 @@ function tpt(;
     duration::Int64   = 20,
     port_name::String = "/dev/ttyUSB0",
 )::NeuroAnalyzer.NEURO
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
     sp = _serial_open(port_name; baudrate = _TPT_BAUDRATE)
-    isnothing(sp) && throw(ArgumentError("Serial port $port_name is not available"))
-
-    println("NeuroTester: TPT")
-    println("================")
-    println("   Duration: $duration [seconds]")
-    println("Serial port: $port_name")
-    println()
-    println("Ready to start — press SPACEBAR to begin the test")
-    println()
-
-    # wait for SPACEBAR
-    while true
-        ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, true)
-        ret == 0 || error("Unable to switch terminal to raw mode.")
-        kbd_key = read(stdin, Char)
-        ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, false)
-        kbd_key == ' ' && break
-    end
-
-    println("The test will start after a beep")
-
-    # flush stale serial data accumulated while waiting for the user
-    _serial_flush(sp, _TPT_WARMUP_SECS)
-
-    println()
-    _beep()
-    print("   Pinch the thumb and the index finger as quickly as possible")
 
     n_samples = duration * _TPT_FS
     tpt_ch_x = zeros(n_samples)
@@ -305,25 +280,48 @@ function tpt(;
     tpt_ch_accy = zeros(n_samples)
     tpt_ch_accz = zeros(n_samples)
 
-    # collect exactly n_samples valid samples
-    idx = 1
-    while idx <= n_samples
-        line = _serial_listener(sp)
-        if !isnothing(line)
-            sample = _parse_tpt_sample(line)
-            if !isnothing(sample)
-                tpt_ch_x[idx] = sample.x
-                tpt_ch_y[idx] = sample.y
-                tpt_ch_z[idx] = sample.z
-                tpt_ch_accx[idx] = sample.accx
-                tpt_ch_accy[idx] = sample.accy
-                tpt_ch_accz[idx] = sample.accz
-                idx += 1
+    try
+        println("NeuroTester: TPT")
+        println("================")
+        println("   Duration: $duration [seconds]")
+        println("Serial port: $port_name")
+        println()
+        println("Ready to start — press SPACEBAR to begin the test")
+        println()
+
+        _wait_spacebar()
+
+        println("The test will start after a beep")
+
+        # flush stale serial data accumulated while waiting for the user
+        _serial_flush(sp, _TPT_WARMUP_SECS)
+
+        println()
+        _beep()
+        print("   Pinch the thumb and the index finger as quickly as possible")
+
+        # collect exactly n_samples valid samples
+        idx = 1
+        while idx <= n_samples
+            line = _serial_listener(sp)
+            if isnothing(line)
+                sleep(0.001)
+            else
+                sample = _parse_tpt_sample(line)
+                if !isnothing(sample)
+                    tpt_ch_x[idx] = sample.x
+                    tpt_ch_y[idx] = sample.y
+                    tpt_ch_z[idx] = sample.z
+                    tpt_ch_accx[idx] = sample.accx
+                    tpt_ch_accy[idx] = sample.accy
+                    tpt_ch_accz[idx] = sample.accz
+                    idx += 1
+                end
             end
         end
+    finally
+        _serial_close(sp)
     end
-
-    _serial_close(sp)
     _beep()
     println()
     println()

@@ -2,7 +2,7 @@ export cwd
 export icwd
 
 """
-    cwd(s; <keyword arguments>)
+    _cwd(s; <keyword arguments>)
 
 Perform continuous wavelet decomposition (CWD) on a signal vector.
 
@@ -17,7 +17,7 @@ Returns the real part of the CWT coefficient matrix. Each row corresponds to one
 
 - `Matrix{Float64}`: CWT coefficient matrix of shape `(n_scales,  length(s))`
 """
-function cwd(
+function _cwd(
     s::AbstractVector;
     wt::T = wavelet(Morlet(2π); β = 2),
 )::Matrix{Float64} where {T <: CWT}
@@ -28,7 +28,7 @@ function cwd(
 end
 
 """
-    cwd(s; <keyword arguments>)
+    _cwd(s; <keyword arguments>)
 
 Perform continuous wavelet decomposition on a 3-D signal array.
 
@@ -43,7 +43,7 @@ Applies [`cwd(::AbstractVector)`](@ref) to every channel × epoch slice in paral
 
 - `Array{Float64, 4}`: CWT coefficients of shape `(channels, n_scales, samples, epochs)`
 """
-function cwd(
+function _cwd(
     s::AbstractArray;
     wt::T = wavelet(Morlet(2π); β = 2),
 )::Array{Float64, 4} where {T <: CWT}
@@ -63,7 +63,7 @@ function cwd(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ct[ch_idx, :, :, ep_idx] = NeuroAnalyzer.cwd(@view(s[ch_idx, :, ep_idx]), wt = wt)
+        ct[ch_idx, :, :, ep_idx] = NeuroAnalyzer._cwd(@view(s[ch_idx, :, ep_idx]), wt = wt)
     end
 
     _log_on()
@@ -95,7 +95,7 @@ function cwd(
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return cwd(@view(obj.data[ch, :, :]); wt = wt)
+    return _cwd(@view(obj.data[ch, :, :]); wt = wt)
 end
 
 """

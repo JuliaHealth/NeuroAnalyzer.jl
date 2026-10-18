@@ -3,7 +3,7 @@ export ica_remove
 export ica_remove!
 
 """
-    ica_decompose(s; <keyword arguments>)
+    _ica_decompose(s; <keyword arguments>)
 
 Decompose a signal into Independent Components (ICs) using the FastICA algorithm.
 
@@ -22,7 +22,7 @@ Named tuple:
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: weighting (unmixing) matrix, shape (channels, n)
 """
-function ica_decompose(
+function _ica_decompose(
     s::AbstractMatrix;
     n::Int64,
     iter::Int64=100,
@@ -142,7 +142,7 @@ function ica_decompose(
     length(ch) == 1 && (ch = ch[1])
 
     # perform decomposition on the selected slice
-    ica_data = ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f, rng=rng)
+    ica_data = _ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f, rng=rng)
     ic = ica_data.ic
     ic_mw = ica_data.ic_mw
 

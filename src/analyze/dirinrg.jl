@@ -1,7 +1,7 @@
 export dirinrg
 
 """
-    dirinrg(s)
+    _dirinrg(s)
 
 Calculate Dirichlet energy for a 1-D signal vector.
 
@@ -17,14 +17,14 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 
 - `Float64`: Dirichlet energy
 """
-function dirinrg(s::AbstractVector)::Float64
+function _dirinrg(s::AbstractVector)::Float64
     # sum(abs2, diff(s)) = Σ(Δs)²
     # equivalent to norm(diff(s), 2)^2 but avoids the sqrt in norm() immediately followed by squaring it back
     return sum(abs2, diff(s))
 end
 
 """
-    dirinrg(s)
+    _dirinrg(s)
 
 Calculate Dirichlet energy. It measures the "roughness" of a discrete signal by summing the squared differences between consecutive samples: E(s) = Σ (s[i+1] - s[i])²  =  ‖diff(s)‖²
 
@@ -38,7 +38,7 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 
 - `Matrix{Float64}`: Dirichlet energy, shape (channels, epochs)
 """
-function dirinrg(s::AbstractArray)::Matrix{Float64}
+function _dirinrg(s::AbstractArray)::Matrix{Float64}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -53,7 +53,7 @@ function dirinrg(s::AbstractArray)::Matrix{Float64}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        dn[ch_idx, ep_idx] = dirinrg(@view(s[ch_idx, :, ep_idx]))
+        dn[ch_idx, ep_idx] = _dirinrg(@view(s[ch_idx, :, ep_idx]))
     end
 
     return dn
@@ -88,5 +88,5 @@ function dirinrg(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return dirinrg(@view(obj.data[ch, :, :]))
+    return _dirinrg(@view(obj.data[ch, :, :]))
 end

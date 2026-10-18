@@ -1,7 +1,7 @@
 export iplv
 
 """
-    iplv(s1, s2)
+    _iplv(s1, s2)
 
 Calculate Imaginary Phase Locking Value (IPLV) for two 1-D signal vectors.
 
@@ -30,7 +30,7 @@ Named tuple:
 
 1. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
-function iplv(
+function _iplv(
     s1::AbstractVector,
     s2::AbstractVector,
 )::@NamedTuple{
@@ -154,7 +154,7 @@ function iplv(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        iplv_data = iplv(
+        iplv_data = _iplv(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -219,7 +219,7 @@ function iplv(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:(ch_idx1 - 1)
-            ipl[ch_idx1, ch_idx2, ep_idx] = iplv(
+            ipl[ch_idx1, ch_idx2, ep_idx] = _iplv(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx]),
             ).ipl

@@ -1,7 +1,7 @@
 export ispc
 
 """
-    ispc(s1, s2)
+    _ispc(s1, s2)
 
 Calculate ISPC (Inter-Site-Phase Clustering) for two 1-D signal vectors.
 
@@ -27,7 +27,7 @@ Named tuple:
 - `s1ph::Vector{Float64}`: instantaneous phase of s1
 - `s2ph::Vector{Float64}`: instantaneous phase of s2
 """
-function ispc(
+function _ispc(
     s1::AbstractVector,
     s2::AbstractVector,
 )::@NamedTuple{
@@ -109,7 +109,7 @@ function ispc(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:(ch_idx1 - 1)
-            ispc_data = ispc(
+            ispc_data = _ispc(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             )
@@ -209,7 +209,7 @@ function ispc(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ispc_data = ispc(
+        ispc_data = _ispc(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )

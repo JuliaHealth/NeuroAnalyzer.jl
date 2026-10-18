@@ -1,7 +1,7 @@
 export cosim
 
 """
-    cosim(s1, s2)
+    _cosim(s1, s2)
 
 Measures the cosine of the angle between two 1-D signal vectors.
 
@@ -20,7 +20,7 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
 - `Float64`: cosine similarity value ∈ [-1, 1]
 """
-function cosim(s1::AbstractVector, s2::AbstractVector)::Float64
+function _cosim(s1::AbstractVector, s2::AbstractVector)::Float64
     # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
@@ -101,7 +101,7 @@ function cosim(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        cs[ch_idx, ep_idx] = cosim(
+        cs[ch_idx, ep_idx] = _cosim(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -153,7 +153,7 @@ function cosim(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            cs[ch_idx1, ch_idx2, ep_idx] = cosim(
+            cs[ch_idx1, ch_idx2, ep_idx] = _cosim(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             )

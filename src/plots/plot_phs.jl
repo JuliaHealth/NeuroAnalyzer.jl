@@ -139,7 +139,7 @@ function plot_phs(
 
     # get mean and 95%CI
     if ci95
-        msci95_data = NeuroAnalyzer.msci95(ph[:, f1:f2])
+        msci95_data = NeuroAnalyzer._msci95(ph[:, f1:f2])
         s_m = msci95_data.sm
         s_l = msci95_data.ll
         s_u = msci95_data.ul
@@ -462,7 +462,7 @@ function plot_phs_topo(
 
         push!(pp_vec, pp)
 
-        pp_full = plot_psd(
+        pp_full = _plot_psd(
             f, ph[idx, f1:f2];
             xlabel = xlabel,
             ylabel = ylabel,
@@ -631,7 +631,7 @@ function plot_phs(
 
     # calculate phs
     fs = sr(obj)
-    phs_data = phs(signal; fs = fs)
+    phs_data = _phs(signal; fs = fs)
     ph, f = phs_data.ph, phs_data.f
 
     # frequency limits

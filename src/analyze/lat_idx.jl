@@ -85,11 +85,11 @@ function lat_idx(
     # for ERP/ERF use epoch 1 (the trial-averaged waveform); keep it 3-D with
     # a singleton epoch dimension so _chk3d() inside psd() does not fail
     if datatype(obj) in ["erp", "erf"]
-        psd_l = psd(@view(obj.data[ch_l, :, 1:1]); psd_kwargs...)
-        psd_r = psd(@view(obj.data[ch_r, :, 1:1]); psd_kwargs...)
+        psd_l = _psd(@view(obj.data[ch_l, :, 1:1]); psd_kwargs...)
+        psd_r = _psd(@view(obj.data[ch_r, :, 1:1]); psd_kwargs...)
     else
-        psd_l = psd(@view(obj.data[ch_l, :, :]); psd_kwargs...)
-        psd_r = psd(@view(obj.data[ch_r, :, :]); psd_kwargs...)
+        psd_l = _psd(@view(obj.data[ch_l, :, :]); psd_kwargs...)
+        psd_r = _psd(@view(obj.data[ch_r, :, :]); psd_kwargs...)
     end
 
     _log_on()

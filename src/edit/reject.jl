@@ -14,7 +14,7 @@ function detect_rmse(s::AbstractMatrix)::Vector{Bool}
     ch_n = size(s, 1)
     # cross-channel median reference signal
     ch_m = vec(median(s; dims = 1))
-    rmse_ch = [rmse(@view(s[i, :]), ch_m) for i = 1:ch_n]
+    rmse_ch = [_rmse(@view(s[i, :]), ch_m) for i = 1:ch_n]
 
     # compute CI once; was called twice per iteration (wasted allocation)
     ci = HypothesisTests.confint(OneSampleTTest(rmse_ch))
@@ -90,7 +90,7 @@ function detect_tkeo(
     thresh = cl2z(p)
 
     for ch_idx = 1:ch_n
-        stkeo = tkeo(@view(s[ch_idx, :]), t; method = tkeo_method)
+        stkeo = _tkeo(@view(s[ch_idx, :]), t; method = tkeo_method)
         z_signal = vec(NeuroAnalyzer.zscore(s[ch_idx, :]))
         z_tkeo = vec(NeuroAnalyzer.zscore(stkeo))
 
@@ -139,7 +139,7 @@ function detect_ransac(
         x = @view s[nearest_idx, :]
 
         # remove RANSAC outliers before computing windowed correlation
-        df = DataFrame(:y => remove_dc(y), :x => remove_dc(x))
+        df = DataFrame(:y => _remove_dc(y), :x => _remove_dc(x))
         reg = createRegressionSetting(@formula(y ~ x), df)
         out = ransac(reg; t = ransac_t, k = 128)["outliers"]
         idx = setdiff(1:length(x), out)

@@ -3,7 +3,7 @@ export mwpsd
 export ghpsd
 
 """
-    psd(s; <keyword arguments>)
+    _psd(s; <keyword arguments>)
 
 Calculate Power Spectral Density for a 1-D signal vector.
 
@@ -41,7 +41,7 @@ Named tuple:
 - Setting `demean=true` reduces (but doesn't fully eliminate) DC contamination; the 0 Hz bin is still present in the output.
 - `:welch`, `:fft`, `:mt` and `:stft` return a one-sided PSD (units²/Hz). `:mw` and `:gh` return band power (units²) at each frequency and are not directly comparable with the other methods.
 """
-function psd(
+function _psd(
     s::AbstractVector;
     fs::Int64,
     db::Bool = false,
@@ -72,14 +72,14 @@ function psd(
     n = length(s)
 
     if method === :mt
-        demean && (s = remove_dc(s))
+        demean && (s = _remove_dc(s))
         # Slepian tapers already window the data; nw so that 2nw - 1 = nt
         pg = DSP.mt_pgram(s; fs = fs, nw = (nt + 1) / 2, ntapers = nt)
         f = Vector(freq(pg))
         p = power(pg)[1:length(f)]
 
     elseif method === :stft
-        demean && (s = remove_dc(s))
+        demean && (s = _remove_dc(s))
         win = w ? DSP.hanning : nothing
         # per-segment PSD (properly scaled), averaged over segments
         sp = DSP.spectrogram(s, wlen, woverlap; fs = fs, window = win)
@@ -87,14 +87,14 @@ function psd(
         p = vec(mean(power(sp); dims = 2))
 
     elseif method === :welch
-        demean && (s = remove_dc(s))
+        demean && (s = _remove_dc(s))
         win = w ? DSP.hanning : nothing
         pg = DSP.welch_pgram(s, wlen, woverlap; fs = fs, window = win)
         f = Vector(freq(pg))
         p = power(pg)
 
     elseif method === :fft
-        demean && (s = remove_dc(s))
+        demean && (s = _remove_dc(s))
         win = w ? DSP.hanning : nothing
         pg = DSP.periodogram(s; fs = fs, window = win)
         f = Vector(freq(pg))
@@ -117,7 +117,7 @@ function psd(
 end
 
 """
-    psd(s; <keyword arguments>)
+    _psd(s; <keyword arguments>)
 
 Calculate Power Spectral Density for each channel of a matrix.
 
@@ -155,7 +155,7 @@ Named tuple:
 - Setting `demean=true` reduces (but doesn't fully eliminate) DC contamination; the 0 Hz bin is still present in the output.
 - `:welch`, `:fft`, `:mt` and `:stft` return a one-sided PSD (units²/Hz). `:mw` and `:gh` return band power (units²) at each frequency and are not directly comparable with the other methods.
 """
-function psd(
+function _psd(
     s::AbstractMatrix;
     fs::Int64,
     db::Bool = false,
@@ -174,7 +174,7 @@ function psd(
     # validate
     size(s, 1) >= 1 || throw(ArgumentError("s must contain at least one channel."))
 
-    _psd(x) = psd(
+    psd_1(x) = _psd(
         x;
         fs = fs,
         db = db,
@@ -189,21 +189,21 @@ function psd(
     )
 
     # first channel also determines the output data
-    psd_data = _psd(@view(s[1, :]))
+    psd_data = psd_1(@view(s[1, :]))
     f = psd_data.f
     # pre-allocate output
     p = zeros(size(s, 1), length(f))
     p[1, :] = psd_data.p
 
     Threads.@threads :static for ch_idx = 2:size(s, 1)
-        p[ch_idx, :] = _psd(@view(s[ch_idx, :])).p
+        p[ch_idx, :] = psd_1(@view(s[ch_idx, :])).p
     end
  
     return (; p, f)
 end
 
 """
-    psd(s; <keyword arguments>)
+    _psd(s; <keyword arguments>)
 
 Calculate Power Spectral Density for a 3-D signal array.
 
@@ -241,7 +241,7 @@ Named tuple:
 - Setting `demean=true` reduces (but doesn't fully eliminate) DC contamination; the 0 Hz bin is still present in the output.
 - `:welch`, `:fft`, `:mt` and `:stft` return a one-sided PSD (units²/Hz). `:mw` and `:gh` return band power (units²) at each frequency and are not directly comparable with the other methods.
 """
-function psd(
+function _psd(
     s::AbstractArray;
     fs::Int64,
     db::Bool = false,
@@ -265,7 +265,7 @@ function psd(
     # number of epochs
     ep_n = size(s, 3)
 
-    _psd(x) = psd(
+    psd_1(x) = _psd(
         x;
         fs = fs,
         db = db,
@@ -280,7 +280,7 @@ function psd(
     )
 
     # first channel/epoch also determines the output data
-    psd_data = _psd(@view(s[1, :, 1]))
+    psd_data = psd_1(@view(s[1, :, 1]))
     f = psd_data.f
     # pre-allocate output
     p = zeros(ch_n, length(f), ep_n)
@@ -290,7 +290,7 @@ function psd(
     idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]
     Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        p[ch_idx, :, ep_idx] = _psd(@view(s[ch_idx, :, ep_idx])).p
+        p[ch_idx, :, ep_idx] = psd_1(@view(s[ch_idx, :, ep_idx])).p
     end
  
     return (; p, f)
@@ -364,7 +364,7 @@ function psd(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    psd_data = psd(
+    psd_data = _psd(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         db = db,
@@ -430,7 +430,7 @@ function mwpsd(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
 
-    demean && (s = remove_dc(s))
+    demean && (s = _remove_dc(s))
     # window the data first, then pad, so the taper covers only real samples
     s_w = w ? s .* hanning(length(s)) : collect(Float64, s)
     pad > 0 && (s_w = pad0(s_w, pad))
@@ -459,7 +459,7 @@ function mwpsd(
         sd = ncyc_v[frq_idx] / (2 * pi * f[frq_idx])
         t = max(1.0, 3 * sd)
         kernel = generate_morlet(fs, f[frq_idx], t; ncyc = ncyc_v[frq_idx], complex = true)
-        w_conv = fconv(s_w; kernel = kernel, norm = true)
+        w_conv = _fconv(s_w; kernel = kernel, norm = true)
         p[frq_idx] = median(abs2.(w_conv))
     end
  
@@ -509,7 +509,7 @@ function ghpsd(
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
-    demean && (s = remove_dc(s))
+    demean && (s = _remove_dc(s))
     flim = (0, fs / 2)
     nfrq = _tlength(flim)
     f = linspace(flim[1], flim[2], nfrq)
@@ -519,7 +519,7 @@ function ghpsd(
     # mean instantaneous power per frequency, without storing the full (frequencies × samples) matrix
     p = zeros(length(f))
     for frq_idx in eachindex(f)
-        env = filter_g(s_w; fs = fs, f = f[frq_idx], gw = gw)
+        env = _filter_g(s_w; fs = fs, f = f[frq_idx], gw = gw)
         p[frq_idx] = mean(abs2, env)
     end
  

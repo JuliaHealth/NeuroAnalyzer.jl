@@ -1,7 +1,8 @@
 export cbp
+export cbp!
 
 """
-    cbp(s; <keyword arguments>)
+    _cbp(s; <keyword arguments>)
 
 Perform convolution band-pass filtering at a single frequency.
 
@@ -18,7 +19,7 @@ Generates a sine-wave kernel at `frq` Hz over a ±1 s window and convolves it wi
 
 - `Vector{Float64}`: band-pass filtered signal of the same length as `s` (padding is removed after convolution)
 """
-function cbp(
+function _cbp(
     s::AbstractVector;
     pad::Int64 = 0,
     frq::Real,
@@ -33,7 +34,7 @@ function cbp(
     pad > 0 && (s = pad0(s, pad))
     kernel = generate_sine(frq, -1:(1 / fs):1)
 
-    return tconv(s; kernel = kernel)
+    return _tconv(s; kernel = kernel)
 end
 
 """
@@ -75,7 +76,7 @@ function cbp(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        obj_tmp.data[ch[ch_idx], :, ep_idx] = cbp(
+        obj_tmp.data[ch[ch_idx], :, ep_idx] = _cbp(
             @view(obj_tmp.data[ch[ch_idx], :, ep_idx]),
             pad = pad,
             frq = frq,

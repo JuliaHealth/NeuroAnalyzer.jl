@@ -241,7 +241,7 @@ function htransform(
 end
 
 """
-    transform(s; <keyword arguments>)
+    _transform(s; <keyword arguments>)
 
 Calculate Fourier or Hilbert transformation for a 3-D signal array.
 
@@ -262,7 +262,7 @@ Named tuple:
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phases in radians
 """
-function transform(
+function _transform(
     s::AbstractArray;
     pad::Int64 = 0,
     h::Bool = false,
@@ -329,7 +329,7 @@ function transform(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return transform(
+    return _transform(
         obj.data[ch, :, :];
         pad = pad,
         h = h,
@@ -339,7 +339,7 @@ function transform(
 end
 
 """
-    hanalytic(s)
+    _hanalytic(s)
 
 Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation for a 1-D signal vector.
 
@@ -351,14 +351,14 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 
 - `Vector{ComplexF64}`: complex analytic signal
 """
-function hanalytic(s::AbstractVector)::Vector{ComplexF64}
+function _hanalytic(s::AbstractVector)::Vector{ComplexF64}
     ha = DSP.hilbert(s)
 
     return ha
 end
 
 """
-    hanalytic(s; <keyword arguments>)
+    _hanalytic(s; <keyword arguments>)
 
 Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation for a 3-D signal array.
 
@@ -371,7 +371,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 
 - `Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
 """
-function hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
+function _hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -420,5 +420,5 @@ function hanalytic(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return NeuroAnalyzer.hanalytic(@view(obj.data[ch, :, :]))
+    return NeuroAnalyzer._hanalytic(@view(obj.data[ch, :, :]))
 end

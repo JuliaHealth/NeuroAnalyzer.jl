@@ -1,7 +1,7 @@
 export frqinst
 
 """
-    frqinst(s)
+    _frqinst(s)
 
 Estimate the instantaneous frequency of a signal via the Hilbert transform for a 1-D signal vector:
 
@@ -23,15 +23,15 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform for a
 
 Uses the Hilbert transform; best results for narrowband signals. Broadband signals produce meaningless instantaneous frequencies.
 """
-function frqinst(s::AbstractVector)::Vector{Float64}
+function _frqinst(s::AbstractVector)::Vector{Float64}
     h = htransform(s)
     ph = h.ph
 
-    return NeuroAnalyzer.derivative(DSP.unwrap(ph)) / (2 * π)
+    return NeuroAnalyzer._derivative(DSP.unwrap(ph)) / (2 * π)
 end
 
 """
-    frqinst(s)
+    _frqinst(s)
 
 Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
@@ -53,7 +53,7 @@ Estimate the instantaneous frequency of a signal via the Hilbert transform:
 
 Uses the Hilbert transform; best results for narrowband signals. Broadband signals produce meaningless instantaneous frequencies.
 """
-function frqinst(s::AbstractArray)::Array{Float64, 3}
+function _frqinst(s::AbstractArray)::Array{Float64, 3}
     _warn(
         "frqinst() uses Hilbert transform, the signal should be narrowband for best results.",
     )
@@ -71,7 +71,7 @@ function frqinst(s::AbstractArray)::Array{Float64, 3}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        f[ch_idx, :, ep_idx] = frqinst(@view(s[ch_idx, :, ep_idx]))
+        f[ch_idx, :, ep_idx] = _frqinst(@view(s[ch_idx, :, ep_idx]))
     end
 
     return f
@@ -112,5 +112,5 @@ function frqinst(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return frqinst(@view(obj.data[ch, :, :])) .* sr(obj)
+    return _frqinst(@view(obj.data[ch, :, :])) .* sr(obj)
 end

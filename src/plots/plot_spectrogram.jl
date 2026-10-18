@@ -670,7 +670,7 @@ function plot_spectrogram(
     # calculate spectrogram
     if length(ch) == 1 || type === :topo
         if method === :stft
-            spec_data = NeuroAnalyzer.spectrogram(
+            spec_data = NeuroAnalyzer._spectrogram(
                 signal; fs = fs, db = false, method = :stft,
                 wlen = wlen, woverlap = woverlap, w = w,
             )
@@ -678,7 +678,7 @@ function plot_spectrogram(
             title == "default" && (title = "Spectrogram (short-time Fourier)$ep_suffix")
 
         elseif method === :mt
-            spec_data = NeuroAnalyzer.spectrogram(
+            spec_data = NeuroAnalyzer._spectrogram(
                 signal; fs = fs, db = false, method = :mt,
                 nt = nt, wlen = wlen, woverlap = woverlap, w = w,
             )
@@ -705,7 +705,7 @@ function plot_spectrogram(
             title == "default" && (title = "CWT Scaleogram$ep_suffix")
 
         elseif method === :hht
-            imf = emd(signal, t)
+            imf = _emd(signal, t)
             spec_data =
                 NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], t; fs = fs, db = false)
             sp, sf, st = spec_data.p, spec_data.f, spec_data.t
@@ -713,7 +713,7 @@ function plot_spectrogram(
         end
     elseif length(ch) > 1 && type === :normal
         if method === :stft
-            psd_data = psd(
+            psd_data = _psd(
                 signal; fs = fs, db = db, method = :stft,
                 nt = nt, wlen = wlen, woverlap = woverlap, w = w,
             )
@@ -721,7 +721,7 @@ function plot_spectrogram(
             title == "default" && (title = "Spectrogram (short-time Fourier)$ep_suffix")
 
         elseif method === :mt
-            psd_data = psd(
+            psd_data = _psd(
                 signal; fs = fs, db = db, method = :mt,
                 nt = nt, wlen = wlen, woverlap = woverlap, w = w,
             )
@@ -729,31 +729,31 @@ function plot_spectrogram(
             title == "default" && (title = "Spectrogram (multi-tapered)$ep_suffix")
 
         elseif method === :mw
-            psd_data = psd(signal; fs = fs, db = db, method = :mw, w = w, ncyc = ncyc)
+            psd_data = _psd(signal; fs = fs, db = db, method = :mw, w = w, ncyc = ncyc)
             sp, sf = psd_data.p, psd_data.f
             title == "default" && (title = "Spectrogram (Morlet wavelet)$ep_suffix")
 
         elseif method === :gh
-            psd_data = psd(signal; fs = fs, db = db, method = :gh, w = w, gw = gw)
+            psd_data = _psd(signal; fs = fs, db = db, method = :gh, w = w, gw = gw)
             sp, sf = psd_data.p, psd_data.f
             title == "default" && (title = "Spectrogram (Gaussian-Hilbert)$ep_suffix")
 
         elseif method === :cwt
-            psd_data = psd(signal; fs = fs, method = :cwt, wt = wt)
+            psd_data = _psd(signal; fs = fs, method = :cwt, wt = wt)
             sp, sf = psd_data.p, psd_data.f
             sf[1] > flim[1] && (flim = (sf[1], flim[2]))
             sf[end] < flim[2] && (flim = (flim[1], sf[end]))
             title == "default" && (title = "CWT Scaleogram$ep_suffix")
 
         elseif method === :hht
-            imf = emd(signal[1, :], t)
+            imf = _emd(signal[1, :], t)
             spec_data =
                 NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], t; fs = fs, db = db)
             sp_tmp, sf = spec_data.p, spec_data.f
             sp = zeros(size(signal, 1), length(sp_tmp))
             sp[1, :] = sp_tmp
             for idx in axes(signal, 1)[(begin + 1):end]
-                imf = emd(signal[idx, :], t)
+                imf = _emd(signal[idx, :], t)
                 sp[idx, :] =
                     NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], t; fs = fs, db = db).p
             end

@@ -1,7 +1,7 @@
 export mdiff
 
 """
-    mdiff(s1, s2; <keyword arguments>)
+    _mdiff(s1, s2; <keyword arguments>)
 
 Calculate the mean difference and its bootstrap p-value for two signal matrices. Estimate whether the mean difference between two signal matrices is statistically significant using a permutation/bootstrap approach:
 
@@ -26,7 +26,7 @@ Named tuple:
 - `sts::Float64`: observed test statistic
 - `p::Float64`: proportion of bootstrap statistics exceeding `sts`
 """
-function mdiff(
+function _mdiff(
     s1::AbstractMatrix,
     s2::AbstractMatrix;
     n::Int64 = 3,
@@ -96,7 +96,7 @@ function mdiff(
 end
 
 """
-    mdiff(s1, s2; <keyword arguments>)
+    _mdiff(s1, s2; <keyword arguments>)
 
 Calculate the mean difference and its bootstrap p-value for each epoch of two 3-D signal arrays.
 
@@ -117,7 +117,7 @@ Named tuple:
 - `sts::Vector{Float64}`: observed statistics per epoch
 - `p::Vector{Float64}`: p-values per epoch
 """
-function mdiff(
+function _mdiff(
     s1::AbstractArray,
     s2::AbstractArray;
     n::Int64 = 3,
@@ -147,7 +147,7 @@ function mdiff(
 
     # calculate over epochs
     for ep_idx = 1:ep_n
-        mdiff_data = mdiff(
+        mdiff_data = _mdiff(
             @view(s1[:, :, ep_idx]),
             @view(s2[:, :, ep_idx]);
             n = n,
@@ -230,7 +230,7 @@ function mdiff(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return NeuroAnalyzer.mdiff(
+    return NeuroAnalyzer._mdiff(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]);
         n = n,

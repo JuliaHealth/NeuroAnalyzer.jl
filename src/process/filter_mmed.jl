@@ -2,7 +2,7 @@ export filter_mmed
 export filter_mmed!
 
 """
-    filter_mmed(s; <keyword arguments>)
+    _filter_mmed(s; <keyword arguments>)
 
 Filter a signal using a weighted moving median with an optional threshold.
 
@@ -24,7 +24,7 @@ Samples within the threshold band `[mean(s) − t×std(s), mean(s) + t×std(s)]`
 
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
 """
-function filter_mmed(
+function _filter_mmed(
     s::AbstractVector;
     k::Int64 = 8,
     t::Real = 0,
@@ -75,7 +75,7 @@ function filter_mmed(
 end
 
 """
-    filter_mmed(s; <keyword arguments>)
+    _filter_mmed(s; <keyword arguments>)
 
 Apply a weighted moving median filter to every channel × epoch slice of a 3-D signal array.
 
@@ -91,7 +91,7 @@ Apply a weighted moving median filter to every channel × epoch slice of a 3-D s
 
 - `Array{Float64, 3}`: filtered array of the same shape as `s`
 """
-function filter_mmed(
+function _filter_mmed(
     s::AbstractArray;
     k::Int64 = 8,
     t::Real = 0, ww::AbstractVector = ones(2 * k + 1),
@@ -111,7 +111,7 @@ function filter_mmed(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
         s_filtered[ch_idx, :, ep_idx] =
-            filter_mmed(@view(s[ch_idx, :, ep_idx]), k = k, t = t, ww = ww)
+            _filter_mmed(@view(s[ch_idx, :, ep_idx]), k = k, t = t, ww = ww)
     end
 
     return s_filtered
@@ -153,7 +153,7 @@ function filter_mmed(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = filter_mmed(
+    obj_tmp.data[ch, :, :] = _filter_mmed(
         @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
     )
     push!(obj_tmp.history, "filter_mmed(obj; ch=$ch, k=$k, t=$t, ww=$ww)")

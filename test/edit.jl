@@ -158,11 +158,11 @@ d = extract_data(e10; ch = "all")
 
 @info "Test: trim()"
 s = collect(1:100)
-@test NeuroAnalyzer.trim(s, seg = (1, 10)) == 11:100
+@test NeuroAnalyzer._trim(s, seg = (1, 10)) == 11:100
 m = rand(10, 100)
-@test size(NeuroAnalyzer.trim(m, seg = (1, 10))) == (10, 90)
+@test size(NeuroAnalyzer._trim(m, seg = (1, 10))) == (10, 90)
 a = rand(10, 100, 10)
-@test size(NeuroAnalyzer.trim(a, seg = (1, 10))) == (10, 90, 10)
+@test size(NeuroAnalyzer._trim(a, seg = (1, 10))) == (10, 90, 10)
 e_tmp = NeuroAnalyzer.trim(eeg; seg = (0, 11))
 @test size(e_tmp) == (24, 305663, 1)
 e_tmp = NeuroAnalyzer.trim(eeg; seg = (0, 21), keep = true)

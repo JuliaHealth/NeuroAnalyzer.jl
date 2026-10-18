@@ -97,7 +97,7 @@ function _interpolate2d(
     s_interpolated = rotl90(s_interpolated)
 
     # normalize the interpolated data
-    normalized_signal = NeuroAnalyzer.normalize(s_interpolated; method = nmethod)
+    normalized_signal = NeuroAnalyzer._normalize(s_interpolated; method = nmethod)
 
     return normalized_signal, interpolated_x, interpolated_y
 end

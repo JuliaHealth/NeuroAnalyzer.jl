@@ -1,7 +1,7 @@
 export cph
 
 """
-    cph(s1, s2; <keyword arguments>)
+    _cph(s1, s2; <keyword arguments>)
 
 Computes the instantaneous phase of the cross-power spectrum between two 1-D signal vectors using multi-taper estimation.
 
@@ -18,7 +18,7 @@ Named tuple:
 - `ph::Vector{Float64}`: cross-power spectrum phase in radians
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(
+function _cph(
     s1::AbstractVector,
     s2::AbstractVector;
     fs::Int64,
@@ -45,7 +45,7 @@ function cph(
 end
 
 """
-    cph(s; <keyword arguments>)
+    _cph(s; <keyword arguments>)
 
 Computes the instantaneous phase of the cross-power spectrum between all channel pairs of a 3-D signal array using multi-taper estimation.
 
@@ -61,7 +61,7 @@ Named tuple:
 - `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians), shape (channels, channels, frequencies, epochs)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(
+function _cph(
     s::AbstractArray;
     fs::Int64,
 )::@NamedTuple{
@@ -76,12 +76,12 @@ function cph(
     # number of epochs
     ep_n = size(s, 3)
 
-    _cph(x1, x2) = cph(x1,
+    cph_1(x1, x2) = _cph(x1,
                        x2; 
                        fs = fs)
 
     # first channel/epoch also determines the output data
-    cph_data = _cph(@view(s[1, :, 1]), @view(s[1, :, 1]))
+    cph_data = cph_1(@view(s[1, :, 1]), @view(s[1, :, 1]))
     f = cph_data.f
     # pre-allocate output
     ph = zeros(ch_n, ch_n, length(f), ep_n)
@@ -97,7 +97,7 @@ function cph(
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
             # @view avoids copying the (samples,) slices per thread.
-            ph[ch_idx1, ch_idx2, :, ep_idx], _ = _cph(
+            ph[ch_idx1, ch_idx2, :, ep_idx], _ = cph_1(
                 @view(s[ch_idx1, :, ep_idx]),
                 @view(s[ch_idx2, :, ep_idx])
             )
@@ -119,7 +119,7 @@ function cph(
 end
 
 """
-    cph(s1, s2; <keyword arguments>)
+    _cph(s1, s2; <keyword arguments>)
 
 Calculate cross-phases between paired channels of two 3-D signal arrays.
 
@@ -136,7 +136,7 @@ Named tuple:
 - `ph::Array{Float64, 3}`: cross-power spectrum phase in radians, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(
+function _cph(
     s1::AbstractArray,
     s2::AbstractArray;
     fs::Int64,
@@ -154,12 +154,12 @@ function cph(
     # number of epochs
     ep_n = size(s1, 3)
 
-    _cph(x1, x2) = cph(x1,
+    cph_1(x1, x2) = _cph(x1,
                        x2; 
                        fs = fs)
 
     # first channel/epoch also determines the frequency vector
-    cph_data = _cph(@view(s1[1, :, 1],), @view(s2[1, :, 1]))
+    cph_data = cph_1(@view(s1[1, :, 1],), @view(s2[1, :, 1]))
     f = cph_data.f
     # pre-allocate output
     ph = zeros(ch_n, length(f), ep_n)
@@ -169,7 +169,7 @@ function cph(
     idxs = CartesianIndices((ch_n, ep_n))[2:end]
     @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        ph[ch_idx, :, ep_idx] = cph(
+        ph[ch_idx, :, ep_idx] = _cph(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx]),
             fs = fs,
@@ -210,7 +210,7 @@ function cph(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return cph(@view(obj.data[ch, :, :]); fs = sr(obj))
+    return _cph(@view(obj.data[ch, :, :]); fs = sr(obj))
 end
 
 """
@@ -275,7 +275,7 @@ function cph(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return cph(
+    return _cph(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]);
         fs = sr(obj1),

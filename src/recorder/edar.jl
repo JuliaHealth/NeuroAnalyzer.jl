@@ -1,6 +1,32 @@
 export iedar
 export edar
 
+# Grove GSR Arduino sketch: 50 Hz, lines "gsr:<value>"
+const _EDA_FS = 50
+const _EDA_BAUDRATE = 19200
+const _EDA_REGEX = r"gsr:([0-9]+\.[0-9]+)"
+
+# value of one EDA serial line, or nothing if the line is not an EDA sample
+function _parse_eda_sample(line::String)::Union{Float64, Nothing}
+    m = match(_EDA_REGEX, line)
+    return isnothing(m) ? nothing : parse(Float64, m.captures[1])
+end
+
+# NEURO object with one EDA channel from the recorded samples
+function _build_eda_object(eda_signal::Vector{Float64})::NeuroAnalyzer.NEURO
+    isempty(eda_signal) && throw(ArgumentError("No EDA samples were recorded."))
+    obj = create_object(; data_type = "eda")
+    add_channel!(
+        obj;
+        data = reshape(eda_signal, 1, :, 1),
+        label = ["eda1"],
+        type = ["eda"],
+        unit = ["μS"],
+    )
+    create_time!(obj; fs = _EDA_FS)
+    return obj
+end
+
 """
     iedar(; <keyword arguments>)
 
@@ -8,11 +34,11 @@ Record electrodermal activity (EDA) in GUI mode.
 
 EDA (also known as Galvanic Skin Response / skin conductance) is recorded using a Grove GSR sensor via an Arduino connected over a virtual serial port.
 
-Nominal sampling rate is 50 Hz.
+Nominal sampling rate is 50 Hz. If the window is closed before the end of the recording, the samples recorded so far are returned.
 
 # Arguments
 
-- `duration::Int64=20`: recording duration in seconds
+- `duration::Int64=20`: recording duration in seconds; must be > 0
 - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
@@ -23,14 +49,17 @@ function iedar(;
     duration::Int64 = 20,
     port_name::String = "/dev/ttyUSB0",
 )::NeuroAnalyzer.NEURO
-    sp = _serial_open(port_name; baudrate = 19200)
-    isnothing(sp) && throw(ArgumentError("Serial port $port_name is not available."))
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
+    sp = _serial_open(port_name; baudrate = _EDA_BAUDRATE)
 
-    fs = 50   # Grove GSR Arduino sketch runs at 50 Hz
-    t = collect(0:(1 / fs):duration)
-    eda_signal = fill(NaN, length(t))
+    n = duration * _EDA_FS
+    t = collect(0:(n - 1)) ./ _EDA_FS
+    eda_signal = fill(NaN, n)
+    n_rec = 0             # number of recorded samples
+    aborted = false       # set when the window is closed
+    rec_task = nothing    # recording task (started by RECORD)
 
-    p = Plots.plot(;
+    plot_kw = (
         ylims = (0, 10),
         xlims = (t[1], t[end]),
         legend = false,
@@ -45,11 +74,11 @@ function iedar(;
 
     function _activate(app)
         win = GtkApplicationWindow(app, "NeuroRecorder: iedar()")
-        Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 40)
+        Gtk4.default_size(win, plot_kw.size[1], plot_kw.size[2] + 40)
 
         can = GtkCanvas()
-        can.content_width = p.attr[:size][1]
-        can.content_height = p.attr[:size][2]
+        can.content_width = plot_kw.size[1]
+        can.content_height = plot_kw.size[2]
 
         g = GtkGrid()
         g.column_homogeneous = false
@@ -77,6 +106,12 @@ function iedar(;
         push!(win, vbox)
         Gtk4.show(win)
 
+        # closing the window stops the recording
+        signal_connect(win, "close-request") do widget
+            aborted = true
+            return false
+        end
+
         @guarded draw(can) do widget
             p_draw = Plots.plot(
                 t, eda_signal;
@@ -84,16 +119,7 @@ function iedar(;
                 ms = 0.5,
                 lw = 0.5,
                 lc = :black,
-                ylims = (0, 10),
-                xlims = (t[1], t[end]),
-                legend = false,
-                palette = :darktest,
-                size = (800, 400),
-                margins = 20Plots.PlotMeasures.px,
-                xlabelfontsize = 8,
-                ylabelfontsize = 8,
-                xtickfontsize = 8,
-                ytickfontsize = 8,
+                plot_kw...,
             )
             io = IOBuffer()
             ctx = getgc(can)
@@ -108,36 +134,37 @@ function iedar(;
 
         return @guarded signal_connect(bt_record, "clicked") do widget
             bt_record.sensitive = false
-            Threads.@spawn begin
-                @idle_add lb_status2.label = "PREPARING"
-                ts = time()
-                while time() - ts <= 2
-                    _serial_listener(sp)
-                end
-                _beep()
-                @idle_add lb_status2.label = "RECORDING"
-                t_refresh = time()
-                idx = 1
-                while idx <= length(eda_signal)
-                    if time() - t_refresh >= 0.1
-                        @idle_add draw(can)
-                        t_refresh = time()
-                    end
-                    sp_signal = _serial_listener(sp)
-                    if !isnothing(sp_signal)
-                        m = match(r"gsr:([0-9]+\.[0-9]+)", sp_signal)
-                        if !isnothing(m)
-                            eda_signal[idx] = parse(Float64, m.captures[1])
-                            idx += 1
+            rec_task = Threads.@spawn begin
+                try
+                    @idle_add lb_status2.label = "PREPARING"
+                    _serial_flush(sp, 2)
+                    _beep()
+                    @idle_add lb_status2.label = "RECORDING"
+                    t_refresh = time()
+                    while n_rec < n && !aborted
+                        if time() - t_refresh >= 0.1
+                            @idle_add draw(can)
+                            t_refresh = time()
+                        end
+                        line = _serial_listener(sp)
+                        isnothing(line) && (sleep(0.001); continue)
+                        v = _parse_eda_sample(line)
+                        if !isnothing(v)
+                            n_rec += 1
+                            eda_signal[n_rec] = v
                         end
                     end
+                    aborted && return nothing
+                    @idle_add draw(can)
+                    @idle_add lb_status2.label = "FINISHED"
+                    _beep()
+                    sleep(2)
+                    @idle_add close(win)
+                catch err
+                    @error "EDA recording failed" exception = (err, catch_backtrace())
+                finally
+                    _serial_close(sp)
                 end
-                @idle_add draw(can)
-                _serial_close(sp)
-                @idle_add lb_status2.label = "FINISHED"
-                _beep()
-                sleep(2)
-                @idle_add close(win)
             end
         end
     end
@@ -147,14 +174,12 @@ function iedar(;
     Gtk4.GLib.stop_main_loop()
     Gtk4.run(app)
 
-    # trim the pre-allocated trailing sample
-    eda_signal = reshape(eda_signal[1:(end - 1)], 1, :, 1)
+    # the window is closed: stop the recording task (if any) and release the port
+    aborted = true
+    isnothing(rec_task) || wait(rec_task)
+    _serial_close(sp)
 
-    obj = create_object(; data_type = "eda")
-    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["μS"])
-    create_time!(obj; fs = fs)
-
-    return obj
+    return _build_eda_object(eda_signal[1:n_rec])
 end
 
 """
@@ -168,7 +193,7 @@ Nominal sampling rate is 50 Hz.
 
 # Arguments
 
-- `duration::Int64=20`: recording duration in seconds
+- `duration::Int64=20`: recording duration in seconds; must be > 0
 - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
@@ -179,67 +204,55 @@ function edar(;
     duration::Int64 = 20,
     port_name::String = "/dev/ttyUSB0",
 )::NeuroAnalyzer.NEURO
-    sp = _serial_open(port_name; baudrate = 19200)
-    isnothing(sp) && throw(ArgumentError("Serial port $port_name is not available."))
+    duration > 0 || throw(ArgumentError("duration must be > 0."))
+    sp = _serial_open(port_name; baudrate = _EDA_BAUDRATE)
 
-    println("NeuroRecorder: EDA")
-    println("==================")
-    println("   Duration: $duration [seconds]")
-    println("Serial port: $port_name")
-    println()
-    println("Ready to start, press SPACEBAR to begin recording")
-    println()
+    n = duration * _EDA_FS
+    eda_signal = zeros(n)
 
-    # wait for spacebar
-    while true
-        ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, true)
-        ret == 0 || error("Unable to switch to raw mode.")
-        kbd_key = read(stdin, Char)
-        ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, false)
-        kbd_key == ' ' && break
-    end
+    try
+        println("NeuroRecorder: EDA")
+        println("==================")
+        println("   Duration: $duration [seconds]")
+        println("Serial port: $port_name")
+        println()
+        println("Ready to start, press SPACEBAR to begin recording")
+        println()
 
-    println("The recording will start after a beep")
-    ts = time()
-    while time() - ts <= 2
-        _serial_listener(sp)
-    end
-    println()
-    _beep()
-    print("Recording .")
+        _wait_spacebar()
 
-    fs = 50
-    t = collect(0:(1 / fs):duration)
-    eda_signal = zeros(length(t))
+        println("The recording will start after a beep")
+        # discard data buffered while waiting for the user
+        _serial_flush(sp, 2)
+        println()
+        _beep()
+        print("Recording .")
 
-    idx = 1
-    ts = time()
-    while idx <= length(eda_signal)
-        sp_signal = _serial_listener(sp)
-        if !isnothing(sp_signal)
-            m = match(r"gsr:([0-9]+\.[0-9]+)", sp_signal)
-            if !isnothing(m)
-                eda_signal[idx] = parse(Float64, m.captures[1])
-                idx += 1
+        idx = 1
+        ts = time()
+        while idx <= n
+            line = _serial_listener(sp)
+            if isnothing(line)
+                sleep(0.001)
+            else
+                v = _parse_eda_sample(line)
+                if !isnothing(v)
+                    eda_signal[idx] = v
+                    idx += 1
+                end
+            end
+            if time() - ts >= 1.0
+                print(".")
+                ts = time()
             end
         end
-        if time() - ts >= 1.0
-            print(".")
-            ts = time()
-        end
+    finally
+        _serial_close(sp)
     end
-    _serial_close(sp)
     _beep()
     println()
     println()
     println("Recording finished.")
 
-    # trim the pre-allocated trailing sample and build the NEURO object
-    eda_signal = reshape(eda_signal[1:(end - 1)], 1, :, 1)
-
-    obj = create_object(; data_type = "eda")
-    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["μS"])
-    create_time!(obj; fs = fs)
-
-    return obj
+    return _build_eda_object(eda_signal)
 end

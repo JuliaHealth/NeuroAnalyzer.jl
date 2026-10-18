@@ -1,7 +1,7 @@
 export cwtfrq
 
 """
-    cwtfrq(s; <keyword arguments>)
+    _cwtfrq(s; <keyword arguments>)
 
 Return the mean frequencies of a collection of analytic or real wavelets for a signal of a given length.
 
@@ -17,7 +17,7 @@ The first frequency bin is set to `0.0` Hz because `getMeanFreq` returns a non-p
 
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places), length determined by the number of wavelet scales
 """
-function cwtfrq(
+function _cwtfrq(
     s::AbstractVector;
     fs::Int64,
     wt::T = wavelet(Morlet(2π); β = 2),
@@ -41,7 +41,7 @@ function cwtfrq(
 end
 
 """
-    cwtfrq(s; <keyword arguments>)
+    _cwtfrq(s; <keyword arguments>)
 
 Return the mean frequencies of a collection of analytic or real wavelets for a 3-D signal array.
 
@@ -57,7 +57,7 @@ Delegates to the vector method using the first channel and first epoch `s[1, :, 
 
 - `Vector{Float64}`: center frequencies in Hz (rounded to 2 decimal places)
 """
-function cwtfrq(
+function _cwtfrq(
     s::AbstractArray;
     fs::Int64,
     wt::T = wavelet(Morlet(2π); β = 2),
@@ -67,7 +67,7 @@ function cwtfrq(
     _chk3d(s)
 
     # all epochs/channels share the same length → any single slice is representative
-    return cwtfrq(@view(s[1, :, 1]); fs = fs, wt = wt)
+    return _cwtfrq(@view(s[1, :, 1]); fs = fs, wt = wt)
 end
 
 """
@@ -90,5 +90,5 @@ function cwtfrq(
     obj::NeuroAnalyzer.NEURO;
     wt::T = wavelet(Morlet(2π); β = 2),
 ) where {T <: CWT}
-    return cwtfrq(@view(obj.data[1, :, 1]); fs = sr(obj), wt = wt)
+    return _cwtfrq(@view(obj.data[1, :, 1]); fs = sr(obj), wt = wt)
 end

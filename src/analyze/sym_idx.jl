@@ -1,7 +1,7 @@
 export sym_idx
 
 """
-    sym_idx(s)
+    _sym_idx(s)
 
 Calculate signal symmetry index (ratio of positive to negative amplitudes) for a 1-D signal vector.
 
@@ -15,14 +15,14 @@ Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates t
 
 - `Float64`: symmetry index
 """
-function sym_idx(s::AbstractVector)::Float64
+function _sym_idx(s::AbstractVector)::Float64
     sym = sum(s .< 0) == 0 ? sum(s .>= 0) : sum(s .>= 0) / sum(s .< 0)
 
     return sym
 end
 
 """
-    sym_idx(s)
+    _sym_idx(s)
 
 Calculate signal symmetry index (ratio of positive to negative amplitudes) for a 3-D signal array.
 
@@ -36,7 +36,7 @@ Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates t
 
 - `Matrix{Float64}`: symmetry index
 """
-function sym_idx(s::AbstractArray)::Matrix{Float64}
+function _sym_idx(s::AbstractArray)::Matrix{Float64}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -50,7 +50,7 @@ function sym_idx(s::AbstractArray)::Matrix{Float64}
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        sym[ch_idx, ep_idx] = sym_idx(@view(s[ch_idx, :, ep_idx]))
+        sym[ch_idx, ep_idx] = _sym_idx(@view(s[ch_idx, :, ep_idx]))
     end
 
     return sym
@@ -81,5 +81,5 @@ function sym_idx(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return sym_idx(@view(obj.data[ch, :, :]))
+    return _sym_idx(@view(obj.data[ch, :, :]))
 end

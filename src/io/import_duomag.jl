@@ -197,7 +197,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         a2 = clamp(stim_sample[idx] + 10, 1, size(data, 2))
         data[idx, a1:a2, 1] .*= 0.05
         # remove DC offset relative to pre-stim baseline
-        data[idx, :] = remove_dc(data[idx, :], max(stim_sample[idx] - 10, 1))
+        data[idx, :] = _remove_dc(data[idx, :], max(stim_sample[idx] - 10, 1))
     end
     data .*= sensitivity
 

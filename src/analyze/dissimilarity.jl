@@ -34,7 +34,7 @@ function topo_var(
 end
 
 """
-    diss(s1, s2)
+    _diss(s1, s2)
 
 Calculate Global Dissimilarity and Spatial Correlation. Measure how different two GFP-normalised scalp topographies are at each time point:
 
@@ -57,7 +57,7 @@ Named tuple:
 - `gd::Vector{Float64}`: global dissimilarity ∈ [0, 2], one value per time point
 - `sc::Vector{Float64}`: spatial correlation ∈ [-1, 1], one value per time point
 """
-function diss(
+function _diss(
     s1::AbstractMatrix,
     s2::AbstractMatrix,
 )::@NamedTuple{
@@ -147,7 +147,7 @@ function diss(
             ),
         )
 
-    return diss(
+    return _diss(
         @view(obj1.data[ch1, :, 1]),
         @view(obj2.data[ch2, :, 1])
     )

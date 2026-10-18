@@ -2,7 +2,7 @@ export entropy
 export negentropy
 
 """
-    entropy(s)
+    _entropy(s)
 
 Calculate signal entropy descriptors for a 1-D signal vector:
 
@@ -33,7 +33,7 @@ Named tuple:
 Histogram entropy uses Freedman-Diaconis binning: `p = n / sum(n)`, `ent = −Σ p·log₂(p)`. Shannon and log energy entropy use `Wavelets.coefentropy()`. Sample entropy approaches zero for completely regular signals and increases
 with irregularity.
 """
-function entropy(
+function _entropy(
     s::AbstractVector,
 )::@NamedTuple{
     ent::Float64,
@@ -79,7 +79,7 @@ function entropy(
 end
 
 """
-    entropy(s)
+    _entropy(s)
 
 Calculate signal entropy descriptors for a 3-D signal array:
 
@@ -105,7 +105,7 @@ Named tuple:
 - `nsent::Matrix{Float64}`: normalized sample entropy, shape (channels, epochs)
 - `dent::Matrix{Float64}`: differential entropy, shape (channels, epochs)
 """
-function entropy(
+function _entropy(
     s::AbstractArray,
 )::@NamedTuple{
     ent::Matrix{Float64},
@@ -134,7 +134,7 @@ function entropy(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        entropy_data = entropy(@view(s[ch_idx, :, ep_idx]))
+        entropy_data = _entropy(@view(s[ch_idx, :, ep_idx]))
         ent[ch_idx, ep_idx] = entropy_data.ent
         shent[ch_idx, ep_idx] = entropy_data.shent
         leent[ch_idx, ep_idx] = entropy_data.leent
@@ -187,11 +187,11 @@ function entropy(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return entropy(@view(obj.data[ch, :, :]))
+    return _entropy(@view(obj.data[ch, :, :]))
 end
 
 """
-    negentropy(s; <keyword arguments>)
+    _negentropy(s; <keyword arguments>)
 
 Calculate negentropy for a 1-D signal vector.
 
@@ -208,7 +208,7 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 
 - `Float64`: negentropy (≥ 0; equals 0 for a Gaussian signal)
 """
-function negentropy(
+function _negentropy(
     s::AbstractVector;
     demean::Bool = true,
     norm::Bool = true,
@@ -218,7 +218,7 @@ function negentropy(
     _check_var(type, [:diff, :shannon, :sample], "type")
 
     # remove DC offset so variance reflects only signal variability
-    demean && (s = remove_dc(s))
+    demean && (s = _remove_dc(s))
 
     # normalize the signal by its total energy
     norm && (s ./= sum(s .^ 2))
@@ -229,18 +229,18 @@ function negentropy(
 
     if type === :diff
         # differential entropy in bits
-        signal_h = NeuroAnalyzer.entropy(s).dent
+        signal_h = NeuroAnalyzer._entropy(s).dent
     elseif type === :shannon
-        signal_h = NeuroAnalyzer.entropy(s).ent
+        signal_h = NeuroAnalyzer._entropy(s).ent
     elseif type === :sample
-        signal_h = NeuroAnalyzer.entropy(s).sent
+        signal_h = NeuroAnalyzer._entropy(s).sent
     end
 
     return gaussian_h - signal_h
 end
 
 """
-    negentropy(s; <keyword arguments>)
+    _negentropy(s; <keyword arguments>)
 
 Calculate negentropy for a 3-D signal array.
 
@@ -257,7 +257,7 @@ Negentropy measures how far a signal's distribution departs from Gaussian: `ne =
 
 - `Matrix{Float64}`: negentropy (≥ 0; equals 0 for a Gaussian signal), shape (channel, epochs)
 """
-function negentropy(
+function _negentropy(
     s::AbstractArray;
     demean::Bool = true,
     norm::Bool = true,
@@ -286,7 +286,7 @@ function negentropy(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ne[ch_idx, ep_idx] = negentropy(
+        ne[ch_idx, ep_idx] = _negentropy(
             @view(s[ch_idx, :, ep_idx]),
             demean = demean,
             norm = norm,
@@ -332,7 +332,7 @@ function negentropy(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return negentropy(
+    return _negentropy(
         @view(obj.data[ch, :, :]);
         demean = demean,
         norm = norm,

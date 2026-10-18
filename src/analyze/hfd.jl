@@ -1,7 +1,7 @@
 export hfd
 
 """
-    hfd(s)
+    _hfd(s)
 
 Calculate the Higuchi fractal dimension for a 1-D signal vector.
 
@@ -19,12 +19,12 @@ Wraps FractalDimensions.higuchi_dim() to compute the Higuchi fractal dimension (
 
 The Higuchi FD estimates the fractal dimension directly from the time series by measuring how the length of the signal scales with the lag parameter k. Values range from 1 (smooth/linear) to 2 (maximally irregular/random).
 """
-function hfd(s::AbstractVector)::Float64
+function _hfd(s::AbstractVector)::Float64
     return higuchi_dim(s)
 end
 
 """
-    hfd(s)
+    _hfd(s)
 
 Calculate the Higuchi fractal dimension for a 3-D signal array.
 
@@ -42,7 +42,7 @@ Wraps FractalDimensions.higuchi_dim() to compute the Higuchi fractal dimension (
 
 The Higuchi FD estimates the fractal dimension directly from the time series by measuring how the length of the signal scales with the lag parameter k. Values range from 1 (smooth/linear) to 2 (maximally irregular/random).
 """
-function hfd(s::AbstractArray)::Matrix{Float64}
+function _hfd(s::AbstractArray)::Matrix{Float64}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -57,7 +57,7 @@ function hfd(s::AbstractArray)::Matrix{Float64}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        hd[ch_idx, ep_idx] = hfd(@view(s[ch_idx, :, ep_idx]))
+        hd[ch_idx, ep_idx] = _hfd(@view(s[ch_idx, :, ep_idx]))
     end
 
     return hd
@@ -94,5 +94,5 @@ function hfd(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return hfd(@view(obj.data[ch, :, :]))
+    return _hfd(@view(obj.data[ch, :, :]))
 end

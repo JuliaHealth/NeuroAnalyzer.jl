@@ -1,44 +1,4 @@
-using LinearAlgebra
-using Statistics
-using DataFrames
-using Optim
-
-using Random
-Random.seed!(1)
-
-# TEST
-# synthetic 64-"channel" cap on a 90 mm sphere, centered at (0,0,10) mm
-n = 64
-pts = [begin v = randn(3); v ./= norm(v); v end for _ in 1:n]
-pts = filter(v -> v[3] > -0.3, pts)
-while length(pts) < n
-    v = randn(3); v ./= norm(v); v[3] > -0.3 && push!(pts, v)
-end
-Rmm = 90.0
-ctr = [0.0, 0.0, 10.0]
-locs = DataFrame(loc_x=[Rmm*v[1]+ctr[1] for v in pts],
-                 loc_y=[Rmm*v[2]+ctr[2] for v in pts],
-                 loc_z=[Rmm*v[3]+ctr[3] for v in pts])
-U = reduce(vcat, [v' for v in pts])
- 
-# test 1: dipole at center, radial moment -> V = 3 q cosθ / (4πσR²)
-R = Rmm * 1e-3; σ = 0.33
-L0 = _leadfield([0.0, 0.0, 0.0], U, R, σ)
-q = [0.0, 0.0, 1.0]
-V = L0 * q
-@show maximum(abs.(V .- 3 .* U[:, 3] ./ (4π * σ * R^2)))
- 
-# test 2: recover an off-center dipole (fixed mode), with noise
-x_true = [0.02, -0.015, 0.03]                    # meters
-qt = [1.0, 0.5, -0.8]
-H = _avgref(n)
-tt = 0:0.01:0.1
-wave = sin.(2π .* 10 .* tt)'
-S = (H * _leadfield(x_true, U, R, σ) * qt) * wave
-S .+= 0.01 * maximum(abs.(S)) .* randn(size(S))
-res = dipole_fit(S, locs)
-@show res.pos .- (x_true' .* 1e3 .+ ctr')        # error in mm
-@show res.gof res.sphere_center res.sphere_radius
+export dipole_fit
 
 # ---------------------------------------------------------------------------
 # Draft: single equivalent current dipole fit, homogeneous spherical head.
@@ -109,7 +69,7 @@ end
 _avgref(n::Int) = Matrix{Float64}(I, n, n) .- 1 / n
 
 # relative residual variance for dipole position x, with optimal moments
-function _cost(x, U, R, σ, H, D, ρmax)
+function _dipole_cost(x, U, R, σ, H, D, ρmax)
     ρ = norm(x)
     ρ > ρmax * R && return 1.0 + (ρ / R - ρmax) * 10      # soft wall
     L = H * _leadfield(x, U, R, σ)
@@ -154,13 +114,20 @@ function dipole_fit(
     ρmax::Real=0.95,
     n_grid::Int=7,
     n_starts::Int=5
-)
+)::NeuroAnalyzer.DIPOLE
+    _wip()
+
     # validate
-    @assert mode in (:fixed, :moving) "mode must be :fixed or :moving."
+    _check_var(mode, [:fixed, :moving], "mode")
     nch, nt = size(s)
-    @assert nrow(locs) == nch "number of rows in locs must equal number of channels."
-    @assert nch >= 8 "too few channels for a stable fit."
-    @assert 0 < ρmax < 1 "ρmax must be in (0, 1)."
+    DataFrames.nrow(locs) == nch ||
+        throw(ArgumentError("Number of rows in locs must equal number of channels."))
+    nch >= 8 || throw(ArgumentError("Too few channels for a stable fit (≥ 8 needed)."))
+    0 < ρmax < 1 || throw(ArgumentError("ρmax must be in (0, 1)."))
+    σ > 0 || throw(ArgumentError("σ must be > 0."))
+    loc_scale > 0 || throw(ArgumentError("loc_scale must be > 0."))
+    n_grid >= 2 || throw(ArgumentError("n_grid must be ≥ 2."))
+    n_starts >= 1 || throw(ArgumentError("n_starts must be ≥ 1."))
 
     P = Matrix{Float64}(locs[:, [:loc_x, :loc_y, :loc_z]])
     c, R_loc = _fit_sphere(P)
@@ -178,11 +145,11 @@ function dipole_fit(
     grid = [[x, y, z] for x in ax for y in ax for z in ax if norm([x, y, z]) <= ρmax * R]
 
     function fit_window(Dw, seeds)
-        costs = [_cost(g, U, R, σ, H, Dw, ρmax) for g in grid]
+        costs = [_dipole_cost(g, U, R, σ, H, Dw, ρmax) for g in grid]
         starts = vcat(seeds, grid[sortperm(costs)[1:min(n_starts, length(grid))]])
         best_x, best_f = starts[1], Inf
         for x0 in starts
-            res = optimize(x -> _cost(x, U, R, σ, H, Dw, ρmax), x0, NelderMead(),
+            res = optimize(x -> _dipole_cost(x, U, R, σ, H, Dw, ρmax), x0, NelderMead(),
                            Optim.Options(iterations=500, g_abstol=1e-8))
             if Optim.minimum(res) < best_f
                 best_f, best_x = Optim.minimum(res), Optim.minimizer(res)

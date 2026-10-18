@@ -1,7 +1,7 @@
 export phs
 
 """
-    phs(s; <keyword arguments>)
+    _phs(s; <keyword arguments>)
 
 Calculate the phase spectrum (one-sided FFT phase) of a 1-D signal vector.
 
@@ -21,7 +21,7 @@ Named tuple:
 
 Phases of bins with near-zero amplitude are numerically meaningless.
 """
-function phs(
+function _phs(
     s::AbstractVector;
     fs::Int64,
 )::@NamedTuple{
@@ -33,13 +33,13 @@ function phs(
     length(s) >= 2 || throw(ArgumentError("s must contain at least 2 samples."))
 
     ph = NeuroAnalyzer.ftransform(s).ph
-    f = freqs(s, fs)[1]
+    f = _freqs(s, fs)[1]
 
     return (; ph, f)
 end
 
 """
-    phs(s; <keyword arguments>)
+    _phs(s; <keyword arguments>)
 
 Calculate the phase spectrum for each channel of a matrix.
 
@@ -55,7 +55,7 @@ Named tuple:
 - `ph::Matrix{Float64}`: phases in radians, shape (channels, frequencies)
 - `f::Vector{Float64}`: frequencies
 """
-function phs(
+function _phs(
     s::AbstractMatrix;
     fs::Int64,
 )::@NamedTuple{
@@ -66,20 +66,20 @@ function phs(
     ch_n >= 1 || throw(ArgumentError("s must contain at least one channel."))
 
     # first channel also determines the frequency vector
-    phs_data = phs(@view(s[1, :]); fs = fs)
+    phs_data = _phs(@view(s[1, :]); fs = fs)
     f = phs_data.f
     ph = zeros(ch_n, length(f))
     ph[1, :] = phs_data.ph
 
     Threads.@threads :static for ch_idx = 2:ch_n
-        ph[ch_idx, :] = phs(@view(s[ch_idx, :]); fs = fs).ph
+        ph[ch_idx, :] = _phs(@view(s[ch_idx, :]); fs = fs).ph
     end
 
     return (; ph, f)
 end
 
 """
-    phs(s; <keyword arguments>)
+    _phs(s; <keyword arguments>)
 
 Calculate the phase spectrum for a 3-D signal array.
 
@@ -95,7 +95,7 @@ Named tuple:
 - `ph::Array{Float64, 3}`: phases in radians, shape (channels, frequencies, epochs)
 - `f::Vector{Float64}`: frequencies
 """
-function phs(
+function _phs(
     s::AbstractArray;
     fs::Int64,
 )::@NamedTuple{
@@ -109,7 +109,7 @@ function phs(
     ep_n = size(s, 3)
 
     # first channel/epoch also determines the frequency vector
-    phs_data = phs(@view(s[1, :, 1]); fs = fs)
+    phs_data = _phs(@view(s[1, :, 1]); fs = fs)
     f = phs_data.f
     ph = zeros(ch_n, length(f), ep_n)
     ph[1, :, 1] = phs_data.ph
@@ -118,7 +118,7 @@ function phs(
     idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]
     Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        ph[ch_idx, :, ep_idx] = phs(@view(s[ch_idx, :, ep_idx]); fs = fs).ph
+        ph[ch_idx, :, ep_idx] = _phs(@view(s[ch_idx, :, ep_idx]); fs = fs).ph
     end
 
     return (; ph, f)
@@ -156,5 +156,5 @@ function phs(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return phs(@view(obj.data[ch, :, :]); fs = sr(obj))
+    return _phs(@view(obj.data[ch, :, :]); fs = sr(obj))
 end

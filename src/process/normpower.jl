@@ -2,7 +2,7 @@ export normpower
 export normpower!
 
 """
-    normpower(s)
+    _normpower(s)
 
 Return a signal with normalized power (amplitudes divided by the root-mean-squared value of the entire signal).
 
@@ -14,12 +14,12 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `Vector{Float64}`
 """
-function normpower(s::AbstractVector)::Vector{Float64}
-    return s .* amp(s).rms_amp
+function _normpower(s::AbstractVector)::Vector{Float64}
+    return s .* _amp(s).rms_amp
 end
 
 """
-    normpower(s)
+    _normpower(s)
 
 Return a signal with normalized power (amplitudes divided by the root-mean-squared value of the entire signal) for a 3-D signal array.
 
@@ -31,7 +31,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `Array{Float64, 3}`
 """
-function normpower(s::AbstractArray)::Array{Float64, 3}
+function _normpower(s::AbstractArray)::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -46,7 +46,7 @@ function normpower(s::AbstractArray)::Array{Float64, 3}
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = normpower(@view(s[ch_idx, :, ep_idx]))
+        s_new[ch_idx, :, ep_idx] = _normpower(@view(s[ch_idx, :, ep_idx]))
     end
 
     return s_new
@@ -77,7 +77,7 @@ function normpower(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = normpower(obj.data[ch, :, :])
+    obj_tmp.data[ch, :, :] = _normpower(obj.data[ch, :, :])
     push!(obj_tmp.history, "normpower(obj; ch=$ch)")
 
     return obj_tmp

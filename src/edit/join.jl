@@ -1,4 +1,3 @@
-export join
 export join!
 
 """

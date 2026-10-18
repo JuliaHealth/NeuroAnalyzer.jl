@@ -1,6 +1,10 @@
 export bootstrap_ci
 export bootstrap_stat
 
+# mean trace of n epochs drawn at random (with replacement) from s (samples × epochs)
+_bootstrap_mean(s::AbstractMatrix, n::Int64)::Vector{Float64} =
+    vec(mean(@view(s[:, rand(axes(s, 2), n)]); dims = 2))
+
 """
     bootstrap_ci(s; <keyword arguments>)
 
@@ -50,38 +54,14 @@ function bootstrap_ci(
 
     s_boot = zeros(n1, tp_n)
     @inbounds for idx1 = 1:n1
-        s_tmp = zeros(tp_n, n2)
-
-        for idx2 = 1:n2
-            s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
-        end
-
-        s_boot[idx1, :] = vec(
-            mean(
-                s_tmp, dims
-            = 2,
-            ),
-        )
+        s_boot[idx1, :] = _bootstrap_mean(s, n2)
         progress_bar && next!(progbar)
     end
 
     # stage 2: derive CI bounds from the empirical quantiles of the bootstrap distribution
-    ll = zeros(tp_n)
-    ul = zeros(tp_n)
-    # lower tail probability
     ci_l = (1.0 - cl) / 2
-    # upper tail probability
-    ci_h = 1.0 - ci_l
-
-    # guard: ensure indices are at least 1 and at most n1
-    ci_l_idx = max(1, round(Int64, ci_l * n1))
-    ci_h_idx = min(n1, round(Int64, ci_h * n1))
-
-    @inbounds for tp in axes(s_boot, 2)
-        tpt = sort(@view s_boot[:, tp])
-        ll[tp] = tpt[ci_l_idx]
-        ul[tp] = tpt[ci_h_idx]
-    end
+    ll = [quantile(@view(s_boot[:, tp]), ci_l) for tp in axes(s_boot, 2)]
+    ul = [quantile(@view(s_boot[:, tp]), 1.0 - ci_l) for tp in axes(s_boot, 2)]
 
     gm = vec(mean(s_boot; dims = 1))
 
@@ -95,14 +75,14 @@ Calculate a scalar statistic of a signal matrix using bootstrapping.
 
 At each of the `n1` iterations, `n2` epochs are drawn at random (with replacement), averaged into a single trace, and the expression `f` is evaluated on that trace. The result is a distribution of the statistic across bootstrap resamples.
 
-The formula string `f` must reference the current signal trace using the placeholder variable `obj`. For example: `f = "abs(maximum(obj))"`.
+`f` is a function of the trace (e.g. `f = x -> abs(maximum(x))`) or a string holding a Julia expression in which the trace is the variable `obj` (e.g. `f = "abs(maximum(obj))"`).
 
 # Arguments
 
 - `s::AbstractMatrix`: signal matrix, shape (samples, epochs)
 - `n1::Int64=3000`: number of bootstrap resamples; must be ≥ 1
 - `n2::Int64=1000`: number of epochs drawn per resample; must be ≥ 1
-- `f::String`: Julia expression to evaluate on each bootstrap mean trace; use `obj` as the placeholder for the current trace vector
+- `f::Union{Function, String}`: statistic evaluated on each bootstrap mean trace: a function, or a Julia expression using `obj` as the current trace vector
 
 # Returns
 
@@ -112,49 +92,39 @@ function bootstrap_stat(
     s::AbstractMatrix;
     n1::Int64 = 3000,
     n2::Int64 = 1000,
-    f::String,
+    f::Union{Function, String},
 )::AbstractVector
     # validate
     n1 > 0 || throw(ArgumentError("n1 must be > 0."))
     n2 > 0 || throw(ArgumentError("n2 must be > 0."))
 
-    # number of time points
-    tp_n = size(s, 1)
-    # number of epochs
-    ep_n = size(s, 2)
+    # a string expression is compiled once into a function of `obj`
+    fn = if f isa String
+        ex = try
+            Meta.parse(f)
+        catch err
+            throw(ArgumentError("Cannot parse expression `f`: $err"))
+        end
+        eval(:(obj -> $ex))
+    else
+        f
+    end
+    apply_f(x) = Base.invokelatest(fn, x)
 
-    # dry run on the first epoch to infer the output element type and validate f
-    f_dry = replace(f, "obj" => "$(s[:, 1])")
-    local s_boot_tmp
-    try
-        s_boot_tmp = eval(Meta.parse(f_dry))
+    # dry run on the first epoch to infer the output type and validate f
+    s_boot_tmp = try
+        apply_f(s[:, 1])
     catch err
         throw(ArgumentError("Formula dry-run failed. Check expression `f`. Error: $err"))
     end
-
-    result = zeros(typeof(s_boot_tmp), n1)
-    s_boot = zeros(n1, tp_n)
+    result = Vector{typeof(s_boot_tmp)}(undef, n1)
 
     # initialize progress bar
     progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    @inbounds for idx1 = 1:n1
-
-        # draw n2 epochs with replacement and average to one trace
-        s_tmp = zeros(tp_n, n2)
-        for idx2 = 1:n2
-            s_tmp[:, idx2] = @view s[:, rand(1:ep_n)]
-        end
-        s_boot[idx1, :] = vec(mean(s_tmp, dims = 2))
-
-        # evaluate the user formula on this bootstrap mean trace
-        f_tmp = replace(f, "obj" => "$(s_boot[idx1, :])")
-        try
-            result[idx1] = eval(Meta.parse(f_tmp))
-        catch err
-            error("Formula failed at resample $idx1. Check expression `f`. Error: $err")
-        end
-
+    for idx1 = 1:n1
+        # evaluate the statistic on the mean of n2 epochs drawn with replacement
+        result[idx1] = apply_f(_bootstrap_mean(s, n2))
         progress_bar && next!(progbar)
     end
 

@@ -1,7 +1,7 @@
 export psd_rel
 
 """
-    psd_rel(s; <keyword arguments>)
+    _psd_rel(s; <keyword arguments>)
 
 Calculate relative power spectral density (PSD) for a 1-D signal vector.
 
@@ -37,7 +37,7 @@ Named tuple:
 - `p::Vector{Float64}`: relative powers (one per frequency bin)
 - `f::Vector{Float64}`: corresponding frequencies in Hz
 """
-function psd_rel(
+function _psd_rel(
     s::AbstractVector;
     fs::Int64,
     db::Bool = false,
@@ -70,12 +70,12 @@ function psd_rel(
 
     # compute the reference power: either within the specified band or broadband
     ref_pw = if flim === nothing
-        total_power(s; psd_kwargs...)
+        _total_power(s; psd_kwargs...)
     else
-        band_power(s; flim = flim, psd_kwargs...)
+        _band_power(s; flim = flim, psd_kwargs...)
     end
 
-    psd_data = psd(s; db = db, psd_kwargs...)
+    psd_data = _psd(s; db = db, psd_kwargs...)
     p = psd_data.p ./ ref_pw
     f = psd_data.f
 
@@ -83,7 +83,7 @@ function psd_rel(
 end
 
 """
-    psd_rel(s; <keyword arguments>)
+    _psd_rel(s; <keyword arguments>)
 
 Calculate relative power spectral density for a 2-D signal matrix.
 
@@ -117,7 +117,7 @@ Named tuple:
 - `p::Matrix{Float64}`: relative powers, shape (channels, frequency_bins)
 - `f::Vector{Float64}`: corresponding frequencies in Hz
 """
-function psd_rel(
+function _psd_rel(
     s::AbstractMatrix;
     fs::Int64,
     db::Bool = false,
@@ -137,7 +137,7 @@ function psd_rel(
     # number of channels
     ch_n = size(s, 1)
 
-    _psd_rel(x) = psd_rel(
+    psd_rel_1(x) = _psd_rel(
         x;
         fs = fs,
         db = db,
@@ -153,21 +153,21 @@ function psd_rel(
     )
 
     # first channel also determines the frequency vector
-    r1 = _psd_rel(@view(s[1, :]))
+    r1 = psd_rel_1(@view(s[1, :]))
     f = r1.f
     # pre-allocate output
     p = zeros(ch_n, length(f))
     p[1, :] = r1.p
 
     @inbounds for ch_idx = 2:ch_n
-        p[ch_idx, :] = _psd_rel(@view(s[ch_idx, :])).p
+        p[ch_idx, :] = psd_rel_1(@view(s[ch_idx, :])).p
     end
 
     return (; p, f)
 end
 
 """
-    psd_rel(s; <keyword arguments>)
+    _psd_rel(s; <keyword arguments>)
 
 Calculate relative power spectral density for a 3-D signal array.
 
@@ -201,7 +201,7 @@ Named tuple:
 - `p::Array{Float64, 3}`: relative powers, shape (channels, frequency_bins, epochs)
 - `f::Vector{Float64}`: corresponding frequencies in Hz
 """
-function psd_rel(
+function _psd_rel(
     s::AbstractArray;
     fs::Int64,
     db::Bool = false,
@@ -227,7 +227,7 @@ function psd_rel(
     # number of epochs
     ep_n = size(s, 3)
 
-    _psd_rel(x) = psd_rel(
+    psd_rel_1(x) = _psd_rel(
         x;
         fs = fs,
         db = db,
@@ -243,7 +243,7 @@ function psd_rel(
     )
 
     # first channel/epoch also determines the frequency vector
-    psd_data = _psd_rel(@view(s[1, :, 1]))
+    psd_data = psd_rel_1(@view(s[1, :, 1]))
     f = psd_data.f
     # pre-allocate output
     p = zeros(ch_n, length(f), ep_n)
@@ -253,7 +253,7 @@ function psd_rel(
     idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]
     @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        p[ch_idx, :, ep_idx] = _psd_rel(@view(s[ch_idx, :, ep_idx])).p
+        p[ch_idx, :, ep_idx] = psd_rel_1(@view(s[ch_idx, :, ep_idx])).p
     end
 
     return (; p, f)
@@ -318,7 +318,7 @@ function psd_rel(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return psd_rel(
+    return _psd_rel(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,

@@ -4,7 +4,7 @@ export denoise_dwd
 export denoise_dwd!
 
 """
-    denoise_cwd(s; <keyword arguments>)
+    _denoise_cwd(s; <keyword arguments>)
 
 Perform denoising by zeroing a frequency band in the continuous wavelet domain.
 
@@ -26,7 +26,7 @@ Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, th
 
 - `Vector{Float64}`: denoised signal of the same length as `s`
 """
-function denoise_cwd(
+function _denoise_cwd(
     s::AbstractVector;
     fs::Int64,
     wt::T = wavelet(Morlet(2π); β = 2),
@@ -40,8 +40,8 @@ function denoise_cwd(
     nf <= fs / 2 || throw(ArgumentError("nf must be ≤ $(fs / 2)."))
 
     # perform CWD and zero out noise frequency band
-    s_cwd = NeuroAnalyzer.cwd(s; wt = wt)
-    f = cwtfrq(s; fs = fs, wt = wt)
+    s_cwd = NeuroAnalyzer._cwd(s; wt = wt)
+    f = _cwtfrq(s; fs = fs, wt = wt)
     f_idx1 = vsearch(nf - w, f)
     f_idx2 = vsearch(nf + w, f)
     s_cwd[f_idx1:f_idx2, :] .= 0
@@ -51,7 +51,7 @@ function denoise_cwd(
 end
 
 """
-    denoise_cwd(s; <keyword arguments>)
+    _denoise_cwd(s; <keyword arguments>)
 
 Perform denoising by zeroing a frequency band in the continuous wavelet domain for a 3-D signal array.
 
@@ -71,7 +71,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain f
 
 - `Array{Float64, 3}`: denoised signal array
 """
-function denoise_cwd(
+function _denoise_cwd(
     s::AbstractArray;
     fs::Int64,
     wt::T = wavelet(Morlet(2π); β = 2),
@@ -91,7 +91,7 @@ function denoise_cwd(
     s_new = similar(s, Float64)
 
     _log_off()
-    f = cwtfrq(s[1, :, 1]; fs = fs, wt = wt)
+    f = _cwtfrq(s[1, :, 1]; fs = fs, wt = wt)
     _log_on()
     f_idx = vsearch(nf, f)
     f_idx1 = vsearch(nf - w, f)
@@ -108,7 +108,7 @@ function denoise_cwd(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = denoise_cwd(
+        s_new[ch_idx, :, ep_idx] = _denoise_cwd(
             @view(
                 s[ch_idx, :, ep_idx]
             ), fs = fs, wt = wt, nf = nf, w = w, type = type,
@@ -158,7 +158,7 @@ function denoise_cwd(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = denoise_cwd(
+    obj_tmp.data[ch, :, :] = _denoise_cwd(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         wt = wt,
@@ -208,7 +208,7 @@ function denoise_cwd!(
 end
 
 """
-    denoise_dwd(s; <keyword arguments>)
+    _denoise_dwd(s; <keyword arguments>)
 
 Perform threshold denoising using discrete wavelet decomposition (DWD).
 
@@ -226,7 +226,7 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 
 - `Vector{Float64}`: denoised signal
 """
-function denoise_dwd(
+function _denoise_dwd(
     s::AbstractVector;
     wt::T1 = wavelet(WT.haar),
     l::Int64 = 0,
@@ -250,7 +250,7 @@ function denoise_dwd(
 end
 
 """
-    denoise_dwd(s; <keyword arguments>)
+    _denoise_dwd(s; <keyword arguments>)
 
 Perform threshold denoising using discrete wavelet decomposition (DWD) for a 3-D signal array.
 
@@ -268,7 +268,7 @@ Perform threshold denoising using discrete wavelet decomposition (DWD) for a 3-D
 
 - `Array{Float64, 3}`: denoised signal array
 """
-function denoise_dwd(
+function _denoise_dwd(
     s::AbstractArray;
     wt::T1 = wavelet(WT.haar),
     l::Int64 = 0,
@@ -289,7 +289,7 @@ function denoise_dwd(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = denoise_dwd(
+        s_new[ch_idx, :, ep_idx] = _denoise_dwd(
             @view(s[ch_idx, :, ep_idx]),
             wt = wt,
             l = l,
@@ -342,7 +342,7 @@ function denoise_dwd(
     obj_tmp = deepcopy(obj)
 
     obj_tmp.data[ch, :, :] =
-        @views denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
+        @views _denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
     push!(
         obj_tmp.history,
         "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))",

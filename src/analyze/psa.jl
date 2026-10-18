@@ -1,7 +1,7 @@
 export psa
 
 """
-    psa(s1, s2)
+    _psa(s1, s2)
 
 Calculate Phase Synchronization Analysis for two 1-D signal vectors.
 
@@ -14,7 +14,7 @@ Calculate Phase Synchronization Analysis for two 1-D signal vectors.
 
 - `Float64`: PSA value
 """
-function psa(s1::AbstractVector, s2::AbstractVector)::Float64
+function _psa(s1::AbstractVector, s2::AbstractVector)::Float64
     # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
@@ -95,7 +95,7 @@ function psa(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ps[ch_idx, ep_idx] = psa(
+        ps[ch_idx, ep_idx] = _psa(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -140,7 +140,7 @@ function psa(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            ps[ch_idx1, ch_idx2, ep_idx] = psa(
+            ps[ch_idx1, ch_idx2, ep_idx] = _psa(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             )

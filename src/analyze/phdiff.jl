@@ -1,7 +1,7 @@
 export phdiff
 
 """
-    phdiff(s1, s2; <keyword arguments>)
+    _phdiff(s1, s2; <keyword arguments>)
 
 Calculate phase difference between two 1-D signal vectors.
 
@@ -18,7 +18,7 @@ Named tuple:
 
 - `Vector{Float64}`: phase differences in radians
 """
-function phdiff(
+function _phdiff(
     s1::AbstractVector,
     s2::AbstractVector;
     pad::Int64 = 0,
@@ -35,7 +35,7 @@ function phdiff(
 end
 
 """
-    phdiff(s; <keyword arguments>)
+    _phdiff(s; <keyword arguments>)
 
 Calculate phase difference between channels and mean phase of reference `ch` for a 3-D signal array.
 
@@ -53,7 +53,7 @@ Calculate phase difference between channels and mean phase of reference `ch` for
 
 - `Array{Float64, 3}`
 """
-function phdiff(
+function _phdiff(
     s::AbstractArray;
     ch::Union{Int64, Vector{Int64}} = _c(size(s, 1)),
     avg::Symbol = :phase,
@@ -103,7 +103,7 @@ function phdiff(
         elseif avg === :signal
             ref_channels = setdiff(ch, ch_idx)
             signal_m = vec(mean(@view(s[ref_channels, :, ep_idx]), dims = 1))
-            phd[ch_idx, :, ep_idx] = phdiff(@view(s[ch[ch_idx], :, ep_idx]), signal_m)
+            phd[ch_idx, :, ep_idx] = _phdiff(@view(s[ch[ch_idx], :, ep_idx]), signal_m)
         end
     end
 
@@ -143,7 +143,7 @@ function phdiff(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return phdiff(
+    return _phdiff(
         @view(obj.data[ch, :, :]);
         avg = avg,
         pad = pad,

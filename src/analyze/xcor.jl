@@ -1,7 +1,7 @@
 export xcor
 
 """
-    xcor(s1, s2; <keyword arguments>)
+    _xcor(s1, s2; <keyword arguments>)
 
 Calculate cross-correlation between two 1-D signal vectors.
 
@@ -21,7 +21,7 @@ Calculate cross-correlation between two 1-D signal vectors.
 
 - `Array{Float64, 3}`: cross-correlation at lags `−l:l`
 """
-function xcor(
+function _xcor(
     s1::AbstractVector,
     s2::AbstractVector;
     l::Int64 = round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))),
@@ -37,8 +37,8 @@ function xcor(
     # optionally remove the DC component (mean) from both signals before
     # computing cross-correlation to eliminate offset bias
     if demean
-        s1_tmp = remove_dc(s1)
-        s2_tmp = remove_dc(s2)
+        s1_tmp = _remove_dc(s1)
+        s2_tmp = _remove_dc(s2)
     else
         s1_tmp = s1
         s2_tmp = s2
@@ -88,7 +88,7 @@ function xcor(
 end
 
 """
-    xcor(s1, s2; <keyword arguments>)
+    _xcor(s1, s2; <keyword arguments>)
 
 Calculate cross-correlation for a pair of 2-D arrays.
 
@@ -108,7 +108,7 @@ Calculate cross-correlation for a pair of 2-D arrays.
 
 - `Array{Float64, 3}`
 """
-function xcor(
+function _xcor(
     s1::AbstractMatrix,
     s2::AbstractMatrix;
     l::Int64 = round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))),
@@ -126,7 +126,7 @@ function xcor(
     xc = zeros(1, length((-l):l), ep_n)
 
     @inbounds for ep_idx = 1:ep_n
-        xc[1, :, ep_idx] = @views xcor(
+        xc[1, :, ep_idx] = @views _xcor(
             s1[:, ep_idx],
             s2[:, ep_idx];
             l = l,
@@ -140,7 +140,7 @@ function xcor(
 end
 
 """
-    xcor(s1, s2; <keyword arguments>)
+    _xcor(s1, s2; <keyword arguments>)
 
 Calculate cross-correlation for two 3-D signal arrays.
 
@@ -160,7 +160,7 @@ Calculate cross-correlation for two 3-D signal arrays.
 
 - `Array{Float64, 3}`
 """
-function xcor(
+function _xcor(
     s1::AbstractArray,
     s2::AbstractArray;
     l::Int64 = round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))),
@@ -185,7 +185,7 @@ function xcor(
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        xc[ch_idx, :, ep_idx] = @views xcor(
+        xc[ch_idx, :, ep_idx] = @views _xcor(
             s1[ch_idx, :, ep_idx],
             s2[ch_idx, :, ep_idx],
             l = l,
@@ -283,7 +283,7 @@ function xcor(
     l_samples = round(Int64, l * sr(obj1))
 
     if datatype(obj1) == "erp" && datatype(obj2) == "erp"
-        xc = @views xcor(
+        xc = @views _xcor(
             reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)),
             reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)),
             l = l_samples,
@@ -293,7 +293,7 @@ function xcor(
         )
         xc = cat(mean(xc; dims = 3), xc; dims = 3)
     else
-        xc = @views xcor(
+        xc = @views _xcor(
             obj1.data[ch1, :, ep1],
             obj2.data[ch2, :, ep2],
             l = l_samples,

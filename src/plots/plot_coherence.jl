@@ -176,7 +176,7 @@ function plot_coherence(
     if ci95
 
         # calculate mean and 95% CI
-        msci95_data = NeuroAnalyzer.msci95(coh)
+        msci95_data = NeuroAnalyzer._msci95(coh)
         coh_m = msci95_data.sm
         coh_u = msci95_data.ul
         coh_l = msci95_data.ll

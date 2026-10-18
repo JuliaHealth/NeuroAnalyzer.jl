@@ -1,7 +1,7 @@
 export sef
 
 """
-    sef(s; <keyword arguments>)
+    _sef(s; <keyword arguments>)
 
 Calculate spectral edge frequency (SEF) for a 1-D signal vector.
 
@@ -30,7 +30,7 @@ SEF is the frequency below which x percent of the total power of a given signal 
 
 - `Float64`: spectral edge frequency
 """
-function sef(
+function _sef(
     s::AbstractVector;
     x::Float64 = 0.95,
     fs::Int64,
@@ -47,7 +47,7 @@ function sef(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     _check_tuple(f, (0, fs / 2), "f")
 
-    pw, pf = psd(
+    pw, pf = _psd(
         s;
         fs = fs,
         db = false,
@@ -84,7 +84,7 @@ function sef(
 end
 
 """
-    sef(s; <keyword arguments>)
+    _sef(s; <keyword arguments>)
 
 Calculate spectral edge frequency (SEF) for a 3-D signal array.
 
@@ -113,7 +113,7 @@ SEF is the frequency below which x percent of the total power of a given signal 
 
 - `Matrix{Float64}`: spectral edge frequency
 """
-function sef(
+function _sef(
     s::AbstractArray;
     x::Float64 = 0.95,
     fs::Int64,
@@ -139,7 +139,7 @@ function sef(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        sef_frq[ch_idx, ep_idx] = sef(
+        sef_frq[ch_idx, ep_idx] = _sef(
             @view(s[ch_idx, :, ep_idx]),
             x = x,
             fs = fs,
@@ -206,7 +206,7 @@ function sef(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return sef(
+    return _sef(
         @view(obj.data[ch, :, :]);
         x = x,
         fs = sr(obj),

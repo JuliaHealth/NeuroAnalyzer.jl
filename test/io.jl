@@ -103,13 +103,13 @@ eeg =
     load_locs(eeg; file_name = joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"));
 @test eeg.locs isa DataFrame
 
-@info "Test: save()"
+@info "Test: save_neuro()"
 isfile("test.hdf") && rm("test.hdf")
-NeuroAnalyzer.save(eeg; file_name = "test.hdf")
+save_neuro(eeg; file_name = "test.hdf")
 @test isfile("test.hdf")
 
-@info "Test: load()"
-new = NeuroAnalyzer.load("test.hdf")
+@info "Test: load_neuro()"
+new = load_neuro("test.hdf")
 @test new isa NeuroAnalyzer.NEURO
 isfile("test.hdf") && rm("test.hdf")
 

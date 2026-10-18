@@ -2,7 +2,7 @@ export erp_gfp
 export erp_gfp_norm
 
 """
-    erp_gfp(s)
+    _erp_gfp(s)
 
 Calculate GFP (Global Field Power).
 
@@ -24,7 +24,7 @@ GFP(t) = std_channels( s[:, t] )
 
 This is used internally by diss() to make amplitudes comparable.
 """
-function erp_gfp(s::AbstractMatrix)::Vector{Float64}
+function _erp_gfp(s::AbstractMatrix)::Vector{Float64}
     # GFP = population std across channels at each time point
     # dropdims removes the trailing singleton dimension left by std(..., dims=1) without allocating a copy
     g = dropdims(std(s; dims = 1); dims = 1)
@@ -48,7 +48,7 @@ Each column (time point) is divided by the GFP value at that time, so that the r
 - `Matrix{Float64}`: GFP-normalised signal (channels × samples)
 """
 function erp_gfp_norm(s::AbstractMatrix)::Matrix{Float64}
-    g = erp_gfp(s)
+    g = _erp_gfp(s)
 
     # pre-allocate output
     gn = similar(s, Float64)
@@ -103,5 +103,5 @@ function erp_gfp(
 
     s = @view obj.data[ch, :, 1]
 
-    return norm ? erp_gfp_norm(s) : erp_gfp(s)
+    return norm ? erp_gfp_norm(s) : _erp_gfp(s)
 end

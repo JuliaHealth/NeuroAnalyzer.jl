@@ -3,7 +3,7 @@ export pca_reconstruct
 export pca_reconstruct!
 
 """
-    pca_decompose(s, n)
+    _pca_decompose(s, n)
 
 Calculate `n` first Primary Components (PCs) for a 3-D signal array.
 
@@ -21,7 +21,7 @@ Named tuple:
 - `pcm::Vector{Float64}`: PC means
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(
+function _pca_decompose(
     s::AbstractArray;
     n::Int64,
 )::@NamedTuple{
@@ -114,11 +114,11 @@ function pca_decompose(
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return pca_decompose(@view(obj.data[ch, :, :]); n = n)
+    return _pca_decompose(@view(obj.data[ch, :, :]); n = n)
 end
 
 """
-    pca_reconstruct(s, pc, pca)
+    _pca_reconstruct(s, pc, pca)
 
 Reconstructs signal using PCA components for a 3-D signal array.
 
@@ -132,7 +132,7 @@ Reconstructs signal using PCA components for a 3-D signal array.
 
 - `Array{Float64, 3}`
 """
-function pca_reconstruct(
+function _pca_reconstruct(
     s::AbstractArray;
     pc::AbstractArray,
     pc_model::MultivariateStats.PCA{Float64},
@@ -184,7 +184,7 @@ function pca_reconstruct(
     obj_tmp = deepcopy(obj)
 
     obj_tmp.data[ch, :, :] =
-        pca_reconstruct(@view(obj_tmp.data[ch, :, :]); pc = pc, pc_model = pc_model)
+        _pca_reconstruct(@view(obj_tmp.data[ch, :, :]); pc = pc, pc_model = pc_model)
     push!(obj_tmp.history, "pca_reconstruct(obj; ch=$ch)")
 
     return obj_tmp

@@ -1,7 +1,7 @@
 export cpsd
 
 """
-    cpsd(s1, s2; <keyword arguments>)
+    _cpsd(s1, s2; <keyword arguments>)
 
 Calculate the complex cross power spectral density (CPSD) between two 1-D signal vectors via one of three estimators:
 
@@ -32,7 +32,7 @@ Named tuple:
 - `pxy::Vector{ComplexF64}`: cross-power spectrum
 - `f::Vector{Float64}`: frequencies
 """
-function cpsd(
+function _cpsd(
     s1::AbstractVector,
     s2::AbstractVector;
     method::Symbol = :mt,
@@ -98,8 +98,8 @@ function cpsd(
 
         for idx in axes(chunks_idx, 1)
             r = chunks_idx[idx, 1]:chunks_idx[idx, 2]
-            s1_tmp = demean ? remove_dc(@view(s1[r])) : @view(s1[r])
-            s2_tmp = demean ? remove_dc(@view(s2[r])) : @view(s2[r])
+            s1_tmp = demean ? _remove_dc(@view(s1[r])) : @view(s1[r])
+            s2_tmp = demean ? _remove_dc(@view(s2[r])) : @view(s2[r])
             # FFT each segment
             # zero-pad to next power of 2, normalize by window length
             ss1 = fft0(s1_tmp .* win, nfft - wlen) / wlen
@@ -124,8 +124,8 @@ function cpsd(
         # apply Hanning window (or unit window)
         win = w ? hanning(n_samples) : ones(n_samples)
         if demean
-            s1_tmp = remove_dc(s1) .* win
-            s2_tmp = remove_dc(s2) .* win
+            s1_tmp = _remove_dc(s1) .* win
+            s2_tmp = _remove_dc(s2) .* win
         else
             s1_tmp = s1 .* win
             s2_tmp = s2 .* win
@@ -148,7 +148,7 @@ function cpsd(
 end
 
 """
-    cpsd(s1, s2; <keyword arguments>)
+    _cpsd(s1, s2; <keyword arguments>)
 
 Calculate the complex cross power spectral density (CPSD) between two 3-D signal arrays via one of three estimators:
 
@@ -179,7 +179,7 @@ Named tuple:
 - `pxy::Array{ComplexF64, 3}`: cross-power spectrum, shape `(channels, frequencies, epochs)`
 - `f::Vector{Float64}`: frequencies
 """
-function cpsd(
+function _cpsd(
     s1::AbstractArray,
     s2::AbstractArray;
     method::Symbol = :mt,
@@ -206,7 +206,7 @@ function cpsd(
     ep_n = size(s1, 3)
 
     # fry run to pre-compute the frequency vector
-    cpsd_data = cpsd(
+    cpsd_data = _cpsd(
         @view(s1[1, :, 1]),
         @view(s2[1, :, 1]);
         method = method,
@@ -226,7 +226,7 @@ function cpsd(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        pxy[ch_idx, :, ep_idx], _ = cpsd(
+        pxy[ch_idx, :, ep_idx], _ = _cpsd(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx]),
             method = method,
@@ -331,7 +331,7 @@ function cpsd(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return cpsd(
+    return _cpsd(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]);
         method = method,

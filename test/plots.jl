@@ -184,7 +184,7 @@ isfile("test.png") && rm("test.png")
 @info "Test: plot()"
 t = 0:0.1:1
 s = sin.(t)
-p = NeuroAnalyzer.plot(t, s)
+p = NeuroAnalyzer._plot(t, s)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot(e10; ch = "Fp1", gui = false)
 @test p isa GLMakie.Figure
@@ -460,7 +460,7 @@ p = plot_fi(fi[1, :, 1], t)
 @info "Test: plot_phase()"
 s = e10.data[1, :, 1]
 X = ftransform(s)
-f, _ = freqs(s, sr(e10))
+f, _ = NeuroAnalyzer._freqs(s, sr(e10))
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100]; unit = :rad, type = :stem)
 @test p isa GLMakie.Figure
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100]; unit = :deg, type = :stem)

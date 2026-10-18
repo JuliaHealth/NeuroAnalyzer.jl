@@ -35,4 +35,7 @@ global testfiles_path =
 
     @info "Running stim.jl tests"
     @test include("stim.jl")
+
+    @info "Running model.jl tests"
+    @test include("model.jl")
 end

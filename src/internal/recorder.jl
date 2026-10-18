@@ -29,21 +29,27 @@ end
 
 Run a blocking keyboard listener that puts each keypress into channel `c`.
 
-Must be launched as a separate `Task`. Based on:
+Must be launched as a separate `Task`. Stops when `c` is closed (after the next keypress). Based on:
 
 https://discourse.julialang.org/t/how-to-detect-key-down-events/95011/2
 
 # Arguments
 
 - `c::Channel`: target channel for `Char` keypresses
+- `timestamp::Bool=false`: if `true`, put `(keypress, time())` tuples, timed when the key is read
 """
-function _kbd_listener(c::Channel)::Nothing
+function _kbd_listener(c::Channel; timestamp::Bool = false)::Nothing
     t = REPL.TerminalMenus.terminal
-    while true
+    while isopen(c)
         REPL.Terminals.raw!(t, true) || error("Unable to switch to raw mode.")
-        keypress = Char(REPL.TerminalMenus.readkey(t.in_stream))
-        REPL.Terminals.raw!(t, false) || error("Unable to switch back from raw mode.")
-        put!(c, keypress)
+        keypress = try
+            Char(REPL.TerminalMenus.readkey(t.in_stream))
+        finally
+            REPL.Terminals.raw!(t, false)
+        end
+        tk = time()
+        isopen(c) || break
+        put!(c, timestamp ? (keypress, tk) : keypress)
     end
     return nothing
 end
@@ -157,6 +163,88 @@ function _serial_close(port_name::String)::Nothing
     sp = lock(() -> pop!(_SERIAL_PORTS, port_name, nothing), _SERIAL_PORTS_LOCK)
     !isnothing(sp) && isopen(sp) && close(sp)
     return nothing
+end
+
+"""
+    _serial_try_open(port_name; <keyword arguments>)
+
+Open a serial port like `_serial_open`, but return `nothing` (with an info message) instead of throwing when the port does not exist or cannot be opened. Keyword arguments are passed to `_serial_open`.
+
+# Returns
+
+- `Union{SerialPort, Nothing}`
+"""
+function _serial_try_open(port_name::String; kwargs...)::Union{SerialPort, Nothing}
+    return try
+        _serial_open(port_name; kwargs...)
+    catch err
+        _info("Serial port $port_name is not available: $(err isa Exception ? sprint(showerror, err) : err)")
+        nothing
+    end
+end
+
+"""
+    _serial_button!(sp, gpio, t0, t_press, t_release, pressed)
+
+Read all pending button events (`"<gpio>:1"` = pressed, `"<gpio>:0"` = released) from `sp`. The time of each state change (seconds since `t0`) is appended to `t_press` or `t_release`.
+
+# Returns
+
+- `Bool`: button state after the events
+"""
+function _serial_button!(
+    sp::LibSerialPort.SerialPort,
+    gpio::Int64,
+    t0::Float64,
+    t_press::Vector{Float64},
+    t_release::Vector{Float64},
+    pressed::Bool,
+)::Bool
+    while true
+        line = _serial_listener(sp)
+        isnothing(line) && break
+        # lines may end with "\r" (CRLF)
+        ev = strip(line)
+        if ev == "$gpio:1" && !pressed
+            push!(t_press, time() - t0)
+            pressed = true
+        elseif ev == "$gpio:0" && pressed
+            push!(t_release, time() - t0)
+            pressed = false
+        end
+    end
+    return pressed
+end
+
+"""
+    _serial_flush(sp, seconds)
+
+Drain the serial port `sp` for `seconds` seconds, discarding all incoming data. Used to discard stale buffered samples before recording begins.
+"""
+function _serial_flush(sp, seconds::Real)::Nothing
+    t0 = time()
+    while time() - t0 <= seconds
+        _serial_listener(sp)
+    end
+    return nothing
+end
+
+"""
+    _wait_spacebar()
+
+Block until the SPACEBAR is pressed in the terminal (raw mode; the terminal mode is always restored).
+"""
+function _wait_spacebar()::Nothing
+    while true
+        ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, true)
+        ret == 0 || error("Unable to switch the terminal to raw mode.")
+        kbd_key = try
+            read(stdin, Char)
+        finally
+            ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, false)
+        end
+        kbd_key == ' ' && return nothing
+    end
 end
 
 """

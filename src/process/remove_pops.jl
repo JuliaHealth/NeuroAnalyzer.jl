@@ -2,7 +2,7 @@ export remove_pops
 export remove_pops!
 
 """
-    remove_pops(s; <keyword arguments>)
+    _remove_pops(s; <keyword arguments>)
 
 Detect and repair electrode pops (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≥2 seconds.
 
@@ -21,7 +21,7 @@ Named tuple:
 - `l_seg::Int64`: length of segment before the pop that starts when signal crosses 0
 - `r_seg::Int64`: length of segment after the pop that ends when signal crosses 0
 """
-function remove_pops(
+function _remove_pops(
     s::AbstractVector;
     r::Int64 = 20,
     repair::Bool = true,
@@ -136,7 +136,7 @@ function remove_pops(
             # s_pop[s_pop_min:end] += ll2
 
             # s_pop = filter_mavg(s_pop, k=12)
-            s_pop = filter_mavg(s_pop; k = 4)
+            s_pop = _filter_mavg(s_pop; k = 4)
 
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
@@ -185,7 +185,7 @@ function remove_pops(
 
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
-            s_pop = filter_mavg(s_pop; k = 4)
+            s_pop = _filter_mavg(s_pop; k = 4)
 
             # s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
             # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
@@ -266,7 +266,7 @@ function remove_pops(
 
     @inbounds for ch_idx = 1:ch_n
         for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
-            p = remove_pops(
+            p = _remove_pops(
                 obj_tmp.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair = repair, r = r,
             )
             if !isnothing(p)

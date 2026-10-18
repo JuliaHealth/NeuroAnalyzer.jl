@@ -7,18 +7,19 @@ export rmna
 """
     distance(p1, p2)
 
-Calculate the Euclidean distance between two points.
+Calculate the Euclidean distance between two points (2-D, 3-D, …).
 
 # Arguments
-- `p1::Tuple{Real, Real}`: first point `(x₁, y₁)`
-- `p2::Tuple{Real, Real}`: second point `(x₂, y₂)`
+
+- `p1::NTuple{N, Real}`: first point, e.g. `(x₁, y₁)`
+- `p2::NTuple{N, Real}`: second point; same number of coordinates as `p1`
 
 # Returns
 
-- `Float64`: Euclidean distance `√((x₂−x₁)² + (y₂−y₁)²)`
+- `Float64`: Euclidean distance `√(Σ(p2ᵢ − p1ᵢ)²)`
 """
-function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
-    return sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
+function distance(p1::NTuple{N, Real}, p2::NTuple{N, Real})::Float64 where {N}
+    return sqrt(sum(abs2, p2 .- p1))
 end
 
 """

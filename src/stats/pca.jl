@@ -67,16 +67,6 @@ function pcacomp(
     m = copy(m)
     zstd && _zstd_columns!(m)
 
-    if zstd
-        for idx in axes(m, 2)
-            if length(unique(m[:, idx])) > 1
-                m[:, idx] = StatsBase.standardize(ZScoreTransform, m[:, idx])
-            else
-                m[:, idx] = zeros(size(m, 1))
-            end
-        end
-    end
-
     # dry run to discover the actual number of PCs the solver can produce
     pc_tmp = _fit_pca(m, n, zstd)
     n_actual = size(pc_tmp.proj, 2)
@@ -190,16 +180,16 @@ function biplot(
         xlabel = "PC1 ($(round(pca.pcv[1], digits = 1))%)",
         ylabel = "PC2 ($(round(pca.pcv[2], digits = 1))%)",
     )
-    GLMakie.xlims!(ax, (-4, 4))
-    GLMakie.ylims!(ax, (-4, 4))
     GLMakie.scatter!(ax, pca.pc[:, "PC1"], pca.pc[:, "PC2"]; markersize = 10)
 
-    cmap = GLMakie.resample_cmap(:darktest, n_pc)
-    for idx = 1:n_pc
-        # scale loading vector by 2 for visibility; pcp is (variables × PCs)
+    # one loading vector per variable: (loading on PC1, loading on PC2);
+    # pcp is (variables × PCs); scaled by 2 for visibility
+    n_var = length(vars)
+    cmap = GLMakie.resample_cmap(:darktest, max(2, n_var))
+    for idx = 1:n_var
         GLMakie.arrows2d!(
             (0, 0),
-            (pca.pcp[1, idx] * 2, pca.pcp[2, idx] * 2);
+            (pca.pcp[idx, 1] * 2, pca.pcp[idx, 2] * 2);
             color = cmap[idx],
             label = string(vars[idx]),
         )

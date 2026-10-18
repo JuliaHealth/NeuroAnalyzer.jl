@@ -64,7 +64,7 @@ end
 
 Calculate R², adjusted R², AIC (with small-sample correction), and BIC for a fitted linear regression model.
 
-The small-sample corrected AIC (AICc) is applied when `n / k < 40`: `AICc = AIC + 2k(k+1) / (n − k − 1)`, where `k` is the number of predictors (excluding the intercept).
+The small-sample corrected AIC (AICc) is applied when `n / k < 40`: `AICc = AIC + 2k(k+1) / (n − k − 1)`, where `k` is the number of estimated parameters (coefficients, including the intercept, and the residual variance).
 
 # Arguments
 
@@ -81,8 +81,8 @@ Named tuple:
 
 # Notes
 
-- `k` = number of predictors (coefficients excluding the intercept).
-- AIC = `2k − 2L`; BIC = `k × ln(n) − 2L`, where L = log-likelihood.
+- `k` = number of estimated parameters (`dof(m)`: coefficients + residual variance).
+- AIC = `2k − 2L`; BIC = `k × ln(n) − 2L`, where L = log-likelihood (as in `GLM.aic()`, `GLM.bic()` and R).
 - AICc correction is applied when the sample-to-parameter ratio `n/k < 40`.
 """
 function infcrit(
@@ -93,10 +93,10 @@ function infcrit(
     aic::Float64,
     bic::Float64,
 } where {T <: StatsModels.TableRegressionModel}
-    # number of predictors (excluding intercept)
-    k = length(GLM.coef(m)) - 1
+    # number of estimated parameters (coefficients incl. intercept + residual variance)
+    k = GLM.dof(m)
     # number of observations
-    n = length(GLM.predict(m))
+    n = GLM.nobs(m)
     n > k + 1 || throw(
         ArgumentError(
             "Model has too few observations relative to parameters (n must be > k + 1).",
@@ -104,14 +104,10 @@ function infcrit(
     )
 
     R2 = GLM.r2(m)
-    R2adj = 1 - (1 - R2) * ((n - 1) / (n - k - 1))
-
-    L = GLM.loglikelihood(m)
-
-    aic = 2k - 2L
-    # apply small-sample AICc correction when n/k < 40
-    n / k < 40 && (aic += (2k * (k + 1)) / (n - k - 1))
-    bic = k * log(n) - 2L
+    R2adj = GLM.adjr2(m)
+    # small-sample AICc when n/k < 40
+    aic = n / k < 40 ? GLM.aicc(m) : GLM.aic(m)
+    bic = GLM.bic(m)
 
     return (; R2, R2adj, aic, bic)
 end

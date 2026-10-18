@@ -1,7 +1,7 @@
 export amp
 
 """
-    amp(s)
+    _amp(s)
 
 Computes amplitude descriptors for a 1-D signal vector.
 
@@ -20,7 +20,7 @@ Named tuple:
 - `ms_amp::Float64`: mean square amplitude (`mean(s²)`)
 - `te_signal::Float64`: total signal energy (`Σ s²`)
 """
-function amp(
+function _amp(
     s::AbstractVector,
 )::@NamedTuple{
     peak_amp::Float64,
@@ -31,7 +31,7 @@ function amp(
     te_signal::Float64,
 }
     peak_amp = maximum(abs, s)
-    rms_amp = rms(s)
+    rms_amp = _rms(s)
     s_min, s_max = extrema(s)
     p2p_amp = s_max - s_min
     semi_p2p_amp = p2p_amp / 2
@@ -42,7 +42,7 @@ function amp(
 end
 
 """
-    amp(s)
+    _amp(s)
 
 Computes amplitude descriptors for a 3-D signal array.
 
@@ -61,7 +61,7 @@ Named tuple:
 - `ms_amp::Matrix{Float64}`: mean square amplitude (`mean(s²)`), shape (channels, epochs)
 - `te_signal::Matrix{Float64}`: total signal energy (`Σ s²`), shape (channels, epochs)
 """
-function amp(
+function _amp(
     s::AbstractArray,
 )::@NamedTuple{
     peak_amp::Matrix{Float64},
@@ -89,7 +89,7 @@ function amp(
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        amp_data = amp(@view(s[ch_idx, :, ep_idx]))
+        amp_data = _amp(@view(s[ch_idx, :, ep_idx]))
         peak_amp[ch_idx, ep_idx] = amp_data.peak_amp
         rms_amp[ch_idx, ep_idx] = amp_data.rms_amp
         p2p_amp[ch_idx, ep_idx] = amp_data.p2p_amp
@@ -139,5 +139,5 @@ function amp(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return amp(@view(obj.data[ch, :, :]))
+    return _amp(@view(obj.data[ch, :, :]))
 end

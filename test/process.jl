@@ -22,20 +22,20 @@ a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
 @info "Test: add_signal()"
-@test add_signal(v1, v2) == v1 + v2
+@test NeuroAnalyzer._add_signal(v1, v2) == v1 + v2
 x = rand(epoch_len(e10))
 e10_tmp = add_signal(e10; ch = "Fp1", s = x)
 e10_tmp.data[1, :, 1] == e10.data[1, :, 1] + x
 
 @info "Test: cbp()"
-@test length(cbp(rand(100), fs = 10, frq = 4)) == 100
+@test length(NeuroAnalyzer._cbp(rand(100), fs = 10, frq = 4)) == 100
 e10_tmp = cbp(e10; ch = "all", frq = 4)
 @test size(e10_tmp) == size(e10)
 
 @info "Test: cwd()"
 s = rand(100)
 NeuroAnalyzer._log_off()
-ct = NeuroAnalyzer.cwd(s; wt = wavelet(Morlet(π); β = 32, Q = 128))
+ct = NeuroAnalyzer._cwd(s; wt = wavelet(Morlet(π); β = 32, Q = 128))
 NeuroAnalyzer._log_on()
 @test size(ct) == (130, 100)
 ct = NeuroAnalyzer.cwd(e10; ch = "Fp1", wt = wavelet(Morlet(π); β = 32, Q = 128));
@@ -43,7 +43,7 @@ ct = NeuroAnalyzer.cwd(e10; ch = "Fp1", wt = wavelet(Morlet(π); β = 32, Q = 12
 
 @info "Test: icwd()"
 NeuroAnalyzer._log_off()
-ct = NeuroAnalyzer.cwd(s; wt = wavelet(Morlet(π); β = 32, Q = 128))
+ct = NeuroAnalyzer._cwd(s; wt = wavelet(Morlet(π); β = 32, Q = 128))
 s_new = icwd(ct; wt = wavelet(Morlet(π); β = 32, Q = 128), type = :nd)
 @test length(s_new) == 100
 s_new = icwd(ct; wt = wavelet(Morlet(π); β = 32, Q = 128), type = :pd)
@@ -54,32 +54,32 @@ NeuroAnalyzer._log_on()
 
 @info "Test: denoise_fft()"
 s = rand(100)
-s2, f = denoise_fft(s)
+s2, f = NeuroAnalyzer._denoise_fft(s)
 @test length(s2) == 100
 @test length(f) == 100
 e10_tmp = denoise_fft(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: denoise_dwd()"
-s = denoise_dwd(rand(100); wt = wavelet(WT.haar))
+s = NeuroAnalyzer._denoise_dwd(rand(100); wt = wavelet(WT.haar))
 @test length(s) == 100
 e10_tmp = denoise_dwd(e10; ch = "all", wt = wavelet(WT.haar))
 @test size(e10_tmp) == size(e10)
 
 @info "Test: denoise_wien()"
-s = denoise_wien(a1)
+s = NeuroAnalyzer._denoise_wien(a1)
 @test size(s) == (2, 3, 2)
 e10_tmp = denoise_wien(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: derivative()"
-@test NeuroAnalyzer.derivative(v1) == [0.5, 1.0, 1.0, 1.0, 0.5]
-@test NeuroAnalyzer.derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
+@test NeuroAnalyzer._derivative(v1) == [0.5, 1.0, 1.0, 1.0, 0.5]
+@test NeuroAnalyzer._derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
 e10_tmp = NeuroAnalyzer.derivative(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: detrend()"
-@test round.(detrend(v1)) == [0.0, 0.0, 0.0, 0.0, 0.0]
+@test round.(NeuroAnalyzer._detrend(v1)) == [0.0, 0.0, 0.0, 0.0, 0.0]
 e10_tmp = detrend(e10; ch = "all", type = :ls)
 @test size(e10_tmp) == size(e10)
 e10_tmp = detrend(e10; ch = "all", type = :linear)
@@ -94,9 +94,9 @@ e10_tmp = detrend(e10; ch = "all", type = :loess)
 @info "Test: dwd()"
 NeuroAnalyzer._log_off()
 s = rand(100)
-dt = dwd(s; type = :sdwt)
+dt = NeuroAnalyzer._dwd(s; type = :sdwt)
 @test size(dt) == (7, 100)
-dt = dwd(s; type = :acdwt)
+dt = NeuroAnalyzer._dwd(s; type = :acdwt)
 @test size(dt) == (7, 100)
 NeuroAnalyzer._log_on()
 dt = dwd(e10; ch = "all", type = :sdwt, l = 2)
@@ -107,11 +107,11 @@ dt = dwd(e10; ch = "all", type = :acdwt, l = 2)
 @info "Test: idwd()"
 NeuroAnalyzer._log_off()
 s = rand(256)
-dt = dwd(s; type = :sdwt, l = 2)
+dt = NeuroAnalyzer._dwd(s; type = :sdwt, l = 2)
 s_new = idwd(dt; type = :sdwt)
 @test length(s_new) == 256
 s = rand(256)
-dt = dwd(s; type = :acdwt, l = 2)
+dt = NeuroAnalyzer._dwd(s; type = :acdwt, l = 2)
 s_new = idwd(dt; type = :acdwt)
 @test length(s_new) == 256
 NeuroAnalyzer._log_on()
@@ -129,14 +129,14 @@ s, bn, bf = bpsplit(e10; ch = "all")
 @test size(s) == (13, 24, 2560, 10)
 
 @info "Test: fconv()"
-@test fconv(v1, kernel = v2) == ComplexF64[
+@test NeuroAnalyzer._fconv(v1, kernel = v2) == ComplexF64[
     1.5999999999999996 + 4.13548630602436e-17im,
     2.4999999999999996 + 0.0im,
     3.499999999999999 + 7.236218295908405e-17im,
     2.6999999999999997 - 2.632430811870764e-17im,
     1.8999999999999997 + 0.0im,
 ]
-@test fconv(a1, kernel = [0.5, 1.0, 0.5]) == ComplexF64[
+@test NeuroAnalyzer._fconv(a1, kernel = [0.5, 1.0, 0.5]) == ComplexF64[
     0.75 + 0.0im 1.0 + 0.0im 0.75 + 0.0im; 0.75 + 0.0im 1.0 + 0.0im 0.75 + 0.0im;;;
     0.75 + 0.0im 1.0 + 0.0im 0.75 + 0.0im; 0.75 + 0.0im 1.0 + 0.0im 0.75 + 0.0im
 ]
@@ -144,23 +144,23 @@ s_conv = fconv(e10; ch = "all", kernel = [0.0, 0.5, 1.0, 0.5, 0.0])
 @test size(s_conv) == size(e10)
 
 @info "Test: filter_mavg()"
-@test filter_mavg(vcat(v1, v1), k = 2) == [1.0, 1.5, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 4.5, 5.0]
+@test NeuroAnalyzer._filter_mavg(vcat(v1, v1), k = 2) == [1.0, 1.5, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 4.5, 5.0]
 e10_tmp = filter_mavg(e10; ch = "all", k = 2)
 @test size(e10_tmp) == size(e10)
 
 @info "Test: filter_mmed()"
-@test filter_mmed(vcat(v1, v1), k = 2) == [1.0, 1.5, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 4.5, 5.0]
+@test NeuroAnalyzer._filter_mmed(vcat(v1, v1), k = 2) == [1.0, 1.5, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 4.5, 5.0]
 e10_tmp = filter_mmed(e10; ch = "all", k = 2)
 @test size(e10_tmp) == size(e10)
 
 @info "Test: filter_poly()"
-s = filter_poly(rand(20))
+s = NeuroAnalyzer._filter_poly(rand(20))
 @test length(s) == 20
 e10_tmp = filter_poly(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: filter_sg()"
-s = filter_sg(rand(20))
+s = NeuroAnalyzer._filter_sg(rand(20))
 @test length(s) == 20
 e10_tmp = filter_poly(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
@@ -442,7 +442,7 @@ eeg_tmp = NeuroAnalyzer.filter(
 @test size(eeg_tmp) == size(e10)
 
 @info "Test: filter_g()"
-s = filter_g(rand(10); fs = 10, f = 4)
+s = NeuroAnalyzer._filter_g(rand(10); fs = 10, f = 4)
 @test length(s) == 10
 e10_tmp = filter_g(e10; ch = "all", f = 20)
 @test size(e10_tmp) == size(e10)
@@ -454,9 +454,9 @@ e10_int = lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
 
 @info "Test: normalize()"
-@test NeuroAnalyzer.normalize(v1, method = :none) == v1
-@test NeuroAnalyzer.normalize(m1, method = :none) == m1
-@test NeuroAnalyzer.normalize(a1, method = :none) == a1
+@test NeuroAnalyzer._normalize(v1, method = :none) == v1
+@test NeuroAnalyzer._normalize(m1, method = :none) == m1
+@test NeuroAnalyzer._normalize(a1, method = :none) == a1
 @test normalize_zscore(v1) == [
     -1.2649110640673518,
     -0.6324555320336759,
@@ -637,7 +637,7 @@ e10_int = plinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
 
 @info "Test: remove_dc()"
-@test remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]
+@test NeuroAnalyzer._remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]
 e10_tmp = remove_dc(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
 
@@ -769,25 +769,25 @@ e10_tmp = csd(e10)
 @test size(e10_tmp) == size(e10)
 
 @info "Test: standardize()"
-m_s, sc = NeuroAnalyzer.standardize(a1)
+m_s, sc = NeuroAnalyzer._standardize(a1)
 @test length(sc) == 2
 m_s, sc = NeuroAnalyzer.standardize(e10; ch = "all")
 @test length(sc) == 10
 
 @info "Test: taper()"
-@test taper(v1, t = v1) == [1, 4, 9, 16, 25]
+@test NeuroAnalyzer._taper(v1, t = v1) == [1, 4, 9, 16, 25]
 e10_tmp = taper(e10; ch = "all", t = e10.data[1, :, 1])
 @test size(e10_tmp) == size(e10)
 
 @info "Test: tconv()"
-@test round.(tconv(v1, kernel = [0.2, 0.1, 0.2]), digits = 2) == [0.5, 1.0, 1.5, 2.0, 1.3]
-@test round.(tconv(a1, kernel = [0.2, 0.1, 0.2]), digits = 2) ==
+@test round.(NeuroAnalyzer._tconv(v1, kernel = [0.2, 0.1, 0.2]), digits = 2) == [0.5, 1.0, 1.5, 2.0, 1.3]
+@test round.(NeuroAnalyzer._tconv(a1, kernel = [0.2, 0.1, 0.2]), digits = 2) ==
       [0.3 0.5 0.3; 0.3 0.5 0.3;;; 0.3 0.5 0.3; 0.3 0.5 0.3]
 e10_tmp = tconv(e10; ch = "all", kernel = [0.2, 0.1, 0.2])
 @test size(e10_tmp) == size(e10)
 
 @info "Test: wbp()"
-@test length(wbp(e10.data[1, :, 1], fs = 10, frq = 4)) == 2560
+@test length(NeuroAnalyzer._wbp(e10.data[1, :, 1], fs = 10, frq = 4)) == 2560
 e10_tmp = wbp(e10; ch = "all", frq = 4)
 @test size(e10_tmp) == size(e10)
 
@@ -814,7 +814,7 @@ remove_powerline!(e10_tmp; pl_frq = 50, ch = "Fp1")
 @test size(e10_tmp) == (24, 2560, 1)
 
 @info "Test: ica_decompose()"
-ica_data = ica_decompose(rand(10, 1000); n = 5)
+ica_data = NeuroAnalyzer._ica_decompose(rand(10, 1000); n = 5)
 @test size(ica_data.ic) == (5, 1000)
 @test size(ica_data.ic_mw) == (10, 5)
 ica_data = ica_decompose(eeg; ch = "all", n = 5, iter = 10)
@@ -838,7 +838,7 @@ eeg_tmp = ica_remove(
 @test size(eeg_tmp) == size(eeg)
 
 @info "Test: pca_decompose()"
-pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2); n = 2)
+pc, pcv, pcm, pc_model = NeuroAnalyzer._pca_decompose(rand(4, 4, 2); n = 2)
 @test size(pc) == (2, 4, 2)
 @test size(pcv) == (2, 2)
 @test length(pcm) == 4
@@ -848,8 +848,8 @@ pc, pcv, pcm, _ = pca_decompose(e10; ch = "all", n = 4)
 @test length(pcm) == 24
 
 @info "Test: pca_reconstruct()"
-pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2); n = 2)
-s = pca_reconstruct(rand(4, 4, 2); pc = pc, pc_model = pc_model)
+pc, pcv, pcm, pc_model = NeuroAnalyzer._pca_decompose(rand(4, 4, 2); n = 2)
+s = NeuroAnalyzer._pca_reconstruct(rand(4, 4, 2); pc = pc, pc_model = pc_model)
 @test size(s) == (4, 4, 2)
 pc, pcv, pcm, pc_model = pca_decompose(e10; ch = "all", n = 4)
 e10_rec = pca_reconstruct(e10; ch = "all", pc = pc, pc_model = pc_model)
@@ -860,7 +860,7 @@ e10_tmp = reference_custom(e10)
 @test size(e10_tmp) == (23, 2560, 10)
 
 @info "Test: normpower()"
-@test round.(normpower(1:10)) == [6.0, 12.0, 19.0, 25.0, 31.0, 37.0, 43.0, 50.0, 56.0, 62.0]
+@test round.(NeuroAnalyzer._normpower(1:10)) == [6.0, 12.0, 19.0, 25.0, 31.0, 37.0, 43.0, 50.0, 56.0, 62.0]
 @test size(normpower(e10, ch = "all")) == size(e10)
 
 @info "Test: sort_epochs()"
@@ -869,7 +869,7 @@ e = sort_epochs(e10_erp; s = collect((nepochs(e10_erp)):-1:2))
 @test size(e.data) == (19, 2560, 11)
 
 @info "Test: denoise_cwd())"
-s = denoise_cwd(rand(100); fs = 10, nf = 2)
+s = NeuroAnalyzer._denoise_cwd(rand(100); fs = 10, nf = 2)
 @test length(s) == 100
 e10_tmp = denoise_cwd(e10; ch = "all", nf = 50)
 @test size(e10_tmp) == size(e10)
@@ -879,7 +879,7 @@ e10_tmp = artrem_cwd(e10; ch = "Fp1", ep = 1, tseg = (0.2, 0.4), fseg = (10, 12.
 @test size(e10_tmp) == size(e10)
 
 @info "Test: emd()"
-@test size(emd(e10.data[1, :, 1], e10.epoch_time, epsilon = 0.3), 1) in [8, 9]
+@test size(NeuroAnalyzer._emd(e10.data[1, :, 1], e10.epoch_time, epsilon = 0.3), 1) in [8, 9]
 @test size(emd(e10, ch = "Fp1", ep = 1, epsilon = 0.3), 1) in [8, 9]
 
 true

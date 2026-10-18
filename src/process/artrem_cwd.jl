@@ -2,7 +2,7 @@ export artrem_cwd
 export artrem_cwd!
 
 """
-    artrem_cwd(s, t; <keyword arguments>)
+    _artrem_cwd(s, t; <keyword arguments>)
 
 Remove an artifact from a signal using continuous wavelet decomposition (CWD).
 
@@ -25,7 +25,7 @@ The signal is transformed into the time-frequency domain via CWD, the coefficien
 
 - `Vector{Float64}`: artifact-corrected signal of the same length as `s`
 """
-function artrem_cwd(
+function _artrem_cwd(
     s::AbstractVector,
     t::AbstractVector;
     fs::Int64,
@@ -38,12 +38,12 @@ function artrem_cwd(
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))   # was: !(fs >= 1) && throw(...)
 
     # compute the wavelet frequency axis, then validate the segment bounds
-    f = cwtfrq(s; fs = fs, wt = wt)
+    f = _cwtfrq(s; fs = fs, wt = wt)
     _check_tuple(tseg, (t[1], t[end]), "tseg")
     _check_tuple(fseg, (f[1], f[end]), "fseg")
 
     # forward CWD → complex coefficient matrix (frequencies × time)
-    coef = NeuroAnalyzer.cwd(s; wt = wt)
+    coef = NeuroAnalyzer._cwd(s; wt = wt)
 
     # find the nearest frequency and time indices for the artifact window
     f_idx1 = vsearch(fseg[1], f)
@@ -100,7 +100,7 @@ function artrem_cwd(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, ep] = artrem_cwd(
+    obj_tmp.data[ch, :, ep] = _artrem_cwd(
         @view(obj.data[ch, :, ep]),
         obj.epoch_time;
         fs = sr(obj),

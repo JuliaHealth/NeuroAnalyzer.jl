@@ -12,8 +12,8 @@ a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
 @info "Test: zscore()"
-@test NeuroAnalyzer.zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
-@test NeuroAnalyzer.zscore(1, 2.0, 3) == -0.3333333333333333
+@test zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
+@test zscore(1, 2.0, 3) == -0.3333333333333333
 
 @info "Test: infcrit()"
 x = 1:10
@@ -23,16 +23,18 @@ m = GLM.lm(@formula(y ~ x), df)
 R2, R2adj, aic, bic = infcrit(m)
 @test R2 == 1.0
 @test R2adj == 1.0
-@test aic == -651.7952199530463
-@test bic == -651.9926348600522
+@test aic == GLM.aicc(m) == -644.2952199530463
+@test bic == GLM.bic(m) == -647.3874646740642
 
 @info "Test: outlier_detect()"
 @test grubbs([1, 2, 3, 4, 5, 6, 100]) == true
 @test outlier_detect(ones(10)) == zeros(10)
+@test outlier_detect(ones(10); method = :z) == zeros(10)
+@test outlier_detect([zeros(20); 100.0]; method = :z) == [zeros(Bool, 20); true]
 
 @info "Test: cor_test()"
 _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
-@test df == 8
+@test df == 3
 
 @info "Test: moe()"
 @test moe(100) == 0.1
@@ -42,16 +44,18 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 @test rng(1:5) == 4
 
 @info "Test: mrng()"
-@test mrng(1:5) == 2.0
+@test mrng(1:5) == 3.0
 
 @info "Test: sem()"
-@test NeuroAnalyzer.sem(1:5) == 0.7071067811865476
+@test sem(1:5) ≈ 0.7071067811865476
 
 @info "Test: semd()"
 @test NeuroAnalyzer.semd(1:5) == 0.886004796826744
 
 @info "Test: sem_diff()"
 @test sem_diff(1:5, 2:6) == 1.0
+# unequal lengths: pooled SD × √(1/n1 + 1/n2)
+@test sem_diff(1:5, 1:3) ≈ sqrt((4 * 2.5 + 2 * 1.0) / 6 * (1 / 5 + 1 / 3))
 
 @info "Test: linreg()"
 _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
@@ -61,26 +65,20 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @info "Test: norminv()"
 @test norminv(0.5) == 0.0
 
-@info "Test: summary()"
-@test NeuroAnalyzer.summary([1, 2.5, 3, NaN, 4, missing, 5.1]) == (
-    n = 7,
-    ms = 2,
-    m = 3.12,
-    v = 2.397,
-    s = 1.5482,
-    mn = 1.0,
-    q1 = 2.5,
-    me = 3.0,
-    q3 = 4.0,
-    mx = 5.1,
-    mo = 1.0,
-)
-@test NeuroAnalyzer.summary(rand(10, 3), g = ["g1", "g2", "g3"], d = 2) isa DataFrame
-@test NeuroAnalyzer.summary(rand(10), rand(11), rand(12), g = ["g1", "g2", "g3"], d = 2) isa
-      DataFrame
+@info "Test: summary_stats() / summary()"
+st = summary_stats([1, 2.5, 3, NaN, 4, missing, 5.1])
+@test (st.n, st.ms) == (7, 2)
+@test st.m ≈ 3.12 && st.v ≈ 2.397 && st.s ≈ sqrt(2.397)
+@test (st.mn, st.q1, st.me, st.q3, st.mx, st.mo) == (1.0, 2.5, 3.0, 4.0, 5.1, 1.0)
+@test summary_stats(rand(10, 3), g = ["g1", "g2", "g3"], d = 2) isa DataFrame
+@test summary(rand(10), rand(11), rand(12), g = ["g1", "g2", "g3"], d = 2) isa DataFrame
+# Base.summary(x) and summary(io, x) (used by show()) are unchanged
+@test sprint(summary, [1, 2]) == "2-element Vector{Int64}"
+@test summary([1, 2]) == "2-element Vector{Int64}"
+@test summary(zeros(2, 3)) == "2×3 Matrix{Float64}"
 
 @info "Test: cimd()"
-@test cimd(collect(1:100)) == (41.0, 60.0)
+@test cimd(collect(1:100)) == (40.0, 61.0)
 
 @info "Test: cir()"
 @test cir(r = 0.5, n = 50) == (0.2574878607682835, 0.6832563020988138)
@@ -93,6 +91,7 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 
 @info "Test: distance()"
 @test NeuroAnalyzer.distance((0, 0), (1, 1)) == 1.4142135623730951
+@test NeuroAnalyzer.distance((0, 0, 0), (1, 2, 2)) == 3.0
 
 @info "Test: count_thresh()"
 m = [1 4 7; 2 5 8; 3 6 9]
@@ -124,6 +123,8 @@ s1, s2, s3 = bootstrap_ci(x)
 x = rand(10, 100)
 s = bootstrap_stat(x; f = "abs(maximum(obj))")
 @test length(s) == 3000
+s = bootstrap_stat(x; n1 = 100, f = v -> abs(maximum(v)))
+@test length(s) == 100 && all(s .> 0)
 
 @info "Test: cip()"
 @test cip(0.5, 10) == (0.19010248384771866, 0.8098975161522813)
@@ -175,6 +176,11 @@ s = NeuroAnalyzer.permute(rand(2, 4, 8), 10)
 @info "Test: cim()"
 @test cim([1, 2, 3, 4], d = :t) == (0.4457397432394794, 4.554260256760521)
 @test cim([1, 2, 3, 4], d = :z) == (1.2348486881183376, 3.765151311881662)
+# one-sided: lower / upper confidence bound with the one-tailed critical value
+e1 = crit_t(3, 0.05; twotailed = false) * sem([1, 2, 3, 4])
+@test cim([1, 2, 3, 4]; twotailed = false) == (2.5 - e1, Inf)
+@test cim([1, 2, 3, 4]; twotailed = false, tail = :upper) == (-Inf, 2.5 + e1)
+@test_throws ArgumentError cim([1, 2, 3, 4]; twotailed = false, tail = :both)
 
 @info "Test: t2p()"
 @test t2p(2, df = 2, twotailed = true) == 0.18350341907227394
@@ -189,11 +195,13 @@ s = NeuroAnalyzer.permute(rand(2, 4, 8), 10)
 @test crit_chi(10) == 3.94029913611906
 
 @info "Test: cis()"
-@test NeuroAnalyzer.cis([1, 2, 3, 4]) == (0.7313348599303633, 4.813533834942627)
+@test cis([1, 2, 3, 4]) == (0.7313348599303633, 4.813533834942627)
+# Base.cis() for numbers is unchanged
+@test cis(0.0) == 1.0 + 0.0im
 
 @info "Test: civ()"
-@test NeuroAnalyzer.civ([1, 2, 3, 4]) == (0.5348506773493641, 23.17010798013747)
-@test NeuroAnalyzer.cis([1, 2, 3, 4]) == sqrt.(NeuroAnalyzer.civ([1, 2, 3, 4]))
+@test civ([1, 2, 3, 4]) == (0.5348506773493641, 23.17010798013747)
+@test cis([1, 2, 3, 4]) == sqrt.(civ([1, 2, 3, 4]))
 
 @info "Test: p2o()"
 @test p2o(0.5) == 1.0

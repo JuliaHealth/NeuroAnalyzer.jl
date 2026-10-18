@@ -1,7 +1,7 @@
 export band_power
 
 """
-    band_power(s; <keyword arguments>)
+    _band_power(s; <keyword arguments>)
 
 Calculate the absolute power in a frequency band by:
 
@@ -33,7 +33,7 @@ Calculate the absolute power in a frequency band by:
 
 - `Float64`: band power
 """
-function band_power(
+function _band_power(
     s::AbstractVector;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -51,7 +51,7 @@ function band_power(
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # compute the power spectral density over the full frequency range
-    psd_data = psd(
+    psd_data = _psd(
         s;
         fs = fs,
         db = false,
@@ -81,7 +81,7 @@ function band_power(
 end
 
 """
-    band_power(s; <keyword arguments>)
+    _band_power(s; <keyword arguments>)
 
 Calculate absolute band power between two frequencies for a 3-D signal array.
 
@@ -109,7 +109,7 @@ Calculate absolute band power between two frequencies for a 3-D signal array.
 
 - `Matrix{Float64}`: band power, shape (channels, epochs)
 """
-function band_power(
+function _band_power(
     s::AbstractArray;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -136,7 +136,7 @@ function band_power(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        bp[ch_idx, ep_idx] = band_power(
+        bp[ch_idx, ep_idx] = _band_power(
             @view(s[ch_idx, :, ep_idx]),
             fs = fs,
             flim = flim,
@@ -203,7 +203,7 @@ function band_power(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return band_power(
+    return _band_power(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,

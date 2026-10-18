@@ -2,7 +2,7 @@ export tconv
 export tconv!
 
 """
-    tconv(s; <keyword arguments>)
+    _tconv(s; <keyword arguments>)
 
 Performs convolution in the time domain.
 
@@ -15,7 +15,7 @@ Performs convolution in the time domain.
 
 - `Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
 """
-function tconv(
+function _tconv(
     s::AbstractVector;
     kernel::AbstractVector,
 )::Union{Vector{Float64}, Vector{ComplexF64}}
@@ -24,7 +24,7 @@ function tconv(
 end
 
 """
-    tconv(s; <keyword arguments>)
+    _tconv(s; <keyword arguments>)
 
 Perform convolution in the time domain for a 3-D signal array.
 
@@ -37,7 +37,7 @@ Perform convolution in the time domain for a 3-D signal array.
 
 - `Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function tconv(
+function _tconv(
     s::AbstractArray;
     kernel::AbstractVector,
 )::Union{Array{Float64, 3}, Array{ComplexF64, 3}}
@@ -59,7 +59,7 @@ function tconv(
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = tconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel)
+        s_new[ch_idx, :, ep_idx] = _tconv(@view(s[ch_idx, :, ep_idx]), kernel = kernel)
         # update progress bar
         progress_bar && next!(progbar)
     end
@@ -96,9 +96,9 @@ function tconv(
     _info("Group delay: $(_group_delay(kernel)) samples")
 
     if eltype(kernel) == ComplexF64
-        return tconv(obj.data[ch, :, :]; kernel = kernel)
+        return _tconv(obj.data[ch, :, :]; kernel = kernel)
     else
-        obj_tmp.data[ch, :, :] = tconv(obj.data[ch, :, :]; kernel = kernel)
+        obj_tmp.data[ch, :, :] = _tconv(obj.data[ch, :, :]; kernel = kernel)
         push!(obj_tmp.history, "tconv(obj; ch=$ch, kernel=kernel)")
         return obj_tmp
     end
@@ -121,7 +121,7 @@ function tconv!(
     kernel::AbstractVector,
 )::Union{Nothing, Array{ComplexF64, 3}}
     if eltype(kernel) == ComplexF64
-        return tconv(obj.data; ch = ch, kernel = kernel)
+        return _tconv(obj.data; ch = ch, kernel = kernel)
     else
         obj_tmp = tconv(obj; ch = ch, kernel = kernel)
         obj.data = obj_tmp.data

@@ -1,3 +1,4 @@
+# sem() is StatsBase.sem() (std(x) / √n), re-exported
 export sem
 export semd
 export sep
@@ -7,28 +8,6 @@ export sep_diff
 export sen_diff
 export ses
 export sek
-
-"""
-    sem(x)
-
-Calculate the standard error of the mean.
-
-Computed as `std(x) / √n`.
-
-# Arguments
-
-- `x::AbstractVector`: input vector; must contain at least 2 elements
-
-# Returns
-
-- `Float64`: standard error of the mean
-"""
-function sem(x::AbstractVector)::Float64
-    # validate
-    length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
-
-    return std(x) / sqrt(length(x))
-end
 
 """
     semd(x)
@@ -98,11 +77,11 @@ end
 """
     sem_diff(x, y)
 
-Calculate the standard error of the difference between two means.
+Calculate the standard error of the difference between two means (pooled variance, as in the Student's t-test):
 
-For equal-length vectors: `√(SEM(x)² + SEM(y)²)`.
+`sₚ × √(1/n1 + 1/n2)`, where `sₚ² = ((n1 − 1)·var(x) + (n2 − 1)·var(y)) / (n1 + n2 − 2)`.
 
-For unequal-length vectors: pooled SD × `√(1/n1 + 1/n2)`.
+For equal-length vectors this equals `√(SEM(x)² + SEM(y)²)`.
 
 # Arguments
 
@@ -118,11 +97,11 @@ function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
     length(x) >= 2 || throw(ArgumentError("x must contain at least 2 elements."))
     length(y) >= 2 || throw(ArgumentError("y must contain at least 2 elements."))
 
-    if length(x) == length(y)
-        return sqrt(sem(x)^2 + sem(y)^2)
-    else
-        return stdp(x, y) * sqrt(1 / length(x) + 1 / length(y))
-    end
+    n1 = length(x)
+    n2 = length(y)
+    sp2 = ((n1 - 1) * var(x) + (n2 - 1) * var(y)) / (n1 + n2 - 2)
+
+    return sqrt(sp2 * (1 / n1 + 1 / n2))
 end
 
 """

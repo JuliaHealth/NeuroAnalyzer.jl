@@ -1,7 +1,7 @@
 export band_mpower
 
 """
-    band_mpower(s; <keyword arguments>)
+    _band_mpower(s; <keyword arguments>)
 
 Calculate mean and peak band power for a 1-D signal vector.
 
@@ -40,7 +40,7 @@ Named tuple:
 - `maxbp::Float64`: power at maximum band frequency
 - `maxba::Float64`: amplitude at maximum band frequency
 """
-function band_mpower(
+function _band_mpower(
     s::AbstractVector;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -63,7 +63,7 @@ function band_mpower(
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # compute the power spectral density over the full frequency range
-    pw, pf = psd(
+    pw, pf = _psd(
         s;
         fs = fs,
         db = false,
@@ -97,7 +97,7 @@ function band_mpower(
 end
 
 """
-    band_mpower(s; <keyword arguments>)
+    _band_mpower(s; <keyword arguments>)
 
 Calculate mean and peak band power for a 3-D signal array.
 
@@ -136,7 +136,7 @@ Named tuple:
 - `maxbp::Matrix{Float64}`: power at maximum band frequency, shape (channels, epochs)
 - `maxba::Matrix{Float64}`: amplitude at maximum band frequency, shape (channels, epochs)
 """
-function band_mpower(
+function _band_mpower(
     s::AbstractArray;
     fs::Int64,
     flim::Tuple{Real, Real},
@@ -171,7 +171,7 @@ function band_mpower(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        mpower_data = band_mpower(
+        mpower_data = _band_mpower(
             @view(s[ch_idx, :, ep_idx]),
             fs = fs,
             flim = flim,
@@ -258,7 +258,7 @@ function band_mpower(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return band_mpower(
+    return _band_mpower(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,

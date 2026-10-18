@@ -1,7 +1,7 @@
 export sumsim
 
 """
-    sumsim(s1, s2; theta)
+    _sumsim(s1, s2; theta)
 
 Calculate summed similarity using an exponential decay model between two 1-D signal vectors.
 
@@ -19,7 +19,7 @@ Calculate summed similarity using an exponential decay model between two 1-D sig
 
 Values of `ss` are in the range [0, 1]; higher value indicates larger similarity.
 """
-function sumsim(s1::AbstractVector, s2::AbstractVector; theta::Real)::Float64
+function _sumsim(s1::AbstractVector, s2::AbstractVector; theta::Real)::Float64
     # validate
     length(s1) == length(s2) ||
         throw(
@@ -34,7 +34,7 @@ function sumsim(s1::AbstractVector, s2::AbstractVector; theta::Real)::Float64
 end
 
 """
-    sumsim(s1, s2; theta)
+    _sumsim(s1, s2; theta)
 
 Calculate summed similarity using an exponential decay model between two 3-D signal arrays.
 
@@ -52,7 +52,7 @@ Calculate summed similarity using an exponential decay model between two 3-D sig
 
 Values of `ss` are in the range [0, 1]; higher value indicates larger similarity.
 """
-function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float64}
+function _sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float64}
     # validate
     size(s1) == size(s2) || throw(
         ArgumentError("Sizes of s1 ($(size(s1))) and s2 ($(size(s2))) must be equal."),
@@ -67,7 +67,7 @@ function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        ss[ch_idx, ep_idx] = sumsim(
+        ss[ch_idx, ep_idx] = _sumsim(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx]),
             theta = theta,
@@ -139,7 +139,7 @@ function sumsim(
     ep1 = _n2v(ep1)
     ep2 = _n2v(ep2)
 
-    return sumsim(
+    return _sumsim(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2]);
         theta = theta,

@@ -146,14 +146,19 @@ function iavh()::Nothing
     # =========================================================================
     # helper: apply volume and spatial weights to a sound, then play it
     #
-    # creates a temporary copy so the original raw samples are never mutated
+    # the original raw samples are never mutated
     # channel amplitudes = raw_sample × vol × (channel_weight × channel_gain)
+    # playback runs in a separate task: wavplay() blocks until the sound ends,
+    # which would freeze the window when called from a GTK signal handler
     # =========================================================================
     function _play(snd_raw)
-        snd_out = deepcopy(snd_raw)
-        snd_out[1][:, 1] = snd_raw[1][:, 1] .* (vol * (d_l * channel_gain))
-        snd_out[1][:, 2] = snd_raw[1][:, 2] .* (vol * (d_r * channel_gain))
-        return wavplay(snd_out[1], snd_out[2])
+        y = snd_raw[1] .* [vol * d_l * channel_gain vol * d_r * channel_gain]
+        Threads.@spawn try
+            wavplay(y, snd_raw[2])
+        catch err
+            @error "Playback failed" exception = (err, catch_backtrace())
+        end
+        return nothing
     end
 
     # =========================================================================
@@ -325,7 +330,7 @@ function iavh()::Nothing
             return _on_speech_setting_changed()
         end
 
-        # --- signal: language changed (was missing in original) ---
+        # --- signal: language changed ---
         signal_connect(combo_lang, "changed") do widget
             return _on_speech_setting_changed()
         end
@@ -384,59 +389,58 @@ function iavh()::Nothing
         # sources within min_dist of either ear are treated as "in-head" and
         # both channels are set to zero
         # -----------------------------------------------------------------------
+        # (runs on the GTK thread: drawing must not be done from another thread)
         function _lmb_click(_, _, x_px, y_px)
-            return Threads.@spawn begin
-                # redraw the head diagram with a red circle at the clicked position
-                @guarded draw(can) do widget
-                    ctx = getgc(widget)
-                    h, w = Cairo.height(can), Cairo.width(can)
-                    Cairo.rectangle(ctx, 0, 0, w, h)
-                    Cairo.set_source_rgb(ctx, 1, 1, 1)
-                    Cairo.fill(ctx)
-                    Cairo.set_source_surface(ctx, img, 1, 1)
-                    Cairo.paint(ctx)
-                    Gtk4.arc(ctx, x_px, y_px, 10, 0, 2π)
-                    Gtk4.set_source_rgb(ctx, 1, 0, 0)
-                    Gtk4.stroke(ctx)
-                    return Gtk4.reveal(widget)
-                end
-
-                # map pixel coordinates to normalized [-0.5, 0.5] space
-                x_norm = round(x_px / canvas_size - 0.5, digits = 2)
-                y_norm = round(0.5 - y_px / canvas_size, digits = 2)
-
-                # euclidean distances from the sound source to each simulated ear
-                dist_l = sqrt((x_norm - ear_l_x)^2 + y_norm^2)
-                dist_r = sqrt((x_norm - ear_r_x)^2 + y_norm^2)
-
-                if dist_l < min_dist || dist_r < min_dist
-                    # source is inside (or too close to) the head - silence both channels
-                    d_l = 0.0
-                    d_r = 0.0
-                else
-                    # power-law attenuation, clamped to [0, 1]
-                    d_l = clamp((1.0 - dist_l)^dist_exponent, 0.0, 1.0)
-                    d_r = clamp((1.0 - dist_r)^dist_exponent, 0.0, 1.0)
-
-                    # attenuate the farther ear to enhance perceived lateralization
-                    if d_l > d_r
-                        d_r = round(d_r * lateral_atten; digits = 2)
-                    elseif d_r > d_l
-                        d_l = round(d_l * lateral_atten; digits = 2)
-                    end
-
-                    d_l = round(d_l; digits = 2)
-                    d_r = round(d_r; digits = 2)
-                end
-
-                # re-randomize and play with the updated spatial weights
-                type, lang, character, gender = _get_ui_state(
-                    combo_type, combo_lang, combo_character, combo_gender,
-                    types, langs, characters, genders,
-                )
-                snd = _select_sound(type, lang, character, gender)
-                _play(snd)
+            # redraw the head diagram with a red circle at the clicked position
+            @guarded draw(can) do widget
+                ctx = getgc(widget)
+                h, w = Cairo.height(can), Cairo.width(can)
+                Cairo.rectangle(ctx, 0, 0, w, h)
+                Cairo.set_source_rgb(ctx, 1, 1, 1)
+                Cairo.fill(ctx)
+                Cairo.set_source_surface(ctx, img, 1, 1)
+                Cairo.paint(ctx)
+                Cairo.arc(ctx, x_px, y_px, 10, 0, 2π)
+                Cairo.set_source_rgb(ctx, 1, 0, 0)
+                return Cairo.stroke(ctx)
             end
+
+            # map pixel coordinates to normalized [-0.5, 0.5] space
+            x_norm = round(x_px / canvas_size - 0.5, digits = 2)
+            y_norm = round(0.5 - y_px / canvas_size, digits = 2)
+
+            # euclidean distances from the sound source to each simulated ear
+            dist_l = sqrt((x_norm - ear_l_x)^2 + y_norm^2)
+            dist_r = sqrt((x_norm - ear_r_x)^2 + y_norm^2)
+
+            if dist_l < min_dist || dist_r < min_dist
+                # source is inside (or too close to) the head - silence both channels
+                d_l = 0.0
+                d_r = 0.0
+            else
+                # power-law attenuation, clamped to [0, 1]
+                d_l = clamp((1.0 - dist_l)^dist_exponent, 0.0, 1.0)
+                d_r = clamp((1.0 - dist_r)^dist_exponent, 0.0, 1.0)
+
+                # attenuate the farther ear to enhance perceived lateralization
+                if d_l > d_r
+                    d_r = round(d_r * lateral_atten; digits = 2)
+                elseif d_r > d_l
+                    d_l = round(d_l * lateral_atten; digits = 2)
+                end
+
+                d_l = round(d_l; digits = 2)
+                d_r = round(d_r; digits = 2)
+            end
+
+            # re-randomize and play with the updated spatial weights
+            type, lang, character, gender = _get_ui_state(
+                combo_type, combo_lang, combo_character, combo_gender,
+                types, langs, characters, genders,
+            )
+            snd = _select_sound(type, lang, character, gender)
+            _play(snd)
+            return nothing
         end
 
         ggc_l = GtkGestureClick()
@@ -446,7 +450,7 @@ function iavh()::Nothing
 
         # --- signal: save button - export session parameters to CSV ---
         signal_connect(bt_save, "clicked") do widget
-            save_dialog("Save as...", win, ["*.csv", ".txt"]) do file_name
+            save_dialog("Save as...", win, ["*.csv", "*.txt"]) do file_name
                 isempty(file_name) && return
 
                 type, lang, character, gender = _get_ui_state(

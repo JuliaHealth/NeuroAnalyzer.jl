@@ -1,7 +1,7 @@
 export mutual_information
 
 """
-    mutual_information(s1, s2)
+    _mutual_information(s1, s2)
 
 Calculate mutual information between two 1-D signal vectors.
 
@@ -16,12 +16,12 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 - `Float64`: mutual information
 """
-function mutual_information(s1::AbstractVector, s2::AbstractVector)::Float64
+function _mutual_information(s1::AbstractVector, s2::AbstractVector)::Float64
     return InformationMeasures.get_mutual_information(s1, s2)
 end
 
 """
-    mutual_information(s1, s2)
+    _mutual_information(s1, s2)
 
 Calculate mutual information between matched channel pairs of two 3-D signal arrays.
 
@@ -36,7 +36,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 - `Matrix{Float64}`: mutual information matrix, shape (channels, epochs)
 """
-function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
+function _mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
@@ -55,7 +55,7 @@ function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float6
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        mi[ch_idx, ep_idx] = mutual_information(
+        mi[ch_idx, ep_idx] = _mutual_information(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx])
         )
@@ -65,7 +65,7 @@ function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float6
 end
 
 """
-    mutual_information(s)
+    _mutual_information(s)
 
 Calculate mutual information between all channel pairs of a 3-D signal array.
 
@@ -79,7 +79,7 @@ Wraps `InformationMeasures.get_mutual_information()` for mutual information esti
 
 - `Array{Float64, 3}`: symmetric mutual information matrix, shape `(channels, channels, epochs)`
 """
-function mutual_information(s::AbstractArray)::Array{Float64, 3}
+function _mutual_information(s::AbstractArray)::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -99,7 +99,7 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:(ch_idx1 - 1)
-            mi[ch_idx1, ch_idx2, ep_idx] = mutual_information(
+            mi[ch_idx1, ch_idx2, ep_idx] = _mutual_information(
                 @view(s[ch_idx1, :, ep_idx]),
                 @view(s[ch_idx2, :, ep_idx]),
             )
@@ -138,7 +138,7 @@ function mutual_information(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return mutual_information(@view(obj.data[ch, :, :]))
+    return _mutual_information(@view(obj.data[ch, :, :]))
 end
 
 """
@@ -198,7 +198,7 @@ function mutual_information(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return mutual_information(
+    return _mutual_information(
         @view(obj1.data[ch1, :, ep1]),
         @view(obj2.data[ch2, :, ep2])
     )

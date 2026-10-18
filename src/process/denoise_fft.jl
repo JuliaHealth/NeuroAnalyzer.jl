@@ -2,7 +2,7 @@ export denoise_fft
 export denoise_fft!
 
 """
-    denoise_fft(s; <keyword arguments>)
+    _denoise_fft(s; <keyword arguments>)
 
 Perform FFT-based denoising on a signal vector.
 
@@ -21,7 +21,7 @@ Named tuple:
 - `s::Vector{Float64}`: denoised signal of the same length as the input
 - `f_idx::BitVector`: boolean mask; `true` at each frequency index that was zeroed
 """
-function denoise_fft(
+function _denoise_fft(
     s::AbstractVector;
     pad::Int64 = 0,
     t::Real = 0,
@@ -48,7 +48,7 @@ function denoise_fft(
 end
 
 """
-    denoise_fft(s; <keyword arguments>)
+    _denoise_fft(s; <keyword arguments>)
 
 Perform FFT-based denoising on every channel × epoch slice of a 3-D signal array.
 
@@ -62,7 +62,7 @@ Perform FFT-based denoising on every channel × epoch slice of a 3-D signal arra
 
 - `Array{Float64, 3}`: denoised 3D signal array
 """
-function denoise_fft(
+function _denoise_fft(
     s::AbstractArray;
     pad::Int64 = 0,
     t::Real = 0,
@@ -81,7 +81,7 @@ function denoise_fft(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        dfft_data = denoise_fft(@view(s[ch_idx, :, ep_idx]), pad = pad, t = t)
+        dfft_data = _denoise_fft(@view(s[ch_idx, :, ep_idx]), pad = pad, t = t)
         s_new[ch_idx, :, ep_idx] = dfft_data.s
     end
 
@@ -117,7 +117,7 @@ function denoise_fft(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
+    obj_tmp.data[ch, :, :] = _denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
     push!(obj_tmp.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
 
     return obj_tmp

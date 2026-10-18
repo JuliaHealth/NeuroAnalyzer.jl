@@ -1,7 +1,7 @@
 export acov
 
 """
-    acov(s; <keyword arguments>)
+    _acov(s; <keyword arguments>)
 
 Calculate auto-covariance for a 1-D signal vector.
 
@@ -20,7 +20,7 @@ Calculate auto-covariance for a 1-D signal vector.
 
 - `Vector{Float64}`: auto-covariance of length `2l + 1`
 """
-function acov(
+function _acov(
     s::AbstractVector;
     l::Int64 = round(Int64, min(length(s) - 1, 10 * log10(length(s)))),
     demean::Bool = true,
@@ -36,7 +36,7 @@ function acov(
     if method === :sum
 
         # compute auto-covariance via dot products
-        demean && (s = remove_dc(s))
+        demean && (s = _remove_dc(s))
         n = length(s)
         # hoist the biased branch: denominator formula is the only difference
         denom = biased ? (idx -> n) : (idx -> n - idx)
@@ -52,7 +52,7 @@ function acov(
     elseif method === :cov
 
         # similar to :sum but uses a covariance-based approach internally
-        demean && (s = remove_dc(s))
+        demean && (s = _remove_dc(s))
         corrected = !biased
         @inbounds for idx = 0:l
             autocov[idx + 1] = cov(
@@ -80,7 +80,7 @@ function acov(
 end
 
 """
-    acov(s; <keyword arguments>)
+    _acov(s; <keyword arguments>)
 
 Calculate auto-covariance for a 3-D signal array.
 
@@ -99,7 +99,7 @@ Calculate auto-covariance for a 3-D signal array.
 
 - `Array{Float64, 3}`: auto-covariances, shape (channels, 2l+1, epochs)
 """
-function acov(
+function _acov(
     s::AbstractArray;
     l::Int64 = round(Int64, min(size(s, 2) - 1, 10 * log10(size(s, 2)))),
     demean::Bool = true,
@@ -120,7 +120,7 @@ function acov(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        autocov[ch_idx, :, ep_idx] = acov(
+        autocov[ch_idx, :, ep_idx] = _acov(
             @view(s[ch_idx, :, ep_idx]),
             l = l,
             demean = demean,
@@ -185,7 +185,7 @@ function acov(
         # epoch 1 is the pre-computed average; epochs 2:end are individual trials
         # compute per-trial auto-correlations first, then prepend the mean across
         # trials as epoch 1 of the output (preserving the ERP convention)
-        autocov = acov(
+        autocov = _acov(
             @view(obj.data[ch, :, 2:end]);
             l = l,
             demean = demean,
@@ -195,7 +195,7 @@ function acov(
         autocov = cat(mean(autocov; dims = 3), autocov; dims = 3)
 
     else
-        autocov = acov(
+        autocov = _acov(
             @view(obj.data[ch, :, :]);
             l = l,
             demean = demean,

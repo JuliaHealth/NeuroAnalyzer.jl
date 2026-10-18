@@ -10,7 +10,8 @@ The header row is prepended to the data and printed as a single table body with 
 # Arguments
 
 - `header::Matrix{String}`: single-row header matrix, e.g. `["Group" "A" "B"]`; must have the same number of columns as `data`
-- `data::Matrix{Any}`: data matrix, e.g. `["var1" 1.0 2.0; "var2" 3.0 4.0]`; integer values are converted to strings before display
+- `data::Matrix{Any}`: data matrix, e.g. `["var1" 1.0 2.0; "var2" 3.0 4.0]`; integer values are shown without decimals
+- `digits::Int64=3`: number of decimal places shown for non-integer numbers
 
 # Returns
 
@@ -18,26 +19,25 @@ The header row is prepended to the data and printed as a single table body with 
 
 # Notes
 
-- The `formatters = ft_printf("%1.3f", 2:3)` format is hardcoded to columns 2 and 3; callers with a different column count should adjust the source accordingly.
-- Integer elements in `data` are converted to `String` in-place to ensure uniform display.
+Values are rounded for display only; `data` is not modified.
 """
-function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
+function make_table(; header::Matrix{String}, data::Matrix{Any}, digits::Int64 = 3)::Nothing
     # validate
     size(header, 1) == 1 || throw(ArgumentError("header must be a single-row matrix."))
     size(header, 2) == size(data, 2) ||
         throw(ArgumentError("header and data must have the same number of columns."))
 
-    # convert any Integer cells to String to avoid type-display inconsistencies;
-    # iterate with CartesianIndices to cover all dimensions safely
-    for idx in CartesianIndices(data)
-        data[idx] isa Integer && (data[idx] = string(data[idx]))
-    end
+    digits >= 0 || throw(ArgumentError("digits must be ≥ 0."))
+
+    # integers are shown as they are (converted on a copy, the caller's data are kept)
+    cells = Any[x isa Integer ? string(x) : x for x in data]
 
     pretty_table(
-        cat(header, data; dims = 1);
+        cat(header, cells; dims = 1);
         body_hlines = [1],
         cell_alignment = Dict((1, 1) => :l),
-        formatters = ft_printf("%1.3f", 2:3),
+        # applies to numeric cells only
+        formatters = ft_printf("%1.$(digits)f"),
         show_header = false,
     )
 

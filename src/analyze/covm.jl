@@ -1,7 +1,7 @@
 export covm
 
 """
-    covm(s; <keyword arguments>)
+    _covm(s; <keyword arguments>)
 
 A single channel has no cross-channel covariance for a 1-D signal vector.
 
@@ -16,7 +16,7 @@ The 1×1 result is simply the signal's own variance.
 
 - `Matrix{Float64}`: 1×1 covariance matrix (`[var(s)]`)
 """
-function covm(s::AbstractVector; norm::Bool = false)::Matrix{Float64}
+function _covm(s::AbstractVector; norm::Bool = false)::Matrix{Float64}
     # 1×1 variance matrix
     cm = fill(Statistics.var(s), 1, 1)
 
@@ -27,7 +27,7 @@ function covm(s::AbstractVector; norm::Bool = false)::Matrix{Float64}
 end
 
 """
-    covm(s1, s2; <keyword arguments>)
+    _covm(s1, s2; <keyword arguments>)
 
 Calculate covariance matrix of two signals.
 
@@ -41,7 +41,7 @@ Calculate covariance matrix of two signals.
 
 - `Matrix{Float64}`: 2×2 covariance matrix
 """
-function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
+function _covm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
@@ -56,7 +56,7 @@ function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matri
 end
 
 """
-    covm(s; <keyword arguments>)
+    _covm(s; <keyword arguments>)
 
 Calculate covariance matrix of a matrix.
 
@@ -69,7 +69,7 @@ Calculate covariance matrix of a matrix.
 
 - `Matrix{Float64}`: covariance matrix, shape `(channels, channels)`
 """
-function covm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
+function _covm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
     # transpose so columns are channels
     # Statistics.cov then returns the channels × channels covariance matrix
     cm = Statistics.cov(s')
@@ -81,7 +81,7 @@ function covm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
 end
 
 """
-    covm(s; <keyword arguments>)
+    _covm(s; <keyword arguments>)
 
 Calculate covariance matrix for a 3-D signal array.
 
@@ -94,7 +94,7 @@ Calculate covariance matrix for a 3-D signal array.
 
 - `Array{Float64, 3}`: covariance matrix, shape `(channels, channels, epochs)`
 """
-function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
+function _covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -108,7 +108,7 @@ function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
     # calculate over epochs
     @inbounds Threads.@threads :static for ep_idx = 1:ep_n
-        cm[:, :, ep_idx] = covm(@view(s[:, :, ep_idx]), norm = norm)
+        cm[:, :, ep_idx] = _covm(@view(s[:, :, ep_idx]), norm = norm)
     end
 
     return cm
@@ -141,5 +141,5 @@ function covm(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return covm(@view(obj.data[ch, :, :]); norm = norm)
+    return _covm(@view(obj.data[ch, :, :]); norm = norm)
 end

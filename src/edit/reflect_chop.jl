@@ -1,6 +1,5 @@
 export reflect
 export reflect!
-export chop
 export chop!
 
 """

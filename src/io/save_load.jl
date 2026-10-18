@@ -1,8 +1,8 @@
-export save
-export load
+export save_neuro
+export load_neuro
 
 """
-    save(obj; <keyword arguments>)
+    save_neuro(obj; <keyword arguments>)
 
 Save `NeuroAnalyzer.NEURO` object to `file_name` file (HDF5-based).
 
@@ -16,7 +16,7 @@ Save `NeuroAnalyzer.NEURO` object to `file_name` file (HDF5-based).
 
 Nothing
 """
-function save(
+function save_neuro(
     obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool = false,
 )::Nothing
     # validate
@@ -43,7 +43,7 @@ function save(
 end
 
 """
-    load(file_name)
+    load_neuro(file_name)
 
 Load `NeuroAnalyzer.NEURO` object from `file_name` file (HDF5-based).
 
@@ -55,7 +55,7 @@ Load `NeuroAnalyzer.NEURO` object from `file_name` file (HDF5-based).
 
 - `NeuroAnalyzer.NEURO`
 """
-function load(file_name::String)::NeuroAnalyzer.NEURO
+function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 

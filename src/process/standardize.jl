@@ -2,7 +2,7 @@ export standardize
 export standardize!
 
 """
-    standardize(s)
+    _standardize(s)
 
 Standardize channels of a 3-D signal array.
 
@@ -15,7 +15,7 @@ Standardize channels of a 3-D signal array.
 - `Array{Float64, 3}`
 - `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
-function standardize(
+function _standardize(
     s::AbstractArray,
 )::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -61,7 +61,7 @@ function standardize(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
+    obj_tmp.data[ch, :, :], scaler = _standardize(obj.data[ch, :, :])
     push!(obj_tmp.history, "standardize(obj)")
 
     return obj_tmp, scaler

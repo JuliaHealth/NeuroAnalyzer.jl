@@ -2,7 +2,7 @@ export snr
 export snr2
 
 """
-    snr(s1, s2)
+    _snr(s1, s2)
 
 Calculate SNR between two 1-D signal vectors.
 
@@ -15,12 +15,12 @@ Calculate SNR between two 1-D signal vectors.
 
 - `Float64`: SNR
 """
-function snr(s1::AbstractVector, s2::AbstractVector)::Float64
+function _snr(s1::AbstractVector, s2::AbstractVector)::Float64
     return -20 * log10(norm(abs.(s2 - s1)) / norm(s2))
 end
 
 """
-    snr(s)
+    _snr(s)
 
 Calculate mean-based SNR for a 1-D signal vector.
 
@@ -36,7 +36,7 @@ Calculate mean-based SNR for a 1-D signal vector.
 
 1. D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
-function snr(s::AbstractVector)::Float64
+function _snr(s::AbstractVector)::Float64
     return mean(s) / std(s)
 end
 
@@ -54,12 +54,12 @@ Calculate RMS-based SNR for a 1-D signal vector.
 - `Float64`: SNR value
 """
 function snr2(s::AbstractVector)::Float64
-    a = amp(s)
+    a = _amp(s)
     return (maximum(s) - minimum(s)) / a.rms_amp
 end
 
 """
-    snr(s; <keyword arguments>)
+    _snr(s; <keyword arguments>)
 
 Calculate SNR for a 3-D signal array.
 
@@ -78,7 +78,7 @@ Named tuple:
 - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
 - `f::Vector{Float64}`: frequencies
 """
-function snr(
+function _snr(
     s::AbstractArray;
     t::Vector{Float64},
     type::Symbol = :rms,
@@ -100,7 +100,7 @@ function snr(
     # validate
     ep_n >= 2 || throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
-    f, _ = freqs(t)
+    f, _ = _freqs(t)
     sp = @views NeuroAnalyzer.ftransform(s[1, :, 1])
     amp = zeros(ch_n, length(sp.a), ep_n)
     sn = zeros(ch_n, length(f))
@@ -115,7 +115,7 @@ function snr(
     @inbounds Threads.@threads :static for idx in CartesianIndices((length(f), ch_n))
         f_idx, ch_idx = idx[1], idx[2]
         if type === :mean
-            sn[ch_idx, f_idx] = snr(@view(amp[ch_idx, f_idx, :]))
+            sn[ch_idx, f_idx] = _snr(@view(amp[ch_idx, f_idx, :]))
         else
             sn[ch_idx, f_idx] = snr2(@view(amp[ch_idx, f_idx, :]))
         end
@@ -159,5 +159,5 @@ function snr(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return snr(@view(obj.data[ch, :, :]); t = obj.epoch_time, type = type)
+    return _snr(@view(obj.data[ch, :, :]); t = obj.epoch_time, type = type)
 end

@@ -230,7 +230,7 @@ function plot_ep(
     elseif type === :butterfly
         if ci95
             for idx in eachindex(ctypes_uni)
-                msci95_data = @lift(NeuroAnalyzer.msci95($s[ctypes .== ctypes_uni[idx], :]))
+                msci95_data = @lift(NeuroAnalyzer._msci95($s[ctypes .== ctypes_uni[idx], :]))
                 GLMakie.band!(
                     ax1, @lift(_pts($msci95_data.ul)), @lift(_pts($msci95_data.ll));
                     alpha = 0.25,

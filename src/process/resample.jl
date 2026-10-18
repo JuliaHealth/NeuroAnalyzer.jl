@@ -6,7 +6,7 @@ export downsample
 export downsample!
 
 """
-    resample(s; <keyword arguments>)
+    _resample(s; <keyword arguments>)
 
 Resample to `new_sr` sampling frequency.
 
@@ -20,7 +20,7 @@ Resample to `new_sr` sampling frequency.
 
 - `Vector{Float64}`
 """
-function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float64}
+function _resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float64}
     # validate
     old_sr >= 1 || throw(ArgumentError("old_sr must be ≥ 1."))
     new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
@@ -35,7 +35,7 @@ function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float
 end
 
 """
-    resample(s; <keyword arguments>)
+    _resample(s; <keyword arguments>)
 
 Resamples all channels and time vector `t` to `new_sr` sampling frequency for a 3-D signal array.
 
@@ -49,7 +49,7 @@ Resamples all channels and time vector `t` to `new_sr` sampling frequency for a 
 
 - `Array{Float64, 3}`
 """
-function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64, 3}
+function _resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -60,7 +60,7 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64
     ch_n, _, ep_n = size(s)
 
     # dry run
-    s_tmp = NeuroAnalyzer.resample(s[1, :, 1]; old_sr = old_sr, new_sr = new_sr)
+    s_tmp = NeuroAnalyzer._resample(s[1, :, 1]; old_sr = old_sr, new_sr = new_sr)
 
     # pre-allocate output
     s_new = zeros(ch_n, length(s_tmp), ep_n)
@@ -68,7 +68,7 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = NeuroAnalyzer.resample(
+        s_new[ch_idx, :, ep_idx] = NeuroAnalyzer._resample(
             @view(s[ch_idx, :, ep_idx]),
             old_sr = old_sr,
             new_sr = new_sr,
@@ -154,7 +154,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
+    obj_tmp.data = NeuroAnalyzer._resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
     obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
     obj_tmp.header.recording[:sampling_rate] = new_sr
@@ -215,7 +215,7 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEUR
 
     # create new dataset
     obj_tmp = deepcopy(obj)
-    s_new = NeuroAnalyzer.resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
+    s_new = NeuroAnalyzer._resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
 
     obj_tmp.data = s_new
 

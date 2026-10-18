@@ -2,7 +2,7 @@ export aecor
 export escor
 
 """
-    aecor(s1, s2)
+    _aecor(s1, s2)
 
 Calculate Amplitude Envelope Correlation (AEC) for 1-D signal vectors.
 
@@ -19,7 +19,7 @@ Calculate Amplitude Envelope Correlation (AEC) for 1-D signal vectors.
 
 1. Bruns, A., Eckhorn, R., Jokeit, H., & Ebner, A. (2000). Amplitude envelope correlation detects coupling among incoherent brain signals. Neuroreport, 11(7), 1509-1514.
 """
-function aecor(s1::AbstractVector, s2::AbstractVector)::Float64
+function _aecor(s1::AbstractVector, s2::AbstractVector)::Float64
     # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
@@ -102,7 +102,7 @@ function aecor(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        aec[ch_idx, ep_idx] = aecor(
+        aec[ch_idx, ep_idx] = _aecor(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -148,7 +148,7 @@ function aecor(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            aec[ch_idx1, ch_idx2, ep_idx] = aecor(
+            aec[ch_idx1, ch_idx2, ep_idx] = _aecor(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             )
@@ -160,7 +160,7 @@ function aecor(
 end
 
 """
-    escor(s1, s2)
+    _escor(s1, s2)
 
 Calculate Envelope-to-Signal Correlation (ESC).
 
@@ -177,7 +177,7 @@ Calculate Envelope-to-Signal Correlation (ESC).
 
 1. Bruns, A., & Eckhorn, R. (2004). Task-related coupling from high-to low-frequency signals among visual cortical areas in human subdural recordings. International Journal of Psychophysiology, 51(2), 97-116.
 """
-function escor(s1::AbstractVector, s2::AbstractVector)::Float64
+function _escor(s1::AbstractVector, s2::AbstractVector)::Float64
     # validate
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
@@ -257,7 +257,7 @@ function escor(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        esc[ch_idx, ep_idx] = escor(
+        esc[ch_idx, ep_idx] = _escor(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -303,7 +303,7 @@ function escor(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            esc[ch_idx1, ch_idx2, ep_idx] = escor(
+            esc[ch_idx1, ch_idx2, ep_idx] = _escor(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             )

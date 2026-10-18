@@ -5,12 +5,14 @@ export tes_model
 
 Create model of TES stimulation.
 
+The electric potential at every electrode of the standard 10-10 (47 channels) cap is the superposition of the anode and cathode contributions, `k × I / (r + 1)` (`k = 1`, `r`: distance from the electrode in the plane of the cap). It is plotted as a topographical map.
+
 # Arguments
 
-- `anode::String`: anode location
-- `cathode::String`: cathode location
-- `anode_curr::Real=2.0`: anode current [mA]
-- `cathode_curr::Real=-2.0`: cathode current [mA]
+- `anode::String`: anode location (label of the 10-10 system, e.g. `"F3"`)
+- `cathode::String`: cathode location (e.g. `"Fp2"`)
+- `anode_curr::Real=2.0`: anode current [mA]; must be > 0
+- `cathode_curr::Real=-2.0`: cathode current [mA]; must be < 0
 
 # Returns
 
@@ -24,7 +26,7 @@ This is a very initial version, simplified model - just superficial spread of th
 
 Model spread of electric field at the cortical surface - reduce charge for skull resistance
 """
-function tes_model(
+function tes_model(;
     anode::String,
     cathode::String,
     anode_curr::Real = 2.0,
@@ -32,62 +34,45 @@ function tes_model(
 )::GLMakie.Figure
     _wip()
 
+    # validate
+    anode_curr > 0 || throw(ArgumentError("anode_curr must be > 0."))
+    cathode_curr < 0 || throw(ArgumentError("cathode_curr must be < 0."))
+
     locs = import_locs(joinpath(NeuroAnalyzer.PATH, "locs", "standard-10-10-cap47.ced"))
+    clabels = String.(locs[!, :label])
+    ch_n = length(clabels)
 
-    labels = locs[!, :label]
-    anode_ch = findfirst(isequal(anode), labels)
-    cathode_ch = findfirst(isequal(cathode), labe)
+    anode_ch = findfirst(==(lowercase(anode)), lowercase.(clabels))
+    cathode_ch = findfirst(==(lowercase(cathode)), lowercase.(clabels))
+    isnothing(anode_ch) && throw(ArgumentError("Anode location $anode not found."))
+    isnothing(cathode_ch) && throw(ArgumentError("Cathode location $cathode not found."))
+    anode_ch != cathode_ch || throw(ArgumentError("anode and cathode must be different."))
 
-    if !cart
-        loc_x = zeros(DataFrames.nrow(locs))
-        loc_y = zeros(DataFrames.nrow(locs))
-        for idx = 1:DataFrames.nrow(locs)
-            loc_x[idx], loc_y[idx] =
-                pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
-        end
-    else
-        loc_x = locs[!, :loc_x]
-        loc_y = locs[!, :loc_y]
-    end
-
-    anode_pos = (loc_x[anode_ch], loc_y[anode_ch])
-    cathode_pos = (loc_x[cathode_ch], loc_y[cathode_ch])
+    loc_x = locs[!, :loc_x]
+    loc_y = locs[!, :loc_y]
 
     # kₑ = 8.988 * 10^9 # for air / vacuum
     kₑ = 1
 
-    # 1st column: distance from anode
-    # 2nd column: distance from cathode
-    r = zeros(DataFrames.nrow(locs), 2)
-    for idx = 1:DataFrames.nrow(locs)
-        r[idx, 1] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), anode_pos)
-        r[idx, 2] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), cathode_pos)
-    end
+    # distances from the anode and the cathode (+1: finite at the electrode itself)
+    r_a = [hypot(loc_x[idx] - loc_x[anode_ch], loc_y[idx] - loc_y[anode_ch]) for idx = 1:ch_n] .+ 1
+    r_c = [hypot(loc_x[idx] - loc_x[cathode_ch], loc_y[idx] - loc_y[cathode_ch]) for idx = 1:ch_n] .+ 1
 
-    # replace distance for anode and cathode with 1 (should be 0, but it would result in division by 0 error)
-    r[anode_ch, :] = [1, 1]
-    r[cathode_ch, :] = [1, 1]
-    r .+= 1
-
-    E = zeros(DataFrames.nrow(locs))
-    for idx = 1:DataFrames.nrow(locs)
-        E[idx] = ((kₑ * anode_curr) / r[idx, 1]) + ((kₑ * cathode_curr) / r[idx, 2])
-    end
+    E = (kₑ * anode_curr) ./ r_a .+ (kₑ * cathode_curr) ./ r_c
     E[anode_ch] = anode_curr
     E[cathode_ch] = cathode_curr
 
-    obj_tmp = create(; data_type = "eeg")
-    obj_tmp.data = reshape(repeat(E, 1, 2), DataFrames.nrow(locs), 2, 1)
-    obj_tmp.header.recording[:label] = locs[!, :label]
-    obj_tmp.header.recording[:channel_type] = repeat(["EEG"], DataFrames.nrow(locs))
-    obj_tmp.locs = locs
-    create_time!(obj_tmp; fs = 1)
-    obj_tmp.time_pts
+    # EEG-type object holding the potential as a constant 2-sample signal
+    obj = create_object(; data_type = "eeg")
+    create_data!(obj; data = reshape(repeat(E, 1, 2), ch_n, 2, 1), fs = 1, type = "eeg")
+    obj.header.recording[:label] = clabels
+    obj.locs = locs
 
-    p = plot_topo(obj_tmp; seg = (0, 1), title = "", nmethod = :none)
-
-    return p
-
-    # Plots.plot(E, xticks=(1:DataFrames.nrow(locs), locs[!, :label]), xtickfontsize=3)
-
+    return plot_topo(
+        obj;
+        ch = "eeg",
+        tpos = 0,
+        title = "TES model: $anode (+) / $cathode (−)",
+        nmethod = :none,
+    )
 end

@@ -2,7 +2,7 @@ export taper
 export taper!
 
 """
-    taper(s; <keyword arguments>)
+    _taper(s; <keyword arguments>)
 
 Taper the signal.
 
@@ -15,7 +15,7 @@ Taper the signal.
 
 - `Vector{Float64}`
 """
-function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
+function _taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
     # validate
     length(t) == length(s) ||
         throw(ArgumentError("Taper and signal lengths must be equal."))
@@ -24,7 +24,7 @@ function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
 end
 
 """
-    taper(s; <keyword arguments>)
+    _taper(s; <keyword arguments>)
 
 Taper a 3-D signal array.
 
@@ -37,7 +37,7 @@ Taper a 3-D signal array.
 
 - `Array{Float64, 3}`
 """
-function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
+function _taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -52,7 +52,7 @@ function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
     # calculate over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = taper(@view(s[ch_idx, :, ep_idx]), t = t)
+        s_new[ch_idx, :, ep_idx] = _taper(@view(s[ch_idx, :, ep_idx]), t = t)
     end
 
     return s_new
@@ -85,7 +85,7 @@ function taper(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, :] = taper(obj.data[ch, :, :]; t = t)
+    obj_tmp.data[ch, :, :] = _taper(obj.data[ch, :, :]; t = t)
     push!(obj_tmp.history, "taper(obj; ch=$ch), t=$t")
 
     return obj_tmp

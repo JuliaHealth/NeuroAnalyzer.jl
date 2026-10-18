@@ -24,7 +24,7 @@ Convert a p-value to the corresponding Z-score.
 function p2z(p::Float64 = 0.05; twotailed::Bool = false)::Float64
 
     # validate
-    _in(p, (0.0, 1.0), "p")
+    0 < p < 1 || throw(ArgumentError("p must be in (0, 1)."))
     d = Distributions.Normal(0.0, 1.0)
 
     return twotailed ? quantile(d, 1 - p / 2) : quantile(d, 1 - p)
@@ -46,9 +46,9 @@ Convert a Z-score to a p-value.
 
 # Notes
 
-Derived probabilities:
+Derived probabilities (for `z ≥ 0`):
 
-- `P(Z < z)` (left-tailed): `1 - z2p(z; twotailed=false)`
+- `P(Z < z)`: `1 - z2p(z; twotailed=false)`
 - `P(|Z| < z)`: `1 - z2p(z; twotailed=true)`
 - `P(0 < Z < z)`: `(1 - z2p(z; twotailed=true)) / 2`
 """
@@ -58,7 +58,7 @@ function z2p(z::Real; twotailed::Bool = false)::Float64
         return 2 * ccdf(d, abs(z))
     else
         # one-tailed: P(Z > z) for z ≥ 0; P(Z < z) for z < 0
-        return z >= 0 ? ccdf(d, z) : cdf(d, z)   # was: 1 - ccdf(d, abs(z)) == cdf(d, -|z|) == cdf(d, z)
+        return z >= 0 ? ccdf(d, z) : cdf(d, z)
     end
 end
 
@@ -79,9 +79,9 @@ Convert a t-score to a p-value using the Student's t-distribution.
 
 # Notes
 
-Derived probabilities:
+Derived probabilities (for `t ≥ 0`):
 
-- `P(T < t)` (left-tailed): `1 - t2p(t; df=df, twotailed=false)`
+- `P(T < t)`: `1 - t2p(t; df=df, twotailed=false)`
 - `P(|T| < t)`: `1 - t2p(t; df=df, twotailed=true)`
 - `P(0 < T < t)`: `(1 - t2p(t; df=df, twotailed=true)) / 2`
 """
@@ -126,7 +126,7 @@ function chi2p(chi::Real; df::Real)::Float64
 end
 
 """
-    f2p(t; <keyword arguments>)
+    f2p(f; <keyword arguments>)
 
 Convert an F-statistic to a right-tailed p-value `P(F > f)`.
 
@@ -146,15 +146,13 @@ To obtain the left-tailed probability `P(F < f)` use `1 - f2p(f; df1=df1, df2=df
 """
 function f2p(f::Real; df1::Real, df2::Real)::Float64
 
-    # negative F silently returns > 1
+    # validate
     f >= 0 || throw(ArgumentError("f must be ≥ 0."))
     df1 > 0 || throw(ArgumentError("df1 must be > 0."))
     df2 > 0 || throw(ArgumentError("df2 must be > 0."))
 
     return ccdf(Distributions.FDist(df1, df2), f)
 end
-
-export norminv
 
 """
     norminv(x::Real)
@@ -173,14 +171,14 @@ Equivalent to `Φ⁻¹(x)` where `Φ` is the standard normal CDF.
 """
 function norminv(x::Real)::Float64
 
-    # norminv(0) = -Inf, norminv(1) = Inf
+    # validate (norminv(0) = -Inf, norminv(1) = Inf)
     0 < x < 1 || throw(ArgumentError("x must be in (0, 1)."))
 
     return quantile(Distributions.Normal(), x)
 end
 
 """
-    p2o(p::Float64)
+    p2o(p)
 
 Convert a probability to odds.
 
@@ -204,7 +202,7 @@ function p2o(p::Real)::Float64
 end
 
 """
-    o2p(o::Float64)
+    o2p(o)
 
 Convert odds to a probability.
 
@@ -220,7 +218,7 @@ Computed as `p = o / (1 + o)`.
 """
 function o2p(o::Real)::Float64
 
-    # negative odds produce p > 1
+    # validate (negative odds would give p > 1)
     o >= 0 || throw(ArgumentError("o must be ≥ 0."))
 
     return o / (1 + o)

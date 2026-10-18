@@ -1,7 +1,7 @@
 export psd_slope
 
 """
-    psd_slope(s; <keyword arguments>)
+    _psd_slope(s; <keyword arguments>)
 
 Calculate PSD linear fit and slope for a 1-D signal vector.
 
@@ -36,7 +36,7 @@ Named tuple:
 - `ls::Float64`: slopes of linear fit
 - `f::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(
+function _psd_slope(
     s::AbstractVector;
     fs::Int64,
     flim::Tuple{Real, Real} = (0, fs / 2),
@@ -58,7 +58,7 @@ function psd_slope(
     _check_tuple(flim, (0, fs / 2), "flim")
 
     # dry run
-    psd_data = psd(
+    psd_data = _psd(
         s;
         fs = fs,
         db = db,
@@ -87,7 +87,7 @@ function psd_slope(
 end
 
 """
-    psd_slope(s; <keyword arguments>)
+    _psd_slope(s; <keyword arguments>)
 
 Calculate PSD linear fit and slope for a 3-D signal array.
 
@@ -122,7 +122,7 @@ Named tuple:
 - `ls::Matrix{Float64}`: slope of linear fit
 - `f::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(
+function _psd_slope(
     s::AbstractArray;
     fs::Int64,
     flim::Tuple{Real, Real} = (0, fs / 2),
@@ -148,7 +148,7 @@ function psd_slope(
     # number of epochs
     ep_n = size(s, 3)
 
-    _psd_slope(x) = psd_slope(
+    psd_slope_1(x) = _psd_slope(
         x;
         fs = fs,
         flim = flim,
@@ -164,7 +164,7 @@ function psd_slope(
     )
 
     # first channel/epoch also determines the output data
-    psd_data = _psd_slope(@view(s[1, :, 1]))
+    psd_data = psd_slope_1(@view(s[1, :, 1]))
     # pre-allocate outputs
     lf = zeros(ch_n, length(psd_data.lf), ep_n)
     ls = zeros(ch_n, ep_n)
@@ -176,7 +176,7 @@ function psd_slope(
     idxs = CartesianIndices((ch_n, ep_n))[2:end]
     @inbounds Threads.@threads :static for idx in idxs
         ch_idx, ep_idx = idx[1], idx[2]
-        psd_slope_data = _psd_slope(@view(s[ch_idx, :, ep_idx]))
+        psd_slope_data = psd_slope_1(@view(s[ch_idx, :, ep_idx]))
         lf[ch_idx, :, ep_idx] = psd_slope_data.lf
         ls[ch_idx, ep_idx] = psd_slope_data.ls
     end
@@ -245,7 +245,7 @@ function psd_slope(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return psd_slope(
+    return _psd_slope(
         @view(obj.data[ch, :, :]);
         fs = sr(obj),
         flim = flim,

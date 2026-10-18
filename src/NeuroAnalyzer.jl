@@ -175,6 +175,21 @@ for pkg in _NA_REQUIRED_PACKAGES
     @eval using $(Symbol(pkg))
 end
 
+# functions of Base and of dependencies that NeuroAnalyzer extends with methods
+# (for NEURO objects, etc.) instead of defining functions of the same name, so
+# that they do not clash when used together; the non-Base ones are re-exported
+# (names exported by two packages extend one of them: plot → Makie, not Plots;
+# entropy → StatsBase, not Images; transform → DataFrames, not MultivariateStats;
+# trim! → StatsBase, not GridLayoutBase)
+import Base: chop, cis, filter, filter!, join, summary
+import DataFrames: describe, transform
+import DSP: coherence, resample, rms, spectrogram
+import GLMakie: plot
+import Images: reflect, rmse
+import LinearAlgebra: normalize, reflect!
+import StatsKit.StatsBase: entropy, sem, standardize, trim, trim!, zscore
+import Wavelets: downsample, upsample
+
 # ---------------------------------------------------------------------------
 
 # Gtk4 modifiers
@@ -566,6 +581,7 @@ include("stim/ect.jl")
 include("stim/tes.jl")
 
 # modeling
+include("model/dipole_fit.jl")
 include("model/efield.jl")
 include("model/tes_model.jl")
 

@@ -94,16 +94,16 @@ x[10] *= 1000
 @test e2t(e10; ep = 1:10) == (0.0, 25599 / 256)
 
 @info "Test: freqs()"
-f, nf = NeuroAnalyzer.freqs(0:(1 / 10):10)
+f, nf = NeuroAnalyzer._freqs(0:(1 / 10):10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(0:(1 / 10):10; nf = true)
+f, nf = NeuroAnalyzer._freqs(0:(1 / 10):10; nf = true)
 @test length(f) == 101
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(rand(100), 10)
+f, nf = NeuroAnalyzer._freqs(rand(100), 10)
 @test length(f) == 51
 @test nf == 5
-f, nf = NeuroAnalyzer.freqs(rand(100), 10; nf = true)
+f, nf = NeuroAnalyzer._freqs(rand(100), 10; nf = true)
 @test length(f) == 100
 @test nf == 5
 f, nf = NeuroAnalyzer.freqs(100, 10)
@@ -190,7 +190,7 @@ s = generate_morlet_fwhm(100, 10)
 
 @info "Test: cwtfrq()"
 s = rand(100)
-@test length(cwtfrq(s, fs = 10)) == 12
+@test length(NeuroAnalyzer._cwtfrq(s, fs = 10)) == 12
 @test length(cwtfrq(e10)) == 30
 
 @info "Test: history()"

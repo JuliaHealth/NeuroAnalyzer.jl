@@ -2,7 +2,7 @@ export rms
 export rmse
 
 """
-    rms(s)
+    _rms(s)
 
 alculate Root Mean Square (RMS) of a 1-D signal vector.
 
@@ -16,13 +16,13 @@ RMS = √( mean(s²) ) = norm(s) / √length(s)
 
 - `Float64`: RMS value
 """
-function rms(s::AbstractVector)::Float64
+function _rms(s::AbstractVector)::Float64
     # equivalent to sqrt(mean(s.^2)) but avoids an intermediate allocation
     return norm(s) / sqrt(length(s))
 end
 
 """
-    rms(s)
+    _rms(s)
 
 Calculate Root Mean Square (RMS) for a 3-D signal array.
 
@@ -34,7 +34,7 @@ Calculate Root Mean Square (RMS) for a 3-D signal array.
 
 - `Matrix{Float64}`: RMS values, shape (channels, epochs)
 """
-function rms(s::AbstractArray)::Matrix{Float64}
+function _rms(s::AbstractArray)::Matrix{Float64}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
 
@@ -48,7 +48,7 @@ function rms(s::AbstractArray)::Matrix{Float64}
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        r[ch_idx, ep_idx] = rms(@view(s[ch_idx, :, ep_idx]))
+        r[ch_idx, ep_idx] = _rms(@view(s[ch_idx, :, ep_idx]))
     end
 
     return r
@@ -84,11 +84,11 @@ function rms(
     _check_epochs(obj, ep)
     ep = _n2v(ep)
 
-    return rms(@view(obj.data[ch, :, ep]))
+    return _rms(@view(obj.data[ch, :, ep]))
 end
 
 """
-    rmse(s1, s2)
+    _rmse(s1, s2)
 
 Calculate Root Mean Square Error (RMSE).
 
@@ -101,7 +101,7 @@ Calculate Root Mean Square Error (RMSE).
 
 - `Float64`: RMSE
 """
-function rmse(s1::AbstractVector, s2::AbstractVector)::Float64
+function _rmse(s1::AbstractVector, s2::AbstractVector)::Float64
     # validate
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
@@ -109,7 +109,7 @@ function rmse(s1::AbstractVector, s2::AbstractVector)::Float64
 end
 
 """
-    rmse(s1, s2)
+    _rmse(s1, s2)
 
 Calculate Root Mean Square Error (RMSE) for two 3-D signal arrays.
 
@@ -122,7 +122,7 @@ Calculate Root Mean Square Error (RMSE) for two 3-D signal arrays.
 
 - `Matrix{Float64}`: RMSE
 """
-function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
+function _rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
     # validate
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     _chk3d(s1)
@@ -135,7 +135,7 @@ function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        r[ch_idx, ep_idx] = rmse(
+        r[ch_idx, ep_idx] = _rmse(
             @view(s1[ch_idx, :, ep_idx]),
             @view(s2[ch_idx, :, ep_idx])
         )
@@ -200,5 +200,5 @@ function rmse(
     epoch_len(obj1) == epoch_len(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    return rmse(@view(obj1.data[ch1, :, ep1]), @view(obj2.data[ch2, :, ep2]))
+    return _rmse(@view(obj1.data[ch1, :, ep1]), @view(obj2.data[ch2, :, ep2]))
 end

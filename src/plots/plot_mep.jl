@@ -137,7 +137,7 @@ function plot_mep(
 
     if ci95
         # get mean and 95%CI
-        msci95_data = NeuroAnalyzer.msci95(s)
+        msci95_data = NeuroAnalyzer._msci95(s)
         s_m = msci95_data.sm
         s_u = msci95_data.ul
         s_l = msci95_data.ll

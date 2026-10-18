@@ -89,7 +89,7 @@ function bpsplit(
         # calculate over channel and epochs
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            s[band_idx, ch_idx, :, ep_idx] = filter_apply(
+            s[band_idx, ch_idx, :, ep_idx] = _filter_apply(
                 @view(obj.data[ch[ch_idx], :, ep_idx]),
                 flt = flt,
             )

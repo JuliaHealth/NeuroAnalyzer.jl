@@ -2,7 +2,7 @@ export intensity2od
 export intensity2od!
 
 """
-    intensity2od(s)
+    _intensity2od(s)
 
 Convert NIRS raw intensity signal to optical density (OD).
 
@@ -20,7 +20,7 @@ where `Ī` is the mean absolute intensity across the sample (time) dimension. Th
 
 - `od::AbstractArray`: optical density array, same shape as `s`
 """
-function intensity2od(s::AbstractArray)::AbstractArray
+function _intensity2od(s::AbstractArray)::AbstractArray
     # compute the reference level: mean absolute intensity over the sample dimension (dim 2)
     # result shape is (ch × 1 × epochs)
     sm = mean(abs.(s); dims = 2)
@@ -71,7 +71,7 @@ function intensity2od(
     obj_tmp.data = vcat(
         obj.data[ch, :, :],
         reshape(
-            intensity2od(@view(obj.data[ch, :, :])),
+            _intensity2od(@view(obj.data[ch, :, :])),
             length(ch), epoch_len(obj), nepochs(obj),
         ),
         obj.data[other_ch, :, :],

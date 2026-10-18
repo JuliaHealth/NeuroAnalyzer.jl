@@ -1,7 +1,7 @@
 export pli
 
 """
-    pli(s1, s2)
+    _pli(s1, s2)
 
 Calculate Phase Locking Index (PLI) for two 1-D signal vectors.
 
@@ -25,7 +25,7 @@ Named tuple:
 1. Stam CJ, Nolte G, Daffertshofer A. Phase lag index: assessment of functional connectivity from multi channel EEG and MEG with diminished bias from common sources. Hum Brain Mapp. 2007 Nov;28(11):1178-93.
 2. Aydore S, Pantazis D, Leahy RM. A note on the phase locking value and its properties. NeuroImage. 2013 July;74:231–44.
 """
-function pli(
+function _pli(
     s1::AbstractVector,
     s2::AbstractVector,
 )::@NamedTuple{
@@ -140,7 +140,7 @@ function pli(
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        pli_data = pli(
+        pli_data = _pli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
             @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         )
@@ -190,7 +190,7 @@ function pli(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            pv[ch_idx1, ch_idx2, ep_idx] = pli(
+            pv[ch_idx1, ch_idx2, ep_idx] = _pli(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             ).pv

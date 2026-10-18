@@ -2,7 +2,7 @@ export itpc
 export itpc_spec
 
 """
-    itpc(s; <keyword arguments>)
+    _itpc(s; <keyword arguments>)
 
 Calculate ITPC (Inter-Trial Phase Clustering) at sample `t` over epochs for a 3-D signal array.
 
@@ -33,7 +33,7 @@ Named tuple:
 
 1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
-function itpc(
+function _itpc(
     s::AbstractArray;
     t::Int64,
     w::Union{AbstractVector, Nothing} = nothing,
@@ -146,7 +146,7 @@ function itpc(
 
     Threads.@threads :static for ch_idx = 1:ch_n
         @inbounds begin
-            itpc_data = itpc(
+            itpc_data = _itpc(
                 reshape(
                     @view(obj.data[ch[ch_idx], :, :]), 1, size(obj.data, 2), ep_n,
                 ),
@@ -164,7 +164,7 @@ function itpc(
 end
 
 """
-    itpc_spec(s; <keyword arguments>)
+    _itpc_spec(s; <keyword arguments>)
 
 Calculate the ITPC spectrogram (ITPC at every time point) for a 3-D signal array.
 
@@ -190,7 +190,7 @@ Named tuple:
 - `itpca::Vector{Float64}`: ITPC angle per channel
 - `itpcph::Matrix{Float64}`: instantaneous phases at `t`, shape (channels, epochs)
 """
-function itpc_spec(
+function _itpc_spec(
     s::AbstractArray;
     w::Union{AbstractVector, Nothing} = nothing,
 )::@NamedTuple{
@@ -329,7 +329,7 @@ function itpc_spec(
         end
 
         # compute the ITPC spectrogram for the convolved signal
-        itpc_data = itpc_spec(s_conv, w = w)
+        itpc_data = _itpc_spec(s_conv, w = w)
         itpcs[frq_idx, :] = itpc_data.itpcv
         itpczs[frq_idx, :] = itpc_data.itpcz
 

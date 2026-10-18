@@ -45,7 +45,7 @@ function average_epochs(
 
     # subtract baseline from each epoch before averaging (pre-average correction)
     if blfirst && !isnothing(bl_samples)
-        obj_tmp.data[:, :, :] = remove_dc(obj_tmp.data[:, :, :], bl_samples)
+        obj_tmp.data[:, :, :] = _remove_dc(obj_tmp.data[:, :, :], bl_samples)
     end
 
     # prepend the trial average as epoch 1; original epochs follow
@@ -61,7 +61,7 @@ function average_epochs(
 
     # subtract baseline from the averaged epoch only (post-average correction)
     if !blfirst && !isnothing(bl_samples)
-        obj_tmp.data[:, :, 1] = remove_dc(obj_tmp.data[:, :, [1]], bl_samples)
+        obj_tmp.data[:, :, 1] = _remove_dc(obj_tmp.data[:, :, [1]], bl_samples)
     end
 
     # ------------------------------------------------------------------ #

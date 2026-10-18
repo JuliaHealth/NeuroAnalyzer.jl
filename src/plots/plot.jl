@@ -1,4 +1,5 @@
 export plot
+export plot_signal
 
 """
     plot(obj; <keyword arguments>)
@@ -242,7 +243,7 @@ end
 export plot
 
 """
-    plot(t, s; <keyword arguments>)
+    plot_signal(t, s; <keyword arguments>)
 
 Plot a continuous signal with time and amplitude axes.
 
@@ -258,7 +259,7 @@ Plot a continuous signal with time and amplitude axes.
 
 - `GLMakie.Figure`: the plotted figure
 """
-function plot(
+function plot_signal(
     t::AbstractVector,
     s::AbstractVector;
     xlabel::String = "Time [s]",
