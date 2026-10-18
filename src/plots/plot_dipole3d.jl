@@ -7,7 +7,8 @@ Plot a 3D dipole inside a schematic brain model.
 
 # Arguments
 
-- `d::NeuroAnalyzer.DIPOLE`: dipole object with `pos` (position) and `mag` (magnitude) fields
+- `d::NeuroAnalyzer.DIPOLE`: dipole object with `pos` (position) and `q` (moment) fields
+- `t::Int64=1`: time point to plot (column of `q`; row of `pos` for a moving dipole)
     - `pos::Tuple{Float64, Float64, Float64}`: dipole position (x, y, z) in brain volume (range: -1.0 to +1.0)
     - `mag::Tuple{Float64, Float64, Float64}`: dipole magnitude vector (mx, my, mz)
 - `project::Bool=true`: if `true`, plot lines projecting the dipole onto the x, y, and z axes
@@ -22,12 +23,19 @@ Plot a 3D dipole inside a schematic brain model.
 - The dipole position is marked with a red dot.
 - If `project=true`, dashed lines show the dipole's projection onto the coordinate planes.
 """
-function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)::GLMakie.Figure
+function plot_dipole3d(
+    d::NeuroAnalyzer.DIPOLE;
+    t::Int64 = 1,
+    project::Bool = true,
+)::GLMakie.Figure
     _wip()
 
     # validate
-    @assert all(-1.0 .≤ d.pos .≤ 1.0) "Position must be within [-1.0, 1.0]."
-    @assert all(-1.0 .≤ d.mag .≤ 1.0) "Magnitude must be within [-1.0, 1.0]."
+    pos, mag = _dipole_at(d, t)
+    all(-1.0 .≤ pos .≤ 1.0) ||
+        throw(ArgumentError("Position must be within [-1.0, 1.0]."))
+    all(-1.0 .≤ mag .≤ 1.0) ||
+        throw(ArgumentError("Magnitude must be within [-1.0, 1.0]."))
 
     # define texture file paths (adjust as needed)
     brain_top_texture_path = joinpath(NeuroAnalyzer.res_path, "brain_top.png")
@@ -74,8 +82,8 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool = true)::GLMakie.F
         GeometryBasics.Mesh(brain_front_vertices, brain_front_faces; uv = brain_front_uvs)
 
     # extract position and magnitude
-    x, y, z = d.pos
-    mx, my, mz = d.mag
+    x, y, z = pos
+    mx, my, mz = mag
 
     # prepare plot
     GLMakie.activate!(; title = "plot_dipole_3d()")

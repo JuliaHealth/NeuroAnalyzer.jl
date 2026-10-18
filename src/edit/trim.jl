@@ -122,8 +122,8 @@ function trim(
         throw(ArgumentError("trim() must be applied to continuous object."))
     NeuroAnalyzer._check_segment(obj, seg)
 
-    s_idx = vsearch(seg[1], obj.time_pts)
-    seg_tpos = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+    # first and last sample of the segment
+    s1, s2 = vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts)
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn(
         "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
@@ -131,42 +131,26 @@ function trim(
 
     # create new dataset
     obj_tmp = deepcopy(obj)
+    obj_tmp.data = trim(obj_tmp.data; seg = (s1, s2), keep = keep)
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
-    obj_tmp.data = trim(obj_tmp.data; seg = seg_tpos, keep = keep)
-
+    fs = sr(obj)
     if keep
-        obj_tmp.time_pts = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
-        obj_tmp.epoch_time = obj.time_pts[seg_tpos[1]:seg_tpos[2]]
+        # keep the markers inside the segment, relative to its start
+        obj_tmp.markers = _remap_markers(obj.markers, fs, s -> s1 <= s <= s2 ? s - s1 + 1 : nothing)
     else
-        obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
+        # drop the markers inside the removed segment, shift the later ones back
+        n_del = s2 - s1 + 1
+        obj_tmp.markers = _remap_markers(
+            obj.markers, fs, s -> s < s1 ? s : (s > s2 ? s - n_del : nothing),
+        )
+        # mark the position of the cut (the last sample if the end was removed)
+        s_cut = min(s1, size(obj_tmp.data, 2))
+        push!(obj_tmp.markers, ("NA", s2t(s_cut, fs), 0.0, "DELETED", 0))
+        obj_tmp.markers = sort(unique(obj_tmp.markers), :start)
     end
 
-    obj_tmp.markers = _delete_markers(obj_tmp.markers, seg)
-    obj_tmp.markers = _shift_markers(obj_tmp.markers, seg)
-
-    if keep
-        obj_tmp.time_pts = obj.time_pts[1:size(obj_tmp.data, 2)]
-        obj_tmp.epoch_time = obj.time_pts[1:size(obj_tmp.data, 2)]
-    end
-
-    if !keep
-        if s_idx <= length(obj_tmp.time_pts)
-            add_marker!(
-                obj_tmp; id = "NA", start = obj_tmp.time_pts[s_idx], len = 0.0,
-                value = "DELETED",
-            )
-            obj_tmp.markers = unique(obj_tmp.markers)
-        else
-            # if the terminal part is removed the marker is placed on the time point
-            add_marker!(
-                obj_tmp; id = "NA", start = obj_tmp.time_pts[s_idx - 1], len = 0.0,
-                value = "DELETED",
-            )
-            obj_tmp.markers = unique(obj_tmp.markers)
-        end
-    end
-
-    push!(obj_tmp.history, "trim(obj, seg=$seg, keep=$keep")
+    push!(obj_tmp.history, "trim(obj, seg=$seg, keep=$keep)")
 
     return obj_tmp
 end
@@ -201,7 +185,6 @@ function trim!(
     obj.time_pts = obj_tmp.time_pts
     obj.epoch_time = obj_tmp.epoch_time
     obj.markers = obj_tmp.markers
-    obj_tmp = nothing
     obj_tmp = nothing
 
     return nothing
@@ -255,7 +238,6 @@ function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
     obj.time_pts = obj_tmp.time_pts
     obj.epoch_time = obj_tmp.epoch_time
     obj.markers = obj_tmp.markers
-    obj_tmp = nothing
     obj_tmp = nothing
 
     return nothing

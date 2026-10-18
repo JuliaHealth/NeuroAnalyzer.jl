@@ -196,3 +196,28 @@ function _a2df(annotations::Vector{String})::DataFrame
         :channel => zeros(Int64, length(a_event)),
     )
 end
+
+"""
+    _remap_markers(markers, fs, f)
+
+Map markers through a transformation of sample positions.
+
+`f(s)` receives the 1-based sample number of a marker start (in the concatenated signal, i.e. `t2s(start, fs)`) and returns its new sample number, or `nothing` to drop the marker. Marker lengths and other columns are kept.
+
+# Returns
+
+- `DataFrame`: remapped markers
+"""
+function _remap_markers(markers::DataFrame, fs::Int64, f::Function)::DataFrame
+    m = copy(markers)
+    keep = trues(DataFrames.nrow(m))
+    for idx = 1:DataFrames.nrow(m)
+        s_new = f(t2s(m[idx, :start], fs))
+        if isnothing(s_new)
+            keep[idx] = false
+        else
+            m[idx, :start] = s2t(s_new, fs)
+        end
+    end
+    return m[keep, :]
+end

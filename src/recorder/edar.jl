@@ -151,7 +151,7 @@ function iedar(;
     eda_signal = reshape(eda_signal[1:(end - 1)], 1, :, 1)
 
     obj = create_object(; data_type = "eda")
-    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
+    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["μS"])
     create_time!(obj; fs = fs)
 
     return obj
@@ -238,7 +238,7 @@ function edar(;
     eda_signal = reshape(eda_signal[1:(end - 1)], 1, :, 1)
 
     obj = create_object(; data_type = "eda")
-    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
+    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["μS"])
     create_time!(obj; fs = fs)
 
     return obj

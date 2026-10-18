@@ -125,7 +125,7 @@ Fit a single current dipole to EEG data.
 
 # Arguments
 
-- `s::AbstractMatrix{<:Real}`: channels × time points (signal units, e.g. µV)
+- `s::AbstractMatrix{<:Real}`: channels × time points (signal units, e.g. μV)
 - `locs::DataFrame`: columns `loc_x`, `loc_y`, `loc_z`, one row per channel (same order as `s`)
 - `mode::Symbol=:fixed`:
     - `:fixed`: one position for all time points, moment varies with time;
@@ -138,13 +138,12 @@ Fit a single current dipole to EEG data.
 
 # Returns
 
-Named tuple:
-
-- `pos` (n×3 for `:moving`, else 1×3, in `locs` units, original coordinates)
-- `q` (3 × time points)
-- `gof` (goodness of fit, 0–1, per fit)
-- `sphere_center`
-- `sphere_radius`.
+- `NeuroAnalyzer.DIPOLE`:
+    - `pos` (n×3 for `:moving`, else 1×3, in `locs` units, original coordinates)
+    - `q` (3 × time points)
+    - `gof` (goodness of fit, 0–1, per fit)
+    - `sphere_center`
+    - `sphere_radius`
 """
 function dipole_fit(
     s::AbstractMatrix{<:Real},
@@ -195,8 +194,7 @@ function dipole_fit(
 
     if mode == :fixed
         x, Q, g = fit_window(D, Vector{Float64}[])
-        return (pos = reshape(x ./ loc_scale .+ c, 1, 3), q = Q, gof = [g],
-                sphere_center = c, sphere_radius = R_loc)
+        return NeuroAnalyzer.DIPOLE(reshape(x ./ loc_scale .+ c, 1, 3), Q, [g], c, R_loc)
     else
         pos = zeros(nt, 3); Q = zeros(3, nt); gof = zeros(nt)
         prev = Vector{Float64}[]
@@ -206,6 +204,6 @@ function dipole_fit(
             Q[:, t] = vec(q); gof[t] = g
             prev = [x]
         end
-        return (pos = pos, q = Q, gof = gof, sphere_center = c, sphere_radius = R_loc)
+        return NeuroAnalyzer.DIPOLE(pos, Q, gof, c, R_loc)
     end
 end

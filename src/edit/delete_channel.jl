@@ -59,11 +59,10 @@ function _delete_channel(
     rec = obj.header.recording
     dt = rec[:data_type]
 
-    # NIRS signal channels must be removed with delete_optode()
+    # NIRS signal channels must be removed with delete_optode() (auxiliary channels may be deleted)
     if dt == "nirs" && !del_opt
-        any(idx -> idx in eachindex(rec[:optode_labels]), ch_idx) && throw(
-            ArgumentError("NIRS signal channels must be deleted using delete_optode()."),
-        )
+        any(idx -> startswith(rec[:channel_type][idx], "nirs") && rec[:channel_type][idx] != "nirs_aux", ch_idx) &&
+            throw(ArgumentError("NIRS signal channels must be deleted using delete_optode()."))
     end
 
     # create new dataset
@@ -81,7 +80,7 @@ function _delete_channel(
     end
 
     # type-specific per-channel header vectors
-    if dt in ("eeg", "seeg", "ecog")
+    if dt in _EEG_LIKE_DATA
         for field in (:prefiltering, :transducers, :gain)
             rec_tmp[field] = rec[field][keep]
         end
@@ -94,7 +93,7 @@ function _delete_channel(
             rec_tmp[field] = rec[field][keep]
         end
 
-    elseif dt == "meg"
+    elseif dt in _MEG_LIKE_DATA
         for field in (:prefiltering, :coil_type)
             rec_tmp[field] = rec[field][keep]
         end
@@ -142,6 +141,17 @@ function _delete_channel(
     rec_tmp[:channel_order] = _sort_channels(rec_tmp[:channel_type])
     obj_tmp.data = obj_tmp.data[keep, :, :]
 
+    # markers refer to channels by number (0 = all channels): renumber them,
+    # markers of deleted channels are removed
+    if DataFrames.nrow(obj_tmp.markers) > 0
+        new_idx = cumsum(keep_mask)
+        mrk_ch = obj_tmp.markers[!, :channel]
+        on_deleted = [c != 0 && !keep_mask[c] for c in mrk_ch]
+        any(on_deleted) && _info("$(count(on_deleted)) marker(s) of deleted channels removed.")
+        obj_tmp.markers = obj_tmp.markers[.!on_deleted, :]
+        obj_tmp.markers[!, :channel] = [c == 0 ? 0 : new_idx[c] for c in obj_tmp.markers[!, :channel]]
+    end
+
     push!(obj_tmp.history, "delete_channel(obj; ch=$(labels(obj)[sort(ch_idx)]))")
 
     return obj_tmp
@@ -172,6 +182,7 @@ function delete_channel!(
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
     obj.locs = obj_tmp.locs
+    obj.markers = obj_tmp.markers
 
     return nothing
 end
@@ -240,6 +251,7 @@ function keep_channel!(
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
     obj.locs = obj_tmp.locs
+    obj.markers = obj_tmp.markers
 
     return nothing
 end

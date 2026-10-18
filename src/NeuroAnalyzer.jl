@@ -9,6 +9,8 @@ module NeuroAnalyzer
 VERSION >= v"1.11.0" ||
     throw(ArgumentError("NeuroAnalyzer requires Julia 1.11.0 or above."))
 
+# ---------------------------------------------------------------------------
+
 # set constants
 
 const VER = v"0.26.11-dev"
@@ -39,7 +41,6 @@ const channel_types = [
     "meg",
     "grad",
     "mag",
-    "csd",
     "nirs",
     "nirs_int",
     "nirs_od",
@@ -78,7 +79,7 @@ const channel_types = [
     "other",
 ]
 const channel_units = [
-    "μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s",
+    "μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "μT", "°", "μS", "rad/s",
     "",
 ]
 const fiducial_points = (
@@ -87,21 +88,23 @@ const fiducial_points = (
     lpa = (-1.04, 0.2, -0.2),
     rpa = (1.04, 0.2, -0.2),
 )
-begin
-    tmp = pwd()
-    cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
-    global const PATH = pwd()
-    cd(tmp)
-end
+const PATH = normpath(joinpath(@__DIR__, ".."))
 
-# initialize preferences
+# ---------------------------------------------------------------------------
 
-progress_bar = nothing
-verbose = nothing
-exclude_bads = nothing
-colors = nothing
+# preferences, resources and plugins are set in __init__() (at load time, not at precompilation)
+
+progress_bar = true
+verbose = true
+exclude_bads = false
+colors = true
+res_path = ""
+plugins_path = ""
+
+# ---------------------------------------------------------------------------
 
 # load dependencies
+
 const _NA_REQUIRED_PACKAGES = [
     "Artifacts",
     "Cairo",
@@ -172,7 +175,10 @@ for pkg in _NA_REQUIRED_PACKAGES
     @eval using $(Symbol(pkg))
 end
 
+# ---------------------------------------------------------------------------
+
 # Gtk4 modifiers
+
 const mask_shift = Gtk4.ModifierType_SHIFT_MASK
 const mask_ctrl = Gtk4.ModifierType_CONTROL_MASK
 const mask_alt = Gtk4.ModifierType_ALT_MASK
@@ -225,13 +231,24 @@ mutable struct NEURO
     locs::DataFrame
     time_pts::Vector{Float64}
     epoch_time::Vector{Float64}
-    data::Array{<:Number, 3}
+    data::Array{Float64, 3}
 end
 
+# equivalent current dipole, as fitted by dipole_fit()
 mutable struct DIPOLE
-    pos::Tuple{Real, Real, Real}
-    mag::Tuple{Real, Real, Real}
+    pos::Matrix{Float64}            # positions: 1 × 3 (fixed dipole) or time points × 3 (moving dipole)
+    q::Matrix{Float64}              # moments: 3 × time points
+    gof::Vector{Float64}            # goodness of fit (0–1), one value per fit
+    sphere_center::Vector{Float64}  # center of the fitted head sphere
+    sphere_radius::Float64          # radius of the fitted head sphere
 end
+
+# single dipole with position `pos` and moment `q` in a unit sphere (no fit)
+DIPOLE(pos::NTuple{3, Real}, q::NTuple{3, Real}) = DIPOLE(
+    reshape(Float64[pos...], 1, 3), reshape(Float64[q...], 3, 1), Float64[], zeros(3), 1.0,
+)
+
+# ---------------------------------------------------------------------------
 
 # load NA functions
 
@@ -239,60 +256,7 @@ include("na/internal.jl")
 include("na/setup.jl")
 include("na/plugins.jl")
 
-# load preferences
-
-global progress_bar = @load_preference("progress_bar", true)
-global verbose = @load_preference("verbose", true)
-global exclude_bads = @load_preference("exclude_bads", false)
-global colors = @load_preference("colors", true)
-na_set_prefs(;
-    progress_bar = progress_bar,
-    verbose = verbose,
-    exclude_bads = exclude_bads,
-    colors = colors,
-)
-
-# show major parameters
-
-@info "NeuroAnalyzer v$(NeuroAnalyzer.VER)"
-@info "NeuroAnalyzer path: $(NeuroAnalyzer.PATH)"
-@info "Preferences:"
-@info " Progress bar: $progress_bar"
-@info "      Verbose: $verbose"
-@info " Exclude bads: $exclude_bads"
-@info "       Colors: $colors"
-@info "System info:"
-@info "  Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
-
-# set package options
-
-GR.setarrowsize(0.4)
-Plots.gr_cbar_width[] = 0.01
-Plots.gr_set_arrowstyle
-FFTW.set_provider!("fftw")
-FFTW.set_num_threads(Sys.CPU_THREADS)
-BLAS.set_num_threads(Sys.CPU_THREADS)
-
-# setup resources
-
-@info "Preparing resources"
-global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
-
-# load plugins
-
-@info "Loading plugins"
-global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
-if isdir(plugins_path)
-    if length(readdir(plugins_path)) > 0
-        na_plugins_reload()
-    end
-else
-    mkpath(plugins_path)
-end
-
 # load sub-modules
-
-@info "Loading sub-modules"
 
 # dependencies
 include("deps/PhaseSlopeIndex.jl/PhaseSlopeIndex.jl")
@@ -604,5 +568,51 @@ include("stim/tes.jl")
 # modeling
 include("model/efield.jl")
 include("model/tes_model.jl")
+
+# ---------------------------------------------------------------------------
+
+# code in __init__() runs every time the package is loaded
+# top-level code runs only once, when the package is precompiled
+function __init__()
+    # load preferences
+    global progress_bar = @load_preference("progress_bar", true)
+    global verbose = @load_preference("verbose", true)
+    global exclude_bads = @load_preference("exclude_bads", false)
+    global colors = @load_preference("colors", true)
+
+    # show major parameters
+    @info "NeuroAnalyzer v$(NeuroAnalyzer.VER)"
+    @info "NeuroAnalyzer path: $(NeuroAnalyzer.PATH)"
+    @info "Preferences:"
+    @info " Progress bar: $progress_bar"
+    @info "      Verbose: $verbose"
+    @info " Exclude bads: $exclude_bads"
+    @info "       Colors: $colors"
+    @info "System info:"
+    @info "  Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
+
+    # set package options
+    FFTW.set_num_threads(max(1, Sys.CPU_THREADS - 1))
+    BLAS.set_num_threads(max(1, Sys.CPU_THREADS - 1))
+
+    # setup resources
+    @info "Preparing resources"
+    global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
+
+    # load plugins (not while another package that depends on NeuroAnalyzer is
+    # being precompiled: plugins are included into this module)
+    global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
+    if ccall(:jl_generating_output, Cint, ()) == 0
+        @info "Loading plugins"
+        try
+            isdir(plugins_path) || mkpath(plugins_path)
+            isempty(readdir(plugins_path)) || na_plugins_reload()
+        catch err
+            @warn "Plugins could not be loaded: $err"
+        end
+    end
+
+    return nothing
+end
 
 end # NeuroAnalyzer

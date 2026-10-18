@@ -63,9 +63,9 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         bad_channels = Bool[],
     )
 
-    if data_type == "eeg"
-        r = _create_recording_eeg(;
-            data_type = "eeg",
+    if data_type in _EEG_LIKE_DATA
+        r = _create_recording_eeg_like(;
+            data_type = data_type,
             _common...,
             reference = "",
             transducers = String[],
@@ -73,29 +73,9 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             line_frequency = 50,
             gain = Float64[],
         )
-    elseif data_type == "seeg"
-        r = _create_recording_seeg(;
-            data_type = "seeg",
-            _common...,
-            reference = "",
-            transducers = String[],
-            prefiltering = String[],
-            line_frequency = 50,
-            gain = Float64[],
-        )
-    elseif data_type == "ecog"
-        r = _create_recording_ecog(;
-            data_type = "ecog",
-            _common...,
-            reference = "",
-            transducers = String[],
-            prefiltering = String[],
-            line_frequency = 50,
-            gain = Float64[],
-        )
-    elseif data_type == "meg"
+    elseif data_type in _MEG_LIKE_DATA
         r = _create_recording_meg(;
-            data_type = "meg",
+            data_type = data_type,
             _common...,
             reference = "",
             prefiltering = String[],
@@ -118,9 +98,9 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             det_labels = String[],
             opt_labels = String[],
         )
-    elseif data_type == "sensors"
-        r = _create_recording_sensors(;
-            data_type = "sensors",
+    elseif data_type in ("sensors", "eda", "tpt")
+        r = _create_recording_prefiltered(;
+            data_type = data_type,
             _common...,
             prefiltering = String[],
         )
@@ -133,18 +113,6 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
             stimulation_sample = Int64[],
             markers_pos = Int64[],
             markers_neg = Int64[],
-        )
-    elseif data_type == "eda"
-        r = _create_recording_eda(;
-            data_type = "eda",
-            _common...,
-            prefiltering = String[],
-        )
-    elseif data_type == "tpt"
-        r = _create_recording_tpt(;
-            data_type = "tpt",
-            _common...,
-            prefiltering = String[],
         )
     end
 
@@ -258,6 +226,27 @@ function create_data(
     obj_tmp.header.recording[:channel_order] = collect(1:ch_n)
     obj_tmp.header.recording[:bad_channel]   = zeros(Bool, ch_n)
     obj_tmp.header.recording[:sampling_rate] = fs
+
+    # per-channel fields specific to the data type
+    rec = obj_tmp.header.recording
+    dt = rec[:data_type]
+    if dt in _EEG_LIKE_DATA
+        rec[:transducers] = fill("", ch_n)
+        rec[:prefiltering] = fill("", ch_n)
+        rec[:gain] = ones(ch_n)
+    elseif dt in _MEG_LIKE_DATA
+        rec[:prefiltering] = fill("", ch_n)
+        rec[:coil_type] = fill("", ch_n)
+        rec[:ssp_channels] = zeros(Bool, ch_n)
+        type == "mag" && (rec[:magnetometers] = collect(1:ch_n))
+        type == "grad" && (rec[:gradiometers] = collect(1:ch_n))
+    elseif dt in ("sensors", "eda", "tpt")
+        rec[:prefiltering] = fill("", ch_n)
+    elseif dt == "mep"
+        rec[:stimulation_intensity] = zeros(Int64, ch_n)
+        rec[:coil_type] = fill("", ch_n)
+    end
+
     obj_tmp.time_pts, obj_tmp.epoch_time     = _get_t(obj_tmp)
     push!(obj_tmp.history, "create_data(obj; data, fs=$fs, type=$type)")
 

@@ -100,12 +100,11 @@ function epoch(
 
         epochs = _make_epochs(obj.data; ep_len = ep_len)
 
-        # remove markers that fall outside the new epoch grid
-        for marker_idx = DataFrames.nrow(obj_tmp.markers):-1:1
-            round(Int64, sr(obj) * obj_tmp.markers[marker_idx, :start]) in
-            0:(size(epochs, 2) * size(epochs, 3)) ||
-                deleteat!(obj_tmp.markers, marker_idx)
-        end
+        # remove markers that fall outside the new epoch grid (trailing samples are dropped)
+        n_total = size(epochs, 2) * size(epochs, 3)
+        obj_tmp.markers = _remap_markers(
+            obj_tmp.markers, sr(obj), s -> 1 <= s <= n_total ? s : nothing,
+        )
     end
 
     obj_tmp.data = epochs
@@ -240,32 +239,19 @@ function subepoch(
     obj_tmp.epoch_time = ep_time[ep_start_idx:ep_end_idx]
     obj_tmp.time_pts, _ = _get_t(obj_tmp)
 
-    # compute per-epoch time windows in absolute signal time
-    ep_tps = _epochs_tps(obj)
-    ep_tps[2, :] = ep_tps[1, :] .+ ep_end
-    ep_tps[1, :] .+= ep_start
-
-    mrk_start = obj.markers.start
-    mrk_epoch = _markers_epochs(obj)
-
-    # remove markers outside the retained window
-    for mrk_idx = length(mrk_start):-1:1
-        ep = mrk_epoch[mrk_idx]
-        if mrk_start[mrk_idx] < ep_tps[1, ep] || mrk_start[mrk_idx] > ep_tps[2, ep]
-            deleteat!(obj_tmp.markers, mrk_idx)
-            deleteat!(mrk_epoch, mrk_idx)
-        end
-    end
-
-    # shift remaining marker timestamps to align with the trimmed epochs
-    mrk_start_new = deepcopy(obj_tmp.markers.start)
-    for mrk_idx in eachindex(mrk_start_new)
-        ep = mrk_epoch[mrk_idx]
-        mrk_start_new[mrk_idx] -= (
-            ep_start + (ep - 1) * (ep_start + (obj.time_pts[epoch_len(obj)] - ep_end))
-        )
-    end
-    obj_tmp.markers.start = round.(mrk_start_new; digits = 3)
+    # markers: keep those within the retained window of their epoch and move
+    # them to the corresponding sample of the trimmed epoch
+    l_old = epoch_len(obj)
+    l_new = ep_end_idx - ep_start_idx + 1
+    obj_tmp.markers = _remap_markers(
+        obj.markers,
+        sr(obj),
+        s -> begin
+            ep = (s - 1) ÷ l_old
+            w = (s - 1) % l_old + 1
+            ep_start_idx <= w <= ep_end_idx ? ep * l_new + w - ep_start_idx + 1 : nothing
+        end,
+    )
 
     push!(obj_tmp.history, "subepoch(obj; ep_start=$ep_start, ep_end=$ep_end)")
 

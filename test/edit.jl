@@ -231,7 +231,7 @@ add_channel!(
     data = rand(2, 10, 1),
     label = ["ecog1", "ecog2"],
     type = repeat(["ecog"], 2),
-    unit = repeat(["µV"], 2),
+    unit = repeat(["μV"], 2),
 )
 @test size(e.data) == (2, 10, 1)
 
@@ -243,7 +243,7 @@ add_channel!(
     data = rand(2, 10, 1),
     label = ["ecog1", "ecog2"],
     type = repeat(["ecog"], 2),
-    unit = repeat(["µV"], 2),
+    unit = repeat(["μV"], 2),
 )
 create_time!(e; fs = 5)
 @test e.header.recording[:sampling_rate] == 5

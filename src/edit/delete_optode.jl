@@ -23,10 +23,9 @@ function delete_optode(
 )::NeuroAnalyzer.NEURO
     # validate
     _check_datatype(obj, "nirs")
-
-    opt_vec = sort(collect(opt isa Int64 ? [opt] : opt); rev = true)
+    # highest index first, so that lower indices stay valid while deleting
+    opt_vec = sort(unique(collect(opt isa Int64 ? [opt] : opt)); rev = true)
     opt_n   = length(obj.header.recording[:optode_labels])
-
     for idx in opt_vec
         idx in 1:opt_n ||
             throw(ArgumentError("opt index $idx is out of range [1, $opt_n]."))
@@ -40,6 +39,7 @@ function delete_optode(
 
     # create new dataset
     obj_tmp = deepcopy(obj)
+    rec = obj_tmp.header.recording
 
     # remove channel locations
     for idx in opt_vec
@@ -53,37 +53,29 @@ function delete_optode(
     end
 
     # update headers and build list of channels to delete
+    # optode_pairs holds the *source* index (column 1) and the *detector* index (column 2),
+    # i.e. positions in src_labels / det_labels, not positions in optode_labels
     chs_to_delete = Int64[]
     for idx in opt_vec
-        ol = optode_labels(obj_tmp)[idx]
-        deleteat!(obj_tmp.header.recording[:optode_labels], idx)
-
-        if ol in source_labels(obj_tmp)
-            chp = obj_tmp.header.recording[:optode_pairs][:, 1]
-            append!(chs_to_delete, findall(isequal(idx), chp))
-            deleteat!(
-                obj_tmp.header.recording[:src_labels],
-                obj_tmp.header.recording[:src_labels] .== ol,
-            )
-            chp[chp .== idx] .= 0
-            chp[chp .> idx] .-= 1
-            obj_tmp.header.recording[:optode_pairs][:, 1] = chp
-
-        elseif ol in detector_labels(obj_tmp)
-            chp = obj_tmp.header.recording[:optode_pairs][:, 2]
-            append!(chs_to_delete, findall(isequal(idx), chp))
-            deleteat!(
-                obj_tmp.header.recording[:det_labels],
-                obj_tmp.header.recording[:det_labels] .== ol,
-            )
-            chp[chp .== idx] .= 0
-            chp[chp .> idx] .-= 1
-            obj_tmp.header.recording[:optode_pairs][:, 2] = chp
+        ol = rec[:optode_labels][idx]
+        deleteat!(rec[:optode_labels], idx)
+        col, field = if ol in rec[:src_labels]
+            1, :src_labels
+        elseif ol in rec[:det_labels]
+            2, :det_labels
+        else
+            continue
         end
+        k = findfirst(isequal(ol), rec[field])
+        chp = rec[:optode_pairs][:, col]
+        append!(chs_to_delete, findall(isequal(k), chp))
+        deleteat!(rec[field], k)
+        chp[chp .== k] .= 0
+        chp[chp .> k] .-= 1
+        rec[:optode_pairs][:, col] = chp
     end
 
     push!(obj_tmp.history, "delete_optode(obj; opt=$opt)")
-
     chs_to_delete = labels(obj_tmp)[sort(unique(chs_to_delete))]
     isempty(chs_to_delete) || _info("Deleting NIRS channels: $chs_to_delete")
     isempty(chs_to_delete) || delete_channel!(obj_tmp; ch = chs_to_delete, del_opt = true)

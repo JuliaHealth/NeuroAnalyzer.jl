@@ -39,7 +39,6 @@ function delete_epoch(
     obj_tmp = deepcopy(obj)
 
     # remove epoch
-    obj_tmp = deepcopy(obj)
     obj_tmp.data = obj_tmp.data[:, :, setdiff(1:nepochs(obj), ep_sorted)]
 
     # marker times are in seconds; epoch e spans [(e - 1) * ep_dur, e * ep_dur)

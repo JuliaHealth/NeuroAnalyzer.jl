@@ -68,7 +68,7 @@ function _ch_units(ch_type::String)::String
     ct == "nirs_aux" && return ""
     ct == "mrk" && return ""
     ct == "accel" && return "m/s²"
-    ct == "magfld" && return "µT"
+    ct == "magfld" && return "μT"
     ct == "orient" && return "°"
     ct == "angvel" && return "rad/s"
     ct == "mep" && return "μV"
@@ -80,6 +80,13 @@ end
 """Get channel units from the object header."""
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String =
     _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
+
+# ---------------------------------------------------------------------------
+# data types sharing the EEG-like / MEG-like recording header schema
+# (per-channel :prefiltering, :transducers, :gain / :prefiltering, :coil_type, …)
+# ---------------------------------------------------------------------------
+const _EEG_LIKE_DATA = ("eeg", "seeg", "ecog", "ieeg", "csd", "erp")
+const _MEG_LIKE_DATA = ("meg", "erf")
 
 # ---------------------------------------------------------------------------
 # NIRS channel type list - defined once to avoid repetition

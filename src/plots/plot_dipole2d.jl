@@ -7,7 +7,8 @@ Plot a 3D dipole in 2D views (top, side, front).
 
 # Arguments
 
-- `d::NeuroAnalyzer.DIPOLE`: dipole object with `pos` (position) and `mag` (magnitude) fields
+- `d::NeuroAnalyzer.DIPOLE`: dipole object with `pos` (position) and `q` (moment) fields
+- `t::Int64=1`: time point to plot (column of `q`; row of `pos` for a moving dipole)
     - `pos::Tuple{Float64, Float64, Float64}`: dipole position (x, y, z) in brain volume (range: -1.0 to +1.0)
     - `mag::Tuple{Float64, Float64, Float64}`: dipole magnitude vector (mx, my, mz)
 
@@ -20,16 +21,17 @@ Plot a 3D dipole in 2D views (top, side, front).
 - Brain volume is within -1.0 to +1.0 for all axes (x, y, z).
 - The dipole position is marked with a red dot, and its magnitude is shown as a red line.
 """
-function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
+function plot_dipole2d(d::NeuroAnalyzer.DIPOLE; t::Int64 = 1)::GLMakie.Figure
     # validate
-    all(-1.0 .≤ d.pos .≤ 1.0) ||
+    pos, mag = _dipole_at(d, t)
+    all(-1.0 .≤ pos .≤ 1.0) ||
         throw(ArgumentError("Position must be within [-1.0, 1.0]."))
-    all(-1.0 .≤ d.mag .≤ 1.0) ||
+    all(-1.0 .≤ mag .≤ 1.0) ||
         throw(ArgumentError("Magnitude must be within [-1.0, 1.0]."))
 
     # extract position and magnitude
-    x, y, z = d.pos
-    mx, my, mz = d.mag
+    x, y, z = pos
+    mx, my, mz = mag
 
     # prepare plot
     GLMakie.activate!(; title = "plot_dipole_2d()")
@@ -129,7 +131,7 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::GLMakie.Figure
     GLMakie.arc!(ax_xz, (0, 0), 1, 0, pi; linewidth = lw, color = :black)
 
     # draw dipole position and magnitude
-    dipole_size = sqrt(sum(d.mag .^ 2)) * 20
+    dipole_size = sqrt(sum(mag .^ 2)) * 20
     GLMakie.scatter!(ax_xy, x, y; markersize = dipole_size, color = :red)
     GLMakie.scatter!(ax_yz, y, z; markersize = dipole_size, color = :red)
     GLMakie.scatter!(ax_xz, x, z; markersize = dipole_size, color = :red)

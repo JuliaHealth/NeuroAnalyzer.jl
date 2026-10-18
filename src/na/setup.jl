@@ -17,7 +17,6 @@ function _print_na_settings()::Nothing
     println("           Verbose: $(NeuroAnalyzer.verbose)")
     println("      Exclude bads: $(NeuroAnalyzer.exclude_bads)")
     println("            Colors: $(NeuroAnalyzer.colors)")
-    cpu_threads = length(Sys.cpu_info())
     println(
         "           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` " *
         "environment variable or Julia --threads command-line option]",
@@ -46,21 +45,12 @@ end
 
 """Helper: print package versions"""
 function _print_package_versions()::Nothing
-    na_pkg = dirname(dirname(Base.find_package("NeuroAnalyzer")))
-    manifest = joinpath(na_pkg, "Manifest.toml")
-    if !isfile(manifest)
-        _warn("Manifest.toml not found in $na_pkg; cannot report package versions.")
-        return nothing
-    end
-    deps = get(TOML.parsefile(manifest), "deps", Dict())
+    # versions of the packages actually loaded (read from their own Project.toml),
+    # independent of the environment NeuroAnalyzer was installed in
     println("Imported packages:")
     for pkg in _NA_REQUIRED_PACKAGES
-        if !haskey(deps, pkg)
-            println("$(lpad(pkg, 25)) (not found in manifest)")
-            continue
-        end
-        entry = deps[pkg]
-        ver   = get(get(entry, 1, Dict()), "version", "unknown")
+        m = getfield(NeuroAnalyzer, Symbol(pkg))
+        ver = something(pkgversion(m), "stdlib")
         println("$(lpad(pkg, 25)) $ver")
     end
     return nothing
@@ -169,10 +159,10 @@ function na_set_prefs(;
     exclude_bads::Bool,
     colors::Bool,
 )::Nothing
-    @set_preferences!("progress_bar" => progress_bar)
-    @set_preferences!("verbose" => verbose)
-    @set_preferences!("exclude_bads" => exclude_bads)
-    @set_preferences!("colors" => colors)
+    na_set_progress_bar(progress_bar)
+    na_set_verbose(verbose)
+    na_set_exclude_bads(exclude_bads)
+    na_set_colors(colors)
 
     return nothing
 end

@@ -58,7 +58,7 @@ function na_plugins_list()::Nothing
 
     plugins = Base.filter(isdir, readdir(plugins_path; join = true))
     println("Available plugins:")
-    for (idx, plugin) in enumerate(basename(p))
+    for (idx, plugin) in enumerate(basename.(plugins))
         println("$idx. $plugin")
     end
 
@@ -106,7 +106,7 @@ end
 """Helper: install plugin from URL"""
 function _install_from_remote(plugin::String)::Nothing
     try
-        run(`$(git()) clone $plugin`)
+        run(Cmd(`$(git()) clone $plugin`; dir = plugins_path))
     catch e
         throw(ErrorException("Cannot clone $plugin: $e"))
     end
@@ -115,7 +115,7 @@ end
 
 """Helper: install plugin from local file"""
 function _install_from_archive(plugin::String)::Nothing
-    plugin = abspath(plugin)  # resolve before cd changes context
+    plugin = abspath(plugin)
     isfile(plugin) ||
         throw(ArgumentError("File $plugin cannot be opened."))
     ext  = lowercase(splitext(plugin)[2])
@@ -124,12 +124,12 @@ function _install_from_archive(plugin::String)::Nothing
         Sys.which("unzip") === nothing &&
             throw(ErrorException("Required command not found: unzip"))
         _info("Installing from .ZIP archive")
-        run(`unzip -oq $plugin`)
+        run(Cmd(`unzip -oq $plugin`; dir = plugins_path))
     elseif ext == ".gz" && ext2 == ".tar"
         Sys.which("tar") === nothing &&
             throw(ErrorException("Required command not found: tar"))
         _info("Installing from .TAR.GZ archive")
-        run(`tar --overwrite -xzf $plugin`)
+        run(Cmd(`tar --overwrite -xzf $plugin`; dir = plugins_path))
     else
         throw(ArgumentError("Plugin must be a .zip or .tar.gz file, got: $plugin"))
     end
@@ -154,11 +154,10 @@ function na_plugins_install(plugin::String)::Nothing
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
 
-    path_tmp = pwd()
-    cd(plugins_path)
-
+    # archives are extracted / repositories cloned into plugins_path
+    # (without changing the working directory of the session)
     try
-        if startswith(plugin, "http")
+        if startswith(plugin, r"https?://|git@")
             _install_from_remote(plugin)
         else
             _install_from_archive(plugin)
@@ -166,8 +165,6 @@ function na_plugins_install(plugin::String)::Nothing
         na_plugins_reload()
     catch e
         @error "Installation of $plugin failed." exception=e
-    finally
-        cd(path_tmp)
     end
 
     return nothing
@@ -195,7 +192,7 @@ Update NeuroAnalyzer plugin(s).
 
 # Arguments
 
-- `plugin::String`: plugin to update; if empty, update all
+- `plugin::String=""`: plugin to update; if empty, update all
 
 # Returns
 
@@ -208,7 +205,7 @@ function na_plugins_update(plugin::String = "")::Nothing
 
     plugins = Base.filter(isdir, readdir(plugins_path; join = true))
 
-    if isnothing(plugin)
+    if isempty(plugin)
         for plugin_path in plugins
             _update_plugin(plugin_path)
         end

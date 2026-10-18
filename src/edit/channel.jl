@@ -27,7 +27,7 @@ end
 
 # true if the object holds (not yet applied) SSP projection vectors
 _has_ssp(obj::NeuroAnalyzer.NEURO)::Bool =
-    datatype(obj) == "meg" &&
+    datatype(obj) in _MEG_LIKE_DATA &&
     haskey(obj.header.recording, :ssp_data) &&
     !isempty(obj.header.recording[:ssp_data])
 
@@ -101,7 +101,7 @@ function set_channel_type(
 
     rec[:channel_type][ch_idx] = type
     rec[:channel_order] = _sort_channels(rec[:channel_type])
-    datatype(obj) == "meg" && _update_meg_sensor_lists!(rec, ch_idx, type)
+    datatype(obj) in _MEG_LIKE_DATA && _update_meg_sensor_lists!(rec, ch_idx, type)
 
     push!(obj_tmp.history, "set_channel_type(obj; ch=$(labels(obj)[ch_idx]), type=$type)")
 
@@ -473,7 +473,7 @@ function add_channel(
     r[:unit] = vcat(has_data ? r[:unit] : String[], unit_v)
     _extend!(:bad_channel, false)
 
-    if dt in ("eeg", "seeg", "ecog")
+    if dt in _EEG_LIKE_DATA
         _extend!(:prefiltering, "")
         _extend!(:transducers, "")
         _extend!(:gain, 1.0)
@@ -485,7 +485,7 @@ function add_channel(
         _extend!(:stimulation_intensity, 0)
         _extend!(:coil_type, "")
 
-    elseif dt == "meg"
+    elseif dt in _MEG_LIKE_DATA
         _extend!(:prefiltering, "")
         _extend!(:coil_type, "")
         _extend!(:ssp_channels, false)

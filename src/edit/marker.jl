@@ -151,6 +151,8 @@ function add_marker(
         throw(ArgumentError("start must be ≤ $(obj.time_pts[end])."))
     start + len <= obj.time_pts[end] ||
         throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
+    # 0 = marker for all channels
+    0 <= ch <= nchannels(obj) || throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
 
     # create new dataset
     obj_tmp = deepcopy(obj)
@@ -245,7 +247,8 @@ function edit_marker(
         throw(ArgumentError("start + len must be ≤ $(signal_len(obj) / sr(obj))."))
 
     nn = size(obj.markers, 1)
-    n < 1 || n > nn && throw(ArgumentError("n must be in [1, $nn]."))
+    1 <= n <= nn || throw(ArgumentError("n must be in [1, $nn]."))
+    0 <= ch <= nchannels(obj) || throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
 
     # create new dataset
     obj_tmp = deepcopy(obj)
@@ -256,7 +259,7 @@ function edit_marker(
     sort!(obj_tmp.markers, :start)
     push!(
         obj_tmp.history,
-        "edit_marker(obj, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+        "edit_marker(obj; n=$n, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
     )
 
     return obj_tmp
@@ -331,10 +334,6 @@ function channel2marker(
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]
 
-    # resolve markers channel
-    stim_ch = get_channel(obj; type = "mrk")
-    isempty(stim_ch) && throw(ArgumentError("No MRK channel."))
-
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]
     length(unique(ev_ch)) > 1 ||
@@ -350,12 +349,14 @@ function channel2marker(
     ev_start = findall(ev_segs .== v)
     ev_end   = findall(ev_segs .== -v)
 
-    # does the signal start with an active event?
-    !isempty(ev_end) && !isempty(ev_start) && ev_end[1] < ev_start[1] &&
-        pushfirst!(ev_start, 1)
+    # an edge at position i lies between samples i and i + 1, so an event detected at
+    # edge i starts at sample i + 1, i.e. at i / fs seconds
+    # does the signal start with an active event? (edge 0: starts at sample 1, t = 0)
+    !isempty(ev_end) && (isempty(ev_start) || ev_end[1] < ev_start[1]) &&
+        pushfirst!(ev_start, 0)
 
-    # does the signal end with an active event?
-    !isempty(ev_start) && !isempty(ev_end) && ev_end[end] < ev_start[end] &&
+    # does the signal end with an active event? (it lasts through the last sample)
+    !isempty(ev_start) && (isempty(ev_end) || ev_end[end] < ev_start[end]) &&
         push!(ev_end, length(ev_ch))
 
     length(ev_start) == length(ev_end) || throw(

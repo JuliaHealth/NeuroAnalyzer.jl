@@ -77,7 +77,7 @@ function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector
 end
 
 """
-Return true for each channel with at least two 10-sample windows where the absolute z-scored signal exceeds the absolute z-scored TKEO by more than the z-score corresponding to `p`.
+Return true for each channel with at least two of 10 consecutive windows where the absolute z-scored signal exceeds the absolute z-scored TKEO by more than the z-score corresponding to `p`.
 """
 function detect_tkeo(
     s::AbstractMatrix,
@@ -94,7 +94,7 @@ function detect_tkeo(
         z_signal = vec(NeuroAnalyzer.zscore(s[ch_idx, :]))
         z_tkeo = vec(NeuroAnalyzer.zscore(stkeo))
 
-        # scan in 10-sample windows; count windows where signal z-score
+        # scan the signal in 10 windows; count windows where signal z-score
         # substantially exceeds TKEO z-score (indicative of an artefact)
         w = max(1, length(stkeo) ÷ 10)
         bad_windows = 0
@@ -125,13 +125,13 @@ function detect_ransac(
     ch_n = size(s, 1)
     bad_chs = zeros(Bool, ch_n)
 
-    # bild pairwise Euclidean distance matrix between electrode positions
+    # build pairwise Euclidean distance matrix between electrode positions
     d = zeros(ch_n, ch_n)
     @inbounds for i = 1:ch_n, j = 1:ch_n
         d[i, j] = euclidean([loc_x[i], loc_y[i]], [loc_x[j], loc_y[j]])
     end
     # prevent a channel from being its own nearest neighbour
-    d[d .== 0] .= Inf
+    d[diagind(d)] .= Inf
 
     @inbounds for ch_idx = 1:ch_n
         _, nearest_idx = findmin(d[ch_idx, :])
@@ -166,17 +166,17 @@ A channel is marked bad if any of the selected methods flags it in at least one 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `method::Union{Symbol, Vector{Symbol}} =[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: one or more detection methods (see below); default: all available methods.
-- `w::Int64 =sr(obj)`: sliding-window width in samples (default = 1 s)
-- `flat_tol::Float64 =0.1`: flatness tolerance; a segment is flat if `|diff(window_mean)| < flat_tol`.
-- `flat_fr::Float64 =0.3`: maximum acceptable fraction of flat windows before marking a channel as bad
-- `p::Float64 =0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
-- `tc::Float64 =0.2`: reserved threshold parameter (not currently used by all methods)
+- `w::Int64=sr(obj)`: sliding-window width in samples (default = 1 s)
+- `flat_tol::Float64=0.1`: flatness tolerance; a segment is flat if `|diff(window_mean)| < flat_tol`.
+- `flat_fr::Float64=0.3`: maximum acceptable fraction of flat windows before marking a channel as bad
+- `p::Float64=0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
+- `tc::Float64=0.2`: reserved threshold parameter (not currently used by all methods)
 - `tkeo_method::Symbol =:pow`: TKEO variant; see `tkeo()` for options
 - `z::Real =3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
-- `ransac_r::Float64 =0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
-- `ransac_tr::Float64 =0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
-- `ransac_t::Float64 =100.0`: RANSAC inlier distance threshold (in signal units)
-- `amp_t::Real =400.0`: amplitude rejection threshold; channels with `max > +amp_t` or `min < −amp_t` are flagged
+- `ransac_r::Float64=0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
+- `ransac_tr::Float64=0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
+- `ransac_t::Float64=100.0`: RANSAC inlier distance threshold (in signal units)
+- `amp_t::Real=400.0`: amplitude rejection threshold; channels with `max > +amp_t` or `min < −amp_t` are flagged
 
 # Detection methods
 
@@ -283,14 +283,6 @@ function channel_reject(
         bc[ch] = bc[ch] .|| vec(any(bad_chs; dims = 2))
     end
 
-    if :rmse in method
-        _info("Using :rmse method")
-        @inbounds for ep_idx = 1:ep_n
-            bad_chs = detect_rmse(@view(obj.data[ch, :, ep_idx]))
-            bc[ch] = bc[ch] .|| bad_chs
-        end
-    end
-
     # -----------------------------------------------------------------------
     if :rmse in method
         _info("Using :rmse method")
@@ -342,7 +334,7 @@ function channel_reject(
         _info("Using :tkeo method")
         for ep_idx = 1:ep_n
             bad_chs = detect_tkeo(
-                obj.data[ch, :, ep_idx], obj.time_pts; tkeo_method = tkeo_method, p = p,
+                obj.data[ch, :, ep_idx], obj.epoch_time; tkeo_method = tkeo_method, p = p,
             )
             bc[ch] = bc[ch] .|| bad_chs
         end
@@ -382,7 +374,7 @@ function channel_reject(
         bc[ch] = bc[ch] .|| vec(any(k .> p; dims = 2))
 
         # pass 2 - per-channel z-score threshold (z + 1 to be stricter)
-        above_z2 = abs.(normalize_zscore(obj.data[ch, :, :]; bych = false)) .> (z + 1)
+        above_z2 = abs.(normalize_zscore(obj.data[ch, :, :]; bych = true)) .> (z + 1)
         k2 = zeros(ch_n, ep_n)
         Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
@@ -401,8 +393,12 @@ function channel_reject(
         length(setdiff(ch_list, chs)) == 0 ||
             throw(ArgumentError("ch must contain only signal channels."))
 
-        chs = intersect(obj.locs[!, :label], ch_list)
-        locs = Base.filter(:label => in(chs), obj.locs)
+        # locations in the order of the channels
+        loc_labels = lowercase.(obj.locs[!, :label])
+        loc_idx = [findfirst(==(lowercase(l)), loc_labels) for l in ch_list]
+        any(isnothing, loc_idx) &&
+            throw(ArgumentError(":ransac requires locations of all channels."))
+        locs = obj.locs[Vector{Int64}(loc_idx), :]
 
         for ep_idx = 1:ep_n
             bad_chs = detect_ransac(
@@ -438,17 +434,17 @@ A channel is marked bad if any of the selected methods flags it in at least one 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `method::Union{Symbol, Vector{Symbol}} =[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: one or more detection methods (see below); default: all available methods.
-- `w::Int64 =sr(obj)`: sliding-window width in samples (default = 1 s)
-- `flat_tol::Float64 =0.1`: flatness tolerance; a segment is flat if `|diff(window_mean)| < flat_tol`.
-- `flat_fr::Float64 =0.3`: maximum acceptable fraction of flat windows before marking a channel as bad
-- `p::Float64 =0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
-- `tc::Float64 =0.2`: reserved threshold parameter (not currently used by all methods)
+- `w::Int64=sr(obj)`: sliding-window width in samples (default = 1 s)
+- `flat_tol::Float64=0.1`: flatness tolerance; a segment is flat if `|diff(window_mean)| < flat_tol`.
+- `flat_fr::Float64=0.3`: maximum acceptable fraction of flat windows before marking a channel as bad
+- `p::Float64=0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
+- `tc::Float64=0.2`: reserved threshold parameter (not currently used by all methods)
 - `tkeo_method::Symbol =:pow`: TKEO variant; see `tkeo()` for options
 - `z::Real =3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
-- `ransac_r::Float64 =0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
-- `ransac_tr::Float64 =0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
-- `ransac_t::Float64 =100.0`: RANSAC inlier distance threshold (in signal units)
-- `amp_t::Real =400.0`: amplitude rejection threshold; channels with `max > +amp_t` or `min < −amp_t` are flagged
+- `ransac_r::Float64=0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
+- `ransac_tr::Float64=0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
+- `ransac_t::Float64=100.0`: RANSAC inlier distance threshold (in signal units)
+- `amp_t::Real=400.0`: amplitude rejection threshold; channels with `max > +amp_t` or `min < −amp_t` are flagged
 
 # Detection methods
 
@@ -513,6 +509,7 @@ function channel_reject!(
         amp_t = amp_t,
     )
     obj.header.recording[:bad_channel][get_channel(obj; ch = ch)] = bc
+    push!(obj.history, "channel_reject!(obj; ch=$ch, method=$method)")
 
     return nothing
 end
@@ -529,17 +526,17 @@ An epoch is marked bad if it contains at least `nbad` bad channels according to 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `method::Union{Symbol, Vector{Symbol}} =[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: one or more detection methods (see below); default: all available methods.
-- `w::Int64 =sr(obj)`: sliding-window width in samples (default = 1 s)
-- `flat_tol::Float64 =0.1`: flatness tolerance; a segment is flat if `|diff(window_mean)| < flat_tol`.
-- `flat_fr::Float64 =0.3`: maximum acceptable fraction of flat windows before marking a channel as bad
-- `p::Float64 =0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
-- `tc::Float64 =0.2`: reserved threshold parameter (not currently used by all methods)
+- `w::Int64=sr(obj)`: sliding-window width in samples (default = 1 s)
+- `flat_tol::Float64=0.1`: flatness tolerance; a segment is flat if `|diff(window_mean)| < flat_tol`.
+- `flat_fr::Float64=0.3`: maximum acceptable fraction of flat windows before marking a channel as bad
+- `p::Float64=0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
+- `tc::Float64=0.2`: reserved threshold parameter (not currently used by all methods)
 - `tkeo_method::Symbol =:pow`: TKEO variant; see `tkeo()` for options
 - `z::Real =3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
-- `ransac_r::Float64 =0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
-- `ransac_tr::Float64 =0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
-- `ransac_t::Float64 =100.0`: RANSAC inlier distance threshold (in signal units)
-- `amp_t::Real =400.0`: amplitude rejection threshold; channels with `max > +amp_t` or `min < −amp_t` are flagged
+- `ransac_r::Float64=0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
+- `ransac_tr::Float64=0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
+- `ransac_t::Float64=100.0`: RANSAC inlier distance threshold (in signal units)
+- `amp_t::Real=400.0`: amplitude rejection threshold; channels with `max > +amp_t` or `min < −amp_t` are flagged
 - `nbad::Int64 =1`: minimum number of bad channels to declare an epoch bad; must be in `[1, nchannels(obj)]`
 
 # Detection methods
@@ -595,7 +592,6 @@ function epoch_reject(
     _in(ransac_r, (0, 1), "ransac_r")
     _in(ransac_tr, (0, 1), "ransac_tr")
     nbad >= 1 || throw(ArgumentError("nbad must be ≥ 1."))
-    nbad <= size(obj, 1) || throw(ArgumentError("nbad must be ≤ $(size(obj, 1))."))
 
     typeof(method) != Vector{Symbol} && (method = [method])
     for m in method
@@ -619,6 +615,7 @@ function epoch_reject(
     ep_len = epoch_len(obj)
 
     # validate
+    nbad <= ch_n || throw(ArgumentError("nbad must be ≤ $ch_n (number of channels)."))
     for m in (:rmse, :rmsd, :euclid)
         m in method && ch_n < 2 && throw(ArgumentError(":$m requires > 1 channel."))
     end
@@ -707,7 +704,7 @@ function epoch_reject(
         _info("Using :tkeo method")
         for ep_idx = 1:ep_n
             bad_chs = detect_tkeo(
-                obj.data[ch, :, ep_idx], obj.time_pts; tkeo_method = tkeo_method, p = p,
+                obj.data[ch, :, ep_idx], obj.epoch_time; tkeo_method = tkeo_method, p = p,
             )
             bc[ch] = bc[ch] .|| bad_chs
             count(bad_chs) >= nbad && push!(be, ep_idx)
@@ -750,7 +747,7 @@ function epoch_reject(
         append!(be, findall(vec(sum(bad_idx; dims = 1)) .>= nbad))
 
         # pass 2 - per-channel threshold (z + 1)
-        above_z2 = abs.(normalize_zscore(obj.data[ch, :, :]; bych = false)) .> (z + 1)
+        above_z2 = abs.(normalize_zscore(obj.data[ch, :, :]; bych = true)) .> (z + 1)
         k2 = zeros(ch_n, ep_n)
         Threads.@threads :static for linear_idx = 1:(ch_n * ep_n)
             ci = (linear_idx - 1) % ch_n + 1
@@ -771,8 +768,12 @@ function epoch_reject(
         length(setdiff(ch_list, chs)) == 0 ||
             throw(ArgumentError("ch must contain only signal channels."))
 
-        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
-        locs = Base.filter(:label => in(chs), obj.locs)
+        # locations in the order of the channels
+        loc_labels = lowercase.(obj.locs[!, :label])
+        loc_idx = [findfirst(==(lowercase(l)), loc_labels) for l in ch_list]
+        any(isnothing, loc_idx) &&
+            throw(ArgumentError(":ransac requires locations of all channels."))
+        locs = obj.locs[Vector{Int64}(loc_idx), :]
 
         for ep_idx = 1:ep_n
             bad_chs = detect_ransac(

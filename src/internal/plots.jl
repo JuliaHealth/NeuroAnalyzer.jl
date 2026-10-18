@@ -240,3 +240,10 @@ function _bernstein_poly(
     y_vals = [sum(py[k] * b[k][t] for k = 1:(n + 1)) for t = 1:steps]
     return x_vals, y_vals
 end
+
+# position and moment of a dipole at time point t
+function _dipole_at(d::NeuroAnalyzer.DIPOLE, t::Int64)::Tuple{Vector{Float64}, Vector{Float64}}
+    1 <= t <= size(d.q, 2) || throw(ArgumentError("t must be in [1, $(size(d.q, 2))]."))
+    pos = size(d.pos, 1) == 1 ? d.pos[1, :] : d.pos[t, :]
+    return pos, d.q[:, t]
+end
