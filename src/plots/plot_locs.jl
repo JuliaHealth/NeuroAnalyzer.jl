@@ -378,26 +378,7 @@ function plot_locs(
     end
 
     # draw head labels
-    if head_labels
-        fid_names = ["NAS", "IN", "LPA", "RPA"]
-        for idx in eachindex(NeuroAnalyzer.fiducial_points)
-            pt = NeuroAnalyzer.fiducial_points[idx]
-            fid_loc_x, fid_loc_y = if plane === :xy
-                pt[1], pt[2]
-            elseif plane === :xz
-                pt[1], pt[3]
-            elseif plane === :yz
-                pt[2], pt[3]
-            end
-            GLMakie.text!(
-                fid_loc_x,
-                fid_loc_y;
-                text     = fid_names[idx],
-                fontsize = font_size,
-                align    = (:center, :center),
-            )
-        end
-    end
+    head_labels && _draw_head_labels!(ax; plane = plane, font_size = font_size)
 
     # draw connection weight labels
     if !isnothing(connections)
@@ -619,6 +600,5 @@ function plot_locs(
         return nothing
     end
 
-    # should never be reached, but satisfies the return type
-    return fig
+    throw(ArgumentError("Locations plot is not available for $(datatype(obj)) data."))
 end

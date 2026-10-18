@@ -107,8 +107,6 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     GLMakie.scatter!(
         ax, _GRIDLOCS_X, _GRIDLOCS_Y;
         color       = cmap,
-        colormap    = pal,
-        colorrange  = 1:ch_n,
         markersize  = 16.0,
         strokewidth = 2,
         strokecolor = :black,

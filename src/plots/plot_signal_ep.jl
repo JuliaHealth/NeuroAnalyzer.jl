@@ -249,7 +249,6 @@ function plot_ep(
                     ax1, @lift(_pts($s[idx, :]));
                     color = mono ? :black : cmap[idx],
                     colormap = pal,
-                    colorrange = 1:size(s[], 1),
                     linewidth = 0.5,
                     alpha = 1.0,
                 )

@@ -9,8 +9,8 @@ Plot a 3D dipole in 2D views (top, side, front).
 
 - `d::NeuroAnalyzer.DIPOLE`: dipole object with `pos` (position) and `q` (moment) fields
 - `t::Int64=1`: time point to plot (column of `q`; row of `pos` for a moving dipole)
-    - `pos::Tuple{Float64, Float64, Float64}`: dipole position (x, y, z) in brain volume (range: -1.0 to +1.0)
-    - `mag::Tuple{Float64, Float64, Float64}`: dipole magnitude vector (mx, my, mz)
+
+Position and moment must be normalized to the unit head (-1.0 to +1.0); for a fitted dipole (in `locs` units), use `(pos - sphere_center) / sphere_radius`.
 
 # Returns
 
@@ -43,12 +43,6 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE; t::Int64 = 1)::GLMakie.Figure
     ax_xy = GLMakie.Axis(
         fig[1, 1];
         aspect = DataAspect(),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
         title = "Top view",
         _AXIS_LOCK_KWARGS...,
     )
@@ -61,12 +55,6 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE; t::Int64 = 1)::GLMakie.Figure
     ax_yz = GLMakie.Axis(
         fig[1, 2];
         aspect = DataAspect(),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
         title = "Side view",
         _AXIS_LOCK_KWARGS...,
     )
@@ -79,12 +67,6 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE; t::Int64 = 1)::GLMakie.Figure
     ax_xz = GLMakie.Axis(
         fig[1, 3];
         aspect = DataAspect(),
-        xzoomlock = true,
-        yzoomlock = true,
-        xpanlock = true,
-        ypanlock = true,
-        xrectzoom = false,
-        yrectzoom = false,
         title = "Front view",
         _AXIS_LOCK_KWARGS...,
     )

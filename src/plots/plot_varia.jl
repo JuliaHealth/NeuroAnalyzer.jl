@@ -911,11 +911,9 @@ function plot_eros(
     if frq === :lin
         yt = flim[2] > 100 ? (flim[1]:10:flim[2]) : (flim[1]:5:flim[2])
     else
-        if flim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            flim = (sf[2], flim[2])
-        end
-        yt = round.(logspace(flim[1], flim[2], nfrq); digits = 1)
+        flim = _log_flim(sf, flim, frq)
+        # log axis: 10 ticks between the frequency limits
+        yt = round.(logspace(flim[1], flim[2], 10); digits = 1)
     end
 
     # apply Gaussian filter if requested
@@ -944,6 +942,9 @@ function plot_eros(
     else
         Int64[]
     end
+
+    # log frequency axis: only positive frequencies (heatmap cell edges must be > 0)
+    fr = frq === :log ? findall(>(0), sf) : collect(eachindex(sf))
 
     function _draw_axis(fig, pos, xl, yl, tt, nticks)
         ax = GLMakie.Axis(
@@ -983,7 +984,7 @@ function plot_eros(
 
         # create axis with customizable properties
         ax = _draw_axis(fig, (1, 1), xl, yl, tt, 15)
-        hm = GLMakie.heatmap!(ax, st, sf, sp[:, :, 1]'; colormap = pal)
+        hm = GLMakie.heatmap!(ax, st, sf[fr], sp[fr, :, 1]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
         _draw_markers!(fig, (1, 1), tm_indices)
 
@@ -1005,14 +1006,14 @@ function plot_eros(
 
         # create axis with customizable properties
         ax1 = _draw_axis(fig, (1, 1), xl1, yl1, tt1, 10)
-        hm1 = GLMakie.heatmap!(ax1, st, sf, sp[:, :, 1]'; colormap = pal)
+        hm1 = GLMakie.heatmap!(ax1, st, sf[fr], sp[fr, :, 1]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[1, 2], hm1; label = cb_title, labelsize = 16)
         GLMakie.vlines!(ax1, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
         _draw_markers!(fig, (1, 1), tm_indices)
 
         # create axis with customizable properties
         ax2 = _draw_axis(fig, (2, 1), xl2, yl2, tt2, 10)
-        hm2 = GLMakie.heatmap!(ax2, st, sf, sp[:, :, 2]'; colormap = pal)
+        hm2 = GLMakie.heatmap!(ax2, st, sf[fr], sp[fr, :, 2]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[2, 2], hm2; label = cb_title, labelsize = 16)
         GLMakie.vlines!(ax2, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
         _draw_markers!(fig, (2, 1), tm_indices)

@@ -77,7 +77,7 @@ function iview_ica(
     # ICA topos
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
-        p_tmp = _plot_topo(
+        p_tmp = plot_topo(
             obj_reconstructed[idx];
             ch = datatype(obj_reconstructed[1]),
             seg = seg,
@@ -341,7 +341,7 @@ function iview_ica(
                     title = "Channel: $(cl[chn[ch_idx]]) (original)",
                 )
             elseif plot_psd_type == 1
-                p_psd = NeuroAnalyzer._plot_psd(
+                p_psd = NeuroAnalyzer.plot_psd(
                     obj_reconstructed[current_ic],
                     ch = cl[chn[ch_idx]],
                     seg = (time1, time2),
@@ -349,7 +349,7 @@ function iview_ica(
                     title = "Channel: $(cl[chn[ch_idx]]) (reconstructed from IC: $current_ic)",
                 )
             elseif plot_psd_type == 2
-                p_psd = NeuroAnalyzer._plot_psd(
+                p_psd = NeuroAnalyzer.plot_psd(
                     obj_removed[current_ic],
                     ch = cl[chn[ch_idx]],
                     seg = (time1, time2),

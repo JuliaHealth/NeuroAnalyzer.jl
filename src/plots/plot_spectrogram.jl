@@ -91,10 +91,7 @@ function plot_spectrogram(
     end
 
     # prepare log-scaled frequencies axis
-    if frq === :log && flim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-        flim = (sf[2], flim[2])
-    end
+    flim = _log_flim(sf, flim, frq)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_spectrogram()")
@@ -223,10 +220,7 @@ function plot_spectrogram(
     smooth && (sp = imfilter(sp, Kernel.gaussian(ks)))
 
     # prepare log-scaled frequencies axis
-    if frq === :log && flim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-        flim = (sf[2], flim[2])
-    end
+    flim = _log_flim(sf, flim, frq)
 
     # channel labels
     ch = collect(eachindex(clabels)) .- 0.5
@@ -349,10 +343,7 @@ function plot_spectrogram_topo(
     pal = mono ? :grays : :darktest
 
     # prepare log-scaled frequencies axis
-    if frq === :log && flim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-        flim = (sf[2], flim[2])
-    end
+    flim = _log_flim(sf, flim, frq)
 
     # number of channels
     ch_n = size(sp, 3)

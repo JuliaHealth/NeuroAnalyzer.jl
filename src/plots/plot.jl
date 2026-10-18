@@ -81,6 +81,9 @@ function plot(
     n_channels > nchannels(obj) && (n_channels = nchannels(obj))
     n_epochs > nepochs(obj) && (n_epochs = nepochs(obj))
 
+    # ERP/ERF/MEP: the :normal multi-channel plot is the butterfly plot
+    type_em = type === :butterfly ? :normal : type
+
     # dispatch to specialized plot functions based on datatype
     if datatype(obj) in ["erp", "erf"]
         fig = plot_erp(
@@ -91,7 +94,7 @@ function plot(
             xlabel = xlabel,
             ylabel = ylabel,
             title = title,
-            type = type,
+            type = type_em,
             avg = avg,
             ci95 = ci95,
             cb = cb,
@@ -112,7 +115,7 @@ function plot(
             xlabel = xlabel,
             ylabel = ylabel,
             title = title,
-            type = type,
+            type = type_em,
             avg = avg,
             ci95 = ci95,
             cb = cb,

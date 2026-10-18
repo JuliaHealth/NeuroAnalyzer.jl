@@ -190,7 +190,6 @@ function plot_phs(
                 ph[idx, f1:f2];
                 color = cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
                 linewidth = 2,
                 label = clabels[idx],
             )
@@ -198,7 +197,7 @@ function plot_phs(
 
         # draw averaged channels
         if avg
-            s = mean(ph[f1:f2]; dims = 1)[:]
+            s = mean(ph[:, f1:f2]; dims = 1)[:]
             GLMakie.lines!(ax, f[f1:f2], s; linewidth = 4, color = :black)
         end
 
@@ -310,13 +309,12 @@ function plot_phs_3d(
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx = 1:ch_n
             GLMakie.lines!(
-                f,
-                ones(length(f)) .* idx,
+                f[f1:f2],
+                ones(f2 - f1 + 1) .* idx,
                 ph[idx, f1:f2];
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
             )
         end
 
@@ -324,7 +322,7 @@ function plot_phs_3d(
 
         # plot powers
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        GLMakie.surface!(f, eachindex(clabels), ph[:, f1:f2]'; colormap = pal)
+        GLMakie.surface!(f[f1:f2], eachindex(clabels), ph[:, f1:f2]'; colormap = pal)
     end
 
     return fig
@@ -451,7 +449,7 @@ function plot_phs_topo(
         GLMakie.autolimits!(ax)
 
         # plot phase
-        GLMakie.lines!(ax, f, ph[idx, f1:f2]; linewidth = 1, color = :black)
+        GLMakie.lines!(ax, f[f1:f2], ph[idx, f1:f2]; linewidth = 1, color = :black)
 
         # draw black box around the entire figure
         GLMakie.Box(pp[:, :], 
@@ -462,8 +460,8 @@ function plot_phs_topo(
 
         push!(pp_vec, pp)
 
-        pp_full = _plot_psd(
-            f, ph[idx, f1:f2];
+        pp_full = plot_psd(
+            f[f1:f2], ph[idx, f1:f2];
             xlabel = xlabel,
             ylabel = ylabel,
             title  = locs[idx, :label] * ": " * title,

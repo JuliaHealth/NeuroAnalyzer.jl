@@ -43,11 +43,8 @@ function plot_coherence(
     # set color palette
     pal = mono ? :grays : :darktest
 
-    # adjust for log scale if flim[1] == 0
-    if frq === :log && flim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        flim = (sf[2], flim[2])
-    end
+    # log scale: the lower frequency bound must be > 0
+    flim = _log_flim(f, flim, frq)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_coherence()")
@@ -76,6 +73,7 @@ function plot_coherence(
 
     # plot coherence
     GLMakie.lines!(
+        ax,
         f,
         coh;
         linewidth = 2,
@@ -143,6 +141,11 @@ function plot_coherence(
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
 
+    length(clabels) == size(coh, 1) ||
+        throw(ArgumentError("Length of clabels must equal the number of channels."))
+    # log scale: the lower frequency bound must be > 0
+    flim = _log_flim(f, flim, frq)
+
     # number of channels
     ch_n = size(coh, 1)
 
@@ -183,6 +186,7 @@ function plot_coherence(
 
         # plot confidence interval band
         GLMakie.band!(
+            ax,
             f,
             coh_u,
             coh_l;
@@ -193,6 +197,7 @@ function plot_coherence(
 
         # plot mean coherence
         GLMakie.lines!(
+            ax,
             f,
             coh_m;
             color = :black,
@@ -207,11 +212,10 @@ function plot_coherence(
         # plot each channel's coherence
         for idx = 1:ch_n
             GLMakie.lines!(
+                ax,
                 f,
                 coh[idx, :];
                 color = cmap[idx],
-                colormap = pal,
-                colorrange = 1:ch_n,
                 linewidth = 2,
                 label = clabels[idx],
             )
@@ -220,12 +224,12 @@ function plot_coherence(
         # plot averaged coherence if requested
         if avg
             coh_avg = mean(coh; dims = 1)[:]
-            Makie.lines!(f, coh_avg; colormap = pal, linewidth = 4, color = :black)
+            GLMakie.lines!(ax, f, coh_avg; linewidth = 4, color = :black)
         end
 
         # add legend if requested and not too many channels
         if leg && ch_n < 30
-            axislegend(ax; position = :rt, colormap = mono ? :grays : :darktest)
+            axislegend(ax; position = :rt)
         end
     end
 

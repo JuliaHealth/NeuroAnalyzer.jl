@@ -149,8 +149,9 @@ function plot_locs3d(
     end
 
     if ch_labels
-        ch_vec  = collect(ch)
-        sch_vec = collect(sch)
+        # (collect of an integer gives a 0-dimensional array; sch = 0: none)
+        ch_vec  = ch isa Integer ? [ch] : collect(ch)
+        sch_vec = sch isa Integer ? (sch == 0 ? Int64[] : [sch]) : collect(sch)
         GLMakie.text!(
             loc_x[ch_vec] .* 1.15,
             loc_y[ch_vec] .* 1.15,

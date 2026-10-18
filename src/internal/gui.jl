@@ -49,7 +49,7 @@ function _refresh_ica_can_set(
     # generate plots for each selected ICA component
     for idx in ic_idx
         # create topographical plot for the ICA component
-        p_tmp = _plot_topo(
+        p_tmp = plot_topo(
             obj_reconstructed[idx];
             ch = datatype(obj_reconstructed[1]),  # use same channel type as first object
             seg = (time1, time2),                 # plot specified time segment

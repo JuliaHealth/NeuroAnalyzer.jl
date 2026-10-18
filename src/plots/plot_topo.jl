@@ -508,15 +508,15 @@ function plot_topo(
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    # significant channels
+    # significant channels (names, a list of names or a Regex): must be among ch
+    sch_labels = nothing
     if !isnothing(sch)
-        if isa(sch, String)
-            length(intersect(ch, get_channel(obj; ch = sch))) == 1 ||
-                throw(ArgumentError("sch channel was not found in ch."))
-        else
-            length(intersect(ch, get_channel(obj; ch = sch))) == length(sch) ||
-                throw(ArgumentError("Some sch channels were not found in ch."))
-        end
+        sch_idx = get_channel(obj; ch = sch)
+        sch_idx = sch_idx isa Integer ? [sch_idx] : sch_idx
+        isempty(sch_idx) && throw(ArgumentError("sch channels not found."))
+        issubset(sch_idx, ch) ||
+            throw(ArgumentError("Some sch channels were not found in ch."))
+        sch_labels = labels(obj)[sch_idx]
     end
 
     length(ch) >= 2 || throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
@@ -524,7 +524,7 @@ function plot_topo(
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-    !isnothing(sch) && (sch = _find_bylabel(locs, sch))
+    !isnothing(sch_labels) && (sch = _find_bylabel(locs, sch_labels))
 
     # prepare data or time position
     if isnothing(data)

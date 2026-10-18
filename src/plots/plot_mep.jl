@@ -152,7 +152,6 @@ function plot_mep(
                 ax, t, s[idx, :];
                 color      = cmap[idx],
                 colormap   = pal,
-                colorrange = 1:ch_n,
                 linewidth  = 1,
                 alpha      = avg ? 0.25 : 1.0,
                 label      = clabels[idx],
@@ -210,6 +209,9 @@ function plot_mep_stack(
     zl::Bool = true,
     mono::Bool = false,
 )::GLMakie.Figure
+    # a single channel may be given as a vector
+    s isa AbstractVector && (s = reshape(s, 1, :))
+
     # validate
     length(t) == size(s, 2) || throw(
         ArgumentError(

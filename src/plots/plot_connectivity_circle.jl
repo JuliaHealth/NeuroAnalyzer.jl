@@ -8,9 +8,9 @@ Plot a circular connectivity diagram for a matrix of connectivities.
 # Arguments
 
 - `m::AbstractMatrix`: connectivity matrix (must be square, channel vs. channel)
-- `clabels=Vector{String}`: channels labels (must match matrix dimensions)
+- `clabels::Vector{String}`: channels labels (must match matrix dimensions)
 - `title::String=""`: plot title
-- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: threshold for marking regions
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: only connections passing the threshold are drawn
     - if `Real`, use a single threshold value
     - if `Tuple{Real, Real}`, use a range for `:in` or `:bin` thresholding
 - `threshold_type::Symbol=:neq`: rule for thresholding:
@@ -29,7 +29,7 @@ Plot a circular connectivity diagram for a matrix of connectivities.
 """
 function plot_connectivity_circle(
     m::AbstractMatrix;
-    clabels = Vector{String},
+    clabels::Vector{String},
     title::String = "",
     threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     threshold_type::Symbol = :neq,
@@ -44,13 +44,37 @@ function plot_connectivity_circle(
     size(m, 1) >= 2 ||
         throw(ArgumentError("Connectivity matrix must contain data for ≥ 2 channels."))
     size(m, 1) == size(m, 2) || throw(ArgumentError("Connectivity matrix must be square."))
+    _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
+    if !isnothing(threshold)
+        if threshold_type in (:in, :bin)
+            threshold isa Tuple ||
+                throw(ArgumentError("threshold must contain two values for :$threshold_type."))
+            _check_tuple(threshold, extrema(m), "threshold")
+        else
+            threshold isa Real ||
+                throw(ArgumentError("threshold must contain a single value for :$threshold_type."))
+        end
+    end
+
+    # true if a connection value passes the threshold
+    function _keep(v)
+        isnothing(threshold) && return true
+        threshold_type === :eq && return v == threshold
+        threshold_type === :neq && return v != threshold
+        threshold_type === :geq && return v >= threshold
+        threshold_type === :leq && return v <= threshold
+        threshold_type === :g && return v > threshold
+        threshold_type === :l && return v < threshold
+        threshold_type === :in && return threshold[1] <= v <= threshold[2]
+        return threshold[1] < v < threshold[2]
+    end
 
     # calculate polar coordinates for each channel
     t = range(π, -π; length = size(m, 1) + 1)
     pos_x = [cos(t[idx]) for idx = 1:size(m, 1)]
     pos_y = [sin(t[idx]) for idx = 1:size(m, 1)]
 
-    # normalize connectivity matrix for visualization
+    # normalize connectivity matrix for visualization (line widths)
     m_norm = normalize_minmax(m)
 
     # prepare plot
@@ -78,37 +102,11 @@ function plot_connectivity_circle(
     GLMakie.xlims!(ax, (-1.5, 1.5))
     GLMakie.ylims!(ax, (-1.5, 1.5))
 
-    # draw connections
-    m_norm = normalize_minmax(m)
-    c = (0.0, 0.0)
+    # draw connections (upper triangle) that pass the threshold
     s = size(m, 1)
     for idx1 = 1:s
         for idx2 = (idx1 + 1):s
-            # apply thresholding if specified
-            if !isnothing(threshold)
-                if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
-                    length(threshold) == 1 ||
-                        throw(ArgumentError("threshold must contain a single value."))
-                else
-                    length(threshold) == 2 ||
-                        throw(ArgumentError("threshold must contain two values."))
-                    _check_tuple(threshold, extrema(m), "threshold")
-                end
-                (threshold_type === :eq && m[idx1, idx2] != threshold) && break
-                (threshold_type === :neq && m[idx1, idx2] == threshold) && break
-                (threshold_type === :g && m[idx1, idx2] <= threshold) && break
-                (threshold_type === :l && m[idx1, idx2] >= threshold) && break
-                (threshold_type === :geq && m[idx1, idx2] < threshold) && break
-                (threshold_type === :leq && m[idx1, idx2] > threshold) && break
-                (
-                    threshold_type === :in &&
-                    (m[idx1, idx2] >= threshold[1] && m[idx1, idx2] <= threshold[2])
-                ) && break
-                (
-                    threshold_type === :bin &&
-                    (m[idx1, idx2] > threshold[1] && m[idx1, idx2] < threshold[2])
-                ) && break
-            end
+            _keep(m[idx1, idx2]) || continue
 
             # calculate midpoint and curvature
             mid_x = (pos_x[idx1] + pos_x[idx2]) / 2
@@ -151,6 +149,7 @@ function plot_connectivity_circle(
     for idx in axes(clabels, 1)
         if _bin(ang[idx], (-π / 2, π / 2))
             GLMakie.text!(
+                ax,
                 pos_x[idx] * 1.1,
                 pos_y[idx] * 1.1;
                 text = " " * clabels[idx],
@@ -160,6 +159,7 @@ function plot_connectivity_circle(
             )
         else
             GLMakie.text!(
+                ax,
                 pos_x[idx] * 1.1,
                 pos_y[idx] * 1.1;
                 text = " " * clabels[idx],

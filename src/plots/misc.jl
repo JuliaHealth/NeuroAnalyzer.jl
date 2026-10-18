@@ -16,7 +16,7 @@ Empty plots are added automatically when `length(vfig) < layout[1]*layout[2]` so
 
 # Returns
 
-- `GLMakie.Figure`: the plotted figure: composite figure
+- `GLMakie.Figure`: composite figure
 """
 function plot_compose(
     vfig::Vector{GLMakie.Figure};
@@ -45,11 +45,9 @@ function plot_compose(
     # total canvas size: columns determine width, rows determine height
     canvas_size = (plot_size[1] * layout[2], plot_size[2] * layout[1])
 
-    # pad the vector with empty plots to fill every grid cell
+    # pad (a copy of) the vector with empty plots to fill every grid cell
     n_empty = layout[1] * layout[2] - length(vfig)
-    for _ = 1:n_empty
-        push!(vfig, plot_empty())
-    end
+    vfig = vcat(vfig, [plot_empty() for _ = 1:n_empty])
 
     # build the composite figure using a GridLayout so axes are properly nested
     GLMakie.activate!(; title = "plot_compose()")
@@ -104,16 +102,16 @@ end
 """
     add_pl(fig, pl; <keyword arguments>)
 
-Overlay a locations plot `pl` onto the top-right corner of `fig`, making the white background of `pl` transparent so only the electrode markers are visible.
+Overlay a locations plot `pl` onto the bottom-right corner of the axis of `fig`, making the white background of `pl` transparent so only the electrode markers are visible.
 
 # Arguments
 
-- `p1::GLMakie.Figure`: primary plot
-- `p2::GLMakie.Figure`: locations plot to overlay
+- `fig::GLMakie.Figure`: primary plot
+- `pl::GLMakie.Figure`: locations plot to overlay
 
 # Returns
 
-- `GLMakie.Figure`: the plotted figure: `fig` with the locations overlay applied in-place
+- `GLMakie.Figure`: `fig` with the locations overlay (modified in place)
 """
 function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
     # render the locations figure to an in-memory PNG stream
@@ -136,7 +134,7 @@ function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
             RGBA(near_white.r, near_white.g, near_white.b, 0.0)
     end
 
-    # determine the top-right corner of the primary axis in data coordinates
+    # determine the bottom-right corner of the primary axis in data coordinates
     ax = contents(fig[1, 1])[1]
     pos_x = (ax.targetlimits[].origin .+ ax.targetlimits[].widths)[1]
     pos_y = ax.targetlimits[].origin[2]

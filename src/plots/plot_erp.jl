@@ -195,7 +195,6 @@ function plot_erp(
                 s[idx, :];
                 color = cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
                 linewidth = 1,
                 alpha = avg ? 0.25 : 1.0,
                 label = clabels[idx],

@@ -16,8 +16,8 @@ function _draw_head_labels!(
 )::Nothing
     _check_var(plane, [:xy, :xz, :yz], "plane")
     fid_names = ["NAS", "IN", "LPA", "RPA"]
-    for idx in eachindex(NeuroAnalyzer.fiducial_points)
-        pt = NeuroAnalyzer.fiducial_points[idx]
+    # (eachindex of a NamedTuple gives its keys, not positions)
+    for (idx, pt) in enumerate(values(NeuroAnalyzer.fiducial_points))
         fid_loc_x, fid_loc_y = if plane === :xy
             pt[1], pt[2]
         elseif plane === :xz
@@ -246,4 +246,18 @@ function _dipole_at(d::NeuroAnalyzer.DIPOLE, t::Int64)::Tuple{Vector{Float64}, V
     1 <= t <= size(d.q, 2) || throw(ArgumentError("t must be in [1, $(size(d.q, 2))]."))
     pos = size(d.pos, 1) == 1 ? d.pos[1, :] : d.pos[t, :]
     return pos, d.q[:, t]
+end
+
+"""
+    _log_flim(f, flim, frq)
+
+For a logarithmic frequency axis (`frq = :log`) the lower frequency bound must be > 0: a bound ≤ 0 is replaced (with a warning) by the lowest positive frequency in `f`.
+"""
+function _log_flim(f::AbstractVector, flim::Tuple{Real, Real}, frq::Symbol)::Tuple{Real, Real}
+    (frq === :log && flim[1] <= 0) || return flim
+    idx = findfirst(>(0), f)
+    isnothing(idx) &&
+        throw(ArgumentError("Logarithmic frequency axis requires positive frequencies."))
+    _warn("Lower frequency bound truncated to $(f[idx]) Hz.")
+    return (f[idx], flim[2])
 end

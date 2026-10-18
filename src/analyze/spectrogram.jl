@@ -659,7 +659,7 @@ function ghtspectrogram(
         ph[:, :, ch_idx] = ght_data.ph
     end
 
-    return (; p, ph, f, t)
+    return (; p, ph, f = f_tmp, t = t_tmp)
 end
 
 """

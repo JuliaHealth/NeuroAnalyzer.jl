@@ -15,7 +15,7 @@ Preview NIRS (Near-Infrared Spectroscopy) optodes and channel locations with cus
 - `det_labels::Bool=false`: plot detector labels
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head::Bool=true`: if `true`, draw head outline
-- `head_labels::Bool=false`: if `true`, draw head labels
+- `head_labels::Bool=true`: if `true`, draw head labels
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `grid::Bool=false`: if `true`, draw grid (useful for locating positions)
 - `ps::Symbol`: plot size:
@@ -27,7 +27,7 @@ Preview NIRS (Near-Infrared Spectroscopy) optodes and channel locations with cus
     - `:xy`: horizontal (top-down) view
     - `:xz`: coronary (front) view
     - `:yz`: sagittal (side) view
-- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channel information details
+- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channel information details (currently not shown)
 
 # Returns
 
@@ -59,6 +59,14 @@ function plot_locs_nirs(
     # validate
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(plane, [:xy, :yz, :xz], "plane")
+    src_n >= 0 && det_n >= 0 || throw(ArgumentError("src_n and det_n must be ≥ 0."))
+    src_n + det_n <= length(ch) ||
+        throw(ArgumentError("locs must contain ≥ $(src_n + det_n) optodes (src_n + det_n)."))
+    size(opt_pairs, 2) == 2 || throw(ArgumentError("opt_pairs must have 2 columns (source, detector)."))
+    all(1 .<= opt_pairs[:, 1] .<= src_n) ||
+        throw(ArgumentError("Sources in opt_pairs must be in [1, $src_n]."))
+    all(1 .<= opt_pairs[:, 2] .<= det_n) ||
+        throw(ArgumentError("Detectors in opt_pairs must be in [1, $det_n]."))
 
     # set color palette
     pal = mono ? :grays : :darktest
@@ -175,8 +183,6 @@ function plot_locs_nirs(
     # number of channels
     ch_n = length(ch)
 
-    cmap = GLMakie.resample_cmap(pal, ch_n)
-
     # draw channel connection lines
     for idx in axes(opt_pairs, 1)
         xs = loc_x[opt_pairs[idx, 1]]
@@ -223,7 +229,7 @@ function plot_locs_nirs(
         end
     elseif !opt_labels
         GLMakie.scatter!(
-            loc_x[(src_n + 1):end], loc_y[(src_n + 1):end];
+            loc_x[(src_n + 1):(src_n + det_n)], loc_y[(src_n + 1):(src_n + det_n)];
             markersize  = marker_size,
             color       = mono ? :white : :green,
             strokewidth = sw,

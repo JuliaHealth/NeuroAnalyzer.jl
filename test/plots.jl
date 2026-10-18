@@ -181,10 +181,10 @@ NeuroAnalyzer.plot_save(p; file_name = "test.png")
 @test isfile("test.png")
 isfile("test.png") && rm("test.png")
 
-@info "Test: plot()"
+@info "Test: plot_signal() / plot()"
 t = 0:0.1:1
 s = sin.(t)
-p = NeuroAnalyzer._plot(t, s)
+p = plot_signal(t, s)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot(e10; ch = "Fp1", gui = false)
 @test p isa GLMakie.Figure
@@ -487,5 +487,36 @@ dc = rand(16, 100)
 t = collect(1:100)
 p = plot_dwc(dc; t = t, n = 4)
 @test p isa GLMakie.Figure
+
+@info "Test: plot regressions"
+# frequency range / log axis in 3-D and topographic PSD and phase plots
+@test plot_psd(e10; ep = 1, ch = ["Fp1", "Fp2"], type = :w3d, frq = :log, gui = false) isa GLMakie.Figure
+@test plot_psd(e10; ep = 1, ch = "eeg", type = :topo, frq = :log, gui = false) isa GLMakie.Figure
+@test plot_phs(e10; ep = 1, ch = ["Fp1", "Fp2"], type = :s3d, frq = :log, gui = false) isa GLMakie.Figure
+# relative PSD keeps the plotted range; Morlet wavelets with a band starting below 1 Hz
+@test plot_psd(e10; ep = 1, ch = "Fp1", method = :mw, ref = :delta, gui = false) isa GLMakie.Figure
+@test plot_spectrogram(e10; ep = 1, ch = "eeg", type = :topo, method = :gh, gui = false) isa GLMakie.Figure
+@test NeuroAnalyzer.plot(e10_erp; ch = ["Fp1", "Fp2"], type = :butterfly, gui = false) isa GLMakie.Figure
+@test plot_mep(mep; ch = labels(mep)[1], type = :stack) isa GLMakie.Figure
+@test plot_topo(e10; ch = "eeg", tpos = 1, sch = r"^Fp") isa GLMakie.Figure
+@test plot_locs(e10; ch = "eeg", head_labels = true, gui = false) isa GLMakie.Figure
+@test plot_efield2d([1, -1], [-1.0, 1.0], [0.0, 0.0]) isa GLMakie.Figure
+f = collect(0.0:0.5:50.0)
+@test plot_coherence(rand(length(f)), f; frq = :log) isa GLMakie.Figure
+@test plot_eros(rand(41, 21, 2), collect(0.0:40.0), collect(0.0:0.1:2.0); frq = :log) isa GLMakie.Figure
+m = rand(19, 19)
+@test plot_connectivity_circle(m; clabels = labels(e10)[1:19], threshold = (0.2, 0.8), threshold_type = :in) isa GLMakie.Figure
+v = [plot_empty(), plot_empty()]
+plot_compose(v; layout = (2, 2))
+@test length(v) == 2
+for fn in ("test.pdf", "test.PNG")
+    isfile(fn) && rm(fn)
+    plot_save(plot_empty(); file_name = fn)
+    @test isfile(fn)
+    rm(fn)
+end
+nirs = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
+r = nirs.header.recording
+@test plot_locs_nirs(nirs.locs, r[:optode_pairs], length(r[:src_labels]), length(r[:det_labels])) isa GLMakie.Figure
 
 true

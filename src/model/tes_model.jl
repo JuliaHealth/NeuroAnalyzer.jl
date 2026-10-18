@@ -20,11 +20,11 @@ The electric potential at every electrode of the standard 10-10 (47 channels) ca
 
 # Notes
 
-This is a very initial version, simplified model - just superficial spread of the electric field
+This is a very initial version, simplified model - just superficial spread of the electric field.
 
 # To do
 
-Model spread of electric field at the cortical surface - reduce charge for skull resistance
+Model spread of electric field at the cortical surface - reduce charge for skull resistance.
 """
 function tes_model(;
     anode::String,

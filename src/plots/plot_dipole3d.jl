@@ -9,8 +9,6 @@ Plot a 3D dipole inside a schematic brain model.
 
 - `d::NeuroAnalyzer.DIPOLE`: dipole object with `pos` (position) and `q` (moment) fields
 - `t::Int64=1`: time point to plot (column of `q`; row of `pos` for a moving dipole)
-    - `pos::Tuple{Float64, Float64, Float64}`: dipole position (x, y, z) in brain volume (range: -1.0 to +1.0)
-    - `mag::Tuple{Float64, Float64, Float64}`: dipole magnitude vector (mx, my, mz)
 - `project::Bool=true`: if `true`, plot lines projecting the dipole onto the x, y, and z axes
 
 # Returns
@@ -22,6 +20,7 @@ Plot a 3D dipole inside a schematic brain model.
 - Brain volume is within -1.0 to +1.0 for all axes (x, y, z).
 - The dipole position is marked with a red dot.
 - If `project=true`, dashed lines show the dipole's projection onto the coordinate planes.
+- Position and moment must be normalized to the unit head; for a fitted dipole (in `locs` units), use `(pos - sphere_center) / sphere_radius`.
 """
 function plot_dipole3d(
     d::NeuroAnalyzer.DIPOLE;
@@ -104,9 +103,9 @@ function plot_dipole3d(
     GLMakie.scatter!(ax, x, y, z; markersize = 20, color = :red)
 
     # draw projection lines if requested
-    if project == true
-        # project onto top plane (z=0)
-        GLMakie.lines!(ax, [x, x], [y, y], [z, 0]; linestyle = :dash, color = :red)
+    if project
+        # project onto top plane (z=-0.1)
+        GLMakie.lines!(ax, [x, x], [y, y], [z, -0.1]; linestyle = :dash, color = :red)
         # project onto side plane (x=-1.2)
         GLMakie.lines!(ax, [x, -1.2], [y, y], [z, z]; linestyle = :dash, color = :red)
         # project onto front plane (y=1.2)

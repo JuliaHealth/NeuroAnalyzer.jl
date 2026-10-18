@@ -186,7 +186,6 @@ function plot_psd(
                 p[idx, f1:f2];
                 color = cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
                 linewidth = 2,
                 label = clabels[idx],
             )
@@ -306,13 +305,12 @@ function plot_psd_3d(
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx = 1:ch_n
             GLMakie.lines!(
-                f,
-                ones(length(f)) .* idx,
+                f[f1:f2],
+                ones(f2 - f1 + 1) .* idx,
                 p[idx, f1:f2];
                 linewidth = 2,
                 color = mono ? :black : cmap[idx],
                 colormap = pal,
-                colorrange = 1:ch_n,
             )
         end
 
@@ -320,7 +318,7 @@ function plot_psd_3d(
 
         # plot powers
         cmap = GLMakie.resample_cmap(pal, ch_n)
-        GLMakie.surface!(f, eachindex(clabels), p[:, f1:f2]'; colormap = pal)
+        GLMakie.surface!(f[f1:f2], eachindex(clabels), p[:, f1:f2]'; colormap = pal)
     end
 
     return fig
@@ -449,7 +447,7 @@ function plot_psd_topo(
         GLMakie.autolimits!(ax)
 
         # plot PSD
-        GLMakie.lines!(ax, f, p[idx, f1:f2]; linewidth = 1, color = :black)
+        GLMakie.lines!(ax, f[f1:f2], p[idx, f1:f2]; linewidth = 1, color = :black)
 
         # draw black box around the entire figure
         GLMakie.Box(pp[:, :], 
@@ -461,7 +459,7 @@ function plot_psd_topo(
         push!(pp_vec, pp)
 
         pp_full = plot_psd(
-            f, p[idx, f1:f2];
+            f[f1:f2], p[idx, f1:f2];
             xlabel = xlabel,
             ylabel = ylabel,
             title = locs[idx, :label] * ": " * title,
@@ -692,7 +690,8 @@ function plot_psd(
 
     # frequency limits
     fs = sr(obj)
-    ref !== :abs && (flim = band_frq(obj; band = ref))
+    # reference band for relative powers (the plotted range is flim)
+    ref_band = ref ∉ (:abs, :total) ? band_frq(obj; band = ref) : nothing
 
     # factor out repeated title fragments
     _method_label = Dict(
@@ -728,7 +727,7 @@ function plot_psd(
     elseif ref === :total
         p, f = _psd_rel(signal; _common_kwargs...)
     else
-        p, f = _psd_rel(signal; flim = flim, _common_kwargs...)
+        p, f = _psd_rel(signal; flim = ref_band, _common_kwargs...)
     end
 
     _check_tuple(flim, (f[1], f[end]), "flim")
