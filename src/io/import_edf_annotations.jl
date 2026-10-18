@@ -70,11 +70,15 @@ function import_edf_annotations(file_name::String)::DataFrame
         # ------------------------------------------------------------ #
         # per-channel header fields                                    #
         # ------------------------------------------------------------ #
+        # bytes are split into fields before decoding, so that non-ASCII
+        # (Latin-1) characters cannot shift the fixed-width boundaries
         read_fields(width, parse_fn = identity) = begin
             buf = zeros(UInt8, ch_n * width)
             readbytes!(fid, buf, ch_n * width)
-            s = String(Char.(buf))
-            [parse_fn(strip(s[(1 + (i - 1) * width):(i * width)])) for i = 1:ch_n]
+            [
+                parse_fn(strip(String(Char.(buf[(1 + (i - 1) * width):(i * width)]))))
+                for i = 1:ch_n
+            ]
         end
 
         clabels = read_fields(16)

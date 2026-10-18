@@ -23,7 +23,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
         throw(ArgumentError("$file_name is not DuoMAG file."))
 
     # extract extension once - used in every branch below.
-    ext = splitext(file_name)[2]
+    ext = lowercase(splitext(file_name)[2])
 
     # ------------------------------------------------------------------ #
     # parse format-specific header and signal data                       #
@@ -192,10 +192,12 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     data = zeros(size(mep_signal, 2), size(mep_signal, 1), 1)
     for idx in axes(data, 1)
         data[idx, :, 1] = @views -mep_signal[:, idx]
-        # suppress stimulation artefact (±10 samples around stim sample)
-        data[idx, (stim_sample[idx] - 10):(stim_sample[idx] + 10), 1] .*= 0.05
+        # suppress stimulation artefact (±10 samples around stim sample, within the signal)
+        a1 = clamp(stim_sample[idx] - 10, 1, size(data, 2))
+        a2 = clamp(stim_sample[idx] + 10, 1, size(data, 2))
+        data[idx, a1:a2, 1] .*= 0.05
         # remove DC offset relative to pre-stim baseline
-        data[idx, :] = remove_dc(data[idx, :], stim_sample[idx] - 10)
+        data[idx, :] = remove_dc(data[idx, :], max(stim_sample[idx] - 10, 1))
     end
     data .*= sensitivity
 

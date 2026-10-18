@@ -102,6 +102,8 @@ function import_ft(
 
     cfg = dataset["cfg"]
     hdr = dataset["hdr"]
+    # original file header (optional)
+    hdr_orig = "orig" in keys(hdr) && hdr["orig"] isa AbstractDict ? hdr["orig"] : Dict{String, Any}()
     sampling_rate = round(Int64, dataset["fsample"])
     ch_n = Int64(hdr["nChans"])
 
@@ -197,7 +199,7 @@ function import_ft(
 
     r = nothing # will be assigned in each branch below
 
-    if data_type == "eeg"
+    if data_type in ("eeg", "ecog", "seeg", "ieeg")
         clabels = _clean_eeg_labels(clabels)
 
         ref = if "reref" in keys(cfg) && cfg["reref"] != "no"
@@ -210,9 +212,11 @@ function import_ft(
             _detect_montage(clabels, ch_type, data_type)
         end
 
+        # convert all epochs, not only the first one
         @inbounds for ch_idx = 1:ch_n
-            if units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg", "emg", "eog", "ref")
-                data[ch_idx, :, 1] .*= 1.0e6
+            if units[ch_idx] == "V" &&
+               ch_type[ch_idx] in ("eeg", "ecog", "seeg", "ieeg", "emg", "eog", "ref")
+                data[ch_idx, :, :] .*= 1.0e6
                 units[ch_idx] = "μV"
             end
         end
@@ -222,18 +226,18 @@ function import_ft(
             file_name = file_name,
             file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
             file_type = file_type,
-            recording = "RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
+            recording = "RID" in keys(hdr_orig) ? string(hdr_orig["RID"]) : "",
             recording_date = "", recording_time = "", recording_notes = "",
             channel_type = ch_type,
             channel_order = _sort_channels(ch_type),
             reference = ref,
             clabels = clabels,
-            transducers = "Transducer" in keys(hdr["orig"]) ?
-                          string.(strip.(hdr["orig"]["Transducer"])) :
+            transducers = "Transducer" in keys(hdr_orig) ?
+                          string.(strip.(vec(string.(hdr_orig["Transducer"])))) :
                           repeat([""], ch_n),
             units = units,
-            prefiltering = "PreFilt" in keys(hdr["orig"]) ?
-                           string.(strip.(hdr["orig"]["PreFilt"])) :
+            prefiltering = "PreFilt" in keys(hdr_orig) ?
+                           string.(strip.(vec(string.(hdr_orig["PreFilt"])))) :
                            repeat([""], ch_n),
             line_frequency = 50, # TODO: make this a keyword argument
             sampling_rate = sampling_rate,
@@ -271,18 +275,19 @@ function import_ft(
         ch_type[occursin.("sti", lowercase.(clabels))] .= "mrk"
         ch_type[occursin.("sys", lowercase.(clabels))] .= "other"
 
+        # convert all epochs, not only the first one
         @inbounds for ch_idx = 1:ch_n
             if units[ch_idx] == "T"
-                data[ch_idx, :, 1] .*= 1.0e15
+                data[ch_idx, :, :] .*= 1.0e15
                 units[ch_idx] = "fT"
             elseif units[ch_idx] == "T/m"
-                data[ch_idx, :, 1] .*= (1.0e15 / 100)
+                data[ch_idx, :, :] .*= (1.0e15 / 100)
                 units[ch_idx] = "fT/cm"
             elseif units[ch_idx] == "T/cm"
-                data[ch_idx, :, 1] .*= 1.0e15
+                data[ch_idx, :, :] .*= 1.0e15
                 units[ch_idx] = "fT/cm"
             elseif units[ch_idx] == "V" && ch_type[ch_idx] in ("eeg", "emg", "eog", "ref")
-                data[ch_idx, :, 1] .*= 1.0e6
+                data[ch_idx, :, :] .*= 1.0e6
                 units[ch_idx] = "μV"
             end
         end
@@ -347,8 +352,8 @@ function import_ft(
         ssp_labels = String[]
         ssp_channels = zeros(Bool, ch_n)
         ssp_data = Matrix{Float64}(undef, 0, 0)
-        if "projs" in keys(hdr["orig"])
-            projs = hdr["orig"]["projs"]
+        if "projs" in keys(hdr_orig)
+            projs = hdr_orig["projs"]
             if length(projs["desc"]) != 0
                 ssp_labels = string.(projs["desc"][:])
                 ssp_ch_names = _clean_meg_labels(string.(projs["data"][1]["col_names"][:]))
@@ -362,11 +367,11 @@ function import_ft(
         end
 
         lp =
-            "lowpass" in keys(hdr["orig"]) ?
-            string(round(hdr["orig"]["lowpass"][1]; digits = 1)) : "?"
+            "lowpass" in keys(hdr_orig) ?
+            string(round(hdr_orig["lowpass"][1]; digits = 1)) : "?"
         hp =
-            "highpass" in keys(hdr["orig"]) ?
-            string(round(hdr["orig"]["highpass"][1]; digits = 1)) : "?"
+            "highpass" in keys(hdr_orig) ?
+            string(round(hdr_orig["highpass"][1]; digits = 1)) : "?"
 
         r = _create_recording_meg(;
             data_type = data_type,
@@ -400,9 +405,10 @@ function import_ft(
         opto = dataset["opto"]
         wavelengths = opto["wavelength"][:]
 
+        # ("nirs" channel types were renamed to "nirs_od" above)
         wavelength_index = Int64[]
         for idx1 in eachindex(ch_type), idx2 in eachindex(wavelengths)
-            if ch_type[idx1] == "nirs" &&
+            if ch_type[idx1] == "nirs_od" &&
                occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1])
                 push!(wavelength_index, idx2)
             end
@@ -476,7 +482,7 @@ function import_ft(
     hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
-    data_type == "eeg" && _initialize_locs!(obj)
+    data_type in ("eeg", "ecog", "seeg", "ieeg") && _initialize_locs!(obj)
 
     _info(
         "Imported: " *

@@ -190,7 +190,8 @@ edit_marker!(eeg_mrk; n = 45, id = "TEST", start = 1989, len = 1, value = "test"
 @info "Test: channel2marker()"
 @test nrow(eeg_mrk.markers) == 45
 unique(eeg_mrk.data[28, :, :])
-idx = getindex.(findall(eeg_mrk.data[28, :, :] .== -11502.913868619822), 1)
+# the marker level is the highest value of the Mark2 channel
+idx = getindex.(findall(eeg_mrk.data[28, :, :] .== maximum(eeg_mrk.data[28, :, :])), 1)
 eeg_mrk.data[28, idx, :] .= 1.0
 idx = getindex.(findall(eeg_mrk.data[28, :, :] .!= 1.0), 1)
 eeg_mrk.data[28, idx, :] .= 0.0

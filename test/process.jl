@@ -472,7 +472,8 @@ e10_int = lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
 @test normalize_minmax(v1) == [-1.0, -0.5, 0.0, 0.5, 1.0]
 @test normalize_minmax(m1; bych = true) == [-1 0 1; -1 0 1]
 @test normalize_minmax(m1; bych = false) ==
-      [-1.0 -0.6 -0.19999999999999996; 0.19999999999999996 0.6000000000000001 1.0]
+      [-1.0 -0.6 -0.19999999999999996;
+      0.19999999999999996 0.6000000000000001 1.0]
 @test normalize_n(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
 @test normalize_n(m1; bych = true) == [0.0 0.5 1.0; 0.0 0.5 1.0]
 @test normalize_n(m1; bych = false) == [0.0 0.2 0.4; 0.6 0.8 1.0]
@@ -563,9 +564,11 @@ e10_int = lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
 @test normalize_invroot(v1) ==
       [1.0, 0.7071067811865475, 0.5773502691896258, 0.5, 0.4472135954999579]
 @test normalize_invroot(m1; bych = true) ==
-      [1.0 0.7071067811865475 0.5773502691896258; 0.5 0.4472135954999579 0.4082482904638631]
+      [1.0 0.7071067811865475 0.5773502691896258;
+      0.5 0.4472135954999579 0.4082482904638631]
 @test normalize_invroot(m1; bych = false) ==
-      [1.0 0.7071067811865475 0.5773502691896258; 0.5 0.4472135954999579 0.4082482904638631]
+      [1.0 0.7071067811865475 0.5773502691896258;
+      0.5 0.4472135954999579 0.4082482904638631]
 @test normalize_softmax(v1) == [
     0.011656230956039607,
     0.03168492079612427,
@@ -790,11 +793,11 @@ e10_tmp = wbp(e10; ch = "all", frq = 4)
 
 @info "Test: intensity2od()"
 n_tmp = intensity2od(nirs)
-@test size(n_tmp.data) == (16, 9015, 1)
+@test size(n_tmp.data) == (16, 9001, 1)  # 25.04 Hz resampled to 25 Hz on import
 
 @info "Test: od2conc()"
 n_tmp2 = od2conc(n_tmp)
-@test size(n_tmp2.data) == (22, 9015, 1)
+@test size(n_tmp2.data) == (22, 9001, 1)
 
 @info "Test: npl()"
 e = average_epochs(e10)

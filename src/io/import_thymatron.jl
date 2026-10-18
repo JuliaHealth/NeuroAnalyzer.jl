@@ -16,8 +16,7 @@ Image properties:
 
 # Arguments
 
-- `file_name::Union{String, Vector{String}}`: name(s) of the file(s) to load
-- `dpi::Int64=100`: DPI of the scanned images
+- `file_name::Union{String, Vector{String}}`: name(s) of the file(s) to load; all images must have the same width
 
 # Returns
 
@@ -43,7 +42,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         size(img, 1) > size(img, 2) && (img = rotl90(img))
 
         size(img, 1) > 100 && (img = img[1:100, :])
-        size(img, 2) > 490 && (img = img[:, 490])
+        size(img, 2) > 490 && (img = img[:, 1:490])
 
         dimx = size(img, 1)
         dimy = size(img, 2)
@@ -69,8 +68,8 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         img_bin = dilate(img_bin)
         # img_bin = Bool.(img_bin)
         img_bin = Int.(img_bin)
-        # fill in discontinuities
-        for idx = 2:dimx
+        # fill in discontinuities (empty columns take the trace of the previous column)
+        for idx = 2:dimy
             c = img_bin[:, idx]
             sum(c) == 0 && (img_bin[:, idx] = img_bin[:, idx - 1])
         end
@@ -113,6 +112,8 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         push!(data_tmp, eeg_signal)
     end
 
+    all(==(length(data_tmp[1])), length.(data_tmp)) ||
+        throw(ArgumentError("All images must have the same width."))
     data = zeros(length(data_tmp), length(data_tmp[1]), 1)
 
     for idx in eachindex(file_name)
@@ -146,7 +147,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     r = _create_recording_eeg(;
         data_type = "eeg",
         file_name = file_name[1],
-        file_size_mb = 0,
+        file_size_mb = round(sum(filesize.(file_name)) / 1024^2; digits = 2),
         file_type = "Thymatron",
         recording = "",
         recording_date = "",

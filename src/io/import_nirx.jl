@@ -24,13 +24,13 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     detect_format(file_name) === :nirx ||
         throw(ArgumentError("$file_name is not NIRX file."))
 
-    hdr = nothing
-    try
-        hdr = readlines(file_name)
-    catch
-        @error "File $file_name cannot be loaded."
+    hdr = try
+        readlines(file_name)
+    catch err
+        throw(ArgumentError("File $file_name cannot be loaded: $err"))
     end
-    hdr[1] == "[GeneralInfo]" || throw(ArgumentError("File $file_name is not NIRX file."))
+    strip(chopprefix(hdr[1], "\ufeff")) == "[GeneralInfo]" ||
+        throw(ArgumentError("File $file_name is not NIRX file."))
 
     file_type = "NIRX"
 
@@ -101,7 +101,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         sampling_rate =
             split(hdr[startswith.(lowercase.(hdr), "samplingrate=")][1], '=')[2]
     )
-    sampling_rate = round(Int64, parse(Float64, sampling_rate))
+    # exact rate of the recording (converted to an integer rate after reading the data)
+    sampling_rate_exact = parse(Float64, sampling_rate)
     if any(startswith.(lowercase.(hdr), "mod amp="))
         modamp = split(hdr[startswith.(lowercase.(hdr), "mod amp=")][1], '=')[2]
         modamp = parse.(Float64, split(modamp, '\t'))
@@ -119,7 +120,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         (notes = split(hdr[startswith.(lowercase.(hdr), "notes=")][1], '=')[2])
 
     # parse .inf
-    #subject = ""
+    subject = ["", ""]
     age = -1
     gender = ""
     study_type1 = ""
@@ -145,170 +146,128 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         )[2]
     end
 
-    # parse gains if .set is not available
-    if !isfile(splitext(file_name)[1] * ".set")
+    # parse gains if .set is not available (informational only)
+    gains = zeros(Int64, sources, detectors)
+    gain_rows = if !isfile(splitext(file_name)[1] * ".set")
         gains_start = findfirst(startswith.(hdr, "Gains="))
-        buf = hdr[(gains_start + 1):(gains_start + sources)]
-        gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] in parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
+        isnothing(gains_start) ? String[] : hdr[(gains_start + 1):(gains_start + sources)]
     else
-        buf = readlines(splitext(file_name)[1] * ".set")
-        buf = split.(buf, ' ')
-        gains = zeros(Int64, sources, detectors)
-        [gains[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
+        readlines(splitext(file_name)[1] * ".set")
+    end
+    for (idx, row) in enumerate(gain_rows[1:min(end, sources)])
+        v = parse.(Int64, split(strip(row)))
+        gains[idx, 1:min(end, length(v))] = v[1:min(end, detectors)]
     end
 
-    # parse opt_pairs
+    # S-D-Key: "s-d:column,…" maps each column of the .wl files to a source-detector pair
     pairs = hdr[findfirst(startswith.(lowercase.(hdr), "s-d-key="))]
-    pairs = split(replace(lowercase.(pairs), "s-d-key=" => ""), ",")[1:(end - 1)]
-    ch_n = length(pairs)
-    opt_pairs = zeros(Int64, ch_n, 2)
-    [
-        opt_pairs[idx, :] in [
-            parse(Int64, split(pairs[idx], "-")[1]),
-            parse(Int64, split(split(pairs[idx], "-")[2], ":")[1]),
-        ] for idx = 1:ch_n
-    ]
-    ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
-    masks = hdr[(ch_mask_start + 1):(ch_mask_start + sources)]
-    masks = split.(masks, '\t')
-    ch_masks = zeros(Int64, sources * detectors)
-    idx = 1
-    for idx1 = 1:sources, idx2 = 1:detectors
-        ch_masks[idx] = parse(Int64, masks[idx1][idx2])
-        idx += 1
+    pairs = Base.filter(!isempty, split(replace(lowercase(pairs), "s-d-key=" => ""), ","))
+    key_pairs = zeros(Int64, length(pairs), 2)
+    for (idx, pr) in enumerate(pairs)
+        sd, col = split(pr, ":")
+        s_idx, d_idx = parse.(Int64, split(sd, "-"))
+        key_pairs[parse(Int64, col), :] = [s_idx, d_idx]
     end
-    ch_n = sum(ch_masks)
-    ch_masks = Bool.(ch_masks)
-    opt_pairs = opt_pairs[ch_masks, :]
+
+    # S-D-Mask: sources × detectors matrix of active channels
+    ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
+    masks = split.(strip.(hdr[(ch_mask_start + 1):(ch_mask_start + sources)]))
+    sd_mask = [parse(Int64, masks[s_idx][d_idx]) == 1 for s_idx = 1:sources, d_idx = 1:detectors]
+    # active .wl columns, in S-D-Key order
+    ch_masks = [sd_mask[key_pairs[idx, 1], key_pairs[idx, 2]] for idx in axes(key_pairs, 1)]
+    opt_pairs_wl = key_pairs[ch_masks, :]
+    ch_n = count(ch_masks)
 
     # parse dark noise ???
     dark_noise = zeros(length(wavelengths), detectors)
     for wv_idx in eachindex(wavelengths)
-        dn = hdr[findfirst(startswith.(lowercase.(hdr), "wavelength$wv_idx=")) + 1]
-        dark_noise[wv_idx, :] = parse.(Float64, split.(dn, '\t')[1:end])
+        dn_idx = findfirst(startswith.(lowercase.(hdr), "wavelength$wv_idx="))
+        isnothing(dn_idx) && continue
+        dark_noise[wv_idx, :] = parse.(Float64, split(strip(hdr[dn_idx + 1])))[1:detectors]
     end
 
-    chd = hdr[findfirst(startswith.(lowercase.(hdr), "chandis="))]
-    chd = replace(lowercase.(chd), "chandis=" => "")
-    chd = split.(chd, '\t')
-    channel_distance = zeros(length(chd))
-    [channel_distance[idx] in parse(Float64, chd[idx]) for idx in eachindex(chd)]
+    # channel distances (informational only)
+    chd_idx = findfirst(startswith.(lowercase.(hdr), "chandis="))
+    channel_distance = isnothing(chd_idx) ? Float64[] :
+        parse.(Float64, split(strip(replace(lowercase(hdr[chd_idx]), "chandis=" => ""))))
 
-    # read raw light intensity channels (V)
-    nirs_int = Matrix(
+    # read raw light intensity channels (V): one .wl file per wavelength,
+    # rows = time points, columns = all source-detector pairs (S-D-Key order)
+    read_wl(idx) = Matrix{Float64}(
         CSV.read(
-            splitext(file_name)[1] * ".wl1",
+            splitext(file_name)[1] * ".wl$idx",
             DataFrame;
             header = false,
-            stringtype = String,
+            delim = ' ',
+            ignorerepeated = true,
         ),
-    )'[
-        ch_masks, :,
-    ]
-    wavelength_index = repeat([1], ch_n)
-    data_type_label = repeat(["nirs_int"], ch_n)
-    data_unit = repeat(["V"], ch_n)
-    for idx = 2:length(wavelengths)
-        nirs_int = vcat(
-            nirs_int,
-            Matrix(
-                CSV.read(
-                    splitext(file_name)[1] * ".wl$idx",
-                    DataFrame;
-                    header = false,
-                    stringtype = String,
-                ),
-            )'[
-                ch_masks, :,
-            ],
-        )
-        wavelength_index = vcat(wavelength_index, repeat([idx], ch_n))
-        opt_pairs = vcat(opt_pairs, opt_pairs)
-        data_type_label = vcat(data_type_label, repeat(["nirs_int"], ch_n))
-        data_unit = vcat(data_unit, repeat(["V"], ch_n))
-    end
+    )'[ch_masks, :]
+    nirs_int = reduce(vcat, [read_wl(idx) for idx in eachindex(wavelengths)])
+    wavelength_index = reduce(vcat, [repeat([idx], ch_n) for idx in eachindex(wavelengths)])
+    opt_pairs = reduce(vcat, [opt_pairs_wl for _ in eachindex(wavelengths)])
+    data_type_label = repeat(["nirs_int"], size(nirs_int, 1))
+    data_unit = repeat(["V"], size(nirs_int, 1))
     ch_n = size(nirs_int, 1)
+    data = reshape(nirs_int, ch_n, size(nirs_int, 2), 1)
+    # NeuroAnalyzer stores integer sampling rates (e.g. 12.5 Hz → upsampled to 25 Hz)
+    data, sampling_rate = _integer_rate(data, sampling_rate_exact)
 
-    time_pts = round.(
-        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)];
-        digits = 4,
-    )
-    epoch_time = round.(
-        collect(0:(1 / sampling_rate):(size(nirs_int, 2) / sampling_rate))[1:(end - 1)];
-        digits = 4,
-    )
+    time_pts = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    epoch_time = time_pts
 
-    # parse events if .evt is not available
-    stim_onset = nothing
+    # events: [Markers] Events= table in the header ("time  code  frame"), otherwise the .evt file
+    # ("frame  bit1 … bit8", the trigger code is the binary value with bit1 as the lowest bit);
+    # frames are 0-based
+    stim_frame = Int64[]
     stim_id = String[]
-    if any(startswith.(hdr, "Events="))
-        events_start = findfirst(startswith.(hdr, "Events="))
-        events_end = events_start + findfirst(startswith.(hdr[events_start:end], "#"))
-        buf = hdr[(events_start + 1):(events_end - 2)]
-        buf = split.(buf, '\t')
-        events = zeros(Float64, length(buf), length(buf[1]))
-        [events[idx, :] in parse.(Float64, buf[idx]) for idx in eachindex(buf)]
-        stim_onset = Int.(events[:, 3])
-        stim_id = string.(Int.(events[:, 2]))
-    elseif isfile(splitext(file_name)[1] * ".evt")
-        buf = readlines(splitext(file_name)[1] * ".evt")
-        buf = split.(buf, '\t')
-        events = zeros(Int64, length(buf), length(buf[1]))
-        [events[idx, :] in parse.(Int64, buf[idx]) for idx in eachindex(buf)]
-        # what are those 0s and 1s in events[] ???
-        stim_onset = events[:, 1]
-        stim_id = String[]
-        [
-            push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for
-            idx in axes(events, 1)
-        ]
-    end
-
-    markers = if isnothing(stim_onset)
-        DataFrame(
-            :id => nothing,
-            :start => nothing,
-            :length => nothing,
-            :value => nothing,
-            :channel => nothing,
-        )
+    events_start = findfirst(startswith.(hdr, "Events="))
+    event_rows = if !isnothing(events_start)
+        rows = String[]
+        for l in hdr[(events_start + 1):end]
+            startswith(l, "#") && break
+            isempty(strip(l)) || push!(rows, l)
+        end
+        rows
     else
-        DataFrame(
-            :id => stim_id,
-            :start => stim_onset,
-            :length => repeat([0], length(stim_id)),
-            :value => repeat(["stim"], length(stim_id)),
-            :channel => zeros(Int64, length(stim_id)),
-        )
+        String[]
+    end
+    if !isempty(event_rows)
+        for l in event_rows
+            v = split(strip(l))
+            push!(stim_id, string(round(Int64, parse(Float64, v[2]))))
+            push!(stim_frame, round(Int64, parse(Float64, v[3])))
+        end
+    elseif isfile(splitext(file_name)[1] * ".evt")
+        for l in readlines(splitext(file_name)[1] * ".evt")
+            isempty(strip(l)) && continue
+            v = parse.(Int64, split(strip(l)))
+            push!(stim_frame, v[1])
+            push!(stim_id, string(sum(v[i + 1] * 2^(i - 1) for i = 1:(length(v) - 1))))
+        end
     end
 
-    # read data ???
-    buf = readlines(splitext(file_name)[1] * ".dat")
-    buf_r = length(parse.(Float64, split(buf[1], ' ')))
-    data = zeros(buf_r, length(buf))
-    [data[:, idx] in parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
-
-    data = reshape(data, size(data, 1), size(data, 2), 1)
+    markers = DataFrame(
+        :id => stim_id,
+        :start => round.(stim_frame ./ sampling_rate_exact; digits = 4),
+        :length => zeros(length(stim_id)),
+        :value => repeat(["stim"], length(stim_id)),
+        :channel => zeros(Int64, length(stim_id)),
+    )
 
     # read probes data
     probes = matread(splitext(file_name)[1] * "_probeInfo.mat")
     # head_model = probes["probeInfo"]["headmodel"]
-    opt_pairs = Int64.(probes["probeInfo"]["probes"]["index_c"])
-    opt_pairs = vcat(opt_pairs, opt_pairs)
     # probes["probeInfo"]["probes"]["labels_o"]
     det_labels = probes["probeInfo"]["probes"]["labels_d"][:]
     src_labels = probes["probeInfo"]["probes"]["labels_s"][:]
     opt_labels = string.(vcat(src_labels, det_labels))
 
-    clabels = repeat([""], ch_n)
-    [
-        clabels[idx] =
-            src_labels[opt_pairs[idx, :][1]] *
-            "_" *
-            det_labels[opt_pairs[idx, :][2]] *
-            " " *
-            string(wavelengths[wavelength_index[idx]]) for idx = 1:ch_n
+    clabels = [
+        string(src_labels[opt_pairs[idx, 1]]) *
+        "_" *
+        string(det_labels[opt_pairs[idx, 2]]) *
+        " " *
+        string(wavelengths[wavelength_index[idx]]) for idx = 1:ch_n
     ]
     clabels = replace.(clabels, ".0" => "")
 
@@ -333,31 +292,25 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     # TPL file ???
     # AVG file ???
 
-    # locations
-    pos2d = hcat(src_pos2d, detector_pos2d)
-    pos3d = hcat(src_pos3d, detector_pos3d)
-    if src_pos3d === nothing
-        if src_pos2d === nothing
-            _warn(
-                "The data does not contain 3D nor 2D location information for the optode positions.",
-            )
-            x = zeros(length(opt_labels))
-        else
-            _warn(
-                "The data only contains 2D location information for the optode positions.",
-            )
-            x = pos2d[1, :]
-        end
+    # locations: 3D coordinates when available, otherwise the 2D layout
+    pos2d = Float64.(hcat(src_pos2d, detector_pos2d))
+    pos3d = Float64.(hcat(src_pos3d, detector_pos3d))
+    if size(pos3d, 1) >= 3 && any(!iszero, pos3d)
+        x, y, z = pos3d[1, :], pos3d[2, :], pos3d[3, :]
+        # normalize all axes jointly (keeps the head geometry)
+        x, y, z = _locs_norm(x, y, z)
+    elseif size(pos2d, 1) >= 2 && any(!iszero, pos2d)
+        _warn("The data only contains 2D location information for the optode positions.")
+        x, y = _locs_norm(pos2d[1, :], pos2d[2, :])
+        z = zeros(length(opt_labels))
     else
-        x = pos3d[1, :]
+        _warn(
+            "The data does not contain 3D nor 2D location information for the optode positions.",
+        )
+        x = zeros(length(opt_labels))
+        y = zeros(length(opt_labels))
+        z = zeros(length(opt_labels))
     end
-    y = isnothing(src_pos3d) ? zeros(length(opt_labels)) : pos2d[2, :]
-    z = isnothing(src_pos3d) ? zeros(length(opt_labels)) : pos3d[3, :]
-    # swap x and y
-    # x, y = y, x
-    # normalize to a unit-sphere
-    z = normalize_n(z)
-    x, y = _locs_norm(x, y)
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))
     radius_sph = zeros(length(opt_labels))
@@ -383,7 +336,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         id = string(subject_id[1]),
         first_name = string(subject[1]),
         middle_name = "",
-        last_name = string(subject[2]),
+        last_name = length(subject) >= 2 ? string(subject[2]) : "",
         head_circumference = -1,
         handedness = "",
         weight = -1,

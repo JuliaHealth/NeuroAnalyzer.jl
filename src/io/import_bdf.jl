@@ -18,9 +18,11 @@ BDF is BioSemi's 24-bit extension of the EDF format. Each sample is stored as a 
 
 # Notes
 
-- `sampling_rate = samples_per_datarecord ÷ data_record_duration`
+- `sampling_rate = samples_per_datarecord ÷ data_record_duration`; channels with fewer samples per record are upsampled to the highest rate
 - `gain = (physical_max − physical_min) / (digital_max − digital_min)`
 - `value = (raw − digital_min) × gain + physical_min`
+- the Status channel keeps the 16 trigger bits (no scaling)
+- channel units are taken from the file header; channels whose NeuroAnalyzer unit is μV stored in V, mV or nV are converted to μV
 
 # References
 
@@ -76,17 +78,20 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         # ------------------------------------------------------------ #
         # per-channel header fields (fixed-width records)              #
         # ------------------------------------------------------------ #
+        # bytes are split into fields before decoding, so that non-ASCII
+        # (Latin-1) characters cannot shift the fixed-width boundaries
         read_fields(width, parse_fn = identity) = begin
             buf = zeros(UInt8, ch_n * width)
             readbytes!(fid, buf, ch_n * width)
-            s = String(Char.(buf))
-            [parse_fn(strip(s[(1 + (i - 1) * width):(i * width)])) for i = 1:ch_n]
+            [
+                parse_fn(strip(String(Char.(buf[(1 + (i - 1) * width):(i * width)]))))
+                for i = 1:ch_n
+            ]
         end
 
         clabels = read_fields(16)
         transducers = read_fields(80)
         units = read_fields(8)
-        units = replace(lowercase.(units), "uv" => "μV")
 
         physical_minimum = read_fields(8, s -> parse(Float64, s))
         physical_maximum = read_fields(8, s -> parse(Float64, s))
@@ -96,96 +101,72 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         samples_per_datarecord = read_fields(8, s -> parse(Int, s))
 
         # ------------------------------------------------------------ #
-        # channel types, annotation channels, markers channel          #
+        # channel types, annotation channels, Status channel           #
         # ------------------------------------------------------------ #
         clabels = _clean_labels(string.(clabels))
         ch_type = if detect_type
             _set_channel_types(clabels, "eeg")
         else
             t = repeat(["eeg"], ch_n)
-            t[clabels .== "Status"] .= "mrk"
+            t[lowercase.(clabels) .== "status"] .= "mrk"
             t
         end
-        units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
-        # BDF:  last channel is always the Status (markers) channel
-        # BDF+: last channel is Status + possible extra annotation channels
-        annotation_channels, markers_channel = if file_type == "BDF"
-            Int64[], [ch_n]
+        # BDF+ annotation channels ("BDF Annotations") hold TAL text, not samples
+        annotation_channels = if file_type == "BDF"
+            Int64[]
         else
-            ann = sort(
-                unique(
-                    vcat(
-                        ch_n,
-                        getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1),
-                    ),
-                ),
-            )
-            ann, getindex.(findall(ch_type .== "mrk"), 1)
+            sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
         end
-
-        # BDF does not support mixed sampling rates; use first signal channel.
+        # the BioSemi Status channel carries the trigger inputs in its lower 16 bits
+        status_channels = setdiff(findall(lowercase.(clabels) .== "status"), annotation_channels)
         signal_chs = setdiff(1:ch_n, annotation_channels)
-        sampling_rate = round(
-            Int64,
-            samples_per_datarecord[signal_chs[1]] / data_records_duration,
-        )
-        gain = @. (physical_maximum - physical_minimum) /
-           (digital_maximum - digital_minimum)
+        isempty(signal_chs) &&
+            throw(ArgumentError("$file_name does not contain any signal channels."))
 
         # ------------------------------------------------------------ #
         # signal data (24-bit little-endian two's-complement)          #
         # ------------------------------------------------------------ #
+        record_bytes = sum(samples_per_datarecord) * 3
+        n_rec = _record_count(
+            data_records, filesize(file_name) - data_offset, record_bytes, file_name,
+        )
         seek(fid, data_offset)
-        data = zeros(ch_n, samples_per_datarecord[signal_chs[1]] * data_records, 1)
-        annotations = String[]
+        raw = read(fid, n_rec * record_bytes)
+        sig, annotations = _read_edf_records(
+            raw, samples_per_datarecord, n_rec, 3;
+            annotation_channels = annotation_channels,
+            trigger_channels = status_channels,
+        )
 
-        @inbounds for rec = 1:data_records, ch = 1:ch_n
-            n = samples_per_datarecord[ch]
-            raw24 = zeros(UInt8, n * 3)
-            readbytes!(fid, raw24, n * 3)
-
-            col_start = (rec - 1) * n + 1
-            col_end = rec * n
-
-            if ch in annotation_channels
-                push!(annotations, String(Char.(raw24)))
-                # annotation rows stay zero.
-
-            elseif ch in markers_channel
-                # status channel: combine only the two lower bytes (no gain).
-                sig = zeros(Float64, n)
-                @inbounds for (i, byte_idx) in enumerate(1:3:(n * 3))
-                    sig[i] = Float64(
-                        Int32(raw24[byte_idx]) | Int32(raw24[byte_idx + 1]),
-                    )
-                end
-                data[ch, col_start:col_end, 1] = sig
-
-            else
-                # signal channel: 24-bit little-endian two's-complement.
-                # decode by packing bytes into the upper 24 bits of an Int32
-                # then arithmetic-right-shifting by 8 to propagate the sign.
-                sig = zeros(Float64, n)
-                @inbounds for (i, byte_idx) in enumerate(1:3:(n * 3))
-                    b1 = Int32(raw24[byte_idx]) << 8
-                    b2 = Int32(raw24[byte_idx + 1]) << 16
-                    b3 = -Int32(-raw24[byte_idx + 2]) << 24
-                    sig[i] = Float64((b1 | b2 | b3) >> 8)
-                end
-                data[ch, col_start:col_end, 1] = sig
+        # digital → physical values (not for the Status channel, which holds trigger codes),
+        # then file units → NeuroAnalyzer units
+        gain = ones(ch_n)
+        units, u_scale = _resolve_units(units, ch_type)
+        for ch in setdiff(signal_chs, status_channels)
+            gain[ch] = _phys_scale!(
+                sig[ch], digital_minimum[ch], digital_maximum[ch],
+                physical_minimum[ch], physical_maximum[ch],
+            )
+            if u_scale[ch] != 1
+                sig[ch] .*= u_scale[ch]
+                gain[ch] *= u_scale[ch]
             end
         end
 
-        # Apply per-channel gain (broadcasts over samples and the epoch dim).
-        data .*= gain
+        # channels with fewer samples per record are upsampled to the highest rate
+        # (marker channels by nearest sample, so that their codes are not interpolated)
+        mrk_chs = union(findall(ch_type .== "mrk"), status_channels)
+        data, resampled = _merge_channels(sig, annotation_channels; nearest = mrk_chs)
+        fs = maximum(samples_per_datarecord[signal_chs]) / data_records_duration
+        resampled && _info("Channels upsampled to $(round(fs; digits = 4)) Hz")
+        # NeuroAnalyzer stores integer sampling rates
+        data, sampling_rate = _integer_rate(data, fs; nearest = mrk_chs)
 
         # return a named tuple to avoid wide argument lists
         return (;
-            patient, recording, recording_date, recording_time, data_offset, reserved,
-            file_type, data_records, data_records_duration, ch_n, clabels, transducers,
-            units, physical_minimum, physical_maximum, digital_minimum, digital_maximum,
-            prefiltering, samples_per_datarecord, ch_type, annotation_channels,
+            patient, recording, recording_date, recording_time, file_type, ch_n,
+            clabels, transducers, units, prefiltering, ch_type, annotation_channels,
             sampling_rate, gain, annotations, data,
         )
     end
@@ -197,22 +178,6 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         transducers, units, prefiltering, ch_type, annotation_channels, sampling_rate,
         gain, annotations, data,
     ) = imported_object
-    # reuse binding
-
-    # ------------------------------------------------------------------ #
-    # unit conversion: nV / mV → μV                                      #
-    # ------------------------------------------------------------------ #
-    @inbounds for idx = 1:ch_n
-        units[idx] == "" && (units[idx] = "μV")
-        ch_type[idx] == "eeg" || continue
-        if lowercase(units[idx]) == "mv"
-            units[idx] = "μV"
-            data[idx, :] .*= 1000
-        elseif lowercase(units[idx]) == "nv"
-            units[idx] = "μV"
-            data[idx, :] ./= 1000
-        end
-    end
 
     # ------------------------------------------------------------------ #
     # parse annotations / strip annotation channels from signal data      #
@@ -224,13 +189,15 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         )
     else
         m = _a2df(annotations)
-        deleteat!(ch_type, annotation_channels)
-        deleteat!(transducers, annotation_channels)
-        deleteat!(units, annotation_channels)
-        deleteat!(prefiltering, annotation_channels)
-        deleteat!(clabels, annotation_channels)
-        data = data[setdiff(1:ch_n, annotation_channels), :, :]
-        ch_n -= length(annotation_channels)
+        keep = setdiff(1:ch_n, annotation_channels)
+        ch_type = ch_type[keep]
+        transducers = transducers[keep]
+        units = units[keep]
+        prefiltering = prefiltering[keep]
+        clabels = clabels[keep]
+        gain = gain[keep]
+        data = data[keep, :, :]
+        ch_n = length(keep)
         m
     end
 

@@ -24,11 +24,10 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     detect_format(file_name) === :snirf ||
         throw(ArgumentError("$file_name is not SNIRF file."))
 
-    nirs = nothing
-    try
-        nirs = FileIO.load(file_name)
-    catch
-        @error "File $file_name cannot be loaded."
+    nirs = try
+        FileIO.load(file_name)
+    catch err
+        throw(ArgumentError("File $file_name cannot be loaded: $err"))
     end
 
     file_type = "SNIRF"
@@ -191,24 +190,25 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
     data = nirs["$n_id/$d_id/dataTimeSeries"]
 
-    time_pts = nirs["$n_id/$d_id/time"]
-    if length(time_pts) > 2
-        sampling_rate = 1 / (time_pts[2] - time_pts[1])
+    # time: one time point per sample, or [start, step] (2 elements) for regular sampling
+    t_raw = Float64.(vec(nirs["$n_id/$d_id/time"]))
+    # TimeUnit is "s" (default) or "ms"
+    t_scale = lowercase(string(time_unit)) == "ms" ? 1.0e-3 : 1.0
+    if length(t_raw) == 2 && size(data, 2) != 2
+        sampling_rate = 1 / (t_raw[2] * t_scale)
     else
-        sampling_rate = 1 / time_pts[2]
-        time_pts = collect(
-            time_pts[1]:(1 / sampling_rate):(time_pts[1] + size(data, 2) * time_pts[2]),
-        )[1:(end - 1)]
+        length(t_raw) == size(data, 2) ||
+            throw(ArgumentError("$file_name: time vector length does not match the data."))
+        # mean step is more robust than the first step alone
+        sampling_rate = (length(t_raw) - 1) / ((t_raw[end] - t_raw[1]) * t_scale)
     end
-    time_pts .-= time_pts[1]
-    epoch_time = time_pts
 
     ch_n = size(data, 1)
 
     source_index = Int64[]
     detector_index = Int64[]
     wavelength_index = Int64[]
-    wavelength_actual = Float64
+    wavelength_actual = Float64[]
     wavelength_emission_actual = Float64[]
     data_type = Int64[]
     data_unit = String[]
@@ -253,69 +253,14 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
         # SI unit for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataUnit"
-        k in keys(nirs) && push!(data_unit, nirs[k][1])
-        data_unit == String[] && (data_unit = repeat(["V"], ch_n))
+        push!(data_unit, k in keys(nirs) ? string(nirs[k][1]) : "")
 
         # data type name for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
-        if k in keys(nirs)
-            if typeof(nirs[k]) == Vector{String}
-                push!(data_type_label, nirs[k][1])
-            else
-                push!(data_type_label, nirs[k])
-            end
-        end
-        # assume its raw data (intensity) if there is no data type
-        data_type_label == String[] && (data_type_label = repeat(["nirs_int"], ch_n))
-        # change in optical density
-        data_type_label = replace(lowercase.(data_type_label), "dod" => "nirs_od")
-        data_type_label = replace(lowercase.(data_type_label), "dmean" => "nirs_dmean")
-        data_type_label = replace(lowercase.(data_type_label), "dvar" => "nirs_dvar")
-        data_type_label = replace(lowercase.(data_type_label), "dskew" => "nirs_dskew")
-        # Absorption coefficient
-        data_type_label = replace(lowercase.(data_type_label), "mua" => "nirs_mua")
-        # Scattering coefficient
-        data_type_label = replace(lowercase.(data_type_label), "musp" => "nirs_musp")
-        # Oxygenated hemoglobin (oxyhemoglobin) concentration
-        data_type_label = replace(lowercase.(data_type_label), "hbo" => "nirs_hbo")
-        # Deoxygenated hemoglobin (deoxyhemoglobin) concentration
-        data_type_label = replace(lowercase.(data_type_label), "hbr" => "nirs_hbr")
-        # Total hemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hbt" => "nirs_hbt")
-        # Water content
-        data_type_label = replace(lowercase.(data_type_label), "h2o" => "nirs_h2o")
-        # Lipid concentration
-        data_type_label = replace(lowercase.(data_type_label), "lipid" => "nirs_lipid")
-        # Hemodynamic response function for blood flow index (BFi)
-        data_type_label = replace(lowercase.(data_type_label), "bfi" => "nirs_bfi")
-        # Hemodynamic response function for change in optical density
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dod" => "nirs_hrf_dod",
-        )
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dmean" => "nirs_hrf_dmean",
-        )
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dvar" => "nirs_hrf_dvar",
-        )
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_dskew" => "nirs_hrf_dskew",
-        )
-        # Hemodynamic response function for oxyhemoglobin concentration
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_hbo" => "nirs_hrf_hbo",
-        )
-        # emodynamic response function for deoxyhemoglobin concentration
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_hbr" => "nirs_hrf_hbr",
-        )
-        # Hemodynamic response function for total hemoglobin concentration
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_hbt" => "nirs_hrf_hbt",
-        )
-        # Hemodynamic response function for blood flow index (BFi)
-        data_type_label = replace(
-            lowercase.(data_type_label), "hrf_bfi" => "nirs_hrf_bfi",
+        # no data type label: raw data (intensity)
+        push!(
+            data_type_label,
+            k in keys(nirs) ? string(nirs[k] isa AbstractArray ? nirs[k][1] : nirs[k]) : "",
         )
 
         # Data type index for a given channel
@@ -343,8 +288,35 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         k in keys(nirs) && (push!(detector_module_index, Int.(nirs[k][1])))
     end
 
+    # SNIRF data type labels → NeuroAnalyzer channel types; no label means raw intensity
+    snirf_types = Dict(
+        "" => "nirs_int",
+        # change in optical density, mean time of flight, variance, skewness
+        "dod" => "nirs_od", "dmean" => "nirs_dmean", "dvar" => "nirs_dvar",
+        "dskew" => "nirs_dskew",
+        # absorption and scattering coefficients
+        "mua" => "nirs_mua", "musp" => "nirs_musp",
+        # oxy-, deoxy- and total hemoglobin, water, lipid, blood flow index
+        "hbo" => "nirs_hbo", "hbr" => "nirs_hbr", "hbt" => "nirs_hbt",
+        "h2o" => "nirs_h2o", "lipid" => "nirs_lipid", "bfi" => "nirs_bfi",
+        # hemodynamic response functions of the above
+        "hrf dod" => "nirs_hrf_dod", "hrf dmean" => "nirs_hrf_dmean",
+        "hrf dvar" => "nirs_hrf_dvar", "hrf dskew" => "nirs_hrf_dskew",
+        "hrf hbo" => "nirs_hrf_hbo", "hrf hbr" => "nirs_hrf_hbr",
+        "hrf hbt" => "nirs_hrf_hbt", "hrf bfi" => "nirs_hrf_bfi",
+    )
+    data_type_label = [
+        get(snirf_types, replace(lowercase(strip(l)), "_" => " "), lowercase(l))
+        for l in data_type_label
+    ]
+    # missing units: intensity in V, other data unitless
+    data_unit = [
+        u != "" ? u : (data_type_label[idx] == "nirs_int" ? "V" : "") for
+        (idx, u) in enumerate(data_unit)
+    ]
+
     # currently data type is not used
-    if data_type !== nothing
+    if !isempty(data_type)
         tmp = String[]
         for idx in eachindex(data_type)
             data_type[idx] == 1 && push!(tmp, "Amplitude")
@@ -365,7 +337,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
             data_type[idx] == 351 && push!(
                 tmp, "Raw: Time Domain: Moments (TD Moments): Fluorescence Amplitude",
             )
-            data_type[idx] == 351 &&
+            data_type[idx] == 401 &&
                 push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): g2")
             data_type[idx] == 410 &&
                 push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): BFi")
@@ -481,47 +453,37 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         "Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
     )
 
-    a_id = "aux$aux_n"
-    aux_data = nothing
-    aux_name = nothing
-    aux_unit = nothing
-    aux_time = nothing
-    aux_timeoffset = nothing
-
-    # Name of the auxiliary channel
-    k = "$n_id/$a_id/name"
-    k in keys(nirs) && (aux_name = nirs[k][1])
-
-    # Data acquired from the auxiliary channel
-    k = "$n_id/$a_id/dataTimeSeries"
-    k in keys(nirs) && (aux_data = nirs[k])
-
-    # SI unit of the auxiliary channel
-    k = "$n_id/$a_id/dataUnit"
-    k in keys(nirs) && (aux_unit = nirs[k])
-
-    # Time (in TimeUnit) for auxiliary data
-    k = "$n_id/$a_id/time"
-    k in keys(nirs) && (aux_time = nirs[k])
-
-    # Time offset of auxiliary channel data
-    k = "$n_id/$a_id/timeOffset"
-    k in keys(nirs) && (aux_timeoffset = nirs[k])
-
-    if aux_data !== nothing
-        data = vcat(data, reshape(aux_data, size(aux_data, 2), :))
-        for idx in axes(aux_data, 1)
-            push!(clabels, "AUX$idx")
+    # every auxiliary stream (aux1 … auxN) is added as channel(s), if it is sampled like the data
+    for aux_idx = 1:aux_n
+        a_id = "aux$aux_idx"
+        k = "$n_id/$a_id/dataTimeSeries"
+        k in keys(nirs) || continue
+        aux_data = nirs[k]
+        # one row per auxiliary channel, one column per sample
+        aux_data = aux_data isa AbstractVector ? reshape(aux_data, 1, :) : aux_data
+        size(aux_data, 2) != size(data, 2) && size(aux_data, 1) == size(data, 2) &&
+            (aux_data = permutedims(aux_data))
+        if size(aux_data, 2) != size(data, 2)
+            _warn("Auxiliary stream $a_id has a different number of samples than the data; skipped.")
+            continue
+        end
+        k = "$n_id/$a_id/name"
+        aux_name = k in keys(nirs) ? string(nirs[k] isa AbstractArray ? nirs[k][1] : nirs[k]) : "AUX$aux_idx"
+        k = "$n_id/$a_id/dataUnit"
+        aux_unit = k in keys(nirs) ? string(nirs[k] isa AbstractArray ? nirs[k][1] : nirs[k]) : ""
+        data = vcat(data, aux_data)
+        for row in axes(aux_data, 1)
+            push!(clabels, size(aux_data, 1) == 1 ? aux_name : "$(aux_name)_$row")
             push!(data_type_label, "nirs_aux")
-            if aux_unit !== nothing
-                data_unit = vcat(data_unit, aux_unit)
-            else
-                data_unit = vcat(data_unit, repeat([""], size(aux_data, 2)))
-            end
+            push!(data_unit, aux_unit)
         end
     end
 
     data = reshape(data, size(data, 1), size(data, 2), 1)
+    # NeuroAnalyzer stores integer sampling rates (e.g. 12.5 Hz → upsampled to 25 Hz)
+    data, sampling_rate = _integer_rate(data, sampling_rate)
+    time_pts = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    epoch_time = time_pts
 
     # locations
     pos2d = hcat(src_pos2d, detector_pos2d)
@@ -613,7 +575,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         src_labels = src_labels,
         det_labels = det_labels,
         opt_labels = opt_labels,
-        sampling_rate = round(Int64, sampling_rate),
+        sampling_rate = sampling_rate,
         bad_channels = zeros(Bool, size(data, 1)),
     )
     e = _create_experiment(; name = "", notes = "", design = "")

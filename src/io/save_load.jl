@@ -28,11 +28,14 @@ function save(
 
     obj.header.recording[:file_name] = file_name
 
-    JLD2.save_object(joinpath(tempdir(), basename(file_name)), obj)
-    obj.header.recording[:file_size_mb] = round(
-        filesize(joinpath(tempdir(), basename(file_name))) / 1024; digits = 2,
-    )
-    rm(joinpath(tempdir(), basename(file_name)))
+    # the file size is stored in the object, so it is measured on a temporary copy first
+    tmp_file = tempname() * ".hdf"
+    try
+        JLD2.save_object(tmp_file, obj)
+        obj.header.recording[:file_size_mb] = round(filesize(tmp_file) / 1024^2; digits = 2)
+    finally
+        rm(tmp_file; force = true)
+    end
 
     JLD2.save_object(file_name, obj)
 

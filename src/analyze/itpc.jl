@@ -317,7 +317,6 @@ function itpc_spec(
     @inbounds Threads.@threads :static for frq_idx = 1:nfrq
         # build Morlet wavelet and compute half-kernel offset for trimming
         kernel = generate_morlet(sr(obj), f[frq_idx], 1, ncyc = 10)
-        kernel = generate_morlet(256, 0, 1, ncyc = 10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
 
         # convolve each epoch with the Morlet kernel

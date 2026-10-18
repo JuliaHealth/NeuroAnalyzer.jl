@@ -54,8 +54,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         exp_name = "TaskName" in k ? header["TaskName"] : ""
         exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
         exp_notes = "Instructions" in k ? header["Instructions"] : ""
-        "RecordingType" in k &&
-        header["RecordingType"] == "continuous" ||
+        # only continuous recordings are supported (a missing field is not an error)
+        (!("RecordingType" in k) || header["RecordingType"] == "continuous") ||
             throw(
                 ArgumentError(
                     "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
@@ -124,20 +124,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     #     Dates.Second(ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz"))).value
     # end
 
-    # check if there is an offset of time points
-    t_start = 0
-    if "timestamps_reference_time" in k
-        t = if typeof(dataset["timestamps_reference_time"]) == Vector{String}
-            dataset["timestamps_reference_time"][1]
-        else
-            dataset["timestamps_reference_time"]
-        end
-        # remove microseconds
-        m = match(r".*(\.[0-9]*)\+.*", t)
-        m !== nothing && (t = replace(t, m.captures[1] => ""))
-        t_start =
-            Dates.Second(ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz"))).value
-    end
+    # note: timestamps_reference_time is an absolute date; the imported time axis always starts at 0
 
     eeg_regexp = r"acquisition.*EEG.*data"
     m = nothing
@@ -147,11 +134,9 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             break
         end
     end
-    if m !== nothing
-        data = dataset[m.match]
-    else
-        @error "File $file_name does not contain EEG data."
-    end
+    m === nothing && throw(ArgumentError("File $file_name does not contain EEG data."))
+    data = Float64.(dataset[m.match])
+    ndims(data) == 2 && (data = reshape(data, size(data, 1), size(data, 2), 1))
 
     timepts_regexp = r"acquisition.*EEG.*timestamps"
     m = nothing
@@ -161,51 +146,48 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             break
         end
     end
-    if m !== nothing
+    if sampling_rate === nothing
+        m === nothing &&
+            throw(ArgumentError("File $file_name does not contain time points data."))
         timepts = dataset[m.match]
-    else
-        @error "File $file_name does not contain time points data."
+        sampling_rate = round(Int64, (length(timepts) - 1) / (timepts[end] - timepts[1]))
     end
-    sampling_rate === nothing && (sampling_rate = Int64(1 / (timepts[2] - timepts[1])))
 
-    time_pts =
-        round.(
-            collect(
-                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
-            )[1:(end - 1)];
-            digits = 4,
-        ) .+ t_start
-    epoch_time =
-        round.(
-            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-            digits = 4,
-        ) .+ t_start
+    time_pts = round.(
+        range(0; step = 1 / sampling_rate, length = size(data, 2) * size(data, 3)); digits = 4,
+    )
+    epoch_time = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+
+    # channel metadata (not read from the NWB electrodes table yet)
+    data_type == "" && (data_type = "eeg")
+    ch_n = size(data, 1)
+    clabels = ["ch_$idx" for idx = 1:ch_n]
+    ch_type = repeat([data_type], ch_n)
+    units = [_ch_units(t) for t in ch_type]
+    transducers = repeat([""], ch_n)
+    prefiltering = repeat([""], ch_n)
+    gain = ones(ch_n)
 
     # events
     "acquisition/Stimulus/data" in k && (stim = dataset["acquisition/Stimulus/data"])
     # dataset["acquisition/Stimulus/timestamps"]
     # check if events file is available
-    m = match(r".*(_[is]eeg).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
-    m = match(r".*(_eeg).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
-    m = match(r".*(_meg).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
-    m = match(r".*(_ecog).*", file_name)
-    m !== nothing && (events_file = replace(file_name, m.captures[1] => "_events"))
-    occursin(".nwb", events_file) && (events_file = replace(events_file, ".nwb" => ".tsv"))
+    # BIDS sidecar: sub-01_task-x_ieeg.nwb → sub-01_task-x_events.tsv
+    base = splitext(file_name)[1]
+    m = match(r"_(ieeg|seeg|ecog|eeg|meg)$", base)
+    events_file = m === nothing ? "" : base[1:(end - length(m.match))] * "_events.tsv"
     if isfile(events_file)
-        events = CSV.read(events_file, DataFrame)
+        events = CSV.read(events_file, DataFrame; stringtype = String, missingstring = "n/a")
         _info("$(DataFrames.nrow(events)) markers found")
-        event_id = events[!, :trial_type]
-        event_description = events[!, :value]
-        event_start_sample = events[!, :sample] .+ 1
-        event_start = zeros(length(event_start_sample))
-        [
-            event_start[idx] in time_pts[event_start_sample[idx]] for
-            idx in eachindex(event_start_sample)
-        ]
-        event_length = round.(events[!, :duration]; digits = 4)
+        event_id = string.(coalesce.(events[!, :trial_type], ""))
+        event_description = string.(coalesce.(events[!, :value], ""))
+        # BIDS: onset and duration in seconds; sample is 0-based
+        event_start = if "onset" in names(events)
+            Float64.(events[!, :onset])
+        else
+            Float64.(events[!, :sample]) ./ sampling_rate
+        end
+        event_length = round.(Float64.(coalesce.(events[!, :duration], 0.0)); digits = 4)
         event_channel = zeros(Int64, DataFrames.nrow(events))
         markers = DataFrame(
             :id => event_id,
@@ -223,11 +205,6 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             :channel => Int64[],
         )
     end
-
-    isfile(file_json) || throw(ArgumentError("$file_json not found."))
-    f = open(file_json, "r")
-    s = read(f, String)
-    close(f)
 
     # dataset["specifications/core/2.4.0/namespace"]
     # dataset["specifications/core/2.4.0/nwb.base"]

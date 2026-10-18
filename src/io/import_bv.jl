@@ -54,7 +54,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # ------------------------------------------------------------------ #
     function vhdr_get(key)
         matches = vhdr[startswith.(lowercase.(vhdr), lowercase(key) * "=")]
-        return isempty(matches) ? nothing : split(matches[1], '=')[2]
+        # limit = 2: the value itself may contain '='
+        return isempty(matches) ? nothing : split(matches[1], '='; limit = 2)[2]
     end
 
     # ------------------------------------------------------------------ #
@@ -90,7 +91,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     # software filters (informational only)                              #
     # ------------------------------------------------------------------ #
     soft_filt = false
-    if soft_filt_idx != 0
+    if soft_filt_idx != 0 && soft_filt_idx + 2 <= length(vhdr)
         if lowercase(vhdr[soft_filt_idx + 2]) != "disabled"
             _info(
                 "Embedded software filters are not implemented yet; " *
@@ -98,9 +99,16 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             )
         end
     end
-    soft_filt_file = replace(splitext(file_name)[1], "eeg" => "channels.tsv")
-    isfile(soft_filt_file) &&
-        (soft_filt = CSV.read(soft_filt_file, DataFrame; stringtype = String))
+    # BIDS sidecars: sub-01_task-x_eeg.vhdr → sub-01_task-x_channels.tsv / _events.tsv
+    # (only the "_eeg" suffix of the file name is replaced, not "eeg" elsewhere in the path)
+    bids_base = splitext(file_name)[1]
+    bids_base = endswith(bids_base, "_eeg") ? bids_base[1:(end - 4)] : ""
+    soft_filt_file = bids_base == "" ? "" : bids_base * "_channels.tsv"
+    events_file = bids_base == "" ? "" : bids_base * "_events.tsv"
+    isfile(soft_filt_file) && (
+        soft_filt =
+            CSV.read(soft_filt_file, DataFrame; stringtype = String, missingstring = "n/a")
+    )
 
     # ------------------------------------------------------------------ #
     # optional BIDS JSON sidecar                                         #
@@ -135,27 +143,35 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
     ref_chs = repeat([""], ch_n)
 
     for idx = 1:ch_n
-        fields = split(split(vhdr[idx + channels_idx], '=')[2], ',')
+        fields = split(split(vhdr[idx + channels_idx], '='; limit = 2)[2], ',')
         clabels[idx] = replace(fields[1], "\1" => ",")
         ref_chs[idx] = length(fields) >= 2 ? fields[2] : ""
         if length(fields) >= 3 && fields[3] != ""
             gain[idx] = parse(Float64, fields[3])
         end
-        length(fields) >= 4 && (units[idx] = fields[4])
+        # unit field is optional; BrainVision default is μV
+        units[idx] = length(fields) >= 4 && fields[4] != "" ? fields[4] : "μV"
     end
 
     # ------------------------------------------------------------------ #
     # apply channel-list sidecar (channels.tsv) when present             #
     # ------------------------------------------------------------------ #
     if soft_filt !== false
-        clabels = soft_filt[!, :name]
-        units = soft_filt[!, :unit]
-        prefiltering =
-            repeat(["LP: "], ch_n) .*
-            string.(round.(soft_filt[!, :low_cutoff]; digits = 4)) .*
-            repeat([" Hz, HP: "], ch_n) .*
-            string.(round.(soft_filt[!, :high_cutoff]; digits = 4)) .*
-            " Hz"
+        DataFrames.nrow(soft_filt) == ch_n || throw(
+            ArgumentError("$soft_filt_file lists $(DataFrames.nrow(soft_filt)) channels, $file_name has $ch_n."),
+        )
+        clabels = string.(soft_filt[!, :name])
+        "units" in names(soft_filt) && (soft_filt[!, :unit] = soft_filt[!, :units])
+        "unit" in names(soft_filt) &&
+            (units = [ismissing(u) ? units[i] : string(u) for (i, u) in enumerate(soft_filt[!, :unit])])
+        # BIDS: low_cutoff is the high-pass and high_cutoff the low-pass frequency
+        fmt(v) = ismissing(v) || !(v isa Real) ? "n/a" : string(round(v; digits = 4)) * " Hz"
+        if "low_cutoff" in names(soft_filt) && "high_cutoff" in names(soft_filt)
+            prefiltering = [
+                "HP: $(fmt(soft_filt[i, :low_cutoff])), LP: $(fmt(soft_filt[i, :high_cutoff]))"
+                for i = 1:ch_n
+            ]
+        end
     end
     clabels = _clean_labels(string.(clabels))
 
@@ -167,13 +183,17 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
     # now that ch_type is defined, apply any overrides from the sidecar
     if soft_filt !== false
-        for idx = 1:ch_n
-            lowercase(soft_filt[idx, :type]) in ("eeg", "eog", "ecg", "emg") &&
-                (ch_type[idx] = lowercase(soft_filt[idx, :type]))
+        if "type" in names(soft_filt)
+            for idx = 1:ch_n
+                t = soft_filt[idx, :type]
+                !ismissing(t) && lowercase(t) in ("eeg", "eog", "ecg", "emg") &&
+                    (ch_type[idx] = lowercase(t))
+            end
         end
     end
 
-    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
+    # file units → NeuroAnalyzer units (V / mV / nV → μV for μV channel types)
+    units, u_scale = _resolve_units(units, ch_type)
 
     # ------------------------------------------------------------------ #
     # channel locations from [Coordinates]                               #
@@ -257,7 +277,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         m_ch = zeros(Int64, n_mk)
 
         for (idx, line) in enumerate(mk_lines)
-            fields = split(split(line, '=')[2], ',')
+            fields = split(split(line, '='; limit = 2)[2], ',')
             m_id[idx] = replace(fields[1], "\1" => ",")
             fields[2] != "" && (m_desc[idx] = replace(fields[2], "\1" => ","))
             m_pos[idx] = parse(Int64, fields[3])
@@ -265,10 +285,11 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             m_ch[idx] = parse(Int64, fields[5])
         end
 
+        # marker positions are 1-based sample numbers; lengths are numbers of samples
         markers = DataFrame(
             :id => m_id,
-            :start => m_pos ./ sampling_rate,
-            :length => round.(m_len ./ sampling_rate),
+            :start => s2t.(max.(m_pos, 1), sampling_rate),
+            :length => n2t.(m_len, sampling_rate),
             :value => m_desc,
             :channel => m_ch,
         )
@@ -276,18 +297,33 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             markers[!, :id] .= "mrk"
         end
 
-    elseif isfile(replace(splitext(file_name)[1], "eeg" => "events.tsv"))
-        vmrk = CSV.read(
-            replace(splitext(file_name)[1], "eeg" => "events.tsv"),
-            DataFrame;
-            stringtype = String,
-        )
+    elseif isfile(events_file)
+        # BIDS events.tsv: onset and duration in seconds; sample is 0-based
+        vmrk = CSV.read(events_file, DataFrame; stringtype = String, missingstring = "n/a")
+        n_ev = DataFrames.nrow(vmrk)
+        cols = names(vmrk)
+        ev_start = if "onset" in cols
+            Float64.(coalesce.(vmrk[!, :onset], 0.0))
+        else
+            Float64.(coalesce.(vmrk[!, :sample], 0)) ./ sampling_rate
+        end
+        ev_len = "duration" in cols ? Float64.(coalesce.(vmrk[!, :duration], 0.0)) : zeros(n_ev)
+        ev_value = if "trial_type" in cols && "value" in cols
+            string.(coalesce.(vmrk[!, :trial_type], "")) .* "_" .*
+            string.(coalesce.(vmrk[!, :value], ""))
+        elseif "trial_type" in cols
+            string.(coalesce.(vmrk[!, :trial_type], ""))
+        elseif "value" in cols
+            string.(coalesce.(vmrk[!, :value], ""))
+        else
+            repeat(["marker"], n_ev)
+        end
         markers = DataFrame(
-            :id => repeat(["mrk"], DataFrames.nrow(vmrk)),
-            :start => vmrk[!, :sample] ./ sampling_rate,
-            :length => round.(vmrk[!, :duration] ./ sampling_rate),
-            :value => vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value]),
-            :channel => zeros(Int64, DataFrames.nrow(vmrk)),
+            :id => repeat(["mrk"], n_ev),
+            :start => ev_start,
+            :length => ev_len,
+            :value => ev_value,
+            :channel => zeros(Int64, n_ev),
         )
     else
         markers = DataFrame(
@@ -319,6 +355,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
 
         # read the entire signal file at once then reinterpret
         raw = read(eeg_file)
+        # ignore a trailing incomplete sample
+        length(raw) % bytes != 0 && (raw = raw[1:(end - length(raw) % bytes)])
         signal = if bytes == 4
             Float64.(reinterpret(Float32, raw))
         else
@@ -330,10 +368,8 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             rem = length(signal) % ch_n
             rem != 0 && (signal = signal[1:(end - rem)])
             n_samples = length(signal) ÷ ch_n
-            data = zeros(ch_n, n_samples, 1)
-            @inbounds for s = 1:n_samples
-                data[:, s, 1] = signal[((s - 1) * ch_n + 1):(s * ch_n)]
-            end
+            # multiplexed: samples of all channels for time point 1, then 2, …
+            data = reshape(signal, ch_n, n_samples, 1)
         else
             throw(
                 ArgumentError(
@@ -351,23 +387,9 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
         )
     end
 
-    # apply per-channel gain.
+    # apply per-channel resolution (gain) and unit conversion
+    gain .*= u_scale
     data .*= gain
-
-    # ------------------------------------------------------------------ #
-    # unit conversion: nV / mV → μV                                      #
-    # ------------------------------------------------------------------ #
-    @inbounds for idx = 1:ch_n
-        units[idx] == "" && (units[idx] = "μV")
-        ch_type[idx] == "eeg" || continue
-        if lowercase(units[idx]) == "mv"
-            units[idx] = "μV"
-            data[idx, :] .*= 1000
-        elseif lowercase(units[idx]) == "nv"
-            units[idx] = "μV"
-            data[idx, :] ./= 1000
-        end
-    end
 
     # ------------------------------------------------------------------ #
     # time axes                                                          #

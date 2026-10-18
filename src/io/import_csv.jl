@@ -10,7 +10,7 @@ The file layout (time × channels or channels × time) is detected automatically
 - **Time × channels**: first column is numeric (time axis); remaining columns are channels labelled by their header row.
 - **Channels × time**: first column is a string (channel names); remaining column headers are parsed as time points.
 
-Sampling rate is inferred from the step between the first two time points.
+The time axis must be in milliseconds. Sampling rate is inferred from the mean step between time points; the imported time axis starts at 0.
 
 Gzip-compressed files (`.csv.gz`) are decompressed automatically by `CSV.jl`.
 
@@ -45,14 +45,14 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         # layout: rows = time points, columns = channels
         # first column is the time axis; remaining columns are channels
         time_pts_raw = Float64.(df[!, 1])
-        data = Matrix(df[:, 2:end])' # → (ch_n × n_samples)
+        data = Matrix{Float64}(df[:, 2:end])' # → (ch_n × n_samples)
         ch_n = DataFrames.ncol(df) - 1
         clabels_tmp = String.(names(df)[2:end])
     else
         # layout: rows = channels, columns = time points
         # first column holds channel names; remaining column headers are time
         time_pts_raw = parse.(Float64, names(df)[2:end])
-        data = Matrix(df[!, 2:end]) # → (ch_n × n_samples)
+        data = Matrix{Float64}(df[!, 2:end]) # → (ch_n × n_samples)
         ch_n = DataFrames.nrow(df)
         clabels_tmp = string.(df[:, 1])
     end
@@ -63,16 +63,21 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # ------------------------------------------------------------------ #
     # sampling rate                                                      #
     # ------------------------------------------------------------------ #
-    sampling_rate = round(Int64, 1 / (time_pts_raw[2] - time_pts_raw[1]) * 1000)
+    length(time_pts_raw) >= 2 ||
+        throw(ArgumentError("$file_name must contain at least 2 time points."))
+    # time is in ms; the mean step is more robust to rounding than the first step alone
+    dt = (time_pts_raw[end] - time_pts_raw[1]) / (length(time_pts_raw) - 1)
+    dt > 0 || throw(ArgumentError("Time points in $file_name must be increasing."))
+    # NeuroAnalyzer stores integer sampling rates (non-integer rates are resampled)
+    data, sampling_rate = _integer_rate(data, 1000 / dt)
 
     # ------------------------------------------------------------------ #
-    # Reconstruct a canonical time axis starting at 0                    #
+    # Reconstruct a canonical time axis (in seconds) starting at 0       #
     # ------------------------------------------------------------------ #
     n_samples = size(data, 2) * size(data, 3)
-    t0 = time_pts_raw[1]
-    time_pts = round.(range(t0; step = 1 / sampling_rate, length = n_samples); digits = 4)
+    time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
     epoch_time =
-        round.(range(t0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+        round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
     # ------------------------------------------------------------------ #
     # channel metadata                                                   #

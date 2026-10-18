@@ -241,16 +241,15 @@ function import_locs_elc(file_name::String)::DataFrame
     z = zeros(n)
 
     for (i, line_idx) in enumerate(locs_l:(locs_l + n - 1))
-        l = lstrip(elc_file[line_idx])
-        x[i], y[i], z[i] = parse.(Float64, split(l, ' '))
+        # coordinates may be separated by several spaces or tabs
+        x[i], y[i], z[i] = parse.(Float64, split(strip(elc_file[line_idx]))[1:3])
     end
     for (i, line_idx) in enumerate((locs_l + 1 + n):(locs_l + 2 * n))
-        clabels[i] = elc_file[line_idx]
+        clabels[i] = strip(elc_file[line_idx])
     end
 
-    x = normalize_minmax(x)
-    y = normalize_minmax(y)
-    z = normalize_minmax(z)
+    # normalize all axes jointly (independent scaling would distort the head shape)
+    x, y, z = _locs_norm(x, y, z)
 
     locs = DataFrame(
         :label => clabels,
@@ -603,8 +602,7 @@ function import_locs_mat(file_name::String)::DataFrame
     x = x_norm .* r
     y = y_norm .* r
 
-    clabels = replace.(clabels, r"MEG\s*0+" => "MEG ")
-    clabels = replace.(clabels, "  " => " ")
+    clabels = _clean_meg_labels(clabels)
 
     n = length(clabels)
     locs = DataFrame(
@@ -802,8 +800,9 @@ function import_locs_asc(file_name::String)::DataFrame
     data_lines = buffer[(n + 1):(2 * n)]
     locs_mat = zeros(n, 4)
     re =
-        r"([0-9]+ +)([0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+)"
+        r"([0-9]+ +)([0-9]+ +)(-?[0-9]+\.[0-9]+ +)(-?[0-9]+\.[0-9]+ +)(-?[0-9]+\.[0-9]+ +)(-?[0-9]+\.[0-9]+)"
     for (idx, m) in enumerate(match.(re, data_lines))
+        isnothing(m) && throw(ArgumentError("$file_name: cannot parse line \"$(data_lines[idx])\"."))
         locs_mat[idx, 1] = parse(Float64, strip(m[3]))
         locs_mat[idx, 2] = parse(Float64, strip(m[4]))
         locs_mat[idx, 3] = parse(Float64, strip(m[5]))
@@ -863,13 +862,16 @@ function import_locs_csv(file_name::String)::DataFrame
         "label", "loc_radius", "loc_theta", "loc_x", "loc_y", "loc_z",
         "loc_radius_sph", "loc_theta_sph", "loc_phi_sph",
     ]
-    names(locs) == expected ||
+    # columns may be in any order (extra columns are ignored)
+    all(in(names(locs)), expected) ||
         throw(
             ArgumentError(
                 "$file_name is not a NeuroAnalyzer locs CSV file. " *
                 "Expected columns: $(Base.join(expected, ", ")).",
             ),
         )
+    locs = locs[:, expected]
+    locs[!, :label] = string.(locs[!, :label])
 
     return locs
 end

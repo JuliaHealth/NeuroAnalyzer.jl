@@ -93,11 +93,10 @@ function import_gdf(
 
     (
         patient, recording, recording_date, recording_time,
-        header_bytes, data_records, sampling_rate, ch_n,
+        header_bytes, data_records, record_duration, ch_n,
         clabels, transducers, units, prefiltering,
         physical_minimum, physical_maximum, digital_minimum, digital_maximum,
         samples_per_datarecord, gdf_type,
-        etv_hdr,
     ) = open(file_name, "r") do fid
 
         # skip the already-read global header.
@@ -109,17 +108,20 @@ function import_gdf(
             # -------------------------------------------------------- #
             patient = replace(strip(String(Char.(header[9:88]))), '\0' => "")
             recording = replace(strip(String(Char.(header[89:168]))), '\0' => "")
-            recording_date = replace(strip(String(Char.(header[169:184]))), '\0' => "")
-            recording_time =
-                recording_date == "" ? "" :
-                replace(strip(String(Char.(header[169:184]))), '\0' => "")
+            # start of recording: "YYYYMMDDhhmmsscc"
+            t0 = replace(strip(String(Char.(header[169:184]))), '\0' => "")
+            recording_date, recording_time = if length(t0) >= 14 && all(isdigit, t0[1:14])
+                (t0[7:8] * "." * t0[5:6] * "." * t0[1:4], t0[9:10] * ":" * t0[11:12] * ":" * t0[13:14])
+            else
+                ("", "")
+            end
             header_bytes = reinterpret(Int64, header[185:192])[1]
             data_records = reinterpret(Int64, header[237:244])[1]
-            sampling_rate = Int64(
-                reinterpret(Int32, header[245:252])[2] ÷
-                reinterpret(Int32, header[245:252])[1],
-            )
-            ch_n = reinterpret(Int32, header[253:256])[1]
+            # duration of a data record in seconds, stored as a rational (numerator, denominator)
+            record_duration =
+                Float64(reinterpret(UInt32, header[245:248])[1]) /
+                Float64(reinterpret(UInt32, header[249:252])[1])
+            ch_n = Int64(reinterpret(Int32, header[253:256])[1])
 
             clabels = read_str_fields(fid, ch_n, 16)
             transducers = read_str_fields(fid, ch_n, 80)
@@ -139,7 +141,6 @@ function import_gdf(
             prefiltering = read_str_fields(fid, ch_n, 80)
             samples_per_datarecord = read_bin_fields(fid, ch_n, 4, Int32)
             gdf_type = read_bin_fields(fid, ch_n, 4, Int32)
-            etv_hdr = 0
 
         else
             # -------------------------------------------------------- #
@@ -149,18 +150,23 @@ function import_gdf(
             patient_weight = header[86] == 0 ? -1 : Int(header[86])
             patient_height = header[87] == 0 ? -1 : Int(header[87])
             recording = replace(strip(String(Char.(header[89:152]))), '\0' => "")
-            recording_date = replace(strip(String(Char.(header[169:176]))), '\0' => "")
-            recording_time = recording_date == "" ? "" : recording_date
-            header_bytes = reinterpret(Int16, header[185:186])[1] * 256
-            etv_hdr = reinterpret(Int16, header[185:186])[1]
+            # start of recording: fixed-point days since 0000-01-01 (MATLAB datenum) × 2³²
+            t0 = reinterpret(UInt64, header[169:176])[1]
+            recording_date, recording_time = if t0 == 0
+                ("", "")
+            else
+                dt = Dates.DateTime(0, 1, 1) +
+                     Dates.Millisecond(round(Int64, (t0 / 2^32 - 1) * 86_400_000))
+                (Dates.format(dt, "dd.mm.yyyy"), Dates.format(dt, "HH:MM:SS"))
+            end
+            # number of 256-byte header blocks (fixed header + channel headers + TLV header)
+            header_bytes = Int64(reinterpret(UInt16, header[185:186])[1]) * 256
             data_records = reinterpret(Int64, header[237:244])[1]
-            data_records == -1 &&
-                throw(ArgumentError("Number of data records cannot be -1."))
-            sampling_rate = Int64(
-                reinterpret(Int32, header[245:252])[2] ÷
-                reinterpret(Int32, header[245:252])[1],
-            )
-            ch_n = reinterpret(Int16, header[253:254])[1]
+            # duration of a data record in seconds, stored as a rational (numerator, denominator)
+            record_duration =
+                Float64(reinterpret(UInt32, header[245:248])[1]) /
+                Float64(reinterpret(UInt32, header[249:252])[1])
+            ch_n = Int64(reinterpret(UInt16, header[253:254])[1])
 
             clabels = read_str_fields(fid, ch_n, 16)
             transducers = read_str_fields(fid, ch_n, 80)
@@ -298,21 +304,30 @@ function import_gdf(
 
         return (
             patient, recording, recording_date, recording_time,
-            header_bytes, data_records, sampling_rate, ch_n,
+            header_bytes, data_records, record_duration, ch_n,
             clabels, transducers, units, prefiltering,
             physical_minimum, physical_maximum, digital_minimum, digital_maximum,
-            samples_per_datarecord, gdf_type, etv_hdr,
+            Int64.(samples_per_datarecord), gdf_type,
         )
     end
     # per-channel header file closed here
 
     # ------------------------------------------------------------------ #
+    # channel types and units                                            #
+    # ------------------------------------------------------------------ #
+    clabels = _clean_labels(string.(clabels))
+    ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
+    units, u_scale = _resolve_units(units, ch_type)
+
+    # ------------------------------------------------------------------ #
     # signal data                                                        #
     # ------------------------------------------------------------------ #
-    # GDF stores data in record-interleaved order:
+    # GDF stores data in records; each record holds, for every channel in turn,
+    # samples_per_datarecord[ch] samples of type gdf_type[ch]:
     #   [ch1_rec1_s1..sN, ch2_rec1_s1..sN, ..., chK_rec1_s1..sN,
     #    ch1_rec2_s1..sN, ...]
-    # Read each channel block sequentially then reassemble.
+    # The data block starts right after the header (header_bytes already
+    # includes the GDF 2 TLV header blocks).
 
     # map from GDF type code → (bytes_per_sample, Julia type)
     gdf_type_map = Dict(
@@ -327,59 +342,56 @@ function import_gdf(
         16 => (4, Float32),
         17 => (8, Float64),
     )
+    for ch = 1:ch_n
+        haskey(gdf_type_map, Int(gdf_type[ch])) ||
+            throw(ArgumentError("Unknown GDF data type code $(gdf_type[ch]) for channel $ch."))
+    end
+    bps = [gdf_type_map[Int(t)][1] for t in gdf_type]
+    types = [gdf_type_map[Int(t)][2] for t in gdf_type]
+    # byte offset of each channel within a record
+    ch_bytes = samples_per_datarecord .* bps
+    ch_offset = cumsum(vcat(0, ch_bytes[1:(end - 1)]))
+    record_bytes = sum(ch_bytes)
 
-    # one signal buffer per channel (n_samples = spdr × data_records)
-    ch_signals = Vector{Vector{Float64}}(undef, ch_n)
-
-    open(file_name, "r") do fid
+    n_rec = _record_count(
+        data_records, filesize(file_name) - header_bytes, record_bytes, file_name,
+    )
+    raw = open(file_name, "r") do fid
         seek(fid, header_bytes)
-
-        # skip TLV block if present (GDF 2.1+)
-        if file_type_ver >= 2.1 && (etv_hdr - (ch_n + 1)) * 256 > 0
-            tlv_tag = UInt8[]
-            readbytes!(fid, tlv_tag, 1)
-            if tlv_tag != [0x00]
-                _warn(
-                    "TLV not supported; please send this file to adam.wysokinski@neuroanalyzer.org",
-                )
-                tlv_len_buf = UInt8[]
-                readbytes!(fid, tlv_len_buf, 3)
-                b1 = Int32(tlv_len_buf[1]) << 8
-                b2 = Int32(tlv_len_buf[2]) << 16
-                b3 = -Int32(-tlv_len_buf[3]) << 24
-                tlv_len = Int(Float64(((b1 | b2 | b3) >> 8)))
-                skip(fid, tlv_len)
-            else
-                skip(fid, 255)
-            end
-        end
-
-        # read each channel's raw bytes for all records at once.
-        for ch = 1:ch_n
-            n_samp = Int(samples_per_datarecord[ch]) * data_records
-            type_id = gdf_type[ch]
-            if !haskey(gdf_type_map, type_id)
-                throw(
-                    ArgumentError("Unknown GDF data type code $(type_id) for channel $ch."),
-                )
-            end
-            bps, T = gdf_type_map[type_id]
-            buf = UInt8[]
-            readbytes!(fid, buf, bps * n_samp)
-            ch_signals[ch] = Float64.(reinterpret(T, buf))
-        end
+        return read(fid, n_rec * record_bytes)
     end
     # signal file closed here
 
-    # reassemble: GDF interleaves samples across channels within each record.
-    n_samp_ch1 = Int(samples_per_datarecord[1]) * data_records
-    data = zeros(ch_n, n_samp_ch1, 1)
+    sig = Vector{Vector{Float64}}(undef, ch_n)
+    gain = ones(ch_n)
     for ch = 1:ch_n
-        data[ch, :, 1] = ch_signals[ch]
+        n = samples_per_datarecord[ch]
+        x = zeros(n * n_rec)
+        @inbounds for rec = 0:(n_rec - 1)
+            o = rec * record_bytes + ch_offset[ch]
+            x[(rec * n + 1):((rec + 1) * n)] =
+                ltoh.(reinterpret(types[ch], view(raw, (o + 1):(o + ch_bytes[ch]))))
+        end
+        # digital → physical values, then file units → NeuroAnalyzer units
+        gain[ch] = _phys_scale!(
+            x, digital_minimum[ch], digital_maximum[ch],
+            physical_minimum[ch], physical_maximum[ch],
+        )
+        if u_scale[ch] != 1
+            x .*= u_scale[ch]
+            gain[ch] *= u_scale[ch]
+        end
+        sig[ch] = x
     end
 
-    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-    data .*= gain
+    # channels with fewer samples per record are upsampled to the highest rate
+    # (marker channels by nearest sample, so that their codes are not interpolated)
+    mrk_chs = findall(ch_type .== "mrk")
+    data, resampled = _merge_channels(sig; nearest = mrk_chs)
+    fs = maximum(samples_per_datarecord) / record_duration
+    resampled && _info("Channels upsampled to $(round(fs; digits = 4)) Hz")
+    # NeuroAnalyzer stores integer sampling rates
+    data, sampling_rate = _integer_rate(data, fs; nearest = mrk_chs)
 
     # ------------------------------------------------------------------ #
     # event table (ETP block)                                            #
@@ -392,10 +404,7 @@ function import_gdf(
         :channel => Int64[],
     )
 
-    data_bytes = sum(
-        Int.(samples_per_datarecord) .* data_records .*
-        [get(gdf_type_map, Int(t), (1,))[1] for t in gdf_type],
-    )
+    data_bytes = n_rec * record_bytes
 
     if header_bytes + data_bytes < filesize(file_name)
         open(file_name, "r") do fid
@@ -463,11 +472,12 @@ function import_gdf(
                 append!(len, zeros(etp_number))
             end
 
-            # POS and DUR are both counted at the event table sampling rate
+            # POS and DUR are both counted at the event table sampling rate;
+            # POS is 1-based (the first sample has position 1)
             sr_denom = etp_sr == 0 ? Float64(sampling_rate) : Float64(etp_sr)
             return markers = DataFrame(
                 :id => id,
-                :start => round.(start ./ sr_denom; digits = 4),
+                :start => round.((start .- 1) ./ sr_denom; digits = 4),
                 :length => round.(len ./ sr_denom; digits = 4),
                 :value => value,
                 :channel => ch,
@@ -480,10 +490,6 @@ function import_gdf(
     # ------------------------------------------------------------------ #
     # channel metadata and NEURO object assembly                         #
     # ------------------------------------------------------------------ #
-    clabels = _clean_labels(string.(clabels))
-    ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
-
     n_samples = size(data, 2) * size(data, 3)
     time_pts = round.(range(0; step = 1 / sampling_rate, length = n_samples); digits = 4)
     epoch_time =

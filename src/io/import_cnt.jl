@@ -235,7 +235,7 @@ function import_cnt(
         dcthreshold = _fread(fid, 1, :ui8)
 
         # ------------------------------------------------------------ #
-        # oer-channel header (75 bytes × ch_n)                         #
+        # per-channel header (75 bytes × ch_n)                         #
         # ------------------------------------------------------------ #
         clabels = String[]
         creference = Int64[]
@@ -307,8 +307,9 @@ function import_cnt(
         # signal data                                                  #
         # ------------------------------------------------------------ #
         begdata = position(fid)
-        # byte offset where signal data ends
-        enddata = eventtablepos
+        # event table offset = (prevfile << 32) | eventtablepos; signal data ends there
+        et_offset = (Int64(prevfile) * Int64(2)^32) + Int64(eventtablepos)
+        enddata = et_offset
 
         bytes_per_samp = data_format === :i32 ? 4 : 2
         nums = floor(Int64, (enddata - begdata) / ch_n / bytes_per_samp)
@@ -316,11 +317,9 @@ function import_cnt(
         seek(fid, begdata)
         # CNT stores samples in multiplexed order: ch1_s1, ch2_s1, ..., chN_s1, ch1_s2, ...
         # read into a flat buffer then reshape - avoids millions of individual _fread calls
-        raw = [_fread(fid, 1, data_format) for _ = 1:(nums * ch_n)]
-        data = zeros(ch_n, nums)
-        @inbounds for s = 1:nums, ch = 1:ch_n
-            data[ch, s] = raw[(s - 1) * ch_n + ch]
-        end
+        raw = read(fid, nums * ch_n * bytes_per_samp)
+        T = data_format === :i32 ? Int32 : Int16
+        data = Float64.(reshape(ltoh.(reinterpret(T, raw)), ch_n, nums))
 
         # scale to μV: value_μV = (raw - baseline) × sensitivity × (calibration / 204.8)
         @inbounds for idx = 1:ch_n
@@ -331,10 +330,7 @@ function import_cnt(
 
         # ------------------------------------------------------------ #
         # event table                                                  #
-        # event table offset = (prevfile << 32) | eventtablepos        #
         # ------------------------------------------------------------ #
-        # `prevfile` holds the high-order 32 bits; `eventtablepos` the low
-        et_offset = (Int64(prevfile) * Int64(2)^32) + Int64(eventtablepos)
         seek(fid, et_offset)
 
         teeg = _fread(fid, 1, :ui8)

@@ -25,7 +25,7 @@ function import_digitrack(
         throw(ArgumentError("File $file_name cannot be loaded."))
 
     # ------------------------------------------------------------------ #
-    # parse fixed-length global header (256 bytes)                       #
+    # parse the text header                                              #
     # ------------------------------------------------------------------ #
     # all header reads share a single open/close via the `do` block
     recording_date, recording_time, sampling_rate, clabels, prefiltering, data =
@@ -64,12 +64,13 @@ function import_digitrack(
             for idx = 1:ch_n
                 fields = split(channels[idx], "\t")
                 clabels[idx] = fields[1]
-                prefiltering[idx] = fields[2]
+                prefiltering[idx] = length(fields) >= 2 ? fields[2] : ""
             end
 
             # signal data block: one row per time point, tab-separated values,
             # trailing tab on each line (stripped with deleteat! below)
-            raw_lines = readlines(fid)
+            # ignore blank lines (e.g. at the end of the file)
+            raw_lines = Base.filter(l -> !isempty(strip(l)), readlines(fid))
             n_samples = length(raw_lines)
             data = zeros(ch_n, n_samples, 1)
 
@@ -77,6 +78,9 @@ function import_digitrack(
                 signals = split(raw_lines[idx], "\t")
                 # remove trailing empty field produced by the trailing tab
                 !isempty(signals[end]) || deleteat!(signals, length(signals))
+                length(signals) == ch_n || throw(
+                    ArgumentError("$file_name: data line $idx has $(length(signals)) values, expected $ch_n."),
+                )
                 data[:, idx, 1] = parse.(Float64, replace.(signals, "," => "."))
             end
 

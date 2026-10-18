@@ -19,11 +19,10 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     detect_format(file_name) === :xdf ||
         throw(ArgumentError("$file_name is not XDF file."))
 
-    streams = nothing
-    try
-        streams = read_xdf(file_name)
-    catch
-        error("File $file_name cannot be loaded.")
+    streams = try
+        read_xdf(file_name)
+    catch err
+        throw(ArgumentError("File $file_name cannot be loaded: $err"))
     end
 
     s_names = collect(keys(streams))
@@ -60,16 +59,25 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     eeg_idx = findall(n -> n == "EEG", stream_type)
     other_idx = findall(n -> n != "EEG", stream_type)
     length(eeg_idx) > 0 || throw(ArgumentError("EEG streams not found in the $file_name."))
-    @assert length(eeg_idx) == 1 _info(
-        "Importing files with > 1 EEG streams is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    length(eeg_idx) == 1 || throw(
+        ArgumentError(
+            "Importing files with > 1 EEG streams is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+        ),
     )
 
     eeg_idx = eeg_idx[1]
-    sampling_rate = round(Int64, streams[s_names[eeg_idx]]["srate"])
+    srate = Float64(streams[s_names[eeg_idx]]["srate"])
+    srate > 0 || throw(
+        ArgumentError("The EEG stream in $file_name has an irregular sampling rate; not supported."),
+    )
+    # all marker times are relative to the first EEG sample
     time_pts0 = time[eeg_idx][1]
-    time_pts = round.(Float64.(time[eeg_idx]) .- time_pts0; digits = 4)
-    epoch_time = time_pts
     eeg_data = reshape(Float64.(data[eeg_idx]'), size(data[eeg_idx], 2), :, 1)
+    # NeuroAnalyzer stores integer sampling rates (non-integer rates are resampled)
+    eeg_data, sampling_rate = _integer_rate(eeg_data, srate)
+    # regular time axis (LSL time stamps jitter)
+    time_pts = round.(range(0; step = 1 / sampling_rate, length = size(eeg_data, 2)); digits = 4)
+    epoch_time = time_pts
     ch_n = size(eeg_data, 1)
     clabels = repeat([""], ch_n)
     ch_type = repeat(["eeg"], ch_n)
@@ -86,20 +94,24 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         :channel => Int64[],
     )
     for idx in other_idx
-        length(streams[s_names[idx]]["data"]) == 0 && break
+        # skip empty streams (do not stop at the first one)
+        length(streams[s_names[idx]]["data"]) == 0 && continue
         for data_idx = 1:streams[s_names[idx]]["nchannels"]
             append!(
                 markers,
                 Dict(
-                    :id => string.(data[idx][:, data_idx]),
-                    :start => (time[idx] .- time[idx][1]),
+                    :id => repeat([stream_name[idx]], length(time[idx])),
+                    :start => round.(time[idx] .- time_pts0; digits = 4),
                     :length => zeros(length(time[idx])),
-                    :value => repeat(["marker"], length(time[idx])),
+                    :value => string.(data[idx][:, data_idx]),
                     :channel => zeros(Int64, length(time[idx])),
                 ),
             )
         end
     end
+    # keep markers that fall within the EEG recording
+    t_end = time_pts[end]
+    markers = markers[(markers[!, :start] .>= 0) .& (markers[!, :start] .<= t_end), :]
     sort!(markers, :start)
 
     file_type = "XDF"

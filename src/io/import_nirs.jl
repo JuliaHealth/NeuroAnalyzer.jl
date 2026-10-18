@@ -40,10 +40,12 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     # time axis                                                          #
     # ------------------------------------------------------------------ #
+    # raw time stamps (used for the stimulus onsets); the regular time axis is built below
     time_pts = Float64.(nirs["t"][:])
+    length(time_pts) >= 2 || throw(ArgumentError("$file_name must contain at least 2 time points."))
     time_pts .-= time_pts[1]
-    epoch_time = time_pts
-    sampling_rate = round(Int64, 1 / (time_pts[2] - time_pts[1]))
+    # mean step is more robust than the first step alone
+    sampling_rate_exact = (length(time_pts) - 1) / time_pts[end]
 
     # ------------------------------------------------------------------ #
     # probe geometry                                                     #
@@ -128,6 +130,10 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     data = reshape(data, size(data, 1), size(data, 2), 1)
+    # NeuroAnalyzer stores integer sampling rates (e.g. 12.5 Hz → upsampled to 25 Hz)
+    data, sampling_rate = _integer_rate(data, sampling_rate_exact)
+    time_pts = round.(range(0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
+    epoch_time = time_pts
 
     # ------------------------------------------------------------------ #
     # optode locations                                                   #

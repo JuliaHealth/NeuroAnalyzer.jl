@@ -3,7 +3,7 @@ export import_npy
 """
     import_npy(file_name; <keyword arguments>)
 
-Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data type and channel types are set as  is EEG.
+Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data type and channel types are set as EEG.
 
 # Arguments
 
@@ -19,12 +19,14 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     detect_format(file_name) === :npy ||
         throw(ArgumentError("$file_name is not an NPY file."))
-    sampling_rate > 1 || throw(ArgumentError("Sampling rate must be ≥ 1."))
+    sampling_rate >= 1 || throw(ArgumentError("Sampling rate must be ≥ 1."))
 
     file_type = "NPY"
 
     data = npzread(file_name)
-    data = reshape(data, size(data, 1), :, 1)
+    ndims(data) in (1, 2) ||
+        throw(ArgumentError("$file_name must contain a 1-D or 2-D (channels × samples) array."))
+    data = reshape(Float64.(data), size(data, 1), :, 1)
     ch_n = size(data, 1)
     clabels = String[]
     for idx = 1:ch_n

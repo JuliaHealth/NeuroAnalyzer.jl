@@ -235,7 +235,7 @@ The wavelet is the product of a complex (or real) sine wave at frequency `f` and
 # Arguments
 
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `f::Real`: centre frequency in Hz; must be > 0
+- `f::Real`: centre frequency in Hz; must be ≥ 0
 - `t::Real=1`: half-length of the wavelet in seconds; must be > 0
 - `ncyc::Int64=5`: number of cycles; controls the Gaussian width; must be ≥ 1
 - `complex::Bool=false`: if `true`, return a complex Morlet; otherwise return the real part only
@@ -274,7 +274,7 @@ The standard deviation of the Gaussian is `σ = ncyc / (2πf)`. The time axis sp
 # Arguments
 
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `f::Real`: frequency in Hz; must be > 0; determines the Gaussian width via `σ = ncyc / (2πf)`
+- `f::Real`: frequency in Hz; must be ≥ 0; determines the Gaussian width via `σ = ncyc / (2πf)` (`f = 0` gives a flat envelope)
 - `t::Real=1`: half-length of the time axis in seconds; must be > 0
 - `ncyc::Int64=5`: number of cycles; controls the width (SD) of the Gaussian; must be ≥ 1
 - `a::Real=1.0`: peak amplitude
@@ -293,7 +293,8 @@ function generate_gaussian(
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
-    f > 0 || throw(ArgumentError("f must be > 0."))
+    # f = 0 is allowed: σ = ∞, i.e. a flat envelope (the DC limit)
+    f >= 0 || throw(ArgumentError("f must be ≥ 0."))
     ncyc >= 1 || throw(ArgumentError("ncyc must be ≥ 1."))
     t > 0 || throw(ArgumentError("t must be > 0."))
 

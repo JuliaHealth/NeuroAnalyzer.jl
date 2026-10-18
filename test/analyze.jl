@@ -448,8 +448,8 @@ iv, ia = ispc(e10; ch = "all")
 @test size(iv) == (24, 24, 10)
 @test size(ia) == (24, 24, 10)
 iv, ia, sd, pd, s1p, s2p = ispc(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-@test iv ≈ [0.9920495361;;]
-@test ia ≈ [0.000134245801555;;]
+@test iv ≈ [0.9920495704;;]
+@test ia ≈ [0.000134242680366;;]
 @test size(sd) == (1, 2560, 1)
 @test size(pd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -462,10 +462,10 @@ iv, izv, ia, ip = itpc(ones(1, 10, 10); t = 1)
 @test ia == 0.0
 @test ip == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 iv, izv, ia, ip = itpc(e10; ch = "Fp1", t = 1)
-@test iv ≈ [0.99979974743]
-@test izv ≈ [9.9959953497]
-@test ia ≈ [-0.00360014089036]
-@test ip[1] ≈ 0.0306445530573
+@test iv ≈ [0.99979974993]
+@test izv ≈ [9.9959953997]
+@test ia ≈ [-0.00360014005561]
+@test ip[1] ≈ 0.0306443702042
 
 @info "Test: itpc_spec()"
 iv, izv, f = itpc_spec(e10; ch = "Fp1", flim = (0, 4), nfrq = 5)
@@ -613,7 +613,7 @@ pv, phd, s1ph, s2ph = plv(v1, v2)
 pv = plv(e10; ch = "all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = plv(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-@test pv ≈ [0.992049536;;]
+@test pv ≈ [0.99204957;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -759,7 +759,7 @@ amp_data = NeuroAnalyzer.amp(e10; ch = "all")
 @test NeuroAnalyzer.rms(a1) == [1.0 1.0; 1.0 1.0]
 @test NeuroAnalyzer.rms(e10, ch = "Fp1") ≈
       [
-    363.811453627 349.849994313 336.523246820 329.74272589 317.290589374 311.96875225 285.77992099 267.594955731 259.63858677 243.78896217
+    363.813292624 349.851835483 336.525088954 329.744566991 317.292431492 311.970593552 285.781759746 267.596794688 259.64042809 243.790799956
 ]
 
 @info "Test: rmse()"

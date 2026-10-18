@@ -50,16 +50,17 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     open(file_name, "r") do fid
 
         # parse 16 KiB text header
-        header = split(_vint2str(_fread(fid, HEADER_SIZE, :c)), "\r\n")
-        header = replace.(header, "\t-" => "", "-" => "", "\t" => " ", "  " => " ")
-        header = [rstrip(l) for l in header]
+        header = split(_vint2str(_fread(fid, HEADER_SIZE, :c)), r"\r?\n")
+        # "-Key Value": strip only the leading dash (values may be negative)
+        header = [lstrip(strip(l), '-') for l in header]
         Base.filter!(l -> !isempty(l) && l[1] != '#', header)
-        header = split.(header, ' ')
+        header = split.(header)
 
         for h in header
             if length(h) == 2
                 h[1] == "ADBitVolts" && (ADBitVolts = parse(Float64, h[2]))
-                h[1] == "SamplingFrequency" && (sampling_rate = parse(Int64, h[2]))
+                h[1] == "SamplingFrequency" &&
+                    (sampling_rate = round(Int64, parse(Float64, h[2])))
                 h[1] == "ADChannel" && (ADChannel = parse(Int64, h[2]))
                 h[1] == "ADGain" && (ADGain = parse(Float64, h[2]))
                 h[1] == "AmpGain" && (AmpGain = parse(Float64, h[2]))
@@ -87,7 +88,8 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
             buf = UInt8[]
             readbytes!(fid, buf, SAMPLES_PER_BLOCK * 2)
             samples = map(ltoh, reinterpret(Int16, buf))
-            append!(raw_samples, samples[1:n_valid])
+            # a block never holds more than 512 samples
+            append!(raw_samples, samples[1:clamp(n_valid, 0, length(samples))])
         end
     end
     # file closed here in all cases

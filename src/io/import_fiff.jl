@@ -737,6 +737,8 @@ function import_fiff(
         startswith(ch_type[idx], "unknown_") && (ch_type[idx] = "other")
         coil_type[idx] = _find_fiff_coiltype(ch.coil_type)
         units[idx] = _find_fiff_unit(ch.unit)
+        # FIFF "none" / "unitless" → no unit
+        units[idx] in ("none", "unitless") && (units[idx] = "")
         # calibration: physical value = raw × range × cal
         @views data[idx, :, 1] .*= (ch.range * ch.cal)
     end

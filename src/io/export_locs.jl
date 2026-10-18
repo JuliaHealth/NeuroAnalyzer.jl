@@ -31,7 +31,7 @@ function export_locs(
 )::Nothing
     # the .csv branch is only available via the NEURO method (full locs table)
     # all other formats are handled by delegating to the DataFrame method
-    if splitext(file_name)[2] == ".csv"
+    if lowercase(splitext(file_name)[2]) == ".csv"
         isfile(file_name) && !overwrite &&
             throw(
                 ArgumentError(
@@ -84,10 +84,10 @@ function export_locs(
         )
 
     # extract the extension once; used for every branch below
-    ext = splitext(file_name)[2]
+    ext = lowercase(splitext(file_name)[2])
 
     # extract all location columns up front
-    channels = _find_bylabel(locs, locs[!, :label])
+    channels = collect(1:DataFrames.nrow(locs))
     clabels = locs[!, :label]
     theta = locs[!, :loc_theta]
     radius = locs[!, :loc_radius]

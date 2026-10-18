@@ -245,6 +245,8 @@ Supported formats:
 | DuoMAG TMS MEP                 | `.ascii`, `.m`    | `:duomag`   | no                            |
 
 "MAT-file only" / "text only" means the container is verified, but the extension (or `format`) decides which importer is used.
+
+Sampling rates are stored as integers. A non-integer rate is converted on import: if `k × fs` is an integer for some `k ≤ 16`, the data are upsampled exactly by `k` (e.g. NIRx 12.5 Hz → 25 Hz, keeping the original samples); otherwise they are resampled to the nearest integer rate. Rates within 0.01% of an integer (e.g. estimated from time stamps) are only rounded.
  
 # Arguments
  
@@ -290,13 +292,22 @@ function import_recording(
     fmt in (:csv, :csv_gz) && return import_csv(file_name; detect_type = detect_type)
     fmt === :set && return import_set(file_name; detect_type = detect_type)
     # .npy stores raw signal data only - sampling rate must be supplied
-    fmt === :npy && return import_npy(file_name; sampling_rate)
+    if fmt === :npy
+        isnothing(sampling_rate) &&
+            throw(ArgumentError("sampling_rate must be specified for NPY files."))
+        return import_npy(file_name; sampling_rate = sampling_rate)
+    end
     fmt === :xdf && return import_xdf(file_name)
     fmt === :nwb && return import_nwb(file_name; detect_type = detect_type)
     fmt === :ncs && return import_ncs(file_name)
     fmt === :fiff && return import_fiff(file_name)
     # FieldTrip requires explicit type hint - auto-detection is not possible
-    fmt === :ft && return import_ft(file_name; type)
+    if fmt === :ft
+        isnothing(type) && throw(
+            ArgumentError("type must be specified for FieldTrip files (:eeg, :ecog, :ieeg, :seeg, :meg, :nirs or :events)."),
+        )
+        return import_ft(file_name; type = type)
+    end
     fmt === :snirf && return import_snirf(file_name; n)
     fmt === :nirs && return import_nirs(file_name)
     fmt === :nirx && return import_nirx(file_name)

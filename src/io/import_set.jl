@@ -32,40 +32,27 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     end
 
     ch_n = Int64(dataset["nbchan"])
-    ep_n = 1
+    # there are no epochs if signal is matrix, not array
+    ep_n = dataset["trials"] isa Real ? Int(dataset["trials"]) : 1
     data_src = nothing
     # data in .FDT file
-    if dataset isa String || (dataset isa Dict && dataset["data"] isa String)
+    if dataset["data"] isa String
         data_src = joinpath(dirname(file_name), dataset["data"])
-        fid = nothing
-        try
-            fid = open(data_src, "r")
-        catch
-            error("File $data_src cannot be loaded.")
-        end
-        samples_per_channel = length(dataset["times"])
-        filesize(data_src) == ch_n * samples_per_channel * 4 ||
-            throw(ArgumentError("Incorrect file size."))
-        data_tmp = Float64[]
-        for ch_idx = 1:ch_n
-            buf = UInt8[]
-            readbytes!(fid, buf, samples_per_channel * 4)
-            append!(data_tmp, Float64.(reinterpret(Float32, buf)))
-        end
-        data = zeros(ch_n, samples_per_channel)
-        for idx = 1:samples_per_channel
-            data[:, idx] = @view(data_tmp[(idx * ch_n - ch_n + 1):(idx * ch_n)])
-        end
+        isfile(data_src) || throw(ArgumentError("File $data_src cannot be loaded."))
+        # .fdt: Float32, channels × points × trials in column-major order
+        pnts = Int(dataset["pnts"])
+        filesize(data_src) == ch_n * pnts * ep_n * 4 || throw(
+            ArgumentError(
+                "Incorrect size of $data_src: expected $(ch_n * pnts * ep_n * 4) bytes ($ch_n channels × $pnts points × $ep_n trials × 4).",
+            ),
+        )
+        data = reshape(Float64.(ltoh.(reinterpret(Float32, read(data_src)))), ch_n, pnts, ep_n)
     else
-        data = dataset["data"]
+        data = Float64.(dataset["data"])
     end
-    # there are no epochs if signal is matrix, not array
-    dataset["trials"] isa Float64 && (ep_n = Int(dataset["trials"]))
-    if ndims(data) == 3
-        ep_n == size(data, 2)
-        _info("$ep_n epochs found")
-    end
-    ndims(data) == 2 && (data = data[:, :, :])
+    ndims(data) == 2 && (data = reshape(data, size(data, 1), size(data, 2), 1))
+    ep_n = size(data, 3)
+    ep_n > 1 && _info("$ep_n epochs found")
 
     sampling_rate = round(Int64, dataset["srate"])
     gain = ones(ch_n)
@@ -84,18 +71,19 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     clabels = _clean_labels(string.(clabels))
     if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
-        units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
     else
-        if length(dataset["chanlocs"]) > 0 &&
-           string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
-            ch_type = repeat(["eeg"], ch_n)
-            units = repeat(["μV"], ch_n)
-        else
-            length(dataset["chanlocs"]) > 0 &&
-                (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
-            units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
+        # channel types stored by EEGLAB; empty (or missing) types default to EEG
+        ch_type = repeat(["eeg"], ch_n)
+        if length(dataset["chanlocs"]) > 0 && haskey(dataset["chanlocs"], "type")
+            t = lowercase.(string.(dataset["chanlocs"]["type"][:]))
+            if length(t) == ch_n
+                for idx = 1:ch_n
+                    t[idx] in channel_types && t[idx] != "all" && (ch_type[idx] = t[idx])
+                end
+            end
         end
     end
+    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
     ref = dataset["ref"]
     ref == "common" && (ref = "CAR")
 
@@ -124,12 +112,10 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
 
     # EEGLAB metadata
     patient = dataset["subject"]
+    # comments: a string or a char/string matrix (one row per line)
     note = dataset["comments"]
-    for idx = length(note):-1:1
-        note[idx] == "" && deleteat!(note, idx)
-    end
-    note = string(note)
-    note = replace(note, '"' => "")
+    note = note isa AbstractString ? note : Base.join(strip.(string.(vec(note))), " ")
+    note = replace(strip(note), '"' => "")
 
     history = split(dataset["history"], "\n")
     # remove first two entries, 1st is empty, second is EEGLAB version
@@ -191,7 +177,8 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             "Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found",
         )
         if DataFrames.nrow(locs) > 0
-            dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
+            haskey(dataset, "chaninfo") && dataset["chaninfo"] isa AbstractDict &&
+                get(dataset["chaninfo"], "nosedir", "") == "+X" && locs_swapxy!(locs)
             locs_normalize!(locs)
         end
     else
@@ -210,13 +197,16 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     if "event" in keys(dataset)
         events = dataset["event"]
         if length(keys(events)) > 0
-            start = Float64.(events["latency"][:]) ./ sampling_rate
-            # for idx in eachindex(events["position"][:])
-            #     events["position"][idx] isa Matrix{Float64} && (events["position"][idx] = 0.0)
-            # end
-            # pos = Int.(events["position"][:])
-            len = zeros(length(start))
-            desc = String.(events["type"][:])
+            # EEGLAB latencies are 1-based (fractional) sample numbers of the concatenated data
+            start = round.((Float64.(events["latency"][:]) .- 1) ./ sampling_rate; digits = 4)
+            # durations are in samples (optional field)
+            len = if haskey(events, "duration")
+                [d isa Real ? round(d / sampling_rate; digits = 4) : 0.0 for d in events["duration"][:]]
+            else
+                zeros(length(start))
+            end
+            # event types may be strings or numbers
+            desc = string.(events["type"][:])
             id = repeat(["stim"], length(start))
             markers = DataFrame(
                 :id => id,
@@ -231,36 +221,13 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # dataset["urevent"]
     # dataset["condition"]
 
-    if ep_n > 1
-        if length(dataset["times"][:]) > 0
-            epoch_time = dataset["times"][:]
-        else
-            epoch_time = round.(
-                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-                digits = 4,
-            )
-        end
-        time_pts = round.(
-            collect(
-                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
-            )[1:(end - 1)];
-            digits = 4,
-        )
-    else
-        # if length(dataset["times"][:]) > 0
-        #     time_pts = dataset["times"][:]
-        # end
-        time_pts = round.(
-            collect(
-                0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate),
-            )[1:(end - 1)];
-            digits = 4,
-        )
-        epoch_time = round.(
-            (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)];
-            digits = 4,
-        )
-    end
+    time_pts = round.(
+        range(0; step = 1 / sampling_rate, length = size(data, 2) * size(data, 3));
+        digits = 4,
+    )
+    # epoch time axis starts at EEG.xmin (in seconds; EEG.times is the same axis in ms)
+    t0 = ep_n > 1 && dataset["xmin"] isa Real ? Float64(dataset["xmin"]) : 0.0
+    epoch_time = round.(range(t0; step = 1 / sampling_rate, length = size(data, 2)); digits = 4)
 
     if data_src isa String
         file_size_mb = round(filesize(data_src) / 1024^2; digits = 2)

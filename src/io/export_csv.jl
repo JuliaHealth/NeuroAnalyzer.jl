@@ -60,10 +60,18 @@ function export_csv(
     locs_file = base * "_locs.csv"
     history_file = base * "_history.txt"
 
+    # check every output file before writing anything, so that a refused
+    # companion file does not leave a partially exported set behind
+    check_overwrite(file_name)
+    header && check_overwrite(header_file)
+    epoch_time && check_overwrite(epoch_time_file)
+    markers && DataFrames.nrow(obj.markers) > 0 && check_overwrite(markers_file)
+    locs && DataFrames.nrow(obj.locs) > 0 && check_overwrite(locs_file)
+    history && !isempty(obj.history) && check_overwrite(history_file)
+
     # ------------------------------------------------------------------ #
     # signal data                                                        #
     # ------------------------------------------------------------------ #
-    check_overwrite(file_name)
 
     # flatten epochs: (channels × samples × epochs) → (channels × total_samples)
     # `reshape` returns a view here (no copy), so this is allocation-free.
