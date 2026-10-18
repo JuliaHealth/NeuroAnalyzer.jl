@@ -1,5 +1,6 @@
 """Convert a vector to range."""
 function _v2r(v::Vector{Int64})::Union{AbstractUnitRange{Int64}, Vector{Int64}}
+    isempty(v) && return v
     sv = sort(v)
     # return a contiguous range only if the sorted vector equals its own range
     if sv == sv[1]:sv[end]

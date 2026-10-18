@@ -46,7 +46,7 @@ function _refresh_ica_can_set(
     # create Cairo surfaces for each ICA component
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
 
-    # denerate plots for each selected ICA component
+    # generate plots for each selected ICA component
     for idx in ic_idx
         # create topographical plot for the ICA component
         p_tmp = plot_topo(

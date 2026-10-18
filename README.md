@@ -65,6 +65,10 @@ See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.h
 
 This software is licensed under [The 2-Clause BSD License](LICENSE).
 
+### Third-party files
+
+- [`src/internal/eventcodes.txt`](src/internal/eventcodes.txt): table of GDF event codes from the [BioSig project](https://biosig.sourceforge.net/) (BioSig 3.9.5; Copyright (C) 2004-2015 Alois Schlögl), which is part of the GDF specification. It is not covered by the BSD license. BioSig licenses it under the GNU General Public License v3 or later, or alternatively allows its use in any application without the GPL restrictions provided that the table is not modified, changed, converted or transformed. NeuroAnalyzer uses it under the alternative license and distributes it unmodified; it is only read at load time to decode GDF event types. See the file header for the full license terms. Suggestions for changes to the table should be addressed to its author, not to NeuroAnalyzer.
+
 ## Financial support
 
 If you would like to support the project financially, we have the Liberapay account:

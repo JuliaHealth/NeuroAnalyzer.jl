@@ -436,35 +436,41 @@ function import_gdf(
             value = String[]
             ch = Int[]
 
+            # POS (uint32 × N)
             for _ = 1:etp_number
                 push!(id, "event")
-                push!(start, Float64(reinterpret(Int32, etp[1:4])[1]))
-                push!(len, 0.0)
-                push!(ch, 0)
+                push!(start, Float64(reinterpret(UInt32, etp[1:4])[1]))
                 etp = etp[5:end]
             end
+            # TYP (uint16 × N)
             for _ = 1:etp_number
                 push!(value, _gdf_etp(etp[1:2]))
                 etp = etp[3:end]
             end
             if etp_mode == 3
+                # CHN (uint16 × N), then DUR (uint32 × N, in samples)
                 for _ = 1:etp_number
-                    push!(ch, Int64(reinterpret(Int16, etp[1:2])[1]))
+                    push!(ch, Int64(reinterpret(UInt16, etp[1:2])[1]))
                     etp = etp[3:end]
                 end
                 for _ = 1:etp_number
-                    push!(len, Float64(reinterpret(Float32, etp[1:4])[1]))
+                    push!(len, Float64(reinterpret(UInt32, etp[1:4])[1]))
                     etp = etp[5:end]
                 end
+            else
+                # mode 1 has no channel / duration information
+                append!(ch, zeros(Int64, etp_number))
+                append!(len, zeros(etp_number))
             end
 
+            # POS and DUR are both counted at the event table sampling rate
             sr_denom = etp_sr == 0 ? Float64(sampling_rate) : Float64(etp_sr)
             return markers = DataFrame(
                 :id => id,
                 :start => round.(start ./ sr_denom; digits = 4),
-                :length => round.(len ./ Float64(sampling_rate); digits = 4),
+                :length => round.(len ./ sr_denom; digits = 4),
                 :value => value,
-                :channel => ch[1:etp_number],
+                :channel => ch,
             )
         end
         # event file closed here

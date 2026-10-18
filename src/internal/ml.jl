@@ -1,5 +1,5 @@
 """
-    _split_df(df; <keyword arguments>)
+    _split(df, ratio)
 
 Split a DataFrame into training and test subsets by random row sampling.
 

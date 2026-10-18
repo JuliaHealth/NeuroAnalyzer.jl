@@ -50,7 +50,8 @@ function _make_epochs_bymarkers(
     _chk3d(s)
 
     # validate
-    offset >= 0 || throw(ArgumentError("offset must be ≥ 0."))  # was: ≥ 1 - offset=0 is valid (epoch starts at marker)
+    # offset = 0 is valid: the epoch starts at the marker
+    offset >= 0 || throw(ArgumentError("offset must be ≥ 0."))
     ep_len >= 1 || throw(ArgumentError("ep_len must be ≥ 1."))
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
@@ -82,11 +83,10 @@ function _make_epochs_bymarkers(
     end
 
     # remove markers that lie outside all extracted epoch windows
+    # (marker :start is in seconds; ep_start / ep_end are 1-based sample numbers)
     @inbounds for mrk_idx = DataFrames.nrow(markers):-1:1
-        within = any(
-            _in(markers[mrk_idx, :start] * fs, (ep_start[ep_idx], ep_end[ep_idx]))
-            for ep_idx = 1:mrk_n
-        )
+        mrk_s = t2s(markers[mrk_idx, :start], fs)
+        within = any(_in(mrk_s, (ep_start[ep_idx], ep_end[ep_idx])) for ep_idx = 1:mrk_n)
         !within && deleteat!(markers, mrk_idx)
     end
 
@@ -101,7 +101,6 @@ function _make_epochs_bymarkers(
         end
     end
 
-    # remove stale commented-out block (marker offset recalculation was replaced above)
     return epochs, mrk_tmp
 end
 

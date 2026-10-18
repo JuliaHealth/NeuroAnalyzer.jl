@@ -65,10 +65,17 @@ function _check_dialout()::Nothing
     return nothing
 end
 
+# serial ports opened by `_serial_open`, by port name, so that `_serial_close(port_name)`
+# can close the handle that is actually in use (LibSerialPort cannot look it up by name)
+const _SERIAL_PORTS = Dict{String, LibSerialPort.SerialPort}()
+const _SERIAL_PORTS_LOCK = ReentrantLock()
+
 """
     _serial_open(port_name; <keyword arguments>)
 
 Open a serial port and return the `SerialPort` handle.
+
+The handle is registered under `port_name`, so it can also be closed with `_serial_close(port_name)`. Throws if the port is already open through `_serial_open`.
 
 # Arguments
 
@@ -90,13 +97,20 @@ function _serial_open(
         throw(ArgumentError("Serial port $port_name does not exist."))
     _check_dialout()
 
-    try
-        sp = LibSerialPort.open(port_name, baudrate; mode = m)
-        sleep(1)
-        return sp
+    lock(_SERIAL_PORTS_LOCK) do
+        haskey(_SERIAL_PORTS, port_name) && isopen(_SERIAL_PORTS[port_name]) &&
+            throw(ArgumentError("Serial port $port_name is already open."))
+    end
+
+    sp = try
+        LibSerialPort.open(port_name, baudrate; mode = m)
     catch err
         throw(ErrorException("Serial port $port_name cannot be opened: $err"))
     end
+    lock(() -> (_SERIAL_PORTS[port_name] = sp), _SERIAL_PORTS_LOCK)
+    sleep(1)
+
+    return sp
 end
 
 """
@@ -122,23 +136,26 @@ end
 
 Close a serial port. Accepts an open `SerialPort` handle.
 
-No-op if the port is already closed.
+No-op if the port is already closed. The handle is removed from the registry of ports opened by `_serial_open`.
 """
 function _serial_close(sp::LibSerialPort.SerialPort)::Nothing
     isopen(sp) && close(sp)
+    lock(_SERIAL_PORTS_LOCK) do
+        Base.filter!(p -> p.second !== sp, _SERIAL_PORTS)
+    end
     return nothing
 end
 
 """
     _serial_close(port_name)
 
-Close a serial port. Accepts a port name string.
+Close a serial port opened by `_serial_open`. Accepts a port name string.
 
-No-op if the port is already closed.
+No-op if the port is not open (or was not opened by `_serial_open`).
 """
 function _serial_close(port_name::String)::Nothing
-    sp = LibSerialPort.open(port_name)
-    isopen(sp) && close(sp)
+    sp = lock(() -> pop!(_SERIAL_PORTS, port_name, nothing), _SERIAL_PORTS_LOCK)
+    !isnothing(sp) && isopen(sp) && close(sp)
     return nothing
 end
 
@@ -154,7 +171,7 @@ Each "block" consists of `n` colon-separated `"key:value"` records. Recording st
 - `port_name::String="/dev/ttyUSB0"`: serial device path
 - `baudrate::Int64=115200`: baud rate
 - `m`: access mode (default: `LibSerialPort.SP_MODE_READ`)
-- `blocks::Int64=256`: number of data blocks to record (ignored when `t > 0`)
+- `blocks::Int64=256`: number of data blocks to record (ignored when `t > 0`); must be ≥ 2
 - `n::Int64=1`: number of records per data block
 - `t::Real=0`: recording duration in seconds; if `> 0`, overrides `blocks`
 
@@ -170,20 +187,13 @@ function _serial_recorder(
     n::Int64          = 1,
     t::Real           = 0,
 )::DataFrame
-    port_name in LibSerialPort.get_port_list() ||
-        throw(ArgumentError("Serial port $port_name does not exist."))
-    _check_dialout()
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     t >= 0 || throw(ArgumentError("t must be ≥ 0."))
-    blocks >= 1 || throw(ArgumentError("blocks must be ≥ 1."))
+    # ≥ 2 blocks are needed to estimate the sampling rate
+    blocks >= 2 || throw(ArgumentError("blocks must be ≥ 2."))
 
-    local sp
-    try
-        sp = LibSerialPort.open(port_name, baudrate; mode = m)
-        sleep(1)
-    catch err
-        throw(ErrorException("Serial port $port_name cannot be opened: $err"))
-    end
+    # validates the port, opens it and registers the handle
+    sp = _serial_open(port_name; baudrate = baudrate, m = m)
     isopen(sp) || throw(ArgumentError("Serial port $port_name is not open."))
 
     tp = Float64[]
@@ -211,13 +221,15 @@ function _serial_recorder(
     end
     _beep()
     _info("Recording finished")
-    close(sp)
+    _serial_close(sp)
 
     # recalculate timestamps relative to recording start, one per block
     tp .-= tp[1]
     tp = tp[1:n:end]
 
-    # estimate sampling rate from the last inter-block interval
+    # estimate sampling rate as the mean block rate over the whole recording
+    blocks >= 2 && tp[end] > 0 ||
+        throw(ArgumentError("At least 2 data blocks are needed to estimate the sampling rate."))
     fs = round(Int64, (blocks - 1) / tp[end])
     _info("Sampling rate: $fs Hz")
     tp = round.(tp; digits = 4)

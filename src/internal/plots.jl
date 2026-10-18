@@ -22,7 +22,7 @@ function _draw_head_labels!(
             pt[1], pt[2]
         elseif plane === :xz
             pt[1], pt[3]
-        elseif plabe === :yz
+        elseif plane === :yz
             pt[2], pt[3]
         end
         GLMakie.text!(

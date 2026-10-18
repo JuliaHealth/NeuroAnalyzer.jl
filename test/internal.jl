@@ -324,9 +324,26 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test length(et) == 2560
 @test NeuroAnalyzer._get_t(1, 10, 10) == [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-@test NeuroAnalyzer._wl2ext(760) == [645.5, 1669.0]
+@test NeuroAnalyzer._wl2ext(760) ≈ [645.5, 1669.0] .* 2.303
+@test NeuroAnalyzer._wl2ext(761) ≈ [(645.5 + 650.0) / 2, (1669.0 + 1660.0) / 2] .* 2.303
 
-@test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
+# descriptions come verbatim from BioSig eventcodes.txt (whitespace runs collapsed)
+@test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks, fast, large amplitude)"
+# event type is a little-endian UInt16: bytes [low, high]
+@test NeuroAnalyzer._gdf_etp([0x04, 0x05]) == "ecg:R-point"
+@test NeuroAnalyzer._gdf_etp([0x01, 0x03]) == "class1, Left hand - cue onset (BCI experiment)"
+@test NeuroAnalyzer._gdf_etp([0x84, 0x00]) == "condition 131"
+# bit 0x8000 marks the end of an event
+@test NeuroAnalyzer._gdf_etp([0x03, 0x81]) == "artifact:EMG/Muscle (end)"
+# end codes with their own (reserved) name in the table
+@test NeuroAnalyzer._gdf_etp([0x02, 0x85]) == "ecg:P-wave-end, MDC_ECG_TIME_END_P"
+@test NeuroAnalyzer._gdf_etp([0x20, 0x84]) == "Lights off"
+@test NeuroAnalyzer._gdf_etp([0x80, 0x85]) == "end"
+# reserved code, and the range comment line is not parsed as a code
+@test NeuroAnalyzer._gdf_etp([0x0f, 0x01]) == "calibration"
+@test NeuroAnalyzer._gdf_etp([0x1b, 0x03]) == "unknown code (0x031b)"
+@test NeuroAnalyzer._gdf_etp([0x99, 0x09]) == "unknown code (0x0999)"
+@test length(NeuroAnalyzer._GDF_ETP_TABLE) == 200
 
 @test NeuroAnalyzer._midxy(1, 1, 4, 4) == (2.5, 2.5)
 

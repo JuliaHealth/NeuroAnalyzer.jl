@@ -80,9 +80,10 @@ function epoch(
             obj_tmp.data;
             marker       = marker,
             markers      = deepcopy(obj_tmp.markers),
-            marker_start = round.(Int64, mrk_start .* sr(obj)),
-            offset       = round(Int64, offset * sr(obj)),
-            ep_len       = round(Int64, ep_len * sr(obj)),
+            # 1-based sample number of each marker (a marker at t = 0 s is sample 1)
+            marker_start = t2s.(mrk_start, sr(obj)),
+            offset       = t2n(offset, sr(obj)),
+            ep_len       = t2n(ep_len, sr(obj)),
             fs           = sr(obj),
         )
 

@@ -37,11 +37,13 @@ function _clean_labels(clabels::Vector{String})::Vector{String}
     # strip dots - longest pattern first to avoid leaving isolated dots
     l = replace.(l, ".." => "", "." => "")
 
-    # normalise MEG labels: ensure exactly one space after "MEG" and strip ALL leading zeros
-    l = replace.(l, r"MEG\s*0*" => "MEG ")
+    # normalise MEG labels: ensure exactly one space after "MEG" and strip leading zeros,
+    # keeping the last digit of an all-zero number ("MEG000" → "MEG 0", not "MEG")
+    l = replace.(l, r"MEG\s*" => "MEG ")
+    l = replace.(l, r"MEG 0+(?=\d)" => "MEG ")
 
-    # collapse any double spaces introduced by prefix removal
-    l = replace.(l, "  " => " ")
+    # collapse any runs of spaces introduced by prefix removal
+    l = replace.(l, r"\s{2,}" => " ")
 
     return strip.(l)
 end
@@ -51,7 +53,7 @@ end
 
 Normalize channel labels from an MEG file.
 
-Ensures a single space between each modality prefix (MEG, EEG, EOG, EMG) and its channel number, and strips ALL leading zeros from the number.
+Ensures a single space between each modality prefix (MEG, EEG, EOG, EMG) and its channel number, and strips leading zeros from the number.
 
 # Arguments
 
@@ -65,13 +67,15 @@ function _clean_meg_labels(clabels::Vector{String})::Vector{String}
     # string is immutable in Julia - shallow copy is sufficient
     l = copy(clabels)
 
-    # ensure one space after each modality prefix and strip ALL leading zeros
+    # ensure one space after each modality prefix and strip leading zeros,
+    # keeping the last digit of an all-zero number ("EOG000" → "EOG 0")
     for prefix in ("MEG", "EEG", "EOG", "EMG")
-        l = replace.(l, Regex("$prefix\\s*0*") => "$prefix ")
+        l = replace.(l, Regex("$prefix\\s*") => "$prefix ")
+        l = replace.(l, Regex("$prefix 0+(?=\\d)") => "$prefix ")
     end
 
-    # collapse any double spaces introduced above
-    l = replace.(l, "  " => " ")
+    # collapse any runs of spaces introduced above
+    l = replace.(l, r"\s{2,}" => " ")
 
     return strip.(l)
 end
@@ -81,7 +85,7 @@ end
 
 Normalize channel labels from an EEG file.
 
-Removes the "EEG " prefix, normalises duplicate-label patterns, and strips ALL leading zeros from EOG/EMG channel numbers.
+Removes the "EEG " prefix, normalises duplicate-label patterns, and strips leading zeros from EEG/EOG/EMG channel numbers.
 
 # Arguments
 
@@ -102,13 +106,14 @@ function _clean_eeg_labels(clabels::Vector{String})::Vector{String}
     l = replace.(l, "EOG EOG" => "EOG")
     l = replace.(l, "ECG EKG" => "ECG")
 
-    # strip ALL leading zeros from EOG/EMG channel numbers
+    # strip leading zeros from EEG/EOG/EMG channel numbers, keeping the last digit of an all-zero number
     for prefix in ("EEG", "EMG", "EOG")
-        l = replace.(l, Regex("$prefix\\s*0+") => "$prefix ")
+        l = replace.(l, Regex("$prefix\\s*0+(?=\\d)") => "$prefix ")
+        l = replace.(l, Regex("$prefix\\s*0+\$") => "$prefix 0")
     end
 
-    # collapse any double spaces
-    l = replace.(l, "  " => " ")
+    # collapse any runs of spaces
+    l = replace.(l, r"\s{2,}" => " ")
 
     return strip.(l)
 end

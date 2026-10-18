@@ -160,6 +160,15 @@ function _s2ti(s::String)::Tuple{Int64, Int64}
     return (parse(Int64, parts[1]), parse(Int64, parts[2]))
 end
 
+# name of a common reference: "common (A)" for ear (A, A1, A2), "common (M)" for mastoid (M, M1, M2),
+# "common" otherwise (e.g. AVG or CAR, which merely contain the letters a/m)
+function _common_ref_name(ref::AbstractString)::String
+    r = lowercase(ref)
+    occursin(r"^a[12]?$", r) && return "common (A)"
+    occursin(r"^m[12]?$", r) && return "common (M)"
+    return "common"
+end
+
 """
     _detect_montage(clabels, ch_type, data_type)
 
@@ -181,15 +190,15 @@ function _detect_montage(
     data_type::String,
 )::String
     target = clabels[ch_type .== data_type]
+    # no channels of this type: nothing to infer
+    isempty(target) && return "physical"
 
     # check for bipolar / common reference pattern: "label-ref"
     m = match.(r"(.+)\-(.+)", lowercase.(target))
     if length(findall(!isnothing, m)) == length(target)
         refs = [m[idx].captures[2] for idx in eachindex(m)]
         if length(unique(refs)) == 1
-            occursin("a", lowercase(refs[1])) && return "common (A)"
-            occursin("m", lowercase(refs[1])) && return "common (M)"
-            return "common"
+            return _common_ref_name(refs[1])
         else
             return "bipolar"
         end
@@ -200,9 +209,7 @@ function _detect_montage(
     if length(findall(!isnothing, m)) == length(target)
         refs = [m[idx].captures[3] for idx in eachindex(m)]
         if length(unique(refs)) == 1
-            occursin("a", lowercase(refs[1])) && return "common (A)"
-            occursin("m", lowercase(refs[1])) && return "common (M)"
-            return "common"
+            return _common_ref_name(refs[1])
         else
             return "bipolar"
         end
@@ -281,7 +288,8 @@ end
 Convert a vector of integer code points to a `String`, stripping null characters.
 """
 function _vint2str(x::Vector{Int64})::String
-    return replace(strip(String(Char.(x))), "\0" => "")
+    # remove NULs first, so that whitespace before NUL padding is also stripped
+    return strip(replace(String(Char.(x)), "\0" => ""))
 end
 
 """

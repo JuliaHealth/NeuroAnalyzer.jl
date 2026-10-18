@@ -10,7 +10,7 @@ Resolves `input` to a concrete, sorted index selection according to these rules:
 | `0` (sentinel)      | Expands to `collect(1:eff_default)`          |
 | `Int64` ≠ 0         | Returned as-is                               |
 | `AbstractUnitRange` | Materialized to `Vector{Int64}`, then sorted |
-| `Vector{Int64}`     | Sorted in-place (no copy) when length > 1    |
+| `Vector{Int64}`     | Sorted copy (the caller's vector is not modified) |
 
 The effective default is derived from `default`:
 - `0`          → `n_total` (select everything)
@@ -47,8 +47,11 @@ function _select_indices(
     # materialize a range to a concrete vector
     result = input isa AbstractUnitRange{Int64} ? collect(input) : input
 
-    # sort multi-element vectors in-place (single elements are trivially sorted)
-    result isa Vector{Int64} && length(result) > 1 && sort!(result)
+    # sort multi-element vectors; a range was already copied by collect(), a user vector is copied by sort()
+    # so that the caller's selection is never reordered behind their back
+    if result isa Vector{Int64} && length(result) > 1
+        result = input isa AbstractUnitRange{Int64} ? sort!(result) : sort(result)
+    end
 
     return result
 end

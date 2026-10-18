@@ -27,9 +27,9 @@ function _get_t(obj::NeuroAnalyzer.NEURO)::Tuple{Vector{Float64}, Vector{Float64
     # per-epoch timeline, optionally shifted by the stored epoch-start offset
     t_offset   = isempty(obj.epoch_time) ? 0.0 : obj.epoch_time[1]
     epoch_time = round.(
-    collect(range(t_offset; step = 1.0 / fs, length = n_smps));
-    digits = 4
-)
+        collect(range(t_offset; step = 1.0 / fs, length = n_smps));
+        digits = 4,
+    )
 
     return time_pts, epoch_time
 end
@@ -86,19 +86,13 @@ end
 """
     _s2epoch(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
 
-Map a sample range `[from, to]` to the range of epoch indices that it spans.
+Map a sample range `[from, to]` to the range of epochs that contain these samples.
 
-Epoch indices are 1-based. A `from` value of 0 is clamped to epoch 1.
-
-If `from` does not fall on an epoch boundary (i.e. it is in the interior of an epoch), that leading partial epoch is excluded and the range starts with the next full epoch.
+`from` and `to` are 1-based sample numbers; epoch `k` holds samples `(k - 1) * epoch_len + 1 : k * epoch_len`, so the result runs from the epoch containing `from` to the epoch containing `to` (partial epochs at both ends are included). A `from` value of 0 is clamped to epoch 1.
 
 # Returns
 - A single `Int64` if the sample range lies entirely within one epoch.
 - An `AbstractUnitRange{Int64}` otherwise.
-
-# Notes
-- `from` and `to` are 0-based sample indices.
-- The exclusion of a leading partial epoch may be intentional (e.g. when the caller wants only epochs that start at or after `from`). Verify this matches your use-case before relying on it.
 """
 function _s2epoch(
     obj::NeuroAnalyzer.NEURO,
@@ -106,34 +100,27 @@ function _s2epoch(
     to::Int64,
 )::Union{Int64, AbstractUnitRange{Int64}}
     from >= 0 || throw(ArgumentError("from must be ≥ 0."))
+    to >= from || throw(ArgumentError("to must be ≥ from."))
     to <= length(obj.time_pts) ||
         throw(ArgumentError("to must be ≤ $(length(obj.time_pts))."))
     el = epoch_len(obj)
 
-    ep_first = floor(Int64, from / el)
-    ep_last  = ceil(Int64, to / el)
-
-    # if `from` is strictly inside an epoch (not on a boundary), the bounding
-    # epoch starts one step later — the partial epoch is excluded
-    if from > 0 && !iszero(mod(from, el))
-        ep_first += 1
-    end
-
-    # clamp to 1-based indexing (handles `from = 0`)
-    ep_first = max(1, ep_first)
+    # epoch containing sample s is ceil(s / el); clamp to 1 for from = 0
+    ep_first = max(1, cld(from, el))
+    ep_last  = max(1, cld(to, el))
 
     return ep_first == ep_last ? ep_first : ep_first:ep_last
 end
 
 """
-    _epoch2s(obj::NeuroAnalyzer.NEURO, ep::Int64) -> Tuple{Float64, Float64}
+    _epoch2s(obj::NeuroAnalyzer.NEURO, ep::Int64) -> Tuple{Int64, Int64}
 
 Return the first and last **1-based** sample indices of epoch `ep`.
 
 This is the inverse of `_s2epoch`.
 
 # Returns
-- `(t1, t2)` Tupe, where
+- `(t1, t2)` tuple, where
     - `t1 = (ep - 1) * epoch_len(obj) + 1` — first sample (1-based)
     - `t2 =  ep      * epoch_len(obj)`     — last  sample (1-based)
 """

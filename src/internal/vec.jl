@@ -1,9 +1,9 @@
 """
     _flipx(s)
 
-Flip a signal along the amplitude axis (i.e. negate relative to its mean).
+Flip a signal along the amplitude axis: returns `mean(s) - s`, i.e. the negated signal shifted by its mean.
 
-Equivalent to reflecting around the horizontal center line: subtract the mean, negate, then add the mean back.
+Maxima of `s` become minima of the result and vice versa, at the same positions (used to find the minima of `s` with a peak finder).
 
 # Returns
 
@@ -49,6 +49,10 @@ function _window_indices(
     wstep::Int64,
     full::Bool,
 )::Matrix{Int64}
+    # validate (wstep < 1 would loop forever)
+    wlen >= 1 || throw(ArgumentError("wlen must be ≥ 1."))
+    wstep >= 1 || throw(ArgumentError("wstep must be ≥ 1."))
+
     starts = Int64[]
     idx    = 1
     while idx - 1 + wlen <= n
@@ -144,7 +148,7 @@ Return start/stop index pairs for all windows over a signal of length `n` (or `l
 
 # Arguments
 
-- `s::AbstractVector`: inpute signal
+- `s::AbstractVector`: input signal
 - `wlen::Int64`: window length in samples
 - `wstep::Int64=round(Int64, wlen * 0.9)`: step between window starts
 

@@ -54,8 +54,7 @@ Convert labeled matrix format (labels and values vectors) back to a dictionary.
 function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})::Dict
     length(l) == length(v) ||
         throw(ArgumentError("Labels and values vectors must have equal lengths."))
-    isempty(l) && "Input vectors cannot be empty."
-    isempty(v) && "Input vectors cannot be empty."
+    isempty(l) && throw(ArgumentError("Input vectors cannot be empty."))
     # convert to dictionary
     return Dict(zip(l, v))
 end

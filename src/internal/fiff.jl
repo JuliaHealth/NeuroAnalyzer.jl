@@ -79,7 +79,7 @@ _fiff_table(pairs, key::Symbol, val::Symbol) =
 # ---------------------------------------------------------------------------
 # data types (FIFFT_*)
 # ---------------------------------------------------------------------------
-fiff_data_type = Dict(
+const fiff_data_type = Dict(
     :id => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 30, 31, 32, 33, 34, 35, 36, 37],
     :name => [
         "void", "byte", "int16", "int32", "float", "double", "julian",
@@ -99,7 +99,7 @@ const _FIFFT_SPARSE_RCS = 0x00200000
 # ---------------------------------------------------------------------------
 # physical units (FIFF_UNIT_*)
 # ---------------------------------------------------------------------------
-fiff_units = _fiff_table(
+const fiff_units = _fiff_table(
     [
         -1 => "none", 0 => "unitless", 1 => "m", 2 => "kg", 3 => "s", 4 => "A",
         5 => "K", 6 => "mol", 7 => "rad", 8 => "sr", 9 => "cd", 10 => "mol/m³",
@@ -114,7 +114,7 @@ fiff_units = _fiff_table(
 )
 
 # value multipliers (FIFF_UNITM_*), stored as power-of-10 exponents
-fiff_multipliers = _fiff_table(
+const fiff_multipliers = _fiff_table(
     [
         18 => "exa", 15 => "peta", 12 => "tera", 9 => "giga", 6 => "mega",
         3 => "k", 2 => "h", 1 => "da", 0 => "none", -1 => "d", -2 => "c",
@@ -127,7 +127,7 @@ fiff_multipliers = _fiff_table(
 # ---------------------------------------------------------------------------
 # tag kinds (FIFF_*) - MNE-Python _fiff/constants.py
 # ---------------------------------------------------------------------------
-fiff_tags = _fiff_table(
+const fiff_tags = _fiff_table(
     [
         # file structure
         100 => "file_id", 101 => "dir_pointer", 102 => "dir", 103 => "block_id",
@@ -248,7 +248,7 @@ fiff_tags = _fiff_table(
 # ---------------------------------------------------------------------------
 # block kinds (FIFFB_*)
 # ---------------------------------------------------------------------------
-fiff_blocks = _fiff_table(
+const fiff_blocks = _fiff_table(
     [
         999 => "root",
         100 => "meas", 101 => "meas_info", 102 => "raw_data",
@@ -288,7 +288,7 @@ fiff_blocks = _fiff_table(
 # ---------------------------------------------------------------------------
 # channel kinds (FIFFV_*_CH)
 # ---------------------------------------------------------------------------
-fiff_channel_type = _fiff_table(
+const fiff_channel_type = _fiff_table(
     [
         1 => "meg", 2 => "eeg", 3 => "stim",
         102 => "bio", 201 => "mcg", 202 => "eog", 301 => "meg_ref", 302 => "emg",
@@ -308,7 +308,7 @@ fiff_channel_type = _fiff_table(
 # ---------------------------------------------------------------------------
 # coil types (FIFFV_COIL_*)
 # ---------------------------------------------------------------------------
-fiff_coil_type = _fiff_table(
+const fiff_coil_type = _fiff_table(
     [
         0 => "none", 1 => "eeg", 2 => "nm_122", 3 => "nm_24",
         4 => "nm_mcg_axial", 5 => "eeg_bipolar", 6 => "eeg_csd",
@@ -342,15 +342,15 @@ fiff_coil_type = _fiff_table(
     :coil_type,
 )
 
-fiff_gantry_type = _fiff_table([0 => "fixed", 1 => "uni_axial", 2 => "free"], :id, :gantry_type)
+const fiff_gantry_type = _fiff_table([0 => "fixed", 1 => "uni_axial", 2 => "free"], :id, :gantry_type)
 
-fiff_dacq_system = _fiff_table(
+const fiff_dacq_system = _fiff_table(
     [0 => "dau", 1 => "vxi", 2 => "rpu", 3 => "orion", 4 => "triux"],
     :id,
     :dacq_system,
 )
 
-fiff_proj_item = _fiff_table(
+const fiff_proj_item = _fiff_table(
     [
         0 => "none", 1 => "field", 2 => "dip_fix", 3 => "dip_rot",
         4 => "homog_grad", 5 => "homog_field", 10 => "eeg_avref",
@@ -359,9 +359,9 @@ fiff_proj_item = _fiff_table(
     :proj_item,
 )
 
-fiff_proj_by = _fiff_table([0 => "complement", 1 => "space"], :id, :proj_by)
+const fiff_proj_by = _fiff_table([0 => "complement", 1 => "space"], :id, :proj_by)
 
-fiff_aspect = _fiff_table(
+const fiff_aspect = _fiff_table(
     [
         100 => "average", 101 => "std_err", 102 => "single", 103 => "subaverage",
         104 => "altaverage", 105 => "sample", 106 => "power_density",
@@ -372,7 +372,7 @@ fiff_aspect = _fiff_table(
     :aspect,
 )
 
-fiff_sss_job = _fiff_table(
+const fiff_sss_job = _fiff_table(
     [
         0 => "sss_job_nothing", 1 => "sss_job_ctc", 2 => "sss_job_filter",
         3 => "sss_job_virt", 4 => "sss_job_head_pos", 5 => "sss_job_movec_fit",
@@ -490,6 +490,7 @@ function _fiff_decode(dtype::Integer, buf::AbstractVector{UInt8})
 
     # dig_point_t (20 B)
     if t == 33
+        length(buf) < 20 && return nothing
         return (
             _i32i64(buf[1:4]),
             _i32i64(buf[5:8]),
@@ -501,11 +502,13 @@ function _fiff_decode(dtype::Integer, buf::AbstractVector{UInt8})
 
     # ch_pos_t (52 B)
     if t == 34
+        length(buf) < 52 && return nothing
         return (_i32i64(buf[1:4]), Float64.(_be(Float32, buf[5:52]))...)
     end
 
     # coord_trans_t (104 B)
     if t == 35
+        length(buf) < 104 && return nothing
         from = _i32i64(buf[1:4])
         to = _i32i64(buf[5:8])
         f = Float64.(_be(Float32, buf[9:104]))
@@ -519,9 +522,11 @@ function _fiff_decode(dtype::Integer, buf::AbstractVector{UInt8})
 
     # dig_string_t
     if t == 36
+        length(buf) < 12 && return nothing
         kind = _i32i64(buf[1:4])
         ident = _i32i64(buf[5:8])
         np = _i32i64(buf[9:12])
+        (np < 0 || length(buf) < 12 + 12 * np) && return nothing
         rr = Float64.(_be(Float32, buf[13:(12 + 12 * np)]))
         return (kind, ident, np, permutedims(reshape(rr, 3, np)))
     end

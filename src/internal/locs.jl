@@ -30,10 +30,14 @@ function _sph_distance_sph(
     # convert angles to radians for calculation
     θ1, θ2 = deg2rad(theta1), deg2rad(theta2)
     φ1, φ2 = deg2rad(phi1), deg2rad(phi2)
-    # calculate spherical distance using law of cosines
+    # calculate spherical distance using law of cosines;
+    # clamp at 0: for (nearly) identical points rounding can make the radicand slightly negative
     return sqrt(
-        r1^2 + r2^2 -
-        2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2)),
+        max(
+            0.0,
+            r1^2 + r2^2 -
+            2 * r1 * r2 * (cos(θ1) * cos(θ2) + sin(θ1) * sin(θ2) * cos(φ1 - φ2)),
+        ),
     )
 end
 
@@ -154,11 +158,11 @@ function _ch_locs(
     obj::NeuroAnalyzer.NEURO,
     ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::DataFrame
+    # validate before indexing, so that an out-of-range index gives a clear error
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     chl  = labels(obj)[ch]
     chs  = intersect(obj.locs[!, :label], chl)
-    locs = Base.filter(:label => in(chs), obj.locs)
-    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-    return locs
+    return Base.filter(:label => in(chs), obj.locs)
 end
 
 """
@@ -387,7 +391,7 @@ end
 """
     _locs_norm(x, y)
 
-Normalize location coordinates to the [0, 1] range using min-max scaling.
+Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved).
 """
 function _locs_norm(
     x::Union{AbstractVector, Real},
@@ -400,7 +404,7 @@ end
 """
     _locs_norm(x, y, z)
 
-Normalize location coordinates to the [0, 1] range using min-max scaling.
+Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved).
 """
 function _locs_norm(
     x::Union{AbstractVector, Real},
@@ -414,7 +418,7 @@ end
 """
     _locs_norm(locs)
 
-Normalize location coordinates to the [0, 1] range using min-max scaling.
+Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved).
 """
 function _locs_norm(locs::DataFrame)::DataFrame
     locs_new = copy(locs)
@@ -429,7 +433,7 @@ end
 """
     _locs_norm!(locs)
 
-Normalize location coordinates to the [0, 1] range using min-max scaling in-place.
+Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved) in-place.
 """
 function _locs_norm!(locs::DataFrame)::Nothing
     xyz = normalize_minmax(hcat(locs.loc_x, locs.loc_y, locs.loc_z))
@@ -443,7 +447,7 @@ end
 """
     _locs_norm(obj)
 
-Normalize location coordinates to the [0, 1] range using min-max scaling.
+Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved).
 """
 function _locs_norm(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     # create new dataset
@@ -455,7 +459,7 @@ end
 """
     _locs_norm!(obj)
 
-Normalize location coordinates to the [0, 1] range using min-max scaling in-place.
+Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved) in-place.
 """
 function _locs_norm!(obj::NeuroAnalyzer.NEURO)::Nothing
     _locs_norm!(obj.locs)

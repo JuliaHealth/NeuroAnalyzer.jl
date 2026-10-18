@@ -118,9 +118,15 @@ function _check_channels(
     ch::Union{String, Vector{String}, Regex},
 )::Nothing
     isa(ch_ref, String) && (ch_ref = [ch_ref])
+    length(ch_ref) > 0 || throw(ArgumentError("ch_ref must not be empty."))
+    # a regex is valid if it matches at least one reference label
+    if ch isa Regex
+        any(l -> occursin(ch, l), ch_ref) ||
+            throw(ArgumentError("$ch does not match any label in ch_ref."))
+        return nothing
+    end
     isa(ch, String) && (ch = [ch])
     length(ch) > 0 || throw(ArgumentError("ch must not be empty."))
-    length(ch_ref) > 0 || throw(ArgumentError("ch_ref must not be empty."))
     for label in ch
         label in ch_ref ||
             throw(ArgumentError("$label does not match any label in ch_ref."))
@@ -181,7 +187,7 @@ Assert that symbol `s1` is one of the allowed values `s2`, producing a human-rea
 function _check_var(s1::Symbol, s2::Vector{Symbol}, var::String)::Nothing
     if s1 ∉ s2
         options = Base.join([":" * string(s) for s in s2], ", ", " or ")
-        false || throw(ArgumentError("$var must be $options."))
+        throw(ArgumentError("$var must be $options."))
     end
     return nothing
 end
@@ -192,7 +198,7 @@ Assert that string `s1` is one of the allowed values `s2`, producing a human-rea
 function _check_var(s1::String, s2::Vector{String}, var::String)::Nothing
     if s1 ∉ s2
         options = Base.join(s2, ", ", " or ")
-        false || throw(ArgumentError("$var must be $options."))
+        throw(ArgumentError("$var must be $options."))
     end
     return nothing
 end
@@ -244,14 +250,14 @@ end
 # String-format validation helpers
 # ---------------------------------------------------------------------------
 
+# unsigned number with an optional decimal part, e.g. "1", "1.", "1.5", ".5"
+const _RE_UFLOAT = raw"(\d+\.?\d*|\.\d+)"
+
 """Return `true` if `s` is a valid comma-separated integer vector string, e.g. `"[1,2,3]"`."""
 function _check_svec(s::String)::Bool
     s = replace(s, " " => "", "[" => "", "]" => "")
-    # all characters must be digits or commas
-    all(c -> c in ('0':'9'..., ','), s) || return false
-    parts = split(s, ",")
-    # require at least 2 non-empty parts
-    return length(parts) >= 2 && all(!isempty, parts)
+    # at least 2 non-empty integers separated by commas
+    return occursin(r"^\d+(,\d+)+$", s)
 end
 
 """Return `true` if `s` is a valid integer range string, e.g. `"1:10"` with start < end."""
@@ -268,23 +274,21 @@ end
 """Return `true` if `s` is a valid integer 2-tuple string, e.g. `"(1,2)"`."""
 function _check_stuplei(s::String)::Bool
     s = replace(s, " " => "")
-    all(c -> c in ('0':'9'..., ',', '(', ')'), s) || return false
-    return startswith(s, "(") && endswith(s, ")") &&
-           length(split(s, ",")) == 2 && length(s) > 2
+    # both elements must be present, e.g. "(1,)" is rejected
+    return occursin(r"^\(\d+,\d+\)$", s)
 end
 
 """Return `true` if `s` is a valid float 2-tuple string, e.g. `"(1.5,2.0)"`."""
 function _check_stuplef(s::String)::Bool
     s = replace(s, " " => "")
-    all(c -> c in ('0':'9'..., '.', ',', '(', ')'), s) || return false
-    return startswith(s, "(") && endswith(s, ")") &&
-           length(split(s, ",")) == 2 && length(s) > 2
+    # both elements must be valid numbers, e.g. "(1.,.)" is rejected
+    return occursin(Regex("^\\($_RE_UFLOAT,$_RE_UFLOAT\\)\$"), s)
 end
 
-"""Return `true` if `s` consists entirely of digits and at most one decimal point."""
+"""Return `true` if `s` consists entirely of digits and at most one decimal point, with at least one digit."""
 function _check_sfloat(s::String)::Bool
-    all(c -> c in ('0':'9'..., '.'), s) || return false
-    return count(==('.'), s) <= 1
+    # "" and "." are rejected (they cannot be parsed as a number)
+    return occursin(Regex("^$_RE_UFLOAT\$"), s)
 end
 
 """Return `true` if `s` consists entirely of decimal digit characters."""

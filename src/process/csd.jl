@@ -22,7 +22,7 @@ The algorithm (Perrin et al. 1989):
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: new object with CSD-transformed data, channel types set to `"csd"`, and units set to `"µV/m²"`
+- `NeuroAnalyzer.NEURO`: new object with CSD-transformed data, channel types set to `"csd"`, and units set to `"μV/m²"`
 
 # References
 
@@ -93,7 +93,7 @@ function csd(
 
     obj_tmp.header.recording[:data_type] = "csd"
     obj_tmp.header.recording[:channel_type][ch] .= "csd"
-    obj_tmp.header.recording[:unit][ch] .= "µV/m²"
+    obj_tmp.header.recording[:unit][ch] .= "μV/m²"
 
     push!(obj_tmp.history, "csd(obj, m=$m, n=$n, lambda=$lambda)")
 

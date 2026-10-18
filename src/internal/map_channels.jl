@@ -5,7 +5,7 @@ Map channel indices from a full channel list into their positions within a subse
 
 # Arguments
 
-- `ch::Union{Int64, Vector{Int64}}`: channel index or indices to remap
+- `ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: channel index or indices to remap
 - `chs::Vector{Int64}`: the channel subset to map into
 
 # Returns
@@ -14,15 +14,16 @@ Map channel indices from a full channel list into their positions within a subse
 """
 function _map_channels(
     ch::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
-    chs = Vector{Int64},
+    chs::Vector{Int64},
 )::Tuple{Union{Int64, Vector{Int64}}, Union{Int64, Vector{Int64}}}
     ch_orig = ch
 
     if ch isa Int64
         ch_mapped = vsearch(ch, chs)
     else
-        ch_orig   = copy(ch)
-        ch_mapped = [vsearch(ch[idx], chs) for idx in eachindex(ch)]
+        # collect() also turns a range into a Vector, matching the declared return type
+        ch_orig   = collect(ch)
+        ch_mapped = [vsearch(c, chs) for c in ch]
     end
 
     return ch_mapped, ch_orig
