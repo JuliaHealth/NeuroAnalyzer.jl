@@ -79,7 +79,7 @@ Plot multi-channel Motor Evoked Potentials (MEPs) with customizable visualizatio
 - `yrev::Bool=false`: if `true`, reverse the y-axis
 - `avg::Bool=true`: if `true`, plot averaged MEP across channels
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged MEPs
-- `leg::Bool=true`: if `true`, show legend with channel labels
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
 
@@ -164,8 +164,8 @@ function plot_mep(
             GLMakie.lines!(ax, t, s_avg; color = :black, linewidth = 2)
         end
 
-        # add legend if requested
-        (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
+        # add legend if requested (outside the plot; not drawn if it does not fit)
+        leg && _side_legend!(fig, ax)
     end
 
     return fig
@@ -278,7 +278,7 @@ Plot Motor Evoked Potentials (MEPs) from a NEURO object with customizable visual
     - `:detect`: detect and draw peaks automatically
     - `:embed`: embed peaks in the plot
     - `:off`: do not draw peaks
-- `leg::Bool=true`: if `true`, show legend with channel labels
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `type::Symbol=:normal`: multi-channel plot type:
     - `:normal`: butterfly or mean and ±95% CI
     - `:stack`: stacked channels

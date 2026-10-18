@@ -96,7 +96,7 @@ Plot multi-channel Power Spectral Density (PSD) with customizable visualization 
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `avg::Bool=false`: if `true`, plot averaged PSD across channels
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged PSDs
-- `leg::Bool=true`: if `true`, add legend with channel labels
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 
 # Returns
 
@@ -197,8 +197,8 @@ function plot_psd(
             GLMakie.lines!(ax, f[f1:f2], s; linewidth = 4, color = :black)
         end
 
-        # add legend if requested
-        (leg && ch_n < 30) && axislegend(; position = :rt, colormap = pal)
+        # add legend if requested (outside the plot; not drawn if it does not fit)
+        leg && _side_legend!(fig, ax)
     end
 
     return fig
@@ -593,7 +593,7 @@ Plot Power Spectral Density (PSD) using various estimation methods with customiz
     - `:topo`: topographical plot
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: if `true`, draw head outline
-- `leg::Bool=true`: if `true`, add legend with channel labels
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `avg::Bool=false`: if `true`, plot averaged PSD across channels
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged PSDs
 - `gui::Bool=true`: if `true`, keep window open and interactive
@@ -601,7 +601,7 @@ Plot Power Spectral Density (PSD) using various estimation methods with customiz
 - `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces (black for a single channel) next to the plot (only for `type = :normal`)
 - `ch_locs_pos::Symbol=:outside`: position of the channel locations inset:
     - `:outside`: to the right of the plot
-    - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner (the legend is not drawn)
+    - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner
 # Returns
 
 - `GLMakie.Figure`: the plotted figure
@@ -638,9 +638,7 @@ function plot_psd(
     ch_locs_pos::Symbol = :outside,
     gui::Bool = true,
 )::GLMakie.Figure
-    # an inset inside the plot replaces the legend
     _check_var(ch_locs_pos, [:outside, :rt, :lt, :rb, :lb], "ch_locs_pos")
-    ch_locs && ch_locs_pos !== :outside && (leg = false)
 
     # validate
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")

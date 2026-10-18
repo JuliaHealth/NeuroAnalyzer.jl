@@ -104,7 +104,7 @@ Plot multi-channel Event-Related Potential/Field with optional averaging and con
 - `yrev::Bool=false`: if `true`, reverse the y-axis
 - `avg::Bool=true`: if `true`, plot averaged ERP
 - `ci95::Bool=false`: if `true`, plot mean and ±95% CI
-- `leg::Bool=true`: if `true`, add legend with channel labels
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
 
@@ -210,10 +210,8 @@ function plot_erp(
         GLMakie.vlines!(ax, rt / 1000; linewidth = 1.5, color = mono ? :black : :red)
     end
 
-    # add legend if requested and not too many channels
-    if leg && ch_n < 30
-        axislegend(ax; position = :rt, colormap = pal)
-    end
+    # add legend if requested (outside the plot; not drawn if it does not fit)
+    leg && _side_legend!(fig, ax)
 
     return fig
 end
@@ -652,7 +650,7 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `cb::Bool=true`: if `true`, show color bar
 - `cb_title::String="default"`: color bar title
 - `peaks::Bool=true`: if `true`, draw peak markers
-- `leg::Bool=true`: if `true`, add legend with channel labels
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `type::Symbol=:normal`: plot type:
     - `:normal`: standard ERP plot
     - `:gfp`: plot Global Field Power
@@ -672,7 +670,7 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces (black for a single channel) next to the plot (only for `type = :normal`)
 - `ch_locs_pos::Symbol=:outside`: position of the channel locations inset:
     - `:outside`: to the right of the plot
-    - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner (the legend is not drawn)
+    - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner
 # Returns
 
 - `GLMakie.Figure`: the plotted figure
@@ -702,9 +700,7 @@ function plot_erp(
     ch_locs_pos::Symbol = :outside,
     gui::Bool = true,
 )::GLMakie.Figure
-    # an inset inside the plot replaces the legend
     _check_var(ch_locs_pos, [:outside, :rt, :lt, :rb, :lb], "ch_locs_pos")
-    ch_locs && ch_locs_pos !== :outside && (leg = false)
 
     # validate
     _check_datatype(obj, ["erp", "erf"])

@@ -357,9 +357,10 @@ function _figure_inset!(
     h = round(Int64, w * size(img, 1) / size(img, 2))
 
     if pos === :outside
-        # next to the plot: the main plot sets the row height, the inset is top-aligned
+        # to the right of the plot, at the top of the side column (above the legend)
+        side = _side_layout(fig)
         ax = GLMakie.Axis(
-            fig[1, 2];
+            side[1, 1];
             width = w,
             height = h,
             tellheight = false,
@@ -368,6 +369,8 @@ function _figure_inset!(
             backgroundcolor = :transparent,
             _AXIS_LOCK_KWARGS...,
         )
+        GLMakie.rowsize!(side, 1, GLMakie.Fixed(h))
+        GLMakie.rowgap!(side, _SIDE_ROWGAP)
     else
         # in a corner of the plot area (same cell as the main axis, 10 px from its edges)
         ax = GLMakie.Axis(
@@ -388,6 +391,67 @@ function _figure_inset!(
     hidespines!(ax)
     GLMakie.image!(ax, rotr90(img))
 
+    # less room is left for the legend below an outside inset
+    pos === :outside && _fit_side_legend!(fig)
+
+    return nothing
+end
+
+# ---------------------------------------------------------------------------
+# legend of multi-channel plots: outside the plot, on the right
+# ---------------------------------------------------------------------------
+
+# gap between the outside inset and the legend [px]
+const _SIDE_ROWGAP = 10
+
+# side column to the right of the main axis (fig[1, 2]): an outside inset (row 1) above
+# the legend (row 2); an unused row takes no space
+function _side_layout(fig::GLMakie.Figure)::GLMakie.GridLayout
+    gl = [c for c in GLMakie.contents(fig[1, 2]) if c isa GLMakie.GridLayout]
+    isempty(gl) || return gl[1]
+    side = GLMakie.GridLayout()
+    fig[1, 2] = side
+    # until an inset is added, its row takes no space (the legend starts at the plot's top)
+    GLMakie.rowsize!(side, 1, GLMakie.Fixed(0))
+    GLMakie.rowgap!(side, 0)
+    return side
+end
+
+"""
+    _side_legend!(fig, ax)
+
+Draw the legend of the labelled plots of `ax` outside the plot, on the right (below the head inset if it is drawn outside). The legend is drawn in 1 or 2 columns so that it is not higher than the plot; if it does not fit (too many channels), it is not drawn.
+"""
+function _side_legend!(fig::GLMakie.Figure, ax::GLMakie.Axis)::Nothing
+    side = _side_layout(fig)
+    GLMakie.Legend(
+        side[2, 1],
+        ax;
+        tellheight = false,
+        valign = :top,
+        labelsize = 12,
+        rowgap = 0,
+    )
+    _fit_side_legend!(fig)
+    return nothing
+end
+
+# number of legend columns (1 or 2) so that the legend is not higher than the plot,
+# minus the outside inset above it; the legend is removed if it does not fit
+function _fit_side_legend!(fig::GLMakie.Figure)::Nothing
+    legs = [c for c in fig.content if c isa GLMakie.Legend]
+    isempty(legs) && return nothing
+    leg = legs[1]
+    h_av = Float64(_main_axis(fig).scene.viewport[].widths[2])
+    side = _side_layout(fig)
+    inset = [c for c in GLMakie.contents(side[1, 1]) if c isa GLMakie.Axis]
+    isempty(inset) || (h_av -= inset[1].height[] + _SIDE_ROWGAP)
+    for nb in (1, 2)
+        leg.nbanks = nb
+        leg.layoutobservables.autosize[][2] <= h_av && return nothing
+    end
+    delete!(leg)
+    _info("Too many channels to fit the legend: legend is not drawn.")
     return nothing
 end
 

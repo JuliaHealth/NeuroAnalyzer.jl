@@ -526,15 +526,36 @@ end
 p = plot_psd(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false)
 @test count(c -> c isa GLMakie.Axis, p.content) == 2
 @test count(c -> c isa GLMakie.Legend, p.content) == 1
-# inside the plot: the inset shares the plot's cell and replaces the legend
+# inside the plot: the inset shares the plot's cell; the legend stays outside
 for pos in (:rt, :lt, :rb, :lb)
     local p = plot_psd(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, ch_locs_pos = pos, gui = false)
     @test count(c -> c isa GLMakie.Axis, p.content) == 2
-    @test count(c -> c isa GLMakie.Legend, p.content) == 0
+    @test count(c -> c isa GLMakie.Legend, p.content) == 1
 end
 @test plot_erp(e10_erp; ch = ["F3", "F4"], ch_locs = true, ch_locs_pos = :lb, gui = false) isa GLMakie.Figure
 @test plot_phs(e10; ep = 1, ch = "Cz", ch_locs = true, ch_locs_pos = :lt, gui = false) isa GLMakie.Figure
 @test_throws ArgumentError plot_psd(e10; ep = 1, ch = "Cz", ch_locs = true, ch_locs_pos = :middle, gui = false)
+@info "Test: legends outside the plot"
+nleg(p) = count(c -> c isa GLMakie.Legend, p.content)
+f = collect(0.0:1.0:50.0)
+p = plot_psd(f, rand(3, length(f)); clabels = ["a", "b", "c"])
+@test nleg(p) == 1
+# the legend is in the side column, not in the plot
+@test any(c -> c isa GLMakie.GridLayout, GLMakie.contents(p[1, 2]))
+@test nleg(plot_psd(f, rand(3, length(f)); leg = false)) == 0
+# too many channels: no legend
+@test nleg(plot_psd(f, rand(80, length(f)))) == 0
+# fits in 2 columns
+p = plot_psd(f, rand(25, length(f)))
+@test nleg(p) == 1 && only(c for c in p.content if c isa GLMakie.Legend).nbanks[] == 2
+@test nleg(plot_phs(f, rand(3, length(f)))) == 1
+@test nleg(plot_coherence(rand(3, length(f)), f)) == 1
+@test nleg(plot_erp(e10_erp; ch = ["F3", "F4"], gui = false)) == 1
+@test nleg(plot_mep(mep.epoch_time, mep.data[:, :, 1])) == 1
+# legend below an outside head inset
+p = plot_psd(e10; ep = 1, ch = ["Fp1", "Cz", "O2"], ch_locs = true, gui = false)
+@test nleg(p) == 1 && count(c -> c isa GLMakie.Axis, p.content) == 2
+
 @info "Test: add_inset()"
 for pos in (:outside, :rt, :lt, :rb, :lb)
     local p = plot_psd(e10; ep = 1, ch = "Cz", gui = false)

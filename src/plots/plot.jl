@@ -32,7 +32,7 @@ Plot signal from a NEURO object.
 - `cb::Bool=true`: if `true`, show color bar (for ERP/ERF/MEP)
 - `cb_title::String="default"`: color bar title (for ERP/ERF/MEP)
 - `peaks::Bool=true`: if `true`, draw peak markers (for ERP/ERF/MEP)
-- `leg::Bool=true`: if `true`, add legend with channel labels (for ERP/ERF/MEP)
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels) (for ERP/ERF/MEP)
 - `yrev::Bool=false`: if `true`, reverse the y-axis (for ERP/ERF/MEP)
 - `smooth::Bool=false`: if `true`, smooth the image using Gaussian blur (for ERP/ERF/MEP)
 - `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing) (for ERP/ERF/MEP)
@@ -41,7 +41,7 @@ Plot signal from a NEURO object.
 - `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `snap::Bool=true`: snap to grid when placing markers
 - `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces next to the plot (for ERP/ERF, `type = :normal`)
-- `ch_locs_pos::Symbol=:outside`: position of the inset: `:outside` (to the right of the plot) or `:rt`, `:lt`, `:rb`, `:lb` (inside the plot, the legend is not drawn)
+- `ch_locs_pos::Symbol=:outside`: position of the inset: `:outside` (to the right of the plot) or `:rt`, `:lt`, `:rb`, `:lb` (inside the plot, in that corner)
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns

@@ -110,7 +110,7 @@ Plot multi-channel coherence as a function of frequency.
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `avg::Bool=false`: if `true`, plot averaged coherence
 - `ci95::Bool=false`: if `true`, plot mean and ±95% CI of averaged coherence
-- `leg::Bool=true`: if `true`, add legend with channel labels
+- `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `mono::Bool=false`: if `true`, use a monochrome palette
 
 # Returns
@@ -227,10 +227,8 @@ function plot_coherence(
             GLMakie.lines!(ax, f, coh_avg; linewidth = 4, color = :black)
         end
 
-        # add legend if requested and not too many channels
-        if leg && ch_n < 30
-            axislegend(ax; position = :rt)
-        end
+        # add legend if requested (outside the plot; not drawn if it does not fit)
+        leg && _side_legend!(fig, ax)
     end
 
     return fig
