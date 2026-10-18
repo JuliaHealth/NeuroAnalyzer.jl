@@ -122,6 +122,7 @@ Preview channel locations with customizable visualization and connection mapping
     - `:bin`: values in the threshold range (exclusive)
 - `weights::Union{Bool, Vector{<:Real}}=true`: if `true`, auto-scale line widths and transparency based on connection strength; if Vector, use provided weights to place at channel location
 - `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channel information details
+- `ch_colors::Union{Nothing, AbstractVector}=nothing`: marker color of each channel in `ch` (overrides `sch` / `mono` coloring)
 
 # Returns
 
@@ -144,10 +145,13 @@ function plot_locs(
     threshold_type::Symbol = :neq,
     weights::Union{Bool, Vector{<:Real}} = true,
     ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
+    ch_colors::Union{Nothing, AbstractVector} = nothing,
     gui::Bool = true,
 )::GLMakie.Figure
     # validate
     _check_var(ps, [:l, :m, :s], "ps")
+    isnothing(ch_colors) || length(ch_colors) == length(ch) ||
+        throw(ArgumentError("Length of ch_colors must equal the number of channels."))
     _check_var(plane, [:xy, :yz, :xz], "plane")
 
     # set color palette
@@ -329,11 +333,21 @@ function plot_locs(
 
     # draw channel markers
     ch_n = length(ch)
-    cmap = GLMakie.resample_cmap(pal, ch_n)
+    # (resample_cmap needs ≥ 2 colors)
+    cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
     sch_set = Set(sch)
 
     for (i, idx) in enumerate(ch)
-        if idx in sch_set
+        if !isnothing(ch_colors)
+            GLMakie.scatter!(
+                loc_x[i],
+                loc_y[i];
+                markersize  = marker_size,
+                color       = ch_colors[i],
+                strokewidth = sw,
+                strokecolor = :black,
+            )
+        elseif idx in sch_set
             GLMakie.scatter!(
                 loc_x[i],
                 loc_y[i];

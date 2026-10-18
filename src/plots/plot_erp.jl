@@ -669,6 +669,10 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
+- `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces (black for a single channel) next to the plot (only for `type = :normal`)
+- `ch_locs_pos::Symbol=:outside`: position of the channel locations inset:
+    - `:outside`: to the right of the plot
+    - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner (the legend is not drawn)
 # Returns
 
 - `GLMakie.Figure`: the plotted figure
@@ -694,8 +698,14 @@ function plot_erp(
     sort_epochs::Bool = false,
     zl::Bool = true,
     mono::Bool = false,
+    ch_locs::Bool = false,
+    ch_locs_pos::Symbol = :outside,
     gui::Bool = true,
 )::GLMakie.Figure
+    # an inset inside the plot replaces the legend
+    _check_var(ch_locs_pos, [:outside, :rt, :lt, :rb, :lb], "ch_locs_pos")
+    ch_locs && ch_locs_pos !== :outside && (leg = false)
+
     # validate
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
@@ -741,7 +751,7 @@ function plot_erp(
             # prepare default labels/titles
             xl, yl, tt = _set_defaults(
                 xlabel, ylabel, title,
-                "Time [ms]", "Amplitude [$units]",
+                "Time [s]", "Amplitude [$units]",
                 "ERP amplitude, $(length(clabels)) channels, avgₑ: $ep_n",
             )
             cb_title = cb_title == "default" ? "Amplitude [$units]" : cb_title
@@ -774,7 +784,7 @@ function plot_erp(
                 xlabel,
                 ylabel,
                 title,
-                "Time [ms]",
+                "Time [s]",
                 "Amplitude [$units]",
                 "ERP amplitude, $(clabels[1]), avgₑ: $ep_n",
             )
@@ -789,6 +799,7 @@ function plot_erp(
                 zl = zl,
                 mono = mono,
             )
+            ch_locs && _ch_locs_inset!(fig, obj, ch, [:black]; pos = ch_locs_pos)
         end
 
     elseif type === :normal
@@ -799,7 +810,7 @@ function plot_erp(
             xlabel,
             ylabel,
             title,
-            "Time [ms]",
+            "Time [s]",
             "Amplitude [$units]",
             "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n",
         )
@@ -818,6 +829,10 @@ function plot_erp(
             zl = zl,
             mono = mono,
         )
+        ch_locs && _ch_locs_inset!(
+            fig, obj, ch, _trace_colors(length(ch); mono = mono, black = ci95);
+            pos = ch_locs_pos,
+        )
 
     elseif type === :stack
         cb_title == "default" && (cb_title = "Amplitude [$units]")
@@ -825,7 +840,7 @@ function plot_erp(
             xlabel,
             ylabel,
             title,
-            "Time [ms]",
+            "Time [s]",
             "",
             "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n",
         )
@@ -851,7 +866,7 @@ function plot_erp(
             xlabel,
             ylabel,
             title,
-            "Time [ms]",
+            "Time [s]",
             "GFP [$units]",
             "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n",
         )
@@ -871,7 +886,7 @@ function plot_erp(
             xlabel,
             ylabel,
             title,
-            "Time [ms]",
+            "Time [s]",
             "Amplitude [$units]",
             "ERP amplitude, avgₑ: $ep_n",
         )
@@ -909,7 +924,7 @@ function plot_erp(
                 throw(ArgumentError("Time marker $marker is out of epoch range"))
             marker_idx = vsearch(marker / 1000, t)
             GLMakie.vlines!(
-                fig[1, 1],
+                _main_axis(fig),
                 t[marker_idx];
                 linewidth = 0.5,
                 color = :black,
@@ -927,7 +942,7 @@ function plot_erp(
             neg_amp = obj.data[ch[1], pp[ch[1], 2], 1][1]
 
             GLMakie.scatter!(
-                fig[1, 1],
+                _main_axis(fig),
                 pos_time / 1000,
                 pos_amp;
                 marker = :xcross,
@@ -935,7 +950,7 @@ function plot_erp(
                 markersize = 15,
             )
             GLMakie.scatter!(
-                fig[1, 1],
+                _main_axis(fig),
                 neg_time / 1000,
                 neg_amp;
                 marker = :xcross,
@@ -960,7 +975,7 @@ function plot_erp(
             neg_amp = mep_tmp[pp[1, 2]]
 
             GLMakie.scatter!(
-                fig[1, 1],
+                _main_axis(fig),
                 pos_time / 1000,
                 pos_amp;
                 marker = :xcross,
@@ -968,7 +983,7 @@ function plot_erp(
                 markersize = 15,
             )
             GLMakie.scatter!(
-                fig[1, 1],
+                _main_axis(fig),
                 neg_time / 1000,
                 neg_amp;
                 marker = :xcross,

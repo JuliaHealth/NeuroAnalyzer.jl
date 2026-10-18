@@ -356,10 +356,10 @@ p = plot_icatopo(
 )
 @test p isa GLMakie.Figure
 
-@info "Test: add_pl()"
+@info "Test: add_inset()"
 p = NeuroAnalyzer.plot(e10; ep = 1, gui = false)
 pl = plot_locs(eeg; ch = "eeg", sch = "eeg", ps = :s, gui = false)
-pp = add_pl(p, pl)
+pp = add_inset(p, pl)
 @test pp isa GLMakie.Figure
 
 @info "Test: plot2canvas()"
@@ -515,6 +515,43 @@ for fn in ("test.pdf", "test.PNG")
     @test isfile(fn)
     rm(fn)
 end
+@info "Test: ch_locs head inset"
+@test plot_psd(e10; ep = 1, ch = ["Fp1", "Cz", "O2"], ch_locs = true, gui = false) isa GLMakie.Figure
+@test plot_psd(e10; ep = 1, ch = "T3", ch_locs = true, gui = false) isa GLMakie.Figure
+@test plot_phs(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false) isa GLMakie.Figure
+@test plot_erp(e10_erp; ch = ["F3", "F4", "P3"], ch_locs = true, gui = false) isa GLMakie.Figure
+@test plot_erp(e10_erp; ch = "Cz", ch_locs = true, gui = false) isa GLMakie.Figure
+@test NeuroAnalyzer.plot(e10_erp; ch = ["F3", "F4"], ci95 = true, avg = false, ch_locs = true, gui = false) isa GLMakie.Figure
+# the inset is the second layout cell, next to the plot
+p = plot_psd(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false)
+@test count(c -> c isa GLMakie.Axis, p.content) == 2
+@test count(c -> c isa GLMakie.Legend, p.content) == 1
+# inside the plot: the inset shares the plot's cell and replaces the legend
+for pos in (:rt, :lt, :rb, :lb)
+    local p = plot_psd(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, ch_locs_pos = pos, gui = false)
+    @test count(c -> c isa GLMakie.Axis, p.content) == 2
+    @test count(c -> c isa GLMakie.Legend, p.content) == 0
+end
+@test plot_erp(e10_erp; ch = ["F3", "F4"], ch_locs = true, ch_locs_pos = :lb, gui = false) isa GLMakie.Figure
+@test plot_phs(e10; ep = 1, ch = "Cz", ch_locs = true, ch_locs_pos = :lt, gui = false) isa GLMakie.Figure
+@test_throws ArgumentError plot_psd(e10; ep = 1, ch = "Cz", ch_locs = true, ch_locs_pos = :middle, gui = false)
+@info "Test: add_inset()"
+for pos in (:outside, :rt, :lt, :rb, :lb)
+    local p = plot_psd(e10; ep = 1, ch = "Cz", gui = false)
+    @test add_inset(p, plot_locs(e10; ch = "eeg", ps = :s, gui = false); pos = pos) === p
+    @test count(c -> c isa GLMakie.Axis, p.content) == 2
+end
+p = plot_psd(e10; ep = 1, ch = "Cz", gui = false)
+add_inset(p, plot_locs(e10; ch = "eeg", ps = :m, gui = false); pos = :rb, width = 150)
+@test any(c -> c isa GLMakie.Axis && c.width[] == 150 && c.height[] == 150, p.content)
+@test_throws ArgumentError add_inset(plot_empty(), plot_empty(); pos = :middle)
+@test_throws ArgumentError add_inset(plot_empty(), plot_empty(); width = 0)
+# no locations: the plot is drawn without the inset
+e_noloc = epoch(eeg; ep_len = 10)
+e_noloc.locs = e_noloc.locs[1:0, :]
+p = plot_psd(e_noloc; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false)
+@test count(c -> c isa GLMakie.Axis, p.content) == 1
+@test plot_locs(e10; ch = "Cz", gui = false) isa GLMakie.Figure
 nirs = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
 r = nirs.header.recording
 @test plot_locs_nirs(nirs.locs, r[:optode_pairs], length(r[:src_labels]), length(r[:det_labels])) isa GLMakie.Figure

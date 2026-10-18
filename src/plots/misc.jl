@@ -1,6 +1,6 @@
 export plot_compose
 export plot_empty
-export add_pl
+export add_inset
 
 """
     plot_compose(vfig; <keyword arguments>)
@@ -100,58 +100,30 @@ function plot_empty()::GLMakie.Figure
 end
 
 """
-    add_pl(fig, pl; <keyword arguments>)
+    add_inset(fig, pl; <keyword arguments>)
 
-Overlay a locations plot `pl` onto the bottom-right corner of the axis of `fig`, making the white background of `pl` transparent so only the electrode markers are visible.
+Add plot `pl` (typically a locations plot, e.g. `plot_locs(obj; ps = :s)`) as an inset of `fig`. `pl` is rendered to an image whose white background is made transparent, so only its content (head outline, electrodes) is drawn.
 
 # Arguments
 
-- `fig::GLMakie.Figure`: primary plot
-- `pl::GLMakie.Figure`: locations plot to overlay
+- `fig::GLMakie.Figure`: primary plot (axis at `fig[1, 1]`)
+- `pl::GLMakie.Figure`: plot to add
+- `pos::Symbol=:rt`: inset position:
+    - `:outside`: to the right of the plot (top-aligned)
+    - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner
+- `width::Union{Nothing, Int64}=nothing`: inset width in pixels (aspect ratio is kept); `nothing`: the size of `pl`
 
 # Returns
 
-- `GLMakie.Figure`: `fig` with the locations overlay (modified in place)
+- `GLMakie.Figure`: `fig` with the inset (modified in place)
 """
-function add_pl(fig::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
-    # render the locations figure to an in-memory PNG stream
-    io = IOBuffer()
-    show(io, MIME"image/png"(), pl)
-
-    # seek back to the beginning then load with an explicit PNG format hint
-    seekstart(io)
-    pp = FileIO.load(FileIO.Stream{FileIO.format"PNG"}(io))
-
-    # make the white background transparent so only the electrode markers are composited onto the primary figure
-    # three near-white values are handled to account for sub-pixel anti-aliasing on the background fill
-    transparent_pp = map(c -> RGBA(color(c), 1.0), pp)
-    for near_white in (
-        RGBA(1.0, 1.0, 1.0, 1.0),
-        RGBA(0.999, 0.999, 0.999, 1.0),
-        RGBA(0.998, 0.998, 0.998, 1.0),
-    )
-        transparent_pp[transparent_pp .== near_white] .=
-            RGBA(near_white.r, near_white.g, near_white.b, 0.0)
-    end
-
-    # determine the bottom-right corner of the primary axis in data coordinates
-    ax = contents(fig[1, 1])[1]
-    pos_x = (ax.targetlimits[].origin .+ ax.targetlimits[].widths)[1]
-    pos_y = ax.targetlimits[].origin[2]
-
-    half_size = GLMakie.Vec2f(size(transparent_pp) ./ -2)
-
-    # scatter a single point with the locations image as its marker,
-    # offset so the marker is centered on pos_x, pos_y.
-    GLMakie.scatter!(
-        fig[1, 1],
-        pos_x,
-        pos_y;
-        marker_offset = half_size,
-        marker = transparent_pp,
-        markersize = size(transparent_pp),
-        markerspace = :pixel,
-    )
+function add_inset(
+    fig::GLMakie.Figure,
+    pl::GLMakie.Figure;
+    pos::Symbol = :rt,
+    width::Union{Nothing, Int64} = nothing,
+)::GLMakie.Figure
+    _figure_inset!(fig, pl; pos = pos, width = width)
 
     return fig
 end

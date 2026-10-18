@@ -40,11 +40,13 @@ Plot signal from a NEURO object.
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `snap::Bool=true`: snap to grid when placing markers
+- `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces next to the plot (for ERP/ERF, `type = :normal`)
+- `ch_locs_pos::Symbol=:outside`: position of the inset: `:outside` (to the right of the plot) or `:rt`, `:lt`, `:rb`, `:lb` (inside the plot, the legend is not drawn)
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
 
-- `GLMakie.Figure`: the plotted figure: the plotted figure
+- `GLMakie.Figure`: the plotted figure
 """
 function plot(
     obj::NeuroAnalyzer.NEURO;
@@ -75,6 +77,8 @@ function plot(
     mono::Bool = false,
     res::Int64 = 1,
     snap::Bool = true,
+    ch_locs::Bool = false,
+    ch_locs_pos::Symbol = :outside,
     gui::Bool = true,
 )::GLMakie.Figure
     # validate and clamp n_channels/n_epochs to object dimensions
@@ -106,6 +110,8 @@ function plot(
             ks = ks,
             zl = zl,
             mono = mono,
+            ch_locs = ch_locs,
+            ch_locs_pos = ch_locs_pos,
             gui = gui,
         )
     elseif datatype(obj) == "mep"

@@ -571,6 +571,10 @@ Plot phase spectrum using various estimation methods with customizable visualiza
 - `ci95::Bool=false`: if `true`, plot mean and ±95% CI of averaged PSDs
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
+- `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces (black for a single channel) next to the plot (only for `type = :normal`)
+- `ch_locs_pos::Symbol=:outside`: position of the channel locations inset:
+    - `:outside`: to the right of the plot
+    - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner (the legend is not drawn)
 # Returns
 
 - `GLMakie.Figure`: the plotted figure
@@ -593,8 +597,14 @@ function plot_phs(
     leg::Bool = true,
     avg::Bool = false,
     ci95::Bool = false,
-    gui::Bool=true,
+    ch_locs::Bool = false,
+    ch_locs_pos::Symbol = :outside,
+    gui::Bool = true,
 )::GLMakie.Figure
+    # an inset inside the plot replaces the legend
+    _check_var(ch_locs_pos, [:outside, :rt, :lt, :rb, :lb], "ch_locs_pos")
+    ch_locs && ch_locs_pos !== :outside && (leg = false)
+
     # validate
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(frq, [:lin, :log], "frq")
@@ -656,7 +666,7 @@ function plot_phs(
             fig = plot_phs(
                 f, ph;
                 xlabel = xlabel,
-                ylabel = "",
+                ylabel = ylabel,
                 clabels = clabels,
                 title = title,
                 flim = flim,
@@ -667,6 +677,11 @@ function plot_phs(
                 mono = mono,
             )
         end
+
+        ch_locs && _ch_locs_inset!(
+            fig, obj, ch, _trace_colors(length(ch); mono = mono, black = length(ch) == 1 || ci95);
+            pos = ch_locs_pos,
+        )
 
     elseif type in [:w3d, :s3d]
         ndims(ph) >= 2 ||

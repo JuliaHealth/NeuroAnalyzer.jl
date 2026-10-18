@@ -261,3 +261,135 @@ function _log_flim(f::AbstractVector, flim::Tuple{Real, Real}, frq::Symbol)::Tup
     _warn("Lower frequency bound truncated to $(f[idx]) Hz.")
     return (f[idx], flim[2])
 end
+
+"""
+    _trace_colors(n; <keyword arguments>)
+
+Colors of the traces of a multi-channel line plot (`plot_psd()`, `plot_phs()`, `plot_erp()`).
+
+# Arguments
+
+- `n::Int64`: number of traces
+- `mono::Bool`: monochrome palette
+- `black::Bool`: all traces black (single channel, or only the mean ± 95% CI is drawn)
+"""
+function _trace_colors(n::Int64; mono::Bool, black::Bool)::Vector
+    return black ? fill(:black, n) : GLMakie.resample_cmap(mono ? :grays : :darktest, n)
+end
+
+"""
+    _ch_locs_inset!(fig, obj, ch, colors; <keyword arguments>)
+
+Add a head outline with the locations of the plotted channels (`plot_locs(; ps = :s)`), drawn in the colors of their traces, next to or inside the axis of `fig`. Nothing is drawn (with a warning) if locations of the channels are not available.
+
+# Arguments
+
+- `fig::GLMakie.Figure`: plot (axis at `fig[1, 1]`)
+- `obj::NeuroAnalyzer.NEURO`: plotted object
+- `ch::Union{Integer, AbstractVector{<:Integer}}`: plotted channel(s) (in the order of the traces)
+- `colors::AbstractVector`: trace colors
+- `pos::Symbol=:outside`: inset position:
+    - `:outside`: to the right of the axis (top-aligned)
+    - `:rt`, `:lt`, `:rb`, `:lb`: inside the axis, in the right-top, left-top, right-bottom or left-bottom corner
+"""
+function _ch_locs_inset!(
+    fig::GLMakie.Figure,
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{Integer, AbstractVector{<:Integer}},
+    colors::AbstractVector;
+    pos::Symbol = :outside,
+)::Nothing
+    _check_var(pos, [:outside, :rt, :lt, :rb, :lb], "pos")
+    ch = ch isa Integer ? [ch] : ch
+    loc_labels = lowercase.(String.(obj.locs[!, :label]))
+    loc_idx = [findfirst(==(lowercase(l)), loc_labels) for l in labels(obj)[ch]]
+    if isempty(loc_labels) || any(isnothing, loc_idx)
+        _warn("Locations of the plotted channels are not available: head inset is not drawn.")
+        return nothing
+    end
+
+    pl = plot_locs(
+        obj.locs;
+        ch = Vector{Int64}(loc_idx),
+        ch_colors = colors,
+        ps = :s,
+        ch_labels = false,
+        head_labels = false,
+        grid = false,
+        gui = false,
+    )
+    _figure_inset!(fig, pl; pos = pos)
+
+    return nothing
+end
+
+"""
+    _figure_inset!(fig, pl; <keyword arguments>)
+
+Draw figure `pl` (rendered to an image, white background made transparent) as an inset next to or inside the axis at `fig[1, 1]`.
+
+# Arguments
+
+- `fig::GLMakie.Figure`: main figure (axis at `fig[1, 1]`)
+- `pl::GLMakie.Figure`: figure to draw as an inset
+- `pos::Symbol=:outside`: inset position:
+    - `:outside`: to the right of the axis (top-aligned)
+    - `:rt`, `:lt`, `:rb`, `:lb`: inside the axis, in the right-top, left-top, right-bottom or left-bottom corner
+- `width::Union{Nothing, Int64}=nothing`: inset width in pixels (aspect ratio is kept); `nothing`: the size of `pl`
+"""
+function _figure_inset!(
+    fig::GLMakie.Figure,
+    pl::GLMakie.Figure;
+    pos::Symbol = :outside,
+    width::Union{Nothing, Int64} = nothing,
+)::Nothing
+    _check_var(pos, [:outside, :rt, :lt, :rb, :lb], "pos")
+    isnothing(width) || width > 0 || throw(ArgumentError("width must be > 0."))
+
+    img = GLMakie.colorbuffer(pl)
+    # white background → transparent
+    # (colorbuffer gives 8-bit N0f8 colors, whose sums wrap around: convert to Float64 first)
+    img = map(img) do c
+        r, g, b = Float64(red(c)), Float64(green(c)), Float64(blue(c))
+        return RGBA(r, g, b, r + g + b > 2.97 ? 0.0 : 1.0)
+    end
+    w = isnothing(width) ? size(img, 2) : width
+    h = round(Int64, w * size(img, 1) / size(img, 2))
+
+    if pos === :outside
+        # next to the plot: the main plot sets the row height, the inset is top-aligned
+        ax = GLMakie.Axis(
+            fig[1, 2];
+            width = w,
+            height = h,
+            tellheight = false,
+            valign = :top,
+            aspect = DataAspect(),
+            backgroundcolor = :transparent,
+            _AXIS_LOCK_KWARGS...,
+        )
+    else
+        # in a corner of the plot area (same cell as the main axis, 10 px from its edges)
+        ax = GLMakie.Axis(
+            fig[1, 1];
+            width = w,
+            height = h,
+            tellwidth = false,
+            tellheight = false,
+            halign = pos in (:rt, :rb) ? :right : :left,
+            valign = pos in (:rt, :lt) ? :top : :bottom,
+            alignmode = Outside(10),
+            aspect = DataAspect(),
+            backgroundcolor = :transparent,
+            _AXIS_LOCK_KWARGS...,
+        )
+    end
+    hidedecorations!(ax)
+    hidespines!(ax)
+    GLMakie.image!(ax, rotr90(img))
+
+    return nothing
+end
+
+# main axis of a plot: the first axis created (an inset may share its layout cell)
+_main_axis(fig::GLMakie.Figure)::GLMakie.Axis = first(c for c in fig.content if c isa GLMakie.Axis)

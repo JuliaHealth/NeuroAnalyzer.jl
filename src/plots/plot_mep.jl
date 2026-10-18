@@ -341,7 +341,7 @@ function plot_mep(
     if length(ch) == 1
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
-            "Time [ms]", "Amplitude [$units]",
+            "Time [s]", "Amplitude [$units]",
             "MEP amplitude, channel: $(clabels[1])",
         )
         fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt,
@@ -350,7 +350,7 @@ function plot_mep(
     elseif type === :normal
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
-            "Time [ms]", "Amplitude [$units]",
+            "Time [s]", "Amplitude [$units]",
             "MEP amplitude, $(length(ch)) channels",
         )
         fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt,
@@ -360,7 +360,7 @@ function plot_mep(
     elseif type === :stack
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
-            "Time [ms]", "",
+            "Time [s]", "",
             "MEP amplitude, $(length(ch)) channels",
         )
         cb_title == "default" && (cb_title = "Amplitude [$units]")
