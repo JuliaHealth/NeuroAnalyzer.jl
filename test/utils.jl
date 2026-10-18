@@ -265,12 +265,29 @@ delete_note!(e10)
 @test channel_pick(e10; pick = [:l, :f]) == ["F3", "F7", "Fp1"]
 
 @info "Test: t2s()"
-@test t2s(1.0, 256) == 256
-@test t2s(e10; t = 1.0) == 256
+@test t2s(0, 256) == 1
+@test t2s(1.0, 256) == 257
+@test t2s(e10; t = 1.0) == 257
+@test t2s(0.3, 10) == 4
+@test all(t2s(s2t(s, 256), 256) == s for s = 1:5000)
 
 @info "Test: s2t()"
-@test s2t(2560, 256) == 9.9961
-@test s2t(e10; s = 256) == 0.9961
+@test s2t(1, 256) == 0.0
+@test s2t(2560, 256) == 2559 / 256
+@test s2t(e10; s = 257) == 1.0
+@test s2t(2, 20_000) != s2t(3, 20_000)
+
+@info "Test: t2n()"
+@test t2n(10, 256) == 2560
+@test t2n(0, 256) == 0
+@test t2n(e10; t = 1.0) == 256
+@test length(t2s(0, 256):(t2s(0, 256) + t2n(10, 256) - 1)) == 2560
+
+@info "Test: n2t()"
+@test n2t(2560, 256) == 10.0
+@test n2t(0, 256) == 0.0
+@test n2t(e10; n = 256) == 1.0
+@test all(t2n(n2t(n, 256), 256) == n for n = 0:5000)
 
 @info "Test: get_channel(wl)"
 @test length(get_channel(n; wl = 760)) == 36
@@ -302,7 +319,7 @@ n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
 @test padm(ones(2, 4, 3), 2; mode = :row) == ones(2, 6, 3)
 
 @info "Test: vec2mat()"
-@test size(vec2mat(ones(10); wlen = 2, woverlap = 1)) == (5, 2)
+@test size(vec2mat(ones(10); wlen = 2, woverlap = 1)) == (9, 2)
 
 @info "Test: arr2mat()"
 @test size(arr2mat(rand(1, 10, 10))) == (10, 10)

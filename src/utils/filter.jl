@@ -71,7 +71,7 @@ function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
     f > 0 || throw(ArgumentError("f must be > 0."))
 
     # samples per one full cycle of the lowest frequency of interest
-    cycle_samples = t2s(1 / f, fs)
+    cycle_samples = ceil(Int64, fs / f)
 
     # convert to samples
     return (4 * cycle_samples, 5 * cycle_samples)

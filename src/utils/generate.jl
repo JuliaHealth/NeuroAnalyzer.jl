@@ -25,8 +25,8 @@ Return an `n`-point symmetric window of the given type.
     - `:flat`: Flat-top
     - `:bn`: Blackman-Nuttall
     - `:nutall`: Nuttall
-    - `:triangle`: symmetric triangle (left half ↑, right half ↓)
-    - `:exp`: symmetric exponential (left half ↑, right half ↓)
+    - `:triangle`: symmetric triangle, linear ramp up to the centre and down again (left half ↑, right half ↓)
+    - `:exp`: symmetric reciprocal decay from the centre, `1/k` for the `k`-th sample from the centre (left half ↑, right half ↓)
 - `n::Int64`: window length in samples; must be ≥ 1
 - `even::Bool=false`: if `true`, and `n` is odd, increment `n` by 1 to enforce even length
 
@@ -44,6 +44,8 @@ function generate_window(
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
 
     even && mod(n, 2) != 0 && (n += 1)
+    # a single-point window is just its peak value (range(0, 1, 1) is not defined)
+    n == 1 && return [1.0]
     t = range(0, 1, n)
 
     if type === :hann
@@ -83,14 +85,9 @@ function generate_window(
 
     elseif type === :triangle
 
-        # symmetric triangle: ramp up to the midpoint, then ramp down
-        w = zeros(n)
-        @inbounds for idx = 1:((n ÷ 2) + 1)
-            w[idx] = @. (idx * (idx + 1)) / 2
-        end
-        w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
-        w .= w ./ maximum(w)
-        return w
+        # symmetric triangle: linear ramp up to the midpoint, then ramp down
+        w = Float64.(min.(1:n, n:-1:1))
+        return w ./ maximum(w)
 
     elseif type === :exp
 
@@ -197,12 +194,12 @@ end
 
 Generate a sinc function.
 
-Produces either the normalized (`sin(2πf(t−peak)) / (π(t−peak))`) or unnormalized (`sin(2f(t−peak)) / (t−peak)`) sinc. The singularity at `t = peak` is resolved by linear interpolation from the two neighboring samples.
+Produces either the normalized (`sin(2πf(t−peak)) / (π(t−peak))`) or unnormalized (`sin(2f(t−peak)) / (t−peak)`) sinc. At `t = peak` the exact limit (`2f` in both cases) is used.
 
 # Arguments
 
 - `t::AbstractVector=-2:0.01:2`: time vector
-- `f::Real=1.0: frequency in Hz
+- `f::Real=1.0`: frequency in Hz
 - `peak::Real=0`: time of the sinc peak (location of the singularity)
 - `norm::Bool=true`: if `true`, generate the normalized sinc; otherwise generate the unnormalized sinc
 
@@ -222,11 +219,8 @@ function generate_sinc(
         (@. sin(2 * f * (t - peak)) / (t - peak))
     end
 
-    # resolve the singularity at t == peak by linear interpolation
-    nan_idx = findfirst(isnan, s)
-    if nan_idx !== nothing
-        s[nan_idx] = (s[nan_idx - 1] + s[nan_idx + 1]) / 2
-    end
+    # resolve the singularity at t == peak (0/0) with its exact limit
+    s[t .== peak] .= 2 * f
 
     return s
 end
@@ -241,7 +235,7 @@ The wavelet is the product of a complex (or real) sine wave at frequency `f` and
 # Arguments
 
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `f::Real`: centre frequency in Hz
+- `f::Real`: centre frequency in Hz; must be > 0
 - `t::Real=1`: half-length of the wavelet in seconds; must be > 0
 - `ncyc::Int64=5`: number of cycles; controls the Gaussian width; must be ≥ 1
 - `complex::Bool=false`: if `true`, return a complex Morlet; otherwise return the real part only
@@ -280,9 +274,9 @@ The standard deviation of the Gaussian is `σ = ncyc / (2πf)`. The time axis sp
 # Arguments
 
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `f::Real`: frequency in Hz; determines the Gaussian width via `σ = ncyc / (2πf)`
+- `f::Real`: frequency in Hz; must be > 0; determines the Gaussian width via `σ = ncyc / (2πf)`
 - `t::Real=1`: half-length of the time axis in seconds; must be > 0
-- `ncyc::Int64`: : number of cycles; controls the width (SD) of the Gaussian; must be ≥ 1
+- `ncyc::Int64=5`: number of cycles; controls the width (SD) of the Gaussian; must be ≥ 1
 - `a::Real=1.0`: peak amplitude
 
 # Returns
@@ -299,6 +293,7 @@ function generate_gaussian(
 
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    f > 0 || throw(ArgumentError("f must be > 0."))
     ncyc >= 1 || throw(ArgumentError("ncyc must be ≥ 1."))
     t > 0 || throw(ArgumentError("t must be > 0."))
 
@@ -324,7 +319,7 @@ The raw noise is normalized to `[−1, 1]` and then scaled by `a`.
 - `type::Symbol=:whiten`: noise type:
     - `:whiten`: white noise (normally distributed)
     - `:whiteu`: white noise (uniformly distributed)
-    - `:pink`: pink (1/f²) noise.
+    - `:pink`: pink noise (power spectral density ∝ 1/f)
 
 # Returns
 
@@ -345,12 +340,11 @@ function generate_noise(
     elseif type === :whiteu
         s = rand(n)
     elseif type === :pink
-        # 1/f² shaping via spectral coloring
-        noise = randn(n)
-        spec = fft(noise)
-        # build a 1/f² shaping filter over the full spectrum length
-        shaping = range(1.0, 2.0; length = length(spec)) .^ 2
-        s = real(ifft(spec .* shaping))
+        # spectral coloring of white noise: scaling the amplitude of bin k by 1/√k
+        # gives power ∝ 1/f; the DC bin (k = 0) is left unchanged
+        spec = rfft(randn(n))
+        spec[2:end] ./= sqrt.(1:(length(spec) - 1))
+        s = irfft(spec, n)
     end
 
     return normalize_minmax(s) .* a

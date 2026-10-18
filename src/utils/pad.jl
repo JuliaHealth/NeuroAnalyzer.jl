@@ -87,7 +87,7 @@ Pad an array with mean values along its second axis (or at the end for 1-D input
 
 - `x::Union{AbstractVector, AbstractArray}`: input array; must be 1-, 2-, or 3-dimensional
 - `n::Int64`: number of mean-value samples to append; must be ≥ 0
-- `mode::Symbol=:row`: how the mean is computed for 2-D and 3-D arrays:
+- `mode::Symbol=:all`: how the mean is computed for 2-D and 3-D arrays:
     - `:all`: single mean of all elements
     - `:row`: separate mean per row (broadcasts across the padded columns)
 

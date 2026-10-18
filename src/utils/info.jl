@@ -41,7 +41,8 @@ function _band_table(band::Symbol, nqf::Float64)::Union{Tuple{Float64, Float64},
     band === :gamma_1 && return (30.0, 40.0)
     band === :gamma_2 && return (40.0, 50.0)
     band === :gamma_lower && return (30.0, 80.0)
-    return band === :gamma_higher && return (80.0, 150.0)
+    band === :gamma_higher && return (80.0, 150.0)
+    throw(ArgumentError("Unknown band: $band."))
 end
 
 """
@@ -410,7 +411,7 @@ Print object metadata and channel table. Optionally return data as a DataFrame.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `df::Bool=false`: if `true`, return the signal data reshaped into a `DataFrame` with columns `:time` and one column per channel label
+- `df::Bool=false`: if `true`, return the signal data as a `DataFrame` (see [`to_df`](@ref)) with columns `:time` and one column per channel label
 
 # Returns
 
@@ -472,16 +473,7 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
         end
     end
 
-    if df
-        result = DataFrame(
-            hcat(obj.time_pts, reshape(obj.data, nchannels(obj), :, 1)[:, :]'),
-            :auto,
-        )
-        DataFrames.rename!(result, vcat(:time, Symbol.(labels(obj))))
-        return result
-    else
-        return nothing
-    end
+    return df ? to_df(obj) : nothing
 end
 
 """
@@ -521,13 +513,14 @@ function channel_info(
             " unit: $(rpad(rec[:unit][ch], 8))" *
             " bad: $(rec[:bad_channel][ch])"
 
-    elseif rec[:channel_type][ch] != "nirs_aux"
+    elseif !(rec[:channel_type][ch] in ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"])
+        # wavelength_index points into the wavelengths vector; report the value in nm
         chi =
             " ch: $(rpad(string(ch), 4))" *
             " label: $(rpad(rec[:label][ch], 8))" *
             " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))" *
             " unit: $(rpad(rec[:unit][ch], 8))" *
-            " wavelength: $(rec[:wavelength_index][ch])"
+            " wavelength: $(rec[:wavelengths][rec[:wavelength_index][ch]]) nm"
 
     else
         chi =
@@ -547,7 +540,9 @@ end
 """
     channel_pick(obj; <keyword arguments>)
 
-Return set of channel indices corresponding to a set of electrodes ("pick", e.g. left or frontal electrodes).
+Return the names of EEG channels corresponding to a set of electrodes ("pick", e.g. left or frontal electrodes).
+
+Region picks select channels whose label contains the region letter (`F`, `T`, `P`, `O`, or `z` for midline). Laterality picks keep channels whose label ends in an odd (left) or even (right) number; midline (`z`) channels are excluded. Region and laterality picks are combined with AND; requesting both `:left` and `:right` applies no laterality filtering.
 
 # Arguments
 
@@ -590,70 +585,38 @@ function channel_pick(
         :o,
     ]
 
-    if pick isa Vector{Symbol}
-        for idx in pick
-            _check_var(idx, valid, "pick")
-        end
+    pick isa Symbol && (pick = [pick])
+    foreach(p -> _check_var(p, valid, "pick"), pick)
 
-        # map non-lateralized picks to their standard 10-20 letter prefix
-        c = Vector{Char}()
-        for idx in pick
-            (idx === :central || idx === :c) && push!(c, 'z')
-            (idx === :frontal || idx === :f) && push!(c, 'F')
-            (idx === :temporal || idx === :t) && push!(c, 'T')
-            (idx === :parietal || idx === :p) && push!(c, 'P')
-            (idx === :occipital||idx === :o) && push!(c, 'O')
-        end
-
-        clabels = get_channel(obj; type = "eeg")
-        ch = Vector{Int64}()
-        for idx1 in eachindex(clabels), idx2 in eachindex(c)
-            in(c[idx2], clabels[idx1]) && push!(ch, idx1)
-        end
-        clabels_filtered = clabels[ch]
-
-        # when both :left and :right are requested simultaneously, return the full bilateral set without further laterality filtering
-        has_left = any(p -> p === :left || p === :l, pick)
-        has_right = any(p -> p === :right || p === :r, pick)
-        has_left && has_right && return clabels_filtered
-
-        # single-laterality filtering: remove contralateral electrode numbers
-        pat = nothing
-        for idx in pick
-            # remove left-side numbers
-            (idx === :right || idx === :r) && (pat = r"[z13579]$")
-            # remove right-side numbers
-            (idx === :left || idx === :l) && (pat = r"[z02468]$")
-        end
-        if pat isa Regex
-            for idx = length(clabels_filtered):-1:1
-                !isnothing(match(pat, clabels_filtered[idx])) && deleteat!(ch, idx)
-            end
-        end
-
-        return clabels[ch]
-
-    else
-        _check_var(pick, valid, "pick")
-
-        # map single pick to the relevant 10-20 digit/letter characters
-        c = Vector{Char}()
-        (pick === :central || pick === :c) && (c = ['z'])
-        (pick === :left || pick === :l) && (c = ['1', '3', '5', '7', '9'])
-        (pick === :right || pick === :r) && (c = ['2', '4', '6', '8'])
-        (pick === :frontal || pick === :f) && (c = ['F'])
-        (pick === :temporal || pick === :t) && (c = ['T'])
-        (pick === :parietal || pick === :p) && (c = ['P'])
-        (pick === :occipital||pick === :o) && (c = ['O'])
-
-        clabels = get_channel(obj; type = "eeg")
-        ch = Vector{Int64}()
-        for idx1 in eachindex(c), idx2 in eachindex(clabels)
-            in(c[idx1], clabels[idx2]) && push!(ch, idx2)
-        end
-
-        return labels(obj)[ch]
+    # map region picks to their standard 10-20 letter
+    c = Vector{Char}()
+    for p in pick
+        (p === :central || p === :c) && push!(c, 'z')
+        (p === :frontal || p === :f) && push!(c, 'F')
+        (p === :temporal || p === :t) && push!(c, 'T')
+        (p === :parietal || p === :p) && push!(c, 'P')
+        (p === :occipital || p === :o) && push!(c, 'O')
     end
+
+    clabels = get_channel(obj; type = "eeg")
+
+    # region filtering (no region picks = all EEG channels); each channel is kept at most once
+    sel = isempty(c) ? collect(eachindex(clabels)) :
+          [idx for idx in eachindex(clabels) if any(x -> x in clabels[idx], c)]
+
+    # laterality filtering on the trailing electrode number (odd = left, even = right),
+    # so that e.g. F10 is right-sided although it contains the digit 1
+    has_left = any(p -> p === :left || p === :l, pick)
+    has_right = any(p -> p === :right || p === :r, pick)
+    if has_left ⊻ has_right
+        side = has_left ? isodd : iseven
+        sel = Base.filter(sel) do idx
+            m = match(r"(\d+)$", clabels[idx])
+            !isnothing(m) && side(parse(Int64, m[1]))
+        end
+    end
+
+    return clabels[sel]
 end
 
 """
@@ -743,8 +706,8 @@ When `band = :list`, the available band names are printed to stdout and the func
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `band::Symbol`: band name (see list below or pass `:list` to print all names):
     - `:list`
-    - `:total`
-    - `:delta`: 0.1-4.0 Hz
+    - `:total`: 0.1 Hz-Nyquist
+    - `:delta`: 0.5-4.0 Hz
     - `:theta`: 4.0-8.0 Hz
     - `:alpha`: 8.0-13.0 Hz
     - `:alpha_lower`: 8.0-10.5 Hz
@@ -795,8 +758,8 @@ When `band = :list`, the available band names are printed to stdout and the func
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `band::Symbol`: band name (see list below or pass `:list` to print all names):
     - `:list`
-    - `:total`
-    - `:delta`: 0.1-4.0 Hz
+    - `:total`: 0.1 Hz-Nyquist
+    - `:delta`: 0.5-4.0 Hz
     - `:theta`: 4.0-8.0 Hz
     - `:alpha`: 8.0-13.0 Hz
     - `:alpha_lower`: 8.0-10.5 Hz
@@ -840,7 +803,7 @@ end
 
 Print or return descriptive statistics for each channel.
 
-Statistics reported: range, mean, SD, minimum, Q1 (25th percentile), median, Q3 (75th percentile), maximum.
+Statistics reported: range, mean, SD, minimum, Q1 (25th percentile), median, Q3 (75th percentile), maximum. Each channel's statistics are computed over all of its samples in all epochs.
 
 # Arguments
 
@@ -854,14 +817,12 @@ Statistics reported: range, mean, SD, minimum, Q1 (25th percentile), median, Q3 
 function describe(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFrame}
     d = zeros(8, nchannels(obj))
     @inbounds for idx = 1:nchannels(obj)
-        d[1, idx] = round(rng(obj.data[idx, :, :]), digits = 2)
-        d[2, idx] = round(mean(obj.data[idx, :, :]), digits = 2)
-        d[3, idx] = round(std(obj.data[idx, :, :]), digits = 2)
-        d[4, idx] = round(minimum(obj.data[idx, :, :]), digits = 2)
-        d[5, idx] = round(quantile(obj.data[idx, :, :][:], 0.5), digits = 2)
-        d[6, idx] = round(median(obj.data[idx, :, :]), digits = 2)
-        d[7, idx] = round(quantile(obj.data[idx, :, :][:], 0.95), digits = 2)
-        d[8, idx] = round(maximum(obj.data[idx, :, :]), digits = 2)
+        # all samples of the channel across epochs
+        x = vec(obj.data[idx, :, :])
+        q1, q2, q3 = quantile(x, (0.25, 0.50, 0.75))
+        d[:, idx] = round.(
+            [rng(x), mean(x), std(x), minimum(x), q1, q2, q3, maximum(x)]; digits = 2,
+        )
     end
 
     if df
@@ -1007,7 +968,7 @@ end
 """
     anonymize!(obj)
 
-Remove subject's data from the header in-place..
+Remove subject's data from the header in-place.
 
 # Arguments
 

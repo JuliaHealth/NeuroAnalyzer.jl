@@ -9,7 +9,7 @@ export ntapers
 export trtm
 
 """
-    linspace(start, stop, length)
+    linspace(start, stop, n)
 
 Return a vector of `n` evenly spaced numbers from `start` to `stop` (inclusive).
 
@@ -117,7 +117,7 @@ function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64, ComplexF64}
 end
 
 """
-    cums(signal)
+    cums(s)
 
 Compute the cumulative sum of a 3-dimensional array along the sample (second) axis.
 
@@ -127,7 +127,7 @@ Compute the cumulative sum of a 3-dimensional array along the sample (second) ax
 
 # Returns
 
-- `Array{Float64, 3}`: cumulative sum array of the same shape as `signal`
+- `Array{Float64, 3}`: cumulative sum array of the same shape as `s`
 """
 function cums(s::Array{<:Real, 3})::Array{Float64, 3}
 
@@ -141,14 +141,14 @@ function cums(s::Array{<:Real, 3})::Array{Float64, 3}
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        csa[ch_idx, :, ep_idx] = cumsum(@view(s[ch_idx, :, ep_idx]))
+        cumsum!(@view(csa[ch_idx, :, ep_idx]), @view(s[ch_idx, :, ep_idx]))
     end
 
     return csa
 end
 
 """
-    f_nearest(m, pos)
+    f_nearest(m, p)
 
 Find the matrix position closest to a query position tuple.
 
@@ -201,7 +201,7 @@ function ntapers(
     df::Real,
 )::Int64
     # validate that df lies within (0, Nyquist)
-    _bin(df, (0, sr(obj) / 2))
+    _bin(df, (0, sr(obj) / 2), "df")
 
     # epoch duration in seconds
     n = epoch_len(obj) / sr(obj)

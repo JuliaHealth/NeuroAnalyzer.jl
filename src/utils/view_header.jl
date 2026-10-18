@@ -1,7 +1,7 @@
 export view_header
 
 """
-    header(obj)
+    view_header(obj)
 
 Print all keys and values stored in the object header.
 

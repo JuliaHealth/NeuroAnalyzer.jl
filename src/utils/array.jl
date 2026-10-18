@@ -65,7 +65,7 @@ Randomly shuffles the combined pool of epochs `perm_n` times, splits each shuffl
 
 - `a1::Array{<:Real, 3}`: first array (e.g. spectrogram), shape `(freq, time, epochs)`
 - `a2::Array{<:Real, 3}`: second array; must match `a1` in size.
-- `p::Float64=0.05`: two-tailed p-value threshold (must be in `(0, 1)`)
+- `p::Float64=0.05`: two-tailed p-value threshold; must be in `(0, 1)`
 - `perm_n::Int64=1000`: number of permutations (must be > 0)
 
 # Returns
@@ -87,14 +87,13 @@ function perm_cmp(
     # validate
     size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
     perm_n > 0 || throw(ArgumentError("perm_n must be > 0."))
-    p >= 0 || throw(ArgumentError("p must be ≥ 0."))
-    p <= 1 || throw(ArgumentError("p must be ≤ 1."))
+    _bin(p, (0, 1), "p")
 
     # real observed difference (a2 − a1), averaged across epochs
     spec_diff = dropdims(mean(a2; dims = 3) .- mean(a1; dims = 3); dims = 3)
 
     # z-value threshold corresponding to the two-tailed p-value
-    zval = abs(norminvcdf(p))
+    zval = norminvcdf(1 - p / 2)
 
     # pool all epochs from both conditions
     spec_all = cat(a1, a2; dims = 3)
@@ -162,7 +161,7 @@ Useful for downsampling a frequency axis (and its associated data) when the numb
 
 # Returns
 
-- `Array{eltype(a), ndims(a)}`: deduced data array
+- `Array{eltype(a), ndims(a)}`: reduced data array
 - `Vector{eltype(f)}`: reduced frequency vector
 """
 function areduce(
@@ -171,8 +170,9 @@ function areduce(
     n::Float64 = 0.5,
 )::Tuple{AbstractArray, AbstractVector}
     # validate
-    ndims(a) <= 3 ||
+    ndims(a) in (2, 3) ||
         throw(ArgumentError("areduce() only works for 2- and 3-dimensional arrays."))
+    n > 0 || throw(ArgumentError("n must be > 0."))
     size(a, 2) == length(f) || throw(
         ArgumentError("size(a, 2) ($(size(a, 2))) must equal length(f) ($(length(f)))."),
     )
@@ -182,25 +182,9 @@ function areduce(
     f2 = round(f[vsearch(round(f[end]), f)])
     frq_vec = collect(f1:n:f2)
 
-    if ndims(a) == 2
-        # allocate with matching element type to avoid silent precision loss
-        arr_new = zeros(eltype(a), size(a, 1), length(frq_vec))
-        @inbounds for ch_idx in axes(a, 1)
-            for (idx, freq) in enumerate(frq_vec)
-                arr_new[ch_idx, idx] = a[ch_idx, vsearch(freq, f)]
-            end
-        end
-    else
-        # allocate with matching element type to avoid silent precision loss
-        arr_new = zeros(eltype(a), size(a, 1), length(frq_vec), size(a, 3))
-        @inbounds for ep_idx in axes(a, 3)
-            for ch_idx in axes(a, 1)
-                for (idx, freq) in enumerate(frq_vec)
-                    arr_new[ch_idx, idx, ep_idx] = a[ch_idx, vsearch(freq, f), ep_idx]
-                end
-            end
-        end
-    end
+    # nearest existing bin for each target frequency (computed once, shared by all channels/epochs)
+    f_idx = vsearch(frq_vec, f)
+    arr_new = ndims(a) == 2 ? a[:, f_idx] : a[:, f_idx, :]
 
     return arr_new, frq_vec
 end

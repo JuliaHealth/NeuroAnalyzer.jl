@@ -38,7 +38,7 @@ function get_channel(
     # return channel names
     ch = String[]
     isa(type, String) && (type = [type])
-    [_check_var(idx, channel_types, "type") for idx in type]
+    foreach(t -> _check_var(t, channel_types, "type"), type)
 
     l = labels(obj)
     if wl == 0

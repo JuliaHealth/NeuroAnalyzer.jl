@@ -56,7 +56,7 @@ function vsearch(
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
 
-    d, idx = findmin(abs.(x .- y))
+    d, idx = findmin(v -> abs(v - y), x)
 
     return acc ? (idx, d) : idx
 end
@@ -69,7 +69,7 @@ Return the indices of the elements in `x` nearest to each element of `y`.
 # Arguments
 
 - `y::AbstractVector`: vector of interest
-- `x::AbstractVector`: vector to search within; must not be empty and must be at least as long as `y`.
+- `x::AbstractVector`: vector to search within; must not be empty
 - `acc::Bool=false`: if `true`, also return the absolute differences between each `y[i]` and its nearest match in `x`
 
 # Returns
@@ -87,12 +87,11 @@ function vsearch(
 }
     # validate
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
-    length(y) <= length(x) || throw(ArgumentError("length(y) must be ≤ length(x)."))
 
     idx = Vector{Int64}(undef, length(y))
     d = Vector{Float64}(undef, length(y))
-    @inbounds for i in eachindex(y)
-        d[i], idx[i] = findmin(abs.(x .- y[i]))
+    @inbounds for (i, yi) in enumerate(y)
+        d[i], idx[i] = findmin(v -> abs(v - yi), x)
     end
 
     return acc ? (idx, d) : idx
@@ -145,7 +144,7 @@ function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
     length(y) > 0 || throw(ArgumentError("y must not be empty."))
     length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
 
-    idx = vsearch(minimum(x), x)
+    idx = argmin(x)
 
     return y[idx], idx
 end
@@ -162,7 +161,7 @@ Find the maximum value of `x` and return the corresponding value from `y` at tha
 
 # Returns
 
-- `Real`: `y[idx]` where `idx = argmin(x)`
+- `Real`: `y[idx]` where `idx = argmax(x)`
 - `Int64`: index of the maximum value in `x`
 """
 function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
@@ -171,7 +170,7 @@ function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
     length(y) > 0 || throw(ArgumentError("y must not be empty."))
     length(x) == length(y) || throw(ArgumentError("x and y must have the same length."))
 
-    idx = vsearch(maximum(x), x)
+    idx = argmax(x)
 
     return y[idx], idx
 end
@@ -203,13 +202,14 @@ function vreduce(
     length(x) > 0 || throw(ArgumentError("x must not be empty."))
     length(f) > 0 || throw(ArgumentError("f must not be empty."))
     length(x) == length(f) || throw(ArgumentError("x and f must have the same length."))
+    n > 0 || throw(ArgumentError("n must be > 0."))
 
     # build the reduced frequency grid from rounded min/max frequencies
     f1 = round(f[vsearch(round(f[1]), f)])
     f2 = round(f[vsearch(round(f[end]), f)])
     f_new = collect(f1:n:f2)
 
-    x_new = [x[vsearch(freq, f)] for freq in f_new]
+    x_new = x[vsearch(f_new, f)]
 
     return x_new, f_new
 end

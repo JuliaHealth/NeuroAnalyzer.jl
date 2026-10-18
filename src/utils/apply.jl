@@ -5,7 +5,7 @@ export apply
 
 Apply a custom function to selected channels and epochs of a NEURO object.
 
-The function string `f` must reference the signal data using the placeholder variable `obj`, which is substituted at runtime with the actual channel data (a `Vector{Float64}` representing one channel × one epoch slice).
+The function string `f` must reference the signal data using the placeholder variable `obj`, which is bound to the actual channel data (a `Vector{Float64}` representing one channel × one epoch slice). The expression is parsed once and compiled into an anonymous function `obj -> f`.
 
 Example: `f = "cumsum(obj)"` or `f = "obj .^ 2"`.
 
@@ -17,7 +17,7 @@ Example: `f = "cumsum(obj)"` or `f = "obj .^ 2"`.
 
 # Returns
 
-- `Array{Float64, 3}`: result array, shape (channels, epoch length, epochs)
+- `Array{Float64, 3}`: result array, shape (channels, length of the result of `f`, epochs)
 """
 function apply(
     obj::NeuroAnalyzer.NEURO;
@@ -33,13 +33,19 @@ function apply(
     # number of epochs
     ep_n = nepochs(obj)
 
+    # compile the expression once into `obj -> f`; the signal is passed as an argument
+    # instead of being pasted into the source text for every channel and epoch
+    fn = try
+        eval(Meta.parse("obj -> ($f)"))
+    catch err
+        throw(ArgumentError("Formula failed. Check expression `f`. Error: $err"))
+    end
+
     # dry run to infer output shape
     # use the first selected channel (not hardcoded index 1) for a representative result
     # this also validates the formula before entering the main loop
-    f_tmp = replace(f, "obj" => "$(obj.data[ch[1], :, 1])")
-    global out_tmp
-    try
-        out_tmp = eval(Meta.parse(f_tmp))
+    out_tmp = try
+        Base.invokelatest(fn, obj.data[ch[1], :, 1])
     catch err
         throw(ArgumentError("Formula failed. Check expression `f`. Error: $err"))
     end
@@ -54,9 +60,8 @@ function apply(
     # compute over channels and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        f_tmp = replace(f, "obj" => "$(obj.data[ch[ch_idx], :, ep_idx])")
         try
-            result[ch_idx, :, ep_idx] = eval(Meta.parse(f_tmp))
+            result[ch_idx, :, ep_idx] = Base.invokelatest(fn, obj.data[ch[ch_idx], :, ep_idx])
         catch err
             throw(ArgumentError("Formula failed. Check expression `f`. Error: $err"))
         end

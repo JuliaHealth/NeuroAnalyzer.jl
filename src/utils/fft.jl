@@ -100,6 +100,9 @@ nextpow2(9)   # → 16
 ```
 """
 function nextpow2(x::Int64)::Int64
+    # validate
+    x > 0 || throw(ArgumentError("x must be > 0."))
+
     return nextpow(2, x)
 end
 

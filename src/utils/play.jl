@@ -5,7 +5,7 @@ export play
 
 Play a channel signal segment as audio.
 
-The signal is normalized to `[−1, 1]` and scaled to `[−1000, +1000]` before playback. For best results the channel should contain an audio-range signal (e.g. speech, auditory ERP); arbitrary EEG/MEG data will be audible but may not be meaningful.
+The signal is normalized to `[−1, 1]` (the full-scale range expected by `wavplay`) before playback. For best results the channel should contain an audio-range signal (e.g. speech, auditory ERP); arbitrary EEG/MEG data will be audible but may not be meaningful.
 
 # Arguments
 
@@ -39,8 +39,9 @@ function play(
     s1 = vsearch(seg[1], obj.epoch_time)
     s2 = vsearch(seg[2], obj.epoch_time)
 
-    # extract the signal slice and normalize to [−1000, +1000] for audio output
-    s = normalize_minmax(@view obj.data[ch, s1:s2, ep]) .* 1000
+    # extract the signal slice and normalize to [−1, +1] for audio output;
+    # samples outside this range would be clipped by the audio backend
+    s = normalize_minmax(@view obj.data[ch, s1:s2, ep])
     wavplay(s, sr(obj))
 
     return nothing

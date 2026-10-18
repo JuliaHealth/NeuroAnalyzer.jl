@@ -25,10 +25,14 @@ function cwtfrq(
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
+    # silence ContinuousWavelets logging; always restore it, even on error
     _log_off()
-    Ŵ, ω = computeWavelets(length(s), wt)
-    f = round.(getMeanFreq(Ŵ, fs); digits = 2)
-    _log_on()
+    f = try
+        Ŵ, _ = computeWavelets(length(s), wt)
+        round.(getMeanFreq(Ŵ, fs); digits = 2)
+    finally
+        _log_on()
+    end
 
     # lowest scale returns a non-physical frequency; replace with DC (0 Hz)
     f[1] = 0.0

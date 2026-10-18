@@ -73,13 +73,13 @@ end
 """
     gradient(x; <keyword arguments>)
 
-Calculate the gradient of a 3-or-higher-dimensional scalar field.
+Calculate the gradient of a 3-dimensional scalar field.
 
-Dispatches when `x` is neither a vector nor a matrix (i.e. `ndims(x) ≥ 3`). Each element of the returned array field `grad_vf` is an `ndims(x)`-element `Vector{Float64}` giving the gradient direction at that position. `grad_mag` contains the corresponding gradient magnitudes.
+Dispatches when `x` is neither a vector nor a matrix; only 3-dimensional arrays are supported. Each element of the returned array field `grad_vf` is an `ndims(x)`-element `Vector{Float64}` giving the gradient direction at that position. `grad_mag` contains the corresponding gradient magnitudes.
 
 # Arguments
 
-- `x::AbstractArray`: scalar field with `ndims(x) ≥ 3`
+- `x::AbstractArray`: 3-dimensional scalar field
 - `rev::Bool=false`: if `false` (default), the gradient direction points toward the maximum value; if `true`, it points toward the minimum value
 
 # Returns
@@ -96,6 +96,9 @@ function gradient(
     grad_vf::Array{Vector{Float64}, 3},
     grad_mag::Array{Float64, 3},
 }
+    # validate
+    ndims(x) == 3 || throw(ArgumentError("x must be a 1-, 2- or 3-dimensional array."))
+
     g_tmp, grad_mag = _gradient(x; rev = rev)
 
     grad_vf = Array{Vector{Float64}}(undef, size(g_tmp))

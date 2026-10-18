@@ -80,7 +80,7 @@ Return the sorting permutation indices of a matrix column-wise or row-wise.
 # Arguments
 
 - `m::AbstractMatrix`: input matrix
-- `rev::Bool`: if `true`, sort in descending order
+- `rev::Bool=false`: if `true`, sort in descending order
 - `dims::Int64=1`: sort along columns (`dims=1`) or rows (`dims=2`)
 
 # Returns
@@ -100,7 +100,7 @@ function m_sortperm(m::AbstractMatrix; rev::Bool = false, dims::Int64 = 1)::Abst
     else
         # compute sort permutation for each row independently
         @inbounds for row in axes(m, 1)
-            idx[row, :] = sortperm(m[row, :]; rev = rev)'
+            idx[row, :] = sortperm(m[row, :]; rev = rev)
         end
     end
 
@@ -115,7 +115,7 @@ Sort a matrix using a pre-computed permutation index vector.
 # Arguments
 
 - `m::AbstractMatrix`: input matrix
-- `m_idx::Vector{Int64}`: permutation index vector (e.g. from `sortperm`); this vector is **not** modified by the function
+- `m_idx::Vector{Int64}`: permutation index vector (e.g. from `sortperm`); its length must equal `size(m, dims)`; this vector is **not** modified by the function
 - `rev::Bool=false`: if `true`, reverse the permutation before applying it
 - `dims::Int64=1`: apply permutation along columns (`dims=1`) or rows (`dims=2`)
 
@@ -131,24 +131,14 @@ function m_sort(
 )::AbstractMatrix
     # validate
     dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
+    length(m_idx) == size(m, dims) ||
+        throw(ArgumentError("length(m_idx) must equal size(m, $dims) ($(size(m, dims)))."))
 
-    # copy to avoid mutating the caller's index vector
-    perm = rev ? reverse(m_idx) : copy(m_idx)
+    # reverse() returns a new vector, so the caller's index vector is never mutated
+    perm = rev ? reverse(m_idx) : m_idx
 
-    m_sorted = zeros(eltype(m), size(m))
-    if dims == 1
-        # apply permutation to each column
-        @inbounds for col in axes(m, 2)
-            m_sorted[:, col] = @view(m[:, col])[perm]
-        end
-    else
-        # apply permutation to each row
-        @inbounds for row in axes(m, 1)
-            m_sorted[row, :] = @view(m[row, :])[perm]
-        end
-    end
-
-    return m_sorted
+    # the same permutation is applied to every column (dims=1) or row (dims=2)
+    return dims == 1 ? m[perm, :] : m[:, perm]
 end
 
 """
@@ -178,7 +168,7 @@ end
 
 Reshape a vector into a matrix using a sliding window with optional overlap.
 
-The vector is divided into `⌊length(x) / wlen⌋` non-overlapping segments of length `wlen`. The `woverlap` parameter shifts the start of each subsequent window backward by that many samples.
+Consecutive windows of length `wlen` start every `wlen - woverlap` samples, so neighbouring windows share `woverlap` samples. Trailing samples that do not fill a whole window are discarded.
 
 # Arguments
 
@@ -188,22 +178,22 @@ The vector is divided into `⌊length(x) / wlen⌋` non-overlapping segments of 
 
 # Returns
 
-- `AbstractMatrix`: matrix of shape (n_segments, wlen)
+- `AbstractMatrix`: matrix of shape `(n_segments, wlen)`, where `n_segments = (length(x) - wlen) ÷ (wlen - woverlap) + 1`
 """
 function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatrix
     # validate
     wlen >= 1 || throw(ArgumentError("wlen must be ≥ 1."))
     woverlap >= 0 || throw(ArgumentError("woverlap must be ≥ 0."))
-    woverlap < wlen || throw(ArgumentError("woverlap must be < wlen ($wlen)."))  # was: < length(x)
+    woverlap < wlen || throw(ArgumentError("woverlap must be < wlen ($wlen)."))
+    wlen <= length(x) || throw(ArgumentError("wlen must be ≤ length(x) ($(length(x)))."))
 
-    (wlen == 1 && woverlap == 0) && return reshape(x, length(x), :)
-
-    seg = length(x) ÷ wlen
+    # distance between the starts of consecutive windows
+    step = wlen - woverlap
+    seg = (length(x) - wlen) ÷ step + 1
     m = zeros(eltype(x), seg, wlen)
-    m[1, :] = x[1:wlen]
-    for idx = 2:seg
-        start = (idx - 1) * wlen + 1 - woverlap
-        m[idx, :] = x[start:(start + wlen - 1)]
+    for idx = 1:seg
+        start = (idx - 1) * step + 1
+        m[idx, :] = @view x[start:(start + wlen - 1)]
     end
 
     return m
@@ -227,13 +217,14 @@ function arr2mat(x::AbstractArray)::AbstractMatrix
     size(x, 1) == 1 ||
         throw(ArgumentError("First dimension of x must be 1; got $(size(x, 1))."))
 
-    # equivalent to squeezing the singleton first dimension and transposing:
-    # dropdims then permute, or simply index and collect row-by-row.
-    return reshape(permutedims(x[1, :, :]), size(x, 3), size(x, 2))
+    ndims(x) == 3 || throw(ArgumentError("x must be a 3-dimensional array."))
+
+    # drop the singleton first dimension and transpose (samples, epochs) → (epochs, samples)
+    return permutedims(x[1, :, :])
 end
 
 """
-    meshgrid(x)
+    meshgrid(x, y)
 
 Build a 2-D mesh grid from two coordinate vectors.
 
