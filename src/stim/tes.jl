@@ -12,7 +12,7 @@ Calculate charge, current density, and charge density for tDCS stimulation.
 
 - `current::Real`: stimulation current in mA; must be > 0
 - `pad_area::Real`: electrode pad area in cm²; must be > 0
-- `duration::Int64`: stimulation duration in seconds; must be > 0
+- `duration::Real`: stimulation duration in seconds; must be > 0
 
 # Returns
 
@@ -29,7 +29,7 @@ Named tuple:
 function tdcs_dose(;
     current::Real,
     pad_area::Real,
-    duration::Int64,
+    duration::Real,
 )::@NamedTuple{
     charge::Float64,
     current_density::Float64,
@@ -42,7 +42,7 @@ function tdcs_dose(;
 
     # Unit conversions:
     #   current:   mA → A    (÷ 1_000)
-    #   pad_area:  cm² → m²  (÷ 10_000)   was: ÷ 1_000 (wrong)
+    #   pad_area:  cm² → m²  (÷ 10_000)
     #   charge:    C  → kC   (÷ 1_000)
     i_A = current / 1_000
     a_m2 = pad_area / 10_000
@@ -62,7 +62,7 @@ end
 
 Calculate charge, current density, and charge density for tACS stimulation.
 
-The effective current is computed by integrating one cycle of the sinusoidal waveform (including the DC offset) over a 1 ms grid using Simpson's rule, then scaling by the number of cycles.
+The effective current is the mean absolute current over one cycle of the waveform `(current / 2) × sin(2πft + φ) + offset`, integrated with Simpson's rule (1000 points per cycle). The charge is the effective current × `duration`.
 
 # Arguments
 
@@ -84,7 +84,7 @@ Named tuple:
 function tacs_dose(;
     current::Real,
     pad_area::Real,
-    duration::Int64,
+    duration::Real,
     offset::Real,
     frequency::Real,
     phase::Real,
@@ -99,11 +99,12 @@ function tacs_dose(;
     duration > 0 || throw(ArgumentError("duration must be > 0."))
     frequency > 0 || throw(ArgumentError("frequency must be > 0."))
 
-    # integrate the rectified sinusoid over one cycle to get the effective current
-    t = collect(0:0.001:1)
-    i_cycle = abs.(generate_sine(frequency, t, current, phase) .+ offset)
-    # effective mA over one cycle
-    eff_current = Simpson.simpson(i_cycle, t)
+    # mean absolute current over one cycle [mA]
+    # (current is peak-to-peak: amplitude = current / 2; offset μA → mA)
+    period = 1 / frequency
+    t = collect(range(0, period; length = 1001))
+    i_cycle = abs.(generate_sine(frequency, t, current / 2, phase) .+ offset / 1_000)
+    eff_current = Simpson.simpson(i_cycle, t) / period
 
     cycles = frequency * duration
     _info("Number of cycles: $cycles")
@@ -129,8 +130,7 @@ The effective current is computed as `current × (pw / isi)`, i.e. scaled by the
 
 # Arguments
 
-# Arguments
-- `current::Real`: peak-to-peak stimulation current in mA; must be > 0
+- `current::Real`: pulse current in mA; must be > 0
 - `pad_area::Real`: electrode pad area in cm²; must be > 0
 - `duration::Real`: stimulation duration in seconds; must be > 0
 - `pw::Real`: pulse width in ms; must be > 0 and < `isi`
@@ -193,14 +193,14 @@ Create a TES (tDCS/tACS/tRNS/tPCS) stimulation protocol dictionary.
 - `type::Symbol`: stimulation type; one of `:tDCS`, `:tACS`, `:tRNS`, `:tPCS`
 - `hd::Bool`: if `true`, use high-density electrodes
 - `current::Real`: stimulation current in mA; must be > 0
-- `frequency::Real=0`: stimulation frequency in Hz; must be > 0 for `:tACS` and `:tRNS`
+- `frequency::Real=0`: stimulation frequency in Hz (for `:tRNS`: upper frequency of the noise band); must be > 0 for `:tACS`, `:tRNS` and `:tPCS`
 - `anode_size::Tuple{Int64, Int64}`: anode dimensions `(width, height)` in mm; both values must be > 0
 - `cathode_size::Tuple{Int64, Int64}`: cathode dimensions `(width, height)` in mm; both values must be > 0
 - `anode_loc::Symbol`: anode location (10-20 Positioning System label)
 - `cathode_loc::Symbol`: cathode location (10-20 Positioning System label)
 - `duration::Real`: stimulation duration in seconds; must be > 0
 - `ramp_in::Real`: ramp-in duration in seconds; must be ≥ 0
-- `ramp_out::Real`: ramp-out duration in seconds; must be ≥ 0
+- `ramp_out::Real`: ramp-out duration in seconds; must be ≥ 0; `ramp_in + ramp_out` must be ≤ `duration`
 - `sham::Bool`: if `true`, the protocol includes sham stimulation
 
 # Returns
@@ -224,7 +224,7 @@ function tes_protocol(;
     # validate
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
     current > 0 || throw(ArgumentError("current must be > 0 mA."))
-    if type === :tACS || type === :tRNS
+    if type in (:tACS, :tRNS, :tPCS)
         frequency > 0 || throw(ArgumentError("frequency must be > 0 Hz."))
     end
     anode_size[1] > 0 || throw(ArgumentError("anode_size width must be > 0 mm."))
@@ -234,6 +234,8 @@ function tes_protocol(;
     duration > 0 || throw(ArgumentError("duration must be > 0 s."))
     ramp_in >= 0 || throw(ArgumentError("ramp_in must be ≥ 0 s."))
     ramp_out >= 0 || throw(ArgumentError("ramp_out must be ≥ 0 s."))
+    ramp_in + ramp_out <= duration ||
+        throw(ArgumentError("ramp_in + ramp_out must be ≤ duration ($duration s)."))
 
     return Dict(
         :type => type,
