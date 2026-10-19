@@ -597,11 +597,11 @@ Plot Power Spectral Density (PSD) using various estimation methods with customiz
 - `avg::Bool=false`: if `true`, plot averaged PSD across channels
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged PSDs
 - `gui::Bool=true`: if `true`, keep window open and interactive
-
 - `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces (black for a single channel) next to the plot (only for `type = :normal`)
 - `ch_locs_pos::Symbol=:outside`: position of the channel locations inset:
     - `:outside`: to the right of the plot
     - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner
+
 # Returns
 
 - `GLMakie.Figure`: the plotted figure

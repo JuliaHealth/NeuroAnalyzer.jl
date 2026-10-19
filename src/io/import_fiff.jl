@@ -79,7 +79,9 @@ function _fiff_head_origin(mi::Dict{Symbol, Any})::Vector{Float64}
     return first(_fiff_fit_sphere(permutedims(reduce(hcat, hsp))))
 end
 
-# cHPI coil frequencies (Hz) and digitized coil positions (head frame, m), matched by coil number
+# cHPI coil frequencies (Hz) and digitized coil positions (head frame, m): coils sorted by
+# number; digitized points sorted by identifier and matched by the HPI digitization order
+# (as in MNE-Python), otherwise by coil number
 function _fiff_hpi(mi::Dict{Symbol, Any})::Dict{Symbol, Any}
     # (coil number, frequency)
     coils = mi[:hpi_coils]
@@ -87,11 +89,16 @@ function _fiff_hpi(mi::Dict{Symbol, Any})::Dict{Symbol, Any}
     (isempty(coils) || isempty(dig)) && return Dict{Symbol, Any}()
     sort!(coils; by = first)
     sort!(dig; by = first)
+    order = get(mi, :hpi_dig_order, Int64[])
     pos = Vector{Vector{Float64}}()
-    for (no, _) in coils
-        i = findfirst(d -> d[1] == no, dig)
-        isnothing(i) && break
-        push!(pos, dig[i][2])
+    if length(order) == length(coils) && all(in(1:length(dig)), order)
+        pos = [dig[o][2] for o in order]
+    else
+        for (no, _) in coils
+            i = findfirst(d -> d[1] == no, dig)
+            isnothing(i) && break
+            push!(pos, dig[i][2])
+        end
     end
     if length(pos) != length(coils)
         # coil numbers do not match digitization identifiers: fall back to order
@@ -503,6 +510,13 @@ function load_fiff(
     end
     # the same coils may be described in several hpi_meas blocks; keep the first
     meas_info[:hpi_coils] = unique(first, hpi_coils)
+    # digitization order of the coils (last initial HPI fit, as in MNE-Python): coil i (in
+    # coil number order) is the order[i]-th digitized HPI point
+    meas_info[:hpi_dig_order] = Int64[]
+    for inst in _fiff_instances(fiff_object, "hpi_result")
+        o = _fiff_get(fiff_object, "hpi_digitization_order"; inst = inst)
+        isnothing(o) || (meas_info[:hpi_dig_order] = Int64.(vec(collect(o))))
+    end
 
     # SSP projectors - one entry per projection item block
     ssp = Dict{Symbol, Any}[]
@@ -1011,6 +1025,7 @@ function import_fiff(
             coil_id = coil_id,
             head_origin = head_origin,
             hpi = hpi_info,
+            first_time = first_samp / sampling_rate,
         )
     else
         isempty(ssp_rows) ||

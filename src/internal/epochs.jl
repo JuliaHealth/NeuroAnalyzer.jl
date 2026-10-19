@@ -82,25 +82,21 @@ function _make_epochs_bymarkers(
         )
     end
 
-    # remove markers that lie outside all extracted epoch windows
-    # (marker :start is in seconds; ep_start / ep_end are 1-based sample numbers)
-    @inbounds for mrk_idx = DataFrames.nrow(markers):-1:1
-        mrk_s = t2s(markers[mrk_idx, :start], fs)
-        within = any(_in(mrk_s, (ep_start[ep_idx], ep_end[ep_idx])) for ep_idx = 1:mrk_n)
-        !within && deleteat!(markers, mrk_idx)
-    end
-
-    # keep only markers of the requested type and recalculate
-    # their time offsets relative to the start of the first epoch
-    mrk_tmp = markers[markers[!, :value] .== marker, :]
-
-    if DataFrames.nrow(mrk_tmp) > 0
-        mrk_tmp[1, :start] = offset / fs
-        for idx = 2:DataFrames.nrow(mrk_tmp)
-            mrk_tmp[idx, :start] = mrk_tmp[idx - 1, :start] + ep_len / fs
+    # markers (of any type) inside each extracted epoch, mapped to the epoched timeline:
+    # sample m of epoch k (window ep_start[k]:ep_end[k]) becomes (k - 1) * ep_len + m - ep_start[k] + 1
+    # (marker :start is in seconds; ep_start / ep_end are 1-based sample numbers); markers in
+    # overlapping windows appear in each epoch
+    mrk_s = [t2s(markers[idx, :start], fs) for idx = 1:DataFrames.nrow(markers)]
+    rows = Int64[]
+    new_start = Float64[]
+    @inbounds for ep_idx = 1:mrk_n, idx in eachindex(mrk_s)
+        if ep_start[ep_idx] <= mrk_s[idx] <= ep_end[ep_idx]
+            push!(rows, idx)
+            push!(new_start, s2t((ep_idx - 1) * ep_len + mrk_s[idx] - ep_start[ep_idx] + 1, fs))
         end
     end
-
+    mrk_tmp = markers[rows, :]
+    mrk_tmp[!, :start] = new_start
     return epochs, mrk_tmp
 end
 

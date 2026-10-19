@@ -10,7 +10,7 @@ Calculate signal entropy descriptors for a 1-D signal vector:
 - Shannon entropy (Wavelets.coefentropy)
 - log energy entropy (Wavelets.coefentropy)
 - sample entropy (ComplexityMeasures)
-- normaliDsed sample entropy (ComplexityMeasures)
+- normalized sample entropy (ComplexityMeasures)
 - differential entropy
 
 # Arguments
@@ -26,7 +26,7 @@ Named tuple:
 - `leent::Float64`: log energy entropy
 - `sent::Float64`: sample entropy
 - `nsent::Float64`: normalized sample entropy
-- `dsent::Float64`: differential entropy
+- `dent::Float64`: differential entropy
 
 # Note
 
@@ -47,7 +47,10 @@ function _entropy(
 
     # Freedman-Diaconis rule: optimal bin width = 2·IQR·N^(−1/3).
     maxmin_range = maximum(s) - minimum(s)
-    fd_bins = ceil(Int64, maxmin_range / (2.0 * StatsKit.iqr(s) * n^(-1 / 3)))
+    q = StatsKit.iqr(s)
+    # IQR = 0 (e.g. flat or heavily quantized signal): fall back to √n bins
+    fd_bins = q > 0 ? max(1, ceil(Int64, maxmin_range / (2.0 * q * n^(-1 / 3)))) :
+        max(1, ceil(Int64, sqrt(n)))
 
     # fit histogram and convert bin counts to probabilities
     h = StatsKit.fit(Histogram, s; nbins = fd_bins)
@@ -62,9 +65,10 @@ function _entropy(
     # differential entropy
     # estimate the PDF using Kernel Density Estimation (KDE)
     kde_model = kde(s)
-    points = range(minimum(s); stop = maximum(s), length = 1000)
-    pdf_values = pdf(kde_model, points)
-    pdf_values[pdf_values .< 0] .= 0
+    # integrate over the whole KDE grid (it includes the kernel tails beyond [min, max]);
+    # truncating to the data range makes the estimate depend on the signal scale
+    points = collect(kde_model.x)
+    pdf_values = max.(kde_model.density, 0)
     # calculate differential entropy in bits
     dent = -trapz(points, pdf_values .* log2.(pdf_values .+ eps()))
 
@@ -195,7 +199,7 @@ end
 
 Calculate negentropy for a 1-D signal vector.
 
-Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
+Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·log₂(2πe·var(s)) − H(s)` (bits), where `H(s)` is the entropy selected by `type` (differential entropy by default). ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 
@@ -217,15 +221,14 @@ function _negentropy(
     # validate
     _check_var(type, [:diff, :shannon, :sample], "type")
 
+    # work on a copy (the input, e.g. a view of the object data, is not modified)
+    s = Vector{Float64}(s)
     # remove DC offset so variance reflects only signal variability
     demean && (s = _remove_dc(s))
-
     # normalize the signal by its total energy
-    norm && (s ./= sum(s .^ 2))
-
-    # Gaussian differential entropy: 0.5·ln(2πe·σ²).
-    # ℯ is the built-in mathematical constant (more readable than exp(1)).
-    gaussian_h = 0.5 * log(2 * π * ℯ * var(s))
+    norm && (s ./= sum(abs2, s))
+    # Gaussian differential entropy in bits (as the entropies below): 0.5·log₂(2πe·σ²)
+    gaussian_h = 0.5 * log2(2 * π * ℯ * var(s))
 
     if type === :diff
         # differential entropy in bits
@@ -244,7 +247,7 @@ end
 
 Calculate negentropy for a 3-D signal array.
 
-Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
+Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·log₂(2πe·var(s)) − H(s)` (bits), where `H(s)` is the entropy selected by `type` (differential entropy by default). ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 
@@ -304,7 +307,7 @@ end
 
 Calculate negentropy for a NEURO object.
 
-Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·ln(2πe·var(s)) − H(s)`, where `H(s)` is the histogram entropy. ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
+Negentropy measures how far a signal's distribution departs from Gaussian: `ne = 0.5·log₂(2πe·var(s)) − H(s)` (bits), where `H(s)` is the entropy selected by `type` (differential entropy by default). ne ≈ 0 for Gaussian; ne > 0 for distributions that are more structured (peaky, multi-modal, etc.).
 
 # Arguments
 

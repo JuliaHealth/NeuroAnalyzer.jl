@@ -18,7 +18,7 @@ For each epoch, the cross-channel mean signal is used as the reference, and a no
 
 # Notes
 
-- The noise estimate is random (`rand`); results are not reproducible unless a random seed is set by the caller
+- The noise estimate is random (`randn`); results are not reproducible unless a random seed is set by the caller
 """
 function _denoise_wien(s::AbstractArray)::AbstractArray
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -37,9 +37,8 @@ function _denoise_wien(s::AbstractArray)::AbstractArray
     Threads.@threads :static for ep_idx = 1:ep_n
         # cross-channel mean for this epoch: shape (samples,)
         s_m = vec(mean(@view(s[:, :, ep_idx]), dims = 1))
-        m = mean(s_m)
-        # Noise estimate: white noise at mean signal power
-        noise = rand(Float64, length(s_m)) .* m
+        # noise estimate: zero-mean white noise with the RMS amplitude (power) of the mean signal
+        noise = randn(length(s_m)) .* sqrt(mean(abs2, s_m))
         for ch_idx = 1:ch_n
             @inbounds s_new[ch_idx, :, ep_idx] =
                 wiener(@view(s[ch_idx, :, ep_idx]), s_m, noise)

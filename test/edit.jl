@@ -201,6 +201,10 @@ channel2marker!(eeg_mrk; ch = "Mark2", id = "mrk")
 @info "Test: epoch()"
 eeg_mrk2 = epoch(eeg_mrk; marker = "Mark2", offset = 0.2, ep_len = 1.2)
 @test size(eeg_mrk2) == (29, 240, 1049)
+# each epoch contains its marker at the offset (other markers inside the epoch are kept)
+m_tmp = eeg_mrk2.markers[eeg_mrk2.markers.value .== "Mark2", :]
+@test any(isapprox.(m_tmp.start, 0.2; atol = 1e-9)) && any(isapprox.(m_tmp.start, 1.2 + 0.2; atol = 1e-9))
+@test all(0 .<= eeg_mrk2.markers.start .< 1.2 * 1049)
 e10 = epoch(eeg; ep_len = 10)
 @test size(e10) == (24, 2560, 120)
 e2 = subepoch(e10; ep_start = 2.0, ep_end = 3.996)

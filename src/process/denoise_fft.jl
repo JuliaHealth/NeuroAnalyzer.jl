@@ -42,7 +42,8 @@ function _denoise_fft(
     # zero coefficients above threshold
     f_idx = s_pow .> t
     s_fft[f_idx] .= 0
-    s = abs.(ifft0(s_fft, pad))
+    # real part: the spectrum stays conjugate-symmetric (both ±f bins exceed the threshold)
+    s = real.(ifft0(s_fft, pad))
 
     return (; s, f_idx)
 end
@@ -108,7 +109,7 @@ function denoise_fft(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     pad::Int64 = 0,
-    t::Int64 = 0,
+    t::Real = 0,
 )::NeuroAnalyzer.NEURO
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -143,7 +144,7 @@ function denoise_fft!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     pad::Int64 = 0,
-    t::Int64 = 0,
+    t::Real = 0,
 )::Nothing
     obj_tmp = denoise_fft(obj; ch = ch, pad = pad, t = t)
     obj.data = obj_tmp.data

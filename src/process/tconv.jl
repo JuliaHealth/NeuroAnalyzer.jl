@@ -121,7 +121,8 @@ function tconv!(
     kernel::AbstractVector,
 )::Union{Nothing, Array{ComplexF64, 3}}
     if eltype(kernel) == ComplexF64
-        return _tconv(obj.data; ch = ch, kernel = kernel)
+        # complex result: returned, obj is not modified
+        return tconv(obj; ch = ch, kernel = kernel)
     else
         obj_tmp = tconv(obj; ch = ch, kernel = kernel)
         obj.data = obj_tmp.data

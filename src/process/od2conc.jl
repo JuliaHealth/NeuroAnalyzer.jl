@@ -53,78 +53,64 @@ function od2conc(
     e = e ./ 10 # convert from /cm to /mm
     einv = inv(e' * e) * e'
 
+    # one concentration triplet per optode pair, from its first-wavelength channel
     lst = findall(wl_idx .== 1)
     dc = zeros(3, ep_len, length(lst), ep_n)
 
+    # source-detector distances (only used for ppf != 1): optode positions from obj.locs
+    use_rho = !all(≈(1), ppf)
+    rho = ones(length(lst))
+    if use_rho
+        rec = obj.header.recording
+        for (idx, idx1) in enumerate(lst)
+            sl = rec[:src_labels][chp[idx1, 1]]
+            dl = rec[:det_labels][chp[idx1, 2]]
+            si = findfirst(==(sl), obj.locs[!, :label])
+            di = findfirst(==(dl), obj.locs[!, :label])
+            (isnothing(si) || isnothing(di)) &&
+                throw(ArgumentError("Optode locations of $sl / $dl not found in OBJ locs."))
+            rho[idx] = sqrt(
+                (obj.locs[si, :loc_x] - obj.locs[di, :loc_x])^2 +
+                (obj.locs[si, :loc_y] - obj.locs[di, :loc_y])^2,
+            )
+        end
+        _warn(
+            "Source-detector distances are computed from OBJ locs coordinates; concentrations are in μM only if these are in mm.",
+        )
+    end
+
     @inbounds for ep_idx = 1:ep_n
         dod = @view(obj_tmp.data[ch, :, ep_idx])
-
-        for idx in eachindex(lst)
-            idx1 = lst[idx]
+        for (idx, idx1) in enumerate(lst)
+            # channels of the same optode pair at the other wavelengths
             idx2 = findall(
                 wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2],
             )
-
-            x = obj.locs[:, :loc_x]
-            y = obj.locs[:, :loc_y]
-
-            src_pos = hcat(x, y)'[:, eachindex(unique(chp[:, 1]))]
-            det_pos = hcat(x, y)'[:, (1 + (end - length(unique(chp[:, 2])))):end]
-            rho = norm(src_pos[:, chp[idx1, 1]] - det_pos[:, chp[idx1, 2]])
-
-            if ppf[1] ≈ 1
-                dc[1:2, :, idx, ep_idx] =
-                    einv * (
-                        dod[vcat(idx1, idx2), :] ./
-                        (ones(ep_len, length(ppf)) .* rho .* ppf')'
-                    )
-            else
-                dc[1:2, :, idx, ep_idx] =
-                    einv * (dod[vcat(idx1, idx2), :] ./ (ones(ep_len, length(ppf)))')
-            end
+            # (Homer3 hmrR_OD2Conc) ppf = 1: Molar·mm, no division by the distance
+            dc[1:2, :, idx, ep_idx] = einv * (dod[vcat(idx1, idx2), :] ./ (rho[idx] .* ppf))
         end
-
         dc[3, :, :, ep_idx] = dc[1, :, :, ep_idx] + dc[2, :, :, ep_idx]
-        # convert to μM
-        dc .*= 10^6
     end
+    # convert to μM
+    dc .*= 10^6
 
-    # add channels
+    # add channels: HbO, HbR, HbT of each optode pair
     for dc_idx in axes(dc, 3)
         obj_tmp.data = vcat(obj_tmp.data, dc[:, :, dc_idx, :])
     end
 
     # update header
-    obj_tmp.header.recording[:channel_type] = vcat(
-        obj.header.recording[:channel_type],
-        repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)),
-    )
-    obj_tmp.header.recording[:unit] =
-        vcat(obj.header.recording[:unit], repeat(["μM/mm"], 3 * size(dc, 3)))
-    for idx in axes(dc, 3)
-        obj_tmp.header.recording[:label] = vcat(
-            obj_tmp.header.recording[:label],
-            [
-                "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO",
-                "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR",
-                "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbT",
-            ],
-        )
+    r = obj_tmp.header.recording
+    r[:channel_type] = vcat(r[:channel_type], repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)))
+    r[:unit] = vcat(r[:unit], repeat([use_rho ? "μM" : "μM·mm"], 3 * size(dc, 3)))
+    for idx1 in lst
+        l = split(obj.header.recording[:label][ch[idx1]], ' ')[1]
+        r[:label] = vcat(r[:label], ["$l HbO", "$l HbR", "$l HbT"])
+        # a concentration channel is bad if any of its OD channels is bad
+        idx2 = findall(wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2])
+        r[:bad_channel] = vcat(r[:bad_channel], fill(any(obj.header.recording[:bad_channel][ch[vcat(idx1, idx2)]]), 3))
     end
-    obj_tmp.header.recording[:channel_order] = vcat(
-        obj_tmp.header.recording[:channel_order],
-        collect((obj_tmp.header.recording[:channel_order][end] + 1):size(obj_tmp.data, 1)),
-    )
-    obj_tmp.header.recording[:label] =
-        replace.(obj_tmp.header.recording[:label], ".0" => "")
-    obj_tmp.header.recording[:bad_channel] = zeros(Bool, size(obj_tmp.data, 1))
-
-    #=
-    for idx in axes(dc, 3)
-        obj_tmp.header.recording[:optode_pairs] = vcat(obj_tmp.header.recording[:optode_pairs], repeat(chp[unique(chp), :][idx, :]', 3))
-    end
-    obj_tmp.header.recording[:wavelength_index] = vcat(obj_tmp.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
-    =#
+    r[:channel_order] = _sort_channels(r[:channel_type])
 
     push!(obj_tmp.history, "od2conc(obj; ch=$ch)")
 

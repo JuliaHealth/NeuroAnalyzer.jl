@@ -27,7 +27,7 @@ This is used internally by diss() to make amplitudes comparable.
 function _erp_gfp(s::AbstractMatrix)::Vector{Float64}
     # GFP = population std across channels at each time point
     # dropdims removes the trailing singleton dimension left by std(..., dims=1) without allocating a copy
-    g = dropdims(std(s; dims = 1); dims = 1)
+    g = dropdims(std(s; dims = 1, corrected = false); dims = 1)
 
     return g
 end
@@ -53,9 +53,9 @@ function erp_gfp_norm(s::AbstractMatrix)::Matrix{Float64}
     # pre-allocate output
     gn = similar(s, Float64)
 
-    # divide each channel row by the GFP vector element-wise
-    # g' broadcasts across rows (channels)
-    @. gn = s / g'
+    # divide each channel row by the GFP vector element-wise (g' broadcasts across rows);
+    # time points with GFP = 0 are left unchanged
+    @. gn = ifelse(g' == 0, s, s / g')
 
     return gn
 end

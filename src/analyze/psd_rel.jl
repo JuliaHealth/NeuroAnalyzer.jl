@@ -75,8 +75,10 @@ function _psd_rel(
         _band_power(s; flim = flim, psd_kwargs...)
     end
 
-    psd_data = _psd(s; db = db, psd_kwargs...)
+    # relative power on the linear scale, then optionally in dB
+    psd_data = _psd(s; db = false, psd_kwargs...)
     p = psd_data.p ./ ref_pw
+    db && (p = pow2db.(p))
     f = psd_data.f
 
     return (; p, f)

@@ -3,7 +3,7 @@ export sym_idx
 """
     _sym_idx(s)
 
-Calculate signal symmetry index (ratio of positive to negative amplitudes) for a 1-D signal vector.
+Calculate signal symmetry index (ratio of the number of non-negative to negative samples) for a 1-D signal vector.
 
 Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
 
@@ -24,7 +24,7 @@ end
 """
     _sym_idx(s)
 
-Calculate signal symmetry index (ratio of positive to negative amplitudes) for a 3-D signal array.
+Calculate signal symmetry index (ratio of the number of non-negative to negative samples) for a 3-D signal array.
 
 Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
 
@@ -59,7 +59,7 @@ end
 """
     sym_idx(obj; <keyword arguments>)
 
-Calculate signal symmetry index (ratio of positive to negative amplitudes). Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
+Calculate signal symmetry index (ratio of the number of non-negative to negative samples). Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
 
 # Arguments
 

@@ -25,13 +25,11 @@ function _resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Floa
     old_sr >= 1 || throw(ArgumentError("old_sr must be ≥ 1."))
     new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
 
-    new_sr == old_sr && return (s)
+    new_sr == old_sr && return Vector{Float64}(s)
 
-    # resample
-    sr_ratio = new_sr / old_sr
-    s_new = DSP.resample(s, sr_ratio)
-
-    return s_new
+    # exact rational ratio: polyphase resampling with an anti-aliasing low-pass filter
+    # (a floating-point ratio would select DSP's approximate arbitrary-rate filter)
+    return DSP.resample(Vector{Float64}(s), new_sr // old_sr)
 end
 
 """
@@ -101,7 +99,8 @@ function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     elseif new_sr < sr(obj)
         return downsample(obj; new_sr = new_sr)
     else
-        return obj
+        # always a copy, never the input object
+        return deepcopy(obj)
     end
 end
 
@@ -147,18 +146,31 @@ Upsample all channels to `new_sr` sampling frequency.
 """
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     # validate
-    new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn(
-        "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.",
+    new_sr > sr(obj) ||
+        throw(ArgumentError("new_sr must be > $(sr(obj)) Hz (the current sampling rate)."))
+
+    return _resample_obj(obj, new_sr, "upsample")
+end
+
+# resampled copy of obj: data, sampling rate and time axes (markers are stored in seconds
+# and do not change)
+function _resample_obj(
+    obj::NeuroAnalyzer.NEURO,
+    new_sr::Int64,
+    fname::String,
+)::NeuroAnalyzer.NEURO
+    r = new_sr // sr(obj)
+    max(numerator(r), denominator(r)) > 1000 && _warn(
+        "The resampling ratio $(numerator(r))/$(denominator(r)) is complex and slow; a sampling rate with a simpler ratio to $(sr(obj)) Hz is faster.",
     )
 
     # create new dataset
     obj_tmp = deepcopy(obj)
-
     obj_tmp.data = NeuroAnalyzer._resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-
+    # the new sampling rate must be set before the time axes are rebuilt
     obj_tmp.header.recording[:sampling_rate] = new_sr
-    push!(obj_tmp.history, "upsample(obj, new_sr=$new_sr)")
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
+    push!(obj_tmp.history, "$fname(obj, new_sr=$new_sr)")
 
     return obj_tmp
 end
@@ -205,26 +217,11 @@ Downsample all channels to `new_sr` sampling frequency.
 """
 function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     # validate
-    new_sr < sr(obj) && _warn(
-        "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(sr(obj) / 2) Hz).",
-    )
+    1 <= new_sr < sr(obj) ||
+        throw(ArgumentError("new_sr must be in [1, $(sr(obj) - 1)] Hz (below the current sampling rate)."))
 
-    new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn(
-        "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.",
-    )
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    s_new = NeuroAnalyzer._resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
-
-    obj_tmp.data = s_new
-
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-
-    obj_tmp.header.recording[:sampling_rate] = new_sr
-    push!(obj_tmp.history, "downsample(obj, new_sr=$new_sr)")
-
-    return obj_tmp
+    # (the resampling filter is an anti-aliasing low-pass filter, cutoff: the new Nyquist frequency)
+    return _resample_obj(obj, new_sr, "downsample")
 end
 
 """

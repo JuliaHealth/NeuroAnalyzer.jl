@@ -297,7 +297,7 @@ Compute area under curve of an ERP/ERF/MEP (epoch 1).
 
 # Returns
 
-- `Vector{Float64}`
+- `Vector{Float64}`: area under the curve for each channel (`:neg`: negative area)
 """
 function erp_auc(
     obj::NeuroAnalyzer.NEURO;
@@ -331,28 +331,15 @@ function erp_auc(
     @inbounds for ch_idx in eachindex(ch)
 
         # extract the signal segment for this channel (epoch 1 = ERP/ERF average).
-        s = @view obj.data[ch_idx, t1:t2, 1]
-
+        s = @view obj.data[ch[ch_idx], t1:t2, 1]
         if type === :all
             auc[ch_idx] = Simpson.simpson(s, t; dx = dx)
-
         elseif type === :pos
-            mask = s .> 0
-            any(mask) || throw(
-                ArgumentError(
-                    "No positive values in channel $(ch[ch_idx]) segment, cannot compute AUC.",
-                ),
-            )
-            auc[ch_idx] = Simpson.simpson(s[mask], t[mask]; dx = dx)
-
+            # area of the positive part: the signal clipped at 0 (no gaps between
+            # positive stretches are integrated over)
+            auc[ch_idx] = Simpson.simpson(max.(s, 0), t; dx = dx)
         elseif type === :neg
-            mask = s .< 0
-            any(mask) || throw(
-                ArgumentError(
-                    "No negative values in channel $(ch[ch_idx]) segment, cannot compute AUC.",
-                ),
-            )
-            auc[ch_idx] = Simpson.simpson(s[mask], t[mask], dx = dx)
+            auc[ch_idx] = Simpson.simpson(min.(s, 0), t; dx = dx)
         end
     end
 

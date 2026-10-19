@@ -82,7 +82,8 @@ Standardize channels.
 - `Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize!(
-    obj::NeuroAnalyzer.NEURO,
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
 )::Vector{ZScoreTransform{Float64, Vector{Float64}}}
     obj_tmp, scaler = standardize(obj; ch = ch)
     obj.data = obj_tmp.data

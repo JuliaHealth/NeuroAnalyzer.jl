@@ -86,7 +86,7 @@ function taper(
     obj_tmp = deepcopy(obj)
 
     obj_tmp.data[ch, :, :] = _taper(obj.data[ch, :, :]; t = t)
-    push!(obj_tmp.history, "taper(obj; ch=$ch), t=$t")
+    push!(obj_tmp.history, "taper(obj; ch=$ch, t=$t)")
 
     return obj_tmp
 end

@@ -1,4 +1,40 @@
 """
+    _interpolator(imethod, loc_x, loc_y, s)
+
+Scattered-data interpolator of values `s` at points `(loc_x, loc_y)`; evaluate it with `ScatteredInterpolation.evaluate(itp, [x, y])`.
+
+# Arguments
+
+- `imethod::Symbol`: interpolation method: `:sh` (Shepard), `:mq` (Multiquadratic), `:imq` (Inverse Multiquadratic), `:tp` (Thin Plate Spline), `:nn` (Nearest Neighbor), `:ga` (Gaussian)
+- `loc_x::AbstractVector{<:Real}`: x-coordinates of data points
+- `loc_y::AbstractVector{<:Real}`: y-coordinates of data points
+- `s::AbstractVector{<:Real}`: values at the data points
+"""
+function _interpolator(
+    imethod::Symbol,
+    loc_x::AbstractVector{<:Real},
+    loc_y::AbstractVector{<:Real},
+    s::AbstractVector{<:Real},
+)
+    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+    m = if imethod === :sh
+        Shepard()
+    elseif imethod === :mq
+        Multiquadratic()
+    elseif imethod === :imq
+        InverseMultiquadratic()
+    elseif imethod === :tp
+        ThinPlate()
+    elseif imethod === :nn
+        NearestNeighbor()
+    else
+        Gaussian()
+    end
+    # data points as a (2 × n_points) matrix
+    return ScatteredInterpolation.interpolate(m, Matrix{Float64}([loc_x loc_y]'), Vector{Float64}(s))
+end
+
+"""
     _interpolate2d(s, loc_x, loc_y, ifactor, imethod, nmethod)
 
 Perform 2D scattered interpolation of signal data on a regular grid.
@@ -65,23 +101,7 @@ function _interpolate2d(
     interpolation_m = Matrix{NTuple{2, Float64}}(undef, ifactor, ifactor)
     s_interpolated = zeros(ifactor, ifactor)
 
-    # prepare electrode locations as matrix (2 × n_points)
-    electrode_locations = [loc_x loc_y]'
-
-    # create appropriate interpolator based on method
-    itp = if imethod === :sh
-        ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s)
-    elseif imethod === :mq
-        ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s)
-    elseif imethod === :imq
-        ScatteredInterpolation.interpolate(InverseMultiquadratic(), electrode_locations, s)
-    elseif imethod === :tp
-        ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s)
-    elseif imethod === :nn
-        ScatteredInterpolation.interpolate(NearestNeighbor(), electrode_locations, s)
-    elseif imethod === :ga
-        ScatteredInterpolation.interpolate(Gaussian(), electrode_locations, s)
-    end
+    itp = _interpolator(imethod, loc_x, loc_y, s)
 
     # perform interpolation on each grid point
     @inbounds for idx1 = 1:ifactor

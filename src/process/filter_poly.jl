@@ -31,7 +31,6 @@ function _filter_poly(
 
     s_filtered = float(copy(s))
 
-    # TO DO: smooth spikes between windows
     window_n = length(s) ÷ window
     # remaining samples after full windows
     window_last = length(s) - window_n * window
@@ -59,7 +58,7 @@ function _filter_poly(
     half = window ÷ 4
     @inbounds for junction = window:window:(window * (window_n - 1))
         j1 = max(1, junction - half)
-        j2 = min(length(s), junction + half - 1)   # was: no bounds check - could exceed signal length
+        j2 = min(length(s), junction + half)
         s_tmp = s_filtered[j1:j2]
         t = collect(1.0:length(s_tmp))
         model = Loess.loess(t, Vector{Float64}(s_tmp); span = 1.0)
@@ -83,8 +82,6 @@ Apply a piecewise polynomial filter to every channel × epoch slice of a 3-D sig
 - `s::AbstractArray`: 3-D signal array, shape (channels, samples, epochs)
 - `order::Int64=8`: polynomial degree; must be ≥ 2 and < `window`
 - `window::Int64=10`: window length in samples; must satisfy `1 ≤ window ≤ size(s, 2)`
-
-# Returns
 
 # Returns
 

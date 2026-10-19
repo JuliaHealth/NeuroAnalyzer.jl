@@ -37,7 +37,7 @@ Calculate non-phase-locked signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be ERP object
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be ERP/ERF object
 
 # Returns
 

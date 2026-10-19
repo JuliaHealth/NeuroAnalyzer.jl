@@ -49,7 +49,7 @@ function edit_locs(
     obj_tmp = deepcopy(obj)
 
     loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
-    length(loc_idx) > 0 ||
+    loc_idx isa Int64 ||
         throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
 
     name != "" && rename_channel!(obj_tmp; ch = labels(obj)[ch], name = name)
@@ -124,6 +124,8 @@ function edit_locs!(
         name = name,
         type = type,
     )
+    # the channel may have been renamed / retyped (header)
+    obj.header = obj_tmp.header
     obj.locs = obj_tmp.locs
     obj.history = obj_tmp.history
     obj_tmp = nothing

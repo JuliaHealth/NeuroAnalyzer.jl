@@ -16,6 +16,41 @@ export henv_mean
 export henv_median
 export env_cor
 
+# mean (`med = false`) or median (`med = true`) and 95% CI of a (channels, points, epochs)
+# array at each point: over channels for each epoch (`dims = 1`, output (points, epochs)),
+# over epochs for each channel (`dims = 2`, output (points, channels)) or over channels and
+# epochs (`dims = 3`, output (points, 1)); mean: normal approximation, median: `cimd()`
+function _env_ci(a::AbstractArray{<:Real, 3}, dims::Int64, med::Bool)
+    dims in (1, 2, 3) || throw(ArgumentError("dims must be 1, 2 or 3."))
+    # values (observations, points, groups)
+    x = if dims == 1
+        a
+    elseif dims == 2
+        permutedims(a, (3, 2, 1))
+    else
+        reshape(permutedims(a, (1, 3, 2)), size(a, 1) * size(a, 3), size(a, 2), 1)
+    end
+    n_obs, n_pts, n_grp = size(x)
+    em = zeros(n_pts, n_grp)
+    el = zeros(n_pts, n_grp)
+    eu = zeros(n_pts, n_grp)
+    @inbounds for g = 1:n_grp, pt = 1:n_pts
+        v = @view(x[:, pt, g])
+        if med
+            em[pt, g] = median(v)
+            el[pt, g], eu[pt, g] = cimd(v)
+        else
+            em[pt, g] = mean(v)
+            ci = 1.96 * std(v) / sqrt(n_obs)
+            el[pt, g] = em[pt, g] - ci
+            eu[pt, g] = em[pt, g] + ci
+        end
+    end
+    return em, el, eu
+end
+_env_mean_ci(a::AbstractArray{<:Real, 3}, dims::Int64) = _env_ci(a, dims, false)
+_env_median_ci(a::AbstractArray{<:Real, 3}, dims::Int64) = _env_ci(a, dims, true)
+
 """
     env_up(s, x; <keyword arguments>)
 
@@ -211,7 +246,7 @@ Calculate temporal envelope (mean and 95% CI) for a NEURO object.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: mean temporal envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: mean temporal envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
@@ -244,49 +279,8 @@ function tenv_mean(
     ch_n = size(a, 1)
     ep_n = size(a, 3)
 
-    if dims == 1
-
-        # mean over channels at each time point, per epoch
-
-        # pre-allocate outputs
-        em = zeros(length(t), ep_n)
-        eu = zeros(length(t), ep_n)
-        el = zeros(length(t), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = dropdims(mean(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
-            ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
-            eu[:, ep_idx] = em[:, ep_idx] .+ ci
-            el[:, ep_idx] = em[:, ep_idx] .- ci
-        end
-
-    elseif dims == 2
-
-        # mean over epochs at each time point, per channel
-
-        # pre-allocate outputs
-        em = zeros(length(t), ch_n)
-        eu = zeros(length(t), ch_n)
-        el = zeros(length(t), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = dropdims(mean(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
-            ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
-            eu[:, ch_idx] = em[:, ch_idx] .+ ci
-            el[:, ch_idx] = em[:, ch_idx] .- ci
-        end
-
-    else
-
-        # mean over channels and epochs: first average over channels (dims=1),
-        # then average the result over epochs (dims=2 of the intermediate matrix)
-
-        tenv_data = tenv_mean(obj; ch = ch, dims = 1, d = d)
-
-        em = mean(tenv_data.em; dims = 2)
-        eu = mean(tenv_data.eu; dims = 2)
-        el = mean(tenv_data.el; dims = 2)
-    end
+    # mean and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_mean_ci(a, dims)
 
     return (; em, el, eu, t)
 end
@@ -307,7 +301,7 @@ Calculate temporal envelope (median and 95% CI) for a NEURO object.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: median temporal envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: median temporal envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
@@ -340,48 +334,8 @@ function tenv_median(
     ch_n = size(a, 1)
     ep_n = size(a, 3)
 
-    if dims == 1
-
-        # median over channels at each time point, per epoch
-
-        # pre-allocate outputs
-        em = zeros(length(t), ep_n)
-        eu = zeros(length(t), ep_n)
-        el = zeros(length(t), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = dropdims(median(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
-            for m_idx in eachindex(t)
-                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(@view(a[:, m_idx, ep_idx]))
-            end
-        end
-
-    elseif dims == 2
-
-        # median over epochs at each time point, per channel
-
-        # pre-allocate outputs
-        em = zeros(length(t), ch_n)
-        eu = zeros(length(t), ch_n)
-        el = zeros(length(t), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = dropdims(median(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
-            for m_idx in eachindex(t)
-                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(a[ch_idx, m_idx, :]))
-            end
-        end
-
-    else
-
-        # median over channels and epochs: first average over channels (dims=1),
-        # then average the result over epochs (dims=2 of the intermediate matrix)
-
-        tenv_data = tenv_median(obj; ch = ch, dims = 1, d = d)
-        em = median(tenv_data.em; dims = 2)
-        eu = median(tenv_data.eu; dims = 2)
-        el = median(tenv_data.el; dims = 2)
-    end
+    # median and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_median_ci(a, dims)
 
     return (; em, el, eu, t)
 end
@@ -389,7 +343,7 @@ end
 """
     penv(obj; <keyword arguments>)
 
-Calculate power spectrum (in dB) envelope for a NEURO object.
+Calculate power spectrum envelope (linear power) for a NEURO object.
 
 # Arguments
 
@@ -482,7 +436,7 @@ end
 """
     penv_mean(obj; <keyword arguments>)
 
-Calculate power spectrum (in dB) envelope (mean and 95% CI) for a NEURO object.
+Calculate power spectrum envelope (linear power) (mean and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -509,7 +463,7 @@ Calculate power spectrum (in dB) envelope (mean and 95% CI) for a NEURO object.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: mean power envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: mean power envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `f::Vector{Float64}`: frequencies
@@ -564,60 +518,8 @@ function penv_mean(
     # number of epochs
     ep_n = size(pw, 3)
 
-    if dims == 1
-
-        # mean over channels at each time point, per epoch
-
-        # pre-allocate outputs
-        em = zeros(length(f), ep_n)
-        eu = zeros(length(f), ep_n)
-        el = zeros(length(f), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = dropdims(mean(@view(pw[:, :, ep_idx]), dims = 1), dims = 1)
-            ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(f))
-            eu[:, ep_idx] = em[:, ep_idx] .+ ci
-            el[:, ep_idx] = em[:, ep_idx] .- ci
-        end
-
-    elseif dims == 2
-
-        # mean over epochs at each time point, per channel
-
-        # pre-allocate outputs
-        em = zeros(length(f), ch_n)
-        eu = zeros(length(f), ch_n)
-        el = zeros(length(f), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = dropdims(mean(@view(pw[ch_idx, :, :]), dims = 2), dims = 2)
-            ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(f))
-            eu[:, ch_idx] = em[:, ch_idx] .+ ci
-            el[:, ch_idx] = em[:, ch_idx] .- ci
-        end
-
-    else
-
-        # mean over channels and epochs: first average over channels (dims=1),
-        # then average the result over epochs (dims=2 of the intermediate matrix)
-
-        penv_data = penv_mean(
-            obj;
-            ch = ch,
-            dims = 1,
-            d = d,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            demean = demean,
-        )
-        em = mean(penv_data.em; dims = 2)
-        eu = mean(penv_data.eu; dims = 2)
-        el = mean(penv_data.el; dims = 2)
-    end
+    # mean and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_mean_ci(pw, dims)
 
     return (; em, el, eu, f)
 end
@@ -625,7 +527,7 @@ end
 """
     penv_median(obj; <keyword arguments>)
 
-Calculate power spectrum (in dB) envelope (median and 95% CI) for a NEURO object.
+Calculate power spectrum envelope (linear power) (median and 95% CI) for a NEURO object.
 
 # Arguments
 
@@ -652,7 +554,7 @@ Calculate power spectrum (in dB) envelope (median and 95% CI) for a NEURO object
 
 Named tuple:
 
-- `em::Matrix{Float64}`: median power envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: median power envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `f::Vector{Float64}`: frequencies
@@ -707,60 +609,8 @@ function penv_median(
     # number of epochs
     ep_n = size(pw, 3)
 
-    if dims == 1
-
-        # median over channels at each time point, per epoch
-
-        # pre-allocate outputs
-        em = zeros(length(f), ep_n)
-        eu = zeros(length(f), ep_n)
-        el = zeros(length(f), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = dropdims(median(@view(pw[:, :, ep_idx]), dims = 1), dims = 1)
-            for m_idx in eachindex(f)
-                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(@view(pw[:, m_idx, ep_idx]))
-            end
-        end
-
-    elseif dims == 2
-
-        # mean over epochs at each time point, per channel
-
-        # pre-allocate outputs
-        em = zeros(length(f), ch_n)
-        eu = zeros(length(f), ch_n)
-        el = zeros(length(f), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = dropdims(median(@view(pw[ch_idx, :, :]), dims = 2), dims = 2)
-            for m_idx in eachindex(f)
-                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(pw[ch_idx, m_idx, :]))
-            end
-        end
-
-    else
-
-        # mean over channels and epochs: first average over channels (dims=1),
-        # then average the result over epochs (dims=2 of the intermediate matrix)
-
-        penv_data = penv_median(
-            obj;
-            ch = ch,
-            dims = 1,
-            d = d,
-            method = method,
-            nt = nt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-            ncyc = ncyc,
-            demean = demean,
-        )
-        em = median(penv_data.em; dims = 2)
-        eu = median(penv_data.eu; dims = 2)
-        el = median(penv_data.el; dims = 2)
-    end
+    # median and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_median_ci(pw, dims)
 
     return (; em, el, eu, f)
 end
@@ -863,7 +713,6 @@ function senv(
             fs = fs,
             db = db,
             ncyc = ncyc,
-            w = w,
         )
         sp = spec_data.p
     elseif method === :gh
@@ -872,7 +721,6 @@ function senv(
             fs = fs,
             db = db,
             gw = gw,
-            w = w,
         )
         sp = spec_data.p
     elseif method === :cwt
@@ -886,9 +734,8 @@ function senv(
         sp = spec_data.m
     end
 
-    # build the spectrogram time axis and align with the epoch start
-    t = linspace(0, (epoch_len(obj) / fs), size(sp, 2))
-    t .+= obj.epoch_time[1]
+    # spectrogram time axis (segment centers for :stft / :mt), aligned with the epoch start
+    t = spec_data.t .+ obj.epoch_time[1]
 
     # pre-allocate output
     e = zeros(ch_n, length(t), ep_n)
@@ -931,7 +778,6 @@ function senv(
                 fs = fs,
                 db = db,
                 ncyc = ncyc,
-                w = w,
             )
             sp_loc = spec_data.p
             sf_loc = spec_data.f
@@ -942,7 +788,6 @@ function senv(
                 fs = fs,
                 db = db,
                 gw = gw,
-                w = w,
             )
             sp_loc = spec_data.p
             sf_loc = spec_data.f
@@ -959,18 +804,10 @@ function senv(
 
         # optionally zero out powers above the threshold, then reverse so the
         # highest sub-threshold power becomes the "dominant" frequency
-        if !isnothing(threshold)
-            sp_loc[sp_loc .> threshold] .= 0
-            reverse!(sp_loc)
-            reverse!(sf_loc)
-        end
-
-        # for each time bin find the frequency with maximum power
-        f_idx = zeros(length(t))
-        m = vec(maximum(sp_loc, dims = 1))
-        for idx2 in eachindex(m)
-            f_idx[idx2] = sf_loc[vsearch(m[idx2], @view(sp_loc[:, idx2]))]
-        end
+        # powers above the threshold are excluded
+        !isnothing(threshold) && (sp_loc[sp_loc .> threshold] .= -Inf)
+        # for each time bin the frequency with maximum power
+        f_idx = [sf_loc[argmax(@view(sp_loc[:, idx2]))] for idx2 in axes(sp_loc, 2)]
 
         e[ch_idx, :, ep_idx] = env_up(f_idx, t, d = d)
     end
@@ -1010,7 +847,7 @@ Calculate spectral envelope (mean and 95% CI) for a NEURO object.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: mean spectral envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: mean spectral envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `t::Vector{Float64}`: time points
@@ -1071,64 +908,8 @@ function senv_mean(
     # number of epochs
     ep_n = size(sp, 3)
 
-    if dims == 1
-
-        # mean over channels at each time point, per epoch
-
-        # pre-allocate outputs
-        em = zeros(length(t), ep_n)
-        eu = zeros(length(t), ep_n)
-        el = zeros(length(t), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = dropdims(mean(@view(sp[:, :, ep_idx]), dims = 1), dims = 1)
-            ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
-            eu[:, ep_idx] = em[:, ep_idx] .+ ci
-            el[:, ep_idx] = em[:, ep_idx] .- ci
-        end
-
-    elseif dims == 2
-
-        # mean over epochs at each time point, per channel
-
-        # pre-allocate outputs
-        em = zeros(length(t), ch_n)
-        eu = zeros(length(t), ch_n)
-        el = zeros(length(t), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = dropdims(mean(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
-            ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
-            eu[:, ch_idx] = em[:, ch_idx] .+ ci
-            el[:, ch_idx] = em[:, ch_idx] .- ci
-        end
-
-    else
-
-        # mean over channels and epochs: first average over channels (dims=1),
-        # then average the result over epochs (dims=2 of the intermediate matrix)
-
-        env_data = senv_mean(
-            obj;
-            ch = ch,
-            dims = 1,
-            d = d,
-            threshold = threshold,
-            pad = pad,
-            method = method,
-            db = db,
-            nt = nt,
-            gw = gw,
-            ncyc = ncyc,
-            wt = wt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-        )
-        em = mean(env_data.em; dims = 2)
-        eu = mean(env_data.eu; dims = 2)
-        el = mean(env_data.el; dims = 2)
-    end
+    # mean and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_mean_ci(sp, dims)
 
     return (; em, el, eu, t)
 end
@@ -1165,7 +946,7 @@ Calculate spectral envelope (median and 95% CI) for a NEURO object.
 
 Named tuple:
 
-- `em::Matrix{Float64}`: median spectral envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: median spectral envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
@@ -1226,67 +1007,8 @@ function senv_median(
     # number of epochs
     ep_n = size(sp, 3)
 
-    if dims == 1
-
-        # median over epochs at each time point, per channel
-
-        # pre-allocate outputs
-        em = zeros(length(t), ep_n)
-        eu = zeros(length(t), ep_n)
-        el = zeros(length(t), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = median(@view(sp[:, :, ep_idx]), dims = 1)
-            for m_idx in eachindex(t)
-                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(sp[:, m_idx, ep_idx])
-            end
-        end
-
-    elseif dims == 2
-
-        # median over epochs at each time point, per channel
-
-        # pre-allocate outputs
-        em = zeros(length(t), ch_n)
-        eu = zeros(length(t), ch_n)
-        el = zeros(length(t), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = dropdims(median(@view(sp[ch_idx, :, :]), dims = 2), dims = 2)
-            for m_idx in eachindex(t)
-                # BUG FIX: was `cimd(sp[ch_idx, :, :])` - passed the entire
-                # (samples, epochs) matrix instead of the epoch vector at m_idx.
-                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(@view(sp[ch_idx, m_idx, :]))
-            end
-        end
-
-    else
-
-        # median over channels and epochs: first average over channels (dims=1),
-        # then average the result over epochs (dims=2 of the intermediate matrix)
-
-        senv_data = senv_median(
-            obj;
-            ch = ch,
-            dims = 1,
-            d = d,
-            threshold = threshold,
-            pad = pad,
-            method = method,
-            db = db,
-            nt = nt,
-            gw = gw,
-            ncyc = ncyc,
-            wt = wt,
-            wlen = wlen,
-            woverlap = woverlap,
-            w = w,
-        )
-
-        em = median(senv_data.em; dims = 2)
-        eu = median(senv_data.eu; dims = 2)
-        el = median(senv_data.el; dims = 2)
-    end
+    # median and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_median_ci(sp, dims)
 
     return (; em, el, eu, t)
 end
@@ -1366,7 +1088,7 @@ Calculate Hilbert spectrum amplitude envelope (mean and 95% CI) for a NEURO obje
 
 Named tuple:
 
-- `em::Matrix{Float64}`: mean Hilbert spectrum amplitude envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: mean Hilbert spectrum amplitude envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
@@ -1400,47 +1122,8 @@ function henv_mean(
     # number of epochs
     ep_n = size(a, 3)
 
-    if dims == 1
-
-        # mean over channels at each time point, per epoch
-
-        # pre-allocate outputs
-        em = zeros(length(t), ep_n)
-        eu = zeros(length(t), ep_n)
-        el = zeros(length(t), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = dropdims(mean(@view(a[:, :, ep_idx]), dims = 1), dims = 1)
-            ci = 1.96 * std(@view(em[:, ep_idx])) / sqrt(length(t))
-            eu[:, ep_idx] = em[:, ep_idx] .+ ci
-            el[:, ep_idx] = em[:, ep_idx] .- ci
-        end
-
-    elseif dims == 2
-
-        # mean over epochs
-
-        em = zeros(length(t), ch_n)
-        eu = zeros(length(t), ch_n)
-        el = zeros(length(t), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = dropdims(mean(@view(a[ch_idx, :, :]), dims = 2), dims = 2)
-            ci = 1.96 * std(@view(em[:, ch_idx])) / sqrt(length(t))
-            eu[:, ch_idx] = em[:, ch_idx] .+ ci
-            el[:, ch_idx] = em[:, ch_idx] .- ci
-        end
-
-    elseif dims == 3
-
-        # mean over channels and epochs: first average over channels (dims=1),
-        # then average the result over epochs (dims=2 of the intermediate matrix)
-
-        henv_data = henv_mean(obj; ch = ch, dims = 1, d = d)
-        em = mean(henv_data.em; dims = 2)
-        eu = mean(henv_data.eu; dims = 2)
-        el = mean(henv_data.el; dims = 2)
-    end
+    # mean and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_mean_ci(a, dims)
 
     return (; em, el, eu, t)
 end
@@ -1461,7 +1144,7 @@ Calculate Hilbert spectrum amplitude envelope (median and 95% CI) for a NEURO ob
 
 Named tuple:
 
-- `em::Matrix{Float64}`: median Hilbert spectrum amplitude envelope, shape (samples, channels) when `dims=1`, (samples, epochs) when `dims=2` or (samples, 1) when `dims=3`
+- `em::Matrix{Float64}`: median Hilbert spectrum amplitude envelope, shape (samples, epochs) when `dims=1`, (samples, channels) when `dims=2` or (samples, 1) when `dims=3`
 - `el::Matrix{Float64}`: 95% CI lower bound
 - `eu::Matrix{Float64}`: 95% CI upper bound
 - `t::Vector{Float64}`: time points
@@ -1496,45 +1179,8 @@ function henv_median(
     # number of epochs
     ep_n = size(a, 3)
 
-    if dims == 1
-
-        # median over channels
-
-        em = zeros(length(t), ep_n)
-        eu = zeros(length(t), ep_n)
-        el = zeros(length(t), ep_n)
-
-        @inbounds for ep_idx = 1:ep_n
-            em[:, ep_idx] = median(@view(a[:, :, ep_idx]), dims = 1)
-            for m_idx in eachindex(t)
-                eu[m_idx, ep_idx], el[m_idx, ep_idx] = cimd(a[:, m_idx, ep_idx])
-            end
-        end
-
-    elseif dims == 2
-
-        # median over epochs
-
-        em = zeros(length(t), ch_n)
-        eu = zeros(length(t), ch_n)
-        el = zeros(length(t), ch_n)
-
-        @inbounds for ch_idx = 1:ch_n
-            em[:, ch_idx] = median(a[ch_idx, :, :], dims = 2)
-            for m_idx in eachindex(t)
-                eu[m_idx, ch_idx], el[m_idx, ch_idx] = cimd(a[ch_idx, m_idx, :])
-            end
-        end
-
-    elseif dims == 3
-
-        # median over channels and epochs
-
-        henv_data = henv_median(obj; ch = ch, dims = 1, d = d)
-        em = median(henv_data.em; dims = 2)
-        eu = median(henv_data.eu; dims = 2)
-        el = median(henv_data.el; dims = 2)
-    end
+    # median and 95% CI over channels (dims = 1), epochs (dims = 2) or both (dims = 3)
+    em, el, eu = _env_median_ci(a, dims)
 
     return (; em, el, eu, t)
 end

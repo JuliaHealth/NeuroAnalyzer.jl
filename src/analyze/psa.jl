@@ -19,7 +19,7 @@ function _psa(s1::AbstractVector, s2::AbstractVector)::Float64
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
 
-    # get instatenous phases
+    # instantaneous phases
     s1ph = htransform(s1).ph
     s2ph = htransform(s2).ph
 
@@ -66,7 +66,7 @@ function psa(
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+                "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
             ),
         )
 
@@ -76,7 +76,7 @@ function psa(
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||

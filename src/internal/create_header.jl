@@ -144,6 +144,7 @@ function _create_recording_meg(;
     coil_id::Vector{Int64} = Int64[],
     head_origin::Vector{Float64} = Float64[],
     hpi::Dict{Symbol, Any} = Dict{Symbol, Any}(),
+    first_time::Real = 0.0,
 )::Dict
     # sensor geometry (FIFF/MNE `loc` convention), one row per channel:
     # r0 (1:3, m), ex (4:6), ey (7:9), ez (10:12; coil normal)
@@ -160,6 +161,8 @@ function _create_recording_meg(;
     (isempty(head_origin) || length(head_origin) == 3) ||
         throw(ArgumentError("head_origin must have 3 elements."))
     # hpi: :freqs (Hz), :dig (n_coils × 3, head frame, m), :coil_no
+    # first_time: time (s) of the first sample from the start of the acquisition (FIFF
+    # first_samp / sampling rate); MaxFilter / MNE-Python head positions are relative to it
     # normalize time separator (MEG files sometimes use '.' instead of ':')
     recording_time = replace(recording_time, '.' => ':')
     d = _common_recording_fields(;
@@ -185,6 +188,7 @@ function _create_recording_meg(;
             :coil_id => coil_id,
             :head_origin => head_origin,
             :hpi => hpi,
+            :first_time => Float64(first_time),
             :sss => false,
             :tsss => false,
             :epoch_id => "",

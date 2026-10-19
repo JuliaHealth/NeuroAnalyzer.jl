@@ -146,8 +146,8 @@ function emd(
 )::Matrix{Float64}
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
     ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] :
-        get_channel(obj; ch = ch, exclude = "")[1]
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+        get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
     ch = ch[1]

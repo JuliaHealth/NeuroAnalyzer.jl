@@ -179,6 +179,10 @@ function iir_order(;
         wp = ((cutoff[1] - bw / 2) / nqf, (cutoff[2] + bw / 2) / nqf)  # outer pass edges
     end
 
+    # all band edges must lie within (0, Nyquist)
+    all(e -> 0 < e < 1, (wp..., ws...)) || throw(
+        ArgumentError("Band edges (cutoff ± bw/2) must lie within (0, $nqf) Hz; reduce bw."),
+    )
     # delegate order estimation to the appropriate DSP.jl function
     if fprototype === :butterworth
         order = buttord(wp, ws, rp, rs)[1]

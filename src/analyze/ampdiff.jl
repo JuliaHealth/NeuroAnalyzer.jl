@@ -47,7 +47,7 @@ Calculate amplitude difference to reference mean: amplitude difference between e
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}`: reference channel name(s)
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s); each selected channel is compared with the mean of the other selected channels
 
 # Returns
 

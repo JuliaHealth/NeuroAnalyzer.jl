@@ -38,7 +38,7 @@ function _plv(
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
 
-    # get instatenous phases
+    # instantaneous phases
     ht_data1 = htransform(s1)
     ht_data2 = htransform(s2)
     s1ph = ht_data1.ph
@@ -109,7 +109,7 @@ function plv(
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+                "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
             ),
         )
 
@@ -119,7 +119,7 @@ function plv(
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||

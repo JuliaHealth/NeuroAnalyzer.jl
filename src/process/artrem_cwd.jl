@@ -16,9 +16,9 @@ The signal is transformed into the time-frequency domain via CWD, the coefficien
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see ContinuousWavelets.jl for available wavelets
 - `tseg::Tuple{Real, Real}`: time window of the artifact `(t_start, t_end)` in seconds; must be a strictly ascending pair within `[t[1], t[end]]`
 - `fseg::Tuple{Real, Real}`: frequency window of the artifact `(f_low, f_high)` in Hz; must be a strictly ascending pair within the wavelet frequency range
-- `type::Symbol=:nd`: inverse CWD reconstruction method:
-    - `:pd`: PenroseDelta
-    - `:nd`: NaiveDelta (default)
+- `type::Symbol=:pd`: inverse CWD reconstruction method:
+    - `:pd`: PenroseDelta (default; most accurate)
+    - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
 # Returns
@@ -32,18 +32,19 @@ function _artrem_cwd(
     wt::T = wavelet(Morlet(2π); β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
+    type::Symbol = :pd,
 )::Vector{Float64} where {T <: CWT}
     # validate
-    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))   # was: !(fs >= 1) && throw(...)
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
 
     # compute the wavelet frequency axis, then validate the segment bounds
     f = _cwtfrq(s; fs = fs, wt = wt)
     _check_tuple(tseg, (t[1], t[end]), "tseg")
     _check_tuple(fseg, (f[1], f[end]), "fseg")
 
-    # forward CWD → complex coefficient matrix (frequencies × time)
-    coef = NeuroAnalyzer._cwd(s; wt = wt)
+    # forward CWD → complex coefficient matrix (frequencies × time); complex coefficients
+    # are needed for an accurate reconstruction
+    coef = NeuroAnalyzer._cwd(s; wt = wt, complex = true)
 
     # find the nearest frequency and time indices for the artifact window
     f_idx1 = vsearch(fseg[1], f)
@@ -71,9 +72,9 @@ Remove an artifact from one channel and one epoch of a NEURO object using contin
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see ContinuousWavelets.jl for available wavelets
 - `tseg::Tuple{Real, Real}`: time window of the artifact `(t_start, t_end)` in seconds; must be a strictly ascending pair within `[t[1], t[end]]`
 - `fseg::Tuple{Real, Real}`: frequency window of the artifact `(f_low, f_high)` in Hz; must be a strictly ascending pair within the wavelet frequency range
-- `type::Symbol=:nd`: inverse CWD reconstruction method:
-    - `:pd`: PenroseDelta
-    - `:nd`: NaiveDelta (default)
+- `type::Symbol=:pd`: inverse CWD reconstruction method:
+    - `:pd`: PenroseDelta (default; most accurate)
+    - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
 # Returns
@@ -87,7 +88,7 @@ function artrem_cwd(
     wt::T = wavelet(Morlet(2π); β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
+    type::Symbol = :pd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -130,9 +131,9 @@ Remove an artifact from one channel and one epoch of a NEURO object in-place usi
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see ContinuousWavelets.jl for available wavelets
 - `tseg::Tuple{Real, Real}`: time window of the artifact `(t_start, t_end)` in seconds; must be a strictly ascending pair within `[t[1], t[end]]`
 - `fseg::Tuple{Real, Real}`: frequency window of the artifact `(f_low, f_high)` in Hz; must be a strictly ascending pair within the wavelet frequency range
-- `type::Symbol=:nd`: inverse CWD reconstruction method:
-    - `:pd`: PenroseDelta
-    - `:nd`: NaiveDelta (default)
+- `type::Symbol=:pd`: inverse CWD reconstruction method:
+    - `:pd`: PenroseDelta (default; most accurate)
+    - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
 # Returns
@@ -146,7 +147,7 @@ function artrem_cwd!(
     wt::T = wavelet(Morlet(2π); β = 2),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
-    type::Symbol = :nd,
+    type::Symbol = :pd,
 )::Nothing where {T <: CWT}
     obj_tmp =
         artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)

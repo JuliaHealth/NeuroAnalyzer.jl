@@ -23,7 +23,7 @@ Named tuple:
 - `e_mean_diff::Vector{Float64}`: mean diff value
 - `e_median_diff::Vector{Float64}`: median diff value
 - `e_max_dif::Vector{Float64}`: max difference
-- `e_dev_mean::Vector{Float64}`: deviation from channel mean
+- `e_dev_mean::Vector{Float64}`: deviation of the epoch mean from the mean of all epochs
 """
 function epoch_stats(
     obj::NeuroAnalyzer.NEURO,
@@ -63,9 +63,9 @@ function epoch_stats(
         e_median_diff[ep_idx] = median(diff(@view(obj.data[:, :, ep_idx]), dims = 2))
         e_max_dif[ep_idx] =
             maximum(@view(obj.data[:, :, ep_idx])) - minimum(@view(obj.data[:, :, ep_idx]))
-        e_dev_mean[ep_idx] =
-            abs(mean(@view(obj.data[:, :, ep_idx]))) - mean(@view(obj.data[:, :, ep_idx]))
     end
+    # deviation from the grand mean
+    e_dev_mean .= e_mean .- mean(obj.data)
 
     return (;
         e_mean,
@@ -103,7 +103,7 @@ Named tuple:
 - `c_mean_diff::Matrix{Float64}`: mean diff value
 - `c_median_diff::Matrix{Float64}`: median diff value
 - `c_max_dif::Matrix{Float64}`: max difference
-- `c_dev_mean::Matrix{Float64}`: deviation from channel mean
+- `c_dev_mean::Matrix{Float64}`: deviation of the channel mean from the mean of all channels (in the same epoch)
 """
 function channel_stats(
     obj::NeuroAnalyzer.NEURO,
@@ -146,10 +146,9 @@ function channel_stats(
         c_max_dif[ch_idx, ep_idx] =
             maximum(@view(obj.data[ch_idx, :, ep_idx])) -
             minimum(@view(obj.data[ch_idx, :, ep_idx]))
-        c_dev_mean[ch_idx, ep_idx] =
-            abs(mean(@view(obj.data[ch_idx, :, ep_idx]))) -
-            mean(obj.data[ch_idx, :, ep_idx])
     end
+    # deviation from the mean of all channels in the same epoch
+    c_dev_mean .= c_mean .- mean(c_mean; dims = 1)
 
     return (;
         c_mean,

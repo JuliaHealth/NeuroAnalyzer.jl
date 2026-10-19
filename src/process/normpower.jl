@@ -15,7 +15,9 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 - `Vector{Float64}`
 """
 function _normpower(s::AbstractVector)::Vector{Float64}
-    return s .* _amp(s).rms_amp
+    rms = _amp(s).rms_amp
+    # an all-zero signal stays unchanged
+    return rms == 0 ? Vector{Float64}(s) : s ./ rms
 end
 
 """

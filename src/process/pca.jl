@@ -5,7 +5,9 @@ export pca_reconstruct!
 """
     _pca_decompose(s, n)
 
-Calculate `n` first Primary Components (PCs) for a 3-D signal array.
+Calculate `n` first Principal Components (PCs) for a 3-D signal array.
+
+One PCA model is fitted to all epochs (channels × samples of all epochs), so the components and the model are shared by all epochs and `_pca_reconstruct()` can reconstruct every epoch.
 
 # Arguments
 
@@ -16,9 +18,9 @@ Calculate `n` first Primary Components (PCs) for a 3-D signal array.
 
 Named tuple:
 
-- `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
-- `pcv::Matrix{Float64}`: PC(1)..PC(n) variances (fraction of total variance explained)
-- `pcm::Vector{Float64}`: PC means
+- `pc::Array{Float64, 3}`: PC(1)..PC(n) × samples × epochs
+- `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) in each epoch (% of the total variance of the epoch)
+- `pcm::Vector{Float64}`: channel means of the model
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function _pca_decompose(
@@ -36,54 +38,36 @@ function _pca_decompose(
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     n <= size(s, 1) || throw(ArgumentError("n must be ≤ $(size(s, 1))."))
 
-    ep_n = size(s, 3)
+    ch_n, ep_len, ep_n = size(s)
 
-    # check maximum n
-    pc_tmp = []
-    n_tmp = n
+    # one model for all epochs
+    pc_model = MultivariateStats.fit(
+        PCA,
+        reshape(Float64.(s), ch_n, ep_len * ep_n);
+        maxoutdim = n,
+        pratio = 1,
+    )
+    n_pc = size(pc_model, 2)
+    n_pc < n && _warn("Only $n_pc PCs were generated.")
+
+    pc = zeros(n_pc, ep_len, ep_n)
+    pcv = zeros(n_pc, ep_n)
     @inbounds for ep_idx = 1:ep_n
-        pc_tmp =
-            MultivariateStats.fit(PCA, @view(s[:, :, ep_idx]), maxoutdim = n, pratio = 1)
-        size(pc_tmp)[2] < n_tmp && (n_tmp = size(pc_tmp)[2])
-    end
-    (n_tmp < n && verbose) && _warn("Only $n_tmp PCs were generated.")
-    n = n_tmp
-
-    pc = zeros(n, size(s, 2), ep_n)
-    pcv = zeros(n, ep_n)
-    pc_model = nothing
-
-    @inbounds for ep_idx = 1:ep_n
-        # m_cov = s_cov(s)
-        # eig_val, eig_vec = eigen(m_cov)
-        # eig_val_idx = sortperm(eig_val, rev=true)
-        # eig_val = eig_val[eig_val_idx]
-        # eig_vec = m_sort(eig_vec, eig_val_idx)
-        # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
-
-        pc_model =
-            MultivariateStats.fit(PCA, @view(s[:, :, ep_idx]), maxoutdim = n, pratio = 1)
-        v =
-            MultivariateStats.principalvars(pc_model) ./ MultivariateStats.var(pc_model) *
-            100
-
-        for idx = 1:n
-            pcv[idx, ep_idx] = v[idx]
-            # pc[idx, :, ep_idx] = (eig_vec[:, idx] .* s)[idx, :]
-            pc[idx, :, ep_idx] =
-                MultivariateStats.predict(pc_model, @view(s[:, :, ep_idx]))[idx, :]
+        pc[:, :, ep_idx] = MultivariateStats.predict(pc_model, @view(s[:, :, ep_idx]))
+        # total variance of the epoch (sum of channel variances)
+        v_tot = sum(var(@view(s[ch_idx, :, ep_idx])) for ch_idx = 1:ch_n)
+        for idx = 1:n_pc
+            pcv[idx, ep_idx] = 100 * var(@view(pc[idx, :, ep_idx])) / v_tot
         end
     end
 
-    pcm = pc_model.mean
-
-    return (; pc, pcv, pcm, pc_model)
+    return (; pc, pcv, pcm = pc_model.mean, pc_model)
 end
 
 """
     pca_decompose(obj; <keyword arguments>)
 
-Calculate `n` first Primary Components (PCs).
+Calculate `n` first Principal Components (PCs); one model is fitted to all epochs.
 
 # Arguments
 
@@ -96,8 +80,8 @@ Calculate `n` first Primary Components (PCs).
 Named tuple:
 
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
-- `pcv::Matrix{Float64}`: PC variances (fraction of total variance explained)
-- `pcm::Vector{Float64}`: PC means
+- `pcv::Matrix{Float64}`: variance of each PC in each epoch (% of the total variance of the epoch)
+- `pcm::Vector{Float64}`: channel means of the model
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pca_decompose(
@@ -125,7 +109,7 @@ Reconstructs signal using PCA components for a 3-D signal array.
 # Arguments
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
-- `pc::AbstractArray`: IC(1)..IC(n) × epoch
+- `pc::AbstractArray`: PC(1)..PC(n) × samples × epochs
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 
 # Returns

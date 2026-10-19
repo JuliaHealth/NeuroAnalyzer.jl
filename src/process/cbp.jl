@@ -6,7 +6,7 @@ export cbp!
 
 Perform convolution band-pass filtering at a single frequency.
 
-Generates a sine-wave kernel at `frq` Hz over a ±1 s window and convolves it with the signal. This acts as a narrow band-pass filter centred at `frq`.
+Convolves the signal with a cosine kernel at `frq` Hz over a ±1 s window. The kernel is even (no phase shift) and scaled to unit gain at `frq`, so this acts as a narrow zero-phase band-pass filter centred at `frq`.
 
 # Arguments
 
@@ -31,10 +31,14 @@ function _cbp(
     frq > 0 || throw(ArgumentError("frq must be > 0."))
     frq <= fs / 2 || throw(ArgumentError("frq must be ≤ $(fs / 2) Hz."))
 
+    n = length(s)
     pad > 0 && (s = pad0(s, pad))
-    kernel = generate_sine(frq, -1:(1 / fs):1)
+    kernel = generate_cosine(frq, -1:(1 / fs):1)
+    # unit gain at frq
+    kernel ./= sum(abs2, kernel)
 
-    return _tconv(s; kernel = kernel)
+    # remove the padding
+    return _tconv(s; kernel = kernel)[1:n]
 end
 
 """

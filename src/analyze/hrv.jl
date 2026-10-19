@@ -31,9 +31,10 @@ function hrv_detect(
 
     # locate the ECG channel index
     ch = get_channel(obj; type = "ecg")
+    length(ch) > 1 && _warn("$(length(ch)) ECG channels found, $(ch[1]) is used.")
     _info("ECG channel found: $(ch[1])")
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
+    # resolve channel name to integer index (first ECG channel)
+    ch = get_channel(obj; ch = ch[1])
 
     # flatten the ECG channel across all epochs into a single continuous vector
     # this treats a multi-epoch recording as one unbroken signal for peak detection

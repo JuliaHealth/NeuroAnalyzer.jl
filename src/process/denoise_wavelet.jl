@@ -18,7 +18,7 @@ Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, th
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
-    - `:pd`: PenroseDelta (default; generally most accurate)
+    - `:pd`: PenroseDelta (default; most accurate)
     - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
@@ -32,7 +32,7 @@ function _denoise_cwd(
     wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
     w::Int64 = 5,
-    type::Symbol = :nd,
+    type::Symbol = :pd,
 )::Vector{Float64} where {T <: CWT}
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
@@ -40,7 +40,8 @@ function _denoise_cwd(
     nf <= fs / 2 || throw(ArgumentError("nf must be ≤ $(fs / 2)."))
 
     # perform CWD and zero out noise frequency band
-    s_cwd = NeuroAnalyzer._cwd(s; wt = wt)
+    # complex coefficients are needed for an accurate reconstruction
+    s_cwd = NeuroAnalyzer._cwd(s; wt = wt, complex = true)
     f = _cwtfrq(s; fs = fs, wt = wt)
     f_idx1 = vsearch(nf - w, f)
     f_idx2 = vsearch(nf + w, f)
@@ -63,7 +64,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain f
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
-    - `:pd`: PenroseDelta (default; generally most accurate)
+    - `:pd`: PenroseDelta (default; most accurate)
     - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
@@ -77,7 +78,7 @@ function _denoise_cwd(
     wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
     w::Int64 = 5,
-    type::Symbol = :nd,
+    type::Symbol = :pd,
 )::Array{Float64, 3} where {T <: CWT}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)
@@ -90,34 +91,32 @@ function _denoise_cwd(
     # pre-allocate output
     s_new = similar(s, Float64)
 
-    _log_off()
     f = _cwtfrq(s[1, :, 1]; fs = fs, wt = wt)
-    _log_on()
     f_idx = vsearch(nf, f)
     f_idx1 = vsearch(nf - w, f)
     f_idx2 = vsearch(nf + w, f)
     _info("Noise at: $(f[f_idx]) Hz")
     _info("Noise width: $(f[f_idx1]) to $(f[f_idx2]) Hz")
 
-    _log_off()
-
     # initialize progress bar
     progbar =
         Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
-        ch_idx, ep_idx = idx[1], idx[2]
-        s_new[ch_idx, :, ep_idx] = _denoise_cwd(
-            @view(
-                s[ch_idx, :, ep_idx]
-            ), fs = fs, wt = wt, nf = nf, w = w, type = type,
-        )
-        # update progress bar
-        progress_bar && next!(progbar)
+    # ContinuousWavelets.jl logs warnings for every slice; logging is restored on errors
+    _log_off()
+    try
+        # calculate over channel and epochs
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            s_new[ch_idx, :, ep_idx] = _denoise_cwd(
+                @view(s[ch_idx, :, ep_idx]); fs = fs, wt = wt, nf = nf, w = w, type = type,
+            )
+            # update progress bar
+            progress_bar && next!(progbar)
+        end
+    finally
+        _log_on()
     end
-
-    _log_on()
 
     return s_new
 end
@@ -135,7 +134,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain o
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
-    - `:pd`: PenroseDelta (default; generally most accurate)
+    - `:pd`: PenroseDelta (default; most accurate)
     - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
@@ -149,7 +148,7 @@ function denoise_cwd(
     wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
     w::Int64 = 5,
-    type::Symbol = :nd,
+    type::Symbol = :pd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -184,7 +183,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain i
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
-    - `:pd`: PenroseDelta (default; generally most accurate)
+    - `:pd`: PenroseDelta (default; most accurate)
     - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
@@ -197,9 +196,10 @@ function denoise_cwd!(
     ch::Union{String, Vector{String}, Regex},
     wt::T = wavelet(Morlet(2π); β = 2),
     nf::Real,
-    type::Symbol = :nd,
+    w::Int64 = 5,
+    type::Symbol = :pd,
 )::Nothing where {T <: CWT}
-    obj_tmp = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, type = type)
+    obj_tmp = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, w = w, type = type)
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
     obj_tmp = nothing
@@ -218,7 +218,7 @@ Perform threshold denoising using discrete wavelet decomposition (DWD).
 - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
 - `l::Int64=0`: decomposition level; `0` uses the maximum available level (`maxtransformlevels(s)`); must be ≤ `maxtransformlevels(s)`
 - `dnt<:DNF=RelErrorShrink(SoftTH())`: denoise type, see WaveletsExt.jl documentation for detailed description of available denoising functions
-- `smooth::Symbol=:regular`: smoothing method:
+- `smooth::Symbol=:regular`: smoothing method (dyadic signal lengths only; other lengths are denoised with the default method):
     - `:regular`: threshold all coefficients
     - `:undersmooth`: do not threshold the lowest-frequency subspace
 
@@ -345,7 +345,7 @@ function denoise_dwd(
         @views _denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
     push!(
         obj_tmp.history,
-        "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))",
+        "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth)",
     )
 
     return obj_tmp

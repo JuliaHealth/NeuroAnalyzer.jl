@@ -2,31 +2,29 @@ export filter_g
 export filter_g!
 
 """
-    _filter_g(s; <keyword arguments>)
+    _filter_g_analytic(s; <keyword arguments>)
 
-Filter a signal by multiplying its FFT spectrum with a Gaussian kernel centered at frequency `f`.
-
-The Gaussian is normalized to unit gain at its peak. Taking the absolute value of the inverse FFT after multiplication yields the filtered signal envelope.
+Band-limited analytic signal: the FFT spectrum of the signal multiplied by a Gaussian kernel centered at frequency `f` (unit gain at its peak, positive frequencies only), scaled so that its absolute value is the amplitude envelope of the band-limited signal and its angle is the instantaneous phase.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `pad::Int64=0`: number of zeros to append before the FFT; must be ≥ 0
-- `f::Real`: center frequency of the Gaussian kernel in Hz; must be ≥ 0 and < `fs/2`
-- `gw::Real=5`: Gaussian width in Hz (used by `:gh`) (full width parameter); must be > 0
+- `f::Real`: center frequency of the Gaussian kernel in Hz; must be ≥ 0 and ≤ `fs/2`
+- `gw::Real=5`: Gaussian width in Hz (full width parameter); must be > 0
 
 # Returns
 
-- `Vector{Float64}`: filtered signal of length `length(s)`
+- `Vector{ComplexF64}`: analytic band-limited signal, length `length(s)`
 """
-function _filter_g(
+function _filter_g_analytic(
     s::AbstractVector;
     fs::Int64,
     pad::Int64 = 0,
     f::Real,
     gw::Real = 5,
-)::Vector{Float64}
+)::Vector{ComplexF64}
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
@@ -36,7 +34,7 @@ function _filter_g(
 
     # frequency axis matching the FFT output length (including zero-padding)
     n = length(s) + pad
-    gf = collect(range(0, fs; length = n))
+    gf = collect(0:(n - 1)) .* (fs / n)
 
     # Gaussian standard deviation derived from the width parameter
     gs = (gw * (2π - 1)) / (4π)
@@ -46,8 +44,37 @@ function _filter_g(
     g = @. exp(-0.5 * (gf / gs)^2)
     g ./= maximum(abs, g)
 
-    # multiply spectrum by kernel and invert; abs gives the signal envelope
-    return abs.(ifft0(fft0(s, pad) .* g, pad))
+    # multiply spectrum by kernel and invert: one-sided spectrum, doubled
+    return 2 .* ifft0(fft0(s, pad) .* g, pad)
+end
+
+"""
+    _filter_g(s; <keyword arguments>)
+
+Filter a signal by multiplying its FFT spectrum with a Gaussian kernel centered at frequency `f`.
+
+The Gaussian is normalized to unit gain at its peak and covers the positive frequencies only, so the inverse FFT is the analytic signal of the band (see `_filter_g_analytic()`); its absolute value is the amplitude envelope of the filtered signal.
+
+# Arguments
+
+- `s::AbstractVector`: signal vector
+- `fs::Int64`: sampling rate in Hz; must be ≥ 1
+- `pad::Int64=0`: number of zeros to append before the FFT; must be ≥ 0
+- `f::Real`: center frequency of the Gaussian kernel in Hz; must be ≥ 0 and ≤ `fs/2`
+- `gw::Real=5`: Gaussian width in Hz (full width parameter); must be > 0
+
+# Returns
+
+- `Vector{Float64}`: amplitude envelope of the filtered signal, length `length(s)`
+"""
+function _filter_g(
+    s::AbstractVector;
+    fs::Int64,
+    pad::Int64 = 0,
+    f::Real,
+    gw::Real = 5,
+)::Vector{Float64}
+    return abs.(_filter_g_analytic(s; fs = fs, pad = pad, f = f, gw = gw))
 end
 
 """

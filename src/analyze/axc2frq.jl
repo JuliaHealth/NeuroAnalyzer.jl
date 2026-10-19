@@ -18,6 +18,8 @@ function axc2frq(c::AbstractVector, l::AbstractVector)::Vector{Float64}
     # find indices of local peaks in the correlation/covariance vector
     # d=2 sets the minimum distance between accepted peaks
     p_idx = findpeaks(c; d = 2)
+    # at least two peaks are needed for an interval
+    length(p_idx) < 2 && return Float64[]
 
     # extract the lag values at the peak positions
     l_pts = l[p_idx]

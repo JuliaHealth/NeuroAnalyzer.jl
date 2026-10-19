@@ -44,8 +44,8 @@ CS = (s1 · s2) / (‖s1‖ · ‖s2‖) ∈ [-1, 1]
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 - `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 
@@ -144,7 +144,7 @@ function cosim(
     # number of channels
     ch_n = length(ch)
     # number of epochs
-    ep_n = length(ep)
+    ep_n = nepochs(obj)
 
     # pre-allocate output
     cs = zeros(ch_n, ch_n, ep_n)

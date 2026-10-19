@@ -4,6 +4,14 @@ export ghtspectrogram
 export cwtspectrogram
 export hhtspectrogram
 
+# power in dB; zero power (-Inf dB) is set to the lowest finite value
+function _pow2db_finite(p::AbstractArray)::Array{Float64}
+    pdb = pow2db.(p)
+    fin = filter(isfinite, pdb)
+    isempty(fin) || (pdb[isinf.(pdb) .& (pdb .< 0)] .= minimum(fin))
+    return pdb
+end
+
 """
     _spectrogram(s; <keyword arguments>)
 
@@ -20,7 +28,7 @@ Calculate spectrogram using STFT or multi-tapered method for a 1-D signal vector
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=true`: if `true`, apply a Hanning window to each STFT segment (`:stft`; `:mt` uses Slepian tapers)
 
 # Returns
 
@@ -59,22 +67,15 @@ function _spectrogram(
             woverlap = div(woverlap, 2)
         end
         spec_data = DSP.spectrogram(s, wlen, woverlap; fs = fs, window = win)
-
     elseif method === :mt
-        win = w ? hanning(length(s)) : ones(length(s))
-        spec_data = DSP.mt_spectrogram(s .* win; fs = fs, nw = ((nt + 1) ÷ 2), ntapers = nt)
+        # Slepian tapers are applied to each segment (2nw - 1 = nt)
+        spec_data = DSP.mt_spectrogram(s, wlen, woverlap; fs = fs, nw = (nt + 1) / 2, ntapers = nt)
     end
-
-    p = spec_data.power
-
-    p[p .== -Inf] .= minimum(p[p .!= -Inf])
-    p[p .== +Inf] .= maximum(p[p .!= +Inf])
-    db && (p = pow2db.(p))
-
-    t = 0:(1 / fs):(length(s) / fs)
-    t = linspace(t[1], t[end - 1], size(p, 2))
-    f = linspace(0, fs / 2, size(p, 1))
-
+    p = Matrix{Float64}(power(spec_data))
+    db && (p = _pow2db_finite(p))
+    # frequencies and window centers (s) of the segments
+    f = Vector{Float64}(freq(spec_data))
+    t = Vector{Float64}(DSP.time(spec_data))
     return (; p, f, t)
 end
 
@@ -94,7 +95,7 @@ Calculate spectrogram for each channel of a matrix.
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
 - `wlen::Int64=fs`: window length, default is 1 second
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=true`: if `true`, apply a Hanning window to each STFT segment (`:stft`; `:mt` uses Slepian tapers)
 
 # Returns
 
@@ -178,7 +179,7 @@ Calculate spectrogram for a NEURO object.
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=true`: if `true`, apply a Hanning window to each STFT segment (`:stft` only; `:mt` uses Slepian tapers, the other methods are not tapered)
 
 # Returns
 
@@ -260,7 +261,6 @@ function spectrogram(
             fs = fs,
             db = db,
             ncyc = ncyc,
-            w = w,
         )
         f = spec_data.f
         t = spec_data.t
@@ -272,7 +272,6 @@ function spectrogram(
             fs = fs,
             db = db,
             gw = gw,
-            w = w,
         )
         f = spec_data.f
         t = spec_data.t
@@ -282,7 +281,7 @@ function spectrogram(
         spec_data = NeuroAnalyzer.cwtspectrogram(@view(obj.data[1, :, 1]); fs = fs, wt = wt)
         f = spec_data.f
         t = spec_data.t
-        # cwtspectrogram returns field .m not .p
+        # cwtspectrogram returns magnitudes (.m): power, optionally in dB
         p_tmp = spec_data.m
 
     elseif method === :hht
@@ -340,7 +339,6 @@ function spectrogram(
                 fs = fs,
                 db = db,
                 ncyc = ncyc,
-                w = w,
             ).p
 
         elseif method === :gh
@@ -349,17 +347,13 @@ function spectrogram(
                 fs = fs,
                 db = db,
                 gw = gw,
-                w = w,
             ).p
 
         elseif method === :cwt
 
-            # cwtspectrogram returns field .m (magnitudes) rather than .p.
-            p[:, :, ch_local, ep_idx] = NeuroAnalyzer.cwtspectrogram(
-                @view(obj.data[ch_idx, :, ep_idx]),
-                fs = fs,
-                wt = wt,
-            ).m
+            # cwtspectrogram returns magnitudes (.m): power, optionally in dB
+            m = NeuroAnalyzer.cwtspectrogram(@view(obj.data[ch_idx, :, ep_idx]), fs = fs, wt = wt).m
+            p[:, :, ch_local, ep_idx] = db ? _pow2db_finite(abs2.(m)) : abs2.(m)
 
         elseif method === :hht
 
@@ -395,7 +389,7 @@ Calculate spectrogram using Morlet wavelet convolution.
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=false`: if `true`, taper the whole signal with a Hanning window (attenuates the edges of the time axis)
 
 # Returns
 
@@ -413,7 +407,7 @@ function mwspectrogram(
     db::Bool = true,
     fs::Int64,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    w::Bool = true,
+    w::Bool = false,
 )::@NamedTuple{
     cs::Matrix{ComplexF64},
     p::Matrix{Float64},
@@ -456,13 +450,8 @@ function mwspectrogram(
         ph[frq_idx, :] = DSP.angle.(@view(cs[frq_idx, :]))
     end
 
-    p[p .== -Inf] .= minimum(p[p .!= -Inf])
-    p[p .== +Inf] .= maximum(p[p .!= +Inf])
-    db && (p = pow2db.(p))
-
-    t = 0:(1 / fs):(length(s) / fs)
-    t = linspace(t[1], t[end - 1], size(p, 2))
-
+    db && (p = _pow2db_finite(p))
+    t = collect(0:(size(p, 2) - 1)) ./ fs
     return (; cs, p, ph, f, t)
 end
 
@@ -478,7 +467,7 @@ Calculate Morlet wavelet spectrogram for each channel of a matrix.
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: Morlet wavelet cycles, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=false`: if `true`, taper the whole signal with a Hanning window (attenuates the edges of the time axis)
 
 # Returns
 
@@ -496,7 +485,7 @@ function mwspectrogram(
     db::Bool = true,
     fs::Int64,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
-    w::Bool = true,
+    w::Bool = false,
 )::@NamedTuple{
     cs::Array{ComplexF64, 3},
     p::Array{Float64, 3},
@@ -543,7 +532,7 @@ Calculate spectrogram using Gaussian filter and Hilbert transform.
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=10`: Gaussian width in Hz
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=false`: if `true`, taper the whole signal with a Hanning window (attenuates the edges of the time axis)
 
 # Returns
 
@@ -559,7 +548,7 @@ function ghtspectrogram(
     fs::Int64,
     db::Bool = true,
     gw::Real = 10,
-    w::Bool = true,
+    w::Bool = false,
 )::@NamedTuple{
     p::Matrix{Float64},
     ph::Matrix{Float64},
@@ -581,19 +570,13 @@ function ghtspectrogram(
     ph = zeros(length(f), length(s))
 
     @inbounds for frq_idx in eachindex(f)
-        swg = _filter_g(sw, fs = fs, f = f[frq_idx], gw = gw)
-        h_data = htransform(swg)
-        p[frq_idx, :] = h_data.p
-        ph[frq_idx, :] = h_data.ph
+        # analytic band-limited signal: instantaneous power and phase
+        z = _filter_g_analytic(sw; fs = fs, f = f[frq_idx], gw = gw)
+        p[frq_idx, :] = abs2.(z)
+        ph[frq_idx, :] = DSP.angle.(z)
     end
-
-    p[p .== -Inf] .= minimum(p[p .!= -Inf]) - eps()
-    p[p .== +Inf] .= maximum(p[p .!= +Inf]) + eps()
-    db && (p = pow2db.(p))
-
-    t = 0:(1 / fs):(length(s) / fs)
-    t = linspace(t[1], t[end - 1], size(p, 2))
-
+    db && (p = _pow2db_finite(p))
+    t = collect(0:(size(p, 2) - 1)) ./ fs
     return (; p, ph, f, t)
 end
 
@@ -608,7 +591,7 @@ Calculate spectrogram using Gaussian and Hilbert transform for each channel of a
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=10`: Gaussian width in Hz
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=false`: if `true`, taper the whole signal with a Hanning window (attenuates the edges of the time axis)
 
 # Returns
 
@@ -624,7 +607,7 @@ function ghtspectrogram(
     fs::Int64,
     db::Bool = true,
     gw::Real = 10,
-    w::Bool = true,
+    w::Bool = false,
 )::@NamedTuple{
     p::Array{Float64, 3},
     ph::Array{Float64, 3},
@@ -677,7 +660,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT).
 
 Named tuple:
 
-- `m::Matrix{Float64}`: magnitudes
+- `m::Matrix{Float64}`: magnitudes, shape (frequencies, time points)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
@@ -703,9 +686,7 @@ function cwtspectrogram(
     f = f[f_idx]
     m = m[f_idx, :]
 
-    t = 0:(1 / fs):(length(s) / fs)
-    t = linspace(t[1], t[end - 1], size(m, 2))
-
+    t = collect(0:(size(m, 2) - 1)) ./ fs
     return (; m, f, t)
 end
 
@@ -724,7 +705,7 @@ Calculate scaleogram using Continuous Wavelet Transformation (CWT) for each chan
 
 Named tuple:
 
-- `m::Array{Float64, 3}`: magnitudes, shape (samples, frequencies, channels)
+- `m::Array{Float64, 3}`: magnitudes, shape (frequencies, time points, channels)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
@@ -762,7 +743,7 @@ Calculate spectrogram using Hilbert-Huang transform.
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `tps::AbstractVector`: time points (required for EMD)
+- `tps::AbstractVector`: time points
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 
@@ -770,8 +751,8 @@ Calculate spectrogram using Hilbert-Huang transform.
 
 Named tuple:
 
-- `p::Matrix{Float64}`: powers (frequencies × time points)
-- `f::Vector{Float64}`: frequencies
+- `p::Matrix{Float64}`: powers, shape (frequencies, time points)
+- `f::Vector{Float64}`: frequencies (0.5 Hz resolution)
 - `t::Vector{Float64}`: time points
 """
 function hhtspectrogram(
@@ -786,57 +767,21 @@ function hhtspectrogram(
 }
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
-
-    # pre-allocate outputs
-    t = tps
-    imf_p = Vector{Vector{Float64}}()
-    imf_fi = Vector{Vector{Float64}}()
-
-    # perform EMD
-    imfs = _emd(s, t)
-    imfs_n = size(imfs, 1)
-    # last IMF is a residual, ignore it
-    for idx2 = 1:(imfs_n - 1)
-        # get instantaneous frequencies of IMF
-        push!(imf_fi, _frqinst(imfs[idx2, :]) .* fs)
-        # perform Hilbert transform and get instantaneous powers of IMF
-        push!(imf_p, htransform(imfs[idx2, :]).p)
-    end
-
-    # project IMF powers onto the frequency grid using instantaneous frequency
-
-    f = collect(0:0.5:(fs ÷ 2)) # frequency range of interest (Hz)
-    p = zeros(length(f), length(t))
-
-    # interpolate each IMF's frequency and power onto the grid
-    @inbounds for (pow, freq) in zip(imf_p, imf_fi)
-        for idx_t in eachindex(t)
-            # find the closest frequency bin
-            f_idx = argmin(abs.(f .- freq[idx_t]))
-            if 1 ≤ f_idx ≤ length(f)
-                p[f_idx, idx_t] += pow[idx_t] # add power
-            end
-        end
-    end
-
-    db && (p = pow2db.(p))
-    p[p .== -Inf] .= -eps()
-
-    return (; p, f, t)
+    # perform EMD; the last IMF is the residual
+    imfs = _emd(s, tps)
+    size(imfs, 1) >= 2 || throw(ArgumentError("EMD returned no IMFs."))
+    return hhtspectrogram(imfs[1:(end - 1), :], tps; fs = fs, db = db)
 end
 
 """
-    hhtspectrogram(s; <keyword arguments>)
+    hhtspectrogram(imf, t; <keyword arguments>)
 
-Calculate spectrogram using Hilbert-Huang transform.
-
-1. Empirical Mode Decomposition (EMD) – Decomposes the signal into Intrinsic Mode Functions (IMFs).
-2. Hilbert Spectral Analysis (HSA) – Applies the Hilbert transform to each IMF to extract instantaneous frequency and powers, producing a spectrogram-like representation.
+Calculate Hilbert spectrum (Hilbert spectral analysis of the Hilbert-Huang transform) of intrinsic mode functions: the instantaneous power of each IMF is assigned to the frequency bin of its instantaneous frequency.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal matrix
-- `tps::AbstractVector`: time points (required for EMD)
+- `imf::AbstractMatrix`: intrinsic mode functions by rows (e.g. `emd()` output without the residual, last row)
+- `tps::AbstractVector`: time points
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
 - `db::Bool=true`: normalize powers to dB
 
@@ -844,12 +789,12 @@ Calculate spectrogram using Hilbert-Huang transform.
 
 Named tuple:
 
-- `p::Matrix{Float64}`: powers (frequencies × time points)
-- `f::Vector{Float64}`: frequencies
+- `p::Matrix{Float64}`: powers, shape (frequencies, time points)
+- `f::Vector{Float64}`: frequencies (0.5 Hz resolution)
 - `t::Vector{Float64}`: time points
 """
 function hhtspectrogram(
-    s::AbstractMatrix,
+    imf::AbstractMatrix,
     tps::AbstractVector;
     fs::Int64,
     db::Bool = true,
@@ -860,43 +805,21 @@ function hhtspectrogram(
 }
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
-
-    # pre-allocate outputs
-    t = tps
-    imf_p = Vector{Vector{Float64}}()
-    imf_fi = Vector{Vector{Float64}}()
-
-    # perform EMD
-    @inbounds for idx1 in axes(s, 1)
-        imfs = _emd(s[idx1, :], t)
-        imfs_n = size(imfs, 1)
-        # last IMF is a residual, ignore it
-        for idx2 = 1:(imfs_n - 1)
-            # get instantaneous frequencies of IMF
-            push!(imf_fi, _frqinst(imfs[idx2, :]) .* fs)
-            # perform Hilbert transform and get instantaneous powers of IMF
-            push!(imf_p, htransform(imfs[idx2, :]).p)
-        end
-    end
-
-    # project IMF powers onto the frequency grid using instantaneous frequency
-
-    f = collect(0:0.5:(fs ÷ 2)) # frequency range of interest (Hz)
+    size(imf, 2) == length(tps) || throw(ArgumentError("Number of IMF samples must equal the number of time points."))
+    t = Vector{Float64}(tps)
+    # frequency grid (Hz)
+    f = collect(0:0.5:(fs / 2))
     p = zeros(length(f), length(t))
-
-    # interpolate each IMF's frequency and power onto the grid
-    @inbounds for (pow, freq) in zip(imf_p, imf_fi)
+    @inbounds for idx in axes(imf, 1)
+        # instantaneous frequency (Hz) and power of the IMF
+        fi = _frqinst(imf[idx, :]) .* fs
+        pw = htransform(imf[idx, :]).p
         for idx_t in eachindex(t)
-            # find the closest frequency bin
-            f_idx = argmin(abs.(f .- freq[idx_t]))
-            if 1 ≤ f_idx ≤ length(f)
-                p[f_idx, idx_t] += pow[idx_t] # add power
-            end
+            # instantaneous frequencies outside 0..fs/2 are not meaningful
+            0 <= fi[idx_t] <= fs / 2 || continue
+            p[argmin(abs.(f .- fi[idx_t])), idx_t] += pw[idx_t]
         end
     end
-
-    db && (p = pow2db.(p))
-    p[p .== -Inf] .= -eps()
-
+    db && (p = _pow2db_finite(p))
     return (; p, f, t)
 end

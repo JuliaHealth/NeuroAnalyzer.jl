@@ -23,7 +23,7 @@ function seg_mean(seg::AbstractArray)::Vector{Float64}
 end
 
 """
-    seg2_mean(seg1, seg2)
+    seg_mean(seg1, seg2)
 
 Calculate mean of two segments (e.g. spectrograms).
 
@@ -84,8 +84,8 @@ function seg_extract(
     c1 > 0 || throw(ArgumentError("c1 must be > 0."))
     c2 > 0 || throw(ArgumentError("c2 must be > 0."))
     r1 <= size(m, 1) || throw(ArgumentError("r1 must be ≤ $(size(m, 1))."))
-    c1 <= size(m, 2) || throw(ArgumentError("r2 must be ≤ $(size(m, 2))."))
-    r2 <= size(m, 1) || throw(ArgumentError("c1 must be ≤ $(size(m, 1))."))
+    c1 <= size(m, 2) || throw(ArgumentError("c1 must be ≤ $(size(m, 2))."))
+    r2 <= size(m, 1) || throw(ArgumentError("r2 must be ≤ $(size(m, 1))."))
     c2 <= size(m, 2) || throw(ArgumentError("c2 must be ≤ $(size(m, 2))."))
 
     if !c

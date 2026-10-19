@@ -73,7 +73,6 @@ function _acov(
         )
     end
 
-    autocov = round.(autocov; digits = 3)
     autocov = vcat(reverse(autocov), autocov[2:end])
 
     return autocov
@@ -170,7 +169,7 @@ function acov(
     lags::Vector{Float64},
 }
     # validate lag bounds: must be non-negative and within the signal length
-    l <= size(obj, 2) || throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
+    l < size(obj, 2) || throw(ArgumentError("l must be < $(size(obj, 2))."))
     l >= 0 || throw(ArgumentError("l must be ≥ 0."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -180,7 +179,7 @@ function acov(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    if datatype(obj) == "erp"
+    if datatype(obj) in ("erp", "erf")
 
         # epoch 1 is the pre-computed average; epochs 2:end are individual trials
         # compute per-trial auto-correlations first, then prepend the mean across

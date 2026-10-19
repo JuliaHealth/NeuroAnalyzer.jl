@@ -151,7 +151,7 @@ Calculate partial auto-correlation function (PACF) for a NEURO object over lags 
 - `:yw` (Yule-Walker) - fast, no matrix inversion, may need larger l
 - `:reg` (regression) - via successive OLS models, more robust for small l
 
-For ERP objects, epoch 1 is the trial-averaged waveform and is prepended to the per-trial result.
+For ERP/ERF objects, the PACF is calculated for the single trials (epochs 2:end) and their average is prepended as epoch 1.
 
 # Arguments
 
@@ -181,7 +181,8 @@ function pacor(
     lags::Vector{Float64},
 }
     # validate
-    (method === :yw && l > 1) || throw(ArgumentError("For method=:yw, l must be > 1."))
+    _check_var(method, [:reg, :yw], "method")
+
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =
@@ -196,9 +197,8 @@ function pacor(
     # validate
     l_samp <= size(obj, 2) ||
         throw(ArgumentError("l must be <= $(size(obj, 2) / sr(obj)) s."))
-    l_samp >= 0 || throw(ArgumentError("l must be >= 0."))
-
-    if datatype(obj) == "erp"
+    l_samp >= 1 || throw(ArgumentError("l must be ≥ $(1 / sr(obj)) s (1 sample)."))
+    if datatype(obj) in ("erp", "erf")
         pac = _pacor(
             @view(obj.data[ch, :, 2:end]);
             l = l_samp,

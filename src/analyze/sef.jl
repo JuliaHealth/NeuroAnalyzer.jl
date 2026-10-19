@@ -69,18 +69,11 @@ function _sef(
     pw = pw[f1_idx:f2_idx]
     pf = pf[f1_idx:f2_idx]
 
-    tp = Simpson.simpson(pw; dx = dx)
-    tp_threshold = tp * x
-
-    sef_frq = nothing
-    for idx in eachindex(pf)
-        if sum(pw[1:idx]) >= tp_threshold
-            sef_frq = pf[idx]
-            break
-        end
-    end
-
-    return sef_frq
+    # cumulative power (rectangle rule: the bin width cancels out)
+    0 < x <= 1 || throw(ArgumentError("x must be in (0, 1]."))
+    cp = cumsum(pw)
+    idx = findfirst(>=(x * cp[end]), cp)
+    return pf[something(idx, length(pf))]
 end
 
 """

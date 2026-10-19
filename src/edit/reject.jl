@@ -47,7 +47,7 @@ end
 Return true for each channel whose peak amplitude exceeds ±`amp_t`.
 """
 function detect_amp(s::AbstractMatrix; amp_t::Real = 400.0)::Vector{Bool}
-    return [maximum(s[i, :]) > amp_t || minimum(s[i, :]) < -amp_t for i = 1:size(s, 1)]
+    return [maximum(s[i, :]) > amp_t || minimum(s[i, :]) < -amp_t for i = axes(s, 1)]
 end
 
 """
@@ -172,7 +172,7 @@ A channel is marked bad if any of the selected methods flags it in at least one 
 - `p::Float64=0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
 - `tc::Float64=0.2`: reserved threshold parameter (not currently used by all methods)
 - `tkeo_method::Symbol =:pow`: TKEO variant; see `tkeo()` for options
-- `z::Real =3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
+- `z::Real=3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
 - `ransac_r::Float64=0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
 - `ransac_tr::Float64=0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
 - `ransac_t::Float64=100.0`: RANSAC inlier distance threshold (in signal units)
@@ -440,7 +440,7 @@ A channel is marked bad if any of the selected methods flags it in at least one 
 - `p::Float64=0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
 - `tc::Float64=0.2`: reserved threshold parameter (not currently used by all methods)
 - `tkeo_method::Symbol =:pow`: TKEO variant; see `tkeo()` for options
-- `z::Real =3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
+- `z::Real=3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
 - `ransac_r::Float64=0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
 - `ransac_tr::Float64=0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
 - `ransac_t::Float64=100.0`: RANSAC inlier distance threshold (in signal units)
@@ -532,7 +532,7 @@ An epoch is marked bad if it contains at least `nbad` bad channels according to 
 - `p::Float64=0.99`: probability threshold for `:p2p`, `:tkeo`, and `:z` methods; interpreted as a percentile (converted internally to a z-score)
 - `tc::Float64=0.2`: reserved threshold parameter (not currently used by all methods)
 - `tkeo_method::Symbol =:pow`: TKEO variant; see `tkeo()` for options
-- `z::Real =3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
+- `z::Real=3`: z-score threshold for `:kurt` and `:z` methods; must be > 0
 - `ransac_r::Float64=0.8`: minimum acceptable Pearson r between a channel and its nearest neighbor (`:ransac` method)
 - `ransac_tr::Float64=0.4`: maximum acceptable fraction of windows below `ransac_r` before marking a channel bad
 - `ransac_t::Float64=100.0`: RANSAC inlier distance threshold (in signal units)

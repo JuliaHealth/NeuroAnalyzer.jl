@@ -25,6 +25,8 @@ Named tuple:
 - `t_median::Float64`: median inter-tap interval [ms]
 - `t_rmssd::Float64`: root mean square of successive differences between adjacent inter-tap intervals [ms]: `√(mean( diff(ITI)²))`
 - `t_sdsd::Float64`: standard deviation of successive differences [ms]: `std(diff(ITI))`
+
+Intervals and their successive differences are computed within trials; values are `NaN` when there are too few taps.
 """
 function ftt_analyze(
     t::@NamedTuple{
@@ -45,27 +47,21 @@ function ftt_analyze(
     # total tap count across all trials
     n = sum(t.taps)
 
-    # accumulate inter-tap intervals (ITI) across all trials
-    # a trial with 1 tap contributes that tap's timestamp (no ITI computable)
-    # trials with ≥ 2 taps contribute their successive differences.
+    # inter-tap intervals (ITI) within each trial (a trial with < 2 taps has none) and
+    # their successive differences within each trial (not across trial boundaries)
     t_iti = Float64[]
+    sd = Float64[]
     for idx in axes(t.tap_t, 1)
-        if length(t.tap_t[idx]) == 1
-            push!(t_iti, t.tap_t[idx][1])
-        elseif length(t.tap_t[idx]) > 1
-            append!(t_iti, round.(diff(t.tap_t[idx]); digits = 1))
-        end
+        length(t.tap_t[idx]) > 1 || continue
+        iti = round.(diff(t.tap_t[idx]); digits = 1)
+        append!(t_iti, iti)
+        append!(sd, diff(iti))
     end
 
-    t_mean = round(mean(t_iti); digits = 1)
-    t_median = round(median(t_iti); digits = 1)
-
-    # successive differences of the ITI vector (difference-of-differences)
-    sd = diff(t_iti)
-
-    # sum(abs2, x) = Σ xᵢ² - avoids allocating x .^ 2 array.
-    t_rmssd = round(sqrt(sum(abs2, sd) / length(sd)); digits = 1)
-    t_sdsd = round(std(sd); digits = 1)
+    t_mean = isempty(t_iti) ? NaN : round(mean(t_iti); digits = 1)
+    t_median = isempty(t_iti) ? NaN : round(median(t_iti); digits = 1)
+    t_rmssd = isempty(sd) ? NaN : round(sqrt(mean(abs2, sd)); digits = 1)
+    t_sdsd = length(sd) < 2 ? NaN : round(std(sd); digits = 1)
 
     return (; n, t_mean, t_median, t_rmssd, t_sdsd)
 end

@@ -20,7 +20,7 @@ Unlike the standard PLV, the imaginary component is insensitive to spurious zero
 
 Named tuple:
 
-- `ipl::Float64`: PLV value
+- `ipl::Float64`: IPLV value
 - `sd::Vector{Float64}`: signal difference (s1 - s2)
 - `phd::Vector{Float64}`: phase difference (s1 - s2)
 - `s1ph::Vector{Float64}`: instantaneous phase of s1

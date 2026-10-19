@@ -16,7 +16,7 @@ Calculate phase difference between two 1-D signal vectors.
 
 Named tuple:
 
-- `Vector{Float64}`: phase differences in radians
+- `Vector{Float64}`: phase differences in radians, wrapped to (-π, π]
 """
 function _phdiff(
     s1::AbstractVector,
@@ -29,7 +29,8 @@ function _phdiff(
     ph1 = h1.ph
     ph2 = h2.ph
 
-    phd = ph1 - ph2
+    # wrapped to (-π, π]
+    phd = angle.(cis.(ph1 .- ph2))
 
     return phd
 end
@@ -42,9 +43,9 @@ Calculate phase difference between channels and mean phase of reference `ch` for
 # Arguments
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
-- `ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))`: index of reference channels, default is all  channels except the analyzed one
+- `ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))`: index of reference channels (the analyzed channel is excluded from its own reference), default is all channels except the analyzed one
 - `avg::Symbol=:phase`: method of averaging:
-    - `:phase`: phase is calculated for each reference channel separately and then averaged
+    - `:phase`: phase is calculated for each reference channel separately and then averaged (circular mean)
     - `:signal`: signals are averaged prior to phase calculation
 - `pad::Int64=0`: number of zeros to append
 - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
@@ -93,17 +94,19 @@ function _phdiff(
                     )
                 ph_ref[ref_idx, :] = h_data.ph
             end
-            ph_ref = vec(mean(ph_ref, dims = 1))
-
+            # circular mean of the reference phases
+            ph_ref = vec(angle.(sum(cis.(ph_ref); dims = 1)))
             h_data =
-                h ? NeuroAnalyzer.htransform(@view(s[ch[ch_idx], :, ep_idx])) :
-                NeuroAnalyzer.ftransform(@view(s[ch[ch_idx], :, ep_idx]); pad = pad)
-            phd[ch_idx, :, ep_idx] = h_data.ph - ph_ref
+                h ? NeuroAnalyzer.htransform(@view(s[ch_idx, :, ep_idx])) :
+                NeuroAnalyzer.ftransform(@view(s[ch_idx, :, ep_idx]); pad = pad)
+            # wrapped to (-π, π]
+            phd[ch_idx, :, ep_idx] = angle.(cis.(h_data.ph .- ph_ref))
 
         elseif avg === :signal
             ref_channels = setdiff(ch, ch_idx)
             signal_m = vec(mean(@view(s[ref_channels, :, ep_idx]), dims = 1))
-            phd[ch_idx, :, ep_idx] = _phdiff(@view(s[ch[ch_idx], :, ep_idx]), signal_m)
+            phd[ch_idx, :, ep_idx] =
+                _phdiff(@view(s[ch_idx, :, ep_idx]), signal_m; pad = pad, h = h)
         end
     end
 
@@ -118,9 +121,9 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}`: index of reference channels
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s); each channel is compared with the other selected channels
 - `avg::Symbol=:phase`: method of averaging:
-    - `:phase`: phase is calculated for each reference channel separately and then averaged
+    - `:phase`: phase is calculated for each reference channel separately and then averaged (circular mean)
     - `:signal`: signals are averaged prior to phase calculation
 - `pad::Int64=0`: number of zeros to append
 - `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform

@@ -40,15 +40,19 @@ function _psi(
         flim = (flim[1], round(Int64, flim[end]))
     end
 
-    fs > length(s1) && (fs = length(s1))
-    seglen = fs             # segment length (1 second) or signal length
-    nboot = 256             # number of bootstrap iterations
-    method = "bootstrap"    # standard deviation estimation method
-    detrend = true          # performs a 0th-order detrend across raw segments
+    seglen = min(fs, length(s1))    # segment length (1 second) or signal length
+    nboot = 256                     # number of bootstrap iterations
+    method = "bootstrap"            # standard deviation estimation method
+    detrend = true                  # performs a 0th-order detrend across raw segments
+
+    # frequency bins (DC excluded): bin k is k * fs / seglen Hz, i.e. k Hz for 1-second segments
+    b1 = max(1, round(Int64, flim[1] * seglen / fs))
+    b2 = min(seglen ÷ 2 - 1, round(Int64, flim[end] * seglen / fs))
+    b2 > b1 || throw(ArgumentError("Signal is too short for the frequency range $flim Hz."))
 
     pv, _ = PhaseSlopeIndex.data2psi(
         [s1 s2], seglen; nboot = nboot, method = method, detrend = detrend,
-        freqlist = Int64(flim[1]):1:Int64(flim[end]),
+        freqlist = b1:b2,
     )
     pv = (pv[1, 2], pv[2, 1])
 
@@ -72,7 +76,8 @@ Calculate Phase Slope Index (PSI) for two NEURO objects.
 
 # Returns
 
-- `Matrix{Float64}`: PSI value
+- `Matrix{Tuple{Float64, Float64}}`: PSI values (ch1 → ch2, ch2 → ch1), shape (channels, epochs)
+
 """
 function psi(
     obj1::NeuroAnalyzer.NEURO,
@@ -95,7 +100,7 @@ function psi(
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+                "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
             ),
         )
 
@@ -104,7 +109,7 @@ function psi(
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||
@@ -144,7 +149,8 @@ Calculate Phase Slope Index (PSI) for a NEURO object.
 
 # Returns
 
-- `Array{Tuple{Float64, Float64}, 3}`: PSI value
+- `Array{Tuple{Float64, Float64}, 3}`: PSI values, shape (channels, channels, epochs); `[i, j]` = (i → j, j → i)
+
 """
 function psi(
     obj::NeuroAnalyzer.NEURO;
@@ -169,14 +175,15 @@ function psi(
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
         for ch_idx2 = 1:ch_idx1
-            pv[ch_idx1, ch_idx2, ep_idx] = _psi(
+            v = _psi(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx]),
                 fs = sr(obj), flim = flim,
             )
+            pv[ch_idx1, ch_idx2, ep_idx] = v
+            # (j → i, i → j) for the mirrored entry
+            pv[ch_idx2, ch_idx1, ep_idx] = (v[2], v[1])
         end
     end
-
-    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
-    return _copy_lt2ut(pv)
+    return pv
 end

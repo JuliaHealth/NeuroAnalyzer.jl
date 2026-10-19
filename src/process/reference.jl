@@ -103,7 +103,7 @@ function _wmedian_cols(
         for m = 1:k
             c += w[p[m]]
             if c >= half - tol
-                global out[j] =
+                out[j] =
                     (abs(c - half) <= tol && m < k) ? (v[p[m]] + v[p[m + 1]]) / 2 :
                     v[p[m]]
                 break

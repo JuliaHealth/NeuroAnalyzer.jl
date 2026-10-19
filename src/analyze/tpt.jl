@@ -27,7 +27,7 @@ function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 end
 
 """
-    tpt_analyze(nn_seg)
+    tpt_analyze(obj)
 
 Analyze pinches in TPT recording.
 
@@ -42,8 +42,8 @@ Named tuple:
 - `n::Int64`: number of pinches
 - `t_mean::Float64`: mean interval between pinches [ms]
 - `t_median::Float64`: median interval between pinches [ms]
-- `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent pinches [ms]
-- `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent pinches [ms]
+- `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent intervals [ms]; `NaN` for < 3 pinches
+- `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent intervals [ms]; `NaN` for < 4 pinches
 
 # Note
 
@@ -72,8 +72,10 @@ function tpt_analyze(
         t_diff = round.(diff(t); digits = 1)
         t_mean = round(mean(t_diff); digits = 1)
         t_median = round(median(t_diff); digits = 1)
-        t_rmssd = round(sqrt(mean(t_diff .^ 2)); digits = 1)
-        t_sdsd = round(std(t_diff); digits = 1)
+        # successive differences of the intervals
+        sd = diff(t_diff)
+        t_rmssd = isempty(sd) ? NaN : round(sqrt(mean(abs2, sd)); digits = 1)
+        t_sdsd = length(sd) < 2 ? NaN : round(std(sd); digits = 1)
         return (; n, t_mean, t_median, t_rmssd, t_sdsd)
     else
         return nothing

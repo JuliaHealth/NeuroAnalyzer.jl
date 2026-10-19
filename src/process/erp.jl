@@ -29,10 +29,11 @@ function average_epochs(
     nchannels(obj) > length(get_channel(obj; type = datatype(obj))) &&
         _warn("Non-signal channels will be removed.")
 
+    # signal channels (get_channel(; type) returns names)
     obj_tmp = if datatype(obj) == "eeg"
-        keep_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+        keep_channel(obj; ch = get_channel(obj; type = "eeg"))
     else
-        keep_channel(obj; ch = ["meg", "mag", "grad"])
+        keep_channel(obj; ch = get_channel(obj; type = ["meg", "mag", "grad"]))
     end
 
     # remove baseline prior to averaging
@@ -51,8 +52,7 @@ function average_epochs(
     # prepend the trial average as epoch 1; original epochs follow
     obj_tmp.data = cat(
         mean(
-            obj_tmp.data; dims
-        = 3,
+            obj_tmp.data; dims = 3,
         ), obj_tmp.data; dims = 3,
     )
 
@@ -64,16 +64,8 @@ function average_epochs(
         obj_tmp.data[:, :, 1] = _remove_dc(obj_tmp.data[:, :, [1]], bl_samples)
     end
 
-    # ------------------------------------------------------------------ #
-    # update markers                                                     #
-    # remove markers that fall outside the remaining data and shift the  #
-    # remaining ones to account for the prepended average epoch.         #
-    # ------------------------------------------------------------------ #
-    ep_len = size(obj_tmp.data, 2)
-    for idx = DataFrames.nrow(obj_tmp.markers):-1:1
-        obj_tmp.markers[idx, :start] > ep_len && deleteat!(obj_tmp.markers, idx)
-    end
-    obj_tmp.markers[!, :start] .+= ep_len
+    # markers (in seconds) follow their epochs, which are shifted by the prepended average epoch
+    obj_tmp.markers[!, :start] .+= n2t(size(obj_tmp.data, 2), sr(obj))
 
     push!(obj_tmp.history, "average_epochs(obj, bl=$bl, blfirst=$blfirst)")
 
@@ -107,6 +99,7 @@ function average_epochs!(
     obj.time_pts = obj_tmp.time_pts
     obj.epoch_time = obj_tmp.epoch_time
     obj.markers = obj_tmp.markers
+    obj.locs = obj_tmp.locs
     obj_tmp = nothing
 
     return nothing
@@ -142,12 +135,24 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
                 "All values in s must be in 2:$(nepochs(obj)); epoch 1 is the average and cannot be reordered.",
             ),
         )
+    allunique(s) || throw(ArgumentError("s must be a permutation (no repeated epochs)."))
 
     # create new dataset
     obj_tmp = deepcopy(obj)
 
     obj_tmp.data[:, :, 2:end] = obj.data[:, :, s]
-    _warn("Markers are not sorted when epochs are reordered.")
+
+    # markers move with their epochs: epoch s[i] becomes epoch i + 1
+    ep_len = epoch_len(obj)
+    new_pos = Dict(e => i + 1 for (i, e) in enumerate(s))
+    obj_tmp.markers = _remap_markers(
+        obj.markers,
+        sr(obj),
+        q -> begin
+            e = (q - 1) ÷ ep_len + 1
+            e == 1 ? q : (new_pos[e] - 1) * ep_len + (q - 1) % ep_len + 1
+        end,
+    )
     push!(obj_tmp.history, "sort_epochs(obj, s=$s)")
 
     return obj_tmp

@@ -19,7 +19,8 @@ Interpolate channel using planar interpolation.
     - `:tp`: ThinPlate
     - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
-- `ifactor::Int64=100`: interpolation quality
+
+The channel is interpolated from the other good signal channels (bad channels are not used), whose locations must be available; the interpolated value is computed exactly at the location of `ch`.
 
 # Returns
 
@@ -30,80 +31,55 @@ function plinterpolate_channel(
     ch::String,
     ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     imethod::Symbol = :sh,
-    ifactor::Int64 = 100,
 )::NeuroAnalyzer.NEURO
-    # resolve channel type to integer indices
-    channels = get_channel(obj; type = datatype(obj))
-    length(channels) > 1 ||
-        throw(ArgumentError("OBJ must contain > 1 signal channel."))
-    ch in channels ||
-        throw(
-            ArgumentError(
-                "ch must be a signal channel; cannot interpolate non-signal channels.",
-            ),
-        )
-
     # validate
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj)
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)[1]
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-
     _check_epochs(obj, ep)
     ep = _n2v(ep)
 
+    # signal channels (names); the reference channels exclude ch and bad channels
+    signal = get_channel(obj; type = datatype(obj))
+    ch in signal ||
+        throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+    bad = labels(obj)[obj.header.recording[:bad_channel]]
+    ref = setdiff(signal, [ch], bad)
+    length(ref) >= 3 || throw(ArgumentError("At least 3 good signal channels are needed for interpolation."))
+
+    # channel numbers and locations (matched by label)
+    ch_num(l) = findfirst(==(l), labels(obj))
+    loc_labels = lowercase.(String.(obj.locs[!, :label]))
+    loc_idx = [findfirst(==(lowercase(l)), loc_labels) for l in vcat(ref, ch)]
+    any(isnothing, loc_idx) &&
+        throw(ArgumentError("Locations of all reference channels and of ch are required."))
+    loc_x = Float64.(obj.locs[Vector{Int64}(loc_idx), :loc_x])
+    loc_y = Float64.(obj.locs[Vector{Int64}(loc_idx), :loc_y])
+    ref_num = ch_num.(ref)
+    ch_idx = ch_num(ch)
+    # target: the location of ch
+    target = [loc_x[end], loc_y[end]]
+    loc_x, loc_y = loc_x[1:(end - 1)], loc_y[1:(end - 1)]
+
     # create new dataset
     obj_tmp = deepcopy(obj)
-    obj_tmp = deepcopy(obj)
-    delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "ref"))
-    delete_channel!(obj_tmp; ch = get_channel(obj_tmp; type = "eog"))
-
-    locs_x1 = obj_tmp.locs.loc_x
-    locs_y1 = obj_tmp.locs.loc_y
-
-    delete_channel!(obj_tmp; ch = labels(obj_tmp)[ch])
-    locs_x2 = obj_tmp.locs.loc_x
-    locs_y2 = obj_tmp.locs.loc_y
-    chs = get_channel(obj_tmp; ch = get_channel(obj_tmp; type = datatype(obj_tmp)))
-
-    # number of epochs
-    ep_n = length(ep)
-    # epoch length
-    ep_len = epoch_len(obj_tmp)
-
-    s_interpolated = zeros(Float64, length(ch), ep_len, ep_n)
+    ep_len = epoch_len(obj)
 
     # initialize progress bar
-    progbar =
-        Progress(ep_n * ep_len; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+    progbar = Progress(
+        length(ep) * ep_len; dt = 1, barlen = 20, color = :white, enabled = progress_bar,
+    )
 
-    @inbounds Threads.@threads :static for ep_idx in eachindex(ep)
-        for length_idx = 1:ep_len
-            s_tmp, x, y = _interpolate2d(
-                @view(obj_tmp.data[chs, length_idx, ep[ep_idx]]),
-                locs_x2,
-                locs_y2,
-                ifactor,
-                imethod,
-                :none,
-            )
-            for ch_idx in eachindex(ch)
-                x_idx = vsearch(locs_x1[ch[ch_idx]], x)
-                y_idx = vsearch(locs_y1[ch[ch_idx]], y)
-                s_interpolated[ch_idx, length_idx, ep_idx] = s_tmp[x_idx, y_idx]
-            end
-
-            # update progress bar
-            progress_bar && next!(progbar)
-        end
+    # value at the location of ch, interpolated from the reference channels at each sample
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ep_len, length(ep)))
+        t_idx, ep_idx = idx[1], idx[2]
+        itp = _interpolator(imethod, loc_x, loc_y, @view(obj.data[ref_num, t_idx, ep[ep_idx]]))
+        obj_tmp.data[ch_idx, t_idx, ep[ep_idx]] = ScatteredInterpolation.evaluate(itp, target)[1]
+        progress_bar && next!(progbar)
     end
-
-    obj_tmp.data[ch, :, ep] = s_interpolated
 
     push!(
         obj_tmp.history,
-        "plinterpolate_channel(obj; ch=$ch, ep=$ep, imethod=$imethod, ifactor=$ifactor)",
+        "plinterpolate_channel(obj; ch=$ch, ep=$ep, imethod=$imethod)",
     )
 
     return obj_tmp
@@ -120,7 +96,6 @@ Interpolate channel using planar interpolation.
 - `ch::String`: channel to interpolate
 - `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
-- `ifactor::Int64=100`: interpolation quality
 
 # Returns
 
@@ -130,11 +105,10 @@ function plinterpolate_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
-    imethod::Symbol = :shepard,
-    ifactor::Int64 = 100,
+    imethod::Symbol = :sh,
 )::Nothing
     obj_tmp =
-        plinterpolate_channel(obj; ch = ch, ep = ep, imethod = imethod, ifactor = ifactor)
+        plinterpolate_channel(obj; ch = ch, ep = ep, imethod = imethod)
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
     obj_tmp = nothing
@@ -145,13 +119,13 @@ end
 """
     plinterpolate(s; <keyword arguments>)
 
-Interpolate channel using planar interpolation.
+Interpolate a 2-D map (planar interpolation) of channel values, leaving out channel `ch`: the map shows the values that the other channels predict at the location of `ch`.
 
 # Arguments
 
-- `s::Matrix{Float64}`: values to plot (one value per channel)
+- `s::AbstractVector`: one value per location (row) of `locs`
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Int64`: channel to interpolate
+- `ch::Int64`: location (row of `locs`) to leave out
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -160,19 +134,19 @@ Interpolate channel using planar interpolation.
     - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `ifactor::Int64=100`: interpolation quality
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `ifactor::Int64=100`: interpolation quality (grid size)
 
 # Returns
 
 Named tuple:
 
-- `int_s::Matrix{Float64}`: interpolated signal
+- `int_s::Matrix{Float64}`: interpolated map
 - `int_x::Vector{Float64}`: X-axis coordinates
 - `int_y::Vector{Float64}`: Y-axis coordinates
 """
 function plinterpolate(
-    s::Matrix{Float64};
+    s::AbstractVector;
     locs::DataFrame,
     ch::Int64,
     imethod::Symbol = :sh,
@@ -185,27 +159,22 @@ function plinterpolate(
     int_y::Vector{Float64},
 }
     # validate
-    ch in axes(s, 1) || throw(ArgumentError("ch must be in [1, $(size(s, 1))"))
+    length(s) == DataFrames.nrow(locs) ||
+        throw(ArgumentError("Length of s must equal the number of locations."))
+    ch in eachindex(s) || throw(ArgumentError("ch must be in [1, $(length(s))]."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
-    locs = locs[ch, :]
-
+    keep = setdiff(eachindex(s), ch)
     if cart
-        loc_x = locs[ch, :loc_x]
-        loc_y = locs[ch, :loc_y]
+        loc_x = Float64.(locs[keep, :loc_x])
+        loc_y = Float64.(locs[keep, :loc_y])
     else
-        loc_x = zeros(length(ch))
-        loc_y = zeros(length(ch))
-        for idx in eachindex(ch)
-            loc_x[idx], loc_y[idx] =
-                pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
-        end
+        xy = [pol2cart(locs[idx, :loc_radius], locs[idx, :loc_theta]) for idx in keep]
+        loc_x = first.(xy)
+        loc_y = last.(xy)
     end
 
-    loc_x = _n2v(loc_x)
-    loc_y = _n2v(loc_y)
-
-    int_s, int_x, int_y = _interpolate2d(s, loc_x, loc_y, ifactor, imethod, nmethod)
+    int_s, int_x, int_y = _interpolate2d(Float64.(s[keep]), loc_x, loc_y, ifactor, imethod, nmethod)
 
     return (; int_s, int_x, int_y)
 end

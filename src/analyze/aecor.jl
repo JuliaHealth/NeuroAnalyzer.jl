@@ -43,8 +43,8 @@ Calculate Amplitude Envelope Correlation (AEC) for two NEURO objects.
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 - `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 
@@ -135,9 +135,8 @@ function aecor(
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
-
     # number of channels
-    ch_n = length(ch1)
+    ch_n = length(ch)
     # number of epochs
     ep_n = nepochs(obj)
 
@@ -278,7 +277,7 @@ Calculate Envelope-to-Signal Correlation (ESC) for a NEURO object.
 
 # Returns
 
-- `Array{Float64, 3}`: ESC value, shape `(channels, channels, epochs)`
+- `Array{Float64, 3}`: ESC value, shape `(channels, channels, epochs)`; `[i, j]`: signal of channel i vs envelope of channel j (not symmetric)
 """
 function escor(
     obj::NeuroAnalyzer.NEURO;
@@ -290,26 +289,23 @@ function escor(
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
-
     # number of channels
-    ch_n = length(ch1)
+    ch_n = length(ch)
     # number of epochs
     ep_n = nepochs(obj)
 
     # pre-allocate output
     esc = zeros(ch_n, ch_n, ep_n)
-
-    # calculate over channels and epochs
+    # calculate over channels and epochs; ESC is not symmetric (signal of channel 1 vs
+    # envelope of channel 2), the full matrix is calculated
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 = 1:ch_idx1
+        for ch_idx2 = 1:ch_n
             esc[ch_idx1, ch_idx2, ep_idx] = _escor(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             )
         end
     end
-
-    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
-    return _copy_lt2ut(esc)
+    return esc
 end

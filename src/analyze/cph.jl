@@ -105,12 +105,13 @@ function _cph(
         progress_bar && next!(progbar)
     end
 
-    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
+    # mirror the lower triangle to the upper triangle: the phase of the cross-spectrum is
+    # antisymmetric (S[j, i] = conj(S[i, j]))
     @inbounds Threads.@threads :static for idx in CartesianIndices((length(f), ep_n))
         f_idx, ep_idx = idx[1], idx[2]
         for ch_idx1 = 1:(ch_n - 1)
             for ch_idx2 = (ch_idx1 + 1):ch_n
-                ph[ch_idx1, ch_idx2, f_idx, ep_idx] = ph[ch_idx2, ch_idx1, f_idx, ep_idx]
+                ph[ch_idx1, ch_idx2, f_idx, ep_idx] = -ph[ch_idx2, ch_idx1, f_idx, ep_idx]
             end
         end
     end
@@ -222,8 +223,8 @@ Calculate cross-phases between paired channels of two NEURO objects.
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::Union{String, Vector{String}, Regex}: channel name(s)
-- `ch2::Union{String, Vector{String}, Regex}: channel name(s)
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 - `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 

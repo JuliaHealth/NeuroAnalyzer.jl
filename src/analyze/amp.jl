@@ -55,7 +55,7 @@ Computes amplitude descriptors for a 3-D signal array.
 Named tuple:
 
 - `peak_amp::Matrix{Float64}`: peak amplitude (`max(|s|)`), shape (channels, epochs)
-- `rms_amp::Matrix{Float64}`: RMS amplitude (`peak_amp / √2`; exact only for a pure sinusoid), shape (channels, epochs)
+- `rms_amp::Matrix{Float64}`: RMS amplitude (`√mean(s²)`), shape (channels, epochs)
 - `p2p_amp::Matrix{Float64}`: peak-to-peak amplitude (`max(s) - min(s)`), shape (channels, epochs)
 - `semi_p2p_amp::Matrix{Float64}`: half of the peak-to-peak amplitude, shape (channels, epochs)
 - `ms_amp::Matrix{Float64}`: mean square amplitude (`mean(s²)`), shape (channels, epochs)
@@ -116,7 +116,7 @@ Computes amplitude descriptors for a NEURO object.
 Named tuple:
 
 - `peak_amp::Matrix{Float64}`: peak amplitude (`max(|s|)`), shape (channels, epochs)
-- `rms_amp::Matrix{Float64}`: RMS amplitude (`peak_amp / √2`; exact only for a pure sinusoid), shape (channels, epochs)
+- `rms_amp::Matrix{Float64}`: RMS amplitude (`√mean(s²)`), shape (channels, epochs)
 - `p2p_amp::Matrix{Float64}`: peak-to-peak amplitude (`max(s) - min(s)`), shape (channels, epochs)
 - `semi_p2p_amp::Matrix{Float64}`: half of the peak-to-peak amplitude, shape (channels, epochs)
 - `ms_amp::Matrix{Float64}`: mean square amplitude (`mean(s²)`), shape (channels, epochs)

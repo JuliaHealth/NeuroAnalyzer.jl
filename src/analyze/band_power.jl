@@ -120,7 +120,7 @@ function _band_power(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
-    demean = demean,
+    demean::Bool = true,
 )::Matrix{Float64}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
     _chk3d(s)

@@ -3,7 +3,7 @@ export wpli
 """
     _wpli(s1, s2; <keyword arguments>)
 
-Calculate weighted PLI (Phase Locking Index) for two 1-D signal vectors.
+Calculate weighted PLI (Phase Locking Index) for two 1-D signal vectors: weighted by the magnitude of the imaginary part of the cross-spectrum, across the positive frequencies of the signals (Vinck et al. 2011).
 
 # Arguments
 
@@ -49,15 +49,17 @@ function _wpli(
     s1ph = pli_data.s1ph
     s2ph = pli_data.s2ph
 
-    # wPLI
-    num = sum(abs.(im_pxy) .* sign.(im_pxy))
-    denom = sum(abs.(im_pxy))
-    sum_sq = sum(im_pxy .^ 2)
-
+    # positive frequencies only: for real signals Im(Pxy) is antisymmetric, the negative
+    # frequencies would cancel the positive ones; DC and Nyquist are real
+    im_pxy = im_pxy[2:((n + 1) ÷ 2)]
+    # wPLI = |Σ Im(Pxy)| / Σ |Im(Pxy)| (Vinck et al. 2011)
+    num = sum(im_pxy)
+    denom = sum(abs, im_pxy)
+    sum_sq = sum(abs2, im_pxy)
     if debiased
         pv = (num^2 - sum_sq) / (denom^2 - sum_sq)
     else
-        pv = num / denom
+        pv = abs(num) / denom
     end
 
     return (; pv, sd, phd, s1ph, s2ph)
@@ -115,7 +117,7 @@ function wpli(
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+                "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
             ),
         )
 
@@ -124,7 +126,7 @@ function wpli(
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||

@@ -55,8 +55,8 @@ function _dpli(
     # signal difference and instantaneous phase difference.
     sd = s1 - s2
 
-    # instantaneous phase difference ∈ (−π, π] by convention of htransform output
-    phd = s1ph - s2ph
+    # instantaneous phase difference, wrapped to (−π, π]
+    phd = angle.(cis.(s1ph .- s2ph))
 
     # dPLI calculation
     # r1: 0 < phd < π → s1 leads s2
@@ -205,7 +205,7 @@ where phd = s1_phase − s2_phase ∈ (−π, π].
 
 # Returns
 
-- `Array{Float64, 3}`: dPLI values, shape (channels, channels, epochs)
+- `Array{Float64, 3}`: dPLI values, shape (channels, channels, epochs); `[i, j]` is the dPLI of channel i relative to channel j (`[j, i] = 1 - [i, j]`, diagonal 0.5)
 
 # References
 
@@ -225,22 +225,24 @@ function dpli(
     # number of channels
     ch_n = length(ch)
     # number of epochs
-    ep_n = length(ep)
-
-    # pre-allocate outpu
+    ep_n = nepochs(obj)
+    # pre-allocate output
     pv = zeros(ch_n, ch_n, ep_n)
 
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx1, ep_idx = idx[1], idx[2]
-        for ch_idx2 = 1:ch_idx1
-            pv[ch_idx1, ch_idx2, ep_idx] = _dpli(
+        for ch_idx2 = 1:(ch_idx1 - 1)
+            v = _dpli(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
                 @view(obj.data[ch[ch_idx2], :, ep_idx])
             ).pv
+            # dPLI is directed: dPLI(j, i) = 1 - dPLI(i, j)
+            pv[ch_idx1, ch_idx2, ep_idx] = v
+            pv[ch_idx2, ch_idx1, ep_idx] = 1 - v
         end
+        # a channel with itself: no phase difference
+        pv[ch_idx1, ch_idx1, ep_idx] = 0.5
     end
-
-    # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
-    return _copy_lt2ut(pv)
+    return pv
 end

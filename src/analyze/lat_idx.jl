@@ -51,7 +51,8 @@ function lat_idx(
     demean::Bool = true,
 )::Float64
     # validate
-    _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
+    # hemispheres are detected from 10-20 style EEG labels
+    _check_datatype(obj, ["eeg", "erp"])
 
     length(channel_pick(obj; pick = :l)) > 0 ||
         throw(ArgumentError("Could not detect left hemisphere channels, check OBJ labels."))
@@ -124,5 +125,5 @@ function lat_idx(
         p_right_val = mean(@view(p_right[frq_idx1:frq_idx2]))
     end
 
-    return log(p_left_val / p_right_val)
+    return log(p_right_val / p_left_val)
 end

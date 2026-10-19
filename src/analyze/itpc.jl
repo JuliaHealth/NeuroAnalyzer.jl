@@ -54,8 +54,8 @@ function _itpc(
     # number of epochs
     ep_n = size(s, 3)
 
-    isnothing(w) && (w = ones(ep_n))
-    # scale w if w contains negative values
+    # weights (a copy: the caller's vector is not modified); negative weights are shifted
+    w = isnothing(w) ? ones(ep_n) : Vector{Float64}(w)
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
     length(w) == ep_n || throw(
         ArgumentError(
@@ -206,8 +206,8 @@ function _itpc_spec(
     # number of epochs
     ep_n = size(s, 3)
 
-    w === nothing && (w = ones(ep_n))
-    # scale w if w contains negative values
+    # weights (a copy: the caller's vector is not modified); negative weights are shifted
+    w = isnothing(w) ? ones(ep_n) : Vector{Float64}(w)
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
     length(w) == ep_n || throw(
         ArgumentError(

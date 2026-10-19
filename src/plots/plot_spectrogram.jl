@@ -534,9 +534,9 @@ Plot a spectrogram or scalogram using various time-frequency analysis methods.
     - `:cwt`: continuous wavelet transformation
     - `:hht`: Hilbert-Huang transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
-- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
+- `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:stft` and `:mt`
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
-- `w::Bool=true`: if `true`, apply Hanning window
+- `w::Bool=true`: if `true`, apply Hanning window (to each segment for `:stft` and `:mt`; for several channels with `:mw` and `:gh`, to the whole signal before the PSD is calculated)
 - `gw::Real=10`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
@@ -677,14 +677,15 @@ function plot_spectrogram(
             title == "default" && (title = "Spectrogram (multi-tapered)$ep_suffix")
 
         elseif method === :mw
+            # no whole-signal taper (`w`): it would fade the edges of the time axis
             spec_data =
-                NeuroAnalyzer.mwspectrogram(signal; fs = fs, ncyc = ncyc, db = false, w = w)
+                NeuroAnalyzer.mwspectrogram(signal; fs = fs, ncyc = ncyc, db = false)
             sp, sf, st = spec_data.p, spec_data.f, spec_data.t
             title == "default" && (title = "Spectrogram (Morlet wavelet)$ep_suffix")
 
         elseif method === :gh
             spec_data =
-                NeuroAnalyzer.ghtspectrogram(signal; fs = fs, db = false, gw = gw, w = w)
+                NeuroAnalyzer.ghtspectrogram(signal; fs = fs, db = false, gw = gw)
             sp, sf, st = spec_data.p, spec_data.f, spec_data.t
             title == "default" && (title = "Spectrogram (Gaussian-Hilbert)$ep_suffix")
 
@@ -728,13 +729,6 @@ function plot_spectrogram(
             psd_data = _psd(signal; fs = fs, db = db, method = :gh, w = w, gw = gw)
             sp, sf = psd_data.p, psd_data.f
             title == "default" && (title = "Spectrogram (Gaussian-Hilbert)$ep_suffix")
-
-        elseif method === :cwt
-            psd_data = _psd(signal; fs = fs, method = :cwt, wt = wt)
-            sp, sf = psd_data.p, psd_data.f
-            sf[1] > flim[1] && (flim = (sf[1], flim[2]))
-            sf[end] < flim[2] && (flim = (flim[1], sf[end]))
-            title == "default" && (title = "CWT Scaleogram$ep_suffix")
 
         elseif method === :hht
             imf = _emd(signal[1, :], t)

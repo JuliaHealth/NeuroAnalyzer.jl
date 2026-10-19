@@ -12,8 +12,8 @@ Calculate auto-correlation for a 1-D signal vector.
 - `demean::Bool=true`: subtract the mean before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
-    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
+    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end])`, normalized to 1 at lag 0
+    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end])`, normalized to 1 at lag 0
     - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
@@ -41,9 +41,8 @@ function _acor(
             biased = biased,
             method = :sum,
         )
-        # normalize by variance to bring values onto [-1, 1] scale
-        autocor = round.(autocor ./ Statistics.var(s); digits = 3)
-
+        # normalize by the zero-lag auto-covariance (autocorrelation = 1 at lag 0)
+        autocor = autocor ./ autocor[l + 1]
     elseif method === :cor
 
         # similar to :sum but uses a covariance-based approach internally;
@@ -55,9 +54,8 @@ function _acor(
             biased = biased,
             method = :cov,
         )
-        # normalize by variance to bring values onto [-1, 1] scale
-        autocor = round.(autocor ./ Statistics.var(s); digits = 3)
-
+        # normalize by the zero-lag auto-covariance (autocorrelation = 1 at lag 0)
+        autocor = autocor ./ autocor[l + 1]
     elseif method === :stat
 
         # delegate entirely to StatsBase.autocor, which handles normalization internally
@@ -67,7 +65,6 @@ function _acor(
             0:l;
             demean = demean,
         )
-        autocor = round.(autocor; digits = 3)
         autocor = vcat(reverse(autocor), autocor[2:end])
     end
 
@@ -86,8 +83,8 @@ Calculate auto-correlation for a 3-D signal array.
 - `demean::Bool=true`: subtract the mean before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
-    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
+    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end])`, normalized to 1 at lag 0
+    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end])`, normalized to 1 at lag 0
     - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
@@ -142,8 +139,8 @@ For ERP return trial-averaged auto-correlation.
 - `demean::Bool=true`: subtract the mean before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
-    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end]) ./ var(s)`
-    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end]) ./ var(s)`
+    - `:sum`: `acf = sum(s[1:(end - l)] .* s[(1 + l):end])`, normalized to 1 at lag 0
+    - `:cor`: `acf = cov(s[1:(end - l)], s[(1 + l):end])`, normalized to 1 at lag 0
     - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
@@ -165,7 +162,7 @@ function acor(
     lags::Vector{Float64},
 }
     # validate lag bounds: must be non-negative and within the signal length
-    l <= size(obj, 2) || throw(ArgumentError("l must be ≤ $(size(obj, 2))."))
+    l < size(obj, 2) || throw(ArgumentError("l must be < $(size(obj, 2))."))
     l >= 0 || throw(ArgumentError("l must be ≥ 0."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
@@ -175,7 +172,7 @@ function acor(
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    if datatype(obj) == "erp"
+    if datatype(obj) in ("erp", "erf")
 
         # epoch 1 is the pre-computed average; epochs 2:end are individual trials
         # compute per-trial auto-correlations first, then prepend the mean across

@@ -1,13 +1,5 @@
 export granger
-
-# granger(s; order, maxorder, conditional) works on a channels × samples × epochs array, and gc[i,j] means i → j.
-# Model: it is a time-domain VAR with BIC order selection. Lags never cross epoch boundaries, and epochs are demeaned and pooled.
-# Statistics: it reports ln(RSS ratio), an F-test p-value and Benjamini–Hochberg-adjusted p-values. conditional=true conditions on all other channels.
-
-# Known methodological problems
-
-# Convention: input array is channels × samples × epochs (assumed to match
-# NeuroAnalyzer's signal layout - verify). Result[i, j] = influence of channel i ON channel j.
+export granger_spectral
 
 """
     _gc_design(x, p)
@@ -21,7 +13,7 @@ Build the lagged VAR design for `x` (channels × samples × epochs). Lags never 
 """
 function _gc_design(x::AbstractArray{<:Real, 3}, p::Int)
     ch, n, ep = size(x)
-    n > p || throw(ArgumentError("model order ($p) must be smaller than epoch length ($n)"))
+    n > p || throw(ArgumentError("Model order ($p) must be smaller than epoch length ($n)."))
     m = n - p
     Y = Matrix{Float64}(undef, m * ep, ch)
     Z = Matrix{Float64}(undef, m * ep, ch * p)
@@ -41,12 +33,13 @@ _gc_rss(y::AbstractVector, Z::AbstractMatrix) = sum(abs2, y .- Z * (Z \ y))
 """
     _gc_order(x, maxorder)
 
-Select common VAR order by minimizing BIC over 1:`maxorder`.
+Select a common VAR order by minimizing BIC over 1:`maxorder`.
 """
 function _gc_order(x::AbstractArray{<:Real, 3}, maxorder::Int)
+    maxorder >= 1 || throw(ArgumentError("maxorder must be ≥ 1."))
     ch = size(x, 1)
     best_p, best_bic = 1, Inf
-    for p in 1:maxorder
+    for p in 1:min(maxorder, size(x, 2) - 1)
         Y, Z = _gc_design(x, p)
         N = size(Y, 1)
         R = Y .- Z * (Z \ Y)
@@ -79,52 +72,47 @@ function _gc_fdr(pv::AbstractMatrix{<:Real})
 end
 
 """
-    granger(s; order, maxorder, conditional)
+    _granger(s; <keyword arguments>)
 
-Time-domain Granger causality between all channel pairs.
+Time-domain Granger causality between all channel pairs of a 3-D signal array.
 
 # Arguments
 
-- `s::AbstractArray{<:Real, 3}`: signal, channels × samples × epochs
+- `s::AbstractArray{<:Real, 3}`: signal array, shape (channels, samples, epochs)
 - `order::Union{Int, Nothing}=nothing`: VAR order; if `nothing`, chosen by BIC
 - `maxorder::Int=20`: upper bound for BIC search
-- `conditional::Bool=false`: if `true`, condition on all remaining channels (full multivariate GC; needs ch·order ≪ samples·epochs), otherwise pairwise
+- `conditional::Bool=false`: if `true`, condition on all remaining channels (full multivariate GC; needs channels·order ≪ samples·epochs), otherwise pairwise
 
 # Returns
 
 Named tuple:
 
-- `gc`: ch × ch matrix, `gc[i, j]` = ln(RSS_restricted / RSS_full), i → j
-- `f`, `p`, `p_adj`: F statistic, p-value, BH-FDR adjusted p-value (same layout)
-- `order`: model order used
-
-# Notes
-
-- Each epoch is demeaned per channel (no intercept in the model).
-- Epochs are pooled as independent observations. Assumes stationarity and Gaussian residuals.
+- `gc::Matrix{Float64}`: channels × channels, `gc[i, j]` = ln(RSS_restricted / RSS_full), i → j
+- `f::Matrix{Float64}`, `p::Matrix{Float64}`, `p_adj::Matrix{Float64}`: F statistic, p-value, Benjamini-Hochberg FDR-adjusted p-value (same layout)
+- `order::Int64`: model order used
 """
-function granger(s::AbstractArray{<:Real, 3}; order::Union{Int, Nothing} = nothing, maxorder::Int = 20, conditional::Bool = false)
+function _granger(
+    s::AbstractArray{<:Real, 3};
+    order::Union{Int, Nothing} = nothing,
+    maxorder::Int = 20,
+    conditional::Bool = false,
+)
     # validate
     ch = size(s, 1)
-    ch >= 2 || throw(ArgumentError("at least 2 channels required"))
-
+    ch >= 2 || throw(ArgumentError("At least 2 channels are required."))
     x = Float64.(s)
+    # each epoch is demeaned per channel (no intercept in the model)
     x .-= mean(x, dims = 2)
-
     p = isnothing(order) ? _gc_order(x, maxorder) : order
-    p >= 1 || throw(ArgumentError("order must be ≥ 1"))
-
+    p >= 1 || throw(ArgumentError("order must be ≥ 1."))
     Y, Z = _gc_design(x, p)
     N = size(Y, 1)
     chcols(c) = c:ch:(ch * p)
-
     gc = zeros(ch, ch)
     f = zeros(ch, ch)
     pv = ones(ch, ch)
-
     rss_full = conditional ? [_gc_rss(Y[:, j], Z) for j in 1:ch] : zeros(ch)
     Zpair = Matrix{Float64}(undef, N, 2p)
-
     for j in 1:ch, i in 1:ch
         i == j && continue
         y = @view Y[:, j]
@@ -144,7 +132,6 @@ function granger(s::AbstractArray{<:Real, 3}; order::Union{Int, Nothing} = nothi
         f[i, j] = ((rss_r - rss_u) / p) / (rss_u / df2)
         pv[i, j] = ccdf(FDist(p, df2), f[i, j])
     end
-
     return (gc = gc, f = f, p = pv, p_adj = _gc_fdr(pv), order = p)
 end
 
@@ -172,77 +159,121 @@ function _gc_var_fit(x::AbstractArray{<:Real, 3}, p::Int)
     return A, Σ
 end
 
-# I added granger_spectral(...; conditional=true) to granger.jl; it uses Wilson spectral factorisation. It is still untested in Julia, because there is no Julia here; I checked it with a line-for-line NumPy port.
-
-# How it works: one VAR is fitted to all channels, which gives the full spectrum S(ω). For each source channel, Wilson’s algorithm factorises the spectrum of all the other channels, which gives the reduced model. GC at each frequency then uses the Geweke 1984 / Ding et al. 2006 formula. That needs one factorisation per source channel, so ch in total.
-
-# I corrected my own formula. My first version only removed the source’s contribution, and for z→y it integrated to 0.16 instead of 0.34. The Geweke/Ding normalisation makes the target’s innovation independent of the others first. That version integrates exactly to the time-domain conditional GC, so it’s the one in the file.
-
-# Checks:
-
-# Test    Result
-# Factorising a known VAR spectrum    H and Σ recovered to about 1e-15, in 6–8 iterations
-# Common driver: z→x at lag 1, z→y at lag 2   Spurious x→y drops from 0.247 (pairwise) to 0.0006 (conditional). z→x 0.59 and z→y 0.34 match high-order regression (0.59, 0.34)
-# Spectrum integrated vs time-domain  Agrees to below 1e-15 on the 3-channel system, a random 5-channel VAR(3), and at 100× amplitude
-# 2 channels  Conditional equals pairwise (difference 1.6e-15)
-
-# Things to check:
-
-# @warn on non-convergence: swap it for the package’s own warning helper if it has one.
-# Grid size: the factorisation uses 2·(nfrq−1) points on the full circle. Narrow spectral peaks (high-Q alpha, line noise) need a larger nfrq, otherwise the autocovariance wraps around and biases the reduced model. There’s no automatic check for this.
-# Conditioning set: conditioning on all other channels needs ch·order to be much smaller than the total number of samples. With dense EEG montages and volume conduction, the full VAR becomes ill-conditioned; use a channel subset or source space.
-# No significance test: use permutation or surrogate testing.
+# [g]₊ operator of the Wilson factorization: causal part (positive lags and half of the
+# zero lag, upper triangle) of a matrix function on the full unit circle (n × n × N2)
+function _gc_plus(g::AbstractArray{ComplexF64, 3})::Array{ComplexF64, 3}
+    N2 = size(g, 3)
+    gam = ifft(g, 3)
+    gam[:, :, 1] = triu(0.5 .* gam[:, :, 1])
+    # negative lags
+    gam[:, :, (N2 ÷ 2 + 2):N2] .= 0
+    return fft(gam, 3)
+end
 
 """
-    granger_spectral(s; fs, order, maxorder, nfrq, conditional, maxiter, tol)
+    _gc_wilson(S; <keyword arguments>)
 
-Spectral Granger causality (Geweke 1982, 1984; formulation of Ding, Chen & Bressler 2006).
+Wilson (1972) spectral matrix factorization `S(ω) = H(ω) Σ H(ω)ᴴ` of a cross-spectral matrix sampled on the full unit circle (n × n × N2, ω_k = 2π(k-1)/N2), as implemented in FieldTrip (`sfactorization_wilson`, Dhamala et al. 2008).
 
 # Arguments
 
-- `s::AbstractArray{<:Real, 3}`: signal, channels × samples × epochs
+- `S::AbstractArray{<:Complex, 3}`: cross-spectral matrix
+- `maxiter::Int=500`: maximum number of iterations
+- `tol::Real=1e-10`: convergence tolerance (maximum absolute change of the factor)
+
+# Returns
+
+- `H::Array{ComplexF64, 3}`: minimum-phase transfer function (n × n × N2), `H(ω) → I` normalized
+- `Σ::Matrix{Float64}`: innovation covariance (n × n)
+"""
+function _gc_wilson(
+    S::AbstractArray{<:Complex, 3};
+    maxiter::Int = 500,
+    tol::Real = 1e-10,
+)::Tuple{Array{ComplexF64, 3}, Matrix{Float64}}
+    N2 = size(S, 3)
+    S = ComplexF64.(S)
+    # initial factor: Cholesky factor of the zero-lag auto-covariance
+    gam0 = real(ifft(S, 3)[:, :, 1])
+    psi = repeat(Matrix{ComplexF64}(cholesky(Symmetric((gam0 + gam0') / 2)).U), 1, 1, N2)
+    g = similar(psi)
+    converged = false
+    for _ in 1:maxiter
+        for k in 1:N2
+            pinv_k = inv(psi[:, :, k])
+            g[:, :, k] = pinv_k * S[:, :, k] * pinv_k' + I
+        end
+        gp = _gc_plus(g)
+        psi_new = similar(psi)
+        for k in 1:N2
+            psi_new[:, :, k] = psi[:, :, k] * gp[:, :, k]
+        end
+        d = maximum(abs, psi_new .- psi)
+        psi = psi_new
+        if d < tol
+            converged = true
+            break
+        end
+    end
+    converged || _warn("Wilson spectral factorization did not converge in $maxiter iterations.")
+    # zero-lag coefficient A0: Σ = A0 A0ᵀ, H = ψ A0⁻¹
+    A0 = real(ifft(psi, 3)[:, :, 1])
+    A0inv = inv(A0)
+    H = similar(psi)
+    for k in 1:N2
+        H[:, :, k] = psi[:, :, k] * A0inv
+    end
+    return H, A0 * A0'
+end
+
+"""
+    _granger_spectral(s; <keyword arguments>)
+
+Spectral Granger causality (Geweke 1982, 1984; formulation of Ding, Chen & Bressler 2006) for a 3-D signal array.
+
+# Arguments
+
+- `s::AbstractArray{<:Real, 3}`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz
 - `order::Union{Int, Nothing}=nothing`: VAR order; if `nothing`, chosen by BIC on the full multichannel model
 - `maxorder::Int=20`: upper bound for BIC search
-- `nfrq::Int=256`: number of frequencies in 0:fs/2 (the factorisation uses 2·(nfrq - 1) points on the full circle)
-- `conditional::Bool=false`
-    - `conditional=false`: pairwise; a bivariate VAR is fitted for every channel pair, using a common model order.
-    - `conditional=true`: conditional on all remaining channels. One VAR is fitted to all channels; for each source channel the reduced model (all channels except the source) is obtained by Wilson spectral factorisation of the corresponding sub-block of the full-model spectrum.
-- `maxiter::Int=500`, `tol::Real=1e-10`: Wilson factorisation settings (`conditional=true` only)
+- `nfrq::Int=256`: number of frequencies in 0:fs/2 (the factorization uses 2·(nfrq - 1) points on the full circle)
+- `conditional::Bool=false`:
+    - `false`: pairwise; a bivariate VAR is fitted for every channel pair, using a common model order
+    - `true`: conditional on all remaining channels; one VAR is fitted to all channels and for each source channel the reduced model (all channels except the source) is obtained by Wilson spectral factorization of the corresponding sub-block of the full-model spectrum
+- `maxiter::Int=500`, `tol::Real=1e-10`: Wilson factorization settings (`conditional=true` only)
 
 # Returns
 
 Named tuple:
 
-- `gc::Array{Float64, 3}`: ch × ch × nfrq, `gc[i, j, k]` = i → j at `frq[k]`
+- `gc::Array{Float64, 3}`: channels × channels × nfrq, `gc[i, j, k]` = i → j at `frq[k]`
 - `frq::Vector{Float64}`: frequencies in Hz
-- `order`: model order used
-
-# Notes
-- Averaging `gc[i, j, :]` over 0:fs/2 (trapezoid) reproduces the time-domain GC of the same model: pairwise ln(σ²_reduced / σ²_full) or, for `conditional=true`, ln(Σ_reduced[j, j] / Σ[j, j]).
-- No significance test is provided (use permutation/surrogate testing).
-- The reduced model is of infinite order; its accuracy depends on `nfrq` being large enough that the autocovariance has
-decayed within 2·(nfrq - 1) lags (narrow spectral peaks need more points).
+- `order::Int64`: model order used
 """
-function granger_spectral(s::AbstractArray{<:Real, 3}; fs::Int64, order::Union{Int, Nothing} = nothing, maxorder::Int = 20, nfrq::Int = 256, conditional::Bool = false, maxiter::Int = 500, tol::Real = 1e-10)
+function _granger_spectral(
+    s::AbstractArray{<:Real, 3};
+    fs::Int64,
+    order::Union{Int, Nothing} = nothing,
+    maxorder::Int = 20,
+    nfrq::Int = 256,
+    conditional::Bool = false,
+    maxiter::Int = 500,
+    tol::Real = 1e-10,
+)
     # validate
-    fs >= 1 || throw(ArgumentError("fs must be ≥ 1"))
-    nfrq >= 2 || throw(ArgumentError("nfrq must be ≥ 2"))
+    fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
+    nfrq >= 2 || throw(ArgumentError("nfrq must be ≥ 2."))
     ch = size(s, 1)
-    ch >= 2 || throw(ArgumentError("at least 2 channels required"))
-
+    ch >= 2 || throw(ArgumentError("At least 2 channels are required."))
     x = Float64.(s)
     x .-= mean(x, dims = 2)
-
     p = isnothing(order) ? _gc_order(x, maxorder) : order
-    p >= 1 || throw(ArgumentError("order must be ≥ 1"))
-
+    p >= 1 || throw(ArgumentError("order must be ≥ 1."))
     frq = collect(range(0, fs / 2, length = nfrq))
     # e^{-iωl}, ω = 2πf/fs
     E = [cis(-2π * frq[k] * l / fs) for l in 1:p, k in 1:nfrq]
-
     gc = zeros(ch, ch, nfrq)
-
     if conditional
         A, Σ = _gc_var_fit(x, p)
         N2 = 2 * (nfrq - 1)
@@ -256,17 +287,17 @@ function granger_spectral(s::AbstractArray{<:Real, 3}; fs::Int64, order::Union{I
             H[:, :, k] = inv(Af)
             S[:, :, k] = H[:, :, k] * Σ * H[:, :, k]'
         end
-        # source
+        # source channel
         for i in 1:ch
-            # reduced model: everything except the source
+            # reduced model: all channels except the source
             r = setdiff(1:ch, i)
             Hr, Σr = _gc_wilson(S[r, r, :]; maxiter = maxiter, tol = tol)
             for k in 1:nfrq
                 Hrinv = inv(Hr[:, :, k])
                 Hk = H[r, :, k]
-                # target
+                # target channel
                 for (t, j) in enumerate(r)
-                    # full model normalised so that ε_j ⟂ other innovations:
+                    # full model normalized so that ε_j ⟂ other innovations:
                     # column j of H·P⁻¹ equals H·Σ[:, j] / Σ[j, j]
                     q = sum(Hrinv[t, :] .* (Hk * Σ[:, j]))
                     gc[i, j, k] = log(Σr[t, t] * Σ[j, j] / abs2(q))
@@ -275,7 +306,6 @@ function granger_spectral(s::AbstractArray{<:Real, 3}; fs::Int64, order::Union{I
         end
         return (gc = gc, frq = frq, order = p)
     end
-
     for a in 1:(ch - 1), b in (a + 1):ch
         A, Σ = _gc_var_fit(@view(x[[a, b], :, :]), p)
         # partial (conditional) variances of the innovations
@@ -295,18 +325,115 @@ function granger_spectral(s::AbstractArray{<:Real, 3}; fs::Int64, order::Union{I
             gc[b, a, k] = log(real(S[1, 1]) / (real(S[1, 1]) - σb * abs2(H[1, 2])))
         end
     end
-
     return (gc = gc, frq = frq, order = p)
 end
 
-# Volume conduction and common reference: both create spurious GC in scalp EEG. Run it on source-space or Laplacian data, or interpret with care.
-# Stationarity: nothing checks it. Short epochs and heavy filtering (high-order or notch filters) distort the VAR fit.
-# Conditional mode: it needs ch·order ≪ samples·epochs. With many channels, downsample or restrict channels first.
-# BIC order: it is a single common order, and the sample count differs slightly per order, so it is not strictly like-for-like.
-# Residuals: the F-test assumes Gaussian residuals. A permutation test is the more defensible option for EEG.
-function granger(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kwargs...)
-    # ch_idx = <repo helper that resolves `ch` to indices, honouring the global exclude_bads>
-    s = obj.data[ch_idx, :, :]
-    return granger(s; kwargs...)
+"""
+    granger(obj; <keyword arguments>)
 
+Time-domain Granger causality between all pairs of selected channels of a NEURO object.
+
+A vector autoregressive (VAR) model with a common order (BIC) is fitted; lags never cross epoch boundaries, epochs are demeaned per channel and pooled as independent observations.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s), at least 2
+- `order::Union{Int, Nothing}=nothing`: VAR order; if `nothing`, chosen by BIC
+- `maxorder::Int=20`: upper bound for BIC search
+- `conditional::Bool=false`: if `true`, condition on all remaining channels (full multivariate GC), otherwise pairwise
+
+# Returns
+
+Named tuple:
+
+- `gc::Matrix{Float64}`: channels × channels, `gc[i, j]` = ln(RSS_restricted / RSS_full), i → j
+- `f::Matrix{Float64}`, `p::Matrix{Float64}`, `p_adj::Matrix{Float64}`: F statistic, p-value, Benjamini-Hochberg FDR-adjusted p-value (same layout)
+- `order::Int64`: model order used
+
+# Notes
+
+- Stationarity and Gaussian residuals are assumed (the F-test relies on them); permutation or surrogate testing is more defensible for EEG.
+- Volume conduction and a common reference create spurious GC in scalp EEG: use source-space or Laplacian (CSD) data, or interpret with care.
+- Short epochs and heavy filtering (high-order or notch filters) distort the VAR fit.
+- Conditional GC needs channels·order ≪ samples·epochs; with many channels downsample or select fewer channels.
+"""
+function granger(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    order::Union{Int, Nothing} = nothing,
+    maxorder::Int = 20,
+    conditional::Bool = false,
+)
+    # resolve channel names to integer indices, optionally skipping bad channels
+    ch =
+        exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
+        get_channel(obj; ch = ch, exclude = "")
+    length(ch) >= 2 || throw(ArgumentError("At least 2 channels must be selected."))
+
+    return _granger(
+        @view(obj.data[ch, :, :]);
+        order = order,
+        maxorder = maxorder,
+        conditional = conditional,
+    )
+end
+
+"""
+    granger_spectral(obj; <keyword arguments>)
+
+Spectral Granger causality (Geweke 1982, 1984; formulation of Ding, Chen & Bressler 2006) between all pairs of selected channels of a NEURO object.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s), at least 2
+- `order::Union{Int, Nothing}=nothing`: VAR order; if `nothing`, chosen by BIC on the full multichannel model
+- `maxorder::Int=20`: upper bound for BIC search
+- `nfrq::Int=256`: number of frequencies in 0:fs/2
+- `conditional::Bool=false`: `false`: pairwise (bivariate VAR for every channel pair); `true`: conditional on all remaining channels (Wilson spectral factorization of the reduced models)
+- `maxiter::Int=500`, `tol::Real=1e-10`: Wilson factorization settings (`conditional=true` only)
+
+# Returns
+
+Named tuple:
+
+- `gc::Array{Float64, 3}`: channels × channels × nfrq, `gc[i, j, k]` = i → j at `frq[k]`
+- `frq::Vector{Float64}`: frequencies in Hz
+- `order::Int64`: model order used
+
+# Notes
+
+- Averaging `gc[i, j, :]` over 0:fs/2 (trapezoid rule) reproduces the time-domain GC of the same model.
+- The reduced model of the conditional GC is of infinite order; its accuracy depends on `nfrq` being large enough that the auto-covariance has decayed within 2·(nfrq - 1) lags (narrow spectral peaks, e.g. high-Q alpha or line noise, need more points).
+- No significance test is provided (use permutation/surrogate testing); see also the notes of `granger()`.
+"""
+function granger_spectral(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    order::Union{Int, Nothing} = nothing,
+    maxorder::Int = 20,
+    nfrq::Int = 256,
+    conditional::Bool = false,
+    maxiter::Int = 500,
+    tol::Real = 1e-10,
+)
+    # resolve channel names to integer indices, optionally skipping bad channels
+    ch =
+        exclude_bads ?
+        get_channel(obj; ch = ch, exclude = "bad") :
+        get_channel(obj; ch = ch, exclude = "")
+    length(ch) >= 2 || throw(ArgumentError("At least 2 channels must be selected."))
+
+    return _granger_spectral(
+        @view(obj.data[ch, :, :]);
+        fs = sr(obj),
+        order = order,
+        maxorder = maxorder,
+        nfrq = nfrq,
+        conditional = conditional,
+        maxiter = maxiter,
+        tol = tol,
+    )
 end

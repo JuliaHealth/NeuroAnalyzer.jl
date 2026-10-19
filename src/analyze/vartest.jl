@@ -8,7 +8,7 @@ Calculate variance F-test for a NEURO object.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}: list of channels
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 
 # Returns
 
@@ -90,16 +90,10 @@ function vartest(
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
 )::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
     # validate
-    length(ch1) == length(ch2) ||
-        throw(
-            ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
-            ),
-        )
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||
@@ -114,6 +108,9 @@ function vartest(
         get_channel(obj2; ch = ch2, exclude = "")
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
+    length(ch1) == length(ch2) || throw(
+        ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."),
+    )
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     ep1 = _n2v(ep1)

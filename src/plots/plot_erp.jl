@@ -666,11 +666,11 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `gui::Bool=true`: if `true`, keep window open and interactive
-
 - `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces (black for a single channel) next to the plot (only for `type = :normal`)
 - `ch_locs_pos::Symbol=:outside`: position of the channel locations inset:
     - `:outside`: to the right of the plot
     - `:rt`, `:lt`, `:rb`, `:lb`: inside the plot, in the right-top, left-top, right-bottom or left-bottom corner
+
 # Returns
 
 - `GLMakie.Figure`: the plotted figure

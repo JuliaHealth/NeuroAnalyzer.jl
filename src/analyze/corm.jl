@@ -97,7 +97,7 @@ Calculate correlation matrix for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}: channel name(s)
-- `norm::Bool=true`: normalize matrix
+- `norm::Bool=false`: normalize matrix
 
 # Returns
 

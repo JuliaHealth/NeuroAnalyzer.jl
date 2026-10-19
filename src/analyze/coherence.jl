@@ -73,6 +73,7 @@ function _coherence(
         demean = demean,
         method = method,
         flim = flim,
+        nt = nt,
     )
 
     # compute the three cross-power spectra needed for coherence
@@ -168,6 +169,7 @@ function _coherence(
         demean = demean,
         method = method,
         flim = flim,
+        nt = nt,
     )
 
     # dry run to pre-compute the frequency vector

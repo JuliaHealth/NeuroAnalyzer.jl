@@ -46,9 +46,9 @@ function csd(
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     isempty(ch) && throw(ArgumentError("No channels selected."))
-    locs =
-        Base.filter(:label => in(intersect(obj.locs.label, labels(obj)[ch])), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs.label)
+    # locations in the order of the channels
+    locs = obj.locs[[findfirst(==(l), obj.locs.label) for l in labels(obj)[ch]], :]
 
     # number of channels
     ch_n = DataFrames.nrow(locs)
@@ -61,13 +61,8 @@ function csd(
     Gs = G + I(ch_n) * lambda
     Gs_inv = inv(Gs)
 
-    # row sums of the inverse and their total - used for the zero-mean constraint
-    Gs_rs = vec(
-        sum(
-            Gs_inv; dims
-        = 2,
-        ),
-    )
+    # row sums of the inverse and their total - used for the zero-sum constraint
+    Gs_rs = vec(sum(Gs_inv; dims = 2))
     Gs_inv_sum = sum(Gs_rs)
 
     # create new dataset
@@ -80,10 +75,11 @@ function csd(
         # solve Gs * C_unconstrained = data for each time point
         # (samples × ch_n): spline coefficients (unconstrained)
         dataGs = (Gs \ data)'
-        # enforce the zero-sum constraint on the coefficients
-        # C[t, i] = dataGs[t, i] - (Σ_j dataGs[t, j] * Gs_rs[j]) / Gs_inv_sum * Gs_rs[i]
+        # enforce the zero-sum constraint on the coefficients (Gs C + c0 = V, Σ C = 0):
+        # c0 = 1ᵀGs⁻¹V / 1ᵀGs⁻¹1, C = Gs⁻¹V - c0 Gs⁻¹1
+        # C[t, i] = dataGs[t, i] - (Σ_j dataGs[t, j]) / Gs_inv_sum * Gs_rs[i]
         # (samples,)
-        correction = (dataGs * Gs_rs) / Gs_inv_sum
+        correction = vec(sum(dataGs; dims = 2)) / Gs_inv_sum
         # (samples × ch_n)
         C = dataGs .- correction .* Gs_rs'
 
@@ -207,7 +203,7 @@ function gh(
                 denom_h = (k * (k + 1))^(m - 1)
                 lp = legpoly[k, i, j]
                 g += (2k + 1) * lp / denom_g
-                h -= (2k + 1) * k * (k + 1) * lp / denom_h
+                h -= (2k + 1) * lp / denom_h
             end
             G[i, j] = g / (4π)
             H[i, j] = -h / (4π)

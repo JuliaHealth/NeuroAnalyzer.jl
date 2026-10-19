@@ -10,7 +10,7 @@ Wraps NeuroAnalyzer.spectrogram() to compute an ERO time-frequency summary for a
 ERP/ERF objects (two-slice output, along dim 3):
 
 - s[:, :, 1] – spectrogram of the trial-averaged ERP/ERF (epoch 1)
-- s[:, :, 2] – mean spectrogram across all epochs
+- s[:, :, 2] – mean spectrogram of the single trials (epochs 2:end)
 
 All other objects (one-slice output):
 
@@ -87,7 +87,7 @@ function eros(
     )
     f = spec_data.f
     t = spec_data.t
-    # (freq, time, epochs)
+    # (frequencies, time, channel, epochs)
     s = spec_data.p
 
     if datatype(obj) in ["erp", "erf"]

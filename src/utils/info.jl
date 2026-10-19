@@ -454,7 +454,8 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
         )
         derived = ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]
         for idx in eachindex(rec[:label])
-            if !(rec[:channel_type][idx] in derived)
+            # wavelength_index describes the optical channels (the first channels)
+            if !(rec[:channel_type][idx] in derived) && idx <= length(rec[:wavelength_index])
                 wl = rec[:wavelengths][rec[:wavelength_index][idx]]
                 println(
                     rpad(" $idx", 8) *
@@ -513,7 +514,8 @@ function channel_info(
             " unit: $(rpad(rec[:unit][ch], 8))" *
             " bad: $(rec[:bad_channel][ch])"
 
-    elseif !(rec[:channel_type][ch] in ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"])
+    elseif !(rec[:channel_type][ch] in ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]) &&
+           ch <= length(rec[:wavelength_index])
         # wavelength_index points into the wavelengths vector; report the value in nm
         chi =
             " ch: $(rpad(string(ch), 4))" *
@@ -565,9 +567,8 @@ function channel_pick(
     pick::Union{Symbol, Vector{Symbol}},
 )::Vector{String}
     # validate
-    _check_datatype(obj, "eeg")
+    _check_datatype(obj, ["eeg", "erp"])
     length(labels(obj)) != 0 || throw(ArgumentError("OBJ does not contain channel labels."))
-
     valid = [
         :central,
         :c,

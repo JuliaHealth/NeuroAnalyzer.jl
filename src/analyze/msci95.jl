@@ -59,11 +59,10 @@ function _msci95(
         end
 
         sm = mean(s_tmp1)
-        se = std(s_tmp1) / sqrt(n_boot)
-
-        ssorted = sort(s_tmp1)
-        ll = ssorted[round(Int, 0.025 * n_boot)]
-        ul = ssorted[round(Int, 0.975 * n_boot)]
+        # bootstrap standard error: standard deviation of the bootstrap means
+        se = std(s_tmp1)
+        ll = quantile(s_tmp1, 0.025)
+        ul = quantile(s_tmp1, 0.975)
     end
 
     return (; sm, se, ll, ul)
@@ -128,10 +127,10 @@ function _msci95(
         end
 
         sm = dropdims(mean(s_tmp1; dims = 1); dims = 1)
-        se = dropdims(std(s_tmp1; dims = 1); dims = 1) ./ sqrt(n_boot)
-        ssorted = sort(s_tmp1; dims = 1)
-        ll = ssorted[round(Int, 0.025 * n_boot), :]
-        ul = ssorted[round(Int, 0.975 * n_boot), :]
+        # bootstrap standard error: standard deviation of the bootstrap means
+        se = dropdims(std(s_tmp1; dims = 1); dims = 1)
+        ll = [quantile(@view(s_tmp1[:, idx]), 0.025) for idx in axes(s_tmp1, 2)]
+        ul = [quantile(@view(s_tmp1[:, idx]), 0.975) for idx in axes(s_tmp1, 2)]
     end
 
     return (; sm, se, ll, ul)
@@ -337,7 +336,7 @@ end
 """
     msci95(obj1, obj2; <keyword arguments>)
 
-Calculate mean difference, standard ERROR and 95% CI between two  NEURO objects.
+Calculate mean difference, standard error and 95% CI between two NEURO objects.
 
 # Arguments
 

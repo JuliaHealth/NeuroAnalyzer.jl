@@ -435,7 +435,6 @@ function mwpsd(
     s_w = w ? s .* hanning(length(s)) : collect(Float64, s)
     pad > 0 && (s_w = pad0(s_w, pad))
 
-    w = w ? hanning(length(s)) : ones(length(s))
 
     flim = (0, fs / 2)
     nfrq = _tlength(flim)

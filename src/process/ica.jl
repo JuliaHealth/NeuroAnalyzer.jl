@@ -20,7 +20,7 @@ Decompose a signal into Independent Components (ICs) using the FastICA algorithm
 Named tuple:
 
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
-- `ic_mw::Matrix{Float64}`: weighting (unmixing) matrix, shape (channels, n)
+- `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
 """
 function _ica_decompose(
     s::AbstractMatrix;
@@ -72,7 +72,6 @@ function _ica_decompose(
             model =
                 MultivariateStats.fit(ICA, s, n; maxiter = iter, tol = tol, fun = functor)
             final_tol = tol
-            println()
             break # exit loop if converged
         catch err
             # if it's not a convergence error, rethrow it; otherwise, update progress and continue
@@ -105,7 +104,7 @@ Decompose selected channels of a NEURO object into Independent Components (ICs) 
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `n::Int`: number of independent components to extract
+- `n::Union{Nothing, Int64}=nothing`: number of independent components to extract; default: the number of selected channels
 - `iter::Int=100`: max iterations per tolerance level
 - `f::Symbol=:tanh`: nonlinear function for neg-entropy approximation (`:tanh` or `:gaus`)
 - `rng::Int64=42`: seed for random initialization in FastICA
@@ -115,13 +114,13 @@ Decompose selected channels of a NEURO object into Independent Components (ICs) 
 Named tuple:
 
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
-- `ic_mw::Matrix{Float64}`: weighting (unmixing) matrix, shape (channels, n)
+- `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
 - `ic_var::Vector{Float64}`: variance explained by each component
 """
 function ica_decompose(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    n::Int64 = length(ch),
+    n::Union{Nothing, Int64} = nothing,
     iter::Int64 = 100,
     f::Symbol = :tanh,
     rng::Int64=42,
@@ -138,23 +137,25 @@ function ica_decompose(
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 && (ch = ch[1])
+    length(ch) >= 2 || throw(ArgumentError("At least 2 channels must be selected."))
+    isnothing(n) && (n = length(ch))
 
     # perform decomposition on the selected slice
     ica_data = _ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f, rng=rng)
     ic = ica_data.ic
     ic_mw = ica_data.ic_mw
 
-    # calculate Variance Accounted For (VAF) per component
-    total_var = var(@view(obj.data[ch, :, 1]))
+    # calculate Variance Accounted For (VAF) per component (components are mean-free)
+    d = obj.data[ch, :, 1]
+    d .-= mean(d; dims = 2)
+    total_var = var(d)
     ic_var = Vector{Float64}(undef, n)
 
     for idx = 1:n
         # reconstruct signal using only the i-th component
         ic_back = @views ic_mw[:, idx] * ic[idx, :]'
         # VAF formula: 100 * (1 - var(residual) / var(original))
-        ic_var[idx] = 100.0 * (1.0 - var(@view(obj.data[ch, :, 1]) .- ic_back) / total_var)
+        ic_var[idx] = 100.0 * (1.0 - var(d .- ic_back) / total_var)
     end
 
     # sort components by descending variance
@@ -173,12 +174,12 @@ end
 """
     ica_remove(; <keyword arguments>)
 
-Reconstruct a signal by removing independent component(s).
+Reconstruct a signal from independent components, removing the selected component(s). The signal is the mixture of the remaining components only: channel means and the part of the signal outside the ICA subspace (if fewer components than channels) are not included; `ica_remove(obj; ...)` keeps them.
 
 # Arguments
 
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
-- `ic_mw::Matrix{Float64}`: weighting (unmixing) matrix, shape (channels, n)
+- `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
 - `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to remove
 - `keep::Bool=false`: if `true`, keep specified components and remove all other components
 
@@ -194,7 +195,7 @@ function ica_remove(;
     # validate
     size(ic, 1) == size(ic_mw, 2) || throw(
         ArgumentError(
-            "Dimension mismatch between ic ($(size(ic)))and ic_mw ($size(ic_mw))).",
+            "Dimension mismatch between ic $(size(ic)) and ic_mw $(size(ic_mw)).",
         ),
     )
     # bounds check
@@ -217,13 +218,13 @@ end
 """
     ica_remove(obj, ic, ic_mw; <keyword arguments>)
 
-Reconstruct selected channels of a NEURO object by removing independent component(s).
+Remove independent component(s) from selected channels of a NEURO object: the back-projection of the removed components (`ic_mw[:, i] * ic[i, :]`) is subtracted from the signal, so channel means and the signal outside the ICA subspace are kept.
 
 # Arguments
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
-- `ic_mw::Matrix{Float64}`: weighting (unmixing) matrix, shape (channels, n)
+- `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
 - `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to remove
 - `keep::Bool=false`: if `true`, keep specified components and remove all other components
 
@@ -246,15 +247,23 @@ function ica_remove(
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 && (ch = ch[1])
+    size(ic_mw, 1) == length(ch) ||
+        throw(ArgumentError("ic_mw has $(size(ic_mw, 1)) rows, $(length(ch)) channels are selected."))
+    size(ic, 2) == epoch_len(obj) ||
+        throw(ArgumentError("ic has $(size(ic, 2)) samples, OBJ has $(epoch_len(obj))."))
+    size(ic, 1) == size(ic_mw, 2) ||
+        throw(ArgumentError("Dimension mismatch between ic $(size(ic)) and ic_mw $(size(ic_mw))."))
+    all(1 .<= ic_idx .<= size(ic_mw, 2)) ||
+        throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
 
-    # reconstruction
+    # components to remove
+    rm_idx = keep ? setdiff(1:size(ic_mw, 2), ic_idx) : unique(collect(ic_idx))
 
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    obj_tmp.data[ch, :, 1] =
-        ica_remove(; ic = ic, ic_mw = ic_mw, ic_idx = ic_idx, keep = keep)
+    # subtract the back-projection of the removed components
+    obj_tmp.data[ch, :, 1] = obj.data[ch, :, 1] .- ic_mw[:, rm_idx] * ic[rm_idx, :]
 
     push!(obj_tmp.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
@@ -272,7 +281,7 @@ Reconstruct selected channels of a NEURO object by removing independent componen
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
 - `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to keep or remove
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
-- `ic_mw::Matrix{Float64}`: weighting (unmixing) matrix, shape (channels, n)
+- `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
 - `keep::Bool=false`: if `true`, keep specified components; otherwise, remove them
 
 # Returns

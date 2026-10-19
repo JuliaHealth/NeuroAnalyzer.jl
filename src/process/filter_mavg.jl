@@ -11,10 +11,9 @@ Samples within the threshold band `[mean(s) − t×std(s), mean(s) + t×std(s)]`
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `k::Int64=8`: half-window length; full window is `2k + 1` samples; for a desired normalized cutoff `F = f/fs`, choose
-  `k = round(Int, sqrt(0.196202 + F^2) / F)`; must satisfy `1 ≤ k < length(s)`
+- `k::Int64=8`: half-window length; full window is `N = 2k + 1` samples; for a desired normalized cutoff `F = f/fs` of the (unweighted) moving average, `N ≈ sqrt(0.196202 + F^2) / F`, i.e. `k = round(Int, (N - 1) / 2)`; must satisfy `1 ≤ k < length(s)`
 - `t::Real=0`: threshold multiplier (≥ 0); `t = 0` filters all samples
-- `ww::Union{Nothing, AbstractVector}=ones(2k+1)`: weighting window of length `2k + 1`
+- `ww::AbstractVector=ones(2k+1)`: weighting window of length `2k + 1`; the weighted mean is `sum(w .* s) / sum(w)`
 
 # Returns
 
@@ -42,33 +41,19 @@ function _filter_mavg(
     lo = s_mean - t * s_std
     hi = s_mean + t * s_std
 
-    # helper: return true when sample x is outside the threshold band
-    _needs_filter(x) = t <= 0 || x < lo || x > hi
-
     # unfiltered samples stay at their original value
-    s_filtered = copy(s) .* 1.0 # convert to floats
+    s_filtered = Vector{Float64}(s)
 
-    # left edge: truncated window [1 … idx]
-    @inbounds for idx = 1:k
-        _needs_filter(s[idx]) || continue
-        s_tmp = @view s[1:idx]
-        w_tmp = @view ww[1:idx]
-        s_filtered[idx] = mean(s_tmp .* w_tmp)
-    end
-
-    # interior: full centered window [idx-k … idx+k]
-    @inbounds for idx = (k + 1):(length(s) - k)
-        _needs_filter(s[idx]) || continue
-        s_tmp = @view s[(idx - k):(idx + k)]
-        s_filtered[idx] = mean(s_tmp .* ww)
-    end
-
-    # right edge: truncated window [idx … end]
-    @inbounds for idx = (length(s) - k + 1):length(s)
-        _needs_filter(s[idx]) || continue
-        s_tmp = @view s[idx:end]
-        w_tmp = @view ww[(end - length(s_tmp) + 1):end]
-        s_filtered[idx] = mean(s_tmp .* w_tmp)
+    # centered window [idx-k … idx+k], truncated at the signal edges (with the matching
+    # part of the weighting window)
+    n = length(s)
+    @inbounds for idx = 1:n
+        (t <= 0 || s[idx] < lo || s[idx] > hi) || continue
+        i1 = max(1, idx - k)
+        i2 = min(n, idx + k)
+        s_tmp = @view s[i1:i2]
+        w_tmp = @view ww[(i1 - idx + k + 1):(i2 - idx + k + 1)]
+        s_filtered[idx] = sum(s_tmp .* w_tmp) / sum(w_tmp)
     end
 
     return s_filtered
@@ -82,10 +67,9 @@ Apply a weighted moving average filter to every channel × epoch slice of a 3-D 
 # Arguments
 
 - `s::AbstractArray`: 3-D signal array, shape (channels, samples, epochs)
-- `k::Int64=8`: half-window length; full window is `2k + 1` samples; for a desired normalized cutoff `F = f/fs`, choose
-  `k = round(Int, sqrt(0.196202 + F^2) / F)`; must satisfy `1 ≤ k < length(s)`
+- `k::Int64=8`: half-window length; full window is `N = 2k + 1` samples; for a desired normalized cutoff `F = f/fs` of the (unweighted) moving average, `N ≈ sqrt(0.196202 + F^2) / F`, i.e. `k = round(Int, (N - 1) / 2)`; must satisfy `1 ≤ k < length(s)`
 - `t::Real=0`: threshold multiplier (≥ 0). `t = 0` filters all samples
-- `ww::Union{Nothing, AbstractVector}=ones(2k+1)`: weighting window of length `2k + 1`
+- `ww::AbstractVector=ones(2k+1)`: weighting window of length `2k + 1`; the weighted mean is `sum(w .* s) / sum(w)`
 
 # Returns
 
@@ -127,10 +111,9 @@ Apply a weighted moving average filter to selected channels of a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `k::Int64=8`: half-window length; full window is `2k + 1` samples; for a desired normalized cutoff `F = f/fs`, choose
-  `k = round(Int, sqrt(0.196202 + F^2) / F)`; must satisfy `1 ≤ k < length(s)`
+- `k::Int64=8`: half-window length; full window is `N = 2k + 1` samples; for a desired normalized cutoff `F = f/fs` of the (unweighted) moving average, `N ≈ sqrt(0.196202 + F^2) / F`, i.e. `k = round(Int, (N - 1) / 2)`; must satisfy `1 ≤ k < length(s)`
 - `t::Real=0`: threshold multiplier (≥ 0). `t = 0` filters all samples
-- `ww::Union{Nothing, AbstractVector}=ones(2k+1)`: weighting window of length `2k + 1`
+- `ww::AbstractVector=ones(2k+1)`: weighting window of length `2k + 1`; the weighted mean is `sum(w .* s) / sum(w)`
 
 # Returns
 
@@ -155,7 +138,7 @@ function filter_mavg(
     _info("Window length: $wlen samples")
     _info("Approximate cutoff: $(round(0.442947 / sqrt(wlen^2 - 1) * fs, digits = 2)) Hz")
     for z = 1:4
-        _info("Zero $z at: $(round(z * fs / k, digits = 2)) Hz")
+        _info("Zero $z at: $(round(z * fs / wlen, digits = 2)) Hz")
     end
 
     # create new dataset
@@ -178,10 +161,9 @@ Apply a weighted moving average filter in-place to selected channels of a NEURO 
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `k::Int64=8`: half-window length; full window is `2k + 1` samples; for a desired normalized cutoff `F = f/fs`, choose
-  `k = round(Int, sqrt(0.196202 + F^2) / F)`; must satisfy `1 ≤ k < length(s)`
+- `k::Int64=8`: half-window length; full window is `N = 2k + 1` samples; for a desired normalized cutoff `F = f/fs` of the (unweighted) moving average, `N ≈ sqrt(0.196202 + F^2) / F`, i.e. `k = round(Int, (N - 1) / 2)`; must satisfy `1 ≤ k < length(s)`
 - `t::Real=0`: threshold multiplier (≥ 0). `t = 0` filters all samples
-- `ww::Union{Nothing, AbstractVector}=ones(2k+1)`: weighting window of length `2k + 1`
+- `ww::AbstractVector=ones(2k+1)`: weighting window of length `2k + 1`; the weighted mean is `sum(w .* s) / sum(w)`
 
 # Returns
 

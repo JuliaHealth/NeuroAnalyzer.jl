@@ -236,7 +236,7 @@ function filter_create(;
                 bw_eff = round(bw_eff; digits = 3)
                 if !isnothing(bw) && abs(bw_eff - bw) / bw > 0.1
                     _warn(
-                        "order=$order gives a transition width of ≈$bw_eff) Hz " *
+                        "order=$order gives a transition width of ≈$bw_eff Hz " *
                         "($(titlecase(string(window))) window), not bw=$bw Hz; bw=$bw Hz needs ≈$(filter_order(; fprototype = :fir, fs = fs, bw = bw, window = window)) taps.",
                     )
                 end

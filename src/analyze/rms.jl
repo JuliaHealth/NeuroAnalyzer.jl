@@ -4,7 +4,7 @@ export rmse
 """
     _rms(s)
 
-alculate Root Mean Square (RMS) of a 1-D signal vector.
+Calculate Root Mean Square (RMS) of a 1-D signal vector.
 
 RMS = √( mean(s²) ) = norm(s) / √length(s)
 
@@ -62,7 +62,7 @@ Calculate Root Mean Square (RMS) for a NEURO object.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}: list of channels
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: default use all epochs
 
 # Returns
@@ -188,13 +188,13 @@ function rmse(
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+                "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
             ),
         )
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||

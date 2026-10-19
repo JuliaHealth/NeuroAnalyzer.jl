@@ -30,8 +30,8 @@ function _dwd(
     # validate
     _check_var(type, [:sdwt, :acdwt], "type")
 
-    l <= maxtransformlevels(s) ||
-        throw(ArgumentError("l must be ≤ $(maxtransformlevels(s))."))
+    1 <= l <= maxtransformlevels(s) ||
+        throw(ArgumentError("l must be in [1, $(maxtransformlevels(s))]."))
 
     if type === :sdwt
         dc = swpd(s, wt, l)
@@ -84,20 +84,17 @@ function _dwd(
 
     dc = zeros(ch_n, n_nodes, ep_len, ep_n)
 
+    # logging is restored on errors
     _log_off()
-
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
-        ch_idx, ep_idx = idx[1], idx[2]
-        dc[ch_idx, :, :, ep_idx] = _dwd(
-            @view(s[ch_idx, :, ep_idx]),
-            wt = wt,
-            type = type,
-            l = l,
-        )
+    try
+        # calculate over channel and epochs
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            dc[ch_idx, :, :, ep_idx] = _dwd(@view(s[ch_idx, :, ep_idx]); wt = wt, type = type, l = l)
+        end
+    finally
+        _log_on()
     end
-
-    _log_on()
 
     return dc
 end
@@ -145,7 +142,7 @@ end
 
 Perform inverse discrete wavelet decomposition (iDWD).
 
-Reconstructs a signal from a subset (or all) of the DWD coefficient rows.
+Reconstructs a signal from the wavelet packet decomposition returned by `dwd()`. The reconstruction uses the `2^l` nodes of the last level (the last `2^l` rows of `dc`); rows not selected by `c` are set to zero.
 
 # Arguments
 
@@ -176,10 +173,18 @@ function idwd(
         (idx >= 1 && idx <= n) || throw(ArgumentError("c index $idx must be in [1, $n]."))
     end
 
+    # number of levels: the packet tree has 2^(l + 1) - 1 nodes
+    l = round(Int64, log2(n + 1)) - 1
+    2^(l + 1) - 1 == n || throw(ArgumentError("dc must have 2^(l + 1) - 1 rows (wavelet packet decomposition from dwd())."))
+
+    # unselected nodes are zeroed (the packet layout must be kept)
+    xw = zeros(size(dc, 2), n)
+    xw[:, c_vec] = permutedims(dc[c_vec, :])
+
     s = if type === :sdwt
-        isdwt(dc[c_vec, :]', wt)
+        WaveletsExt.iswpd(xw, wt, l)
     elseif type === :acdwt
-        iacdwt(dc[c_vec, :]', wt)
+        WaveletsExt.iacwpd(xw, wt, l)
     end
 
     return vec(s)

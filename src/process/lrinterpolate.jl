@@ -43,51 +43,32 @@ function lrinterpolate_channel(
     _check_epochs(obj, ep_ref)
     ep in ep_ref && throw(ArgumentError("ep must not be in ep_rep."))
 
-    # source data
-    signal_src = @view(obj.data[:, :, ep])
-
-    # reference channels and data
+    # training data: the reference epochs only (all their samples), flattened
+    ep_ref = _n2v(ep_ref)
     ch_ref = setdiff(channels, ch)
-    signal_ref =
-        reshape(obj.data, size(obj.data, 1), (size(obj.data, 2) * size(obj.data, 3)), 1)
+    y = vec(obj.data[ch, :, ep_ref])
+    x = reshape(obj.data[ch_ref, :, ep_ref], length(ch_ref), :)'
+    df = DataFrame(hcat(y, x), :auto)
 
-    # train
-    df = DataFrame(
-        hcat(@view(signal_ref[ch, :, 1]), @view(signal_ref[ch_ref, :, 1])'),
-        :auto,
-    )
-    train, test = _split(df, 0.8)
-    fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
-    linear_regressor = GLM.lm(fm, train)
-    prediction = GLM.predict(linear_regressor, test)
-    accuracy_testdf =
-        DataFrame(; signal_actual = test[!, :x1], signal_predicted = prediction)
-    accuracy_testdf.error = accuracy_testdf[!, :signal_actual]
-    acc_rmse = sqrt(sum((accuracy_testdf.error) .^ 2)) / length(accuracy_testdf.error)
-    acc_mae = mean(abs.(accuracy_testdf.error))
+    # linear regression of ch on the other signal channels
+    fm = Term(:x1) ~ sum(Term.(Symbol.(names(df)[2:end])))
+    linear_regressor = GLM.lm(fm, df)
+
+    # accuracy on the reference epochs
+    err = y .- GLM.predict(linear_regressor)
     R2, R2adj, aic, bic = infcrit(linear_regressor)
-
-    _info("Accuracy report:")
+    _info("Accuracy report (reference epochs):")
     _info(" R²: $(round(R2, digits = 3))")
     _info(" R² adj: $(round(R2adj, digits = 3))")
     _info(" AIC: $(round(aic, digits = 3))")
     _info(" BIC: $(round(bic, digits = 3))")
-    _info(" RMSE: $(round(acc_rmse, digits = 3))")
-    _info(" MAE: $(round(acc_mae, digits = 3))")
+    _info(" RMSE: $(round(sqrt(mean(abs2, err)), digits = 3))")
+    _info(" MAE: $(round(mean(abs, err), digits = 3))")
 
-    # predict
-
-    # create new dataset
+    # predict ch in epoch ep from the other channels of that epoch
     obj_tmp = deepcopy(obj)
-
-    df = DataFrame(
-        hcat(
-            @view(signal_src[ch, :]),
-            @view(signal_src[ch_ref, :])',
-        ),
-        :auto,
-    )
-    obj_tmp.data[ch, :, ep] = GLM.predict(linear_regressor, df)
+    df_ep = DataFrame(hcat(obj.data[ch, :, ep], obj.data[ch_ref, :, ep]'), :auto)
+    obj_tmp.data[ch, :, ep] = GLM.predict(linear_regressor, df_ep)
 
     push!(obj_tmp.history, "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref)")
 

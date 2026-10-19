@@ -63,151 +63,156 @@ function remove_powerline(
 
     _info("Removing power line noise at $pl_frq Hz and its harmonics")
 
-    if method === :iir
-        bw_values = collect(q:q:10.0)
+    df = DataFrame()
+    # verbose is restored even if an error occurs
+    try
+        if method === :iir
+            bw_values = collect(q:q:10.0)
 
-        progbar = Progress(
-            length(ch);
-            dt = 1,
-            barlen = 20,
-            color = :white,
-            enabled = progress_bar,
-        )
-
-        # use enumerate so we index pl_best_bw by loop position
-        for (loop_idx, ch_idx) in enumerate(ch)
-            ch_label = clabels[ch_idx]
-
-            # --- detect and validate the fundamental power line peak ---
-            psd_data = psd(obj_tmp; ch = ch_label, db = true)
-            f = psd_data.f
-            p = psd_data.p[:]
-            f_band = vsearch(pl_frq - d, f):vsearch(pl_frq + d, f)
-            p_band = p[f_band]
-            f_band_vals = f[f_band]
-            peaks, _ = findpeaks1d(p_band; prominence = pr)
-            length(peaks) > 0 || throw(
-                ArgumentError(
-                    "No power line peak found near $pl_frq Hz in channel $ch_label. Check pl_frq or whether the signal is already filtered.",
-                ),
+            progbar = Progress(
+                length(ch);
+                dt = 1,
+                barlen = 20,
+                color = :white,
+                enabled = progress_bar,
             )
-            pl_amp = vsearch(maximum(p_band[peaks]), p_band)
-            pl_frq_detected = f_band_vals[pl_amp]
-            (pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) &&
-                throw(
+
+            # use enumerate so we index pl_best_bw by loop position
+            for (loop_idx, ch_idx) in enumerate(ch)
+                ch_label = clabels[ch_idx]
+
+                # --- detect and validate the fundamental power line peak ---
+                psd_data = psd(obj_tmp; ch = ch_label, db = true)
+                f = psd_data.f
+                p = psd_data.p[:]
+                f_band = vsearch(pl_frq - d, f):vsearch(pl_frq + d, f)
+                p_band = p[f_band]
+                f_band_vals = f[f_band]
+                peaks, _ = findpeaks1d(p_band; prominence = pr)
+                length(peaks) > 0 || throw(
                     ArgumentError(
-                        "Channel $ch_label: power line peak at $pl_frq_detected Hz is outside the expected range.",
+                        "No power line peak found near $pl_frq Hz in channel $ch_label. Check pl_frq or whether the signal is already filtered.",
                     ),
                 )
-
-            # --- optimize notch bandwidth for the fundamental ---
-            v = [
-                begin
-                    obj_tmp = NeuroAnalyzer.filter(
-                        obj_tmp;
-                        ch = ch_label,
-                        fprototype = :iirnotch,
-                        cutoff = pl_frq,
-                        bw = bw,
+                pl_amp = vsearch(maximum(p_band[peaks]), p_band)
+                pl_frq_detected = f_band_vals[pl_amp]
+                (pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) &&
+                    throw(
+                        ArgumentError(
+                            "Channel $ch_label: power line peak at $pl_frq_detected Hz is outside the expected range.",
+                        ),
                     )
-                    p2, f2 = psd(obj_tmp; ch = ch_label, db = true)
-                    seg = p2[vsearch(pl_frq - d, f2):vsearch(pl_frq + d, f2)]
-                    var(seg)
-                end for bw in bw_values
-            ]
-            best_bw = bw_values[vsearch(minimum(v), v)]
-            push!(pl_best_bw, best_bw)
 
-            NeuroAnalyzer.filter!(
-                obj_tmp;
-                ch = ch_label,
-                fprototype = :iirnotch,
-                cutoff = pl_frq,
-                bw = pl_best_bw[loop_idx],
+                # --- optimize notch bandwidth for the fundamental ---
+                v = [
+                    begin
+                        # each candidate is applied to the current signal (not cumulatively)
+                        obj_bw = NeuroAnalyzer.filter(
+                            obj_tmp;
+                            ch = ch_label,
+                            fprototype = :iirnotch,
+                            cutoff = pl_frq,
+                            bw = bw,
+                        )
+                        p2, f2 = psd(obj_bw; ch = ch_label, db = true)
+                        seg = p2[vsearch(pl_frq - d, f2):vsearch(pl_frq + d, f2)]
+                        var(seg)
+                    end for bw in bw_values
+                ]
+                best_bw = bw_values[vsearch(minimum(v), v)]
+                push!(pl_best_bw, best_bw)
+
+                NeuroAnalyzer.filter!(
+                    obj_tmp;
+                    ch = ch_label,
+                    fprototype = :iirnotch,
+                    cutoff = pl_frq,
+                    bw = pl_best_bw[loop_idx],
+                )
+
+                # --- detect harmonics above the fundamental ---
+                p, f = psd(obj_tmp; ch = ch_label, db = true)
+                p = p[:]
+                f_above = vsearch(2 * pl_frq - 2 * d, f)
+                p_above = p[f_above:end]
+                f_above_vals = f[f_above:end]
+
+                if isempty(pks_frq)
+                    pr_tmp, d_tmp = pr, d
+                    peaks, _ =
+                        findpeaks1d(p_above; prominence = pr_tmp, distance = vsearch(d_tmp, f))
+                    while isempty(peaks) && pr_tmp > 0.1 && d_tmp > 0.1
+                        pr_tmp -= 0.1
+                        d_tmp -= 0.1
+                        peaks, _ = findpeaks1d(
+                            p_above;
+                            prominence = pr_tmp,
+                            distance = vsearch(d_tmp, f),
+                        )
+                    end
+                    for idx in eachindex(peaks)
+                        push!(pks_frq, f_above_vals[peaks[idx]])
+                    end
+                end
+
+                n = length(pks_frq)
+                if n > 0
+                    bw_harm = collect(q:q:5.0)
+                    best_bw_harm = zeros(n)
+                    for peak_idx in eachindex(pks_frq)
+                        vh = [
+                            begin
+                                obj_bw = NeuroAnalyzer.filter(
+                                    obj_tmp; ch = ch_label, fprototype = :iirnotch,
+                                    cutoff = pks_frq[peak_idx], bw = bw,
+                                )
+                                p2, f2 = psd(obj_bw; ch = ch_label, db = true)
+                                seg = p2[
+                                    vsearch(
+                                    pks_frq[peak_idx] - d / 2,
+                                    f2,
+                                ):vsearch(pks_frq[peak_idx] + d / 2, f2),
+                                ]
+                                var(seg)
+                            end for bw in bw_harm
+                        ]
+                        best_bw_harm[peak_idx] = bw_harm[vsearch(minimum(vh), vh)]
+                    end
+                    for peak_idx in eachindex(pks_frq)
+                        NeuroAnalyzer.filter!(
+                            obj_tmp; ch = ch_label, fprototype = :iirnotch,
+                            cutoff = pks_frq[peak_idx], bw = best_bw_harm[peak_idx],
+                        )
+                    end
+                    push!(pks_best_bw, best_bw_harm)
+                end
+
+                progress_bar && next!(progbar)
+            end
+
+            # --- build results DataFrame ---
+            df = DataFrame(
+                "channel" => clabels[ch],
+                "power line bandwidth" => pl_best_bw,
             )
-
-            # --- detect harmonics above the fundamental ---
-            p, f = psd(obj_tmp; ch = ch_label, db = true)
-            p = p[:]
-            f_above = vsearch(2 * pl_frq - 2 * d, f)
-            p_above = p[f_above:end]
-            f_above_vals = f[f_above:end]
-
-            if isempty(pks_frq)
-                pr_tmp, d_tmp = pr, d
-                peaks, _ =
-                    findpeaks1d(p_above; prominence = pr_tmp, distance = vsearch(d_tmp, f))
-                while isempty(peaks)
-                    pr_tmp -= 0.1
-                    d_tmp -= 0.1
-                    peaks, _ = findpeaks1d(
-                        p_above;
-                        prominence = pr_tmp,
-                        distance = vsearch(d_tmp, f),
-                    )
+            if !isempty(pks_frq)
+                n_ch = length(ch)
+                n_pk = length(pks_frq)
+                pks_frq_m = zeros(n_ch, n_pk)
+                pks_bw_m = zeros(n_ch, n_pk)
+                peak_frq_names = ["peak $i frequency" for i = 1:n_pk]
+                peak_bw_names = ["peak $i bandwidth" for i = 1:n_pk]
+                for i = 1:n_ch
+                    pks_frq_m[i, :] = pks_frq
+                    pks_bw_m[i, :] = pks_best_bw[i]
                 end
-                for idx in eachindex(peaks)
-                    push!(pks_frq, f_above_vals[peaks[idx]])
-                end
+                df = hcat(df, DataFrame(pks_frq_m, peak_frq_names))
+                df = hcat(df, DataFrame(pks_bw_m, peak_bw_names))
             end
-
-            n = length(pks_frq)
-            if n > 0
-                bw_harm = collect(q:q:5.0)
-                best_bw_harm = zeros(n)
-                for peak_idx in eachindex(pks_frq)
-                    vh = [
-                        begin
-                            obj_tmp = NeuroAnalyzer.filter(
-                                obj_tmp; ch = ch_label, fprototype = :iirnotch,
-                                cutoff = pks_frq[peak_idx], bw = bw,
-                            )
-                            p2, f2 = psd(obj_tmp; ch = ch_label, db = true)
-                            seg = p2[
-                                vsearch(
-                                pks_frq[peak_idx] - d / 2,
-                                f2,
-                            ):vsearch(pks_frq[peak_idx] + d / 2, f2),
-                            ]
-                            var(seg)
-                        end for bw in bw_harm
-                    ]
-                    best_bw_harm[peak_idx] = bw_harm[vsearch(minimum(vh), vh)]
-                end
-                for peak_idx in eachindex(pks_frq)
-                    NeuroAnalyzer.filter!(
-                        obj_tmp; ch = ch_label, fprototype = :iirnotch,
-                        cutoff = pks_frq[peak_idx], bw = best_bw_harm[peak_idx],
-                    )
-                end
-                push!(pks_best_bw, best_bw_harm)
-            end
-
-            progress_bar && next!(progbar)
         end
-
-        # --- build results DataFrame ---
-        df = DataFrame(
-            "channel" => clabels[ch],
-            "power line bandwidth" => pl_best_bw,
-        )
-        if !isempty(pks_frq)
-            n_ch = length(ch)
-            n_pk = length(pks_frq)
-            pks_frq_m = zeros(n_ch, n_pk)
-            pks_bw_m = zeros(n_ch, n_pk)
-            peak_frq_names = ["peak $i frequency" for i = 1:n_pk]
-            peak_bw_names = ["peak $i bandwidth" for i = 1:n_pk]
-            for i = 1:n_ch
-                pks_frq_m[i, :] = pks_frq
-                pks_bw_m[i, :] = pks_best_bw[i]
-            end
-            df = hcat(df, DataFrame(pks_frq_m, peak_frq_names))
-            df = hcat(df, DataFrame(pks_bw_m, peak_bw_names))
-        end
+    finally
+        NeuroAnalyzer.verbose = verbose_tmp
     end
-
-    NeuroAnalyzer.verbose = verbose_tmp
     push!(
         obj_tmp.history,
         "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)",

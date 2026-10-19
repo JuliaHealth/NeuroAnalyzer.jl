@@ -6,7 +6,7 @@ export edit_montage
 Open a montage file in the operating-system default text editor.
 
 - **Windows**: opens with `notepad.exe`.
-- **Linux**: opens with the editor specified in the `\$EDITOR` environment variable.
+- **Linux**: opens with the editor specified in the `\$EDITOR` environment variable (it may include arguments, e.g. `"code -w"`).
 - **macOS**: opens with TextEdit via `open -e`.
 
 # Arguments
@@ -29,7 +29,7 @@ function edit_montage(file_name::String)::Nothing
                 "No editor set; please define the \$EDITOR environment variable.",
             ),
         )
-        run(`$editor $file_name`)
+        run(`$(Base.shell_split(editor)) $file_name`)
     elseif Sys.isapple()
         run(`open -e $file_name`)
     else

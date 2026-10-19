@@ -11,7 +11,7 @@ Detect a pair of positive and negative peaks of MEP.
 
 # Returns
 
-- `Matrix{Int64}`: peaks, shape (channels, positive peak position, negative peak position)
+- `Matrix{Int64}`: peak positions (samples), shape (channels, 2): positive peak, negative peak (searched from 20 samples after the stimulation sample)
 """
 function mep_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
     # validate
@@ -31,7 +31,8 @@ function mep_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
             argmin(@view(obj.data[ch_idx, ss[ch_idx]:end, 1])),
         ]
 
-        p[ch_idx, :] .+= ss[ch_idx]
+        # slice positions → sample positions
+        p[ch_idx, :] .+= ss[ch_idx] - 1
     end
 
     return p

@@ -62,7 +62,8 @@ function _xcor(
             xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
             xc_neg[idx + 1] /= biased ? length(s1) : (length(s1) - idx)
         end
-    elseif method === :cor
+    elseif method === :cov
+
         for idx = 0:l
             xc[idx + 1] = @views cor(s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)])
         end
@@ -80,9 +81,11 @@ function _xcor(
     # so drop the duplicate when concatenating
     xc = vcat(reverse(xc_neg), xc[2:end])
     if method === :sum
-        xc = xc ./ (std(s1) * std(s2))
+        # normalize by the zero-lag auto-covariances (same estimator): a signal is
+        # perfectly correlated with itself at lag 0
+        n = length(s1)
+        xc = xc ./ sqrt((dot(s1_tmp, s1_tmp) / n) * (dot(s2_tmp, s2_tmp) / n))
     end
-    xc = round.(xc; digits = 3)
 
     return reshape(xc, 1, :, 1)
 end
@@ -94,7 +97,7 @@ Calculate cross-correlation for a pair of 2-D arrays.
 
 # Arguments
 
-- `s1::AbstractMatrix`: signal matrix (channels, epochs)
+- `s1::AbstractMatrix`: signal matrix (samples, epochs)
 - `s2::AbstractMatrix`: signal matrix, same size as `s1`
 - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: maximum lag in samples; lags range is `−l : l`
 - `demean::Bool=true`: subtract the mean before computing cross-correlation
@@ -213,7 +216,7 @@ For ERP/ERF objects the trial-averaged cross-correlation is prepended as epoch 1
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 - `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
-- `l::Real=1`: maximum lag in samples; lags range is `−l : l`
+- `l::Real=1`: maximum lag in seconds; lags range is `−l : l`
 - `demean::Bool=true`: subtract the mean before computing cross-correlation
 - `biased::Bool=true`: use biased (÷ n) or unbiased (÷ n−lag) estimator
 - `method::Symbol=:sum`: computation method:
@@ -246,16 +249,10 @@ function xcor(
     # validate
     sr(obj1) == sr(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
-    length(ch1) == length(ch2) ||
-        throw(
-            ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
-            ),
-        )
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||
@@ -270,6 +267,9 @@ function xcor(
         get_channel(obj2; ch = ch2, exclude = "")
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
+    length(ch1) == length(ch2) || throw(
+        ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."),
+    )
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     ep1 = _n2v(ep1)
@@ -282,7 +282,7 @@ function xcor(
 
     l_samples = round(Int64, l * sr(obj1))
 
-    if datatype(obj1) == "erp" && datatype(obj2) == "erp"
+    if datatype(obj1) in ("erp", "erf") && datatype(obj2) in ("erp", "erf")
         xc = @views _xcor(
             reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)),
             reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)),

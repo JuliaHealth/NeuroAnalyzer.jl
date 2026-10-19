@@ -27,16 +27,16 @@ end
 
 Calculate mean stationarity for a 1-D signal vector.
 
-Signal is split into `window`-long windows and averaged across windows.
+The signal is split into `window` consecutive, equal segments (trailing samples that do not fill a segment are dropped); the mean of each segment is returned.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `window::Int64`: time window in samples
+- `window::Int64`: number of segments
 
 # Returns
 
-- `Vector{Float64}`
+- `Vector{Float64}`: segment means
 """
 function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
     # validate
@@ -56,16 +56,16 @@ end
 
 Calculate variance stationarity for a 1-D signal vector.
 
-Signal is split into `window`-long windows and variance is calculated across windows.
+The signal is split into `window` consecutive, equal segments (trailing samples that do not fill a segment are dropped); the variance of each segment is returned.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
-- `window::Int64`: time window in samples
+- `window::Int64`: number of segments
 
 # Returns
 
-- `Vector{Float64}`
+- `Vector{Float64}`: segment variances
 """
 function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
     # validate
@@ -88,12 +88,12 @@ Calculate stationarity for a NEURO object.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}: list of channels
-- `window::Int64=10`: time window in samples
-- `method::Symbol=:euclid`: stationarity method:
-    - `:mean`: mean across `window`-long windows
-    - `:var`: variance across `window`-long windows
-    - `:cov`: covariance stationarity based on Euclidean distance between covariance matrix of adjacent time windows
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `window::Int64=10`: for `:mean` and `:var`: number of segments; for `:cov`: segment length in samples
+- `method::Symbol=:hilbert`: stationarity method:
+    - `:mean`: mean of each of `window` segments, shape (channels, window, epochs)
+    - `:var`: variance of each of `window` segments, shape (channels, window, epochs)
+    - `:cov`: covariance stationarity: Euclidean (Frobenius) distance between the channel covariance matrices of adjacent `window`-sample segments, shape (segments - 1, epochs)
     - `:hilbert`: phase stationarity using Hilbert transformation
     - `:adf`: Augmented Dickey–Fuller test; returns ADF-test value and p-value (H0: signal is non-stationary; p-value < alpha means that signal is stationary)
 
@@ -163,32 +163,22 @@ function stationarity(
         ch_n >= 2 ||
             throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
 
-        # number of time windows per epoch
-        window_n = epoch_len(obj)
-        cov_mat = zeros(ch_n, ch_n, window_n, ep_n)
-        s = zeros(1 + length(2:window:window_n), ep_n)
-
-        # create covariance matrices per each window
-        @inbounds Threads.@threads :static for idx in CartesianIndices((window_n, ep_n))
-            window_idx, ep_idx = idx[1], idx[2]
-            cov_mat[:, :, window_idx, ep_idx] = cov(
-                @view(obj.data[ch, window_idx, ep_idx]) *
-                @view(obj.data[ch, window_idx, ep_idx])',
-            )
-        end
-
-        # calculate Euclidean distance between adjacent matrices
+        window >= 2 || throw(ArgumentError("For :cov method, window must be ≥ 2."))
+        # number of complete windows per epoch
+        window_n = epoch_len(obj) ÷ window
+        window_n >= 2 || throw(ArgumentError("For :cov method, the epoch must contain ≥ 2 windows."))
+        s = zeros(window_n - 1, ep_n)
         @inbounds Threads.@threads :dynamic for ep_idx = 1:ep_n
-            w_idx = 1
-            for window_idx = 2:window:window_n
-                s[w_idx, ep_idx] = euclidean(
-                    @view(cov_mat[:, :, window_idx - 1, ep_idx]),
-                    @view(cov_mat[:, :, window_idx, ep_idx])
-                )
-                w_idx += 1
+            # channel covariance matrix of each window
+            cm = [
+                cov(permutedims(@view(obj.data[ch, ((w - 1) * window + 1):(w * window), ep_idx]))) for
+                w = 1:window_n
+            ]
+            # Euclidean distance between the covariance matrices of adjacent windows
+            for w = 2:window_n
+                s[w - 1, ep_idx] = euclidean(cm[w - 1], cm[w])
             end
         end
-
         return s
     end
 
@@ -207,7 +197,7 @@ function stationarity(
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx = 1:ep_n
             Threads.@threads :dynamic for ch_idx = 1:ch_n
-                adf = HypothesisTests.ADFTest(@view(obj.data[ch_idx, :, ep_idx]), :none, 1)
+                adf = HypothesisTests.ADFTest(@view(obj.data[ch[ch_idx], :, ep_idx]), :none, 1)
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)

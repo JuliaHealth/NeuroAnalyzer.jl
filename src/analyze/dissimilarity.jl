@@ -36,7 +36,7 @@ end
 """
     _diss(s1, s2)
 
-Calculate Global Dissimilarity and Spatial Correlation. Measure how different two GFP-normalised scalp topographies are at each time point:
+Calculate Global Dissimilarity and Spatial Correlation (Lehmann & Skrandies 1980). Measure how different two average-referenced, GFP-normalised scalp topographies are at each time point:
 
 - gd[t] = √( Σ_ch (g1[ch,t] - g2[ch,t])² / n_ch ) ∈ [0, 2]
 - sc[t] = 1 - gd[t]² / 2  =  0.5 · (2 - gd[t]²) ∈ [-1, 1]
@@ -70,8 +70,9 @@ function _diss(
     # number of channels
     ch_n = size(s1, 1)
 
-    g1 = erp_gfp_norm(s1)
-    g2 = erp_gfp_norm(s2)
+    # average reference, then GFP normalization (unit population SD across channels)
+    g1 = erp_gfp_norm(s1 .- mean(s1; dims = 1))
+    g2 = erp_gfp_norm(s2 .- mean(s2; dims = 1))
 
     # pre-allocate outputs
     gd = zeros(size(s1, 2))

@@ -43,7 +43,7 @@ Convert NIRS intensity (RAW) channels to optical density (OD) and append the OD 
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: output NEURO object with OD channels appended after the selected intensity channels
+- `NeuroAnalyzer.NEURO`: output NEURO object with OD channels inserted after the optical (intensity / OD) channels
 """
 function intensity2od(
     obj::NeuroAnalyzer.NEURO;
@@ -59,64 +59,36 @@ function intensity2od(
     _check_datatype(obj, "nirs")
     _check_channels(get_channel(obj; type = "nirs_int"), ch)
 
+    # optical channels (described by :wavelength_index and :optode_pairs) come first
+    rec = obj.header.recording
+    n_opt = length(rec[:wavelength_index])
+    all(<=(n_opt), ch) ||
+        throw(ArgumentError("NIRS intensity channels are not described by the wavelength index."))
+
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    # index of non-selected channels (kept as-is in the output)
-    other_ch = setdiff(axes(obj.data, 1), ch)
-
-    # ------------------------------------------------------------------ #
-    # Signal data: [original intensity | new OD | remaining channels]    #
-    # ------------------------------------------------------------------ #
+    # new channel layout: [optical channels | OD(ch) | remaining channels], so that the
+    # optical channels (including the new OD channels) stay described by the header
+    opt = 1:n_opt
+    rest = (n_opt + 1):size(obj.data, 1)
     obj_tmp.data = vcat(
-        obj.data[ch, :, :],
-        reshape(
-            _intensity2od(@view(obj.data[ch, :, :])),
-            length(ch), epoch_len(obj), nepochs(obj),
-        ),
-        obj.data[other_ch, :, :],
+        obj.data[opt, :, :],
+        _intensity2od(@view(obj.data[ch, :, :])),
+        obj.data[rest, :, :],
     )
-
-    # ------------------------------------------------------------------ #
-    # header updates: all three sections must cover the same channel     #
-    # order as the data array: [ch | OD(ch) | other_ch].                 #
-    # ------------------------------------------------------------------ #
-
-    # wavelength index: replicate for OD channels; pass through for others
-    obj_tmp.header.recording[:wavelength_index] = vcat(
-        obj.header.recording[:wavelength_index][ch],        # intensity
-        obj.header.recording[:wavelength_index][ch],        # OD (same wavelength)
-    )
-
-    # optode pairs: same fix as wavelength_index
-    obj_tmp.header.recording[:optode_pairs] = vcat(
-        obj.header.recording[:optode_pairs][ch, :],   # intensity
-        obj.header.recording[:optode_pairs][ch, :],   # OD (same pairs)
-    )
-
-    # channel type: OD channels get the "nirs_od" type string
-    obj_tmp.header.recording[:channel_type] = vcat(
-        obj.header.recording[:channel_type][ch],
-        repeat(["nirs_od"], length(ch)),
-        obj.header.recording[:channel_type][other_ch],
-    )
-
-    # channel labels: append " OD" suffix to distinguish from the raw channels
-    obj_tmp.header.recording[:label] = vcat(
-        obj.header.recording[:label][ch],              # intensity
-        obj.header.recording[:label][ch] .* " OD",     # OD (same pairs)
-        obj.header.recording[:label][other_ch],
-    )
-
-    # units: OD channels inherit the same unit string as their source channels
-    obj_tmp.header.recording[:unit] = vcat(
-        obj.header.recording[:unit][ch],              # intensity
-        repeat([""], length(ch)),                     # OD (same pairs)
-        obj.header.recording[:unit][other_ch],
-    )
-
-    # reset bad-channel flags to match the new channel count
-    obj_tmp.header.recording[:bad_channel] = zeros(Bool, size(obj_tmp.data, 1))
+    r = obj_tmp.header.recording
+    # OD channels: same wavelength and optode pair as their intensity channels
+    r[:wavelength_index] = vcat(rec[:wavelength_index], rec[:wavelength_index][ch])
+    r[:optode_pairs] = vcat(rec[:optode_pairs], rec[:optode_pairs][ch, :])
+    r[:channel_type] = vcat(rec[:channel_type][opt], fill("nirs_od", length(ch)), rec[:channel_type][rest])
+    # " OD" suffix distinguishes the OD channels from the intensity channels
+    r[:label] = vcat(rec[:label][opt], rec[:label][ch] .* " OD", rec[:label][rest])
+    # OD is dimensionless
+    r[:unit] = vcat(rec[:unit][opt], fill("", length(ch)), rec[:unit][rest])
+    # OD channels inherit the bad-channel flags of their intensity channels
+    r[:bad_channel] = vcat(rec[:bad_channel][opt], rec[:bad_channel][ch], rec[:bad_channel][rest])
+    r[:channel_order] = _sort_channels(r[:channel_type])
 
     push!(obj_tmp.history, "intensity2od(obj; ch=$ch)")
 

@@ -11,7 +11,7 @@ Calculate Teager-Kaiser energy-tracking operator for a 1-D signal vector.
 - `t::AbstractVector=collect(1:length(s))`: time points
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
-    - `:der`: TKEO = f'(t) - f(t) × f''(t)
+    - `:der`: TKEO = f'(t)² - f(t) × f''(t)
     - `:amp`: TKEO = envelope(amplitude)^2
 
 # Returns
@@ -29,16 +29,18 @@ function _tkeo(
     tk = nothing
 
     if method === :pow
+        length(s) >= 3 || throw(ArgumentError("Signal length must be ≥ 3."))
         tk = zeros(length(s))
-        tk[1] = s[1]
-        tk[end] = s[end]
         @inbounds for idx = 2:(length(s) - 1)
             tk[idx] = s[idx]^2 - (s[idx - 1] * s[idx + 1])
         end
+        # edges (no neighbor on one side): nearest interior value
+        tk[1] = tk[2]
+        tk[end] = tk[end - 1]
     elseif method === :der
         d1 = _derivative(s)
         d2 = _derivative(d1)
-        tk = @. d1 - s * d2
+        tk = @. d1^2 - s * d2
     else
         tk = env_up(s, t; d = 8) .^ 2
     end
@@ -54,10 +56,10 @@ Calculate Teager-Kaiser energy-tracking operator for a 3-D signal array.
 # Arguments
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
-- `t::AbstractArray=collect(1:length(s))`: time points
+- `t::AbstractVector=collect(1:size(s, 2))`: time points
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
-    - `:der`: TKEO = f'(t) - f(t) × f''(t)
+    - `:der`: TKEO = f'(t)² - f(t) × f''(t)
     - `:amp`: TKEO = envelope(amplitude)^2
 
 # Returns
@@ -66,7 +68,7 @@ Calculate Teager-Kaiser energy-tracking operator for a 3-D signal array.
 """
 function _tkeo(
     s::AbstractArray,
-    t::AbstractVector = collect(1:length(s));
+    t::AbstractVector = collect(1:size(s, 2));
     method::Symbol = :pow,
 )::Array{Float64, 3}
 
@@ -98,7 +100,7 @@ Calculate Teager-Kaiser energy-tracking operator for a NEURO object.
 - `ch::Union{String, Vector{String}, Regex}: list of channels
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
-    - `:der`: TKEO = f'(t) - f(t) × f''(t)
+    - `:der`: TKEO = f'(t)² - f(t) × f''(t)
     - `:amp`: TKEO = envelope(amplitude)^2
 
 # Returns

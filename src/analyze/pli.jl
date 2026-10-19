@@ -16,7 +16,7 @@ Named tuple:
 
 - `pv::Float64`: PLI value
 - `sd::Vector{Float64}`: signal difference (s1 - s2)
-- `phd::Vector{Float64}`: phase difference (s1 - s2)
+- `phd::Vector{Float64}`: phase difference (s1 - s2), wrapped to (-π, π]
 - `s1ph::Vector{Float64}`: signal 1 phase
 - `s2ph::Vector{Float64}`: signal 2 phase
 
@@ -39,7 +39,7 @@ function _pli(
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
 
-    # get instatenous phases
+    # instantaneous phases
     ht_data1 = htransform(s1)
     ht_data2 = htransform(s2)
     s1ph = ht_data1.ph
@@ -48,11 +48,10 @@ function _pli(
     # signal difference
     sd = s1 - s2
 
-    # phase differences
-    phd = s1ph - s2ph
-
-    # PLI
-    pv = abs(mean(sign.(phd)))
+    # phase differences, wrapped to (-π, π]
+    phd = angle.(cis.(s1ph .- s2ph))
+    # PLI: asymmetry of the phase difference distribution around 0 (sign of sin(Δφ))
+    pv = abs(mean(sign.(sin.(phd))))
 
     return (; pv, sd, phd, s1ph, s2ph)
 end
@@ -77,7 +76,7 @@ Named tuple:
 
 - `pv::Matrix{Float64}`: PLI value
 - `sd::Array{Float64, 3}`: signal difference (s1 - s2)
-- `phd::Array{Float64, 3}`: phase difference (s1 - s2)
+- `phd::Array{Float64, 3}`: phase difference (s1 - s2), wrapped to (-π, π]
 - `s1ph::Array{Float64, 3}`: signal 1 phase
 - `s2ph::Array{Float64, 3}`: signal 2 phase
 """
@@ -107,7 +106,7 @@ function pli(
     length(ch1) == length(ch2) ||
         throw(
             ArgumentError(
-                "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal.",
+                "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
             ),
         )
 
@@ -117,7 +116,7 @@ function pli(
     length(ep1) == length(ep2) ||
         throw(
             ArgumentError(
-                "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal.",
+                "Lengths of ep1 ($(length(ep1))) and ep2 ($(length(ep2))) must be equal.",
             ),
         )
     epoch_len(obj1) == epoch_len(obj2) ||

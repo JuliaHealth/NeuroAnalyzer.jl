@@ -31,12 +31,12 @@ function mlinterpolate_channel(
     ),
     model::T,
 )::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
-    # resolve channel names to integer indices
-    channels = get_channel(obj; type = datatype(obj))
-    channel_labels = labels(obj)[channels]
+    # signal channels: names (get_channel(; type) returns names) and numbers
+    channel_labels = get_channel(obj; type = datatype(obj))
+    channel_indices = [findfirst(==(l), labels(obj)) for l in channel_labels]
 
     # validate
-    length(channels) > 1 ||
+    length(channel_indices) > 1 ||
         throw(ArgumentError("Signal must contain > 1 signal channel."))
     ch in channel_labels ||
         throw(
@@ -50,7 +50,6 @@ function mlinterpolate_channel(
     ep in ep_ref && throw(ArgumentError("ep ($ep) must not be included in ep_ref."))
 
     ch_idx = get_channel(obj; ch = ch)[1]     # String → Int64
-    ch_ref = setdiff(channel_indices, ch_idx) # all signal channels except ch
 
     # ------------------------------------------------------------------ #
     # build training data from reference epochs                          #
@@ -74,7 +73,7 @@ function mlinterpolate_channel(
     y = ref_flat[ch_pos, :]
 
     # feature matrix: all other signal channels, transposed so rows = samples
-    x = MLJBase.table(ref_flat[ch_ref_pos, :]')
+    x = MLJ.table(ref_flat[ch_ref_pos, :]')
 
     # ------------------------------------------------------------------ #
     # Train the model                                                    #
@@ -93,8 +92,8 @@ function mlinterpolate_channel(
     # ------------------------------------------------------------------ #
     obj_tmp = deepcopy(obj)
 
-    # feature matrix for the epoch to reconstruct: same other-channel layout
-    x_pred = MLJBase.table(obj.data[ch_ref, :, ep]')
+    # feature matrix for the epoch to reconstruct: the same channels, in the same order
+    x_pred = MLJ.table(obj.data[channel_indices[ch_ref_pos], :, ep]')
     obj_tmp.data[ch_idx, :, ep] = MLJ.predict(mach, x_pred)
 
     push!(

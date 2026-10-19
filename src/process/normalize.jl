@@ -48,6 +48,7 @@ Normalize.
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
     - `:mad`: by MAD
     - `:rank`: using tiedranks
+    - `:fisher`: Fisher z-transform of the signal scaled to [-1, +1]
     - `:none`
 
 # Returns
@@ -74,6 +75,7 @@ function _normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVec
             :sigmoid,
             :mad,
             :rank,
+            :fisher,
             :none,
         ],
         "method",
@@ -96,7 +98,8 @@ function _normalize(s::AbstractVector, n::Real = 1; method::Symbol)::AbstractVec
     method === :mad && return normalize_mad(s)
     method === :rank && return normalize_rank(s)
     method === :fisher && return normalize_fisher(s)
-    return method === :none && return s
+    # :none
+    return s
 end
 
 """
@@ -124,6 +127,9 @@ Normalize a signal array using the specified method.
     - `:n`: in [0, n], default is [0, 1]; <keyword arguments>) .+ n1`
     - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
+    - `:mad`: by MAD
+    - `:rank`: using tiedranks
+    - `:fisher`: Fisher z-transform of the signal scaled to [-1, +1]
     - `:none`
 
 # Returns
@@ -153,6 +159,9 @@ function _normalize(
             :n,
             :softmax,
             :sigmoid,
+            :mad,
+            :rank,
+            :fisher,
             :none,
         ],
         "method",
@@ -172,7 +181,11 @@ function _normalize(
     method === :n && return normalize_n(s, n; bych = bych)
     method === :softmax && return normalize_softmax(s; bych = bych)
     method === :sigmoid && return normalize_sigmoid(s; bych = bych)
-    return method === :none && return s
+    method === :mad && return normalize_mad(s; bych = bych)
+    method === :rank && return normalize_rank(s; bych = bych)
+    method === :fisher && return normalize_fisher(s; bych = bych)
+    # :none
+    return s
 end
 
 """
@@ -201,6 +214,7 @@ Normalize selected channels of a NEURO object.
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
     - `:mad`: by MAD
     - `:rank`: using tiedranks
+    - `:fisher`: Fisher z-transform of the signal scaled to [-1, +1]
     - `:none`
 - `bych::Bool=false`: if `true`, normalize each channel separately
 - `n::Real=1`: scaling parameter used by `:minmax`, `:n`
@@ -277,6 +291,7 @@ Normalize selected channels in-place.
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
     - `:mad`: by MAD
     - `:rank`: using tiedranks
+    - `:fisher`: Fisher z-transform of the signal scaled to [-1, +1]
     - `:none`
 - `bych::Bool=false`: if `true`, normalize each channel separately
 - `n::Real=1`: scaling parameter used by `:minmax`, `:n`
@@ -570,7 +585,7 @@ end
 """
     normalize_gauss(s)
 
-Normalize to Gaussian via rank-based inverse normal transform (Fisher–Yates): `atanh(2 * tiedrank(x) / (n+1) − 1)`.
+Normalize to Gaussian via rank-based inverse normal transform (Van der Waerden): `Φ⁻¹(tiedrank(x) / (n+1))`, Φ⁻¹: standard normal quantile function.
 
 # Arguments
 
@@ -581,15 +596,14 @@ Normalize to Gaussian via rank-based inverse normal transform (Fisher–Yates): 
 - `AbstractVector`: normalized signal, same shape as `s`
 """
 function normalize_gauss(s::AbstractVector)::AbstractVector
-    l = length(s) + 1
-    sn = (tiedrank(s) ./ l .- 0.5) .* 2
-    return atanh.(sn)
+    # quantiles of the standard normal distribution at rank / (n + 1)
+    return quantile.(Distributions.Normal(), tiedrank(s) ./ (length(s) + 1))
 end
 
 """
     normalize_gauss(s; <keyword arguments>)
 
-Normalize to Gaussian via rank-based inverse normal transform (Fisher–Yates): `atanh(2 * tiedrank(x) / (n+1) − 1)`.
+Normalize to Gaussian via rank-based inverse normal transform (Van der Waerden): `Φ⁻¹(tiedrank(x) / (n+1))`, Φ⁻¹: standard normal quantile function.
 
 # Arguments
 
@@ -606,9 +620,7 @@ function normalize_gauss(s::AbstractArray; bych::Bool = false)::AbstractArray
         throw(ArgumentError("normalize_gauss() only works for arrays of ≤ 3 dimensions."))
 
     if !bych
-        l = length(s) + 1
-        sn = (tiedrank(s) ./ l .- 0.5) .* 2
-        return atanh.(sn)
+        return quantile.(Distributions.Normal(), tiedrank(s) ./ (length(s) + 1))
     else
         sn = zeros(size(s))
         if ndims(s) == 2
@@ -953,7 +965,8 @@ Softmax normalization: `exp(xᵢ) / Σexp(x)`. `bych` is ignored.
 - `AbstractArray`: normalized signal, same shape as `s`
 """
 function normalize_softmax(s::AbstractArray; bych::Bool = false)::AbstractArray
-    ex = exp.(s)
+    # (subtracting the maximum does not change the result and prevents overflow)
+    ex = exp.(s .- maximum(s))
     return ex ./ sum(ex)
 end
 
@@ -1083,7 +1096,7 @@ Normalize using tied ranks (result is in `[1, n]`).
 """
 function normalize_rank(s::AbstractArray; bych::Bool = false)::AbstractArray
     # validate
-    length(unique(s)) == 1 && return ones(length(s))
+    length(unique(s)) == 1 && return ones(size(s))
 
     ndims(s) <= 3 ||
         throw(ArgumentError("normalize_rank() only works for arrays of ≤ 3 dimensions."))

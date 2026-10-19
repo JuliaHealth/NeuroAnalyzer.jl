@@ -4,7 +4,7 @@ export wbp!
 """
     _wbp(s; <keyword arguments>)
 
-Perform wavelet band-pass filtering.
+Perform wavelet band-pass filtering: convolution with a complex Morlet wavelet centered at `frq` (unit gain at `frq`, zero phase).
 
 # Arguments
 
@@ -32,11 +32,14 @@ function _wbp(
     pad >= 0 || throw(ArgumentError("pad must be ≥ 0."))
     frq <= fs / 2 || throw(ArgumentError("frq must be ≤ $(fs / 2)."))
 
+    n = length(s)
     pad > 0 && (s = pad0(s, pad))
 
     kernel = generate_morlet(fs, frq, 1; ncyc = ncyc, complex = true)
 
-    return real.(_fconv(s; kernel = kernel, norm = true))
+    # the complex wavelet passes only the positive frequencies of the real signal: the
+    # real part is doubled for unit gain at frq; the padding is removed
+    return 2 .* real.(_fconv(s; kernel = kernel, norm = true))[1:n]
 end
 
 """

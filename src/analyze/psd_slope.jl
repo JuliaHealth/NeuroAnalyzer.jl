@@ -81,7 +81,8 @@ function _psd_slope(
 
     lr = NeuroAnalyzer.linreg(f, pw)
     lf = lr.lf
-    ls = lf[2] - lf[1]
+    # slope (power per Hz) of the fitted line
+    ls = lr.c[2]
 
     return (; lf, ls, f)
 end

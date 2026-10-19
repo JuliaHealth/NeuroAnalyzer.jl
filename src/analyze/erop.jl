@@ -10,7 +10,7 @@ Wraps psd() to compute an ERO power summary for a single channel:
 ERP/ERF objects (two-column output):
 
 - column 1 – power spectrum of the trial-averaged ERP/ERF (epoch 1)
-- column 2 – mean power spectrum across all epochs (including epoch 1)
+- column 2 – mean power spectrum of the single trials (epochs 2:end)
 
 All other objects (one-column output):
 
@@ -85,7 +85,8 @@ function erop(
     f = psd_data.f
 
     if datatype(obj) in ["erp", "erf"]
-        p = cat(p[:, 1], mean(p; dims = 2); dims = 2)
+        nepochs(obj) > 1 || throw(ArgumentError("ERP/ERF OBJ must contain single trials (epochs 2:end)."))
+        p = cat(p[:, 1], mean(p[:, 2:end]; dims = 2); dims = 2)
     else
         p = mean(p; dims = 2)
     end

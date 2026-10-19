@@ -47,12 +47,13 @@ function ftransform(
 
     # amplitudes: normalize by N; compensate for the removed negative-frequency
     # mirror by doubling all bins except DC (index 1) and Nyquist (index end)
+    # (the last bin is the Nyquist frequency only for an even FFT length)
+    dbl = iseven(n + pad) ? (2:(length(c) - 1)) : (2:length(c))
     a = abs.(c) ./ n
-    !nf && (a[2:(end - 1)] .*= 2)
-
+    !nf && (a[dbl] .*= 2)
     # powers: same normalization and symmetry compensation.
     p = abs2.(c) ./ n
-    !nf && (p[2:(end - 1)] .*= 2)
+    !nf && (p[dbl] .*= 2)
 
     # convert powers to dB if requested
     db && (p = pow2db.(p))
@@ -365,11 +366,10 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 # Arguments
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
-- `pad::Int64=0`: number of zeros to append
 
 # Returns
 
-- `Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
+- `Array{ComplexF64, 3}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function _hanalytic(s::AbstractArray)::Array{ComplexF64, 3}
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -403,11 +403,10 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `pad::Int64=0`: number of zeros to append
 
 # Returns
 
-- `Vector{ComplexF64}`: complex analytic signal, shape (channels, samples, epochs)
+- `Array{ComplexF64, 3}`: complex analytic signal, shape (channels, samples, epochs)
 """
 function hanalytic(
     obj::NeuroAnalyzer.NEURO;
