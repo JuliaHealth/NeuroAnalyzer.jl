@@ -30,7 +30,7 @@ function test_pipeline(
         fprototype = :fir,
         ftype = :hp,
         cutoff = hp,
-        order = 91,
+        bw = 0.5,
     )
 
     # LP filtering
@@ -39,7 +39,7 @@ function test_pipeline(
         fprototype = :fir,
         ftype = :lp,
         cutoff = lp,
-        order = 91,
+        bw = 2,
     )
 
     # re-reference to common average
