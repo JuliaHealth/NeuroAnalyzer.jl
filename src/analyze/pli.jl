@@ -3,7 +3,7 @@ export pli
 """
     _pli(s1, s2)
 
-Calculate Phase Locking Index (PLI) for two 1-D signal vectors.
+Calculate Phase Lag Index (PLI) for two 1-D signal vectors.
 
 # Arguments
 
@@ -59,7 +59,7 @@ end
 """
     pli(obj1, obj2; <keyword arguments>)
 
-Calculate Phase Locking Index (PLI) for two NEURO objects.
+Calculate Phase Lag Index (PLI) for two NEURO objects.
 
 # Arguments
 
@@ -156,7 +156,7 @@ end
 """
     pli(obj; <keyword arguments>)
 
-Calculate Phase Locking Index (PLI) for a NEURO object.
+Calculate Phase Lag Index (PLI) for a NEURO object.
 
 # Arguments
 

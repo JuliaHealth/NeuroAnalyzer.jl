@@ -10,7 +10,7 @@ Plot a topographical map of signal values across channel locations.
 
 - `s::AbstractVector`: signal values to plot (one value per channel)
 - `locs::DataFrame`: channel location data
-- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: channels to include; defaults to all rows in `locs`
+- `ch::Union{Int64, AbstractVector{Int64}}=1:DataFrames.nrow(locs)`: channels to include; defaults to all rows in `locs`
 - `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: significant channels to highlight
 - `cb::Bool=true`: if `true`, show colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
@@ -56,7 +56,7 @@ Plot a topographical map of signal values across channel locations.
 function plot_topo(
     s::AbstractVector;
     locs::DataFrame,
-    ch::Union{Int64, Vector{Int64}} = 1:DataFrames.nrow(locs),
+    ch::Union{Int64, AbstractVector{Int64}} = 1:DataFrames.nrow(locs),
     sch::Union{Nothing, Int64, Vector{Int64}} = nothing,
     cb::Bool = true,
     cb_title::String = "[A.U.]",

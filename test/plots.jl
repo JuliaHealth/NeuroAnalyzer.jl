@@ -499,6 +499,8 @@ p = plot_dwc(dc; t = t, n = 4)
 @test NeuroAnalyzer.plot(e10_erp; ch = ["Fp1", "Fp2"], type = :butterfly, gui = false) isa GLMakie.Figure
 @test plot_mep(mep; ch = labels(mep)[1], type = :stack) isa GLMakie.Figure
 @test plot_topo(e10; ch = "eeg", tpos = 1, sch = r"^Fp") isa GLMakie.Figure
+# vector method with the default channels (all rows of locs)
+@test plot_topo(rand(nrow(e10.locs)); locs = e10.locs) isa GLMakie.Figure
 @test plot_locs(e10; ch = "eeg", head_labels = true, gui = false) isa GLMakie.Figure
 @test plot_efield2d([1, -1], [-1.0, 1.0], [0.0, 0.0]) isa GLMakie.Figure
 f = collect(0.0:0.5:50.0)

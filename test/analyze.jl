@@ -602,6 +602,20 @@ x1 = sin.(2π * 8 .* (0:511) ./ 256)
 x2 = sin.(2π * 8 .* (0:511) ./ 256 .- π / 2)
 @test NeuroAnalyzer._pli(x1, x2).pv ≈ 1 atol = 0.05
 @test NeuroAnalyzer._wpli(x1, x2).pv ≈ 1 atol = 0.05
+# identical signals (zero lag): wPLI = 0; zero lag + independent noise: wPLI small
+@test NeuroAnalyzer._wpli(x1, x1).pv == 0
+rng_w = NeuroAnalyzer.Random.MersenneTwister(3)
+w0 = [NeuroAnalyzer._wpli(x1 .+ 0.3 .* randn(rng_w, 512), 0.8 .* x1 .+ 0.3 .* randn(rng_w, 512)).pv for _ in 1:20]
+w4 = [NeuroAnalyzer._wpli(x1 .+ 0.3 .* randn(rng_w, 512), x2 .+ 0.3 .* randn(rng_w, 512)).pv for _ in 1:20]
+@test sum(w0) / length(w0) < 0.3 && sum(w4) / length(w4) > 0.9
+# across epochs (matrix method): zero lag ≈ 0, constant lag = 1
+m0a = hcat([x1 .+ 0.3 .* randn(rng_w, 512) for _ in 1:30]...)
+m0b = 0.8 .* m0a .+ 0.3 .* randn(rng_w, 512, 30)
+@test abs(NeuroAnalyzer._wpli(m0a, m0b; debiased = true)) < 0.2
+@test NeuroAnalyzer._wpli(hcat(x1, x1, x1), hcat(x2, x2, x2)) ≈ 1
+@test_throws ArgumentError NeuroAnalyzer._wpli(reshape(x1, :, 1), reshape(x2, :, 1))
+# debiased wPLI of a constant lag ≈ 1
+@test NeuroAnalyzer._wpli(x1, x2; debiased = true).pv ≈ 1 atol = 0.05
 pv = pli(e10; ch = "all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = pli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
@@ -1196,6 +1210,9 @@ pv, sd, phd, s1p, s2p = wpli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
+pv2 = wpli(e10, e10; ch1 = ["Fp1", "F3"], ch2 = ["Fp2", "F4"], across_epochs = true).pv
+@test size(pv2) == (2, 1) && all(0 .<= pv2 .<= 1)
+@test_throws ArgumentError wpli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, across_epochs = true)
 pv, sd, phd, s1p, s2p =
     wpli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, debiased = true)
 @test size(pv) == (1, 1)

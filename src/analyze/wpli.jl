@@ -3,7 +3,15 @@ export wpli
 """
     _wpli(s1, s2; <keyword arguments>)
 
-Calculate weighted PLI (Phase Locking Index) for two 1-D signal vectors: weighted by the magnitude of the imaginary part of the cross-spectrum, across the positive frequencies of the signals (Vinck et al. 2011).
+Calculate weighted PLI (Phase Lag Index) for two 1-D signal vectors (Vinck et al. 2011).
+
+The imaginary part of the cross-spectrum is calculated at every time point from the analytic signals (Hilbert transform): `X = Im(z₁ · conj(z₂))`; the wPLI is the asymmetry of its distribution around zero, weighted by its magnitude:
+
+`wPLI = |Σₜ X| / Σₜ |X|`
+
+and the debiased squared wPLI: `(( Σₜ X)² − Σₜ X²) / ((Σₜ |X|)² − Σₜ X²)`.
+
+As PLI, it is insensitive to zero-lag (volume-conducted) coupling, and less sensitive to noise near zero lag, because small imaginary components get small weights. The signals should be narrowband (band-pass filtered).
 
 # Arguments
 
@@ -36,27 +44,21 @@ function _wpli(
     length(s1) == length(s2) ||
         throw(ArgumentError("Both signals must have the same length."))
 
-    # CPSD
-    n = length(s1)
-    ss1 = fft(_detrend(s1; type = :mean) .* DSP.hanning(n)) / n
-    ss2 = fft(_detrend(s2; type = :mean) .* DSP.hanning(n)) / n
-    pxy = conj.(ss1) .* ss2
-    im_pxy = imag.(pxy)
-
     pli_data = _pli(s1, s2)
     sd = pli_data.sd
     phd = pli_data.phd
     s1ph = pli_data.s1ph
     s2ph = pli_data.s2ph
 
-    # positive frequencies only: for real signals Im(Pxy) is antisymmetric, the negative
-    # frequencies would cancel the positive ones; DC and Nyquist are real
-    im_pxy = im_pxy[2:((n + 1) ÷ 2)]
-    # wPLI = |Σ Im(Pxy)| / Σ |Im(Pxy)| (Vinck et al. 2011)
-    num = sum(im_pxy)
-    denom = sum(abs, im_pxy)
-    sum_sq = sum(abs2, im_pxy)
-    if debiased
+    # imaginary part of the cross-spectrum at every time point (analytic signals)
+    im_xy = imag.(htransform(s1).c .* conj.(htransform(s2).c))
+    # wPLI = |Σ Im| / Σ |Im|; debiased squared wPLI (Vinck et al. 2011)
+    num = sum(im_xy)
+    denom = sum(abs, im_xy)
+    sum_sq = sum(abs2, im_xy)
+    if denom == 0
+        pv = 0.0
+    elseif debiased
         pv = (num^2 - sum_sq) / (denom^2 - sum_sq)
     else
         pv = abs(num) / denom
@@ -66,9 +68,42 @@ function _wpli(
 end
 
 """
+    _wpli(s1, s2; <keyword arguments>)
+
+Calculate weighted PLI (Phase Lag Index) across epochs (trials) for two signal matrices (Vinck et al. 2011).
+
+For each epoch, the imaginary part of the cross-spectrum is averaged over time (analytic signals): `Xₑ = meanₜ Im(z₁ · conj(z₂))`; the wPLI is calculated across epochs: `|Σₑ Xₑ| / Σₑ |Xₑ|` (debiased: `((Σₑ Xₑ)² − Σₑ Xₑ²) / ((Σₑ |Xₑ|)² − Σₑ Xₑ²)`). This is the standard definition, unbiased (debiased version) for independent epochs.
+
+# Arguments
+
+- `s1::AbstractMatrix`: signal matrix, shape (samples, epochs)
+- `s2::AbstractMatrix`: signal matrix, shape (samples, epochs)
+- `debiased::Bool=false`: if `true`, calculate debiased wPLI
+
+# Returns
+
+- `Float64`: wPLI value
+"""
+function _wpli(s1::AbstractMatrix, s2::AbstractMatrix; debiased::Bool = false)::Float64
+    # validate
+    size(s1) == size(s2) || throw(ArgumentError("Both signals must have the same size."))
+    size(s1, 2) >= 2 || throw(ArgumentError("At least 2 epochs are required."))
+
+    # imaginary part of the cross-spectrum of each epoch (mean over time)
+    x = [mean(imag.(htransform(@view(s1[:, ep])).c .* conj.(htransform(@view(s2[:, ep])).c)))
+         for ep in axes(s1, 2)]
+    num = sum(x)
+    denom = sum(abs, x)
+    sum_sq = sum(abs2, x)
+    denom == 0 && return 0.0
+
+    return debiased ? (num^2 - sum_sq) / (denom^2 - sum_sq) : abs(num) / denom
+end
+
+"""
     wpli(obj1, obj2; <keyword arguments>)
 
-Calculate weighted PLI (Phase Locking Index) for two NEURO objects.
+Calculate weighted PLI (Phase Lag Index) for two NEURO objects.
 
 # Arguments
 
@@ -79,12 +114,17 @@ Calculate weighted PLI (Phase Locking Index) for two NEURO objects.
 - `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 - `debiased::Bool=false`: if `true`, calculate debiased wPLI
+- `across_epochs::Bool=false`: if `true`, calculate wPLI across the selected epochs (the standard definition, Vinck et al. 2011; `pv` has one column); otherwise for each epoch separately (across its time points)
 
 # Returns
 
 Named tuple:
 
-- `pv::Matrix{Float64}`: PLI value
+- `pv::Matrix{Float64}`: wPLI values, shape (channels, epochs) or (channels, 1) if `across_epochs = true`
+
+# Notes
+
+wPLI calculated within single epochs is biased upwards for short epochs of narrowband signals (few independent time points), even for zero-lag coupling; with several epochs, `across_epochs = true` (optionally with `debiased = true`) is recommended.
 - `sd::Array{Float64, 3}`: signal difference (s1 - s2)
 - `phd::Array{Float64, 3}`: phase difference (s1 - s2)
 - `s1ph::Array{Float64, 3}`: signal 1 phase
@@ -98,6 +138,7 @@ function wpli(
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
     debiased::Bool = false,
+    across_epochs::Bool = false,
 )::@NamedTuple{
     pv::Matrix{Float64},
     sd::Array{Float64, 3},
@@ -157,13 +198,24 @@ function wpli(
         s2ph[ch_idx, :, ep_idx] = wpli_data.s2ph
     end
 
+    # wPLI across epochs
+    if across_epochs
+        ep_n >= 2 || throw(ArgumentError("across_epochs requires at least 2 epochs."))
+        pv = zeros(ch_n, 1)
+        for ch_idx in 1:ch_n
+            pv[ch_idx, 1] = _wpli(@view(obj1.data[ch1[ch_idx], :, ep1]),
+                                  @view(obj2.data[ch2[ch_idx], :, ep2]);
+                                  debiased = debiased)
+        end
+    end
+
     return (; pv, sd, phd, s1ph, s2ph)
 end
 
 """
     wpli(obj; <keyword arguments>)
 
-Calculate weighted PLI (Phase Locking Index) for a NEURO object.
+Calculate weighted PLI (Phase Lag Index) for a NEURO object.
 
 # Arguments
 
