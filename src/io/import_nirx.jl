@@ -200,6 +200,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
             header = false,
             delim = ' ',
             ignorerepeated = true,
+            ntasks = 1,
         ),
     )'[ch_masks, :]
     nirs_int = reduce(vcat, [read_wl(idx) for idx in eachindex(wavelengths)])

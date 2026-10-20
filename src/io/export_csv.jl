@@ -81,7 +81,7 @@ function export_csv(
     # prepend the global time axis (in ms, as expected by import_csv()); transpose so rows correspond to time points
     col_names = vcat("time", labels(obj))
     df = DataFrame(hcat(obj.time_pts .* 1000, flat'), col_names)
-    CSV.write(file_name, df; writeheader = names)
+    CSV.write(file_name, df; header = names)
 
     # ------------------------------------------------------------------ #
     # metadata header                                                    #
