@@ -1380,6 +1380,15 @@ r_b = NeuroAnalyzer._msci95(x; method = :boot, n = 20)
 # ftransform(): one-sided amplitude in the last bin of an odd-length FFT (not Nyquist)
 x = 3 .* cos.(2π * 50 .* (0:100) ./ 101)
 @test maximum(ftransform(x).a) ≈ 3
+# amplitude A, power A² / 2; the powers sum to the mean square (Parseval), one- and two-sided
+x = 2 .* cos.(2π * 10 .* (0:999) ./ 100) .+ 0.5
+X = ftransform(x)
+@test X.a[101] ≈ 2 && X.a[1] ≈ 0.5
+@test X.p[101] ≈ 2^2 / 2 && X.p[1] ≈ 0.5^2
+@test sum(X.p) ≈ sum(abs2, x) / length(x)
+@test sum(ftransform(x; nf = true).p) ≈ sum(abs2, x) / length(x)
+y = rand(NeuroAnalyzer.Random.MersenneTwister(5), 101)   # odd length: no Nyquist bin
+@test sum(ftransform(y).p) ≈ sum(abs2, y) / length(y)
 # spectrograms: Gaussian-Hilbert power of a stationary sine = squared amplitude, flat in time
 x = 2 .* cos.(2π * 10 .* (0:1023) ./ 128)
 g_tmp = ghtspectrogram(x; fs = 128, db = false)

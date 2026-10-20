@@ -19,14 +19,14 @@ Calculate Fourier transform (FFT / rFFT) for a 1-D signal vector.
 
 Named tuple:
 
-- `c::Vector{ComplexF64}`: Fourier coefficients
-- `a::Vector{Float64}`: amplitudes
-- `p::Vector{Float64}`: powers
+- `c::Vector{ComplexF64}`: Fourier coefficients (not normalized)
+- `a::Vector{Float64}`: amplitudes (`|c| / N`, one-sided: doubled except 0 Hz and Nyquist); a sine of amplitude `A` has amplitude `A`
+- `p::Vector{Float64}`: powers (mean square per frequency, `|c|² / N²`, one-sided: doubled except 0 Hz and Nyquist); a sine of amplitude `A` has power `A² / 2` and the powers sum to the mean square of the signal (Parseval's theorem)
 - `ph::Vector{Float64}`: phases in radians
 
 # Notes
 
-To obtain the matching frequency vector use `f, _ = freqs(length(s), fs)`.
+`N` is the signal length before padding. To obtain the matching frequency vector use `f, _ = freqs(length(s) + pad, fs)`.
 """
 function ftransform(
     s::AbstractVector;
@@ -51,8 +51,9 @@ function ftransform(
     dbl = iseven(n + pad) ? (2:(length(c) - 1)) : (2:length(c))
     a = abs.(c) ./ n
     !nf && (a[dbl] .*= 2)
-    # powers: same normalization and symmetry compensation.
-    p = abs2.(c) ./ n
+    # powers: mean square per frequency (|c|² / N², one-sided bins doubled), so that the powers sum to the
+    # mean square of the signal (Parseval's theorem); a sine of amplitude A has power A² / 2
+    p = abs2.(c) ./ n^2
     !nf && (p[dbl] .*= 2)
 
     # convert powers to dB if requested
