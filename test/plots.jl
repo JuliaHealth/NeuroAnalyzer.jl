@@ -503,6 +503,8 @@ p = plot_dwc(dc; t = t, n = 4)
 @test plot_efield2d([1, -1], [-1.0, 1.0], [0.0, 0.0]) isa GLMakie.Figure
 f = collect(0.0:0.5:50.0)
 @test plot_coherence(rand(length(f)), f; frq = :log) isa GLMakie.Figure
+# logarithmic frequency axes are base 10
+@test first(c for c in plot_coherence(rand(length(f)), f; frq = :log).content if c isa GLMakie.Axis).xscale[] === log10
 @test plot_eros(rand(41, 21, 2), collect(0.0:40.0), collect(0.0:0.1:2.0); frq = :log) isa GLMakie.Figure
 m = rand(19, 19)
 @test plot_connectivity_circle(m; clabels = labels(e10)[1:19], threshold = (0.2, 0.8), threshold_type = :in) isa GLMakie.Figure

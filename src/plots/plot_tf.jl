@@ -121,7 +121,7 @@ function plot_eros(
             xminorticksvisible = true,
             xminorticks        = IntervalsBetween(10),
             yticks             = yt,
-            yscale             = frq === :lin ? identity : log,
+            yscale             = frq === :lin ? identity : log10,
             _AXIS_LOCK_KWARGS...,
         )
         GLMakie.ylims!(ax, flim)
@@ -250,7 +250,7 @@ function plot_erop(
             title              = tt,
             xminorticksvisible = true,
             xminorticks        = IntervalsBetween(10),
-            xscale             = frq === :lin ? identity : log,
+            xscale             = frq === :lin ? identity : log10,
             _AXIS_LOCK_KWARGS...,
         )
         GLMakie.xlims!(ax, flim)

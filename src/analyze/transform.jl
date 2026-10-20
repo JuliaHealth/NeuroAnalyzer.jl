@@ -26,7 +26,7 @@ Named tuple:
 
 # Notes
 
-To obtain the matching frequency vector use `f = freqs(s, fs).f`.
+To obtain the matching frequency vector use `f, _ = freqs(length(s), fs)`.
 """
 function ftransform(
     s::AbstractVector;
