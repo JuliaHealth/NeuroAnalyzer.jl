@@ -24,7 +24,7 @@ function _cwd(
     complex::Bool = false,
 )::Union{Matrix{Float64}, Matrix{ComplexF64}} where {T <: CWT}
     # ContinuousWavelets.cwt returns (samples × scales); transpose to (scales × samples)
-    c = ContinuousWavelets.cwt(s, wt)
+    c = ContinuousWavelets.cwt(collect(s), wt)
     return complex ? permutedims(ComplexF64.(c)) : permutedims(real.(c))
 end
 
