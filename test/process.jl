@@ -1289,6 +1289,17 @@ x = 0.2 .* randn(NeuroAnalyzer.Random.MersenneTwister(3), 2560) .+ sin.(2π * 50
 e_tmp = keep_epoch(eb; ep = 1)
 e_tmp.data[1, :, 1] = x
 @test detect_powerline(keep_channel(e_tmp; ch = "Fp1")) == 50.0
+# only 50 or 60 Hz: a stronger 10 Hz rhythm is not power-line noise; 0 if there is none
+tt_pl = (0:2559) ./ 256
+x_pl = 5 .* sin.(2π * 10 .* tt_pl) .+ 0.5 .* randn(NeuroAnalyzer.Random.MersenneTwister(4), 2560)
+@test NeuroAnalyzer._detect_powerline(x_pl; fs = 256) == 0.0
+@test NeuroAnalyzer._detect_powerline(x_pl .+ 0.5 .* sin.(2π * 60 .* tt_pl); fs = 256) == 60.0
+@test NeuroAnalyzer._detect_powerline(x_pl .+ 0.5 .* sin.(2π * 50 .* tt_pl); fs = 256) == 50.0
+@test NeuroAnalyzer._detect_powerline(x_pl .+ 0.5 .* sin.(2π * 50 .* tt_pl); fs = 256, pr = 100) == 0.0
+@test NeuroAnalyzer._line_prominence(fill(1.0, 21), collect(40.0:60.0), 50) == 0
+@test_throws ArgumentError NeuroAnalyzer._detect_powerline(x_pl; fs = 1)
+e_tmp.data[1, :, 1] = x_pl
+@test detect_powerline(keep_channel(e_tmp; ch = "Fp1")) == 0.0
 
 @info "Test: mlinterpolate_channel()"
 # constant regressor: the interpolated epoch = the mean of the channel in the reference epochs
@@ -1547,9 +1558,25 @@ e_out, df_pl = remove_powerline(e_pl; ch = "Fp1", pl_frq = 50)
 amp_f(s, f) = (mid = 1001:(length(s) - 1000); A = [sin.(2π * f .* tp_[mid]) cos.(2π * f .* tp_[mid])]; hypot((A \ s[mid])...))
 @test amp_f(e_out.data[1, :, 1], 50) < 0.05
 @test amp_f(e_out.data[1, :, 1], 10) > 0.95
-@test df_pl[1, :channel] == "Fp1" && df_pl[1, "power line bandwidth"] > 0
+@test df_pl[1, :channel] == "Fp1" && df_pl[1, :frequency] == 50 && df_pl[1, :bandwidth] > 0
+# only channels with a peak are filtered; no harmonic in this signal
+@test nrow(df_pl) == 1
 # other channels are not modified
 @test e_out.data[2, :, 1] == e_pl.data[2, :, 1]
+# harmonics: 50 Hz + 100 Hz removed; a channel without line noise is not modified
+e_pl.data[1, :, 1] = sin.(2π * 10 .* tp_) .+ sin.(2π * 50 .* tp_) .+ 0.3 .* sin.(2π * 100 .* tp_) .+ 0.05 .* randn(NeuroAnalyzer.Random.MersenneTwister(1), length(tp_))
+e_pl.data[2, :, 1] = sin.(2π * 10 .* tp_) .+ 0.05 .* randn(NeuroAnalyzer.Random.MersenneTwister(2), length(tp_))
+e_out, df_pl = remove_powerline(e_pl; ch = ["Fp1", "Fp2"], pl_frq = 50)
+@test df_pl[!, :channel] == ["Fp1", "Fp1"] && df_pl[!, :frequency] == [50, 100]
+@test amp_f(e_out.data[1, :, 1], 50) < 0.05 && amp_f(e_out.data[1, :, 1], 100) < 0.03
+@test amp_f(e_out.data[1, :, 1], 10) > 0.95
+@test e_out.data[2, :, 1] == e_pl.data[2, :, 1]
+# 60 Hz
+e_pl.data[1, :, 1] = sin.(2π * 10 .* tp_) .+ sin.(2π * 60 .* tp_) .+ 0.05 .* randn(NeuroAnalyzer.Random.MersenneTwister(1), length(tp_))
+e_out, df_pl = remove_powerline(e_pl; ch = "Fp1", pl_frq = 60)
+@test df_pl[!, :frequency] == [60] && amp_f(e_out.data[1, :, 1], 60) < 0.05
+@test_throws ArgumentError remove_powerline(e_pl; ch = "Fp1", pl_frq = 0)
+@test_throws ArgumentError remove_powerline(e_pl; ch = "Fp1", pl_frq = 50, d = 0)
 @test_throws ArgumentError remove_powerline(epoch(eeg; ep_len = 10); ch = "Fp1")
 
 true

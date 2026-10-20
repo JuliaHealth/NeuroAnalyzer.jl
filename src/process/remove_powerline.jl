@@ -3,6 +3,9 @@ export remove_powerline!
 export detect_powerline
 export detect_powerline!
 
+# power line frequencies in use worldwide
+const _LINE_FREQUENCIES = (50, 60)
+
 # zero-phase IIR notch filter of a signal vector (as filter(obj; fprototype = :iirnotch), two-pass)
 _notch(x::AbstractVector, fs::Int64, frq::Real, bw::Real)::Vector{Float64} =
     _filter_apply(x; flt = filter_create(; fprototype = :iirnotch, cutoff = frq, fs = fs, bw = bw))
@@ -25,12 +28,24 @@ function _notch_band_var(
     return v
 end
 
+# prominence (dB) of the PSD at f0 over the median PSD 2–5 Hz away from f0
+function _line_prominence(p::AbstractVector, f::AbstractVector, f0::Real)::Float64
+    nb = findall(x -> 2 <= abs(x - f0) <= 5, f)
+    pk = findall(x -> abs(x - f0) <= 0.5, f)
+    (isempty(nb) || isempty(pk)) && return -Inf
+    return maximum(p[pk]) - median(p[nb])
+end
+
 """
     remove_powerline(obj; <keyword arguments>)
 
 Remove power line noise and its harmonics from a continuous NEURO object.
 
-For each selected channel, an IIR notch filter is optimised by scanning a range of bandwidth values and choosing the one that minimises spectral variance around the noise frequency. The same process is repeated for any harmonic peaks detected above the fundamental.
+For each selected channel:
+
+1. the power spectrum (Welch, dB) is checked for a peak (prominence ≥ `pr` dB) at the power line frequency `pl_frq` (within `pl_frq ± d`); channels without a peak are not modified
+2. zero-phase IIR notch filters of bandwidths `q`, `2q`, …, 10 Hz are applied to the signal and the bandwidth giving the flattest spectrum (lowest variance of the PSD within `pl_frq ± d`) is used
+3. the procedure is repeated for each harmonic (`2 × pl_frq`, `3 × pl_frq`, … below the Nyquist frequency) that shows a peak in this channel (bandwidths up to 5 Hz, window `± d / 2`)
 
 # Arguments
 
@@ -38,14 +53,14 @@ For each selected channel, an IIR notch filter is optimised by scanning a range 
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency in Hz; default is read from the object header
 - `method::Symbol=:iir`: filtering method (currently only `:iir` is supported)
-- `pr::Real=2.0`: minimum peak prominence in dB for harmonic detection
-- `d::Real=5.0`: minimum distance between detected peaks in Hz
+- `pr::Real=2.0`: minimum peak prominence in dB
+- `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics)
 - `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)`
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with power line noise removed
-- `DataFrame`: detected peaks with their optimized notch bandwidths
+- `DataFrame`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
 """
 function remove_powerline(
     obj::NeuroAnalyzer.NEURO;
@@ -56,15 +71,15 @@ function remove_powerline(
     d::Real = 5.0,
     q::Real = 0.1,
 )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
-
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("remove_powerline() requires a continuous (1-epoch) object."))
-    pl_frq >= 0 || throw(ArgumentError("pl_frq must be ≥ 0."))
-    pl_frq <= sr(obj) / 2 ||
-        throw(ArgumentError("pl_frq must be ≤ $(sr(obj) / 2) Hz (Nyquist)."))
+    fs = sr(obj)
+    pl_frq > 0 || throw(ArgumentError("pl_frq must be > 0."))
+    pl_frq < fs / 2 || throw(ArgumentError("pl_frq must be < $(fs / 2) Hz (Nyquist)."))
     q >= 0.01 || throw(ArgumentError("q must be ≥ 0.01."))
     q < 5 || throw(ArgumentError("q must be < 5."))
+    d > 0 || throw(ArgumentError("d must be > 0."))
     _check_var(method, [:iir], "method")
 
     # resolve channel names to integer indices
@@ -75,142 +90,58 @@ function remove_powerline(
     # create new dataset
     obj_tmp = deepcopy(obj)
 
-    # pre-allocate outputs
-    pl_best_bw = Float64[]
-    pks_frq = Float64[]
-    pks_best_bw = Vector{Float64}[]
+    # the fundamental and its harmonics below the Nyquist frequency
+    frqs = [k * pl_frq for k = 1:floor(Int64, fs / 2 / pl_frq) if k * pl_frq < fs / 2]
+    bw_fund = collect(q:q:10.0)
+    bw_harm = collect(q:q:5.0)
 
-    verbose_tmp = NeuroAnalyzer.verbose
-    NeuroAnalyzer.verbose = false
+    df = DataFrame(:channel => String[], :frequency => Float64[], :bandwidth => Float64[])
+    no_peak = String[]
 
     _info("Removing power line noise at $pl_frq Hz and its harmonics")
 
-    df = DataFrame()
-    # verbose is restored even if an error occurs
+    # messages of the internal filtering are not shown; verbose is restored even if an error occurs
+    verbose_tmp = NeuroAnalyzer.verbose
+    NeuroAnalyzer.verbose = false
     try
-        if method === :iir
-            bw_values = collect(q:q:10.0)
+        progbar = Progress(length(ch); dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
-            progbar = Progress(
-                length(ch);
-                dt = 1,
-                barlen = 20,
-                color = :white,
-                enabled = progress_bar,
-            )
+        for ch_idx in ch
+            x = obj_tmp.data[ch_idx, :, 1]
+            for (h_idx, h) in enumerate(frqs)
+                hw = h_idx == 1 ? d : d / 2
+                f1, f2 = max(h - hw, 0), min(h + hw, fs / 2)
 
-            # use enumerate so we index pl_best_bw by loop position
-            for (loop_idx, ch_idx) in enumerate(ch)
-                ch_label = clabels[ch_idx]
-
-                # --- detect and validate the fundamental power line peak ---
-                fs = sr(obj_tmp)
-                psd_data = _psd(@view(obj_tmp.data[ch_idx, :, 1]); fs = fs, db = true)
-                f = psd_data.f
-                p = psd_data.p
-                f_band = vsearch(pl_frq - d, f):vsearch(pl_frq + d, f)
-                p_band = p[f_band]
-                f_band_vals = f[f_band]
-                peaks, _ = findpeaks1d(p_band; prominence = pr)
-                length(peaks) > 0 || throw(
-                    ArgumentError(
-                        "No power line peak found near $pl_frq Hz in channel $ch_label. Check pl_frq or whether the signal is already filtered.",
-                    ),
-                )
-                pl_amp = vsearch(maximum(p_band[peaks]), p_band)
-                pl_frq_detected = f_band_vals[pl_amp]
-                (pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) &&
-                    throw(
-                        ArgumentError(
-                            "Channel $ch_label: power line peak at $pl_frq_detected Hz is outside the expected range.",
-                        ),
-                    )
-
-                # --- optimize notch bandwidth for the fundamental ---
-                # each candidate is applied to the current signal (not cumulatively)
-                x = obj_tmp.data[ch_idx, :, 1]
-                v = _notch_band_var(x, fs, pl_frq, bw_values, pl_frq - d, pl_frq + d)
-                best_bw = bw_values[vsearch(minimum(v), v)]
-                push!(pl_best_bw, best_bw)
-                obj_tmp.data[ch_idx, :, 1] = _notch(x, fs, pl_frq, best_bw)
-
-                # --- detect harmonics above the fundamental ---
-                p, f = _psd(@view(obj_tmp.data[ch_idx, :, 1]); fs = fs, db = true)
-                f_above = vsearch(2 * pl_frq - 2 * d, f)
-                p_above = p[f_above:end]
-                f_above_vals = f[f_above:end]
-
-                if isempty(pks_frq)
-                    pr_tmp, d_tmp = pr, d
-                    peaks, _ =
-                        findpeaks1d(p_above; prominence = pr_tmp, distance = vsearch(d_tmp, f))
-                    while isempty(peaks) && pr_tmp > 0.1 && d_tmp > 0.1
-                        pr_tmp -= 0.1
-                        d_tmp -= 0.1
-                        peaks, _ = findpeaks1d(
-                            p_above;
-                            prominence = pr_tmp,
-                            distance = vsearch(d_tmp, f),
-                        )
-                    end
-                    for idx in eachindex(peaks)
-                        push!(pks_frq, f_above_vals[peaks[idx]])
-                    end
+                # is there a peak at this frequency (within 1 Hz) in this channel?
+                p, f = _psd(x; fs = fs, db = true)
+                band = vsearch(f1, f):vsearch(f2, f)
+                pks, _ = findpeaks1d(p[band]; prominence = pr)
+                if !any(i -> abs(f[band][i] - h) <= 1, pks)
+                    h_idx == 1 && push!(no_peak, clabels[ch_idx])
+                    continue
                 end
 
-                n = length(pks_frq)
-                if n > 0
-                    bw_harm = collect(q:q:5.0)
-                    best_bw_harm = zeros(n)
-                    x = obj_tmp.data[ch_idx, :, 1]
-                    for peak_idx in eachindex(pks_frq)
-                        pf = pks_frq[peak_idx]
-                        # the notch band must lie within (0, Nyquist): peaks close to the Nyquist
-                        # frequency allow only narrow notches (none: the peak is skipped, bandwidth 0)
-                        bw_ok = Base.filter(b -> pf - b / 2 > 0 && pf + b / 2 < fs / 2, bw_harm)
-                        isempty(bw_ok) && continue
-                        vh = _notch_band_var(x, fs, pf, bw_ok, pf - d / 2, min(pf + d / 2, fs / 2))
-                        best_bw_harm[peak_idx] = bw_ok[vsearch(minimum(vh), vh)]
-                    end
-                    for peak_idx in eachindex(pks_frq)
-                        best_bw_harm[peak_idx] > 0 &&
-                            (x = _notch(x, fs, pks_frq[peak_idx], best_bw_harm[peak_idx]))
-                    end
-                    obj_tmp.data[ch_idx, :, 1] = x
-                    push!(pks_best_bw, best_bw_harm)
-                end
-
-                progress_bar && next!(progbar)
+                # the notch band must lie within (0, Nyquist)
+                bws = Base.filter(b -> h - b / 2 > 0 && h + b / 2 < fs / 2, h_idx == 1 ? bw_fund : bw_harm)
+                isempty(bws) && continue
+                v = _notch_band_var(x, fs, h, bws, f1, f2)
+                bw = bws[argmin(v)]
+                x = _notch(x, fs, h, bw)
+                push!(df, (clabels[ch_idx], h, bw))
             end
-            progress_bar && finish!(progbar)
+            obj_tmp.data[ch_idx, :, 1] = x
 
-            # --- build results DataFrame ---
-            df = DataFrame(
-                "channel" => clabels[ch],
-                "power line bandwidth" => pl_best_bw,
-            )
-            if !isempty(pks_frq)
-                n_ch = length(ch)
-                n_pk = length(pks_frq)
-                pks_frq_m = zeros(n_ch, n_pk)
-                pks_bw_m = zeros(n_ch, n_pk)
-                peak_frq_names = ["peak $i frequency" for i = 1:n_pk]
-                peak_bw_names = ["peak $i bandwidth" for i = 1:n_pk]
-                for i = 1:n_ch
-                    pks_frq_m[i, :] = pks_frq
-                    pks_bw_m[i, :] = pks_best_bw[i]
-                end
-                df = hcat(df, DataFrame(pks_frq_m, peak_frq_names))
-                df = hcat(df, DataFrame(pks_bw_m, peak_bw_names))
-            end
+            progress_bar && next!(progbar)
         end
+        progress_bar && finish!(progbar)
     finally
         NeuroAnalyzer.verbose = verbose_tmp
     end
-    push!(
-        obj_tmp.history,
-        "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)",
+
+    isempty(no_peak) || _warn(
+        "No power line peak at $pl_frq Hz in channel(s) $(join(no_peak, ", ")); power line frequency not filtered (check pl_frq or whether the signal is already filtered).",
     )
+    push!(obj_tmp.history, "remove_powerline(OBJ, ch=$ch, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)")
 
     return obj_tmp, df
 end
@@ -218,7 +149,7 @@ end
 """
     remove_powerline!(obj; <keyword arguments>)
 
-Remove power line noise in-place.
+Remove power line noise and its harmonics in-place (see `remove_powerline()`).
 
 # Arguments
 
@@ -226,13 +157,13 @@ Remove power line noise in-place.
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency in Hz; default is read from the object header
 - `method::Symbol=:iir`: filtering method (currently only `:iir` is supported)
-- `pr::Real=2.0`: minimum peak prominence in dB for harmonic detection
-- `d::Real=5.0`: minimum distance between detected peaks in Hz
+- `pr::Real=2.0`: minimum peak prominence in dB
+- `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics)
 - `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)`
 
 # Returns
 
-- `DataFrame`: detected peaks with their optimized notch bandwidths
+- `DataFrame`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
 """
 function remove_powerline!(
     obj::NeuroAnalyzer.NEURO;
@@ -243,15 +174,7 @@ function remove_powerline!(
     d::Real = 5.0,
     q::Real = 0.1,
 )::DataFrame
-    obj_tmp, df = remove_powerline(
-        obj;
-        ch = ch,
-        pl_frq = pl_frq,
-        method = method,
-        pr = pr,
-        d = d,
-        q = q,
-    )
+    obj_tmp, df = remove_powerline(obj; ch = ch, pl_frq = pl_frq, method = method, pr = pr, d = d, q = q)
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
 
@@ -261,57 +184,55 @@ end
 """
     _detect_powerline(s; <keyword arguments>)
 
-Detect the dominant power line noise frequency in a signal.
+Detect the power line noise frequency (50 or 60 Hz) in a signal.
 
-Fits a sine + cosine model at each integer frequency from 1 to `fs÷2` Hz and returns the frequency with maximum fitted power.
+The prominence of the power spectrum (Welch, dB) at 50 and 60 Hz over the median power 2–5 Hz away is calculated; the frequency with the larger prominence is returned if the prominence is ≥ `pr` dB.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 2
+- `pr::Real=3`: minimum prominence in dB
 
 # Returns
 
-- `Float64`: noise frequency in Hz
+- `Float64`: power line frequency in Hz (50 or 60), 0 if not detected
 """
-function _detect_powerline(s::AbstractVector; fs::Int64)::Float64
+function _detect_powerline(s::AbstractVector; fs::Int64, pr::Real = 3)::Float64
     # validate
     fs >= 2 || throw(ArgumentError("fs must be ≥ 2."))
 
-    n = length(s)
-    # sample times (step 1 / fs)
-    t = (0:(n - 1)) ./ fs
-
-    noise_power = zeros(fs ÷ 2)
-    for freq = 1:(fs ÷ 2)
-        df = DataFrame(
-            :signal => s,
-            :b0 => ones(n),
-            :b1 => sin.(2π * freq .* t),
-            :b2 => cos.(2π * freq .* t),
-        )
-        lr = GLM.lm(@formula(signal ~ b0 + b1 + b2), df)
-        b = GLM.coef(lr)
-        noise_power[freq] = b[3]^2 + b[4]^2
+    p, f = _psd(s; fs = fs, db = true)
+    best, best_pr = 0.0, -Inf
+    for f0 in _LINE_FREQUENCIES
+        f0 + 5 < fs / 2 || continue
+        pr_f0 = _line_prominence(p, f, f0)
+        pr_f0 > best_pr && ((best, best_pr) = (Float64(f0), pr_f0))
     end
 
-    return Float64(vsearch(maximum(noise_power), noise_power))
+    return best_pr >= pr ? best : 0.0
 end
 
 """
-    detect_powerline(obj)
+    detect_powerline(obj; <keyword arguments>)
 
-Detect the dominant power line noise frequency for each channel and epoch.
+Detect the power line noise frequency (50 or 60 Hz).
+
+For each channel and epoch, the prominence of the power spectrum at 50 and 60 Hz over the neighbouring frequencies (2–5 Hz away) is calculated; the frequency detected in most channels/epochs is returned.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `pr::Real=3`: minimum prominence in dB
 
 # Returns
 
-- `Float64`: noise frequency in Hz
+- `Float64`: power line frequency in Hz (50 or 60), 0 if not detected
 """
-function detect_powerline(obj::NeuroAnalyzer.NEURO)::Float64
+function detect_powerline(obj::NeuroAnalyzer.NEURO; pr::Real = 3)::Float64
+    sr(obj) > 2 * (minimum(_LINE_FREQUENCIES) + 5) ||
+        throw(ArgumentError("Sampling rate must be > $(2 * (minimum(_LINE_FREQUENCIES) + 5)) Hz to detect power line noise."))
+
     # number of channels
     ch_n = size(obj, 1)
     # number of epochs
@@ -327,35 +248,42 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Float64
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        noise_frq[ch_idx, ep_idx] =
-            _detect_powerline(@view(obj.data[ch_idx, :, ep_idx]); fs = sr(obj))
+        noise_frq[ch_idx, ep_idx] = _detect_powerline(@view(obj.data[ch_idx, :, ep_idx]); fs = sr(obj), pr = pr)
 
         # update progress bar
         progress_bar && next!(progbar)
     end
     progress_bar && finish!(progbar)
 
-    return median(noise_frq)
+    # the frequency detected most often
+    n = [count(==(f0), noise_frq) for f0 in _LINE_FREQUENCIES]
+    maximum(n) == 0 && return 0.0
+
+    return Float64(_LINE_FREQUENCIES[argmax(n)])
 end
 
 """
-    detect_powerline!(obj)
+    detect_powerline!(obj; <keyword arguments>)
 
-Detect power line noise and store the median detected frequency in the object header in-place.
+Detect the power line noise frequency (see `detect_powerline()`) and store it in the object header (`obj.header.recording[:line_frequency]`); the header is not changed if no power line noise is detected.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object; `header.recording[:line_frequency]` is updated in-place
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `pr::Real=3`: minimum prominence in dB
 
 # Returns
 
 - `Nothing`
 """
-function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
-    noise_frq = detect_powerline(obj)
-    med_frq = median(noise_frq)
-    _info("Power line noise detected at $med_frq Hz")
-    obj.header.recording[:line_frequency] = med_frq
+function detect_powerline!(obj::NeuroAnalyzer.NEURO; pr::Real = 3)::Nothing
+    noise_frq = detect_powerline(obj; pr = pr)
+    if noise_frq == 0
+        _warn("No power line noise detected; line frequency not changed ($(obj.header.recording[:line_frequency]) Hz).")
+    else
+        _info("Power line noise detected at $noise_frq Hz")
+        obj.header.recording[:line_frequency] = noise_frq
+    end
 
     return nothing
 end
