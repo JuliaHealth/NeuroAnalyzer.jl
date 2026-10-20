@@ -185,12 +185,12 @@ end
 """
     plot(obj1, obj2; <keyword arguments>)
 
-Plot two signals from NEURO objects for comparison.
+Plot two signals from NEURO objects for comparison (e.g. before and after processing); both signals of a channel are drawn with the same amplitude scale.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`: first NEURO object
-- `obj2::NeuroAnalyzer.NEURO`: second NEURO object
+- `obj1::NeuroAnalyzer.NEURO`: first NEURO object (drawn in blue)
+- `obj2::NeuroAnalyzer.NEURO`: second NEURO object (drawn in black)
 - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label
@@ -198,8 +198,7 @@ Plot two signals from NEURO objects for comparison.
 - `title::String="default"`: plot title
 - `scale::Bool=true`: draw scales
 - `group_ch::Bool=true`: group channels by type
-- `n_channels::Int64=20`: number of visible channels
-- `n_epochs::Int64=5`: number of visible epochs
+- `n_channels::Int64=20`: number of visible channels (at most the number of channels)
 - `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `gui::Bool=true`: if `true`, keep window open and interactive
 

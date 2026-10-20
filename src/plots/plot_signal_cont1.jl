@@ -61,8 +61,8 @@ function plot_cont(
     res >= 1 || throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
     n_channels >= 1 || throw(ArgumentError("n_channels must be ≥ 1."))
-    n_channels <= nchannels(obj) ||
-        throw(ArgumentError("n_channels must be ≤ $(nchannels(obj))."))
+    # at most all channels are shown at once
+    n_channels = min(n_channels, nchannels(obj))
     _check_var(type, [:normal, :butterfly], "type")
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
 

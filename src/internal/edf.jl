@@ -75,7 +75,7 @@ function _integer_rate(
         k = ks[k_idx]
         new_fs = round(Int64, k * fs)
         m = n * k
-        _info("Sampling rate $fs Hz is not an integer: data upsampled ×$k to $new_fs Hz (exact).")
+        _info("Sampling rate $fs Hz is not an integer: data upsampled ×$k to $new_fs Hz (exact)")
     else
         new_fs = max(1, round(Int64, fs))
         m = round(Int64, n * new_fs / fs)

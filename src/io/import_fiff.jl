@@ -183,7 +183,7 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
         :loc_phi_sph => Float64[],
     )
     if isempty(idx)
-        _info("FIFF data contain no channel positions.")
+        _info("FIFF data contain no channel positions")
         return l
     end
     # n × 3
@@ -206,7 +206,7 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
             rmax = maximum(r[mask])
             rmax > 0 && (p[mask, :] .*= r_out / rmax)
         end
-        _info("Fewer than 10 head-shape points: channel locations scaled to fixed radii (MEG 1.2, EEG 1.0).")
+        _info("Fewer than 10 head-shape points: channel locations scaled to fixed radii (MEG 1.2, EEG 1.0)")
     end
 
     for (j, i) in enumerate(idx)
@@ -1039,7 +1039,7 @@ function import_fiff(
         )
     else
         isempty(ssp_rows) ||
-            _info("SSP projectors (e.g. EEG average reference) are not stored for EEG-only data.")
+            _info("SSP projectors (e.g. EEG average reference) are not stored for EEG-only data")
         _create_recording_eeg(;
             data_type = data_type,
             file_name = file_name,
@@ -1079,12 +1079,12 @@ function import_fiff(
         add_locs!(obj; locs = l)
     elseif channel_locs !== :none && is_306
         # the bundled layout describes the 306-channel Vectorview/TRIUX helmet only
-        channel_locs === :fiff && _info("Using the bundled 306-channel Vectorview/TRIUX layout.")
+        channel_locs === :fiff && _info("Using the bundled 306-channel Vectorview/TRIUX layout")
         lay = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
         lay[!, :label] = _match_labels(lay[!, :label], clabels)
         add_locs!(obj; locs = lay)
     elseif channel_locs !== :none
-        _info("No channel locations available; OBJ.locs left empty.")
+        _info("No channel locations available; OBJ.locs left empty")
     end
 
     _info(

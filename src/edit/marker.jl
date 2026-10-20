@@ -373,7 +373,7 @@ function channel2marker(
     ev_id = ["$id_prefix$i" for i in eachindex(ev_start)]
     ev_ch_v = zeros(Int64, length(ev_start))
 
-    _info("$(length(ev_start)) events found and added as markers.")
+    _info("$(length(ev_start)) events found and added as markers")
 
     obj_tmp = deepcopy(obj)
     append!(

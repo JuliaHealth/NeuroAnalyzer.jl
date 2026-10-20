@@ -547,7 +547,7 @@ function plot_topo(
         end
 
     else
-        !isnothing(tpos) && _info("tpos is ignored when data is provided.")
+        !isnothing(tpos) && _info("tpos is ignored when data is provided")
         if ndims(data) == 2
             data = amethod === :mean ? mean(data; dims = 2)[:] : median(data; dims = 2)[:]
         end

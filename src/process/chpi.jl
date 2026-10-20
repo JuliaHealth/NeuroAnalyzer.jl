@@ -321,7 +321,7 @@ function chpi_head_positions(
         "$n_skipped of $(length(starts)) window(s) skipped (fewer than 3 coils with gof ≥ $gof_limit or coil distance > $(dist_limit * 1000) mm).",
     )
     isempty(rows) && throw(ArgumentError("No head position could be estimated."))
-    _info("Head positions estimated for $(length(rows)) window(s).")
+    _info("Head positions estimated for $(length(rows)) window(s)")
 
     return permutedims(reduce(hcat, rows))
 end

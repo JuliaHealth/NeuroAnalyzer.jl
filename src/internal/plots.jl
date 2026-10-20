@@ -451,7 +451,7 @@ function _fit_side_legend!(fig::GLMakie.Figure)::Nothing
         leg.layoutobservables.autosize[][2] <= h_av && return nothing
     end
     delete!(leg)
-    _info("Too many channels to fit the legend: legend is not drawn.")
+    _info("Too many channels to fit the legend: legend is not drawn")
     return nothing
 end
 

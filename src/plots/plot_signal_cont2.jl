@@ -42,8 +42,8 @@ function plot_cont(
     res >= 1 || throw(ArgumentError("res must be ≥ 1."))
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
     n_channels >= 1 || throw(ArgumentError("n_channels must be ≥ 1."))
-    n_channels <= nchannels(obj1) ||
-        throw(ArgumentError("n_channels must be ≤ $(nchannels(obj1))."))
+    # at most all channels are shown at once
+    n_channels = min(n_channels, nchannels(obj1))
     size(obj1) == size(obj2) ||
         throw(ArgumentError("Size of OBJ1 and OBJ2 must equal."))
     sr(obj1) == sr(obj2) ||
@@ -113,9 +113,14 @@ function plot_cont(
         # remove per-channel DC offset
         group1 = group1 .- mean(group1; dims = 2)
         group2 = group2 .- mean(group2; dims = 2)
-        # map to [-0.5, 0.5]
-        s1[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group1, 0.5; bych = true)
-        s2[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group2, 0.5; bych = true)
+        # map to [-0.5, 0.5] with the same scale for both signals of a channel, so that their amplitudes can be compared
+        lo = min.(minimum(group1; dims = 2), minimum(group2; dims = 2))
+        hi = max.(maximum(group1; dims = 2), maximum(group2; dims = 2))
+        rng = hi .- lo
+        rng[rng .== 0] .= 1
+        mid = (lo .+ hi) ./ 2
+        s1[ctypes .== ctypes_uni[idx], :] = (group1 .- mid) ./ rng
+        s2[ctypes .== ctypes_uni[idx], :] = (group2 .- mid) ./ rng
     end
     s1 .+= collect(1:ch_n)
     s2 .+= collect(1:ch_n)

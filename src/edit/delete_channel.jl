@@ -147,7 +147,7 @@ function _delete_channel(
         new_idx = cumsum(keep_mask)
         mrk_ch = obj_tmp.markers[!, :channel]
         on_deleted = [c != 0 && !keep_mask[c] for c in mrk_ch]
-        any(on_deleted) && _info("$(count(on_deleted)) marker(s) of deleted channels removed.")
+        any(on_deleted) && _info("$(count(on_deleted)) marker(s) of deleted channels removed")
         obj_tmp.markers = obj_tmp.markers[.!on_deleted, :]
         obj_tmp.markers[!, :channel] = [c == 0 ? 0 : new_idx[c] for c in obj_tmp.markers[!, :channel]]
     end

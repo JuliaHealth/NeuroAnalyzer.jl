@@ -900,7 +900,7 @@ function maxwell_filter(
     n_bad = count(bad)
     if n_bad > 0
         r[:bad_channel][meg] .= false
-        _info("$n_bad bad MEG channel(s) reconstructed and marked as good.")
+        _info("$n_bad bad MEG channel(s) reconstructed and marked as good")
     end
 
     # pre-SSS projectors are no longer valid
