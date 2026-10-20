@@ -126,16 +126,10 @@ function plot_phase(
         xlabel             = xl,
         ylabel             = yl,
         title              = tt,
-        xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
+        _frq_axis_kwargs(:lin)...,
         xautolimitmargin   = (0, 0),
         yautolimitmargin   = (0.05, 0.05),
-        xzoomlock          = true,
-        yzoomlock          = true,
-        xpanlock           = true,
-        ypanlock           = true,
-        xrectzoom          = false,
-        yrectzoom          = false,
+        _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, _xlims(sf))
     _style_axis!(ax)
@@ -178,7 +172,7 @@ function _plot_phase_coupling(
             xlabel = "Time [s]",
             ylabel = ylabel,
             title = title,
-            xticks = LinearTicks(10),
+            _TIME_AXIS_KWARGS...,
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0.05, 0.05),
             _AXIS_LOCK_KWARGS...,
@@ -427,7 +421,7 @@ function plot_itpc_frq(
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
-        xticks = LinearTicks(10),
+        _TIME_AXIS_KWARGS...,
         xautolimitmargin = (0, 0),
         _AXIS_LOCK_KWARGS...,
     )

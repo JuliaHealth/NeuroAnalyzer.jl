@@ -219,6 +219,32 @@ const _AXIS_LOCK_KWARGS = (
     yrectzoom = false,
 )
 
+"""Keyword arguments applied to every time x-axis."""
+const _TIME_AXIS_KWARGS = (
+    xticks             = LinearTicks(10),
+    xminorticksvisible = true,
+    xminorticks        = IntervalsBetween(10),
+)
+
+# logarithmic frequency axis: major ticks at 1-2-5 steps, minor ticks at 1-9 × 10^k
+const _LOG_FRQ_TICKS = [m * 10.0^k for k in -2:3 for m in (1, 2, 5)]
+const _LOG_FRQ_MINORTICKS = [m * 10.0^k for k in -2:3 for m in 1:9]
+
+"""Keyword arguments applied to every frequency axis (`axis`: `:x` or `:y`; `frq`: `:lin` or `:log`)."""
+function _frq_axis_kwargs(frq::Symbol; axis::Symbol = :x)::NamedTuple
+    if frq === :lin
+        ticks = LinearTicks(15)
+        minorticks = IntervalsBetween(10)
+        scale = identity
+    else
+        ticks = (_LOG_FRQ_TICKS, [isinteger(v) ? string(Int(v)) : string(v) for v in _LOG_FRQ_TICKS])
+        minorticks = _LOG_FRQ_MINORTICKS
+        scale = log10
+    end
+    names = Symbol.(string(axis) .* ["ticks", "minorticksvisible", "minorticks", "scale"])
+    return NamedTuple{Tuple(names)}((ticks, true, minorticks, scale))
+end
+
 """Apply standard font sizes to an Axis."""
 function _style_axis!(ax)
     ax.titlesize      = 18

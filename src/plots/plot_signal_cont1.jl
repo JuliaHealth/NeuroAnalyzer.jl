@@ -185,9 +185,7 @@ function plot_cont(
         xlabel = "",
         ylabel = yl,
         title = tt,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
+        _TIME_AXIS_KWARGS...,
         yticks = (1:ch_n, clabels),
         # TO DO: yticklabelcolor = ytc
         xautolimitmargin = (0, 0),

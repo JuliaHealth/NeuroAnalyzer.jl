@@ -132,9 +132,7 @@ function _filter_axis(fig, pos, title, ylabel, flim)
         xlabel = "Frequency [Hz]",
         ylabel = ylabel,
         title = title,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
+        _frq_axis_kwargs(:lin)...,
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, flim)

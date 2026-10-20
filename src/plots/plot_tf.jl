@@ -73,13 +73,7 @@ function plot_eros(
     cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
 
     # set frequency limits
-    if frq === :lin
-        yt = flim[2] > 100 ? (flim[1]:10:flim[2]) : (flim[1]:5:flim[2])
-    else
-        flim = _log_flim(sf, flim, frq)
-        # log axis: 10 ticks between the frequency limits
-        yt = round.(logspace(flim[1], flim[2], 10); digits = 1)
-    end
+    flim = _log_flim(sf, flim, frq)
 
     # apply Gaussian filter if requested
     if smooth
@@ -111,17 +105,14 @@ function plot_eros(
     # log frequency axis: only positive frequencies (heatmap cell edges must be > 0)
     fr = frq === :log ? findall(>(0), sf) : collect(eachindex(sf))
 
-    function _draw_axis(fig, pos, xl, yl, tt, nticks)
+    function _draw_axis(fig, pos, xl, yl, tt)
         ax = GLMakie.Axis(
             fig[pos...];
             xlabel             = xl,
             ylabel             = yl,
             title              = tt,
-            xticks             = LinearTicks(nticks),
-            xminorticksvisible = true,
-            xminorticks        = IntervalsBetween(10),
-            yticks             = yt,
-            yscale             = frq === :lin ? identity : log10,
+            _TIME_AXIS_KWARGS...,
+            _frq_axis_kwargs(frq; axis = :y)...,
             _AXIS_LOCK_KWARGS...,
         )
         GLMakie.ylims!(ax, flim)
@@ -148,7 +139,7 @@ function plot_eros(
         fig = GLMakie.Figure(; size = (900, 450))
 
         # create axis with customizable properties
-        ax = _draw_axis(fig, (1, 1), xl, yl, tt, 15)
+        ax = _draw_axis(fig, (1, 1), xl, yl, tt)
         hm = GLMakie.heatmap!(ax, st, sf[fr], sp[fr, :, 1]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
         _draw_markers!(fig, (1, 1), tm_indices)
@@ -170,14 +161,14 @@ function plot_eros(
         fig = GLMakie.Figure(; size = (1200, 800))
 
         # create axis with customizable properties
-        ax1 = _draw_axis(fig, (1, 1), xl1, yl1, tt1, 10)
+        ax1 = _draw_axis(fig, (1, 1), xl1, yl1, tt1)
         hm1 = GLMakie.heatmap!(ax1, st, sf[fr], sp[fr, :, 1]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[1, 2], hm1; label = cb_title, labelsize = 16)
         GLMakie.vlines!(ax1, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
         _draw_markers!(fig, (1, 1), tm_indices)
 
         # create axis with customizable properties
-        ax2 = _draw_axis(fig, (2, 1), xl2, yl2, tt2, 10)
+        ax2 = _draw_axis(fig, (2, 1), xl2, yl2, tt2)
         hm2 = GLMakie.heatmap!(ax2, st, sf[fr], sp[fr, :, 2]'; colormap = pal)
         cb && GLMakie.Colorbar(fig[2, 2], hm2; label = cb_title, labelsize = 16)
         GLMakie.vlines!(ax2, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
@@ -248,9 +239,7 @@ function plot_erop(
             xlabel             = xl,
             ylabel             = yl,
             title              = tt,
-            xminorticksvisible = true,
-            xminorticks        = IntervalsBetween(10),
-            xscale             = frq === :lin ? identity : log10,
+            _frq_axis_kwargs(frq)...,
             _AXIS_LOCK_KWARGS...,
         )
         GLMakie.xlims!(ax, flim)
@@ -358,9 +347,7 @@ function plot_imf(
                     xlabel             = "Time [s]",
                     ylabel             = "",
                     title              = label,
-                    xticks             = LinearTicks(10),
-                    xminorticksvisible = true,
-                    xminorticks        = IntervalsBetween(10),
+                    _TIME_AXIS_KWARGS...,
                     yticks             = yticks,
                     _AXIS_LOCK_KWARGS...,
                 )
@@ -380,9 +367,7 @@ function plot_imf(
     xlabel             = "Time [s]",
     ylabel             = "",
     title              = "Reconstructed signal",
-    xticks             = LinearTicks(10),
-    xminorticksvisible = true,
-    xminorticks        = IntervalsBetween(10),
+    _TIME_AXIS_KWARGS...,
     yticks             = yticks,
     _AXIS_LOCK_KWARGS...
 )
@@ -437,9 +422,7 @@ function plot_fi(
         xlabel             = xl,
         ylabel             = yl,
         title              = tt,
-        xticks             = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks        = IntervalsBetween(10),
+        _TIME_AXIS_KWARGS...,
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, _xlims(st))
@@ -501,9 +484,7 @@ function plot_dwc(
                     xlabel             = "Time [s]",
                     ylabel             = "",
                     title              = "Coefficient #$(idx - 1)",
-                    xticks             = LinearTicks(10),
-                    xminorticksvisible = true,
-                    xminorticks        = IntervalsBetween(10),
+                    _TIME_AXIS_KWARGS...,
                     yticks             = yticks,
                     _AXIS_LOCK_KWARGS...,
                 )
@@ -523,9 +504,7 @@ function plot_dwc(
     xlabel             = "Time [s]",
     ylabel             = "",
     title              = "Original signal",
-    xticks             = LinearTicks(10),
-    xminorticksvisible = true,
-    xminorticks        = IntervalsBetween(10),
+    _TIME_AXIS_KWARGS...,
     yticks             = yticks,
     _AXIS_LOCK_KWARGS...
 )
@@ -582,9 +561,7 @@ function plot_env(
         xlabel = xlabel,
         ylabel = ylabel,
         title = title,
-        xticks = LinearTicks(10),
-        xminorticksvisible = true,
-        xminorticks = IntervalsBetween(10),
+        _TIME_AXIS_KWARGS...,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0.05, 0.05),
         _AXIS_LOCK_KWARGS...,
