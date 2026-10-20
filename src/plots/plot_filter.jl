@@ -1,4 +1,5 @@
 export plot_filter
+export plot_polezero
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -11,14 +12,17 @@ function _filter_freqz(flt, f::AbstractVector, fs::Real)
            freqresp(flt, ω)
 end
 
-# group delay in samples: τ = -dφ/dω = -Im(H'/H); no phase unwrapping needed, NaN where |H| ≈ 0
+# group delay in samples: τ = -dφ/dω from the phase difference of neighboring bins (no unwrapping needed while
+# the phase turns by < π between them), NaN where |H| ≈ 0
 function _group_delay(H::AbstractVector, f::AbstractVector, fs::Real)
     ω = 2π .* f ./ fs
     hmax = maximum(abs.(H))
     τ = fill(NaN, length(H))
     for i = 2:(length(H) - 1)
         abs(H[i]) > 1e-6 * hmax || continue
-        τ[i] = -imag((H[i + 1] - H[i - 1]) / ((ω[i + 1] - ω[i - 1]) * H[i]))
+        # phase difference of the neighbors (exact for linear phase; differentiating H itself is
+        # biased by sin(τΔω) / (τΔω) on coarse frequency grids)
+        τ[i] = -angle(H[i + 1] / H[i - 1]) / (ω[i + 1] - ω[i - 1])
     end
     return τ
 end
@@ -491,4 +495,72 @@ function plot_filter(
         mono = mono,
         gui = gui,
     )
+end
+
+"""
+    plot_polezero(pol, zer; <keyword arguments>)
+
+Plot a polar pole-zero map for digital filter analysis showing poles and zeros in the complex plane.
+
+# Arguments
+
+- `fig::Vector{Complex{Float64}}`: vector of complex pole locations in the z-plane
+- `z::Vector{Complex{Float64}}`: vector of complex zero locations in the z-plane
+- `m::Tuple{Real, Real}=(0, 0)`: major value to plot
+- `title::String=""`: plot title
+- `ticks::Bool=false`: if `true`, draw x- and y-axis ticks
+- `ms::Symbol=:circle`: marker shape for drawing complex numbers (`:circle` or `:xcross`)
+- `mono::Bool=false`: if `true`, use a monochrome palette
+
+# Returns
+
+- `GLMakie.Figure`: the plotted figure
+"""
+function plot_polezero(
+    pol::Vector{Complex{Float64}},
+    zer::Vector{Complex{Float64}};
+    title::String = "default",
+    mono::Bool = false,
+)::GLMakie.Figure
+    # prepare plot
+    GLMakie.activate!(; title = "plot_polezero()")
+    fig = GLMakie.Figure(; size = (600, 600))
+
+    # create axis with customizable properties
+    ax = GLMakie.Axis(
+        fig[1, 1];
+        xlabel    = "Real",
+        ylabel    = "Imag",
+        aspect    = 1,
+        title     = title == "default" ? "Pole-zero map" : title,
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock  = true,
+        ypanlock  = true,
+        xrectzoom = false,
+        yrectzoom = false,
+    )
+
+    # plot poles
+    GLMakie.scatter!(
+        ax, real.(pol), imag.(pol);
+        markersize = 15,
+        color      = mono ? :black : :blue,
+        marker     = :xcross,
+    )
+
+    # plot zeros
+    GLMakie.scatter!(
+        ax, real.(zer), imag.(zer);
+        markersize  = 15,
+        strokecolor = mono ? :black : :blue,
+        strokewidth = 2,
+        color       = :transparent,
+        marker      = :circle,
+    )
+
+    # plot unit circle
+    GLMakie.arc!(Point2f(0), 1, -pi, pi; linestyle = :dot, linewidth = 0.5, color = :black)
+
+    return fig
 end

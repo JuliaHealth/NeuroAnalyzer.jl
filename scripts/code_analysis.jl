@@ -8,7 +8,8 @@
 # Aqua and JET must be installed in the default (global) environment.
 
 using Pkg
-Pkg.activate(pwd())
+# NeuroAnalyzer.jl is the parent folder of this script
+Pkg.activate(dirname(@__DIR__))
 Pkg.instantiate()
 # test the release with the newest compatible dependencies
 Pkg.update()
@@ -38,7 +39,7 @@ jet_report = JET.report_package(
     target_modules = (NeuroAnalyzer,),
     toplevel_logger = nothing,
 )
-jet_file = joinpath(pwd(), "jet_report.txt")
+jet_file = joinpath(dirname(@__DIR__), "jet_report.txt")
 open(io -> show(io, MIME"text/plain"(), jet_report), jet_file, "w")
 @info "JET: $(length(JET.get_reports(jet_report))) possible error(s), see $jet_file"
 

@@ -243,7 +243,7 @@ function plot_ep(
             end
 
         else
-            !mono && (cmap = GLMakie.resample_cmap(pal, size(s[], 1)))
+            !mono && (cmap = GLMakie.resample_cmap(pal, max(2, size(s[], 1))))
             for idx in axes(s[], 1)
                 GLMakie.lines!(
                     ax1, @lift(_pts($s[idx, :]));

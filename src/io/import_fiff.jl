@@ -719,7 +719,7 @@ function import_fiff(
     sfreq = mi[:sfreq]
     sampling_rate = round(Int64, sfreq)
     isapprox(sfreq, sampling_rate; atol = 1e-6) || _warn(
-        "Sampling rate $sfreq Hz is not an integer; stored as $sampling_rate Hz - time axis and marker positions will be slightly off.",
+        "Sampling rate $sfreq Hz is not an integer; stored as $sampling_rate Hz - the time axis is slightly off (markers are kept at their samples).",
     )
 
     # ------------------------------------------------------------------ #
@@ -837,9 +837,14 @@ function import_fiff(
         lst = _fiff_vec(ev[:list])
         length(lst) % 3 == 0 || (_warn("Malformed FIFF event list; ignored."); continue)
         evts = permutedims(reshape(Int64.(lst), 3, :))
-        # sample numbers are normally absolute (include first_samp)
-        offset = all(>=(first_samp), evts[:, 1]) ? first_samp : 0
+        # sample numbers are absolute (include first_samp); the list of a cropped file may also hold
+        # events from before the crop, so absolute numbering is assumed if any event lies after first_samp
+        offset = any(>=(first_samp), evts[:, 1]) ? first_samp : 0
         for row in axes(evts, 1)
+            # (sample, value before, value after): a change to 0 is the end of an event, not an event;
+            # events outside the recording are dropped
+            evts[row, 3] == 0 && continue
+            0 <= evts[row, 1] - offset < size(data, 2) || continue
             push!(m_id, "mrk")
             push!(m_start, (evts[row, 1] - offset) / sfreq)
             push!(m_len, 0.0)
@@ -868,9 +873,12 @@ function import_fiff(
         :channel => m_ch,
     )
     sort!(markers, :start)
+    # non-integer sampling rate (stored rounded): place the markers on the stored time axis, so that a
+    # marker at sample s of the file stays at sample s of the data
+    sfreq == sampling_rate || (markers[!, :start] .*= sfreq / sampling_rate; markers[!, :length] .*= sfreq / sampling_rate)
 
     # ------------------------------------------------------------------ #
-    # SSP projectors                                                     #
+    # SSP projectors                                                    #
     # ------------------------------------------------------------------ #
     ssp_labels = String[]
     ssp_channels = zeros(Bool, ch_n)

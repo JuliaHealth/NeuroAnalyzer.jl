@@ -53,7 +53,7 @@ end
 """
 Return true for each channel with excessive peak-to-peak variation.
 
-Sliding-window means are computed, their differences are rounded to the nearest 100, and a channel is flagged if any rounded difference falls outside `[mean − p_z×std, mean + p_z×std]` where `p_z = Φ⁻¹(p)`.
+Sliding-window means are computed, their differences are rounded to the nearest 100, and a channel is flagged if the magnitude of any rounded difference exceeds `p_z × std(signal)` where `p_z = Φ⁻¹(p)` (independent of the DC offset).
 """
 function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector{Bool}
     w < size(s, 2) || throw(ArgumentError("w must be < $(size(s, 2))."))
@@ -68,9 +68,11 @@ function detect_p2p(s::AbstractMatrix; w::Int64 = 10, p::Float64 = 0.95)::Vector
         sm = [mean(@view v[idx:(idx + w)]) for idx = 1:w:(length(v) - w)]
         p2p = round.(diff(sm); digits = -2)
 
-        s_m = mean(v)
+        # differences of window means are centered on 0 whatever the DC offset of the signal:
+        # compare their magnitude with the signal SD (comparing them with mean(v) ± p_z × SD would
+        # flag every channel with a DC offset)
         s_s = std(v)
-        bad_chs[ch_idx] = any(p2p .> s_m + p_z * s_s) || any(p2p .< s_m - p_z * s_s)
+        bad_chs[ch_idx] = any(abs.(p2p) .> p_z * s_s)
     end
 
     return bad_chs

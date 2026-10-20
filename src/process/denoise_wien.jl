@@ -6,7 +6,7 @@ export denoise_wien!
 
 Perform Wiener deconvolution denoising on a 3-D signal array.
 
-For each epoch, the cross-channel mean signal is used as the reference, and a noise estimate is generated as white noise scaled to the mean signal power. The Wiener filter is then applied independently to each channel.
+For each epoch, the cross-channel mean signal is used as the reference, and the noise is modeled as white noise with the power of the mean signal (its expected, flat power spectrum is used, so the result is deterministic). The Wiener filter is then applied independently to each channel.
 
 # Arguments
 
@@ -16,9 +16,6 @@ For each epoch, the cross-channel mean signal is used as the reference, and a no
 
 - `Array{Float64, 3}`: denoised array of the same shape as `s`
 
-# Notes
-
-- The noise estimate is random (`randn`); results are not reproducible unless a random seed is set by the caller
 """
 function _denoise_wien(s::AbstractArray)::AbstractArray
     # validate that the input is a proper 3-D array (channels, samples, epochs)
@@ -37,8 +34,11 @@ function _denoise_wien(s::AbstractArray)::AbstractArray
     Threads.@threads :static for ep_idx = 1:ep_n
         # cross-channel mean for this epoch: shape (samples,)
         s_m = vec(mean(@view(s[:, :, ep_idx]), dims = 1))
-        # noise estimate: zero-mean white noise with the RMS amplitude (power) of the mean signal
-        noise = randn(length(s_m)) .* sqrt(mean(abs2, s_m))
+        # noise estimate: white noise with the RMS amplitude (power) of the mean signal; only its power
+        # spectrum is used, so the expected (flat) spectrum n σ² is used instead of a random
+        # realization (an impulse √n σ has exactly this spectrum) and the result is deterministic
+        noise = zeros(length(s_m))
+        noise[1] = sqrt(length(s_m) * mean(abs2, s_m))
         for ch_idx = 1:ch_n
             @inbounds s_new[ch_idx, :, ep_idx] =
                 wiener(@view(s[ch_idx, :, ep_idx]), s_m, noise)

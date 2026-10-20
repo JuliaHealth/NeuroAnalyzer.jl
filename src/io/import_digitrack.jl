@@ -99,7 +99,8 @@ function import_digitrack(
     ch_n = length(clabels)
     clabels = _clean_labels(string.(clabels))
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
+    # Digitrack exports all channels in μV: e.g. an ECG channel stays in μV (its default unit would be mV)
+    units, _ = _resolve_units(fill("μV", ch_n), ch_type)
 
     markers = DataFrame(
         :id => String[],

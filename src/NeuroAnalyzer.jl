@@ -548,7 +548,10 @@ include("plots/plot_topo.jl")
 include("plots/plot_connectivity_circle.jl")
 include("plots/plot_coherence.jl")
 include("plots/plot_efield.jl")
-include("plots/plot_varia.jl")
+include("plots/plot_stats.jl")
+include("plots/plot_matrix.jl")
+include("plots/plot_phase.jl")
+include("plots/plot_tf.jl")
 include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/plot_erp.jl")
@@ -609,7 +612,10 @@ function __init__()
     @info "  Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
 
     # set package options
-    FFTW.set_num_threads(max(1, Sys.CPU_THREADS - 1))
+    # FFTW: one thread - most transforms are small (Welch / STFT segments, wavelets) and many run
+    # inside Julia-threaded loops; multi-threaded FFTW makes them ~100× slower (thread overhead and
+    # oversubscription), and large single transforms gain nothing
+    FFTW.set_num_threads(1)
     BLAS.set_num_threads(max(1, Sys.CPU_THREADS - 1))
 
     # setup resources
@@ -623,7 +629,7 @@ function __init__()
         @info "Loading plugins"
         try
             isdir(plugins_path) || mkpath(plugins_path)
-            isempty(readdir(plugins_path)) || na_plugins_reload()
+            isempty(readdir(plugins_path)) || plugins_reload()
         catch err
             @warn "Plugins could not be loaded: $err"
         end

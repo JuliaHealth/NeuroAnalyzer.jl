@@ -171,8 +171,10 @@ function gh(
     G = zeros(ch_n, ch_n)
     H = zeros(ch_n, ch_n)
 
-    # normalize electrode coordinates to the unit sphere
-    x, y, z = _locs_norm(locs.loc_x, locs.loc_y, locs.loc_z)
+    # project the electrodes onto the unit sphere (cos(angle) = 1 - |ri - rj|² / 2 holds for unit vectors only)
+    r = sqrt.(locs.loc_x .^ 2 .+ locs.loc_y .^ 2 .+ locs.loc_z .^ 2)
+    any(iszero, r) && throw(ArgumentError("Electrode location at the origin; CSD requires 3-D locations."))
+    x, y, z = locs.loc_x ./ r, locs.loc_y ./ r, locs.loc_z ./ r
 
     # --- cosine distances between all electrode pairs ---
     cosdist = zeros(ch_n, ch_n)

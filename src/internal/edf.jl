@@ -30,7 +30,10 @@ Resample `x` to `m` samples by taking the nearest original sample (for trigger /
 function _resample_nearest(x::AbstractVector{<:Real}, m::Int64)::Vector{Float64}
     n = length(x)
     n == m && return Float64.(x)
-    return Float64.(x[clamp.(round.(Int64, (0:(m - 1)) .* (n / m)) .+ 1, 1, n)])
+    # sample-and-hold (floor, in integer arithmetic): new sample j takes the last original sample at or
+    # before its time, so a trigger onset stays at its original time (rounding would move it up to
+    # half an original sample earlier)
+    return Float64.(x[clamp.(div.((0:(m - 1)) .* n, m) .+ 1, 1, n)])
 end
 
 """

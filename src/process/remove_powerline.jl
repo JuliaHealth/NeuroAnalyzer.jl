@@ -3,6 +3,28 @@ export remove_powerline!
 export detect_powerline
 export detect_powerline!
 
+# zero-phase IIR notch filter of a signal vector (as filter(obj; fprototype = :iirnotch), two-pass)
+_notch(x::AbstractVector, fs::Int64, frq::Real, bw::Real)::Vector{Float64} =
+    _filter_apply(x; flt = filter_create(; fprototype = :iirnotch, cutoff = frq, fs = fs, bw = bw))
+
+# for every notch bandwidth in `bws`: variance of the PSD (dB) within [f1, f2] of the notch-filtered
+# signal (the candidates are independent and evaluated in parallel)
+function _notch_band_var(
+    x::AbstractVector,
+    fs::Int64,
+    frq::Real,
+    bws::AbstractVector{<:Real},
+    f1::Real,
+    f2::Real,
+)::Vector{Float64}
+    v = zeros(length(bws))
+    Threads.@threads :static for idx in eachindex(bws)
+        p, f = _psd(_notch(x, fs, frq, bws[idx]); fs = fs, db = true)
+        v[idx] = var(@view(p[vsearch(f1, f):vsearch(f2, f)]))
+    end
+    return v
+end
+
 """
     remove_powerline(obj; <keyword arguments>)
 
@@ -82,9 +104,10 @@ function remove_powerline(
                 ch_label = clabels[ch_idx]
 
                 # --- detect and validate the fundamental power line peak ---
-                psd_data = psd(obj_tmp; ch = ch_label, db = true)
+                fs = sr(obj_tmp)
+                psd_data = _psd(@view(obj_tmp.data[ch_idx, :, 1]); fs = fs, db = true)
                 f = psd_data.f
-                p = psd_data.p[:]
+                p = psd_data.p
                 f_band = vsearch(pl_frq - d, f):vsearch(pl_frq + d, f)
                 p_band = p[f_band]
                 f_band_vals = f[f_band]
@@ -104,35 +127,15 @@ function remove_powerline(
                     )
 
                 # --- optimize notch bandwidth for the fundamental ---
-                v = [
-                    begin
-                        # each candidate is applied to the current signal (not cumulatively)
-                        obj_bw = NeuroAnalyzer.filter(
-                            obj_tmp;
-                            ch = ch_label,
-                            fprototype = :iirnotch,
-                            cutoff = pl_frq,
-                            bw = bw,
-                        )
-                        p2, f2 = psd(obj_bw; ch = ch_label, db = true)
-                        seg = p2[vsearch(pl_frq - d, f2):vsearch(pl_frq + d, f2)]
-                        var(seg)
-                    end for bw in bw_values
-                ]
+                # each candidate is applied to the current signal (not cumulatively)
+                x = obj_tmp.data[ch_idx, :, 1]
+                v = _notch_band_var(x, fs, pl_frq, bw_values, pl_frq - d, pl_frq + d)
                 best_bw = bw_values[vsearch(minimum(v), v)]
                 push!(pl_best_bw, best_bw)
-
-                NeuroAnalyzer.filter!(
-                    obj_tmp;
-                    ch = ch_label,
-                    fprototype = :iirnotch,
-                    cutoff = pl_frq,
-                    bw = pl_best_bw[loop_idx],
-                )
+                obj_tmp.data[ch_idx, :, 1] = _notch(x, fs, pl_frq, best_bw)
 
                 # --- detect harmonics above the fundamental ---
-                p, f = psd(obj_tmp; ch = ch_label, db = true)
-                p = p[:]
+                p, f = _psd(@view(obj_tmp.data[ch_idx, :, 1]); fs = fs, db = true)
                 f_above = vsearch(2 * pl_frq - 2 * d, f)
                 p_above = p[f_above:end]
                 f_above_vals = f[f_above:end]
@@ -159,31 +162,21 @@ function remove_powerline(
                 if n > 0
                     bw_harm = collect(q:q:5.0)
                     best_bw_harm = zeros(n)
+                    x = obj_tmp.data[ch_idx, :, 1]
                     for peak_idx in eachindex(pks_frq)
-                        vh = [
-                            begin
-                                obj_bw = NeuroAnalyzer.filter(
-                                    obj_tmp; ch = ch_label, fprototype = :iirnotch,
-                                    cutoff = pks_frq[peak_idx], bw = bw,
-                                )
-                                p2, f2 = psd(obj_bw; ch = ch_label, db = true)
-                                seg = p2[
-                                    vsearch(
-                                    pks_frq[peak_idx] - d / 2,
-                                    f2,
-                                ):vsearch(pks_frq[peak_idx] + d / 2, f2),
-                                ]
-                                var(seg)
-                            end for bw in bw_harm
-                        ]
-                        best_bw_harm[peak_idx] = bw_harm[vsearch(minimum(vh), vh)]
+                        pf = pks_frq[peak_idx]
+                        # the notch band must lie within (0, Nyquist): peaks close to the Nyquist
+                        # frequency allow only narrow notches (none: the peak is skipped, bandwidth 0)
+                        bw_ok = Base.filter(b -> pf - b / 2 > 0 && pf + b / 2 < fs / 2, bw_harm)
+                        isempty(bw_ok) && continue
+                        vh = _notch_band_var(x, fs, pf, bw_ok, pf - d / 2, min(pf + d / 2, fs / 2))
+                        best_bw_harm[peak_idx] = bw_ok[vsearch(minimum(vh), vh)]
                     end
                     for peak_idx in eachindex(pks_frq)
-                        NeuroAnalyzer.filter!(
-                            obj_tmp; ch = ch_label, fprototype = :iirnotch,
-                            cutoff = pks_frq[peak_idx], bw = best_bw_harm[peak_idx],
-                        )
+                        best_bw_harm[peak_idx] > 0 &&
+                            (x = _notch(x, fs, pks_frq[peak_idx], best_bw_harm[peak_idx]))
                     end
+                    obj_tmp.data[ch_idx, :, 1] = x
                     push!(pks_best_bw, best_bw_harm)
                 end
 
@@ -285,7 +278,8 @@ function _detect_powerline(s::AbstractVector; fs::Int64)::Float64
     fs >= 2 || throw(ArgumentError("fs must be ≥ 2."))
 
     n = length(s)
-    t = range(0, n / fs; length = n)
+    # sample times (step 1 / fs)
+    t = (0:(n - 1)) ./ fs
 
     noise_power = zeros(fs ÷ 2)
     for freq = 1:(fs ÷ 2)

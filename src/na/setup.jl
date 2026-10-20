@@ -1,13 +1,13 @@
-export na_info
-export na_set_progress_bar
-export na_set_prefs
-export na_set_verbose
-export na_set_colors
-export na_set_exclude_bads
-export na_version
+export info
+export set_progress_bar
+export set_prefs
+export set_verbose
+export set_colors
+export set_exclude_bads
+export version
 
 """Helper: print NA settings"""
-function _print_na_settings()::Nothing
+function _print_settings()::Nothing
     println("     NeuroAnalyzer: $(NeuroAnalyzer.VER)")
     println("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
     println("     Julia version: $VERSION")
@@ -57,7 +57,7 @@ function _print_package_versions()::Nothing
 end
 
 """
-    na_info()
+    info()
 
 Show NeuroAnalyzer and imported packages versions.
 
@@ -69,8 +69,8 @@ Nothing
 
 - `Nothing`
 """
-function na_info()::Nothing
-    _print_na_settings()
+function info()::Nothing
+    _print_settings()
     _print_thread_warnings()
     println()
     _print_package_versions()
@@ -78,7 +78,7 @@ function na_info()::Nothing
 end
 
 """
-    na_set_progress_bar(value)
+    set_progress_bar(value)
 
 Change `progress_bar` preference.
 
@@ -90,7 +90,7 @@ Change `progress_bar` preference.
 
 - `Nothing`
 """
-function na_set_progress_bar(value::Bool)::Nothing
+function set_progress_bar(value::Bool)::Nothing
     NeuroAnalyzer.progress_bar = value
     @set_preferences!("progress_bar" => value)
 
@@ -98,7 +98,7 @@ function na_set_progress_bar(value::Bool)::Nothing
 end
 
 """
-    na_set_verbose(value)
+    set_verbose(value)
 
 Change `verbose` preference.
 
@@ -110,7 +110,7 @@ Change `verbose` preference.
 
 - `Nothing`
 """
-function na_set_verbose(value::Bool)::Nothing
+function set_verbose(value::Bool)::Nothing
     NeuroAnalyzer.verbose = value
     @set_preferences!("verbose" => value)
 
@@ -118,7 +118,7 @@ function na_set_verbose(value::Bool)::Nothing
 end
 
 """
-    na_set_colors(value)
+    set_colors(value)
 
 Change `colors` preference.
 
@@ -130,7 +130,7 @@ Change `colors` preference.
 
 - `Nothing`
 """
-function na_set_colors(value::Bool)::Nothing
+function set_colors(value::Bool)::Nothing
     NeuroAnalyzer.colors = value
     @set_preferences!("colors" => value)
 
@@ -138,7 +138,7 @@ function na_set_colors(value::Bool)::Nothing
 end
 
 """
-    na_set_prefs(; <keyword arguments>)
+    set_prefs(; <keyword arguments>)
 
 Set and save NeuroAnalyzer preferences.
 
@@ -153,22 +153,22 @@ Set and save NeuroAnalyzer preferences.
 
 - `Nothing`
 """
-function na_set_prefs(;
+function set_prefs(;
     progress_bar::Bool,
     verbose::Bool,
     exclude_bads::Bool,
     colors::Bool,
 )::Nothing
-    na_set_progress_bar(progress_bar)
-    na_set_verbose(verbose)
-    na_set_exclude_bads(exclude_bads)
-    na_set_colors(colors)
+    set_progress_bar(progress_bar)
+    set_verbose(verbose)
+    set_exclude_bads(exclude_bads)
+    set_colors(colors)
 
     return nothing
 end
 
 """
-    na_version()
+    version()
 
 Convert NeuroAnalyzer version to string.
 
@@ -180,7 +180,7 @@ Nothing
 
 - `VER::String`
 """
-function na_version()::String
+function version()::String
     VER =
         string(Int(NeuroAnalyzer.VER.major)) *
         "." *
@@ -192,7 +192,7 @@ function na_version()::String
 end
 
 """
-    na_set_exclude_bads(value)
+    set_exclude_bads(value)
 
 Change `exclude_bads` preference.
 
@@ -204,7 +204,7 @@ Change `exclude_bads` preference.
 
 - `Nothing`
 """
-function na_set_exclude_bads(value::Bool)::Nothing
+function set_exclude_bads(value::Bool)::Nothing
     NeuroAnalyzer.exclude_bads = value
     @set_preferences!("exclude_bads" => value)
 

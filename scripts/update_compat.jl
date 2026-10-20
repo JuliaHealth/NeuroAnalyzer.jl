@@ -4,7 +4,6 @@ using Pkg
 Pkg.add("PackageCompatUI")
 using PackageCompatUI
 
-Pkg.activate(".")
+# NeuroAnalyzer.jl is the parent folder of this script
+Pkg.activate(dirname(@__DIR__))
 compat_ui()
-
-exit()

@@ -98,17 +98,24 @@ function export_locs(
     theta_sph = locs[!, :loc_theta_sph]
     phi_sph = locs[!, :loc_phi_sph]
 
+    # EEGLAB conventions (the inverse of import_locs_ced() / import_locs_locs()): X towards the nose,
+    # Y towards the left ear; polar angle 0° = nose, positive to the right; spherical azimuth from X
+    # towards Y; polar radius = (90° - elevation) / 180° (0.5 on the equator)
+    theta_eeglab = @. mod(90 - theta + 180, 360) - 180
+    radius_eeglab = @. (90 - phi_sph) / 180
+    theta_sph_eeglab = @. mod(theta_sph - 90 + 180, 360) - 180
+
     if ext == ".ced"
         # EEGLAB CED format: tab-separated, column header required.
         df = DataFrame(;
             Number = channels,
             labels = clabels,
-            theta = theta,
-            radius = radius,
-            X = x,
-            Y = y,
+            theta = theta_eeglab,
+            radius = radius_eeglab,
+            X = y,
+            Y = -x,
             Z = z,
-            sph_theta = theta_sph,
+            sph_theta = theta_sph_eeglab,
             sph_phi = phi_sph,
             sph_radius = radius_sph,
         )
@@ -118,8 +125,8 @@ function export_locs(
         # EEGLAB .locs format: tab-separated, no column header.
         df = DataFrame(;
             Number = channels,
-            theta = theta,
-            radius = radius,
+            theta = theta_eeglab,
+            radius = radius_eeglab,
             labels = clabels,
         )
         CSV.write(file_name, df; delim = "\t", header = false)

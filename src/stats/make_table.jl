@@ -32,13 +32,13 @@ function make_table(; header::Matrix{String}, data::Matrix{Any}, digits::Int64 =
     # integers are shown as they are (converted on a copy, the caller's data are kept)
     cells = Any[x isa Integer ? string(x) : x for x in data]
 
+    # PrettyTables ≥ 3: the header is shown as column labels, the first (label) column left-aligned
     pretty_table(
-        cat(header, cells; dims = 1);
-        body_hlines = [1],
-        cell_alignment = Dict((1, 1) => :l),
+        cells;
+        column_labels = vec(header),
+        alignment = vcat(:l, fill(:r, size(cells, 2) - 1)),
         # applies to numeric cells only
-        formatters = ft_printf("%1.$(digits)f"),
-        show_header = false,
+        formatters = [fmt__printf("%1.$(digits)f")],
     )
 
     return nothing

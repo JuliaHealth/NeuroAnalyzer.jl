@@ -57,6 +57,8 @@ function _build_tpt_object(
     signal = reshape(Matrix([ch_x ch_y ch_z ch_accx ch_accy ch_accz]'), 6, :, 1)
 
     obj = create_object(; data_type = "tpt")
+    # add_channel!() needs the sampling rate of the (empty) object
+    obj.header.recording[:sampling_rate] = _TPT_FS
     add_channel!(
         obj;
         data  = signal,

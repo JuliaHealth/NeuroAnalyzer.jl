@@ -5,7 +5,7 @@ export export_csv
 
 Export a `NeuroAnalyzer.NEURO` object to CSV (and optional sidecar files).
 
-The primary signal data is always written to `file_name`. When the corresponding flag is `true`, companion files are created next to it using the same base name:
+The primary signal data is always written to `file_name` (time × channels; the first column is the time in ms, the format read by `import_csv()`). When the corresponding flag is `true`, companion files are created next to it using the same base name:
 
 |       Option      |       Output file       |
 | ----------------- | ----------------------- |
@@ -78,9 +78,9 @@ function export_csv(
     n_ch, n_s, n_ep = size(obj.data)
     flat = reshape(obj.data, n_ch, n_s * n_ep)
 
-    # prepend the global time axis; transpose so rows correspond to time points.
+    # prepend the global time axis (in ms, as expected by import_csv()); transpose so rows correspond to time points
     col_names = vcat("time", labels(obj))
-    df = DataFrame(hcat(obj.time_pts, flat'), col_names)
+    df = DataFrame(hcat(obj.time_pts .* 1000, flat'), col_names)
     CSV.write(file_name, df; writeheader = names)
 
     # ------------------------------------------------------------------ #

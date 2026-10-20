@@ -40,12 +40,13 @@ function _pacor(
     s_tmp = demean ? _remove_dc(s) : s
 
     # positive and negative lags computed separately (reverse trick for negative)
-    pac = pacf(s_tmp, collect(0:l); method = method)
-    pac_neg = pacf(reverse(s_tmp), collect(0:l); method = method)
+    # lags 1:l only, lag 0 is 1 by definition: StatsBase.pacf(; method = :yulewalker) returns
+    # shifted values (lag 1 = the lag-2 autocorrelation) when lag 0 is requested
+    pac = vcat(1.0, pacf(s_tmp, collect(1:l); method = method))
+    pac_neg = vcat(1.0, pacf(reverse(s_tmp), collect(1:l); method = method))
 
     # concatenate to form the symmetric lag vector: [−l … −1, 0, +1 … +l].
     pac = vcat(reverse(pac_neg), pac[2:end])
-    pac = round.(pac; digits = 3)
 
     return reshape(pac, 1, :, 1)
 end

@@ -106,7 +106,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         )
         for col = 1:s_n
             for samp in findall(!iszero, stim[:, col])
-                push!(df, ("", time_pts[samp], 0.0, "stim", 0))
+                # value: the condition (column of the stimulus matrix)
+                push!(df, ("", time_pts[samp], 0.0, string(col), 0))
             end
         end
         # assign sequential IDs per unique value

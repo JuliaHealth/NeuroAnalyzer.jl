@@ -274,7 +274,7 @@ Colors of the traces of a multi-channel line plot (`plot_psd()`, `plot_phs()`, `
 - `black::Bool`: all traces black (single channel, or only the mean ± 95% CI is drawn)
 """
 function _trace_colors(n::Int64; mono::Bool, black::Bool)::Vector
-    return black ? fill(:black, n) : GLMakie.resample_cmap(mono ? :grays : :darktest, n)
+    return black ? fill(:black, n) : GLMakie.resample_cmap(mono ? :grays : :darktest, max(2, n))[1:n]
 end
 
 """

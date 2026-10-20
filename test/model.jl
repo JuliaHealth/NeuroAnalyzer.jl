@@ -72,4 +72,17 @@ res = NeuroAnalyzer._ftt_result([[0.1], [0.2, 0.4]], [[0.2], [0.3, 0.5]], [Float
 @test res.taps == [1, 2] && res.taps_int == [0, 1]
 @test res.tap_t[2] ≈ [200.0, 400.0] && res.tap_d_int[2] ≈ [100.0]
 
+
+@info "Test: dipole fit helpers"
+# least-squares sphere through the electrodes: the cap's center and radius
+c_fit, r_fit = NeuroAnalyzer._fit_sphere(Matrix(locs[!, [:loc_x, :loc_y, :loc_z]]))
+@test c_fit ≈ ctr atol = 1e-8
+@test r_fit ≈ Rmm
+# relative residual of the fit: ≈ 0 at the true position (noise only), larger elsewhere, soft wall outside
+D = H * S
+c_true = NeuroAnalyzer._dipole_cost(x_true, U, R, σ, H, D, 0.95)
+@test c_true < 1e-3
+@test NeuroAnalyzer._dipole_cost([-0.03, 0.02, 0.0], U, R, σ, H, D, 0.95) > 10 * c_true
+@test NeuroAnalyzer._dipole_cost([0.0, 0.0, 0.099], U, R, σ, H, D, 0.95) > 1.0
+
 true

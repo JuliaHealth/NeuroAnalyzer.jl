@@ -178,7 +178,7 @@ function plot_psd(
         # draw mean
         GLMakie.lines!(ax, f[f1:f2], s_m; color = :black, linewidth = 2)
     else
-        cmap = GLMakie.resample_cmap(pal, ch_n)
+        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
         for idx = 1:ch_n
             Makie.lines!(
                 ax,
@@ -242,7 +242,7 @@ function plot_psd_3d(
     title::String = "",
     mono::Bool = false,
     frq::Symbol = :lin,
-    variant::Symbol,
+    variant::Symbol = :w,
 )::GLMakie.Figure
     # validate
     _check_var(variant, [:w, :s], "variant")
@@ -302,7 +302,7 @@ function plot_psd_3d(
 
     # plot powers
     if variant === :w
-        cmap = GLMakie.resample_cmap(pal, ch_n)
+        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
         for idx = 1:ch_n
             GLMakie.lines!(
                 f[f1:f2],
@@ -317,7 +317,7 @@ function plot_psd_3d(
     elseif variant === :s
 
         # plot powers
-        cmap = GLMakie.resample_cmap(pal, ch_n)
+        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
         GLMakie.surface!(f[f1:f2], eachindex(clabels), p[:, f1:f2]'; colormap = pal)
     end
 

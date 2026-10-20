@@ -6,10 +6,14 @@
 # - switch the artifacts to the "-dev" archives
 # - push devel to codeberg
 #
-# usage: na_create_release_DEVEL.sh <version> (e.g. 0.25.11; "-dev" is added)
+# usage: create_release_DEVEL.sh <version> (e.g. 0.25.11; "-dev" is added)
 
 # fail on errors
 set -euo pipefail
+
+# the whole script is read before it runs: it lives in the repository, and the checkout
+# below may replace this file while bash is still reading it
+main() {
 
 # preflight: required commands
 require_cmd() {
@@ -49,13 +53,9 @@ echo "Initiating DEVEL release: $DEV_VERSION"
 export GIT_AUTHOR_NAME="$NA_GIT_NAME" GIT_COMMITTER_NAME="$NA_GIT_NAME"
 export GIT_AUTHOR_EMAIL="$NA_GIT_EMAIL" GIT_COMMITTER_EMAIL="$NA_GIT_EMAIL"
 
-# preflight: required paths
-NA_DIR="$HOME/Documents/Code/NeuroAnalyzer.jl"
-
-if [[ ! -e "$NA_DIR" ]]; then
-  echo "Error: expected path not found: $NA_DIR" >&2
-  exit 1
-fi
+# preflight: required paths (this script is in NeuroAnalyzer.jl/scripts)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NA_DIR="$(dirname "$SCRIPT_DIR")"
 
 # version from a "version = ..." line of Project.toml (empty if there is none)
 project_version() {
@@ -129,5 +129,7 @@ fi
 git add --all
 git commit -m "$DEV_VERSION initiated"
 git push codeberg devel
+}
 
+main "$@"
 exit 0

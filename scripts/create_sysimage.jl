@@ -34,5 +34,3 @@ else
 end
 
 @info "Done."
-
-exit()

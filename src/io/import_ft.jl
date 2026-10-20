@@ -104,7 +104,6 @@ function import_ft(
     hdr = dataset["hdr"]
     # original file header (optional)
     hdr_orig = "orig" in keys(hdr) && hdr["orig"] isa AbstractDict ? hdr["orig"] : Dict{String, Any}()
-    sampling_rate = round(Int64, dataset["fsample"])
     ch_n = Int64(hdr["nChans"])
 
     # ------------------------------------------------------------------ #
@@ -158,23 +157,17 @@ function import_ft(
         data[:, :, idx] = dataset["trial"][idx]
     end
 
+    # non-integer sampling rate (e.g. NIRS): exact upsampling or resampling to an integer rate, as in
+    # the other importers (marker channels by nearest sample)
+    data, sampling_rate = _integer_rate(data, Float64(dataset["fsample"]); nearest = findall(==("mrk"), ch_type))
+
     # ------------------------------------------------------------------ #
     # time axes                                                            #
     # ------------------------------------------------------------------ #
-    if "time" in keys(dataset)
-        if ep_n == 1
-            raw_t = Float64.(dataset["time"][1][:])
-            epoch_time = raw_t .- raw_t[1]
-            time_pts = epoch_time
-        else
-            # FieldTrip trial time (relative to the trigger), as stored in the file
-            epoch_time = Float64.(dataset["time"][1][:])
-            time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
-        end
-    else
-        epoch_time = _time_axis(size(data, 2), sampling_rate)
-        time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
-    end
+    # continuous data start at 0; trials keep the FieldTrip trial time (relative to the trigger)
+    t0 = ("time" in keys(dataset) && ep_n > 1) ? Float64(dataset["time"][1][1]) : 0.0
+    epoch_time = _time_axis(size(data, 2), sampling_rate; t0 = t0)
+    time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)
 
     _info(
         "FieldTrip markers are stored separately; import with " *

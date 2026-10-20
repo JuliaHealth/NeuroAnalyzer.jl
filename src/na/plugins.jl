@@ -1,11 +1,11 @@
-export na_plugins_reload
-export na_plugins_list
-export na_plugins_remove
-export na_plugins_install
-export na_plugins_update
+export plugins_reload
+export plugins_list
+export plugins_remove
+export plugins_install
+export plugins_update
 
 """
-    na_plugins_reload()
+    plugins_reload()
 
 Reload NeuroAnalyzer plugins.
 
@@ -17,7 +17,7 @@ Nothing
 
 - `Nothing`
 """
-function na_plugins_reload()::Nothing
+function plugins_reload()::Nothing
     # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
@@ -39,7 +39,7 @@ function na_plugins_reload()::Nothing
 end
 
 """
-    na_plugins_list()
+    plugins_list()
 
 List NeuroAnalyzer plugins.
 
@@ -51,7 +51,7 @@ Nothing
 
 - `Nothing`
 """
-function na_plugins_list()::Nothing
+function plugins_list()::Nothing
     # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
@@ -66,7 +66,7 @@ function na_plugins_list()::Nothing
 end
 
 """
-    na_plugins_remove(plugin)
+    plugins_remove(plugin)
 
 Remove NeuroAnalyzer plugin.
 
@@ -78,7 +78,7 @@ Remove NeuroAnalyzer plugin.
 
 - `Nothing`
 """
-function na_plugins_remove(plugin::String)::Nothing
+function plugins_remove(plugin::String)::Nothing
     # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
@@ -99,7 +99,7 @@ function na_plugins_remove(plugin::String)::Nothing
         return nothing  # abort - don't reload if removal failed
     end
 
-    na_plugins_reload()
+    plugins_reload()
     return nothing
 end
 
@@ -137,7 +137,7 @@ function _install_from_archive(plugin::String)::Nothing
 end
 
 """
-    na_plugins_install(plugin)
+    plugins_install(plugin)
 
 Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.ZIP archive (requires unzip or tar command to be available).
 
@@ -149,7 +149,7 @@ Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.Z
 
 - `Nothing`
 """
-function na_plugins_install(plugin::String)::Nothing
+function plugins_install(plugin::String)::Nothing
     # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
@@ -162,7 +162,7 @@ function na_plugins_install(plugin::String)::Nothing
         else
             _install_from_archive(plugin)
         end
-        na_plugins_reload()
+        plugins_reload()
     catch e
         @error "Installation of $plugin failed." exception=e
     end
@@ -186,7 +186,7 @@ function _update_plugin(plugin_path::String)::Nothing
 end
 
 """
-    na_plugins_update(plugin)
+    plugins_update(plugin)
 
 Update NeuroAnalyzer plugin(s).
 
@@ -198,7 +198,7 @@ Update NeuroAnalyzer plugin(s).
 
 - `Nothing`
 """
-function na_plugins_update(plugin::String = "")::Nothing
+function plugins_update(plugin::String = "")::Nothing
     # validate
     isdir(plugins_path) ||
         throw(ArgumentError("Folder $plugins_path cannot be opened."))
@@ -216,6 +216,6 @@ function na_plugins_update(plugin::String = "")::Nothing
         _update_plugin(plugin_path)
     end
 
-    na_plugins_reload()
+    plugins_reload()
     return nothing
 end

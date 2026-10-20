@@ -207,7 +207,7 @@ function plot_coherence(
     else
 
         # set color palette
-        cmap = GLMakie.resample_cmap(pal, ch_n)
+        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
 
         # plot each channel's coherence
         for idx = 1:ch_n

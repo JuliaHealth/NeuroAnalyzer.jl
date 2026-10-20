@@ -1,7 +1,7 @@
-export na_test_plugin
+export test_plugin
 
 """
-    na_test_plugin()
+    test_plugin()
 
 NeuroAnalyzer test plugin.
 
@@ -13,11 +13,11 @@ Nothing
 
 - `Nothing`
 """
-function na_test_plugin()::Nothing
+function test_plugin()::Nothing
     _info("This is a test plugin for NeuroAnalyzer")
-    _info("Running na_info()")
+    _info("Running info()")
 
-    na_info()
+    info()
 
     _info("Test completed")
 

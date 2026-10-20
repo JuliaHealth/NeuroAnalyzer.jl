@@ -1,4 +1,5 @@
 export plot_topo
+export plot_icatopo
 
 """
     plot_topo(s; <keyword arguments>)
@@ -582,4 +583,77 @@ function plot_topo(
         threshold_type   = threshold_type,
         threshold_method = threshold_method,
     )
+end
+
+"""
+    plot_icatopo(obj; <keyword arguments>)
+
+Create a topographical plot of Independent Component Analysis (ICA) components from EEG/MEG data.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object containing channel locations and data
+- `ic::Matrix{Float64}`: ICA component matrix IC(1)..IC(n) containing spatial patterns
+- `ic_mw::Matrix{Float64}`: weighting matrix for ICA components
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=axes(ic, 1)`: component indices to plot, default is all components
+- `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point(s) in seconds to plot, ignored if `data` is provided
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: Inverse Multiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: Nearest Neighbour
+    - `:ga`: Gaussian
+- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `contours::Int64=0`: number of contour levels to plot
+- `electrodes::Bools=true`: if `true`, plot electrode locations over topography
+- `ps::Symbol`: plot size:
+    - `:l`: large (800×800 px)
+    - `:m`: medium (300×300 px)
+    - `:s`: small (100×100 px)
+
+# Returns
+
+- `GLMakie.Figure`: the plotted figure
+"""
+function plot_icatopo(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = axes(ic, 1),
+    tpos::Union{Nothing, Real, AbstractVector},
+    imethod::Symbol = :sh,
+    nmethod::Symbol = :minmax,
+    contours::Int64 = 0,
+    electrodes::Bool = true,
+    ps::Symbol = :l,
+)::GLMakie.Figure
+    fig_topo = GLMakie.Figure[]
+    for idx in eachindex(ic_idx)
+        obj_tmp = ica_remove(
+            obj;
+            ch     = ch,
+            ic     = ic,
+            ic_mw  = ic_mw,
+            ic_idx = idx,
+            keep   = true,
+        )
+        fig_tmp = plot_topo(
+            obj_tmp;
+            ch         = ch,
+            tpos       = tpos,
+            title      = "IC $(ic_idx[idx])",
+            imethod    = imethod,
+            nmethod    = nmethod,
+            contours   = contours,
+            electrodes = electrodes,
+            ps         = ps,
+            cb         = true,
+        )
+        push!(fig_topo, fig_tmp)
+    end
+
+    return plot_compose(fig_topo; layout = (1, length(ic_idx)))
 end

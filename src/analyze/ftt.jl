@@ -53,15 +53,15 @@ function ftt_analyze(
     sd = Float64[]
     for idx in axes(t.tap_t, 1)
         length(t.tap_t[idx]) > 1 || continue
-        iti = round.(diff(t.tap_t[idx]); digits = 1)
+        iti = diff(t.tap_t[idx])
         append!(t_iti, iti)
         append!(sd, diff(iti))
     end
 
-    t_mean = isempty(t_iti) ? NaN : round(mean(t_iti); digits = 1)
-    t_median = isempty(t_iti) ? NaN : round(median(t_iti); digits = 1)
-    t_rmssd = isempty(sd) ? NaN : round(sqrt(mean(abs2, sd)); digits = 1)
-    t_sdsd = length(sd) < 2 ? NaN : round(std(sd); digits = 1)
+    t_mean = isempty(t_iti) ? NaN : mean(t_iti)
+    t_median = isempty(t_iti) ? NaN : median(t_iti)
+    t_rmssd = isempty(sd) ? NaN : sqrt(mean(abs2, sd))
+    t_sdsd = length(sd) < 2 ? NaN : std(sd)
 
     return (; n, t_mean, t_median, t_rmssd, t_sdsd)
 end

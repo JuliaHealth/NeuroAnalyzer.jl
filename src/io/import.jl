@@ -120,17 +120,18 @@ end
 Distinguish NWB from SNIRF by inspecting HDF5 root contents. Returns `:nwb`, `:snirf` or `nothing`.
 """
 function _hdf5_flavor(file_name::String)::Union{Nothing, Symbol}
-    try
-        return HDF5.h5open(file_name, "r") do fid
-            # NWB 2.x: root attribute; NWB 1.x: root dataset
-            (haskey(HDF5.attributes(fid), "nwb_version") || haskey(fid, "nwb_version")) &&
-                return :nwb
-            haskey(fid, "formatVersion") && return :snirf
-            return nothing
-        end
+    # read with JLD2 (HDF5.jl is not a dependency); only the root keys are inspected
+    k = try
+        JLD2.jldopen(f -> keys(f), file_name, "r")
     catch
         return nothing
     end
+    # SNIRF: required root datasets
+    ("formatVersion" in k && any(startswith("nirs"), k)) && return :snirf
+    # NWB 1.x: root dataset; NWB 2.x: datasets required by the NWBFile specification
+    ("nwb_version" in k || all(in(k), ("file_create_date", "identifier", "session_description"))) &&
+        return :nwb
+    return nothing
 end
  
 """

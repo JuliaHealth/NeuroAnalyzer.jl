@@ -187,7 +187,7 @@ function plot_erp(
         GLMakie.Makie.lines!(ax, t, s_m; color = :black, linewidth = 2)
     else
         # plot individual channels
-        cmap = GLMakie.resample_cmap(pal, ch_n)
+        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
         for idx = 1:ch_n
             GLMakie.lines!(
                 ax,

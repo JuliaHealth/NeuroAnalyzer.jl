@@ -370,9 +370,8 @@ function spectrogram(
         progress_bar && next!(progbar)
     end
 
-    f = round.(f; digits = 2)
-    t = round.(t; digits = 4)
-    t .+= obj.epoch_time[1]
+    # exact axes (values are rounded only for presentation)
+    t = t .+ obj.epoch_time[1]
 
     return (; p, f, t)
 end

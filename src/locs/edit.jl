@@ -52,8 +52,9 @@ function edit_locs(
     loc_idx isa Int64 ||
         throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
 
+    # type first: after renaming the old label no longer exists
+    type != "" && set_channel_type!(obj_tmp; ch = labels(obj)[ch], type = type)
     name != "" && rename_channel!(obj_tmp; ch = labels(obj)[ch], name = name)
-    type != "" && channel_type!(obj_tmp; ch = labels(obj)[ch], type = type)
 
     x !== nothing && (obj_tmp.locs[loc_idx, :loc_x] = x)
     y !== nothing && (obj_tmp.locs[loc_idx, :loc_y] = y)

@@ -26,7 +26,7 @@ Calculate total power for a 1-D signal vector.
 
 # Returns
 
-- `Float64`: total power
+- `Float64`: total power: the PSD summed over all frequencies × frequency resolution (equal to the signal variance for `:welch`, `:fft` and `:mt`)
 """
 function _total_power(
     s::AbstractVector;
@@ -55,8 +55,10 @@ function _total_power(
     )
 
     # dx: frequency resolution
+    # discrete PSD: sum × Δf is exact (Parseval: = signal variance for :welch, :fft, :mt);
+    # Simpson's rule weights alternate bins by 4/3 and 2/3, which biases spectra with narrow peaks
     dx = pf[2] - pf[1]
-    tp = Simpson.simpson(pw; dx = dx)
+    tp = sum(pw) * dx
 
     return tp
 end

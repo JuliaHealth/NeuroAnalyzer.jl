@@ -426,7 +426,8 @@ function import_cnt(
     # channel types and units                                            #
     # ------------------------------------------------------------------ #
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
-    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
+    # samples are scaled to μV above: e.g. an ECG channel stays in μV (its default unit would be mV)
+    units, _ = _resolve_units(fill("μV", ch_n), ch_type)
 
     # ------------------------------------------------------------------ #
     # build markers DataFrame from parsed event table                    #
@@ -440,13 +441,14 @@ function import_cnt(
             :channel => Int64[],
         )
     else
+        # value: the trigger code (StimType), as in MNE-Python, EEGLAB and FieldTrip; id: the
+        # keypad response code (KeyPad Accept), if stored
+        # start: the sample of the event's byte offset (MNE-Python places events 1 sample earlier)
         DataFrame(
-            :id => [
-                isempty(evt_stimtype) ? "mrk" : string(evt_stimtype[i]) for i = 1:nevents
-            ],
+            :id => [isempty(evt_code) ? "mrk" : string(evt_code[i]) for i = 1:nevents],
             :start => evt_offset ./ sampling_rate,
             :length => fill(0.0, nevents),
-            :value => [isempty(evt_code) ? "" : string(evt_code[i]) for i = 1:nevents],
+            :value => string.(evt_stimtype),
             :channel => fill(0, nevents),
         )
     end

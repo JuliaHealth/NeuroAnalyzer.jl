@@ -9,10 +9,14 @@
 # - rebuild and upload the documentation
 # - create the ZIP archive
 #
-# usage: na_create_release_STABLE.sh <version> (e.g. 0.25.11)
+# usage: create_release_STABLE.sh <version> (e.g. 0.25.11)
 
 # fail on errors
 set -euo pipefail
+
+# the whole script is read before it runs: it lives in the repository, and the checkouts
+# below may replace this file while bash is still reading it
+main() {
 
 # preflight: required commands
 require_cmd() {
@@ -24,7 +28,7 @@ require_cmd() {
 
 JLFMT="$HOME/.julia/bin/jlfmt"
 
-for cmd in git julia gh find grep sed mktemp ncftpput xdg-open base64 tr; do
+for cmd in git julia gh find grep sed mktemp ncftpput xdg-open; do
   require_cmd "$cmd"
 done
 
@@ -53,6 +57,8 @@ echo "Creating STABLE release: $VERSION"
 : "${NA_GIT_NAME:?NA_GIT_NAME not set}"
 : "${NA_GIT_EMAIL:?NA_GIT_EMAIL not set}"
 : "${NA_GITHUB_TOKEN:?NA_GITHUB_TOKEN not set}"
+: "${NA_GH_USER:?NA_GH_USER not set}"
+: "${NA_FTP_HOST:?NA_FTP_HOST not set}"
 : "${NA_FTP_USER:?NA_FTP_USER not set}"
 : "${NA_FTP_PASS:?NA_FTP_PASS not set}"
 THREADS="${THREADS:-auto}"
@@ -61,12 +67,14 @@ THREADS="${THREADS:-auto}"
 export GIT_AUTHOR_NAME="$NA_GIT_NAME" GIT_COMMITTER_NAME="$NA_GIT_NAME"
 export GIT_AUTHOR_EMAIL="$NA_GIT_EMAIL" GIT_COMMITTER_EMAIL="$NA_GIT_EMAIL"
 
-# preflight: required paths
-CODE_ANALYSIS_SCRIPT="$NA_DIR/scripts/code_analysis.jl"
-UPDATE_REGISTRY_SCRIPT="$NA_DIR/scripts/update_registry.jl"
+# preflight: required paths (this script is in NeuroAnalyzer.jl/scripts)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NA_DIR="$(dirname "$SCRIPT_DIR")"
+CODE_ANALYSIS_SCRIPT="$SCRIPT_DIR/code_analysis.jl"
+UPDATE_REGISTRY_SCRIPT="$SCRIPT_DIR/update_registry.sh"
 REGISTRY_BRANCH="my-update"
 
-for path in "$NA_DIR" "$CODE_ANALYSIS_SCRIPT" "$UPDATE_REGISTRY_SCRIPT"; do
+for path in "$CODE_ANALYSIS_SCRIPT" "$UPDATE_REGISTRY_SCRIPT" "$SCRIPT_DIR/update_registry.jl"; do
   if [[ ! -e "$path" ]]; then
     echo "Error: expected path not found: $path" >&2
     exit 1
@@ -79,7 +87,7 @@ if ! gh auth status &>/dev/null; then
   exit 1
 fi
 
-# temporary files (registry clone, docs build, FTP login file) are removed on exit
+# temporary files (docs build, FTP login file) are removed on exit
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -162,35 +170,9 @@ git tag -a "$VERSION" -m "stable v$VERSION release"
 git push codeberg main devel
 git push codeberg "refs/tags/$VERSION"
 
-# update the fork of the Julia General registry and push the registry branch
+# update the fork of the Julia General registry and push the registry branch (main is checked out)
 echo "Update registry"
-
-REGISTRY_DIR="$TMP_DIR/JuliaRegistry"
-
-# reuse the fork (synchronized with upstream) instead of deleting and re-forking it
-if gh repo view "$NA_GH_USER/General" &>/dev/null; then
-  gh repo sync "$NA_GH_USER/General" --source JuliaRegistries/General --force
-else
-  gh repo fork JuliaRegistries/General --clone=false
-  # GitHub provisions forks asynchronously
-  for _ in {1..30}; do
-    gh repo view "$NA_GH_USER/General" &>/dev/null && break
-    sleep 2
-  done
-fi
-git clone --depth 1 "https://github.com/$NA_GH_USER/General" "$REGISTRY_DIR"
-git -C "$REGISTRY_DIR" checkout -b "$REGISTRY_BRANCH"
-
-# only necessary if there are new packages added to dependencies
-# julia scripts/na_update_compat.jl
-
-julia "$UPDATE_REGISTRY_SCRIPT" "$REGISTRY_DIR"
-
-# the token is passed in the environment, not on the command line (visible in the process list)
-GITHUB_AUTH_HEADER="Authorization: Basic $(printf 'x-access-token:%s' "$NA_GITHUB_TOKEN" | base64 | tr -d '\n')"
-GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader GIT_CONFIG_VALUE_0="$GITHUB_AUTH_HEADER" \
-  git -C "$REGISTRY_DIR" push --force "https://github.com/$NA_GH_USER/General.git" "$REGISTRY_BRANCH"
-unset GITHUB_AUTH_HEADER
+REGISTRY_BRANCH="$REGISTRY_BRANCH" "$UPDATE_REGISTRY_SCRIPT"
 
 # re-generate the documentation from the released code and upload it
 echo "Update docs"
@@ -229,12 +211,14 @@ git archive --format zip --output "../NeuroAnalyzer-$VERSION.zip" "$VERSION"
 
 echo "Opening https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/releases"
 echo "Stable v$VERSION release. See [changelog](https://neuroanalyzer.org/changelog.html) for the detailed list of changes."
-xdg-open https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/releases &>/dev/null
+xdg-open https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/releases &>/dev/null || true
 
 echo "Opening https://zenodo.org/records/16964565"
-xdg-open https://zenodo.org/records/16964565 &>/dev/null
+xdg-open https://zenodo.org/records/16964565 &>/dev/null || true
 
 echo "Opening https://github.com/$NA_GH_USER/General/tree/$REGISTRY_BRANCH"
-xdg-open "https://github.com/$NA_GH_USER/General/tree/$REGISTRY_BRANCH" &>/dev/null
+xdg-open "https://github.com/$NA_GH_USER/General/tree/$REGISTRY_BRANCH" &>/dev/null || true
+}
 
+main "$@"
 exit 0

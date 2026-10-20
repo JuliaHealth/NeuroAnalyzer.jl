@@ -264,7 +264,6 @@ function _set_channel_types(
         )
             occursin(pattern, lbl) && (channel_type[idx] = "mrk")
         end
-        lbl == "e" && (channel_type[idx] = "mrk")
         lbl == "stim" && (channel_type[idx] = "mrk") # already covered by occursin above; kept for explicitness
 
         occursin("nm", lbl) && (channel_type[idx] = "nirs_od")

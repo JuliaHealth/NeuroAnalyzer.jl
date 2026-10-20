@@ -122,7 +122,7 @@ function plot_locs3d(
     mesh_type !== :disabled && GLMakie.mesh!(msh; alpha = effective_alpha, color = :gray)
 
     ch_n = length(ch)
-    cmap = GLMakie.resample_cmap(pal, ch_n)
+    cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
     ch = setdiff(ch, sch)
 
     sch_set = Set(sch)

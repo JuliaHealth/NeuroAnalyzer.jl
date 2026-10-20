@@ -16,6 +16,8 @@ end
 function _build_eda_object(eda_signal::Vector{Float64})::NeuroAnalyzer.NEURO
     isempty(eda_signal) && throw(ArgumentError("No EDA samples were recorded."))
     obj = create_object(; data_type = "eda")
+    # add_channel!() needs the sampling rate of the (empty) object
+    obj.header.recording[:sampling_rate] = _EDA_FS
     add_channel!(
         obj;
         data = reshape(eda_signal, 1, :, 1),

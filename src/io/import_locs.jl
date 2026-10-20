@@ -195,7 +195,12 @@ function import_locs_locs(file_name::String)::DataFrame
 
     locs_swapxy!(locs; polar = true, cart = false, spherical = false)
     locs_flipx!(locs; polar = true, cart = false, spherical = false)
-    locs[!, :loc_phi_sph] .= 0.0
+    # spherical coordinates on the unit sphere: azimuth = polar angle; EEGLAB polar radius 0.5 lies
+    # on the equator, i.e. elevation = 90° - 180° × radius
+    locs[!, :loc_radius_sph] .= 1.0
+    locs[!, :loc_theta_sph] = copy(locs[!, :loc_theta])
+    locs[!, :loc_phi_sph] = 90 .- 180 .* radius
+    locs_sph2cart!(locs)
     locs_normalize!(locs)
 
     return locs

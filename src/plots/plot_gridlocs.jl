@@ -46,7 +46,7 @@ function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     pal = mono ? :grays : :darktest
 
     ch_n = length(_GRIDLOCS_LABELS)
-    cmap = GLMakie.resample_cmap(pal, ch_n)
+    cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
 
     # prepare plot
     GLMakie.activate!(; title = "plot_gridlocs()")

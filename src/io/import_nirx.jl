@@ -247,10 +247,11 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     markers = DataFrame(
-        :id => stim_id,
+        # value: the condition (trigger) code, so that epochs can be selected by condition
+        :id => repeat(["stim"], length(stim_id)),
         :start => stim_frame ./ sampling_rate_exact,
         :length => zeros(length(stim_id)),
-        :value => repeat(["stim"], length(stim_id)),
+        :value => stim_id,
         :channel => zeros(Int64, length(stim_id)),
     )
 

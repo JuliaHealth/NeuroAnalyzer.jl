@@ -93,21 +93,21 @@ function hrv_analyze(
     nn_diff = diff(nn_seg)
     nn_total = length(nn_seg)
 
-    menn = round(mean(nn_seg); digits = 3)
-    mdnn = round(median(nn_seg); digits = 3)
-    vnn = round(var(nn_seg); digits = 3)
-    sdnn = round(std(nn_seg); digits = 3)
+    menn = mean(nn_seg)
+    mdnn = median(nn_seg)
+    vnn = var(nn_seg)
+    sdnn = std(nn_seg)
 
     # RMSSD: root mean square of successive differences.
-    rmssd = round(sqrt(sum(abs2, nn_diff) / length(nn_diff)); digits = 3)
-    sdsd = round(std(nn_diff); digits = 3)
+    rmssd = sqrt(sum(abs2, nn_diff) / length(nn_diff))
+    sdsd = std(nn_diff)
 
     # NN50 / NN20: count pairs of successive intervals differing by > threshold.
     nn50 = count(d -> abs(d) > 50, nn_diff)
-    pnn50 = round(nn50 / nn_total; digits = 3)
+    pnn50 = nn50 / nn_total
 
     nn20 = count(d -> abs(d) > 20, nn_diff)
-    pnn20 = round(nn20 / nn_total; digits = 3)
+    pnn20 = nn20 / nn_total
 
     return (;
         menn,

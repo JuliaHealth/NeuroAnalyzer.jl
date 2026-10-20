@@ -60,6 +60,13 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     obj = JLD2.load_object(file_name)
+    # files saved by old versions of NeuroAnalyzer (e.g. EEG objects) are reconstructed by JLD2 as
+    # anonymous types without the NEURO fields
+    obj isa NeuroAnalyzer.NEURO || throw(
+        ArgumentError(
+            "$file_name does not contain a NEURO object (found: $(typeof(obj).name.name)); it may have been saved by an incompatible version of NeuroAnalyzer.",
+        ),
+    )
 
     _info(
         "Loaded: " *

@@ -388,59 +388,59 @@ function _has_locs(obj::NeuroAnalyzer.NEURO)::Nothing
     return nothing
 end
 
+# scaling factor of _locs_norm(): the largest absolute coordinate (1 if all coordinates are 0)
+function _locs_norm_scale(xyz::AbstractMatrix)::Float64
+    m = maximum(abs, xyz; init = 0.0)
+    return m > 0 ? m : 1.0
+end
+
 """
     _locs_norm(x, y)
 
-Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved).
+Scale location coordinates to the [-1, 1] range: all axes are divided by the largest absolute coordinate, so the origin (head center) and the aspect ratio are preserved.
 """
 function _locs_norm(
     x::Union{AbstractVector, Real},
     y::Union{AbstractVector, Real},
 )::Tuple{Vector{Float64}, Vector{Float64}}
-    xy = normalize_minmax(hcat(x, y))
+    xy = Float64.(hcat(x, y))
+    xy ./= _locs_norm_scale(xy)
     return xy[:, 1], xy[:, 2]
 end
 
 """
     _locs_norm(x, y, z)
 
-Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved).
+Scale location coordinates to the [-1, 1] range: all axes are divided by the largest absolute coordinate, so the origin (head center) and the aspect ratio are preserved.
 """
 function _locs_norm(
     x::Union{AbstractVector, Real},
     y::Union{AbstractVector, Real},
     z::Union{AbstractVector, Real},
 )::Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}}
-    xyz = normalize_minmax(hcat(x, y, z))
+    xyz = Float64.(hcat(x, y, z))
+    xyz ./= _locs_norm_scale(xyz)
     return xyz[:, 1], xyz[:, 2], xyz[:, 3]
 end
 
 """
     _locs_norm(locs)
 
-Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved).
+Scale location coordinates to the [-1, 1] range: all axes are divided by the largest absolute coordinate, so the origin (head center) and the aspect ratio are preserved.
 """
 function _locs_norm(locs::DataFrame)::DataFrame
     locs_new = copy(locs)
-    xyz = normalize_minmax(hcat(locs.loc_x, locs.loc_y, locs.loc_z))
-    x = xyz[:, 1]
-    y = xyz[:, 2]
-    z = xyz[:, 3]
-    locs_new.loc_x, locs_new.loc_y, locs_new.loc_z = x, y, z
+    _locs_norm!(locs_new)
     return locs_new
 end
 
 """
     _locs_norm!(locs)
 
-Normalize location coordinates to the [-1, 1] range using min-max scaling (all axes jointly, so the aspect ratio is preserved) in-place.
+Scale location coordinates to the [-1, 1] range in-place: all axes are divided by the largest absolute coordinate, so the origin (head center) and the aspect ratio are preserved.
 """
 function _locs_norm!(locs::DataFrame)::Nothing
-    xyz = normalize_minmax(hcat(locs.loc_x, locs.loc_y, locs.loc_z))
-    x = xyz[:, 1]
-    y = xyz[:, 2]
-    z = xyz[:, 3]
-    locs.loc_x, locs.loc_y, locs.loc_z = x, y, z
+    locs.loc_x, locs.loc_y, locs.loc_z = _locs_norm(locs.loc_x, locs.loc_y, locs.loc_z)
     return nothing
 end
 

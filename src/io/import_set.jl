@@ -83,7 +83,8 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
             end
         end
     end
-    units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
+    # EEGLAB stores all channels in μV: e.g. an ECG channel stays in μV (its default unit would be mV)
+    units, _ = _resolve_units(fill("μV", ch_n), ch_type)
     ref = dataset["ref"]
     ref == "common" && (ref = "CAR")
 

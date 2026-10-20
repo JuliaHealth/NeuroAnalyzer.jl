@@ -20,7 +20,7 @@ end
 
 Generate SSP (Signal-Space Projection) projectors from the SSP data embedded in a MEG recording.
 
-Following MNE-Python (`_make_projector`), the selected projection vectors are restricted to good channels (bad channel entries are set to zero), normalized to unit length, re-orthogonalised via SVD, and linearly dependent vectors are discarded (relative singular-value threshold 0.01).
+The selected projection vectors are restricted to good channels (bad channel entries are set to zero), normalized to unit length, re-orthogonalised via SVD, and linearly dependent vectors are discarded (relative singular-value threshold 0.01).
 
 The projector `P = I - U Uᵀ` is built in SI units (T, T/m, V), in which the vectors are defined, and is returned converted to the units of the data: `D P D⁻¹`, where `D` holds the per-channel unit scaling (e.g. 10¹⁵ for fT, 10¹³ for fT/cm). This keeps the projection correct for projectors that span sensors of different types.
 
