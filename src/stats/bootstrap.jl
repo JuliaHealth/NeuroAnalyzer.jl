@@ -57,6 +57,7 @@ function bootstrap_ci(
         s_boot[idx1, :] = _bootstrap_mean(s, n2)
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     # stage 2: derive CI bounds from the empirical quantiles of the bootstrap distribution
     ci_l = (1.0 - cl) / 2
@@ -127,6 +128,7 @@ function bootstrap_stat(
         result[idx1] = apply_f(_bootstrap_mean(s, n2))
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     return result
 end

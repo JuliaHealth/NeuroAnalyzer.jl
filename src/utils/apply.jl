@@ -68,6 +68,7 @@ function apply(
         # update progress bar
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     return result
 end

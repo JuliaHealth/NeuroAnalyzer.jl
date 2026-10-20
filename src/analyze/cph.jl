@@ -104,6 +104,7 @@ function _cph(
         end
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     # mirror the lower triangle to the upper triangle: the phase of the cross-spectrum is
     # antisymmetric (S[j, i] = conj(S[i, j]))

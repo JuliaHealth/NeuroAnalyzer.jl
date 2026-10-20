@@ -64,45 +64,47 @@ set_prefs(; progress_bar = pb0, verbose = vb0, exclude_bads = eb0, colors = cl0)
 @test load_preference(NeuroAnalyzer, "verbose") == vb0
 
 @info "Test: plugins"
+# git messages and the "method overwritten" warnings of repeated plugin reloads are expected: silenced
+quiet(f) = redirect_stdio(f; stdout = devnull, stderr = devnull)
 # a temporary plugins folder (the user's plugins are not touched)
 pp0 = NeuroAnalyzer.plugins_path
 tmp = mktempdir()
 NeuroAnalyzer.plugins_path = tmp
 mkpath(joinpath(tmp, "naplugin", "src"))
-write(joinpath(tmp, "naplugin", "src", "naplugin.jl"), "na_test_plugin_fn() = 42\n")
+write(joinpath(tmp, "naplugin", "src", "naplugin.jl"), "test_plugin_fn() = 42\n")
 NeuroAnalyzer.plugins_reload()
-@test NeuroAnalyzer.na_test_plugin_fn() == 42
+@test NeuroAnalyzer.test_plugin_fn() == 42
 @test occursin("1. naplugin", capture_out(plugins_list))
 # install from a .tar.gz archive
 arch = joinpath(mktempdir(), "naplugin2.tar.gz")
 src2 = mktempdir()
 mkpath(joinpath(src2, "naplugin2", "src"))
-write(joinpath(src2, "naplugin2", "src", "naplugin2.jl"), "na_test_plugin_fn2() = 43\n")
+write(joinpath(src2, "naplugin2", "src", "naplugin2.jl"), "test_plugin_fn2() = 43\n")
 run(Cmd(`tar -czf $arch naplugin2`; dir = src2))
-plugins_install(arch)
+quiet(() -> plugins_install(arch))
 @test isdir(joinpath(tmp, "naplugin2"))
-@test NeuroAnalyzer.na_test_plugin_fn2() == 43
+@test NeuroAnalyzer.test_plugin_fn2() == 43
 @test_throws ArgumentError NeuroAnalyzer._install_from_archive(joinpath(tmp, "naplugin2.rar"))
 write(joinpath(tmp, "x.rar"), "x")
 @test_throws ArgumentError NeuroAnalyzer._install_from_archive(joinpath(tmp, "x.rar"))
 # install from a git repository (a local one: no network)
 repo = joinpath(mktempdir(), "naplugin3")
 mkpath(joinpath(repo, "src"))
-write(joinpath(repo, "src", "naplugin3.jl"), "na_test_plugin_fn3() = 44\n")
+write(joinpath(repo, "src", "naplugin3.jl"), "test_plugin_fn3() = 44\n")
 run(`$(NeuroAnalyzer.git()) -C $repo init -q`)
 run(`$(NeuroAnalyzer.git()) -C $repo -c user.name=t -c user.email=t@t add .`)
 run(`$(NeuroAnalyzer.git()) -C $repo -c user.name=t -c user.email=t@t commit -qm init`)
-NeuroAnalyzer._install_from_remote(repo)
+quiet(() -> NeuroAnalyzer._install_from_remote(repo))
 @test isfile(joinpath(tmp, "naplugin3", "src", "naplugin3.jl"))
-@test_throws ErrorException NeuroAnalyzer._install_from_remote(joinpath(tmp, "no_such_repo"))
+@test_throws ErrorException quiet(() -> NeuroAnalyzer._install_from_remote(joinpath(tmp, "no_such_repo")))
 # a git plugin is updated (git pull)
-@test NeuroAnalyzer._update_plugin(joinpath(tmp, "naplugin3")) === nothing
+@test quiet(() -> NeuroAnalyzer._update_plugin(joinpath(tmp, "naplugin3"))) === nothing
 # update: plugins that are not git repositories are skipped
-@test plugins_update() === nothing
-@test NeuroAnalyzer._update_plugin(joinpath(tmp, "naplugin")) === nothing
+@test quiet(plugins_update) === nothing
+@test quiet(() -> NeuroAnalyzer._update_plugin(joinpath(tmp, "naplugin"))) === nothing
 @test_throws ArgumentError plugins_update("no_such_plugin")
 # remove
-plugins_remove("naplugin2")
+quiet(() -> plugins_remove("naplugin2"))
 @test !isdir(joinpath(tmp, "naplugin2"))
 @test_throws ArgumentError plugins_remove("no_such_plugin")
 NeuroAnalyzer.plugins_path = joinpath(tmp, "no_such_folder")
@@ -110,7 +112,7 @@ NeuroAnalyzer.plugins_path = joinpath(tmp, "no_such_folder")
 @test_throws ArgumentError plugins_reload()
 # the bundled test plugin (plugins/test_plugin): self-test on a synthetic 10 Hz sine
 NeuroAnalyzer.plugins_path = joinpath(@__DIR__, "..", "plugins")
-NeuroAnalyzer.plugins_reload()
+quiet(NeuroAnalyzer.plugins_reload)
 @test NeuroAnalyzer.test_plugin()
 @test NeuroAnalyzer._test_plugin_zcr([1.0, -1.0, 1.0, -1.0]; fs = 4) == 3.0
 @test_throws ArgumentError NeuroAnalyzer._test_plugin_zcr([1.0]; fs = 10)

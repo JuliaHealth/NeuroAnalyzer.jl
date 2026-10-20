@@ -182,6 +182,7 @@ function remove_powerline(
 
                 progress_bar && next!(progbar)
             end
+            progress_bar && finish!(progbar)
 
             # --- build results DataFrame ---
             df = DataFrame(
@@ -332,6 +333,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Float64
         # update progress bar
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     return median(noise_frq)
 end

@@ -298,6 +298,7 @@ function _negentropy(
         # update progress bar
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     return ne
 end

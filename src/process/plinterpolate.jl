@@ -76,6 +76,7 @@ function plinterpolate_channel(
         obj_tmp.data[ch_idx, t_idx, ep[ep_idx]] = ScatteredInterpolation.evaluate(itp, target)[1]
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     push!(
         obj_tmp.history,

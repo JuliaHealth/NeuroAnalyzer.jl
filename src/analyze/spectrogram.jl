@@ -369,6 +369,7 @@ function spectrogram(
 
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     # exact axes (values are rounded only for presentation)
     t = t .+ obj.epoch_time[1]

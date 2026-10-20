@@ -81,6 +81,8 @@ function _ica_decompose(
             progress_bar && next!(progbar)
         end
     end
+    # the loop stops at the first tolerance that converges
+    progress_bar && finish!(progbar)
 
     model === nothing &&
         throw(ErrorException("ICA failed to converge even at highest tolerance."))

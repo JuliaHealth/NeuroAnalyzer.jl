@@ -819,6 +819,14 @@ sp, sst, t, f = spec_seg(sp, sf, st; ch = 1, t = (1, 2), f = (0, 10))
 @info "Test: stationarity()"
 s = NeuroAnalyzer.stationarity(e10; ch = "all", method = :adf)
 @test size(s) == (24, 2, 10)
+# ADF: white noise is stationary (small p), a random walk is not (large p); values are not rounded
+adf_obj = deepcopy(e10)
+rng = NeuroAnalyzer.Random.Xoshiro(7)
+adf_obj.data[1, :, 1] = randn(rng, size(adf_obj.data, 2))
+adf_obj.data[2, :, 1] = cumsum(randn(rng, size(adf_obj.data, 2)))
+s = NeuroAnalyzer.stationarity(adf_obj; ch = labels(adf_obj)[1:2], method = :adf)
+@test s[1, 2, 1] < 0.01 && s[2, 2, 1] > 0.1
+@test s[1, 1, 1] < s[2, 1, 1] && s[1, 1, 1] != round(s[1, 1, 1]; digits = 2)
 s = NeuroAnalyzer.stationarity(e10; ch = "all", method = :cov)
 # 2560 samples / 10 = 256 windows, 255 distances
 @test size(s) == (255, 10)

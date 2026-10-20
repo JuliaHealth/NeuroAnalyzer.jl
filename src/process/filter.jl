@@ -747,6 +747,7 @@ function filter_apply(
         # update progress bar
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     push!(obj_tmp.history, "filter_apply(obj; ch=$ch, dir=:$dir) [$(r.summary)]")
 

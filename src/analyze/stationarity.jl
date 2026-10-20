@@ -201,15 +201,13 @@ function stationarity(
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)
-                a = round(a, digits = 2)
-                p = round(p, digits = 4)
-                p == 0.0 && (p = 0.0001)
                 s[ch_idx, :, ep_idx] = [a, p]
 
                 # update progress bar
                 progress_bar && next!(progbar)
             end
         end
+        progress_bar && finish!(progbar)
 
         return s
     end

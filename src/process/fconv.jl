@@ -96,6 +96,7 @@ function _fconv(
         # update progress bar
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     return s_new
 end

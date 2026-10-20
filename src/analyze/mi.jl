@@ -106,6 +106,7 @@ function _mutual_information(s::AbstractArray)::Array{Float64, 3}
         end
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     # mirror the lower triangle to the upper triangle to produce the full symmetric matrix
     return _copy_lt2ut(mi)

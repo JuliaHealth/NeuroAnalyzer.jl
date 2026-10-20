@@ -114,6 +114,7 @@ function _denoise_cwd(
             # update progress bar
             progress_bar && next!(progbar)
         end
+        progress_bar && finish!(progbar)
     finally
         _log_on()
     end

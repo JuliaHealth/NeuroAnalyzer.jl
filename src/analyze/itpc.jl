@@ -335,6 +335,7 @@ function itpc_spec(
 
         progress_bar && next!(progbar)
     end
+    progress_bar && finish!(progbar)
 
     return (; itpcs, itpczs, f)
 end
