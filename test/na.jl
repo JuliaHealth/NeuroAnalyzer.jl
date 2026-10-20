@@ -108,6 +108,13 @@ plugins_remove("naplugin2")
 NeuroAnalyzer.plugins_path = joinpath(tmp, "no_such_folder")
 @test_throws ArgumentError plugins_list()
 @test_throws ArgumentError plugins_reload()
+# the bundled test plugin (plugins/test_plugin): self-test on a synthetic 10 Hz sine
+NeuroAnalyzer.plugins_path = joinpath(@__DIR__, "..", "plugins")
+NeuroAnalyzer.plugins_reload()
+@test NeuroAnalyzer.test_plugin()
+@test NeuroAnalyzer._test_plugin_zcr([1.0, -1.0, 1.0, -1.0]; fs = 4) == 3.0
+@test_throws ArgumentError NeuroAnalyzer._test_plugin_zcr([1.0]; fs = 10)
+@test_throws ArgumentError NeuroAnalyzer._test_plugin_zcr([1.0, -1.0]; fs = 0)
 NeuroAnalyzer.plugins_path = pp0
 rm(tmp; recursive = true)
 
