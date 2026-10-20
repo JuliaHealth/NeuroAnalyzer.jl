@@ -11,6 +11,7 @@ Both GDF 1.x and GDF 2.x variants are supported. Channels may have mixed data ty
 
 - `file_name::String`: path to the `.gdf` file
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
@@ -31,6 +32,7 @@ Both GDF 1.x and GDF 2.x variants are supported. Channels may have mixed data ty
 function import_gdf(
     file_name::String;
     detect_type::Bool = true,
+    clean_labels::Bool = true,
 )::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
@@ -315,7 +317,7 @@ function import_gdf(
     # ------------------------------------------------------------------ #
     # channel types and units                                            #
     # ------------------------------------------------------------------ #
-    clabels = _clean_labels(string.(clabels))
+    clabels = clean_labels ? _clean_labels(clabels) : String.(strip.(clabels))
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
     units, u_scale = _resolve_units(units, ch_type)
 

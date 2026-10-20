@@ -36,8 +36,8 @@ write(joinpath(tmp, "unknown.xyz"), UInt8[0x00, 0x01, 0x02])
 # a BrainVision data file instead of its header: the error suggests the header
 err = try
     detect_format(joinpath(testfiles_path, "eeg", "eeg-test-bv.eeg"))
-catch e
-    e
+catch ex
+    ex
 end
 @test err isa ArgumentError && occursin("eeg-test-bv.vhdr", err.msg)
 @test NeuroAnalyzer._sniff_format(joinpath(testfiles_path, "eeg", "eeg-test-fieldtrip.mat")) === :mat73
@@ -213,13 +213,20 @@ meg = import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif"))
 @test meg.markers[[1, 2, 10], :start] ≈ [17.944, 18.945, 26.985]
 @test meg.markers[!, :value] == string.(1:10)
 @test meg.header.recording[:first_time] == 9.0
+# labels: "MEG0111" in the file → "MEG 0111" (spacing only, leading zeros kept); raw labels with clean_labels = false
+meg_raw = import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif"); clean_labels = false)
+@test labels(meg_raw) == load_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif"); read_data = false)[1][:meas_info][:ch_names]
+@test labels(meg)[12:13] == replace.(labels(meg_raw)[12:13], r"^MEG(?=\d)" => "MEG ")
+@test all(occursin.(r"^MEG \d{4}$", labels(meg)[meg.header.recording[:channel_type] .∈ Ref(["mag", "grad"])]))
+@test meg_raw.data == meg.data
 meg = import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fiff"))
 @test nchannels(meg) == 327
 # non-integer sampling rate (600.615 Hz): stored as 601 Hz without resampling (MEG data must not be
 # resampled before Maxwell filtering); the markers stay at their samples
 meg = import_fiff(joinpath(testfiles_path, "meg", "test_raw.fif"))
 @test (sr(meg), nchannels(meg), signal_len(meg)) == (601, 376, 14400)
-@test labels(meg)[1] == "MEG 113"
+# MNE: ch_names[:3] == ["MEG 0113", "MEG 0112", "MEG 0111"]
+@test labels(meg)[1:3] == ["MEG 0113", "MEG 0112", "MEG 0111"]
 @test meg.data[3, pos(14400), 1] ≈ [101.07422236953386, 63.17138898095866, -12.634277796191732, 12.634277796191732, -214.78272253525944] rtol = 1e-9
 @test meg.data[1, pos(14400), 1] ≈ [96.43554807784935, 0.0, -28.930664423354806, 57.86132884670961, -38.574219231139736] rtol = 1e-9 atol = 1e-9
 @test meg.data[316, pos(14400), 1] ≈ [11.398925963135298, 9.850158848578872, -10.283813640654671, 0.6195068458225705, 29.05487106907856] rtol = 1e-9
@@ -443,6 +450,8 @@ NeuroAnalyzer.JLD2.jldopen(nwb, "w") do f
     f["session_description"] = "test"
 end
 write(joinpath(tmp, "rec_events.tsv"), "onset\tduration\ttrial_type\tvalue\n0.01\t0\tstim\ta\n")
+# JLD2 writes a 512 B userblock before the HDF5 signature: still detected by content
+@test detect_format(nwb) === :nwb
 n = import_nwb(nwb)
 @test n.header.recording[:file_type] == "NWB"
 @test sr(n) == 100
@@ -463,7 +472,21 @@ n = import_recording(joinpath(testfiles_path, "eeg", "eeg-test-npy.npy"); sampli
 @test_throws ArgumentError import_recording(joinpath(testfiles_path, "eeg", "eeg-test-npy.npy"))
 @test import_recording(joinpath(testfiles_path, "eeg", "eeg-test-fieldtrip.mat"); type = :eeg) isa NeuroAnalyzer.NEURO
 @test import_recording(joinpath(testfiles_path, "events", "events-test-fieldtrip.mat"); type = :events) isa DataFrame
-eeg = import_recording(joinpath(tmp, "edf.bdf"); format = :edf)
+# channel labels: cleaned by default, raw with clean_labels = false (also through import_recording)
+edf_f = joinpath(testfiles_path, "eeg", "eeg-test-edf.edf")
+@test labels(import_edf(edf_f))[1] == "Fp1"
+@test labels(import_edf(edf_f; clean_labels = false))[1] == "EEG Fp1"
+@test labels(import_recording(edf_f; clean_labels = false))[1] == "EEG Fp1"
+gdf_raw = labels(import_gdf(joinpath(testfiles_path, "eeg", "eeg-test-gdf_1.25.gdf"); clean_labels = false))
+gdf_cln = labels(import_gdf(joinpath(testfiles_path, "eeg", "eeg-test-gdf_1.25.gdf")))
+@test gdf_cln[findfirst(isequal("FP1"), gdf_raw)] == "Fp1"
+@test labels(import_set(joinpath(testfiles_path, "eeg", "eeg-test-eeglab.set")))[end-2:end] == ["EOG1", "EOG2", "ECG"]
+@test labels(import_cnt(joinpath(testfiles_path, "eeg", "eeg-test-cnt.cnt"); clean_labels = false)) ==
+      labels(import_cnt(joinpath(testfiles_path, "eeg", "eeg-test-cnt.cnt")))
+ft_meg = import_recording(joinpath(testfiles_path, "meg", "meg-test-fieldtrip.mat"); type = :meg)
+@test "MEG 0113" in labels(ft_meg) && !isempty(ft_meg.locs)
+@test "MEG0113" in labels(import_ft(joinpath(testfiles_path, "meg", "meg-test-fieldtrip.mat"); type = :meg, clean_labels = false))
+eeg = @test_logs (:warn, r"contents are :edf") match_mode = :any import_recording(joinpath(tmp, "edf.bdf"); format = :edf)
 @test eeg.header.recording[:file_type] == "EDF"
 @test_throws ArgumentError import_recording(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"); format = :xyz)
 @test_throws ArgumentError import_recording(joinpath(tmp, "no_such_file.edf"))
@@ -565,7 +588,10 @@ new = load_neuro(f)
 @test new.time_pts == eeg.time_pts
 @test_throws ArgumentError load_neuro(joinpath(tmp, "no_such_file.hdf"))
 # file shipped with the test data: an EEG object saved by an old version of NeuroAnalyzer → clear error
-@test_throws ArgumentError load_neuro(joinpath(testfiles_path, "eeg", "eeg.hdf5"))
+# (JLD2 warns that it reconstructs the unknown type; the warning is silenced)
+@test_throws ArgumentError Base.CoreLogging.with_logger(Base.CoreLogging.NullLogger()) do
+    load_neuro(joinpath(testfiles_path, "eeg", "eeg.hdf5"))
+end
 
 @info "Test: export_csv()"
 f = joinpath(tmp, "eeg.csv")

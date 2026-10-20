@@ -26,7 +26,7 @@ rng = Random.Xoshiro(1)
 n = 64
 pts = Vector{Float64}[]
 while length(pts) < n
-    v = randn(rng, 3)
+    local v = randn(rng, 3)
     v ./= norm(v)
     v[3] > -0.3 && push!(pts, v)
 end

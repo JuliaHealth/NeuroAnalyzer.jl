@@ -570,19 +570,20 @@ function import_locs_geo(file_name::String)::DataFrame
 end
 
 """
-    import_locs_mat(file_name)
+    import_locs_mat(file_name; <keyword arguments>)
 
 Load channel locations from a MATLAB MAT file.
 
 # Arguments
 
 - `file_name::String`
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
 - `DataFrame`
 """
-function import_locs_mat(file_name::String)::DataFrame
+function import_locs_mat(file_name::String; clean_labels::Bool = true)::DataFrame
     # validate
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     lowercase(splitext(file_name)[2]) == ".mat" ||
@@ -599,7 +600,7 @@ function import_locs_mat(file_name::String)::DataFrame
     x = x_norm .* r
     y = y_norm .* r
 
-    clabels = _clean_meg_labels(clabels)
+    clean_labels && (clabels = _clean_labels(clabels))
 
     n = length(clabels)
     locs = DataFrame(

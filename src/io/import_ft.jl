@@ -12,6 +12,7 @@ FieldTrip stores EEG, MEG, fNIRS data and event tables in separate `.mat` files.
 - `file_name::String`: path to the `.mat` file
 - `type::Symbol`: data type to import; one of `:eeg`, `:meg`, `:nirs`, `:events`
 - `detect_type::Bool=false`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
@@ -22,6 +23,7 @@ function import_ft(
     file_name::String;
     type::Symbol,
     detect_type::Bool = false,
+    clean_labels::Bool = true,
 )::Union{NeuroAnalyzer.NEURO, DataFrame}
     # validate
     _check_var(type, [:eeg, :ecog, :seeg, :ieeg, :meg, :nirs, :events], "type")
@@ -183,7 +185,7 @@ function import_ft(
     r = nothing # will be assigned in each branch below
 
     if data_type in ("eeg", "ecog", "seeg", "ieeg")
-        clabels = _clean_eeg_labels(clabels)
+        clean_labels && (clabels = _clean_labels(clabels))
 
         ref = if "reref" in keys(cfg) && cfg["reref"] != "no"
             _info(
@@ -229,7 +231,7 @@ function import_ft(
         )
 
     elseif data_type == "meg"
-        clabels = _clean_meg_labels(clabels)
+        clean_labels && (clabels = _clean_labels(clabels))
 
         "grad" in keys(dataset) ||
             throw(ArgumentError("Dataset does not contain 'grad' field."))
@@ -297,6 +299,7 @@ function import_ft(
             locs = meg_locs
         else
             locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+            locs[!, :label] = _match_labels(locs[!, :label], clabels)
         end
 
         if "elec" in keys(dataset)
@@ -339,7 +342,8 @@ function import_ft(
             projs = hdr_orig["projs"]
             if length(projs["desc"]) != 0
                 ssp_labels = string.(projs["desc"][:])
-                ssp_ch_names = _clean_meg_labels(string.(projs["data"][1]["col_names"][:]))
+                ssp_ch_names = string.(projs["data"][1]["col_names"][:])
+                clean_labels && (ssp_ch_names = _clean_labels(ssp_ch_names))
                 ssp_sort_idx = [findfirst(isequal(l), clabels) for l in ssp_ch_names]
                 ssp_channels[Base.filter(!isnothing, ssp_sort_idx)] .= true
                 ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])

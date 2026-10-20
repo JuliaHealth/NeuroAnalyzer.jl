@@ -11,6 +11,7 @@ The Digitrack ASCII format has a 3-line text header followed by one line per cha
 
 - `file_name::String`: path to the Digitrack ASCII file
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
@@ -19,6 +20,7 @@ The Digitrack ASCII format has a 3-line text header followed by one line per cha
 function import_digitrack(
     file_name::String;
     detect_type::Bool = true,
+    clean_labels::Bool = true,
 )::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
@@ -97,7 +99,7 @@ function import_digitrack(
     # channel metadata                                                    #
     # ------------------------------------------------------------------ #
     ch_n = length(clabels)
-    clabels = _clean_labels(string.(clabels))
+    clabels = clean_labels ? _clean_labels(clabels) : String.(strip.(clabels))
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
     # Digitrack exports all channels in μV: e.g. an ECG channel stays in μV (its default unit would be mV)
     units, _ = _resolve_units(fill("μV", ch_n), ch_type)

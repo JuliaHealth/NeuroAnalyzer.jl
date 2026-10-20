@@ -13,12 +13,13 @@ Alice 4 EDF files are non-conforming in two ways, both handled by `import_edf`, 
 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`
 """
-function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_alice4(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
@@ -38,5 +39,5 @@ function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyz
     occursin("Alice 4", String(Char.(header[89:168]))) ||
         throw(ArgumentError("$file_name is not a valid Alice 4 EDF file."))
 
-    return import_edf(file_name; detect_type = detect_type)
+    return import_edf(file_name; detect_type = detect_type, clean_labels = clean_labels)
 end

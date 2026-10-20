@@ -13,6 +13,7 @@ Channel units are taken from the file header; channels whose NeuroAnalyzer unit 
 
 - `file_name::String`: path to the EDF/EDF+ file to load
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
@@ -30,7 +31,7 @@ Channel units are taken from the file header; channels whose NeuroAnalyzer unit 
 2. Kemp B, Olivan J. European data format 'plus' (EDF+). *Clin Neurophysiol*. 2003;114:1755-61.
 3. https://www.edfplus.info/specs/
 """
-function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_edf(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
@@ -107,7 +108,7 @@ function import_edf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         # ------------------------------------------------------------ #
         # resolve channel types and annotation channels                #
         # ------------------------------------------------------------ #
-        clabels = _clean_labels(string.(clabels))
+        clabels = clean_labels ? _clean_labels(clabels) : String.(strip.(clabels))
         ch_type =
             detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
 

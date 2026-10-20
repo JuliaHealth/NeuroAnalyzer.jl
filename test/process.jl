@@ -620,21 +620,10 @@ e10_int = lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
     0.7310585786300049 0.8807970779778823 0.9525741268224334;
     0.9820137900379085 0.9933071490757153 0.9975273768433653
 ]
-@test normalize_mad(v1) == [
-    -0.9098742077378683,
-    -0.45493710386893416,
-    0.0,
-    0.45493710386893416,
-    0.9098742077378683,
-]
-@test normalize_mad(m1; bych = true) == [
-    -0.45493710386893416 0.0 0.45493710386893416;
-    -0.45493710386893416 0.0 0.45493710386893416
-]
-@test normalize_mad(m1; bych = false) == [
-    -0.7582285064482237 -0.4549371038689342 -0.15164570128964475;
-    0.15164570128964475 0.4549371038689342 0.7582285064482237
-]
+# (x − median) / (1.4826 × MAD): v1 median 3, MAD 1; rows of m1 median 2/5, MAD 1; m1 median 3.5, MAD 1.5
+@test normalize_mad(v1) ≈ (v1 .- 3) ./ 1.4826
+@test normalize_mad(m1; bych = true) ≈ [-1 0 1; -1 0 1] ./ 1.4826
+@test normalize_mad(m1; bych = false) ≈ (m1 .- 3.5) ./ (1.4826 * 1.5)
 @test normalize_rank(v1) == 1.0:5.0
 @test normalize_rank(m1; bych = true) == [1.0 2.0 3.0; 1.0 2.0 3.0]
 @test normalize_rank(m1; bych = false) == [1.0 2.0 3.0; 4.0 5.0 6.0]
@@ -775,7 +764,7 @@ end
 e10_sim.data[ch_eeg, :, :] .= 0.0
 e10_sim.data[ch_eeg[1], :, :] .= 1.0
 for f in (reference_plap, reference_slap)
-    out = f(e10_sim; nn = 3).data[ch_eeg, 1, 1]
+    local out = f(e10_sim; nn = 3).data[ch_eeg, 1, 1]
     @test out[1] ≈ 1.0
     @test all(v -> isapprox(v, 0; atol = 1e-12) || isapprox(v, -1 / 3), out[2:end])
     @test any(v -> isapprox(v, -1 / 3), out[2:end])
@@ -995,9 +984,9 @@ mn, md = _mf_snr(s, "test_move_anon_stdOrigin_raw_sss.fif")
 @test_throws ArgumentError maxwell_filter(s)
 mn, md = _mf_snr(maxwell_filter(raw; origin = o), "test_move_anon_regIn_raw_sss.fif")
 @test mn > 20 && md > 200
-# fine calibration: channel names "MEG 113" (data) and "MEG0113" (file) must match
+# fine calibration: channel names "MEG 0113" (data) and "MEG0113" (file) must match
 cal = read_fine_calibration(joinpath(sss_path, "sss_cal_3053.dat"))
-@test haskey(cal, NeuroAnalyzer._sss_name("MEG 113")) && NeuroAnalyzer._sss_name("MEG0113") == "MEG113"
+@test haskey(cal, NeuroAnalyzer._sss_name("MEG 0113")) && NeuroAnalyzer._sss_name("MEG0113") == "MEG113"
 mn, md = _mf_snr(
     maxwell_filter(raw; origin = o, regularize = :none, calibration = joinpath(sss_path, "sss_cal_3053.dat")),
     "test_move_anon_fineCal_raw_sss.fif",
@@ -1042,7 +1031,7 @@ ref = reduce(vcat, permutedims.(ref))
 ref[:, 1] .-= c.header.recording[:first_time]
 for r in eachrow(ref)
     0 < r[1] < 3 || continue
-    k = argmin(abs.(hp[:, 1] .- r[1]))
+    local k = argmin(abs.(hp[:, 1] .- r[1]))
     @test NeuroAnalyzer.norm(hp[k, 5:7] .- r[5:7]) < 0.002
 end
 
@@ -1091,7 +1080,7 @@ fr = [5.0, 20, 29, 31, 45, 80]
 for (p, ref) in ((:chebyshev1, [0.9629080387446526, 0.9490149558771923, 0.9868240257223284, 0.867296802722799, 0.08728069796786471, 0.0016906547989606268]),
                  (:chebyshev2, [0.9999996629508234, 0.9383994834987681, 0.1648264095457529, 0.04838851547390617, 0.09073270752540165, 0.050573680748433526]),
                  (:elliptic, [0.9541360941244506, 0.9824598868041596, 0.9999988024626586, 0.7061632202106207, 0.07599550817942868, 0.06624646323565964]))
-    f = filter_create(; fprototype = p, ftype = :lp, cutoff = 30, fs = fs, order = 4, rp = 0.5, rs = 20)
+    local f = filter_create(; fprototype = p, ftype = :lp, cutoff = 30, fs = fs, order = 4, rp = 0.5, rs = 20)
     @test abs.(NeuroAnalyzer.DSP.freqresp(f, 2π .* fr ./ fs)) ≈ ref atol = 1e-10
 end
 @test_throws ArgumentError filter_create(; fprototype = :butterworth, ftype = :lp, cutoff = 30, fs = fs)
@@ -1107,8 +1096,8 @@ for p in (:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :reme
     kw = p in (:butterworth, :chebyshev1, :chebyshev2, :elliptic) ? (order = 6, rp = 0.5, rs = 40) :
          p === :fir ? (order = 151,) : (order = 151, bw = 6)
     p in (:butterworth,) && (kw = (order = 6,))
-    f = filter_create(; fprototype = p, ftype = ft, cutoff = c, fs = fs, kw...)
-    y = NeuroAnalyzer._filter_apply(xs; flt = f)
+    local f = filter_create(; fprototype = p, ftype = ft, cutoff = c, fs = fs, kw...)
+    local y = NeuroAnalyzer._filter_apply(xs; flt = f)
     # Chebyshev I / elliptic: pass-band ripple rp = 0.5 dB (twice for two-pass filtering); Chebyshev II:
     # the cutoff is the stop-band edge, so frequencies near it are in the transition band
     lo = p in (:chebyshev1, :elliptic) ? 10^(-2 * 0.5 / 20) - 0.02 : 0.9
@@ -1307,7 +1296,7 @@ for k = 1:3
     e_k = zeros(3); e_k[k] = h
     Rp, Ip = NeuroAnalyzer._sss_harmonics(p0 .+ e_k, 3)
     Rm, Im = NeuroAnalyzer._sss_harmonics(p0 .- e_k, 3)
-    g = getfield.(R, (:gx, :gy, :gz)[k])
+    local g = getfield.(R, (:gx, :gy, :gz)[k])
     @test g ≈ (getfield.(Rp, :v) .- getfield.(Rm, :v)) ./ (2h) rtol = 1e-5
     gi = getfield.(Ir, (:gx, :gy, :gz)[k])
     @test gi ≈ (getfield.(Ip, :v) .- getfield.(Im, :v)) ./ (2h) rtol = 1e-5

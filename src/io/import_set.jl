@@ -9,6 +9,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: detect channel type based on its label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
@@ -18,7 +19,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
-function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_set(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     detect_format(file_name) === :set ||
@@ -68,7 +69,7 @@ function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         end
     end
     # dataset["chaninfo"]
-    clabels = _clean_labels(string.(clabels))
+    clabels = clean_labels ? _clean_labels(clabels) : String.(strip.(clabels))
     if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
     else

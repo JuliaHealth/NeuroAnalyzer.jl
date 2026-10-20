@@ -65,7 +65,7 @@ _hasprefix(buf::AbstractVector{UInt8}, p::String) = _hasprefix(buf, codeunits(p)
 Identify file format from its leading bytes. Returns a format symbol, a container symbol (`:mat5`, `:mat73`, `:hdf5`, `:gzip`, `:text`), `:unknown` or `:empty`.
 """
 function _sniff_format(file_name::String)::Symbol
-    buf = open(io -> read(io, 1024), file_name)
+    buf = open(io -> read(io, 2056), file_name)
     isempty(buf) && return :empty
     # binary signatures
     _hasprefix(buf, UInt8[0x1f, 0x8b]) && return :gzip
@@ -77,10 +77,15 @@ function _sniff_format(file_name::String)::Symbol
     _hasprefix(buf, "GDF ") && return :gdf
     _hasprefix(buf, UInt8[0x93, codeunits("NUMPY")...]) && return :npy
     _hasprefix(buf, "XDF:") && return :xdf
-    _hasprefix(buf, UInt8[0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a]) && return :hdf5
+    hdf5_sig = UInt8[0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a]
+    _hasprefix(buf, hdf5_sig) && return :hdf5
     _hasprefix(buf, "MATLAB 5.0 MAT-file") && return :mat5
-    # HDF5 with 512 B userblock
+    # MATLAB 7.3: HDF5 with a 512 B userblock
     _hasprefix(buf, "MATLAB 7.3 MAT-file") && return :mat73
+    # HDF5 with a userblock (e.g. JLD2): the signature is at offset 512, 1024 or 2048
+    for o in (512, 1024, 2048)
+        length(buf) >= o + 8 && buf[(o + 1):(o + 8)] == hdf5_sig && return :hdf5
+    end
  
     # FIFF: big-endian; first tag must be FIFF_FILE_ID (100), FIFFT_ID_STRUCT (31), size 20
     if length(buf) >= 12
@@ -247,12 +252,24 @@ Supported formats:
 
 "MAT-file only" / "text only" means the container is verified, but the extension (or `format`) decides which importer is used.
 
+Channel labels are normalized on import (`clean_labels = true`, EEG and MEG formats):
+
+- numbered channels of MEG systems (MEG, EEG, EOG, ECG, EMG, STI, MISC, … with a ≥ 3-digit number): exactly one space between the prefix and the number; leading zeros are kept (`"MEG0113"` → `"MEG 0113"`)
+- format prefixes before a channel name are removed (`"EEG Fp1"`, `"EDF C3"` → `"Fp1"`, `"C3"`)
+- duplicated type prefixes are merged (`"EOG EOG"` → `"EOG"`, `"ECG EKG"` → `"ECG"`)
+- trailing padding dots are removed (`"Fc5."` → `"FC5"`)
+- reference suffixes are removed (`"FP1-REF"`, `"C3-LE"` → `"Fp1"`, `"C3"`)
+- standard 10-20 / 10-10 names get the standard capitalization (`"FP1"` → `"Fp1"`, `"CZ"` → `"Cz"`)
+
+Labels that would become identical after cleaning keep their original form.
+
 Sampling rates are stored as integers. A non-integer rate is converted on import: if `k × fs` is an integer for some `k ≤ 16`, the data are upsampled exactly by `k` (e.g. NIRx 12.5 Hz → 25 Hz, keeping the original samples); otherwise they are resampled to the nearest integer rate. Rates within 0.01% of an integer (e.g. estimated from time stamps) are only rounded.
  
 # Arguments
  
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see below)
 - `type::Union{Nothing, Symbol}=nothing`: data type for FieldTrip (`.mat`) files, where auto-detection is not possible; one of `:eeg`, `:meg`, `:nirs`, `:events`
 - `sampling_rate::Union{Nothing, Int64}=nothing`: sampling rate for `.npy` files, which store only raw signal data with no embedded metadata
 - `n::Int64=0`: subject index to extract from multi-subject SNIRF files
@@ -266,6 +283,7 @@ Sampling rates are stored as integers. A non-integer rate is converted on import
 function import_recording(
     file_name::String;
     detect_type::Bool = true,
+    clean_labels::Bool = true,
     type::Union{Nothing, Symbol} = nothing,
     sampling_rate::Union{Nothing, Int64} = nothing,
     n::Int64 = 0,
@@ -286,12 +304,12 @@ function import_recording(
         format
     end
  
-    fmt === :edf && return import_edf(file_name; detect_type = detect_type)
-    fmt === :bdf && return import_bdf(file_name; detect_type = detect_type)
-    fmt === :gdf && return import_gdf(file_name; detect_type = detect_type)
-    fmt === :bv && return import_bv(file_name; detect_type = detect_type)
-    fmt in (:csv, :csv_gz) && return import_csv(file_name; detect_type = detect_type)
-    fmt === :set && return import_set(file_name; detect_type = detect_type)
+    fmt === :edf && return import_edf(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :bdf && return import_bdf(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :gdf && return import_gdf(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :bv && return import_bv(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt in (:csv, :csv_gz) && return import_csv(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :set && return import_set(file_name; detect_type = detect_type, clean_labels = clean_labels)
     # .npy stores raw signal data only - sampling rate must be supplied
     if fmt === :npy
         isnothing(sampling_rate) &&
@@ -301,13 +319,13 @@ function import_recording(
     fmt === :xdf && return import_xdf(file_name)
     fmt === :nwb && return import_nwb(file_name; detect_type = detect_type)
     fmt === :ncs && return import_ncs(file_name)
-    fmt === :fiff && return import_fiff(file_name)
+    fmt === :fiff && return import_fiff(file_name; clean_labels = clean_labels)
     # FieldTrip requires explicit type hint - auto-detection is not possible
     if fmt === :ft
         isnothing(type) && throw(
             ArgumentError("type must be specified for FieldTrip files (:eeg, :ecog, :ieeg, :seeg, :meg, :nirs or :events)."),
         )
-        return import_ft(file_name; type = type)
+        return import_ft(file_name; type = type, clean_labels = clean_labels)
     end
     fmt === :snirf && return import_snirf(file_name; n)
     fmt === :nirs && return import_nirs(file_name)

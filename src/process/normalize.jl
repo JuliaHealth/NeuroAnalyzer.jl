@@ -1005,7 +1005,7 @@ The `1.4826` factor is the standard consistency constant for a normal distributi
 """
 function normalize_mad(s::AbstractVector)::AbstractVector
     m = median(s)
-    md = 1.4826 * mad(s)
+    md = 1.4826 * mad(s; normalize = false)
     if md != 0
         return @. (s - m) / md
     else
@@ -1037,9 +1037,7 @@ function normalize_mad(s::AbstractArray; bych::Bool = false)::AbstractArray
 
     if !bych
         m = median(s)
-        # FIX: original used `mad(s)` without the 1.4826 consistency factor,
-        # making the array method inconsistent with the vector method.
-        md = 1.4826 * mad(s)
+        md = 1.4826 * mad(s; normalize = false)
         if md != 0
             return @. (s - m) / md
         else

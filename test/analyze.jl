@@ -1453,7 +1453,7 @@ c = NeuroAnalyzer._coherence(xa, ya; fs = fs, method = :stft, wlen = 256, wstep 
 @info "Test: spectral estimates of a sine (closed form)"
 # Parseval: the PSD integrates to the variance (Welch, periodogram, multitaper)
 for m in (:welch, :fft, :mt)
-    p = NeuroAnalyzer._psd(s2; fs = fs, method = m)
+    local p = NeuroAnalyzer._psd(s2; fs = fs, method = m)
     @test sum(p.p) * (p.f[2] - p.f[1]) ≈ 2.0 rtol = 1e-3
     @test p.f[argmax(p.p)] == 10.0
     @test NeuroAnalyzer._total_power(s2; fs = fs, method = m) ≈ 2.0 rtol = 1e-3
@@ -1639,7 +1639,7 @@ for (fun, jac, p0) in ((NeuroAnalyzer._fooof_ap, NeuroAnalyzer._fooof_ap_jac, [1
                        (NeuroAnalyzer._fooof_gauss, NeuroAnalyzer._fooof_gauss_jac, [10.0, 1.0, 2.0, 25.0, 0.5, 3.0]))
     J = jac(fq, p0)
     for k in eachindex(p0)
-        d = zeros(length(p0)); d[k] = 1e-6
+        local d = zeros(length(p0)); d[k] = 1e-6
         @test J[:, k] ≈ (fun(fq, p0 .+ d) .- fun(fq, p0 .- d)) ./ 2e-6 rtol = 1e-5 atol = 1e-8
     end
 end

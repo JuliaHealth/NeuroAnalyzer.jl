@@ -45,13 +45,13 @@ _fiff_vec(x) = isnothing(x) ? Any[] : (x isa AbstractVector ? x : [x])
 _fiff_nan2nothing(x) = (x isa Real && isnan(x)) ? nothing : x
 
 # channel labels as used in NEURO objects: ch_name (or kind + logical number when empty)
-# normalized with _clean_meg_labels()
-function _fiff_labels(mi::Dict{Symbol, Any})::Vector{String}
+# normalized with _clean_labels() if clean = true
+function _fiff_labels(mi::Dict{Symbol, Any}; clean::Bool = true)::Vector{String}
     labels = [
         isempty(n) ? uppercase(_find_fiff_chtype(ch.kind)) * " " * string(ch.log_no) : n for
         (n, ch) in zip(mi[:ch_names], mi[:ch_info])
     ]
-    return _clean_meg_labels(labels)
+    return clean ? _clean_labels(labels) : labels
 end
 
 # least-squares sphere fit to points (n × 3); returns center and radius
@@ -641,6 +641,7 @@ When accepted with `allow_maxshield = true`, the recording header contains `:max
 
 - `file_name::String`: path to the `.fif` or `.fiff` file (first part of a split recording)
 - `allow_maxshield::Bool=false`: import IAS (MaxShield) raw data instead of throwing an error
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 - `channel_locs::Symbol=:fiff`: source of channel locations in `OBJ.locs`:
     - `:fiff`: sensor/electrode positions stored in the file (see `import_locs_fiff()`); falls back to the bundled 306-channel layout if the file has no positions
     - `:layout`: bundled flattened 306-channel Vectorview/TRIUX layout (`meg_306flattened.csv`)
@@ -653,6 +654,7 @@ When accepted with `allow_maxshield = true`, the recording header contains `:max
 function import_fiff(
     file_name::String;
     allow_maxshield::Bool = false,
+    clean_labels::Bool = true,
     channel_locs::Symbol = :fiff,
 )::NeuroAnalyzer.NEURO
     # validate
@@ -733,7 +735,7 @@ function import_fiff(
     ch_type = Vector{String}(undef, ch_n)
     fiff_kind = Vector{String}(undef, ch_n)
     coil_type = Vector{String}(undef, ch_n)
-    clabels = _fiff_labels(mi)
+    clabels = _fiff_labels(mi; clean = clean_labels)
 
     any(ch -> ch.unit_mul != 0, chs) && _info(
         "Some channels define a non-zero unit multiplier; as in MNE-Python it is not applied to the data.",
@@ -888,7 +890,7 @@ function import_fiff(
     for (item_idx, item) in enumerate(mi[:ssp])
         vecs = item[:vectors]
         isnothing(vecs) && continue
-        names = _clean_meg_labels(item[:ch_names])
+        names = clean_labels ? _clean_labels(item[:ch_names]) : item[:ch_names]
         if size(vecs, 2) != length(names)
             _warn("SSP item $item_idx: $(size(vecs, 2)) vector elements but $(length(names)) channel names; ignored.")
             continue
@@ -1078,7 +1080,9 @@ function import_fiff(
     elseif channel_locs !== :none && is_306
         # the bundled layout describes the 306-channel Vectorview/TRIUX helmet only
         channel_locs === :fiff && _info("Using the bundled 306-channel Vectorview/TRIUX layout.")
-        add_locs!(obj; locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv")))
+        lay = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+        lay[!, :label] = _match_labels(lay[!, :label], clabels)
+        add_locs!(obj; locs = lay)
     elseif channel_locs !== :none
         _info("No channel locations available; OBJ.locs left empty.")
     end
@@ -1094,7 +1098,7 @@ function import_fiff(
 end
 
 """
-    import_locs_fiff(file_name)
+    import_locs_fiff(file_name; <keyword arguments>)
 
 Load channel locations from a FIFF file (raw, evoked or any file with measurement info).
 
@@ -1107,15 +1111,16 @@ Sensor orientations (coil normals) are not stored.
 # Arguments
 
 - `file_name::String`: path to the `.fif` or `.fiff` file
+- `clean_labels::Bool=true`: normalize channel labels (as in `import_fiff()`)
 
 # Returns
 
 - `DataFrame`: channel locations (`label`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`); labels match those created by `import_fiff()`
 """
-function import_locs_fiff(file_name::String)::DataFrame
+function import_locs_fiff(file_name::String; clean_labels::Bool = true)::DataFrame
     detect_format(file_name) === :fiff ||
         throw(ArgumentError("$file_name is not FIFF file."))
     fiff, _, _ = load_fiff(file_name; read_data = false)
     mi = fiff[:meas_info]
-    return _fiff_locs(mi, _fiff_labels(mi))
+    return _fiff_locs(mi, _fiff_labels(mi; clean = clean_labels))
 end

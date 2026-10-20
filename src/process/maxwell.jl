@@ -351,7 +351,7 @@ end
 _hom(R::AbstractMatrix, t::AbstractVector)::Matrix{Float64} = [R t; 0.0 0.0 0.0 1.0]
 
 # channel name normalization for matching calibration / cross-talk files: imported labels
-# are "MEG 113", the files use "MEG0113" (both → "MEG113")
+# are "MEG 0113" (or "MEG0113" with clean_labels = false), the files use "MEG0113" (all → "MEG113")
 _sss_name(s::AbstractString)::String =
     replace(uppercase(replace(s, r"[^A-Za-z0-9]" => "")), r"^MEG0+(?=\d)" => "MEG")
 

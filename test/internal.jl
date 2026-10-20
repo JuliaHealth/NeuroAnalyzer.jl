@@ -311,7 +311,7 @@ r = NeuroAnalyzer._fir_response(rand(100), range(0; stop = π, length = 1024))
 lmt = NeuroAnalyzer._labeled_matrix2dict(["a"], [[1.0]])
 @test lmt == Dict("a"=>[1.0])
 @test NeuroAnalyzer._dict2labeled_matrix(lmt) == (["a"], [[1.0]])
-@test NeuroAnalyzer._clean_labels(["eeg fp1"]) == ["fp1"]
+@test NeuroAnalyzer._clean_labels(["eeg fp1"]) == ["Fp1"]
 
 df1, df2 = NeuroAnalyzer._split(DataFrame(:a=>1:10))
 @test nrow(df1) == 8
@@ -428,12 +428,23 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._v2r(Int64[]) == Int64[]
 
 # labels
-@test NeuroAnalyzer._clean_labels(["EEG Fp1", "EDF Cz", "EOG EOG", "ECG EKG", "Fp1.", "MEG0113", "MEG000"]) ==
-      ["Fp1", "Cz", "EOG", "ECG", "Fp1", "MEG 113", "MEG 0"]
-@test NeuroAnalyzer._clean_meg_labels(["MEG0113", "EEG 001", "EOG000", "MEG 2443"]) ==
-      ["MEG 113", "EEG 1", "EOG 0", "MEG 2443"]
-@test NeuroAnalyzer._clean_eeg_labels(["EEG Fp1", "EOG EOG", "EMG001", "EOG000"]) ==
-      ["Fp1", "EOG", "EMG 1", "EOG 0"]
+# format prefixes, duplicated prefixes, padding dots, reference suffixes, 10-20 capitalization
+@test NeuroAnalyzer._clean_labels(["EEG Fp1", "EDF Cz", "EEG-O1", "EOG EOG", "ECG EKG", "Fc5.", "T9..", "EEG FP2-REF", "C3-LE", "PZ", "afz", "fpz"]) ==
+      ["Fp1", "Cz", "O1", "EOG", "ECG", "FC5", "T9", "Fp2", "C3", "Pz", "AFz", "Fpz"]
+# numbered channels: spacing only, leading zeros kept
+@test NeuroAnalyzer._clean_labels(["MEG0113", "MEG 2443", "MEG  0111", "EEG001", "EEG 060", "EOG061", "STI 014", "STI101", "MEG000"]) ==
+      ["MEG 0113", "MEG 2443", "MEG 0111", "EEG 001", "EEG 060", "EOG 061", "STI 014", "STI 101", "MEG 000"]
+# other labels unchanged (apart from surrounding whitespace)
+@test NeuroAnalyzer._clean_labels([" Fp1 ", "A12", "Pulse", "EDF Annotations", "EEG", "ECG1", "EOG 2"]) ==
+      ["Fp1", "A12", "Pulse", "Annotations", "EEG", "ECG1", "EOG 2"]
+# labels that would become identical keep their original form
+@test NeuroAnalyzer._clean_labels(["EEG Fp1", "Fp1-REF", "Cz"]) == ["EEG Fp1", "Fp1-REF", "Cz"]
+@test NeuroAnalyzer._clean_labels(["MEG0113", "MEG 0113"]) == ["MEG0113", "MEG 0113"]
+@test NeuroAnalyzer._clean_labels(String[]) == String[]
+# layout labels renamed to the recording labels
+@test NeuroAnalyzer._label_key("MEG 0113") == NeuroAnalyzer._label_key("meg113") == "MEG113"
+@test NeuroAnalyzer._match_labels(["MEG 113", "MEG 2443", "X"], ["MEG 0113", "MEG 2443"]) == ["MEG 0113", "MEG 2443", "X"]
+@test NeuroAnalyzer._match_labels(["MEG 113"], ["MEG0113"]) == ["MEG0113"]
 
 ##
 ## Selection, mapping, conversion helpers

@@ -11,6 +11,7 @@ BDF is BioSemi's 24-bit extension of the EDF format. Each sample is stored as a 
 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
@@ -28,7 +29,7 @@ BDF is BioSemi's 24-bit extension of the EDF format. Each sample is stored as a 
 
 1. https://www.biosemi.com/faq/file_format.htm
 """
-function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_bdf(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
@@ -103,7 +104,7 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         # ------------------------------------------------------------ #
         # channel types, annotation channels, Status channel           #
         # ------------------------------------------------------------ #
-        clabels = _clean_labels(string.(clabels))
+        clabels = clean_labels ? _clean_labels(clabels) : String.(strip.(clabels))
         ch_type = if detect_type
             _set_channel_types(clabels, "eeg")
         else

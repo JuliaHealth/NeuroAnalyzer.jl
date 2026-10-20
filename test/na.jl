@@ -3,7 +3,7 @@ using Test
 const load_preference = NeuroAnalyzer.Preferences.load_preference
 
 # capture what f() prints to stdout
-function capture(f)
+function capture_out(f)
     mktemp() do path, io
         redirect_stdout(io) do
             f()
@@ -17,18 +17,18 @@ end
 v0, c0 = NeuroAnalyzer.verbose, NeuroAnalyzer.colors
 NeuroAnalyzer.verbose = true
 NeuroAnalyzer.colors = false
-@test capture(() -> NeuroAnalyzer._info("abc")) == "[ Info: abc\n"
-@test capture(() -> NeuroAnalyzer._warn("abc")) == "[ Warning: abc\n"
-@test capture(() -> NeuroAnalyzer._error("abc")) == "[ Error: abc\n"
-@test capture(() -> NeuroAnalyzer._deprecated("f")) == "[ Warning: Function f() is deprecated.\n"
-@test capture(() -> NeuroAnalyzer._deprecated("f", "g")) == "[ Warning: Function f() is deprecated, please use g() instead.\n"
-@test occursin("Work In Progress", capture(() -> NeuroAnalyzer._wip()))
-@test capture(() -> NeuroAnalyzer._msg("X", NeuroAnalyzer.Crayons.Box.RED_FG, "y")) == "[ X: y\n"
+@test capture_out(() -> NeuroAnalyzer._info("abc")) == "[ Info: abc\n"
+@test capture_out(() -> NeuroAnalyzer._warn("abc")) == "[ Warning: abc\n"
+@test capture_out(() -> NeuroAnalyzer._error("abc")) == "[ Error: abc\n"
+@test capture_out(() -> NeuroAnalyzer._deprecated("f")) == "[ Warning: Function f() is deprecated.\n"
+@test capture_out(() -> NeuroAnalyzer._deprecated("f", "g")) == "[ Warning: Function f() is deprecated, please use g() instead.\n"
+@test occursin("Work In Progress", capture_out(() -> NeuroAnalyzer._wip()))
+@test capture_out(() -> NeuroAnalyzer._msg("X", NeuroAnalyzer.Crayons.Box.RED_FG, "y")) == "[ X: y\n"
 NeuroAnalyzer.colors = true
-@test occursin("abc", capture(() -> NeuroAnalyzer._info("abc")))
+@test occursin("abc", capture_out(() -> NeuroAnalyzer._info("abc")))
 # verbose = false: nothing is printed
 NeuroAnalyzer.verbose = false
-@test capture(() -> NeuroAnalyzer._info("abc")) == ""
+@test capture_out(() -> NeuroAnalyzer._info("abc")) == ""
 NeuroAnalyzer.verbose, NeuroAnalyzer.colors = v0, c0
 # logging on/off
 NeuroAnalyzer._log_off()
@@ -38,13 +38,13 @@ NeuroAnalyzer._log_on()
 
 @info "Test: version() / info()"
 @test version() == "$(NeuroAnalyzer.VER.major).$(NeuroAnalyzer.VER.minor).$(NeuroAnalyzer.VER.patch)"
-out = capture(info)
+out = capture_out(info)
 @test occursin("NeuroAnalyzer: $(NeuroAnalyzer.VER)", out)
 @test occursin("Imported packages:", out)
 @test occursin("DSP", out)
-@test occursin("Threads:", capture(NeuroAnalyzer._print_settings))
-@test capture(NeuroAnalyzer._print_thread_warnings) isa String
-@test occursin("FFTW", capture(NeuroAnalyzer._print_package_versions))
+@test occursin("Threads:", capture_out(NeuroAnalyzer._print_settings))
+@test capture_out(NeuroAnalyzer._print_thread_warnings) isa String
+@test occursin("FFTW", capture_out(NeuroAnalyzer._print_package_versions))
 
 @info "Test: set_*()"
 # settings are stored as preferences: set and restore
@@ -72,7 +72,7 @@ mkpath(joinpath(tmp, "naplugin", "src"))
 write(joinpath(tmp, "naplugin", "src", "naplugin.jl"), "na_test_plugin_fn() = 42\n")
 NeuroAnalyzer.plugins_reload()
 @test NeuroAnalyzer.na_test_plugin_fn() == 42
-@test occursin("1. naplugin", capture(plugins_list))
+@test occursin("1. naplugin", capture_out(plugins_list))
 # install from a .tar.gz archive
 arch = joinpath(mktempdir(), "naplugin2.tar.gz")
 src2 = mktempdir()

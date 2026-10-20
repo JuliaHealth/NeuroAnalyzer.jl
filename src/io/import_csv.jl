@@ -18,12 +18,13 @@ Gzip-compressed files (`.csv.gz`) are decompressed automatically by `CSV.jl`.
 
 - `file_name::String`: path to the `.csv` or `.csv.gz` file
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`
 """
-function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_csv(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
@@ -82,7 +83,7 @@ function import_csv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     # ------------------------------------------------------------------ #
     # channel metadata                                                   #
     # ------------------------------------------------------------------ #
-    clabels = _clean_labels(clabels_tmp)
+    clabels = clean_labels ? _clean_labels(clabels_tmp) : String.(strip.(clabels_tmp))
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
     units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 

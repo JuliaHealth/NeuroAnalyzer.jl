@@ -12,12 +12,13 @@ Channel locations are read from the `[Coordinates]` section of the header when a
 
 - `file_name::String`: path to the `.vhdr` or `.ahdr` header file
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`
 """
-function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
+function import_bv(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
@@ -173,7 +174,7 @@ function import_bv(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.N
             ]
         end
     end
-    clabels = _clean_labels(string.(clabels))
+    clabels = clean_labels ? _clean_labels(clabels) : String.(strip.(clabels))
 
     ch_type = if detect_type
         _set_channel_types(clabels, "eeg")

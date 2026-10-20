@@ -11,6 +11,7 @@ CNT files store a fixed 900-byte global header, a per-channel header block (75 b
 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: infer channel type from channel label
+- `clean_labels::Bool=true`: normalize channel labels (see `import_recording()`)
 - `data_format::Symbol=:i32`: sample width; `:i16` for 16-bit or `:i32` for 32-bit; Neuroscan does not encode this in the file header - you must supply it based on your recording setup
 
 # Returns
@@ -25,6 +26,7 @@ function import_cnt(
     file_name::String;
     data_format::Symbol = :i32,
     detect_type::Bool = true,
+    clean_labels::Bool = true,
 )::NeuroAnalyzer.NEURO
     # validate
     _check_var(data_format, [:i32, :i16], "data_format")
@@ -425,6 +427,7 @@ function import_cnt(
     # ------------------------------------------------------------------ #
     # channel types and units                                            #
     # ------------------------------------------------------------------ #
+    clean_labels && (clabels = _clean_labels(clabels))
     ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
     # samples are scaled to μV above: e.g. an ECG channel stays in μV (its default unit would be mV)
     units, _ = _resolve_units(fill("μV", ch_n), ch_type)

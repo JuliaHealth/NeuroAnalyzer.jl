@@ -271,7 +271,7 @@ for (f, f!, kw) in ((locs_flipx, locs_flipx!, ()), (locs_flipy, locs_flipy!, ())
                     (locs_sph2cart, locs_sph2cart!, ()), (locs_sph2pol, locs_sph2pol!, ()),
                     (locs_generate, locs_generate!, ()))
     l1 = f(locs; kw...)
-    l2 = deepcopy(locs)
+    local l2 = deepcopy(locs)
     f!(l2; kw...)
     @test Matrix(l2[!, 2:end]) ≈ Matrix(l1[!, 2:end])
 end
@@ -290,7 +290,7 @@ l2 = locs_flipx(locs)
 @info "Test: locs_rot*() values"
 # rotations keep distances from the origin; 360° restores the locations
 for f in (locs_rotx, locs_roty, locs_rotz)
-    l2 = f(locs; a = 37)
+    local l2 = f(locs; a = 37)
     @test sqrt.(sum(abs2, coords(l2); dims = 2)) ≈ sqrt.(sum(abs2, coords(locs); dims = 2))
     @test coords(f(locs; a = 360)) ≈ coords(locs) atol = 1e-10
 end

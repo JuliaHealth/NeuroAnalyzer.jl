@@ -524,7 +524,7 @@ mf = generate_morlet_fwhm(1000, 10, 1; h = 0.2)
 @test_throws ArgumentError generate_morlet_fwhm(1000, 10, 1; h = 0.0)
 # noise: normalized to [-a, a]
 for type in (:whiten, :whiteu, :pink)
-    s = generate_noise(1000, 2; type = type)
+    local s = generate_noise(1000, 2; type = type)
     @test extrema(s) == (-2.0, 2.0)
 end
 @test_throws ArgumentError generate_noise(10; type = :x)

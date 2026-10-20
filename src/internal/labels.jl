@@ -1,119 +1,89 @@
-# ------------------------------------------------------------------ #
-# internal helper: apply a sequence of replacements in a single pass,
-# avoiding repeated intermediate allocations.
-# ------------------------------------------------------------------ #
+# standard 10-20 / 10-10 electrode names (case-insensitive): prefix + number or "z"
+const _LABEL_1010 = r"^(fp|af|ft|fc|tp|cp|po|f|c|t|p|o|i|n|a|m)(\d{1,2}|z)$"i
+
+# numbered channels of MEG systems (≥ 3 digits: MEG0113, EEG 001, EOG061, STI 014); "ECG1" is not one
+const _LABEL_NUMBERED = r"^(MEG|EEG|EOG|ECG|EKG|EMG|STI|MISC|IAS|SYS|CHPI)\s*(\d{3,})$"i
+
+"""
+    _clean_label(label)
+
+Normalize a single channel label (see `_clean_labels()`).
+"""
+function _clean_label(label::AbstractString)::String
+    raw = strip(String(label))
+    l = replace(raw, r"\s+" => " ")
+
+    # numbered channels: one space between the prefix and the number, leading zeros kept
+    # ("MEG0113" → "MEG 0113", "EOG061" → "EOG 061", "EEG 001" unchanged)
+    m = match(_LABEL_NUMBERED, l)
+    m !== nothing && return m[1] * " " * m[2]
+
+    # format prefixes before a channel name ("EEG Fp1", "EDF C3", "EEG-Fp1"), not before a number
+    l = replace(l, r"^(EEG|EDF|BDF)[\s_-]+(?=[^\d\s])"i => "")
+
+    # duplicated type prefixes
+    l = replace(l, r"^EOG\s+EOG"i => "EOG")
+    l = replace(l, r"^ECG\s+EKG"i => "ECG")
+
+    # trailing dots used as padding (PhysioNet: "Fc5.", "T9..")
+    l = replace(l, r"\.+$" => "")
+
+    # reference suffixes (TUH: "FP1-REF", "C3-LE")
+    l = replace(l, r"-(REF|LE|AR|AVG)$"i => "")
+
+    # standard capitalization of 10-20 / 10-10 names: FP1 → Fp1, CZ → Cz, afz → AFz, Fc5 → FC5
+    m = match(_LABEL_1010, l)
+    if m !== nothing
+        prefix = lowercase(m[1]) == "fp" ? "Fp" : uppercase(m[1])
+        l = prefix * lowercase(m[2])
+    end
+
+    return isempty(l) ? raw : l
+end
 
 """
     _clean_labels(clabels)
 
-Normalize raw channel labels read from an EDF/BDF file.
+Normalize channel labels read from a file header.
 
-Removes format prefixes (EEG, EDF, BDF), normalizes duplicate-label patterns (EOG EOG → EOG, ECG EKG → ECG), strips stray dots, and normalizes MEG labels to the form "MEG <number>" with no leading zeros.
+- numbered channels of MEG systems (MEG, EEG, EOG, ECG, EMG, STI, MISC, … with a ≥ 3-digit number): exactly one space between the prefix and the number; leading zeros are kept (`"MEG0113"` → `"MEG 0113"`, as in MNE-Python and the MEGIN naming)
+- format prefixes before a channel name are removed (`"EEG Fp1"`, `"EDF C3"` → `"Fp1"`, `"C3"`)
+- duplicated type prefixes are merged (`"EOG EOG"` → `"EOG"`, `"ECG EKG"` → `"ECG"`)
+- trailing padding dots are removed (`"Fc5."` → `"FC5"`)
+- reference suffixes are removed (`"FP1-REF"`, `"C3-LE"` → `"Fp1"`, `"C3"`)
+- standard 10-20 / 10-10 names get the standard capitalization (`"FP1"` → `"Fp1"`, `"CZ"` → `"Cz"`)
+
+Labels that would become identical after cleaning keep their original form.
 
 # Arguments
 
-- `clabels::Vector{String}`: raw channel labels from file header
+- `clabels::AbstractVector{<:AbstractString}`: raw channel labels
 
 # Returns
 
 - `Vector{String}`: cleaned labels (same length, same order)
 """
-function _clean_labels(clabels::Vector{String})::Vector{String}
-    # string is immutable in Julia - shallow copy is sufficient
-    l = copy(clabels)
-
-    # remove EEG prefix (case-insensitive, with any trailing whitespace)
-    # four separate replace calls collapsed into one regex pass
-    l = replace.(l, r"(?i)EEG\s*" => "")
-
-    # normalize duplicate-label patterns (case-insensitive)
-    l = replace.(l, r"(?i)EOG\s+EOG" => "EOG")
-    l = replace.(l, r"(?i)ECG\s+EKG" => "ECG")
-
-    # remove EDF/BDF format prefixes with any trailing whitespace
-    l = replace.(l, r"(?i)EDF\s*" => "")
-    l = replace.(l, r"(?i)BDF\s*" => "")
-
-    # strip dots - longest pattern first to avoid leaving isolated dots
-    l = replace.(l, ".." => "", "." => "")
-
-    # normalise MEG labels: ensure exactly one space after "MEG" and strip leading zeros,
-    # keeping the last digit of an all-zero number ("MEG000" → "MEG 0", not "MEG")
-    l = replace.(l, r"MEG\s*" => "MEG ")
-    l = replace.(l, r"MEG 0+(?=\d)" => "MEG ")
-
-    # collapse any runs of spaces introduced by prefix removal
-    l = replace.(l, r"\s{2,}" => " ")
-
-    return strip.(l)
+function _clean_labels(clabels::AbstractVector{<:AbstractString})::Vector{String}
+    raw = [String(strip(l)) for l in clabels]
+    l = _clean_label.(clabels)
+    # cleaning must not create duplicates: revert the colliding labels
+    for lbl in unique(l)
+        idx = findall(isequal(lbl), l)
+        length(idx) > 1 && length(unique(raw[idx])) > 1 && (l[idx] = raw[idx])
+    end
+    return l
 end
 
-"""
-    _clean_meg_labels(clabels)
-
-Normalize channel labels from an MEG file.
-
-Ensures a single space between each modality prefix (MEG, EEG, EOG, EMG) and its channel number, and strips leading zeros from the number.
-
-# Arguments
-
-- `clabels::Vector{String}`: raw channel labels from MEG file header
-
-# Returns
-
-- `Vector{String}`: cleaned labels (same length, same order)
-"""
-function _clean_meg_labels(clabels::Vector{String})::Vector{String}
-    # string is immutable in Julia - shallow copy is sufficient
-    l = copy(clabels)
-
-    # ensure one space after each modality prefix and strip leading zeros,
-    # keeping the last digit of an all-zero number ("EOG000" → "EOG 0")
-    for prefix in ("MEG", "EEG", "EOG", "EMG")
-        l = replace.(l, Regex("$prefix\\s*") => "$prefix ")
-        l = replace.(l, Regex("$prefix 0+(?=\\d)") => "$prefix ")
-    end
-
-    # collapse any runs of spaces introduced above
-    l = replace.(l, r"\s{2,}" => " ")
-
-    return strip.(l)
-end
+# label compared without separators, case and leading zeros of the number ("MEG 0113" ≡ "MEG113" ≡ "meg0113")
+_label_key(s::AbstractString)::String =
+    replace(uppercase(replace(s, r"[^A-Za-z0-9]" => "")), r"^([A-Z]+)0+(?=\d)" => s"\1")
 
 """
-    _clean_eeg_labels(clabels)
+    _match_labels(labels, clabels)
 
-Normalize channel labels from an EEG file.
-
-Removes the "EEG " prefix, normalises duplicate-label patterns, and strips leading zeros from EEG/EOG/EMG channel numbers.
-
-# Arguments
-
-- `clabels::Vector{String}`: raw channel labels from EEG file header
-
-# Returns
-
-- `Vector{String}`: cleaned labels (same length, same order)
+Rename `labels` (e.g. of a bundled layout) to the matching recording labels `clabels`; labels without a match are kept.
 """
-function _clean_eeg_labels(clabels::Vector{String})::Vector{String}
-    # string is immutable in Julia - shallow copy is sufficient
-    l = copy(clabels)
-
-    # remove "EEG " prefix (with trailing space) - a plain label like "EEG Fp1" becomes "Fp1"
-    l = replace.(l, "EEG " => "")
-
-    # normalise duplicate-label patterns
-    l = replace.(l, "EOG EOG" => "EOG")
-    l = replace.(l, "ECG EKG" => "ECG")
-
-    # strip leading zeros from EEG/EOG/EMG channel numbers, keeping the last digit of an all-zero number
-    for prefix in ("EEG", "EMG", "EOG")
-        l = replace.(l, Regex("$prefix\\s*0+(?=\\d)") => "$prefix ")
-        l = replace.(l, Regex("$prefix\\s*0+\$") => "$prefix 0")
-    end
-
-    # collapse any runs of spaces
-    l = replace.(l, r"\s{2,}" => " ")
-
-    return strip.(l)
+function _match_labels(labels::AbstractVector{<:AbstractString}, clabels::AbstractVector{<:AbstractString})::Vector{String}
+    key = Dict(_label_key(c) => String(c) for c in clabels)
+    return [get(key, _label_key(l), String(l)) for l in labels]
 end
