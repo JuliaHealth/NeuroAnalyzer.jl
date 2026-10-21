@@ -113,17 +113,19 @@ function plot_topo(
     # plot parameters
     if ps === :l
         plot_size = (900, 900)
-        marker_size = length(ch) > 64 ? 8 : 16
+        marker_size = length(ch) > 64 ? 6 : length(ch) > 32 ? 9 : 12
         iter = 512
         font_size = 20
+        label_size = length(ch) > 64 ? 11 : length(ch) > 32 ? 14 : 16
         lw = 2
         sw = 4
         !occursin("\n", title) && title !== "" && (title *= "\n")
     elseif ps === :m
         plot_size = (300, 300)
-        marker_size = length(ch) > 64 ? 2 : 4
+        marker_size = length(ch) > 64 ? 2 : length(ch) > 32 ? 3 : 4
         iter = 256
         font_size = 10
+        label_size = length(ch) > 64 ? 5 : length(ch) > 32 ? 6 : 8
         cb_title = ""
         lw = 1
         sw = 2
@@ -132,6 +134,7 @@ function plot_topo(
         marker_size = length(ch) > 64 ? 1 : 2
         iter = 128
         font_size   = 5
+        label_size = 4
         title = ""
         cb = false
         contours = 0
@@ -336,13 +339,9 @@ function plot_topo(
         end
     end
 
-    if electrodes
-        label_offset_x = 0.0
-        label_offset_y = -0.04
-    else
-        label_offset_x = 0.0
-        label_offset_y = 0.0
-    end
+    # labels below the electrode markers (offset in pixels, independent of the plot scale)
+    label_align = electrodes ? (:center, :top) : (:center, :center)
+    label_offset = electrodes ? (0, -(marker_size / 2 + 2)) : (0, 0)
 
     # draw mask to crop interpolation outside the head circle
     head12 && GLMakie.arc!(ax, Point2f(0, 0), r, -pi, pi; linewidth = 5, color = :white)
@@ -355,11 +354,12 @@ function plot_topo(
                 local_i = findfirst(==(idx), collect(ch))
                 isnothing(local_i) && continue
                 GLMakie.text!(
-                    loc_x[local_i] + label_offset_x,
-                    loc_y[local_i] + label_offset_y;
+                    loc_x[local_i],
+                    loc_y[local_i];
                     text = local_locs.label[idx],
-                    align = (:center, :center),
-                    fontsize = font_size,
+                    align = label_align,
+                    offset = label_offset,
+                    fontsize = label_size,
                 )
             end
         end
