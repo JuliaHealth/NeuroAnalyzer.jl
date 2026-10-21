@@ -130,7 +130,7 @@ end
 """
     filter_g(obj; <keyword arguments>)
 
-Filter selected channels of a NEURO object using a Gaussian kernel in the frequency domain.
+Replace selected channels of a NEURO object with the amplitude envelope of the band around `f`: the FFT of the signal is multiplied by a Gaussian kernel centered at `f` (positive frequencies only) and transformed back; the absolute value of this band-limited analytic signal is the envelope.
 
 # Arguments
 
@@ -142,7 +142,7 @@ Filter selected channels of a NEURO object using a Gaussian kernel in the freque
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: new object with filtered channels
+- `NeuroAnalyzer.NEURO`: new object; the selected channels contain the amplitude envelope
 """
 function filter_g(
     obj::NeuroAnalyzer.NEURO;
@@ -173,7 +173,7 @@ end
 """
     filter_g!(obj; <keyword arguments>)
 
-Filter selected channels of a NEURO object in-place using a Gaussian kernel in the frequency domain.
+Replace selected channels of a NEURO object in-place with the amplitude envelope of the band around `f` (see `filter_g()`).
 
 # Arguments
 
