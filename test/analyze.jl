@@ -11,18 +11,18 @@ keep_epoch!(e10; ep = 1:10)
 NeuroAnalyzer.filter!(
     e10;
     ch = "all",
-    fprototype = :fir,
-    ftype = :lp,
-    cutoff = 40,
-    order = 91,
+    fprototype = :butterworth,
+    ftype = :hp,
+    cutoff = 0.5,
+    order = 4,
 )
 NeuroAnalyzer.filter!(
     e10;
     ch = "all",
     fprototype = :fir,
-    ftype = :hp,
-    cutoff = 1,
-    order = 91,
+    ftype = :lp,
+    cutoff = 40,
+    bw = 2,
 )
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -64,6 +64,9 @@ ad = ampdiff(e10; ch = "all")
 @test size(band_power(e10, ch = "Fp1", flim = (10, 20), method = :mt)) == (1, 10)
 @test size(band_power(e10, ch = "Fp1", flim = (10, 20), method = :mw)) == (1, 10)
 @test size(band_power(e10, ch = "Fp1", flim = (10, 20), method = :gh)) == (1, 10)
+# band power of a sine of amplitude 10 = its variance (50), as in MNE-Python (sum of PSD bins × bin width)
+x_bp = 10 .* sin.(2π * 10 .* (0:255) ./ 128 .+ 0.3)
+@test NeuroAnalyzer._band_power(x_bp; fs = 128, flim = (8, 12), wlen = 128, woverlap = 64) ≈ 50 rtol = 1e-3
 
 @info "Test: band_mpower()"
 mbp, maxf, maxbp, maxba = band_mpower(e10; ch = "Fp1", flim = (10, 20))
@@ -449,8 +452,8 @@ iv, ia = ispc(e10; ch = "all")
 @test size(iv) == (24, 24, 10)
 @test size(ia) == (24, 24, 10)
 iv, ia, sd, pd, s1p, s2p = ispc(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-@test iv ≈ [0.9920495704;;]
-@test ia ≈ [0.000134242680366;;]
+@test iv ≈ [0.199648809268;;]
+@test ia ≈ [1.56178064844;;]
 @test size(sd) == (1, 2560, 1)
 @test size(pd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -463,10 +466,10 @@ iv, izv, ia, ip = NeuroAnalyzer._itpc(ones(1, 10, 10); t = 1)
 @test ia == 0.0
 @test ip == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 iv, izv, ia, ip = itpc(e10; ch = "Fp1", t = 1)
-@test iv ≈ [0.99979974993]
-@test izv ≈ [9.9959953997]
-@test ia ≈ [-0.00360014005561]
-@test ip[1] ≈ 0.0306443702042
+@test iv ≈ [0.016813756844]
+@test izv ≈ [0.002827024192]
+@test ia ≈ [2.27334195841]
+@test ip[1] ≈ 2.57452357929
 
 @info "Test: itpc_spec()"
 iv, izv, f = itpc_spec(e10; ch = "Fp1", flim = (0, 4), nfrq = 5)
@@ -619,7 +622,7 @@ m0b = 0.8 .* m0a .+ 0.3 .* randn(rng_w, 512, 30)
 pv = pli(e10; ch = "all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = pli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-@test pv == [0.265625;;]
+@test pv ≈ [0.29453125;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -634,7 +637,7 @@ pv, phd, s1ph, s2ph = NeuroAnalyzer._plv(v1, v2)
 pv = plv(e10; ch = "all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = plv(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-@test pv ≈ [0.99204957;;]
+@test pv ≈ [0.19964881;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -780,7 +783,7 @@ amp_data = NeuroAnalyzer.amp(e10; ch = "all")
 @test NeuroAnalyzer._rms(a1) == [1.0 1.0; 1.0 1.0]
 @test NeuroAnalyzer.rms(e10, ch = "Fp1") ≈
       [
-    363.813292624 349.851835483 336.525088954 329.744566991 317.292431492 311.970593552 285.781759746 267.596794688 259.64042809 243.790799956
+    61.392375488 56.08131375 24.663485263 50.475698329 25.628403821 50.588155212 53.699695346 63.480314377 40.975312719 51.974070055
 ]
 
 @info "Test: rmse()"
@@ -1033,9 +1036,9 @@ ph, f = phs(e10; ch = "all")
 
 @info "Test: sym_idx()"
 @test NeuroAnalyzer._sym_idx(v) == 5.0
-@test sym_idx(e10, ch = "Fp1") ==
+@test sym_idx(e10, ch = "Fp1") ≈
       [
-    852.3333333333334 1279.0 852.3333333333334 852.3333333333334 1279.0 852.3333333333334 639.0 852.3333333333334 1279.0 1279.0
+    1.0046985121 0.865889212828 1.05457463884 1.00784313725 1.03821656051 0.843052555796 0.876832844575 1.03659506762 1.0562248996 1.03013481364
 ]
 
 @info "Test: lat_idx()"
@@ -1118,7 +1121,7 @@ gd, sc = diss(erp, erp; ch1 = "all", ch2 = "all")
 @test NeuroAnalyzer._sumsim(a1, a2, theta = 1) ≈
       [0.176921206317 0.176921206317; 0.176921206317 0.176921206317]
 @test sumsim(e10, e10, ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, theta = 0.0001) ≈
-      [0.33211228;;]
+      [0.59932154;;]
 
 @info "Test: hfd()"
 @test NeuroAnalyzer._hfd([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) ≈ 0.86044864760
@@ -1327,6 +1330,9 @@ x2 = sin.(2π * 8 .* (0:511) ./ 256 .- π / 2)
 @test NeuroAnalyzer._dpli(x1, x2).pv > 0.9
 # pacor() with :reg (always threw)
 @test size(pacor(e10; ch = "Fp1", l = 0.05, method = :reg).pac, 2) == 2 * round(Int, 0.05 * sr(e10)) + 1
+# regression PACF solved by QR: same as StatsBase (Cholesky) when well-conditioned
+x_pac = randn(NeuroAnalyzer.Random.MersenneTwister(1), 1000)
+@test NeuroAnalyzer._pacf_reg(x_pac, 10) ≈ NeuroAnalyzer.pacf(x_pac, collect(1:10); method = :regression)
 # phase differences are wrapped to (-π, π]
 x1 = sin.(2π * 5 .* (0:255) ./ 256)
 x2 = sin.(2π * 5 .* (0:255) ./ 256 .+ 3.0)

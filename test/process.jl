@@ -148,6 +148,24 @@ s, bn, bf = bpsplit(e10; ch = "all")
 @test length(bn) == 13
 @test length(bf) == 13
 @test size(s) == (13, 24, 2560, 10)
+# band clamped to Nyquist (fs = 256 Hz): extracted with a high-pass filter
+@test bf[findfirst(==(:gamma), bn)] == (30.0, 127.9)
+s, bn, bf = bpsplit(e10; ch = "Fp1", band = [:alpha, :gamma], fprototype = :butterworth, order = 4)
+@test bn == [:alpha, :gamma]
+@test size(s) == (2, 1, 2560, 10)
+# 10 Hz + 20 Hz sines: each band keeps its own component (std of a unit sine = 1/√2)
+e_tmp = deepcopy(e10)
+e_tmp.data[1, :, :] .= sin.(2π * 10 .* e_tmp.epoch_time) .+ sin.(2π * 20 .* e_tmp.epoch_time)
+std_mid(x) = (m = x[600:1960]; sqrt(sum((m .- sum(m) / length(m)) .^ 2) / (length(m) - 1)))
+for (p, kw) in ((:fir, (;)), (:firls, (;)), (:remez, (;)), (:butterworth, (order = 6,)))
+    local s = bpsplit(e_tmp; ch = "Fp1", band = [:alpha, :beta, :gamma], fprototype = p, kw...).s
+    @test std_mid(s[1, 1, :, 1]) ≈ 1 / sqrt(2) atol = 0.01
+    @test std_mid(s[2, 1, :, 1]) ≈ 1 / sqrt(2) atol = 0.01
+    @test std_mid(s[3, 1, :, 1]) < 0.01
+end
+@test_throws ArgumentError bpsplit(e10; ch = "Fp1", fprototype = :iirnotch)
+@test_throws ArgumentError bpsplit(e10; ch = "Fp1", band = [:foo])
+@test_throws ArgumentError bpsplit(e10; ch = "Fp1", fprototype = :butterworth)
 
 @info "Test: fconv()"
 @test NeuroAnalyzer._fconv(v1, kernel = v2) == ComplexF64[
@@ -207,7 +225,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :butterworth,
     ftype = :hp,
     cutoff = 1,
-    order = 12,
+    order = 4,
 )
 @test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(
@@ -244,7 +262,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :chebyshev1,
     ftype = :hp,
     cutoff = 1,
-    order = 12,
+    order = 4,
     rs = 2,
 )
 @test size(eeg_tmp) == size(e10)
@@ -354,8 +372,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :fir,
     ftype = :lp,
     cutoff = 40,
-    order = 91,
-    bw = 0.5,
+    bw = 1,
 )
 @test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(
@@ -364,7 +381,6 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :fir,
     ftype = :hp,
     cutoff = 1,
-    order = 91,
     bw = 0.5,
 )
 @test size(eeg_tmp) == size(e10)
@@ -374,8 +390,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :fir,
     ftype = :bs,
     cutoff = (49, 51),
-    order = 91,
-    bw = 0.5,
+    bw = 1,
 )
 @test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(
@@ -384,8 +399,7 @@ eeg_tmp = NeuroAnalyzer.filter(
     fprototype = :fir,
     ftype = :bp,
     cutoff = (49, 51),
-    order = 91,
-    bw = 0.5,
+    bw = 1,
 )
 @test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(
@@ -1168,6 +1182,17 @@ for p in (:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :reme
         @test sine_amp(y, s) < 0.05
     end
 end
+
+@info "Test: two-pass FIR filtering of long signals"
+# DSP.filtfilt(b, x) filters in place and is corrupted when filt! uses FFT overlap-save
+# reference: forward and reverse convolution (the middle is unaffected by the edge extension)
+xl = randn(NeuroAnalyzer.Random.MersenneTwister(1), 100_000) .+ 100
+f = filter_create(; fprototype = :fir, ftype = :hp, cutoff = 0.5, fs = fs, bw = 0.5)
+fc(v) = NeuroAnalyzer.DSP.conv(v, f)[((length(f) - 1) ÷ 2 + 1):((length(f) - 1) ÷ 2 + length(v))]
+yl = NeuroAnalyzer._filter_apply(xl; flt = f)
+@test yl[20_000:80_000] ≈ reverse(fc(reverse(fc(xl))))[20_000:80_000] atol = 1e-9
+@test NeuroAnalyzer._fir_filtfilt(f[1:31], xl) ≈ NeuroAnalyzer.DSP.filtfilt(f[1:31], xl)
+@test length(NeuroAnalyzer._fir_filtfilt(f, xl[1:500])) == 500
 
 @info "Test: filter() / filter_apply() / filter!() on objects"
 f = filter_create(; fprototype = :butterworth, ftype = :lp, cutoff = 30, fs = fs, order = 4)

@@ -596,6 +596,25 @@ function filter_report(
     )
 end
 
+# zero-phase FIR filtering, as DSP.filtfilt(b, s): odd-symmetric extension of
+# length(b) - 1 samples at both ends, then convolution with b ⋆ reverse(b)
+# DSP.filtfilt(b, s) filters in place (filt!(x, b, x)); when filt! switches to
+# FFT overlap-save (long filters and signals), the input is overwritten before
+# it is read and the output is corrupted (DSP.jl ≤ 0.8.6)
+function _fir_filtfilt(b::AbstractVector, s::AbstractVector)::Vector{Float64}
+    nb = length(b)
+    n = length(s)
+    p = min(nb - 1, n - 1)
+    ext = zeros(Float64, n + p + nb - 1)
+    for i in 1:p
+        ext[i] = 2 * s[1] - s[p + 2 - i]
+        ext[n + p + i] = 2 * s[n] - s[n - i]
+    end
+    ext[(p + 1):(p + n)] = s
+    y = filt(DSP.conv(b, reverse(b)), ext)
+    return y[(p + nb):(p + nb + n - 1)]
+end
+
 """
     _filter_apply(s; <keyword arguments>)
 
@@ -655,7 +674,7 @@ function _filter_apply(
     if dir === :onepass
         return filt(flt, s)
     elseif dir === :twopass
-        return filtfilt(flt, s)
+        return flt isa Vector{Float64} ? _fir_filtfilt(flt, s) : filtfilt(flt, s)
     elseif dir === :reverse
         return reverse(filt(flt, reverse(s)))
     end
@@ -764,7 +783,7 @@ function _filter_one(
 )
     s = @view(obj.data[ch_idx, :, ep_idx])
     dir === :onepass && return filt(flt, s)
-    dir === :twopass && return filtfilt(flt, s)
+    dir === :twopass && return flt isa Vector{Float64} ? _fir_filtfilt(flt, s) : filtfilt(flt, s)
     return reverse(filt(flt, reverse(s)))
 end
 

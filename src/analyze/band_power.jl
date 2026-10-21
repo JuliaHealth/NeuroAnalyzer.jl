@@ -7,7 +7,7 @@ Calculate the absolute power in a frequency band by:
 
 1. Estimating the PSD with the chosen method (Welch, FFT, MT, STFT, MW, GH)
 2. Locating the bin indices that bracket the requested band
-3. Integrating the PSD over that band using Simpson's rule
+3. Integrating the PSD over that band: sum of the PSD bins × bin width (for a sine of amplitude A, the band power equals its variance, A² / 2)
 
 # Arguments
 
@@ -74,8 +74,9 @@ function _band_power(
     # frequency resolution: uniform bin spacing from the PSD
     dx = frq[2] - frq[1]
 
-    # integrate
-    bp = Simpson.simpson(@view(pow[f1_idx:f2_idx]), @view(frq[f1_idx:f2_idx]); dx = dx)
+    # integrate: sum of the PSD bins × bin width (rectangle rule, as total_power(); Simpson's rule
+    # weights alternate bins by 4/3 and 2/3, which biases spectra with narrow peaks)
+    bp = sum(@view(pow[f1_idx:f2_idx])) * dx
 
     return bp
 end

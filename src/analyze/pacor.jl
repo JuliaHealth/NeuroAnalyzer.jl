@@ -1,5 +1,18 @@
 export pacor
 
+# PACF at lags 1:l by successive OLS regressions with intercept, as
+# StatsBase.pacf(; method = :regression), but solved by QR instead of Cholesky of X'X:
+# lagged copies of a band-limited (e.g. low-pass filtered) signal are nearly collinear
+# and X'X is numerically singular
+function _pacf_reg(s::AbstractVector, l::Int64)::Vector{Float64}
+    n = length(s)
+    X = ones(n, l + 1)
+    for k in 1:l
+        X[(k + 1):n, k + 1] = @view(s[1:(n - k)])
+    end
+    return [(X[(k + 1):n, 1:(k + 1)] \ s[(k + 1):n])[end] for k in 1:l]
+end
+
 """
     _pacor(s; <keyword arguments>)
 
@@ -20,10 +33,6 @@ Computes the partial auto-correlation function (PACF) of a 1-D signal vector ove
 # Returns
 
 - `Array{Float64, 3}`: shape `(1, 2l+1, 1)`
-
-# Notes
-
-If you get `ERROR: PosDefException: matrix is not positive definite; Cholesky factorization failed.`, try lowering `l` value or change method to `:yw`.
 """
 function _pacor(
     s::AbstractVector;
@@ -33,17 +42,18 @@ function _pacor(
 )::Array{Float64, 3}
     _check_var(method, [:reg, :yw], "method")
 
-    # map short symbol names to the names expected by StatsBase.pacf()
-    method === :reg && (method = :regression)
-    method === :yw && (method = :yulewalker)
-
     s_tmp = demean ? _remove_dc(s) : s
 
     # positive and negative lags computed separately (reverse trick for negative)
     # lags 1:l only, lag 0 is 1 by definition: StatsBase.pacf(; method = :yulewalker) returns
     # shifted values (lag 1 = the lag-2 autocorrelation) when lag 0 is requested
-    pac = vcat(1.0, pacf(s_tmp, collect(1:l); method = method))
-    pac_neg = vcat(1.0, pacf(reverse(s_tmp), collect(1:l); method = method))
+    if method === :reg
+        pac = vcat(1.0, _pacf_reg(s_tmp, l))
+        pac_neg = vcat(1.0, _pacf_reg(reverse(s_tmp), l))
+    else
+        pac = vcat(1.0, pacf(s_tmp, collect(1:l); method = :yulewalker))
+        pac_neg = vcat(1.0, pacf(reverse(s_tmp), collect(1:l); method = :yulewalker))
+    end
 
     # concatenate to form the symmetric lag vector: [−l … −1, 0, +1 … +l].
     pac = vcat(reverse(pac_neg), pac[2:end])
