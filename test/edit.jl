@@ -373,6 +373,17 @@ e_tmp = channel2marker(e_tmp; ch = labels(eeg)[24], value = "pulse")
 @test e_tmp.markers[!, :length] ≈ [1.0, 40 / 256]
 @test e_tmp.markers[!, :value] == ["pulse", "pulse"]
 @test_throws ArgumentError channel2marker(e_tmp; ch = labels(eeg)[24], v = 7)
+# trigger channel with several event codes: an event may end by a change to another code
+e_tmp.data[24, :, 1] .= 0.0
+e_tmp.data[24, 257:300, 1] .= 1.0
+e_tmp.data[24, 301:350, 1] .= 32.0
+e_tmp.data[24, 1025:1100, 1] .= 1.0
+e_tmp.markers = e_tmp.markers[1:0, :]
+e_tmp2 = channel2marker(e_tmp; ch = labels(eeg)[24], v = 1, value = "code 1")
+@test e_tmp2.markers[!, :start] ≈ [1.0, 4.0]
+@test e_tmp2.markers[!, :length] ≈ [44 / 256, 76 / 256]
+e_tmp2 = channel2marker(e_tmp; ch = labels(eeg)[24], v = 32, value = "code 32")
+@test e_tmp2.markers[!, :start] ≈ [300 / 256]
 
 @info "Test: reflect() / chop()"
 e_tmp = add_markers(e10; markers = DataFrame(:id => ["a"], :start => [12.0], :length => [0.0], :value => ["x"], :channel => [0]))

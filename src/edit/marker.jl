@@ -344,10 +344,13 @@ function channel2marker(
     v in ev_v || throw(ArgumentError("Event channel does not contain value $v."))
     _info("Event channel contains values: $ev_v")
 
-    ev_segs = diff(ev_ch)
+    # edges of the samples equal to v (a trigger channel may contain several event codes,
+    # so jumps of the channel value itself are not reliable: e.g. 1 → 32 is the end of
+    # event 1 and the start of event 32)
+    ev_segs = diff(Int8.(ev_ch .== v))
 
-    ev_start = findall(ev_segs .== v)
-    ev_end   = findall(ev_segs .== -v)
+    ev_start = findall(ev_segs .== 1)
+    ev_end   = findall(ev_segs .== -1)
 
     # an edge at position i lies between samples i and i + 1, so an event detected at
     # edge i starts at sample i + 1, i.e. at i / fs seconds
