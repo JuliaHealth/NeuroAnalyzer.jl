@@ -8,13 +8,13 @@ export denoise_dwd!
 
 Perform denoising by zeroing a frequency band in the continuous wavelet domain.
 
-Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, then reconstructs the signal via the inverse CWD.
+Computes the CWD, reconstructs the coefficients in the band `[nf − w, nf + w]` Hz via the inverse CWD and subtracts them from the signal. The inverse CWD is approximate and not strictly band-limited: check the result, as a narrow band may be removed only partially.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=1)`: wavelet (β = 1: more scales per octave than the `cwd()` default, for a more accurate reconstruction); see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
@@ -29,7 +29,7 @@ Computes the CWD, zeros all coefficients in the band `[nf − w, nf + w]` Hz, th
 function _denoise_cwd(
     s::AbstractVector;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π); β = 2),
+    wt::T = wavelet(Morlet(2π); β = 1),
     nf::Real,
     w::Int64 = 5,
     type::Symbol = :pd,
@@ -39,16 +39,18 @@ function _denoise_cwd(
     nf >= 1 || throw(ArgumentError("nf must be ≥ 1."))
     nf <= fs / 2 || throw(ArgumentError("nf must be ≤ $(fs / 2)."))
 
-    # perform CWD and zero out noise frequency band
+    # perform CWD and keep only the noise frequency band
     # complex coefficients are needed for an accurate reconstruction
     s_cwd = NeuroAnalyzer._cwd(s; wt = wt, complex = true)
     f = _cwtfrq(s; fs = fs, wt = wt)
     f_idx1 = vsearch(nf - w, f)
     f_idx2 = vsearch(nf + w, f)
-    s_cwd[f_idx1:f_idx2, :] .= 0
+    noise = zero(s_cwd)
+    noise[f_idx1:f_idx2, :] = @view(s_cwd[f_idx1:f_idx2, :])
 
-    # reconstruct signal
-    return vec(icwd(s_cwd; wt = wt, type = type))
+    # reconstruct the noise band and subtract it (the iCWD is approximate: reconstructing
+    # the whole signal would distort it also outside the band)
+    return s .- vec(icwd(noise; wt = wt, type = type))
 end
 
 """
@@ -60,7 +62,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain f
 
 - `s::AbstractArray`: signal array, shape (channels, samples, epochs)
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=1)`: wavelet (β = 1: more scales per octave than the `cwd()` default, for a more accurate reconstruction); see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
@@ -75,7 +77,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain f
 function _denoise_cwd(
     s::AbstractArray;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π); β = 2),
+    wt::T = wavelet(Morlet(2π); β = 1),
     nf::Real,
     w::Int64 = 5,
     type::Symbol = :pd,
@@ -131,7 +133,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain o
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=1)`: wavelet (β = 1: more scales per octave than the `cwd()` default, for a more accurate reconstruction); see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
@@ -146,7 +148,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain o
 function denoise_cwd(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    wt::T = wavelet(Morlet(2π); β = 2),
+    wt::T = wavelet(Morlet(2π); β = 1),
     nf::Real,
     w::Int64 = 5,
     type::Symbol = :pd,
@@ -180,7 +182,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain i
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=1)`: wavelet (β = 1: more scales per octave than the `cwd()` default, for a more accurate reconstruction); see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency to suppress in Hz; must be in `[1, fs/2]`
 - `w::Int64=5`: half-width of the suppression band in Hz; the zeroed region is `[nf − w, nf + w]`
 - `type::Symbol=:pd`: reconstruction method:
@@ -195,7 +197,7 @@ Perform denoising by zeroing a frequency band in the continuous wavelet domain i
 function denoise_cwd!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    wt::T = wavelet(Morlet(2π); β = 2),
+    wt::T = wavelet(Morlet(2π); β = 1),
     nf::Real,
     w::Int64 = 5,
     type::Symbol = :pd,

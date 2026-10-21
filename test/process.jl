@@ -51,8 +51,15 @@ x = sin.(2π * 10 .* (0:1023) ./ 256) .+ 0.5 .* sin.(2π * 40 .* (0:1023) ./ 256
 r = icwd(NeuroAnalyzer._cwd(x; complex = true); type = :pd)
 @test NeuroAnalyzer.norm(r .- x) / NeuroAnalyzer.norm(x) < 0.05
 # artrem_cwd(): removing a band outside the signal leaves it (nearly) unchanged
-r = NeuroAnalyzer._artrem_cwd(x, collect(0:1023) ./ 256; fs = 256, tseg = (1, 2), fseg = (70, 80))
-@test NeuroAnalyzer.norm(r .- x) / NeuroAnalyzer.norm(x) < 0.05
+r = NeuroAnalyzer._artrem_cwd(x, collect(0:1023) ./ 256; fs = 256, tseg = (1, 2), fseg = (60, 70))
+@test NeuroAnalyzer.norm(r .- x) / NeuroAnalyzer.norm(x) < 0.02
+# artrem_cwd(): the artifact is reconstructed and subtracted, the signal far from it is not changed
+tb = collect(0:1023) ./ 256
+xb = x .+ 5 .* exp.(-(tb .- 2) .^ 2 ./ (2 * 0.1^2))
+r = NeuroAnalyzer._artrem_cwd(xb, tb; fs = 256, tseg = (1.5, 2.5), fseg = (0, 5))
+far = (tb .< 1) .| (tb .> 3)
+@test maximum(abs.(r[far] .- xb[far])) < 0.01
+@test maximum(abs.(r .- x)) < 0.5
 NeuroAnalyzer._log_off()
 ct = NeuroAnalyzer._cwd(s; wt = wavelet(Morlet(π); β = 32, Q = 128))
 s_new = icwd(ct; wt = wavelet(Morlet(π); β = 32, Q = 128), type = :nd)

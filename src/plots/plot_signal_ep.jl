@@ -73,7 +73,11 @@ function plot_ep(
     ep_len = epoch_duration(obj)
     ep_n = Observable(nepochs(obj))
     ep_n[] > 1 || throw(ArgumentError("Use plot_cont() for continuous object."))
-    seg = (0, n_epochs * ep_len)
+    # displayed segment starts at epoch `ep`; the last valid position (in epochs) leaves
+    # no empty space after the last epoch
+    seg_pos_max() = Float64(max(ep_n[] - n_epochs, 0))
+    seg_pos = Observable(clamp(Float64(ep - 1), 0.0, seg_pos_max()))
+    seg = (seg_pos[] * ep_len, (seg_pos[] + n_epochs) * ep_len)
     epmarkers = @lift([(idx - 1) * ep_len for idx = 1:$ep_n])
     ep_selected = Observable(zeros(Bool, ep_n[]))
 
@@ -113,11 +117,8 @@ function plot_ep(
     # list of bad channels
     bad_ch = Observable(obj.header.recording[:bad_channel])
 
-    # displayed segment
-    seg_pos = Observable(seg[1])
+    # displayed segment length
     seg_len = (seg[2] - seg[1])
-    # last valid segment position (in epochs), so that no empty space is shown after the last epoch
-    seg_pos_max() = Float64(max(ep_n[] - n_epochs, 0))
 
     if type === :normal
         nch = Observable(n_channels)

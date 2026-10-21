@@ -6,14 +6,14 @@ export artrem_cwd!
 
 Remove an artifact from a signal using continuous wavelet decomposition (CWD).
 
-The signal is transformed into the time-frequency domain via CWD, the coefficients within the specified time (`tseg`) and frequency (`fseg`) windows are zeroed, and the signal is reconstructed via the inverse CWD (iCWD).
+The signal is transformed into the time-frequency domain via CWD; the coefficients within the specified time (`tseg`) and frequency (`fseg`) windows are reconstructed via the inverse CWD (iCWD) and subtracted from the signal. Because only the artifact is reconstructed, the rest of the signal is not affected by the (approximate) iCWD.
 
 # Arguments
 
 - `s::AbstractVector`: signal vector
 - `t::AbstractVector`: time-point vector corresponding to `s`; must not be empty
 - `fs::Int64`: sampling rate in Hz; must be ≥ 1
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see ContinuousWavelets.jl for available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=1)`: wavelet to use (β = 1: more scales per octave than the `cwd()` default, for a more accurate reconstruction); see ContinuousWavelets.jl for available wavelets
 - `tseg::Tuple{Real, Real}`: time window of the artifact `(t_start, t_end)` in seconds; must be a strictly ascending pair within `[t[1], t[end]]`
 - `fseg::Tuple{Real, Real}`: frequency window of the artifact `(f_low, f_high)` in Hz; must be a strictly ascending pair within the wavelet frequency range
 - `type::Symbol=:pd`: inverse CWD reconstruction method:
@@ -29,7 +29,7 @@ function _artrem_cwd(
     s::AbstractVector,
     t::AbstractVector;
     fs::Int64,
-    wt::T = wavelet(Morlet(2π); β = 2),
+    wt::T = wavelet(Morlet(2π); β = 1),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
     type::Symbol = :pd,
@@ -52,11 +52,13 @@ function _artrem_cwd(
     t_idx1 = vsearch(tseg[1], t)
     t_idx2 = vsearch(tseg[2], t)
 
-    # zero the artifact region in the coefficient matrix
-    coef[f_idx1:f_idx2, t_idx1:t_idx2] .= 0
+    # keep only the artifact region of the coefficient matrix
+    art = zero(coef)
+    art[f_idx1:f_idx2, t_idx1:t_idx2] = @view(coef[f_idx1:f_idx2, t_idx1:t_idx2])
 
-    # reconstruct the clean signal via inverse CWD
-    return vec(icwd(coef; wt = wt, type = type))
+    # reconstruct the artifact via inverse CWD and subtract it (the iCWD is approximate:
+    # reconstructing the whole signal would distort it also outside the artifact)
+    return s .- vec(icwd(art; wt = wt, type = type))
 end
 
 """
@@ -69,7 +71,7 @@ Remove an artifact from one channel and one epoch of a NEURO object using contin
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
 - `ep::Int64`: epoch index; must be a valid epoch number
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see ContinuousWavelets.jl for available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=1)`: wavelet to use (β = 1: more scales per octave than the `cwd()` default, for a more accurate reconstruction); see ContinuousWavelets.jl for available wavelets
 - `tseg::Tuple{Real, Real}`: time window of the artifact `(t_start, t_end)` in seconds; must be a strictly ascending pair within `[t[1], t[end]]`
 - `fseg::Tuple{Real, Real}`: frequency window of the artifact `(f_low, f_high)` in Hz; must be a strictly ascending pair within the wavelet frequency range
 - `type::Symbol=:pd`: inverse CWD reconstruction method:
@@ -85,7 +87,7 @@ function artrem_cwd(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     ep::Int64,
-    wt::T = wavelet(Morlet(2π); β = 2),
+    wt::T = wavelet(Morlet(2π); β = 1),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
     type::Symbol = :pd,
@@ -128,7 +130,7 @@ Remove an artifact from one channel and one epoch of a NEURO object in-place usi
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::String`: channel name; must resolve to exactly one channel
 - `ep::Int64`: epoch index; must be a valid epoch number
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: wavelet to use; see ContinuousWavelets.jl for available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=1)`: wavelet to use (β = 1: more scales per octave than the `cwd()` default, for a more accurate reconstruction); see ContinuousWavelets.jl for available wavelets
 - `tseg::Tuple{Real, Real}`: time window of the artifact `(t_start, t_end)` in seconds; must be a strictly ascending pair within `[t[1], t[end]]`
 - `fseg::Tuple{Real, Real}`: frequency window of the artifact `(f_low, f_high)` in Hz; must be a strictly ascending pair within the wavelet frequency range
 - `type::Symbol=:pd`: inverse CWD reconstruction method:
@@ -144,7 +146,7 @@ function artrem_cwd!(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     ep::Int64,
-    wt::T = wavelet(Morlet(2π); β = 2),
+    wt::T = wavelet(Morlet(2π); β = 1),
     tseg::Tuple{Real, Real},
     fseg::Tuple{Real, Real},
     type::Symbol = :pd,

@@ -743,6 +743,8 @@ function plot_spectrogram(
     f1 = vsearch(flim[1], sf)
     f2 = vsearch(flim[2], sf)
     sf = sf[f1:f2]
+    # nearest frequencies may lie inside flim (e.g. the non-uniform :cwt frequency grid)
+    flim = (max(flim[1], sf[1]), min(flim[2], sf[end]))
 
     if length(ch) == 1 && type === :normal
         sp = sp[f1:f2, :]
