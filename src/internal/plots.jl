@@ -16,8 +16,12 @@ function _draw_head_labels!(
 )::Nothing
     _check_var(plane, [:xy, :xz, :yz], "plane")
     fid_names = ["NAS", "IN", "LPA", "RPA"]
+    # only the points visible in the view (otherwise NAS/IN or LPA/RPA would be drawn at the same position):
+    # :xz is seen from behind (no nasion), :yz from the right (no left preauricular point)
+    visible = plane === :xy ? fid_names : plane === :xz ? ["IN", "LPA", "RPA"] : ["NAS", "IN", "RPA"]
     # (eachindex of a NamedTuple gives its keys, not positions)
     for (idx, pt) in enumerate(values(NeuroAnalyzer.fiducial_points))
+        fid_names[idx] in visible || continue
         fid_loc_x, fid_loc_y = if plane === :xy
             pt[1], pt[2]
         elseif plane === :xz
@@ -79,31 +83,64 @@ end
 """
     _draw_head_outline!(ax; <keyword arguments>)
 
-Draw a schematic head outline (circle, nose, ears) onto a 2-D axis.
+Draw a schematic head outline onto a 2-D axis.
 
 The head is assumed to have unit radius centered at the origin. Set `ax.aspect = DataAspect()` on the axis, otherwise the head is drawn as an ellipse.
+
+- `:xy` (top view, nose up): circle, nose and both ears
+- `:xz` (coronal view from behind, subject's right on the right): upper head outline and both ears; the nose is not visible from behind
+- `:yz` (sagittal view from the right, nose on the right): head circle, nose (bridge, tip and a short part of the underside) and the right ear (traced from a drawing); the nose extends to y ≈ 1.21, so the axis limits must include it
 
 # Arguments
 
 - `ax::GLMakie.Axis`: target axis
+- `plane::Symbol=:xy`: `:xy`, `:xz` or `:yz`
 - `lw::Real=1`: line width
 - `color=:black`: line color
 """
-function _draw_head_outline!(ax::GLMakie.Axis; lw::Real = 1, color = :black)::Nothing
+function _draw_head_outline!(
+    ax::GLMakie.Axis;
+    plane::Symbol = :xy,
+    lw::Real = 1,
+    color = :black,
+)::Nothing
+    _check_var(plane, [:xy, :xz, :yz], "plane")
     kw = (linewidth = lw, color = color)
 
-    # head circle
-    θ = range(0, 2π; length = 181)
-    GLMakie.lines!(ax, Point2f.(cos.(θ), sin.(θ)); kw...)
-
-    # nose: one polyline so the tip gets a proper join
-    GLMakie.lines!(ax, Point2f[(-0.2, 0.98), (0.0, 1.1), (0.2, 0.98)]; kw...)
-
-    # ears: right ear mirrors the left, so they cannot drift apart
+    # ear profile (top view and coronal view): right ear mirrors the left, so they cannot drift apart
     ear_x = [0.995, 1.03, 1.06, 1.1, 1.12, 1.1, 1.13, 1.09, 1.02, 0.98, 0.975]
     ear_y = [0.1, 0.15, 0.16, 0.14, 0.05, -0.1, -0.3, -0.37, -0.39, -0.33, -0.22]
-    GLMakie.lines!(ax, _smooth_path(-ear_x, ear_y); kw...)
-    GLMakie.lines!(ax, _smooth_path(ear_x, ear_y); kw...)
+
+    if plane === :xy
+        # head circle
+        θ = range(0, 2π; length = 181)
+        GLMakie.lines!(ax, Point2f.(cos.(θ), sin.(θ)); kw...)
+        # nose: one polyline so the tip gets a proper join
+        GLMakie.lines!(ax, Point2f[(-0.2, 0.98), (0.0, 1.1), (0.2, 0.98)]; kw...)
+        GLMakie.lines!(ax, _smooth_path(-ear_x, ear_y); kw...)
+        GLMakie.lines!(ax, _smooth_path(ear_x, ear_y); kw...)
+    elseif plane === :xz
+        # upper part of the head, extended below the horizontal plane down to the ears
+        θ = range(-0.6, π + 0.6; length = 181)
+        GLMakie.lines!(ax, Point2f.(cos.(θ), sin.(θ)); kw...)
+        # ears at the preauricular points, z ≈ -0.2
+        GLMakie.lines!(ax, _smooth_path(-ear_x, ear_y); kw...)
+        GLMakie.lines!(ax, _smooth_path(ear_x, ear_y); kw...)
+    else
+        # head circle from the nasion (z ≈ -0.19) over the top and down the back of the head, so that it
+        # matches the electrode positions on the unit sphere
+        θ = range(asin(-0.189), π + 0.6; length = 181)
+        GLMakie.lines!(ax, Point2f.(cos.(θ), sin.(θ)); kw...)
+        # nose and right ear traced from a drawing of a head profile (scaled to the head model)
+        # bridge, rounded tip and a short part of the underside
+        nose_y = [0.982, 1.012, 1.076, 1.15, 1.2, 1.208, 1.18, 1.12]
+        nose_z = [-0.189, -0.262, -0.345, -0.444, -0.53, -0.565, -0.59, -0.615]
+        GLMakie.lines!(ax, _smooth_path(nose_y, nose_z; n = 4); kw...)
+        # right ear
+        ear_y = [0.02, -0.043, -0.129, -0.192, -0.225, -0.235, -0.215, -0.17, -0.1, -0.02, 0.039]
+        ear_z = [-0.051, 0.007, 0.025, -0.029, -0.145, -0.291, -0.371, -0.455, -0.545, -0.6, -0.625]
+        GLMakie.lines!(ax, _smooth_path(ear_y, ear_z; n = 4); kw...)
+    end
 
     return nothing
 end

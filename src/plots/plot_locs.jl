@@ -207,19 +207,21 @@ function plot_locs(
         maximum(abs.(locs.loc_y)) < 1.2 &&
         maximum(abs.(locs.loc_z)) < 1.2
 
+    # the side view of the head extends beyond the unit sphere (nose at y ≈ 1.21)
+    head12 = head12 && !(head && plane === :yz)
     xl = head12 ? (-1.2, 1.2) : (-1.4, 1.4)
     yl = head12 ? (-1.2, 1.2) : (-1.4, 1.4)
 
     # plot parameters
     if ps === :l
         plot_size   = (800, 800)
-        marker_size = length(ch) > 64 ? 10 : 20
-        font_size   = 14
+        marker_size = length(ch) > 64 ? 6 : length(ch) > 32 ? 9 : 12
+        font_size   = length(ch) > 64 ? 10 : 14
         lw          = 3
         sw          = 2
     elseif ps === :m
         plot_size   = (300, 300)
-        marker_size = length(ch) > 64 ? 5 : 10
+        marker_size = length(ch) > 64 ? 3 : length(ch) > 32 ? 4 : 5
         font_size   = 8
         lw          = 2
         sw          = 1
@@ -228,7 +230,7 @@ function plot_locs(
         grid        = false
     elseif ps === :s
         plot_size   = (100, 100)
-        marker_size = length(ch) > 64 ? 4 : 8
+        marker_size = length(ch) > 64 ? 2 : 3
         font_size   = 8
         lw          = 1
         sw          = 0.0
@@ -279,15 +281,7 @@ function plot_locs(
         ps === :l && (lw = 3)
         ps === :m && (lw = 2)
         ps === :s && (lw = 1)
-        if plane === :xy
-            _draw_head_outline!(ax; lw = lw)
-        elseif plane === :yz
-            # head
-            GLMakie.arc!(ax, (0, 0), 1, 0, pi; linewidth = lw, color = :black)
-        elseif plane === :xz
-            # head
-            GLMakie.arc!(ax, (0, 0), 1, 0, pi; linewidth = lw, color = :black)
-        end
+        _draw_head_outline!(ax; plane = plane, lw = lw)
     end
 
     # draw connections lines
@@ -370,21 +364,38 @@ function plot_locs(
         end
     end
 
-    label_offset_x = 0.0
-    label_offset_y = -0.04
+    # in the side (:yz, seen from the right) and coronal (:xz, seen from behind) views, channels of both
+    # hemispheres (or the front and the back) project onto the same point: of overlapping channels, only
+    # the one nearer to the viewer is labelled
+    depth = if plane === :yz
+        locs.loc_x[ch]
+    elseif plane === :xz
+        -locs.loc_y[ch]
+    else
+        zeros(length(ch))
+    end
+    hidden = falses(length(ch))
+    if plane !== :xy
+        for i in eachindex(ch), j in eachindex(ch)
+            i == j && continue
+            hypot(loc_x[i] - loc_x[j], loc_y[i] - loc_y[j]) < 0.06 &&
+                depth[j] > depth[i] + 1e-3 && (hidden[i] = true)
+        end
+    end
 
-    # draw labels
+    # draw labels below the markers (offset in pixels, independent of the plot scale)
     if ch_labels
         ch_set = Set(ch)
         for idx in eachindex(locs[!, :label])
             if idx in ch_set
                 local_i = findfirst(==(idx), collect(ch))
-                isnothing(local_i) && continue
+                (isnothing(local_i) || hidden[local_i]) && continue
                 GLMakie.text!(
-                    loc_x[local_i] + label_offset_x,
-                    loc_y[local_i] + label_offset_y;
+                    loc_x[local_i],
+                    loc_y[local_i];
                     text     = locs[!, :label][idx],
-                    align    = (:center, :bottom),
+                    align    = (:center, :top),
+                    offset   = (0, -(marker_size / 2 + 2)),
                     fontsize = font_size,
                 )
             end
