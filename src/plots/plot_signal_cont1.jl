@@ -131,17 +131,16 @@ function plot_cont(
         # get signal matrix
         s = obj.data[ch, :, 1][ch_order, 1:res:end]
 
-        # get ranges of the original signal for the scales
-        # normalize in groups by channel type
-        # between -0.5 and +0.5 and shift so all channels are visible
+        # common amplitude scale of each channel type (one row = r signal units), robust to
+        # artifacts; each channel is centered at its median
         r = Float64[]
         for idx in eachindex(ctypes_uni)
-            group = s[ctypes .== ctypes_uni[idx], :]
-            push!(r, round(_get_range(group)))
-            # remove per-channel DC offset
-            group = group .- mean(group; dims = 2)
-            # map to [-0.5, 0.5]
-            s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych = true)
+            g_idx = ctypes .== ctypes_uni[idx]
+            group = s[g_idx, :]
+            # butterfly: all channels of the type share one row, ±6 SD fit in it
+            sc = _plot_scale(group) * (type === :butterfly ? 2 : 1)
+            push!(r, round(sc; sigdigits = 3))
+            s[g_idx, :] = (group .- median(group; dims = 2)) ./ sc
         end
         if type === :normal
             s .+= collect(1:ch_n)
@@ -603,8 +602,9 @@ function plot_cont(
                     seg_pos[] -= 1
                     update_ax2 = true
                 end
-                if ispressed(fig, Keyboard.left_shift & Keyboard.left) && seg_pos[] >= 9
-                    seg_pos[] -= 9
+                # together with the plain arrow (1 s): back by the segment length
+                if ispressed(fig, Keyboard.left_shift & Keyboard.left)
+                    seg_pos[] = max(seg_pos[] - (seg_len - 1), 0)
                     update_ax2 = true
                 end
                 if event.key == Keyboard.right && seg_pos[] < t[end] - seg_len

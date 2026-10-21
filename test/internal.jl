@@ -1024,8 +1024,9 @@ fig = NeuroAnalyzer.GLMakie.Figure()
 ax = NeuroAnalyzer.GLMakie.Axis(fig[1, 1])
 NeuroAnalyzer._draw_head_outline!(ax)
 @test length(ax.scene.plots) == 4
+# :xz is seen from behind: IN, LPA and RPA (no NAS)
 NeuroAnalyzer._draw_head_labels!(ax; plane = :xz)
-@test length(ax.scene.plots) == 8
+@test length(ax.scene.plots) == 7
 @test_throws ArgumentError NeuroAnalyzer._draw_head_labels!(ax; plane = :ab)
 @test NeuroAnalyzer._main_axis(fig) === ax
 # legend outside the plot, with an inset above it
@@ -1058,3 +1059,13 @@ ax = NeuroAnalyzer.GLMakie.Axis(NeuroAnalyzer.GLMakie.Figure()[1, 1])
 @test ax.titlesize[] == 18 && ax.xticklabelsize[] == 12
 
 true
+
+@info "Test: _plot_scale()"
+rng_ps = NeuroAnalyzer.Random.MersenneTwister(1)
+s_ps = 10 .* randn(rng_ps, 4, 10_000)
+sc_ps = NeuroAnalyzer._plot_scale(s_ps)
+@test isapprox(sc_ps, 60; rtol = 0.05)
+# a large artifact and a flat channel do not change the scale
+s_ps[1, 100:110] .= 1e4
+@test isapprox(NeuroAnalyzer._plot_scale(vcat(s_ps, zeros(1, 10_000))), sc_ps; rtol = 0.01)
+@test NeuroAnalyzer._plot_scale(zeros(3, 100)) == 1.0

@@ -5,10 +5,12 @@ export vch
 
 Calculate a virtual channel using formula `f`.
 
+The formula is evaluated element-wise, sample by sample (it is broadcast with `@.`): each channel label stands for the value of that channel at a given sample. Functions of the whole signal (e.g. `mean`, `std`) therefore act on single samples, not on channels or time; e.g. the average of four channels must be written as `(C3 + C4 + Fz + Pz) / 4`, not `mean(C3 + C4 + Fz + Pz)` (which equals the sum).
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `f::String`: channel calculation formula, e.g. `"cz / mean(Fp1 + Fp2)"`; all standard Julia math operators are available, channel labels must be the same as of the OBJ object
+- `f::String`: channel calculation formula, e.g. `"Cz - (C3 + C4 + Fz + Pz) / 4"`; all standard Julia math operators and functions are available, channel labels must be the same as of the OBJ object (case-sensitive)
 
 # Returns
 
@@ -47,9 +49,23 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
         throw(ArgumentError("Formula is incorrect, check channel labels and operators."))
     end
 
-    # ── step 4: parallel loop - no eval, no parsing, no string alloc per epoch ───
+    # ── step 4: evaluate the first epoch, reporting formula errors (e.g. unknown channel labels,
+    # which are parsed as undefined variables) as an ArgumentError ────────────────
+    args = ntuple(k -> @view(obj.data[active_idx[k], :, 1]), length(active_idx))
+    try
+        vc[1, :, 1] = Base.invokelatest(f_func, args...)
+    catch err
+        throw(
+            ArgumentError(
+                "Formula cannot be evaluated, check channel labels and operators: " *
+                sprint(showerror, err),
+            ),
+        )
+    end
+
+    # ── step 5: parallel loop - no eval, no parsing, no string alloc per epoch ───
     # @view avoids copying channel slices; ntuple builds the argument list
-    Threads.@threads :static for ep_idx = 1:ep_n
+    Threads.@threads :static for ep_idx = 2:ep_n
         args = ntuple(k -> @view(obj.data[active_idx[k], :, ep_idx]), length(active_idx))
         @inbounds vc[1, :, ep_idx] = Base.invokelatest(f_func, args...)
     end

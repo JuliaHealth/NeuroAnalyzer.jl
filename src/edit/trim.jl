@@ -106,7 +106,6 @@ Trim signal by removing parts of the signal.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
 - `keep::Bool=false`: if `true`, keep the segment
-- `remove_epochs::Bool=false`: if `true`, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 
 # Returns
 

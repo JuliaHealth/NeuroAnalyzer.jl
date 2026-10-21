@@ -116,12 +116,13 @@ keep_epoch!(e10_tmp; ep = 1:2)
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 
 @info "Test: channel_reject()"
-bc = channel_reject(e10; ch = ["Fp1", "Fp2"])
-@test sum(bc) == 2
+bc = channel_reject(e10; ch = ["Fp1", "Fp2"], method = [:flat, :amp])
+@test bc isa Vector{Bool}
+@test length(bc) == 2
 
 @info "Test: epoch_reject()"
-be = epoch_reject(e10; ch = ["Fp1", "Fp2"])
-@test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+be = epoch_reject(e10; ch = ["Fp1", "Fp2"], method = [:flat, :amp])
+@test be isa Vector{Int64}
 
 @info "Test: epoch(), subepoch()"
 eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
@@ -272,48 +273,70 @@ eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
 e10 = epoch(eeg; ep_len = 10)
 keep_epoch!(e10; ep = 1:10)
 
-@info "Test: artifact detectors (synthetic signals)"
+@info "Test: channel_reject() / epoch_reject() (injected faults)"
+# synthetic recording: a common signal plus small independent noise in each channel
+e_rej = keep_channel(crop(eeg; seg = (0, 60)); ch = "eeg")
+load_locs!(e_rej; file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
+e_rej = epoch(e_rej; ep_len = 2)
 rng_ = NeuroAnalyzer.Random.MersenneTwister(7)
-s = randn(rng_, 8, 2000) .* 10
-# amplitude: channel 3 exceeds ±400
-s_a = copy(s)
-s_a[3, 1000] = 500
-@test NeuroAnalyzer.detect_amp(s_a) == [false, false, true, false, false, false, false, false]
-@test NeuroAnalyzer.detect_amp(s_a; amp_t = 600) == falses(8)
-# distance from the cross-channel median: channel 5 is 20× larger
-s_d = copy(s)
-s_d[5, :] .*= 20
-for f in (NeuroAnalyzer.detect_rmse, NeuroAnalyzer.detect_rmsd, NeuroAnalyzer.detect_euclid)
-    @test f(s_d)[5]
-    @test count(f(s_d)) <= 2
+ch_n, ep_l, ep_n = size(e_rej.data)
+t_ = collect(0:(ep_l * ep_n - 1)) ./ sr(e_rej)
+common = 20 .* sin.(2π .* 10 .* t_) .+ 10 .* sin.(2π .* 3 .* t_) .+ 5 .* randn(rng_, length(t_))
+for idx = 1:ch_n
+    e_rej.data[idx, :, :] = reshape(common .+ 5 .* randn(rng_, length(t_)), ep_l, ep_n)
 end
-# peak-to-peak: a step of 2000 μV in channel 2; DC offsets do not matter
-s_p = copy(s)
-s_p[2, 1001:end] .+= 2000
-@test NeuroAnalyzer.detect_p2p(s_p; w = 10)[2]
-@test !any(NeuroAnalyzer.detect_p2p(s_p; w = 10)[[1, 3, 4, 5, 6, 7, 8]])
-@test !any(NeuroAnalyzer.detect_p2p(s .+ 1000; w = 10))
-@test_throws ArgumentError NeuroAnalyzer.detect_p2p(s; w = 5000)
-# TKEO: bursts of high-frequency activity
-t_ = collect(0:(1 / 256):(2000 / 256))[1:2000]
-@test NeuroAnalyzer.detect_tkeo(s, t_) isa Vector{Bool}
-@test length(NeuroAnalyzer.detect_tkeo(s, t_)) == 8
-# RANSAC: channels 1-4 share a signal with their nearest neighbors, channel 4's neighbor is noise
-base = randn(rng_, 2000)
-s_r = vcat(base', base' .+ 0.05 .* randn(rng_, 1, 2000), randn(rng_, 1, 2000), base' .+ 0.05 .* randn(rng_, 1, 2000))
-bad = NeuroAnalyzer.detect_ransac(s_r; loc_x = [0.0, 0.1, 1.0, 0.2], loc_y = [0.0, 0.0, 1.0, 0.0], w = 100)
-@test bad[3]
-@test !bad[1] && !bad[2]
+l_ = labels(e_rej)
+ix_(l) = findfirst(==(l), l_)
+@test !any(channel_reject(e_rej; ch = "eeg"))
+e_bad = deepcopy(e_rej)
+e_bad.data[ix_("F3"), :, :] .= 0.0                                      # flat
+e_bad.data[ix_("C4"), :, :] .+= 40 .* randn(rng_, ep_l, ep_n)            # noise
+for ep_idx = 1:ep_n
+    e_bad.data[ix_("P3"), 100:110, ep_idx] .+= 300                      # pops
+end
+@test findall(channel_reject(e_bad; ch = "eeg", method = :flat)) == [ix_("F3")]
+@test findall(channel_reject(e_bad; ch = "eeg", method = :amp, amp_t = 200)) == [ix_("P3")]
+# the flat channel is also far from the median signal
+for m in (:rmse, :rmsd, :euclid)
+    @test findall(channel_reject(e_bad; ch = "eeg", method = m)) == sort([ix_("F3"), ix_("C4"), ix_("P3")])
+end
+for m in (:p2p, :tkeo)
+    @test findall(channel_reject(e_bad; ch = "eeg", method = m)) == sort([ix_("C4"), ix_("P3")])
+end
+@test findall(channel_reject(e_bad; ch = "eeg", method = :var)) == sort([ix_("F3"), ix_("C4"), ix_("P3")])
+# the flat channel is not peaked
+bc = channel_reject(e_bad; ch = "eeg", method = :kurt)
+@test bc[ix_("P3")] && !bc[ix_("F3")]
+@test findall(channel_reject(e_bad; ch = "eeg", method = :z)) == [ix_("P3")]
+@test ix_("F3") in findall(channel_reject(e_bad; ch = "eeg", method = :ransac))
+@test ix_("C4") in findall(channel_reject(e_bad; ch = "eeg", method = :ransac))
+e_bad = deepcopy(e_rej)
+e_bad.data[ix_("C3"), :, 2] .= 0.0                                      # flat epoch
+e_bad.data[ix_("O1"), 256:end, 3] .+= 200                               # jump
+e_bad.data[ix_("T3"), 200:400, 4] .+= 30 .* randn(rng_, 201)            # muscle
+@test epoch_reject(e_bad; ch = "eeg", method = :flat) == [2]
+@test epoch_reject(e_bad; ch = "eeg", method = :amp, amp_t = 150) == [3]
+@test epoch_reject(e_bad; ch = "eeg", method = :var) == [2, 3, 4]
+@test epoch_reject(e_bad; ch = "eeg", method = :p2p) == [3, 4]
+@test 4 in epoch_reject(e_bad; ch = "eeg", method = :tkeo)
+@test epoch_reject(e_bad; ch = "eeg", method = :z) == [3, 4]
+@test epoch_reject(e_bad; ch = "eeg", method = :var, nbad = 2) == Int64[]
+@test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", nbad = 0)
+@test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", nbad = 20)
+@test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", method = :var, w = 1)
+@test_throws ArgumentError channel_reject(e_bad; ch = "eeg", method = :var, z = 0)
 
 @info "Test: channel_reject() values"
 e_tmp = deepcopy(e10)
 e_tmp.data[2, 100, 3] = 1e4
-@test channel_reject(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000) == [false, true, false]
+@test channel_reject(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000, tc = 0.1) == [false, true, false]
+@test !any(channel_reject(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000))
 e_tmp.data[5, :, :] .= 1.0
 @test channel_reject(e_tmp; ch = ["Fp1", "C3"], method = :flat)[2]
-channel_reject!(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000)
+channel_reject!(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000, tc = 0.1)
 @test e_tmp.header.recording[:bad_channel][1:3] == [false, true, false]
 @test_throws ArgumentError channel_reject(e10; ch = "Fp1", method = :rmse)
+@test_throws ArgumentError epoch_reject(keep_epoch(e10; ep = 1:2); ch = "Fp1", method = :var)
 @test_throws ArgumentError channel_reject(e10; ch = "Fp1", method = :x)
 
 @info "Test: epoch_reject() values"
@@ -327,11 +350,17 @@ e_tmp.data[1, 10, 4] = 2e6
 v = vch(e10; f = "Fp1 - Fp2")
 @test size(v) == (1, 2560, 10)
 @test v[1, :, :] == e10.data[1, :, :] .- e10.data[2, :, :]
+# the formula is element-wise: mean() of a single sample is the sample itself
 v = vch(e10; f = "mean(Fp1) + 0 * Cz")
-@test v[1, 5, 2] ≈ sum(e10.data[1, :, 2]) / 2560 || v[1, 5, 2] ≈ e10.data[1, 5, 2]
+@test v[1, :, :] ≈ e10.data[1, :, :]
 v = vch(e10; f = "2 * F3")
 @test v[1, :, :] == 2 .* e10.data[3, :, :]
+v = vch(e10; f = "Cz - (C3 + C4 + Fz + Pz) / 4")
+@test v[1, :, 3] ≈ e10.data[get_channel(e10; ch = "Cz")[1], :, 3] .-
+                   sum(e10.data[get_channel(e10; ch = ["C3", "C4", "Fz", "Pz"]), :, 3]; dims = 1)[:] ./ 4
 @test_throws ArgumentError vch(e10; f = "Fp1 +* Fp2")
+# unknown channel label
+@test_throws ArgumentError vch(e10; f = "Fp1 - Xyz")
 
 @info "Test: markers"
 mrk = DataFrame(:id => ["a", "b"], :start => [1.0, 12.5], :length => [0.0, 0.5], :value => ["x", "y"], :channel => [0, 0])

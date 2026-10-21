@@ -133,17 +133,16 @@ function plot_ep(
         clabels = uppercase.(ctypes_uni)
     end
 
-    # get ranges of the original signal for the scales
-    # normalize in groups by channel type
-    # between -0.5 and +0.5 and shift so all channels are visible
+    # common amplitude scale of each channel type (one row = r signal units), robust to artifacts;
+    # each channel is centered at its median
     r = Observable(Float64[])
     for idx in eachindex(ctypes_uni)
-        group = s[ctypes .== ctypes_uni[idx], :]
-        push!(r[], round(_get_range(group)))
-        # remove per-channel DC offset
-        group = group .- mean(group; dims = 2)
-        # map to [-0.5, 0.5]
-        s[ctypes .== ctypes_uni[idx], :] = normalize_minmax(group, 0.5; bych = true)
+        g_idx = ctypes .== ctypes_uni[idx]
+        group = s[g_idx, :]
+        # butterfly: all channels of the type share one row, ±6 SD fit in it
+        sc = _plot_scale(group) * (type === :butterfly ? 2 : 1)
+        push!(r[], round(sc; sigdigits = 3))
+        s[g_idx, :] = (group .- median(group; dims = 2)) ./ sc
     end
     if type === :normal
         s .+= collect(1:ch_n)

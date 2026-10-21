@@ -494,3 +494,23 @@ end
 
 # main axis of a plot: the first axis created (an inset may share its layout cell)
 _main_axis(fig::GLMakie.Figure)::GLMakie.Axis = first(c for c in fig.content if c isa GLMakie.Axis)
+
+"""
+    _plot_scale(s)
+
+Common amplitude scale of a group of channels of the same type (rows of `s`) for the multi-channel signal plots: 6 × the median (over channels) of the robust standard deviation (1.4826 × MAD) of each channel, so that a typical channel spans about ±3 SD in its row (one row = the scale). Flat channels are ignored. The scale is not affected by artifacts, which may extend into the neighboring rows.
+
+# Arguments
+
+- `s::AbstractMatrix`: signal matrix, shape (channels, samples)
+
+# Returns
+
+- `Float64`
+"""
+function _plot_scale(s::AbstractMatrix)::Float64
+    sd = [1.4826 * median(abs.(r .- median(r))) for r in eachrow(s)]
+    filter!(>(0), sd)
+    isempty(sd) && return 1.0
+    return 6 * median(sd)
+end

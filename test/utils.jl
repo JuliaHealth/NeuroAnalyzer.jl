@@ -17,6 +17,14 @@ a2 = zeros(2, 3, 2)
 
 @info "Test: apply()"
 @test size(apply(e10; ch = "all", f = "mean(obj, dims=1)")) == (24, 1, 10)
+# scalar results (one value per channel and epoch)
+r = apply(e10; ch = ["Fp1", "Fp2"], f = "maximum(obj) - minimum(obj)")
+@test size(r) == (2, 1, 10)
+@test r[2, 1, 4] ≈ maximum(e10.data[2, :, 4]) - minimum(e10.data[2, :, 4])
+@test size(apply(e10; ch = "Fp1", f = "obj .^ 2")) == (1, 2560, 10)
+# complex results are rejected
+@test_throws ArgumentError apply(e10; ch = "Fp1", f = "fft(obj)")
+@test_throws ArgumentError apply(e10; ch = "Fp1", f = "obj +* 2")
 
 @info "Test: l1()"
 @test l1(a1, a2) == 12

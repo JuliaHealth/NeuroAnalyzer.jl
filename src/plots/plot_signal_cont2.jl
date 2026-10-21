@@ -102,25 +102,18 @@ function plot_cont(
     ch1      = Observable(1)
     ch2_init = ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
 
-    # get ranges of the original signal for the scales
-    # normalize in groups by channel type
-    # between -0.5 and +0.5 and shift so all channels are visible
+    # common amplitude scale of each channel type (one row = r signal units, computed from the
+    # first signal), robust to artifacts and the same for both signals, so that their
+    # amplitudes can be compared; each channel is centered at its median
     r = Observable(Float64[])
     for idx in eachindex(ctypes_uni)
-        group1 = s1[ctypes .== ctypes_uni[idx], :]
-        group2 = s2[ctypes .== ctypes_uni[idx], :]
-        push!(r[], round(_get_range(group1)))
-        # remove per-channel DC offset
-        group1 = group1 .- mean(group1; dims = 2)
-        group2 = group2 .- mean(group2; dims = 2)
-        # map to [-0.5, 0.5] with the same scale for both signals of a channel, so that their amplitudes can be compared
-        lo = min.(minimum(group1; dims = 2), minimum(group2; dims = 2))
-        hi = max.(maximum(group1; dims = 2), maximum(group2; dims = 2))
-        rng = hi .- lo
-        rng[rng .== 0] .= 1
-        mid = (lo .+ hi) ./ 2
-        s1[ctypes .== ctypes_uni[idx], :] = (group1 .- mid) ./ rng
-        s2[ctypes .== ctypes_uni[idx], :] = (group2 .- mid) ./ rng
+        g_idx = ctypes .== ctypes_uni[idx]
+        group1 = s1[g_idx, :]
+        group2 = s2[g_idx, :]
+        sc = _plot_scale(group1)
+        push!(r[], round(sc; sigdigits = 3))
+        s1[g_idx, :] = (group1 .- median(group1; dims = 2)) ./ sc
+        s2[g_idx, :] = (group2 .- median(group2; dims = 2)) ./ sc
     end
     s1 .+= collect(1:ch_n)
     s2 .+= collect(1:ch_n)
@@ -366,8 +359,9 @@ function plot_cont(
                     seg_pos[] -= 1
                     update_ax2 = true
                 end
-                if ispressed(fig, Keyboard.left_shift & Keyboard.left) && seg_pos[] >= 9
-                    seg_pos[] -= 9
+                # together with the plain arrow (1 s): back by the segment length
+                if ispressed(fig, Keyboard.left_shift & Keyboard.left)
+                    seg_pos[] = max(seg_pos[] - (seg_len - 1), 0)
                     update_ax2 = true
                 end
                 if event.key == Keyboard.right && seg_pos[] < t[end] - seg_len
