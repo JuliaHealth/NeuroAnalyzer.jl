@@ -141,6 +141,10 @@ function _filter_axis(fig, pos, title, ylabel, flim)
     )
     GLMakie.xlims!(ax, flim)
     _style_axis!(ax)
+    # three stacked panels: smaller titles and labels than the other plots
+    ax.titlesize = 14
+    ax.xlabelsize = 14
+    ax.ylabelsize = 14
     return ax
 end
 
@@ -374,7 +378,7 @@ function plot_filter(;
         fig = GLMakie.Figure(; size = gui ? (1200, 950) : (1200, 850))
 
         # filter description above the plots
-        GLMakie.Label(fig[0, 1], title1; fontsize = 14, font = :bold, tellwidth = false)
+        GLMakie.Label(fig[0, 1], title1; fontsize = 16, font = :bold, tellwidth = false)
         ax1 = _filter_axis(fig, (1, 1), "Frequency response", "Magnitude\n[dB]", flim)
         GLMakie.ylims!(ax1, (-120, 10))
         GLMakie.hlines!(ax1, [-3, -6]; linestyle = :dot, linewidth = 0.75, color = :gray)
