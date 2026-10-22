@@ -87,8 +87,10 @@ function _filter_title(
         :elliptic => "Elliptic",
         :iirnotch => "IIR notch",
     )
-    s = "Filter: $(names[fprototype])"
-    !isnothing(ftype) && (s *= ", type: $(uppercase(String(ftype)))")
+    # short lines, so that the header fits when the figure is scaled down
+    # line 1: design
+    s = names[fprototype]
+    !isnothing(ftype) && (s *= " $(uppercase(String(ftype)))")
     s *= ", cutoff: $(_fmt(cutoff)) Hz"
     if flt isa Vector{Float64}
         s *= ", taps: $(length(flt))"
@@ -96,16 +98,17 @@ function _filter_title(
     elseif fprototype !== :iirnotch
         s *= ", order: $order"
     end
-    !isnothing(bw) && (s *= ", bw: $(_fmt(bw)) Hz")
-    !isnothing(bw_eff) && fprototype === :fir && (s *= " (effective ≈ $(_fmt(bw_eff)) Hz)")
-    isnothing(bw) && !isnothing(bw_eff) && (s *= ", bw ≈ $(_fmt(bw_eff)) Hz")
-    !isnothing(rp) && fprototype in (:chebyshev1, :elliptic) &&
-        (s *= ", RP: $(_fmt(rp)) dB")
-    !isnothing(rs) && fprototype in (:chebyshev2, :elliptic) &&
-        (s *= ", RS: $(_fmt(rs)) dB")
-    s *= ", fs: $fs Hz, $(dir === :twopass ? "two-pass (|H|²)" : String(dir))"
+    # line 2: parameters
+    p2 = String[]
+    !isnothing(bw) && push!(p2, "bw: $(_fmt(bw)) Hz" *
+        (!isnothing(bw_eff) && fprototype === :fir ? " (effective ≈ $(_fmt(bw_eff)) Hz)" : ""))
+    isnothing(bw) && !isnothing(bw_eff) && push!(p2, "bw ≈ $(_fmt(bw_eff)) Hz")
+    !isnothing(rp) && fprototype in (:chebyshev1, :elliptic) && push!(p2, "RP: $(_fmt(rp)) dB")
+    !isnothing(rs) && fprototype in (:chebyshev2, :elliptic) && push!(p2, "RS: $(_fmt(rs)) dB")
+    push!(p2, "fs: $fs Hz", dir === :twopass ? "two-pass (|H|²)" : String(dir))
+    s *= "\n" * Base.join(p2, ", ")
 
-    # measured response
+    # lines 3-4: measured response
     r = filter_report(
         flt;
         fs = fs,
@@ -116,13 +119,14 @@ function _filter_title(
         n = 2^14,
         verbose = false,
     )
-    m = "−3 dB: $(_fmt(r.crossings[-3.0])) Hz; −6 dB: $(_fmt(r.crossings[-6.0])) Hz; 0 Hz: $(_fmt(r.gain_dc)) dB"
-    !isnothing(r.stop_att) && (m *= "; stop-band ≥ $(_fmt(r.stop_att)) dB")
-    !isnothing(r.pass_dev) && (m *= "; pass-band ≤ $(_fmt(r.pass_dev)) dB")
-    !isnothing(r.kernel_s) && (m *= "; kernel: $(_fmt(r.kernel_s)) s")
-    s *= "\n" * m
+    s *= "\n−3 dB: $(_fmt(r.crossings[-3.0])) Hz; −6 dB: $(_fmt(r.crossings[-6.0])) Hz; 0 Hz: $(_fmt(r.gain_dc)) dB"
+    p4 = String[]
+    !isnothing(r.stop_att) && push!(p4, "stop-band ≥ $(_fmt(r.stop_att)) dB")
+    !isnothing(r.pass_dev) && push!(p4, "pass-band ≤ $(_fmt(r.pass_dev)) dB")
+    !isnothing(r.kernel_s) && push!(p4, "kernel: $(_fmt(r.kernel_s)) s")
+    !isempty(p4) && (s *= "\n" * Base.join(p4, "; "))
     !isempty(status) && (s *= "\n⚠ $status — showing last valid filter")
-    return s * "\n\nFrequency response"
+    return s
 end
 
 # standard filter-response axis
@@ -369,15 +373,17 @@ function plot_filter(;
         GLMakie.activate!(; title = "plot_filter()")
         fig = GLMakie.Figure(; size = gui ? (1200, 950) : (1200, 850))
 
-        ax1 = _filter_axis(fig, (1, 1), title1, "Magnitude [dB]", flim)
+        # filter description above the plots
+        GLMakie.Label(fig[0, 1], title1; fontsize = 14, font = :bold, tellwidth = false)
+        ax1 = _filter_axis(fig, (1, 1), "Frequency response", "Magnitude\n[dB]", flim)
         GLMakie.ylims!(ax1, (-120, 10))
         GLMakie.hlines!(ax1, [-3, -6]; linestyle = :dot, linewidth = 0.75, color = :gray)
         GLMakie.lines!(ax1, f, H; color = mono ? :black : :blue)
 
-        ax2 = _filter_axis(fig, (2, 1), "Phase response", "Phase [deg]", flim)
+        ax2 = _filter_axis(fig, (2, 1), "Phase response", "Phase\n[deg]", flim)
         GLMakie.lines!(ax2, f, phi; color = mono ? :black : :blue)
 
-        ax3 = _filter_axis(fig, (3, 1), "Group delay", "Group delay [samples]", flim)
+        ax3 = _filter_axis(fig, (3, 1), "Group delay", "Group delay\n[samples]", flim)
         GLMakie.lines!(ax3, f, tau; color = mono ? :black : :blue)
         on(tau) do t
             ft = Base.filter(isfinite, t)

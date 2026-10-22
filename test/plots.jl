@@ -676,6 +676,8 @@ ttl = NeuroAnalyzer._filter_title(f; fprototype = :butterworth, ftype = :lp, cut
                                   bw_eff = nothing, rp = nothing, rs = nothing, fs = 256, dir = :twopass,
                                   window = :hamming, custom_w = false, status = "")
 @test occursin("Butterworth", ttl) && occursin("LP", ttl) && occursin("order: 4", ttl)
+# short lines: the header must fit when the figure is scaled down
+@test maximum(length, split(ttl, '\n')) <= 80
 fig = GLMakie.Figure()
 ax = NeuroAnalyzer._filter_axis(fig, (1, 1), "t", "Gain [dB]", (0, 128))
 @test ax isa GLMakie.Axis && ax.ylabel[] == "Gain [dB]" && ax.xlabel[] == "Frequency [Hz]"
