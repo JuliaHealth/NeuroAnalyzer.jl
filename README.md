@@ -16,7 +16,7 @@ Note: this toolbox is under active development and its API is subject to changes
 
 ## Installation
 
-We recommended installing NeuroAnalyzer from the project repository (which is always up to date).
+We recommend installing NeuroAnalyzer from the project repository (which is always up to date).
 
 The stable branch is `main` and is installed by default:
 
