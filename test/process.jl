@@ -501,6 +501,22 @@ e10_tmp = deepcopy(e10)
 e10_tmp.data[1, :, 1] = zeros(epoch_len(e10))
 e10_int = lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
+# segment of epoch 1 only, trained on the rest of the epoch; the samples outside the
+# segment are not changed
+e10_seg = deepcopy(e10)
+r_seg = NeuroAnalyzer._epoch_seg(e10_seg, (2, 4))
+e10_seg.data[1, r_seg, 1] .= 0
+e10_int = lrinterpolate_channel(e10_seg; ch = "Fp1", ep = 1, ep_ref = Int64[], seg = (2, 4))
+@test all(!iszero, e10_int.data[1, r_seg, 1])
+@test e10_int.data[1, setdiff(1:epoch_len(e10), r_seg), 1] == e10.data[1, setdiff(1:epoch_len(e10), r_seg), 1]
+@test_throws ArgumentError lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1, ep_ref = Int64[])
+@test_throws ArgumentError lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1, seg = (4, 2))
+@test_throws ArgumentError lrinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1, ep_ref = 1)
+# bad channels are not used as predictors
+e10_bad = deepcopy(e10_tmp)
+e10_bad.data[2, :, :] .= 1e6 .* randn(size(e10_bad.data, 2), size(e10_bad.data, 3))
+e10_bad.header.recording[:bad_channel][2] = true
+@test lrinterpolate_channel(e10_bad; ch = "Fp1", ep = 1).data[1, :, 1] ≈ lrinterpolate_channel(delete_channel(e10_tmp; ch = "Fp2"); ch = "Fp1", ep = 1).data[1, :, 1]
 
 @info "Test: normalize()"
 @test NeuroAnalyzer._normalize(v1, method = :none) == v1
@@ -666,6 +682,13 @@ e10_tmp = deepcopy(e10)
 e10_tmp.data[1, :, 1] = zeros(epoch_len(e10))
 e10_int = plinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
+# all epochs by default; segment only
+@test plinterpolate_channel(e10_tmp; ch = "Fp1").data[1, :, :] != e10_tmp.data[1, :, :]
+e10_int = plinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1, seg = (2, 4))
+r_seg = NeuroAnalyzer._epoch_seg(e10_tmp, (2, 4))
+@test all(!iszero, e10_int.data[1, r_seg, 1])
+@test all(iszero, e10_int.data[1, setdiff(1:epoch_len(e10), r_seg), 1])
+@test_throws ArgumentError plinterpolate_channel(e10_tmp; ch = "Fp1", seg = (0, 100))
 
 @info "Test: remove_dc()"
 @test NeuroAnalyzer._remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]

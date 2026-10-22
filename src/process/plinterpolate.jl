@@ -2,6 +2,15 @@ export plinterpolate_channel
 export plinterpolate_channel!
 export plinterpolate
 
+# sample range (within an epoch) of the time segment seg, in seconds of the epoch time
+function _epoch_seg(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::UnitRange{Int64}
+    seg[1] < seg[2] || throw(ArgumentError("seg[1] must be < seg[2]."))
+    et = obj.epoch_time
+    et[1] <= seg[1] && seg[2] <= et[end] ||
+        throw(ArgumentError("seg must be within the epoch time [$(et[1]), $(et[end])] s."))
+    return vsearch(seg[1], et):vsearch(seg[2], et)
+end
+
 """
     plinterpolate_channel(obj; <keyword arguments>)
 
@@ -11,7 +20,8 @@ Interpolate channel using planar interpolation.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
-- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch number(s) within to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: epoch number(s) within to interpolate; default: all epochs
+- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate, e.g. a short artifact in a continuous recording; default: the whole epoch(s)
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -29,7 +39,8 @@ The channel is interpolated from the other good signal channels (bad channels ar
 function plinterpolate_channel(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
-    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
+    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
     imethod::Symbol = :sh,
 )::NeuroAnalyzer.NEURO
     # validate
@@ -37,6 +48,8 @@ function plinterpolate_channel(
     _has_locs(obj)
     _check_epochs(obj, ep)
     ep = _n2v(ep)
+    # samples to interpolate within each epoch
+    t_rng = isnothing(seg) ? (1:epoch_len(obj)) : _epoch_seg(obj, seg)
 
     # signal channels (names); the reference channels exclude ch and bad channels
     signal = get_channel(obj; type = datatype(obj))
@@ -62,16 +75,15 @@ function plinterpolate_channel(
 
     # create new dataset
     obj_tmp = deepcopy(obj)
-    ep_len = epoch_len(obj)
 
     # initialize progress bar
     progbar = Progress(
-        length(ep) * ep_len; dt = 1, barlen = 20, color = :white, enabled = progress_bar,
+        length(ep) * length(t_rng); dt = 1, barlen = 20, color = :white, enabled = progress_bar,
     )
 
     # value at the location of ch, interpolated from the reference channels at each sample
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ep_len, length(ep)))
-        t_idx, ep_idx = idx[1], idx[2]
+    @inbounds Threads.@threads :static for idx in CartesianIndices((length(t_rng), length(ep)))
+        t_idx, ep_idx = t_rng[idx[1]], idx[2]
         itp = _interpolator(imethod, loc_x, loc_y, @view(obj.data[ref_num, t_idx, ep[ep_idx]]))
         obj_tmp.data[ch_idx, t_idx, ep[ep_idx]] = ScatteredInterpolation.evaluate(itp, target)[1]
         progress_bar && next!(progbar)
@@ -80,7 +92,7 @@ function plinterpolate_channel(
 
     push!(
         obj_tmp.history,
-        "plinterpolate_channel(obj; ch=$ch, ep=$ep, imethod=$imethod)",
+        "plinterpolate_channel(obj; ch=$ch, ep=$ep, seg=$seg, imethod=$imethod)",
     )
 
     return obj_tmp
@@ -95,7 +107,8 @@ Interpolate channel using planar interpolation.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to interpolate
-- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: epoch number(s) within to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: epoch number(s) within to interpolate; default: all epochs
+- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch(s)
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 
 # Returns
@@ -105,11 +118,12 @@ Interpolate channel using planar interpolation.
 function plinterpolate_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
-    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
+    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
     imethod::Symbol = :sh,
 )::Nothing
     obj_tmp =
-        plinterpolate_channel(obj; ch = ch, ep = ep, imethod = imethod)
+        plinterpolate_channel(obj; ch = ch, ep = ep, seg = seg, imethod = imethod)
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
     obj_tmp = nothing
