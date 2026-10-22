@@ -88,13 +88,40 @@ e10_tmp = denoise_dwd(e10; ch = "all", wt = wavelet(WT.haar))
 @test size(e10_tmp) == size(e10)
 
 @info "Test: denoise_wien()"
-s = NeuroAnalyzer._denoise_wien(a1)
+s = NeuroAnalyzer._denoise_wien(a1; fs = 10)
 @test size(s) == (2, 3, 2)
-# deterministic (the noise model is the expected white-noise spectrum, not a random realization)
 xw = randn(NeuroAnalyzer.Random.MersenneTwister(1), 3, 256, 2)
-@test NeuroAnalyzer._denoise_wien(xw) == NeuroAnalyzer._denoise_wien(xw)
+@test NeuroAnalyzer._denoise_wien(xw; fs = 256) == NeuroAnalyzer._denoise_wien(xw; fs = 256)
+# a signal common to all channels is kept, independent noise is removed, and activity
+# present in one channel only is attenuated
+rng_w = NeuroAnalyzer.Random.MersenneTwister(2)
+t_w = (0:2559) ./ 256
+common_w = 10 .* sin.(2π * 10 .* t_w)
+xw = zeros(8, 2560, 1)
+for idx = 1:8
+    xw[idx, :, 1] = common_w .+ 10 .* randn(rng_w, 2560)
+end
+xw[1, :, 1] .+= 10 .* sin.(2π * 6 .* t_w)
+yw = NeuroAnalyzer._denoise_wien(xw; fs = 256)
+@test sqrt(sum(abs2, yw[2, :, 1] .- common_w) / 2560) < 3
+fw_in = abs.(NeuroAnalyzer.rfft(xw[1, :, 1]))
+fw_out = abs.(NeuroAnalyzer.rfft(yw[1, :, 1]))
+@test fw_out[61] / fw_in[61] < 0.1      # 6 Hz, channel 1 only
+@test fw_out[101] / fw_in[101] > 0.9    # 10 Hz, all channels
+# ref = :epochs: noisy trials of the same response
+xe = zeros(1, 256, 30)
+for idx = 1:30
+    xe[1, :, idx] = common_w[1:256] .+ 10 .* randn(rng_w, 256)
+end
+ye = NeuroAnalyzer._denoise_wien(xe; fs = 256, ref = :epochs)
+@test sqrt(sum(abs2, ye[1, :, 1] .- common_w[1:256]) / 256) < sqrt(sum(abs2, xe[1, :, 1] .- common_w[1:256]) / 256) / 2
+@test_throws ArgumentError NeuroAnalyzer._denoise_wien(xw[1:1, :, :]; fs = 256)
+@test_throws ArgumentError NeuroAnalyzer._denoise_wien(xw; fs = 256, ref = :epochs)
+@test_throws ArgumentError NeuroAnalyzer._denoise_wien(xw; fs = 256, ref = :x)
+@test_throws ArgumentError NeuroAnalyzer._denoise_wien(xw; fs = 256, fsmooth = -1)
 e10_tmp = denoise_wien(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
+@test size(denoise_wien(e10; ch = "all", ref = :epochs)) == size(e10)
 
 @info "Test: derivative()"
 @test NeuroAnalyzer._derivative(v1) == [0.5, 1.0, 1.0, 1.0, 0.5]
@@ -901,6 +928,16 @@ e10_tmp = taper(e10; ch = "all", t = e10.data[1, :, 1])
       [0.3 0.5 0.3; 0.3 0.5 0.3;;; 0.3 0.5 0.3; 0.3 0.5 0.3]
 e10_tmp = tconv(e10; ch = "all", kernel = [0.2, 0.1, 0.2])
 @test size(e10_tmp) == size(e10)
+# "same" convolution for kernels of any length; a symmetric kernel does not shift the signal
+x_imp = zeros(50)
+x_imp[25] = 1
+for k = 1:6
+    @test length(NeuroAnalyzer._tconv(x_imp; kernel = ones(k))) == 50
+    @test length(NeuroAnalyzer._fconv(x_imp; kernel = ones(k))) == 50
+end
+@test argmax(NeuroAnalyzer._tconv(x_imp; kernel = [1.0, 2, 3, 2, 1])) == 25
+@test size(tconv(e10; ch = "all", kernel = ones(4))) == size(e10)
+@test size(fconv(e10; ch = "all", kernel = ones(4))) == size(e10.data)
 
 @info "Test: wbp()"
 @test length(NeuroAnalyzer._wbp(e10.data[1, :, 1], fs = 10, frq = 4)) == 2560
@@ -1006,8 +1043,23 @@ e10_tmp = artrem_cwd(e10; ch = "Fp1", ep = 1, tseg = (0.2, 0.4), fseg = (10, 12.
 @test size(e10_tmp) == size(e10)
 
 @info "Test: emd()"
-@test size(NeuroAnalyzer._emd(e10.data[1, :, 1], e10.epoch_time, epsilon = 0.3), 1) in [8, 9]
-@test size(emd(e10, ch = "Fp1", ep = 1, epsilon = 0.3), 1) in [8, 9]
+# 20 Hz + 4 Hz + linear trend: two IMFs and the trend as the residual
+t_emd = collect(0:(1 / 256):(4 - 1 / 256))
+x_emd = 5 .* sin.(2π * 20 .* t_emd) .+ 10 .* sin.(2π * 4 .* t_emd) .+ 2 .* t_emd
+imf_emd = NeuroAnalyzer._emd(x_emd, t_emd)
+@test size(imf_emd) == (3, length(t_emd))
+@test vec(sum(imf_emd; dims = 1)) ≈ x_emd
+@test cor(imf_emd[1, :], 5 .* sin.(2π * 20 .* t_emd)) > 0.99
+@test cor(imf_emd[2, :], 10 .* sin.(2π * 4 .* t_emd)) > 0.99
+@test maximum(abs.(imf_emd[3, :] .- 2 .* t_emd)) < 1
+# the rows (IMFs and residual) always sum to the signal
+imf_emd = emd(e10; ch = "Fp1", ep = 1)
+@test vec(sum(imf_emd; dims = 1)) ≈ e10.data[1, :, 1]
+@test size(emd(e10; ch = "Fp1", ep = 1, max_imf = 2), 1) == 3
+# a trend (no oscillation) is returned as the residual only
+@test size(NeuroAnalyzer._emd(t_emd, t_emd), 1) == 1
+@test_throws ArgumentError NeuroAnalyzer._emd(x_emd, t_emd; epsilon = 0)
+@test_throws ArgumentError NeuroAnalyzer._emd(x_emd, t_emd[1:10])
 
 @info "Test: process regressions"
 # resample: time axes use the new sampling rate; epoch offset is kept; markers unchanged
@@ -1512,7 +1564,7 @@ for (f, f!, o, kw) in (
     (cbp, cbp!, eb, (ch = "Fp1", frq = 4)),
     (csd, csd!, eb, ()),
     (denoise_fft, denoise_fft!, eb, (ch = "Fp1",)),
-    (denoise_wien, denoise_wien!, eb, (ch = "Fp1",)),
+    (denoise_wien, denoise_wien!, eb, (ch = ["Fp1", "Fp2", "F3"],)),
     (denoise_dwd, denoise_dwd!, eb, (ch = "Fp1", wt = wavelet(WT.haar))),
     (NeuroAnalyzer.derivative, derivative!, eb, (ch = "Fp1",)),
     (detrend, detrend!, eb, (ch = "Fp1", type = :linear)),

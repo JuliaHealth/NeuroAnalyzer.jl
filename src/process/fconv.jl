@@ -127,7 +127,7 @@ function fconv(
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    _info("Group delay: $(_group_delay(kernel)) samples")
+    _info("Output aligned with the input: group delay of $(_group_delay(kernel)) samples removed")
 
     return _fconv(@view(obj.data[ch, :, :]); kernel = kernel, norm = norm)
 end
