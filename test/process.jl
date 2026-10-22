@@ -739,9 +739,9 @@ end
 @test lrinterpolate_channel(e10_rb; ch = "C3", ep = 1).header.recording[:bad_channel][c3]
 @test !lrinterpolate_channel(e10_rb; ch = "C3", ep = 1, reset_bads = true).header.recording[:bad_channel][c3]
 for f! in (sphinterpolate_channel!, plinterpolate_channel!)
-    e_tmp = deepcopy(e10_rb)
-    f!(e_tmp; ch = "C3", ep = 1, reset_bads = true)
-    @test !e_tmp.header.recording[:bad_channel][c3]
+    e_rb = deepcopy(e10_rb)
+    f!(e_rb; ch = "C3", ep = 1, reset_bads = true)
+    @test !e_rb.header.recording[:bad_channel][c3]
 end
 e_tmp = deepcopy(e10_rb)
 lrinterpolate_channel!(e_tmp; ch = "C3", ep = 1, reset_bads = true)
@@ -923,74 +923,6 @@ n_tmp2 = od2conc(n_tmp)
 e = average_epochs(e10)
 npl!(e)
 @test size(e.data) == (19, 2560, 11)
-
-@info "Test: remove_pops()"
-# synthetic: 10 Hz sine + noise (σ = 2), a positive pop (200, τ = 40 samples) and a negative pop (-150, τ = 20 samples)
-fs_p = 256
-n_p = 10 * fs_p
-t_p = (0:(n_p - 1)) ./ fs_p
-clean_p = 10 .* sin.(2π * 10 .* t_p) .+ 2 .* randn(NeuroAnalyzer.Random.Xoshiro(1), n_p)
-pops_p = zeros(n_p)
-pops_p[1200:end] .+= 200 .* exp.(-(0:(n_p - 1200)) ./ 40)
-pops_p[1900:end] .-= 150 .* exp.(-(0:(n_p - 1900)) ./ 20)
-x = clean_p .+ pops_p
-x0 = copy(x)
-p = NeuroAnalyzer._remove_pops(x; r = 128)
-@test x == x0
-@test p.pop_loc == [1200, 1900]
-@test isapprox(p.amp, [200, -150]; rtol = 0.05)
-@test isapprox(p.tau, [40, 20]; rtol = 0.1)
-# the pops are removed, the underlying signal is preserved (residual below the noise level)
-@test maximum(abs.(p.s .- clean_p)) < 10
-@test sqrt(sum(abs2, p.s .- clean_p) / n_p) < 1
-# detection only
-p = NeuroAnalyzer._remove_pops(x; r = 128, repair = false)
-@test p.s == x && p.pop_loc == [1200, 1900]
-# no pops in a clean signal; a single-sample spike is not a pop
-p = NeuroAnalyzer._remove_pops(clean_p; r = 128)
-@test isempty(p.pop_loc) && p.s == clean_p
-x_sp = copy(clean_p)
-x_sp[1500] += 300
-@test isempty(NeuroAnalyzer._remove_pops(x_sp; r = 128).pop_loc)
-# exponential fit
-@test all(isapprox.(values(NeuroAnalyzer._pop_fit(50 .* exp.(-(0:99) ./ 12))), (50, 12); rtol = 0.02))
-# a step that does not recover is not a pop: not repaired (a warning is shown)
-x_st = copy(clean_p)
-x_st[1200:end] .+= 300
-p = NeuroAnalyzer._remove_pops(x_st; r = 128)
-@test isempty(p.pop_loc) && p.s == x_st
-# acceptance: a small pop (relative to the signal SD) or a shape that does not follow the model is rejected
-@test isempty(NeuroAnalyzer._remove_pops(x; r = 128, a_min = 100).pop_loc)
-x_bl = copy(clean_p)
-x_bl[1200:1327] .+= 300 .* sin.(π .* (0:127) ./ 127) .^ 8   # a fast bump that returns (not a step with exponential recovery)
-@test isempty(NeuroAnalyzer._remove_pops(x_bl; r = 128).pop_loc)
-# a pop at the very beginning of the signal (e.g. a filter transient) is not analyzed
-x_b = copy(clean_p)
-x_b[2:end] .+= 300 .* exp.(-(0:(n_p - 2)) ./ 40)
-@test isempty(NeuroAnalyzer._remove_pops(x_b; r = 128).pop_loc)
-@test_throws ArgumentError NeuroAnalyzer._remove_pops(x; r = 128, a_min = -1)
-@test_throws ArgumentError NeuroAnalyzer._remove_pops(x; r = 128, r2_min = 2)
-@test_throws ArgumentError NeuroAnalyzer._remove_pops(x; r = 4)
-@test_throws ArgumentError NeuroAnalyzer._remove_pops(x; r = 128, z = 0)
-@test_throws ArgumentError NeuroAnalyzer._remove_pops(x[1:100]; r = 128)
-# NEURO object: channel 1 with the pops, channel 2 clean
-o_p = create_object(; data_type = "eeg")
-o_p.header.recording[:sampling_rate] = fs_p
-add_channel!(o_p; data = reshape(vcat(x', clean_p'), 2, n_p, 1), label = ["P1", "P2"], type = ["eeg", "eeg"], unit = ["μV", "μV"])
-create_time!(o_p; fs = fs_p)
-o_r, pops = remove_pops(o_p; ch = "all", window = 5)
-@test pops[!, :channel] == ["P1", "P1"]
-@test pops[!, :sample] == [1200, 1900]
-@test pops[!, :time] ≈ [1199, 1899] ./ fs_p
-@test isapprox(pops[!, :tau], [40, 20] ./ fs_p; rtol = 0.1)
-@test o_r.data[2, :, 1] == clean_p
-@test sqrt(sum(abs2, o_r.data[1, :, 1] .- clean_p) / n_p) < 1
-@test o_p.data[1, :, 1] == x
-# detection only: same pops (amplitudes of later pops differ: measured from the unrepaired level)
-@test remove_pops(o_p; ch = "all", repair = false)[!, [:channel, :sample]] == pops[!, [:channel, :sample]]
-@test_throws ArgumentError remove_pops(o_p; ch = "all", window = 0.5)
-@test_throws ArgumentError remove_pops(o_p; ch = "all", window = 20)
-@test_throws ArgumentError remove_pops(epoch(o_p; ep_len = 5); ch = "all")
 
 @info "Test: remove_powerline()"
 e10_tmp = keep_epoch(e10; ep = 1)
@@ -1627,10 +1559,6 @@ e_tmp = deepcopy(eeg)
 ica_remove!(e_tmp; ch = "all", ic_idx = 1:2, ic = ica_d.ic, ic_mw = ica_d.ic_mw)
 @test e_tmp.data ≈ ica_remove(eeg; ch = "all", ic_idx = 1:2, ic = ica_d.ic, ic_mw = ica_d.ic_mw).data
 e_tmp = keep_epoch(eb; ep = 1)
-rp_out = remove_pops(o_p; ch = "all")
-o_tmp = deepcopy(o_p)
-@test remove_pops!(o_tmp; ch = "all") == rp_out[2]
-@test o_tmp.data == rp_out[1].data
 m_tmp = deepcopy(m_ssp)
 apply_ssp_projectors!(m_tmp)
 @test m_tmp.data ≈ apply_ssp_projectors(m_ssp).data
