@@ -14,19 +14,23 @@ You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags
 
 Note: this toolbox is under active development and its API is subject to changes.
 
-## Installation / Getting Started
+## Installation
 
-NeuroAnalyzer can be installed using the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+We recommended installing NeuroAnalyzer from the project repository (which is always up to date).
 
-```julia
-pkg> add NeuroAnalyzer
-```
-
-Or, equivalently, via the `Pkg` API:
+The stable branch is `main` and is installed by default:
 
 ```julia
 using Pkg
-Pkg.add("NeuroAnalyzer")
+Pkg.add(url = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl")
+```
+
+The development branch, `devel`, contains the newest features and fixes, but may be less stable:
+
+```julia
+using Pkg
+Pkg.add(url = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl",
+        rev = "devel")
 ```
 
 ## Quickstart
@@ -56,10 +60,6 @@ See [Requirements](https://neuroanalyzer.org/requirements.html) for more details
 This [roadmap](https://neuroanalyzer.org/roadmap.html) gives an overview of where NeuroAnalyzer is headed. It is not exhaustive, and the order of items does not reflect implementation priority.
 
 You are encouraged to add new functions required for your study. You may also submit a feature request using Codeberg [NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) repository page.
-
-## Plugins (extensions)
-
-See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.html) for more details.
 
 ## License
 
