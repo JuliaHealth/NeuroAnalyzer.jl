@@ -690,6 +690,63 @@ r_seg = NeuroAnalyzer._epoch_seg(e10_tmp, (2, 4))
 @test all(iszero, e10_int.data[1, setdiff(1:epoch_len(e10), r_seg), 1])
 @test_throws ArgumentError plinterpolate_channel(e10_tmp; ch = "Fp1", seg = (0, 100))
 
+@info "Test: sphinterpolate_channel()"
+# G matrix: the same as in gh() (CSD) for the same parameters
+ch_eeg_sph = get_channel(e10; ch = "eeg")
+locs_sph = e10.locs[[findfirst(==(l), e10.locs.label) for l in labels(e10)[ch_eeg_sph]], :]
+p_sph = Matrix{Float64}(locs_sph[:, [:loc_x, :loc_y, :loc_z]])
+p_sph ./= sqrt.(sum(abs2, p_sph; dims = 2))
+@test NeuroAnalyzer._sph_g(p_sph, p_sph; m = 4, n = 8) ≈ gh(locs_sph; m = 4, n = 8).G
+# a constant field is reproduced exactly (the spline has a constant term)
+e10_c = deepcopy(e10)
+e10_c.data[ch_eeg_sph, :, :] .= 7.0
+@test sphinterpolate_channel(e10_c; ch = "C3").data[get_channel(e10; ch = "C3")[1], :, :] ≈ fill(7.0, epoch_len(e10), nepochs(e10)) atol = 1e-6
+# only the interpolated channels (and epochs) change; several channels at once
+e10_tmp = deepcopy(e10)
+c34 = get_channel(e10; ch = ["C3", "C4"])
+e10_tmp.data[c34, :, :] .= 0
+e10_int = sphinterpolate_channel(e10_tmp; ch = ["C3", "C4"], ep = 1:2)
+@test all(!iszero, e10_int.data[c34, :, 1:2])
+@test all(iszero, e10_int.data[c34, :, 3:end])
+@test e10_int.data[setdiff(1:nchannels(e10), c34), :, :] == e10_tmp.data[setdiff(1:nchannels(e10), c34), :, :]
+# segment only
+e10_int = sphinterpolate_channel(e10_tmp; ch = "C3", ep = 1, seg = (2, 4))
+r_seg = NeuroAnalyzer._epoch_seg(e10_tmp, (2, 4))
+@test all(!iszero, e10_int.data[c34[1], r_seg, 1])
+@test all(iszero, e10_int.data[c34[1], setdiff(1:epoch_len(e10), r_seg), 1])
+# bad channels are not used
+e10_bad = deepcopy(e10)
+fp2 = get_channel(e10; ch = "Fp2")[1]
+e10_bad.data[fp2, :, :] .= 1e6
+e10_bad.header.recording[:bad_channel][fp2] = true
+@test sphinterpolate_channel(e10_bad; ch = "C3").data[c34[1], :, :] ≈ sphinterpolate_channel(delete_channel(e10; ch = "Fp2"); ch = "C3").data[get_channel(delete_channel(e10; ch = "Fp2"); ch = "C3")[1], :, :]
+# in-place
+e10_tmp2 = deepcopy(e10_tmp)
+sphinterpolate_channel!(e10_tmp2; ch = "C3")
+@test e10_tmp2.data == sphinterpolate_channel(e10_tmp; ch = "C3").data
+@test_throws ArgumentError sphinterpolate_channel(e10; ch = "ECG")
+@test_throws ArgumentError sphinterpolate_channel(e10; ch = "C3", m = 1)
+@test_throws ArgumentError sphinterpolate_channel(e10; ch = "C3", seg = (0, 100))
+
+@info "Test: interpolation, reset_bads"
+e10_rb = deepcopy(e10)
+c3 = get_channel(e10_rb; ch = "C3")[1]
+e10_rb.header.recording[:bad_channel][c3] = true
+for f in (sphinterpolate_channel, plinterpolate_channel)
+    @test f(e10_rb; ch = "C3", ep = 1).header.recording[:bad_channel][c3]
+    @test !f(e10_rb; ch = "C3", ep = 1, reset_bads = true).header.recording[:bad_channel][c3]
+end
+@test lrinterpolate_channel(e10_rb; ch = "C3", ep = 1).header.recording[:bad_channel][c3]
+@test !lrinterpolate_channel(e10_rb; ch = "C3", ep = 1, reset_bads = true).header.recording[:bad_channel][c3]
+for f! in (sphinterpolate_channel!, plinterpolate_channel!)
+    e_tmp = deepcopy(e10_rb)
+    f!(e_tmp; ch = "C3", ep = 1, reset_bads = true)
+    @test !e_tmp.header.recording[:bad_channel][c3]
+end
+e_tmp = deepcopy(e10_rb)
+lrinterpolate_channel!(e_tmp; ch = "C3", ep = 1, reset_bads = true)
+@test !e_tmp.header.recording[:bad_channel][c3]
+
 @info "Test: remove_dc()"
 @test NeuroAnalyzer._remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]
 e10_tmp = remove_dc(e10; ch = "all")
@@ -1368,6 +1425,11 @@ mlinterpolate_channel!(e_tmp; ch = "Cz", ep = 1, ep_ref = 2:4, model = cr)
 @test e_tmp.data == e_ml.data
 @test_throws ArgumentError mlinterpolate_channel(eb; ch = "Cz", ep = 1, ep_ref = 1:3, model = cr)
 @test_throws ArgumentError mlinterpolate_channel(eb; ch = "ECG", ep = 1, model = cr)
+e_tmp = deepcopy(eb)
+e_tmp.header.recording[:bad_channel][get_channel(eb; ch = "Cz")[1]] = true
+@test !mlinterpolate_channel(e_tmp; ch = "Cz", ep = 1, ep_ref = 2:4, model = cr, reset_bads = true).header.recording[:bad_channel][get_channel(eb; ch = "Cz")[1]]
+mlinterpolate_channel!(e_tmp; ch = "Cz", ep = 1, ep_ref = 2:4, model = cr, reset_bads = true)
+@test !e_tmp.header.recording[:bad_channel][get_channel(eb; ch = "Cz")[1]]
 
 @info "Test: plinterpolate()"
 ploc = eb.locs[NeuroAnalyzer._find_bylabel(eb.locs, labels(eb)[ch_eeg]), :]

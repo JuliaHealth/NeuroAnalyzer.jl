@@ -31,6 +31,7 @@ Interpolate channel using planar interpolation.
     - `:ga`: Gaussian
 
 The channel is interpolated from the other good signal channels (bad channels are not used), whose locations must be available; the interpolated value is computed exactly at the location of `ch`.
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
 
 # Returns
 
@@ -42,6 +43,7 @@ function plinterpolate_channel(
     ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
     seg::Union{Nothing, Tuple{Real, Real}} = nothing,
     imethod::Symbol = :sh,
+    reset_bads::Bool = false,
 )::NeuroAnalyzer.NEURO
     # validate
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -90,9 +92,11 @@ function plinterpolate_channel(
     end
     progress_bar && finish!(progbar)
 
+    reset_bads && (obj_tmp.header.recording[:bad_channel][ch_idx] = false)
+
     push!(
         obj_tmp.history,
-        "plinterpolate_channel(obj; ch=$ch, ep=$ep, seg=$seg, imethod=$imethod)",
+        "plinterpolate_channel(obj; ch=$ch, ep=$ep, seg=$seg, imethod=$imethod, reset_bads=$reset_bads)",
     )
 
     return obj_tmp
@@ -110,6 +114,7 @@ Interpolate channel using planar interpolation.
 - `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: epoch number(s) within to interpolate; default: all epochs
 - `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch(s)
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
 
 # Returns
 
@@ -121,10 +126,14 @@ function plinterpolate_channel!(
     ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
     seg::Union{Nothing, Tuple{Real, Real}} = nothing,
     imethod::Symbol = :sh,
+    reset_bads::Bool = false,
 )::Nothing
     obj_tmp =
-        plinterpolate_channel(obj; ch = ch, ep = ep, seg = seg, imethod = imethod)
+        plinterpolate_channel(
+            obj; ch = ch, ep = ep, seg = seg, imethod = imethod, reset_bads = reset_bads,
+        )
     obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
     obj.history = obj_tmp.history
     obj_tmp = nothing
 

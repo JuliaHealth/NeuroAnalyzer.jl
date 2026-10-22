@@ -13,6 +13,7 @@ Interpolate channel using linear regression: the channel is modelled as a linear
 - `ep::Int64`: epoch index to interpolate (`1` for a continuous signal)
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
 - `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; the samples of epoch `ep` outside the segment are added to the training data, so that a segment of a continuous signal can be repaired; default: the whole epoch (requires reference epochs)
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
 
 # Returns
 
@@ -27,6 +28,7 @@ function lrinterpolate_channel(
         ep,
     ),
     seg::Union{Nothing, Tuple{Real, Real}} = nothing,
+    reset_bads::Bool = false,
 )::NeuroAnalyzer.NEURO
     # resolve channel names to integer indices
     ch_idx = get_channel(obj; ch = ch)
@@ -88,9 +90,11 @@ function lrinterpolate_channel(
     df_ep = DataFrame(hcat(obj.data[ch_idx, t_rng, ep], obj.data[ch_ref, t_rng, ep]'), :auto)
     obj_tmp.data[ch_idx, t_rng, ep] = GLM.predict(linear_regressor, df_ep)
 
+    reset_bads && (obj_tmp.header.recording[:bad_channel][ch_idx] = false)
+
     push!(
         obj_tmp.history,
-        "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, seg=$seg)",
+        "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, seg=$seg, reset_bads=$reset_bads)",
     )
 
     return obj_tmp
@@ -108,6 +112,7 @@ Interpolate channel using linear regression.
 - `ep::Int64`: epoch index to interpolate (`1` for a continuous signal)
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
 - `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
 
 # Returns
 
@@ -122,9 +127,13 @@ function lrinterpolate_channel!(
         ep,
     ),
     seg::Union{Nothing, Tuple{Real, Real}} = nothing,
+    reset_bads::Bool = false,
 )::Nothing
-    obj_tmp = lrinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref, seg = seg)
+    obj_tmp = lrinterpolate_channel(
+        obj; ch = ch, ep = ep, ep_ref = ep_ref, seg = seg, reset_bads = reset_bads,
+    )
     obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
     obj.history = obj_tmp.history
     obj_tmp = nothing
 
