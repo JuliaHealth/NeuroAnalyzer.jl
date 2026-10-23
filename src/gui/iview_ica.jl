@@ -82,7 +82,7 @@ function iview_ica(
             ch = datatype(obj_reconstructed[1]),
             seg = seg,
             amethod = :mean,
-            imethod = :sh,
+            imethod = :tp,
             nmethod = :minmax,
             cb = false,
             large = false,

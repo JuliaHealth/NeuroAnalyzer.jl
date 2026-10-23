@@ -87,12 +87,13 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         combo_imethod = GtkComboBoxText()
         imethod_types = [
             "shepard", "multiquadratic", "inv multiquadratic", "thin plate",
-            "nearest neighbour", "gaussian",
+            "nearest neighbour", "gaussian", "sibson", "sibson-1", "laplace",
+            "farin", "hiyoshi", "triangle", "spherical spline",
         ]
         for idx in imethod_types
             push!(combo_imethod, idx)
         end
-        combo_imethod.active = 0
+        combo_imethod.active = 3
         combo_imethod.tooltip_text = "Interpolate type"
 
         combo_amethod = GtkComboBoxText()
@@ -195,6 +196,13 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
             imethod == 3 && (imethod = :tp)
             imethod == 4 && (imethod = :nn)
             imethod == 5 && (imethod = :ga)
+            imethod == 6 && (imethod = :sib)
+            imethod == 7 && (imethod = :sib1)
+            imethod == 8 && (imethod = :lap)
+            imethod == 9 && (imethod = :far)
+            imethod == 10 && (imethod = :hiy)
+            imethod == 11 && (imethod = :tri)
+            imethod == 12 && (imethod = :sph)
             amethod = combo_amethod.active
             amethod == 0 && (amethod = :mean)
             amethod == 1 && (amethod = :median)
@@ -464,12 +472,13 @@ function itopo_ep(
         combo_imethod = GtkComboBoxText()
         imethod_types = [
             "shepard", "multiquadratic", "inv multiquadratic", "thin plate",
-            "nearest neighbour", "gaussian",
+            "nearest neighbour", "gaussian", "sibson", "sibson-1", "laplace",
+            "farin", "hiyoshi", "triangle", "spherical spline",
         ]
         for idx in imethod_types
             push!(combo_imethod, idx)
         end
-        combo_imethod.active = 0
+        combo_imethod.active = 3
         combo_imethod.tooltip_text = "Interpolate type"
 
         combo_amethod = GtkComboBoxText()
@@ -581,6 +590,13 @@ function itopo_ep(
             imethod == 3 && (imethod = :tp)
             imethod == 4 && (imethod = :nn)
             imethod == 5 && (imethod = :ga)
+            imethod == 6 && (imethod = :sib)
+            imethod == 7 && (imethod = :sib1)
+            imethod == 8 && (imethod = :lap)
+            imethod == 9 && (imethod = :far)
+            imethod == 10 && (imethod = :hiy)
+            imethod == 11 && (imethod = :tri)
+            imethod == 12 && (imethod = :sph)
             amethod = combo_amethod.active
             amethod == 0 && (amethod = :mean)
             amethod == 1 && (amethod = :median)

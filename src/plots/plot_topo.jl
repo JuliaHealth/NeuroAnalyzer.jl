@@ -16,13 +16,20 @@ Plot a topographical map of signal values across channel locations.
 - `cb_title::String="[A.U.]"`: colorbar title
 - `title::String=""`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `imethod::Symbol=:sh`: interpolation method:
+- `imethod::Symbol=:tp`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
     - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
     - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
+    - `:sib`: Sibson (natural neighbour)
+    - `:sib1`: Sibson-1 (smooth natural neighbour)
+    - `:lap`: Laplace (non-Sibsonian natural neighbour)
+    - `:far`: Farin (C1 natural neighbour)
+    - `:hiy`: Hiyoshi (C2 natural neighbour)
+    - `:tri`: piecewise linear on Delaunay triangles
+    - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
 - `electrodes::Bool=true`: if `true`, plot electrode locations over topography
@@ -62,7 +69,7 @@ function plot_topo(
     cb_title::String = "[A.U.]",
     title::String = "",
     mono::Bool = false,
-    imethod::Symbol = :sh,
+    imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
     electrodes::Bool = true,
@@ -75,7 +82,7 @@ function plot_topo(
     threshold_method::Symbol = :reg,
 )::GLMakie.Figure
     # validate
-    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+    _check_var(imethod, _IMETHODS, "imethod")
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(threshold_method, [:reg, :loc], "threshold_method")
@@ -108,6 +115,14 @@ function plot_topo(
             loc_x[idx], loc_y[idx] =
                 pol2cart(local_locs.loc_radius[idx], local_locs.loc_theta[idx])
         end
+    end
+
+    # spherical spline: fit at the 3D positions (if available), the grid is mapped
+    # onto the sphere by inverting the polar (azimuthal equidistant) projection
+    loc_xyz = nothing
+    if imethod === :sph && !cart
+        xyz = Matrix{Float64}(local_locs[!, [:loc_x, :loc_y, :loc_z]])
+        all(>(0), sum(abs2, xyz; dims = 2)) && (loc_xyz = xyz)
     end
 
     # plot parameters
@@ -146,7 +161,7 @@ function plot_topo(
 
     # interpolate signal
     s_interpolated, interpolated_x, interpolated_y =
-        _interpolate2d(s, loc_x, loc_y, iter, imethod, nmethod)
+        _interpolate2d(s, loc_x, loc_y, iter, imethod, nmethod; loc_xyz = loc_xyz)
     s_interpolated = s_interpolated'[:, end:-1:1]
     s_interpolated_threshold = deepcopy(s_interpolated)
 
@@ -408,13 +423,20 @@ Plot a topographical map of signal values from a NEURO object with customizable 
 - `amethod::Symbol=:mean`: averaging method for matrix data:
     - `:mean`: mean averaging
     - `:median`: median averaging
-- `imethod::Symbol=:sh`: interpolation method:
+- `imethod::Symbol=:tp`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
     - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
     - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
+    - `:sib`: Sibson (natural neighbour)
+    - `:sib1`: Sibson-1 (smooth natural neighbour)
+    - `:lap`: Laplace (non-Sibsonian natural neighbour)
+    - `:far`: Farin (C1 natural neighbour)
+    - `:hiy`: Hiyoshi (C2 natural neighbour)
+    - `:tri`: piecewise linear on Delaunay triangles
+    - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
 - `electrodes::Bool=true`: if `true`, plot electrode locations over topography
@@ -458,7 +480,7 @@ function plot_topo(
     cb::Bool = true,
     cb_title::String = "default",
     amethod::Symbol = :mean,
-    imethod::Symbol = :sh,
+    imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
     electrodes::Bool = true,
@@ -493,7 +515,7 @@ function plot_topo(
 
     # validate
     contours >= 0 || throw(ArgumentError("contours must be ≥ 0."))
-    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+    _check_var(imethod, _IMETHODS, "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
     _check_var(
         nmethod,
@@ -598,13 +620,20 @@ Create a topographical plot of Independent Component Analysis (ICA) components f
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=axes(ic, 1)`: component indices to plot, default is all components
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point(s) in seconds to plot, ignored if `data` is provided
-- `imethod::Symbol=:sh`: interpolation method:
+- `imethod::Symbol=:tp`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
     - `:imq`: Inverse Multiquadratic
     - `:tp`: ThinPlate
     - `:nn`: Nearest Neighbour
     - `:ga`: Gaussian
+    - `:sib`: Sibson (natural neighbour)
+    - `:sib1`: Sibson-1 (smooth natural neighbour)
+    - `:lap`: Laplace (non-Sibsonian natural neighbour)
+    - `:far`: Farin (C1 natural neighbour)
+    - `:hiy`: Hiyoshi (C2 natural neighbour)
+    - `:tri`: piecewise linear on Delaunay triangles
+    - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `contours::Int64=0`: number of contour levels to plot
 - `electrodes::Bools=true`: if `true`, plot electrode locations over topography
@@ -624,7 +653,7 @@ function plot_icatopo(
     ic_mw::Matrix{Float64},
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = axes(ic, 1),
     tpos::Union{Nothing, Real, AbstractVector},
-    imethod::Symbol = :sh,
+    imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
     contours::Int64 = 0,
     electrodes::Bool = true,

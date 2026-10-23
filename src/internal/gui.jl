@@ -54,7 +54,7 @@ function _refresh_ica_can_set(
             ch = datatype(obj_reconstructed[1]),  # use same channel type as first object
             seg = (time1, time2),                 # plot specified time segment
             amethod = :mean,                      # amplitude method
-            imethod = :sh,                        # interpolation method
+            imethod = :tp,                        # interpolation method
             nmethod = :minmax,                    # normalization method
             cb = false,                           # don't show color bar
             large = false,                        # don't use large plot size

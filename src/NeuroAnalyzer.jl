@@ -146,6 +146,7 @@ const _NA_REQUIRED_PACKAGES = [
     "Logging",
     "MAT",
     "MLJ",
+    "NaturalNeighbours",
     "NPZ",
     "Optim",
     "PiGPIO",
@@ -201,6 +202,9 @@ const mask_alt = Gtk4.ModifierType_ALT_MASK
 # ---------------------------------------------------------------------------
 # internal helpers
 # ---------------------------------------------------------------------------
+
+"""Planar interpolation methods (`imethod`): ScatteredInterpolation.jl, NaturalNeighbours.jl and spherical spline."""
+const _IMETHODS = [:sh, :mq, :imq, :tp, :nn, :ga, :sib, :sib1, :lap, :far, :hiy, :tri, :sph]
 
 """ Columns that hold numeric coordinate data in a locations DataFrame."""
 const _LOCS_COORD_COLS = [

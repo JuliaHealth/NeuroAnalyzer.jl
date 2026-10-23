@@ -717,6 +717,9 @@ r_seg = NeuroAnalyzer._epoch_seg(e10_tmp, (2, 4))
 @test all(!iszero, e10_int.data[1, r_seg, 1])
 @test all(iszero, e10_int.data[1, setdiff(1:epoch_len(e10), r_seg), 1])
 @test_throws ArgumentError plinterpolate_channel(e10_tmp; ch = "Fp1", seg = (0, 100))
+# :sph delegates to sphinterpolate_channel()
+@test plinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1, seg = (2, 4), imethod = :sph).data ==
+      sphinterpolate_channel(e10_tmp; ch = "Fp1", ep = 1, seg = (2, 4)).data
 
 @info "Test: sphinterpolate_channel()"
 # G matrix: the same as in gh() (CSD) for the same parameters

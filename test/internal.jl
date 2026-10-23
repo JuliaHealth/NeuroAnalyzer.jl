@@ -987,11 +987,28 @@ NeuroAnalyzer._locs_norm!(e_tmp)
 # Shepard and nearest-neighbor interpolators reproduce the data at the data points
 for im in (:sh, :nn)
     itp = NeuroAnalyzer._interpolator(im, [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 2.0, 3.0])
-    @test NeuroAnalyzer.ScatteredInterpolation.evaluate(itp, [1.0, 0.0])[1] ≈ 2.0
+    @test itp([1.0], [0.0])[1] ≈ 2.0
 end
+# natural neighbour interpolators reproduce the data at the data points and
+# evaluate several points at once
+lx = [0.0, 1.0, 0.0, 1.0, 0.5, 0.2, 0.8]
+ly = [0.0, 0.0, 1.0, 1.0, 0.5, 0.7, 0.3]
+lv = lx .+ 2 .* ly
+for im in (:sib, :sib1, :lap, :far, :hiy, :tri)
+    itp = NeuroAnalyzer._interpolator(im, lx, ly, lv)
+    @test itp([1.0, 0.5], [0.0, 0.5]) ≈ [1.0, 1.5]
+end
+# spherical spline (almost) reproduces the data at the data points
+itp = NeuroAnalyzer._interpolator(:sph, lx, ly, lv)
+@test isapprox(itp(lx, ly), lv; atol = 1e-3)
+# the vertex maps to the top of the sphere, r = 1 to the equator
+@test NeuroAnalyzer._xy2sph([0.0, 1.0], [0.0, 0.0]) ≈ [0.0 0.0 1.0; 1.0 0.0 0.0] atol = 1e-12
 @test_throws ArgumentError NeuroAnalyzer._interpolator(:x, [0.0], [0.0], [1.0])
 s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10), 50)
 @test size(s) == (50, 50) && x[1] == -1.2 && x[end] == 1.2
+# grid is not rounded, so dense grids have no duplicate coordinates
+s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10), 500, :sib)
+@test size(s) == (500, 500) && allunique(x) && !any(isnan, s)
 @test_throws ArgumentError NeuroAnalyzer._interpolate2d(rand(3), rand(3), rand(3), 0)
 
 ##
