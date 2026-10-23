@@ -217,6 +217,8 @@ function plot_spectrogram(
 
     # prepare log-scaled frequencies axis
     flim = _log_flim(sf, flim, frq)
+    # frequencies within the limits (0 Hz cannot be drawn on a log axis)
+    fi = findall(x -> flim[1] <= x <= flim[2], sf)
 
     # channel labels
     ch = collect(eachindex(clabels)) .- 0.5
@@ -244,14 +246,14 @@ function plot_spectrogram(
     GLMakie.xlims!(ax, flim)
     _style_axis!(ax)
 
-    hm = GLMakie.heatmap!(ax, sf, ch, sp'; colormap = pal)
+    hm = GLMakie.heatmap!(ax, sf[fi], ch, sp[:, fi]'; colormap = pal)
 
     # draw thresholded region
     if !isnothing(threshold)
         _, bm = seg_extract(sp; threshold = threshold, threshold_type = threshold_type)
         reg = ones(size(sp)) .* minimum(sp)
         reg[bm] .= maximum(sp)
-        GLMakie.contour!(ax, sf, ch, reg'; levels = 1, color = :black, linewidth = 2)
+        GLMakie.contour!(ax, sf[fi], ch, reg[:, fi]'; levels = 1, color = :black, linewidth = 2)
     end
 
     # draw colorbar

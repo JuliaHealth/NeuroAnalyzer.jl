@@ -115,8 +115,8 @@ function plot_cont(
         s1[g_idx, :] = (group1 .- median(group1; dims = 2)) ./ sc
         s2[g_idx, :] = (group2 .- median(group2; dims = 2)) ./ sc
     end
-    s1 .+= collect(1:ch_n)
-    s2 .+= collect(1:ch_n)
+    # vertical scaling of the traces (Alt + ↑ / ↓ in the GUI)
+    gain = Observable(1.0)
 
     # prepare plot
     if gui
@@ -158,7 +158,7 @@ function plot_cont(
         GLMakie.lines!(
             ax1,
             t[1:res:end],
-            s1[idx, 1:res:end];
+            lift(g -> idx .+ g .* s1[idx, 1:res:end], gain);
             linewidth = 1.5,
             alpha = 0.4,
             color = :blue,
@@ -166,7 +166,7 @@ function plot_cont(
         GLMakie.lines!(
             ax1,
             t[1:res:end],
-            s2[idx, 1:res:end];
+            lift(g -> idx .+ g .* s2[idx, 1:res:end], gain);
             linewidth = 1.5,
             color = :black,
         )
@@ -194,10 +194,12 @@ function plot_cont(
                     strokecolor = :red,
                     strokewidth = 2,
                 )
+                # amplitude of one row at the current gain
+                r_k = r[][idx2]
                 GLMakie.text!(
                     ax1, l_pos;
                     markerspace = :pixel,
-                    text = string(r[][idx2]) * " " * cunits[idx1],
+                    text = lift(g -> string(round(r_k / g; sigdigits = 3)) * " " * cunits[idx1], gain),
                     fontsize = 10,
                     color = :red,
                     align = (:left, :bottom),
@@ -323,13 +325,17 @@ function plot_cont(
             update_ax2 = false
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
-                if event.key == Keyboard.down
+                # Alt + ↑ / ↓: vertical scaling of the traces
+                alt = ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
+                alt && event.key == Keyboard.up && (gain[] *= 1.25)
+                alt && event.key == Keyboard.down && (gain[] /= 1.25)
+                if !alt && event.key == Keyboard.down
                     if ch1[] < ch_n - nch[] + 1
                         ch1[] += 1
                         update_ax3 = true
                     end
                 end
-                if event.key == Keyboard.up
+                if !alt && event.key == Keyboard.up
                     if ch1[] > 1
                         ch1[] -= 1
                         update_ax3 = true

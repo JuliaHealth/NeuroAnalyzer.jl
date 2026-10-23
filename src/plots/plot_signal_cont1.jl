@@ -123,8 +123,10 @@ function plot_cont(
     end
 
     # signal-dependent data, recomputed after the signal is modified
-    local t, s, r, markers_pos, markers_id, markers_desc
+    local t, s, y_off, r, markers_pos, markers_id, markers_desc
     markers_init = markers
+    # vertical scaling of the traces (Alt + ↑ / ↓ in the GUI)
+    gain = Observable(1.0)
     function _prepare_data!()
         # get time points vector
         t = obj.time_pts[1:res:end]
@@ -142,12 +144,11 @@ function plot_cont(
             push!(r, round(sc; sigdigits = 3))
             s[g_idx, :] = (group .- median(group; dims = 2)) ./ sc
         end
-        if type === :normal
-            s .+= collect(1:ch_n)
-        elseif type === :butterfly
-            for idx in eachindex(ctypes_uni)
-                s[ctypes .== ctypes_uni[idx], :] .+= idx
-            end
+        # baseline of each trace: its row (:normal) or the row of its channel type (:butterfly)
+        y_off = if type === :normal
+            collect(1.0:ch_n)
+        else
+            Float64[findfirst(==(c), ctypes_uni) for c in ctypes]
         end
 
         # prepare markers
@@ -286,16 +287,17 @@ function plot_cont(
         if type === :normal
             for idx = 1:ch_n
                 line_color = _draw_lift(b -> b[idx] ? :lightgray : :black, bad_ch)
-                GLMakie.lines!(ax1, t, s[idx, :]; linewidth = 1.5, color = line_color)
+                y = _draw_lift(g -> y_off[idx] .+ g .* s[idx, :], gain)
+                GLMakie.lines!(ax1, t, y; linewidth = 1.5, color = line_color)
             end
 
         elseif type === :butterfly
             if ci95
                 for idx in eachindex(ctypes_uni)
                     msci95_data = NeuroAnalyzer._msci95(s[ctypes .== ctypes_uni[idx], :])
-                    s_m = msci95_data.sm
-                    s_u = msci95_data.ul
-                    s_l = msci95_data.ll
+                    s_m = _draw_lift(g -> idx .+ g .* msci95_data.sm, gain)
+                    s_u = _draw_lift(g -> idx .+ g .* msci95_data.ul, gain)
+                    s_l = _draw_lift(g -> idx .+ g .* msci95_data.ll, gain)
                     GLMakie.band!(
                         ax1, t, s_u, s_l;
                         alpha = 0.25,
@@ -309,7 +311,7 @@ function plot_cont(
                 !mono && (cmap = GLMakie.resample_cmap(pal, max(2, size(s, 1))))
                 for idx in axes(s, 1)
                     GLMakie.lines!(
-                        ax1, t, s[idx, :];
+                        ax1, t, _draw_lift(g -> y_off[idx] .+ g .* s[idx, :], gain);
                         color = mono ? :black : cmap[idx],
                         colormap = pal,
                         linewidth = 0.5,
@@ -319,7 +321,8 @@ function plot_cont(
                 if avg
                     for idx in eachindex(ctypes_uni)
                         s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
-                        GLMakie.lines!(ax1, t, s_avg; linewidth = 2, color = :black)
+                        y = _draw_lift(g -> idx .+ g .* s_avg, gain)
+                        GLMakie.lines!(ax1, t, y; linewidth = 2, color = :black)
                     end
                 end
             end
@@ -349,10 +352,15 @@ function plot_cont(
                             strokecolor = :red,
                             strokewidth = 2,
                         )
+                        # amplitude of one row at the current gain
+                        r_k = r[idx2]
                         GLMakie.text!(
                             ax1, l_pos;
                             markerspace = :pixel,
-                            text        = string(r[idx2]) * " " * cunits[idx1],
+                            text        = _draw_lift(
+                                g -> string(round(r_k / g; sigdigits = 3)) * " " * cunits[idx1],
+                                gain,
+                            ),
                             fontsize    = 10,
                             color       = :red,
                             align       = (:left, :bottom),
@@ -376,9 +384,13 @@ function plot_cont(
                         strokecolor = :red,
                         strokewidth = 2,
                     )
+                    u_k = cunits[ctypes .== ctypes_uni[idx]][1]
                     GLMakie.text!(
                         ax1, l_pos;
-                        text        = string(r[idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
+                        text        = _draw_lift(
+                            g -> string(round(r[idx] / g; sigdigits = 3)) * " " * u_k,
+                            gain,
+                        ),
                         markerspace = :pixel,
                         fontsize    = 10,
                         color       = :red,
@@ -544,6 +556,10 @@ function plot_cont(
             update_ax2 = false
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
+                # Alt + ↑ / ↓: vertical scaling of the traces
+                alt = ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
+                alt && event.key == Keyboard.up && (gain[] *= 1.25)
+                alt && event.key == Keyboard.down && (gain[] /= 1.25)
                 if type === :normal
                     if event.key == Keyboard.d
                         if !isnan(vmarker1[]) && !isnan(vmarker2[])
@@ -564,13 +580,13 @@ function plot_cont(
 
                     event.key == Keyboard.s && (snap = !snap)
 
-                    if event.key == Keyboard.down
+                    if !alt && event.key == Keyboard.down
                         if ch1[] < ch_n - nch[] + 1
                             ch1[] += 1
                             update_ax3 = true
                         end
                     end
-                    if event.key == Keyboard.up
+                    if !alt && event.key == Keyboard.up
                         if ch1[] > 1
                             ch1[] -= 1
                             update_ax3 = true

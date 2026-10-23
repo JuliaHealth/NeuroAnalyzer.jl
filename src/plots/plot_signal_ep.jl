@@ -144,13 +144,14 @@ function plot_ep(
         push!(r[], round(sc; sigdigits = 3))
         s[g_idx, :] = (group .- median(group; dims = 2)) ./ sc
     end
-    if type === :normal
-        s .+= collect(1:ch_n)
-    elseif type === :butterfly
-        for idx in eachindex(ctypes_uni)
-            s[ctypes .== ctypes_uni[idx], :] .+= idx
-        end
+    # baseline of each trace: its row (:normal) or the row of its channel type (:butterfly)
+    y_base = if type === :normal
+        collect(1.0:ch_n)
+    else
+        Float64[findfirst(==(c), ctypes_uni) for c in ctypes]
     end
+    # vertical scaling of the traces (Alt + ↑ / ↓ in the GUI)
+    gain = Observable(1.0)
 
     # signal is observable so that deleted epochs can be removed from the plot
     ep_cols = size(s, 2) ÷ ep_n[]
@@ -222,7 +223,8 @@ function plot_ep(
     if type === :normal
         for idx = 1:ch_n
             line_color = @lift($bad_ch[idx] ? :lightgray : :black)
-            GLMakie.lines!(ax1, @lift(_pts($s[idx, :])); linewidth = 1.5, color = line_color)
+            y = @lift(_pts(y_base[idx] .+ $gain .* $s[idx, :]))
+            GLMakie.lines!(ax1, y; linewidth = 1.5, color = line_color)
         end
 
     elseif type === :butterfly
@@ -230,13 +232,17 @@ function plot_ep(
             for idx in eachindex(ctypes_uni)
                 msci95_data = @lift(NeuroAnalyzer._msci95($s[ctypes .== ctypes_uni[idx], :]))
                 GLMakie.band!(
-                    ax1, @lift(_pts($msci95_data.ul)), @lift(_pts($msci95_data.ll));
+                    ax1,
+                    @lift(_pts(idx .+ $gain .* $msci95_data.ul)),
+                    @lift(_pts(idx .+ $gain .* $msci95_data.ll));
                     alpha = 0.25,
                     color = :grey,
                     strokewidth = 0.5,
                 )
                 GLMakie.lines!(
-                    ax1, @lift(_pts($msci95_data.sm)); color = :black, linewidth = 2,
+                    ax1, @lift(_pts(idx .+ $gain .* $msci95_data.sm));
+                    color = :black,
+                    linewidth = 2,
                 )
             end
 
@@ -244,7 +250,7 @@ function plot_ep(
             !mono && (cmap = GLMakie.resample_cmap(pal, max(2, size(s[], 1))))
             for idx in axes(s[], 1)
                 GLMakie.lines!(
-                    ax1, @lift(_pts($s[idx, :]));
+                    ax1, @lift(_pts(y_base[idx] .+ $gain .* $s[idx, :]));
                     color = mono ? :black : cmap[idx],
                     colormap = pal,
                     linewidth = 0.5,
@@ -253,7 +259,9 @@ function plot_ep(
             end
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = @lift(_pts(mean($s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]))
+                    s_avg = @lift(
+                        _pts(idx .+ $gain .* mean($s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]),
+                    )
                     GLMakie.lines!(ax1, s_avg; linewidth = 2, color = :black)
                 end
             end
@@ -295,10 +303,13 @@ function plot_ep(
                         strokecolor = :red,
                         strokewidth = 2,
                     )
+                    # amplitude of one row at the current gain
+                    r_k = r[][idx2]
+                    u_k = cunits[idx1]
                     GLMakie.text!(
                         ax1, l_pos;
                         markerspace = :pixel,
-                        text = string(r[][idx2]) * " " * cunits[idx1],
+                        text = @lift(string(round(r_k / $gain; sigdigits = 3)) * " " * u_k),
                         fontsize = 10,
                         color = :red,
                         align = (:left, :bottom),
@@ -322,9 +333,11 @@ function plot_ep(
                     strokecolor = :red,
                     strokewidth = 2,
                 )
+                r_k = r[][idx]
+                u_k = cunits[ctypes .== ctypes_uni[idx]][1]
                 GLMakie.text!(
                     ax1, l_pos;
-                    text = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
+                    text = @lift(string(round(r_k / $gain; sigdigits = 3)) * " " * u_k),
                     markerspace = :pixel,
                     fontsize = 10,
                     color = :red,
@@ -516,14 +529,18 @@ function plot_ep(
             update_ax2 = false
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
+                # Alt + ↑ / ↓: vertical scaling of the traces
+                alt = ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
+                alt && event.key == Keyboard.up && (gain[] *= 1.25)
+                alt && event.key == Keyboard.down && (gain[] /= 1.25)
                 if type === :normal
-                    if event.key == Keyboard.down
+                    if !alt && event.key == Keyboard.down
                         if ch1[] < ch_n - nch[] + 1
                             ch1[] += 1
                             update_ax3 = true
                         end
                     end
-                    if event.key == Keyboard.up
+                    if !alt && event.key == Keyboard.up
                         if ch1[] > 1
                             ch1[] -= 1
                             update_ax3 = true

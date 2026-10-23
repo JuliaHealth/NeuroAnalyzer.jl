@@ -148,6 +148,15 @@ p = plot_locs(e10; ch = "eeg", sch = ["Fp1", "Fp2"], gui = false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_psd()"
+# log frequency axis: the x-axis ends at the highest plotted frequency (not at the next decade)
+f_log = collect(0:0.5:128.0)
+p_log = abs.(randn(NeuroAnalyzer.Random.MersenneTwister(1), 3, length(f_log))) .+ 1
+for fig in (plot_psd(f_log, p_log[1, :]; frq = :log), plot_psd(f_log, p_log; frq = :log),
+            plot_phs(f_log, p_log[1, :]; frq = :log), plot_phs(f_log, p_log; frq = :log))
+    ax_log = first(c for c in fig.content if c isa GLMakie.Axis)
+    @test ax_log.limits[][1] == (0.5, 128.0)
+end
+@test plot_spectrogram(f_log, p_log; frq = :log) isa GLMakie.Figure
 p = plot_psd(e10; db = true, ep = 1, ch = "Fp1", gui = false)
 @test p isa GLMakie.Figure
 p = plot_psd(e10; db = true, ep = 1, ch = "Fp1", method = :mw, gui = false)

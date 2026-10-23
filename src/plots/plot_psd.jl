@@ -65,6 +65,8 @@ function plot_psd(
     )
     GLMakie.autolimits!(ax)
     _style_axis!(ax)
+    # the data range (a log axis would otherwise extend to the next tick decade)
+    GLMakie.xlims!(ax, f[f1], f[f2])
 
     GLMakie.lines!(
         ax,
@@ -128,6 +130,9 @@ function plot_psd(
     # number of channels
     ch_n = size(p, 1)
 
+    # log-scaled frequency axis: 0 Hz cannot be shown
+    flim = _log_flim(f, flim, frq)
+
     # frequency limits
     f1 = vsearch(flim[1], f)
     f2 = vsearch(flim[2], f)
@@ -158,6 +163,8 @@ function plot_psd(
     )
     GLMakie.autolimits!(ax)
     _style_axis!(ax)
+    # the data range (a log axis would otherwise extend to the next tick decade)
+    GLMakie.xlims!(ax, f[f1], f[f2])
 
     if ci95
         # draw 95% CI
@@ -443,6 +450,7 @@ function plot_psd_topo(
 
         # plot PSD
         GLMakie.lines!(ax, f[f1:f2], p[idx, f1:f2]; linewidth = 1, color = :black)
+        GLMakie.xlims!(ax, f[f1], f[f2])
 
         # draw black box around the entire figure
         GLMakie.Box(pp[:, :], 
