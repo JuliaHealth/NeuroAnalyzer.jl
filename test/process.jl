@@ -2,6 +2,7 @@ using NeuroAnalyzer
 using Test
 using Wavelets
 using ContinuousWavelets
+import LinearAlgebra
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
@@ -1336,6 +1337,23 @@ e_r = reference_custom(eb; ref_list = ["Fp1-F3", "Cz"], ref_name = "test")
 @test e_r.data[1, :, :] ≈ eb.data[1, :, :] .- eb.data[3, :, :]
 @test labels(e_r)[1] == "Fp1-F3"
 @test e_r.header.recording[:reference] == "test"
+e_r = reference_custom(e10; ref_list = ["Fp1-F3", "Cz"])
+lfp1 = e10.locs[NeuroAnalyzer._find_bylabel(e10.locs, "Fp1"), :]
+lf3 = e10.locs[NeuroAnalyzer._find_bylabel(e10.locs, "F3"), :]
+lm = e_r.locs[NeuroAnalyzer._find_bylabel(e_r.locs, "Fp1-F3"), :]
+pm = [lm.loc_x, lm.loc_y, lm.loc_z]
+p1 = [lfp1.loc_x, lfp1.loc_y, lfp1.loc_z]
+p2 = [lf3.loc_x, lf3.loc_y, lf3.loc_z]
+@test LinearAlgebra.norm(pm) ≈ (LinearAlgebra.norm(p1) + LinearAlgebra.norm(p2)) / 2
+@test LinearAlgebra.normalize(pm) ≈ LinearAlgebra.normalize(p1 .+ p2)
+@test lm.loc_radius_sph ≈ LinearAlgebra.norm(pm)
+@test e_r.locs[NeuroAnalyzer._find_bylabel(e_r.locs, "Cz"), :loc_x] ==
+      e10.locs[NeuroAnalyzer._find_bylabel(e10.locs, "Cz"), :loc_x]
+@test isempty(NeuroAnalyzer._find_bylabel(e_r.locs, "Fp1"))
+e_r = reference_custom(e10; ref_list = ["Fp1-F3", "Cz"], loc = :first)
+lm = e_r.locs[NeuroAnalyzer._find_bylabel(e_r.locs, "Fp1-F3"), :]
+@test lm.loc_x == lfp1.loc_x && lm.loc_theta == lfp1.loc_theta
+@test_throws ArgumentError reference_custom(e10; loc = :last)
 @test NeuroAnalyzer._parse_montage_entry("Fp1-F3", ["Fp1", "F3"]) == ("Fp1", "F3")
 @test NeuroAnalyzer._parse_montage_entry("Fp1", ["Fp1", "F3"]) == ("Fp1", nothing)
 @test NeuroAnalyzer._parse_montage_entry("A-B-C", ["A-B", "C"]) == ("A-B", "C")

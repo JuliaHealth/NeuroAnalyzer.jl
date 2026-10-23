@@ -788,6 +788,42 @@ function _parse_montage_entry(
     return hits[1]
 end
 
+# location of one montage channel: `:first` copies the location of the first electrode,
+# `:mid` uses the midpoint between the two electrodes; the Cartesian midpoint is projected
+# back onto the head surface (mean radius of the pair), the polar midpoint is taken between
+# the 2-D topographic positions (so it follows whatever projection the polar coordinates use)
+function _montage_loc(
+    locs::DataFrame,
+    lbl::String,
+    a::String,
+    b::Union{Nothing, String},
+    loc::Symbol,
+)::Union{Nothing, DataFrame}
+    ra = _find_bylabel(locs, a)
+    ra isa Int64 || return nothing
+    row = locs[[ra], :]
+    row[1, :label] = lbl
+    (isnothing(b) || loc === :first) && return row
+    rb = _find_bylabel(locs, b)
+    rb isa Int64 || return nothing
+
+    # Cartesian and spherical
+    p1 = [Float64(locs[ra, c]) for c in (:loc_x, :loc_y, :loc_z)]
+    p2 = [Float64(locs[rb, c]) for c in (:loc_x, :loc_y, :loc_z)]
+    p = (p1 .+ p2) ./ 2
+    np = norm(p)
+    np > 0 && (p .*= ((norm(p1) + norm(p2)) / 2) / np)
+    row[1, :loc_x], row[1, :loc_y], row[1, :loc_z] = p
+    row[1, :loc_radius_sph], row[1, :loc_theta_sph], row[1, :loc_phi_sph] = cart2sph(p...)
+
+    # polar
+    x1, y1 = pol2cart(locs[ra, :loc_radius], locs[ra, :loc_theta])
+    x2, y2 = pol2cart(locs[rb, :loc_radius], locs[rb, :loc_theta])
+    row[1, :loc_radius], row[1, :loc_theta] = cart2pol((x1 + x2) / 2, (y1 + y2) / 2)
+
+    return row
+end
+
 """
     reference_custom(obj; <keyword arguments>)
 
@@ -800,6 +836,9 @@ Each entry in `ref_list` is either a single channel name (copied as-is) or a `"C
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be of type `"eeg"`
 - `ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]`: montage definition; default is a standard longitudinal bipolar montage
 - `ref_name::String="longitudinal-BIP"`: montage name stored in the header
+- `loc::Symbol=:mid`: location of bipolar montage channels:
+    - `:mid`: midpoint between the two electrodes
+    - `:first`: location of the first electrode of the pair
 
 # Returns
 
@@ -809,7 +848,9 @@ Each entry in `ref_list` is either a single channel name (copied as-is) or a `"C
 
 - `"Ch1-Ch2"` → output = amplitude(Ch1) − amplitude(Ch2).
 - A montage channel is marked bad if any of its source channels was marked bad.
-- Montage channels have no locations; locations of the replaced EEG channels are removed (TODO).
+- Single-channel entries keep the location of their channel; for `"Ch1-Ch2"` entries the location is set according to `loc`. Locations of the replaced EEG channels are removed.
+- With `loc=:mid` the Cartesian midpoint is projected back onto the head surface and the spherical coordinates are recalculated from it; the polar midpoint is taken between the 2-D topographic positions.
+- A montage channel whose source channel(s) have no location gets no location.
 
 Examples of montages:
 
@@ -822,9 +863,11 @@ function reference_custom(
     obj::NeuroAnalyzer.NEURO;
     ref_list::Vector{String} = _BIP_LONGITUDINAL,
     ref_name::String = "longitudinal-BIP",
+    loc::Symbol = :mid,
 )::NeuroAnalyzer.NEURO
     _check_datatype(obj, "eeg")
     isempty(ref_list) && throw(ArgumentError("ref_list must not be empty."))
+    _check_var(loc, [:mid, :first], "loc")
 
     ch = _eeg_ch_idx(obj)
     ch_lbls = labels(obj)[ch]
@@ -863,11 +906,22 @@ function reference_custom(
     rec[:channel_order] = _sort_channels(rec[:channel_type])
     rec[:reference] = ref_name
 
-    # TODO: add locations for the custom montage channels
+    # montage channel locations replace the EEG channel locations
     eeg_loc_rows = _find_bylabel(obj.locs, ch_lbls)
-    obj_tmp.locs = obj.locs[setdiff(1:size(obj.locs, 1), eeg_loc_rows), :]
+    new_locs = filter(
+        !isnothing,
+        [_montage_loc(obj.locs, ref_list[k], a, b, loc) for (k, (a, b)) in enumerate(entries)],
+    )
+    obj_tmp.locs = vcat(
+        new_locs...,
+        obj.locs[setdiff(1:size(obj.locs, 1), eeg_loc_rows), :];
+        cols = :setequal,
+    )
 
-    push!(obj_tmp.history, "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name)")
+    push!(
+        obj_tmp.history,
+        "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name, loc=:$loc)",
+    )
 
     return obj_tmp
 end
@@ -882,6 +936,9 @@ Re-reference EEG channels using a custom montage in-place.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be of type `"eeg"`; modified in-place
 - `ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]`: montage definition; default is a standard longitudinal bipolar montage
 - `ref_name::String="longitudinal-BIP"`: montage name stored in the header
+- `loc::Symbol=:mid`: location of bipolar montage channels:
+    - `:mid`: midpoint between the two electrodes
+    - `:first`: location of the first electrode of the pair
 
 # Returns
 
@@ -891,7 +948,9 @@ Re-reference EEG channels using a custom montage in-place.
 
 - `"Ch1-Ch2"` → output = amplitude(Ch1) − amplitude(Ch2).
 - A montage channel is marked bad if any of its source channels was marked bad.
-- Montage channels have no locations; locations of the replaced EEG channels are removed (TODO).
+- Single-channel entries keep the location of their channel; for `"Ch1-Ch2"` entries the location is set according to `loc`. Locations of the replaced EEG channels are removed.
+- With `loc=:mid` the Cartesian midpoint is projected back onto the head surface and the spherical coordinates are recalculated from it; the polar midpoint is taken between the 2-D topographic positions.
+- A montage channel whose source channel(s) have no location gets no location.
 
 Examples of montages:
 
@@ -904,7 +963,8 @@ function reference_custom!(
     obj::NeuroAnalyzer.NEURO;
     ref_list::Vector{String} = _BIP_LONGITUDINAL,
     ref_name::String = "longitudinal-BIP",
+    loc::Symbol = :mid,
 )::Nothing
-    _copy_into!(obj, reference_custom(obj; ref_list = ref_list, ref_name = ref_name))
+    _copy_into!(obj, reference_custom(obj; ref_list = ref_list, ref_name = ref_name, loc = loc))
     return nothing
 end
