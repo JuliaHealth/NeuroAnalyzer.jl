@@ -561,7 +561,7 @@ Plot a spectrogram or scalogram using various time-frequency analysis methods.
     - `:normal`: standard spectrogram
     - `:topo`: topographical map of spectrograms
 - `cart::Bool=false`: if `true`, use Cartesian coordinates, otherwise use polar coordinates
-- `head::Bool=true`: if `true`, draw head outline
+- `head::Bool=true`: if `true`, draw head outline, used by `:topo`
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
