@@ -131,9 +131,10 @@ const _NA_REQUIRED_PACKAGES = [
     "Gtk4",
     "Hurst",
     "ImageBinarization",
+    "ImageCore",
     "ImageFiltering",
+    "ImageIO",
     "ImageMorphology",
-    "Images",
     "InformationMeasures",
     "Interpolations",
     "Jacobi",
@@ -180,13 +181,13 @@ end
 # (for NEURO objects, etc.) instead of defining functions of the same name, so
 # that they do not clash when used together; the non-Base ones are re-exported
 # (names exported by two packages extend one of them: plot → Makie, not Plots;
-# entropy → StatsBase, not Images; transform → DataFrames, not MultivariateStats;
+# entropy → StatsBase, not ImageQualityIndexes; transform → DataFrames, not MultivariateStats;
 # trim! → StatsBase, not GridLayoutBase)
 import Base: chop, cis, filter, filter!, join, summary
 import DataFrames: describe, transform
 import DSP: coherence, resample, rms, spectrogram
 import GLMakie: plot
-import Images: reflect, rmse
+import ImageFiltering: reflect
 import LinearAlgebra: normalize, reflect!
 import StatsKit.StatsBase: entropy, sem, standardize, trim, trim!, zscore
 import Wavelets: downsample, upsample
