@@ -595,7 +595,7 @@ e10_bad.header.recording[:bad_channel][2] = true
 @test normalize_minmax(v1) == [-1.0, -0.5, 0.0, 0.5, 1.0]
 @test normalize_minmax(m1; bych = true) == [-1 0 1; -1 0 1]
 @test normalize_minmax(m1; bych = false) ==
-      [       -1.0 -0.6 -0.19999999999999996;
+      [          -1.0 -0.6 -0.19999999999999996;
     0.19999999999999996 0.6000000000000001 1.0]
 @test normalize_n(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
 @test normalize_n(m1; bych = true) == [0.0 0.5 1.0; 0.0 0.5 1.0]
@@ -680,10 +680,10 @@ e10_bad.header.recording[:bad_channel][2] = true
 @test normalize_invroot(v1) ==
       [1.0, 0.7071067811865475, 0.5773502691896258, 0.5, 0.4472135954999579]
 @test normalize_invroot(m1; bych = true) ==
-      [       1.0 0.7071067811865475 0.5773502691896258;
+      [          1.0 0.7071067811865475 0.5773502691896258;
     0.5 0.4472135954999579 0.4082482904638631]
 @test normalize_invroot(m1; bych = false) ==
-      [       1.0 0.7071067811865475 0.5773502691896258;
+      [          1.0 0.7071067811865475 0.5773502691896258;
     0.5 0.4472135954999579 0.4082482904638631]
 @test normalize_softmax(v1) ≈ [
     0.011656230956039607,
