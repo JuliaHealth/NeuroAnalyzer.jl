@@ -40,7 +40,8 @@ if [[ ! -e "$UPDATE_REGISTRY_SCRIPT" ]]; then
 fi
 
 # preflight: gh authentication
-if ! gh auth status &>/dev/null; then
+# gh auth status exits 0 for an invalid token (gh ≤ 2.46); make an authenticated request instead
+if ! gh api user --silent &>/dev/null; then
   echo "Error: gh is not authenticated. Run 'gh auth login' first." >&2
   exit 1
 fi
