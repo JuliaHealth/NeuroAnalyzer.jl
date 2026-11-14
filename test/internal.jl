@@ -355,7 +355,6 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._fchunks(55, wlen = 32, wstep = 8) == [1 32; 9 40; 17 48]
 @test NeuroAnalyzer._fchunks(1:55, wlen = 32, wstep = 8) == [1 32; 9 40; 17 48]
 
-
 ##
 ## Check helpers
 ##
@@ -533,8 +532,11 @@ tps = NeuroAnalyzer._epochs_tps(e10)
 @test tps[:, 1] == [0.0, 2559 / 256]
 @test tps[1, 2] == 10.0
 e10_tmp = deepcopy(e10)
-e10_tmp.markers = DataFrame(:id => ["1", "1"], :start => [5.0, 25.0], :length => [0.0, 0.0],
-                            :value => ["a", "a"], :channel => [0, 0])
+e10_tmp.markers = DataFrame(:id => ["1", "1"],
+                            :start => [5.0, 25.0],
+                            :length => [0.0, 0.0],
+                            :value => ["a", "a"],
+                            :channel => [0, 0])
 @test NeuroAnalyzer._markers_epochs(e10_tmp) == [1, 3]
 
 # epochs around markers: signal 1:20 at 10 Hz, markers at samples 5, 12 and 18
@@ -881,13 +883,13 @@ c_tmp = NeuroAnalyzer._common_recording_fields(; common...)
 @test c_tmp[:label] == ["a"] && c_tmp[:sampling_rate] == 100 && c_tmp[:bad_channel] == [false]
 for f in (NeuroAnalyzer._create_recording_seeg, NeuroAnalyzer._create_recording_ecog,
           NeuroAnalyzer._create_recording_eeg_like)
-    r_tmp = f(; common..., reference = "a", transducers = ["t"], prefiltering = ["p"],
+    local r_tmp = f(; common..., reference = "a", transducers = ["t"], prefiltering = ["p"],
               line_frequency = 50, gain = [1.0])
     @test r_tmp[:reference] == "a" && r_tmp[:gain] == [1.0] && r_tmp[:epoch_id] == ""
 end
 for f in (NeuroAnalyzer._create_recording_sensors, NeuroAnalyzer._create_recording_eda,
           NeuroAnalyzer._create_recording_tpt, NeuroAnalyzer._create_recording_prefiltered)
-    r_tmp = f(; common..., prefiltering = ["p"])
+    local r_tmp = f(; common..., prefiltering = ["p"])
     @test r_tmp[:prefiltering] == ["p"] && r_tmp[:data_type] == "x"
 end
 r_tmp = NeuroAnalyzer._create_recording_nirs(; common..., wavelengths = [760.0, 850.0], wavelength_index = [1],
@@ -986,7 +988,7 @@ NeuroAnalyzer._locs_norm!(e_tmp)
 
 # Shepard and nearest-neighbor interpolators reproduce the data at the data points
 for im in (:sh, :nn)
-    itp = NeuroAnalyzer._interpolator(im, [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 2.0, 3.0])
+    local itp = NeuroAnalyzer._interpolator(im, [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 2.0, 3.0])
     @test itp([1.0], [0.0])[1] ≈ 2.0
 end
 # natural neighbour interpolators reproduce the data at the data points and
@@ -995,7 +997,7 @@ lx = [0.0, 1.0, 0.0, 1.0, 0.5, 0.2, 0.8]
 ly = [0.0, 0.0, 1.0, 1.0, 0.5, 0.7, 0.3]
 lv = lx .+ 2 .* ly
 for im in (:sib, :sib1, :lap, :far, :hiy, :tri)
-    itp = NeuroAnalyzer._interpolator(im, lx, ly, lv)
+    local itp = NeuroAnalyzer._interpolator(im, lx, ly, lv)
     @test itp([1.0, 0.5], [0.0, 0.5]) ≈ [1.0, 1.5]
 end
 # spherical spline (almost) reproduces the data at the data points
@@ -1075,9 +1077,6 @@ ax = NeuroAnalyzer.GLMakie.Axis(NeuroAnalyzer.GLMakie.Figure()[1, 1])
 @test NeuroAnalyzer._style_axis!(ax) === ax
 @test ax.titlesize[] == 18 && ax.xticklabelsize[] == 12
 
-true
-
-@info "Test: _plot_scale()"
 rng_ps = NeuroAnalyzer.Random.MersenneTwister(1)
 s_ps = 10 .* randn(rng_ps, 4, 10_000)
 sc_ps = NeuroAnalyzer._plot_scale(s_ps)
@@ -1086,3 +1085,5 @@ sc_ps = NeuroAnalyzer._plot_scale(s_ps)
 s_ps[1, 100:110] .= 1e4
 @test isapprox(NeuroAnalyzer._plot_scale(vcat(s_ps, zeros(1, 10_000))), sc_ps; rtol = 0.01)
 @test NeuroAnalyzer._plot_scale(zeros(3, 100)) == 1.0
+
+true
