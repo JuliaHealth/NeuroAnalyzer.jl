@@ -65,7 +65,7 @@ function _interpolator(
             xyz ./= r
         end
         np = length(s)
-        A = [ (_sph_g(xyz, xyz; m = 4, n = 50) + 1e-8 * I(np)) ones(np);
+        A = [  (_sph_g(xyz, xyz; m = 4, n = 50) + 1e-8 * I(np)) ones(np);
             ones(1, np) 0.0]
         c = A \ [Vector{Float64}(s); 0.0]
         return (x, y) -> [_sph_g(_xy2sph(x, y), xyz; m = 4, n = 50) ones(length(x))] * c
