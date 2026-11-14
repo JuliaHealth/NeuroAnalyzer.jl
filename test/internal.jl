@@ -1151,9 +1151,16 @@ lu_sub = lu[1:3, :]
 @test NeuroAnalyzer._locs_unit(lu_sub) === lu_sub
 # topographic interpolation does not depend on the units of the locations
 # (channels without a position, i.e. at the origin, excluded: coincident points are ill-posed)
-has_loc = findall(i -> any(!iszero, e10.locs[i, [:loc_x, :loc_y, :loc_z]]), 1:nrow(e10.locs))
+has_loc =
+    findall(i -> any(!iszero, e10.locs[i, [:loc_x, :loc_y, :loc_z]]), 1:nrow(e10.locs))
 s_tmp = collect(1.0:length(has_loc))
-@test plinterpolate(s_tmp; locs = e_mm.locs[has_loc, :], ch = 1, cart = true, ifactor = 20).int_s ≈
+@test plinterpolate(
+    s_tmp;
+    locs = e_mm.locs[has_loc, :],
+    ch = 1,
+    cart = true,
+    ifactor = 20,
+).int_s ≈
       plinterpolate(s_tmp; locs = e10.locs[has_loc, :], ch = 1, cart = true, ifactor = 20).int_s
 
 ##

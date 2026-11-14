@@ -21,17 +21,22 @@ using Tar
 
 const BASE_URL = "https://neuroanalyzer.org/artifacts"
 # Artifacts.toml entry => archive base name (= top-level directory inside the archive)
-const ARTIFACTS = ["NeuroAnalyzer_resources" => "neuroanalyzer-resources", "NeuroAnalyzer_test-files" => "neuroanalyzer-test-files"]
+const ARTIFACTS = [
+    "NeuroAnalyzer_resources" => "neuroanalyzer-resources",
+    "NeuroAnalyzer_test-files" => "neuroanalyzer-test-files",
+]
 
 function main(args)
     channel = isempty(args) ? "" : args[1]
-    channel in ("dev", "stable") || error("usage: julia update_artifacts.jl <dev|stable> [--keep-tree]")
+    channel in ("dev", "stable") ||
+        error("usage: julia update_artifacts.jl <dev|stable> [--keep-tree]")
     keep_tree = "--keep-tree" in args[2:end]
 
     # NA_DIR: set when the script is run from a copy (release scripts)
     na_dir = get(ENV, "NA_DIR", dirname(@__DIR__))
     toml_file = joinpath(na_dir, "Artifacts.toml")
-    art_dir = get(ENV, "NA_ARTIFACTS_DIR", joinpath(dirname(na_dir), "NeuroAnalyzer-artifacts"))
+    art_dir =
+        get(ENV, "NA_ARTIFACTS_DIR", joinpath(dirname(na_dir), "NeuroAnalyzer-artifacts"))
     isfile(toml_file) || error("$toml_file not found")
     isdir(art_dir) || error("artifacts directory $art_dir not found (set NA_ARTIFACTS_DIR)")
 
@@ -60,7 +65,7 @@ function main(args)
         else
             # git-tree-sha1 is the git hash of the unpacked tree (empty directories are ignored)
             open(`gzip -dc $archive`) do io
-                Tar.tree_hash(io; skip_empty = true)
+                return Tar.tree_hash(io; skip_empty = true)
             end
         end
 
@@ -71,7 +76,13 @@ function main(args)
             @info "$name: contents changed ($old_tree → $tree)"
         end
 
-        bind_artifact!(toml_file, name, Base.SHA1(tree); download_info = [(url, sha)], force = true)
+        bind_artifact!(
+            toml_file,
+            name,
+            Base.SHA1(tree);
+            download_info = [(url, sha)],
+            force = true,
+        )
         println("  git-tree-sha1 = $tree")
         println("  url           = $url")
         println("  sha256        = $sha")

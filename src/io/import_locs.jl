@@ -404,7 +404,6 @@ function import_locs_sfp(file_name::String)::DataFrame
     y = Float64.(locs_raw[!, :y])
     z = Float64.(locs_raw[!, :z])
 
-
     n = length(clabels)
     locs = DataFrame(
         :label => clabels,
@@ -485,7 +484,6 @@ function import_locs_csd(file_name::String)::DataFrame
         :loc_theta_sph => theta_sph,
         :loc_phi_sph => phi_sph,
     )
-
 
     return locs
 end

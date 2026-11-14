@@ -425,7 +425,9 @@ c[:tb_scale].displayed_string[] = "85"
 c[:scale].clicks[] += 1
 @test ed.obj.locs[r1, :loc_x] ≈ 85 * x0
 c[:norm].clicks[] += 1
-@test maximum(sqrt.(ed.obj.locs.loc_x .^ 2 .+ ed.obj.locs.loc_y .^ 2 .+ ed.obj.locs.loc_z .^ 2)) ≈ 1
+@test maximum(
+    sqrt.(ed.obj.locs.loc_x .^ 2 .+ ed.obj.locs.loc_y .^ 2 .+ ed.obj.locs.loc_z .^ 2),
+) ≈ 1
 NeuroAnalyzer.GLMakie.Makie.set!(c[:label], "Fp1x")
 @test labels(ed.obj)[1] == "Fp1x"
 @test "Fp1x" in ed.obj.locs[!, :label]
