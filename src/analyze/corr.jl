@@ -69,7 +69,7 @@ function corr(
         ch_idx, ep_idx = idx[1], idx[2]
         cr[ch_idx, ep_idx] = cor(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
         )
     end
 
@@ -116,7 +116,7 @@ function corr(
         for ch_idx2 = 1:ch_idx1
             cr[ch_idx1, ch_idx2, ep_idx] = cor(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx])
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
             )
         end
     end

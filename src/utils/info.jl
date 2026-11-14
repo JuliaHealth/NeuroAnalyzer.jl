@@ -42,7 +42,7 @@ function _band_table(band::Symbol, nqf::Float64)::Union{Tuple{Float64, Float64},
     band === :gamma_2 && return (40.0, 50.0)
     band === :gamma_lower && return (30.0, 80.0)
     band === :gamma_higher && return (80.0, 150.0)
-    throw(ArgumentError("Unknown band: $band."))
+    return throw(ArgumentError("Unknown band: $band."))
 end
 
 """
@@ -455,7 +455,8 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
         derived = ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]
         for idx in eachindex(rec[:label])
             # wavelength_index describes the optical channels (the first channels)
-            if !(rec[:channel_type][idx] in derived) && idx <= length(rec[:wavelength_index])
+            if !(rec[:channel_type][idx] in derived) &&
+               idx <= length(rec[:wavelength_index])
                 wl = rec[:wavelengths][rec[:wavelength_index][idx]]
                 println(
                     rpad(" $idx", 8) *
@@ -602,8 +603,9 @@ function channel_pick(
     clabels = get_channel(obj; type = "eeg")
 
     # region filtering (no region picks = all EEG channels); each channel is kept at most once
-    sel = isempty(c) ? collect(eachindex(clabels)) :
-          [idx for idx in eachindex(clabels) if any(x -> x in clabels[idx], c)]
+    sel =
+        isempty(c) ? collect(eachindex(clabels)) :
+        [idx for idx in eachindex(clabels) if any(x -> x in clabels[idx], c)]
 
     # laterality filtering on the trailing electrode number (odd = left, even = right),
     # so that e.g. F10 is right-sided although it contains the digit 1
@@ -613,7 +615,7 @@ function channel_pick(
         side = has_left ? isodd : iseven
         sel = Base.filter(sel) do idx
             m = match(r"(\d+)$", clabels[idx])
-            !isnothing(m) && side(parse(Int64, m[1]))
+            return !isnothing(m) && side(parse(Int64, m[1]))
         end
     end
 

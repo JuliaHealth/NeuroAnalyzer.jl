@@ -606,7 +606,7 @@ function _fir_filtfilt(b::AbstractVector, s::AbstractVector)::Vector{Float64}
     n = length(s)
     p = min(nb - 1, n - 1)
     ext = zeros(Float64, n + p + nb - 1)
-    for i in 1:p
+    for i = 1:p
         ext[i] = 2 * s[1] - s[p + 2 - i]
         ext[n + p + i] = 2 * s[n] - s[n - i]
     end
@@ -783,7 +783,8 @@ function _filter_one(
 )
     s = @view(obj.data[ch_idx, :, ep_idx])
     dir === :onepass && return filt(flt, s)
-    dir === :twopass && return flt isa Vector{Float64} ? _fir_filtfilt(flt, s) : filtfilt(flt, s)
+    dir === :twopass &&
+        return flt isa Vector{Float64} ? _fir_filtfilt(flt, s) : filtfilt(flt, s)
     return reverse(filt(flt, reverse(s)))
 end
 

@@ -26,11 +26,15 @@ function locs_center(
     locs_new = deepcopy(locs)
     lab = lowercase.(locs[!, :label])
     # row of the first channel of `names` present in locs (in order of preference)
-    pick(names) = (n = findfirst(in(lab), names); isnothing(n) ? nothing : findfirst(==(names[n]), lab))
+    pick(names) = (
+        n = findfirst(in(lab), names);
+        isnothing(n) ? nothing : findfirst(==(names[n]), lab)
+    )
 
     # x offset: a midline channel (Cz preferred, then Fz, Pz)
     cl = pick(["cz", "fz", "pz"])
-    isnothing(cl) && throw(ArgumentError("Central line channels (Cz, Fz, Pz) could not be found."))
+    isnothing(cl) &&
+        throw(ArgumentError("Central line channels (Cz, Fz, Pz) could not be found."))
     x_offset = locs[cl, :loc_x]
 
     # y offset: a channel of the central coronal line (Cz preferred, then C1, C2)
@@ -50,7 +54,9 @@ function locs_center(
     if spherical
         # shift the Cartesian coordinates derived from the spherical ones (unrounded)
         r, t, p = _sph_transform(locs, (x, y, z) -> (x .- x_offset, y .- y_offset, z))
-        locs_new[!, :loc_radius_sph], locs_new[!, :loc_theta_sph], locs_new[!, :loc_phi_sph] = r, t, p
+        locs_new[!, :loc_radius_sph],
+        locs_new[!, :loc_theta_sph],
+        locs_new[!, :loc_phi_sph] = r, t, p
     end
 
     if polar

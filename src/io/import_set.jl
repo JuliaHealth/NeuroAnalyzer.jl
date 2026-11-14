@@ -19,7 +19,11 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
-function import_set(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
+function import_set(
+    file_name::String;
+    detect_type::Bool = true,
+    clean_labels::Bool = true,
+)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     detect_format(file_name) === :set ||
@@ -47,7 +51,8 @@ function import_set(file_name::String; detect_type::Bool = true, clean_labels::B
                 "Incorrect size of $data_src: expected $(ch_n * pnts * ep_n * 4) bytes ($ch_n channels × $pnts points × $ep_n trials × 4).",
             ),
         )
-        data = reshape(Float64.(ltoh.(reinterpret(Float32, read(data_src)))), ch_n, pnts, ep_n)
+        data =
+            reshape(Float64.(ltoh.(reinterpret(Float32, read(data_src)))), ch_n, pnts, ep_n)
     else
         data = Float64.(dataset["data"])
     end

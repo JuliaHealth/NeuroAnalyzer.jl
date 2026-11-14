@@ -141,7 +141,7 @@ function pli(
         ch_idx, ep_idx = idx[1], idx[2]
         pli_data = _pli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
         )
         pv[ch_idx, ep_idx] = pli_data.pv
         sd[ch_idx, :, ep_idx] = pli_data.sd
@@ -191,7 +191,7 @@ function pli(
         for ch_idx2 = 1:ch_idx1
             pv[ch_idx1, ch_idx2, ep_idx] = _pli(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx])
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
             ).pv
         end
     end

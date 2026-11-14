@@ -105,7 +105,9 @@ function import_ft(
     cfg = dataset["cfg"]
     hdr = dataset["hdr"]
     # original file header (optional)
-    hdr_orig = "orig" in keys(hdr) && hdr["orig"] isa AbstractDict ? hdr["orig"] : Dict{String, Any}()
+    hdr_orig =
+        "orig" in keys(hdr) && hdr["orig"] isa AbstractDict ? hdr["orig"] :
+        Dict{String, Any}()
     ch_n = Int64(hdr["nChans"])
 
     # ------------------------------------------------------------------ #
@@ -161,7 +163,11 @@ function import_ft(
 
     # non-integer sampling rate (e.g. NIRS): exact upsampling or resampling to an integer rate, as in
     # the other importers (marker channels by nearest sample)
-    data, sampling_rate = _integer_rate(data, Float64(dataset["fsample"]); nearest = findall(==("mrk"), ch_type))
+    data, sampling_rate = _integer_rate(
+        data,
+        Float64(dataset["fsample"]);
+        nearest = findall(==("mrk"), ch_type),
+    )
 
     # ------------------------------------------------------------------ #
     # time axes                                                            #

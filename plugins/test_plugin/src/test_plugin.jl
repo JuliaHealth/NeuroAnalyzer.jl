@@ -75,8 +75,13 @@ Zero-crossing rate (an example plugin function). For a sine of frequency `f` the
 
 - `Matrix{Float64}`: number of zero crossings per second, shape (channels, epochs)
 """
-function test_plugin_zcr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
-    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+function test_plugin_zcr(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+)::Matrix{Float64}
+    ch =
+        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
+        get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _test_plugin_zcr(@view(obj.data[ch, :, :]); fs = sr(obj))
@@ -105,12 +110,19 @@ function test_plugin()::Bool
     s = sin.(2π * 10 .* t .- 0.1)
     obj = create_object(; data_type = "eeg")
     obj.header.recording[:sampling_rate] = fs
-    add_channel!(obj; data = reshape(repeat(s, 2), 1, fs, 2), label = "sine", type = "eeg", unit = "μV")
+    add_channel!(
+        obj;
+        data = reshape(repeat(s, 2), 1, fs, 2),
+        label = "sine",
+        type = "eeg",
+        unit = "μV",
+    )
     create_time!(obj; fs = fs)
 
     zcr = test_plugin_zcr(obj; ch = "sine")
     passed = size(zcr) == (1, 2) && all(zcr .== 20)
-    passed ? _info("Test passed") : _warn("Test failed: zero-crossing rate $(vec(zcr)), expected 20")
+    passed ? _info("Test passed") :
+    _warn("Test failed: zero-crossing rate $(vec(zcr)), expected 20")
 
     return passed
 end

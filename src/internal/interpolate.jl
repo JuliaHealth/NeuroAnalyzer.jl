@@ -60,12 +60,13 @@ function _interpolator(
         else
             xyz = Matrix{Float64}(loc_xyz)
             r = sqrt.(sum(abs2, xyz; dims = 2))
-            any(iszero, r) && throw(ArgumentError("loc_xyz must not contain points at the origin."))
+            any(iszero, r) &&
+                throw(ArgumentError("loc_xyz must not contain points at the origin."))
             xyz ./= r
         end
         np = length(s)
         A = [(_sph_g(xyz, xyz; m = 4, n = 50) + 1e-8 * I(np)) ones(np);
-             ones(1, np) 0.0]
+            ones(1, np) 0.0]
         c = A \ [Vector{Float64}(s); 0.0]
         return (x, y) -> [_sph_g(_xy2sph(x, y), xyz; m = 4, n = 50) ones(length(x))] * c
     end
@@ -112,7 +113,11 @@ function _interpolator(
         Gaussian()
     end
     # data points as a (2 × n_points) matrix
-    itp_si = ScatteredInterpolation.interpolate(m, Matrix{Float64}([loc_x loc_y]'), Vector{Float64}(s))
+    itp_si = ScatteredInterpolation.interpolate(
+        m,
+        Matrix{Float64}([loc_x loc_y]'),
+        Vector{Float64}(s),
+    )
     # query points as a (2 × n_points) matrix
     return (x, y) -> vec(ScatteredInterpolation.evaluate(itp_si, Matrix{Float64}([x y]')))
 end

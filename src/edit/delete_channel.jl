@@ -61,8 +61,17 @@ function _delete_channel(
 
     # NIRS signal channels must be removed with delete_optode() (auxiliary channels may be deleted)
     if dt == "nirs" && !del_opt
-        any(idx -> startswith(rec[:channel_type][idx], "nirs") && rec[:channel_type][idx] != "nirs_aux", ch_idx) &&
-            throw(ArgumentError("NIRS signal channels must be deleted using delete_optode()."))
+        any(
+            idx ->
+                startswith(rec[:channel_type][idx], "nirs") &&
+                rec[:channel_type][idx] != "nirs_aux",
+            ch_idx,
+        ) &&
+            throw(
+                ArgumentError(
+                    "NIRS signal channels must be deleted using delete_optode().",
+                ),
+            )
     end
 
     # create new dataset
@@ -122,7 +131,8 @@ function _delete_channel(
                 )
             end
             rec_tmp[:ssp_channels] = ssp_mask[keep]
-            !isempty(rec[:ssp_data]) && (rec_tmp[:ssp_data] = rec[:ssp_data][:, ssp_cols_keep])
+            !isempty(rec[:ssp_data]) &&
+                (rec_tmp[:ssp_data] = rec[:ssp_data][:, ssp_cols_keep])
         end
 
     elseif dt == "nirs"
@@ -133,7 +143,8 @@ function _delete_channel(
                 deleteat!(rec_tmp[:wavelength_index], idx)
             end
             if idx in axes(rec_tmp[:optode_pairs], 1)
-                rec_tmp[:optode_pairs] = rec_tmp[:optode_pairs][setdiff(axes(rec_tmp[:optode_pairs], 1), idx), :]
+                rec_tmp[:optode_pairs] =
+                    rec_tmp[:optode_pairs][setdiff(axes(rec_tmp[:optode_pairs], 1), idx), :]
             end
         end
     end
@@ -147,9 +158,11 @@ function _delete_channel(
         new_idx = cumsum(keep_mask)
         mrk_ch = obj_tmp.markers[!, :channel]
         on_deleted = [c != 0 && !keep_mask[c] for c in mrk_ch]
-        any(on_deleted) && _info("$(count(on_deleted)) marker(s) of deleted channels removed")
+        any(on_deleted) &&
+            _info("$(count(on_deleted)) marker(s) of deleted channels removed")
         obj_tmp.markers = obj_tmp.markers[.!on_deleted, :]
-        obj_tmp.markers[!, :channel] = [c == 0 ? 0 : new_idx[c] for c in obj_tmp.markers[!, :channel]]
+        obj_tmp.markers[!, :channel] =
+            [c == 0 ? 0 : new_idx[c] for c in obj_tmp.markers[!, :channel]]
     end
 
     push!(obj_tmp.history, "delete_channel(obj; ch=$(labels(obj)[sort(ch_idx)]))")

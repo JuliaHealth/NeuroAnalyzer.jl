@@ -10,7 +10,7 @@ const _FORMATS = (
     :edf, :bdf, :gdf, :bv, :csv, :csv_gz, :set, :npy, :xdf, :nwb, :ncs,
     :fiff, :ft, :snirf, :nirs, :nirx, :duomag,
 )
- 
+
 # extension → format
 const _EXT_FORMAT = Dict{String, Symbol}(
     ".edf"   => :edf,
@@ -36,7 +36,7 @@ const _EXT_FORMAT = Dict{String, Symbol}(
 
 # formats whose leading bytes identify them unambiguously: content wins over extension
 const _UNIQUE_SIGNATURE = (:edf, :bdf, :gdf, :bv, :npy, :xdf, :ncs, :fiff, :nirx)
- 
+
 # generic containers → formats that may legitimately use them (extension disambiguates)
 const _CONTAINER_FORMATS = Dict{Symbol, Tuple{Vararg{Symbol}}}(
     :mat5  => (:ft, :set, :nirs),
@@ -45,7 +45,7 @@ const _CONTAINER_FORMATS = Dict{Symbol, Tuple{Vararg{Symbol}}}(
     :gzip  => (:csv_gz,),
     :text  => (:csv, :duomag),
 )
- 
+
 const _SIG_DESCRIPTION = Dict{Symbol, String}(
     :mat5    => "a MATLAB v5 MAT-file",
     :mat73   => "a MATLAB v7.3 MAT-file",
@@ -54,11 +54,11 @@ const _SIG_DESCRIPTION = Dict{Symbol, String}(
     :text    => "a plain-text file",
     :unknown => "an unrecognized binary file",
 )
- 
+
 _hasprefix(buf::AbstractVector{UInt8}, p::AbstractVector{UInt8}) =
     length(buf) >= length(p) && view(buf, 1:length(p)) == p
 _hasprefix(buf::AbstractVector{UInt8}, p::String) = _hasprefix(buf, codeunits(p))
- 
+
 """
     _sniff_format(file_name)
  
@@ -86,13 +86,13 @@ function _sniff_format(file_name::String)::Symbol
     for o in (512, 1024, 2048)
         length(buf) >= o + 8 && buf[(o + 1):(o + 8)] == hdf5_sig && return :hdf5
     end
- 
+
     # FIFF: big-endian; first tag must be FIFF_FILE_ID (100), FIFFT_ID_STRUCT (31), size 20
     if length(buf) >= 12
         kind, typ, sz = ntoh.(reinterpret(Int32, buf[1:12]))
         (kind, typ, sz) == (100, 31, 20) && return :fiff
     end
- 
+
     # text-based headers (strip UTF-8 BOM)
     txt = chopprefix(String(buf[1:min(end, 256)]), "\ufeff")
     occursin(r"^Brain ?Vision Data Exchange Header File", txt) && return :bv
@@ -100,10 +100,10 @@ function _sniff_format(file_name::String)::Symbol
     # NIRx (NIRStar / Aurora) header: INI-style, [GeneralInfo] is the first section
     occursin(r"^\s*\[GeneralInfo\]"m, chopprefix(String(copy(buf)), "\ufeff")) &&
         return :nirx
- 
+
     return 0x00 in buf ? :unknown : :text
 end
- 
+
 """
     _ext_format(file_name)
  
@@ -118,7 +118,7 @@ function _ext_format(file_name::String)::Union{Nothing, Symbol}
     end
     return get(_EXT_FORMAT, ext, nothing)
 end
- 
+
 """
     _hdf5_flavor(file_name)
  
@@ -134,11 +134,14 @@ function _hdf5_flavor(file_name::String)::Union{Nothing, Symbol}
     # SNIRF: required root datasets
     ("formatVersion" in k && any(startswith("nirs"), k)) && return :snirf
     # NWB 1.x: root dataset; NWB 2.x: datasets required by the NWBFile specification
-    ("nwb_version" in k || all(in(k), ("file_create_date", "identifier", "session_description"))) &&
+    (
+        "nwb_version" in k ||
+        all(in(k), ("file_create_date", "identifier", "session_description"))
+    ) &&
         return :nwb
     return nothing
 end
- 
+
 """
     _sibling_hint(file_name)
  
@@ -185,13 +188,13 @@ function detect_format(file_name::String)::Symbol
     sig = _sniff_format(file_name)
     sig === :empty && throw(ArgumentError("File $file_name is empty."))
     ext_fmt = _ext_format(file_name)
- 
+
     if sig in _UNIQUE_SIGNATURE
         ext_fmt !== nothing && ext_fmt !== sig &&
             @warn "$file_name has a :$ext_fmt extension, but its contents are :$sig. Importing as :$sig."
         return sig
     end
- 
+
     if sig === :hdf5
         flavor = _hdf5_flavor(file_name)
         if flavor !== nothing
@@ -200,10 +203,10 @@ function detect_format(file_name::String)::Symbol
             return flavor
         end
     end
- 
+
     allowed = get(_CONTAINER_FORMATS, sig, ())
     ext_fmt in allowed && return ext_fmt
- 
+
     # content is inconclusive (text or unknown binary): trust the extension
     if ext_fmt !== nothing && sig in (:text, :unknown)
         ext_fmt === :duomag ||
@@ -217,8 +220,10 @@ function detect_format(file_name::String)::Symbol
     else
         "File $file_name has a :$ext_fmt extension, but its contents are $desc."
     end
-    isempty(allowed) || (msg *= " Possible formats: $(join(":" .* string.(allowed), ", ")); pass `format` explicitly.")
-    throw(ArgumentError(msg * _sibling_hint(file_name)))
+    isempty(allowed) || (
+        msg *= " Possible formats: $(join(":" .* string.(allowed), ", ")); pass `format` explicitly."
+    )
+    return throw(ArgumentError(msg * _sibling_hint(file_name)))
 end
 
 """
@@ -292,7 +297,7 @@ function import_recording(
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
- 
+
     fmt = if format === nothing
         detect_format(file_name)
     else
@@ -303,13 +308,19 @@ function import_recording(
         )
         format
     end
- 
-    fmt === :edf && return import_edf(file_name; detect_type = detect_type, clean_labels = clean_labels)
-    fmt === :bdf && return import_bdf(file_name; detect_type = detect_type, clean_labels = clean_labels)
-    fmt === :gdf && return import_gdf(file_name; detect_type = detect_type, clean_labels = clean_labels)
-    fmt === :bv && return import_bv(file_name; detect_type = detect_type, clean_labels = clean_labels)
-    fmt in (:csv, :csv_gz) && return import_csv(file_name; detect_type = detect_type, clean_labels = clean_labels)
-    fmt === :set && return import_set(file_name; detect_type = detect_type, clean_labels = clean_labels)
+
+    fmt === :edf &&
+        return import_edf(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :bdf &&
+        return import_bdf(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :gdf &&
+        return import_gdf(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :bv &&
+        return import_bv(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt in (:csv, :csv_gz) &&
+        return import_csv(file_name; detect_type = detect_type, clean_labels = clean_labels)
+    fmt === :set &&
+        return import_set(file_name; detect_type = detect_type, clean_labels = clean_labels)
     # .npy stores raw signal data only - sampling rate must be supplied
     if fmt === :npy
         isnothing(sampling_rate) &&
@@ -323,7 +334,9 @@ function import_recording(
     # FieldTrip requires explicit type hint - auto-detection is not possible
     if fmt === :ft
         isnothing(type) && throw(
-            ArgumentError("type must be specified for FieldTrip files (:eeg, :ecog, :ieeg, :seeg, :meg, :nirs or :events)."),
+            ArgumentError(
+                "type must be specified for FieldTrip files (:eeg, :ecog, :ieeg, :seeg, :meg, :nirs or :events).",
+            ),
         )
         return import_ft(file_name; type = type, clean_labels = clean_labels)
     end
@@ -331,7 +344,7 @@ function import_recording(
     fmt === :nirs && return import_nirs(file_name)
     fmt === :nirx && return import_nirx(file_name)
     fmt === :duomag && return import_duomag(file_name)
- 
+
     # unreachable: every member of _FORMATS is handled above
-    throw(ErrorException("Internal error: unhandled format :$fmt."))
+    return throw(ErrorException("Internal error: unhandled format :$fmt."))
 end

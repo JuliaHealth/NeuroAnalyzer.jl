@@ -77,8 +77,8 @@ function _cph(
     ep_n = size(s, 3)
 
     cph_1(x1, x2) = _cph(x1,
-                       x2; 
-                       fs = fs)
+        x2;
+        fs = fs)
 
     # first channel/epoch also determines the output data
     cph_data = cph_1(@view(s[1, :, 1]), @view(s[1, :, 1]))
@@ -99,7 +99,7 @@ function _cph(
             # @view avoids copying the (samples,) slices per thread.
             ph[ch_idx1, ch_idx2, :, ep_idx], _ = cph_1(
                 @view(s[ch_idx1, :, ep_idx]),
-                @view(s[ch_idx2, :, ep_idx])
+                @view(s[ch_idx2, :, ep_idx]),
             )
         end
         progress_bar && next!(progbar)
@@ -157,8 +157,8 @@ function _cph(
     ep_n = size(s1, 3)
 
     cph_1(x1, x2) = _cph(x1,
-                       x2; 
-                       fs = fs)
+        x2;
+        fs = fs)
 
     # first channel/epoch also determines the frequency vector
     cph_data = cph_1(@view(s1[1, :, 1],), @view(s2[1, :, 1]))

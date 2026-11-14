@@ -150,6 +150,6 @@ function diss(
 
     return _diss(
         @view(obj1.data[ch1, :, 1]),
-        @view(obj2.data[ch2, :, 1])
+        @view(obj2.data[ch2, :, 1]),
     )
 end

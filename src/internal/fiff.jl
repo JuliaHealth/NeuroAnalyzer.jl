@@ -80,7 +80,34 @@ _fiff_table(pairs, key::Symbol, val::Symbol) =
 # data types (FIFFT_*)
 # ---------------------------------------------------------------------------
 const fiff_data_type = Dict(
-    :id => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 30, 31, 32, 33, 34, 35, 36, 37],
+    :id => [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        16,
+        20,
+        21,
+        23,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+    ],
     :name => [
         "void", "byte", "int16", "int32", "float", "double", "julian",
         "uint16", "uint32", "uint64", "string", "int64",
@@ -89,7 +116,34 @@ const fiff_data_type = Dict(
         "dir_entry_struct", "dig_point_struct", "ch_pos_struct",
         "coord_trans_struct", "dig_string_struct", "stream_segment_struct",
     ],
-    :size => [0, 1, 2, 4, 4, 8, 4, 2, 4, 8, 1, 8, 2, 2, 2, 8, 16, 0, 96, 20, 16, 20, 52, 104, 0, 0],
+    :size => [
+        0,
+        1,
+        2,
+        4,
+        4,
+        8,
+        4,
+        2,
+        4,
+        8,
+        1,
+        8,
+        2,
+        2,
+        2,
+        8,
+        16,
+        0,
+        96,
+        20,
+        16,
+        20,
+        52,
+        104,
+        0,
+        0,
+    ],
 )
 
 const _FIFFT_MATRIX = 0x40000000
@@ -342,7 +396,8 @@ const fiff_coil_type = _fiff_table(
     :coil_type,
 )
 
-const fiff_gantry_type = _fiff_table([0 => "fixed", 1 => "uni_axial", 2 => "free"], :id, :gantry_type)
+const fiff_gantry_type =
+    _fiff_table([0 => "fixed", 1 => "uni_axial", 2 => "free"], :id, :gantry_type)
 
 const fiff_dacq_system = _fiff_table(
     [0 => "dau", 1 => "vxi", 2 => "rpu", 3 => "orion", 4 => "triux"],
@@ -695,7 +750,8 @@ function _create_fiff_block(
         push!(d, data)
 
         if tag_kind == be
-            length(stack) > 1 ? pop!(stack) : _warn("Unbalanced block_end tag in FIFF file.")
+            length(stack) > 1 ? pop!(stack) :
+            _warn("Unbalanced block_end tag in FIFF file.")
         end
 
         tag_next == -1 && break

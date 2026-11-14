@@ -33,7 +33,10 @@ function _fooof_ap(f::AbstractVector{<:Real}, p::AbstractVector{<:Real})::Vector
     end
 end
 
-function _fooof_ap_jac(f::AbstractVector{<:Real}, p::AbstractVector{<:Real})::Matrix{Float64}
+function _fooof_ap_jac(
+    f::AbstractVector{<:Real},
+    p::AbstractVector{<:Real},
+)::Matrix{Float64}
     if length(p) == 2
         J = zeros(length(f), 2)
         J[:, 1] .= 1.0
@@ -52,15 +55,18 @@ end
 function _fooof_gauss(f::AbstractVector{<:Real}, p::AbstractVector{<:Real})::Vector{Float64}
     # p = [cf1, h1, sd1, cf2, h2, sd2, ...]
     y = zeros(length(f))
-    @inbounds for idx in 1:3:length(p)
+    @inbounds for idx = 1:3:length(p)
         y .+= p[idx + 1] .* exp.(-(f .- p[idx]) .^ 2 ./ (2 * p[idx + 2]^2))
     end
     return y
 end
 
-function _fooof_gauss_jac(f::AbstractVector{<:Real}, p::AbstractVector{<:Real})::Matrix{Float64}
+function _fooof_gauss_jac(
+    f::AbstractVector{<:Real},
+    p::AbstractVector{<:Real},
+)::Matrix{Float64}
     J = zeros(length(f), length(p))
-    @inbounds for idx in 1:3:length(p)
+    @inbounds for idx = 1:3:length(p)
         c, h, w = p[idx], p[idx + 1], p[idx + 2]
         dx = f .- c
         e = exp.(-dx .^ 2 ./ (2 * w^2))
@@ -99,7 +105,8 @@ function _fooof_lm(
         d = max.(diag(A), eps())
         converged = false
         while true
-            nfev >= maxfev && error("Maximum number of function evaluations ($maxfev) exceeded.")
+            nfev >= maxfev &&
+                error("Maximum number of function evaluations ($maxfev) exceeded.")
             δ = try
                 Symmetric(A + λ * Diagonal(d)) \ g
             catch
@@ -130,7 +137,7 @@ function _fooof_lm(
         converged && return p
     end
 
-    error("Maximum number of function evaluations ($maxfev) exceeded.")
+    return error("Maximum number of function evaluations ($maxfev) exceeded.")
 end
 
 # aperiodic fitting
@@ -200,14 +207,14 @@ function _fooof_fit_peaks(
         # as in fooof, the left-side search excludes the first frequency bin
         hh = 0.5 * max_h
         le_idx = nothing
-        for i in (max_idx - 1):-1:2
+        for i = (max_idx - 1):-1:2
             if flat_iter[i] <= hh
                 le_idx = i
                 break
             end
         end
         ri_idx = nothing
-        for i in (max_idx + 1):length(flat_iter)
+        for i = (max_idx + 1):length(flat_iter)
             if flat_iter[i] <= hh
                 ri_idx = i
                 break
@@ -239,8 +246,9 @@ function _fooof_fit_peaks(
         lo = guess[:, 1] .- guess[:, 3] .* _FOOOF_GAUSS_OVERLAP_THRESH
         hi = guess[:, 1] .+ guess[:, 3] .* _FOOOF_GAUSS_OVERLAP_THRESH
         drop = Int64[]
-        for idx in 1:(size(guess, 1) - 1)
-            hi[idx] > lo[idx + 1] && push!(drop, guess[idx, 2] <= guess[idx + 1, 2] ? idx : idx + 1)
+        for idx = 1:(size(guess, 1) - 1)
+            hi[idx] > lo[idx + 1] &&
+                push!(drop, guess[idx, 2] <= guess[idx + 1, 2] ? idx : idx + 1)
         end
         guess = guess[setdiff(1:size(guess, 1), drop), :]
     end
@@ -278,7 +286,8 @@ function _fooof_check_settings(
 end
 
 function _fooof_check_f(f::Vector{Float64})::Nothing
-    length(f) >= 4 || throw(ArgumentError("At least 4 frequency bins are required within flim."))
+    length(f) >= 4 ||
+        throw(ArgumentError("At least 4 frequency bins are required within flim."))
     fres = _fooof_fres(f)
     # tolerance covers rounding of frequencies to 3 decimals in psd()
     all(x -> abs(x - fres) <= 2e-3, diff(f)) ||
@@ -292,7 +301,10 @@ function _fooof_check_p(p::Vector{Float64})::Nothing
     return nothing
 end
 
-function _fooof_width_warn(f::Vector{Float64}, peak_width_limits::Tuple{Real, Real})::Nothing
+function _fooof_width_warn(
+    f::Vector{Float64},
+    peak_width_limits::Tuple{Real, Real},
+)::Nothing
     fres = _fooof_fres(f)
     peak_width_limits[1] < 2 * fres && _warn(
         "Lower peak width limit ($(peak_width_limits[1]) Hz) is < 2 × frequency resolution ($(round(2 * fres; digits = 3)) Hz); this may lead to overfitting of narrow peaks.",
@@ -318,7 +330,17 @@ function _fooof_nan(
     model = fill(NaN, length(f))
     ap_fit = fill(NaN, length(f))
     p = _log10nan.(p)
-    return (; ap = fill(NaN, 3), pe = zeros(0, 3), gp = zeros(0, 3), r2 = NaN, err = NaN, f, p, model, ap_fit)
+    return (;
+        ap = fill(NaN, 3),
+        pe = zeros(0, 3),
+        gp = zeros(0, 3),
+        r2 = NaN,
+        err = NaN,
+        f,
+        p,
+        model,
+        ap_fit,
+    )
 end
 
 # fit one validated spectrum (f in Hz, p in linear power)
@@ -350,7 +372,14 @@ function _fooof_fit(
         ap = _fooof_robust_ap_fit(f, pl, knee)
         # flatten and fit peaks
         flat = pl .- _fooof_ap(f, ap)
-        gp = _fooof_fit_peaks(f, flat, peak_width_limits, max_n_peaks, min_peak_height, peak_threshold)
+        gp = _fooof_fit_peaks(
+            f,
+            flat,
+            peak_width_limits,
+            max_n_peaks,
+            min_peak_height,
+            peak_threshold,
+        )
         pe_fit = _fooof_gauss(f, vec(permutedims(gp)))
         # final aperiodic fit on the peak-removed spectrum
         p_rm = pl .- pe_fit
@@ -607,7 +636,9 @@ function _fooof(
     end
 
     n_fail = count(isnan, r2)
-    n_fail > 0 && _warn("FOOOF model fitting failed for $n_fail of $(length(r2)) spectra (parameters set to NaN).")
+    n_fail > 0 && _warn(
+        "FOOOF model fitting failed for $n_fail of $(length(r2)) spectra (parameters set to NaN).",
+    )
 
     return (; ap, pe, r2, err, f, model, ap_fit)
 end

@@ -81,7 +81,9 @@ function import_digitrack(
                 # remove trailing empty field produced by the trailing tab
                 !isempty(signals[end]) || deleteat!(signals, length(signals))
                 length(signals) == ch_n || throw(
-                    ArgumentError("$file_name: data line $idx has $(length(signals)) values, expected $ch_n."),
+                    ArgumentError(
+                        "$file_name: data line $idx has $(length(signals)) values, expected $ch_n.",
+                    ),
                 )
                 data[:, idx, 1] = parse.(Float64, replace.(signals, "," => "."))
             end

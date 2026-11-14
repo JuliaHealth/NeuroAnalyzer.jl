@@ -175,7 +175,8 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     m = match(r"_(ieeg|seeg|ecog|eeg|meg)$", base)
     events_file = m === nothing ? "" : base[1:(end - length(m.match))] * "_events.tsv"
     if isfile(events_file)
-        events = CSV.read(events_file, DataFrame; stringtype = String, missingstring = "n/a")
+        events =
+            CSV.read(events_file, DataFrame; stringtype = String, missingstring = "n/a")
         _info("$(DataFrames.nrow(events)) markers found")
         event_id = string.(coalesce.(events[!, :trial_type], ""))
         event_description = string.(coalesce.(events[!, :value], ""))

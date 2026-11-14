@@ -100,11 +100,19 @@ function _filter_title(
     end
     # line 2: parameters
     p2 = String[]
-    !isnothing(bw) && push!(p2, "bw: $(_fmt(bw)) Hz" *
-        (!isnothing(bw_eff) && fprototype === :fir ? " (effective ≈ $(_fmt(bw_eff)) Hz)" : ""))
+    !isnothing(bw) && push!(
+        p2,
+        "bw: $(_fmt(bw)) Hz" *
+        (
+            !isnothing(bw_eff) && fprototype === :fir ?
+            " (effective ≈ $(_fmt(bw_eff)) Hz)" : ""
+        ),
+    )
     isnothing(bw) && !isnothing(bw_eff) && push!(p2, "bw ≈ $(_fmt(bw_eff)) Hz")
-    !isnothing(rp) && fprototype in (:chebyshev1, :elliptic) && push!(p2, "RP: $(_fmt(rp)) dB")
-    !isnothing(rs) && fprototype in (:chebyshev2, :elliptic) && push!(p2, "RS: $(_fmt(rs)) dB")
+    !isnothing(rp) && fprototype in (:chebyshev1, :elliptic) &&
+        push!(p2, "RP: $(_fmt(rp)) dB")
+    !isnothing(rs) && fprototype in (:chebyshev2, :elliptic) &&
+        push!(p2, "RS: $(_fmt(rs)) dB")
     push!(p2, "fs: $fs Hz", dir === :twopass ? "two-pass (|H|²)" : String(dir))
     s *= "\n" * Base.join(p2, ", ")
 

@@ -49,7 +49,8 @@ function _entropy(
     maxmin_range = maximum(s) - minimum(s)
     q = StatsKit.iqr(s)
     # IQR = 0 (e.g. flat or heavily quantized signal): fall back to √n bins
-    fd_bins = q > 0 ? max(1, ceil(Int64, maxmin_range / (2.0 * q * n^(-1 / 3)))) :
+    fd_bins =
+        q > 0 ? max(1, ceil(Int64, maxmin_range / (2.0 * q * n^(-1 / 3)))) :
         max(1, ceil(Int64, sqrt(n)))
 
     # fit histogram and convert bin counts to probabilities

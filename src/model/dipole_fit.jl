@@ -14,7 +14,7 @@ Least-squares sphere fit to n×3 points. Returns (center, radius).
 """
 function _fit_sphere(P::AbstractMatrix{<:Real})
     A = hcat(2 .* P, ones(size(P, 1)))
-    b = vec(sum(abs2, P; dims=2))
+    b = vec(sum(abs2, P; dims = 2))
     s = A \ b
     c = s[1:3]
     return c, sqrt(s[4] + sum(abs2, c))
@@ -30,14 +30,14 @@ function _leadfield(
     U::AbstractMatrix{<:Real},
     R::Real,
     σ::Real;
-    nmax::Int=400,
-    tol::Real=1e-10
+    nmax::Int = 400,
+    tol::Real = 1e-10,
 )::Matrix{Float64}
     nch = size(U, 1)
     ρ = norm(r0)
     L = zeros(nch, 3)
     r̂0 = ρ > 1e-12 ? r0 ./ ρ : zeros(3)
-    for i in 1:nch
+    for i = 1:nch
         u = U[i, :]
         # n = 1 term (independent of r̂0)
         g = 3 .* u
@@ -49,7 +49,7 @@ function _leadfield(
             Pm, P = 1.0, c
             # P_0', P_1'
             dPm, dP = 0.0, 1.0
-            for n in 1:(nmax - 1)
+            for n = 1:(nmax - 1)
                 Pn = ((2n + 1) * c * P - n * Pm) / (n + 1)
                 dPn = dPm + (2n + 1) * P
                 Pm, P = P, Pn
@@ -108,12 +108,12 @@ Fit a single current dipole to EEG data.
 function dipole_fit(
     s::AbstractMatrix{<:Real},
     locs::DataFrame;
-    mode::Symbol=:fixed,
-    σ::Real=0.33,
-    loc_scale::Real=1e-3,
-    ρmax::Real=0.95,
-    n_grid::Int=7,
-    n_starts::Int=5
+    mode::Symbol = :fixed,
+    σ::Real = 0.33,
+    loc_scale::Real = 1e-3,
+    ρmax::Real = 0.95,
+    n_grid::Int = 7,
+    n_starts::Int = 5,
 )::NeuroAnalyzer.DIPOLE
     _wip()
 
@@ -133,7 +133,7 @@ function dipole_fit(
     c, R_loc = _fit_sphere(P)
     U = P .- c'
     # project electrodes to sphere surface
-    U ./= sqrt.(sum(abs2, U; dims=2))
+    U ./= sqrt.(sum(abs2, U; dims = 2))
     R = R_loc * loc_scale
 
     H = _avgref(nch)
@@ -141,7 +141,7 @@ function dipole_fit(
     D = H * Float64.(s)
 
     # candidate grid inside the sphere (in meters)
-    ax = range(-ρmax, ρmax, length=n_grid) .* R
+    ax = range(-ρmax, ρmax; length = n_grid) .* R
     grid = [[x, y, z] for x in ax for y in ax for z in ax if norm([x, y, z]) <= ρmax * R]
 
     function fit_window(Dw, seeds)
@@ -150,7 +150,7 @@ function dipole_fit(
         best_x, best_f = starts[1], Inf
         for x0 in starts
             res = optimize(x -> _dipole_cost(x, U, R, σ, H, Dw, ρmax), x0, NelderMead(),
-                           Optim.Options(iterations=500, g_abstol=1e-8))
+                Optim.Options(; iterations = 500, g_abstol = 1e-8))
             if Optim.minimum(res) < best_f
                 best_f, best_x = Optim.minimum(res), Optim.minimizer(res)
             end
@@ -163,12 +163,15 @@ function dipole_fit(
         x, Q, g = fit_window(D, Vector{Float64}[])
         return NeuroAnalyzer.DIPOLE(reshape(x ./ loc_scale .+ c, 1, 3), Q, [g], c, R_loc)
     else
-        pos = zeros(nt, 3); Q = zeros(3, nt); gof = zeros(nt)
+        pos = zeros(nt, 3)
+        Q = zeros(3, nt)
+        gof = zeros(nt)
         prev = Vector{Float64}[]
-        for t in 1:nt
+        for t = 1:nt
             x, q, g = fit_window(D[:, t:t], prev)
             pos[t, :] = x ./ loc_scale .+ c
-            Q[:, t] = vec(q); gof[t] = g
+            Q[:, t] = vec(q)
+            gof[t] = g
             prev = [x]
         end
         return NeuroAnalyzer.DIPOLE(pos, Q, gof, c, R_loc)

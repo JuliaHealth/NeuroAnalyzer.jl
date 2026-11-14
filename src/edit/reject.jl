@@ -2,7 +2,8 @@ export channel_reject
 export channel_reject!
 export epoch_reject
 
-const _REJECT_METHODS = [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]
+const _REJECT_METHODS =
+    [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]
 
 # methods comparing a per-channel statistic between channels (channel_reject) or epochs
 # (epoch_reject) with robust z-scores; :var is two-sided (high and low variance)
@@ -62,8 +63,10 @@ function _reject_stat(
         return [lg(var(@view(s[i, :]))) for i = 1:ch_n]
     elseif method === :p2p
         win = _reject_windows(n, w)
-        return [lg(maximum(maximum(@view(s[i, r])) - minimum(@view(s[i, r])) for r in win))
-                for i = 1:ch_n]
+        return [
+            lg(maximum(maximum(@view(s[i, r])) - minimum(@view(s[i, r])) for r in win))
+            for i = 1:ch_n
+        ]
     elseif method === :kurt
         # excess kurtosis; a flat signal (undefined kurtosis) gets the median of the other
         # channels, so that it is not flagged
@@ -76,7 +79,7 @@ function _reject_stat(
         # fraction of outlying samples: robust z-score within the channel > z
         return [count(abs.(_robust_z(@view(s[i, :]))) .> z) / n for i = 1:ch_n]
     end
-    throw(ArgumentError("Unknown method :$method."))
+    return throw(ArgumentError("Unknown method :$method."))
 end
 
 """
@@ -98,12 +101,14 @@ function _reject_absolute(
     if method === :flat
         # fraction of windows in which the signal is (nearly) constant
         win = _reject_windows(n, w)
-        return [count(std(@view(s[i, r])) < flat_tol for r in win) / length(win) > flat_fr
-                for i = 1:ch_n]
+        return [
+            count(std(@view(s[i, r])) < flat_tol for r in win) / length(win) > flat_fr
+            for i = 1:ch_n
+        ]
     elseif method === :amp
         return [maximum(abs, @view(s[i, :])) > amp_t for i = 1:ch_n]
     end
-    throw(ArgumentError("Unknown method :$method."))
+    return throw(ArgumentError("Unknown method :$method."))
 end
 
 """
@@ -111,13 +116,20 @@ end
 
 Statistic of the `:ransac` method: the signal of each channel is predicted from its 3 nearest neighbors (inverse-distance weighted mean); the statistic is the median correlation between the channel and the prediction in windows of `w` samples (a flat channel has correlation 0).
 """
-function _reject_neighbors(s::AbstractMatrix, xyz::AbstractMatrix; w::Int64)::Vector{Float64}
+function _reject_neighbors(
+    s::AbstractMatrix,
+    xyz::AbstractMatrix;
+    w::Int64,
+)::Vector{Float64}
     ch_n, n = size(s)
     k = min(3, ch_n - 1)
     win = _reject_windows(n, w)
     rc = zeros(ch_n)
     for i = 1:ch_n
-        d = [i == j ? Inf : sqrt(sum(abs2, @view(xyz[i, :]) .- @view(xyz[j, :]))) for j = 1:ch_n]
+        d = [
+            i == j ? Inf : sqrt(sum(abs2, @view(xyz[i, :]) .- @view(xyz[j, :]))) for
+            j = 1:ch_n
+        ]
         nb = sortperm(d)[1:k]
         wt = 1 ./ max.(d[nb], 1e-6)
         pred = vec(sum(s[nb, :] .* wt; dims = 1)) ./ sum(wt)
@@ -161,14 +173,16 @@ function _reject_flags(
             x = @view(obj.data[ch[ch_idx], :, :])
             xz = reshape(_robust_z(vec(x)), size(x))
             for ep_idx = 1:ep_n
-                flags[ch_idx, ep_idx] = count(>(z), abs.(@view(xz[:, ep_idx]))) / size(x, 1) > 1 - p
+                flags[ch_idx, ep_idx] =
+                    count(>(z), abs.(@view(xz[:, ep_idx]))) / size(x, 1) > 1 - p
             end
         end
     elseif method in _REJECT_ROBUST
         st = zeros(ch_n, ep_n)
         Threads.@threads :static for ep_idx = 1:ep_n
             st[:, ep_idx] = _reject_stat(
-                @view(obj.data[ch, :, ep_idx]), method; w = w, tkeo_method = tkeo_method, z = z,
+                @view(obj.data[ch, :, ep_idx]), method; w = w,
+                tkeo_method = tkeo_method, z = z,
             )
         end
         rz = similar(st)
@@ -212,7 +226,8 @@ function _reject_flags(
         Threads.@threads :static for ep_idx = 1:ep_n
             flags[:, ep_idx] = _reject_absolute(
                 @view(obj.data[ch, :, ep_idx]), method;
-                w = w, flat_tol = flat_tol, flat_fr = flat_fr, amp_t = amp_t, z = z, p = p,
+                w = w, flat_tol = flat_tol, flat_fr = flat_fr, amp_t = amp_t, z = z,
+                p = p,
             )
         end
     end
@@ -325,7 +340,8 @@ function channel_reject(
         flags = _reject_flags(
             obj, ch, m;
             across = :channels, w = w, flat_tol = flat_tol, flat_fr = flat_fr, p = p,
-            tkeo_method = tkeo_method, z = z, ransac_r = ransac_r, ransac_tr = ransac_tr,
+            tkeo_method = tkeo_method, z = z, ransac_r = ransac_r,
+            ransac_tr = ransac_tr,
             amp_t = amp_t,
         )
         # fraction of epochs in which the channel was flagged
@@ -470,7 +486,8 @@ function epoch_reject(
         flags = _reject_flags(
             obj, ch, m;
             across = :epochs, w = w, flat_tol = flat_tol, flat_fr = flat_fr, p = p,
-            tkeo_method = tkeo_method, z = z, ransac_r = ransac_r, ransac_tr = ransac_tr,
+            tkeo_method = tkeo_method, z = z, ransac_r = ransac_r,
+            ransac_tr = ransac_tr,
             amp_t = amp_t,
         )
         be .|= vec(sum(flags; dims = 1)) .>= nbad

@@ -53,7 +53,9 @@ function lrinterpolate_channel(
     # samples of epoch ep outside the segment
     if isnothing(seg)
         isempty(ep_ref) && throw(
-            ArgumentError("Training the model requires reference epochs (or a segment, seg)."),
+            ArgumentError(
+                "Training the model requires reference epochs (or a segment, seg).",
+            ),
         )
         t_rng = 1:epoch_len(obj)
         t_train = Int64[]
@@ -67,7 +69,9 @@ function lrinterpolate_channel(
         obj.data[ch_ref, t_train, ep]',
     )
     length(y) > length(ch_ref) + 1 ||
-        throw(ArgumentError("Not enough training samples for $(length(ch_ref)) predictors."))
+        throw(
+            ArgumentError("Not enough training samples for $(length(ch_ref)) predictors."),
+        )
     df = DataFrame(hcat(y, x), :auto)
 
     # linear regression of ch on the other signal channels
@@ -87,7 +91,8 @@ function lrinterpolate_channel(
 
     # predict ch in epoch ep (within the segment) from the other channels
     obj_tmp = deepcopy(obj)
-    df_ep = DataFrame(hcat(obj.data[ch_idx, t_rng, ep], obj.data[ch_ref, t_rng, ep]'), :auto)
+    df_ep =
+        DataFrame(hcat(obj.data[ch_idx, t_rng, ep], obj.data[ch_ref, t_rng, ep]'), :auto)
     obj_tmp.data[ch_idx, t_rng, ep] = GLM.predict(linear_regressor, df_ep)
 
     reset_bads && (obj_tmp.header.recording[:bad_channel][ch_idx] = false)

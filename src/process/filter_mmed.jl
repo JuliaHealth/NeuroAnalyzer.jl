@@ -56,7 +56,8 @@ function _filter_mmed(
         i2 = min(n, idx + k)
         s_tmp = @view s[i1:i2]
         w_tmp = @view ww[(i1 - idx + k + 1):(i2 - idx + k + 1)]
-        s_filtered[idx] = _wmedian_cols(reshape(Vector{Float64}(s_tmp), :, 1), Vector{Float64}(w_tmp))[1]
+        s_filtered[idx] =
+            _wmedian_cols(reshape(Vector{Float64}(s_tmp), :, 1), Vector{Float64}(w_tmp))[1]
     end
 
     return s_filtered

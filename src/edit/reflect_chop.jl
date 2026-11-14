@@ -96,7 +96,8 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::NeuroAnalyzer.NEURO
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))
     el = epoch_len(obj)
     # at least one sample must remain in each epoch
-    2 * n < el || throw(ArgumentError("n must be < $(cld(el, 2)) (half of the epoch length)."))
+    2 * n < el ||
+        throw(ArgumentError("n must be < $(cld(el, 2)) (half of the epoch length)."))
 
     # create new dataset
     obj_tmp = deepcopy(obj)

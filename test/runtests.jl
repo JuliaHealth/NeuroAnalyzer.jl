@@ -41,5 +41,4 @@ global testfiles_path =
 
     @info "Running na.jl tests"
     @test include("na.jl")
-
 end

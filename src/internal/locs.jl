@@ -160,8 +160,8 @@ function _ch_locs(
 )::DataFrame
     # validate before indexing, so that an out-of-range index gives a clear error
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-    chl  = labels(obj)[ch]
-    chs  = intersect(obj.locs[!, :label], chl)
+    chl = labels(obj)[ch]
+    chs = intersect(obj.locs[!, :label], chl)
     return Base.filter(:label => in(chs), obj.locs)
 end
 
@@ -537,6 +537,10 @@ end
 Apply the Cartesian transformation `f(x, y, z) -> (x, y, z)` to the spherical coordinates of `locs` (via unrounded conversions) and return the new `(radius, theta, phi)` columns.
 """
 function _sph_transform(locs::DataFrame, f::Function)
-    x, y, z = _sph2cart_raw(locs[!, :loc_radius_sph], locs[!, :loc_theta_sph], locs[!, :loc_phi_sph])
+    x, y, z = _sph2cart_raw(
+        locs[!, :loc_radius_sph],
+        locs[!, :loc_theta_sph],
+        locs[!, :loc_phi_sph],
+    )
     return _cart2sph_raw(f(x, y, z)...)
 end

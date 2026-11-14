@@ -7,7 +7,6 @@ _approx₂(a::AbstractString, b::AbstractString) = a == b
 _approx₂(a, b) = isapprox(a, b; atol = 0.01)
 ≈₂(a, b) = all(map(_approx₂, Tuple(a), Tuple(b)))
 
-
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
 locs = import_locs(joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
@@ -19,7 +18,7 @@ add_locs!(eeg; locs = locs)
 @test nrow(eeg.locs) == 23
 
 @info "Test: locs_details()"
-@test locs_details(eeg, ch = "Fp1", out = false) ≈₂ (
+@test locs_details(eeg, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -32,31 +31,31 @@ add_locs!(eeg; locs = locs)
 )
 
 @info "Test: cart2pol()"
-@test cart2pol(1.0, 1.0) ≈₂ (1.41, 45.0)
+@test cart2pol(1.0, 1.0)≈₂(1.41, 45.0)
 
 @info "Test: pol2cart()"
-@test pol2cart(1.41, 45.0) ≈₂ (1, 1)
+@test pol2cart(1.41, 45.0)≈₂(1, 1)
 
 @info "Test: sph2cart()"
-@test sph2cart(1.73, 45.0, 35.27) ≈₂ (1.0, 1.0, 1.0)
+@test sph2cart(1.73, 45.0, 35.27)≈₂(1.0, 1.0, 1.0)
 
 @info "Test: cart2sph()"
-@test cart2sph(1.0, 1.0, 1.0) ≈₂ (1.73, 45.0, 35.26)
+@test cart2sph(1.0, 1.0, 1.0)≈₂(1.73, 45.0, 35.26)
 
 @info "Test: sph2pol()"
-@test sph2pol(1.73, 45.0, 35.26) ≈₂ (1.41, 45.0)
+@test sph2pol(1.73, 45.0, 35.26)≈₂(1.41, 45.0)
 
 @info "Test: locs_sph2cart()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_tmp = locs_sph2cart(locs_tmp)
-@test locs_tmp[1, :loc_x] ≈₂ 1.0
+@test locs_tmp[1, :loc_x]≈₂1.0
 
 @info "Test: locs_sph2cart!()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_sph2cart!(locs_tmp)
-@test locs_tmp[1, :loc_x] ≈₂ 1.0
+@test locs_tmp[1, :loc_x]≈₂1.0
 
 @info "Test: locs_cart2sph()"
 locs_tmp = deepcopy(locs)
@@ -104,7 +103,7 @@ locs_sph2pol!(locs_tmp)
 
 @info "Test: edit_locs()"
 eeg_tmp = deepcopy(eeg)
-@test locs_details(eeg_tmp, ch = "Fp1", out = false) ≈₂ (
+@test locs_details(eeg_tmp, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -116,7 +115,7 @@ eeg_tmp = deepcopy(eeg)
     phi_sph = -2.0,
 )
 eeg_tmp = edit_locs(eeg_tmp; ch = "Fp1", x = 0.5)
-@test locs_details(eeg_tmp, ch = "Fp1", out = false) ≈₂ (
+@test locs_details(eeg_tmp, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -128,7 +127,7 @@ eeg_tmp = edit_locs(eeg_tmp; ch = "Fp1", x = 0.5)
     phi_sph = -2.0,
 )
 edit_locs!(eeg_tmp; ch = "Fp1", x = 0.5)
-@test locs_details(eeg_tmp, ch = "Fp1", out = false) ≈₂ (
+@test locs_details(eeg_tmp, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
     radius_pl = 1.0,
@@ -141,19 +140,19 @@ edit_locs!(eeg_tmp; ch = "Fp1", x = 0.5)
 )
 
 @info "Test: locs_flipx()"
-@test locs[1, :loc_x] ≈₂ -0.31
+@test locs[1, :loc_x]≈₂-0.31
 locs2 = locs_flipx(locs)
-@test locs2[1, :loc_x] ≈₂ 0.31
+@test locs2[1, :loc_x]≈₂0.31
 
 @info "Test: locs_flipy()"
-@test locs[1, :loc_y] ≈₂ 0.95
+@test locs[1, :loc_y]≈₂0.95
 locs2 = locs_flipy(locs)
-@test locs2[1, :loc_y] ≈₂ -0.95
+@test locs2[1, :loc_y]≈₂-0.95
 
 @info "Test: locs_flipz()"
-@test locs[1, :loc_z] ≈₂ -0.03
+@test locs[1, :loc_z]≈₂-0.03
 locs2 = locs_flipz(locs)
-@test locs2[1, :loc_z] ≈₂ 0.03
+@test locs2[1, :loc_z]≈₂0.03
 
 @info "Test: locs_scale()"
 @test locs[1, :loc_radius] == 1.0
@@ -184,8 +183,8 @@ locs2 = locs_swapxy(locs)
 locs2 = locs_rotx(locs; a = 20)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_theta] == 108.0
-@test locs2[1, :loc_theta_sph] ≈₂ 108.84
-@test locs2[1, :loc_phi_sph] ≈₂ 16.99
+@test locs2[1, :loc_theta_sph]≈₂108.84
+@test locs2[1, :loc_phi_sph]≈₂16.99
 
 @info "Test: locs_roty()"
 @test locs[1, :loc_radius] == 1.0
@@ -195,8 +194,8 @@ locs2 = locs_rotx(locs; a = 20)
 locs2 = locs_roty(locs; a = 20)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_theta] == 108.0
-@test locs2[1, :loc_theta_sph] ≈₂ 107.63
-@test locs2[1, :loc_phi_sph] ≈₂ 4.18
+@test locs2[1, :loc_theta_sph]≈₂107.63
+@test locs2[1, :loc_phi_sph]≈₂4.18
 
 @info "Test: locs_rotz()"
 @test locs[1, :loc_radius] == 1.0
@@ -218,7 +217,6 @@ eeg_tmp = locs_generate(eeg_tmp)
 @info "Test: locs_origin()"
 @test locs_origin(locs, y = 0.2) isa DataFrame
 
-
 ##
 ## values (geometry) and in-place variants
 ##
@@ -228,7 +226,9 @@ coords(l) = Matrix(l[!, [:loc_x, :loc_y, :loc_z]])
 
 @info "Test: coordinate conversions values"
 # polar/spherical angles in degrees: theta from +x (right) towards +y (nose), phi = elevation
-@test all(pol2cart(1.0, 90.0) .≈ (0.0, 1.0) .|| abs.(pol2cart(1.0, 90.0) .- (0.0, 1.0)) .< 1e-12)
+@test all(
+    pol2cart(1.0, 90.0) .≈ (0.0, 1.0) .|| abs.(pol2cart(1.0, 90.0) .- (0.0, 1.0)) .< 1e-12,
+)
 @test collect(pol2cart(2.0, 180.0)) ≈ [-2.0, 0.0] atol = 1e-12
 @test collect(sph2cart(1.0, 0.0, 90.0)) ≈ [0.0, 0.0, 1.0] atol = 1e-12
 @test collect(sph2cart(2.0, 90.0, 0.0)) ≈ [0.0, 2.0, 0.0] atol = 1e-12
@@ -243,9 +243,11 @@ r_tmp, t_tmp, p_tmp = cart2sph(0.0, 0.0, 2.0)
 @test pol2sph(0.8, 45.0) == (0.8, 45.0, 0.0)
 
 @info "Test: locs_pol2cart() / locs_pol2sph()"
-lp = DataFrame(:label => ["a", "b", "c"], :loc_radius => [1.0, 1.0, 0.5], :loc_theta => [0.0, 90.0, 180.0],
-               :loc_x => zeros(3), :loc_y => zeros(3), :loc_z => zeros(3), :loc_radius_sph => zeros(3),
-               :loc_theta_sph => zeros(3), :loc_phi_sph => zeros(3))
+lp = DataFrame(:label => ["a", "b", "c"], :loc_radius => [1.0, 1.0, 0.5],
+    :loc_theta => [0.0, 90.0, 180.0],
+    :loc_x => zeros(3), :loc_y => zeros(3), :loc_z => zeros(3),
+    :loc_radius_sph => zeros(3),
+    :loc_theta_sph => zeros(3), :loc_phi_sph => zeros(3))
 l2 = locs_pol2cart(lp)
 @test l2[!, :loc_x] ≈ [1.0, 0.0, -0.5] atol = 1e-12
 @test l2[!, :loc_y] ≈ [0.0, 1.0, 0.0] atol = 1e-12
@@ -262,14 +264,15 @@ locs_pol2sph!(l3)
 @test l3 == l2
 
 @info "Test: in-place variants = non-mutating variants"
-for (f, f!, kw) in ((locs_flipx, locs_flipx!, ()), (locs_flipy, locs_flipy!, ()), (locs_flipz, locs_flipz!, ()),
-                    (locs_rotx, locs_rotx!, (a = 30,)), (locs_roty, locs_roty!, (a = 30,)),
-                    (locs_rotz, locs_rotz!, (a = 30,)), (locs_scale, locs_scale!, (r = 2,)),
-                    (locs_normalize, locs_normalize!, ()), (locs_swapxy, locs_swapxy!, ()),
-                    (locs_center, locs_center!, ()), (locs_origin, locs_origin!, (x = 0.1, z = -0.2)),
-                    (locs_cart2sph, locs_cart2sph!, ()), (locs_cart2pol, locs_cart2pol!, ()),
-                    (locs_sph2cart, locs_sph2cart!, ()), (locs_sph2pol, locs_sph2pol!, ()),
-                    (locs_generate, locs_generate!, ()))
+for (f, f!, kw) in ((locs_flipx, locs_flipx!, ()), (locs_flipy, locs_flipy!, ()),
+    (locs_flipz, locs_flipz!, ()),
+    (locs_rotx, locs_rotx!, (a = 30,)), (locs_roty, locs_roty!, (a = 30,)),
+    (locs_rotz, locs_rotz!, (a = 30,)), (locs_scale, locs_scale!, (r = 2,)),
+    (locs_normalize, locs_normalize!, ()), (locs_swapxy, locs_swapxy!, ()),
+    (locs_center, locs_center!, ()), (locs_origin, locs_origin!, (x = 0.1, z = -0.2)),
+    (locs_cart2sph, locs_cart2sph!, ()), (locs_cart2pol, locs_cart2pol!, ()),
+    (locs_sph2cart, locs_sph2cart!, ()), (locs_sph2pol, locs_sph2pol!, ()),
+    (locs_generate, locs_generate!, ()))
     l1 = f(locs; kw...)
     local l2 = deepcopy(locs)
     f!(l2; kw...)
@@ -282,7 +285,8 @@ l2 = locs_flipx(locs)
 @test l2[!, :loc_y] == locs[!, :loc_y]
 # flipping twice restores the locations
 @test coords(locs_flipy(locs_flipy(locs))) ≈ coords(locs)
-@test mod.(locs_flipx(locs_flipx(locs))[!, :loc_theta], 360) ≈ mod.(locs[!, :loc_theta], 360)
+@test mod.(locs_flipx(locs_flipx(locs))[!, :loc_theta], 360) ≈
+      mod.(locs[!, :loc_theta], 360)
 @test locs_flipz(locs)[!, :loc_phi_sph] ≈ -locs[!, :loc_phi_sph]
 # Fp1 (left, θ = 108°) → right (θ = 72°)
 @test locs_flipx(locs)[1, :loc_theta] ≈ 72.0
@@ -346,9 +350,10 @@ locs_origin!(eeg_tmp; z = 1)
 @test eeg_tmp.locs[!, :loc_z] ≈ eeg.locs[!, :loc_z] .+ 1
 
 @info "Test: locs_generate() values"
-lg = DataFrame(:label => ["Cz", "Fpz", "Oz", "T7", "T8", "Fp1-F3", "xyz"], :loc_radius => zeros(7),
-               :loc_theta => zeros(7), :loc_x => zeros(7), :loc_y => zeros(7), :loc_z => zeros(7),
-               :loc_radius_sph => zeros(7), :loc_theta_sph => zeros(7), :loc_phi_sph => zeros(7))
+lg = DataFrame(:label => ["Cz", "Fpz", "Oz", "T7", "T8", "Fp1-F3", "xyz"],
+    :loc_radius => zeros(7),
+    :loc_theta => zeros(7), :loc_x => zeros(7), :loc_y => zeros(7), :loc_z => zeros(7),
+    :loc_radius_sph => zeros(7), :loc_theta_sph => zeros(7), :loc_phi_sph => zeros(7))
 lg = locs_generate(lg)
 # 10/10 positions on the unit sphere: Cz on top, Fpz in front, Oz at the back, T7 left, T8 right
 @test xyz(lg, 1) ≈ [0.0, 0.0, 1.0] atol = 1e-3
@@ -380,10 +385,10 @@ eeg_tmp = edit_locs(eeg; ch = "Fp1", theta = 100.0, name = "Fp1x", type = "eog")
 @info "Test: locs_details() print"
 out = mktemp() do path, io
     redirect_stdout(io) do
-        locs_details(eeg; ch = "Fp1")
+        return locs_details(eeg; ch = "Fp1")
     end
     flush(io)
-    read(path, String)
+    return read(path, String)
 end
 @test occursin("Fp1", out)
 

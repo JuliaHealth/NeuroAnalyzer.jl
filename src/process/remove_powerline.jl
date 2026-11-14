@@ -8,7 +8,10 @@ const _LINE_FREQUENCIES = (50, 60)
 
 # zero-phase IIR notch filter of a signal vector (as filter(obj; fprototype = :iirnotch), two-pass)
 _notch(x::AbstractVector, fs::Int64, frq::Real, bw::Real)::Vector{Float64} =
-    _filter_apply(x; flt = filter_create(; fprototype = :iirnotch, cutoff = frq, fs = fs, bw = bw))
+    _filter_apply(
+        x;
+        flt = filter_create(; fprototype = :iirnotch, cutoff = frq, fs = fs, bw = bw),
+    )
 
 # for every notch bandwidth in `bws`: variance of the PSD (dB) within [f1, f2] of the notch-filtered
 # signal (the candidates are independent and evaluated in parallel)
@@ -104,7 +107,13 @@ function remove_powerline(
     verbose_tmp = NeuroAnalyzer.verbose
     NeuroAnalyzer.verbose = false
     try
-        progbar = Progress(length(ch); dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+        progbar = Progress(
+            length(ch);
+            dt = 1,
+            barlen = 20,
+            color = :white,
+            enabled = progress_bar,
+        )
 
         for ch_idx in ch
             x = obj_tmp.data[ch_idx, :, 1]
@@ -122,7 +131,10 @@ function remove_powerline(
                 end
 
                 # the notch band must lie within (0, Nyquist)
-                bws = Base.filter(b -> h - b / 2 > 0 && h + b / 2 < fs / 2, h_idx == 1 ? bw_fund : bw_harm)
+                bws = Base.filter(
+                    b -> h - b / 2 > 0 && h + b / 2 < fs / 2,
+                    h_idx == 1 ? bw_fund : bw_harm,
+                )
                 isempty(bws) && continue
                 v = _notch_band_var(x, fs, h, bws, f1, f2)
                 bw = bws[argmin(v)]
@@ -141,7 +153,10 @@ function remove_powerline(
     isempty(no_peak) || _warn(
         "No power line peak at $pl_frq Hz in channel(s) $(join(no_peak, ", ")); power line frequency not filtered (check pl_frq or whether the signal is already filtered).",
     )
-    push!(obj_tmp.history, "remove_powerline(OBJ, ch=$ch, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)")
+    push!(
+        obj_tmp.history,
+        "remove_powerline(OBJ, ch=$ch, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)",
+    )
 
     return obj_tmp, df
 end
@@ -174,7 +189,15 @@ function remove_powerline!(
     d::Real = 5.0,
     q::Real = 0.1,
 )::DataFrame
-    obj_tmp, df = remove_powerline(obj; ch = ch, pl_frq = pl_frq, method = method, pr = pr, d = d, q = q)
+    obj_tmp, df = remove_powerline(
+        obj;
+        ch = ch,
+        pl_frq = pl_frq,
+        method = method,
+        pr = pr,
+        d = d,
+        q = q,
+    )
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
 
@@ -231,7 +254,11 @@ For each channel and epoch, the prominence of the power spectrum at 50 and 60 Hz
 """
 function detect_powerline(obj::NeuroAnalyzer.NEURO; pr::Real = 3)::Float64
     sr(obj) > 2 * (minimum(_LINE_FREQUENCIES) + 5) ||
-        throw(ArgumentError("Sampling rate must be > $(2 * (minimum(_LINE_FREQUENCIES) + 5)) Hz to detect power line noise."))
+        throw(
+            ArgumentError(
+                "Sampling rate must be > $(2 * (minimum(_LINE_FREQUENCIES) + 5)) Hz to detect power line noise.",
+            ),
+        )
 
     # number of channels
     ch_n = size(obj, 1)
@@ -248,7 +275,8 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO; pr::Real = 3)::Float64
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        noise_frq[ch_idx, ep_idx] = _detect_powerline(@view(obj.data[ch_idx, :, ep_idx]); fs = sr(obj), pr = pr)
+        noise_frq[ch_idx, ep_idx] =
+            _detect_powerline(@view(obj.data[ch_idx, :, ep_idx]); fs = sr(obj), pr = pr)
 
         # update progress bar
         progress_bar && next!(progbar)
@@ -279,7 +307,9 @@ Detect the power line noise frequency (see `detect_powerline()`) and store it in
 function detect_powerline!(obj::NeuroAnalyzer.NEURO; pr::Real = 3)::Nothing
     noise_frq = detect_powerline(obj; pr = pr)
     if noise_frq == 0
-        _warn("No power line noise detected; line frequency not changed ($(obj.header.recording[:line_frequency]) Hz).")
+        _warn(
+            "No power line noise detected; line frequency not changed ($(obj.header.recording[:line_frequency]) Hz).",
+        )
     else
         _info("Power line noise detected at $noise_frq Hz")
         obj.header.recording[:line_frequency] = noise_frq

@@ -23,7 +23,11 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyz
     nchannels(obj1) == nchannels(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same number of channels."))
     labels(obj1) == labels(obj2) ||
-        throw(ArgumentError("OBJ1 and OBJ2 must have the same channel labels (in the same order)."))
+        throw(
+            ArgumentError(
+                "OBJ1 and OBJ2 must have the same channel labels (in the same order).",
+            ),
+        )
     nepochs(obj1) == nepochs(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same number of epochs."))
 
@@ -39,8 +43,13 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyz
     # (obj1 samples first, then obj2 samples)
     fs = sr(obj1)
     l1, l2 = epoch_len(obj1), epoch_len(obj2)
-    m1 = _remap_markers(obj1.markers, fs, s -> ((s - 1) ÷ l1) * (l1 + l2) + (s - 1) % l1 + 1)
-    m2 = _remap_markers(obj2.markers, fs, s -> ((s - 1) ÷ l2) * (l1 + l2) + l1 + (s - 1) % l2 + 1)
+    m1 =
+        _remap_markers(obj1.markers, fs, s -> ((s - 1) ÷ l1) * (l1 + l2) + (s - 1) % l1 + 1)
+    m2 = _remap_markers(
+        obj2.markers,
+        fs,
+        s -> ((s - 1) ÷ l2) * (l1 + l2) + l1 + (s - 1) % l2 + 1,
+    )
     obj_tmp.markers = sort(vcat(m1, m2), :start)
 
     push!(obj_tmp.history, "join(obj1, obj2)")

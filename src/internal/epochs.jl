@@ -92,7 +92,10 @@ function _make_epochs_bymarkers(
     @inbounds for ep_idx = 1:mrk_n, idx in eachindex(mrk_s)
         if ep_start[ep_idx] <= mrk_s[idx] <= ep_end[ep_idx]
             push!(rows, idx)
-            push!(new_start, s2t((ep_idx - 1) * ep_len + mrk_s[idx] - ep_start[ep_idx] + 1, fs))
+            push!(
+                new_start,
+                s2t((ep_idx - 1) * ep_len + mrk_s[idx] - ep_start[ep_idx] + 1, fs),
+            )
         end
     end
     mrk_tmp = markers[rows, :]

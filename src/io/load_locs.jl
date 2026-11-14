@@ -53,7 +53,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
     _info("Nose direction is set at '+Y'")
 
     importers = Dict(
-        ".ced" => import_locs_ced, ".elc" => import_locs_elc, ".locs" => import_locs_locs,
+        ".ced" => import_locs_ced, ".elc" => import_locs_elc,
+        ".locs" => import_locs_locs,
         ".tsv" => import_locs_tsv, ".sfp" => import_locs_sfp, ".csd" => import_locs_csd,
         ".geo" => import_locs_geo, ".mat" => import_locs_mat, ".txt" => import_locs_txt,
         ".dat" => import_locs_dat, ".asc" => import_locs_asc, ".csv" => import_locs_csv,
@@ -92,16 +93,16 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
                 occursin("1", ref_labels[idx])
             ) && add_loc!(
                 [
-                    ref_labels[idx],
-                    0.95,
-                    -173.93,
-                    -0.94,
-                    -0.1,
-                    -0.3,
-                    0.99,
-                    -173.93,
-                    -17.61,
-                ],
+                ref_labels[idx],
+                0.95,
+                -173.93,
+                -0.94,
+                -0.1,
+                -0.3,
+                0.99,
+                -173.93,
+                -17.61,
+            ],
             )
             (
                 occursin("m", lowercase(ref_labels[idx])) &&
@@ -123,9 +124,10 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
                 [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01],
             )
             # if no numbers, assume that EMG channel is on the right side
-            (!occursin("1", emg_labels[idx]) && !occursin("2", emg_labels[idx])) && add_loc!(
-                [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01],
-            )
+            (!occursin("1", emg_labels[idx]) && !occursin("2", emg_labels[idx])) &&
+                add_loc!(
+                    [emg_labels[idx], 0.99, 45.0, 0.7, 0.7, -1.1, 1.48, 45.0, -48.01],
+                )
         end
     end
 
@@ -136,29 +138,29 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
             if occursin("1", eog_labels[idx])
                 occursin("v", lowercase(eog_labels[idx])) && add_loc!(
                     [
-                        eog_labels[idx],
-                        1.01,
-                        149.0,
-                        -0.87,
-                        0.51,
-                        -0.37,
-                        1.07,
-                        149.0,
-                        -20.15,
-                    ],
+                    eog_labels[idx],
+                    1.01,
+                    149.0,
+                    -0.87,
+                    0.51,
+                    -0.37,
+                    1.07,
+                    149.0,
+                    -20.15,
+                ],
                 )
                 occursin("h", lowercase(eog_labels[idx])) && add_loc!(
                     [
-                        eog_labels[idx],
-                        1.01,
-                        129.73,
-                        -0.64,
-                        0.77,
-                        -0.04,
-                        1.0,
-                        129.73,
-                        -2.29,
-                    ],
+                    eog_labels[idx],
+                    1.01,
+                    129.73,
+                    -0.64,
+                    0.77,
+                    -0.04,
+                    1.0,
+                    129.73,
+                    -2.29,
+                ],
                 )
             end
             if occursin("2", eog_labels[idx])
@@ -183,16 +185,16 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
                !occursin("h", lowercase(eog_labels[idx]))
                 occursin("1", eog_labels[idx]) && add_loc!(
                     [
-                        eog_labels[idx],
-                        1.01,
-                        149.0,
-                        -0.87,
-                        0.51,
-                        -0.37,
-                        1.07,
-                        149.0,
-                        -20.15,
-                    ],
+                    eog_labels[idx],
+                    1.01,
+                    149.0,
+                    -0.87,
+                    0.51,
+                    -0.37,
+                    1.07,
+                    149.0,
+                    -20.15,
+                ],
                 )
                 occursin("2", eog_labels[idx]) && add_loc!(
                     [eog_labels[idx], 1.01, 31.0, 0.87, 0.51, -0.37, 1.07, 31.0, -20.15],

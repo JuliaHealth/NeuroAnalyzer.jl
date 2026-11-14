@@ -18,5 +18,5 @@ using LocalRegistry
 @info "Updating registry"
 # NeuroAnalyzer.jl is the parent folder of this script
 Pkg.activate(dirname(@__DIR__))
-register(registry = reg_path, push = false)
+register(; registry = reg_path, push = false)
 @info "Done"

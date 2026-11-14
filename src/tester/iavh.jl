@@ -406,8 +406,8 @@ function iavh()::Nothing
             end
 
             # map pixel coordinates to normalized [-0.5, 0.5] space
-            x_norm = round(x_px / canvas_size - 0.5, digits = 2)
-            y_norm = round(0.5 - y_px / canvas_size, digits = 2)
+            x_norm = round(x_px / canvas_size - 0.5; digits = 2)
+            y_norm = round(0.5 - y_px / canvas_size; digits = 2)
 
             # euclidean distances from the sound source to each simulated ear
             dist_l = sqrt((x_norm - ear_l_x)^2 + y_norm^2)

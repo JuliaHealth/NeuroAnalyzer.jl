@@ -137,7 +137,7 @@ function _rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
         ch_idx, ep_idx = idx[1], idx[2]
         r[ch_idx, ep_idx] = _rmse(
             @view(s1[ch_idx, :, ep_idx]),
-            @view(s2[ch_idx, :, ep_idx])
+            @view(s2[ch_idx, :, ep_idx]),
         )
     end
 

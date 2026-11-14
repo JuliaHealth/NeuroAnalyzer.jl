@@ -204,7 +204,8 @@ eeg_mrk2 = epoch(eeg_mrk; marker = "Mark2", offset = 0.2, ep_len = 1.2)
 @test size(eeg_mrk2) == (29, 240, 1049)
 # each epoch contains its marker at the offset (other markers inside the epoch are kept)
 m_tmp = eeg_mrk2.markers[eeg_mrk2.markers.value .== "Mark2", :]
-@test any(isapprox.(m_tmp.start, 0.2; atol = 1e-9)) && any(isapprox.(m_tmp.start, 1.2 + 0.2; atol = 1e-9))
+@test any(isapprox.(m_tmp.start, 0.2; atol = 1e-9)) &&
+      any(isapprox.(m_tmp.start, 1.2 + 0.2; atol = 1e-9))
 @test all(0 .<= eeg_mrk2.markers.start .< 1.2 * 1049)
 e10 = epoch(eeg; ep_len = 10)
 @test size(e10) == (24, 2560, 120)
@@ -264,7 +265,6 @@ delete_optode!(n; opt = 1)
 @test nrow(n.locs) == 35
 @test size(n) == (70, 500, 1)
 
-
 ##
 ## values: synthetic signals and marker bookkeeping
 ##
@@ -276,12 +276,16 @@ keep_epoch!(e10; ep = 1:10)
 @info "Test: channel_reject() / epoch_reject() (injected faults)"
 # synthetic recording: a common signal plus small independent noise in each channel
 e_rej = keep_channel(crop(eeg; seg = (0, 60)); ch = "eeg")
-load_locs!(e_rej; file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
+load_locs!(
+    e_rej;
+    file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"),
+)
 e_rej = epoch(e_rej; ep_len = 2)
 rng_ = NeuroAnalyzer.Random.MersenneTwister(7)
 ch_n, ep_l, ep_n = size(e_rej.data)
 t_ = collect(0:(ep_l * ep_n - 1)) ./ sr(e_rej)
-common = 20 .* sin.(2π .* 10 .* t_) .+ 10 .* sin.(2π .* 3 .* t_) .+ 5 .* randn(rng_, length(t_))
+common =
+    20 .* sin.(2π .* 10 .* t_) .+ 10 .* sin.(2π .* 3 .* t_) .+ 5 .* randn(rng_, length(t_))
 for idx = 1:ch_n
     e_rej.data[idx, :, :] = reshape(common .+ 5 .* randn(rng_, length(t_)), ep_l, ep_n)
 end
@@ -298,12 +302,15 @@ end
 @test findall(channel_reject(e_bad; ch = "eeg", method = :amp, amp_t = 200)) == [ix_("P3")]
 # the flat channel is also far from the median signal
 for m in (:rmse, :rmsd, :euclid)
-    @test findall(channel_reject(e_bad; ch = "eeg", method = m)) == sort([ix_("F3"), ix_("C4"), ix_("P3")])
+    @test findall(channel_reject(e_bad; ch = "eeg", method = m)) ==
+          sort([ix_("F3"), ix_("C4"), ix_("P3")])
 end
 for m in (:p2p, :tkeo)
-    @test findall(channel_reject(e_bad; ch = "eeg", method = m)) == sort([ix_("C4"), ix_("P3")])
+    @test findall(channel_reject(e_bad; ch = "eeg", method = m)) ==
+          sort([ix_("C4"), ix_("P3")])
 end
-@test findall(channel_reject(e_bad; ch = "eeg", method = :var)) == sort([ix_("F3"), ix_("C4"), ix_("P3")])
+@test findall(channel_reject(e_bad; ch = "eeg", method = :var)) ==
+      sort([ix_("F3"), ix_("C4"), ix_("P3")])
 # the flat channel is not peaked
 bc = channel_reject(e_bad; ch = "eeg", method = :kurt)
 @test bc[ix_("P3")] && !bc[ix_("F3")]
@@ -329,14 +336,24 @@ e_bad.data[ix_("T3"), 200:400, 4] .+= 30 .* randn(rng_, 201)            # muscle
 @info "Test: channel_reject() values"
 e_tmp = deepcopy(e10)
 e_tmp.data[2, 100, 3] = 1e4
-@test channel_reject(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000, tc = 0.1) == [false, true, false]
+@test channel_reject(
+    e_tmp;
+    ch = ["Fp1", "Fp2", "F3"],
+    method = :amp,
+    amp_t = 9000,
+    tc = 0.1,
+) == [false, true, false]
 @test !any(channel_reject(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000))
 e_tmp.data[5, :, :] .= 1.0
 @test channel_reject(e_tmp; ch = ["Fp1", "C3"], method = :flat)[2]
 channel_reject!(e_tmp; ch = ["Fp1", "Fp2", "F3"], method = :amp, amp_t = 9000, tc = 0.1)
 @test e_tmp.header.recording[:bad_channel][1:3] == [false, true, false]
 @test_throws ArgumentError channel_reject(e10; ch = "Fp1", method = :rmse)
-@test_throws ArgumentError epoch_reject(keep_epoch(e10; ep = 1:2); ch = "Fp1", method = :var)
+@test_throws ArgumentError epoch_reject(
+    keep_epoch(e10; ep = 1:2);
+    ch = "Fp1",
+    method = :var,
+)
 @test_throws ArgumentError channel_reject(e10; ch = "Fp1", method = :x)
 
 @info "Test: epoch_reject() values"
@@ -356,14 +373,21 @@ v = vch(e10; f = "mean(Fp1) + 0 * Cz")
 v = vch(e10; f = "2 * F3")
 @test v[1, :, :] == 2 .* e10.data[3, :, :]
 v = vch(e10; f = "Cz - (C3 + C4 + Fz + Pz) / 4")
-@test v[1, :, 3] ≈ e10.data[get_channel(e10; ch = "Cz")[1], :, 3] .-
-                   sum(e10.data[get_channel(e10; ch = ["C3", "C4", "Fz", "Pz"]), :, 3]; dims = 1)[:] ./ 4
+@test v[1, :, 3] ≈
+      e10.data[get_channel(e10; ch = "Cz")[1], :, 3] .-
+      sum(e10.data[get_channel(e10; ch = ["C3", "C4", "Fz", "Pz"]), :, 3]; dims = 1)[:] ./ 4
 @test_throws ArgumentError vch(e10; f = "Fp1 +* Fp2")
 # unknown channel label
 @test_throws ArgumentError vch(e10; f = "Fp1 - Xyz")
 
 @info "Test: markers"
-mrk = DataFrame(:id => ["a", "b"], :start => [1.0, 12.5], :length => [0.0, 0.5], :value => ["x", "y"], :channel => [0, 0])
+mrk = DataFrame(
+    :id => ["a", "b"],
+    :start => [1.0, 12.5],
+    :length => [0.0, 0.5],
+    :value => ["x", "y"],
+    :channel => [0, 0],
+)
 e_tmp = add_markers(eeg; markers = mrk)
 @test e_tmp.markers == mrk
 @test isempty(eeg.markers)
@@ -375,10 +399,10 @@ add_markers!(e_tmp; markers = mrk[1:1, :])
 e_tmp = add_markers(eeg; markers = mrk)
 out = mktemp() do path, io
     redirect_stdout(io) do
-        view_marker(e_tmp)
+        return view_marker(e_tmp)
     end
     flush(io)
-    read(path, String)
+    return read(path, String)
 end
 @test occursin("'x'", out) && occursin("12.5", out)
 @test_throws ArgumentError view_marker(eeg)
@@ -415,7 +439,16 @@ e_tmp2 = channel2marker(e_tmp; ch = labels(eeg)[24], v = 32, value = "code 32")
 @test e_tmp2.markers[!, :start] ≈ [300 / 256]
 
 @info "Test: reflect() / chop()"
-e_tmp = add_markers(e10; markers = DataFrame(:id => ["a"], :start => [12.0], :length => [0.0], :value => ["x"], :channel => [0]))
+e_tmp = add_markers(
+    e10;
+    markers = DataFrame(
+        :id => ["a"],
+        :start => [12.0],
+        :length => [0.0],
+        :value => ["x"],
+        :channel => [0],
+    ),
+)
 er = NeuroAnalyzer.reflect(e_tmp; n = 256)
 @test epoch_len(er) == 2560 + 2 * 256
 # reflected edges: mirrored first / last n samples
@@ -442,7 +475,10 @@ j2 = deepcopy(e1)
 NeuroAnalyzer.join!(j2, e1)
 @test j2.data == j.data
 @test_throws ArgumentError NeuroAnalyzer.join(e1, keep_epoch(e10; ep = 1:3))
-@test_throws ArgumentError NeuroAnalyzer.join(e1, rename_channel(e1; ch = "Fp1", name = "X"))
+@test_throws ArgumentError NeuroAnalyzer.join(
+    e1,
+    rename_channel(e1; ch = "Fp1", name = "X"),
+)
 
 @info "Test: subepoch() / extract_epoch() / trim() / crop() in-place variants"
 e_tmp = deepcopy(e10)
@@ -464,7 +500,16 @@ NeuroAnalyzer.crop!(e_tmp; seg = (1, 2))
 @test_throws ArgumentError NeuroAnalyzer.crop(e10; seg = (1, 2))
 @test_throws ArgumentError NeuroAnalyzer.trim!(e10; seg = (1, 2))
 # trim removes the markers in the segment and shifts the later ones
-e_tmp = add_markers(eeg; markers = DataFrame(:id => ["a", "b"], :start => [5.0, 20.0], :length => [0.0, 0.0], :value => ["x", "y"], :channel => [0, 0]))
+e_tmp = add_markers(
+    eeg;
+    markers = DataFrame(
+        :id => ["a", "b"],
+        :start => [5.0, 20.0],
+        :length => [0.0, 0.0],
+        :value => ["x", "y"],
+        :channel => [0, 0],
+    ),
+)
 e_tmp = NeuroAnalyzer.trim(e_tmp; seg = (4, 6))
 # a "DELETED" boundary marker is placed at the cut; [4 s, 6 s] = 513 samples are removed
 @test e_tmp.markers[!, :value] == ["DELETED", "y"]
@@ -540,7 +585,13 @@ x_sp = copy(clean_p)
 x_sp[1500] += 300
 @test isempty(NeuroAnalyzer._remove_pops(x_sp; r = 128).pop_loc)
 # exponential fit
-@test all(isapprox.(values(NeuroAnalyzer._pop_fit(50 .* exp.(-(0:99) ./ 12))), (50, 12); rtol = 0.02))
+@test all(
+    isapprox.(
+        values(NeuroAnalyzer._pop_fit(50 .* exp.(-(0:99) ./ 12))),
+        (50, 12);
+        rtol = 0.02,
+    ),
+)
 # a step that does not recover is not a pop: not repaired (a warning is shown)
 x_st = copy(clean_p)
 x_st[1200:end] .+= 300
@@ -563,7 +614,13 @@ x_b[2:end] .+= 300 .* exp.(-(0:(n_p - 2)) ./ 40)
 # NEURO object: channel 1 with the pops, channel 2 clean
 o_p = create_object(; data_type = "eeg")
 o_p.header.recording[:sampling_rate] = fs_p
-add_channel!(o_p; data = reshape(vcat(x', clean_p'), 2, n_p, 1), label = ["P1", "P2"], type = ["eeg", "eeg"], unit = ["μV", "μV"])
+add_channel!(
+    o_p;
+    data = reshape(vcat(x', clean_p'), 2, n_p, 1),
+    label = ["P1", "P2"],
+    type = ["eeg", "eeg"],
+    unit = ["μV", "μV"],
+)
 create_time!(o_p; fs = fs_p)
 o_r, pops = remove_pops(o_p; ch = "all", window = 5)
 @test pops[!, :channel] == ["P1", "P1"]
@@ -574,7 +631,8 @@ o_r, pops = remove_pops(o_p; ch = "all", window = 5)
 @test sqrt(sum(abs2, o_r.data[1, :, 1] .- clean_p) / n_p) < 1
 @test o_p.data[1, :, 1] == x
 # detection only: same pops (amplitudes of later pops differ: measured from the unrepaired level)
-@test remove_pops(o_p; ch = "all", repair = false)[!, [:channel, :sample]] == pops[!, [:channel, :sample]]
+@test remove_pops(o_p; ch = "all", repair = false)[!, [:channel, :sample]] ==
+      pops[!, [:channel, :sample]]
 @test_throws ArgumentError remove_pops(o_p; ch = "all", window = 0.5)
 @test_throws ArgumentError remove_pops(o_p; ch = "all", window = 20)
 @test_throws ArgumentError remove_pops(epoch(o_p; ep_len = 5); ch = "all")

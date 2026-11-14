@@ -134,7 +134,8 @@ function data2para(
     nep = nsamples ÷ eplen  # number of epochs
 
     if nep < 2 && method == "jackknife"
-        verbose && @warn "Jackknife requires ≥ 2 epochs => No estimation of standard deviation."
+        verbose &&
+            @warn "Jackknife requires ≥ 2 epochs => No estimation of standard deviation."
         method = "none"
     end
 
@@ -158,7 +159,11 @@ function data2para(
         verbose && @info "freqlist is transposed to (#freq, #nfbands)"
     end
     if maximum(freqlist) >= seglen ÷ 2
-        throw(ArgumentError("Maximum frequency for freqlist must be below the Nyquist frequency (seglen / 2)!"))
+        throw(
+            ArgumentError(
+                "Maximum frequency for freqlist must be below the Nyquist frequency (seglen / 2)!",
+            ),
+        )
     elseif minimum(freqlist) < 1
         throw(ArgumentError("Minimum frequency for freqlist is 0 or negative!"))
     end

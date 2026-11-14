@@ -111,7 +111,7 @@ function ispc(
         for ch_idx2 = 1:(ch_idx1 - 1)
             ispc_data = _ispc(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx])
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
             )
             ispcv[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispcv
             ispca[ch_idx1, ch_idx2, ep_idx] = ispc_data.ispca
@@ -211,7 +211,7 @@ function ispc(
         ch_idx, ep_idx = idx[1], idx[2]
         ispc_data = _ispc(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
         )
         ispcv[ch_idx, ep_idx] = ispc_data.ispcv
         ispca[ch_idx, ep_idx] = ispc_data.ispca

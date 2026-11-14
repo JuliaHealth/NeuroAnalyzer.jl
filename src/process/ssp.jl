@@ -12,7 +12,7 @@ function _ssp_unit_scale(u::String)::Float64
     u == "nV" && return 1.0e9
     u == "mV" && return 1.0e3
     u == "pT" && return 1.0e12
-    throw(ArgumentError("Unsupported unit for SSP channel: $u."))
+    return throw(ArgumentError("Unsupported unit for SSP channel: $u."))
 end
 
 """
@@ -100,9 +100,10 @@ function generate_ssp_projectors(
         n = norm(ssp_vecs[:, k])
         n > 0 || continue
         # warn when excluding bad channels removed a sizeable part of the vector
-        norm_orig[k] > 0 && n / norm_orig[k] < 0.9 && _warn(
-            "Projection vector $(pidx[k]) lost $(round(100 * (1 - n / norm_orig[k]); digits = 1))% of its norm after excluding bad channels.",
-        )
+        norm_orig[k] > 0 && n / norm_orig[k] < 0.9 &&
+            _warn(
+                "Projection vector $(pidx[k]) lost $(round(100 * (1 - n / norm_orig[k]); digits = 1))% of its norm after excluding bad channels.",
+            )
         ssp_vecs[:, k] ./= n
     end
 

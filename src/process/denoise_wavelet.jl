@@ -111,7 +111,8 @@ function _denoise_cwd(
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
             s_new[ch_idx, :, ep_idx] = _denoise_cwd(
-                @view(s[ch_idx, :, ep_idx]); fs = fs, wt = wt, nf = nf, w = w, type = type,
+                @view(s[ch_idx, :, ep_idx]); fs = fs, wt = wt, nf = nf, w = w,
+                type = type,
             )
             # update progress bar
             progress_bar && next!(progbar)

@@ -16,8 +16,8 @@ function _fiff_getall(
 )::Vector{Any}
     return Any[
         x[4] for x in fo if x[2] == tag &&
-        (isnothing(block) || x[3] == block) &&
-        (isnothing(inst) || x[5] == inst)
+            (isnothing(block) || x[3] == block) &&
+            (isnothing(inst) || x[5] == inst)
     ]
 end
 
@@ -56,7 +56,8 @@ end
 
 # least-squares sphere fit to points (n × 3); returns center and radius
 function _fiff_fit_sphere(p::AbstractMatrix{<:Real})::Tuple{Vector{Float64}, Float64}
-    size(p, 1) >= 4 || throw(ArgumentError("At least 4 points are required to fit a sphere."))
+    size(p, 1) >= 4 ||
+        throw(ArgumentError("At least 4 points are required to fit a sphere."))
     a = hcat(2 .* p, ones(size(p, 1)))
     b = vec(sum(p .^ 2; dims = 2))
     sol = a \ b
@@ -103,10 +104,14 @@ function _fiff_hpi(mi::Dict{Symbol, Any})::Dict{Symbol, Any}
     if length(pos) != length(coils)
         # coil numbers do not match digitization identifiers: fall back to order
         length(dig) == length(coils) || begin
-            _warn("Number of digitized HPI coils ($(length(dig))) differs from cHPI coils ($(length(coils))); cHPI information not stored.")
+            _warn(
+                "Number of digitized HPI coils ($(length(dig))) differs from cHPI coils ($(length(coils))); cHPI information not stored.",
+            )
             return Dict{Symbol, Any}()
         end
-        _warn("HPI coil numbers do not match digitization identifiers; coils matched by order.")
+        _warn(
+            "HPI coil numbers do not match digitization identifiers; coils matched by order.",
+        )
         pos = [d[2] for d in dig]
     end
     return Dict{Symbol, Any}(
@@ -150,9 +155,10 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
     meg_kinds = ("meg",)
     el_kinds = ("eeg", "seeg", "ecog", "dbs")
     has_meg = any(ch -> _find_fiff_chtype(ch.kind) in meg_kinds, chs)
-    has_meg && isnothing(t) && _info(
-        "No device → head transform found; MEG sensor locations are given in the device frame.",
-    )
+    has_meg && isnothing(t) &&
+        _info(
+            "No device → head transform found; MEG sensor locations are given in the device frame.",
+        )
 
     idx = Int64[]
     pos = Vector{Vector{Float64}}()
@@ -206,7 +212,9 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
             rmax = maximum(r[mask])
             rmax > 0 && (p[mask, :] .*= r_out / rmax)
         end
-        _info("Fewer than 10 head-shape points: channel locations scaled to fixed radii (MEG 1.2, EEG 1.0)")
+        _info(
+            "Fewer than 10 head-shape points: channel locations scaled to fixed radii (MEG 1.2, EEG 1.0)",
+        )
     end
 
     for (j, i) in enumerate(idx)
@@ -352,7 +360,9 @@ function load_fiff(
 )::Tuple{Dict{Symbol, Any}, Vector{Any}, Matrix{Int64}}
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     endswith(lowercase(file_name), ".gz") && throw(
-        ArgumentError("Gzip-compressed FIFF files are not supported; decompress $file_name first."),
+        ArgumentError(
+            "Gzip-compressed FIFF files are not supported; decompress $file_name first.",
+        ),
     )
 
     buf, fiff_blocks, insts = open(file_name, "r") do fid
@@ -396,7 +406,13 @@ function load_fiff(
         end
         push!(
             fiff_object,
-            (idx, _find_fiff_tag(kind), _find_fiff_block(fiff_blocks[idx, 6]), d, insts[idx]),
+            (
+                idx,
+                _find_fiff_tag(kind),
+                _find_fiff_block(fiff_blocks[idx, 6]),
+                d,
+                insts[idx],
+            ),
         )
     end
 
@@ -413,13 +429,21 @@ function load_fiff(
         end
     end
     isnothing(mi_inst) &&
-        throw(ArgumentError("$file_name: no measurement info (meas_info block with nchan) found."))
+        throw(
+            ArgumentError(
+                "$file_name: no measurement info (meas_info block with nchan) found.",
+            ),
+        )
     mi(tag) = _fiff_get(fiff_object, tag; inst = mi_inst)
 
     nchan = mi("nchan")
     ch_info = _fiff_getall(fiff_object, "ch_info"; inst = mi_inst)
     length(ch_info) == nchan ||
-        throw(ArgumentError("$file_name: nchan = $nchan but $(length(ch_info)) ch_info records found."))
+        throw(
+            ArgumentError(
+                "$file_name: nchan = $nchan but $(length(ch_info)) ch_info records found.",
+            ),
+        )
 
     # channel names: ch_info struct holds max. 15 characters
     # MNE stores longer names in per-channel ch_info blocks (FIFF_NAME tag)
@@ -455,7 +479,8 @@ function load_fiff(
         :ch_names => ch_names,
         :bad_chs => _fiff_get(fiff_object, "bad_chs"; block = "meas_info"),
     )
-    isnothing(meas_info[:sfreq]) && throw(ArgumentError("$file_name: sampling frequency not found."))
+    isnothing(meas_info[:sfreq]) &&
+        throw(ArgumentError("$file_name: sampling frequency not found."))
 
     # bad channels (MNE convention: bad_channels block, colon-separated names)
     bads = String[]
@@ -493,7 +518,14 @@ function load_fiff(
         :hpi_coil => _pack_fiff_blocks(
             fiff_object,
             "hpi_coil",
-            ["hpi_coil_no", "epoch", "hpi_slopes", "hpi_corr_coeff", "hpi_coil_freq", "event_bits"],
+            [
+                "hpi_coil_no",
+                "epoch",
+                "hpi_slopes",
+                "hpi_corr_coeff",
+                "hpi_coil_freq",
+                "event_bits",
+            ],
         ),
         :hpi_subsystem =>
             _pack_fiff_blocks(fiff_object, "hpi_subsystem", ["hpi_ncoil", "event_channel"]),
@@ -593,15 +625,18 @@ function load_fiff(
         if !isempty(i)
             raw_inst = i[1]
             maxshield = b == "maxshield_raw_data"
-            length(i) > 1 && _warn("$file_name contains $(length(i)) $b blocks; only the first one is read.")
+            length(i) > 1 && _warn(
+                "$file_name contains $(length(i)) $b blocks; only the first one is read.",
+            )
             break
         end
     end
-    read_data && isnothing(raw_inst) && throw(
-        ArgumentError(
-            "$file_name contains no continuous raw data (evoked / epochs FIFF files are not supported by this importer).",
-        ),
-    )
+    read_data && isnothing(raw_inst) &&
+        throw(
+            ArgumentError(
+                "$file_name contains no continuous raw data (evoked / epochs FIFF files are not supported by this importer).",
+            ),
+        )
     # IAS (MaxShield) raw data are flagged here; import_fiff() decides whether to accept them
     meas_info[:maxshield] = maxshield
 
@@ -682,7 +717,9 @@ function import_fiff(
             break
         end
         if !isfile(next_file)
-            _warn("Next part of split FIFF file not found: $next_file; data are incomplete.")
+            _warn(
+                "Next part of split FIFF file not found: $next_file; data are incomplete.",
+            )
             break
         end
         push!(visited, abspath(next_file))
@@ -691,7 +728,11 @@ function import_fiff(
             part[:meas_info][:nchan] == mi[:nchan] &&
             part[:meas_info][:sfreq] == mi[:sfreq] &&
             part[:meas_info][:ch_names] == mi[:ch_names]
-        ) || throw(ArgumentError("$next_file does not match channels / sampling rate of $file_name."))
+        ) || throw(
+            ArgumentError(
+                "$next_file does not match channels / sampling rate of $file_name.",
+            ),
+        )
         part[:raw_data][:first_samp] != expected && _warn(
             "$next_file starts at sample $(part[:raw_data][:first_samp]), expected $expected; parts are concatenated without gap filling.",
         )
@@ -818,7 +859,8 @@ function import_fiff(
     bad_channels = zeros(Bool, ch_n)
     for b in mi[:bads]
         i = findfirst(isequal(b), mi[:ch_names])
-        isnothing(i) ? _warn("Bad channel $b not found in channel list.") : (bad_channels[i] = true)
+        isnothing(i) ? _warn("Bad channel $b not found in channel list.") :
+        (bad_channels[i] = true)
     end
     !isnothing(mi[:bad_chs]) && _warn(
         "Legacy bad_chs tag found and ignored (as in MNE-Python); please send this file to adam.wysokinski@neuroanalyzer.org",
@@ -877,7 +919,10 @@ function import_fiff(
     sort!(markers, :start)
     # non-integer sampling rate (stored rounded): place the markers on the stored time axis, so that a
     # marker at sample s of the file stays at sample s of the data
-    sfreq == sampling_rate || (markers[!, :start] .*= sfreq / sampling_rate; markers[!, :length] .*= sfreq / sampling_rate)
+    sfreq == sampling_rate || (
+        markers[!, :start] .*= sfreq / sampling_rate;
+        markers[!, :length] .*= sfreq / sampling_rate
+    )
 
     # ------------------------------------------------------------------ #
     # SSP projectors                                                    #
@@ -892,7 +937,9 @@ function import_fiff(
         isnothing(vecs) && continue
         names = clean_labels ? _clean_labels(item[:ch_names]) : item[:ch_names]
         if size(vecs, 2) != length(names)
-            _warn("SSP item $item_idx: $(size(vecs, 2)) vector elements but $(length(names)) channel names; ignored.")
+            _warn(
+                "SSP item $item_idx: $(size(vecs, 2)) vector elements but $(length(names)) channel names; ignored.",
+            )
             continue
         end
         ch_idx = [findfirst(isequal(l), clabels) for l in names]
@@ -907,7 +954,9 @@ function import_fiff(
                 ssp_channels[ci] = true
             end
             push!(ssp_rows, full)
-            label = isempty(item[:description]) ? "PCA-v$(lpad(length(ssp_rows), 2, '0'))" : item[:description]
+            label =
+                isempty(item[:description]) ? "PCA-v$(lpad(length(ssp_rows), 2, '0'))" :
+                item[:description]
             size(vecs, 1) > 1 && (label *= "-$row")
             push!(ssp_labels, label)
         end
@@ -963,7 +1012,9 @@ function import_fiff(
 
     hand = get(si, :subj_hand, nothing)
     handedness =
-        hand == 1 ? "right" : hand == 2 ? "left" : hand == 3 ? "ambidextrous" :
+        hand == 1 ? "right" :
+        hand == 2 ? "left" :
+        hand == 3 ? "ambidextrous" :
         isnothing(hand) ? "" : string(hand)
 
     subj_id = get_field(si, :subj_id)
@@ -1039,7 +1090,9 @@ function import_fiff(
         )
     else
         isempty(ssp_rows) ||
-            _info("SSP projectors (e.g. EEG average reference) are not stored for EEG-only data")
+            _info(
+                "SSP projectors (e.g. EEG average reference) are not stored for EEG-only data",
+            )
         _create_recording_eeg(;
             data_type = data_type,
             file_name = file_name,
@@ -1079,7 +1132,8 @@ function import_fiff(
         add_locs!(obj; locs = l)
     elseif channel_locs !== :none && is_306
         # the bundled layout describes the 306-channel Vectorview/TRIUX helmet only
-        channel_locs === :fiff && _info("Using the bundled 306-channel Vectorview/TRIUX layout")
+        channel_locs === :fiff &&
+            _info("Using the bundled 306-channel Vectorview/TRIUX layout")
         lay = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
         lay[!, :label] = _match_labels(lay[!, :label], clabels)
         add_locs!(obj; locs = lay)

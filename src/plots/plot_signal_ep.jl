@@ -78,7 +78,7 @@ function plot_ep(
     seg_pos_max() = Float64(max(ep_n[] - n_epochs, 0))
     seg_pos = Observable(clamp(Float64(ep - 1), 0.0, seg_pos_max()))
     seg = (seg_pos[] * ep_len, (seg_pos[] + n_epochs) * ep_len)
-    epmarkers = @lift([(idx - 1) * ep_len for idx = 1:$ep_n])
+    epmarkers = @lift([(idx - 1) * ep_len for idx = 1:($ep_n)])
     ep_selected = Observable(zeros(Bool, ep_n[]))
 
     # check channels and meta data
@@ -230,7 +230,8 @@ function plot_ep(
     elseif type === :butterfly
         if ci95
             for idx in eachindex(ctypes_uni)
-                msci95_data = @lift(NeuroAnalyzer._msci95($s[ctypes .== ctypes_uni[idx], :]))
+                msci95_data =
+                    @lift(NeuroAnalyzer._msci95($s[ctypes .== ctypes_uni[idx], :]))
                 GLMakie.band!(
                     ax1,
                     @lift(_pts(idx .+ $gain .* $msci95_data.ul)),
@@ -260,7 +261,10 @@ function plot_ep(
             if avg
                 for idx in eachindex(ctypes_uni)
                     s_avg = @lift(
-                        _pts(idx .+ $gain .* mean($s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]),
+                        _pts(
+                            idx .+
+                            $gain .* mean($s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:],
+                        ),
                     )
                     GLMakie.lines!(ax1, s_avg; linewidth = 2, color = :black)
                 end
@@ -356,18 +360,20 @@ function plot_ep(
         end
         # labels are redrawn (not updated) after epoch deletion:
         # textlabel!() leaves stale backgrounds when its positions become empty
-        draw_marker_labels() = isempty(obj.markers) ? nothing : GLMakie.textlabel!(
-            ax1, markers_ypos;
-            text = string.(obj.markers[!, :id], " / ", obj.markers[!, :value]),
-            text_align = (:left, :center),
-            fontsize = 8,
-            cornerradius = 0,
-            cornervertices = 2,
-            padding = 2,
-            strokewidth = 1,
-            offset = (0, 5),
-            text_rotation = pi / 2,
-        )
+        draw_marker_labels() =
+            isempty(obj.markers) ? nothing :
+            GLMakie.textlabel!(
+                ax1, markers_ypos;
+                text = string.(obj.markers[!, :id], " / ", obj.markers[!, :value]),
+                text_align = (:left, :center),
+                fontsize = 8,
+                cornerradius = 0,
+                cornervertices = 2,
+                padding = 2,
+                strokewidth = 1,
+                offset = (0, 5),
+                text_rotation = pi / 2,
+            )
         markers_labels = draw_marker_labels()
     end
 
@@ -401,7 +407,7 @@ function plot_ep(
 
         # epoch markers
         GLMakie.vlines!(
-            ax2, @lift(collect(1:$ep_n)); linestyle = :dash, linewidth = 1, color = :black,
+            ax2, @lift(collect(1:($ep_n))); linestyle = :dash, linewidth = 1, color = :black,
         )
 
         # time line marker
@@ -503,7 +509,8 @@ function plot_ep(
 
                     # change displayed epoch window
                     if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
-                        seg_pos[] = clamp(Float64(round(Int64, ax2_x) - 1), 0.0, seg_pos_max())
+                        seg_pos[] =
+                            clamp(Float64(round(Int64, ax2_x) - 1), 0.0, seg_pos_max())
                         seg = (seg_pos[] * ep_len, (seg_pos[] + n_epochs) * ep_len)
                         ax1.limits[] = (seg, ax1.limits[][2])
                     end
@@ -530,7 +537,8 @@ function plot_ep(
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 # Alt + ↑ / ↓: vertical scaling of the traces
-                alt = ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
+                alt =
+                    ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
                 alt && event.key == Keyboard.up && (gain[] *= 1.25)
                 alt && event.key == Keyboard.down && (gain[] /= 1.25)
                 if type === :normal
@@ -568,7 +576,10 @@ function plot_ep(
                     else
                         delete_epoch!(obj; ep = ep_del)
                         ep_keep = setdiff(1:ep_n[], ep_del)
-                        cols = reduce(vcat, [((e - 1) * ep_cols + 1):(e * ep_cols) for e in ep_keep])
+                        cols = reduce(
+                            vcat,
+                            [((e - 1) * ep_cols + 1):(e * ep_cols) for e in ep_keep],
+                        )
                         ep_selected[] = zeros(Bool, length(ep_keep))
                         ep_n[] = length(ep_keep)
                         s[] = s[][:, cols]

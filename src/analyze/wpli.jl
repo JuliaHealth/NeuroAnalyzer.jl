@@ -90,8 +90,12 @@ function _wpli(s1::AbstractMatrix, s2::AbstractMatrix; debiased::Bool = false)::
     size(s1, 2) >= 2 || throw(ArgumentError("At least 2 epochs are required."))
 
     # imaginary part of the cross-spectrum of each epoch (mean over time)
-    x = [mean(imag.(htransform(@view(s1[:, ep])).c .* conj.(htransform(@view(s2[:, ep])).c)))
-         for ep in axes(s1, 2)]
+    x = [
+        mean(
+            imag.(htransform(@view(s1[:, ep])).c .* conj.(htransform(@view(s2[:, ep])).c)),
+        )
+        for ep in axes(s1, 2)
+    ]
     num = sum(x)
     denom = sum(abs, x)
     sum_sq = sum(abs2, x)
@@ -202,10 +206,10 @@ function wpli(
     if across_epochs
         ep_n >= 2 || throw(ArgumentError("across_epochs requires at least 2 epochs."))
         pv = zeros(ch_n, 1)
-        for ch_idx in 1:ch_n
+        for ch_idx = 1:ch_n
             pv[ch_idx, 1] = _wpli(@view(obj1.data[ch1[ch_idx], :, ep1]),
-                                  @view(obj2.data[ch2[ch_idx], :, ep2]);
-                                  debiased = debiased)
+                @view(obj2.data[ch2[ch_idx], :, ep2]);
+                debiased = debiased)
         end
     end
 

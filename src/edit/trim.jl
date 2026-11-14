@@ -136,7 +136,8 @@ function trim(
     fs = sr(obj)
     if keep
         # keep the markers inside the segment, relative to its start
-        obj_tmp.markers = _remap_markers(obj.markers, fs, s -> s1 <= s <= s2 ? s - s1 + 1 : nothing)
+        obj_tmp.markers =
+            _remap_markers(obj.markers, fs, s -> s1 <= s <= s2 ? s - s1 + 1 : nothing)
     else
         # drop the markers inside the removed segment, shift the later ones back
         n_del = s2 - s1 + 1

@@ -18,7 +18,9 @@ function _draw_head_labels!(
     fid_names = ["NAS", "IN", "LPA", "RPA"]
     # only the points visible in the view (otherwise NAS/IN or LPA/RPA would be drawn at the same position):
     # :xz is seen from behind (no nasion), :yz from the right (no left preauricular point)
-    visible = plane === :xy ? fid_names : plane === :xz ? ["IN", "LPA", "RPA"] : ["NAS", "IN", "RPA"]
+    visible =
+        plane === :xy ? fid_names :
+        plane === :xz ? ["IN", "LPA", "RPA"] : ["NAS", "IN", "RPA"]
     # (eachindex of a NamedTuple gives its keys, not positions)
     for (idx, pt) in enumerate(values(NeuroAnalyzer.fiducial_points))
         fid_names[idx] in visible || continue
@@ -60,7 +62,7 @@ function _smooth_path(x::Vector{<:Real}, y::Vector{<:Real}; n::Int64 = 8)
     function cr(v::Vector{Float32})
         w = [v[1]; v; v[end]]  # duplicate endpoints
         out = Float32[]
-        for k in 1:(length(v) - 1)
+        for k = 1:(length(v) - 1)
             v0, v1, v2, v3 = w[k], w[k + 1], w[k + 2], w[k + 3]
             for t in range(0.0f0, 1.0f0; length = n + 1)[1:n]
                 push!(
@@ -137,8 +139,32 @@ function _draw_head_outline!(
         nose_z = [-0.189, -0.262, -0.345, -0.444, -0.53, -0.565, -0.59, -0.615]
         GLMakie.lines!(ax, _smooth_path(nose_y, nose_z; n = 4); kw...)
         # right ear
-        ear_y = [0.02, -0.043, -0.129, -0.192, -0.225, -0.235, -0.215, -0.17, -0.1, -0.02, 0.039]
-        ear_z = [-0.051, 0.007, 0.025, -0.029, -0.145, -0.291, -0.371, -0.455, -0.545, -0.6, -0.625]
+        ear_y = [
+            0.02,
+            -0.043,
+            -0.129,
+            -0.192,
+            -0.225,
+            -0.235,
+            -0.215,
+            -0.17,
+            -0.1,
+            -0.02,
+            0.039,
+        ]
+        ear_z = [
+            -0.051,
+            0.007,
+            0.025,
+            -0.029,
+            -0.145,
+            -0.291,
+            -0.371,
+            -0.455,
+            -0.545,
+            -0.6,
+            -0.625,
+        ]
         GLMakie.lines!(ax, _smooth_path(ear_y, ear_z; n = 4); kw...)
     end
 
@@ -279,7 +305,10 @@ function _bernstein_poly(
 end
 
 # position and moment of a dipole at time point t
-function _dipole_at(d::NeuroAnalyzer.DIPOLE, t::Int64)::Tuple{Vector{Float64}, Vector{Float64}}
+function _dipole_at(
+    d::NeuroAnalyzer.DIPOLE,
+    t::Int64,
+)::Tuple{Vector{Float64}, Vector{Float64}}
     1 <= t <= size(d.q, 2) || throw(ArgumentError("t must be in [1, $(size(d.q, 2))]."))
     pos = size(d.pos, 1) == 1 ? d.pos[1, :] : d.pos[t, :]
     return pos, d.q[:, t]
@@ -290,7 +319,11 @@ end
 
 For a logarithmic frequency axis (`frq = :log`) the lower frequency bound must be > 0: a bound ≤ 0 is replaced (with a warning) by the lowest positive frequency in `f`.
 """
-function _log_flim(f::AbstractVector, flim::Tuple{Real, Real}, frq::Symbol)::Tuple{Real, Real}
+function _log_flim(
+    f::AbstractVector,
+    flim::Tuple{Real, Real},
+    frq::Symbol,
+)::Tuple{Real, Real}
     (frq === :log && flim[1] <= 0) || return flim
     idx = findfirst(>(0), f)
     isnothing(idx) &&
@@ -311,7 +344,8 @@ Colors of the traces of a multi-channel line plot (`plot_psd()`, `plot_phs()`, `
 - `black::Bool`: all traces black (single channel, or only the mean ± 95% CI is drawn)
 """
 function _trace_colors(n::Int64; mono::Bool, black::Bool)::Vector
-    return black ? fill(:black, n) : GLMakie.resample_cmap(mono ? :grays : :darktest, max(2, n))[1:n]
+    return black ? fill(:black, n) :
+           GLMakie.resample_cmap(mono ? :grays : :darktest, max(2, n))[1:n]
 end
 
 """
@@ -341,7 +375,9 @@ function _ch_locs_inset!(
     loc_labels = lowercase.(String.(obj.locs[!, :label]))
     loc_idx = [findfirst(==(lowercase(l)), loc_labels) for l in labels(obj)[ch]]
     if isempty(loc_labels) || any(isnothing, loc_idx)
-        _warn("Locations of the plotted channels are not available: head inset is not drawn.")
+        _warn(
+            "Locations of the plotted channels are not available: head inset is not drawn.",
+        )
         return nothing
     end
 
@@ -493,7 +529,8 @@ function _fit_side_legend!(fig::GLMakie.Figure)::Nothing
 end
 
 # main axis of a plot: the first axis created (an inset may share its layout cell)
-_main_axis(fig::GLMakie.Figure)::GLMakie.Axis = first(c for c in fig.content if c isa GLMakie.Axis)
+_main_axis(fig::GLMakie.Figure)::GLMakie.Axis =
+    first(c for c in fig.content if c isa GLMakie.Axis)
 
 """
     _plot_scale(s)

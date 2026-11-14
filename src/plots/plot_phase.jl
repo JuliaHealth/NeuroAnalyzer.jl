@@ -123,12 +123,12 @@ function plot_phase(
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = xl,
-        ylabel             = yl,
-        title              = tt,
+        xlabel = xl,
+        ylabel = yl,
+        title  = tt,
         _frq_axis_kwargs(:lin)...,
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0.05, 0.05),
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0.05, 0.05),
         _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, _xlims(sf))
@@ -195,8 +195,13 @@ function _plot_phase_coupling(
 
     # polar views: unit vectors at every phase (one line segment each, drawn as a single plot)
     rays(ph) = (vec(vcat(zeros(length(ph))', ph', fill(NaN, length(ph))')),
-                vec(vcat(zeros(length(ph))', ones(length(ph))', fill(NaN, length(ph))')))
-    ax5 = GLMakie.PolarAxis(fig[3, 1]; title = "Phases", thetazoomlock = true, rzoomlock = true)
+        vec(vcat(zeros(length(ph))', ones(length(ph))', fill(NaN, length(ph))')))
+    ax5 = GLMakie.PolarAxis(
+        fig[3, 1];
+        title = "Phases",
+        thetazoomlock = true,
+        rzoomlock = true,
+    )
     GLMakie.hiderdecorations!(ax5)
     GLMakie.lines!(ax5, rays(s1ph)...; color = :black, linewidth = 0.5)
     GLMakie.lines!(ax5, rays(s2ph)...; color = :gray, linewidth = 0.5)
@@ -332,7 +337,7 @@ function plot_itpc(
     GLMakie.hiderdecorations!(ax2)
     n = length(itpcph)
     GLMakie.lines!(ax2, vec(vcat(zeros(n)', itpcph', fill(NaN, n)')),
-                   vec(vcat(zeros(n)', ones(n)', fill(NaN, n)')); color = :black, linewidth = 0.5)
+        vec(vcat(zeros(n)', ones(n)', fill(NaN, n)')); color = :black, linewidth = 0.5)
     GLMakie.lines!(ax2, [0, itpca], [0, itpcv]; color = :red, linewidth = 2)
 
     return fig
@@ -412,7 +417,11 @@ function plot_itpc_frq(
     title::String = "",
 )::GLMakie.Figure
     length(t) == length(s) ||
-        throw(ArgumentError("Lengths of t ($(length(t))) and s ($(length(s))) must be equal."))
+        throw(
+            ArgumentError(
+                "Lengths of t ($(length(t))) and s ($(length(s))) must be equal.",
+            ),
+        )
 
     GLMakie.activate!(; title = "plot_itpc_frq()")
     fig = GLMakie.Figure(; size = (900, 450))

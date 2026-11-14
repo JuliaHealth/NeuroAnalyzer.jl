@@ -74,8 +74,7 @@ function plot_psd(
         p[f1:f2];
         linewidth = 2,
         color = :black,
-    
-)
+    )
     return fig
 end
 
@@ -434,7 +433,7 @@ function plot_psd_topo(
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(p, 1)
         pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
-        gl = GridLayout(pp[1, 1], alignmode = Outside(5))
+        gl = GridLayout(pp[1, 1]; alignmode = Outside(5))
         ax = GLMakie.Axis(
             gl[1, 1];
             xlabel = "",
@@ -453,10 +452,10 @@ function plot_psd_topo(
         GLMakie.xlims!(ax, f[f1], f[f2])
 
         # draw black box around the entire figure
-        GLMakie.Box(pp[:, :], 
-            color = :transparent, 
-            strokecolor = :black, 
-            strokewidth = 1.5
+        GLMakie.Box(pp[:, :];
+            color = :transparent,
+            strokecolor = :black,
+            strokewidth = 1.5,
         )
 
         push!(pp_vec, pp)
@@ -782,7 +781,8 @@ function plot_psd(
         end
 
         ch_locs && _ch_locs_inset!(
-            fig, obj, ch, _trace_colors(length(ch); mono = mono, black = length(ch) == 1 || ci95);
+            fig, obj, ch,
+            _trace_colors(length(ch); mono = mono, black = length(ch) == 1 || ci95);
             pos = ch_locs_pos,
         )
 
@@ -826,11 +826,11 @@ function plot_psd(
             xlabel = xlabel,
             ylabel = ylabel,
             title  = title,
-            flim = flim,
-            frq = frq,
-            cart = cart,
-            head = head,
-            gui = gui,
+            flim   = flim,
+            frq    = frq,
+            cart   = cart,
+            head   = head,
+            gui    = gui,
         )
     end
 

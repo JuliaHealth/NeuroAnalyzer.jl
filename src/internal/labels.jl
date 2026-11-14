@@ -83,7 +83,10 @@ _label_key(s::AbstractString)::String =
 
 Rename `labels` (e.g. of a bundled layout) to the matching recording labels `clabels`; labels without a match are kept.
 """
-function _match_labels(labels::AbstractVector{<:AbstractString}, clabels::AbstractVector{<:AbstractString})::Vector{String}
+function _match_labels(
+    labels::AbstractVector{<:AbstractString},
+    clabels::AbstractVector{<:AbstractString},
+)::Vector{String}
     key = Dict(_label_key(c) => String(c) for c in clabels)
     return [get(key, _label_key(l), String(l)) for l in labels]
 end

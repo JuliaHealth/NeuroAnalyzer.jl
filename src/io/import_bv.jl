@@ -18,7 +18,11 @@ Channel locations are read from the `[Coordinates]` section of the header when a
 
 - `NeuroAnalyzer.NEURO`
 """
-function import_bv(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
+function import_bv(
+    file_name::String;
+    detect_type::Bool = true,
+    clean_labels::Bool = true,
+)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
@@ -159,14 +163,22 @@ function import_bv(file_name::String; detect_type::Bool = true, clean_labels::Bo
     # ------------------------------------------------------------------ #
     if soft_filt !== false
         DataFrames.nrow(soft_filt) == ch_n || throw(
-            ArgumentError("$soft_filt_file lists $(DataFrames.nrow(soft_filt)) channels, $file_name has $ch_n."),
+            ArgumentError(
+                "$soft_filt_file lists $(DataFrames.nrow(soft_filt)) channels, $file_name has $ch_n.",
+            ),
         )
         clabels = string.(soft_filt[!, :name])
         "units" in names(soft_filt) && (soft_filt[!, :unit] = soft_filt[!, :units])
         "unit" in names(soft_filt) &&
-            (units = [ismissing(u) ? units[i] : string(u) for (i, u) in enumerate(soft_filt[!, :unit])])
+            (
+                units = [
+                    ismissing(u) ? units[i] : string(u) for
+                    (i, u) in enumerate(soft_filt[!, :unit])
+                ]
+            )
         # BIDS: low_cutoff is the high-pass and high_cutoff the low-pass frequency
-        fmt(v) = ismissing(v) || !(v isa Real) ? "n/a" : string(round(v; digits = 4)) * " Hz"
+        fmt(v) =
+            ismissing(v) || !(v isa Real) ? "n/a" : string(round(v; digits = 4)) * " Hz"
         if "low_cutoff" in names(soft_filt) && "high_cutoff" in names(soft_filt)
             prefiltering = [
                 "HP: $(fmt(soft_filt[i, :low_cutoff])), LP: $(fmt(soft_filt[i, :high_cutoff]))"
@@ -308,7 +320,8 @@ function import_bv(file_name::String; detect_type::Bool = true, clean_labels::Bo
         else
             Float64.(coalesce.(vmrk[!, :sample], 0)) ./ sampling_rate
         end
-        ev_len = "duration" in cols ? Float64.(coalesce.(vmrk[!, :duration], 0.0)) : zeros(n_ev)
+        ev_len =
+            "duration" in cols ? Float64.(coalesce.(vmrk[!, :duration], 0.0)) : zeros(n_ev)
         ev_value = if "trial_type" in cols && "value" in cols
             string.(coalesce.(vmrk[!, :trial_type], "")) .* "_" .*
             string.(coalesce.(vmrk[!, :value], ""))

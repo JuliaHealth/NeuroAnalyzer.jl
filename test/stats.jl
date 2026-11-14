@@ -232,7 +232,6 @@ df = DataFrame(:sex=>["F", "M", "F", "M", "F"], :group=>[1, 2, 1, 2, 2])
 @test arf(df, :sex) == [3.0 2.0 5.0; 0.6 0.4 1.0; 60.0 40.0 100.0]
 @test arf(df, :group) == [2.0 3.0 5.0; 0.4 0.6 1.0; 40.0 60.0 100.0]
 
-
 ##
 ## values: SciPy 1.17 references (scipy.stats) and formulas
 ##
@@ -302,7 +301,8 @@ x = [1.0, 2, 3, 4, 5, 6, 30]
 @test_throws ArgumentError grubbs(x; t = 2)
 @test outlier_detect(x; method = :iqr) == [false, false, false, false, false, false, true]
 @test outlier_detect(x; method = :g) == [false, false, false, false, false, false, true]
-@test outlier_detect(vcat(-30.0, x[1:6]); method = :g) == [true, false, false, false, false, false, false]
+@test outlier_detect(vcat(-30.0, x[1:6]); method = :g) ==
+      [true, false, false, false, false, false, false]
 @test_throws ArgumentError outlier_detect(x[1:5]; method = :g)
 @test_throws ArgumentError outlier_detect(x; method = :x)
 # indices of removed elements map back to the original vector
@@ -310,7 +310,16 @@ x = [1.0, 2, 3, 4, 5, 6, 30]
 @test NeuroAnalyzer._original_index(1, Int64[], 5) == 1
 
 @info "Test: pcacomp() / npca() values"
-m = [2.5 2.4 1.0; 0.5 0.7 2.1; 2.2 2.9 0.3; 1.9 2.2 1.7; 3.1 3.0 0.2; 2.3 2.7 1.1; 2.0 1.6 1.9; 1.0 1.1 2.6]
+m = [
+    2.5 2.4 1.0;
+    0.5 0.7 2.1;
+    2.2 2.9 0.3;
+    1.9 2.2 1.7;
+    3.1 3.0 0.2;
+    2.3 2.7 1.1;
+    2.0 1.6 1.9;
+    1.0 1.1 2.6
+]
 # eigenvalues of the correlation matrix (numpy.linalg.eigvalsh of the covariance of z-scored data)
 p = pcacomp(m)
 @test p.pc_model.prinvars ≈ [2.7704108324518177, 0.1721504588627501, 0.05743870868543334]
@@ -353,7 +362,10 @@ gm, ll, ul = bootstrap_ci(s; n1 = 500, n2 = 200)
 @test all(abs.((ul .- ll) .- 2 * 1.96 / sqrt(200)) .< 0.1)
 @test_throws ArgumentError bootstrap_ci(s; cl = 1.5)
 @test_throws ArgumentError bootstrap_ci(s; n1 = 0)
-@test all(bootstrap_stat(repeat([1.0, -4.0], 1, 10); n1 = 20, n2 = 5, f = v -> maximum(abs, v)) .== 4.0)
+@test all(
+    bootstrap_stat(repeat([1.0, -4.0], 1, 10); n1 = 20, n2 = 5, f = v -> maximum(abs, v)) .==
+    4.0,
+)
 @test_throws ArgumentError bootstrap_stat(s; f = "undefined_fn(obj)")
 bm = NeuroAnalyzer._bootstrap_mean(repeat([1.0, 2.0], 1, 4), 3)
 @test bm == [1.0, 2.0]
@@ -386,20 +398,20 @@ df = NeuroAnalyzer._build_summary_df(idx -> (gd[idx], length(gd[idx])), ["a", "b
 @test_throws ArgumentError NeuroAnalyzer._build_summary_df(idx -> (Float64[], 1), ["a"])
 out = mktemp() do path, io
     redirect_stdout(io) do
-        NeuroAnalyzer._print_summary_table(["a", "b"], df, 2)
+        return NeuroAnalyzer._print_summary_table(["a", "b"], df, 2)
     end
     flush(io)
-    read(path, String)
+    return read(path, String)
 end
 @test occursin("median", out) && occursin("5.00", out)
 
 @info "Test: make_table()"
 out = mktemp() do path, io
     redirect_stdout(io) do
-        make_table(header = ["Group" "A" "B"], data = Any["var1" 1 2.5; "var2" 3.25 4])
+        return make_table(; header = ["Group" "A" "B"], data = Any["var1" 1 2.5; "var2" 3.25 4])
     end
     flush(io)
-    read(path, String)
+    return read(path, String)
 end
 @test occursin("Group", out) && occursin("2.500", out) && occursin("3.250", out)
 # integers are shown without decimals

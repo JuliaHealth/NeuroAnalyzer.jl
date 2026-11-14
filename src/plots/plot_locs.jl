@@ -625,5 +625,7 @@ function plot_locs(
         return nothing
     end
 
-    throw(ArgumentError("Locations plot is not available for $(datatype(obj)) data."))
+    return throw(
+        ArgumentError("Locations plot is not available for $(datatype(obj)) data."),
+    )
 end

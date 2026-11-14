@@ -252,7 +252,7 @@ function plot_erp_topo(
     head::Bool = true,
     zl::Bool = true,
     mono::Bool = false,
-    gui::Bool=true,
+    gui::Bool = true,
 )::GLMakie.Figure
     # validate
     size(s, 2) == length(t) ||
@@ -317,7 +317,7 @@ function plot_erp_topo(
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(s, 1)
         pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
-        gl = GridLayout(pp[1, 1], alignmode = Outside(5))
+        gl = GridLayout(pp[1, 1]; alignmode = Outside(5))
         ax = GLMakie.Axis(
             gl[1, 1];
             xlabel = "",
@@ -342,10 +342,10 @@ function plot_erp_topo(
         end
 
         # draw black box around the entire figure
-        GLMakie.Box(pp[:, :], 
-            color = :transparent, 
-            strokecolor = :black, 
-            strokewidth = 1.5
+        GLMakie.Box(pp[:, :];
+            color = :transparent,
+            strokecolor = :black,
+            strokewidth = 1.5,
         )
 
         push!(pp_vec, pp)

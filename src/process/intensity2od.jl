@@ -63,7 +63,11 @@ function intensity2od(
     rec = obj.header.recording
     n_opt = length(rec[:wavelength_index])
     all(<=(n_opt), ch) ||
-        throw(ArgumentError("NIRS intensity channels are not described by the wavelength index."))
+        throw(
+            ArgumentError(
+                "NIRS intensity channels are not described by the wavelength index.",
+            ),
+        )
 
     # create new dataset
     obj_tmp = deepcopy(obj)
@@ -81,13 +85,15 @@ function intensity2od(
     # OD channels: same wavelength and optode pair as their intensity channels
     r[:wavelength_index] = vcat(rec[:wavelength_index], rec[:wavelength_index][ch])
     r[:optode_pairs] = vcat(rec[:optode_pairs], rec[:optode_pairs][ch, :])
-    r[:channel_type] = vcat(rec[:channel_type][opt], fill("nirs_od", length(ch)), rec[:channel_type][rest])
+    r[:channel_type] =
+        vcat(rec[:channel_type][opt], fill("nirs_od", length(ch)), rec[:channel_type][rest])
     # " OD" suffix distinguishes the OD channels from the intensity channels
     r[:label] = vcat(rec[:label][opt], rec[:label][ch] .* " OD", rec[:label][rest])
     # OD is dimensionless
     r[:unit] = vcat(rec[:unit][opt], fill("", length(ch)), rec[:unit][rest])
     # OD channels inherit the bad-channel flags of their intensity channels
-    r[:bad_channel] = vcat(rec[:bad_channel][opt], rec[:bad_channel][ch], rec[:bad_channel][rest])
+    r[:bad_channel] =
+        vcat(rec[:bad_channel][opt], rec[:bad_channel][ch], rec[:bad_channel][rest])
     r[:channel_order] = _sort_channels(r[:channel_type])
 
     push!(obj_tmp.history, "intensity2od(obj; ch=$ch)")

@@ -331,7 +331,8 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks, fast, large amplitude)"
 # event type is a little-endian UInt16: bytes [low, high]
 @test NeuroAnalyzer._gdf_etp([0x04, 0x05]) == "ecg:R-point"
-@test NeuroAnalyzer._gdf_etp([0x01, 0x03]) == "class1, Left hand - cue onset (BCI experiment)"
+@test NeuroAnalyzer._gdf_etp([0x01, 0x03]) ==
+      "class1, Left hand - cue onset (BCI experiment)"
 @test NeuroAnalyzer._gdf_etp([0x84, 0x00]) == "condition 131"
 # bit 0x8000 marks the end of an event
 @test NeuroAnalyzer._gdf_etp([0x03, 0x81]) == "artifact:EMG/Muscle (end)"
@@ -416,7 +417,17 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._ch_rename("unknown_type") == "unknown_type"
 @test NeuroAnalyzer._def_ylabel("nirs_od", "") == "OD []"
 @test NeuroAnalyzer._def_ylabel("nirs_hbo", "μM/mm") == "HbO concentration [μM/mm]"
-@test NeuroAnalyzer._set_channel_types(["ecg", "eog", "emg", "a1", "acc x", "status", "760nm", "xyz", "Cz"]) ==
+@test NeuroAnalyzer._set_channel_types([
+    "ecg",
+    "eog",
+    "emg",
+    "a1",
+    "acc x",
+    "status",
+    "760nm",
+    "xyz",
+    "Cz",
+]) ==
       ["ecg", "eog", "emg", "ref", "accel", "mrk", "nirs_od", "other", "eeg"]
 # priorities: eeg (3) < ecg (6) < unknown (8) < mrk (9)
 @test NeuroAnalyzer._sort_channels(["mrk", "eeg", "ecg", "unknown"]) == [2, 3, 4, 1]
@@ -428,21 +439,64 @@ t, et = NeuroAnalyzer._get_t(e10)
 
 # labels
 # format prefixes, duplicated prefixes, padding dots, reference suffixes, 10-20 capitalization
-@test NeuroAnalyzer._clean_labels(["EEG Fp1", "EDF Cz", "EEG-O1", "EOG EOG", "ECG EKG", "Fc5.", "T9..", "EEG FP2-REF", "C3-LE", "PZ", "afz", "fpz"]) ==
+@test NeuroAnalyzer._clean_labels([
+    "EEG Fp1",
+    "EDF Cz",
+    "EEG-O1",
+    "EOG EOG",
+    "ECG EKG",
+    "Fc5.",
+    "T9..",
+    "EEG FP2-REF",
+    "C3-LE",
+    "PZ",
+    "afz",
+    "fpz",
+]) ==
       ["Fp1", "Cz", "O1", "EOG", "ECG", "FC5", "T9", "Fp2", "C3", "Pz", "AFz", "Fpz"]
 # numbered channels: spacing only, leading zeros kept
-@test NeuroAnalyzer._clean_labels(["MEG0113", "MEG 2443", "MEG  0111", "EEG001", "EEG 060", "EOG061", "STI 014", "STI101", "MEG000"]) ==
-      ["MEG 0113", "MEG 2443", "MEG 0111", "EEG 001", "EEG 060", "EOG 061", "STI 014", "STI 101", "MEG 000"]
+@test NeuroAnalyzer._clean_labels([
+    "MEG0113",
+    "MEG 2443",
+    "MEG  0111",
+    "EEG001",
+    "EEG 060",
+    "EOG061",
+    "STI 014",
+    "STI101",
+    "MEG000",
+]) ==
+      [
+    "MEG 0113",
+    "MEG 2443",
+    "MEG 0111",
+    "EEG 001",
+    "EEG 060",
+    "EOG 061",
+    "STI 014",
+    "STI 101",
+    "MEG 000",
+]
 # other labels unchanged (apart from surrounding whitespace)
-@test NeuroAnalyzer._clean_labels([" Fp1 ", "A12", "Pulse", "EDF Annotations", "EEG", "ECG1", "EOG 2"]) ==
+@test NeuroAnalyzer._clean_labels([
+    " Fp1 ",
+    "A12",
+    "Pulse",
+    "EDF Annotations",
+    "EEG",
+    "ECG1",
+    "EOG 2",
+]) ==
       ["Fp1", "A12", "Pulse", "Annotations", "EEG", "ECG1", "EOG 2"]
 # labels that would become identical keep their original form
-@test NeuroAnalyzer._clean_labels(["EEG Fp1", "Fp1-REF", "Cz"]) == ["EEG Fp1", "Fp1-REF", "Cz"]
+@test NeuroAnalyzer._clean_labels(["EEG Fp1", "Fp1-REF", "Cz"]) ==
+      ["EEG Fp1", "Fp1-REF", "Cz"]
 @test NeuroAnalyzer._clean_labels(["MEG0113", "MEG 0113"]) == ["MEG0113", "MEG 0113"]
 @test NeuroAnalyzer._clean_labels(String[]) == String[]
 # layout labels renamed to the recording labels
 @test NeuroAnalyzer._label_key("MEG 0113") == NeuroAnalyzer._label_key("meg113") == "MEG113"
-@test NeuroAnalyzer._match_labels(["MEG 113", "MEG 2443", "X"], ["MEG 0113", "MEG 2443"]) == ["MEG 0113", "MEG 2443", "X"]
+@test NeuroAnalyzer._match_labels(["MEG 113", "MEG 2443", "X"], ["MEG 0113", "MEG 2443"]) ==
+      ["MEG 0113", "MEG 2443", "X"]
 @test NeuroAnalyzer._match_labels(["MEG 113"], ["MEG0113"]) == ["MEG0113"]
 
 ##
@@ -492,15 +546,25 @@ m3 = cat([1.0 0; 2 3], [4.0 0; 5 6]; dims = 3)
 @test NeuroAnalyzer._common_ref_name("A1") == "common (A)"
 @test NeuroAnalyzer._common_ref_name("m") == "common (M)"
 @test NeuroAnalyzer._common_ref_name("avg") == "common"
-@test NeuroAnalyzer._detect_montage(["Fp1-A1", "Fp2-A1"], ["eeg", "eeg"], "eeg") == "common (A)"
-@test NeuroAnalyzer._detect_montage(["Fp1-F3", "Fp2-F4"], ["eeg", "eeg"], "eeg") == "bipolar"
-@test NeuroAnalyzer._detect_montage(["Fp1M1", "Fp2M1"], ["eeg", "eeg"], "eeg") == "common (M)"
+@test NeuroAnalyzer._detect_montage(["Fp1-A1", "Fp2-A1"], ["eeg", "eeg"], "eeg") ==
+      "common (A)"
+@test NeuroAnalyzer._detect_montage(["Fp1-F3", "Fp2-F4"], ["eeg", "eeg"], "eeg") ==
+      "bipolar"
+@test NeuroAnalyzer._detect_montage(["Fp1M1", "Fp2M1"], ["eeg", "eeg"], "eeg") ==
+      "common (M)"
 @test NeuroAnalyzer._detect_montage(["Fp1", "Fp2"], ["eeg", "eeg"], "eeg") == "physical"
 @test NeuroAnalyzer._detect_montage(["Fp1", "Fp2"], ["eeg", "eeg"], "meg") == "physical"
 
 # _fread(): little-endian binary fields
 io = IOBuffer()
-write(io, htol(Int16(-2)), htol(Float32(1.5)), UInt8[0x61, 0x62, 0x63], htol(UInt32(7)), htol(Float64(-0.25)))
+write(
+    io,
+    htol(Int16(-2)),
+    htol(Float32(1.5)),
+    UInt8[0x61, 0x62, 0x63],
+    htol(UInt32(7)),
+    htol(Float64(-0.25)),
+)
 seekstart(io)
 @test NeuroAnalyzer._fread(io, 1, :i16) == -2
 @test NeuroAnalyzer._fread(io, 1, :f32) == 1.5
@@ -523,7 +587,8 @@ seekstart(io)
 @test_throws ArgumentError NeuroAnalyzer._s2epoch(e10, 2, 1)
 @test NeuroAnalyzer._s2epoch(e10, 0, 2560) == 1
 @test NeuroAnalyzer._s2epoch(e10, 2560, 2561) == 1:2
-@test NeuroAnalyzer._make_epochs(reshape(1.0:12, 1, 12); ep_len = 5)[1, :, :] == [1.0 6; 2 7; 3 8; 4 9; 5 10]
+@test NeuroAnalyzer._make_epochs(reshape(1.0:12, 1, 12); ep_len = 5)[1, :, :] ==
+      [1.0 6; 2 7; 3 8; 4 9; 5 10]
 @test_throws ArgumentError NeuroAnalyzer._make_epochs(rand(2, 10); ep_len = 0)
 @test_throws ArgumentError NeuroAnalyzer._make_epochs(rand(2, 10); ep_len = 11)
 
@@ -533,18 +598,20 @@ tps = NeuroAnalyzer._epochs_tps(e10)
 @test tps[1, 2] == 10.0
 e10_tmp = deepcopy(e10)
 e10_tmp.markers = DataFrame(:id => ["1", "1"],
-                            :start => [5.0, 25.0],
-                            :length => [0.0, 0.0],
-                            :value => ["a", "a"],
-                            :channel => [0, 0])
+    :start => [5.0, 25.0],
+    :length => [0.0, 0.0],
+    :value => ["a", "a"],
+    :channel => [0, 0])
 @test NeuroAnalyzer._markers_epochs(e10_tmp) == [1, 3]
 
 # epochs around markers: signal 1:20 at 10 Hz, markers at samples 5, 12 and 18
 s_tmp = reshape(collect(1.0:20), 1, 20, 1)
-mrk = DataFrame(:id => ["1", "1", "2"], :start => [0.4, 1.1, 1.7], :length => [0.0, 0.0, 0.0],
-                :value => ["a", "a", "b"], :channel => [0, 0, 0])
+mrk =
+    DataFrame(:id => ["1", "1", "2"], :start => [0.4, 1.1, 1.7], :length => [0.0, 0.0, 0.0],
+        :value => ["a", "a", "b"], :channel => [0, 0, 0])
 ep_tmp, mrk_tmp = NeuroAnalyzer._make_epochs_bymarkers(
-    s_tmp; marker = "a", markers = mrk, marker_start = [5, 12], offset = 2, ep_len = 5, fs = 10,
+    s_tmp; marker = "a", markers = mrk, marker_start = [5, 12], offset = 2, ep_len = 5,
+    fs = 10,
 )
 @test ep_tmp[1, :, 1] == 3:7
 @test ep_tmp[1, :, 2] == 10:14
@@ -554,7 +621,8 @@ ep_tmp, mrk_tmp = NeuroAnalyzer._make_epochs_bymarkers(
 @test mrk_tmp[!, :value] == ["a", "a"]
 # an epoch reaching beyond the signal is skipped
 ep_tmp, _ = NeuroAnalyzer._make_epochs_bymarkers(
-    s_tmp; marker = "a", markers = mrk, marker_start = [1, 12], offset = 2, ep_len = 5, fs = 10,
+    s_tmp; marker = "a", markers = mrk, marker_start = [1, 12], offset = 2, ep_len = 5,
+    fs = 10,
 )
 @test size(ep_tmp, 3) == 1
 @test_throws ArgumentError NeuroAnalyzer._make_epochs_bymarkers(
@@ -565,15 +633,17 @@ ep_tmp, _ = NeuroAnalyzer._make_epochs_bymarkers(
 ## Markers
 ##
 
-mrk = DataFrame(:id => ["1", "2", "3"], :start => [0.5, 1.5, 3.0], :length => [0.0, 0.0, 0.0],
-                :value => ["a", "b", "c"], :channel => [0, 0, 0])
+mrk =
+    DataFrame(:id => ["1", "2", "3"], :start => [0.5, 1.5, 3.0], :length => [0.0, 0.0, 0.0],
+        :value => ["a", "b", "c"], :channel => [0, 0, 0])
 @test NeuroAnalyzer._delete_markers(mrk, (1, 2))[!, :value] == ["a", "c"]
 @test NeuroAnalyzer._shift_markers(mrk, (1, 2))[!, :start] == [0.5, 1.5, 2.0]
 # input is not modified
 @test mrk[!, :start] == [0.5, 1.5, 3.0]
 # remapping by sample number: +10 samples at 10 Hz = +1 s; nothing drops the marker
 @test NeuroAnalyzer._remap_markers(mrk, 10, s -> s + 10)[!, :start] ≈ [1.5, 2.5, 4.0]
-@test NeuroAnalyzer._remap_markers(mrk, 10, s -> s > 20 ? nothing : s)[!, :value] == ["a", "b"]
+@test NeuroAnalyzer._remap_markers(mrk, 10, s -> s > 20 ? nothing : s)[!, :value] ==
+      ["a", "b"]
 @test NeuroAnalyzer._has_markers(["eeg"]) == (false, 0)
 @test NeuroAnalyzer._has_markers(e10) == false
 @test NeuroAnalyzer._has_markers(e10_tmp) == true
@@ -583,7 +653,11 @@ df = NeuroAnalyzer._a2df(["+0\x14\x14\0", "+1.5\x150.5\x14stim\x14"])
 @test df[!, :length] == [0.5]
 @test df[!, :value] == ["stim"]
 # several records; records without a duration get length 0; ids are per label
-df = NeuroAnalyzer._a2df(["+1\x14\x14stim\x14", "+2.5\x150.5\x14resp\x14", "+3\x14\x14stim\x14"])
+df = NeuroAnalyzer._a2df([
+    "+1\x14\x14stim\x14",
+    "+2.5\x150.5\x14resp\x14",
+    "+3\x14\x14stim\x14",
+])
 @test df[!, :start] == [1.0, 2.5, 3.0]
 @test df[!, :length] == [0.0, 0.5, 0.0]
 @test df[!, :id] == ["1", "2", "1"]
@@ -624,8 +698,10 @@ g, gl = NeuroAnalyzer._gradient(2.0 .* (1:5); rev = true)
 g, gl = NeuroAnalyzer._gradient([i + 2.0 * j for i = 1:3, j = 1:3])
 @test all(gl .≈ sqrt(5))
 # FIR response: H(0) = sum of the coefficients, |H(π)| of a 2-tap average = 0
-@test NeuroAnalyzer._fir_response([0.5, 0.5], [0.0, π]) ≈ [1.0 + 0im, 0.0 + 0im] atol = 1e-12
-@test NeuroAnalyzer._dict2labeled_matrix(Dict("a" => [1.0]); rev = false) == (["a"], [[1.0]])
+@test NeuroAnalyzer._fir_response([0.5, 0.5], [0.0, π]) ≈ [1.0 + 0im, 0.0 + 0im] atol =
+    1e-12
+@test NeuroAnalyzer._dict2labeled_matrix(Dict("a" => [1.0]); rev = false) ==
+      (["a"], [[1.0]])
 @test_throws ArgumentError NeuroAnalyzer._dict2labeled_matrix(Dict())
 @test_throws ArgumentError NeuroAnalyzer._dict2labeled_matrix(Dict("a" => [1]))
 @test_throws ArgumentError NeuroAnalyzer._labeled_matrix2dict(["a", "b"], [[1.0]])
@@ -646,10 +722,10 @@ msh = NeuroAnalyzer.GeometryBasics.Mesh(
 # confusion matrix print-out
 cm_out = mktemp() do path, io
     redirect_stdout(io) do
-        NeuroAnalyzer._cm([1 2; 3 4])
+        return NeuroAnalyzer._cm([1 2; 3 4])
     end
     flush(io)
-    read(path, String)
+    return read(path, String)
 end
 @test occursin("prediction", cm_out)
 @test occursin("│ 1 │ 2 │", replace(cm_out, r" +" => " "))
@@ -678,7 +754,8 @@ x = sin.(2π .* (0:63) ./ 16)
 @test NeuroAnalyzer._resample_mirror([2.0], 3) == [2.0, 2.0, 2.0]
 # nearest: sample-and-hold, every sample repeated k times
 @test NeuroAnalyzer._resample_nearest([1, 2, 3, 4], 8) == [1, 1, 2, 2, 3, 3, 4, 4]
-@test NeuroAnalyzer._resample_nearest([1, 2, 3, 4], 12) == [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4]
+@test NeuroAnalyzer._resample_nearest([1, 2, 3, 4], 12) ==
+      [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4]
 @test NeuroAnalyzer._resample_nearest(1:8, 4) == [1, 3, 5, 7]
 # 12.5 Hz → exact ×2 upsampling to 25 Hz; integer rates are not changed
 d_tmp = reshape(sin.(2π .* (0:63) ./ 16), 1, 64, 1)
@@ -730,7 +807,8 @@ raw = UInt8[0xff, 0xff, 0xff, 0x01, 0x00, 0x00, 0x05, 0x00, 0xff]
 sig, _ = NeuroAnalyzer._read_edf_records(raw, [2, 1], 1, 3; trigger_channels = [2])
 @test sig == [[-1.0, 1.0], [5.0]]
 @test_throws ArgumentError NeuroAnalyzer._read_edf_records(raw, [1], 1, 4)
-d_tmp, rs = NeuroAnalyzer._merge_channels([[1.0, 2, 3, 4], [5.0, 6], Float64[]], [3]; nearest = [2])
+d_tmp, rs =
+    NeuroAnalyzer._merge_channels([[1.0, 2, 3, 4], [5.0, 6], Float64[]], [3]; nearest = [2])
 @test rs
 @test d_tmp[:, :, 1] == [1.0 2 3 4; 5 5 6 6; 0 0 0 0]
 d_tmp, rs = NeuroAnalyzer._merge_channels([[1.0, 2], [3.0, 4]])
@@ -784,7 +862,8 @@ tbl = NeuroAnalyzer._fiff_table([1 => "a", 2 => "b"], :id, :name)
 @test NeuroAnalyzer._fiff_eltype(16) == Int16
 @test isnothing(NeuroAnalyzer._fiff_eltype(30))
 @test NeuroAnalyzer._fiff_elements(3, bebytes(Int32, [1, -2])) == [1, -2]
-@test NeuroAnalyzer._fiff_elements(20, bebytes(Float32, [1, 2, 3, 4])) == [1.0 + 2.0im, 3.0 + 4.0im]
+@test NeuroAnalyzer._fiff_elements(20, bebytes(Float32, [1, 2, 3, 4])) ==
+      [1.0 + 2.0im, 3.0 + 4.0im]
 @test isnothing(NeuroAnalyzer._fiff_elements(30, UInt8[]))
 @test NeuroAnalyzer._fiff_scalar([5]) == 5
 @test NeuroAnalyzer._fiff_scalar([1, 2]) == [1, 2]
@@ -795,16 +874,29 @@ tbl = NeuroAnalyzer._fiff_table([1 => "a", 2 => "b"], :id, :name)
 @test isnothing(NeuroAnalyzer._fiff_decode(0, UInt8[0x00]))
 @test isnothing(NeuroAnalyzer._fiff_decode(3, UInt8[]))
 # Julian day 2451545 = 2000-01-01
-@test NeuroAnalyzer._fiff_decode(6, bebytes(Int32, [2451545])) == NeuroAnalyzer.Date(2000, 1, 1)
+@test NeuroAnalyzer._fiff_decode(6, bebytes(Int32, [2451545])) ==
+      NeuroAnalyzer.Date(2000, 1, 1)
 # old_pack: offset, scale, Int16 values
-@test NeuroAnalyzer._fiff_decode(23, vcat(bebytes(Float32, [1.0, 2.0]), bebytes(Int16, [3, -1]))) == [7.0, -1.0]
+@test NeuroAnalyzer._fiff_decode(
+    23,
+    vcat(bebytes(Float32, [1.0, 2.0]), bebytes(Int16, [3, -1])),
+) == [7.0, -1.0]
 # dig_point: kind, ident, r
-@test NeuroAnalyzer._fiff_decode(33, vcat(bebytes(Int32, [1, 2]), bebytes(Float32, [0.5, -0.5, 0.25]))) ==
+@test NeuroAnalyzer._fiff_decode(
+    33,
+    vcat(bebytes(Int32, [1, 2]), bebytes(Float32, [0.5, -0.5, 0.25])),
+) ==
       (1, 2, 0.5, -0.5, 0.25)
 # coord_trans: rotation (row-major), translation and their inverses
 ct = NeuroAnalyzer._fiff_decode(
     35,
-    vcat(bebytes(Int32, [1, 4]), bebytes(Float32, [0, -1, 0, 1, 0, 0, 0, 0, 1, 1, 2, 3, 0, 1, 0, -1, 0, 0, 0, 0, 1, -2, 1, -3])),
+    vcat(
+        bebytes(Int32, [1, 4]),
+        bebytes(
+            Float32,
+            [0, -1, 0, 1, 0, 0, 0, 0, 1, 1, 2, 3, 0, 1, 0, -1, 0, 0, 0, 0, 1, -2, 1, -3],
+        ),
+    ),
 )
 @test ct[1:2] == (1, 4)
 @test ct[3] == [0.0 -1 0; 1 0 0; 0 0 1]
@@ -813,8 +905,9 @@ ct = NeuroAnalyzer._fiff_decode(
 # ch_info: 96 bytes
 chi = NeuroAnalyzer._fiff_decode(
     30,
-    vcat(bebytes(Int32, [1, 2, 1]), bebytes(Float32, [1.0, 2.0]), bebytes(Int32, [3012]), bebytes(Float32, collect(1:12)),
-         bebytes(Int32, [201, -15]), UInt8.(collect("MEG 0113")), zeros(UInt8, 8)),
+    vcat(bebytes(Int32, [1, 2, 1]), bebytes(Float32, [1.0, 2.0]),
+        bebytes(Int32, [3012]), bebytes(Float32, collect(1:12)),
+        bebytes(Int32, [201, -15]), UInt8.(collect("MEG 0113")), zeros(UInt8, 8)),
 )
 @test chi.kind == 1 && chi.coil_type == 3012 && chi.cal == 2.0
 @test chi.loc == collect(1.0:12)
@@ -824,22 +917,46 @@ chi = NeuroAnalyzer._fiff_decode(
 dm = vcat(bebytes(Int32, 1:6), bebytes(Int32, [3, 2]), bebytes(Int32, [2]))
 @test NeuroAnalyzer._fiff_matrix(NeuroAnalyzer._FIFFT_MATRIX | 3, dm) == [1 2 3; 4 5 6]
 @test NeuroAnalyzer._fiff_decode(NeuroAnalyzer._FIFFT_MATRIX | 3, dm) == [1 2 3; 4 5 6]
-@test_throws ArgumentError NeuroAnalyzer._fiff_matrix(NeuroAnalyzer._FIFFT_MATRIX | 3, vcat(bebytes(Int32, 1:2), bebytes(Int32, [3, 2]), bebytes(Int32, [2])))
+@test_throws ArgumentError NeuroAnalyzer._fiff_matrix(
+    NeuroAnalyzer._FIFFT_MATRIX | 3,
+    vcat(bebytes(Int32, 1:2), bebytes(Int32, [3, 2]), bebytes(Int32, [2])),
+)
 # sparse CCS: [1 0 0; 0 0 2] = values, row indices, column pointers, (nnz, nrow, ncol), ndim
-sm = vcat(bebytes(Float64, [1, 2]), bebytes(Int32, [0, 1]), bebytes(Int32, [0, 1, 1, 2]), bebytes(Int32, [2, 2, 3]), bebytes(Int32, [2]))
-@test NeuroAnalyzer._fiff_matrix(NeuroAnalyzer._FIFFT_MATRIX | NeuroAnalyzer._FIFFT_SPARSE_CCS | 5, sm) ==
+sm = vcat(
+    bebytes(Float64, [1, 2]),
+    bebytes(Int32, [0, 1]),
+    bebytes(Int32, [0, 1, 1, 2]),
+    bebytes(Int32, [2, 2, 3]),
+    bebytes(Int32, [2]),
+)
+@test NeuroAnalyzer._fiff_matrix(
+    NeuroAnalyzer._FIFFT_MATRIX | NeuroAnalyzer._FIFFT_SPARSE_CCS | 5,
+    sm,
+) ==
       [1.0 0 0; 0 0 2]
 # sparse RCS: same matrix = values, column indices, row pointers
-sm = vcat(bebytes(Float64, [1, 2]), bebytes(Int32, [0, 2]), bebytes(Int32, [0, 1, 2]), bebytes(Int32, [2, 2, 3]), bebytes(Int32, [2]))
-@test NeuroAnalyzer._fiff_matrix(NeuroAnalyzer._FIFFT_MATRIX | NeuroAnalyzer._FIFFT_SPARSE_RCS | 5, sm) ==
+sm = vcat(
+    bebytes(Float64, [1, 2]),
+    bebytes(Int32, [0, 2]),
+    bebytes(Int32, [0, 1, 2]),
+    bebytes(Int32, [2, 2, 3]),
+    bebytes(Int32, [2]),
+)
+@test NeuroAnalyzer._fiff_matrix(
+    NeuroAnalyzer._FIFFT_MATRIX | NeuroAnalyzer._FIFFT_SPARSE_RCS | 5,
+    sm,
+) ==
       [1.0 0 0; 0 0 2]
 # FIFF tag stream: block_start(meas_info), nchan = 3, block_end; the last tag has next = -1
-fiff_tag(kind, dt, data, nxt = 0) = vcat(bebytes(Int32, [kind, dt, length(data), nxt]), data)
-fio = IOBuffer(vcat(
-    fiff_tag(104, 3, bebytes(Int32, [101])),
-    fiff_tag(200, 3, bebytes(Int32, [3])),
-    fiff_tag(105, 3, bebytes(Int32, [101]), -1),
-))
+fiff_tag(kind, dt, data, nxt = 0) =
+    vcat(bebytes(Int32, [kind, dt, length(data), nxt]), data)
+fio = IOBuffer(
+    vcat(
+        fiff_tag(104, 3, bebytes(Int32, [101])),
+        fiff_tag(200, 3, bebytes(Int32, [3])),
+        fiff_tag(105, 3, bebytes(Int32, [101]), -1),
+    ),
+)
 k, dt_tmp, sz, d_tmp, nxt = NeuroAnalyzer._read_fiff_tag(fio)
 @test (k, dt_tmp, sz, nxt) == (104, 3, 4, 0)
 @test NeuroAnalyzer._i32i64(d_tmp) == 101
@@ -855,8 +972,9 @@ fd, fb, finst = NeuroAnalyzer._create_fiff_block(fio)
 bidx, btypes = NeuroAnalyzer._get_blocks(fb)
 @test bidx == [[1, 2, 3]]
 @test btypes == [101]
-fobj = Any[(1, "nchan", "meas_info", 3), (2, "ch_info", "meas_info", :a), (3, "ch_info", "meas_info", :b),
-           (4, "nchan", "raw_data", 9)]
+fobj = Any[(1, "nchan", "meas_info", 3), (2, "ch_info", "meas_info", :a),
+    (3, "ch_info", "meas_info", :b),
+    (4, "nchan", "raw_data", 9)]
 pk = NeuroAnalyzer._pack_fiff_blocks(fobj, "meas_info", ["nchan", "ch_info", "sfreq"])
 @test pk[:nchan] == 3
 @test pk[:ch_info_1] == :a && pk[:ch_info_2] == :b
@@ -864,10 +982,10 @@ pk = NeuroAnalyzer._pack_fiff_blocks(fobj, "meas_info", ["nchan", "ch_info", "sf
 tree_out = mktemp() do path, io
     redirect_stdout(io) do
         NeuroAnalyzer._fiff_tree(fobj)
-        NeuroAnalyzer._view_fiff_block(fb)
+        return NeuroAnalyzer._view_fiff_block(fb)
     end
     flush(io)
-    read(path, String)
+    return read(path, String)
 end
 @test occursin("meas_info - nchan", tree_out)
 @test occursin("200 [nchan]", tree_out)
@@ -876,41 +994,54 @@ end
 ## Create header
 ##
 
-common = (data_type = "x", file_name = "f", file_size_mb = 1, file_type = "t", recording = "r",
-          recording_date = "d", recording_time = "12.30.00", recording_notes = "n", channel_type = ["a"],
-          channel_order = [1], clabels = ["a"], units = ["u"], sampling_rate = 100, bad_channels = [false])
+common =
+    (data_type = "x", file_name = "f", file_size_mb = 1, file_type = "t", recording = "r",
+        recording_date = "d", recording_time = "12.30.00", recording_notes = "n",
+        channel_type = ["a"],
+        channel_order = [1], clabels = ["a"], units = ["u"], sampling_rate = 100,
+        bad_channels = [false])
 c_tmp = NeuroAnalyzer._common_recording_fields(; common...)
-@test c_tmp[:label] == ["a"] && c_tmp[:sampling_rate] == 100 && c_tmp[:bad_channel] == [false]
+@test c_tmp[:label] == ["a"] && c_tmp[:sampling_rate] == 100 &&
+      c_tmp[:bad_channel] == [false]
 for f in (NeuroAnalyzer._create_recording_seeg, NeuroAnalyzer._create_recording_ecog,
-          NeuroAnalyzer._create_recording_eeg_like)
-    local r_tmp = f(; common..., reference = "a", transducers = ["t"], prefiltering = ["p"],
-              line_frequency = 50, gain = [1.0])
+    NeuroAnalyzer._create_recording_eeg_like)
+    local r_tmp =
+        f(; common..., reference = "a", transducers = ["t"], prefiltering = ["p"],
+            line_frequency = 50, gain = [1.0])
     @test r_tmp[:reference] == "a" && r_tmp[:gain] == [1.0] && r_tmp[:epoch_id] == ""
 end
 for f in (NeuroAnalyzer._create_recording_sensors, NeuroAnalyzer._create_recording_eda,
-          NeuroAnalyzer._create_recording_tpt, NeuroAnalyzer._create_recording_prefiltered)
+    NeuroAnalyzer._create_recording_tpt, NeuroAnalyzer._create_recording_prefiltered)
     local r_tmp = f(; common..., prefiltering = ["p"])
     @test r_tmp[:prefiltering] == ["p"] && r_tmp[:data_type] == "x"
 end
-r_tmp = NeuroAnalyzer._create_recording_nirs(; common..., wavelengths = [760.0, 850.0], wavelength_index = [1],
-                                             optode_pairs = [1 1], src_labels = ["S1"], det_labels = ["D1"],
-                                             opt_labels = ["S1", "D1"])
+r_tmp = NeuroAnalyzer._create_recording_nirs(; common..., wavelengths = [760.0, 850.0],
+    wavelength_index = [1],
+    optode_pairs = [1 1], src_labels = ["S1"], det_labels = ["D1"],
+    opt_labels = ["S1", "D1"])
 @test r_tmp[:wavelengths] == [760.0, 850.0] && r_tmp[:optode_labels] == ["S1", "D1"]
-r_tmp = NeuroAnalyzer._create_recording_mep(; common..., stimulation_intensity = [50], coil_type = ["c"],
-                                            stimulation_sample = [10], markers_pos = [1], markers_neg = [2])
+r_tmp = NeuroAnalyzer._create_recording_mep(; common..., stimulation_intensity = [50],
+    coil_type = ["c"],
+    stimulation_sample = [10], markers_pos = [1], markers_neg = [2])
 @test r_tmp[:stimulation_intensity] == [50] && !haskey(r_tmp, :epoch_id)
 # MEG: time separator normalized, geometry validated
-r_tmp = NeuroAnalyzer._create_recording_meg(; common..., reference = "", prefiltering = [""], line_frequency = 50,
-                                            magnetometers = [1], gradiometers = Int64[], coil_type = [""],
-                                            ssp_labels = String[], ssp_channels = Bool[],
-                                            ssp_data = zeros(0, 0), first_time = 1.5)
+r_tmp =
+    NeuroAnalyzer._create_recording_meg(; common..., reference = "", prefiltering = [""],
+        line_frequency = 50,
+        magnetometers = [1], gradiometers = Int64[], coil_type = [""],
+        ssp_labels = String[], ssp_channels = Bool[],
+        ssp_data = zeros(0, 0), first_time = 1.5)
 @test r_tmp[:recording_time] == "12:30:00"
 @test r_tmp[:first_time] == 1.5 && r_tmp[:sss] == false
-@test_throws ArgumentError NeuroAnalyzer._create_recording_meg(; common..., reference = "", prefiltering = [""],
-    line_frequency = 50, magnetometers = [1], gradiometers = Int64[], coil_type = [""], ssp_labels = String[],
+@test_throws ArgumentError NeuroAnalyzer._create_recording_meg(; common..., reference = "",
+    prefiltering = [""],
+    line_frequency = 50, magnetometers = [1], gradiometers = Int64[], coil_type = [""],
+    ssp_labels = String[],
     ssp_channels = Bool[], ssp_data = zeros(0, 0), coil_loc = zeros(2, 12))
-@test_throws ArgumentError NeuroAnalyzer._create_recording_meg(; common..., reference = "", prefiltering = [""],
-    line_frequency = 50, magnetometers = [1], gradiometers = Int64[], coil_type = [""], ssp_labels = String[],
+@test_throws ArgumentError NeuroAnalyzer._create_recording_meg(; common..., reference = "",
+    prefiltering = [""],
+    line_frequency = 50, magnetometers = [1], gradiometers = Int64[], coil_type = [""],
+    ssp_labels = String[],
     ssp_channels = Bool[], ssp_data = zeros(0, 0), head_origin = [0.0])
 
 ##
@@ -928,7 +1059,11 @@ xs, ys, zs = NeuroAnalyzer._sph2cart_raw([1.0], [90.0], [0.0])
 r_tmp, th_tmp, ph_tmp = NeuroAnalyzer._cart2sph_raw([0.0, 0.0], [1.0, 0.0], [0.0, 0.0])
 @test r_tmp == [1.0, 0.0] && th_tmp ≈ [90.0, 0.0] && ph_tmp == [0.0, 0.0]
 # round trip spherical → Cartesian → spherical through an identity transformation
-lt = DataFrame(:loc_radius_sph => [1.0, 0.8], :loc_theta_sph => [45.0, -120.0], :loc_phi_sph => [10.0, -30.0])
+lt = DataFrame(
+    :loc_radius_sph => [1.0, 0.8],
+    :loc_theta_sph => [45.0, -120.0],
+    :loc_phi_sph => [10.0, -30.0],
+)
 r_tmp, th_tmp, ph_tmp = NeuroAnalyzer._sph_transform(lt, (x, y, z) -> (x, y, z))
 @test r_tmp ≈ lt.loc_radius_sph && th_tmp ≈ lt.loc_theta_sph && ph_tmp ≈ lt.loc_phi_sph
 # a 90° rotation about z shifts the horizontal angle
@@ -939,7 +1074,24 @@ e_tmp = deepcopy(e10)
 e_tmp.locs = NeuroAnalyzer._initialize_locs()
 @test_throws ArgumentError NeuroAnalyzer._has_locs(e_tmp)
 NeuroAnalyzer._initialize_locs!(e_tmp)
-@test nrow(e_tmp.locs) == length(get_channel(e10; type = ["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg", "nirs_int", "nirs_od", "eog", "ref"]))
+@test nrow(e_tmp.locs) == length(
+    get_channel(
+        e10;
+        type = [
+            "meg",
+            "grad",
+            "mag",
+            "eeg",
+            "ecog",
+            "seeg",
+            "ieeg",
+            "nirs_int",
+            "nirs_od",
+            "eog",
+            "ref",
+        ],
+    ),
+)
 @test all(e_tmp.locs[!, :loc_x] .== 0)
 @test NeuroAnalyzer._check_ch_locs([1, 2], ["Fp1", "Fp2"], ["Fp1", "Fp2"]) === nothing
 @test_throws ArgumentError NeuroAnalyzer._check_ch_locs(3, ["Fp1", "Fp2"], ["Fp1"])
@@ -955,11 +1107,14 @@ lbl1 = labels(e10)[1]
 @test NeuroAnalyzer._ch_locs(e10, [1, 2])[!, :label] == labels(e10)[1:2]
 @test NeuroAnalyzer._ch_locs(e10, labels(e10)[1:2]) == NeuroAnalyzer._ch_locs(e10, [1, 2])
 @test NeuroAnalyzer._find_bylabel(e10.locs, "no_such_label") == Int64[]
-@test NeuroAnalyzer._find_bylabel(e10.locs, ["FP2", "no_such_label"]) == [NeuroAnalyzer._find_bylabel(e10.locs, "Fp2")]
+@test NeuroAnalyzer._find_bylabel(e10.locs, ["FP2", "no_such_label"]) ==
+      [NeuroAnalyzer._find_bylabel(e10.locs, "Fp2")]
 @test_throws ArgumentError NeuroAnalyzer._find_bylabel(DataFrame(:a => [1]), "a")
-lr = DataFrame(:label => ["a"], :loc_radius => [1.234], :loc_theta => [1.236], :loc_x => [0.111],
-               :loc_y => [0.0], :loc_z => [0.0], :loc_radius_sph => [1.0], :loc_theta_sph => [1.005],
-               :loc_phi_sph => [0.0])
+lr = DataFrame(:label => ["a"], :loc_radius => [1.234], :loc_theta => [1.236],
+    :loc_x => [0.111],
+    :loc_y => [0.0], :loc_z => [0.0], :loc_radius_sph => [1.0],
+    :loc_theta_sph => [1.005],
+    :loc_phi_sph => [0.0])
 NeuroAnalyzer._locs_round!(lr)
 @test lr[1, :loc_radius] == 1.23 && lr[1, :loc_theta] == 1.24 && lr[1, :loc_x] == 0.11
 e_tmp = deepcopy(e10)
@@ -980,7 +1135,8 @@ NeuroAnalyzer._locs_norm!(lnan)
 @test lnan == NeuroAnalyzer._locs_norm(e10.locs)
 # normalizing again changes nothing
 NeuroAnalyzer._locs_norm!(e_tmp)
-@test Matrix(e_tmp.locs[!, [:loc_x, :loc_y, :loc_z]]) ≈ Matrix(NeuroAnalyzer._locs_norm(e10).locs[!, [:loc_x, :loc_y, :loc_z]])
+@test Matrix(e_tmp.locs[!, [:loc_x, :loc_y, :loc_z]]) ≈
+      Matrix(NeuroAnalyzer._locs_norm(e10).locs[!, [:loc_x, :loc_y, :loc_z]])
 
 ##
 ## Interpolation
@@ -988,7 +1144,8 @@ NeuroAnalyzer._locs_norm!(e_tmp)
 
 # Shepard and nearest-neighbor interpolators reproduce the data at the data points
 for im in (:sh, :nn)
-    local itp = NeuroAnalyzer._interpolator(im, [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 2.0, 3.0])
+    local itp =
+        NeuroAnalyzer._interpolator(im, [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 2.0, 3.0])
     @test itp([1.0], [0.0])[1] ≈ 2.0
 end
 # natural neighbour interpolators reproduce the data at the data points and
@@ -1004,7 +1161,8 @@ end
 itp = NeuroAnalyzer._interpolator(:sph, lx, ly, lv)
 @test isapprox(itp(lx, ly), lv; atol = 1e-3)
 # the vertex maps to the top of the sphere, r = 1 to the equator
-@test NeuroAnalyzer._xy2sph([0.0, 1.0], [0.0, 0.0]) ≈ [0.0 0.0 1.0; 1.0 0.0 0.0] atol = 1e-12
+@test NeuroAnalyzer._xy2sph([0.0, 1.0], [0.0, 0.0]) ≈ [0.0 0.0 1.0; 1.0 0.0 0.0] atol =
+    1e-12
 @test_throws ArgumentError NeuroAnalyzer._interpolator(:x, [0.0], [0.0], [1.0])
 s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10), 50)
 @test size(s) == (50, 50) && x[1] == -1.2 && x[end] == 1.2
@@ -1034,7 +1192,8 @@ bx, by = NeuroAnalyzer._bernstein_poly([0, 1, 2], [0, 2, 0]; steps = 3)
 # Catmull-Rom spline passes through every input point
 sp_tmp = NeuroAnalyzer._smooth_path([0.0, 1.0, 2.0], [0.0, 1.0, 0.0]; n = 4)
 @test length(sp_tmp) == 9
-@test Tuple(sp_tmp[1]) == (0.0f0, 0.0f0) && Tuple(sp_tmp[5]) == (1.0f0, 1.0f0) && Tuple(sp_tmp[9]) == (2.0f0, 0.0f0)
+@test Tuple(sp_tmp[1]) == (0.0f0, 0.0f0) && Tuple(sp_tmp[5]) == (1.0f0, 1.0f0) &&
+      Tuple(sp_tmp[9]) == (2.0f0, 0.0f0)
 dp = NeuroAnalyzer.DIPOLE([1.0 2.0 3.0], [1.0 2.0; 3.0 4.0; 5.0 6.0], [0.9], zeros(3), 1.0)
 @test NeuroAnalyzer._dipole_at(dp, 2) == ([1.0, 2.0, 3.0], [2.0, 4.0, 6.0])
 @test_throws ArgumentError NeuroAnalyzer._dipole_at(dp, 3)
@@ -1053,10 +1212,18 @@ NeuroAnalyzer.GLMakie.lines!(ax, 1:3, 1:3; label = "a")
 NeuroAnalyzer._side_legend!(fig, ax)
 @test NeuroAnalyzer._side_layout(fig) isa NeuroAnalyzer.GLMakie.GridLayout
 @test count(c -> c isa NeuroAnalyzer.GLMakie.Legend, fig.content) == 1
-NeuroAnalyzer._figure_inset!(fig, NeuroAnalyzer.GLMakie.Figure(; size = (50, 40)); width = 25)
+NeuroAnalyzer._figure_inset!(
+    fig,
+    NeuroAnalyzer.GLMakie.Figure(; size = (50, 40));
+    width = 25,
+)
 @test count(c -> c isa NeuroAnalyzer.GLMakie.Axis, fig.content) == 2
 @test NeuroAnalyzer._fit_side_legend!(fig) === nothing
-@test_throws ArgumentError NeuroAnalyzer._figure_inset!(fig, NeuroAnalyzer.GLMakie.Figure(); pos = :x)
+@test_throws ArgumentError NeuroAnalyzer._figure_inset!(
+    fig,
+    NeuroAnalyzer.GLMakie.Figure();
+    pos = :x,
+)
 fig = NeuroAnalyzer.GLMakie.Figure()
 NeuroAnalyzer.GLMakie.Axis(fig[1, 1])
 NeuroAnalyzer._ch_locs_inset!(fig, e10, [1, 2], [:red, :blue]; pos = :rt)

@@ -101,14 +101,20 @@ function od2conc(
 
     # update header
     r = obj_tmp.header.recording
-    r[:channel_type] = vcat(r[:channel_type], repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)))
+    r[:channel_type] =
+        vcat(r[:channel_type], repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)))
     r[:unit] = vcat(r[:unit], repeat([use_rho ? "μM" : "μM·mm"], 3 * size(dc, 3)))
     for idx1 in lst
         l = split(obj.header.recording[:label][ch[idx1]], ' ')[1]
         r[:label] = vcat(r[:label], ["$l HbO", "$l HbR", "$l HbT"])
         # a concentration channel is bad if any of its OD channels is bad
-        idx2 = findall(wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2])
-        r[:bad_channel] = vcat(r[:bad_channel], fill(any(obj.header.recording[:bad_channel][ch[vcat(idx1, idx2)]]), 3))
+        idx2 = findall(
+            wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2],
+        )
+        r[:bad_channel] = vcat(
+            r[:bad_channel],
+            fill(any(obj.header.recording[:bad_channel][ch[vcat(idx1, idx2)]]), 3),
+        )
     end
     r[:channel_order] = _sort_channels(r[:channel_type])
 

@@ -120,9 +120,13 @@ function locs_roty(
     if spherical
         # rotate the Cartesian coordinates derived from the spherical ones (unrounded)
         r, t, p = _sph_transform(
-            locs, (x, y, z) -> ((@. x * cosd(a) + z * sind(a)), y, (@. -x * sind(a) + z * cosd(a))),
+            locs,
+            (x, y, z) ->
+                ((@. x * cosd(a) + z * sind(a)), y, (@. -x * sind(a) + z * cosd(a))),
         )
-        locs_new[!, :loc_radius_sph], locs_new[!, :loc_theta_sph], locs_new[!, :loc_phi_sph] = r, t, p
+        locs_new[!, :loc_radius_sph],
+        locs_new[!, :loc_theta_sph],
+        locs_new[!, :loc_phi_sph] = r, t, p
     end
 
     polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
@@ -200,9 +204,13 @@ function locs_rotx(
     if spherical
         # rotate the Cartesian coordinates derived from the spherical ones (unrounded)
         r, t, p = _sph_transform(
-            locs, (x, y, z) -> (x, (@. y * cosd(a) - z * sind(a)), (@. y * sind(a) + z * cosd(a))),
+            locs,
+            (x, y, z) ->
+                (x, (@. y * cosd(a) - z * sind(a)), (@. y * sind(a) + z * cosd(a))),
         )
-        locs_new[!, :loc_radius_sph], locs_new[!, :loc_theta_sph], locs_new[!, :loc_phi_sph] = r, t, p
+        locs_new[!, :loc_radius_sph],
+        locs_new[!, :loc_theta_sph],
+        locs_new[!, :loc_phi_sph] = r, t, p
     end
 
     polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")

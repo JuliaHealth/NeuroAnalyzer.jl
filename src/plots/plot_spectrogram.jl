@@ -253,7 +253,15 @@ function plot_spectrogram(
         _, bm = seg_extract(sp; threshold = threshold, threshold_type = threshold_type)
         reg = ones(size(sp)) .* minimum(sp)
         reg[bm] .= maximum(sp)
-        GLMakie.contour!(ax, sf[fi], ch, reg[:, fi]'; levels = 1, color = :black, linewidth = 2)
+        GLMakie.contour!(
+            ax,
+            sf[fi],
+            ch,
+            reg[:, fi]';
+            levels = 1,
+            color = :black,
+            linewidth = 2,
+        )
     end
 
     # draw colorbar
@@ -312,7 +320,7 @@ function plot_spectrogram_topo(
     frq::Symbol = :lin,
     cart::Bool = false,
     head::Bool = true,
-    gui::Bool=true,
+    gui::Bool = true,
 )::GLMakie.Figure
     # validate
     size(sp, 3) == DataFrames.nrow(locs) || throw(
@@ -395,7 +403,7 @@ function plot_spectrogram_topo(
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(sp, 3)
         pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
-        gl = GridLayout(pp[1, 1], alignmode = Outside(5))
+        gl = GridLayout(pp[1, 1]; alignmode = Outside(5))
         ax = GLMakie.Axis(
             gl[1, 1];
             xlabel = "",
@@ -413,10 +421,10 @@ function plot_spectrogram_topo(
         GLMakie.heatmap!(ax, sf, st, sp[:, :, idx]'; colormap = pal)
 
         # draw black box around the entire figure
-        GLMakie.Box(pp[:, :], 
-            color = :transparent, 
-            strokecolor = :black, 
-            strokewidth = 1.5
+        GLMakie.Box(pp[:, :];
+            color = :transparent,
+            strokecolor = :black,
+            strokewidth = 1.5,
         )
 
         push!(pp_vec, pp)
@@ -444,7 +452,7 @@ function plot_spectrogram_topo(
     fig = GLMakie.Figure(; size = plot_size, figure_padding = 0)
 
     # create axis with customizable properties
-    ax  = GLMakie.Axis(
+    ax = GLMakie.Axis(
         fig[1, 1];
         xlabel = "",
         ylabel = "",
@@ -452,7 +460,7 @@ function plot_spectrogram_topo(
         aspect = 1,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        _AXIS_LOCK_KWARGS...
+        _AXIS_LOCK_KWARGS...,
     )
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -597,7 +605,7 @@ function plot_spectrogram(
     type::Symbol = :normal,
     cart::Bool = false,
     head::Bool = true,
-    gui::Bool=true,
+    gui::Bool = true,
 )::GLMakie.Figure where {T <: CWT}
     # validate
     _check_var(type, [:normal, :topo], "type")

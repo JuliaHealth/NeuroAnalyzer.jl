@@ -25,7 +25,9 @@ Parse a BioSig `eventcodes.txt` file.
 - `Dict{UInt16, String}`: official event codes (uncommented lines)
 - `Dict{UInt16, String}`: reserved/proposed event codes (commented-out code lines)
 """
-function _read_gdf_eventcodes(file::String)::Tuple{Dict{UInt16, String}, Dict{UInt16, String}}
+function _read_gdf_eventcodes(
+    file::String,
+)::Tuple{Dict{UInt16, String}, Dict{UInt16, String}}
     official = Dict{UInt16, String}()
     reserved = Dict{UInt16, String}()
     for line in eachline(file)

@@ -73,7 +73,6 @@ function import_locs(file_name::String)::DataFrame
         )
     end
 
-
     return locs
 end
 
@@ -797,7 +796,8 @@ function import_locs_asc(file_name::String)::DataFrame
     re =
         r"([0-9]+ +)([0-9]+ +)(-?[0-9]+\.[0-9]+ +)(-?[0-9]+\.[0-9]+ +)(-?[0-9]+\.[0-9]+ +)(-?[0-9]+\.[0-9]+)"
     for (idx, m) in enumerate(match.(re, data_lines))
-        isnothing(m) && throw(ArgumentError("$file_name: cannot parse line \"$(data_lines[idx])\"."))
+        isnothing(m) &&
+            throw(ArgumentError("$file_name: cannot parse line \"$(data_lines[idx])\"."))
         locs_mat[idx, 1] = parse(Float64, strip(m[3]))
         locs_mat[idx, 2] = parse(Float64, strip(m[4]))
         locs_mat[idx, 3] = parse(Float64, strip(m[5]))

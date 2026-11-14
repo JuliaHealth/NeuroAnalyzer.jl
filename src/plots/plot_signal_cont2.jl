@@ -199,7 +199,10 @@ function plot_cont(
                 GLMakie.text!(
                     ax1, l_pos;
                     markerspace = :pixel,
-                    text = lift(g -> string(round(r_k / g; sigdigits = 3)) * " " * cunits[idx1], gain),
+                    text = lift(
+                        g -> string(round(r_k / g; sigdigits = 3)) * " " * cunits[idx1],
+                        gain,
+                    ),
                     fontsize = 10,
                     color = :red,
                     align = (:left, :bottom),
@@ -326,7 +329,8 @@ function plot_cont(
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 # Alt + ↑ / ↓: vertical scaling of the traces
-                alt = ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
+                alt =
+                    ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
                 alt && event.key == Keyboard.up && (gain[] *= 1.25)
                 alt && event.key == Keyboard.down && (gain[] /= 1.25)
                 if !alt && event.key == Keyboard.down

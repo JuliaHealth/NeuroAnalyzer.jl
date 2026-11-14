@@ -464,13 +464,18 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         size(aux_data, 2) != size(data, 2) && size(aux_data, 1) == size(data, 2) &&
             (aux_data = permutedims(aux_data))
         if size(aux_data, 2) != size(data, 2)
-            _warn("Auxiliary stream $a_id has a different number of samples than the data; skipped.")
+            _warn(
+                "Auxiliary stream $a_id has a different number of samples than the data; skipped.",
+            )
             continue
         end
         k = "$n_id/$a_id/name"
-        aux_name = k in keys(nirs) ? string(nirs[k] isa AbstractArray ? nirs[k][1] : nirs[k]) : "AUX$aux_idx"
+        aux_name =
+            k in keys(nirs) ? string(nirs[k] isa AbstractArray ? nirs[k][1] : nirs[k]) :
+            "AUX$aux_idx"
         k = "$n_id/$a_id/dataUnit"
-        aux_unit = k in keys(nirs) ? string(nirs[k] isa AbstractArray ? nirs[k][1] : nirs[k]) : ""
+        aux_unit =
+            k in keys(nirs) ? string(nirs[k] isa AbstractArray ? nirs[k][1] : nirs[k]) : ""
         data = vcat(data, aux_data)
         for row in axes(aux_data, 1)
             push!(clabels, size(aux_data, 1) == 1 ? aux_name : "$(aux_name)_$row")

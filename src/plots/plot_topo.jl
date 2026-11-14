@@ -145,18 +145,18 @@ function plot_topo(
         lw = 1
         sw = 2
     elseif ps === :s
-        plot_size = (100, 100)
+        plot_size   = (100, 100)
         marker_size = length(ch) > 64 ? 1 : 2
-        iter = 128
+        iter        = 128
         font_size   = 5
-        label_size = 4
-        title = ""
-        cb = false
-        contours = 0
-        cb_title = ""
-        lw = 1
-        sw = 1
-        ch_labels = false
+        label_size  = 4
+        title       = ""
+        cb          = false
+        contours    = 0
+        cb_title    = ""
+        lw          = 1
+        sw          = 1
+        ch_labels   = false
     end
 
     # interpolate signal
@@ -320,7 +320,7 @@ function plot_topo(
                     GLMakie.scatter!(
                         ax, loc_x[idx], loc_y[idx];
                         markersize  = marker_size * 2,
-                        color = :gray,
+                        color       = :gray,
                         strokewidth = sw,
                         strokecolor = :black,
                     )

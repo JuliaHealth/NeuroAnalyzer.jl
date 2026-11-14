@@ -78,8 +78,8 @@ function epoch(
 
         epochs, obj_tmp.markers = _make_epochs_bymarkers(
             obj_tmp.data;
-            marker       = marker,
-            markers      = deepcopy(obj_tmp.markers),
+            marker  = marker,
+            markers = deepcopy(obj_tmp.markers),
             # 1-based sample number of each marker (a marker at t = 0 s is sample 1)
             marker_start = t2s.(mrk_start, sr(obj)),
             offset       = t2n(offset, sr(obj)),

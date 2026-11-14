@@ -66,7 +66,8 @@ ad = ampdiff(e10; ch = "all")
 @test size(band_power(e10, ch = "Fp1", flim = (10, 20), method = :gh)) == (1, 10)
 # band power of a sine of amplitude 10 = its variance (50), as in MNE-Python (sum of PSD bins × bin width)
 x_bp = 10 .* sin.(2π * 10 .* (0:255) ./ 128 .+ 0.3)
-@test NeuroAnalyzer._band_power(x_bp; fs = 128, flim = (8, 12), wlen = 128, woverlap = 64) ≈ 50 rtol = 1e-3
+@test NeuroAnalyzer._band_power(x_bp; fs = 128, flim = (8, 12), wlen = 128, woverlap = 64) ≈
+      50 rtol = 1e-3
 
 @info "Test: band_mpower()"
 mbp, maxf, maxbp, maxba = band_mpower(e10; ch = "Fp1", flim = (10, 20))
@@ -329,7 +330,8 @@ coh_data = NeuroAnalyzer._coherence(rand(100), rand(100); fs = 10, wstep = 5, me
 @test length(coh_data.imcoh) == 51
 @test length(coh_data.msc) == 51
 @test length(coh_data.f) == 51
-coh_data = NeuroAnalyzer._coherence(rand(100), rand(100); fs = 10, wstep = 5, method = :stft)
+coh_data =
+    NeuroAnalyzer._coherence(rand(100), rand(100); fs = 10, wstep = 5, method = :stft)
 @test length(coh_data.coh) == 9
 @test length(coh_data.imcoh) == 9
 @test length(coh_data.msc) == 9
@@ -608,11 +610,19 @@ x2 = sin.(2π * 8 .* (0:511) ./ 256 .- π / 2)
 # identical signals (zero lag): wPLI = 0; zero lag + independent noise: wPLI small
 @test NeuroAnalyzer._wpli(x1, x1).pv == 0
 rng_w = NeuroAnalyzer.Random.MersenneTwister(3)
-w0 = [NeuroAnalyzer._wpli(x1 .+ 0.3 .* randn(rng_w, 512), 0.8 .* x1 .+ 0.3 .* randn(rng_w, 512)).pv for _ in 1:20]
-w4 = [NeuroAnalyzer._wpli(x1 .+ 0.3 .* randn(rng_w, 512), x2 .+ 0.3 .* randn(rng_w, 512)).pv for _ in 1:20]
+w0 = [
+    NeuroAnalyzer._wpli(
+        x1 .+ 0.3 .* randn(rng_w, 512),
+        0.8 .* x1 .+ 0.3 .* randn(rng_w, 512),
+    ).pv for _ = 1:20
+]
+w4 = [
+    NeuroAnalyzer._wpli(x1 .+ 0.3 .* randn(rng_w, 512), x2 .+ 0.3 .* randn(rng_w, 512)).pv
+    for _ = 1:20
+]
 @test sum(w0) / length(w0) < 0.3 && sum(w4) / length(w4) > 0.9
 # across epochs (matrix method): zero lag ≈ 0, constant lag = 1
-m0a = hcat([x1 .+ 0.3 .* randn(rng_w, 512) for _ in 1:30]...)
+m0a = hcat([x1 .+ 0.3 .* randn(rng_w, 512) for _ = 1:30]...)
 m0b = 0.8 .* m0a .+ 0.3 .* randn(rng_w, 512, 30)
 @test abs(NeuroAnalyzer._wpli(m0a, m0b; debiased = true)) < 0.2
 @test NeuroAnalyzer._wpli(hcat(x1, x1, x1), hcat(x2, x2, x2)) ≈ 1
@@ -688,14 +698,35 @@ ec, p = env_cor(e1, e2)
 p, f = NeuroAnalyzer._psd_rel(rand(100); fs = 10, flim = (0, 1), wlen = 10, woverlap = 5)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-p, f = NeuroAnalyzer._psd_rel(rand(10, 100); fs = 10, flim = (0, 1), wlen = 10, woverlap = 5)
+p, f =
+    NeuroAnalyzer._psd_rel(rand(10, 100); fs = 10, flim = (0, 1), wlen = 10, woverlap = 5)
 @test size(p) == (10, 6)
-p, f = NeuroAnalyzer._psd_rel(rand(10, 100, 10); fs = 10, flim = (0, 1), wlen = 10, woverlap = 5)
+p, f = NeuroAnalyzer._psd_rel(
+    rand(10, 100, 10);
+    fs = 10,
+    flim = (0, 1),
+    wlen = 10,
+    woverlap = 5,
+)
 @test size(p) == (10, 6, 10)
-p, f = NeuroAnalyzer._psd_rel(rand(100); fs = 10, method = :mt, flim = (0, 1), wlen = 10, woverlap = 5)
+p, f = NeuroAnalyzer._psd_rel(
+    rand(100);
+    fs = 10,
+    method = :mt,
+    flim = (0, 1),
+    wlen = 10,
+    woverlap = 5,
+)
 @test length(p) == 51
 @test round.(f, digits = 3) == 0.0:0.1:5.0
-p, f = NeuroAnalyzer._psd_rel(rand(10, 100); fs = 10, method = :mt, flim = (0, 1), wlen = 10, woverlap = 5)
+p, f = NeuroAnalyzer._psd_rel(
+    rand(10, 100);
+    fs = 10,
+    method = :mt,
+    flim = (0, 1),
+    wlen = 10,
+    woverlap = 5,
+)
 @test size(p) == (10, 51)
 p, f = NeuroAnalyzer._psd_rel(
     rand(10, 100, 10);
@@ -1215,7 +1246,15 @@ pv, sd, phd, s1p, s2p = wpli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 
 @test size(s2p) == (1, 2560, 1)
 pv2 = wpli(e10, e10; ch1 = ["Fp1", "F3"], ch2 = ["Fp2", "F4"], across_epochs = true).pv
 @test size(pv2) == (2, 1) && all(0 .<= pv2 .<= 1)
-@test_throws ArgumentError wpli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, across_epochs = true)
+@test_throws ArgumentError wpli(
+    e10,
+    e10;
+    ch1 = "Fp1",
+    ch2 = "Fp2",
+    ep1 = 1,
+    ep2 = 1,
+    across_epochs = true,
+)
 pv, sd, phd, s1p, s2p =
     wpli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1, debiased = true)
 @test size(pv) == (1, 1)
@@ -1269,7 +1308,11 @@ pv = psi(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
 #   fixed: ap = [1.00846, 1.50140], peaks = [10.0016 0.78872 2.91857; 22.0024 0.38969 3.80960], R² = 0.99986
 #   knee:  ap = [1.0, 25.0, 2.0], no peaks
 f = collect(1:0.5:40)
-p = 10 .^ (1 .- 1.5 .* log10.(f) .+ 0.8 .* exp.(-(f .- 10) .^ 2 ./ (2 * 1.5^2)) .+ 0.4 .* exp.(-(f .- 22) .^ 2 ./ (2 * 2.0^2)))
+p =
+    10 .^ (
+        1 .- 1.5 .* log10.(f) .+ 0.8 .* exp.(-(f .- 10) .^ 2 ./ (2 * 1.5^2)) .+
+        0.4 .* exp.(-(f .- 22) .^ 2 ./ (2 * 2.0^2))
+    )
 r = NeuroAnalyzer._fooof(f, p)
 @test isapprox(r.ap, [1.00846, 0.0, 1.50140]; atol = 1e-3)
 @test size(r.pe) == (2, 3)
@@ -1315,8 +1358,10 @@ m_tmp = [1.0 2.0 5.0; 3.0 2.0 1.0]
 @test NeuroAnalyzer._erp_gfp(m_tmp) ≈ [1.0, 0.0, 2.0]
 @test erp_gfp_norm(m_tmp)[:, 2] == m_tmp[:, 2]
 # ftt_analyze: intervals within trials only
-t_tmp = (taps = [3, 1], tap_t = [[0.0, 100.0, 300.0], [50.0]], tap_d = [[1.0, 1.0, 1.0], [1.0]],
-    taps_int = [0, 0], tap_t_int = [Float64[], Float64[]], tap_d_int = [Float64[], Float64[]])
+t_tmp =
+    (taps = [3, 1], tap_t = [[0.0, 100.0, 300.0], [50.0]], tap_d = [[1.0, 1.0, 1.0], [1.0]],
+        taps_int = [0, 0], tap_t_int = [Float64[], Float64[]],
+        tap_d_int = [Float64[], Float64[]])
 r_tmp = ftt_analyze(t_tmp)
 @test r_tmp.t_mean == 150.0 && r_tmp.t_rmssd == 100.0 && isnan(r_tmp.t_sdsd)
 # cosim within one object (used an undefined variable)
@@ -1329,10 +1374,12 @@ x1 = sin.(2π * 8 .* (0:511) ./ 256)
 x2 = sin.(2π * 8 .* (0:511) ./ 256 .- π / 2)
 @test NeuroAnalyzer._dpli(x1, x2).pv > 0.9
 # pacor() with :reg (always threw)
-@test size(pacor(e10; ch = "Fp1", l = 0.05, method = :reg).pac, 2) == 2 * round(Int, 0.05 * sr(e10)) + 1
+@test size(pacor(e10; ch = "Fp1", l = 0.05, method = :reg).pac, 2) ==
+      2 * round(Int, 0.05 * sr(e10)) + 1
 # regression PACF solved by QR: same as StatsBase (Cholesky) when well-conditioned
 x_pac = randn(NeuroAnalyzer.Random.MersenneTwister(1), 1000)
-@test NeuroAnalyzer._pacf_reg(x_pac, 10) ≈ NeuroAnalyzer.pacf(x_pac, collect(1:10); method = :regression)
+@test NeuroAnalyzer._pacf_reg(x_pac, 10) ≈
+      NeuroAnalyzer.pacf(x_pac, collect(1:10); method = :regression)
 # phase differences are wrapped to (-π, π]
 x1 = sin.(2π * 5 .* (0:255) ./ 256)
 x2 = sin.(2π * 5 .* (0:255) ./ 256 .+ 3.0)
@@ -1364,13 +1411,20 @@ g_tmp = NeuroAnalyzer._granger(x_gc; order = 1)
 @test g_tmp.gc[1, 2] > 0.1 && g_tmp.gc[2, 1] < 0.01 && g_tmp.p[1, 2] < 0.001
 # spectral GC: 2 channels, conditional = pairwise; frequency average = time-domain GC
 gs_p = NeuroAnalyzer._granger_spectral(x_gc; fs = 100, order = 1, nfrq = 128)
-gs_c = NeuroAnalyzer._granger_spectral(x_gc; fs = 100, order = 1, nfrq = 128, conditional = true)
+gs_c = NeuroAnalyzer._granger_spectral(
+    x_gc;
+    fs = 100,
+    order = 1,
+    nfrq = 128,
+    conditional = true,
+)
 @test maximum(abs.(gs_p.gc .- gs_c.gc)) < 1e-6
 gm = sum((gs_p.gc[1, 2, 1:(end - 1)] .+ gs_p.gc[1, 2, 2:end]) ./ 2) / (length(gs_p.frq) - 1)
 @test gm ≈ g_tmp.gc[1, 2] rtol = 0.05
 # NEURO methods
 @test size(granger(e10; ch = ["Fp1", "Fp2"], order = 2).gc) == (2, 2)
-@test size(granger_spectral(e10; ch = ["Fp1", "Fp2"], order = 2, nfrq = 16).gc) == (2, 2, 16)
+@test size(granger_spectral(e10; ch = ["Fp1", "Fp2"], order = 2, nfrq = 16).gc) ==
+      (2, 2, 16)
 # psd_slope(): slope per Hz (0.5 Hz resolution)
 x = randn(NeuroAnalyzer.Random.MersenneTwister(2), 5120)
 r_tmp = NeuroAnalyzer._psd_slope(x; fs = 256, wlen = 512)
@@ -1381,7 +1435,8 @@ c_tmp = cph(e10; ch = ["Fp1", "Fp2"])
 # erp_auc(): selected channels (not the first ones); positive + negative = total
 e_erp = average_epochs(e10)
 a_all = erp_auc(e_erp; ch = "Fp2")
-@test a_all ≈ erp_auc(e_erp; ch = "Fp2", type = :pos) .+ erp_auc(e_erp; ch = "Fp2", type = :neg)
+@test a_all ≈
+      erp_auc(e_erp; ch = "Fp2", type = :pos) .+ erp_auc(e_erp; ch = "Fp2", type = :neg)
 @test a_all != erp_auc(e_erp; ch = "Fp1")
 # negentropy of a Gaussian signal ≈ 0 (bits vs bits); the object is not modified
 x = randn(NeuroAnalyzer.Random.MersenneTwister(3), 20000)
@@ -1389,8 +1444,10 @@ x = randn(NeuroAnalyzer.Random.MersenneTwister(3), 20000)
 # negentropy does not depend on the signal scale (differential entropy over the whole KDE support)
 xu = rand(NeuroAnalyzer.Random.MersenneTwister(4), 10000)
 @test NeuroAnalyzer._negentropy(xu; norm = false) > 0
-@test NeuroAnalyzer._negentropy(xu; norm = false) ≈ NeuroAnalyzer._negentropy(1e-3 .* xu; norm = false) rtol = 1e-4
-@test NeuroAnalyzer._negentropy(xu) ≈ NeuroAnalyzer._negentropy(xu; norm = false) rtol = 1e-4
+@test NeuroAnalyzer._negentropy(xu; norm = false) ≈
+      NeuroAnalyzer._negentropy(1e-3 .* xu; norm = false) rtol = 1e-4
+@test NeuroAnalyzer._negentropy(xu) ≈ NeuroAnalyzer._negentropy(xu; norm = false) rtol =
+    1e-4
 e_tmp = deepcopy(e10)
 negentropy(e_tmp; ch = "Fp1", demean = false)
 @test e_tmp.data == e10.data
@@ -1445,12 +1502,18 @@ p = NeuroAnalyzer._psi(x, y; fs = 256, flim = (1, 40))
 @test_throws ArgumentError NeuroAnalyzer._psi(x[1:8], y[1:8]; fs = 256, flim = (1, 2))
 # vendored Simpson / FIRLS: values from SciPy 1.17 (scipy.integrate.simpson, scipy.signal.firls)
 @test NeuroAnalyzer.Simpson.simpson(collect(0:0.1:2) .^ 3; dx = 0.1) ≈ 4.0
-h = NeuroAnalyzer.FIRLSFilterDesign.firls_design(100, [0, 9, 11, 128.0], [1, 1, 0, 0.0], ones(4), false; fs = 256)
+h = NeuroAnalyzer.FIRLSFilterDesign.firls_design(
+    100,
+    [0, 9, 11, 128.0],
+    [1, 1, 0, 0.0],
+    ones(4),
+    false;
+    fs = 256,
+)
 @test length(h) == 101 && h ≈ reverse(h)
 @test sum(h) ≈ 0.9627675365974948
 @test h[51] ≈ 0.078125
 @test h[1] ≈ -0.0014178653128872954
-
 
 ##
 ## values: SciPy 1.17 references, closed-form results on synthetic signals
@@ -1458,36 +1521,59 @@ h = NeuroAnalyzer.FIRLSFilterDesign.firls_design(100, [0, 9, 11, 128.0], [1, 1, 
 
 fs = 256
 tv = (0:1023) ./ fs
-xa = sin.(2π * 10 .* tv) .+ 0.5 .* sin.(2π * 23 .* tv .+ 0.3) .+ 0.2 .* cos.(2π * 47 .* tv) .+ 0.1 .* sin.(2π * 3.7 .* tv) .^ 3
-ya = 0.8 .* sin.(2π * 10 .* tv .- 0.7) .+ 0.3 .* sin.(2π * 31 .* tv) .+ 0.1 .* cos.(2π * 47 .* tv .+ 1) .+ 0.05 .* cos.(2π * 71 .* tv) .* sin.(2π * 0.9 .* tv)
+xa =
+    sin.(2π * 10 .* tv) .+ 0.5 .* sin.(2π * 23 .* tv .+ 0.3) .+ 0.2 .* cos.(2π * 47 .* tv) .+
+    0.1 .* sin.(2π * 3.7 .* tv) .^ 3
+ya =
+    0.8 .* sin.(2π * 10 .* tv .- 0.7) .+ 0.3 .* sin.(2π * 31 .* tv) .+
+    0.1 .* cos.(2π * 47 .* tv .+ 1) .+ 0.05 .* cos.(2π * 71 .* tv) .* sin.(2π * 0.9 .* tv)
 s2 = 2 .* sin.(2π * 10 .* tv)
 
 @info "Test: psd() / spectrogram() / coherence() / htransform() vs SciPy"
 # scipy.signal.welch(x - mean, window = hann(256, sym = True), nperseg = 256, noverlap = 230, detrend = False)
 p = NeuroAnalyzer._psd(xa; fs = fs, method = :welch, wlen = 256, woverlap = 230)
 @test length(p.p) == 129
-@test p.p[[11, 24, 48]] ≈ [0.3323734482782393, 0.08300780760898713, 0.013281255151670541] rtol = 1e-10
+@test p.p[[11, 24, 48]] ≈ [0.3323734482782393, 0.08300780760898713, 0.013281255151670541] rtol =
+    1e-10
 # scipy.signal.periodogram(x - mean, window = hann(1024, sym = True), detrend = False)
 p = NeuroAnalyzer._psd(xa; fs = fs, method = :fft)
 @test p.f[[41, 93]] == [10.0, 23.0]
 @test p.p[[41, 93]] ≈ [1.3321094937218387, 0.33300812959494636] rtol = 1e-10
 # scipy.signal.spectrogram(..., mode = "psd"): 30 segments, centers 0.5, 0.6015625, … s
-sp = NeuroAnalyzer._spectrogram(xa; fs = fs, method = :stft, wlen = 256, woverlap = 230, db = false)
+sp = NeuroAnalyzer._spectrogram(
+    xa;
+    fs = fs,
+    method = :stft,
+    wlen = 256,
+    woverlap = 230,
+    db = false,
+)
 @test size(sp.p) == (129, 30)
 @test sp.t[1:2] == [0.5, 0.6015625]
 @test sp.p[11, 1] ≈ 0.3388363680892147 rtol = 1e-6
 @test sp.p[24, 6] ≈ 0.08300121883523325 rtol = 1e-6
 # scipy.signal.coherence(x, y, window = hann(256, sym = True), nperseg = 256, noverlap = 192, nfft = 256)
-c = NeuroAnalyzer._coherence(xa, ya; fs = fs, method = :stft, wlen = 256, wstep = 64, demean = true)
+c = NeuroAnalyzer._coherence(
+    xa,
+    ya;
+    fs = fs,
+    method = :stft,
+    wlen = 256,
+    wstep = 64,
+    demean = true,
+)
 @test c.f[[11, 32, 48, 61]] == [10.0, 31.0, 47.0, 60.0]
-@test c.msc[[11, 32, 48, 61]] ≈ [0.9998861347266094, 0.9611892034248443, 0.9999999991801273, 0.2826798537576459] rtol = 1e-9
+@test c.msc[[11, 32, 48, 61]] ≈
+      [0.9998861347266094, 0.9611892034248443, 0.9999999991801273, 0.2826798537576459] rtol =
+    1e-9
 @test c.imcoh ≈ imag.(c.coh)
 # a single segment (:fft): |coherence| = 1 at every frequency
 @test all(NeuroAnalyzer._coherence(xa, ya; fs = fs, method = :fft).msc .≈ 1)
 # |scipy.signal.hilbert(x)|
 @test htransform(xa).a[[501, 101]] ≈ [0.3079868348251104, 1.249903120202579] rtol = 1e-10
 @test NeuroAnalyzer._hanalytic(xa) ≈ NeuroAnalyzer.DSP.hilbert(xa)
-@test NeuroAnalyzer._hanalytic(reshape(xa, 1, :, 1))[1, :, 1] ≈ NeuroAnalyzer.DSP.hilbert(xa)
+@test NeuroAnalyzer._hanalytic(reshape(xa, 1, :, 1))[1, :, 1] ≈
+      NeuroAnalyzer.DSP.hilbert(xa)
 @test hanalytic(e10; ch = "Fp1")[1, :, 2] ≈ NeuroAnalyzer.DSP.hilbert(e10.data[1, :, 2])
 
 @info "Test: spectral estimates of a sine (closed form)"
@@ -1498,7 +1584,8 @@ for m in (:welch, :fft, :mt)
     @test p.f[argmax(p.p)] == 10.0
     @test NeuroAnalyzer._total_power(s2; fs = fs, method = m) ≈ 2.0 rtol = 1e-3
 end
-@test NeuroAnalyzer._total_power(xa; fs = fs) ≈ sum(abs2, xa .- sum(xa) / length(xa)) / length(xa) rtol = 1e-3
+@test NeuroAnalyzer._total_power(xa; fs = fs) ≈
+      sum(abs2, xa .- sum(xa) / length(xa)) / length(xa) rtol = 1e-3
 # Morlet wavelets have unit gain at their center frequency: power of A sin = (A/2)²
 mw = mwspectrogram(s2; fs = fs, db = false)
 @test mw.f[argmax(vec(sum(mw.p; dims = 2)))] == 10.0
@@ -1576,7 +1663,8 @@ xc = NeuroAnalyzer._xcov(xa, xa; l = 5)
 xd = vcat(zeros(3), xa[1:(end - 3)])
 xc = NeuroAnalyzer._xcov(xd, xa; l = 6)
 @test argmax(xc[1, :, 1]) - 7 == 3
-@test NeuroAnalyzer._xcov(xa, ya; l = 4, method = :cov)[1, 5, 1] ≈ NeuroAnalyzer.Statistics.cov(xa, ya; corrected = false)
+@test NeuroAnalyzer._xcov(xa, ya; l = 4, method = :cov)[1, 5, 1] ≈
+      NeuroAnalyzer.Statistics.cov(xa, ya; corrected = false)
 @test_throws ArgumentError NeuroAnalyzer._xcov(xa, ya[1:10])
 # AR(1) with φ = 0.7: partial autocorrelation 0.7 at lag 1, ≈ 0 beyond
 rng_ = NeuroAnalyzer.Random.MersenneTwister(11)
@@ -1598,7 +1686,8 @@ h = NeuroAnalyzer._ghexp(bm_; tau_range = 1:20)
 @info "Test: stationarity_*() values"
 s = vcat(fill(1.0, 10), fill(3.0, 10), [5.0])
 @test stationarity_mean(s; window = 2) == [1.0, 3.0]
-@test stationarity_var(vcat(collect(1.0:4), collect(1.0:4) .* 2); window = 2) ≈ [NeuroAnalyzer.Statistics.var(1:4), NeuroAnalyzer.Statistics.var(2:2:8)]
+@test stationarity_var(vcat(collect(1.0:4), collect(1.0:4) .* 2); window = 2) ≈
+      [NeuroAnalyzer.Statistics.var(1:4), NeuroAnalyzer.Statistics.var(2:2:8)]
 @test_throws ArgumentError stationarity_mean(s; window = 0)
 @test_throws ArgumentError stationarity_var(s; window = 100)
 # a sine: constant phase increments of 2πf / fs
@@ -1614,7 +1703,8 @@ h = hrv_detect(e_ecg)
 @test all(h.nn_seg .== 1000.0)
 ha = hrv_analyze([800.0, 850.0, 900.0, 1000.0])
 @test ha.menn == 887.5 && ha.mdnn == 875.0
-@test ha.vnn ≈ NeuroAnalyzer.Statistics.var([800.0, 850.0, 900.0, 1000.0]) && ha.sdnn ≈ NeuroAnalyzer.Statistics.std([800.0, 850.0, 900.0, 1000.0])
+@test ha.vnn ≈ NeuroAnalyzer.Statistics.var([800.0, 850.0, 900.0, 1000.0]) &&
+      ha.sdnn ≈ NeuroAnalyzer.Statistics.std([800.0, 850.0, 900.0, 1000.0])
 @test ha.rmssd ≈ sqrt((50^2 + 50^2 + 100^2) / 3)
 @test ha.sdsd ≈ NeuroAnalyzer.Statistics.std([50.0, 50.0, 100.0])
 @test ha.nn50 == 1
@@ -1625,9 +1715,15 @@ e_tmp = keep_channel(e10; ch = "Fp1")
 @info "Test: tpt_detect() / tpt_analyze()"
 tp = create_object(; data_type = "tpt")
 tp.header.recording[:sampling_rate] = 50
-add_channel!(tp; data = zeros(6, 1000, 1), label = ["x", "y", "z", "p1", "p2", "p3"], type = repeat(["other"], 6), unit = repeat([""], 6))
+add_channel!(
+    tp;
+    data = zeros(6, 1000, 1),
+    label = ["x", "y", "z", "p1", "p2", "p3"],
+    type = repeat(["other"], 6),
+    unit = repeat([""], 6),
+)
 tp.time_pts, tp.epoch_time = NeuroAnalyzer._get_t(tp)
-for k in 60:100:960
+for k = 60:100:960
     tp.data[4, k:(k + 2), 1] .= 100.0
 end
 pi_ = tpt_detect(tp)
@@ -1640,7 +1736,7 @@ ta = tpt_analyze(tp)
 mep = import_duomag(joinpath(testfiles_path, "mep", "mep-duomag.ascii"))
 pk = mep_peaks(mep)
 ss = mep.header.recording[:stimulation_sample] .+ 20
-for ch in 1:nchannels(mep)
+for ch = 1:nchannels(mep)
     @test mep.data[ch, pk[ch, 1], 1] == maximum(mep.data[ch, ss[ch]:end, 1])
     @test mep.data[ch, pk[ch, 2], 1] == minimum(mep.data[ch, ss[ch]:end, 1])
     @test all(pk[ch, :] .>= ss[ch])
@@ -1675,26 +1771,52 @@ fq = collect(1.0:0.5:40.0)
 @test NeuroAnalyzer._fooof_gauss(fq, [10.0, 1.0, 2.0])[findfirst(==(10.0), fq)] == 1.0
 # analytic Jacobians = finite differences
 for (fun, jac, p0) in ((NeuroAnalyzer._fooof_ap, NeuroAnalyzer._fooof_ap_jac, [1.0, 2.0]),
-                       (NeuroAnalyzer._fooof_ap, NeuroAnalyzer._fooof_ap_jac, [1.0, 5.0, 2.0]),
-                       (NeuroAnalyzer._fooof_gauss, NeuroAnalyzer._fooof_gauss_jac, [10.0, 1.0, 2.0, 25.0, 0.5, 3.0]))
+    (NeuroAnalyzer._fooof_ap, NeuroAnalyzer._fooof_ap_jac, [1.0, 5.0, 2.0]),
+    (
+        NeuroAnalyzer._fooof_gauss,
+        NeuroAnalyzer._fooof_gauss_jac,
+        [10.0, 1.0, 2.0, 25.0, 0.5, 3.0],
+    ))
     J = jac(fq, p0)
     for k in eachindex(p0)
-        local d = zeros(length(p0)); d[k] = 1e-6
-        @test J[:, k] ≈ (fun(fq, p0 .+ d) .- fun(fq, p0 .- d)) ./ 2e-6 rtol = 1e-5 atol = 1e-8
+        local d = zeros(length(p0))
+        d[k] = 1e-6
+        @test J[:, k] ≈ (fun(fq, p0 .+ d) .- fun(fq, p0 .- d)) ./ 2e-6 rtol = 1e-5 atol =
+            1e-8
     end
 end
 # noise-free aperiodic spectrum: exact recovery of offset and exponent
 pap = 10 .^ NeuroAnalyzer._fooof_ap(fq, [2.0, 1.5])
-@test NeuroAnalyzer._fooof_ap_fit(fq, log10.(pap), NeuroAnalyzer._fooof_ap_guess(fq, log10.(pap), log10.(pap), false)) ≈ [2.0, 1.5] atol = 1e-6
+@test NeuroAnalyzer._fooof_ap_fit(
+    fq,
+    log10.(pap),
+    NeuroAnalyzer._fooof_ap_guess(fq, log10.(pap), log10.(pap), false),
+) ≈ [2.0, 1.5] atol = 1e-6
 @test NeuroAnalyzer._fooof_robust_ap_fit(fq, log10.(pap), false) ≈ [2.0, 1.5] atol = 1e-6
-@test NeuroAnalyzer._fooof_lm(NeuroAnalyzer._fooof_ap, NeuroAnalyzer._fooof_ap_jac, fq, log10.(pap), [0.0, 0.0], fill(-Inf, 2), fill(Inf, 2)) ≈ [2.0, 1.5] atol = 1e-6
+@test NeuroAnalyzer._fooof_lm(
+    NeuroAnalyzer._fooof_ap,
+    NeuroAnalyzer._fooof_ap_jac,
+    fq,
+    log10.(pap),
+    [0.0, 0.0],
+    fill(-Inf, 2),
+    fill(Inf, 2),
+) ≈ [2.0, 1.5] atol = 1e-6
 # a Gaussian peak on a flat spectrum: center, height and width
-pks = NeuroAnalyzer._fooof_fit_peaks(fq, NeuroAnalyzer._fooof_gauss(fq, [10.0, 0.8, 1.5]), (0.5, 12.0), 5, 0.0, 2.0)
+pks = NeuroAnalyzer._fooof_fit_peaks(
+    fq,
+    NeuroAnalyzer._fooof_gauss(fq, [10.0, 0.8, 1.5]),
+    (0.5, 12.0),
+    5,
+    0.0,
+    2.0,
+)
 @test size(pks, 1) == 1
 @test pks[1, :] ≈ [10.0, 0.8, 1.5] rtol = 1e-3
-r = NeuroAnalyzer._fooof_fit(fq, pap .* 10 .^ NeuroAnalyzer._fooof_gauss(fq, [10.0, 0.8, 1.5]);
-                             peak_width_limits = (0.5, 12.0), max_n_peaks = 5, min_peak_height = 0.0,
-                             peak_threshold = 2.0, aperiodic_mode = :fixed)
+r = NeuroAnalyzer._fooof_fit(fq,
+    pap .* 10 .^ NeuroAnalyzer._fooof_gauss(fq, [10.0, 0.8, 1.5]);
+    peak_width_limits = (0.5, 12.0), max_n_peaks = 5, min_peak_height = 0.0,
+    peak_threshold = 2.0, aperiodic_mode = :fixed)
 # fixed model: ap = [offset, 0 (no knee), exponent]
 @test r.ap[[1, 3]] ≈ [2.0, 1.5] atol = 0.01
 @test r.ap[2] == 0.0
@@ -1712,10 +1834,10 @@ rn = NeuroAnalyzer._fooof_nan(fq, pap)
 # 0.5 Hz < 2 × resolution (1 Hz): a warning is printed
 wout = mktemp() do path, io
     redirect_stdout(io) do
-        NeuroAnalyzer._fooof_width_warn(fq, (0.5, 12.0))
+        return NeuroAnalyzer._fooof_width_warn(fq, (0.5, 12.0))
     end
     flush(io)
-    read(path, String)
+    return read(path, String)
 end
 @test occursin("overfitting", wout) || !NeuroAnalyzer.verbose
 
@@ -1742,21 +1864,22 @@ A, Σ = NeuroAnalyzer._gc_var_fit(xv, 2)
 # Benjamini-Hochberg adjusted p-values: monotone in the raw p-values, ≥ raw, ≤ 1, diagonal untouched
 pv = [1.0 0.01 0.04; 0.03 1.0 0.5; 0.02 0.9 1.0]
 adj = NeuroAnalyzer._gc_fdr(pv)
-off = [CartesianIndex(i, j) for i in 1:3 for j in 1:3 if i != j]
+off = [CartesianIndex(i, j) for i = 1:3 for j = 1:3 if i != j]
 @test all(adj[k] >= pv[k] for k in off)
 @test all(adj[k] <= 1 for k in off)
-@test sortperm([adj[k] for k in off]) == sortperm([pv[k] for k in off]) || issorted([adj[k] for k in off][sortperm([pv[k] for k in off])])
+@test sortperm([adj[k] for k in off]) == sortperm([pv[k] for k in off]) ||
+      issorted([adj[k] for k in off][sortperm([pv[k] for k in off])])
 @test adj[1, 2] ≈ 0.01 * 6 / 1
 # Wilson factorization: S = H Σ Hᴴ at every frequency
 N2 = 64
 S = zeros(ComplexF64, 2, 2, N2)
-for k in 1:N2
+for k = 1:N2
     ω = 2π * (k - 1) / N2
     Hk = inv([1.0 0.0; 0.0 1.0] .- [0.5 0.0; 0.6 0.4] .* exp(-im * ω))
     S[:, :, k] = Hk * Hk'
 end
 H, Σw = NeuroAnalyzer._gc_wilson(S)
-@test all(H[:, :, k] * Σw * H[:, :, k]' ≈ S[:, :, k] for k in 1:N2)
+@test all(H[:, :, k] * Σw * H[:, :, k]' ≈ S[:, :, k] for k = 1:N2)
 @test Σw ≈ [1.0 0.0; 0.0 1.0] atol = 1e-6
 gp = NeuroAnalyzer._gc_plus(S)
 @test size(gp) == size(S)

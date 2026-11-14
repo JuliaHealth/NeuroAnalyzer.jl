@@ -55,8 +55,16 @@ function tes_model(;
     kₑ = 1
 
     # distances from the anode and the cathode (+1: finite at the electrode itself)
-    r_a = [hypot(loc_x[idx] - loc_x[anode_ch], loc_y[idx] - loc_y[anode_ch]) for idx = 1:ch_n] .+ 1
-    r_c = [hypot(loc_x[idx] - loc_x[cathode_ch], loc_y[idx] - loc_y[cathode_ch]) for idx = 1:ch_n] .+ 1
+    r_a =
+        [
+            hypot(loc_x[idx] - loc_x[anode_ch], loc_y[idx] - loc_y[anode_ch]) for
+            idx = 1:ch_n
+        ] .+ 1
+    r_c =
+        [
+            hypot(loc_x[idx] - loc_x[cathode_ch], loc_y[idx] - loc_y[cathode_ch]) for
+            idx = 1:ch_n
+        ] .+ 1
 
     E = (kₑ * anode_curr) ./ r_a .+ (kₑ * cathode_curr) ./ r_c
     E[anode_ch] = anode_curr

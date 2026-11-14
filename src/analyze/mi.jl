@@ -57,7 +57,7 @@ function _mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float
         ch_idx, ep_idx = idx[1], idx[2]
         mi[ch_idx, ep_idx] = _mutual_information(
             @view(s1[ch_idx, :, ep_idx]),
-            @view(s2[ch_idx, :, ep_idx])
+            @view(s2[ch_idx, :, ep_idx]),
         )
     end
 
@@ -201,6 +201,6 @@ function mutual_information(
 
     return _mutual_information(
         @view(obj1.data[ch1, :, ep1]),
-        @view(obj2.data[ch2, :, ep2])
+        @view(obj2.data[ch2, :, ep2]),
     )
 end

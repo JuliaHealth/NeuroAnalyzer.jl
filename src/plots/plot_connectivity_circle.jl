@@ -48,11 +48,19 @@ function plot_connectivity_circle(
     if !isnothing(threshold)
         if threshold_type in (:in, :bin)
             threshold isa Tuple ||
-                throw(ArgumentError("threshold must contain two values for :$threshold_type."))
+                throw(
+                    ArgumentError(
+                        "threshold must contain two values for :$threshold_type.",
+                    ),
+                )
             _check_tuple(threshold, extrema(m), "threshold")
         else
             threshold isa Real ||
-                throw(ArgumentError("threshold must contain a single value for :$threshold_type."))
+                throw(
+                    ArgumentError(
+                        "threshold must contain a single value for :$threshold_type.",
+                    ),
+                )
         end
     end
 

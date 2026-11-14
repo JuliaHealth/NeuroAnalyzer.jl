@@ -231,8 +231,8 @@ const _TIME_AXIS_KWARGS = (
 )
 
 # logarithmic frequency axis: major ticks at 1-2-5 steps, minor ticks at 1-9 × 10^k
-const _LOG_FRQ_TICKS = [m * 10.0^k for k in -2:3 for m in (1, 2, 5)]
-const _LOG_FRQ_MINORTICKS = [m * 10.0^k for k in -2:3 for m in 1:9]
+const _LOG_FRQ_TICKS = [m * 10.0^k for k = -2:3 for m in (1, 2, 5)]
+const _LOG_FRQ_MINORTICKS = [m * 10.0^k for k = -2:3 for m = 1:9]
 
 """Keyword arguments applied to every frequency axis (`axis`: `:x` or `:y`; `frq`: `:lin` or `:log`)."""
 function _frq_axis_kwargs(frq::Symbol; axis::Symbol = :x)::NamedTuple
@@ -241,7 +241,10 @@ function _frq_axis_kwargs(frq::Symbol; axis::Symbol = :x)::NamedTuple
         minorticks = IntervalsBetween(10)
         scale = identity
     else
-        ticks = (_LOG_FRQ_TICKS, [isinteger(v) ? string(Int(v)) : string(v) for v in _LOG_FRQ_TICKS])
+        ticks = (
+            _LOG_FRQ_TICKS,
+            [isinteger(v) ? string(Int(v)) : string(v) for v in _LOG_FRQ_TICKS],
+        )
         minorticks = _LOG_FRQ_MINORTICKS
         scale = log10
     end
@@ -290,7 +293,8 @@ end
 
 # single dipole with position `pos` and moment `q` in a unit sphere (no fit)
 DIPOLE(pos::NTuple{3, Real}, q::NTuple{3, Real}) = DIPOLE(
-    reshape(Float64[pos...], 1, 3), reshape(Float64[q...], 3, 1), Float64[], zeros(3), 1.0,
+    reshape(Float64[pos...], 1, 3), reshape(Float64[q...], 3, 1), Float64[], zeros(3),
+    1.0,
 )
 
 # ---------------------------------------------------------------------------

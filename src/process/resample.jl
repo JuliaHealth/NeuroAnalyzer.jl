@@ -218,7 +218,11 @@ Downsample all channels to `new_sr` sampling frequency.
 function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
     # validate
     1 <= new_sr < sr(obj) ||
-        throw(ArgumentError("new_sr must be in [1, $(sr(obj) - 1)] Hz (below the current sampling rate)."))
+        throw(
+            ArgumentError(
+                "new_sr must be in [1, $(sr(obj) - 1)] Hz (below the current sampling rate).",
+            ),
+        )
 
     # (the resampling filter is an anti-aliasing low-pass filter, cutoff: the new Nyquist frequency)
     return _resample_obj(obj, new_sr, "downsample")

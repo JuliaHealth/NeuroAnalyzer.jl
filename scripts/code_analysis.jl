@@ -27,8 +27,8 @@ using NeuroAnalyzer
 Aqua.test_all(
     NeuroAnalyzer;
     piracies = (treat_as_own = [Base.cis,
-                                Base.summary,
-                                NeuroAnalyzer.zscore],),
+        Base.summary,
+        NeuroAnalyzer.zscore],),
 )
 
 @info "Running NeuroAnalyzer JET code analysis.."

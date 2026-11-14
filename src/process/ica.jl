@@ -25,9 +25,9 @@ Named tuple:
 function _ica_decompose(
     s::AbstractMatrix;
     n::Int64,
-    iter::Int64=100,
-    f::Symbol=:tanh,
-    rng::Int64=42,
+    iter::Int64 = 100,
+    f::Symbol = :tanh,
+    rng::Int64 = 42,
 )::@NamedTuple{
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
@@ -125,7 +125,7 @@ function ica_decompose(
     n::Union{Nothing, Int64} = nothing,
     iter::Int64 = 100,
     f::Symbol = :tanh,
-    rng::Int64=42,
+    rng::Int64 = 42,
 )::@NamedTuple{
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
@@ -143,7 +143,8 @@ function ica_decompose(
     isnothing(n) && (n = length(ch))
 
     # perform decomposition on the selected slice
-    ica_data = _ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f, rng=rng)
+    ica_data =
+        _ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f, rng = rng)
     ic = ica_data.ic
     ic_mw = ica_data.ic_mw
 
@@ -250,11 +251,19 @@ function ica_remove(
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
     size(ic_mw, 1) == length(ch) ||
-        throw(ArgumentError("ic_mw has $(size(ic_mw, 1)) rows, $(length(ch)) channels are selected."))
+        throw(
+            ArgumentError(
+                "ic_mw has $(size(ic_mw, 1)) rows, $(length(ch)) channels are selected.",
+            ),
+        )
     size(ic, 2) == epoch_len(obj) ||
         throw(ArgumentError("ic has $(size(ic, 2)) samples, OBJ has $(epoch_len(obj))."))
     size(ic, 1) == size(ic_mw, 2) ||
-        throw(ArgumentError("Dimension mismatch between ic $(size(ic)) and ic_mw $(size(ic_mw))."))
+        throw(
+            ArgumentError(
+                "Dimension mismatch between ic $(size(ic)) and ic_mw $(size(ic_mw)).",
+            ),
+        )
     all(1 .<= ic_idx .<= size(ic_mw, 2)) ||
         throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
 

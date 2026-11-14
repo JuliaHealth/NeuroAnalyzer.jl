@@ -50,8 +50,24 @@ end
 # zero-phase band-pass: a 4th-order Butterworth high-pass (a FIR filter for low cutoffs would need
 # thousands of taps) and a Hamming-window FIR low-pass with a 2 Hz transition band
 function _bandpass!(obj::NeuroAnalyzer.NEURO; hp::Real, lp::Real, ch = "eeg")::Nothing
-    NeuroAnalyzer.filter!(obj; ch = ch, fprototype = :butterworth, ftype = :hp, cutoff = hp, order = 4, report = false)
-    NeuroAnalyzer.filter!(obj; ch = ch, fprototype = :fir, ftype = :lp, cutoff = lp, bw = 2, report = false)
+    NeuroAnalyzer.filter!(
+        obj;
+        ch = ch,
+        fprototype = :butterworth,
+        ftype = :hp,
+        cutoff = hp,
+        order = 4,
+        report = false,
+    )
+    NeuroAnalyzer.filter!(
+        obj;
+        ch = ch,
+        fprototype = :fir,
+        ftype = :lp,
+        cutoff = lp,
+        bw = 2,
+        report = false,
+    )
     return nothing
 end
 
@@ -94,7 +110,11 @@ function preprocess_pipeline(
     ica_n::Union{Nothing, Int64} = nothing,
     ica_remove::Vector{Int64} = Int64[],
 )::NeuroAnalyzer.NEURO
-    nepochs(eeg) == 1 || throw(ArgumentError("preprocess_pipeline() expects a continuous (non-epoched) recording."))
+    nepochs(eeg) == 1 || throw(
+        ArgumentError(
+            "preprocess_pipeline() expects a continuous (non-epoched) recording.",
+        ),
+    )
     obj = deepcopy(eeg)
 
     # 1. channel locations
@@ -127,7 +147,13 @@ function preprocess_pipeline(
     if !isnothing(ica_n)
         ica = ica_decompose(obj; ch = "eeg", n = ica_n)
         isempty(ica_remove) ||
-            ica_remove!(obj; ch = "eeg", ic = ica.ic, ic_mw = ica.ic_mw, ic_idx = ica_remove)
+            ica_remove!(
+                obj;
+                ch = "eeg",
+                ic = ica.ic,
+                ic_mw = ica.ic_mw,
+                ic_idx = ica_remove,
+            )
     end
 
     return obj
@@ -164,7 +190,8 @@ function spectral_pipeline(
 
     # epochs with extreme amplitudes in any EEG channel
     rejected = epoch_reject(obj; ch = "eeg", method = :amp, amp_t = amp_t)
-    length(rejected) < nepochs(obj) || throw(ArgumentError("All epochs were rejected; check amp_t."))
+    length(rejected) < nepochs(obj) ||
+        throw(ArgumentError("All epochs were rejected; check amp_t."))
     isempty(rejected) || delete_epoch!(obj; ep = rejected)
 
     ch = get_channel(obj; type = "eeg")
@@ -224,14 +251,18 @@ function erp_pipeline(
     obj = epoch(eeg; marker = marker, offset = offset, ep_len = ep_len)
 
     rejected = epoch_reject(obj; ch = "eeg", method = :amp, amp_t = amp_t)
-    length(rejected) < nepochs(obj) || throw(ArgumentError("All epochs were rejected; check amp_t."))
+    length(rejected) < nepochs(obj) ||
+        throw(ArgumentError("All epochs were rejected; check amp_t."))
     isempty(rejected) || delete_epoch!(obj; ep = rejected)
 
     # baseline: the pre-stimulus interval
     erp = average_epochs(obj; bl = (-offset, 0))
 
     # peaks of the average within the time window
-    ch = get_channel(erp; ch = get_channel(erp; type = datatype(erp) == "erp" ? "eeg" : datatype(erp)))
+    ch = get_channel(
+        erp;
+        ch = get_channel(erp; type = datatype(erp) == "erp" ? "eeg" : datatype(erp)),
+    )
     t = erp.epoch_time
     w = findall(x -> twin[1] <= x <= twin[2], t)
     peaks = DataFrame(:channel => labels(erp)[ch])

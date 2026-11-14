@@ -61,8 +61,11 @@ function plot_locs_nirs(
     _check_var(plane, [:xy, :yz, :xz], "plane")
     src_n >= 0 && det_n >= 0 || throw(ArgumentError("src_n and det_n must be ≥ 0."))
     src_n + det_n <= length(ch) ||
-        throw(ArgumentError("locs must contain ≥ $(src_n + det_n) optodes (src_n + det_n)."))
-    size(opt_pairs, 2) == 2 || throw(ArgumentError("opt_pairs must have 2 columns (source, detector)."))
+        throw(
+            ArgumentError("locs must contain ≥ $(src_n + det_n) optodes (src_n + det_n)."),
+        )
+    size(opt_pairs, 2) == 2 ||
+        throw(ArgumentError("opt_pairs must have 2 columns (source, detector)."))
     all(1 .<= opt_pairs[:, 1] .<= src_n) ||
         throw(ArgumentError("Sources in opt_pairs must be in [1, $src_n]."))
     all(1 .<= opt_pairs[:, 2] .<= det_n) ||

@@ -38,9 +38,9 @@ function plot_mep(
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = xlabel,
-        ylabel             = ylabel,
-        title              = title,
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title  = title,
         _TIME_AXIS_KWARGS...,
         yticks             = LinearTicks(10),
         yminorticksvisible = true,
@@ -113,9 +113,9 @@ function plot_mep(
     fig = GLMakie.Figure(; size = (900, 450))
     ax  = GLMakie.Axis(
     fig[1, 1];
-    xlabel             = xlabel,
-    ylabel             = ylabel,
-    title              = title,
+    xlabel = xlabel,
+    ylabel = ylabel,
+    title  = title,
     _TIME_AXIS_KWARGS...,
     yticks             = LinearTicks(10),
     yminorticksvisible = true,
@@ -146,11 +146,11 @@ function plot_mep(
         for idx = 1:ch_n
             GLMakie.lines!(
                 ax, t, s[idx, :];
-                color      = cmap[idx],
-                colormap   = pal,
-                linewidth  = 1,
-                alpha      = avg ? 0.25 : 1.0,
-                label      = clabels[idx],
+                color     = cmap[idx],
+                colormap  = pal,
+                linewidth = 1,
+                alpha     = avg ? 0.25 : 1.0,
+                label     = clabels[idx],
             )
         end
 
@@ -231,13 +231,13 @@ function plot_mep_stack(
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = xlabel,
-        ylabel             = ylabel,
-        title              = title,
+        xlabel = xlabel,
+        ylabel = ylabel,
+        title  = title,
         _TIME_AXIS_KWARGS...,
-        yticks             = (axes(s, 1), clabels),
-        xautolimitmargin   = (0, 0),
-        yautolimitmargin   = (0, 0),
+        yticks           = (axes(s, 1), clabels),
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
         _AXIS_LOCK_KWARGS...,
     )
     _style_axis!(ax)

@@ -32,7 +32,7 @@ while length(pts) < n
 end
 Rmm = 90.0
 ctr = [0.0, 0.0, 10.0]
-locs = DataFrame(
+locs = DataFrame(;
     loc_x = [Rmm * v[1] + ctr[1] for v in pts],
     loc_y = [Rmm * v[2] + ctr[2] for v in pts],
     loc_z = [Rmm * v[3] + ctr[3] for v in pts],
@@ -63,15 +63,21 @@ d = dipole_fit(S, locs)
 @test NeuroAnalyzer._parse_eda_sample("gsr:1.25") == 1.25
 @test isnothing(NeuroAnalyzer._parse_eda_sample("noise"))
 smp = NeuroAnalyzer._parse_tpt_sample("tpt: 1 -2 3 0.5 -1.25 9.81")
-@test (smp.x, smp.y, smp.z, smp.accx, smp.accy, smp.accz) == (1.0, -2.0, 3.0, 0.5, -1.25, 9.81)
+@test (smp.x, smp.y, smp.z, smp.accx, smp.accy, smp.accz) ==
+      (1.0, -2.0, 3.0, 0.5, -1.25, 9.81)
 @test isnothing(NeuroAnalyzer._parse_tpt_sample("tpt: 1 2"))
 # taps: the last press has no release (still pressed at the end) and is dropped
 n_taps, t_ms, d_ms = NeuroAnalyzer._ftt_taps([0.1, 0.5, 0.9], [0.2, 0.65])
 @test n_taps == 2 && t_ms ≈ [100.0, 500.0] && d_ms ≈ [100.0, 150.0]
-res = NeuroAnalyzer._ftt_result([[0.1], [0.2, 0.4]], [[0.2], [0.3, 0.5]], [Float64[], [0.1]], [Float64[], [0.2]], 2)
+res = NeuroAnalyzer._ftt_result(
+    [[0.1], [0.2, 0.4]],
+    [[0.2], [0.3, 0.5]],
+    [Float64[], [0.1]],
+    [Float64[], [0.2]],
+    2,
+)
 @test res.taps == [1, 2] && res.taps_int == [0, 1]
 @test res.tap_t[2] ≈ [200.0, 400.0] && res.tap_d_int[2] ≈ [100.0]
-
 
 @info "Test: dipole fit helpers"
 # least-squares sphere through the electrodes: the cap's center and radius

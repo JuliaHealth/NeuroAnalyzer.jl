@@ -33,7 +33,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
 
     time_pts = Float64[]
     ep_time  = Float64[]
-    data = Array{Float64, 3}(undef, 0, 0, 0)
+    data     = Array{Float64, 3}(undef, 0, 0, 0)
 
     s = _create_subject(;
         id = "",
@@ -247,7 +247,7 @@ function create_data(
         rec[:coil_type] = fill("", ch_n)
     end
 
-    obj_tmp.time_pts, obj_tmp.epoch_time     = _get_t(obj_tmp)
+    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
     push!(obj_tmp.history, "create_data(obj; data, fs=$fs, type=$type)")
 
     return obj_tmp

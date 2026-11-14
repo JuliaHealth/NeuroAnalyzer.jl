@@ -115,10 +115,10 @@ function plot_cont(
         ch2_init = ch_n > nch[] ? ch1[] + nch[] - 1 : ch_n
         clabels = labels(obj)[ch][ch_order]
     else
-        ch_n = length(ctypes_uni)
-        ch1 = Observable(1)
+        ch_n     = length(ctypes_uni)
+        ch1      = Observable(1)
         ch2_init = length(ctypes_uni)
-        nch = Observable(ch_n)
+        nch      = Observable(ch_n)
         clabels  = uppercase.(ctypes_uni)
     end
 
@@ -358,9 +358,9 @@ function plot_cont(
                             ax1, l_pos;
                             markerspace = :pixel,
                             text        = _draw_lift(
-                                g -> string(round(r_k / g; sigdigits = 3)) * " " * cunits[idx1],
-                                gain,
-                            ),
+                            g -> string(round(r_k / g; sigdigits = 3)) * " " * cunits[idx1],
+                            gain
+    ),
                             fontsize    = 10,
                             color       = :red,
                             align       = (:left, :bottom),
@@ -388,9 +388,9 @@ function plot_cont(
                     GLMakie.text!(
                         ax1, l_pos;
                         text        = _draw_lift(
-                            g -> string(round(r[idx] / g; sigdigits = 3)) * " " * u_k,
-                            gain,
-                        ),
+                        g -> string(round(r[idx] / g; sigdigits = 3)) * " " * u_k,
+                        gain
+    ),
                         markerspace = :pixel,
                         fontsize    = 10,
                         color       = :red,
@@ -403,7 +403,13 @@ function plot_cont(
 
         # draw event markers
         if markers
-            GLMakie.vlines!(ax1, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
+            GLMakie.vlines!(
+                ax1,
+                markers_pos;
+                linestyle = :dash,
+                linewidth = 1,
+                color = :black,
+            )
             for idx in eachindex(markers_pos)
                 markers_ypos = _draw_lift(ch1, nch) do v1, v2
                     return (markers_pos[idx], v1 + (v2 - 1) + 0.5)
@@ -557,7 +563,8 @@ function plot_cont(
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 # Alt + ↑ / ↓: vertical scaling of the traces
-                alt = ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
+                alt =
+                    ispressed(fig, Keyboard.left_alt) || ispressed(fig, Keyboard.right_alt)
                 alt && event.key == Keyboard.up && (gain[] *= 1.25)
                 alt && event.key == Keyboard.down && (gain[] /= 1.25)
                 if type === :normal
@@ -573,7 +580,8 @@ function plot_cont(
                             empty!(ax1)
                             empty!(ax2)
                             _draw!()
-                            seg_pos[] > t[end] - seg_len && (seg_pos[] = max(t[1], t[end] - seg_len))
+                            seg_pos[] > t[end] - seg_len &&
+                                (seg_pos[] = max(t[1], t[end] - seg_len))
                             update_ax2 = true
                         end
                     end

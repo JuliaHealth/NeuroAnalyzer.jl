@@ -39,21 +39,34 @@ function _locs_polar_xy(locs::DataFrame)::Tuple{Vector{Float64}, Vector{Float64}
     r = Float64.(locs[!, :loc_radius])
     θ = Float64.(locs[!, :loc_theta])
     all(iszero, r) &&
-        throw(ArgumentError("Polar coordinates are not available, use locs_cart2pol() first."))
+        throw(
+            ArgumentError(
+                "Polar coordinates are not available, use locs_cart2pol() first.",
+            ),
+        )
     return r .* cosd.(θ), r .* sind.(θ)
 end
 
 # great-circle distances (radians) between electrode positions projected onto the unit sphere
 function _locs_gc_dist(locs::DataFrame)::Matrix{Float64}
-    xyz = hcat(Float64.(locs[!, :loc_x]), Float64.(locs[!, :loc_y]), Float64.(locs[!, :loc_z]))
+    xyz = hcat(
+        Float64.(locs[!, :loc_x]),
+        Float64.(locs[!, :loc_y]),
+        Float64.(locs[!, :loc_z]),
+    )
     r = sqrt.(sum(abs2, xyz; dims = 2))
     any(iszero, r) && throw(
-        ArgumentError("Some channels have no Cartesian coordinates, use locs_sph2cart() first."),
+        ArgumentError(
+            "Some channels have no Cartesian coordinates, use locs_sph2cart() first.",
+        ),
     )
     xyz ./= r
     n = size(xyz, 1)
     # atan(|a×b|, a⋅b) is exact for identical and nearby positions (acos(a⋅b) is not)
-    return [atan(norm(cross(xyz[i, :], xyz[j, :])), dot(xyz[i, :], xyz[j, :])) for i = 1:n, j = 1:n]
+    return [
+        atan(norm(cross(xyz[i, :], xyz[j, :])), dot(xyz[i, :], xyz[j, :])) for
+        i = 1:n, j = 1:n
+    ]
 end
 
 # inverse-distance weights; zero/non-finite distances get weight 0 (excluded)
@@ -612,7 +625,9 @@ function _laplacian_reference(
     for i = 1:ch_n
         nb = sortperm(d[i, :])[1:nn]
         any(isinf, d[i, nb]) && throw(
-            ArgumentError("Channel $(lbl[i]) has fewer than $nn neighbours at distinct locations."),
+            ArgumentError(
+                "Channel $(lbl[i]) has fewer than $nn neighbours at distinct locations.",
+            ),
         )
         nn_idx[i] = nb
     end
@@ -663,7 +678,13 @@ function reference_plap(
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
     ch, s_ref =
-        _laplacian_reference(obj; nn = nn, weighted = weighted, med = med, spherical = false)
+        _laplacian_reference(
+            obj;
+            nn = nn,
+            weighted = weighted,
+            med = med,
+            spherical = false,
+        )
 
     # create new dataset
     obj_tmp = deepcopy(obj)
@@ -783,7 +804,9 @@ function _parse_montage_entry(
         a in lbls && b in lbls && push!(hits, (a, b))
     end
     isempty(hits) &&
-        throw(ArgumentError("Montage entry \"$ref\": label(s) not found among EEG channels."))
+        throw(
+            ArgumentError("Montage entry \"$ref\": label(s) not found among EEG channels."),
+        )
     length(hits) > 1 && throw(ArgumentError("Montage entry \"$ref\" is ambiguous."))
     return hits[1]
 end
@@ -910,7 +933,10 @@ function reference_custom(
     eeg_loc_rows = _find_bylabel(obj.locs, ch_lbls)
     new_locs = filter(
         !isnothing,
-        [_montage_loc(obj.locs, ref_list[k], a, b, loc) for (k, (a, b)) in enumerate(entries)],
+        [
+            _montage_loc(obj.locs, ref_list[k], a, b, loc) for
+            (k, (a, b)) in enumerate(entries)
+        ],
     )
     obj_tmp.locs = vcat(
         new_locs...,
@@ -965,6 +991,9 @@ function reference_custom!(
     ref_name::String = "longitudinal-BIP",
     loc::Symbol = :mid,
 )::Nothing
-    _copy_into!(obj, reference_custom(obj; ref_list = ref_list, ref_name = ref_name, loc = loc))
+    _copy_into!(
+        obj,
+        reference_custom(obj; ref_list = ref_list, ref_name = ref_name, loc = loc),
+    )
     return nothing
 end

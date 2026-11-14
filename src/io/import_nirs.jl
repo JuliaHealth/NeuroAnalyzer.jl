@@ -42,7 +42,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     # ------------------------------------------------------------------ #
     # raw time stamps (used for the stimulus onsets); the regular time axis is built below
     time_pts = Float64.(nirs["t"][:])
-    length(time_pts) >= 2 || throw(ArgumentError("$file_name must contain at least 2 time points."))
+    length(time_pts) >= 2 ||
+        throw(ArgumentError("$file_name must contain at least 2 time points."))
     time_pts .-= time_pts[1]
     # mean step is more robust than the first step alone
     sampling_rate_exact = (length(time_pts) - 1) / time_pts[end]

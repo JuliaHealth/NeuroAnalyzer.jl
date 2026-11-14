@@ -85,7 +85,8 @@ function erop(
     f = psd_data.f
 
     if datatype(obj) in ["erp", "erf"]
-        nepochs(obj) > 1 || throw(ArgumentError("ERP/ERF OBJ must contain single trials (epochs 2:end)."))
+        nepochs(obj) > 1 ||
+            throw(ArgumentError("ERP/ERF OBJ must contain single trials (epochs 2:end)."))
         p = cat(p[:, 1], mean(p[:, 2:end]; dims = 2); dims = 2)
     else
         p = mean(p; dims = 2)

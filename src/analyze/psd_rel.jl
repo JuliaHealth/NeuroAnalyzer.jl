@@ -334,5 +334,4 @@ function psd_rel(
         gw = gw,
         demean = demean,
     )
-
 end

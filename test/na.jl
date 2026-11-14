@@ -6,10 +6,10 @@ const load_preference = NeuroAnalyzer.Preferences.load_preference
 function capture_out(f)
     mktemp() do path, io
         redirect_stdout(io) do
-            f()
+            return f()
         end
         flush(io)
-        read(path, String)
+        return read(path, String)
     end
 end
 
@@ -20,10 +20,13 @@ NeuroAnalyzer.colors = false
 @test capture_out(() -> NeuroAnalyzer._info("abc")) == "[ Info: abc\n"
 @test capture_out(() -> NeuroAnalyzer._warn("abc")) == "[ Warning: abc\n"
 @test capture_out(() -> NeuroAnalyzer._error("abc")) == "[ Error: abc\n"
-@test capture_out(() -> NeuroAnalyzer._deprecated("f")) == "[ Warning: Function f() is deprecated.\n"
-@test capture_out(() -> NeuroAnalyzer._deprecated("f", "g")) == "[ Warning: Function f() is deprecated, please use g() instead.\n"
+@test capture_out(() -> NeuroAnalyzer._deprecated("f")) ==
+      "[ Warning: Function f() is deprecated.\n"
+@test capture_out(() -> NeuroAnalyzer._deprecated("f", "g")) ==
+      "[ Warning: Function f() is deprecated, please use g() instead.\n"
 @test occursin("Work In Progress", capture_out(() -> NeuroAnalyzer._wip()))
-@test capture_out(() -> NeuroAnalyzer._msg("X", NeuroAnalyzer.Crayons.Box.RED_FG, "y")) == "[ X: y\n"
+@test capture_out(() -> NeuroAnalyzer._msg("X", NeuroAnalyzer.Crayons.Box.RED_FG, "y")) ==
+      "[ X: y\n"
 NeuroAnalyzer.colors = true
 @test occursin("abc", capture_out(() -> NeuroAnalyzer._info("abc")))
 # verbose = false: nothing is printed
@@ -32,12 +35,14 @@ NeuroAnalyzer.verbose = false
 NeuroAnalyzer.verbose, NeuroAnalyzer.colors = v0, c0
 # logging on/off
 NeuroAnalyzer._log_off()
-@test NeuroAnalyzer.Logging.min_enabled_level(NeuroAnalyzer.Logging.current_logger()) > NeuroAnalyzer.Logging.Warn ||
+@test NeuroAnalyzer.Logging.min_enabled_level(NeuroAnalyzer.Logging.current_logger()) >
+      NeuroAnalyzer.Logging.Warn ||
       (@test_logs @warn("hidden"); true)
 NeuroAnalyzer._log_on()
 
 @info "Test: version() / info()"
-@test version() == "$(NeuroAnalyzer.VER.major).$(NeuroAnalyzer.VER.minor).$(NeuroAnalyzer.VER.patch)"
+@test version() ==
+      "$(NeuroAnalyzer.VER.major).$(NeuroAnalyzer.VER.minor).$(NeuroAnalyzer.VER.patch)"
 out = capture_out(info)
 @test occursin("NeuroAnalyzer: $(NeuroAnalyzer.VER)", out)
 @test occursin("Imported packages:", out)
@@ -48,7 +53,10 @@ out = capture_out(info)
 
 @info "Test: set_*()"
 # settings are stored as preferences: set and restore
-pb0, vb0, eb0, cl0 = NeuroAnalyzer.progress_bar, NeuroAnalyzer.verbose, NeuroAnalyzer.exclude_bads, NeuroAnalyzer.colors
+pb0, vb0, eb0, cl0 = NeuroAnalyzer.progress_bar,
+NeuroAnalyzer.verbose,
+NeuroAnalyzer.exclude_bads,
+NeuroAnalyzer.colors
 set_progress_bar(!pb0)
 @test NeuroAnalyzer.progress_bar == !pb0
 @test load_preference(NeuroAnalyzer, "progress_bar") == !pb0
@@ -60,7 +68,12 @@ set_colors(!cl0)
 @test NeuroAnalyzer.colors == !cl0
 @test load_preference(NeuroAnalyzer, "colors") == !cl0
 set_prefs(; progress_bar = pb0, verbose = vb0, exclude_bads = eb0, colors = cl0)
-@test (NeuroAnalyzer.progress_bar, NeuroAnalyzer.verbose, NeuroAnalyzer.exclude_bads, NeuroAnalyzer.colors) == (pb0, vb0, eb0, cl0)
+@test (
+    NeuroAnalyzer.progress_bar,
+    NeuroAnalyzer.verbose,
+    NeuroAnalyzer.exclude_bads,
+    NeuroAnalyzer.colors,
+) == (pb0, vb0, eb0, cl0)
 @test load_preference(NeuroAnalyzer, "verbose") == vb0
 
 @info "Test: plugins"
@@ -84,7 +97,9 @@ run(Cmd(`tar -czf $arch naplugin2`; dir = src2))
 quiet(() -> plugins_install(arch))
 @test isdir(joinpath(tmp, "naplugin2"))
 @test NeuroAnalyzer.test_plugin_fn2() == 43
-@test_throws ArgumentError NeuroAnalyzer._install_from_archive(joinpath(tmp, "naplugin2.rar"))
+@test_throws ArgumentError NeuroAnalyzer._install_from_archive(
+    joinpath(tmp, "naplugin2.rar"),
+)
 write(joinpath(tmp, "x.rar"), "x")
 @test_throws ArgumentError NeuroAnalyzer._install_from_archive(joinpath(tmp, "x.rar"))
 # install from a git repository (a local one: no network)
@@ -96,7 +111,9 @@ run(`$(NeuroAnalyzer.git()) -C $repo -c user.name=t -c user.email=t@t add .`)
 run(`$(NeuroAnalyzer.git()) -C $repo -c user.name=t -c user.email=t@t commit -qm init`)
 quiet(() -> NeuroAnalyzer._install_from_remote(repo))
 @test isfile(joinpath(tmp, "naplugin3", "src", "naplugin3.jl"))
-@test_throws ErrorException quiet(() -> NeuroAnalyzer._install_from_remote(joinpath(tmp, "no_such_repo")))
+@test_throws ErrorException quiet(
+    () -> NeuroAnalyzer._install_from_remote(joinpath(tmp, "no_such_repo")),
+)
 # a git plugin is updated (git pull)
 @test quiet(() -> NeuroAnalyzer._update_plugin(joinpath(tmp, "naplugin3"))) === nothing
 # update: plugins that are not git repositories are skipped
@@ -127,7 +144,14 @@ e = NeuroAnalyzer._build_eda_object([1.0, 2.0, 3.0, 4.0])
 @test labels(e) == ["eda1"] && e.header.recording[:unit] == ["μS"]
 @test sr(e) == NeuroAnalyzer._EDA_FS
 @test_throws ArgumentError NeuroAnalyzer._build_eda_object(Float64[])
-o = NeuroAnalyzer._build_tpt_object([1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0], [9.0, 10.0], [11.0, 12.0])
+o = NeuroAnalyzer._build_tpt_object(
+    [1.0, 2.0],
+    [3.0, 4.0],
+    [5.0, 6.0],
+    [7.0, 8.0],
+    [9.0, 10.0],
+    [11.0, 12.0],
+)
 @test datatype(o) == "tpt"
 @test o.data[:, :, 1] == [1.0 2.0; 3.0 4.0; 5.0 6.0; 7.0 8.0; 9.0 10.0; 11.0 12.0]
 @test labels(o) == ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"]

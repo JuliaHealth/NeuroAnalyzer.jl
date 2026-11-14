@@ -19,7 +19,10 @@ function _smooth_bins(p::AbstractVector, h::Int64)::Vector{Float64}
     h == 0 && return collect(Float64, p)
     n = length(p)
     c = vcat(0.0, cumsum(p))
-    return [(c[min(n, i + h) + 1] - c[max(1, i - h)]) / (min(n, i + h) - max(1, i - h) + 1) for i = 1:n]
+    return [
+        (c[min(n, i + h) + 1] - c[max(1, i - h)]) / (min(n, i + h) - max(1, i - h) + 1) for
+        i = 1:n
+    ]
 end
 
 """

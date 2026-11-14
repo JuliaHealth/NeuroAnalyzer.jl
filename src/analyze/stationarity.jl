@@ -166,12 +166,17 @@ function stationarity(
         window >= 2 || throw(ArgumentError("For :cov method, window must be ≥ 2."))
         # number of complete windows per epoch
         window_n = epoch_len(obj) ÷ window
-        window_n >= 2 || throw(ArgumentError("For :cov method, the epoch must contain ≥ 2 windows."))
+        window_n >= 2 ||
+            throw(ArgumentError("For :cov method, the epoch must contain ≥ 2 windows."))
         s = zeros(window_n - 1, ep_n)
         @inbounds Threads.@threads :dynamic for ep_idx = 1:ep_n
             # channel covariance matrix of each window
             cm = [
-                cov(permutedims(@view(obj.data[ch, ((w - 1) * window + 1):(w * window), ep_idx]))) for
+                cov(
+                    permutedims(
+                        @view(obj.data[ch, ((w - 1) * window + 1):(w * window), ep_idx]),
+                    ),
+                ) for
                 w = 1:window_n
             ]
             # Euclidean distance between the covariance matrices of adjacent windows
@@ -197,7 +202,11 @@ function stationarity(
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx = 1:ep_n
             Threads.@threads :dynamic for ch_idx = 1:ch_n
-                adf = HypothesisTests.ADFTest(@view(obj.data[ch[ch_idx], :, ep_idx]), :none, 1)
+                adf = HypothesisTests.ADFTest(
+                    @view(obj.data[ch[ch_idx], :, ep_idx]),
+                    :none,
+                    1,
+                )
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)

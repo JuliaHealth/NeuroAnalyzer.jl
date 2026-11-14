@@ -75,7 +75,9 @@ function _integer_rate(
         k = ks[k_idx]
         new_fs = round(Int64, k * fs)
         m = n * k
-        _info("Sampling rate $fs Hz is not an integer: data upsampled ×$k to $new_fs Hz (exact)")
+        _info(
+            "Sampling rate $fs Hz is not an integer: data upsampled ×$k to $new_fs Hz (exact)",
+        )
     else
         new_fs = max(1, round(Int64, fs))
         m = round(Int64, n * new_fs / fs)
@@ -185,7 +187,9 @@ function _record_count(
     n_avail = available_bytes ÷ record_bytes
     data_records < 0 && return n_avail
     if data_records > n_avail
-        _warn("$file_name is truncated: header declares $data_records data records, $n_avail found.")
+        _warn(
+            "$file_name is truncated: header declares $data_records data records, $n_avail found.",
+        )
         return n_avail
     end
     return data_records

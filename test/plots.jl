@@ -7,7 +7,10 @@ using GLMakie
 eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
 e10 = epoch(eeg; ep_len = 10)
 keep_epoch!(e10; ep = 1:10)
-load_locs!(e10; file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
+load_locs!(
+    e10;
+    file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"),
+)
 
 isfile("test.png") && rm("test.png")
 
@@ -152,7 +155,7 @@ p = plot_locs(e10; ch = "eeg", sch = ["Fp1", "Fp2"], gui = false)
 f_log = collect(0:0.5:128.0)
 p_log = abs.(randn(NeuroAnalyzer.Random.MersenneTwister(1), 3, length(f_log))) .+ 1
 for fig in (plot_psd(f_log, p_log[1, :]; frq = :log), plot_psd(f_log, p_log; frq = :log),
-            plot_phs(f_log, p_log[1, :]; frq = :log), plot_phs(f_log, p_log; frq = :log))
+    plot_phs(f_log, p_log[1, :]; frq = :log), plot_phs(f_log, p_log; frq = :log))
     ax_log = first(c for c in fig.content if c isa GLMakie.Axis)
     @test ax_log.limits[][1] == (0.5, 128.0)
 end
@@ -236,7 +239,15 @@ p = plot_spectrogram(e10; db = true, ep = 1, ch = "Fp1", method = :gh, gui = fal
 p = plot_spectrogram(e10; db = true, ep = 1, ch = "Fp1", method = :cwt, gui = false)
 @test p isa GLMakie.Figure
 # flim between the (non-uniform) CWT frequencies
-p = plot_spectrogram(e10; db = true, ep = 1, ch = "Fp1", method = :cwt, flim = (0, 40), gui = false)
+p = plot_spectrogram(
+    e10;
+    db = true,
+    ep = 1,
+    ch = "Fp1",
+    method = :cwt,
+    flim = (0, 40),
+    gui = false,
+)
 @test p isa GLMakie.Figure
 p = plot_spectrogram(e10; db = true, ep = 1, ch = "Fp1", method = :hht, gui = false)
 @test p isa GLMakie.Figure
@@ -507,13 +518,19 @@ p = plot_dwc(dc; t = t, n = 4)
 
 @info "Test: plot regressions"
 # frequency range / log axis in 3-D and topographic PSD and phase plots
-@test plot_psd(e10; ep = 1, ch = ["Fp1", "Fp2"], type = :w3d, frq = :log, gui = false) isa GLMakie.Figure
-@test plot_psd(e10; ep = 1, ch = "eeg", type = :topo, frq = :log, gui = false) isa GLMakie.Figure
-@test plot_phs(e10; ep = 1, ch = ["Fp1", "Fp2"], type = :s3d, frq = :log, gui = false) isa GLMakie.Figure
+@test plot_psd(e10; ep = 1, ch = ["Fp1", "Fp2"], type = :w3d, frq = :log, gui = false) isa
+      GLMakie.Figure
+@test plot_psd(e10; ep = 1, ch = "eeg", type = :topo, frq = :log, gui = false) isa
+      GLMakie.Figure
+@test plot_phs(e10; ep = 1, ch = ["Fp1", "Fp2"], type = :s3d, frq = :log, gui = false) isa
+      GLMakie.Figure
 # relative PSD keeps the plotted range; Morlet wavelets with a band starting below 1 Hz
-@test plot_psd(e10; ep = 1, ch = "Fp1", method = :mw, ref = :delta, gui = false) isa GLMakie.Figure
-@test plot_spectrogram(e10; ep = 1, ch = "eeg", type = :topo, method = :gh, gui = false) isa GLMakie.Figure
-@test NeuroAnalyzer.plot(e10_erp; ch = ["Fp1", "Fp2"], type = :butterfly, gui = false) isa GLMakie.Figure
+@test plot_psd(e10; ep = 1, ch = "Fp1", method = :mw, ref = :delta, gui = false) isa
+      GLMakie.Figure
+@test plot_spectrogram(e10; ep = 1, ch = "eeg", type = :topo, method = :gh, gui = false) isa
+      GLMakie.Figure
+@test NeuroAnalyzer.plot(e10_erp; ch = ["Fp1", "Fp2"], type = :butterfly, gui = false) isa
+      GLMakie.Figure
 @test plot_mep(mep; ch = labels(mep)[1], type = :stack) isa GLMakie.Figure
 @test plot_topo(e10; ch = "eeg", tpos = 1, sch = r"^Fp") isa GLMakie.Figure
 # vector method with the default channels (all rows of locs)
@@ -523,10 +540,18 @@ p = plot_dwc(dc; t = t, n = 4)
 f = collect(0.0:0.5:50.0)
 @test plot_coherence(rand(length(f)), f; frq = :log) isa GLMakie.Figure
 # logarithmic frequency axes are base 10
-@test first(c for c in plot_coherence(rand(length(f)), f; frq = :log).content if c isa GLMakie.Axis).xscale[] === log10
-@test plot_eros(rand(41, 21, 2), collect(0.0:40.0), collect(0.0:0.1:2.0); frq = :log) isa GLMakie.Figure
+@test first(
+    c for c in plot_coherence(rand(length(f)), f; frq = :log).content if c isa GLMakie.Axis
+).xscale[] === log10
+@test plot_eros(rand(41, 21, 2), collect(0.0:40.0), collect(0.0:0.1:2.0); frq = :log) isa
+      GLMakie.Figure
 m = rand(19, 19)
-@test plot_connectivity_circle(m; clabels = labels(e10)[1:19], threshold = (0.2, 0.8), threshold_type = :in) isa GLMakie.Figure
+@test plot_connectivity_circle(
+    m;
+    clabels = labels(e10)[1:19],
+    threshold = (0.2, 0.8),
+    threshold_type = :in,
+) isa GLMakie.Figure
 v = [plot_empty(), plot_empty()]
 plot_compose(v; layout = (2, 2))
 @test length(v) == 2
@@ -537,25 +562,56 @@ for fn in ("test.pdf", "test.PNG")
     rm(fn)
 end
 @info "Test: ch_locs head inset"
-@test plot_psd(e10; ep = 1, ch = ["Fp1", "Cz", "O2"], ch_locs = true, gui = false) isa GLMakie.Figure
+@test plot_psd(e10; ep = 1, ch = ["Fp1", "Cz", "O2"], ch_locs = true, gui = false) isa
+      GLMakie.Figure
 @test plot_psd(e10; ep = 1, ch = "T3", ch_locs = true, gui = false) isa GLMakie.Figure
-@test plot_phs(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false) isa GLMakie.Figure
-@test plot_erp(e10_erp; ch = ["F3", "F4", "P3"], ch_locs = true, gui = false) isa GLMakie.Figure
+@test plot_phs(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false) isa
+      GLMakie.Figure
+@test plot_erp(e10_erp; ch = ["F3", "F4", "P3"], ch_locs = true, gui = false) isa
+      GLMakie.Figure
 @test plot_erp(e10_erp; ch = "Cz", ch_locs = true, gui = false) isa GLMakie.Figure
-@test NeuroAnalyzer.plot(e10_erp; ch = ["F3", "F4"], ci95 = true, avg = false, ch_locs = true, gui = false) isa GLMakie.Figure
+@test NeuroAnalyzer.plot(
+    e10_erp;
+    ch = ["F3", "F4"],
+    ci95 = true,
+    avg = false,
+    ch_locs = true,
+    gui = false,
+) isa GLMakie.Figure
 # the inset is the second layout cell, next to the plot
 p = plot_psd(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false)
 @test count(c -> c isa GLMakie.Axis, p.content) == 2
 @test count(c -> c isa GLMakie.Legend, p.content) == 1
 # inside the plot: the inset shares the plot's cell; the legend stays outside
 for pos in (:rt, :lt, :rb, :lb)
-    local p = plot_psd(e10; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, ch_locs_pos = pos, gui = false)
+    local p = plot_psd(
+        e10;
+        ep = 1,
+        ch = ["Fp1", "Cz"],
+        ch_locs = true,
+        ch_locs_pos = pos,
+        gui = false,
+    )
     @test count(c -> c isa GLMakie.Axis, p.content) == 2
     @test count(c -> c isa GLMakie.Legend, p.content) == 1
 end
-@test plot_erp(e10_erp; ch = ["F3", "F4"], ch_locs = true, ch_locs_pos = :lb, gui = false) isa GLMakie.Figure
-@test plot_phs(e10; ep = 1, ch = "Cz", ch_locs = true, ch_locs_pos = :lt, gui = false) isa GLMakie.Figure
-@test_throws ArgumentError plot_psd(e10; ep = 1, ch = "Cz", ch_locs = true, ch_locs_pos = :middle, gui = false)
+@test plot_erp(
+    e10_erp;
+    ch = ["F3", "F4"],
+    ch_locs = true,
+    ch_locs_pos = :lb,
+    gui = false,
+) isa GLMakie.Figure
+@test plot_phs(e10; ep = 1, ch = "Cz", ch_locs = true, ch_locs_pos = :lt, gui = false) isa
+      GLMakie.Figure
+@test_throws ArgumentError plot_psd(
+    e10;
+    ep = 1,
+    ch = "Cz",
+    ch_locs = true,
+    ch_locs_pos = :middle,
+    gui = false,
+)
 @info "Test: legends outside the plot"
 nleg(p) = count(c -> c isa GLMakie.Legend, p.content)
 f = collect(0.0:1.0:50.0)
@@ -596,8 +652,12 @@ p = plot_psd(e_noloc; ep = 1, ch = ["Fp1", "Cz"], ch_locs = true, gui = false)
 @test plot_locs(e10; ch = "Cz", gui = false) isa GLMakie.Figure
 nirs = import_nirs(joinpath(testfiles_path, "nirs", "fnirs-test-nirs.nirs"))
 r = nirs.header.recording
-@test plot_locs_nirs(nirs.locs, r[:optode_pairs], length(r[:src_labels]), length(r[:det_labels])) isa GLMakie.Figure
-
+@test plot_locs_nirs(
+    nirs.locs,
+    r[:optode_pairs],
+    length(r[:src_labels]),
+    length(r[:det_labels]),
+) isa GLMakie.Figure
 
 ##
 ## untested plot functions and helpers; content checks (labels, plotted data)
@@ -632,7 +692,13 @@ p = plot_erp_stack(tg, rand(3, length(tg)); clabels = ["a", "b", "c"])
 e_erp = average_epochs(e10)
 ch_eeg = get_channel(e_erp; ch = get_channel(e_erp; type = "eeg"))
 locs_e = e_erp.locs[NeuroAnalyzer._find_bylabel(e_erp.locs, labels(e_erp)[ch_eeg]), :]
-p = plot_erp_topo(locs_e, e_erp.epoch_time, e_erp.data[ch_eeg, :, 1]; clabels = labels(e_erp)[ch_eeg], gui = false)
+p = plot_erp_topo(
+    locs_e,
+    e_erp.epoch_time,
+    e_erp.data[ch_eeg, :, 1];
+    clabels = labels(e_erp)[ch_eeg],
+    gui = false,
+)
 # one trace per channel, placed at the channel locations
 @test p isa GLMakie.Figure
 
@@ -654,12 +720,23 @@ p = plot_phs_3d(fp, ph; clabels = labels(e10)[ch_eeg])
 @test p isa GLMakie.Figure
 p = plot_phs_topo(locs_e, fp, ph; gui = false)
 @test p isa GLMakie.Figure
-sp = NeuroAnalyzer._spectrogram(e10.data[ch_eeg, :, 1]; fs = sr(e10), method = :stft, db = false)
+sp = NeuroAnalyzer._spectrogram(
+    e10.data[ch_eeg, :, 1];
+    fs = sr(e10),
+    method = :stft,
+    db = false,
+)
 p = plot_spectrogram_topo(locs_e, sp.t, sp.f, sp.p; gui = false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_filter() helpers"
-f = filter_create(; fprototype = :butterworth, ftype = :lp, cutoff = 30, fs = 256, order = 4)
+f = filter_create(;
+    fprototype = :butterworth,
+    ftype = :lp,
+    cutoff = 30,
+    fs = 256,
+    order = 4,
+)
 fr = collect(0.0:1.0:128.0)
 H = NeuroAnalyzer._filter_freqz(f, fr, 256)
 @test H ≈ NeuroAnalyzer.DSP.freqresp(f, 2π .* fr ./ 256)
@@ -681,9 +758,10 @@ gd = NeuroAnalyzer._group_delay(Hf, fr, 256)
 @test NeuroAnalyzer._fmt(1.234) == "1.23"
 @test NeuroAnalyzer._fmt((1.0, 2.555)) == "(1.0, 2.56)"
 @test NeuroAnalyzer._fmt(Float64[]) == "not reached"
-ttl = NeuroAnalyzer._filter_title(f; fprototype = :butterworth, ftype = :lp, cutoff = 30, order = 4, bw = nothing,
-                                  bw_eff = nothing, rp = nothing, rs = nothing, fs = 256, dir = :twopass,
-                                  window = :hamming, custom_w = false, status = "")
+ttl = NeuroAnalyzer._filter_title(f; fprototype = :butterworth, ftype = :lp, cutoff = 30,
+    order = 4, bw = nothing,
+    bw_eff = nothing, rp = nothing, rs = nothing, fs = 256, dir = :twopass,
+    window = :hamming, custom_w = false, status = "")
 @test occursin("Butterworth", ttl) && occursin("LP", ttl) && occursin("order: 4", ttl)
 # short lines: the header must fit when the figure is scaled down
 @test maximum(length, split(ttl, '\n')) <= 80
@@ -698,8 +776,10 @@ ax = NeuroAnalyzer._filter_axis(fig, (1, 1), "t", "Gain [dB]", (0, 128))
 @test !NeuroAnalyzer._passes_threshold(5, 3, :l)
 @test NeuroAnalyzer._passes_threshold(3, 3, :eq)
 @test NeuroAnalyzer._passes_threshold(3, 4, :neq)
-@test NeuroAnalyzer._passes_threshold(3, 3, :geq) && NeuroAnalyzer._passes_threshold(3, 3, :leq)
-@test NeuroAnalyzer._passes_threshold(3, (1, 5), :in) && !NeuroAnalyzer._passes_threshold(5, (1, 5), :bin)
+@test NeuroAnalyzer._passes_threshold(3, 3, :geq) &&
+      NeuroAnalyzer._passes_threshold(3, 3, :leq)
+@test NeuroAnalyzer._passes_threshold(3, (1, 5), :in) &&
+      !NeuroAnalyzer._passes_threshold(5, (1, 5), :bin)
 fig = GLMakie.Figure()
 ax = GLMakie.Axis(fig[1, 1])
 GLMakie.current_axis!(ax)
@@ -709,7 +789,6 @@ NeuroAnalyzer._draw_connection!([0.0, 1.0], [0.0, 1.0], 1, 2, 0.5, 2.0, false, t
 n0 = length(ax.scene.plots)
 NeuroAnalyzer._draw_connection_label!([0.0, 1.0], [0.0, 1.0], 1, 2, 0.5, 8, false)
 @test length(ax.scene.plots) > n0
-
 
 @info "Test: plot_env()"
 r = tenv(e10; ch = "Fp1")
@@ -727,26 +806,49 @@ p = plot_env(r.t, r.em[:, 1]; el = r.el[:, 1], eu = r.eu[:, 1])
 
 @info "Test: plot_ispc() / plot_pli()"
 r = ispc(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-p = plot_ispc(e10.epoch_time, e10.data[1, :, 1], e10.data[2, :, 1]; ispcv = r.ispcv[1], ispca = r.ispca[1],
-              sd = r.sd[1, :, 1], phd = r.phd[1, :, 1], s1ph = r.s1ph[1, :, 1], s2ph = r.s2ph[1, :, 1], unit = "μV")
+p = plot_ispc(e10.epoch_time, e10.data[1, :, 1], e10.data[2, :, 1]; ispcv = r.ispcv[1],
+    ispca = r.ispca[1],
+    sd = r.sd[1, :, 1], phd = r.phd[1, :, 1], s1ph = r.s1ph[1, :, 1],
+    s2ph = r.s2ph[1, :, 1], unit = "μV")
 @test p isa GLMakie.Figure
 # 4 time-course axes (signals, difference, phases, phase difference) + 2 polar axes
 @test length(axes_of(p)) == 4
 @test count(c -> c isa GLMakie.PolarAxis, p.content) == 2
 @test axes_of(p)[1].ylabel[] == "Amplitude [μV]"
-@test any(c -> c isa GLMakie.PolarAxis && occursin("ISPC = $(round(r.ispcv[1]; digits = 2))", c.title[]), p.content)
+@test any(
+    c ->
+        c isa GLMakie.PolarAxis &&
+        occursin("ISPC = $(round(r.ispcv[1]; digits = 2))", c.title[]),
+    p.content,
+)
 r = pli(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1)
-p = plot_pli(e10.epoch_time, e10.data[1, :, 1], e10.data[2, :, 1]; pv = r.pv[1], sd = r.sd[1, :, 1],
-             phd = r.phd[1, :, 1], s1ph = r.s1ph[1, :, 1], s2ph = r.s2ph[1, :, 1])
-@test any(c -> c isa GLMakie.PolarAxis && occursin("PLI = $(round(r.pv[1]; digits = 2))", c.title[]), p.content)
-@test_throws ArgumentError plot_pli(e10.epoch_time, e10.data[1, 1:10, 1], e10.data[2, :, 1]; pv = r.pv[1],
-                                    sd = r.sd[1, :, 1], phd = r.phd[1, :, 1], s1ph = r.s1ph[1, :, 1], s2ph = r.s2ph[1, :, 1])
+p = plot_pli(e10.epoch_time, e10.data[1, :, 1], e10.data[2, :, 1]; pv = r.pv[1],
+    sd = r.sd[1, :, 1],
+    phd = r.phd[1, :, 1], s1ph = r.s1ph[1, :, 1], s2ph = r.s2ph[1, :, 1])
+@test any(
+    c ->
+        c isa GLMakie.PolarAxis &&
+        occursin("PLI = $(round(r.pv[1]; digits = 2))", c.title[]),
+    p.content,
+)
+@test_throws ArgumentError plot_pli(e10.epoch_time, e10.data[1, 1:10, 1], e10.data[2, :, 1];
+    pv = r.pv[1],
+    sd = r.sd[1, :, 1], phd = r.phd[1, :, 1], s1ph = r.s1ph[1, :, 1], s2ph = r.s2ph[
+    1,
+    :,
+    1,
+])
 
 @info "Test: plot_itpc() / plot_itpc_spec() / plot_itpc_frq()"
 r = itpc(e10; ch = "Fp1", t = 256)
 p = plot_itpc(r.itpcph[1, :]; itpcv = r.itpcv[1], itpca = r.itpca[1])
 @test p isa GLMakie.Figure
-@test any(c -> c isa GLMakie.PolarAxis && occursin("ITPC = $(round(r.itpcv[1]; digits = 2))", c.title[]), p.content)
+@test any(
+    c ->
+        c isa GLMakie.PolarAxis &&
+        occursin("ITPC = $(round(r.itpcv[1]; digits = 2))", c.title[]),
+    p.content,
+)
 p = plot_itpc(r.itpcph[1, :]; itpcv = r.itpcz[1], itpca = r.itpca[1], label = "ITPCz")
 @test any(c -> c isa GLMakie.PolarAxis && occursin("ITPCz", c.title[]), p.content)
 @test_throws ArgumentError plot_itpc(Float64[]; itpcv = 0.5, itpca = 0.0)

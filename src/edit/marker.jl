@@ -152,7 +152,8 @@ function add_marker(
     start + len <= obj.time_pts[end] ||
         throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
     # 0 = marker for all channels
-    0 <= ch <= nchannels(obj) || throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
+    0 <= ch <= nchannels(obj) ||
+        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
 
     # create new dataset
     obj_tmp = deepcopy(obj)
@@ -248,7 +249,8 @@ function edit_marker(
 
     nn = size(obj.markers, 1)
     1 <= n <= nn || throw(ArgumentError("n must be in [1, $nn]."))
-    0 <= ch <= nchannels(obj) || throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
+    0 <= ch <= nchannels(obj) ||
+        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
 
     # create new dataset
     obj_tmp = deepcopy(obj)

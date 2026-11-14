@@ -46,7 +46,7 @@ function vartest(
         for ch_idx2 = 1:ch_idx1
             ftest = VarianceFTest(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx])
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
             )
             f[ch_idx1, ch_idx2, ep_idx] = ftest.F
             p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
@@ -109,7 +109,9 @@ function vartest(
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(
-        ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."),
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
     )
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
@@ -127,7 +129,7 @@ function vartest(
         for ch_idx2 = 1:ch_n
             ftest = VarianceFTest(
                 @view(obj1.data[ch1[ch_idx1], :, ep1[ep_idx]]),
-                @view(obj2.data[ch2[ch_idx2], :, ep2[ep_idx]])
+                @view(obj2.data[ch2[ch_idx2], :, ep2[ep_idx]]),
             )
             f[ch_idx1, ch_idx2, ep_idx] = ftest.F
             p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)

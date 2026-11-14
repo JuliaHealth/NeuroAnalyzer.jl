@@ -129,7 +129,9 @@ function sumsim(
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(
-        ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."),
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
     )
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)

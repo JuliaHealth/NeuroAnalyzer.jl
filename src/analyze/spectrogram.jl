@@ -69,7 +69,8 @@ function _spectrogram(
         spec_data = DSP.spectrogram(s, wlen, woverlap; fs = fs, window = win)
     elseif method === :mt
         # Slepian tapers are applied to each segment (2nw - 1 = nt)
-        spec_data = DSP.mt_spectrogram(s, wlen, woverlap; fs = fs, nw = (nt + 1) / 2, ntapers = nt)
+        spec_data =
+            DSP.mt_spectrogram(s, wlen, woverlap; fs = fs, nw = (nt + 1) / 2, ntapers = nt)
     end
     p = Matrix{Float64}(power(spec_data))
     db && (p = _pow2db_finite(p))
@@ -352,7 +353,11 @@ function spectrogram(
         elseif method === :cwt
 
             # cwtspectrogram returns magnitudes (.m): power, optionally in dB
-            m = NeuroAnalyzer.cwtspectrogram(@view(obj.data[ch_idx, :, ep_idx]), fs = fs, wt = wt).m
+            m = NeuroAnalyzer.cwtspectrogram(
+                @view(obj.data[ch_idx, :, ep_idx]),
+                fs = fs,
+                wt = wt,
+            ).m
             p[:, :, ch_local, ep_idx] = db ? _pow2db_finite(abs2.(m)) : abs2.(m)
 
         elseif method === :hht
@@ -805,7 +810,8 @@ function hhtspectrogram(
 }
     # validate
     fs >= 1 || throw(ArgumentError("fs must be ≥ 1."))
-    size(imf, 2) == length(tps) || throw(ArgumentError("Number of IMF samples must equal the number of time points."))
+    size(imf, 2) == length(tps) ||
+        throw(ArgumentError("Number of IMF samples must equal the number of time points."))
     t = Vector{Float64}(tps)
     # frequency grid (Hz)
     f = collect(0:0.5:(fs / 2))

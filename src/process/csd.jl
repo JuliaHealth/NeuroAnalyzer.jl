@@ -173,7 +173,9 @@ function gh(
 
     # project the electrodes onto the unit sphere (cos(angle) = 1 - |ri - rj|² / 2 holds for unit vectors only)
     r = sqrt.(locs.loc_x .^ 2 .+ locs.loc_y .^ 2 .+ locs.loc_z .^ 2)
-    any(iszero, r) && throw(ArgumentError("Electrode location at the origin; CSD requires 3-D locations."))
+    any(iszero, r) && throw(
+        ArgumentError("Electrode location at the origin; CSD requires 3-D locations."),
+    )
     x, y, z = locs.loc_x ./ r, locs.loc_y ./ r, locs.loc_z ./ r
 
     # --- cosine distances between all electrode pairs ---

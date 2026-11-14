@@ -108,9 +108,9 @@ function plot_eros(
     function _draw_axis(fig, pos, xl, yl, tt)
         ax = GLMakie.Axis(
             fig[pos...];
-            xlabel             = xl,
-            ylabel             = yl,
-            title              = tt,
+            xlabel = xl,
+            ylabel = yl,
+            title  = tt,
             _TIME_AXIS_KWARGS...,
             _frq_axis_kwargs(frq; axis = :y)...,
             _AXIS_LOCK_KWARGS...,
@@ -236,9 +236,9 @@ function plot_erop(
     function _make_power_axis(fig, pos, xl, yl, tt)
         ax = GLMakie.Axis(
             fig[pos...];
-            xlabel             = xl,
-            ylabel             = yl,
-            title              = tt,
+            xlabel = xl,
+            ylabel = yl,
+            title  = tt,
             _frq_axis_kwargs(frq)...,
             _AXIS_LOCK_KWARGS...,
         )
@@ -344,11 +344,11 @@ function plot_imf(
                 # create axis with customizable properties
                 ax = GLMakie.Axis(
                     fig[idx1, idx2];
-                    xlabel             = "Time [s]",
-                    ylabel             = "",
-                    title              = label,
+                    xlabel = "Time [s]",
+                    ylabel = "",
+                    title  = label,
                     _TIME_AXIS_KWARGS...,
-                    yticks             = yticks,
+                    yticks = yticks,
                     _AXIS_LOCK_KWARGS...,
                 )
                 GLMakie.ylims!(ax, ylim)
@@ -364,11 +364,11 @@ function plot_imf(
     row = cidx == 1 ? nr : nr + 1
     ax  = GLMakie.Axis(
     fig[row, 1:2];
-    xlabel             = "Time [s]",
-    ylabel             = "",
-    title              = "Reconstructed signal",
+    xlabel = "Time [s]",
+    ylabel = "",
+    title  = "Reconstructed signal",
     _TIME_AXIS_KWARGS...,
-    yticks             = yticks,
+    yticks = yticks,
     _AXIS_LOCK_KWARGS...
 )
     GLMakie.ylims!(ax, ylim)
@@ -419,9 +419,9 @@ function plot_fi(
     # create axis with customizable properties
     ax = GLMakie.Axis(
         fig[1, 1];
-        xlabel             = xl,
-        ylabel             = yl,
-        title              = tt,
+        xlabel = xl,
+        ylabel = yl,
+        title  = tt,
         _TIME_AXIS_KWARGS...,
         _AXIS_LOCK_KWARGS...,
     )
@@ -481,11 +481,11 @@ function plot_dwc(
             if idx < n + 2
                 ax = GLMakie.Axis(
                     fig[idx1, idx2];
-                    xlabel             = "Time [s]",
-                    ylabel             = "",
-                    title              = "Coefficient #$(idx - 1)",
+                    xlabel = "Time [s]",
+                    ylabel = "",
+                    title  = "Coefficient #$(idx - 1)",
                     _TIME_AXIS_KWARGS...,
-                    yticks             = yticks,
+                    yticks = yticks,
                     _AXIS_LOCK_KWARGS...,
                 )
                 GLMakie.ylims!(ax, ylim)
@@ -501,11 +501,11 @@ function plot_dwc(
     row = cidx == 1 ? nr : nr + 1
     ax  = GLMakie.Axis(
     fig[row, 1:2];
-    xlabel             = "Time [s]",
-    ylabel             = "",
-    title              = "Original signal",
+    xlabel = "Time [s]",
+    ylabel = "",
+    title  = "Original signal",
     _TIME_AXIS_KWARGS...,
-    yticks             = yticks,
+    yticks = yticks,
     _AXIS_LOCK_KWARGS...
 )
     GLMakie.xlims!(ax, _xlims(t))
@@ -546,8 +546,13 @@ function plot_env(
 )::GLMakie.Figure
     # validate
     length(x) == length(e) ||
-        throw(ArgumentError("Lengths of x ($(length(x))) and e ($(length(e))) must be equal."))
-    isnothing(el) == isnothing(eu) || throw(ArgumentError("Both el and eu must be provided."))
+        throw(
+            ArgumentError(
+                "Lengths of x ($(length(x))) and e ($(length(e))) must be equal.",
+            ),
+        )
+    isnothing(el) == isnothing(eu) ||
+        throw(ArgumentError("Both el and eu must be provided."))
     if !isnothing(el)
         length(el) == length(eu) == length(e) ||
             throw(ArgumentError("el and eu must have the same length as e."))
@@ -569,7 +574,8 @@ function plot_env(
     _style_axis!(ax)
 
     # 95% CI
-    !isnothing(el) && GLMakie.band!(ax, x, el, eu; alpha = 0.25, color = :grey, strokewidth = 0.5)
+    !isnothing(el) &&
+        GLMakie.band!(ax, x, el, eu; alpha = 0.25, color = :grey, strokewidth = 0.5)
     GLMakie.lines!(ax, x, e; linewidth = 2, color = :black)
 
     return fig

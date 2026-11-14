@@ -420,7 +420,7 @@ function penv(
     f = psd_data.f
     # pre-allocate output
     e = zeros(ch_n, length(f), ep_n)
-    e[1, :, 1] = env_up(psd_data.p, f, d = d)
+    e[1, :, 1] = env_up(psd_data.p, f; d = d)
 
     # calculate over channel and epochs (skipping the one already done)
     idxs = vec(CartesianIndices((ch_n, ep_n)))[2:end]

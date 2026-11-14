@@ -173,7 +173,7 @@ function dpli(
         ch_idx, ep_idx = idx[1], idx[2]
         dpli_data = _dpli(
             @view(obj1.data[ch1[ch_idx], :, ep1[ep_idx]]),
-            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            @view(obj2.data[ch2[ch_idx], :, ep2[ep_idx]]),
         )
         pv[ch_idx, ep_idx] = dpli_data.pv
         sd[ch_idx, :, ep_idx] = dpli_data.sd
@@ -235,7 +235,7 @@ function dpli(
         for ch_idx2 = 1:(ch_idx1 - 1)
             v = _dpli(
                 @view(obj.data[ch[ch_idx1], :, ep_idx]),
-                @view(obj.data[ch[ch_idx2], :, ep_idx])
+                @view(obj.data[ch[ch_idx2], :, ep_idx]),
             ).pv
             # dPLI is directed: dPLI(j, i) = 1 - dPLI(i, j)
             pv[ch_idx1, ch_idx2, ep_idx] = v

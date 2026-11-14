@@ -112,11 +112,15 @@ function import_gdf(
             recording = replace(strip(String(Char.(header[89:168]))), '\0' => "")
             # start of recording: "YYYYMMDDhhmmsscc"
             t0 = replace(strip(String(Char.(header[169:184]))), '\0' => "")
-            recording_date, recording_time = if length(t0) >= 14 && all(isdigit, t0[1:14])
-                (t0[7:8] * "." * t0[5:6] * "." * t0[1:4], t0[9:10] * ":" * t0[11:12] * ":" * t0[13:14])
-            else
-                ("", "")
-            end
+            recording_date, recording_time =
+                if length(t0) >= 14 && all(isdigit, t0[1:14])
+                    (
+                        t0[7:8] * "." * t0[5:6] * "." * t0[1:4],
+                        t0[9:10] * ":" * t0[11:12] * ":" * t0[13:14],
+                    )
+                else
+                    ("", "")
+                end
             header_bytes = reinterpret(Int64, header[185:192])[1]
             data_records = reinterpret(Int64, header[237:244])[1]
             # duration of a data record in seconds, stored as a rational (numerator, denominator)
@@ -157,8 +161,9 @@ function import_gdf(
             recording_date, recording_time = if t0 == 0
                 ("", "")
             else
-                dt = Dates.DateTime(0, 1, 1) +
-                     Dates.Millisecond(round(Int64, (t0 / 2^32 - 1) * 86_400_000))
+                dt =
+                    Dates.DateTime(0, 1, 1) +
+                    Dates.Millisecond(round(Int64, (t0 / 2^32 - 1) * 86_400_000))
                 (Dates.format(dt, "dd.mm.yyyy"), Dates.format(dt, "HH:MM:SS"))
             end
             # number of 256-byte header blocks (fixed header + channel headers + TLV header)
@@ -346,7 +351,11 @@ function import_gdf(
     )
     for ch = 1:ch_n
         haskey(gdf_type_map, Int(gdf_type[ch])) ||
-            throw(ArgumentError("Unknown GDF data type code $(gdf_type[ch]) for channel $ch."))
+            throw(
+                ArgumentError(
+                    "Unknown GDF data type code $(gdf_type[ch]) for channel $ch.",
+                ),
+            )
     end
     bps = [gdf_type_map[Int(t)][1] for t in gdf_type]
     types = [gdf_type_map[Int(t)][2] for t in gdf_type]

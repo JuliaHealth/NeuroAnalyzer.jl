@@ -7,10 +7,10 @@ export pacor
 function _pacf_reg(s::AbstractVector, l::Int64)::Vector{Float64}
     n = length(s)
     X = ones(n, l + 1)
-    for k in 1:l
+    for k = 1:l
         X[(k + 1):n, k + 1] = @view(s[1:(n - k)])
     end
-    return [(X[(k + 1):n, 1:(k + 1)] \ s[(k + 1):n])[end] for k in 1:l]
+    return [(X[(k + 1):n, 1:(k + 1)] \ s[(k + 1):n])[end] for k = 1:l]
 end
 
 """
@@ -193,7 +193,6 @@ function pacor(
 }
     # validate
     _check_var(method, [:reg, :yw], "method")
-
 
     # resolve channel names to integer indices, optionally skipping bad channels
     ch =

@@ -45,7 +45,7 @@ function _acov(
             autocov[idx + 1] =
                 dot(
                     @view(s[1:(end - idx)]),
-                    @view(s[(1 + idx):end])
+                    @view(s[(1 + idx):end]),
                 ) / denom(idx)
         end
 

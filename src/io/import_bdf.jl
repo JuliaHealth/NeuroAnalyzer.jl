@@ -29,7 +29,11 @@ BDF is BioSemi's 24-bit extension of the EDF format. Each sample is stored as a 
 
 1. https://www.biosemi.com/faq/file_format.htm
 """
-function import_bdf(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
+function import_bdf(
+    file_name::String;
+    detect_type::Bool = true,
+    clean_labels::Bool = true,
+)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
@@ -120,7 +124,8 @@ function import_bdf(file_name::String; detect_type::Bool = true, clean_labels::B
             sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
         end
         # the BioSemi Status channel carries the trigger inputs in its lower 16 bits
-        status_channels = setdiff(findall(lowercase.(clabels) .== "status"), annotation_channels)
+        status_channels =
+            setdiff(findall(lowercase.(clabels) .== "status"), annotation_channels)
         signal_chs = setdiff(1:ch_n, annotation_channels)
         isempty(signal_chs) &&
             throw(ArgumentError("$file_name does not contain any signal channels."))

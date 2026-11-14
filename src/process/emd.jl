@@ -14,13 +14,24 @@ end
 # cubic-spline envelope through the extrema idx of h; up to 2 extrema at each end are
 # mirrored about the ends of the signal (Rilling et al. 2003), so that the spline is
 # anchored beyond the ends (reduces end effects)
-function _emd_envelope(h::AbstractVector, x::AbstractVector, idx::Vector{Int64})::Vector{Float64}
+function _emd_envelope(
+    h::AbstractVector,
+    x::AbstractVector,
+    idx::Vector{Int64},
+)::Vector{Float64}
     nm = min(2, length(idx))
     l = idx[nm:-1:1]
     r = idx[end:-1:(end - nm + 1)]
     xs = vcat(2 * x[1] .- x[l], x[idx], 2 * x[end] .- x[r])
     ys = vcat(h[l], h[idx], h[r])
-    return Spline1D(Float64.(xs), Float64.(ys); k = min(3, length(xs) - 1), bc = "extrapolate")(x)
+    return Spline1D(
+        Float64.(xs),
+        Float64.(ys);
+        k = min(3, length(xs) - 1),
+        bc = "extrapolate",
+    )(
+        x,
+    )
 end
 
 """
@@ -125,7 +136,12 @@ function emd(
     # validate
     _check_epochs(obj, ep)
 
-    imf = _emd(@view(obj.data[ch, :, ep]), obj.epoch_time; epsilon = epsilon, max_imf = max_imf)
+    imf = _emd(
+        @view(obj.data[ch, :, ep]),
+        obj.epoch_time;
+        epsilon = epsilon,
+        max_imf = max_imf,
+    )
     _info("$(size(imf, 1) - 1) IMFs were calculated")
 
     return imf

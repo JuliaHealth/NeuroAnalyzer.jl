@@ -172,7 +172,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     # S-D-Mask: sources × detectors matrix of active channels
     ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
     masks = split.(strip.(hdr[(ch_mask_start + 1):(ch_mask_start + sources)]))
-    sd_mask = [parse(Int64, masks[s_idx][d_idx]) == 1 for s_idx = 1:sources, d_idx = 1:detectors]
+    sd_mask =
+        [parse(Int64, masks[s_idx][d_idx]) == 1 for s_idx = 1:sources, d_idx = 1:detectors]
     # active .wl columns, in S-D-Key order
     ch_masks = [sd_mask[key_pairs[idx, 1], key_pairs[idx, 2]] for idx in axes(key_pairs, 1)]
     opt_pairs_wl = key_pairs[ch_masks, :]
@@ -188,7 +189,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     # channel distances (informational only)
     chd_idx = findfirst(startswith.(lowercase.(hdr), "chandis="))
-    channel_distance = isnothing(chd_idx) ? Float64[] :
+    channel_distance =
+        isnothing(chd_idx) ? Float64[] :
         parse.(Float64, split(strip(replace(lowercase(hdr[chd_idx]), "chandis=" => ""))))
 
     # read raw light intensity channels (V): one .wl file per wavelength,
@@ -202,7 +204,10 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
             ignorerepeated = true,
             ntasks = 1,
         ),
-    )'[ch_masks, :]
+    )'[
+        ch_masks,
+        :,
+    ]
     nirs_int = reduce(vcat, [read_wl(idx) for idx in eachindex(wavelengths)])
     wavelength_index = reduce(vcat, [repeat([idx], ch_n) for idx in eachindex(wavelengths)])
     opt_pairs = reduce(vcat, [opt_pairs_wl for _ in eachindex(wavelengths)])

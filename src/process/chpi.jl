@@ -137,7 +137,10 @@ function _nelder_mead(
 end
 
 # rigid transform (R, t) with B ≈ R A + t (rows are points), Kabsch algorithm
-function _kabsch(A::AbstractMatrix{Float64}, B::AbstractMatrix{Float64})::Tuple{Matrix{Float64}, Vector{Float64}}
+function _kabsch(
+    A::AbstractMatrix{Float64},
+    B::AbstractMatrix{Float64},
+)::Tuple{Matrix{Float64}, Vector{Float64}}
     ca = vec(sum(A; dims = 1)) ./ size(A, 1)
     cb = vec(sum(B; dims = 1)) ./ size(B, 1)
     H = (A .- ca')' * (B .- cb')
@@ -177,7 +180,8 @@ function chpi_head_positions(
     # validate                                                           #
     # ------------------------------------------------------------------ #
     _check_datatype(obj, "meg")
-    nepochs(obj) == 1 || throw(ArgumentError("cHPI fitting requires continuous (non-epoched) data."))
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("cHPI fitting requires continuous (non-epoched) data."))
     t_window > 0 || throw(ArgumentError("t_window must be > 0."))
     t_step > 0 || throw(ArgumentError("t_step must be > 0."))
     0 < gof_limit < 1 || throw(ArgumentError("gof_limit must be in (0, 1)."))
@@ -190,19 +194,33 @@ function chpi_head_positions(
     freqs = Vector{Float64}(get(hpi, :freqs, Float64[]))
     hpi_dig = get(hpi, :dig, Matrix{Float64}(undef, 0, 3))
     n_hpi = length(freqs)
-    n_hpi >= 3 || throw(ArgumentError("OBJ contains no cHPI information (at least 3 coil frequencies required)."))
+    n_hpi >= 3 || throw(
+        ArgumentError(
+            "OBJ contains no cHPI information (at least 3 coil frequencies required).",
+        ),
+    )
     size(hpi_dig, 1) == n_hpi ||
-        throw(ArgumentError("Number of digitized HPI coils ($(size(hpi_dig, 1))) does not match coil frequencies ($n_hpi)."))
+        throw(
+            ArgumentError(
+                "Number of digitized HPI coils ($(size(hpi_dig, 1))) does not match coil frequencies ($n_hpi).",
+            ),
+        )
     dev_head = get(rec, :dev_head_t, Matrix{Float64}(undef, 0, 0))
     size(dev_head) == (4, 4) || throw(ArgumentError("OBJ has no device → head transform."))
     for k in (:coil_loc, :coil_id)
         (haskey(rec, k) && !isempty(rec[k])) ||
-            throw(ArgumentError("OBJ has no MEG sensor geometry ($k); re-import the data with import_fiff()."))
+            throw(
+                ArgumentError(
+                    "OBJ has no MEG sensor geometry ($k); re-import the data with import_fiff().",
+                ),
+            )
     end
 
     fs = rec[:sampling_rate]
     any(>=(fs / 2), freqs) && throw(
-        ArgumentError("HPI frequencies $(freqs) Hz are not below the Nyquist frequency ($(fs / 2) Hz)."),
+        ArgumentError(
+            "HPI frequencies $(freqs) Hz are not below the Nyquist frequency ($(fs / 2) Hz).",
+        ),
     )
     get(rec, :lowpass, nothing) isa Real && 0 < rec[:lowpass] < maximum(freqs) &&
         _warn("Data are low-pass filtered below the highest HPI frequency.")
@@ -219,7 +237,8 @@ function chpi_head_positions(
     d_scale = [_ssp_unit_scale(u) for u in rec[:unit][meg]]
     data = obj.data[meg, :, 1] ./ d_scale
 
-    pts, wn, cidx = _chpi_coil_points(Matrix{Float64}(rec[:coil_loc][meg, :]), rec[:coil_id][meg])
+    pts, wn, cidx =
+        _chpi_coil_points(Matrix{Float64}(rec[:coil_loc][meg, :]), rec[:coil_id][meg])
     fwd = rq -> _chpi_mag_dipole_fwd(rq, pts, wn, cidx, n_meg) .* coil_scale
 
     # ------------------------------------------------------------------ #

@@ -181,7 +181,9 @@ function iir_order(;
 
     # all band edges must lie within (0, Nyquist)
     all(e -> 0 < e < 1, (wp..., ws...)) || throw(
-        ArgumentError("Band edges (cutoff ± bw/2) must lie within (0, $nqf) Hz; reduce bw."),
+        ArgumentError(
+            "Band edges (cutoff ± bw/2) must lie within (0, $nqf) Hz; reduce bw.",
+        ),
     )
     # delegate order estimation to the appropriate DSP.jl function
     if fprototype === :butterworth

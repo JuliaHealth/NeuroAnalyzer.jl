@@ -57,7 +57,13 @@ function plinterpolate_channel(
 
     # spherical spline: one fixed weight matrix for all samples instead of a fit per sample
     imethod === :sph &&
-        return sphinterpolate_channel(obj; ch = ch, ep = ep, seg = seg, reset_bads = reset_bads)
+        return sphinterpolate_channel(
+            obj;
+            ch = ch,
+            ep = ep,
+            seg = seg,
+            reset_bads = reset_bads,
+        )
 
     _has_locs(obj)
     _check_epochs(obj, ep)
@@ -68,10 +74,16 @@ function plinterpolate_channel(
     # signal channels (names); the reference channels exclude ch and bad channels
     signal = get_channel(obj; type = datatype(obj))
     ch in signal ||
-        throw(ArgumentError("ch must be a signal channel; cannot interpolate non-signal channels."))
+        throw(
+            ArgumentError(
+                "ch must be a signal channel; cannot interpolate non-signal channels.",
+            ),
+        )
     bad = labels(obj)[obj.header.recording[:bad_channel]]
     ref = setdiff(signal, [ch], bad)
-    length(ref) >= 3 || throw(ArgumentError("At least 3 good signal channels are needed for interpolation."))
+    length(ref) >= 3 || throw(
+        ArgumentError("At least 3 good signal channels are needed for interpolation."),
+    )
 
     # channel numbers and locations (matched by label)
     ch_num(l) = findfirst(==(l), labels(obj))
@@ -92,13 +104,20 @@ function plinterpolate_channel(
 
     # initialize progress bar
     progbar = Progress(
-        length(ep) * length(t_rng); dt = 1, barlen = 20, color = :white, enabled = progress_bar,
+        length(ep) * length(t_rng); dt = 1, barlen = 20, color = :white,
+        enabled = progress_bar,
     )
 
     # value at the location of ch, interpolated from the reference channels at each sample
-    @inbounds Threads.@threads :static for idx in CartesianIndices((length(t_rng), length(ep)))
+    @inbounds Threads.@threads :static for idx in
+                                           CartesianIndices((length(t_rng), length(ep)))
         t_idx, ep_idx = t_rng[idx[1]], idx[2]
-        itp = _interpolator(imethod, loc_x, loc_y, @view(obj.data[ref_num, t_idx, ep[ep_idx]]))
+        itp = _interpolator(
+            imethod,
+            loc_x,
+            loc_y,
+            @view(obj.data[ref_num, t_idx, ep[ep_idx]]),
+        )
         obj_tmp.data[ch_idx, t_idx, ep[ep_idx]] = itp(target[1:1], target[2:2])[1]
         progress_bar && next!(progbar)
     end
@@ -217,7 +236,8 @@ function plinterpolate(
         loc_y = last.(xy)
     end
 
-    int_s, int_x, int_y = _interpolate2d(Float64.(s[keep]), loc_x, loc_y, ifactor, imethod, nmethod)
+    int_s, int_x, int_y =
+        _interpolate2d(Float64.(s[keep]), loc_x, loc_y, ifactor, imethod, nmethod)
 
     return (; int_s, int_x, int_y)
 end

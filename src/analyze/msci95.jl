@@ -280,7 +280,7 @@ function _msci95(
         ch_idx, ep_idx = idx[1], idx[2]
         result = _msci95(
             @view(s1[ch_idx, :, ep_idx]),
-            @view(s2[ch_idx, :, ep_idx])
+            @view(s2[ch_idx, :, ep_idx]),
         )
         sm[ch_idx, ep_idx] = result.sm
         se[ch_idx, ep_idx] = result.se
@@ -400,6 +400,6 @@ function msci95(
 
     return NeuroAnalyzer._msci95(
         @view(obj1.data[ch1, :, ep1]),
-        @view(obj2.data[ch2, :, ep2])
+        @view(obj2.data[ch2, :, ep2]),
     )
 end

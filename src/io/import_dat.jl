@@ -26,12 +26,18 @@ function import_dat(file_name)::DataFrame
     # the column names are in the line above the row of dashes
     sep = findfirst(l -> occursin(r"^\s*-+(\s+-+)*\s*$", l), lines)
     (isnothing(sep) || sep == 1) &&
-        throw(ArgumentError("$file_name: column header (names and a row of dashes) not found."))
+        throw(
+            ArgumentError(
+                "$file_name: column header (names and a row of dashes) not found.",
+            ),
+        )
     cols = Symbol.(replace.(lowercase.(split(strip(lines[sep - 1]))), "resp" => "response"))
 
     rows = [split(strip(l)) for l in lines[(sep + 1):end] if !isempty(strip(l))]
     all(r -> length(r) == length(cols), rows) || throw(
-        ArgumentError("$file_name: data rows do not have $(length(cols)) columns ($(Base.join(cols, ", "))).")
+        ArgumentError(
+            "$file_name: data rows do not have $(length(cols)) columns ($(Base.join(cols, ", "))).",
+        ),
     )
     dat = DataFrame()
     for (idx, c) in enumerate(cols)

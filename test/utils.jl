@@ -442,7 +442,6 @@ eeg_tmp = anonymize(eeg)
 @test eeg_tmp.header.subject[:middle_name] == ""
 @test eeg_tmp.header.subject[:last_name] == ""
 
-
 ##
 ## values (formulas, synthetic signals, SciPy references)
 ##
@@ -477,12 +476,24 @@ f, nf = NeuroAnalyzer.freqs(8, 8; nf = true)
 @info "Test: generate_window() values"
 # SciPy scipy.signal.windows (sym = True), n = 7
 @test generate_window(:hann, 7) ≈ [0.0, 0.25, 0.75, 1.0, 0.75, 0.25, 0.0] atol = 1e-12
-@test generate_window(:bh, 7) ≈ [6.0e-5, 0.055645, 0.520575, 1.0, 0.520575, 0.055645, 6.0e-5] atol = 1e-10
-@test generate_window(:bohman, 7) ≈ [0.0, 0.10899778104422927, 0.6089977810442293, 1.0, 0.6089977810442293, 0.10899778104422927, 0.0] atol = 1e-12
+@test generate_window(:bh, 7) ≈
+      [6.0e-5, 0.055645, 0.520575, 1.0, 0.520575, 0.055645, 6.0e-5] atol = 1e-10
+@test generate_window(:bohman, 7) ≈ [
+    0.0,
+    0.10899778104422927,
+    0.6089977810442293,
+    1.0,
+    0.6089977810442293,
+    0.10899778104422927,
+    0.0,
+] atol = 1e-12
 # flat top: SciPy uses more digits of the coefficients
-@test generate_window(:flat, 7) ≈ [-0.000421051, -0.051263156, 0.19821053, 1.0, 0.19821053, -0.051263156, -0.000421051] atol = 1e-4
+@test generate_window(:flat, 7) ≈
+      [-0.000421051, -0.051263156, 0.19821053, 1.0, 0.19821053, -0.051263156, -0.000421051] atol =
+    1e-4
 # Blackman-Nuttall = scipy.signal.windows.nuttall
-@test generate_window(:bn, 7) ≈ [0.0003628, 0.0613345, 0.5292298, 1.0, 0.5292298, 0.0613345, 0.0003628] atol = 1e-10
+@test generate_window(:bn, 7) ≈
+      [0.0003628, 0.0613345, 0.5292298, 1.0, 0.5292298, 0.0613345, 0.0003628] atol = 1e-10
 # Nuttall (continuous first derivative): w(0) = a0 - a1 + a2 - a3, w(centre) = a0 + a1 + a2 + a3
 w = generate_window(:nutall, 7)
 @test w[1] ≈ 0.355768 - 0.487396 + 0.144232 - 0.012604
@@ -547,7 +558,8 @@ s = generate_signal(500, 3)
 # square wave: period 2, duty cycle (2 - w) / 2, amplitude a, offset
 s = generate_square(0:0.5:3.5, 2, 0)
 @test s == [0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 2.0]
-@test generate_square(0:0.5:3.5, 1, 0; w = 0.5, offset = -0.5) == [-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5]
+@test generate_square(0:0.5:3.5, 1, 0; w = 0.5, offset = -0.5) ==
+      [-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5]
 # triangle: a × |mod(t, 2) - 1|
 @test generate_triangle(0:0.5:2, 4) == [4.0, 2.0, 0.0, 2.0, 4.0]
 
@@ -676,10 +688,10 @@ p = phases(cos.(2π * 8 .* t))
 function capture(f)
     mktemp() do path, io
         redirect_stdout(io) do
-            f()
+            return f()
         end
         flush(io)
-        read(path, String)
+        return read(path, String)
     end
 end
 out = capture(() -> NeuroAnalyzer._print_header(e10))
@@ -690,7 +702,8 @@ out = capture(() -> NeuroAnalyzer.header(e10))
 out = capture(() -> info(e10))
 @test occursin("Fp1", out)
 @test names(info(e10; df = true))[1:2] == ["time", "Fp1"]
-@test channel_info(e10; ch = "Fp1", pr = false) == " ch: 1    label: Fp1      type: EEG      unit: μV       bad: false"
+@test channel_info(e10; ch = "Fp1", pr = false) ==
+      " ch: 1    label: Fp1      type: EEG      unit: μV       bad: false"
 out = capture(() -> channel_info(e10; ch = "Fp1"))
 @test occursin("label: Fp1", out)
 @test_throws ArgumentError channel_info(e10; ch = r"Fp" |> string)
@@ -735,7 +748,13 @@ e_tmp = add_note(e10; note = "x")
 @test_throws ArgumentError e2t(e10; ep = 11)
 @test_throws ArgumentError t2s(-1, 256)
 @test_throws ArgumentError s2t(1, 0)
-m = DataFrame(:id => ["a"], :start => [257.0], :length => [256.0], :value => ["x"], :channel => [0])
+m = DataFrame(
+    :id => ["a"],
+    :start => [257.0],
+    :length => [256.0],
+    :value => ["x"],
+    :channel => [0],
+)
 @test markers_s2t(m; fs = 256)[1, :start] == 1.0
 @test markers_s2t(m; fs = 256)[1, :length] == 1.0
 @test m[1, :start] == 257.0
@@ -755,7 +774,8 @@ r = apply(e10; ch = "Fp1", f = "mean(obj, dims=1)")
 @test get_channel(e10; ch = "Fp2") == [2]
 # indices in channel order
 @test get_channel(e10; ch = ["Fp2", "Fp1"]) == [1, 2]
-@test get_channel(e10; type = "ecg") == labels(e10)[e10.header.recording[:channel_type] .== "ecg"]
+@test get_channel(e10; type = "ecg") ==
+      labels(e10)[e10.header.recording[:channel_type] .== "ecg"]
 @test_throws ArgumentError get_channel(e10; ch = "no_such_channel")
 
 @info "Test: cwtfrq() values"

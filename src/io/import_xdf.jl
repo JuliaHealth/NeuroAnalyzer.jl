@@ -68,7 +68,9 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     eeg_idx = eeg_idx[1]
     srate = Float64(streams[s_names[eeg_idx]]["srate"])
     srate > 0 || throw(
-        ArgumentError("The EEG stream in $file_name has an irregular sampling rate; not supported."),
+        ArgumentError(
+            "The EEG stream in $file_name has an irregular sampling rate; not supported.",
+        ),
     )
     # all marker times are relative to the first EEG sample
     time_pts0 = time[eeg_idx][1]

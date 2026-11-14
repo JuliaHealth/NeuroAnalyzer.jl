@@ -54,7 +54,13 @@ function _ftt_result(
     )
 end
 
-function _ftt_check(duration::Int64, trials::Int64, interval::Int64, gpio::Int64, port_name::String)::Nothing
+function _ftt_check(
+    duration::Int64,
+    trials::Int64,
+    interval::Int64,
+    gpio::Int64,
+    port_name::String,
+)::Nothing
     duration > 0 || throw(ArgumentError("duration must be > 0."))
     trials > 0 || throw(ArgumentError("trials must be > 0."))
     interval >= 0 || throw(ArgumentError("interval must be ≥ 0."))
@@ -140,7 +146,8 @@ function iftt(;
 
     # record one trial or interval of `len` seconds
     function _ftt_phase(ph::Symbol, idx::Int64, len::Int64)
-        press, rel = ph === :trial ? (tr_press[idx], tr_rel[idx]) : (int_press[idx], int_rel[idx])
+        press, rel =
+            ph === :trial ? (tr_press[idx], tr_rel[idx]) : (int_press[idx], int_rel[idx])
         key_pressed = false
         cur = idx
         t0 = time()
@@ -247,7 +254,7 @@ function iftt(;
         # --- START button ---
         return signal_connect(bt_start, "clicked") do widget
             bt_start.sensitive = false
-            test_task = Threads.@spawn begin
+            return test_task = Threads.@spawn begin
                 try
                     for idx = 1:trials
                         _beep()
@@ -373,7 +380,10 @@ function ftt(;
     int_rel = [Float64[] for _ = 1:trials]
 
     # keyboard: key presses with the time they were read
-    channel = device === :keyboard ? Channel{Tuple{Char, Float64}}(c -> _kbd_listener(c; timestamp = true), 1024) : nothing
+    channel =
+        device === :keyboard ?
+        Channel{Tuple{Char, Float64}}(c -> _kbd_listener(c; timestamp = true), 1024) :
+        nothing
 
     # record one trial or interval of `len` seconds
     function _ftt_phase(press::Vector{Float64}, rel::Vector{Float64}, len::Int64)

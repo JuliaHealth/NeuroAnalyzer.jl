@@ -31,7 +31,11 @@ Channel units are taken from the file header; channels whose NeuroAnalyzer unit 
 2. Kemp B, Olivan J. European data format 'plus' (EDF+). *Clin Neurophysiol*. 2003;114:1755-61.
 3. https://www.edfplus.info/specs/
 """
-function import_edf(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
+function import_edf(
+    file_name::String;
+    detect_type::Bool = true,
+    clean_labels::Bool = true,
+)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))

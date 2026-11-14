@@ -90,7 +90,8 @@ function _dwd(
         # calculate over channel and epochs
         @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
             ch_idx, ep_idx = idx[1], idx[2]
-            dc[ch_idx, :, :, ep_idx] = _dwd(@view(s[ch_idx, :, ep_idx]); wt = wt, type = type, l = l)
+            dc[ch_idx, :, :, ep_idx] =
+                _dwd(@view(s[ch_idx, :, ep_idx]); wt = wt, type = type, l = l)
         end
     finally
         _log_on()
@@ -175,7 +176,11 @@ function idwd(
 
     # number of levels: the packet tree has 2^(l + 1) - 1 nodes
     l = round(Int64, log2(n + 1)) - 1
-    2^(l + 1) - 1 == n || throw(ArgumentError("dc must have 2^(l + 1) - 1 rows (wavelet packet decomposition from dwd())."))
+    2^(l + 1) - 1 == n || throw(
+        ArgumentError(
+            "dc must have 2^(l + 1) - 1 rows (wavelet packet decomposition from dwd()).",
+        ),
+    )
 
     # unselected nodes are zeroed (the packet layout must be kept)
     xw = zeros(size(dc, 2), n)

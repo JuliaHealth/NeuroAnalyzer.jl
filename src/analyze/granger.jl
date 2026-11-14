@@ -13,14 +13,15 @@ Build the lagged VAR design for `x` (channels × samples × epochs). Lags never 
 """
 function _gc_design(x::AbstractArray{<:Real, 3}, p::Int)
     ch, n, ep = size(x)
-    n > p || throw(ArgumentError("Model order ($p) must be smaller than epoch length ($n)."))
+    n > p ||
+        throw(ArgumentError("Model order ($p) must be smaller than epoch length ($n)."))
     m = n - p
     Y = Matrix{Float64}(undef, m * ep, ch)
     Z = Matrix{Float64}(undef, m * ep, ch * p)
-    for e in 1:ep
+    for e = 1:ep
         r = ((e - 1) * m + 1):(e * m)
         Y[r, :] = transpose(@view x[:, (p + 1):n, e])
-        for l in 1:p, c in 1:ch
+        for l = 1:p, c = 1:ch
             Z[r, (l - 1) * ch + c] = @view x[c, (p - l + 1):(n - l), e]
         end
     end
@@ -39,7 +40,7 @@ function _gc_order(x::AbstractArray{<:Real, 3}, maxorder::Int)
     maxorder >= 1 || throw(ArgumentError("maxorder must be ≥ 1."))
     ch = size(x, 1)
     best_p, best_bic = 1, Inf
-    for p in 1:min(maxorder, size(x, 2) - 1)
+    for p = 1:min(maxorder, size(x, 2) - 1)
         Y, Z = _gc_design(x, p)
         N = size(Y, 1)
         R = Y .- Z * (Z \ Y)
@@ -54,13 +55,13 @@ end
 # Benjamini-Hochberg FDR over the off-diagonal entries of a p-value matrix
 function _gc_fdr(pv::AbstractMatrix{<:Real})
     ch = size(pv, 1)
-    idx = [CartesianIndex(i, j) for i in 1:ch for j in 1:ch if i != j]
+    idx = [CartesianIndex(i, j) for i = 1:ch for j = 1:ch if i != j]
     p = [pv[k] for k in idx]
     m = length(p)
     o = sortperm(p)
     adj = similar(p)
     running = 1.0
-    for k in m:-1:1
+    for k = m:-1:1
         running = min(running, p[o[k]] * m / k)
         adj[o[k]] = running
     end
@@ -102,7 +103,7 @@ function _granger(
     ch >= 2 || throw(ArgumentError("At least 2 channels are required."))
     x = Float64.(s)
     # each epoch is demeaned per channel (no intercept in the model)
-    x .-= mean(x, dims = 2)
+    x .-= mean(x; dims = 2)
     p = isnothing(order) ? _gc_order(x, maxorder) : order
     p >= 1 || throw(ArgumentError("order must be ≥ 1."))
     Y, Z = _gc_design(x, p)
@@ -111,9 +112,9 @@ function _granger(
     gc = zeros(ch, ch)
     f = zeros(ch, ch)
     pv = ones(ch, ch)
-    rss_full = conditional ? [_gc_rss(Y[:, j], Z) for j in 1:ch] : zeros(ch)
+    rss_full = conditional ? [_gc_rss(Y[:, j], Z) for j = 1:ch] : zeros(ch)
     Zpair = Matrix{Float64}(undef, N, 2p)
-    for j in 1:ch, i in 1:ch
+    for j = 1:ch, i = 1:ch
         i == j && continue
         y = @view Y[:, j]
         if conditional
@@ -153,7 +154,7 @@ function _gc_var_fit(x::AbstractArray{<:Real, 3}, p::Int)
     R = Y .- Z * B
     Σ = (R' * R) / size(Y, 1)
     A = Array{Float64, 3}(undef, ch, ch, p)
-    for l in 1:p, c in 1:ch, t in 1:ch
+    for l = 1:p, c = 1:ch, t = 1:ch
         A[t, c, l] = B[(l - 1) * ch + c, t]
     end
     return A, Σ
@@ -198,14 +199,14 @@ function _gc_wilson(
     psi = repeat(Matrix{ComplexF64}(cholesky(Symmetric((gam0 + gam0') / 2)).U), 1, 1, N2)
     g = similar(psi)
     converged = false
-    for _ in 1:maxiter
-        for k in 1:N2
+    for _ = 1:maxiter
+        for k = 1:N2
             pinv_k = inv(psi[:, :, k])
             g[:, :, k] = pinv_k * S[:, :, k] * pinv_k' + I
         end
         gp = _gc_plus(g)
         psi_new = similar(psi)
-        for k in 1:N2
+        for k = 1:N2
             psi_new[:, :, k] = psi[:, :, k] * gp[:, :, k]
         end
         d = maximum(abs, psi_new .- psi)
@@ -215,12 +216,13 @@ function _gc_wilson(
             break
         end
     end
-    converged || _warn("Wilson spectral factorization did not converge in $maxiter iterations.")
+    converged ||
+        _warn("Wilson spectral factorization did not converge in $maxiter iterations.")
     # zero-lag coefficient A0: Σ = A0 A0ᵀ, H = ψ A0⁻¹
     A0 = real(ifft(psi, 3)[:, :, 1])
     A0inv = inv(A0)
     H = similar(psi)
-    for k in 1:N2
+    for k = 1:N2
         H[:, :, k] = psi[:, :, k] * A0inv
     end
     return H, A0 * A0'
@@ -267,32 +269,32 @@ function _granger_spectral(
     ch = size(s, 1)
     ch >= 2 || throw(ArgumentError("At least 2 channels are required."))
     x = Float64.(s)
-    x .-= mean(x, dims = 2)
+    x .-= mean(x; dims = 2)
     p = isnothing(order) ? _gc_order(x, maxorder) : order
     p >= 1 || throw(ArgumentError("order must be ≥ 1."))
-    frq = collect(range(0, fs / 2, length = nfrq))
+    frq = collect(range(0, fs / 2; length = nfrq))
     # e^{-iωl}, ω = 2πf/fs
-    E = [cis(-2π * frq[k] * l / fs) for l in 1:p, k in 1:nfrq]
+    E = [cis(-2π * frq[k] * l / fs) for l = 1:p, k = 1:nfrq]
     gc = zeros(ch, ch, nfrq)
     if conditional
         A, Σ = _gc_var_fit(x, p)
         N2 = 2 * (nfrq - 1)
         H = Array{ComplexF64, 3}(undef, ch, ch, N2)
         S = similar(H)
-        for k in 1:N2
+        for k = 1:N2
             Af = Matrix{ComplexF64}(I, ch, ch)
-            for l in 1:p
+            for l = 1:p
                 Af .-= @view(A[:, :, l]) .* cis(-2π * (k - 1) * l / N2)
             end
             H[:, :, k] = inv(Af)
             S[:, :, k] = H[:, :, k] * Σ * H[:, :, k]'
         end
         # source channel
-        for i in 1:ch
+        for i = 1:ch
             # reduced model: all channels except the source
             r = setdiff(1:ch, i)
             Hr, Σr = _gc_wilson(S[r, r, :]; maxiter = maxiter, tol = tol)
-            for k in 1:nfrq
+            for k = 1:nfrq
                 Hrinv = inv(Hr[:, :, k])
                 Hk = H[r, :, k]
                 # target channel
@@ -306,16 +308,16 @@ function _granger_spectral(
         end
         return (gc = gc, frq = frq, order = p)
     end
-    for a in 1:(ch - 1), b in (a + 1):ch
+    for a = 1:(ch - 1), b = (a + 1):ch
         A, Σ = _gc_var_fit(@view(x[[a, b], :, :]), p)
         # partial (conditional) variances of the innovations
         # var of ε_a given ε_b
         σa = Σ[1, 1] - Σ[1, 2]^2 / Σ[2, 2]
         # var of ε_b given ε_a
         σb = Σ[2, 2] - Σ[1, 2]^2 / Σ[1, 1]
-        for k in 1:nfrq
+        for k = 1:nfrq
             Af = Matrix{ComplexF64}(I, 2, 2)
-            for l in 1:p
+            for l = 1:p
                 Af .-= @view(A[:, :, l]) .* E[l, k]
             end
             H = inv(Af)

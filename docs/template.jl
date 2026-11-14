@@ -75,7 +75,10 @@ end
 open(OUT, "a") do io
     println(io, "# NeuroAnalyzer.jl documentation")
     println(io)
-    println(io, "This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).")
+    println(
+        io,
+        "This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).",
+    )
     for (idx, (title, dir)) in enumerate(SECTIONS)
         isempty(entries[dir]) && continue
         idx > 1 && (println(io); println(io, "---"))

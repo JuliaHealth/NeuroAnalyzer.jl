@@ -363,7 +363,7 @@ function plot_phs_topo(
     frq::Symbol = :lin,
     cart::Bool = false,
     head::Bool = true,
-    gui::Bool=true,
+    gui::Bool = true,
 )::GLMakie.Figure
     # validate
     size(ph, 2) == length(f) || throw(
@@ -435,7 +435,7 @@ function plot_phs_topo(
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(ph, 1)
         pp = GLMakie.Figure(; size = marker_size, figure_padding = 0)
-        gl = GridLayout(pp[1, 1], alignmode = Outside(5))
+        gl = GridLayout(pp[1, 1]; alignmode = Outside(5))
         ax = GLMakie.Axis(
             gl[1, 1];
             xlabel = "",
@@ -454,10 +454,10 @@ function plot_phs_topo(
         GLMakie.xlims!(ax, f[f1], f[f2])
 
         # draw black box around the entire figure
-        GLMakie.Box(pp[:, :], 
-            color = :transparent, 
-            strokecolor = :black, 
-            strokewidth = 1.5
+        GLMakie.Box(pp[:, :];
+            color = :transparent,
+            strokecolor = :black,
+            strokewidth = 1.5,
         )
 
         push!(pp_vec, pp)
@@ -467,8 +467,8 @@ function plot_phs_topo(
             xlabel = xlabel,
             ylabel = ylabel,
             title  = locs[idx, :label] * ": " * title,
-            flim = flim,
-            frq = frq,
+            flim   = flim,
+            frq    = frq,
         )
         push!(pp_full_vec, pp_full)
     end
@@ -679,7 +679,8 @@ function plot_phs(
         end
 
         ch_locs && _ch_locs_inset!(
-            fig, obj, ch, _trace_colors(length(ch); mono = mono, black = length(ch) == 1 || ci95);
+            fig, obj, ch,
+            _trace_colors(length(ch); mono = mono, black = length(ch) == 1 || ci95);
             pos = ch_locs_pos,
         )
 

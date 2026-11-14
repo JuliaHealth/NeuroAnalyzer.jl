@@ -223,8 +223,7 @@ function edit_channel(
     end
 
     # record the user's call instead of the delegated one
-    obj_tmp.history[end] =
-        "edit_channel(obj; ch=$(labels(obj)[ch_idx]), field=$field, value=$value)"
+    obj_tmp.history[end] = "edit_channel(obj; ch=$(labels(obj)[ch_idx]), field=$field, value=$value)"
 
     return obj_tmp
 end
@@ -509,7 +508,8 @@ function add_channel(
     # time axes for a previously empty object
     if !has_data
         fs = r[:sampling_rate]
-        fs > 0 || throw(ArgumentError("Sampling rate must be set to initialize an empty object."))
+        fs > 0 ||
+            throw(ArgumentError("Sampling rate must be set to initialize an empty object."))
         n_s = size(data, 2)
         n_e = size(data, 3)
         obj_tmp.time_pts = _time_axis(n_s * n_e, fs)

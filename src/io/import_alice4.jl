@@ -19,7 +19,11 @@ Alice 4 EDF files are non-conforming in two ways, both handled by `import_edf`, 
 
 - `NeuroAnalyzer.NEURO`
 """
-function import_alice4(file_name::String; detect_type::Bool = true, clean_labels::Bool = true)::NeuroAnalyzer.NEURO
+function import_alice4(
+    file_name::String;
+    detect_type::Bool = true,
+    clean_labels::Bool = true,
+)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))

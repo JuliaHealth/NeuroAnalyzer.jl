@@ -63,7 +63,6 @@ function _xcor(
             xc_neg[idx + 1] /= biased ? length(s1) : (length(s1) - idx)
         end
     elseif method === :cov
-
         for idx = 0:l
             xc[idx + 1] = @views cor(s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)])
         end
@@ -268,7 +267,9 @@ function xcor(
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(
-        ArgumentError("Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal."),
+        ArgumentError(
+            "Lengths of ch1 ($(length(ch1))) and ch2 ($(length(ch2))) must be equal.",
+        ),
     )
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)

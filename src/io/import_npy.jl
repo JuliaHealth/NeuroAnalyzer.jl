@@ -25,7 +25,11 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
 
     data = npzread(file_name)
     ndims(data) in (1, 2) ||
-        throw(ArgumentError("$file_name must contain a 1-D or 2-D (channels × samples) array."))
+        throw(
+            ArgumentError(
+                "$file_name must contain a 1-D or 2-D (channels × samples) array.",
+            ),
+        )
     data = reshape(Float64.(data), size(data, 1), :, 1)
     ch_n = size(data, 1)
     clabels = String[]

@@ -96,11 +96,17 @@ function sphinterpolate_channel(
     function _xyz(chs::Vector{Int64})::Matrix{Float64}
         idx = [findfirst(==(lowercase(l)), loc_labels) for l in labels(obj)[chs]]
         any(isnothing, idx) &&
-            throw(ArgumentError("Locations of all interpolated and good channels are required."))
+            throw(
+                ArgumentError(
+                    "Locations of all interpolated and good channels are required.",
+                ),
+            )
         p = Matrix{Float64}(obj.locs[Vector{Int64}(idx), [:loc_x, :loc_y, :loc_z]])
         r = sqrt.(sum(abs2, p; dims = 2))
         any(iszero, r) && throw(
-            ArgumentError("Some channels have no Cartesian coordinates, use locs_sph2cart() first."),
+            ArgumentError(
+                "Some channels have no Cartesian coordinates, use locs_sph2cart() first.",
+            ),
         )
         return p ./ r
     end
@@ -111,7 +117,7 @@ function sphinterpolate_channel(
     # interpolated positions are [G_int 1] [c; c0], i.e. a fixed linear map of V
     ng = length(ch_good)
     A = [(_sph_g(xyz_good, xyz_good; m = m, n = n) + lambda * I(ng)) ones(ng);
-         ones(1, ng) 0.0]
+        ones(1, ng) 0.0]
     B = [_sph_g(xyz_int, xyz_good; m = m, n = n) ones(length(ch_int))]
     W = (B / A)[:, 1:ng]
 
@@ -162,7 +168,8 @@ function sphinterpolate_channel!(
     reset_bads::Bool = false,
 )::Nothing
     obj_tmp = sphinterpolate_channel(
-        obj; ch = ch, ep = ep, seg = seg, m = m, n = n, lambda = lambda, reset_bads = reset_bads,
+        obj; ch = ch, ep = ep, seg = seg, m = m, n = n, lambda = lambda,
+        reset_bads = reset_bads,
     )
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header

@@ -94,7 +94,9 @@ function tconv(
 
     # create new dataset
     obj_tmp = deepcopy(obj)
-    _info("Output aligned with the input: group delay of $(_group_delay(kernel)) samples removed")
+    _info(
+        "Output aligned with the input: group delay of $(_group_delay(kernel)) samples removed",
+    )
 
     if eltype(kernel) == ComplexF64
         return _tconv(obj.data[ch, :, :]; kernel = kernel)

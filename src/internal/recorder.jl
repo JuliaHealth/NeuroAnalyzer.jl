@@ -104,8 +104,8 @@ function _serial_open(
     _check_dialout()
 
     lock(_SERIAL_PORTS_LOCK) do
-        haskey(_SERIAL_PORTS, port_name) && isopen(_SERIAL_PORTS[port_name]) &&
-            throw(ArgumentError("Serial port $port_name is already open."))
+        return haskey(_SERIAL_PORTS, port_name) && isopen(_SERIAL_PORTS[port_name]) &&
+               throw(ArgumentError("Serial port $port_name is already open."))
     end
 
     sp = try
@@ -147,7 +147,7 @@ No-op if the port is already closed. The handle is removed from the registry of 
 function _serial_close(sp::LibSerialPort.SerialPort)::Nothing
     isopen(sp) && close(sp)
     lock(_SERIAL_PORTS_LOCK) do
-        Base.filter!(p -> p.second !== sp, _SERIAL_PORTS)
+        return Base.filter!(p -> p.second !== sp, _SERIAL_PORTS)
     end
     return nothing
 end
@@ -178,7 +178,9 @@ function _serial_try_open(port_name::String; kwargs...)::Union{SerialPort, Nothi
     return try
         _serial_open(port_name; kwargs...)
     catch err
-        _info("Serial port $port_name is not available: $(err isa Exception ? sprint(showerror, err) : err)")
+        _info(
+            "Serial port $port_name is not available: $(err isa Exception ? sprint(showerror, err) : err)",
+        )
         nothing
     end
 end
@@ -317,7 +319,11 @@ function _serial_recorder(
 
     # estimate sampling rate as the mean block rate over the whole recording
     blocks >= 2 && tp[end] > 0 ||
-        throw(ArgumentError("At least 2 data blocks are needed to estimate the sampling rate."))
+        throw(
+            ArgumentError(
+                "At least 2 data blocks are needed to estimate the sampling rate.",
+            ),
+        )
     fs = round(Int64, (blocks - 1) / tp[end])
     _info("Sampling rate: $fs Hz")
     tp = round.(tp; digits = 4)

@@ -104,7 +104,10 @@ Real orthonormal regular solid harmonics `R_lm = r^l Y_lm` and irregular solid h
 
 Uses `r^l P_l^m(cos θ) e^{imφ} = Π_l^m(z, r²) (x + iy)^m` with the recurrence `(l-m) Π_l^m = (2l-1) z Π_{l-1}^m - (l+m-1) r² Π_{l-2}^m`, which is free of singularities on the z-axis.
 """
-function _sss_harmonics(p::AbstractVector{Float64}, L::Int64)::Tuple{Vector{_D3}, Vector{_D3}}
+function _sss_harmonics(
+    p::AbstractVector{Float64},
+    L::Int64,
+)::Tuple{Vector{_D3}, Vector{_D3}}
     x = _D3(p[1], 1.0, 0.0, 0.0)
     y = _D3(p[2], 0.0, 1.0, 0.0)
     z = _D3(p[3], 0.0, 0.0, 1.0)
@@ -376,7 +379,11 @@ function read_fine_calibration(file_name::String)::Dict{String, NamedTuple}
         (isempty(s) || startswith(s, "#")) && continue
         tok = split(s)
         length(tok) in (14, 16) ||
-            throw(ArgumentError("$file_name, line $ln: expected 14 or 16 values, found $(length(tok))."))
+            throw(
+                ArgumentError(
+                    "$file_name, line $ln: expected 14 or 16 values, found $(length(tok)).",
+                ),
+            )
         name = String(tok[1])
         if length(name) in (3, 4) && all(isdigit, name)
             name = "MEG" * lpad(name, 4, '0')
@@ -403,13 +410,15 @@ Named tuple:
 - `ch_names::Vector{String}`: normalized channel names (e.g. `"MEG113"` for MEG0113)
 - `decoupler::Matrix{Float64}`: cross-talk (decoupler) matrix
 """
-function read_cross_talk(file_name::String)::@NamedTuple{
+function read_cross_talk(
+    file_name::String,
+)::@NamedTuple{
     ch_names::Vector{String},
     decoupler::Matrix{Float64},
 }
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     buf, fb, _ = open(file_name, "r") do fid
-        _create_fiff_block(fid)
+        return _create_fiff_block(fid)
     end
     k_mat = _find_fiff_tag("decoupler_matrix")
     k_names = _find_fiff_tag("proj_item_ch_name_list")
@@ -426,13 +435,18 @@ function read_cross_talk(file_name::String)::@NamedTuple{
         throw(ArgumentError("$file_name does not contain a cross-talk decoupler matrix."))
     ch = [_sss_name(String(n)) for n in split(names, ':')]
     size(mat) == (length(ch), length(ch)) ||
-        throw(ArgumentError("$file_name: decoupler matrix size does not match channel list."))
+        throw(
+            ArgumentError("$file_name: decoupler matrix size does not match channel list."),
+        )
     return (ch_names = ch, decoupler = Matrix{Float64}(mat))
 end
 
 # rotation matrix mapping unit vector a onto unit vector b (Rodrigues' formula, minimal
 # rotation about a × b; antiparallel vectors: half turn about an axis perpendicular to a)
-function _vec_rotation(a::AbstractVector{Float64}, b::AbstractVector{Float64})::Matrix{Float64}
+function _vec_rotation(
+    a::AbstractVector{Float64},
+    b::AbstractVector{Float64},
+)::Matrix{Float64}
     v = cross(a, b)
     s = dot(v, v)
     c = dot(a, b)
@@ -630,16 +644,20 @@ function maxwell_filter(
         Vector{Float64}(origin)
     end
     norm(org) > 0.1 &&
-        _warn("Origin is $(round(norm(org) * 1000; digits = 1)) mm from the frame center; check its units (m).")
+        _warn(
+            "Origin is $(round(norm(org) * 1000; digits = 1)) mm from the frame center; check its units (m).",
+        )
 
     # destination (reconstruction) transform
     dest = if isnothing(destination)
         coord_frame === :head ? Matrix{Float64}(dev_head) : Matrix{Float64}(I(4))
     elseif destination isa AbstractVector
-        length(destination) == 3 || throw(ArgumentError("destination vector must have 3 elements."))
+        length(destination) == 3 ||
+            throw(ArgumentError("destination vector must have 3 elements."))
         _hom(Matrix{Float64}(I(3)), Vector{Float64}(destination))
     else
-        size(destination) == (4, 4) || throw(ArgumentError("destination matrix must be 4 × 4."))
+        size(destination) == (4, 4) ||
+            throw(ArgumentError("destination matrix must be 4 × 4."))
         Matrix{Float64}(destination)
     end
     T_rec = coord_frame === :head ? Matrix{Float64}(dev_head) : Matrix{Float64}(I(4))
@@ -686,7 +704,9 @@ function maxwell_filter(
         have = findall(!isnothing, ct_idx)
         isempty(have) && throw(ArgumentError("No MEG channels found in $cross_talk."))
         length(have) < n_meg &&
-            _warn("Cross-talk: $(n_meg - length(have)) MEG channels not found in $cross_talk.")
+            _warn(
+                "Cross-talk: $(n_meg - length(have)) MEG channels not found in $cross_talk.",
+            )
         have = intersect(have, good)
         ci = Int64[ct_idx[k] for k in have]
         data[have, :] = ct.decoupler[ci, ci] * data[have, :]
@@ -698,7 +718,9 @@ function maxwell_filter(
     n_out = _sss_ncomp(ext_order)
     # without magnetometers and fine calibration the homogeneous field (first 3 external
     # components) is invisible to the gradiometers
-    out_keep = collect((n_in + 1 + (any(is_mag) || !isnothing(calibration) ? 0 : 3)):(n_in + n_out))
+    out_keep = collect(
+        (n_in + 1 + (any(is_mag) || !isnothing(calibration) ? 0 : 3)):(n_in + n_out),
+    )
 
     # ------------------------------------------------------------------ #
     # basis                                                              #
@@ -741,13 +763,19 @@ function maxwell_filter(
     function _decomp(T::Matrix{Float64})::NamedTuple
         haskey(decomps, T) && return decomps[T]
         S = _decomp_basis(T)[good, :]
-        in_keep = regularize === :in ? _sss_regularize_in(S, n_in, int_order, out_keep) :
+        in_keep =
+            regularize === :in ? _sss_regularize_in(S, n_in, int_order, out_keep) :
             collect(1:n_in)
         mom = vcat(in_keep, out_keep)
         pS, sing = _col_norm_pinv(S[:, mom])
         cond_max[] = max(cond_max[], sing[1] / sing[end])
         pS .*= coil_scale[good]'
-        d = (in_keep = in_keep, n = length(in_keep), pS = pS, S = S[:, mom] ./ coil_scale[good])
+        d = (
+            in_keep = in_keep,
+            n = length(in_keep),
+            pS = pS,
+            S = S[:, mom] ./ coil_scale[good],
+        )
         decomps[T] = d
         return d
     end
@@ -774,10 +802,19 @@ function maxwell_filter(
     cp_q = [vcat(_rot2quat(T_rec[1:3, 1:3]), T_rec[1:3, 4])]
     if !isnothing(head_pos)
         size(head_pos, 2) == 10 ||
-            throw(ArgumentError("head_pos must have 10 columns (t, q1-q3, x, y, z, gof, err, v)."))
+            throw(
+                ArgumentError(
+                    "head_pos must have 10 columns (t, q1-q3, x, y, z, gof, err, v).",
+                ),
+            )
         t = Float64.(head_pos[:, 1])
-        issorted(t; lt = <=) || throw(ArgumentError("head_pos times must be unique and ascending."))
-        t[1] < -1.0e-3 && throw(ArgumentError("head_pos times must be ≥ 0 s (from the start of the recording)."))
+        issorted(t; lt = <=) ||
+            throw(ArgumentError("head_pos times must be unique and ascending."))
+        t[1] < -1.0e-3 && throw(
+            ArgumentError(
+                "head_pos times must be ≥ 0 s (from the start of the recording).",
+            ),
+        )
         maximum(norm.(eachrow(head_pos[:, 5:7]))) > 1.0 &&
             _warn("head_pos contains translations > 1 m; head positions may be invalid.")
         # the recording's transform applies before the first position

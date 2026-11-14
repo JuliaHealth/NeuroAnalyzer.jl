@@ -109,7 +109,7 @@ function _psd(
         p, f = r.p, r.f
     end
 
-    f = round.(f, digits = 3)
+    f = round.(f; digits = 3)
 
     db && (p = pow2db.(p))
 
@@ -198,7 +198,7 @@ function _psd(
     Threads.@threads :static for ch_idx = 2:size(s, 1)
         p[ch_idx, :] = psd_1(@view(s[ch_idx, :])).p
     end
- 
+
     return (; p, f)
 end
 
@@ -292,7 +292,7 @@ function _psd(
         ch_idx, ep_idx = idx[1], idx[2]
         p[ch_idx, :, ep_idx] = psd_1(@view(s[ch_idx, :, ep_idx])).p
     end
- 
+
     return (; p, f)
 end
 
@@ -435,7 +435,6 @@ function mwpsd(
     s_w = w ? s .* hanning(length(s)) : collect(Float64, s)
     pad > 0 && (s_w = pad0(s_w, pad))
 
-
     flim = (0, fs / 2)
     nfrq = _tlength(flim)
     # drop 0 Hz
@@ -461,9 +460,9 @@ function mwpsd(
         w_conv = _fconv(s_w; kernel = kernel, norm = true)
         p[frq_idx] = median(abs2.(w_conv))
     end
- 
+
     db && (p = pow2db.(p))
- 
+
     return (; p, f)
 end
 
@@ -502,7 +501,7 @@ function ghpsd(
     demean::Bool = true,
 )::@NamedTuple{
     p::Vector{Float64},
-    f::Vector{Float64}
+    f::Vector{Float64},
 }
 
     # validate
@@ -521,8 +520,8 @@ function ghpsd(
         env = _filter_g(s_w; fs = fs, f = f[frq_idx], gw = gw)
         p[frq_idx] = mean(abs2, env)
     end
- 
+
     db && (p = pow2db.(p))
- 
+
     return (; p, f)
 end
