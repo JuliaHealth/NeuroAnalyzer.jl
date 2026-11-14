@@ -204,7 +204,8 @@ p = NeuroAnalyzer.plot(e10; ch = ["Fp1", "Fp2"], type = :butterfly, gui = false)
 @test p isa GLMakie.Figure
 # epoched signal: the view starts at epoch `ep` (clamped so that n_epochs epochs are shown)
 view_x0(f) = [a.targetlimits[].origin[1] for a in f.content if a isa GLMakie.Axis][1]
-@test view_x0(NeuroAnalyzer.plot(e10; ch = "Fp1", ep = 3, gui = false)) ≈ 2 * epoch_duration(e10)
+@test view_x0(NeuroAnalyzer.plot(e10; ch = "Fp1", ep = 3, gui = false)) ≈
+      2 * epoch_duration(e10)
 @test view_x0(NeuroAnalyzer.plot(e10; ch = "Fp1", ep = nepochs(e10), gui = false)) ≈
       (nepochs(e10) - 5) * epoch_duration(e10)
 p = NeuroAnalyzer.plot(
