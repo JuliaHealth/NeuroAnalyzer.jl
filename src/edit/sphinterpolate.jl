@@ -116,7 +116,7 @@ function sphinterpolate_channel(
     # spline with a constant term: [G + λI 1; 1ᵀ 0] [c; c0] = [V; 0]; the values at the
     # interpolated positions are [G_int 1] [c; c0], i.e. a fixed linear map of V
     ng = length(ch_good)
-    A = [(_sph_g(xyz_good, xyz_good; m = m, n = n) + lambda * I(ng)) ones(ng);
+    A = [ (_sph_g(xyz_good, xyz_good; m = m, n = n) + lambda * I(ng)) ones(ng);
         ones(1, ng) 0.0]
     B = [_sph_g(xyz_int, xyz_good; m = m, n = n) ones(length(ch_int))]
     W = (B / A)[:, 1:ng]
