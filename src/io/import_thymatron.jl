@@ -58,9 +58,9 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         # unsharp mask
         # img = unsharp_mask(img, radius=5, amount=2)
 
-        # edge detection
-        # img = imedge(img, KernelFactors.sobel)[3]
-        img = imedge(img, KernelFactors.sobel)[3]
+        # edge detection: Sobel gradient magnitude (as Images.imedge(img, KernelFactors.sobel)[3])
+        grad_y, grad_x = imgradients(img, KernelFactors.sobel)
+        img = hypot.(grad_y, grad_x)
 
         # binarize
         img_bin = binarize(img, Otsu())
