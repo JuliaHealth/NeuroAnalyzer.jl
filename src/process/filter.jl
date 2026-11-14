@@ -596,25 +596,6 @@ function filter_report(
     )
 end
 
-# zero-phase FIR filtering, as DSP.filtfilt(b, s): odd-symmetric extension of
-# length(b) - 1 samples at both ends, then convolution with b ⋆ reverse(b)
-# DSP.filtfilt(b, s) filters in place (filt!(x, b, x)); when filt! switches to
-# FFT overlap-save (long filters and signals), the input is overwritten before
-# it is read and the output is corrupted (DSP.jl ≤ 0.8.6)
-function _fir_filtfilt(b::AbstractVector, s::AbstractVector)::Vector{Float64}
-    nb = length(b)
-    n = length(s)
-    p = min(nb - 1, n - 1)
-    ext = zeros(Float64, n + p + nb - 1)
-    for i = 1:p
-        ext[i] = 2 * s[1] - s[p + 2 - i]
-        ext[n + p + i] = 2 * s[n] - s[n - i]
-    end
-    ext[(p + 1):(p + n)] = s
-    y = filt(DSP.conv(b, reverse(b)), ext)
-    return y[(p + nb):(p + nb + n - 1)]
-end
-
 """
     _filter_apply(s; <keyword arguments>)
 
@@ -664,6 +645,14 @@ function _filter_apply(
         )
     end
 
+    dir === :twopass &&
+        flt isa Vector{Float64} &&
+        length(s) < length(flt) &&
+        throw(
+            ArgumentError(
+                "Signal ($(length(s)) samples) must be at least as long as the filter ($(length(flt)) taps) for two-pass filtering.",
+            ),
+        )
     if flt isa Vector{Float64} && length(s) <= 3 * (length(flt) - 1)
         _warn(
             "Signal ($(length(s)) samples) is short relative to the filter ($(length(flt)) taps): " *
@@ -674,7 +663,7 @@ function _filter_apply(
     if dir === :onepass
         return filt(flt, s)
     elseif dir === :twopass
-        return flt isa Vector{Float64} ? _fir_filtfilt(flt, s) : filtfilt(flt, s)
+        return filtfilt(flt, s)
     elseif dir === :reverse
         return reverse(filt(flt, reverse(s)))
     end
@@ -745,6 +734,14 @@ function filter_apply(
     _info("Taper the signal before filtering to reduce edge artifacts")
     dir === :twopass &&
         _info("Two-pass filtering: magnitude response is squared (gains in dB doubled)")
+    dir === :twopass &&
+        flt isa Vector{Float64} &&
+        size(obj.data, 2) < length(flt) &&
+        throw(
+            ArgumentError(
+                "Epoch length ($(size(obj.data, 2)) samples) must be at least as long as the filter ($(length(flt)) taps) for two-pass filtering.",
+            ),
+        )
     if flt isa Vector{Float64} && size(obj.data, 2) <= 3 * (length(flt) - 1)
         _warn(
             "Epoch length ($(size(obj.data, 2)) samples) is short relative to the filter ($(length(flt)) taps): " *
@@ -783,8 +780,7 @@ function _filter_one(
 )
     s = @view(obj.data[ch_idx, :, ep_idx])
     dir === :onepass && return filt(flt, s)
-    dir === :twopass &&
-        return flt isa Vector{Float64} ? _fir_filtfilt(flt, s) : filtfilt(flt, s)
+    dir === :twopass && return filtfilt(flt, s)
     return reverse(filt(flt, reverse(s)))
 end
 

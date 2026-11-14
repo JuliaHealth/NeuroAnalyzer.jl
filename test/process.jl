@@ -1421,7 +1421,7 @@ for p in (:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :reme
 end
 
 @info "Test: two-pass FIR filtering of long signals"
-# DSP.filtfilt(b, x) filters in place and is corrupted when filt! uses FFT overlap-save
+# DSP.filtfilt(b, x) filtered in place and was corrupted when filt! used FFT overlap-save (DSP.jl ≤ 0.8.6)
 # reference: forward and reverse convolution (the middle is unaffected by the edge extension)
 xl = randn(NeuroAnalyzer.Random.MersenneTwister(1), 100_000) .+ 100
 f = filter_create(; fprototype = :fir, ftype = :hp, cutoff = 0.5, fs = fs, bw = 0.5)
@@ -1431,8 +1431,7 @@ fc(v) =
     ))]
 yl = NeuroAnalyzer._filter_apply(xl; flt = f)
 @test yl[20_000:80_000] ≈ reverse(fc(reverse(fc(xl))))[20_000:80_000] atol = 1e-9
-@test NeuroAnalyzer._fir_filtfilt(f[1:31], xl) ≈ NeuroAnalyzer.DSP.filtfilt(f[1:31], xl)
-@test length(NeuroAnalyzer._fir_filtfilt(f, xl[1:500])) == 500
+@test_throws ArgumentError NeuroAnalyzer._filter_apply(xl[1:(length(f) - 1)]; flt = f)
 
 @info "Test: filter() / filter_apply() / filter!() on objects"
 f = filter_create(; fprototype = :butterworth, ftype = :lp, cutoff = 30, fs = fs, order = 4)
