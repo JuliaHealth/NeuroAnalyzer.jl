@@ -3,7 +3,8 @@
 # Initiate a DEVEL release of NeuroAnalyzer.jl:
 # - merge main into devel
 # - set the version to "<version>-dev"
-# - switch the artifacts to the "-dev" archives
+# - switch the artifacts to the "-dev" archives (checksums are recalculated from the local
+#   archives, which must be on neuroanalyzer.org/artifacts/: see publish_artifacts.sh)
 # - push devel to codeberg
 #
 # usage: create_release_DEVEL.sh <version> (e.g. 0.25.11; "-dev" is added)
@@ -23,7 +24,7 @@ require_cmd() {
   fi
 }
 
-for cmd in git grep sed sort; do
+for cmd in git grep sed sort julia curl; do
   require_cmd "$cmd"
 done
 
@@ -56,6 +57,9 @@ export GIT_AUTHOR_EMAIL="$NA_GIT_EMAIL" GIT_COMMITTER_EMAIL="$NA_GIT_EMAIL"
 # preflight: required paths (this script is in NeuroAnalyzer.jl/scripts)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NA_DIR="$(dirname "$SCRIPT_DIR")"
+PUBLISH_ARTIFACTS_SCRIPT="$SCRIPT_DIR/publish_artifacts.sh"
+UPDATE_ARTIFACTS_SCRIPT="$SCRIPT_DIR/update_artifacts.jl"
+export NA_ARTIFACTS_DIR="${NA_ARTIFACTS_DIR:-$(dirname "$NA_DIR")/NeuroAnalyzer-artifacts}"
 
 # version from a "version = ..." line of Project.toml (empty if there is none)
 project_version() {
@@ -82,6 +86,24 @@ for f in Artifacts.toml Project.toml src/NeuroAnalyzer.jl; do
     exit 1
   fi
 done
+
+# the scripts are copied: the checkout below may replace or remove them
+for f in "$PUBLISH_ARTIFACTS_SCRIPT" "$UPDATE_ARTIFACTS_SCRIPT"; do
+  if [[ ! -e "$f" ]]; then
+    echo "Error: expected file not found: $f" >&2
+    exit 1
+  fi
+done
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+mkdir "$TMP_DIR/scripts"
+cp "$PUBLISH_ARTIFACTS_SCRIPT" "$UPDATE_ARTIFACTS_SCRIPT" "$TMP_DIR/scripts/"
+PUBLISH_ARTIFACTS_SCRIPT="$TMP_DIR/scripts/publish_artifacts.sh"
+UPDATE_ARTIFACTS_SCRIPT="$TMP_DIR/scripts/update_artifacts.jl"
+
+# the "-dev" archives must be on the server before Artifacts.toml points to them
+echo "Checking the devel artifacts"
+NA_DIR="$NA_DIR" bash "$PUBLISH_ARTIFACTS_SCRIPT" --verify-only
 
 # local branches must contain everything that is on codeberg (pushes are never forced)
 git fetch codeberg
@@ -116,10 +138,12 @@ if [[ "$VERSION" == "$PROJECT_VERSION" ]] ||
   exit 1
 fi
 
-# "-dev" version strings and artifact archives (idempotent: an existing "-dev" is not doubled)
+# "-dev" version strings
 sed -i -E "s/^(version[[:space:]]*=[[:space:]]*)\"[^\"]*\"/\1\"$DEV_VERSION\"/" Project.toml
 sed -i -E "s/^(const VER = v)\"[^\"]*\"/\1\"$DEV_VERSION\"/" src/NeuroAnalyzer.jl
-sed -i -E 's/(-dev)?\.tar\.gz/-dev.tar.gz/g' Artifacts.toml
+
+# "-dev" artifact archives: URLs and checksums
+NA_DIR="$NA_DIR" julia --startup-file=no "$UPDATE_ARTIFACTS_SCRIPT" dev
 
 if [[ "$(project_version)" != "$DEV_VERSION" ]] || ! grep -q "^const VER = v\"$DEV_VERSION\"" src/NeuroAnalyzer.jl; then
   echo "Error: could not set version $DEV_VERSION in Project.toml / src/NeuroAnalyzer.jl." >&2

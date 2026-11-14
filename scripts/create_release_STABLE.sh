@@ -4,6 +4,8 @@
 # - format and analyze the code on devel
 # - merge devel into main
 # - drop "-dev" from the version
+# - publish the "-dev" artifact archives as stable ones and recalculate the checksums in
+#   Artifacts.toml (see publish_artifacts.sh)
 # - tag and push to codeberg
 # - update the fork of the Julia General registry
 # - rebuild and upload the documentation
@@ -28,7 +30,7 @@ require_cmd() {
 
 JLFMT="$HOME/.julia/bin/jlfmt"
 
-for cmd in git julia gh find grep sed mktemp ncftpput xdg-open; do
+for cmd in git julia gh find grep sed mktemp ncftpput xdg-open lftp curl tar gzip cmp stat; do
   require_cmd "$cmd"
 done
 
@@ -72,9 +74,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NA_DIR="$(dirname "$SCRIPT_DIR")"
 CODE_ANALYSIS_SCRIPT="$SCRIPT_DIR/code_analysis.jl"
 UPDATE_REGISTRY_SCRIPT="$SCRIPT_DIR/update_registry.sh"
+PUBLISH_ARTIFACTS_SCRIPT="$SCRIPT_DIR/publish_artifacts.sh"
+UPDATE_ARTIFACTS_SCRIPT="$SCRIPT_DIR/update_artifacts.jl"
+export NA_ARTIFACTS_DIR="${NA_ARTIFACTS_DIR:-$(dirname "$NA_DIR")/NeuroAnalyzer-artifacts}"
 REGISTRY_BRANCH="my-update"
 
-for path in "$CODE_ANALYSIS_SCRIPT" "$UPDATE_REGISTRY_SCRIPT" "$SCRIPT_DIR/update_registry.jl"; do
+for path in "$CODE_ANALYSIS_SCRIPT" "$UPDATE_REGISTRY_SCRIPT" "$SCRIPT_DIR/update_registry.jl" \
+            "$PUBLISH_ARTIFACTS_SCRIPT" "$UPDATE_ARTIFACTS_SCRIPT" \
+            "$NA_ARTIFACTS_DIR/neuroanalyzer-resources-dev.tar.gz" \
+            "$NA_ARTIFACTS_DIR/neuroanalyzer-test-files-dev.tar.gz"; do
   if [[ ! -e "$path" ]]; then
     echo "Error: expected path not found: $path" >&2
     exit 1
@@ -91,6 +99,12 @@ fi
 # temporary files (docs build, FTP login file) are removed on exit
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
+
+# the artifact scripts are copied: the checkouts below may replace or remove them
+mkdir "$TMP_DIR/scripts"
+cp "$PUBLISH_ARTIFACTS_SCRIPT" "$UPDATE_ARTIFACTS_SCRIPT" "$TMP_DIR/scripts/"
+PUBLISH_ARTIFACTS_SCRIPT="$TMP_DIR/scripts/publish_artifacts.sh"
+UPDATE_ARTIFACTS_SCRIPT="$TMP_DIR/scripts/update_artifacts.jl"
 
 # version from a "version = ..." line of Project.toml (empty if there is none)
 project_version() {
@@ -146,7 +160,11 @@ fi
 echo "Running code analysis"
 julia -q --color=yes -O2 -g0 --threads "$THREADS" --cpu-target=native "$CODE_ANALYSIS_SCRIPT"
 
-# merge devel into main and drop "-dev" from the version strings and artifact file names
+# the "-dev" archives must be on the server (devel was tested with them)
+echo "Checking the devel artifacts"
+NA_DIR="$NA_DIR" bash "$PUBLISH_ARTIFACTS_SCRIPT" --verify-only
+
+# merge devel into main and drop "-dev" from the version strings
 git checkout main
 git merge --no-edit devel
 
@@ -158,12 +176,19 @@ fi
 
 sed -i -E "s/^(version[[:space:]]*=[[:space:]]*)\"[^\"]*\"/\1\"$VERSION\"/" Project.toml
 sed -i -E "s/^(const VER = v)\"[^\"]*\"/\1\"$VERSION\"/" src/NeuroAnalyzer.jl
-sed -i -E 's/-dev\.tar\.gz/.tar.gz/g' Artifacts.toml
 
 if [[ "$(project_version)" != "$VERSION" ]] || ! grep -q "^const VER = v\"$VERSION\"" src/NeuroAnalyzer.jl; then
   echo "Error: could not set version $VERSION in Project.toml / src/NeuroAnalyzer.jl." >&2
   exit 1
 fi
+
+# stable artifacts: copies of the "-dev" archives; Artifacts.toml gets the stable URLs and
+# checksums (--keep-tree: fails if the archives differ from those referenced on devel);
+# the archives are uploaded only after Artifacts.toml has been updated successfully
+echo "Publishing the stable artifacts"
+NA_DIR="$NA_DIR" bash "$PUBLISH_ARTIFACTS_SCRIPT" --stable --no-upload
+NA_DIR="$NA_DIR" julia --startup-file=no "$UPDATE_ARTIFACTS_SCRIPT" stable --keep-tree
+NA_DIR="$NA_DIR" bash "$PUBLISH_ARTIFACTS_SCRIPT" --stable
 
 git add --all
 git commit -m "update: version $VERSION"
