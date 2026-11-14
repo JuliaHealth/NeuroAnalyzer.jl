@@ -97,7 +97,7 @@ function plot_locs3d(
     end
 
     plot_size   = (850, 850)
-    marker_size = length(ch) > 64 ? 8 : 16
+    marker_size = length(ch) > 64 ? 5 : length(ch) > 32 ? 7 : 10
     font_size   = 14
 
     # prepare plot
@@ -125,8 +125,9 @@ function plot_locs3d(
 
     ch_n = length(ch)
     cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
-    ch = setdiff(ch, sch)
 
+    # markers of all channels (selected ones in color); color index = position in ch,
+    # as in plot_locs()
     sch_set = Set(sch)
     for (i, idx) in enumerate(ch)
         if idx in sch_set
@@ -149,6 +150,9 @@ function plot_locs3d(
             )
         end
     end
+
+    # labels of the selected channels are drawn separately
+    ch = setdiff(ch, sch)
 
     if ch_labels
         # (collect of an integer gives a 0-dimensional array; sch = 0: none)

@@ -482,7 +482,9 @@ const _SIDE_ROWGAP = 10
 function _side_layout(fig::GLMakie.Figure)::GLMakie.GridLayout
     gl = [c for c in GLMakie.contents(fig[1, 2]) if c isa GLMakie.GridLayout]
     isempty(gl) || return gl[1]
-    side = GLMakie.GridLayout()
+    # tellheight = false: the side column (inset, legend) must not set the height of the
+    # plot row, otherwise a small inset squashes the plot to its own height
+    side = GLMakie.GridLayout(; tellheight = false, valign = :top)
     fig[1, 2] = side
     # until an inset is added, its row takes no space (the legend starts at the plot's top)
     GLMakie.rowsize!(side, 1, GLMakie.Fixed(0))
