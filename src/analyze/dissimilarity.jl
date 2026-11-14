@@ -78,10 +78,11 @@ function _diss(
     gd = zeros(size(s1, 2))
     sc = zeros(size(s1, 2))
 
-    Threads.@threads :dynamic for idx in axes(s1, 2)
+    # single-threaded: each iteration is only ch_n operations, so threading gives no speed-up
+    @inbounds for idx in axes(s1, 2)
         # Global dissimilarity: RMS difference of GFP-normalized topographies
-        # sum(abs2, a .- b) = Σ(a-b)² avoids allocating (a.-b).^2 separately
-        gd[idx] = sqrt(sum(abs2, @view(g1[:, idx]) .- @view(g2[:, idx])) / ch_n)
+        # Σ(a-b)² computed without allocating a temporary difference vector
+        gd[idx] = sqrt(sum(i -> abs2(g1[i, idx] - g2[i, idx]), axes(g1, 1)) / ch_n)
 
         # Spatial correlation: linear rescaling of gd² onto [-1, 1].
         # sc = 1 - gd²/2 = 0.5*(2 - gd²). Computed from the already-stored gd[idx] so no re-calculation is needed
