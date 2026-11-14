@@ -38,7 +38,10 @@ function tes_model(;
     anode_curr > 0 || throw(ArgumentError("anode_curr must be > 0."))
     cathode_curr < 0 || throw(ArgumentError("cathode_curr must be < 0."))
 
-    locs = import_locs(joinpath(NeuroAnalyzer.PATH, "locs", "standard-10-10-cap47.ced"))
+    # the field model below uses distances in unit-sphere units
+    locs = locs_normalize(
+        import_locs(joinpath(NeuroAnalyzer.PATH, "locs", "standard-10-10-cap47.ced")),
+    )
     clabels = String.(locs[!, :label])
     ch_n = length(clabels)
 

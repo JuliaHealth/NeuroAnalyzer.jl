@@ -140,7 +140,7 @@ Compute the G (potential spline) and H (CSD spline) matrices for a set of electr
 
 # Arguments
 
-- `locs::DataFrame`: electrode locations; must contain columns `:loc_x`, `:loc_y`, `:loc_z` (Cartesian coordinates, normalised to the unit sphere)
+- `locs::DataFrame`: electrode locations; must contain columns `:loc_x`, `:loc_y`, `:loc_z` (Cartesian coordinates in any units; the positions are projected onto the unit sphere)
 - `m::Int64=4`: spline flexibility constant; must be in `[2, 10]`; higher values increase rigidity
 - `n::Int64=8`: Legendre polynomial order; must be ≥ 1
 

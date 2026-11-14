@@ -254,6 +254,8 @@ function plot_erp_topo(
     mono::Bool = false,
     gui::Bool = true,
 )::GLMakie.Figure
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
     # validate
     size(s, 2) == length(t) ||
         throw(ArgumentError("Signal matrix columns must match time vector length"))
@@ -887,7 +889,7 @@ function plot_erp(
             )
         _has_locs(obj)
         chs = intersect(obj.locs.label, labels(obj)[ch])
-        locs = Base.filter(:label => in(chs), obj.locs)
+        locs = Base.filter(:label => in(chs), _locs_unit(obj.locs))
         _check_ch_locs(ch, labels(obj), obj.locs.label)
         fig = plot_erp_topo(
             locs,

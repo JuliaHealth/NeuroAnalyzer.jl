@@ -304,11 +304,9 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     pos3d = Float64.(hcat(src_pos3d, detector_pos3d))
     if size(pos3d, 1) >= 3 && any(!iszero, pos3d)
         x, y, z = pos3d[1, :], pos3d[2, :], pos3d[3, :]
-        # normalize all axes jointly (keeps the head geometry)
-        x, y, z = _locs_norm(x, y, z)
     elseif size(pos2d, 1) >= 2 && any(!iszero, pos2d)
         _warn("The data only contains 2D location information for the optode positions.")
-        x, y = _locs_norm(pos2d[1, :], pos2d[2, :])
+        x, y = pos2d[1, :], pos2d[2, :]
         z = zeros(length(opt_labels))
     else
         _warn(

@@ -50,6 +50,8 @@ function plot_locs_nirs(
     plane::Symbol = :xy,
     ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
 )::GLMakie.Figure
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
 
     # TO DO: plot channel numbers
 

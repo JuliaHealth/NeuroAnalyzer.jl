@@ -181,7 +181,6 @@ function locs_pol2cart(locs::DataFrame)::DataFrame
         locs_new[idx, :loc_y] = y
     end
 
-    _locs_norm!(locs_new)
     _locs_remove_nans!(locs_new)
 
     return locs_new

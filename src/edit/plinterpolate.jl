@@ -91,8 +91,10 @@ function plinterpolate_channel(
     loc_idx = [findfirst(==(lowercase(l)), loc_labels) for l in vcat(ref, ch)]
     any(isnothing, loc_idx) &&
         throw(ArgumentError("Locations of all reference channels and of ch are required."))
-    loc_x = Float64.(obj.locs[Vector{Int64}(loc_idx), :loc_x])
-    loc_y = Float64.(obj.locs[Vector{Int64}(loc_idx), :loc_y])
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(obj.locs)
+    loc_x = Float64.(locs[Vector{Int64}(loc_idx), :loc_x])
+    loc_y = Float64.(locs[Vector{Int64}(loc_idx), :loc_y])
     ref_num = ch_num.(ref)
     ch_idx = ch_num(ch)
     # target: the location of ch
@@ -220,6 +222,8 @@ function plinterpolate(
     int_x::Vector{Float64},
     int_y::Vector{Float64},
 }
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
     # validate
     length(s) == DataFrames.nrow(locs) ||
         throw(ArgumentError("Length of s must equal the number of locations."))

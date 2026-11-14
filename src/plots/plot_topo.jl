@@ -81,6 +81,8 @@ function plot_topo(
     threshold_type::Symbol = :neq,
     threshold_method::Symbol = :reg,
 )::GLMakie.Figure
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
     # validate
     _check_var(imethod, _IMETHODS, "imethod")
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
@@ -545,7 +547,7 @@ function plot_topo(
     length(ch) >= 2 || throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
 
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
-    locs = Base.filter(:label => in(chs), obj.locs)
+    locs = Base.filter(:label => in(chs), _locs_unit(obj.locs))
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     !isnothing(sch_labels) && (sch = _find_bylabel(locs, sch_labels))
 

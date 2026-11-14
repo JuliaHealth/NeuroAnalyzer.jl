@@ -84,6 +84,8 @@ end
 
 Normalize channel locations to fit the unit sphere.
 
+Imported locations are kept in their original units; plots and topographic interpolation scale them to the unit sphere internally, so calling this function is not required for them. Note that normalized coordinates are not suitable for computations that need physical distances (e.g. `od2conc()`, `dipole_fit()`).
+
 # Arguments
 
 - `locs::DataFrame`

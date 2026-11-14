@@ -186,7 +186,6 @@ function import_set(
         if DataFrames.nrow(locs) > 0
             haskey(dataset, "chaninfo") && dataset["chaninfo"] isa AbstractDict &&
                 get(dataset["chaninfo"], "nosedir", "") == "+X" && locs_swapxy!(locs)
-            locs_normalize!(locs)
         end
     else
         locs = _initialize_locs()

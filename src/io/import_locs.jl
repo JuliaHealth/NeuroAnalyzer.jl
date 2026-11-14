@@ -19,6 +19,8 @@ Load channel locations from a file. The format is detected from the extension.
 
 Supported formats: CED, ELC, LOCS, TSV, SFP, CSD, GEO, MAT, TXT, DAT, ASC, CSV.
 
+Coordinates are kept in the units of the file (e.g. mm, cm or m); they are only converted to the NeuroAnalyzer head frame (axis orientation). Functions that need coordinates on the unit sphere (plots, topographic interpolation, spherical splines) scale them internally. Use `locs_normalize()` to scale the locations explicitly.
+
 # Arguments
 
 - `file_name::String`: path to the locations file
@@ -142,7 +144,6 @@ function import_locs_ced(file_name::String)::DataFrame
 
     locs_swapxy!(locs; polar = true, cart = true, spherical = true)
     locs_flipx!(locs; polar = true, cart = false, spherical = false)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -200,7 +201,6 @@ function import_locs_locs(file_name::String)::DataFrame
     locs[!, :loc_theta_sph] = copy(locs[!, :loc_theta])
     locs[!, :loc_phi_sph] = 90 .- 180 .* radius
     locs_sph2cart!(locs)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -249,9 +249,6 @@ function import_locs_elc(file_name::String)::DataFrame
         clabels[i] = strip(elc_file[line_idx])
     end
 
-    # normalize all axes jointly (independent scaling would distort the head shape)
-    x, y, z = _locs_norm(x, y, z)
-
     locs = DataFrame(
         :label => clabels,
         :loc_radius => zeros(n),
@@ -266,7 +263,6 @@ function import_locs_elc(file_name::String)::DataFrame
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -347,7 +343,6 @@ function import_locs_tsv(file_name::String)::DataFrame
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -409,10 +404,6 @@ function import_locs_sfp(file_name::String)::DataFrame
     y = Float64.(locs_raw[!, :y])
     z = Float64.(locs_raw[!, :z])
 
-    t = x[1]
-    x, y, z = _locs_norm(x, y, z)
-    t -= x[1]
-    x .+= abs(t)
 
     n = length(clabels)
     locs = DataFrame(
@@ -431,7 +422,6 @@ function import_locs_sfp(file_name::String)::DataFrame
     locs[:, :loc_x] .-= x_range
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -496,7 +486,6 @@ function import_locs_csd(file_name::String)::DataFrame
         :loc_phi_sph => phi_sph,
     )
 
-    locs_normalize!(locs)
 
     return locs
 end
@@ -542,12 +531,8 @@ function import_locs_geo(file_name::String)::DataFrame
         x[idx], y[idx], z[idx] = parse.(Float64, split(tmp, ", "))
     end
 
-    x, y, z = _locs_norm(x, y, z)
     cz_idx = findfirst(isequal("Cz"), clabels)
-    if !isnothing(cz_idx)
-        x .-= x[cz_idx]
-        x, y, z = _locs_norm(x, y, z)
-    end
+    !isnothing(cz_idx) && (x .-= x[cz_idx])
 
     locs = DataFrame(
         :label => clabels,
@@ -563,7 +548,6 @@ function import_locs_geo(file_name::String)::DataFrame
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -591,13 +575,7 @@ function import_locs_mat(file_name::String; clean_labels::Bool = true)::DataFram
     dataset = matread(file_name)
     x = dataset["Cpos"][1, :]
     y = dataset["Cpos"][2, :]
-    r = dataset["Rxy"]
-    ch_n = length(x)
     clabels = string.(vec(dataset["Cnames"]))
-
-    x_norm, y_norm = _locs_norm(x, y)
-    x = x_norm .* r
-    y = y_norm .* r
 
     clean_labels && (clabels = _clean_labels(clabels))
 
@@ -683,7 +661,6 @@ function import_locs_txt(file_name::String)::DataFrame
 
     locs_cart2sph!(locs)
     locs_sph2pol!(locs)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -760,7 +737,6 @@ function import_locs_dat(file_name::String)::DataFrame
     locs_center!(locs; polar = false, spherical = false)
     locs_cart2pol!(locs)
     locs_cart2sph!(locs)
-    locs_normalize!(locs)
 
     return locs
 end
@@ -820,7 +796,6 @@ function import_locs_asc(file_name::String)::DataFrame
     locs_flipy!(locs)
     locs_cart2pol!(locs)
     locs_cart2sph!(locs)
-    locs_normalize!(locs)
 
     return locs
 end

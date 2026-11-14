@@ -1127,16 +1127,34 @@ NeuroAnalyzer._locs_remove_nans!(lnan)
 @test lnan[!, :a] == [0.0, 1.0]
 @test_throws ArgumentError NeuroAnalyzer._locs_remove_nans(DataFrame())
 # min-max normalization of all axes jointly: the largest |coordinate| maps to ±1
-e_tmp = NeuroAnalyzer._locs_norm(e10)
+# (locations scaled to mm first, as imported coordinates keep their original units)
+e_mm = deepcopy(e10)
+e_mm.locs[!, [:loc_x, :loc_y, :loc_z]] .*= 85
+e_tmp = NeuroAnalyzer._locs_norm(e_mm)
 @test maximum(abs, Matrix(e_tmp.locs[!, [:loc_x, :loc_y, :loc_z]])) ≈ 1
-@test e10.locs != e_tmp.locs
-lnan = copy(e10.locs)
+@test e_mm.locs != e_tmp.locs
+lnan = copy(e_mm.locs)
 NeuroAnalyzer._locs_norm!(lnan)
-@test lnan == NeuroAnalyzer._locs_norm(e10.locs)
+@test lnan == NeuroAnalyzer._locs_norm(e_mm.locs)
 # normalizing again changes nothing
 NeuroAnalyzer._locs_norm!(e_tmp)
 @test Matrix(e_tmp.locs[!, [:loc_x, :loc_y, :loc_z]]) ≈
-      Matrix(NeuroAnalyzer._locs_norm(e10).locs[!, [:loc_x, :loc_y, :loc_z]])
+      Matrix(NeuroAnalyzer._locs_norm(e_mm).locs[!, [:loc_x, :loc_y, :loc_z]])
+# _locs_unit(): unit-sphere copy for plots / interpolation, independent of the units
+lu = NeuroAnalyzer._locs_unit(e_mm.locs)
+@test maximum(sqrt.(lu.loc_x .^ 2 .+ lu.loc_y .^ 2 .+ lu.loc_z .^ 2)) ≈ 1
+@test Matrix(lu[!, 2:end]) ≈ Matrix(NeuroAnalyzer._locs_unit(e10.locs)[!, 2:end])
+# stored locations are not modified
+@test e_mm.locs.loc_x ≈ 85 .* e10.locs.loc_x
+# a subset of an already scaled montage is not re-scaled
+lu_sub = lu[1:3, :]
+@test NeuroAnalyzer._locs_unit(lu_sub) === lu_sub
+# topographic interpolation does not depend on the units of the locations
+# (channels without a position, i.e. at the origin, excluded: coincident points are ill-posed)
+has_loc = findall(i -> any(!iszero, e10.locs[i, [:loc_x, :loc_y, :loc_z]]), 1:nrow(e10.locs))
+s_tmp = collect(1.0:length(has_loc))
+@test plinterpolate(s_tmp; locs = e_mm.locs[has_loc, :], ch = 1, cart = true, ifactor = 20).int_s ≈
+      plinterpolate(s_tmp; locs = e10.locs[has_loc, :], ch = 1, cart = true, ifactor = 20).int_s
 
 ##
 ## Interpolation

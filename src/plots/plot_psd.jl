@@ -363,6 +363,8 @@ function plot_psd_topo(
     head::Bool = true,
     gui::Bool = true,
 )::GLMakie.Figure
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
     # validate
     size(p, 2) == length(f) || throw(
         ArgumentError("Length of powers vector must equal length of frequencies vector."),
@@ -817,7 +819,7 @@ function plot_psd(
         )
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
-        locs = Base.filter(:label => in(chs), obj.locs)
+        locs = Base.filter(:label => in(chs), _locs_unit(obj.locs))
         ndims(p) == 1 && (p = reshape(p, 1, length(p)))
         fig = plot_psd_topo(
             locs,

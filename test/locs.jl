@@ -21,7 +21,7 @@ add_locs!(eeg; locs = locs)
 @test locs_details(eeg, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
-    radius_pl = 1.0,
+    radius_pl = 0.51,
     x = -0.31,
     y = 0.95,
     z = -0.03,
@@ -106,7 +106,7 @@ eeg_tmp = deepcopy(eeg)
 @test locs_details(eeg_tmp, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
-    radius_pl = 1.0,
+    radius_pl = 0.51,
     x = -0.31,
     y = 0.95,
     z = -0.03,
@@ -118,7 +118,7 @@ eeg_tmp = edit_locs(eeg_tmp; ch = "Fp1", x = 0.5)
 @test locs_details(eeg_tmp, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
-    radius_pl = 1.0,
+    radius_pl = 0.51,
     x = 0.5,
     y = 0.95,
     z = -0.03,
@@ -130,7 +130,7 @@ edit_locs!(eeg_tmp; ch = "Fp1", x = 0.5)
 @test locs_details(eeg_tmp, ch = "Fp1", out = false)≈₂(
     label = "Fp1",
     theta_pl = 108.0,
-    radius_pl = 1.0,
+    radius_pl = 0.51,
     x = 0.5,
     y = 0.95,
     z = -0.03,
@@ -155,14 +155,14 @@ locs2 = locs_flipz(locs)
 @test locs2[1, :loc_z]≈₂0.03
 
 @info "Test: locs_scale()"
-@test locs[1, :loc_radius] == 1.0
+@test locs[1, :loc_radius] == 0.511
 @test locs[1, :loc_radius_sph] == 1.0
 locs2 = locs_scale(locs; r = 1.2)
-@test locs2[1, :loc_radius] == 1.2
+@test locs2[1, :loc_radius] ≈ 0.511 * 1.2
 @test locs2[1, :loc_radius_sph] == 1.2
 
 @info "Test: locs_normalize()"
-@test locs[1, :loc_radius] == 1.0
+@test locs[1, :loc_radius] == 0.511
 @test locs[1, :loc_radius_sph] == 1.0
 locs2 = locs_normalize(locs)
 @test locs2[1, :loc_radius] == 1.0
@@ -176,34 +176,34 @@ locs2 = locs_swapxy(locs)
 @test locs2[1, :loc_theta_sph] == -162.0
 
 @info "Test: locs_rotx()"
-@test locs[1, :loc_radius] == 1.0
+@test locs[1, :loc_radius] == 0.511
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.0
 @test locs[1, :loc_phi_sph] == -2.0
 locs2 = locs_rotx(locs; a = 20)
-@test locs2[1, :loc_radius] == 1.0
+@test locs2[1, :loc_radius] == 0.511
 @test locs2[1, :loc_theta] == 108.0
 @test locs2[1, :loc_theta_sph]≈₂108.84
 @test locs2[1, :loc_phi_sph]≈₂16.99
 
 @info "Test: locs_roty()"
-@test locs[1, :loc_radius] == 1.0
+@test locs[1, :loc_radius] == 0.511
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.0
 @test locs[1, :loc_phi_sph] == -2.0
 locs2 = locs_roty(locs; a = 20)
-@test locs2[1, :loc_radius] == 1.0
+@test locs2[1, :loc_radius] == 0.511
 @test locs2[1, :loc_theta] == 108.0
 @test locs2[1, :loc_theta_sph]≈₂107.63
 @test locs2[1, :loc_phi_sph]≈₂4.18
 
 @info "Test: locs_rotz()"
-@test locs[1, :loc_radius] == 1.0
+@test locs[1, :loc_radius] == 0.511
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.0
 @test locs[1, :loc_phi_sph] == -2.0
 locs2 = locs_rotz(locs; a = 20)
-@test locs2[1, :loc_radius] == 1.0
+@test locs2[1, :loc_radius] == 0.511
 @test locs2[1, :loc_theta] == 128.0
 @test locs2[1, :loc_theta_sph] == 128.0
 @test locs2[1, :loc_phi_sph] == -2.0
@@ -381,6 +381,71 @@ eeg_tmp = edit_locs(eeg; ch = "Fp1", theta = 100.0, name = "Fp1x", type = "eog")
 @test eeg_tmp.header.recording[:channel_type][1] == "eog"
 @test labels(eeg)[1] == "Fp1"
 @test_throws ArgumentError edit_locs(eeg; ch = "no_such_channel", x = 1.0)
+# coordinates, name or type without ch: error (no editor window is opened)
+@test_throws ArgumentError edit_locs(eeg; x = 1.0)
+@test_throws ArgumentError edit_locs!(eeg; name = "x")
+
+@info "Test: edit_locs() interactive editor"
+# the editor is built without displaying it; widgets are driven programmatically
+ed = NeuroAnalyzer._edit_locs_build(eeg)
+c = ed.ctl
+@test ed.cur[] == 1
+c[:next].clicks[] += 1
+@test ed.cur[] == 2
+c[:prev].clicks[] += 1
+c[:prev].clicks[] += 1
+@test ed.cur[] == nchannels(eeg)
+ed.cur[] = 1
+r1 = findfirst(==("Fp1"), ed.obj.locs[!, :label])
+x0 = ed.obj.locs[r1, :loc_x]
+NeuroAnalyzer.GLMakie.Makie.set!(c[:coord][:loc_x], "0.5")
+@test ed.obj.locs[r1, :loc_x] == 0.5
+# a typed coordinate is committed when the box loses focus
+c[:coord][:loc_y].focused[] = true
+c[:coord][:loc_y].displayed_string[] = "0.25"
+c[:coord][:loc_y].focused[] = false
+@test ed.obj.locs[r1, :loc_y] == 0.25
+c[:undo].clicks[] += 1
+@test NeuroAnalyzer._el_numchar('5') && !NeuroAnalyzer._el_numchar('a')
+c[:undo].clicks[] += 1
+@test ed.obj.locs[r1, :loc_x] == x0
+c[:flip].clicks[] += 1
+@test ed.obj.locs[r1, :loc_x] ≈ -x0
+c[:undo].clicks[] += 1
+# values typed in the numeric boxes are used without pressing Enter
+y0 = ed.obj.locs[r1, :loc_y]
+c[:tb_rot].displayed_string[] = "90"
+c[:rot].clicks[] += 1
+# rotation around the X axis (default): x is kept, y changes
+@test ed.obj.locs[r1, :loc_x] ≈ x0
+@test !isapprox(ed.obj.locs[r1, :loc_y], y0)
+c[:undo].clicks[] += 1
+@test ed.obj.locs[r1, :loc_y] == y0
+c[:tb_scale].displayed_string[] = "85"
+c[:scale].clicks[] += 1
+@test ed.obj.locs[r1, :loc_x] ≈ 85 * x0
+c[:norm].clicks[] += 1
+@test maximum(sqrt.(ed.obj.locs.loc_x .^ 2 .+ ed.obj.locs.loc_y .^ 2 .+ ed.obj.locs.loc_z .^ 2)) ≈ 1
+NeuroAnalyzer.GLMakie.Makie.set!(c[:label], "Fp1x")
+@test labels(ed.obj)[1] == "Fp1x"
+@test "Fp1x" in ed.obj.locs[!, :label]
+# deleting needs a confirming second click
+c[:delete].clicks[] += 1
+@test nchannels(ed.obj) == nchannels(eeg)
+c[:delete].clicks[] += 1
+@test nchannels(ed.obj) == nchannels(eeg) - 1
+f_tmp = joinpath(mktempdir(), "edit.ced")
+c[:file].displayed_string[] = f_tmp
+c[:save].clicks[] += 1
+@test isfile(f_tmp)
+c[:load].clicks[] += 1
+@test occursin("loaded", c[:status][])
+@test !ed.applied[]
+c[:apply].clicks[] += 1
+@test ed.applied[]
+# the input object is not modified by the editor
+@test labels(eeg)[1] == "Fp1"
+@test nchannels(eeg) == nchannels(ed.obj) + 1
 
 @info "Test: locs_details() print"
 out = mktemp() do path, io

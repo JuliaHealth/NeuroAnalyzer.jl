@@ -365,6 +365,8 @@ function plot_phs_topo(
     head::Bool = true,
     gui::Bool = true,
 )::GLMakie.Figure
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
     # validate
     size(ph, 2) == length(f) || throw(
         ArgumentError("Length of powers vector must equal length of frequencies vector."),
@@ -717,7 +719,7 @@ function plot_phs(
             )
         _has_locs(obj)
         chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
-        locs = Base.filter(:label => in(chs), obj.locs)
+        locs = Base.filter(:label => in(chs), _locs_unit(obj.locs))
         ndims(ph) == 1 && (ph = reshape(ph, 1, length(ph)))
         fig = plot_phs_topo(
             locs, f, ph;

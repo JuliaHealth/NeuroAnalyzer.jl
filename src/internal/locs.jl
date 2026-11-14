@@ -388,6 +388,20 @@ function _has_locs(obj::NeuroAnalyzer.NEURO)::Nothing
     return nothing
 end
 
+"""
+    _locs_unit(locs)
+
+Return `locs` scaled to the unit sphere (the largest polar, spherical and Cartesian radius equal to 1, see `locs_normalize()`), for functions that require normalized coordinates: plots, topographic interpolation. Channel locations are stored in their original units and are never modified.
+
+The returned copy is marked with `:note`-style metadata (kept by `filter()` and row indexing), so a subset of an already scaled montage is not re-scaled by a downstream call: wrappers scale the whole montage first, then select channels.
+"""
+function _locs_unit(locs::DataFrame)::DataFrame
+    DataFrames.metadata(locs, "unit_sphere", false) === true && return locs
+    locs_new = DataFrames.nrow(locs) == 0 ? copy(locs) : locs_normalize(locs)
+    DataFrames.metadata!(locs_new, "unit_sphere", true; style = :note)
+    return locs_new
+end
+
 # scaling factor of _locs_norm(): the largest absolute coordinate (1 if all coordinates are 0)
 function _locs_norm_scale(xyz::AbstractMatrix)::Float64
     m = maximum(abs, xyz; init = 0.0)

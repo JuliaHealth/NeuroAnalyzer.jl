@@ -322,6 +322,8 @@ function plot_spectrogram_topo(
     head::Bool = true,
     gui::Bool = true,
 )::GLMakie.Figure
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
     # validate
     size(sp, 3) == DataFrames.nrow(locs) || throw(
         ArgumentError(
@@ -826,7 +828,7 @@ function plot_spectrogram(
         )
         _has_locs(obj)
         chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
-        locs = Base.filter(:label => in(chs), obj.locs)
+        locs = Base.filter(:label => in(chs), _locs_unit(obj.locs))
         ndims(sp) == 1 && (sp = reshape(sp, 1, 1, length(sp)))
         fig = plot_spectrogram_topo(
             locs, st, sf, sp;

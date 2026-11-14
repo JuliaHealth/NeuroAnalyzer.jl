@@ -18,6 +18,8 @@ Electrode locations:
 - `loc_theta_sph`   spherical horizontal angle
 - `loc_phi_sph`     spherical azimuth angle
 
+Locations are stored as given, in their original units.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object

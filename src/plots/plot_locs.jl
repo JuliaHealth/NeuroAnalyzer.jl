@@ -148,6 +148,8 @@ function plot_locs(
     ch_colors::Union{Nothing, AbstractVector} = nothing,
     gui::Bool = true,
 )::GLMakie.Figure
+    # locations are stored in their original units: scale the montage to the unit sphere
+    locs = _locs_unit(locs)
     # validate
     _check_var(ps, [:l, :m, :s], "ps")
     isnothing(ch_colors) || length(ch_colors) == length(ch) ||
@@ -559,7 +561,7 @@ function plot_locs(
     end
 
     chs  = intersect(obj.locs[!, :label], labels(obj)[ch])
-    locs = Base.filter(:label => in(chs), obj.locs)
+    locs = Base.filter(:label => in(chs), _locs_unit(obj.locs))
     ch   = collect(1:DataFrames.nrow(locs))
 
     sch_resolved = if sch == ""

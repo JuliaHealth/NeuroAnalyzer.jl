@@ -474,8 +474,8 @@ l = import_locs_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif"))
     in(labels(import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif")))),
     l[!, :label],
 )
-# centered and scaled: the outermost channel has radius 1.2
-@test maximum(sqrt.(l.loc_x .^ 2 .+ l.loc_y .^ 2 .+ l.loc_z .^ 2)) ≈ 1.2
+# centered, kept in meters: sensors lie roughly 5-20 cm from the head center
+@test 0.05 < maximum(sqrt.(l.loc_x .^ 2 .+ l.loc_y .^ 2 .+ l.loc_z .^ 2)) < 0.2
 
 @info "Test: import_digitrack()"
 eeg = import_digitrack(joinpath(testfiles_path, "eeg", "eeg-test-digitrack.txt"))

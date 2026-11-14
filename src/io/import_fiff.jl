@@ -145,7 +145,7 @@ Build a NeuroAnalyzer `locs` DataFrame from FIFF channel information.
 - MEG sensor positions (`ch_info.loc[1:3]`, device frame) are transformed to the head frame using the device → head transform; without it (e.g. empty-room data) they stay in the device frame.
 - EEG/sEEG/ECoG/DBS electrode positions are stored in the head frame.
 - Reference MEG sensors and channels without a position (stim, misc, ...) are skipped.
-- With at least 10 head-shape digitisation points (extra and EEG points, nose region excluded, as in MNE-Python), coordinates are centred on the fitted head sphere and divided by its radius: the head surface (EEG electrodes) is at radius ≈ 1 and MEG sensors are at their true relative distance. Otherwise coordinates are centred on a sphere fitted to the channel positions and scaled so that the outermost MEG sensor has radius 1.2 and the outermost electrode radius 1.0.
+- Coordinates are kept in meters. With at least 10 head-shape digitisation points (extra and EEG points, nose region excluded, as in MNE-Python), they are centred on the fitted head sphere; otherwise on a sphere fitted to the channel positions. Functions that need coordinates on the unit sphere (plots, topographic interpolation) scale them internally.
 
 Both FIFF head and device frames are RAS (x → right, y → anterior, z → superior).
 """
@@ -162,7 +162,6 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
 
     idx = Int64[]
     pos = Vector{Vector{Float64}}()
-    is_meg = Bool[]
     for (i, ch) in enumerate(chs)
         r0 = ch.loc[1:3]
         (all(isfinite, r0) && !all(iszero, r0)) || continue
@@ -174,7 +173,6 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
         end
         push!(idx, i)
         push!(pos, r0)
-        push!(is_meg, k in meg_kinds)
     end
 
     l = DataFrame(
@@ -197,25 +195,13 @@ function _fiff_locs(mi::Dict{Symbol, Any}, labels::Vector{String})::DataFrame
 
     # head-shape points: kind 3 = EEG, 4 = extra; exclude nose/face (z < 0, y > 0)
     hsp = _fiff_hsp(mi)
-    if length(hsp) >= 10 && (!has_meg || !isnothing(t))
-        # head sphere: head surface at radius 1, sensors at their true relative distance
-        c, r_head = _fiff_fit_sphere(permutedims(reduce(hcat, hsp)))
-        p = (p .- c') ./ r_head
+    # center on the head sphere (or, without a usable head shape, on the channels); keep meters
+    c = if length(hsp) >= 10 && (!has_meg || !isnothing(t))
+        first(_fiff_fit_sphere(permutedims(reduce(hcat, hsp))))
     else
-        # no usable head shape: center on the channels
-        # outermost MEG sensor at radius 1.2 and outermost electrode at radius 1.0
-        c = size(p, 1) >= 4 ? first(_fiff_fit_sphere(p)) : zeros(3)
-        p = p .- c'
-        r = vec(sqrt.(sum(p .^ 2; dims = 2)))
-        for (mask, r_out) in ((is_meg, 1.2), (.!is_meg, 1.0))
-            any(mask) || continue
-            rmax = maximum(r[mask])
-            rmax > 0 && (p[mask, :] .*= r_out / rmax)
-        end
-        _info(
-            "Fewer than 10 head-shape points: channel locations scaled to fixed radii (MEG 1.2, EEG 1.0)",
-        )
+        size(p, 1) >= 4 ? first(_fiff_fit_sphere(p)) : zeros(3)
     end
+    p = p .- c'
 
     for (j, i) in enumerate(idx)
         push!(l, (labels[i], 0.0, 0.0, p[j, 1], p[j, 2], p[j, 3], 0.0, 0.0, 0.0))
@@ -1158,7 +1144,7 @@ Load channel locations from a FIFF file (raw, evoked or any file with measuremen
 
 MEG sensor positions are transformed from the device to the head frame (when the device → head transform is present), EEG electrode positions are taken from the head frame.
 
-Coordinates are centered on a sphere fitted to the head-shape digitization (or to the channel positions) and scaled so that the outermost channel has radius 1.2. Reference MEG sensors and channels without positions are omitted.
+Coordinates are kept in meters, centered on a sphere fitted to the head-shape digitization (or to the channel positions). Functions that need coordinates on the unit sphere (plots, topographic interpolation) scale them internally. Reference MEG sensors and channels without positions are omitted.
 
 Sensor orientations (coil normals) are not stored.
 

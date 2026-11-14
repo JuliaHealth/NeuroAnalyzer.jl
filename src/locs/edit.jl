@@ -1,15 +1,27 @@
 export edit_locs
 export edit_locs!
 
+# the interactive editor is opened only when no edit is requested by keyword arguments
+function _el_no_kwargs(args...)::Nothing
+    all(a -> isnothing(a) || a == "", args) || throw(
+        ArgumentError(
+            "ch must be specified to edit coordinates, name or type of a channel.",
+        ),
+    )
+    return nothing
+end
+
 """
     edit_locs(obj; <keyword arguments>)
 
-Edit electrode.
+Edit channel location and properties.
+
+Without `ch` (and without any other keyword argument), opens the interactive editor (GLMakie window) for EEG and MEG objects: select a channel from the list or by clicking its electrode, edit its label, type, unit and coordinates, transform all locations (flip, swap X/Y, center, rotate, scale, normalize, move origin, convert between coordinate systems, generate 10-10 positions), load or save a locations file. Every location change can be undone. Coordinates are shown and edited as stored, in their original units.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name; must resolve to exactly one channel
+- `ch::Union{String, Nothing}=nothing`: channel name; must resolve to exactly one channel; if `nothing`, open the interactive editor
 - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
 - `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
@@ -23,11 +35,11 @@ Edit electrode.
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: output NEURO object
+- `NeuroAnalyzer.NEURO`: output NEURO object; for the interactive editor: the edited copy if the changes were applied, otherwise an unchanged copy
 """
 function edit_locs(
     obj::NeuroAnalyzer.NEURO;
-    ch::String,
+    ch::Union{String, Nothing} = nothing,
     x::Union{Real, Nothing} = nothing,
     y::Union{Real, Nothing} = nothing,
     z::Union{Real, Nothing} = nothing,
@@ -39,6 +51,12 @@ function edit_locs(
     name::String = "",
     type::String = "",
 )::NeuroAnalyzer.NEURO
+    if isnothing(ch)
+        _el_no_kwargs(x, y, z, theta, radius, theta_sph, radius_sph, phi_sph, name, type)
+        obj_new = _edit_locs_gui(obj)
+        return isnothing(obj_new) ? deepcopy(obj) : obj_new
+    end
+
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -76,12 +94,14 @@ end
 """
     edit_locs!(obj; <keyword arguments>)
 
-Edit electrode.
+Edit channel location and properties in-place.
+
+Without `ch` (and without any other keyword argument), opens the interactive editor; the changes are written to `obj` when *Apply* is clicked (GLMakie window) for EEG and MEG objects: select a channel from the list or by clicking its electrode, edit its label, type, unit and coordinates, transform all locations (flip, swap X/Y, center, rotate, scale, normalize, move origin, convert between coordinate systems, generate 10-10 positions), load or save a locations file. Every location change can be undone. Coordinates are shown and edited as stored, in their original units.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch1::String`: channel name; must resolve to exactly one channel
+- `ch::Union{String, Nothing}=nothing`: channel name; must resolve to exactly one channel; if `nothing`, open the interactive editor
 - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
 - `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
@@ -99,7 +119,7 @@ Edit electrode.
 """
 function edit_locs!(
     obj::NeuroAnalyzer.NEURO;
-    ch::String,
+    ch::Union{String, Nothing} = nothing,
     x::Union{Real, Nothing} = nothing,
     y::Union{Real, Nothing} = nothing,
     z::Union{Real, Nothing} = nothing,
@@ -111,6 +131,18 @@ function edit_locs!(
     name::String = "",
     type::String = "",
 )::Nothing
+    if isnothing(ch)
+        _el_no_kwargs(x, y, z, theta, radius, theta_sph, radius_sph, phi_sph, name, type)
+        obj_tmp = _edit_locs_gui(obj)
+        isnothing(obj_tmp) && return nothing
+        obj.header = obj_tmp.header
+        obj.data = obj_tmp.data
+        obj.locs = obj_tmp.locs
+        obj.markers = obj_tmp.markers
+        obj.history = obj_tmp.history
+        return nothing
+    end
+
     obj_tmp = edit_locs(
         obj;
         ch = ch,

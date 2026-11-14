@@ -524,12 +524,6 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     end
     # swap x and y
     # x, y = y, x
-    # normalize to a unit-sphere
-    if z != zeros(length(opt_labels))
-        x, y, z = _locs_norm(x, y, z)
-    else
-        x, y = _locs_norm(x, y)
-    end
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))
     radius_sph = zeros(length(opt_labels))

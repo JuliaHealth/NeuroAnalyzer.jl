@@ -148,14 +148,6 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     y = Float64.(pos3d[2, :])
     z = Float64.(pos3d[3, :])
 
-    if !all(iszero, z)
-        x, y, z = _locs_norm(x, y, z)
-    else
-        x_n, y_n = _locs_norm(x, y)
-        x = x_n
-        y = y_n
-    end
-
     n_opt = length(opt_labels)
     locs = DataFrame(
         :label => opt_labels,
