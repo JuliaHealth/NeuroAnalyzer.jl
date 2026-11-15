@@ -69,8 +69,24 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
 
     # default positions of reference / EMG / EOG channels are added only for
     # channels that the locations file does not already contain
+    # the defaults are given on the unit sphere with the scalp edge at polar radius 1; locations
+    # are kept in the units and polar convention of the file (e.g. EEGLAB: 0.5 = equator,
+    # Cartesian in mm), so the defaults are scaled to them: the largest polar radius of the
+    # file corresponds to 1 and the median spherical radius to the unit sphere
+    pol_r = Base.filter(r -> isfinite(r) && r > 0, locs[!, :loc_radius])
+    sph_r = Base.filter(r -> isfinite(r) && r > 0, locs[!, :loc_radius_sph])
+    s_pol = isempty(pol_r) ? 1.0 : maximum(pol_r)
+    s_sph = isempty(sph_r) ? 1.0 : median(sph_r)
     has_loc(l) = lowercase(l) in lowercase.(locs[!, :label])
-    add_loc!(row) = has_loc(row[1]) || push!(locs, row)
+    # row: label, radius, theta, x, y, z, radius_sph, theta_sph, phi_sph
+    function add_loc!(row)
+        has_loc(row[1]) && return nothing
+        r = Any[row...]
+        r[2] *= s_pol
+        r[4:7] .*= s_sph
+        push!(locs, r)
+        return nothing
+    end
 
     # add locations of reference channels
     ref_labels = get_channel(obj; type = "ref")

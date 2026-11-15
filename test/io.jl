@@ -812,6 +812,11 @@ load_locs!(
     file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"),
 )
 @test eeg_tmp.locs == eeg.locs
+# default positions of A1/A2/EOG are scaled to the file (.ced: EEGLAB polar radius, 0.5 =
+# equator): after normalization the equator electrodes stay at the head circle
+u = NeuroAnalyzer._locs_unit(eeg.locs)
+@test u[findfirst(==("T3"), u[!, :label]), :loc_radius] > 0.95
+@test eeg.locs[findfirst(==("A1"), eeg.locs[!, :label]), :loc_radius] ≈ 0.511
 
 @info "Test: export_locs()"
 @test_throws ArgumentError export_locs(eeg; file_name = joinpath(tmp, "locs_out.sfp"))

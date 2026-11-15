@@ -36,9 +36,7 @@ Export (Save button)
 
 Writes a CSV containing: AH type, AVH language, AVH gender, AVH emotional aspect, left channel distance weight, right channel distance weight, and volume. Non-speech types record `NA` for the speech-only fields.
 
-!!! note "Headphones required"
-
-Accurate binaural spatialization requires headphones. The application shows a reminder dialog on startup.
+**Headphones are required**. Accurate binaural spatialization requires headphones. The application shows a reminder dialog on startup.
 
 # Arguments
 

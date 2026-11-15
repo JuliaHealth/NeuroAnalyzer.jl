@@ -582,6 +582,7 @@ include("plots/plot_locs_nirs.jl")
 include("plots/plot_gridlocs.jl")
 include("plots/plot_save.jl")
 include("plots/plot_topo.jl")
+include("plots/plot_ica.jl")
 include("plots/plot_connectivity_circle.jl")
 include("plots/plot_coherence.jl")
 include("plots/plot_efield.jl")
@@ -600,11 +601,6 @@ include("plots/plot.jl")
 include("plots/plot_signal_cont1.jl")
 include("plots/plot_signal_cont2.jl")
 include("plots/plot_signal_ep.jl")
-
-# gui
-# include("gui/ispectrogram.jl")
-# include("gui/itopo.jl")
-# include("gui/iview_ica.jl")
 
 # recorder
 include("recorder/edar.jl")

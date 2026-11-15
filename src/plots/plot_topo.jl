@@ -668,7 +668,7 @@ function plot_icatopo(
             ch     = ch,
             ic     = ic,
             ic_mw  = ic_mw,
-            ic_idx = idx,
+            ic_idx = ic_idx[idx],
             keep   = true,
         )
         fig_tmp = plot_topo(

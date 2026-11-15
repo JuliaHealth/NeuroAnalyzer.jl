@@ -75,7 +75,7 @@ end
 """
     itpt(; duration, port_name)
 
-Perform the **Two-Point Pinch Test (TPT)** in **GUI mode**.
+Perform the **Two-Point Pinch Test (TPT)** in GUI mode.
 
 Orientation and acceleration are sampled at $_TPT_FS Hz from an **MMA7660** accelerometer connected via an Arduino on a USB virtual serial port.
 
@@ -245,7 +245,7 @@ end
 """
     tpt(; duration, port_name)
 
-Perform the **Two-Point Pinch Test (TPT)** in **CLI (terminal) mode**.
+Perform the **Two-Point Pinch Test (TPT)** in CLI (terminal) mode.
 
 Functionally identical to [`itpt`](@ref) but runs entirely in the terminal without a graphical window. Press `SPACEBAR` to begin; the test starts after a beep and a $_TPT_WARMUP_SECS-second serial flush.
 

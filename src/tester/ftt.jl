@@ -74,7 +74,7 @@ end
 """
     iftt(; <keyword arguments>)
 
-Perform the **Finger Tapping Test (FTT)** in **GUI mode**.
+Perform the **Finger Tapping Test (FTT)** in GUI mode.
 
 The subject taps a key as fast as possible during each *trial* window, and intentionally suppresses tapping during each *interval* window. Both active and suppressed taps are recorded.
 
@@ -304,7 +304,7 @@ end
 """
     ftt(; <keyword arguments>)
 
-Perform the **Finger Tapping Test (FTT)** in **CLI (terminal) mode**.
+Perform the **Finger Tapping Test (FTT)** in CLI (terminal) mode.
 
 Functionally identical to [`iftt`](@ref) but without a graphical window - the test runs entirely in the terminal. Suitable for headless or scripted use.
 

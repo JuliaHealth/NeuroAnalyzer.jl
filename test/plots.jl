@@ -385,6 +385,64 @@ p = plot_icatopo(
 )
 @test p isa GLMakie.Figure
 
+@info "Test: plot_ica()"
+# the window is built without displaying it; widgets are driven programmatically
+pv = NeuroAnalyzer._plot_ica_build(
+    eeg_new;
+    ch = "eeg",
+    ic = ica_data.ic,
+    ic_mw = ica_data.ic_mw,
+    ic_var = ica_data.ic_var,
+    wlen = 2,
+)
+c = pv.ctl
+ic_n = size(ica_data.ic, 1)
+@test pv.cur_ic[] == 1
+c[:ic_next].clicks[] += 1
+@test pv.cur_ic[] == 2
+c[:ic_prev].clicks[] += 1
+c[:ic_prev].clicks[] += 1
+@test pv.cur_ic[] == ic_n
+# no marked components: the cleaned signal is the original one
+@test c[:clean][] == c[:orig][]
+c[:mark].clicks[] += 1
+@test findall(pv.marked[]) == [ic_n]
+# the preview matches ica_remove()
+chn = get_channel(eeg_new; ch = "eeg")
+ref = ica_remove(
+    eeg_new;
+    ch = "eeg",
+    ic = ica_data.ic,
+    ic_mw = ica_data.ic_mw,
+    ic_idx = ic_n,
+)
+n = length(c[:clean][])
+@test Float32.(ref.data[chn[1], 1:n, 1]) ≈ last.(c[:clean][]) rtol = 1e-4
+c[:ch_next].clicks[] += 1
+@test pv.cur_ch[] == 2 && c[:menu_ch].i_selected[] == 2
+c[:menu_ch].i_selected[] = 3
+@test pv.cur_ch[] == 3
+t1 = first(c[:orig][])[1]
+c[:fwd].clicks[] += 1
+@test first(c[:orig][])[1] ≈ t1 + 2 atol = 0.05
+c[:end].clicks[] += 1
+@test last(c[:orig][])[1] ≈ eeg_new.time_pts[end] atol = 0.1
+c[:start].clicks[] += 1
+@test first(c[:orig][])[1] ≈ eeg_new.time_pts[1]
+c[:clear].clicks[] += 1
+@test !any(pv.marked[])
+c[:apply].clicks[] += 1
+@test pv.applied[]
+p = plot_ica(eeg_new; ch = "eeg", ic = ica_data.ic, ic_mw = ica_data.ic_mw, gui = false)
+@test p isa GLMakie.Figure
+@test_throws ArgumentError plot_ica(
+    e10;
+    ch = "eeg",
+    ic = ica_data.ic,
+    ic_mw = ica_data.ic_mw,
+    gui = false,
+)
+
 @info "Test: add_inset()"
 p = NeuroAnalyzer.plot(e10; ep = 1, gui = false)
 pl = plot_locs(eeg; ch = "eeg", sch = "eeg", ps = :s, gui = false)
