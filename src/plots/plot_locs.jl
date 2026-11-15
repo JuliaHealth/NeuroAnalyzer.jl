@@ -432,8 +432,6 @@ function plot_locs(
 
     # draw per-channel weight values
     if weights isa Vector
-        label_offset_x = 0.0
-        label_offset_y = 0.07
         length(weights) <= length(ch) ||
             throw(
                 ArgumentError(
@@ -446,13 +444,15 @@ function plot_locs(
         for (i, idx) in enumerate(collect(ch))
             i > length(weights) && break
             color = mono ? :black : (weights[i] >= 0 ? :red : :blue)
+            # above the electrode marker (offset in pixels; channel labels are below it)
             GLMakie.text!(
-                loc_x[i] + label_offset_x,
-                loc_y[i] + label_offset_y;
+                loc_x[i],
+                loc_y[i];
                 text     = _num_label(weights[i]),
                 fontsize = font_size,
                 color    = color,
-                align    = (:center, :top),
+                align    = (:center, :bottom),
+                offset   = (0, marker_size / 2 + 2),
             )
         end
     end

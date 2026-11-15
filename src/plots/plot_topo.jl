@@ -313,6 +313,11 @@ function plot_topo(
     head && _draw_head_outline!(ax; lw = lw)
 
     # draw electrodes, highlighting thresholded or significant channels
+    # highlighted electrodes: 1.5 × the electrode size, with a thin outline
+    hl_size = marker_size * 1.5
+    hl_sw = max(1, sw / 2)
+    highlight =
+        !isnothing(sch) || (!isnothing(threshold) && threshold_method === :loc)
     if electrodes
         if (isnothing(threshold) && isnothing(sch)) ||
            (!isnothing(threshold) && threshold_method === :reg)
@@ -329,9 +334,9 @@ function plot_topo(
                 if idx in threshold_idx
                     GLMakie.scatter!(
                         ax, loc_x[idx], loc_y[idx];
-                        markersize  = marker_size * 2,
+                        markersize  = hl_size,
                         color       = :gray,
-                        strokewidth = sw,
+                        strokewidth = hl_sw,
                         strokecolor = :black,
                     )
                 else
@@ -348,9 +353,9 @@ function plot_topo(
                 if idx in sch
                     GLMakie.scatter!(
                         ax, loc_x[idx], loc_y[idx];
-                        markersize  = marker_size * 2,
+                        markersize  = hl_size,
                         color       = :gray,
-                        strokewidth = sw,
+                        strokewidth = hl_sw,
                         strokecolor = :black,
                     )
                 else
@@ -366,7 +371,9 @@ function plot_topo(
 
     # labels below the electrode markers (offset in pixels, independent of the plot scale)
     label_align = electrodes ? (:center, :top) : (:center, :center)
-    label_offset = electrodes ? (0, -(marker_size / 2 + 2)) : (0, 0)
+    # (below the largest marker drawn, so that highlighted electrodes do not cover the labels)
+    m_extent = electrodes && highlight ? hl_size / 2 + hl_sw : marker_size / 2
+    label_offset = electrodes ? (0, -(m_extent + 2)) : (0, 0)
 
     # draw mask to crop interpolation outside the head circle
     head12 && GLMakie.arc!(ax, Point2f(0, 0), r, -pi, pi; linewidth = 5, color = :white)
