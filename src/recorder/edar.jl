@@ -29,12 +29,47 @@ function _build_eda_object(eda_signal::Vector{Float64})::NeuroAnalyzer.NEURO
     return obj
 end
 
+# window of iedar(): live plot of the recorded EDA, RECORD button and status
+function _iedar_build(duration::Int64)
+    n = duration * _EDA_FS
+    t = collect(0:(n - 1)) ./ _EDA_FS
+
+    fig = GLMakie.Figure(; size = (900, 500))
+    ax = GLMakie.Axis(
+        fig[1, 1:3];
+        title = "Electrodermal activity",
+        xlabel = "Time [s]",
+        ylabel = "Skin conductance [μS]",
+        _AXIS_LOCK_KWARGS...,
+    )
+    GLMakie.xlims!(ax, 0, duration)
+    GLMakie.ylims!(ax, 0, 10)
+    pts = Observable(GLMakie.Point2f[])
+    GLMakie.lines!(ax, pts; color = :black, linewidth = 1)
+    bt_record = GLMakie.Button(fig[2, 1]; label = "RECORD", width = 120)
+    GLMakie.Label(fig[2, 2], "Status:"; halign = :right)
+    lb_status = GLMakie.Label(fig[2, 3], _REC_STATUS[1]; halign = :left, tellwidth = false)
+
+    # show the first n_rec samples; the y-axis follows the signal
+    function show!(eda::Vector{Float64}, n_rec::Int64)
+        pts[] = GLMakie.Point2f.(t[1:n_rec], eda[1:n_rec])
+        if n_rec > 0
+            lo, hi = extrema(eda[1:n_rec])
+            m = max(0.1 * (hi - lo), 0.5)
+            GLMakie.ylims!(ax, lo - m, hi + m)
+        end
+        return nothing
+    end
+
+    return (; fig, ax, bt_record, lb_status, pts, show!)
+end
+
 """
     iedar(; <keyword arguments>)
 
 Record electrodermal activity (EDA) in GUI mode.
 
-EDA (also known as Galvanic Skin Response / skin conductance) is recorded using a Grove GSR sensor via an Arduino connected over a virtual serial port.
+EDA (also known as Galvanic Skin Response / skin conductance) is recorded using a Grove GSR sensor via an Arduino connected over a virtual serial port. The recorded signal is plotted live.
 
 Nominal sampling rate is 50 Hz. If the window is closed before the end of the recording, the samples recorded so far are returned.
 
@@ -55,133 +90,64 @@ function iedar(;
     sp = _serial_open(port_name; baudrate = _EDA_BAUDRATE)
 
     n = duration * _EDA_FS
-    t = collect(0:(n - 1)) ./ _EDA_FS
     eda_signal = fill(NaN, n)
-    n_rec = 0             # number of recorded samples
-    aborted = false       # set when the window is closed
-    rec_task = nothing    # recording task (started by RECORD)
+    # shared with the recording task
+    n_rec = Threads.Atomic{Int64}(0)
+    phase = Threads.Atomic{Int64}(_REC_READY)
+    aborted = Threads.Atomic{Bool}(false)
+    rec_task = Ref{Union{Nothing, Task}}(nothing)
 
-    plot_kw = (
-        ylims = (0, 10),
-        xlims = (t[1], t[end]),
-        legend = false,
-        palette = :darktest,
-        size = (800, 400),
-        margins = 20Plots.PlotMeasures.px,
-        xlabelfontsize = 8,
-        ylabelfontsize = 8,
-        xtickfontsize = 8,
-        ytickfontsize = 8,
-    )
+    w = _iedar_build(duration)
 
-    function _activate(app)
-        win = GtkApplicationWindow(app, "NeuroRecorder: iedar()")
-        Gtk4.default_size(win, plot_kw.size[1], plot_kw.size[2] + 40)
-
-        can = GtkCanvas()
-        can.content_width = plot_kw.size[1]
-        can.content_height = plot_kw.size[2]
-
-        g = GtkGrid()
-        g.column_homogeneous = false
-        g.column_spacing = 5
-        g.row_spacing = 5
-        g.margin_start = 5
-        g.margin_end = 5
-        g.margin_top = 5
-        g.margin_bottom = 5
-
-        bt_record = GtkButton("RECORD")
-        bt_record.tooltip_text = "Start recording"
-
-        lb_status1 = GtkLabel("Status:")
-        lb_status2 = GtkLabel("READY TO START")
-        lb_status1.halign = 2
-        lb_status2.halign = 1
-
-        g[1:2, 1] = can
-        g[1:2, 2] = bt_record
-        g[1, 3] = lb_status1
-        g[2, 3] = lb_status2
-        vbox = GtkBox(:v)
-        push!(vbox, g)
-        push!(win, vbox)
-        Gtk4.show(win)
-
-        # closing the window stops the recording
-        signal_connect(win, "close-request") do widget
-            aborted = true
-            return false
-        end
-
-        @guarded draw(can) do widget
-            p_draw = Plots.plot(
-                t, eda_signal;
-                mc = :black,
-                ms = 0.5,
-                lw = 0.5,
-                lc = :black,
-                plot_kw...,
-            )
-            io = IOBuffer()
-            ctx = getgc(can)
-            withenv("GKSwstype" => "100") do
-                return png(p_draw, io)
-            end
-            seek(io, 0)
-            img = read_from_png(io)
-            set_source_surface(ctx, img, 0, 0)
-            return Cairo.paint(ctx)
-        end
-
-        return @guarded signal_connect(bt_record, "clicked") do widget
-            bt_record.sensitive = false
-            rec_task = Threads.@spawn begin
-                try
-                    @idle_add lb_status2.label = "PREPARING"
-                    _serial_flush(sp, 2)
-                    _beep()
-                    @idle_add lb_status2.label = "RECORDING"
-                    t_refresh = time()
-                    while n_rec < n && !aborted
-                        if time() - t_refresh >= 0.1
-                            @idle_add draw(can)
-                            t_refresh = time()
-                        end
-                        line = _serial_listener(sp)
-                        isnothing(line) && (sleep(0.001); continue)
-                        v = _parse_eda_sample(line)
-                        if !isnothing(v)
-                            n_rec += 1
-                            eda_signal[n_rec] = v
-                        end
+    on(w.bt_record.clicks) do _
+        phase[] == _REC_READY || return nothing
+        phase[] = _REC_PREPARING
+        rec_task[] = Threads.@spawn begin
+            try
+                # discard data buffered while waiting for the user
+                _serial_flush(sp, 2)
+                _beep()
+                phase[] = _REC_RECORDING
+                while n_rec[] < n && !aborted[]
+                    line = _serial_listener(sp)
+                    isnothing(line) && (sleep(0.001); continue)
+                    v = _parse_eda_sample(line)
+                    if !isnothing(v)
+                        eda_signal[n_rec[] + 1] = v
+                        n_rec[] += 1
                     end
-                    aborted && return nothing
-                    @idle_add draw(can)
-                    @idle_add lb_status2.label = "FINISHED"
-                    _beep()
-                    sleep(2)
-                    @idle_add close(win)
-                catch err
-                    @error "EDA recording failed" exception = (err, catch_backtrace())
-                finally
-                    _serial_close(sp)
                 end
+                aborted[] && return nothing
+                phase[] = _REC_FINISHED
+                _beep()
+            catch err
+                phase[] = _REC_ERROR
+                @error "EDA recording failed" exception = (err, catch_backtrace())
             end
         end
+        return nothing
     end
 
-    app = GtkApplication("org.neuroanalyzer.iedar")
-    Gtk4.signal_connect(_activate, app, :activate)
-    Gtk4.GLib.stop_main_loop()
-    Gtk4.run(app)
+    shown = Ref(-1)
+    function refresh!()
+        st = _REC_STATUS[phase[] + 1]
+        if w.lb_status.text[] != st
+            w.lb_status.text[] = st
+            # RECORD works once: grayed out after it has been pressed
+            phase[] == _REC_READY || _button_disable!(w.bt_record)
+        end
+        k = n_rec[]
+        k != shown[] && (w.show!(eda_signal, k); shown[] = k)
+        return nothing
+    end
+    _recorder_window_run(w.fig, "NeuroRecorder: iedar()", phase, refresh!)
 
     # the window is closed: stop the recording task (if any) and release the port
-    aborted = true
-    isnothing(rec_task) || wait(rec_task)
+    aborted[] = true
+    isnothing(rec_task[]) || wait(rec_task[])
     _serial_close(sp)
 
-    return _build_eda_object(eda_signal[1:n_rec])
+    return _build_eda_object(eda_signal[1:n_rec[]])
 end
 
 """

@@ -134,7 +134,7 @@ function plot_cont(
         s = obj.data[ch, :, 1][ch_order, 1:res:end]
 
         # common amplitude scale of each channel type (one row = r signal units), robust to
-        # artifacts; each channel is centered at its median
+        # artifacts; each channel is centered (see _plot_center())
         r = Float64[]
         for idx in eachindex(ctypes_uni)
             g_idx = ctypes .== ctypes_uni[idx]
@@ -142,7 +142,9 @@ function plot_cont(
             # butterfly: all channels of the type share one row, ±6 SD fit in it
             sc = _plot_scale(group) * (type === :butterfly ? 2 : 1)
             push!(r, round(sc; sigdigits = 3))
-            s[g_idx, :] = (group .- median(group; dims = 2)) ./ sc
+            # the y-axis is reversed (first channel at the top): the values are negated,
+            # so that positive values point up
+            s[g_idx, :] = .-(group .- _plot_center(group)) ./ sc
         end
         # baseline of each trace: its row (:normal) or the row of its channel type (:butterfly)
         y_off = if type === :normal
@@ -182,7 +184,8 @@ function plot_cont(
     # create axis with customizable properties
     ax1 = GLMakie.Axis(
         fig[1, 1];
-        xlabel = "",
+        # the time bar below (GUI) shows the x-axis label
+        xlabel = gui ? "" : xl,
         ylabel = yl,
         title = tt,
         _TIME_AXIS_KWARGS...,

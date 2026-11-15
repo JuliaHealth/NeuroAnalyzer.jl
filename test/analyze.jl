@@ -1727,9 +1727,31 @@ for k = 60:100:960
     tp.data[4, k:(k + 2), 1] .= 100.0
 end
 pi_ = tpt_detect(tp)
-@test length(pi_) >= 1
+@test pi_ == 61:100:961
 ta = tpt_analyze(tp)
-@test isnothing(ta) || ta.n == length(pi_)
+@test ta.n == 10 && ta.t_mean ≈ 2000
+# simulated recording: gravity, slow change of the posture, noise, pinches at varying rate
+rng_tp = NeuroAnalyzer.Random.MersenneTwister(3)
+fs_tp = 50
+t_tp = (0:(30 * fs_tp - 1)) ./ fs_tp
+on_tp = cumsum(0.2 .+ 0.3 .* rand(rng_tp, 200))
+on_tp = on_tp[0.5 .< on_tp .< 29.5]
+pk_tp = [sum(exp(-((x - o) / 0.04)^2) for o in on_tp) for x in t_tp]
+drift_tp = 0.5 .* sin.(2π .* 0.05 .* t_tp)
+tp.data = zeros(6, length(t_tp), 1)
+tp.data[4, :, 1] = 0.3 .+ drift_tp .+ 3 .* pk_tp .+ 0.1 .* randn(rng_tp, length(t_tp))
+tp.data[5, :, 1] = -0.2 .- 2 .* pk_tp .+ 0.1 .* randn(rng_tp, length(t_tp))
+tp.data[6, :, 1] = 9.8 .- drift_tp .- 4 .* pk_tp .+ 0.1 .* randn(rng_tp, length(t_tp))
+tp.time_pts, tp.epoch_time = NeuroAnalyzer._get_t(tp)
+pi_ = tpt_detect(tp)
+# every pinch is detected once, within 2 samples
+@test length(pi_) == length(on_tp)
+@test all(abs.(t_tp[pi_] .- on_tp) .<= 2 / fs_tp)
+ta = tpt_analyze(tp)
+@test ta.t_mean ≈ 1000 * NeuroAnalyzer.Statistics.mean(diff(on_tp)) rtol = 0.02
+# no pinches: noise only
+tp.data[4:6, :, 1] = 0.1 .* randn(rng_tp, 3, length(t_tp))
+@test length(tpt_detect(tp)) <= 2
 @test_throws ArgumentError tpt_detect(e10)
 
 @info "Test: mep_peaks() values"

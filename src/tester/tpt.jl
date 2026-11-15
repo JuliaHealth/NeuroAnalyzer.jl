@@ -72,6 +72,64 @@ end
 
 # =============================================================================
 
+# window of itpt(): finger image (idle / pinch), live plot of the acceleration, RECORD
+# button and status
+function _itpt_build(duration::Int64)
+    n = duration * _TPT_FS
+    t = collect(0:(n - 1)) ./ _TPT_FS
+    img_idle = rotr90(FileIO.load(joinpath(res_path, "finger_nopinch.png")))
+    img_pinch = rotr90(FileIO.load(joinpath(res_path, "finger_pinch.png")))
+
+    fig = GLMakie.Figure(; size = (1300, 650))
+    ax_img = GLMakie.Axis(
+        fig[1, 1];
+        aspect = GLMakie.DataAspect(),
+        width = 450,
+        _AXIS_LOCK_KWARGS...,
+    )
+    GLMakie.hidedecorations!(ax_img)
+    GLMakie.hidespines!(ax_img)
+    img = Observable(img_idle)
+    GLMakie.image!(ax_img, img)
+
+    ax = GLMakie.Axis(
+        fig[1, 2:4];
+        title = "Acceleration",
+        xlabel = "Time [s]",
+        ylabel = "Acceleration [m/s²]",
+        _AXIS_LOCK_KWARGS...,
+    )
+    GLMakie.xlims!(ax, 0, duration)
+    GLMakie.ylims!(ax, -1, 1)
+    pts = [Observable(GLMakie.Point2f[]) for _ = 1:3]
+    for (p, c, l) in zip(pts, (:dodgerblue3, :darkorange2, :forestgreen), ("X", "Y", "Z"))
+        GLMakie.lines!(ax, p; color = c, linewidth = 1, label = l)
+    end
+    GLMakie.axislegend(ax; position = :rt, orientation = :horizontal, framevisible = false)
+
+    bt_record = GLMakie.Button(fig[2, 2]; label = "RECORD", width = 120)
+    GLMakie.Label(fig[2, 3], "Status:"; halign = :right)
+    lb_status = GLMakie.Label(fig[2, 4], _REC_STATUS[1]; halign = :left, tellwidth = false)
+
+    # show the first n_rec samples of the acceleration (x, y, z); the y-axis follows the signal
+    function show!(acc::NTuple{3, Vector{Float64}}, n_rec::Int64)
+        for idx = 1:3
+            pts[idx][] = GLMakie.Point2f.(t[1:n_rec], acc[idx][1:n_rec])
+        end
+        if n_rec > 0
+            lo = minimum(minimum(a[1:n_rec]) for a in acc)
+            hi = maximum(maximum(a[1:n_rec]) for a in acc)
+            m = max(0.1 * (hi - lo), 0.5)
+            GLMakie.ylims!(ax, lo - m, hi + m)
+        end
+        return nothing
+    end
+    # finger image: pinching while recording
+    pinch!(p::Bool) = (img[] = p ? img_pinch : img_idle; nothing)
+
+    return (; fig, ax, bt_record, lb_status, pts, img, show!, pinch!)
+end
+
 """
     itpt(; duration, port_name)
 
@@ -79,7 +137,7 @@ Perform the **Two-Point Pinch Test (TPT)** in GUI mode.
 
 Orientation and acceleration are sampled at $_TPT_FS Hz from an **MMA7660** accelerometer connected via an Arduino on a USB virtual serial port.
 
-The test window shows a finger graphic and a status label. Pressing **RECORD** flushes stale serial data for $_TPT_WARMUP_SECS seconds, then captures exactly `duration × $_TPT_FS` samples before closing automatically.
+The test window shows a finger graphic, a live plot of the acceleration and a status label. Pressing **RECORD** flushes stale serial data for $_TPT_WARMUP_SECS seconds, then captures exactly `duration × $_TPT_FS` samples before closing automatically. If the window is closed before the end of the test, the samples recorded so far are returned.
 
 # Arguments
 
@@ -106,9 +164,6 @@ function itpt(;
     duration > 0 || throw(ArgumentError("duration must be > 0."))
     sp = _serial_open(port_name; baudrate = _TPT_BAUDRATE)
 
-    img_idle = read_from_png(joinpath(res_path, "finger_nopinch.png"))
-    img_pinch = read_from_png(joinpath(res_path, "finger_pinch.png"))
-
     n_samples = duration * _TPT_FS
     tpt_ch_x = zeros(n_samples)
     tpt_ch_y = zeros(n_samples)
@@ -116,122 +171,76 @@ function itpt(;
     tpt_ch_accx = zeros(n_samples)
     tpt_ch_accy = zeros(n_samples)
     tpt_ch_accz = zeros(n_samples)
-    n_rec = 0 # number of recorded samples
-    aborted = false # set when the window is closed
-    rec_task = nothing # recording task (started by RECORD)
+    # shared with the recording task
+    n_rec = Threads.Atomic{Int64}(0)
+    phase = Threads.Atomic{Int64}(_REC_READY)
+    aborted = Threads.Atomic{Bool}(false)
+    rec_task = Ref{Union{Nothing, Task}}(nothing)
 
-    # =========================================================================
-    function _activate(app)
-        win = GtkApplicationWindow(app, "NeuroAnalyzer: itpt()")
-        Gtk4.default_size(win, Int64(img_idle.width), Int64(img_idle.height) + 100)
+    w = _itpt_build(duration)
 
-        can = GtkCanvas()
-        can.content_width = Int64(img_idle.width)
-        can.content_height = Int64(img_idle.height)
-
-        g = GtkGrid()
-        g.column_homogeneous = false
-        g.column_spacing = 5
-        g.row_spacing = 5
-
-        bt_record = GtkButton("RECORD")
-        bt_record.tooltip_text = "Start recording"
-
-        lb_status1 = GtkLabel("Status:")
-        lb_status1.halign = 2
-        lb_status2 = GtkLabel("READY TO START")
-        lb_status2.halign = 1
-
-        g[1:2, 1] = can
-        g[1:2, 2] = bt_record
-        g[1, 3]   = lb_status1
-        g[2, 3]   = lb_status2
-
-        vbox = GtkBox(:v)
-        push!(vbox, g)
-        push!(win, vbox)
-        Gtk4.show(win)
-
-        # closing the window stops the recording
-        signal_connect(win, "close-request") do widget
-            aborted = true
-            return false
-        end
-
-        # initial canvas draw — idle (unpinched) finger image
-        @guarded draw(can) do widget
-            ctx = getgc(can)
-            Cairo.set_source_surface(ctx, img_idle, 0, 0)
-            return Cairo.paint(ctx)
-        end
-
-        # --- RECORD button ---
-        @guarded signal_connect(bt_record, "clicked") do widget
-            bt_record.sensitive = false
-            rec_task = Threads.@spawn begin
-                try
-                    # flush stale serial data before recording begins
-                    @idle_add lb_status2.label = "PREPARING"
-                    _serial_flush(sp, _TPT_WARMUP_SECS)
-
-                    # signal start and switch to pinch image
-                    _beep()
-                    @idle_add @guarded draw(can) do widget
-                        ctx = getgc(can)
-                        Cairo.set_source_surface(ctx, img_pinch, 0, 0)
-                        return Cairo.paint(ctx)
+    on(w.bt_record.clicks) do _
+        phase[] == _REC_READY || return nothing
+        phase[] = _REC_PREPARING
+        rec_task[] = Threads.@spawn begin
+            try
+                # flush stale serial data before recording begins
+                _serial_flush(sp, _TPT_WARMUP_SECS)
+                _beep()
+                phase[] = _REC_RECORDING
+                # collect n_samples valid samples (or until the window is closed)
+                while n_rec[] < n_samples && !aborted[]
+                    line = _serial_listener(sp)
+                    isnothing(line) && (sleep(0.001); continue)
+                    sample = _parse_tpt_sample(line)
+                    if !isnothing(sample)
+                        k = n_rec[] + 1
+                        tpt_ch_x[k] = sample.x
+                        tpt_ch_y[k] = sample.y
+                        tpt_ch_z[k] = sample.z
+                        tpt_ch_accx[k] = sample.accx
+                        tpt_ch_accy[k] = sample.accy
+                        tpt_ch_accz[k] = sample.accz
+                        n_rec[] = k
                     end
-                    @idle_add lb_status2.label = "RECORDING"
-
-                    # collect n_samples valid samples (or until the window is closed)
-                    while n_rec < n_samples && !aborted
-                        line = _serial_listener(sp)
-                        isnothing(line) && (sleep(0.001); continue)
-                        sample = _parse_tpt_sample(line)
-                        if !isnothing(sample)
-                            n_rec += 1
-                            tpt_ch_x[n_rec] = sample.x
-                            tpt_ch_y[n_rec] = sample.y
-                            tpt_ch_z[n_rec] = sample.z
-                            tpt_ch_accx[n_rec] = sample.accx
-                            tpt_ch_accy[n_rec] = sample.accy
-                            tpt_ch_accz[n_rec] = sample.accz
-                        end
-                    end
-                    aborted && return nothing
-
-                    # finalize
-                    _beep()
-                    @idle_add lb_status2.label = "FINISHED"
-                    @idle_add @guarded draw(can) do widget
-                        ctx = getgc(can)
-                        Cairo.set_source_surface(ctx, img_idle, 0, 0)
-                        return Cairo.paint(ctx)
-                    end
-                    sleep(2)
-                    @idle_add close(win)
-                catch err
-                    @error "TPT recording failed" exception = (err, catch_backtrace())
-                finally
-                    # ensure the port is always closed, even if the task errors
-                    _serial_close(sp)
                 end
+                aborted[] && return nothing
+                phase[] = _REC_FINISHED
+                _beep()
+            catch err
+                phase[] = _REC_ERROR
+                @error "TPT recording failed" exception = (err, catch_backtrace())
             end
         end
+        return nothing
     end
-    # =========================================================================
 
-    app = GtkApplication("org.neuroanalyzer.itpt")
-    Gtk4.signal_connect(_activate, app, :activate)
-    Gtk4.GLib.stop_main_loop()
-    Gtk4.run(app)
+    shown = Ref(-1)
+    pinching = Ref(false)
+    function refresh!()
+        st = _REC_STATUS[phase[] + 1]
+        if w.lb_status.text[] != st
+            w.lb_status.text[] = st
+            # RECORD works once: grayed out after it has been pressed
+            phase[] == _REC_READY || _button_disable!(w.bt_record)
+        end
+        recording = phase[] == _REC_RECORDING
+        recording == pinching[] || (w.pinch!(recording); pinching[] = recording)
+        k = n_rec[]
+        if k != shown[]
+            w.show!((tpt_ch_accx, tpt_ch_accy, tpt_ch_accz), k)
+            shown[] = k
+        end
+        return nothing
+    end
+    _recorder_window_run(w.fig, "NeuroTester: itpt()", phase, refresh!)
 
     # the window is closed: stop the recording task (if any) and release the port
-    aborted = true
-    isnothing(rec_task) || wait(rec_task)
+    aborted[] = true
+    isnothing(rec_task[]) || wait(rec_task[])
     _serial_close(sp)
 
-    r = 1:n_rec
+    r = 1:n_rec[]
     return _build_tpt_object(
         tpt_ch_x[r],
         tpt_ch_y[r],

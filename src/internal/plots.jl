@@ -537,7 +537,12 @@ _main_axis(fig::GLMakie.Figure)::GLMakie.Axis =
 """
     _plot_scale(s)
 
-Common amplitude scale of a group of channels of the same type (rows of `s`) for the multi-channel signal plots: 6 × the median (over channels) of the robust standard deviation (1.4826 × MAD) of each channel, so that a typical channel spans about ±3 SD in its row (one row = the scale). Flat channels are ignored. The scale is not affected by artifacts, which may extend into the neighboring rows.
+Common amplitude scale of a group of channels of the same type (rows of `s`) for the multi-channel signal plots (one row = the scale), the larger of:
+
+- 6 × the median (over channels) of the robust standard deviation (1.4826 × MAD) of each channel: a typical channel spans about ±3 SD in its row,
+- 1.2 × the median (over channels) of the range between the 1st and the 99th percentile of each channel: signals with frequent large one-sided peaks (e.g. movements in accelerometer recordings) fit in their rows (see `_plot_center()`).
+
+For noise-like signals the first term is larger (for Gaussian noise the second is 5.6 SD). The scale is not affected by artifacts lasting < 1% of the signal, which may extend into the neighboring rows. Flat channels and non-finite values are ignored.
 
 # Arguments
 
@@ -548,8 +553,38 @@ Common amplitude scale of a group of channels of the same type (rows of `s`) for
 - `Float64`
 """
 function _plot_scale(s::AbstractMatrix)::Float64
-    sd = [1.4826 * median(abs.(r .- median(r))) for r in eachrow(s)]
+    sd = Float64[]
+    rng = Float64[]
+    for r in eachrow(s)
+        x = Base.filter(isfinite, r)
+        isempty(x) && continue
+        push!(sd, 1.4826 * median(abs.(x .- median(x))))
+        push!(rng, quantile(x, 0.99) - quantile(x, 0.01))
+    end
     filter!(>(0), sd)
-    isempty(sd) && return 1.0
-    return 6 * median(sd)
+    filter!(>(0), rng)
+    sc = max(isempty(sd) ? 0.0 : 6 * median(sd), isempty(rng) ? 0.0 : 1.2 * median(rng))
+    return sc > 0 ? sc : 1.0
+end
+
+"""
+    _plot_center(s)
+
+Center of each channel (rows of `s`) in the multi-channel signal plots: the midpoint between its 1st and 99th percentile. For signals symmetric around the baseline (e.g. EEG) it is close to the median; signals with one-sided peaks (e.g. accelerometer) use the whole height of their rows. Not affected by artifacts lasting < 1% of the signal; non-finite values are ignored.
+
+# Arguments
+
+- `s::AbstractMatrix`: signal matrix, shape (channels, samples)
+
+# Returns
+
+- `Matrix{Float64}`: shape (channels, 1)
+"""
+function _plot_center(s::AbstractMatrix)::Matrix{Float64}
+    c = zeros(size(s, 1), 1)
+    for (idx, r) in enumerate(eachrow(s))
+        x = Base.filter(isfinite, r)
+        isempty(x) || (c[idx] = (quantile(x, 0.01) + quantile(x, 0.99)) / 2)
+    end
+    return c
 end

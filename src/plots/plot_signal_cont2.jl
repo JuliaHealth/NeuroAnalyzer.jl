@@ -104,7 +104,7 @@ function plot_cont(
 
     # common amplitude scale of each channel type (one row = r signal units, computed from the
     # first signal), robust to artifacts and the same for both signals, so that their
-    # amplitudes can be compared; each channel is centered at its median
+    # amplitudes can be compared; each channel is centered (see _plot_center())
     r = Observable(Float64[])
     for idx in eachindex(ctypes_uni)
         g_idx = ctypes .== ctypes_uni[idx]
@@ -112,8 +112,10 @@ function plot_cont(
         group2 = s2[g_idx, :]
         sc = _plot_scale(group1)
         push!(r[], round(sc; sigdigits = 3))
-        s1[g_idx, :] = (group1 .- median(group1; dims = 2)) ./ sc
-        s2[g_idx, :] = (group2 .- median(group2; dims = 2)) ./ sc
+        # the y-axis is reversed (first channel at the top): the values are negated, so that
+        # positive values point up
+        s1[g_idx, :] = .-(group1 .- _plot_center(group1)) ./ sc
+        s2[g_idx, :] = .-(group2 .- _plot_center(group2)) ./ sc
     end
     # vertical scaling of the traces (Alt + ↑ / ↓ in the GUI)
     gain = Observable(1.0)
@@ -133,7 +135,8 @@ function plot_cont(
     )
     ax1 = GLMakie.Axis(
         fig[1, 1];
-        xlabel = "",
+        # the time bar below (GUI) shows the x-axis label
+        xlabel = gui ? "" : xl,
         ylabel = yl,
         title = tt,
         _TIME_AXIS_KWARGS...,

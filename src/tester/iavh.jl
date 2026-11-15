@@ -1,5 +1,291 @@
 export iavh
 
+# left and right channel weights of a sound source at (x, y) (normalized head diagram
+# coordinates in [-0.5, 0.5]², up = front): power-law attenuation with the distance to each
+# simulated ear, the farther ear further attenuated; sources too close to the ears (inside
+# the head) are silent
+function _avh_weights(x::Real, y::Real)::Tuple{Float64, Float64}
+    dist_exponent = 4 # power applied to (1 - distance) for attenuation
+    lateral_atten = 0.75 # quieter-ear reduction when sound is lateralized
+    ear_l_x = -0.05 # left-ear x position
+    ear_r_x = 0.05 # right-ear x position
+    min_dist = 0.1 # inside this radius the sound is treated as "in-head"
+
+    dist_l = sqrt((x - ear_l_x)^2 + y^2)
+    dist_r = sqrt((x - ear_r_x)^2 + y^2)
+    (dist_l < min_dist || dist_r < min_dist) && return (0.0, 0.0)
+
+    d_l = clamp((1.0 - dist_l)^dist_exponent, 0.0, 1.0)
+    d_r = clamp((1.0 - dist_r)^dist_exponent, 0.0, 1.0)
+    if d_l > d_r
+        d_r = round(d_r * lateral_atten; digits = 2)
+    elseif d_r > d_l
+        d_l = round(d_l * lateral_atten; digits = 2)
+    end
+    return (round(d_l; digits = 2), round(d_r; digits = 2))
+end
+
+# session settings exported by the Save button
+function _avh_save(
+    file_name::String,
+    type::String,
+    lang::String,
+    gender::String,
+    character::String,
+    d_l::Real,
+    d_r::Real,
+    vol::Real,
+)::Nothing
+    open(file_name, "w") do f
+        println(f, "\"AH type\",$type")
+        # non-speech types have no language/gender/affect settings
+        is_voice = type == "voice"
+        println(f, "\"AVH language\",$(is_voice ? lang : "NA")")
+        println(f, "\"AVH gender\",$(is_voice ? gender : "NA")")
+        println(f, "\"AVH emotional aspect\",$(is_voice ? character : "NA")")
+        println(f, "\"distance L\",$d_l")
+        println(f, "\"distance R\",$d_r")
+        return print(f, "\"volume\",$vol")
+    end
+    return nothing
+end
+
+# window of iavh(); `play(snd, vol, d_l, d_r)` plays a sound (replaced in tests)
+function _iavh_build(play::Function)
+    vol_step = 0.1 # volume increment / decrement per button press
+    vol_min = 0.1 # minimum allowed volume
+    vol_max = 1.0 # maximum allowed volume
+
+    # voice file index ranges - 15 files per language×gender set, 5 per valence
+    idx_negative = 1:5
+    idx_positive = 6:10
+    idx_neutral = 11:15
+
+    # =========================================================================
+    # sounds
+    # =========================================================================
+    snd_whisper = wavread(joinpath(res_path, "avh/wav/whisper_2s01fifo.wav"))
+    snd_noise = wavread(joinpath(res_path, "avh/wav/noise_2s01fifo.wav"))
+    snd_sine = wavread(joinpath(res_path, "avh/wav/sine_8k2s01fifo.wav"))
+
+    # each language × gender set contains 15 WAV files named "<lang>_<g>_NN.wav":
+    #   files 01–05 → negative emotional content
+    #   files 06–10 → positive emotional content
+    #   files 11–15 → neutral emotional content
+    _load_voices(prefix::String) = [
+        wavread(joinpath(res_path, "avh/wav/$(prefix)_$(lpad(i, 2, '0')).wav"))
+        for i = 1:15
+    ]
+    voices = Dict(
+        ("EN", "male")   => _load_voices("en_m"),
+        ("EN", "female") => _load_voices("en_w"),
+        ("DE", "male")   => _load_voices("de_m"),
+        ("DE", "female") => _load_voices("de_w"),
+        ("SP", "male")   => _load_voices("sp_m"),
+        ("SP", "female") => _load_voices("sp_w"),
+        ("PL", "male")   => _load_voices("pl_m"),
+        ("PL", "female") => _load_voices("pl_w"),
+    )
+
+    # for "voice", a random utterance from the 5-file pool of the language, gender and
+    # emotional valence; for other types the fixed non-speech sound
+    function select_sound(type::String, lang::String, character::String, gender::String)
+        if type == "voice"
+            idx_range = character == "negative" ? idx_negative :
+                        character == "positive" ? idx_positive : idx_neutral
+            return voices[(lang, gender)][rand(idx_range)]
+        end
+        return type == "whisper" ? snd_whisper : type == "noise" ? snd_noise : snd_sine
+    end
+
+    # =========================================================================
+    # state
+    # =========================================================================
+    d_l = Ref(1.0) # left-channel spatial weight (updated by clicks on the head)
+    d_r = Ref(1.0) # right-channel spatial weight
+    vol = Observable(vol_max) # playback volume
+    snd = Ref{Any}(snd_whisper) # current sound
+    pending_save = Ref(false)
+    status = Observable("Please use headphones for the best results.")
+    msg!(s) = (status[] = s; nothing)
+
+    langs = ["EN", "DE", "SP", "PL"]
+    types = ["voice", "whisper", "noise", "ringing"]
+    genders = ["male", "female"]
+    characters = ["negative", "neutral", "positive"]
+
+    # =========================================================================
+    # layout: controls | head diagram
+    # =========================================================================
+    img = rotr90(FileIO.load(joinpath(res_path, "avh/head.png")))
+    fig = GLMakie.Figure(; size = (1200, 850))
+    ctrl = fig[1, 1] = GLMakie.GridLayout(; valign = :top, tellheight = false)
+    GLMakie.colsize!(fig.layout, 1, GLMakie.Fixed(340))
+
+    GLMakie.Label(ctrl[1, 1], "Type"; halign = :right)
+    menu_type = GLMakie.Menu(ctrl[1, 2]; options = uppercase.(types), width = 160)
+    lb_lang = GLMakie.Label(ctrl[2, 1], "Language"; halign = :right)
+    menu_lang = GLMakie.Menu(ctrl[2, 2]; options = langs, width = 160)
+    lb_gender = GLMakie.Label(ctrl[3, 1], "Gender"; halign = :right)
+    menu_gender = GLMakie.Menu(ctrl[3, 2]; options = uppercase.(genders), width = 160)
+    lb_character = GLMakie.Label(ctrl[4, 1], "Emotional aspect"; halign = :right)
+    menu_character =
+        GLMakie.Menu(ctrl[4, 2]; options = uppercase.(characters), width = 160)
+
+    lb_vol = GLMakie.Label(ctrl[5, 1], lift(v -> "Volume: $v", vol); halign = :right)
+    g_vol = ctrl[5, 2] = GLMakie.GridLayout(; halign = :left)
+    bt_vol_down = GLMakie.Button(g_vol[1, 1]; label = "−", width = 50)
+    bt_vol_up = GLMakie.Button(g_vol[1, 2]; label = "+", width = 50)
+
+    bt_play = GLMakie.Button(ctrl[6, 1:2]; label = "Play", width = 260)
+    GLMakie.Label(ctrl[7, 1:2], "Settings file"; halign = :left)
+    tb_file = GLMakie.Textbox(
+        ctrl[8, 1:2];
+        width = 260,
+        placeholder = "file path (.csv)",
+    )
+    bt_save = GLMakie.Button(ctrl[9, 1:2]; label = "Save", width = 260)
+    bt_close = GLMakie.Button(ctrl[10, 1:2]; label = "Close", width = 260)
+    GLMakie.Label(
+        ctrl[11, 1:2],
+        status;
+        halign = :left,
+        word_wrap = true,
+        width = 320,
+        color = :gray25,
+    )
+    GLMakie.rowgap!(ctrl, 12)
+
+    ax = GLMakie.Axis(
+        fig[1, 2];
+        aspect = GLMakie.DataAspect(),
+        title = "Click to place the sound source",
+        _AXIS_LOCK_KWARGS...,
+    )
+    GLMakie.hidedecorations!(ax)
+    GLMakie.hidespines!(ax)
+    GLMakie.image!(ax, img)
+    GLMakie.xlims!(ax, 0, size(img, 1))
+    GLMakie.ylims!(ax, 0, size(img, 2))
+    source = Observable(GLMakie.Point2f[])
+    GLMakie.scatter!(
+        ax,
+        source;
+        marker = :circle,
+        markersize = 20,
+        color = :transparent,
+        strokecolor = :red,
+        strokewidth = 2,
+    )
+
+    # =========================================================================
+    # behavior
+    # =========================================================================
+    selections() = (
+        types[menu_type.i_selected[]],
+        langs[menu_lang.i_selected[]],
+        characters[menu_character.i_selected[]],
+        genders[menu_gender.i_selected[]],
+    )
+    new_sound!() = (snd[] = select_sound(selections()...); nothing)
+    play_current() = play(snd[], vol[], d_l[], d_r[])
+
+    # speech settings are used only for voices: their labels are grayed out otherwise
+    on(menu_type.i_selected) do i
+        c = types[i] == "voice" ? :black : :gray70
+        for lb in (lb_lang, lb_gender, lb_character)
+            lb.color[] = GLMakie.to_color(c)
+        end
+        return new_sound!()
+    end
+    for m in (menu_lang, menu_gender, menu_character)
+        on(_ -> new_sound!(), m.i_selected)
+    end
+
+    # volume changes preview the current sound without choosing another utterance
+    on(bt_vol_up.clicks) do _
+        vol[] = round(min(vol[] + vol_step, vol_max); digits = 1)
+        return play_current()
+    end
+    on(bt_vol_down.clicks) do _
+        vol[] = round(max(vol[] - vol_step, vol_min); digits = 1)
+        return play_current()
+    end
+
+    # each Play chooses another utterance, as AVH are unpredictable
+    on(bt_play.clicks) do _
+        new_sound!()
+        return play_current()
+    end
+
+    # click on the head diagram: place the sound source and play
+    function place!(x::Real, y::Real)
+        source[] = [GLMakie.Point2f(x, y)]
+        d_l[], d_r[] = _avh_weights(x / size(img, 1) - 0.5, y / size(img, 2) - 0.5)
+        new_sound!()
+        play_current()
+        return msg!("Sound source: left $(d_l[]), right $(d_r[]).")
+    end
+    on(GLMakie.events(ax.scene).mousebutton; priority = 2) do ev
+        if ev.button == GLMakie.Mouse.left &&
+           ev.action == GLMakie.Mouse.press &&
+           GLMakie.is_mouseinside(ax.scene)
+            p = GLMakie.mouseposition(ax)
+            place!(p[1], p[2])
+            return GLMakie.Consume(true)
+        end
+        return GLMakie.Consume(false)
+    end
+
+    # save the session settings; an existing file is overwritten after a second click
+    on(_ -> (pending_save[] = false), tb_file.displayed_string)
+    on(bt_save.clicks) do _
+        f = String(strip(something(tb_file.displayed_string[], "")))
+        isempty(f) && return msg!("Enter the file path first.")
+        if isfile(f) && !pending_save[]
+            pending_save[] = true
+            return msg!("$f exists: click Save again to overwrite it.")
+        end
+        pending_save[] = false
+        try
+            type, lang, character, gender = selections()
+            _avh_save(f, type, lang, gender, character, d_l[], d_r[], vol[])
+        catch err
+            return msg!("File cannot be saved: $(sprint(showerror, err))")
+        end
+        return msg!("Settings saved to $f.")
+    end
+
+    ctl = Dict{Symbol, Any}(
+        :type => menu_type,
+        :lang => menu_lang,
+        :gender => menu_gender,
+        :character => menu_character,
+        :vol_up => bt_vol_up,
+        :vol_down => bt_vol_down,
+        :play => bt_play,
+        :file => tb_file,
+        :save => bt_save,
+        :close => bt_close,
+        :status => status,
+    )
+
+    return (; fig, ctl, vol, d_l, d_r, snd, source, place!, labels = (lb_lang, lb_gender, lb_character))
+end
+
+# play `snd` (as returned by wavread()) with the volume and channel weights; playback runs in
+# another task, as wavplay() blocks until the sound ends
+function _avh_play(snd, vol::Real, d_l::Real, d_r::Real)::Nothing
+    channel_gain = 0.25 # master scalar applied to both channel amplitudes
+    y = snd[1] .* [vol * d_l * channel_gain vol * d_r * channel_gain]
+    Threads.@spawn try
+        wavplay(y, snd[2])
+    catch err
+        @error "Playback failed" exception = (err, catch_backtrace())
+    end
+    return nothing
+end
+
 """
     iavh()
 
@@ -34,9 +320,9 @@ Use the **+** / **−** buttons to adjust playback volume in increments of 0.1 (
 
 Export (Save button)
 
-Writes a CSV containing: AH type, AVH language, AVH gender, AVH emotional aspect, left channel distance weight, right channel distance weight, and volume. Non-speech types record `NA` for the speech-only fields.
+Enter the file path and press **Save** to write a CSV containing: AH type, AVH language, AVH gender, AVH emotional aspect, left channel distance weight, right channel distance weight, and volume. Non-speech types record `NA` for the speech-only fields.
 
-**Headphones are required**. Accurate binaural spatialization requires headphones. The application shows a reminder dialog on startup.
+**Headphones are required**. Accurate binaural spatialization requires headphones. The window shows a reminder on startup.
 
 # Arguments
 
@@ -47,448 +333,10 @@ None.
 - `Nothing`
 """
 function iavh()::Nothing
-
-    # =========================================================================
-    # configuration - named locals used in place of magic numbers throughout
-    # =========================================================================
-    vol_step = 0.1 # volume increment / decrement per button press
-    vol_min = 0.1 # minimum allowed volume
-    vol_max = 1.0 # maximum allowed volume
-    dist_exponent = 4 # power applied to (1 - distance) for attenuation
-    channel_gain = 0.25 # master scalar applied to both channel amplitudes
-    lateral_atten = 0.75 # quieter-ear reduction when sound is lateralized
-    ear_l_x = -0.05 # left-ear x position in normalized [-0.5, 0.5] space
-    ear_r_x = 0.05 # right-ear x position in normalized [-0.5, 0.5] space
-    min_dist = 0.1 # inside this radius the sound is treated as "in-head"
-    canvas_size = 800 # canvas width and height in pixels
-
-    # voice file index ranges - 15 files per language×gender set, 5 per valence
-    idx_negative = 1:5
-    idx_positive = 6:10
-    idx_neutral = 11:15
-
-    # =========================================================================
-    # state - mutable values updated by UI interactions
-    # =========================================================================
-    d_l = 1.0 # left-channel spatial weight  (updated by canvas clicks)
-    d_r = 1.0 # right-channel spatial weight (updated by canvas clicks)
-    vol = vol_max # current playback volume
-
-    # =========================================================================
-    # load non-speech sound assets
-    # =========================================================================
-    snd_whisper = wavread(joinpath(res_path, "avh/wav/whisper_2s01fifo.wav"))
-    snd_noise = wavread(joinpath(res_path, "avh/wav/noise_2s01fifo.wav"))
-    snd_sine = wavread(joinpath(res_path, "avh/wav/sine_8k2s01fifo.wav"))
-
-    # =========================================================================
-    # load speech samples
-    # each language × gender set contains 15 WAV files named "<lang>_<g>_NN.wav":
-    #   files 01–05 → negative emotional content
-    #   files 06–10 → positive emotional content
-    #   files 11–15 → neutral emotional content
-    # =========================================================================
-    function _load_voices(prefix::String)
-        return [
-            wavread(joinpath(res_path, "avh/wav/$(prefix)_$(lpad(i, 2, '0')).wav"))
-            for i = 1:15
-        ]
-    end
-
-    # keyed by (language_code, gender_string) for O(1) lookup in signal handlers
-    voices = Dict{
-        Tuple{String, String},
-        Vector{Tuple{Matrix{Float64}, Float32, UInt16, Vector{WAVChunk}}},
-    }(
-        ("EN", "male")   => _load_voices("en_m"),
-        ("EN", "female") => _load_voices("en_w"),
-        ("DE", "male")   => _load_voices("de_m"),
-        ("DE", "female") => _load_voices("de_w"),
-        ("SP", "male")   => _load_voices("sp_m"),
-        ("SP", "female") => _load_voices("sp_w"),
-        ("PL", "male")   => _load_voices("pl_m"),
-        ("PL", "female") => _load_voices("pl_w"),
-    )
-
-    # currently active raw sound (updated whenever settings change or Play is pressed)
-    snd = deepcopy(snd_whisper)
-
-    img = read_from_png(joinpath(res_path, "avh/head.png"))
-
-    # =========================================================================
-    # helper: pick a sound clip from the appropriate pool
-    #
-    # for "voice" type, selects randomly from the 5-file pool that matches
-    # the given language, gender, and emotional valence
-    # for all other types the fixed non-speech asset is returned
-    # =========================================================================
-    function _select_sound(type::String, lang::String, character::String, gender::String)
-        if type == "voice"
-            idx_range = if character == "negative"
-                idx_negative
-            elseif character == "positive"
-                idx_positive
-            else  # neutral
-                idx_neutral
-            end
-            return voices[(lang, gender)][rand(idx_range)]
-        elseif type == "whisper"
-            return snd_whisper
-        elseif type == "noise"
-            return snd_noise
-        else  # ringing
-            return snd_sine
-        end
-    end
-
-    # =========================================================================
-    # helper: apply volume and spatial weights to a sound, then play it
-    #
-    # the original raw samples are never mutated
-    # channel amplitudes = raw_sample × vol × (channel_weight × channel_gain)
-    # playback runs in a separate task: wavplay() blocks until the sound ends,
-    # which would freeze the window when called from a GTK signal handler
-    # =========================================================================
-    function _play(snd_raw)
-        y = snd_raw[1] .* [vol * d_l * channel_gain vol * d_r * channel_gain]
-        Threads.@spawn try
-            wavplay(y, snd_raw[2])
-        catch err
-            @error "Playback failed" exception = (err, catch_backtrace())
-        end
-        return nothing
-    end
-
-    # =========================================================================
-    # helper: read current selections from the four combo boxes
-    # returns (type, lang, character, gender) as plain lowercase strings
-    # =========================================================================
-    function _get_ui_state(combo_type, combo_lang, combo_character, combo_gender,
-        types, langs, characters, genders)
-        type = types[Int64(combo_type.active) + 1]
-        lang = langs[Int64(combo_lang.active) + 1]
-        character = characters[Int64(combo_character.active) + 1]
-        gender = genders[Int64(combo_gender.active) + 1]
-        return type, lang, character, gender
-    end
-
-    # =========================================================================
-    # GTK application
-    # =========================================================================
-    function _activate(app)
-        win = GtkApplicationWindow(app, "NeuroTester: iavh()")
-        Gtk4.default_size(win, 1100, 820)
-
-        # canvas that renders the head diagram and the clicked sound-source marker
-        can                = GtkCanvas()
-        can.content_width  = canvas_size
-        can.content_height = canvas_size
-
-        # outer grid: options panel (column 1) | canvas (column 2)
-        g = GtkGrid()
-        g.column_homogeneous = false
-        g.column_spacing = 10
-        g.row_spacing = 10
-        g.margin_start = 5
-        g.margin_end = 5
-        g.margin_top = 5
-        g.margin_bottom = 5
-
-        # inner grid for all control widgets
-        g_opts = GtkGrid()
-        g_opts.column_homogeneous = false
-        g_opts.column_spacing = 10
-        g_opts.row_spacing = 10
-        g_opts.margin_start = 5
-        g_opts.margin_end = 5
-        g_opts.margin_top = 5
-        g_opts.margin_bottom = 5
-
-        # --- language selector ---
-        lab_lang = GtkLabel("Language")
-        lab_lang.halign = 2
-        langs = ["EN", "DE", "SP", "PL"]
-        combo_lang = GtkComboBoxText()
-        foreach(l -> push!(combo_lang, l), langs)
-        combo_lang.active       = 0
-        combo_lang.tooltip_text = "Language of AVH speech samples"
-
-        # --- sound type selector ---
-        lab_type = GtkLabel("Type")
-        lab_type.halign = 2
-        types = ["voice", "whisper", "noise", "ringing"]
-        combo_type = GtkComboBoxText()
-        foreach(t -> push!(combo_type, uppercase(t)), types)
-        combo_type.active       = 0
-        combo_type.tooltip_text = "Hallucination sound type"
-
-        # --- voice gender selector (speech only) ---
-        lab_gender = GtkLabel("Gender")
-        lab_gender.halign = 2
-        genders = ["male", "female"]
-        combo_gender = GtkComboBoxText()
-        foreach(g -> push!(combo_gender, uppercase(g)), genders)
-        combo_gender.active       = 0
-        combo_gender.tooltip_text = "Voice gender (speech only)"
-
-        # --- emotional aspect selector (speech only) ---
-        lab_character = GtkLabel("Emotional aspect")
-        lab_character.halign = 2
-        characters = ["negative", "neutral", "positive"]
-        combo_character = GtkComboBoxText()
-        foreach(c -> push!(combo_character, uppercase(c)), characters)
-        combo_character.active       = 0
-        combo_character.tooltip_text = "Emotional valence of AVH content (speech only)"
-
-        # --- volume controls ---
-        lab_vol_up = GtkLabel("Volume")
-        lab_vol_up.halign = 2
-        lab_vol_down = GtkLabel("Volume")
-        lab_vol_down.halign = 2
-        bt_vol_up = GtkButton("+")
-        bt_vol_down = GtkButton("-")
-        # initialize sensitivity: at max vol the up button is disabled
-        bt_vol_up.sensitive = (vol < vol_max) ? 1 : 0
-        bt_vol_down.sensitive = (vol > vol_min) ? 1 : 0
-        bt_vol_up.tooltip_text = "Increase volume (step $(vol_step))"
-        bt_vol_down.tooltip_text = "Decrease volume (step $(vol_step))"
-
-        # --- action buttons ---
-        bt_play               = GtkButton("Play")
-        bt_play.tooltip_text  = "Play the sound with current settings"
-        bt_save               = GtkButton("Save")
-        bt_save.tooltip_text  = "Export session settings to CSV"
-        bt_close              = GtkButton("Close")
-        bt_close.tooltip_text = "Close this window"
-
-        # --- populate options grid ---
-        g_opts[1, 1] = lab_lang
-        g_opts[2, 1] = combo_lang
-        g_opts[1, 2] = lab_type
-        g_opts[2, 2] = combo_type
-        g_opts[1, 3] = lab_gender
-        g_opts[2, 3] = combo_gender
-        g_opts[1, 4] = lab_character
-        g_opts[2, 4] = combo_character
-        g_opts[1, 5] = lab_vol_up
-        g_opts[2, 5] = bt_vol_up
-        g_opts[1, 6] = lab_vol_down
-        g_opts[2, 6] = bt_vol_down
-        g_opts[1:2, 7] = GtkLabel("")
-        g_opts[1:2, 8] = bt_play
-        g_opts[1:2, 9] = GtkLabel("")
-        g_opts[1:2, 10] = bt_save
-        g_opts[1:2, 11] = GtkLabel("")
-        g_opts[1:2, 12] = bt_close
-
-        vbox = GtkBox(:v)
-        push!(vbox, g_opts)
-
-        g[1, 1] = vbox
-        g[2, 1] = can
-        push!(win, g)
-        Gtk4.show(win)
-
-        info_dialog("Please use headphones for the best results.", win) do
-            return nothing
-        end
-
-        # --- canvas: initial draw (head diagram, no marker) ---
-        @guarded draw(can) do widget
-            ctx = getgc(widget)
-            h, w = Cairo.height(can), Cairo.width(can)
-            Cairo.rectangle(ctx, 0, 0, w, h)
-            Cairo.set_source_rgb(ctx, 1, 1, 1)
-            Cairo.fill(ctx)
-            Cairo.set_source_surface(ctx, img, 1, 1)
-            return Cairo.paint(ctx)
-        end
-
-        # -----------------------------------------------------------------------
-        # shared handler for any speech-setting combo-box change.
-        # updates the active sound without triggering playback; the user must
-        # press Play or click the canvas to hear the result
-        # -----------------------------------------------------------------------
-        function _on_speech_setting_changed()
-            type, lang, character, gender = _get_ui_state(
-                combo_type, combo_lang, combo_character, combo_gender,
-                types, langs, characters, genders,
-            )
-            return snd = _select_sound(type, lang, character, gender)
-        end
-
-        # --- signal: sound type changed ---
-        # enable/disable speech-only controls depending on whether "voice" is active
-        signal_connect(combo_type, "changed") do widget
-            type = types[Int64(combo_type.active) + 1]
-            is_voice = (type == "voice")
-            combo_lang.sensitive = is_voice ? 1 : 0
-            combo_character.sensitive = is_voice ? 1 : 0
-            combo_gender.sensitive = is_voice ? 1 : 0
-            return _on_speech_setting_changed()
-        end
-
-        # --- signal: language changed ---
-        signal_connect(combo_lang, "changed") do widget
-            return _on_speech_setting_changed()
-        end
-
-        # --- signal: voice gender changed ---
-        signal_connect(combo_gender, "changed") do widget
-            return _on_speech_setting_changed()
-        end
-
-        # --- signal: emotional aspect changed ---
-        signal_connect(combo_character, "changed") do widget
-            return _on_speech_setting_changed()
-        end
-
-        # --- signal: volume up ---
-        # previews the *current* sound at the new volume without re-randomizing
-        signal_connect(bt_vol_up, "clicked") do widget
-            vol = round(min(vol + vol_step, vol_max); digits = 1)
-            bt_vol_up.sensitive = (vol < vol_max) ? 1 : 0
-            bt_vol_down.sensitive = 1 # definitely above minimum after an increase
-            return _play(snd)
-        end
-
-        # --- signal: volume down ---
-        signal_connect(bt_vol_down, "clicked") do widget
-            vol = round(max(vol - vol_step, vol_min); digits = 1)
-            bt_vol_down.sensitive = (vol > vol_min) ? 1 : 0
-            bt_vol_up.sensitive = 1 # definitely below maximum after a decrease
-            return _play(snd)
-        end
-
-        # --- signal: play button ---
-        # re-randomizes the utterance on each press to simulate unpredictable AVH
-        signal_connect(bt_play, "clicked") do widget
-            type, lang, character, gender = _get_ui_state(
-                combo_type, combo_lang, combo_character, combo_gender,
-                types, langs, characters, genders,
-            )
-            snd = _select_sound(type, lang, character, gender)
-            return _play(snd)
-        end
-
-        # -----------------------------------------------------------------------
-        # canvas left-click: reposition the sound source and play.
-        #
-        # coordinate mapping:
-        #   canvas pixel (px, py) → normalized (x, y) in [-0.5, 0.5]²
-        #   x = px / canvas_size - 0.5
-        #   y = 0.5 - py / canvas_size   (y-axis flipped: up = positive)
-        #
-        # ear positions (normalized): L = (ear_l_x, 0), R = (ear_r_x, 0)
-        #
-        # attenuation model:
-        #   amplitude = clamp((1 - dist)^dist_exponent, 0, 1)
-        # where dist is the Euclidean distance from the sound source to the ear
-        # sources within min_dist of either ear are treated as "in-head" and
-        # both channels are set to zero
-        # -----------------------------------------------------------------------
-        # (runs on the GTK thread: drawing must not be done from another thread)
-        function _lmb_click(_, _, x_px, y_px)
-            # redraw the head diagram with a red circle at the clicked position
-            @guarded draw(can) do widget
-                ctx = getgc(widget)
-                h, w = Cairo.height(can), Cairo.width(can)
-                Cairo.rectangle(ctx, 0, 0, w, h)
-                Cairo.set_source_rgb(ctx, 1, 1, 1)
-                Cairo.fill(ctx)
-                Cairo.set_source_surface(ctx, img, 1, 1)
-                Cairo.paint(ctx)
-                Cairo.arc(ctx, x_px, y_px, 10, 0, 2π)
-                Cairo.set_source_rgb(ctx, 1, 0, 0)
-                return Cairo.stroke(ctx)
-            end
-
-            # map pixel coordinates to normalized [-0.5, 0.5] space
-            x_norm = round(x_px / canvas_size - 0.5; digits = 2)
-            y_norm = round(0.5 - y_px / canvas_size; digits = 2)
-
-            # euclidean distances from the sound source to each simulated ear
-            dist_l = sqrt((x_norm - ear_l_x)^2 + y_norm^2)
-            dist_r = sqrt((x_norm - ear_r_x)^2 + y_norm^2)
-
-            if dist_l < min_dist || dist_r < min_dist
-                # source is inside (or too close to) the head - silence both channels
-                d_l = 0.0
-                d_r = 0.0
-            else
-                # power-law attenuation, clamped to [0, 1]
-                d_l = clamp((1.0 - dist_l)^dist_exponent, 0.0, 1.0)
-                d_r = clamp((1.0 - dist_r)^dist_exponent, 0.0, 1.0)
-
-                # attenuate the farther ear to enhance perceived lateralization
-                if d_l > d_r
-                    d_r = round(d_r * lateral_atten; digits = 2)
-                elseif d_r > d_l
-                    d_l = round(d_l * lateral_atten; digits = 2)
-                end
-
-                d_l = round(d_l; digits = 2)
-                d_r = round(d_r; digits = 2)
-            end
-
-            # re-randomize and play with the updated spatial weights
-            type, lang, character, gender = _get_ui_state(
-                combo_type, combo_lang, combo_character, combo_gender,
-                types, langs, characters, genders,
-            )
-            snd = _select_sound(type, lang, character, gender)
-            _play(snd)
-            return nothing
-        end
-
-        ggc_l = GtkGestureClick()
-        ggc_l.button = 1
-        push!(can, ggc_l)
-        signal_connect(_lmb_click, ggc_l, "pressed")
-
-        # --- signal: save button - export session parameters to CSV ---
-        signal_connect(bt_save, "clicked") do widget
-            save_dialog("Save as...", win, ["*.csv", "*.txt"]) do file_name
-                isempty(file_name) && return
-
-                type, lang, character, gender = _get_ui_state(
-                    combo_type, combo_lang, combo_character, combo_gender,
-                    types, langs, characters, genders,
-                )
-
-                try
-                    open(file_name, "w") do f
-                        println(f, "\"AH type\",$type")
-                        if type == "voice"
-                            println(f, "\"AVH language\",$lang")
-                            println(f, "\"AVH gender\",$gender")
-                            println(f, "\"AVH emotional aspect\",$character")
-                        else
-                            # non-speech types have no language/gender/affect settings
-                            println(f, "\"AVH language\",NA")
-                            println(f, "\"AVH gender\",NA")
-                            println(f, "\"AVH emotional aspect\",NA")
-                        end
-                        println(f, "\"distance L\",$d_l")
-                        println(f, "\"distance R\",$d_r")
-                        return print(f, "\"volume\",$vol")
-                    end
-                catch
-                    warn_dialog(_nill, "File cannot be saved!", win)
-                end
-            end
-        end
-
-        # --- signal: close button ---
-        return signal_connect(bt_close, "clicked") do widget
-            return close(win)
-        end
-    end # _activate
-
-    app = GtkApplication("org.neuroanalyzer.iavh")
-    Gtk4.signal_connect(_activate, app, :activate)
-    Gtk4.GLib.stop_main_loop()
-    Gtk4.run(app)
-
+    w = _iavh_build(_avh_play)
+    screen = GLMakie.Screen(; title = "NeuroTester: iavh()")
+    on(_ -> close(screen), w.ctl[:close].clicks)
+    display(screen, w.fig)
+    wait(screen)
     return nothing
 end

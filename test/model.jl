@@ -66,6 +66,55 @@ smp = NeuroAnalyzer._parse_tpt_sample("tpt: 1 -2 3 0.5 -1.25 9.81")
 @test (smp.x, smp.y, smp.z, smp.accx, smp.accy, smp.accz) ==
       (1.0, -2.0, 3.0, 0.5, -1.25, 9.81)
 @test isnothing(NeuroAnalyzer._parse_tpt_sample("tpt: 1 2"))
+
+@info "Test: recorder / tester windows"
+# the windows are built without displaying them (no serial device or audio needed)
+w = NeuroAnalyzer._iedar_build(2)
+w.show!([1.0, 2.0, 4.0, NaN], 3)
+@test length(w.pts[]) == 3 && w.pts[][3] == GLMakie.Point2f(2 / 50, 4.0)
+w = NeuroAnalyzer._itpt_build(2)
+acc = ([0.1, 0.2], [0.3, 0.4], [-0.5, 9.8])
+w.show!(acc, 2)
+@test all(length(p[]) == 2 for p in w.pts) && w.pts[3][][2][2] ≈ 9.8f0
+img0 = w.img[]
+w.pinch!(true)
+@test w.img[] != img0
+w.pinch!(false)
+@test w.img[] == img0
+w = NeuroAnalyzer._rt_plotter_build(100, 2, "test")
+w.show!(collect(range(-1, 1; length = 200)), 50, 1)
+@test length(w.pts[]) == 50 && w.pts[][1][1] ≈ 2
+# spatialization: symmetric in front, louder on the side of the source, silent in the head
+d_l, d_r = NeuroAnalyzer._avh_weights(0.0, 0.3)
+@test d_l == d_r > 0
+d_l, d_r = NeuroAnalyzer._avh_weights(-0.3, 0.0)
+@test d_l > d_r > 0
+@test NeuroAnalyzer._avh_weights(0.0, 0.0) == (0.0, 0.0)
+played = []
+w = NeuroAnalyzer._iavh_build((snd, vol, l, r) -> push!(played, (vol, l, r)))
+c = w.ctl
+c[:vol_down].clicks[] += 1
+@test w.vol[] == 0.9 && length(played) == 1
+c[:vol_up].clicks[] += 1
+c[:vol_up].clicks[] += 1
+@test w.vol[] == 1.0
+c[:type].i_selected[] = 3
+@test w.labels[1].color[] == GLMakie.to_color(:gray70)
+c[:type].i_selected[] = 1
+@test w.labels[1].color[] == GLMakie.to_color(:black)
+# a source on the left of the head diagram (800 × 800 px)
+w.place!(100, 400)
+@test w.d_l[] > w.d_r[] && played[end] == (1.0, w.d_l[], w.d_r[])
+f = joinpath(mktempdir(), "avh.csv")
+c[:file].displayed_string[] = f
+c[:save].clicks[] += 1
+@test isfile(f) && occursin("\"distance L\",$(w.d_l[])", read(f, String))
+# an existing file is overwritten only after a second click
+c[:type].i_selected[] = 2
+c[:save].clicks[] += 1
+@test occursin("voice", read(f, String))
+c[:save].clicks[] += 1
+@test occursin("whisper", read(f, String)) && occursin("\"AVH language\",NA", read(f, String))
 # taps: the last press has no release (still pressed at the end) and is dropped
 n_taps, t_ms, d_ms = NeuroAnalyzer._ftt_taps([0.1, 0.5, 0.9], [0.2, 0.65])
 @test n_taps == 2 && t_ms ≈ [100.0, 500.0] && d_ms ≈ [100.0, 150.0]

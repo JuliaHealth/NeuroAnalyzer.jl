@@ -9,6 +9,51 @@ function _beep()::Nothing
     return nothing
 end
 
+# phases of a recording shown in the recorder/tester windows (index = phase + 1)
+const _REC_STATUS = ("READY TO START", "PREPARING", "RECORDING", "FINISHED", "ERROR")
+const _REC_READY = 0
+const _REC_PREPARING = 1
+const _REC_RECORDING = 2
+const _REC_FINISHED = 3
+const _REC_ERROR = 4
+
+# gray out a Makie button (in every state: normal, hovered, pressed); clicks still have to be
+# ignored by the caller
+function _button_disable!(bt::GLMakie.Button)::Nothing
+    for a in (:labelcolor, :labelcolor_hover, :labelcolor_active)
+        getproperty(bt, a)[] = GLMakie.to_color(:gray60)
+    end
+    for a in (:buttoncolor, :buttoncolor_hover, :buttoncolor_active)
+        getproperty(bt, a)[] = GLMakie.to_color(:gray94)
+    end
+    return nothing
+end
+
+"""
+    _recorder_window_run(fig, title, phase, refresh!)
+
+Show `fig` in its own window and keep it up to date until it is closed. The recording runs in another task (GLMakie is not thread-safe), so the window is updated here, on the calling task: `refresh!()` is called 10 times per second. The window closes 2 seconds after `phase` becomes `_REC_FINISHED`.
+"""
+function _recorder_window_run(
+    fig::GLMakie.Figure,
+    title::String,
+    phase::Threads.Atomic{Int64},
+    refresh!::Function,
+)::Nothing
+    screen = GLMakie.Screen(; title = title)
+    display(screen, fig)
+    t_finished = nothing
+    while isopen(screen)
+        refresh!()
+        if phase[] == _REC_FINISHED
+            isnothing(t_finished) && (t_finished = time())
+            time() - t_finished >= 2 && close(screen)
+        end
+        sleep(0.1)
+    end
+    return nothing
+end
+
 """
     _check_rpi()
 
@@ -226,7 +271,8 @@ Drain the serial port `sp` for `seconds` seconds, discarding all incoming data. 
 function _serial_flush(sp, seconds::Real)::Nothing
     t0 = time()
     while time() - t0 <= seconds
-        _serial_listener(sp)
+        # wait briefly when there is nothing to read: other tasks (e.g. the window) can run
+        isnothing(_serial_listener(sp)) && sleep(0.001)
     end
     return nothing
 end

@@ -4,7 +4,7 @@ export tpt_analyze
 """
     tpt_detect(obj)
 
-Detect pinches in TPT recording.
+Detect pinches in TPT recording: peaks of the movement magnitude (3-D acceleration after removing the posture of the hand), at least 0.12 s apart. The detection threshold adapts to the noise and to the size of the pinches in the recording.
 
 # Arguments
 
@@ -17,10 +17,8 @@ Detect pinches in TPT recording.
 function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     _check_datatype(obj, "tpt")
 
-    p_idx1 = _tpt_peaks(obj.data[4, :, 1])
-    p_idx2 = _tpt_peaks(obj.data[5, :, 1])
-    p_idx3 = _tpt_peaks(.-obj.data[6, :, 1])
-    p_idx = sort(union(p_idx1, p_idx2, p_idx3))
+    # acceleration channels: X, Y, Z (channels 4-6 of a TPT recording)
+    p_idx = _tpt_peaks(obj.data[4:6, :, 1], sr(obj))
     _info("Detected pinches: $(length(p_idx))")
 
     return p_idx

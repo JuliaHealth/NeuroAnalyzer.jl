@@ -1277,5 +1277,13 @@ sc_ps = NeuroAnalyzer._plot_scale(s_ps)
 s_ps[1, 100:110] .= 1e4
 @test isapprox(NeuroAnalyzer._plot_scale(vcat(s_ps, zeros(1, 10_000))), sc_ps; rtol = 0.01)
 @test NeuroAnalyzer._plot_scale(zeros(3, 100)) == 1.0
+# frequent large peaks on a flat baseline (e.g. accelerometer): the peaks fit in the row
+s_pk = zeros(2, 1000)
+s_pk[:, 1:20:end] .= 5.0
+@test NeuroAnalyzer._plot_scale(s_pk) ≈ 6.0
+# centers: the median for symmetric signals, the middle of the range for one-sided peaks
+@test NeuroAnalyzer._plot_center(s_pk) ≈ [2.5; 2.5;;]
+@test abs(NeuroAnalyzer._plot_center(10 .* randn(rng_ps, 1, 10_000))[1]) < 1
+@test NeuroAnalyzer._plot_scale([1.0 NaN 2.0 3.0]) > 0
 
 true

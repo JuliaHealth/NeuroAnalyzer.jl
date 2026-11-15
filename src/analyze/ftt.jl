@@ -3,18 +3,17 @@ export ftt_analyze
 """
     ftt_analyze(t)
 
-Analyze taps in a TPT (Tapping Performance Task) recording. Summarizes inter-tap interval statistics from a TPT (Tapping Performance Task) recording.
+Analyze the results of the Finger Tapping Test (FTT), as returned by `ftt()` or `iftt()`: summarize the inter-tap intervals.
 
 # Arguments
 
-Named tuple:
-
-- `taps::Vector{Int64}`: number of taps per trial
-- `tap_t::Vector{Vector{Float64}}`: tap time points per trial [ms]
-- `tap_d::Vector{Vector{Float64}}`: tap durations per trial [ms]
-- `taps_int::Vector{Int64}`: number of taps per trial during intervals
-- `tap_t_int::Vector{Vector{Float64}}`: tap time points during intervals [ms]
-- `tap_d_int::Vector{Vector{Float64}}`: tap durations during intervals [ms]
+- `t::NamedTuple`: test results:
+    - `taps::Vector{Int64}`: number of taps per trial
+    - `tap_t::Vector{Vector{Float64}}`: tap time points per trial [ms]
+    - `tap_d::Vector{Vector{Float64}}`: tap durations per trial [ms]
+    - `taps_int::Vector{Int64}`: number of taps per trial during intervals
+    - `tap_t_int::Vector{Vector{Float64}}`: tap time points during intervals [ms]
+    - `tap_d_int::Vector{Vector{Float64}}`: tap durations during intervals [ms]
 
 # Returns
 
