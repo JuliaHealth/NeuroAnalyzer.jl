@@ -61,6 +61,9 @@ function _draw_connection!(
     end
 end
 
+# Text of a weight / connection label (3 significant digits for non-integers).
+_num_label(v::Real)::String = v isa Integer ? string(v) : string(round(v; sigdigits = 3))
+
 # Draw a connection weight label at the midpoint between two channel positions.
 function _draw_connection_label!(
     loc_x::AbstractVector,
@@ -77,7 +80,7 @@ function _draw_connection_label!(
         l_pos[1],
         l_pos[2];
         align    = (:center, :center),
-        text     = string(val),
+        text     = _num_label(val),
         fontsize = font_size,
         color    = color,
     )
@@ -446,7 +449,7 @@ function plot_locs(
             GLMakie.text!(
                 loc_x[i] + label_offset_x,
                 loc_y[i] + label_offset_y;
-                text     = string(weights[i]),
+                text     = _num_label(weights[i]),
                 fontsize = font_size,
                 color    = color,
                 align    = (:center, :top),

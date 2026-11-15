@@ -6,6 +6,8 @@ export hrv_analyze
 
 Detect heart rate variability (HRV) R-peaks from the ECG channel.
 
+R-peaks are the peaks higher than mean + 2 × SD of the ECG signal, at least 250 ms apart. The intervals are not corrected for ectopic beats or missed/false detections; check the detected peaks and remove non-normal intervals before `hrv_analyze()`.
+
 The ECG channel is located automatically from the `channel_type` field of `obj.header.recording`.
 
 # Arguments
@@ -40,8 +42,13 @@ function hrv_detect(
     # this treats a multi-epoch recording as one unbroken signal for peak detection
     ecg = vec(obj.data[ch, :, :])
 
-    # detect R-peaks: threshold at mean + 2σ to select prominent peaks only
-    r_idx, _ = findpeaks1d(ecg; height = mean(ecg) + 2 * std(ecg))
+    # detect R-peaks: threshold at mean + 2σ to select prominent peaks only;
+    # peaks closer than 250 ms (> 240 bpm) belong to the same QRS complex
+    r_idx, _ = findpeaks1d(
+        ecg;
+        height = mean(ecg) + 2 * std(ecg),
+        distance = max(1, round(Int64, 0.25 * sr(obj))),
+    )
     r_idx = Int.(r_idx)
 
     # convert inter-peak sample distances to milliseconds

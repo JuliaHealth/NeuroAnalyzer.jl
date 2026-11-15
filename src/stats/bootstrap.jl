@@ -18,7 +18,7 @@ Algorithm:
 
 - `s::AbstractMatrix`: signal matrix, shape (samples, epochs)
 - `n1::Int64=3000`: number of bootstrap resamples (outer loop); must be ≥ 1
-- `n2::Int64=1000`: number of epochs drawn per resample (inner loop); must be ≥ 1
+- `n2::Int64=size(s, 2)`: number of epochs drawn per resample (inner loop); must be ≥ 1. The default (the number of epochs in `s`) gives the sampling distribution of the mean of the observed epochs; larger values make the confidence interval too narrow (by a factor of √(n2 / epochs))
 - `cl::Float64=0.95`: confidence level; must be in `(0, 1)`
 
 # Returns
@@ -32,7 +32,7 @@ Named tuple:
 function bootstrap_ci(
     s::AbstractMatrix;
     n1::Int64 = 3000,
-    n2::Int64 = 1000,
+    n2::Int64 = size(s, 2),
     cl::Float64 = 0.95,
 )::@NamedTuple{
     gm::Vector{Float64},
@@ -82,7 +82,7 @@ At each of the `n1` iterations, `n2` epochs are drawn at random (with replacemen
 
 - `s::AbstractMatrix`: signal matrix, shape (samples, epochs)
 - `n1::Int64=3000`: number of bootstrap resamples; must be ≥ 1
-- `n2::Int64=1000`: number of epochs drawn per resample; must be ≥ 1
+- `n2::Int64=size(s, 2)`: number of epochs drawn per resample; must be ≥ 1. The default (the number of epochs in `s`) gives the sampling distribution of the mean of the observed epochs; larger values make the confidence interval too narrow (by a factor of √(n2 / epochs))
 - `f::Union{Function, String}`: statistic evaluated on each bootstrap mean trace: a function, or a Julia expression using `obj` as the current trace vector
 
 # Returns
@@ -92,7 +92,7 @@ At each of the `n1` iterations, `n2` epochs are drawn at random (with replacemen
 function bootstrap_stat(
     s::AbstractMatrix;
     n1::Int64 = 3000,
-    n2::Int64 = 1000,
+    n2::Int64 = size(s, 2),
     f::Union{Function, String},
 )::AbstractVector
     # validate

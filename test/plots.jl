@@ -354,6 +354,17 @@ eros_data = eros(e10; ch = "Fp1")
 s, f, t = eros_data.s, eros_data.f, eros_data.t
 p = plot_eros(s, f, t; tm = 1000)
 @test p isa GLMakie.Figure
+ax_e = p.content[1]
+@test ax_e.xlabel[] == "Time [s]"
+# the time marker is drawn at its exact time (1000 ms = 1 s)
+vl_e = only(filter(x -> x isa VLines, ax_e.scene.plots))
+@test only(vl_e[1][]) == 1.0
+# the color range ignores values outside flim (e.g. -300 dB above a low-pass cutoff)
+sp_c = randn(41, 21, 1)
+sp_c[31:end, :, 1] .= -300
+p = plot_eros(sp_c, collect(0.0:40.0), collect(0.0:0.1:2.0); flim = (0, 20))
+hm_c = only(filter(x -> x isa Heatmap, p.content[1].scene.plots))
+@test hm_c.colorrange[][1] > -10
 e10_erp = average_epochs(e10)
 s, f, t = eros(e10_erp; ch = "Fp1")
 p = plot_eros(s, f, t)
@@ -592,8 +603,21 @@ p = plot_dwc(dc; t = t, n = 4)
       GLMakie.Figure
 @test plot_mep(mep; ch = labels(mep)[1], type = :stack) isa GLMakie.Figure
 @test plot_topo(e10; ch = "eeg", tpos = 1, sch = r"^Fp") isa GLMakie.Figure
+# ERP: tpos is the epoch time of the averaged waveform (epoch 1); with nearest-neighbour
+# interpolation every map value is one of the channel values at that time point
+tp_idx = 100
+p = plot_topo(e10_erp; ch = "eeg", tpos = e10_erp.epoch_time[tp_idx], nmethod = :none,
+              imethod = :nn)
+hm_tp = only(filter(x -> x isa Heatmap, p.content[1].scene.plots))
+v_tp = Float32.(e10_erp.data[get_channel(e10_erp; ch = "eeg"), tp_idx, 1])
+@test all(x -> isnan(x) || any(isapprox(x; atol = 1e-3), v_tp), hm_tp[3][])
 # vector method with the default channels (all rows of locs)
 @test plot_topo(rand(nrow(e10.locs)); locs = e10.locs) isa GLMakie.Figure
+# fixed color range
+p = plot_topo(rand(nrow(e10.locs)); locs = e10.locs, nmethod = :none, crange = (-2, 2))
+hm_cr = only(filter(x -> x isa Heatmap, p.content[1].scene.plots))
+@test hm_cr.colorrange[] == [-2, 2]
+@test_throws ArgumentError plot_topo(rand(nrow(e10.locs)); locs = e10.locs, crange = (1, 0))
 @test plot_locs(e10; ch = "eeg", head_labels = true, gui = false) isa GLMakie.Figure
 @test plot_efield2d([1, -1], [-1.0, 1.0], [0.0, 0.0]) isa GLMakie.Figure
 f = collect(0.0:0.5:50.0)
@@ -746,8 +770,12 @@ p = plot_gfp(tg, g; title = "GFP test", xlabel = "Time [s]", ylabel = "GFP")
 ax = axes_of(p)[1]
 @test ax.title[] == "GFP test" && ax.xlabel[] == "Time [s]"
 @test any(d -> [q[2] for q in d] ≈ g, line_data(ax))
-p = plot_erp_stack(tg, rand(3, length(tg)); clabels = ["a", "b", "c"])
+# row i of the matrix must be drawn at y = i (the row labelled clabels[i])
+s_st = repeat([1.0, 2.0, 3.0], 1, length(tg))
+p = plot_erp_stack(tg, s_st; clabels = ["a", "b", "c"])
 @test p isa GLMakie.Figure
+hm_st = only(filter(x -> x isa Heatmap, axes_of(p)[1].scene.plots))
+@test hm_st[3][][1, :] == [1.0, 2.0, 3.0]
 e_erp = average_epochs(e10)
 ch_eeg = get_channel(e_erp; ch = get_channel(e_erp; type = "eeg"))
 locs_e = e_erp.locs[NeuroAnalyzer._find_bylabel(e_erp.locs, labels(e_erp)[ch_eeg]), :]
@@ -765,6 +793,8 @@ p = plot_erp_topo(
 mep = import_duomag(joinpath(testfiles_path, "mep", "mep-duomag.ascii"))
 p = plot_mep_stack(mep.epoch_time, mep.data[:, :, 1])
 @test p isa GLMakie.Figure
+hm_st = only(filter(x -> x isa Heatmap, axes_of(p)[1].scene.plots))
+@test hm_st[3][][:, 1] ≈ mep.data[1, :, 1]
 
 @info "Test: plot_psd_3d() / plot_psd_topo() / plot_phs_3d() / plot_phs_topo() / plot_spectrogram_topo()"
 pw, fw = NeuroAnalyzer._psd(e10.data[ch_eeg, :, 1]; fs = sr(e10))

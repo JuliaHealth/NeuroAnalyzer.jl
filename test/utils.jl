@@ -270,7 +270,8 @@ delete_note!(e10)
 @test length(phases(e10.data[1, :, 1])) == 2560
 
 @info "Test: pick()"
-@test channel_pick(e10; pick = [:l, :f]) == ["F3", "F7", "Fp1"]
+# in the order of the channels in the object
+@test channel_pick(e10; pick = [:l, :f]) == ["Fp1", "F3", "F7"]
 
 @info "Test: t2s()"
 @test t2s(0, 256) == 1

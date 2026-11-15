@@ -163,7 +163,9 @@ function _reject_flags(
 )::Matrix{Bool}
     ch_n = length(ch)
     ep_n = nepochs(obj)
-    flags = falses(ch_n, ep_n)
+    # Matrix{Bool}, not a BitMatrix: elements are written from several threads, and
+    # neighbouring bits of a BitMatrix share a machine word (concurrent writes are lost)
+    flags = fill(false, ch_n, ep_n)
 
     if method === :z && across === :epochs
         # fraction of samples of each epoch outlying from the whole channel (robust z-score

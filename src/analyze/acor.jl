@@ -147,8 +147,8 @@ For ERP return trial-averaged auto-correlation.
 
 Named tuple:
 
-- `autocor_m::Array{Float64, 3}`: auto-correlations, shape (channels, 2l+1, epochs)
-- `l::Vector{Float64}`: lags in seconds
+- `autocor::Array{Float64, 3}`: auto-correlations, shape (channels, 2l+1, epochs)
+- `lags::Vector{Float64}`: lags in seconds
 """
 function acor(
     obj::NeuroAnalyzer.NEURO;

@@ -125,14 +125,14 @@ Calculate weighted PLI (Phase Lag Index) for two NEURO objects.
 Named tuple:
 
 - `pv::Matrix{Float64}`: wPLI values, shape (channels, epochs) or (channels, 1) if `across_epochs = true`
-
-# Notes
-
-wPLI calculated within single epochs is biased upwards for short epochs of narrowband signals (few independent time points), even for zero-lag coupling; with several epochs, `across_epochs = true` (optionally with `debiased = true`) is recommended.
 - `sd::Array{Float64, 3}`: signal difference (s1 - s2)
 - `phd::Array{Float64, 3}`: phase difference (s1 - s2)
 - `s1ph::Array{Float64, 3}`: signal 1 phase
 - `s2ph::Array{Float64, 3}`: signal 2 phase
+
+# Notes
+
+wPLI calculated within single epochs is biased upwards for short epochs of narrowband signals (few independent time points), even for zero-lag coupling; with several epochs, `across_epochs = true` (optionally with `debiased = true`) is recommended.
 """
 function wpli(
     obj1::NeuroAnalyzer.NEURO,
@@ -150,13 +150,8 @@ function wpli(
     s1ph::Array{Float64, 3},
     s2ph::Array{Float64, 3},
 }
-    # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 =
-        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-        get_channel(obj1; ch = ch1, exclude = "")
-    ch2 =
-        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-        get_channel(obj2; ch = ch2, exclude = "")
+    # resolve the channel pairs (user order kept, bad pairs removed)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) ||

@@ -243,7 +243,8 @@ function plot_mep_stack(
     _style_axis!(ax)
     ax.yticklabelsize = ytick_size  # conditional, overwrite _style_axis!
 
-    hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s); colormap = pal)
+    # heatmap!(x, y, z) expects z of shape (length(x), length(y)): row i of s at y = i
+    hm = GLMakie.heatmap!(ax, t, axes(s, 1), permutedims(s); colormap = pal)
 
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)

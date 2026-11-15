@@ -82,8 +82,8 @@ function plot_eros(
         end
     end
 
-    # resolve time markers to indices into a new local variable — do not mutate the input
-    tm_indices = if !isnothing(tm)
+    # time markers in seconds (a new local variable — do not mutate the input)
+    tm_s = if !isnothing(tm)
         markers = tm isa Int64 ? [tm] : tm
         for val in markers
             val / 1000 >= st[1] || throw(
@@ -97,13 +97,16 @@ function plot_eros(
                 ),
             )
         end
-        [vsearch(val / 1000, st) for val in markers]
+        [val / 1000 for val in markers]
     else
-        Int64[]
+        Float64[]
     end
 
     # log frequency axis: only positive frequencies (heatmap cell edges must be > 0)
     fr = frq === :log ? findall(>(0), sf) : collect(eachindex(sf))
+    # displayed frequencies (used for the color range)
+    fr_c = Base.filter(i -> flim[1] <= sf[i] <= flim[2], fr)
+    isempty(fr_c) && (fr_c = fr)
 
     function _draw_axis(fig, pos, xl, yl, tt)
         ax = GLMakie.Axis(
@@ -120,10 +123,20 @@ function plot_eros(
         return ax
     end
 
-    function _draw_markers!(fig, pos, indices)
-        for i in indices
-            GLMakie.vlines!(fig[pos...], [st[i]]; color = :black, linewidth = 1)
+    # time markers (in seconds)
+    function _draw_markers!(fig, pos, tms)
+        for tmx in tms
+            GLMakie.vlines!(fig[pos...], [tmx]; color = :black, linewidth = 1)
         end
+    end
+
+    # robust color range (1st-99th percentile of the finite values within flim): single near-zero bins in dB (e.g. -300 dB) would otherwise
+    # compress the whole map into a few colors
+    function _crange(m)
+        v = Base.filter(isfinite, vec(m))
+        isempty(v) && return (0.0, 1.0)
+        lo, hi = quantile(v, 0.01), quantile(v, 0.99)
+        return lo < hi ? (lo, hi) : extrema(v)
     end
 
     if size(sp, 3) == 1
@@ -131,7 +144,7 @@ function plot_eros(
         # set default values
         xl, yl, tt = _set_defaults(
             xlabel, ylabel, title,
-            "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of epochs",
+            "Time [s]", "Frequency [Hz]", "Averaged spectrograms of epochs",
         )
 
         # prepare plot
@@ -140,20 +153,23 @@ function plot_eros(
 
         # create axis with customizable properties
         ax = _draw_axis(fig, (1, 1), xl, yl, tt)
-        hm = GLMakie.heatmap!(ax, st, sf[fr], sp[fr, :, 1]'; colormap = pal)
+        hm = GLMakie.heatmap!(
+            ax, st, sf[fr], sp[fr, :, 1]';
+            colormap = pal, colorrange = _crange(sp[fr_c, :, 1]),
+        )
         cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
-        _draw_markers!(fig, (1, 1), tm_indices)
+        _draw_markers!(fig, (1, 1), tm_s)
 
     else
 
         # set default values
         xl1, yl1, tt1 = _set_defaults(
             xlabel, ylabel, title,
-            "Time [ms]", "Frequency [Hz]", "ERP spectrogram",
+            "Time [s]", "Frequency [Hz]", "ERP spectrogram",
         )
         xl2, yl2, tt2 = _set_defaults(
             xlabel, ylabel, title,
-            "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs",
+            "Time [s]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs",
         )
 
         # prepare plot
@@ -162,17 +178,23 @@ function plot_eros(
 
         # create axis with customizable properties
         ax1 = _draw_axis(fig, (1, 1), xl1, yl1, tt1)
-        hm1 = GLMakie.heatmap!(ax1, st, sf[fr], sp[fr, :, 1]'; colormap = pal)
+        hm1 = GLMakie.heatmap!(
+            ax1, st, sf[fr], sp[fr, :, 1]';
+            colormap = pal, colorrange = _crange(sp[fr_c, :, 1]),
+        )
         cb && GLMakie.Colorbar(fig[1, 2], hm1; label = cb_title, labelsize = 16)
         GLMakie.vlines!(ax1, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
-        _draw_markers!(fig, (1, 1), tm_indices)
+        _draw_markers!(fig, (1, 1), tm_s)
 
         # create axis with customizable properties
         ax2 = _draw_axis(fig, (2, 1), xl2, yl2, tt2)
-        hm2 = GLMakie.heatmap!(ax2, st, sf[fr], sp[fr, :, 2]'; colormap = pal)
+        hm2 = GLMakie.heatmap!(
+            ax2, st, sf[fr], sp[fr, :, 2]';
+            colormap = pal, colorrange = _crange(sp[fr_c, :, 2]),
+        )
         cb && GLMakie.Colorbar(fig[2, 2], hm2; label = cb_title, labelsize = 16)
         GLMakie.vlines!(ax2, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
-        _draw_markers!(fig, (2, 1), tm_indices)
+        _draw_markers!(fig, (2, 1), tm_s)
     end
 
     return fig

@@ -26,13 +26,8 @@ function corr(
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
 )::Matrix{Float64}
-    # resolve channel names to integer indices, optionally skipping bad channels
-    ch1 =
-        exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") :
-        get_channel(obj1; ch = ch1, exclude = "")
-    ch2 =
-        exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") :
-        get_channel(obj2; ch = ch2, exclude = "")
+    # resolve the channel pairs (user order kept, bad pairs removed)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(

@@ -653,6 +653,17 @@ pv, sd, phd, s1p, s2p = plv(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
 
+@info "Test: channel pairs of two-object functions"
+# rows follow the pairs in the order given (ch1[i] with ch2[i]), not the object order
+for (f, get) in ((plv, x -> x.pv), (pli, x -> x.pv), (corr, identity), (cosim, identity),
+                 (aecor, identity), (NeuroAnalyzer.coherence, x -> x.msc))
+    r = get(f(e10, e10; ch1 = ["O1", "F3"], ch2 = ["O2", "F4"], ep1 = 1:2, ep2 = 1:2))
+    r1 = get(f(e10, e10; ch1 = "O1", ch2 = "O2", ep1 = 1:2, ep2 = 1:2))
+    r2 = get(f(e10, e10; ch1 = "F3", ch2 = "F4", ep1 = 1:2, ep2 = 1:2))
+    @test selectdim(r, 1, 1) ≈ selectdim(r1, 1, 1)
+    @test selectdim(r, 1, 2) ≈ selectdim(r2, 1, 1)
+end
+
 @info "Test: psd()"
 p, f = NeuroAnalyzer._psd(rand(100); fs = 10, wlen = 10, woverlap = 5)
 @test length(p) == 6

@@ -25,27 +25,11 @@ set_channel_type!(e10_tmp; ch = "F3", type = "eeg")
 @test channel_type(e10_tmp, ch = "F3") == "eeg"
 
 @info "Test: get_channel()"
-@test get_channel(e10, type = "eeg") == [
-    "C3",
-    "C4",
-    "Cz",
-    "F3",
-    "F4",
-    "F7",
-    "F8",
-    "Fp1",
-    "Fp2",
-    "Fz",
-    "O1",
-    "O2",
-    "P3",
-    "P4",
-    "Pz",
-    "T3",
-    "T4",
-    "T5",
-    "T6",
-]
+# labels of the selected type, in the order of the channels in the object
+@test get_channel(e10, type = "eeg") ==
+      labels(e10)[e10.header.recording[:channel_type] .== "eeg"]
+@test get_channel(e10, type = ["ecg", "eeg"]) ==
+      labels(e10)[in.(e10.header.recording[:channel_type], Ref(["ecg", "eeg"]))]
 
 @info "Test: rename_channel()"
 e10_tmp = rename_channel(e10; ch = "Fp1", name = "FP1")

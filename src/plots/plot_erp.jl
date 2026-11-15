@@ -519,14 +519,16 @@ function plot_erp_stack(
         _TIME_AXIS_KWARGS...,
         xautolimitmargin = (0, 0),
         yautolimitmargin = (0, 0),
-        yticks = (1:size(s, 1), size(s, 1) <= 30 ? clabels : clabels[1:5:end]),
+        yticks = size(s, 1) <= 30 ? (1:size(s, 1), clabels) :
+                 (1:5:size(s, 1), clabels[1:5:end]),
         yticklabelsize = size(s, 1) <= 64 ? 8 : 5,
         _AXIS_LOCK_KWARGS...,
     )
     _style_axis!(ax)
 
     # create heatmap of ERP data
-    hm = GLMakie.heatmap!(ax, t, axes(s, 1), rotr90(s); colormap = pal)
+    # heatmap!(x, y, z) expects z of shape (length(x), length(y)): row i of s at y = i
+    hm = GLMakie.heatmap!(ax, t, axes(s, 1), permutedims(s); colormap = pal)
 
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)

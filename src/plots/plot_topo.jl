@@ -31,6 +31,7 @@ Plot a topographical map of signal values across channel locations.
     - `:tri`: piecewise linear on Delaunay triangles
     - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `crange::Union{Nothing, Tuple{Real, Real}}=nothing`: color range (in the units of the plotted, possibly normalized, values); `nothing`: the range of the values. A fixed range makes several maps comparable (e.g. frames of an animation)
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
 - `electrodes::Bool=true`: if `true`, plot electrode locations over topography
 - `ch_labels::Bool=true`: if `true`, plot electrode labels over topography
@@ -71,6 +72,7 @@ function plot_topo(
     mono::Bool = false,
     imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
+    crange::Union{Nothing, Tuple{Real, Real}} = nothing,
     contours::Int64 = 0,
     electrodes::Bool = true,
     ch_labels::Bool = true,
@@ -89,6 +91,8 @@ function plot_topo(
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(threshold_method, [:reg, :loc], "threshold_method")
     contours >= 0 || throw(ArgumentError("contours must be ≥ 0."))
+    isnothing(crange) || crange[1] < crange[2] ||
+        throw(ArgumentError("crange[1] must be < crange[2]."))
     if !isnothing(sch)
         length(intersect(ch, sch)) == length(sch) ||
             throw(ArgumentError("Some sch channels were not found in ch."))
@@ -265,13 +269,16 @@ function plot_topo(
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
 
+    # color range: fixed or the range of the interpolated values
+    c_range = isnothing(crange) ? extrema(s_interpolated[.!isnan.(s_interpolated)]) : crange
+
     if !isnothing(threshold) && threshold_method === :reg
         hm = GLMakie.heatmap!(
             ax,
             interpolated_x,
             interpolated_y,
             s_interpolated_threshold;
-            colorrange = extrema(s_interpolated[.!isnan.(s_interpolated)]),
+            colorrange = c_range,
             colormap   = pal,
         )
     else
@@ -280,6 +287,7 @@ function plot_topo(
             interpolated_x,
             interpolated_y,
             s_interpolated;
+            colorrange = c_range,
             colormap = pal,
         )
     end
@@ -417,7 +425,7 @@ Plot a topographical map of signal values from a NEURO object with customizable 
     - `nothing`: use data from NEURO object at specified time point(s) (default)
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: significant channels to highlight
-- `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
+- `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot (for ERP/ERF objects: time relative to the event in the averaged waveform), ignored if `data` is provided
 - `title::String="default"`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `cb::Bool=true`: if `true`, show colorbar
@@ -440,6 +448,7 @@ Plot a topographical map of signal values from a NEURO object with customizable 
     - `:tri`: piecewise linear on Delaunay triangles
     - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `crange::Union{Nothing, Tuple{Real, Real}}=nothing`: color range (in the units of the plotted, possibly normalized, values); `nothing`: the range of the values. A fixed range makes several maps comparable (e.g. frames of an animation)
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
 - `electrodes::Bool=true`: if `true`, plot electrode locations over topography
 - `ch_labels::Bool=true`: if `true`, plot electrode labels over topography
@@ -484,6 +493,7 @@ function plot_topo(
     amethod::Symbol = :mean,
     imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
+    crange::Union{Nothing, Tuple{Real, Real}} = nothing,
     contours::Int64 = 0,
     electrodes::Bool = true,
     ch_labels::Bool = true,
@@ -554,15 +564,17 @@ function plot_topo(
     # prepare data or time position
     if isnothing(data)
         isnothing(tpos) && throw(ArgumentError("Either tpos or data must be provided."))
-        tpos >= obj.time_pts[1] ||
-            throw(ArgumentError("tpos must be ≥ $(obj.time_pts[1])"))
-        tpos <= obj.time_pts[end] ||
-            throw(ArgumentError("tpos must be ≤ $(obj.time_pts[end])"))
+        # ERP/ERF: tpos is the time relative to the event (epoch time) in the
+        # averaged waveform (epoch 1); otherwise the time from the start of the recording
+        erp_type = datatype(obj) in ("erp", "erf")
+        tp = erp_type ? obj.epoch_time : obj.time_pts
+        tpos >= tp[1] || throw(ArgumentError("tpos must be ≥ $(tp[1])"))
+        tpos <= tp[end] || throw(ArgumentError("tpos must be ≤ $(tp[end])"))
 
-        tpos_idx = vsearch(tpos, obj.time_pts)
-        title == "default" && (title = "$(obj.time_pts[tpos_idx]) s")
+        tpos_idx = vsearch(tpos, tp)
+        title == "default" && (title = "$(tp[tpos_idx]) s")
 
-        data = if nepochs(obj) == 1
+        data = if nepochs(obj) == 1 || erp_type
             obj.data[ch, tpos_idx, 1]
         else
             reshape(obj.data, size(obj.data, 1), size(obj.data, 2) * size(obj.data, 3))[
@@ -597,6 +609,7 @@ function plot_topo(
         mono             = mono,
         imethod          = imethod,
         nmethod          = nmethod,
+        crange           = crange,
         contours         = contours,
         electrodes       = electrodes,
         ch_labels        = ch_labels,
@@ -637,6 +650,7 @@ Create a topographical plot of Independent Component Analysis (ICA) components f
     - `:tri`: piecewise linear on Delaunay triangles
     - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `crange::Union{Nothing, Tuple{Real, Real}}=nothing`: color range (in the units of the plotted, possibly normalized, values); `nothing`: the range of the values. A fixed range makes several maps comparable (e.g. frames of an animation)
 - `contours::Int64=0`: number of contour levels to plot
 - `electrodes::Bools=true`: if `true`, plot electrode locations over topography
 - `ps::Symbol`: plot size:
@@ -657,6 +671,7 @@ function plot_icatopo(
     tpos::Union{Nothing, Real, AbstractVector},
     imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
+    crange::Union{Nothing, Tuple{Real, Real}} = nothing,
     contours::Int64 = 0,
     electrodes::Bool = true,
     ps::Symbol = :l,
@@ -678,6 +693,7 @@ function plot_icatopo(
             title      = "IC $(ic_idx[idx])",
             imethod    = imethod,
             nmethod    = nmethod,
+            crange     = crange,
             contours   = contours,
             electrodes = electrodes,
             ps         = ps,

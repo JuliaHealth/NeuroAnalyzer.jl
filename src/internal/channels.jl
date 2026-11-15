@@ -294,3 +294,68 @@ function _sort_channels(ch_t::Vector{String})::Vector{Int64}
     ch_order = [get(priority, t, "8") for t in ch_t] # default to "8" for unknowns
     return sortperm(ch_order)
 end
+
+"""
+    _ch_pairs(obj1, ch1, obj2, ch2)
+
+Resolve the channel pairs of two-object functions (`ch1[i]` of `obj1` with `ch2[i]` of `obj2`).
+
+Unlike `get_channel()`, the order of the channels given by the user is kept and channels may repeat (e.g. one seed channel paired with several others). Keywords (channel types, groups) and regular expressions are expanded in the order of the channels in the object. If `exclude_bads` is set, pairs in which either channel is marked as bad are removed as whole pairs.
+
+# Arguments
+
+- `obj1::NeuroAnalyzer.NEURO`
+- `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
+- `obj2::NeuroAnalyzer.NEURO`
+- `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
+
+# Returns
+
+- `Tuple{Vector{Int64}, Vector{Int64}}`: channel numbers in `obj1` and `obj2`
+"""
+function _ch_pairs(
+    obj1::NeuroAnalyzer.NEURO,
+    ch1::Union{String, Vector{String}, Regex},
+    obj2::NeuroAnalyzer.NEURO,
+    ch2::Union{String, Vector{String}, Regex},
+)::Tuple{Vector{Int64}, Vector{Int64}}
+    # resolve each token separately: keeps the order of the tokens and repeated channels;
+    # a token expanding to several channels (keyword, regex) is in the object order
+    function _resolve(obj::NeuroAnalyzer.NEURO, ch)::Vector{Int64}
+        ch isa Vector{String} || return sort(_ch_idx(obj, ch))
+        idx = Int64[]
+        for token in ch
+            append!(idx, sort(_ch_idx(obj, token)))
+        end
+        return idx
+    end
+
+    c1 = _resolve(obj1, ch1)
+    c2 = _resolve(obj2, ch2)
+    isempty(c1) && throw(ArgumentError("No channels selected in ch1."))
+    isempty(c2) && throw(ArgumentError("No channels selected in ch2."))
+    length(c1) == length(c2) || throw(
+        ArgumentError(
+            "Lengths of ch1 ($(length(c1))) and ch2 ($(length(c2))) must be equal.",
+        ),
+    )
+
+    if exclude_bads
+        bad1 = obj1.header.recording[:bad_channel]
+        bad2 = obj2.header.recording[:bad_channel]
+        keep = [!bad1[i1] && !bad2[i2] for (i1, i2) in zip(c1, c2)]
+        if !all(keep)
+            dropped = join(
+                [labels(obj1)[i1] * "-" * labels(obj2)[i2] for (i1, i2) in
+                 zip(c1[.!keep], c2[.!keep])],
+                ", ",
+            )
+            _warn("Pairs with bad channels removed: $dropped")
+            c1 = c1[keep]
+            c2 = c2[keep]
+        end
+        isempty(c1) && throw(ArgumentError("No channel pairs without bad channels."))
+    end
+
+    return c1, c2
+end

@@ -360,6 +360,9 @@ gm, ll, ul = bootstrap_ci(s; n1 = 500, n2 = 200)
 @test all(abs.(gm .- 3) .< 0.3)
 # width ≈ 2 × 1.96 × SD / √n2
 @test all(abs.((ul .- ll) .- 2 * 1.96 / sqrt(200)) .< 0.1)
+# default n2 = number of epochs (here 200): the same CI width
+gm, ll, ul = bootstrap_ci(s; n1 = 500)
+@test all(abs.((ul .- ll) .- 2 * 1.96 / sqrt(200)) .< 0.1)
 @test_throws ArgumentError bootstrap_ci(s; cl = 1.5)
 @test_throws ArgumentError bootstrap_ci(s; n1 = 0)
 @test all(

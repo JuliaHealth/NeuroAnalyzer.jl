@@ -62,6 +62,30 @@ l = labels(e10)
 @test NeuroAnalyzer._ch_idx(e10, r"Fp") == findall(occursin.(r"Fp", l))
 @test NeuroAnalyzer._ch_idx(e10, r"^Fp1$") == [findfirst(isequal("Fp1"), l)]
 @test NeuroAnalyzer._ch_idx(e10, r"no_such_channel") == Int64[]
+
+@info "Test: _ch_pairs()"
+ci(x) = findfirst(isequal(x), l)
+# user order kept (not sorted into the object order)
+@test NeuroAnalyzer._ch_pairs(e10, ["O1", "F3"], e10, ["O2", "F4"]) ==
+      ([ci("O1"), ci("F3")], [ci("O2"), ci("F4")])
+# a repeated (seed) channel is allowed
+@test NeuroAnalyzer._ch_pairs(e10, ["O1", "O1"], e10, ["O2", "Fp1"]) ==
+      ([ci("O1"), ci("O1")], [ci("O2"), ci("Fp1")])
+# keywords expand in the object order
+@test NeuroAnalyzer._ch_pairs(e10, "eeg", e10, "eeg")[1] ==
+      findall(e10.header.recording[:channel_type] .== "eeg")
+@test_throws ArgumentError NeuroAnalyzer._ch_pairs(e10, ["O1", "F3"], e10, "O2")
+# with exclude_bads, a pair with a bad channel is removed as a whole
+e_bad = deepcopy(e10)
+e_bad.header.recording[:bad_channel][ci("F3")] = true
+eb0 = NeuroAnalyzer.exclude_bads
+Core.eval(NeuroAnalyzer, :(exclude_bads = true))
+try
+    @test NeuroAnalyzer._ch_pairs(e_bad, ["O1", "F3", "C3"], e_bad, ["O2", "F4", "C4"]) ==
+          ([ci("O1"), ci("C3")], [ci("O2"), ci("C4")])
+finally
+    Core.eval(NeuroAnalyzer, :(exclude_bads = $eb0))
+end
 @test NeuroAnalyzer._ch_idx(l, r"Fp") == findall(occursin.(r"Fp", l))
 @test NeuroAnalyzer._ch_idx(l, "all") == collect(1:length(l))
 # keywords are expanded in place, every occurrence

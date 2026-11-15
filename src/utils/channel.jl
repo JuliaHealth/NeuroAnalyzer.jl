@@ -15,7 +15,7 @@ Return list of channel names of specified type or their numbers if names are spe
 
 # Returns
 
-- `ch::Union{Vector{String}, Vector{Int64}}`
+- `ch::Union{Vector{String}, Vector{Int64}}`: channel names (when `ch` is not given) or channel numbers (when `ch` is given); both in the order of the channels in the object, without duplicates
 """
 function get_channel(
     obj::NeuroAnalyzer.NEURO;
@@ -45,12 +45,8 @@ function get_channel(
         if type == ["all"]
             ch = l
         else
-            for type_idx in eachindex(type)
-                for ch_idx in eachindex(obj.header.recording[:channel_type])
-                    obj.header.recording[:channel_type][ch_idx] == type[type_idx] &&
-                        push!(ch, l[ch_idx])
-                end
-            end
+            # channels of the requested types, in the order of the channels in the object
+            ch = l[[t in type for t in obj.header.recording[:channel_type]]]
         end
     else
         _check_datatype(obj, ["nirs"])
@@ -70,6 +66,6 @@ function get_channel(
     exclude = exclude == "" ? Int64[] : _ch_idx(obj, exclude)
     ch = exclude == [] ? ch : setdiff(ch, labels(obj)[exclude])
 
-    chs = unique(ch)
-    return sort(chs)
+    # channel names in the order of the channels in the object
+    return unique(ch)
 end
