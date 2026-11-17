@@ -741,6 +741,46 @@ r = nirs.header.recording
     length(r[:src_labels]),
     length(r[:det_labels]),
 ) isa GLMakie.Figure
+# optodes are looked up by label (rows of locs in any order), each pair drawn once
+nl = nirs.locs[end:-1:1, :]
+f1 = plot_locs_nirs(nl, r[:optode_pairs], length(r[:src_labels]), length(r[:det_labels]);
+                    src_names = r[:src_labels], det_names = r[:det_labels])
+@test f1 isa GLMakie.Figure
+nl_lines(f) = count(p -> p isa GLMakie.Lines, f.content[1].scene.plots)
+op2 = vcat(r[:optode_pairs], r[:optode_pairs])
+f2 = plot_locs_nirs(nl, op2, length(r[:src_labels]), length(r[:det_labels]);
+                    src_names = r[:src_labels], det_names = r[:det_labels], head = false)
+f3 = plot_locs_nirs(nl, r[:optode_pairs][1:1, :], length(r[:src_labels]),
+                    length(r[:det_labels]);
+                    src_names = r[:src_labels], det_names = r[:det_labels], head = false)
+@test nl_lines(f2) == 2
+@test nl_lines(f3) == 1
+@test_throws ArgumentError plot_locs_nirs(nl, r[:optode_pairs], 1, 2;
+                                          src_names = ["S9"], det_names = r[:det_labels])
+@test_throws ArgumentError plot_locs_nirs(nl, r[:optode_pairs], 1, 2;
+                                          src_names = r[:src_labels], det_names = r[:det_labels],
+                                          weights = [1.0])
+@test plot_locs(nirs; ch = "all", sch = "S1_D1 690", weights = [1.0, -1.0], gui = false) isa
+      GLMakie.Figure
+@test_throws ArgumentError plot_locs(nirs; ch = "AUX1", gui = false)
+
+@info "Test: plot_hb() / plot_topo() (NIRS) / auxiliary channels"
+n_hb = od2conc(intensity2od(nirs))
+@test plot_hb(n_hb) isa GLMakie.Figure
+@test plot_hb(n_hb; pair = "S1_D2", hbt = true, title = "t") isa GLMakie.Figure
+@test_throws ArgumentError plot_hb(n_hb; pair = "S9_D9")
+@test_throws ArgumentError plot_hb(nirs)
+ch_hbo = get_channel(n_hb; type = "nirs_hbo")
+@test plot_topo(n_hb; ch = ch_hbo, data = [1.0, 2.0]) isa GLMakie.Figure
+# auxiliary channels are scaled one by one (each within its row)
+p = NeuroAnalyzer.plot(nirs; ch = "all", gui = false)
+@test p isa GLMakie.Figure
+sg = zeros(3, 100)
+sg[1, :] = sin.(1:100)
+sg[2, :] = 100 .* sin.(1:100)
+sg[3, :] = 0.01 .* sin.(1:100)
+@test isnan(NeuroAnalyzer._plot_scale_group!(sg, [true, true, true], "nirs_aux", 1))
+@test all(r -> maximum(abs, r) <= 1, eachrow(sg))
 
 ##
 ## untested plot functions and helpers; content checks (labels, plotted data)

@@ -1596,13 +1596,18 @@ c = NeuroAnalyzer._coherence(
 @test hanalytic(e10; ch = "Fp1")[1, :, 2] ≈ NeuroAnalyzer.DSP.hilbert(e10.data[1, :, 2])
 
 @info "Test: spectral estimates of a sine (closed form)"
-# Parseval: the PSD integrates to the variance (Welch, periodogram, multitaper)
+# Parseval: the PSD integrates to the variance (Welch, periodogram, multitaper with equal
+# weights); Thomson's adaptive weights (multitaper default) do not preserve the total power
+# exactly (the weights depend on the frequency), so the tolerance is wider
 for m in (:welch, :fft, :mt)
+    local rt = m === :mt ? 1e-2 : 1e-3
     local p = NeuroAnalyzer._psd(s2; fs = fs, method = m)
-    @test sum(p.p) * (p.f[2] - p.f[1]) ≈ 2.0 rtol = 1e-3
+    @test sum(p.p) * (p.f[2] - p.f[1]) ≈ 2.0 rtol = rt
     @test p.f[argmax(p.p)] == 10.0
-    @test NeuroAnalyzer._total_power(s2; fs = fs, method = m) ≈ 2.0 rtol = 1e-3
+    @test NeuroAnalyzer._total_power(s2; fs = fs, method = m) ≈ 2.0 rtol = rt
 end
+p_eq = NeuroAnalyzer._psd(s2; fs = fs, method = :mt, adaptive = false)
+@test sum(p_eq.p) * (p_eq.f[2] - p_eq.f[1]) ≈ 2.0 rtol = 1e-3
 @test NeuroAnalyzer._total_power(xa; fs = fs) ≈
       sum(abs2, xa .- sum(xa) / length(xa)) / length(xa) rtol = 1e-3
 # Morlet wavelets have unit gain at their center frequency: power of A sin = (A/2)²

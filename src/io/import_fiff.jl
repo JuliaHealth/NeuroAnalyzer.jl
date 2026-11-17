@@ -434,8 +434,14 @@ function load_fiff(
     # channel names: ch_info struct holds max. 15 characters
     # MNE stores longer names in per-channel ch_info blocks (FIFF_NAME tag)
     ch_names = String[ch.ch_name for ch in ch_info]
-    ext_names = _fiff_getall(fiff_object, "name"; block = "ch_info")
+    # MNE-Python stores the full name as ch_dacq_name (older files: name)
+    ext_names = _fiff_getall(fiff_object, "ch_dacq_name"; block = "ch_info")
+    length(ext_names) == nchan ||
+        (ext_names = _fiff_getall(fiff_object, "name"; block = "ch_info"))
+    # bad channel and SSP name lists use the short (ch_info) names
+    short2long = Dict{String, String}()
     if length(ext_names) == nchan && all(x -> x isa String && !isempty(x), ext_names)
+        short2long = Dict(zip(ch_names, String.(ext_names)))
         ch_names = String.(ext_names)
     end
 
@@ -473,7 +479,7 @@ function load_fiff(
     for s in _fiff_getall(fiff_object, "mne_ch_name_list"; block = "bad_channels")
         append!(bads, _fiff_name_list(s))
     end
-    meas_info[:bads] = unique(bads)
+    meas_info[:bads] = unique([get(short2long, b, b) for b in bads])
 
     meas_info[:subject_info] = _pack_fiff_blocks(
         fiff_object,
@@ -551,7 +557,10 @@ function load_fiff(
                 :kind => g("proj_item_kind"),
                 :nvec => g("proj_item_nvec"),
                 :active => g("mne_proj_item_active"),
-                :ch_names => _fiff_name_list(g("proj_item_ch_name_list")),
+                :ch_names => [
+                    get(short2long, n, n) for
+                    n in _fiff_name_list(g("proj_item_ch_name_list"))
+                ],
                 :vectors => vecs,
             ),
         )
@@ -794,7 +803,8 @@ function import_fiff(
         elseif units[idx] == "T/m"
             @views data[idx, :, 1] .*= (1.0e15 / 100)
             units[idx] = "fT/cm"
-        elseif units[idx] == "V" && ch_type[idx] in ("eeg", "emg", "eog", "ref")
+        elseif units[idx] == "V" &&
+               ch_type[idx] in ("eeg", "emg", "eog", "ecg", "ref", "seeg", "ecog", "dbs")
             @views data[idx, :, 1] .*= 1.0e6
             units[idx] = "μV"
         end

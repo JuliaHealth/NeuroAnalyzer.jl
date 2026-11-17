@@ -249,6 +249,40 @@ delete_optode!(n; opt = 1)
 @test nrow(n.locs) == 35
 @test size(n) == (70, 500, 1)
 
+@info "Test: delete_channel() / keep_channel() / delete_pair() (NIRS)"
+n2 = import_nirs(joinpath(testfiles_path, "nirs", "fnirs-test-nirs.nirs"))
+intensity2od!(n2)
+od2conc!(n2)
+has(o, l) = l in labels(o)
+nlab(o) = length(o.header.recording[:wavelength_index])
+# a single channel is deleted with the other wavelengths of its optode pair
+d2 = delete_channel(n2; ch = "S1_D2 690")
+@test !has(d2, "S1_D2 690") && !has(d2, "S1_D2 830") && has(d2, "S1_D2 690 OD")
+@test nchannels(d2) == nchannels(n2) - 2
+@test nlab(d2) == nlab(n2) - 2 && size(d2.header.recording[:optode_pairs], 1) == nlab(d2)
+@test od2conc(d2) isa NeuroAnalyzer.NEURO
+# keeping one wavelength keeps the other wavelengths of the pair
+@test sort(labels(keep_channel(n2; ch = "S1_D1 690"))) == ["S1_D1 690", "S1_D1 830"]
+# keeping only the concentration channels
+hb = keep_channel(n2; ch = get_channel(n2; type = ["nirs_hbo", "nirs_hbr"]))
+@test labels(hb) == ["S1_D1 HbO", "S1_D1 HbR", "S1_D2 HbO", "S1_D2 HbR"]
+@test nlab(hb) == 4 && all(iszero, hb.header.recording[:wavelength_index])
+# all channels of a source-detector pair; optodes are kept
+dp = delete_pair(n2; pair = "S1_D2")
+@test !any(startswith("S1_D2"), labels(dp))
+@test nchannels(dp) == nchannels(n2) - 7
+@test dp.header.recording[:optode_labels] == n2.header.recording[:optode_labels]
+@test nrow(dp.locs) == nrow(n2.locs)
+@test_throws ArgumentError delete_pair(n2; pair = "S1-D2")
+@test_throws ArgumentError delete_pair(n2; pair = "S9_D1")
+dp2 = deepcopy(n2)
+delete_pair!(dp2; pair = ["S1_D2"])
+@test labels(dp2) == labels(dp)
+# deleting an optode removes its concentration channels too
+d_opt = delete_optode(n2; opt = findfirst(==("D2"), n2.header.recording[:optode_labels]))
+@test !any(startswith("S1_D2"), labels(d_opt))
+@test nlab(d_opt) == size(d_opt.header.recording[:optode_pairs], 1)
+
 ##
 ## values: synthetic signals and marker bookkeeping
 ##

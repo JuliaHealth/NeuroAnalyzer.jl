@@ -196,6 +196,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         opt_labels = opt_labels,
         sampling_rate = sampling_rate,
         bad_channels = zeros(Bool, size(data, 1)),
+        length_unit = string(get(probes, "SpatialUnit", "")),
     )
     e = _create_experiment(; name = "", notes = "", design = "")
     hdr = _create_header(; subject = s, recording = r, experiment = e)

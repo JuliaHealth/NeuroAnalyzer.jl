@@ -886,6 +886,89 @@ m = NeuroAnalyzer.CSV.read(f, DataFrame; stringtype = String)
 @test m[!, :start] == eeg.markers[!, :start]
 @test m[!, :value] == eeg.markers[!, :value]
 
+@info "Test: export_fiff()"
+# MEG (+ EEG, EOG, stim) round trip: data, geometry, SSP, markers
+meg = import_fiff(joinpath(testfiles_path, "meg", "test_raw.fif"))
+f = joinpath(tmp, "meg_raw.fif")
+@test export_fiff(meg; file_name = f) == [f]
+@test_throws ArgumentError export_fiff(meg; file_name = f)
+@test_throws ArgumentError export_fiff(meg; file_name = joinpath(tmp, "meg.edf"))
+@test_throws ArgumentError export_fiff(meg; file_name = f, overwrite = true, split_size = 3)
+@test_throws ArgumentError export_fiff(meg; file_name = f, overwrite = true, locs_unit = :km)
+@test_throws ArgumentError export_fiff(epoch(meg; ep_len = 2); file_name = f, overwrite = true)
+meg2 = import_fiff(f)
+r1, r2 = meg.header.recording, meg2.header.recording
+@test meg2.data ≈ meg.data rtol = 1e-6
+@test labels(meg2) == labels(meg)
+for k in (
+    :channel_type, :unit, :coil_type, :coil_id, :bad_channel, :magnetometers, :gradiometers,
+    :ssp_labels, :ssp_channels, :sampling_rate, :recording_date, :recording_time,
+)
+    @test r2[k] == r1[k]
+end
+@test r2[:coil_loc] ≈ r1[:coil_loc] atol = 1e-6
+@test r2[:dev_head_t] ≈ r1[:dev_head_t] atol = 1e-6
+@test r2[:ssp_data] ≈ r1[:ssp_data] atol = 1e-6
+@test r2[:first_time] ≈ r1[:first_time]
+@test meg2.markers[!, :value] == meg.markers[!, :value]
+@test meg2.markers[!, :start] ≈ meg.markers[!, :start] atol = 1e-5
+# split files
+f = joinpath(tmp, "split_raw.fif")
+fs = export_fiff(meg; file_name = f, split_size = 0.008)
+@test fs == [f, joinpath(tmp, "split_raw-1.fif"), joinpath(tmp, "split_raw-2.fif")]
+@test all(x -> filesize(x) <= 0.008 * 1024^3, fs)
+@test import_fiff(f).data ≈ meg.data rtol = 1e-6
+# EEG round trip: locations from OBJ.locs (unit sphere → meters), bad channels, long labels
+eeg_tmp = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
+load_locs!(eeg_tmp; file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
+eeg_tmp.header.recording[:bad_channel][3] = true
+eeg_tmp.header.recording[:label][1] = "Fp1_very_long_channel_label"
+f = joinpath(tmp, "eeg_raw.fif")
+export_fiff(eeg_tmp; file_name = f)
+eeg2 = import_fiff(f; clean_labels = false)
+@test datatype(eeg2) == "eeg"
+@test labels(eeg2) == labels(eeg_tmp)
+@test eeg2.data ≈ eeg_tmp.data rtol = 1e-6
+@test eeg2.header.recording[:unit] == eeg_tmp.header.recording[:unit]
+@test eeg2.header.recording[:bad_channel] == eeg_tmp.header.recording[:bad_channel]
+@test nrow(eeg2.locs) == nrow(eeg_tmp.locs)
+# head radius of 95 mm
+@test 0.07 < maximum(eeg2.locs[!, :loc_radius_sph]) < 0.12
+# helpers
+@test NeuroAnalyzer._fiff_short_names(["A"^20, "A"^20 * "x", "B"]) ==
+      ["A"^15, "A"^13 * "-1", "B"]
+@test NeuroAnalyzer._fiff_meas_date("31.08.22", "12.32.53") ==
+      round(Int64, NeuroAnalyzer.datetime2unix(NeuroAnalyzer.DateTime(2022, 8, 31, 12, 32, 53)))
+@test NeuroAnalyzer._fiff_meas_date("3-12-2002", "19:1:10") ==
+      round(Int64, NeuroAnalyzer.datetime2unix(NeuroAnalyzer.DateTime(2002, 12, 3, 19, 1, 10)))
+@test isnothing(NeuroAnalyzer._fiff_meas_date("", ""))
+@test NeuroAnalyzer._fiff_prefiltering("LP: 172.2 Hz; HP: 0.1 Hz") == (172.2, 0.1)
+
+@info "Test: export_recording()"
+f = joinpath(tmp, "rec_raw.fif")
+@test export_recording(meg; file_name = f) == [f]
+@test_throws ArgumentError export_recording(meg; file_name = f)
+@test export_recording(meg; file_name = f, overwrite = true, split_size = 0.008) ==
+      [f, joinpath(tmp, "rec_raw-1.fif"), joinpath(tmp, "rec_raw-2.fif")]
+@test import_fiff(f).data ≈ meg.data rtol = 1e-6
+f = joinpath(tmp, "rec.csv")
+@test export_recording(eeg_tmp; file_name = f, markers = true, locs = true) ==
+      [f, joinpath(tmp, "rec_locs.csv")]
+f = joinpath(tmp, "rec.hdf")
+@test export_recording(eeg_tmp; file_name = f) == [f]
+@test load_neuro(f).data == eeg_tmp.data
+@test_throws ArgumentError export_recording(eeg_tmp; file_name = f, overwrite = true, locs = true)
+nirs_tmp = import_snirf(joinpath(testfiles_path, "nirs", "fnirs-test-snirf.snirf"))
+f = joinpath(tmp, "rec.snirf")
+@test export_recording(nirs_tmp; file_name = f) == [f]
+@test isfile(f)
+# format forced; extension still checked by the exporter
+@test_throws ArgumentError export_recording(eeg_tmp; file_name = joinpath(tmp, "rec.xyz"))
+@test_throws ArgumentError export_recording(eeg_tmp; file_name = joinpath(tmp, "rec.xyz"), format = :edf)
+@test_throws ArgumentError export_recording(eeg_tmp; file_name = joinpath(tmp, "rec.xyz"), format = :fiff)
+# exporter-specific validation is kept
+@test_throws ArgumentError export_recording(nirs_tmp; file_name = joinpath(tmp, "nirs_raw.fif"))
+
 @info "Test: import_montage()"
 ref_list, ref_name =
     import_montage(joinpath(NeuroAnalyzer.PATH, "montages", "bip_long.mnt"))

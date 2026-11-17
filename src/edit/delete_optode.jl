@@ -1,12 +1,14 @@
 export delete_optode
 export delete_optode!
+export delete_pair
+export delete_pair!
 
 """
     delete_optode(obj; <keyword arguments>)
 
 Return a copy of `obj` with the specified NIRS optode(s) and all their associated channels removed.
 
-Source or detector labels, optode-pair mappings, and channel location entries are all updated consistently. Associated NIRS signal channels are removed via `delete_channel!`.
+Source or detector labels, optode-pair mappings, and channel location entries are all updated consistently. All channels using the optode(s) are removed (intensity, OD and concentration channels).
 
 # Arguments
 
@@ -76,9 +78,14 @@ function delete_optode(
     end
 
     push!(obj_tmp.history, "delete_optode(obj; opt=$opt)")
-    chs_to_delete = labels(obj_tmp)[sort(unique(chs_to_delete))]
-    isempty(chs_to_delete) || _info("Deleting NIRS channels: $chs_to_delete")
-    isempty(chs_to_delete) || delete_channel!(obj_tmp; ch = chs_to_delete, del_opt = true)
+    chs_to_delete = sort(unique(chs_to_delete))
+    if !isempty(chs_to_delete)
+        _info("Deleting NIRS channels: $(labels(obj_tmp)[chs_to_delete])")
+        # by index: the channels are identified by their optode pairs, not by labels
+        h = obj_tmp.history
+        obj_tmp = _delete_channel(obj_tmp, chs_to_delete)
+        obj_tmp.history = h
+    end
 
     return obj_tmp
 end
@@ -106,7 +113,85 @@ function delete_optode!(
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
     obj.locs = obj_tmp.locs
+    obj.markers = obj_tmp.markers
     obj_tmp = nothing
+
+    return nothing
+end
+
+"""
+    delete_pair(obj; <keyword arguments>)
+
+Return a copy of `obj` with all channels of the specified NIRS source-detector pair(s) removed: intensity, OD and concentration channels at all wavelengths. The optodes (labels and locations) are kept, as they may be used by other pairs; use `delete_optode()` to remove optodes.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `pair::Union{String, Vector{String}}`: pair(s) given as `"source_detector"` labels, e.g. `"S1_D2"`
+
+# Returns
+
+- `NeuroAnalyzer.NEURO`: output NEURO object
+"""
+function delete_pair(
+    obj::NeuroAnalyzer.NEURO;
+    pair::Union{String, Vector{String}},
+)::NeuroAnalyzer.NEURO
+    # validate
+    _check_datatype(obj, "nirs")
+    pairs = pair isa String ? [pair] : pair
+    isempty(pairs) && throw(ArgumentError("No pairs selected."))
+
+    # channels described by :optode_pairs (source index, detector index) come first
+    rec = obj.header.recording
+    n_opt = size(rec[:optode_pairs], 1)
+    ch_idx = Int64[]
+    for p in pairs
+        sd = split(p, "_")
+        length(sd) == 2 || throw(
+            ArgumentError(
+                "Pair must be given as \"source_detector\", e.g. \"S1_D1\" (got \"$p\").",
+            ),
+        )
+        s = findfirst(==(sd[1]), rec[:src_labels])
+        d = findfirst(==(sd[2]), rec[:det_labels])
+        isnothing(s) && throw(ArgumentError("Source $(sd[1]) not found."))
+        isnothing(d) && throw(ArgumentError("Detector $(sd[2]) not found."))
+        idx = [j for j = 1:n_opt if rec[:optode_pairs][j, :] == [s, d]]
+        isempty(idx) && throw(ArgumentError("No channels of pair $p found."))
+        append!(ch_idx, idx)
+    end
+
+    obj_tmp = _delete_channel(obj, ch_idx)
+    obj_tmp.history[end] = "delete_pair(obj; pair=$pairs)"
+
+    return obj_tmp
+end
+
+"""
+    delete_pair!(obj; <keyword arguments>)
+
+Delete all channels of the specified NIRS source-detector pair(s) in-place. See `delete_pair()`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `pair::Union{String, Vector{String}}`: pair(s) given as `"source_detector"` labels, e.g. `"S1_D2"`
+
+# Returns
+
+- `Nothing`
+"""
+function delete_pair!(
+    obj::NeuroAnalyzer.NEURO;
+    pair::Union{String, Vector{String}},
+)::Nothing
+    obj_tmp = delete_pair(obj; pair = pair)
+    obj.header = obj_tmp.header
+    obj.data = obj_tmp.data
+    obj.history = obj_tmp.history
+    obj.locs = obj_tmp.locs
+    obj.markers = obj_tmp.markers
 
     return nothing
 end

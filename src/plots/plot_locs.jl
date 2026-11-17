@@ -487,6 +487,8 @@ end
 
 Preview channel locations from a NEURO object with customizable 2D/3D visualization and optional connection mapping.
 
+For NIRS objects, the optodes (sources in red, detectors in green) and the source-detector pairs of the selected channels (`ch`; channels without optodes, e.g. auxiliary channels, are skipped) are shown; short-separation pairs (source-detector distance < 15 mm) are drawn with dashed lines. `sch` highlights the pairs of the given channels, `ch_labels` shows the channels (pairs) at the midpoints between their source and detector, numbered in the order of the pairs (as in `nirs_quality()`), and a `weights` vector gives one value per pair. `connections` are not supported for NIRS objects.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
@@ -521,6 +523,7 @@ Preview channel locations from a NEURO object with customizable 2D/3D visualizat
     - `:in`: values in the threshold range (inclusive)
     - `:bin`: values in the threshold range (exclusive)
 - `weights::Union{Bool, Vector{<:Real}}=true`: if `true`, auto-scale line widths and transparency based on connection strength; if Vector, use provided weights to place at channel location
+- `schematic::Bool=false`: NIRS only: if `true`, draw a schematic montage (sources as diamonds, detectors as circles, channels as numbered squares, legend), see `plot_locs_nirs()`
 - `gui::Bool=true`: if `true`, keep window open and interactive
 
 # Returns
@@ -546,6 +549,7 @@ function plot_locs(
     threshold::Real = 0,
     threshold_type::Symbol = :neq,
     weights::Union{Bool, Vector{<:Real}} = true,
+    schematic::Bool = false,
     gui::Bool = true,
 )::Union{GLMakie.Figure, Nothing}
     # validate
@@ -557,6 +561,27 @@ function plot_locs(
         get_channel(obj; ch = ch, exclude = "bad") :
         get_channel(obj; ch = ch, exclude = "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    datatype(obj) == "nirs" && return _plot_locs_nirs_obj(
+        obj, ch;
+        sch          = sch,
+        exclude_bads = exclude_bads,
+        ch_labels    = ch_labels,
+        src_labels   = src_labels,
+        det_labels   = det_labels,
+        opt_labels   = opt_labels,
+        head         = head,
+        head_labels  = head_labels,
+        mono         = mono,
+        grid         = grid,
+        ps           = ps,
+        cart         = cart,
+        plane        = plane,
+        connections  = connections,
+        weights      = weights,
+        schematic    = schematic,
+        gui          = gui,
+    )
 
     ch_info = String[]
     for idx in eachindex(ch)
@@ -598,24 +623,6 @@ function plot_locs(
             ch_info        = ch_info,
             gui            = gui,
         )
-    elseif datatype(obj) == "nirs"
-        opt_pairs = obj.header.recording[:optode_pairs]
-        src_n = length(source_labels(obj))
-        det_n = length(detector_labels(obj))
-        return plot_locs_nirs(
-            obj.locs, opt_pairs, src_n, det_n;
-            src_labels  = src_labels,
-            det_labels  = det_labels,
-            opt_labels  = opt_labels,
-            ps          = ps,
-            head        = head,
-            head_labels = head_labels,
-            cart        = cart,
-            grid        = grid,
-            mono        = mono,
-            plane       = plane,
-            ch_info     = ch_info,
-        )
     elseif datatype(obj) == "ecog"
         _warn("ECOG locs are not supported yet.")
         return nothing
@@ -633,4 +640,77 @@ function plot_locs(
     return throw(
         ArgumentError("Locations plot is not available for $(datatype(obj)) data."),
     )
+end
+
+# plot_locs() for NIRS objects: optodes and the source-detector pairs of the channels `ch`
+function _plot_locs_nirs_obj(
+    obj::NeuroAnalyzer.NEURO,
+    ch::Vector{Int64};
+    sch::Union{String, Vector{String}, Regex},
+    exclude_bads::Bool,
+    ch_labels::Bool,
+    src_labels::Bool,
+    det_labels::Bool,
+    opt_labels::Bool,
+    head::Bool,
+    head_labels::Bool,
+    mono::Bool,
+    grid::Bool,
+    ps::Symbol,
+    cart::Bool,
+    plane::Symbol,
+    connections::Union{Nothing, Matrix{<:Real}},
+    weights::Union{Bool, Vector{<:Real}},
+    schematic::Bool,
+    gui::Bool,
+)::GLMakie.Figure
+    rec = obj.header.recording
+    opt_pairs = rec[:optode_pairs]
+    n_opt = size(opt_pairs, 1)
+    # channels with optodes (intensity, OD, concentration)
+    ch_opt = [c for c in ch if c <= n_opt && all(>(0), opt_pairs[c, :])]
+    isempty(ch_opt) && throw(ArgumentError("No NIRS channels with optodes selected."))
+    isnothing(connections) || _warn("connections are not supported for NIRS objects.")
+
+    # short-separation pairs (if the distances can be calculated)
+    short = try
+        nirs_distance(obj).d[ch_opt] .< 15
+    catch
+        nothing
+    end
+
+    # highlighted pairs: rows (in ch_opt) of the channels in sch
+    spairs = Int64[]
+    if sch != ""
+        sch_idx =
+            exclude_bads ?
+            get_channel(obj; ch = sch, exclude = "bad") :
+            get_channel(obj; ch = sch, exclude = "")
+        sp = Set((opt_pairs[c, 1], opt_pairs[c, 2]) for c in sch_idx if c <= n_opt)
+        spairs = [k for (k, c) in enumerate(ch_opt) if (opt_pairs[c, 1], opt_pairs[c, 2]) in sp]
+    end
+
+    fig = plot_locs_nirs(
+        obj.locs, opt_pairs[ch_opt, :], length(rec[:src_labels]), length(rec[:det_labels]);
+        src_names   = string.(rec[:src_labels]),
+        det_names   = string.(rec[:det_labels]),
+        short       = short,
+        spairs      = spairs,
+        ch_mid      = ch_labels,
+        weights     = weights isa Vector ? weights : nothing,
+        schematic   = schematic,
+        src_labels  = src_labels,
+        det_labels  = det_labels,
+        opt_labels  = opt_labels,
+        ps          = ps,
+        head        = head,
+        head_labels = head_labels,
+        cart        = cart,
+        grid        = grid,
+        mono        = mono,
+        plane       = plane,
+    )
+    gui && wait(display(fig))
+
+    return fig
 end

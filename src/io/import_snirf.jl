@@ -351,17 +351,26 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     clabels = repeat([""], ch_n)
     for idx = 1:ch_n
         opt_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
-        if length(wavelength_index) == ch_n
-            clabels[idx] =
-                "S" *
-                string(source_index[idx]) *
-                "_D" *
-                string(detector_index[idx]) *
-                " " *
-                string(wavelengths[wavelength_index[idx]])
+        # pair label from the optode labels of the probe (if present), e.g. "Tx3_Rx2"
+        pair =
+            (src_labels === nothing ? "S" * string(source_index[idx]) :
+             string(src_labels[source_index[idx]])) * "_" *
+            (det_labels === nothing ? "D" * string(detector_index[idx]) :
+             string(det_labels[detector_index[idx]]))
+        wl_i = length(wavelength_index) == ch_n ? wavelength_index[idx] : 0
+        clabels[idx] = if wl_i > 0 && data_type_label[idx] in ("nirs_int", "nirs_od")
+            # intensity: "S1_D1 760", OD: "S1_D1 760 OD" (as created by intensity2od())
+            pair * " " * string(wavelengths[wl_i]) *
+            (data_type_label[idx] == "nirs_od" ? " OD" : "")
+        elseif haskey(_SNIRF_LABELS, data_type_label[idx])
+            # e.g. "S1_D1 HbO" (as created by od2conc())
+            pair * " " * _SNIRF_LABELS[data_type_label[idx]] *
+            (wl_i > 0 && !(data_type_label[idx] in _SNIRF_NO_WL) ?
+             " " * string(wavelengths[wl_i]) : "")
+        elseif wl_i > 0
+            pair * " " * string(wavelengths[wl_i])
         else
-            clabels[idx] =
-                "S" * string(source_index[idx]) * "_D" * string(detector_index[idx])
+            pair
         end
     end
     clabels = replace.(clabels, ".0" => "")
@@ -394,48 +403,35 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         end
     end
     stim_n -= 1
-    stim_n > 1 && _warn(
-        "Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+
+    # stimulus groups (stim1 … stimN): one group per condition; data rows: onset, duration,
+    # value (and optional additional columns)
+    markers = DataFrame(
+        :id => String[],
+        :start => Float64[],
+        :length => Float64[],
+        :value => String[],
+        :channel => Int64[],
     )
-
-    s_id = "stim1"
-    stim_data = nothing
-    stim_name = nothing
-    stim_labels = nothing
-
-    # Name of the stimulus data
-    k = "$n_id/$s_id/name"
-    k in keys(nirs) && (stim_name = nirs[k][1])
-
-    # Data stream of the stimulus channel
-    k = "$n_id/$s_id/data"
-    k in keys(nirs) && (stim_data = nirs[k])
-
-    # Data stream of the stimulus channel
-    k = "$n_id/$s_id/dataLabels"
-    k in keys(nirs) && (stim_labels = nirs[k])
-
-    if stim_data !== nothing
-        markers = DataFrame(
-            :id => repeat([""], size(stim_data, 2)),
-            :start => stim_data[1, :],
-            :length => stim_data[2, :],
-            :value => stim_name,
-            :channel => repeat([0], size(stim_data, 2)),
-        )
-        # generate unique IDs
-        value = unique(markers[!, :value])
-        for idx1 = 1:DataFrames.nrow(markers), idx2 in eachindex(value)
-            markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
+    for s_idx = 1:stim_n
+        s_id = "stim$s_idx"
+        stim_name = string(nirs["$n_id/$s_id/name"] isa AbstractVector ?
+                           nirs["$n_id/$s_id/name"][1] : nirs["$n_id/$s_id/name"])
+        k = "$n_id/$s_id/data"
+        k in keys(nirs) || continue
+        stim_data = nirs[k]
+        stim_data isa AbstractVector && (stim_data = reshape(stim_data, :, 1))
+        # an empty stimulus group (no events)
+        (isempty(stim_data) || size(stim_data, 1) < 2) && continue
+        for e_idx in axes(stim_data, 2)
+            push!(markers, ("", stim_data[1, e_idx], stim_data[2, e_idx], stim_name, 0))
         end
-    else
-        markers = DataFrame(
-            :id => String[],
-            :start => Float64[],
-            :length => Float64[],
-            :value => String[],
-            :channel => Int64[],
-        )
+    end
+    sort!(markers, :start)
+    # unique IDs: one per stimulus name
+    value = unique(markers[!, :value])
+    for idx1 = 1:DataFrames.nrow(markers), idx2 in eachindex(value)
+        markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
     end
 
     # auxiliary measurements
@@ -576,6 +572,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         opt_labels = opt_labels,
         sampling_rate = sampling_rate,
         bad_channels = zeros(Bool, size(data, 1)),
+        length_unit = string(length_unit),
     )
     e = _create_experiment(; name = "", notes = "", design = "")
 

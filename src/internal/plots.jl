@@ -598,3 +598,35 @@ function _plot_center(s::AbstractMatrix)::Matrix{Float64}
     end
     return c
 end
+
+# channel types whose channels are unrelated signals of different amplitudes (e.g. NIRS
+# auxiliary channels): each channel is scaled separately, without a common scale bar
+const _PLOT_SCALE_EACH = ["nirs_aux"]
+
+# scale and center the rows `g_idx` of `s` (channels of one type) in place, negating them for
+# the reversed y-axis; return the common scale (`NaN` for types scaled channel by channel)
+function _plot_scale_group!(
+    s::AbstractMatrix,
+    g_idx::AbstractVector{Bool},
+    ctype::String,
+    k::Real,
+)::Float64
+    if ctype in _PLOT_SCALE_EACH
+        # signals of different devices (e.g. slow drifts, pulse, spikes): each channel is
+        # scaled by its own 1st–99th percentile range (the MAD-based scale of `_plot_scale`
+        # makes slow or spiky signals look flat)
+        for i in findall(g_idx)
+            row = s[i:i, :]
+            x = Base.filter(isfinite, vec(row))
+            rng = isempty(x) ? 0.0 : quantile(x, 0.99) - quantile(x, 0.01)
+            sc = rng > 0 ? 1.2 * rng : 1.0
+            s[i, :] = .-(row .- _plot_center(row)) ./ (sc * k)
+        end
+        return NaN
+    end
+    group = s[g_idx, :]
+    sc = _plot_scale(group) * k
+    s[g_idx, :] = .-(group .- _plot_center(group)) ./ sc
+
+    return sc
+end

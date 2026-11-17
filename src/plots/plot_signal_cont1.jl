@@ -138,13 +138,11 @@ function plot_cont(
         r = Float64[]
         for idx in eachindex(ctypes_uni)
             g_idx = ctypes .== ctypes_uni[idx]
-            group = s[g_idx, :]
-            # butterfly: all channels of the type share one row, ±6 SD fit in it
-            sc = _plot_scale(group) * (type === :butterfly ? 2 : 1)
-            push!(r, round(sc; sigdigits = 3))
-            # the y-axis is reversed (first channel at the top): the values are negated,
-            # so that positive values point up
-            s[g_idx, :] = .-(group .- _plot_center(group)) ./ sc
+            # butterfly: all channels of the type share one row, ±6 SD fit in it; the y-axis
+            # is reversed (first channel at the top): the values are negated, so that positive
+            # values point up; auxiliary channels are scaled separately (NaN: no scale bar)
+            sc = _plot_scale_group!(s, g_idx, ctypes_uni[idx], type === :butterfly ? 2 : 1)
+            push!(r, isnan(sc) ? NaN : round(sc; sigdigits = 3))
         end
         # baseline of each trace: its row (:normal) or the row of its channel type (:butterfly)
         y_off = if type === :normal
@@ -342,6 +340,8 @@ function plot_cont(
                 idx2 = 1
                 for idx1 = 1:ch_n
                     if ctypes_uni_pos[idx1] == 1
+                        # no common scale (channels scaled separately)
+                        isnan(r[idx2]) && (idx2 += 1; continue)
                         s_rectangle = _draw_lift(seg_pos) do sp
                             return Rect(sp, (idx1 - 0.49), sb_w, 0.98)
                         end
@@ -374,6 +374,7 @@ function plot_cont(
                 end
             elseif type === :butterfly
                 for idx = 1:ch_n
+                    isnan(r[idx]) && continue
                     s_rectangle = _draw_lift(seg_pos) do sp
                         return Rect(sp, (idx - 0.475), sb_w, 0.975)
                     end

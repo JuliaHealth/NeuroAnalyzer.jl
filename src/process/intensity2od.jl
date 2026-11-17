@@ -8,7 +8,7 @@ Convert NIRS raw intensity signal to optical density (OD).
 
 The optical density is defined as:
 
-    OD = −log(I / Ī)
+    OD = −log(|I| / Ī)
 
 where `Ī` is the mean absolute intensity across the sample (time) dimension. The mean is computed per channel and per epoch so that the reference level adapts to each recording segment independently.
 
@@ -34,6 +34,8 @@ end
     intensity2od(obj; <keyword arguments>)
 
 Convert NIRS intensity (RAW) channels to optical density (OD) and append the OD channels to the object. Both the original intensity channels and the new OD channels are retained.
+
+The OD is `−log(|I| / Ī)`, where `Ī` is the mean absolute intensity of the channel in the epoch. Intensities must be finite and non-zero (an error lists the offending channels); negative intensities (e.g. after dark-current subtraction) are used as absolute values, as in Homer2/3, with a warning.
 
 # Arguments
 
@@ -68,6 +70,26 @@ function intensity2od(
                 "NIRS intensity channels are not described by the wavelength index.",
             ),
         )
+
+    # intensities must be finite and non-zero (log of 0 is -Inf); negative values (e.g. after
+    # dark-current subtraction) are used as absolute values, as in Homer2/3
+    s = @view(obj.data[ch, :, :])
+    bad_f = [!all(isfinite, @view(s[idx, :, :])) for idx in eachindex(ch)]
+    any(bad_f) && throw(
+        ArgumentError(
+            "Non-finite intensities in channel(s): $(join(rec[:label][ch[bad_f]], ", "))",
+        ),
+    )
+    bad_z = [any(iszero, @view(s[idx, :, :])) for idx in eachindex(ch)]
+    any(bad_z) && throw(
+        ArgumentError(
+            "Zero intensities in channel(s): $(join(rec[:label][ch[bad_z]], ", ")); OD is undefined (mark them as bad or remove them).",
+        ),
+    )
+    bad_n = [any(<(0), @view(s[idx, :, :])) for idx in eachindex(ch)]
+    any(bad_n) && _warn(
+        "Negative intensities in channel(s): $(join(rec[:label][ch[bad_n]], ", ")); absolute values are used.",
+    )
 
     # create new dataset
     obj_tmp = deepcopy(obj)

@@ -1021,6 +1021,140 @@ n_tmp = intensity2od(nirs)
 @info "Test: od2conc()"
 n_tmp2 = od2conc(n_tmp)
 @test size(n_tmp2.data) == (22, 9001, 1)
+# intensities: zero → error, negative → absolute value
+n_bad = deepcopy(nirs)
+n_bad.data[1, 10, 1] = 0
+@test_throws ArgumentError intensity2od(n_bad)
+n_neg = deepcopy(nirs)
+n_neg.data[1, :, :] .*= -1
+@test intensity2od(n_neg).data[5:end, :, :] ≈ n_tmp.data[5:end, :, :]
+# the optode position unit is read from the file
+@test nirs.header.recording[:length_unit] == "mm"
+# concentration channels: after the optical channels, before the auxiliary channels, with
+# their optode pairs (wavelength index 0)
+r2 = n_tmp2.header.recording
+n_opt = 8
+@test r2[:channel_type][(n_opt + 1):(n_opt + 6)] == repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], 2)
+@test all(==("nirs_aux"), r2[:channel_type][(n_opt + 7):end])
+@test length(r2[:wavelength_index]) == n_opt + 6
+@test all(iszero, r2[:wavelength_index][(n_opt + 1):end])
+@test r2[:optode_pairs][(n_opt + 1):(n_opt + 3), :] == repeat(r2[:optode_pairs][5:5, :], 3)
+@test all(==("μM·mm"), r2[:unit][(n_opt + 1):(n_opt + 6)])
+# the OD → concentration conversion can be repeated after the concentration channels
+@test od2conc(n_tmp2) isa NeuroAnalyzer.NEURO
+# DPF (Scholkmann & Wolf 2013)
+@test nirs_dpf(; age = 30, wl = 760) ≈ 6.30 atol = 0.01
+@test nirs_dpf(; age = 30, wl = [760, 850]) isa Vector{Float64}
+@test_throws ArgumentError nirs_dpf(; age = -1, wl = 760)
+# path length: ppf (or DPF) × source-detector distance (3-D, in mm) → μM
+src = n_tmp.locs[findfirst(==(r2[:src_labels][r2[:optode_pairs][5, 1]]), n_tmp.locs.label), :]
+det = n_tmp.locs[findfirst(==(r2[:det_labels][r2[:optode_pairs][5, 2]]), n_tmp.locs.label), :]
+rho = sqrt((src.loc_x - det.loc_x)^2 + (src.loc_y - det.loc_y)^2 + (src.loc_z - det.loc_z)^2)
+n_ppf = od2conc(n_tmp; ppf = [2.0, 2.0])
+@test n_ppf.data[n_opt + 1, :, 1] ≈ n_tmp2.data[n_opt + 1, :, 1] ./ (2 * rho)
+@test all(==("μM"), n_ppf.header.recording[:unit][(n_opt + 1):(n_opt + 6)])
+dpf = nirs_dpf(; age = 30, wl = nirs.header.recording[:wavelengths])
+@test od2conc(n_tmp; age = 30).data ≈ od2conc(n_tmp; ppf = dpf).data
+@test_throws ArgumentError od2conc(n_tmp; ppf = [1.0, 1.0], age = 30)
+
+@info "Test: nirs_distance() / nirs_sci() / nirs_cv() / nirs_quality()"
+@test nirs_distance(nirs).d ≈ fill(30.0, 4)
+sc = nirs_sci(nirs)
+@test sc.pair == ["S1_D1", "S1_D2"] && all(0.9 .< sc.sci .<= 1)
+cvn = nirs_cv(nirs)
+@test size(cvn.cv) == (4, 1) && all(0 .< cvn.cv .< 15)
+q = nirs_quality(nirs)
+@test q.pair == ["S1_D1", "S1_D2"] && !any(q.bad)
+@test nirs_quality(nirs; sci_t = 0.99).bad == [true, true]
+# a pair whose wavelengths do not share the cardiac pulsation (one replaced by noise)
+n_q = deepcopy(nirs)
+n_q.data[3, :, 1] .= NeuroAnalyzer.Statistics.mean(n_q.data[3, :, 1]) .+ randn(NeuroAnalyzer.Random.MersenneTwister(1), size(n_q.data, 2))
+@test nirs_sci(n_q).sci[1] < 0.3
+
+@info "Test: tddr()"
+n_m = deepcopy(n_tmp)
+# baseline shift (motion) in an OD channel: removed by TDDR
+n_m.data[5, 4000:end, 1] .+= 1.0
+n_t = tddr(n_m; ch = "S1_D1 690 OD")
+@test abs(NeuroAnalyzer.Statistics.mean(n_t.data[5, 4100:4500, 1]) - NeuroAnalyzer.Statistics.mean(n_t.data[5, 3500:3900, 1])) < 0.2
+@test n_t.data[6, :, :] == n_m.data[6, :, :]
+n_t2 = deepcopy(n_m)
+tddr!(n_t2; ch = "S1_D1 690 OD")
+@test n_t2.data ≈ n_t.data
+
+# simulated task and short-separation channel: S1_D2 is moved 8 mm from S1
+function _nirs_sim(n0)
+    n = deepcopy(n0)
+    s = findfirst(==("S1"), n.locs.label)
+    d = findfirst(==("D2"), n.locs.label)
+    n.locs[d, :loc_x] = n.locs[s, :loc_x]
+    n.locs[d, :loc_y] = n.locs[s, :loc_y] + 8
+    fs = sr(n)
+    onsets = 30:45:330
+    for o in onsets
+        add_marker!(n; id = "stim", start = Float64(o), len = 15.0, value = "task", ch = 0)
+    end
+    h = nirs_hrf(; fs = fs).h
+    u = zeros(epoch_len(n))
+    for o in onsets
+        u[(round(Int, o * fs) + 1):round(Int, (o + 15) * fs)] .= 1
+    end
+    reg = NeuroAnalyzer.DSP.conv(u, h)[1:epoch_len(n)]
+    ho, hr, ht = get_channel(n; ch = ["S1_D1 HbO", "S1_D1 HbR", "S1_D1 HbT"])
+    a = NeuroAnalyzer.Statistics.std(n.data[ho, :, 1])
+    n.data[ho, :, 1] .+= a .* reg
+    n.data[hr, :, 1] .-= a / 3 .* reg
+    n.data[ht, :, 1] .+= 2a / 3 .* reg
+    return n, a
+end
+n_sim, amp = _nirs_sim(n_tmp2)
+
+@info "Test: nirs_hrf()"
+hrf = nirs_hrf(; fs = 10)
+@test sum(hrf.h) ≈ 1
+@test 4 < hrf.t[argmax(hrf.h)] < 6
+
+@info "Test: nirs_glm()"
+g = nirs_glm(n_sim)
+@test g.channel == ["S1_D1 HbO", "S1_D1 HbR", "S1_D2 HbO", "S1_D2 HbR"]
+@test g.p[1] < 1e-6 && g.beta[1] > 0 && g.p[2] < 0.05 && g.beta[2] < 0
+@test g.beta[1] ≈ amp rtol = 0.3
+@test g.p[3] > 0.01
+@test_throws ArgumentError nirs_glm(n_tmp2)
+
+@info "Test: nirs_ssr()"
+n_s = nirs_ssr(n_sim)
+# the short channels are not changed, the long channels are
+@test n_s.data[get_channel(n_s; ch = "S1_D2 HbO"), :, :] == n_sim.data[get_channel(n_sim; ch = "S1_D2 HbO"), :, :]
+@test n_s.data[get_channel(n_s; ch = "S1_D1 HbO"), :, :] != n_sim.data[get_channel(n_sim; ch = "S1_D1 HbO"), :, :]
+# the systemic signal is removed: smaller standard error of the activation
+g_s = nirs_glm(n_s)
+@test g_s.se[1] < g.se[1]
+@test_throws ArgumentError nirs_ssr(n_tmp2)
+n_s2 = deepcopy(n_sim)
+nirs_ssr!(n_s2)
+@test n_s2.data == n_s.data
+
+@info "Test: average_epochs() (NIRS)"
+e_n = epoch(n_s; marker = "task", offset = 5, ep_len = 30)
+a_n = average_epochs(e_n; bl = (-5, 0))
+@test datatype(a_n) == "nirs"
+@test nepochs(a_n) == nepochs(e_n) + 1
+@test !("nirs_aux" in a_n.header.recording[:channel_type])
+ho = get_channel(a_n; ch = "S1_D1 HbO")[1]
+@test maximum(a_n.data[ho, :, 1]) > 0.5 * amp
+
+@info "Test: export_snirf()"
+f_snirf = joinpath(mktempdir(), "test.snirf")
+export_snirf(n_s; file_name = f_snirf)
+@test_throws ArgumentError export_snirf(n_s; file_name = f_snirf)
+r_s = import_snirf(f_snirf)
+@test labels(r_s) == labels(n_s)
+@test r_s.header.recording[:channel_type] == n_s.header.recording[:channel_type]
+@test r_s.data ≈ n_s.data
+@test r_s.header.recording[:optode_pairs] == n_s.header.recording[:optode_pairs]
+@test r_s.markers[!, :start] == n_s.markers[!, :start] && all(==("task"), r_s.markers[!, :value])
+@test_throws ArgumentError export_snirf(e_n; file_name = joinpath(mktempdir(), "e.snirf"))
 
 @info "Test: npl()"
 e = average_epochs(e10)

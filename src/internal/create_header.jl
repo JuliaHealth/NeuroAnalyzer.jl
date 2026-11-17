@@ -222,6 +222,7 @@ function _create_recording_nirs(;
     opt_labels::Vector{String},
     sampling_rate::Int64,
     bad_channels::Vector{Bool},
+    length_unit::String = "",
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
@@ -232,6 +233,8 @@ function _create_recording_nirs(;
         d,
         Dict(
             :wavelengths => wavelengths,
+            # unit of the optode positions (e.g. "mm", "cm"); "" if unknown
+            :length_unit => length_unit,
             :wavelength_index => wavelength_index,
             :optode_pairs => optode_pairs,
             :src_labels => src_labels,

@@ -6,7 +6,7 @@ export sort_epochs!
 """
     average_epochs(obj; <keyword arguments>)
 
-Average EEG/MEG epochs and prepend the average as epoch 1. Non-signal channels are removed. obj.header.recording[:data_type]` is updated to `"erp"` (EEG) or `"erf"` (MEG).
+Average EEG/MEG/NIRS epochs and prepend the average as epoch 1. Non-signal channels are removed. `obj.header.recording[:data_type]` is updated to `"erp"` (EEG) or `"erf"` (MEG); for NIRS it stays `"nirs"` (epoch 1 is the averaged hemodynamic response, the auxiliary channels are removed).
 
 # Arguments
 
@@ -24,17 +24,20 @@ function average_epochs(
     blfirst::Bool = false,
 )::NeuroAnalyzer.NEURO
     # validate
-    _check_datatype(obj, ["eeg", "meg"])
-
-    nchannels(obj) > length(get_channel(obj; type = datatype(obj))) &&
-        _warn("Non-signal channels will be removed.")
+    _check_datatype(obj, ["eeg", "meg", "nirs"])
 
     # signal channels (get_channel(; type) returns names)
-    obj_tmp = if datatype(obj) == "eeg"
-        keep_channel(obj; ch = get_channel(obj; type = "eeg"))
+    sig_ch = if datatype(obj) == "eeg"
+        get_channel(obj; type = "eeg")
+    elseif datatype(obj) == "meg"
+        get_channel(obj; type = ["meg", "mag", "grad"])
     else
-        keep_channel(obj; ch = get_channel(obj; type = ["meg", "mag", "grad"]))
+        # NIRS: all optical and derived channels (auxiliary channels are removed)
+        labels(obj)[obj.header.recording[:channel_type] .!= "nirs_aux"]
     end
+    isempty(sig_ch) && throw(ArgumentError("OBJ does not contain signal channels."))
+    nchannels(obj) > length(sig_ch) && _warn("Non-signal channels will be removed.")
+    obj_tmp = keep_channel(obj; ch = sig_ch)
 
     # remove baseline prior to averaging
     bl_samples = if bl != (0, 0)
@@ -56,7 +59,9 @@ function average_epochs(
         ), obj_tmp.data; dims = 3,
     )
 
-    obj_tmp.header.recording[:data_type] = datatype(obj) == "eeg" ? "erp" : "erf"
+    # EEG → ERP, MEG → ERF; NIRS stays NIRS (epoch 1 is the averaged hemodynamic response)
+    datatype(obj) == "eeg" && (obj_tmp.header.recording[:data_type] = "erp")
+    datatype(obj) == "meg" && (obj_tmp.header.recording[:data_type] = "erf")
     obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
 
     # subtract baseline from the averaged epoch only (post-average correction)

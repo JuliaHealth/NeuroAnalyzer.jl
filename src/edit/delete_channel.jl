@@ -10,11 +10,12 @@ Return a copy of `obj` with the specified channel(s) removed.
 
 All per-channel header fields are updated, including MEG sensor index lists (`:magnetometers`, `:gradiometers`), SSP channel mask and projection vectors, sensor geometry (`:coil_loc`), and MEP stimulation intensities and coil types.
 
+For NIRS objects, a deleted intensity or OD channel is deleted together with the channels of the same type and optode pair at the other wavelengths (the conversion to concentration requires all wavelengths of a pair); use `delete_pair()` to remove all channels of a source-detector pair. The optode labels and locations are kept (use `delete_optode()` to remove optodes).
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s) to remove
-- `del_opt::Bool=false`: set `true` only when called from `delete_optode()`; bypasses the NIRS guard that prevents direct signal-channel deletion
 
 # Returns
 
@@ -23,28 +24,55 @@ All per-channel header fields are updated, including MEG sensor index lists (`:m
 function delete_channel(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false,
 )::NeuroAnalyzer.NEURO
     # resolve channel names to integer indices
     ch_idx = get_channel(obj; ch = ch)
     ch_idx = ch_idx isa Integer ? [Int64(ch_idx)] : Vector{Int64}(ch_idx)
     isempty(ch_idx) && throw(ArgumentError("No channels selected."))
 
-    return _delete_channel(obj, ch_idx; del_opt = del_opt)
+    return _delete_channel(obj, ch_idx)
+end
+
+# NIRS: add to `ch_idx` the intensity / OD channels of the same type and optode pair at the
+# other wavelengths (channels described by :wavelength_index / :optode_pairs come first)
+function _nirs_pair_wl(
+    obj::NeuroAnalyzer.NEURO,
+    ch_idx::Vector{Int64};
+    msg::String,
+)::Vector{Int64}
+    rec = obj.header.recording
+    n_opt = length(rec[:wavelength_index])
+    ct = rec[:channel_type]
+    chp = rec[:optode_pairs]
+    add = Int64[]
+    for i in ch_idx
+        (i <= n_opt && ct[i] in ("nirs_int", "nirs_od")) || continue
+        for j = 1:n_opt
+            (j in ch_idx || j in add) && continue
+            ct[j] == ct[i] && chp[j, :] == chp[i, :] && push!(add, j)
+        end
+    end
+    isempty(add) && return ch_idx
+    _info("$msg the other wavelengths of the same optode pairs: $(labels(obj)[sort(add)])")
+
+    return vcat(ch_idx, add)
 end
 
 # index-based core of delete_channel(); used directly by keep_channel() so
 # that channels are never re-resolved by (possibly duplicated) labels
 function _delete_channel(
     obj::NeuroAnalyzer.NEURO,
-    ch_idx::Vector{Int64};
-    del_opt::Bool = false,
+    ch_idx::Vector{Int64},
 )::NeuroAnalyzer.NEURO
     ch_n = nchannels(obj)
     ch_idx = unique(ch_idx)
     isempty(ch_idx) && throw(ArgumentError("No channels selected."))
     all(i -> 1 <= i <= ch_n, ch_idx) ||
         throw(ArgumentError("Channel indices must be in [1, $ch_n]."))
+    # NIRS: an intensity or OD channel is deleted together with the channels of the same
+    # type and optode pair at the other wavelengths (OD -> concentration needs all of them)
+    datatype(obj) == "nirs" &&
+        (ch_idx = _nirs_pair_wl(obj, ch_idx; msg = "Also deleting"))
     length(ch_idx) < ch_n || throw(
         ArgumentError(
             "Number of channels to delete ($(length(ch_idx))) must be smaller than number of all channels ($ch_n).",
@@ -58,21 +86,6 @@ function _delete_channel(
 
     rec = obj.header.recording
     dt = rec[:data_type]
-
-    # NIRS signal channels must be removed with delete_optode() (auxiliary channels may be deleted)
-    if dt == "nirs" && !del_opt
-        any(
-            idx ->
-                startswith(rec[:channel_type][idx], "nirs") &&
-                rec[:channel_type][idx] != "nirs_aux",
-            ch_idx,
-        ) &&
-            throw(
-                ArgumentError(
-                    "NIRS signal channels must be deleted using delete_optode().",
-                ),
-            )
-    end
 
     # create new dataset
     obj_tmp = deepcopy(obj)
@@ -179,7 +192,6 @@ Delete channel(s) in-place.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s) to remove
-- `del_opt::Bool=false`: set `true` only when called from `delete_optode()`; bypasses the NIRS guard that prevents direct signal-channel deletion
 
 # Returns
 
@@ -188,9 +200,8 @@ Delete channel(s) in-place.
 function delete_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false,
 )::Nothing
-    obj_tmp = delete_channel(obj; ch = ch, del_opt = del_opt)
+    obj_tmp = delete_channel(obj; ch = ch)
     obj.header = obj_tmp.header
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history
@@ -205,11 +216,12 @@ end
 
 Return a copy of `obj` retaining only the specified channel(s).
 
+For NIRS objects, keeping an intensity or OD channel keeps the channels of the same type and optode pair at the other wavelengths.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s) to keep
-- `del_opt::Bool=false`: passed to `delete_channel()`; set `true` only when called from optode-handling functions
 
 # Returns
 
@@ -218,7 +230,6 @@ Return a copy of `obj` retaining only the specified channel(s).
 function keep_channel(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false,
 )::NeuroAnalyzer.NEURO
     ch_n = nchannels(obj)
 
@@ -227,12 +238,16 @@ function keep_channel(
     ch_idx = unique(ch_idx isa Integer ? [Int64(ch_idx)] : Vector{Int64}(ch_idx))
     isempty(ch_idx) && throw(ArgumentError("No channels selected."))
 
+    # NIRS: keeping an intensity or OD channel keeps the channels of the same type and
+    # optode pair at the other wavelengths
+    datatype(obj) == "nirs" && (ch_idx = _nirs_pair_wl(obj, ch_idx; msg = "Also keeping"))
+
     # nothing to remove: still return a copy, never the input object
     length(ch_idx) == ch_n && return deepcopy(obj)
 
     # delete by index: re-resolving by label would select wrong channels
     # when labels are duplicated
-    obj_tmp = _delete_channel(obj, setdiff(_c(ch_n), ch_idx); del_opt = del_opt)
+    obj_tmp = _delete_channel(obj, setdiff(_c(ch_n), ch_idx))
     # record the user's call rather than the internal deletion
     obj_tmp.history[end] = "keep_channel(obj; ch=$(labels(obj)[sort(ch_idx)]))"
 
@@ -248,7 +263,6 @@ Keep only the specified channel(s) in-place.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s) to keep
-- `del_opt::Bool=false`: passed to `delete_channel()`; set `true` only when called from optode-handling functions
 
 # Returns
 
@@ -257,9 +271,8 @@ Keep only the specified channel(s) in-place.
 function keep_channel!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
-    del_opt::Bool = false,
 )::Nothing
-    obj_tmp = keep_channel(obj; ch = ch, del_opt = del_opt)
+    obj_tmp = keep_channel(obj; ch = ch)
     obj.header = obj_tmp.header
     obj.data = obj_tmp.data
     obj.history = obj_tmp.history

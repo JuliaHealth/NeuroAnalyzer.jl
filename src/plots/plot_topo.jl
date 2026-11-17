@@ -32,6 +32,7 @@ Plot a topographical map of signal values across channel locations.
     - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `crange::Union{Nothing, Tuple{Real, Real}}=nothing`: color range (in the units of the plotted, possibly normalized, values); `nothing`: the range of the values. A fixed range makes several maps comparable (e.g. frames of an animation)
+- `mask::Bool=false`: if `true`, the map is shown only near the channels (within 1.5 × the median distance between neighbouring channels), e.g. for montages covering a part of the head
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
 - `electrodes::Bool=true`: if `true`, plot electrode locations over topography
 - `ch_labels::Bool=true`: if `true`, plot electrode labels over topography
@@ -73,6 +74,7 @@ function plot_topo(
     imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
     crange::Union{Nothing, Tuple{Real, Real}} = nothing,
+    mask::Bool = false,
     contours::Int64 = 0,
     electrodes::Bool = true,
     ch_labels::Bool = true,
@@ -169,6 +171,16 @@ function plot_topo(
     s_interpolated, interpolated_x, interpolated_y =
         _interpolate2d(s, loc_x, loc_y, iter, imethod, nmethod; loc_xyz = loc_xyz)
     s_interpolated = s_interpolated'[:, end:-1:1]
+    # show the map only near the channels (no extrapolation over areas without channels)
+    if mask && length(loc_x) > 1
+        nn = [minimum(hypot(loc_x[i] - loc_x[j], loc_y[i] - loc_y[j])
+                      for j in eachindex(loc_x) if j != i) for i in eachindex(loc_x)]
+        md = 1.5 * median(nn[nn .> 0])
+        for i in eachindex(interpolated_x), j in eachindex(interpolated_y)
+            d = minimum(hypot.(loc_x .- interpolated_x[i], loc_y .- interpolated_y[j]))
+            d > md && (s_interpolated[i, j] = NaN)
+        end
+    end
     s_interpolated_threshold = deepcopy(s_interpolated)
 
     # compute thresholded region before removing peripheral values
@@ -423,6 +435,8 @@ end
 
 Plot a topographical map of signal values from a NEURO object with customizable visualization options.
 
+For NIRS objects, each channel (source-detector pair) is located at the midpoint between its source and detector; select channels of one type (e.g. `ch = get_channel(obj; type = "nirs_hbo")`) and give one value per channel in `data`.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
@@ -456,6 +470,7 @@ Plot a topographical map of signal values from a NEURO object with customizable 
     - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `crange::Union{Nothing, Tuple{Real, Real}}=nothing`: color range (in the units of the plotted, possibly normalized, values); `nothing`: the range of the values. A fixed range makes several maps comparable (e.g. frames of an animation)
+- `mask::Bool=datatype(obj) == "nirs"`: if `true`, the map is shown only near the channels (within 1.5 × the median distance between neighbouring channels); default for NIRS objects, whose optodes usually cover only a part of the head
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
 - `electrodes::Bool=true`: if `true`, plot electrode locations over topography
 - `ch_labels::Bool=true`: if `true`, plot electrode labels over topography
@@ -501,6 +516,7 @@ function plot_topo(
     imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
     crange::Union{Nothing, Tuple{Real, Real}} = nothing,
+    mask::Bool = datatype(obj) == "nirs",
     contours::Int64 = 0,
     electrodes::Bool = true,
     ch_labels::Bool = true,
@@ -513,6 +529,14 @@ function plot_topo(
     nr::Int64 = 1,
     nc::Int64 = 0,
 )::GLMakie.Figure
+    # NIRS: the values belong to channels (source-detector pairs), located at the midpoints
+    # of their optodes (the data are shared, not copied)
+    if datatype(obj) == "nirs"
+        obj = NeuroAnalyzer.NEURO(
+            obj.header, obj.history, obj.markers, _nirs_chlocs(obj),
+            obj.time_pts, obj.epoch_time, obj.data,
+        )
+    end
 
     # TO DO: vector of tpos:
     # generate separate plots, put them in nr × nc matrix and add one shared colorbar
@@ -617,6 +641,7 @@ function plot_topo(
         imethod          = imethod,
         nmethod          = nmethod,
         crange           = crange,
+        mask             = mask,
         contours         = contours,
         electrodes       = electrodes,
         ch_labels        = ch_labels,
