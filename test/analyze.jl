@@ -679,6 +679,14 @@ p, f = NeuroAnalyzer._psd(rand(10, 100); fs = 10, method = :mt, woverlap = 5)
 @test size(p) == (10, 51)
 p, f = NeuroAnalyzer._psd(rand(10, 100, 10); fs = 10, method = :mt, woverlap = 5)
 @test size(p) == (10, 51, 10)
+# equal-weight multitaper equals DSP.mt_pgram
+x = randn(1001)
+x .-= mean(x)
+p, f = NeuroAnalyzer._psd(x; fs = 256, method = :mt, nt = 7, adaptive = false)
+pg = NeuroAnalyzer.DSP.mt_pgram(x; fs = 256, nw = 4, ntapers = 7)
+@test p ≈ NeuroAnalyzer.DSP.power(pg)[1:length(f)]
+p, f = NeuroAnalyzer._psd(x; fs = 256, method = :mt, nt = 7)
+@test length(p) == length(f) && all(isfinite, p)
 p, f = NeuroAnalyzer.psd(e10; ch = "Fp1")
 @test size(p) == (1, 129, 10)
 @test f == 0.0:1.0:128.0

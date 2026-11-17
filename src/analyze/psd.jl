@@ -3,6 +3,98 @@ export mwpsd
 export ghpsd
 
 """
+    _mt_psd(s; <keyword arguments>)
+
+Multitaper PSD of a 1-D signal using Slepian (DPSS) tapers, optionally with Thomson's adaptive weighting of the eigenspectra.
+
+# Arguments
+
+- `s::AbstractVector`: signal vector
+- `fs::Int64`: sampling rate in Hz
+- `nw::Real`: time-bandwidth product
+- `nt::Int64`: number of Slepian tapers
+- `adaptive::Bool=true`: if `true`, combine eigenspectra using Thomson's adaptive weights; if `false`, use equal weights (identical to `DSP.mt_pgram()`)
+- `maxiter::Int64=100`: maximum number of iterations of the adaptive weighting
+- `tol::Float64=1e-10`: relative convergence tolerance of the adaptive weighting
+
+# Returns
+
+Named tuple:
+
+- `p::Vector{Float64}`: one-sided PSD (units²/Hz)
+- `f::Vector{Float64}`: frequencies
+
+# Notes
+
+The adaptive weights follow Percival & Walden (1993), eq. 368a/370a: for each frequency the weights `d²ₖ = λₖ S² / (λₖ S + (1 - λₖ) σ²)²` are iterated together with `S = Σ d²ₖ Sₖ / Σ d²ₖ` until convergence, where `λₖ` are the taper concentration eigenvalues and `σ²` is the signal variance. Tapers with poor spectral concentration (low `λₖ`) are down-weighted where the spectrum is low, which reduces broadband leakage in spectra with a large dynamic range (e.g. 1/f EEG spectra).
+
+# References
+
+1. Thomson DJ. Spectrum estimation and harmonic analysis. Proceedings of the IEEE. 1982;70(9):1055–1096.
+2. Percival DB, Walden AT. Spectral Analysis for Physical Applications. Cambridge University Press; 1993.
+"""
+function _mt_psd(
+    s::AbstractVector;
+    fs::Int64,
+    nw::Real,
+    nt::Int64,
+    adaptive::Bool = true,
+    maxiter::Int64 = 100,
+    tol::Float64 = 1e-10,
+)::@NamedTuple{
+    p::Vector{Float64},
+    f::Vector{Float64},
+}
+    n = length(s)
+    nfft = DSP.nextfastfft(n)
+    nf = nfft ÷ 2 + 1
+    tapers = DSP.dpss(n, nw, nt)
+
+    # eigenspectra |FFT(s ⋅ hₖ)|² (tapers have unit energy)
+    sk = zeros(nf, nt)
+    buf = zeros(nfft)
+    rfft_plan = FFTW.plan_rfft(buf)
+    for k = 1:nt
+        @views buf[1:n] .= s .* tapers[:, k]
+        sk[:, k] = abs2.(rfft_plan * buf)
+    end
+
+    σ² = var(s; corrected = false)
+    if !adaptive || nt < 2 || σ² == 0
+        S = vec(mean(sk; dims = 2))
+    else
+        λ = DSP.dpsseig(tapers, nw)
+        S = zeros(nf)
+        @inbounds for i = 1:nf
+            # initial estimate: mean of the two best-concentrated tapers
+            si = (sk[i, 1] + sk[i, 2]) / 2
+            for _ = 1:maxiter
+                num = 0.0
+                den = 0.0
+                for k = 1:nt
+                    d² = λ[k] * (si / (λ[k] * si + (1 - λ[k]) * σ²))^2
+                    num += d² * sk[i, k]
+                    den += d²
+                end
+                si_new = den > 0 ? num / den : 0.0
+                converged = abs(si_new - si) <= tol * si_new
+                si = si_new
+                converged && break
+            end
+            S[i] = si
+        end
+    end
+
+    # one-sided PSD in units²/Hz: double all bins except DC (and Nyquist for even nfft)
+    p = S ./ fs
+    last_bin = iseven(nfft) ? nf - 1 : nf
+    p[2:last_bin] .*= 2
+    f = Vector(DSP.rfftfreq(nfft, fs))
+
+    return (; p, f)
+end
+
+"""
     _psd(s; <keyword arguments>)
 
 Calculate Power Spectral Density for a 1-D signal vector.
@@ -22,6 +114,7 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `adaptive::Bool=true`: if `true`, combine Slepian eigenspectra using Thomson's adaptive weights, otherwise use equal weights (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`; used by `:welch` and `:stft`
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples; used by `:welch` and `:stft`
 - `w::Bool=true`: if `true`, apply Hanning window (ignored by `:mt`, which uses Slepian tapers)
@@ -47,6 +140,7 @@ function _psd(
     db::Bool = false,
     method::Symbol = :welch,
     nt::Int64 = 7,
+    adaptive::Bool = true,
     wlen::Int64 = fs,
     woverlap::Int64 = min(round(Int64, wlen * 0.9), wlen - 1),
     w::Bool = true,
@@ -74,9 +168,8 @@ function _psd(
     if method === :mt
         demean && (s = _remove_dc(s))
         # Slepian tapers already window the data; nw so that 2nw - 1 = nt
-        pg = DSP.mt_pgram(s; fs = fs, nw = (nt + 1) / 2, ntapers = nt)
-        f = Vector(freq(pg))
-        p = power(pg)[1:length(f)]
+        r = _mt_psd(s; fs = fs, nw = (nt + 1) / 2, nt = nt, adaptive = adaptive)
+        p, f = r.p, r.f
 
     elseif method === :stft
         demean && (s = _remove_dc(s))
@@ -136,6 +229,7 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `adaptive::Bool=true`: if `true`, combine Slepian eigenspectra using Thomson's adaptive weights, otherwise use equal weights (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
@@ -161,6 +255,7 @@ function _psd(
     db::Bool = false,
     method::Symbol = :welch,
     nt::Int64 = 7,
+    adaptive::Bool = true,
     wlen::Int64 = fs,
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
@@ -180,6 +275,7 @@ function _psd(
         db = db,
         method = method,
         nt = nt,
+        adaptive = adaptive,
         wlen = wlen,
         woverlap = woverlap,
         w = w,
@@ -222,6 +318,7 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `adaptive::Bool=true`: if `true`, combine Slepian eigenspectra using Thomson's adaptive weights, otherwise use equal weights (used by `:mt`)
 - `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
@@ -247,6 +344,7 @@ function _psd(
     db::Bool = false,
     method::Symbol = :welch,
     nt::Int64 = 7,
+    adaptive::Bool = true,
     wlen::Int64 = fs,
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
@@ -271,6 +369,7 @@ function _psd(
         db = db,
         method = method,
         nt = nt,
+        adaptive = adaptive,
         wlen = wlen,
         woverlap = woverlap,
         w = w,
@@ -316,6 +415,7 @@ Default method is Welch's periodogram.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian filter + Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers (used by `:mt`)
+- `adaptive::Bool=true`: if `true`, combine Slepian eigenspectra using Thomson's adaptive weights, otherwise use equal weights (used by `:mt`)
 - `wlen::Int64=sr(obj)`: window length in samples (default = 1 second); used by `:welch` and `:stft`
 - `woverlap::Int64=min(min(round(Int64, wlen * 0.90), wlen - 1), wlen - 1)`: window overlap in samples
 - `w::Bool=true`: if `true`, apply Hanning window
@@ -342,6 +442,7 @@ function psd(
     db::Bool = false,
     method::Symbol = :welch,
     nt::Int64 = 7,
+    adaptive::Bool = true,
     wlen::Int64 = sr(obj),
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
@@ -370,6 +471,7 @@ function psd(
         db = db,
         method = method,
         nt = nt,
+        adaptive = adaptive,
         wlen = wlen,
         woverlap = woverlap,
         w = w,
