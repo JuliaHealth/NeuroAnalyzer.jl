@@ -12,6 +12,8 @@ export reference_slap
 export reference_slap!
 export reference_custom
 export reference_custom!
+export reference_rest
+export reference_rest!
 
 # ---------------------------------------------------------------------------
 # internal helpers
@@ -780,6 +782,147 @@ function reference_slap!(
     med::Bool = false,
 )::Nothing
     _copy_into!(obj, reference_slap(obj; nn = nn, weighted = weighted, med = med))
+    return nothing
+end
+
+# ---------------------------------------------------------------------------
+# REST (reference electrode standardization technique)
+# ---------------------------------------------------------------------------
+
+# n points spread evenly over the unit sphere (Fibonacci lattice)
+function _fibonacci_sphere(n::Int64)::Matrix{Float64}
+    ϕ = (1 + sqrt(5)) / 2
+    P = zeros(n, 3)
+    for k = 1:n
+        z = 1 - 2 * (k - 0.5) / n
+        r = sqrt(1 - z^2)
+        a = 2π * k / ϕ
+        P[k, :] = [r * cos(a), r * sin(a), z]
+    end
+    return P
+end
+
+# REST transformation matrix T (nch × nch): V_rest = T ⋅ V, for unit vectors U toward the electrodes
+function _rest_matrix(
+    U::AbstractMatrix{Float64};
+    ndip::Int64,
+    rdip::Real,
+    model::Symbol,
+    nmax::Int64 = 400,
+)::Matrix{Float64}
+    nch = size(U, 1)
+    # three-shell head model (brain, skull, scalp) of Yao (2001), conductivity ratio 1:1/80:1
+    g = model === :shell3 ? _shell_factors([0.87, 0.92, 1.0], [0.33, 0.33 / 80, 0.33], nmax) : nothing
+    # equivalent sources: layer of dipoles (3 orientations each) on a sphere inside the brain
+    D = _fibonacci_sphere(ndip) .* rdip
+    G = zeros(nch, 3 * ndip)
+    Threads.@threads :static for k = 1:ndip
+        G[:, (3k - 2):(3k)] = _leadfield(@view(D[k, :]), U, 1.0, 0.33; nmax = nmax, g = g)
+    end
+    H = _avgref(nch)
+    # the average-referenced lead field has rank nch - 1 (common mode is lost); drop the null space
+    return G * pinv(H * G; rtol = 1e-6) * H
+end
+
+"""
+    reference_rest(obj; <keyword arguments>)
+
+Re-reference EEG channels using the reference electrode standardization technique (REST). REST estimates the potentials referenced to a point at infinity (zero potential): the recorded potentials are explained by an equivalent layer of dipoles inside the head, whose potentials are then calculated without a reference. Only EEG-type channels are modified.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must have channel locations (Cartesian coordinates) for all EEG channels; must be of type `"eeg"`
+- `ndip::Int64=3000`: number of dipoles of the equivalent source layer
+- `rdip::Real=0.85`: radius of the equivalent source layer (fraction of the head radius); must be in `(0, 0.87)` (inside the brain) for `model = :shell3` and in `(0, 1)` for `model = :sphere`
+- `model::Symbol=:shell3`: head model:
+    - `:shell3`: three concentric spheres (brain, skull, scalp; radii 0.87, 0.92, 1.0; conductivity ratio 1:1/80:1)
+    - `:sphere`: homogeneous sphere
+
+# Returns
+
+- `NeuroAnalyzer.NEURO`: new object with re-referenced EEG channels
+
+# Notes
+
+- The recording reference must be common to all EEG channels (e.g. a physical, common electrode, linked ears/mastoids or average reference); REST is not valid for bipolar or Laplacian montages.
+- Electrode positions are projected onto the unit sphere centered at the origin of the channel locations coordinate system; their units do not matter.
+- Like the average reference, REST uses all EEG channels: remove or interpolate bad channels first.
+- With good electrode coverage of the head the result is close to the average reference; the difference is larger for sparse (e.g. 10-20) montages.
+
+# References
+
+1. Yao D. A method to standardize a reference of scalp EEG recordings to a point at infinity. Physiological Measurement. 2001;22(4):693–711.
+2. Yao D, Qin Y, Hu S, Dong L, Bringas Vega ML, Valdés Sosa PA. Which reference should we use for EEG and ERP practice? Brain Topography. 2019;32(4):530–549.
+"""
+function reference_rest(
+    obj::NeuroAnalyzer.NEURO;
+    ndip::Int64 = 3000,
+    rdip::Real = 0.85,
+    model::Symbol = :shell3,
+)::NeuroAnalyzer.NEURO
+    # validate
+    _check_datatype(obj, "eeg")
+    _check_var(model, [:shell3, :sphere], "model")
+    ndip >= 1 || throw(ArgumentError("ndip must be ≥ 1."))
+    rmax = model === :shell3 ? 0.87 : 1.0
+    0 < rdip < rmax || throw(ArgumentError("rdip must be in (0, $rmax)."))
+
+    ch = _eeg_ch_idx(obj)
+    ch_n = length(ch)
+    ch_n >= 3 || throw(ArgumentError("At least 3 EEG channels are needed."))
+
+    # unit vectors toward the electrodes
+    locs = _locs_ch_order(obj, ch)
+    U = hcat(Float64.(locs[!, :loc_x]), Float64.(locs[!, :loc_y]), Float64.(locs[!, :loc_z]))
+    r = sqrt.(sum(abs2, U; dims = 2))
+    any(iszero, r) && throw(
+        ArgumentError(
+            "Some channels have no Cartesian coordinates, use locs_sph2cart() first.",
+        ),
+    )
+    U ./= r
+
+    T = _rest_matrix(U; ndip = ndip, rdip = rdip, model = model)
+
+    # create new dataset
+    obj_tmp = deepcopy(obj)
+    for ep_idx = 1:nepochs(obj)
+        obj_tmp.data[ch, :, ep_idx] = T * @view(obj.data[ch, :, ep_idx])
+    end
+
+    _append_label_suffix!(obj_tmp, obj, ch, "-rest")
+    obj_tmp.header.recording[:reference] =
+        "REST ($(model === :shell3 ? "3-shell" : "homogeneous") sphere, $ndip dipoles)"
+    push!(obj_tmp.history, "reference_rest(obj, ndip=$ndip, rdip=$rdip, model=:$model)")
+
+    return obj_tmp
+end
+
+"""
+    reference_rest!(obj; <keyword arguments>)
+
+Re-reference EEG channels using the reference electrode standardization technique (REST) in-place. Only EEG-type channels are modified.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must have channel locations (Cartesian coordinates) for all EEG channels; must be of type `"eeg"`; modified in-place
+- `ndip::Int64=3000`: number of dipoles of the equivalent source layer
+- `rdip::Real=0.85`: radius of the equivalent source layer (fraction of the head radius); must be in `(0, 0.87)` (inside the brain) for `model = :shell3` and in `(0, 1)` for `model = :sphere`
+- `model::Symbol=:shell3`: head model:
+    - `:shell3`: three concentric spheres (brain, skull, scalp; radii 0.87, 0.92, 1.0; conductivity ratio 1:1/80:1)
+    - `:sphere`: homogeneous sphere
+
+# Returns
+
+- `Nothing`
+"""
+function reference_rest!(
+    obj::NeuroAnalyzer.NEURO;
+    ndip::Int64 = 3000,
+    rdip::Real = 0.85,
+    model::Symbol = :shell3,
+)::Nothing
+    _copy_into!(obj, reference_rest(obj; ndip = ndip, rdip = rdip, model = model))
     return nothing
 end
 

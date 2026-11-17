@@ -135,7 +135,7 @@ function _total_power(
 end
 
 """
-    total_power(obj; ch, method, nt, wlen, woverlap, w, ncyc, gw, wt)
+    total_power(obj; <keyword arguments>)
 
 Calculate total power for a NEURO object.
 

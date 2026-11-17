@@ -942,6 +942,28 @@ for f in (reference_plap, reference_slap)
 end
 @test_throws ArgumentError reference_slap(e10; nn = length(ch_eeg))
 
+@info "Test: reference_rest()"
+# shell factors: equal conductivities → homogeneous sphere
+@test NeuroAnalyzer._shell_factors([0.87, 0.92, 1.0], [0.33, 0.33, 0.33], 50) ≈ ones(50)
+@test NeuroAnalyzer._shell_factors([1.0], [0.33], 10) ≈ ones(10)
+e10_tmp = reference_rest(e10; ndip = 500)
+@test size(e10_tmp) == size(e10)
+@test all(isfinite, e10_tmp.data)
+@test startswith(e10_tmp.header.recording[:reference], "REST")
+# REST does not depend on the original common reference
+@test reference_rest(reference_ce(e10; ch = "Cz"); ndip = 500).data[ch_eeg, :, :] ≈
+      e10_tmp.data[ch_eeg, :, :]
+@test reference_rest(reference_avg(e10); ndip = 500).data[ch_eeg, :, :] ≈
+      e10_tmp.data[ch_eeg, :, :]
+# non-EEG channels are not modified
+ch_other = setdiff(1:nchannels(e10), ch_eeg)
+@test e10_tmp.data[ch_other, :, :] == e10.data[ch_other, :, :]
+e10_tmp = reference_rest(e10; ndip = 500, model = :sphere, rdip = 0.9)
+@test all(isfinite, e10_tmp.data)
+@test_throws ArgumentError reference_rest(e10; rdip = 0.9)
+@test_throws ArgumentError reference_rest(e10; model = :foo)
+@test_throws ArgumentError reference_rest(e10; ndip = 0)
+
 @info "Test: csd()"
 g, h = gh(e10.locs)
 @test size(g) == (23, 23)
@@ -1878,6 +1900,7 @@ for (f, f!, o, kw) in (
     (reference_ce, reference_ce!, eb, (ch = "Fp1",)),
     (reference_plap, reference_plap!, eb, ()),
     (reference_slap, reference_slap!, eb, ()),
+    (reference_rest, reference_rest!, eb, (ndip = 500,)),
     (reference_custom, reference_custom!, eb, ()),
     (resample, resample!, eb, (new_sr = 128,)),
     (downsample, downsample!, eb, (new_sr = 128,)),

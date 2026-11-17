@@ -1,7 +1,7 @@
 export sumsim
 
 """
-    _sumsim(s1, s2; theta)
+    _sumsim(s1, s2; <keyword arguments>)
 
 Calculate summed similarity using an exponential decay model between two 1-D signal vectors.
 
@@ -34,7 +34,7 @@ function _sumsim(s1::AbstractVector, s2::AbstractVector; theta::Real)::Float64
 end
 
 """
-    _sumsim(s1, s2; theta)
+    _sumsim(s1, s2; <keyword arguments>)
 
 Calculate summed similarity using an exponential decay model between two 3-D signal arrays.
 

@@ -1,7 +1,17 @@
 """
-    _time_axis(n, fs; t0 = 0.0)
+    _time_axis(n, fs; <keyword arguments>)
 
 Exact time axis of `n` samples at `fs` Hz starting at `t0` seconds: sample `k` lies at `t0 + (k - 1) / fs`.
+
+# Arguments
+
+- `n::Integer`: number of samples; must be ≥ 0
+- `fs::Real`: sampling rate in Hz; must be > 0
+- `t0::Real=0.0`: time of the first sample in seconds
+
+# Returns
+
+- `Vector{Float64}`
 
 Each time point is a single, correctly rounded division (no accumulated step error, no rounding to a fixed number of decimals), so `_time_axis(n, fs)[s] == s2t(s, fs)` and times that are exact multiples of `1 / fs` compare equal to their decimal literals (e.g. `1.5`, `0.1`). Values are rounded only for presentation.
 """

@@ -263,15 +263,25 @@ function _set_defaults(
 end
 
 """
-    _bernstein(i, n; steps=50)
+    _bernstein(i, n; <keyword arguments>)
 
 Return the values of the `i`-th Bernstein basis polynomial of degree `n` evaluated at `steps` evenly spaced points in [0, 1].
+
+# Arguments
+
+- `i::Int`: index of the basis polynomial
+- `n::Int`: degree of the basis polynomial
+- `steps::Int=50`: number of evaluation points
+
+# Returns
+
+- `Vector{Float64}`
 """
 _bernstein(i::Int, n::Int; steps::Int = 50) =
     [binomial(n, i) * t^i * (1 - t)^(n - i) for t in LinRange(0, 1, steps)]
 
 """
-    _bernstein_poly(px, py; steps=50)
+    _bernstein_poly(px, py; <keyword arguments>)
 
 Evaluate a Bézier curve defined by control points `(px[i], py[i])` at `steps` parameter values, using Bernstein polynomial basis functions.
 

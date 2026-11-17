@@ -1,5 +1,5 @@
 """
-    _dict2labeled_matrix(d; rev)
+    _dict2labeled_matrix(d; <keyword arguments>)
 
 Convert a dictionary to labeled matrix format (labels and values vectors).
 

@@ -131,7 +131,7 @@ function _itpt_build(duration::Int64)
 end
 
 """
-    itpt(; duration, port_name)
+    itpt(; <keyword arguments>)
 
 Perform the **Two-Point Pinch Test (TPT)** in GUI mode.
 
@@ -252,7 +252,7 @@ function itpt(;
 end
 
 """
-    tpt(; duration, port_name)
+    tpt(; <keyword arguments>)
 
 Perform the **Two-Point Pinch Test (TPT)** in CLI (terminal) mode.
 

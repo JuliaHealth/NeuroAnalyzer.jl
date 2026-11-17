@@ -12,7 +12,7 @@ const _QRange = Union{
 }
 
 """
-    _ghexp(s; tau_range, q_range)
+    _ghexp(s; <keyword arguments>)
 
 Calculate the Generalised Hurst Exponent(s) of a 1-D signal vector by analysing how the q-th moment of the absolute increments |s(t+τ) − s(t)|^q scales with lag τ.
 

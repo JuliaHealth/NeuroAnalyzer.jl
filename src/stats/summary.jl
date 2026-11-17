@@ -74,7 +74,7 @@ end
 export summary_stats
 
 """
-    summary_stats(x; g, d)
+    summary_stats(x; <keyword arguments>)
 
 Return summary statistics for a single vector, printing a formatted table.
 
@@ -159,7 +159,7 @@ function summary_stats(
 end
 
 """
-    summary_stats(x; g, d)
+    summary_stats(x; <keyword arguments>)
 
 Return summary statistics for each column of a matrix, printing a formatted table.
 
@@ -194,7 +194,7 @@ function summary_stats(
 end
 
 """
-    summary(x1, x2, xs...; g, d)
+    summary(x1, x2, xs...; <keyword arguments>)
 
 Return summary statistics for two or more data vectors (groups), printing a formatted table.
 
