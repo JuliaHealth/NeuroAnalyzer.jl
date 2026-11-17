@@ -281,14 +281,16 @@ function _sort_channels(ch_t::Vector{String})::Vector{Int64}
         "ieeg" => "3", "csd" => "4", "ref" => "4",
         "eog" => "5", "ecg" => "6", "emg" => "7",
         "other" => "8", "mrk" => "9", "stim" => "9",
-        "nirs_int" => "1", "nirs_od" => "1", "nirs_hbo" => "2",
-        "nirs_hbr" => "2", "nirs_hbt" => "2", "nirs_h2o" => "2",
-        "nirs_dmean" => "3", "nirs_dvar" => "3", "nirs_dskew" => "3",
-        "nirs_mua" => "3", "nirs_musp" => "3", "nirs_lipid" => "3",
-        "nirs_bfi" => "3", "nirs_hrf_dod" => "3", "nirs_hrf_dmean" => "3",
-        "nirs_hrf_dvar" => "3", "nirs_hrf_dskew" => "3", "nirs_hrf_hbo" => "3",
-        "nirs_hrf_hbr" => "3", "nirs_hrf_hbt" => "3", "nirs_hrf_bfi" => "3",
-        "nirs_aux" => "4", "accel" => "1", "magfld" => "2",
+        # NIRS: each data type forms its own block (the channels of the pairs are
+        # interleaved by od2conc(): S1_D1 HbO, S1_D1 HbR, S1_D1 HbT, S1_D2 HbO, …)
+        "nirs_int" => "1", "nirs_od" => "2", "nirs_dmean" => "3",
+        "nirs_dvar" => "3", "nirs_dskew" => "3", "nirs_mua" => "3",
+        "nirs_musp" => "3", "nirs_hbo" => "4", "nirs_hbr" => "5", "nirs_hbt" => "6",
+        "nirs_h2o" => "7", "nirs_lipid" => "7", "nirs_bfi" => "7",
+        "nirs_hrf_dod" => "8", "nirs_hrf_dmean" => "8", "nirs_hrf_dvar" => "8",
+        "nirs_hrf_dskew" => "8", "nirs_hrf_hbo" => "8", "nirs_hrf_hbr" => "8",
+        "nirs_hrf_hbt" => "8", "nirs_hrf_bfi" => "8",
+        "nirs_aux" => "9", "accel" => "1", "magfld" => "2",
         "orient" => "3", "angvel" => "4",
     )
     ch_order = [get(priority, t, "8") for t in ch_t] # default to "8" for unknowns

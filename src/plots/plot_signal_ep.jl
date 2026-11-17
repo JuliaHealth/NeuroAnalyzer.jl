@@ -90,6 +90,8 @@ function plot_ep(
     else
         ch_order = collect(1:ch_n)
     end
+    # object index of the channel shown in each row
+    ch_idx = ch[ch_order]
     clabels = labels(obj)[ch][ch_order]
     ctypes  = obj.header.recording[:channel_type][ch][ch_order]
     cunits  = obj.header.recording[:unit][ch][ch_order]
@@ -130,7 +132,7 @@ function plot_ep(
         ch1 = Observable(1)
         ch2_init = length(ctypes_uni)
         nch = Observable(ch_n)
-        clabels = uppercase.(ctypes_uni)
+        clabels = _ctype_label.(ctypes_uni)
     end
 
     # common amplitude scale of each channel type (one row = r signal units), robust to artifacts;
@@ -161,8 +163,7 @@ function plot_ep(
 
     # y-axis labels colors
     if type === :normal
-        ytc = repeat([:black], nchannels(obj))
-        ytc[bad_ch[]] .= :lightgray
+        ytc = [bad_ch[][c] ? :lightgray : :black for c in ch_idx]
     else
         ytc = repeat([:black], ch_n)
     end
@@ -223,7 +224,7 @@ function plot_ep(
     # draw channels
     if type === :normal
         for idx = 1:ch_n
-            line_color = @lift($bad_ch[idx] ? :lightgray : :black)
+            line_color = @lift($bad_ch[ch_idx[idx]] ? :lightgray : :black)
             y = @lift(_pts(y_base[idx] .+ $gain .* $s[idx, :]))
             GLMakie.lines!(ax1, y; linewidth = 1.5, color = line_color)
         end
@@ -484,14 +485,14 @@ function plot_ep(
                     # mark/unmark channel as bad
                     if type === :normal
                         if ax1_x < 0
-                            bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
-                            obj.header.recording[:bad_channel][
-                                get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                            ] =
-                                !obj.header.recording[:bad_channel][
-                                    get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                                ]
-                            notify(bad_ch)
+                            # the row is a display position: flip the flag of its channel
+                            # once (bad_ch wraps the header vector itself)
+                            row = round(Int64, ax1_y)
+                            if 1 <= row <= ch_n
+                                c = ch_idx[row]
+                                bad_ch[][c] = !bad_ch[][c]
+                                notify(bad_ch)
+                            end
                         end
                     end
 

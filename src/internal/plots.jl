@@ -603,6 +603,23 @@ end
 # auxiliary channels): each channel is scaled separately, without a common scale bar
 const _PLOT_SCALE_EACH = ["nirs_aux"]
 
+# readable names of channel types (row labels of butterfly plots)
+const _CTYPE_LABELS = Dict(
+    "nirs_int" => "Intensity", "nirs_od" => "OD", "nirs_hbo" => "HbO",
+    "nirs_hbr" => "HbR", "nirs_hbt" => "HbT", "nirs_h2o" => "H₂O",
+    "nirs_lipid" => "Lipid", "nirs_bfi" => "BFi", "nirs_aux" => "AUX",
+    "nirs_dmean" => "dMean", "nirs_dvar" => "dVar", "nirs_dskew" => "dSkew",
+    "nirs_mua" => "μa", "nirs_musp" => "μs′",
+)
+function _ctype_label(t::AbstractString)::String
+    haskey(_CTYPE_LABELS, t) && return _CTYPE_LABELS[t]
+    if startswith(t, "nirs_hrf_")
+        b = t[10:end]
+        return "HRF " * get(_CTYPE_LABELS, "nirs_" * b, uppercase(b))
+    end
+    return uppercase(t)
+end
+
 # scale and center the rows `g_idx` of `s` (channels of one type) in place, negating them for
 # the reversed y-axis; return the common scale (`NaN` for types scaled channel by channel)
 function _plot_scale_group!(

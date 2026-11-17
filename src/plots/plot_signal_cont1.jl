@@ -85,6 +85,8 @@ function plot_cont(
     else
         ch_order = collect(1:ch_n)
     end
+    # object index of the channel shown in each row
+    ch_idx = ch[ch_order]
     ctypes = obj.header.recording[:channel_type][ch][ch_order]
     cunits = obj.header.recording[:unit][ch][ch_order]
 
@@ -119,7 +121,7 @@ function plot_cont(
         ch1      = Observable(1)
         ch2_init = length(ctypes_uni)
         nch      = Observable(ch_n)
-        clabels  = uppercase.(ctypes_uni)
+        clabels  = _ctype_label.(ctypes_uni)
     end
 
     # signal-dependent data, recomputed after the signal is modified
@@ -164,8 +166,7 @@ function plot_cont(
 
     # y-axis labels colors
     if type === :normal
-        ytc = repeat([:black], nchannels(obj))
-        ytc[bad_ch[]] .= :lightgray
+        ytc = [bad_ch[][c] ? :lightgray : :black for c in ch_idx]
     else
         ytc = repeat([:black], ch_n)
     end
@@ -287,7 +288,7 @@ function plot_cont(
         # draw channels
         if type === :normal
             for idx = 1:ch_n
-                line_color = _draw_lift(b -> b[idx] ? :lightgray : :black, bad_ch)
+                line_color = _draw_lift(b -> b[ch_idx[idx]] ? :lightgray : :black, bad_ch)
                 y = _draw_lift(g -> y_off[idx] .+ g .* s[idx, :], gain)
                 GLMakie.lines!(ax1, t, y; linewidth = 1.5, color = line_color)
             end
@@ -481,14 +482,14 @@ function plot_cont(
                     if type === :normal
                         # mark/unmark channel as bad
                         if ax1_x < ax1.limits[][1][1]
-                            bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
-                            obj.header.recording[:bad_channel][
-                                get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                            ] =
-                                !obj.header.recording[:bad_channel][
-                                    get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1],
-                                ]
-                            notify(bad_ch)
+                            # the row is a display position: flip the flag of its channel
+                            # once (bad_ch wraps the header vector itself)
+                            row = round(Int64, ax1_y)
+                            if 1 <= row <= ch_n
+                                c = ch_idx[row]
+                                bad_ch[][c] = !bad_ch[][c]
+                                notify(bad_ch)
+                            end
                         end
                         # clear markers
                         if ax1_x >= ax1.limits[][1][1] &&

@@ -780,6 +780,18 @@ sg[1, :] = sin.(1:100)
 sg[2, :] = 100 .* sin.(1:100)
 sg[3, :] = 0.01 .* sin.(1:100)
 @test isnan(NeuroAnalyzer._plot_scale_group!(sg, [true, true, true], "nirs_aux", 1))
+# bad channels are drawn in gray in the rows where they are shown (rows are display
+# positions: channel subsets and type grouping reorder the channels)
+n_bad = od2conc(intensity2od(nirs))
+n_bad.header.recording[:bad_channel][get_channel(n_bad; ch = "S1_D2 HbR")] .= true
+p = NeuroAnalyzer.plot(n_bad; ch = ["S1_D2 HbR", "S1_D1 HbO", "S1_D2 HbO"], gui = false)
+bad_lines = [
+    x for x in p.content[1].scene.plots if x isa GLMakie.Lines && length(x[1][]) > 2
+]
+bad_gray = [x.color[] == GLMakie.to_color(:lightgray) for x in bad_lines]
+@test count(bad_gray) == 1
+# HbO rows first, then HbR (the bad channel): the last row
+@test bad_gray[end]
 @test all(r -> maximum(abs, r) <= 1, eachrow(sg))
 
 ##

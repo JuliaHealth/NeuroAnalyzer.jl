@@ -455,6 +455,13 @@ t, et = NeuroAnalyzer._get_t(e10)
       ["ecg", "eog", "emg", "ref", "accel", "mrk", "nirs_od", "other", "eeg"]
 # priorities: eeg (3) < ecg (6) < unknown (8) < mrk (9)
 @test NeuroAnalyzer._sort_channels(["mrk", "eeg", "ecg", "unknown"]) == [2, 3, 4, 1]
+# NIRS: each data type forms its own block (od2conc() interleaves HbO/HbR/HbT by pair)
+@test NeuroAnalyzer._sort_channels(
+    ["nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_hbo", "nirs_hbr", "nirs_aux", "nirs_od"],
+) == [7, 1, 4, 2, 5, 3, 6]
+@test NeuroAnalyzer._ctype_label("nirs_hbo") == "HbO"
+@test NeuroAnalyzer._ctype_label("nirs_hrf_hbr") == "HRF HbR"
+@test NeuroAnalyzer._ctype_label("eeg") == "EEG"
 @test NeuroAnalyzer._ch_idx(["a", "b", "c"], ["c", "a", "c"]) == [3, 1]
 @test_throws ArgumentError NeuroAnalyzer._ch_idx(["a", "b"], "z")
 @test NeuroAnalyzer._v2r([3, 1, 2]) == 1:3
