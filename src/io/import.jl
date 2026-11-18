@@ -8,7 +8,7 @@ export detect_format
 # all formats import_recording() can dispatch to
 const _FORMATS = (
     :edf, :bdf, :gdf, :bv, :csv, :csv_gz, :set, :npy, :xdf, :nwb, :ncs,
-    :fiff, :ft, :snirf, :nirs, :nirx, :duomag,
+    :fiff, :ft, :snirf, :nirs, :nirx, :duomag, :dtee,
 )
 
 # extension → format
@@ -32,10 +32,11 @@ const _EXT_FORMAT = Dict{String, Symbol}(
     ".hdr"   => :nirx,
     ".ascii" => :duomag,
     ".m"     => :duomag,
+    ".eef"   => :dtee,
 )
 
 # formats whose leading bytes identify them unambiguously: content wins over extension
-const _UNIQUE_SIGNATURE = (:edf, :bdf, :gdf, :bv, :npy, :xdf, :ncs, :fiff, :nirx)
+const _UNIQUE_SIGNATURE = (:edf, :bdf, :gdf, :bv, :npy, :xdf, :ncs, :fiff, :nirx, :dtee)
 
 # generic containers → formats that may legitimately use them (extension disambiguates)
 const _CONTAINER_FORMATS = Dict{Symbol, Tuple{Vararg{Symbol}}}(
@@ -97,6 +98,8 @@ function _sniff_format(file_name::String)::Symbol
     txt = chopprefix(String(buf[1:min(end, 256)]), "\ufeff")
     occursin(r"^Brain ?Vision Data Exchange Header File", txt) && return :bv
     startswith(txt, "########") && occursin("Neuralynx", txt) && return :ncs
+    # DigiTrack (Elmiko) exam header: XML with an <ElmikoExamFile> root element
+    startswith(txt, "<?xml") && occursin("<ElmikoExamFile", txt) && return :dtee
     # NIRx (NIRStar / Aurora) header: INI-style, [GeneralInfo] is the first section
     occursin(r"^\s*\[GeneralInfo\]"m, chopprefix(String(copy(buf)), "\ufeff")) &&
         return :nirx
@@ -157,6 +160,9 @@ function _sibling_hint(file_name::String)::String
     elseif ext in (".wl1", ".wl2", ".wl3", ".wl4", ".evt", ".inf", ".tpl", ".set")
         # NIRx data/aux files; note NIRStar also writes a (text) .set settings file
         (".hdr", ".HDR")
+    elseif ext in (".1", ".evx")
+        # DigiTrack signal / event files
+        (".eef", ".EEF")
     else
         ()
     end
@@ -171,7 +177,8 @@ end
 
 Determine file format using content signature first and extension second.
 
-- unique signature (EDF, BDF, GDF, BrainVision, NPY, XDF, NCS, FIFF): content wins; warns if extension disagrees
+- unique signature (EDF, BDF, GDF, BrainVision, NPY, XDF, NCS, FIFF, NIRx, DigiTrack `.eef`): content wins; warns if extension disagrees
+- a folder containing a DigiTrack `.eef` file: `:dtee`
 - HDF5: NWB/SNIRF identified by content when possible, otherwise by extension
 - MATLAB / gzip / text containers: extension picks the format, but must be compatible with the container
 - no conclusive signature: falls back to extension (with a warning if the format should have been recognizable)
@@ -185,6 +192,11 @@ Determine file format using content signature first and extension second.
 - `ext_fmt::Symbol`
 """
 function detect_format(file_name::String)::Symbol
+    # a folder: DigiTrack exam (e.g. an exported .dtEE folder) with an .eef header
+    if isdir(file_name)
+        any(f -> lowercase(splitext(f)[2]) == ".eef", readdir(file_name)) && return :dtee
+        throw(ArgumentError("Cannot determine the format of folder $file_name."))
+    end
     sig = _sniff_format(file_name)
     sig === :empty && throw(ArgumentError("File $file_name is empty."))
     ext_fmt = _ext_format(file_name)
@@ -254,6 +266,9 @@ Supported formats:
 | NIRS                           | `.nirs`           | `:nirs`     | MAT-file only                 |
 | NIRx (NIRStar / Aurora)        | `.hdr`            | `:nirx`     | yes                           |
 | DuoMAG TMS MEP                 | `.ascii`, `.m`    | `:duomag`   | no                            |
+| DigiTrack (Elmiko) exam        | `.eef`, folder    | `:dtee`     | yes                           |
+
+A DigiTrack exam may be given as its `.eef` header file or as the folder containing it (e.g. an exported `.dtEE` folder).
 
 "MAT-file only" / "text only" means the container is verified, but the extension (or `format`) decides which importer is used.
 
@@ -294,8 +309,8 @@ function import_recording(
     n::Int64 = 0,
     format::Union{Nothing, Symbol} = nothing,
 )::Union{NeuroAnalyzer.NEURO, DataFrame}
-    # validate
-    isfile(file_name) ||
+    # validate (folders: DigiTrack exams)
+    (isfile(file_name) || isdir(file_name)) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
 
     fmt = if format === nothing
@@ -344,6 +359,8 @@ function import_recording(
     fmt === :nirs && return import_nirs(file_name)
     fmt === :nirx && return import_nirx(file_name)
     fmt === :duomag && return import_duomag(file_name)
+    fmt === :dtee &&
+        return import_dtee(file_name; detect_type = detect_type, clean_labels = clean_labels)
 
     # unreachable: every member of _FORMATS is handled above
     return throw(ErrorException("Internal error: unhandled format :$fmt."))

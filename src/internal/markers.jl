@@ -87,7 +87,7 @@ _has_markers(obj::NeuroAnalyzer.NEURO)::Bool = !isempty(obj.markers)
 
 Convert a vector of raw EDF/BDF annotation strings into a standardized markers DataFrame.
 
-Each annotation is pre-processed to normalize control characters (0x14, 0x15, 0x00) to pipe `|` separators or removed entirely. The resulting token stream is parsed into `(start, length, event)` triples.
+Each string (the annotation channel of one data record) is parsed into time-stamped annotation lists (TALs, EDF+ specification): TALs are separated by 0x00; a TAL is `onset[0x15 duration]0x14 annotation 0x14 [annotation 0x14 …]`. Every non-empty annotation of a TAL is one event (several annotations may share an onset, and a data record may contain several TALs); empty annotations (the time-keeping TAL of each data record) are skipped.
 
 # Arguments
 
@@ -103,73 +103,24 @@ Each annotation is pre-processed to normalize control characters (0x14, 0x15, 0x
 - Non-ASCII labels trigger a warning but are not dropped
 """
 function _a2df(annotations::Vector{String})::DataFrame
-    # normalize control characters to "|" separators
-    mrk = replace.(annotations,
-        "\x14\x14\0" => "|",
-        "\x14\x14"   => "|",
-        "\x14"       => "|",
-        "\x15"       => "|",
-        "\0"         => "",
-        r"\|$"       => "",
-    )
-
-    # remove entries that are empty or contain no pipe separators
-    for idx = length(mrk):-1:1
-        if isempty(mrk[idx]) || !occursin('|', mrk[idx])
-            deleteat!(mrk, idx)
-        end
-    end
-
     a_start  = Float64[]
     a_length = Float64[]
     a_event  = String[]
 
-    if length(mrk) == 1
-        s = split(mrk[1], "|")
-
-        for idx = length(s):-1:1
-            s[idx] == "" && deleteat!(s, idx)
-        end
-
-        if length(s) % 3 == 0
-            for idx = 1:3:(length(s) - 2)
-                push!(a_start, parse(Float64, strip(s[idx])))
-                push!(a_length, parse(Float64, strip(s[idx + 1])))
-                push!(a_event, strip(s[idx + 2]))
-            end
-        else
-
-            # TODO: use offset if provided
-
-            _offset = parse(Float64, strip(s[1]))
-            for idx = 2:3:(length(s) - 1)
-                push!(a_start, parse(Float64, strip(s[idx])))
-                push!(a_length, parse(Float64, strip(s[idx + 1])))
-                push!(a_event, strip(s[idx + 2]))
-            end
-        end
-
-    else
-        for idx in eachindex(mrk)
-            s = split(mrk[idx], "|")
-            # drop empty tokens
-            for s_idx in reverse(eachindex(s))
-                s[s_idx] == "" && deleteat!(s, s_idx)
-            end
-            # drop leading annotation-number column when both first two tokens start with '+'
-            length(s) >= 2 && s[1][1] == '+' && s[2][1] == '+' && (s = s[2:end])
-
-            if length(s) == 3
-                # markers with 2 tokens must have start, length and name
-                push!(a_start, parse(Float64, strip(s[1])))
-                push!(a_length, parse(Float64, strip(s[2])))
-                push!(a_event, strip(s[3]))
-            elseif length(s) == 2
-                # markers with 2 tokens only have start and name
-                push!(a_start, parse(Float64, strip(s[1])))
-                push!(a_length, 0.0)
-                push!(a_event, strip(s[2]))
-            end
+    # TAL: onset (+/- number), optional 0x15 duration, 0x14, annotations terminated by 0x14
+    tal_re = r"^\s*([+-]\d+(?:\.\d*)?)(?:\x15(\d*(?:\.\d*)?))?\x14(.*)$"s
+    for rec in annotations, tal in split(rec, '\0')
+        m = match(tal_re, tal)
+        isnothing(m) && continue
+        onset = parse(Float64, m.captures[1])
+        dur = m.captures[2]
+        dur = (isnothing(dur) || isempty(dur)) ? 0.0 : something(tryparse(Float64, dur), 0.0)
+        for txt in split(m.captures[3], '\x14')
+            txt = strip(txt)
+            isempty(txt) && continue
+            push!(a_start, onset)
+            push!(a_length, dur)
+            push!(a_event, txt)
         end
     end
 

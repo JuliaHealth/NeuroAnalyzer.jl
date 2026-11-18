@@ -693,6 +693,14 @@ df = NeuroAnalyzer._a2df([
 @test df[!, :length] == [0.0, 0.5, 0.0]
 @test df[!, :id] == ["1", "2", "1"]
 @test nrow(NeuroAnalyzer._a2df(["+0\x14\x14\0"])) == 0
+# a data record with a time-keeping TAL followed by several TALs, one of them with
+# two annotations sharing the onset (previously such records were dropped)
+df = NeuroAnalyzer._a2df([
+    "+616\x14\x14\0+617.5\x14pause\x14resume\x14\0+618\x152\x14hv\x14\0\0",
+])
+@test df[!, :start] == [617.5, 617.5, 618.0]
+@test df[!, :length] == [0.0, 0.0, 2.0]
+@test df[!, :value] == ["pause", "resume", "hv"]
 
 ##
 ## Vectors, signals

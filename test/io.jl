@@ -487,6 +487,44 @@ eeg = import_digitrack(joinpath(testfiles_path, "eeg", "eeg-test-digitrack.txt")
 # Digitrack exports all channels in μV
 @test eeg.header.recording[:unit][24] == "μV"
 
+@info "Test: import_dtee()"
+dtee_dir = joinpath(testfiles_path, "eeg", "dtee")
+dtee_base = joinpath(dtee_dir, "exam-\$ver{abb7c439-f499-4419-87a3-18640a2481e5}")
+@test detect_format(dtee_dir) === :dtee
+@test detect_format(dtee_base * ".eef") === :dtee
+eeg = import_recording(dtee_dir)
+@test eeg.data == import_dtee(dtee_base * ".eef").data
+@test eeg.header.recording[:file_type] == "DigiTrack"
+@test (sr(eeg), nchannels(eeg), epoch_len(eeg)) == (256, 25, 324751)
+@test labels(eeg)[[1, 21, 22, 24, 25]] == ["Fp1", "Pz", "EOG1", "EKG", "Marker"]
+@test eeg.header.recording[:channel_type][[1, 22, 24, 25]] == ["eeg", "eog", "ecg", "mrk"]
+@test eeg.header.recording[:recording_date] == "2024-04-09"
+@test eeg.header.recording[:recording_time] == "09:37:56.15"
+# reference: raw EDF+ export of the same exam (common resolution 0.17936 μV, i.e. equal
+# within one EDF step; the EDF is zero-padded to whole data records)
+ref = import_edf(dtee_base * ".edf")
+@test maximum(abs.(eeg.data[1:24, :, 1] .- ref.data[1:24, 1:epoch_len(eeg), 1])) < 0.18
+# events: pauses are not stored in the signal; times relative to the exam start
+@test DataFrames.nrow(eeg.markers) == 66
+@test eeg.markers[1, :value] == "Technical_ExamStart" && eeg.markers[1, :start] == 0
+@test eeg.markers[2, :value] == "Eyes_Opened"
+@test eeg.markers[2, :start] ≈ 510.749 atol = 0.001
+@test "Stimulation_HyperventilationIsGoing 10" in eeg.markers[!, :value]
+# event codes in the marker channel (eyes opened: 0x0100) at the event time (± 1 sample)
+@test any(
+    abs.(findall(==(0x0100), eeg.data[25, :, 1]) ./ sr(eeg) .- 1 / sr(eeg) .- 510.749) .<
+    1.5 / sr(eeg),
+)
+# the EDF export places the events 0.151 s later (start time truncated to whole seconds)
+for row in eachrow(ref.markers)
+    v = replace(row[:value], "@value:+" => " ", "@value:-" => " ")
+    idx = findall(==(v), eeg.markers[!, :value])
+    isempty(idx) && continue
+    @test minimum(abs.(eeg.markers[idx, :start] .- (row[:start] - 0.151))) < 0.002
+end
+@test_throws ArgumentError import_dtee(joinpath(testfiles_path, "eeg"))
+@test_throws ArgumentError import_recording(dtee_base * ".1")
+
 @info "Test: import_csv()"
 # both files: the EEGLAB recording, time in ms (256 Hz); Fp1 = 222.4075, 182.7696, …
 eeg = import_csv(joinpath(testfiles_path, "eeg", "eeg-test_txch.csv.gz"))
