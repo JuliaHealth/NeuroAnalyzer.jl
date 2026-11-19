@@ -1758,7 +1758,8 @@ ta = tpt_analyze(tp)
 rng_tp = NeuroAnalyzer.Random.MersenneTwister(3)
 fs_tp = 50
 t_tp = (0:(30 * fs_tp - 1)) ./ fs_tp
-on_tp = cumsum(0.2 .+ 0.3 .* rand(rng_tp, 200))
+# pinches 0.35-0.65 s apart (fastest pinching in real recordings: ~0.4 s)
+on_tp = cumsum(0.35 .+ 0.3 .* rand(rng_tp, 200))
 on_tp = on_tp[0.5 .< on_tp .< 29.5]
 pk_tp = [sum(exp(-((x - o) / 0.04)^2) for o in on_tp) for x in t_tp]
 drift_tp = 0.5 .* sin.(2π .* 0.05 .* t_tp)

@@ -4,7 +4,7 @@ export tpt_analyze
 """
     tpt_detect(obj)
 
-Detect pinches in TPT recording: peaks of the movement magnitude (3-D acceleration after removing the posture of the hand), at least 0.12 s apart. The detection threshold adapts to the noise and to the size of the pinches in the recording.
+Detect pinches in TPT recording: peaks of the movement envelope (3-D acceleration after removing single-sample glitches and the posture of the hand, smoothed so that the several acceleration peaks of one pinch are merged), at least 0.25 s apart. The detection threshold adapts to the noise and to the size of the pinches in the recording, so the acceleration units do not matter.
 
 # Arguments
 
