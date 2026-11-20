@@ -265,9 +265,12 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     probes = matread(splitext(file_name)[1] * "_probeInfo.mat")
     # head_model = probes["probeInfo"]["headmodel"]
     # probes["probeInfo"]["probes"]["labels_o"]
-    det_labels = probes["probeInfo"]["probes"]["labels_d"][:]
-    src_labels = probes["probeInfo"]["probes"]["labels_s"][:]
-    opt_labels = string.(vcat(src_labels, det_labels))
+    # optode labels from the probe (e.g. 10-20 positions); optodes without a label (e.g. the
+    # detectors of short-separation channels) are named as in NIRx: S1, S2, … and D1, D2, …
+    _opt_label(l, prefix, idx) = l isa AbstractString && !isempty(strip(l)) ? string(strip(l)) : "$prefix$idx"
+    det_labels = [_opt_label(l, "D", idx) for (idx, l) in enumerate(probes["probeInfo"]["probes"]["labels_d"][:])]
+    src_labels = [_opt_label(l, "S", idx) for (idx, l) in enumerate(probes["probeInfo"]["probes"]["labels_s"][:])]
+    opt_labels = vcat(src_labels, det_labels)
 
     clabels = [
         string(src_labels[opt_pairs[idx, 1]]) *
@@ -368,6 +371,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         opt_labels = opt_labels,
         sampling_rate = sampling_rate,
         bad_channels = zeros(Bool, size(data, 1)),
+        # optode coordinates of NIRx probe files (probeInfo.mat) are in cm
+        length_unit = "cm",
     )
     e = _create_experiment(;
         name = string(study_type1),

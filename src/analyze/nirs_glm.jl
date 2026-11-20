@@ -50,25 +50,34 @@ function _dct_drift(n::Int64, fs::Int64, cutoff::Real)::Matrix{Float64}
     return reduce(hcat, [cos.(pi .* (2 .* t .+ 1) .* j ./ (2 * n)) for j = 1:(k - 1)])
 end
 
-# AR(p) coefficients of x (Yule-Walker, Levinson-Durbin) and the innovation variance
-function _ar_yw(x::AbstractVector, p::Int64)::Tuple{Vector{Float64}, Float64}
+# AR(p) models of x for all orders p = 1:pmax (Yule-Walker, Levinson-Durbin): the coefficients
+# and the innovation variance of each order; the recursion of order p contains all lower orders,
+# so the autocorrelation is calculated once
+function _ar_yw(
+    x::AbstractVector,
+    pmax::Int64,
+)::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
     n = length(x)
-    r = [sum(x[1:(n - k)] .* x[(1 + k):n]) / n for k = 0:p]
-    a = zeros(p)
+    r = [dot(view(x, 1:(n - k)), view(x, (1 + k):n)) / n for k = 0:pmax]
+    as = Vector{Vector{Float64}}(undef, pmax)
+    es = zeros(pmax)
+    a = Float64[]
     e = r[1]
-    for k = 1:p
+    for k = 1:pmax
         acc = r[k + 1] - sum(a[j] * r[k - j + 1] for j = 1:(k - 1); init = 0.0)
         kk = acc / e
-        a_new = copy(a)
+        a_new = zeros(k)
         a_new[k] = kk
         for j = 1:(k - 1)
             a_new[j] = a[j] - kk * a[k - j]
         end
         a = a_new
         e *= (1 - kk^2)
+        as[k] = a
+        es[k] = e
     end
 
-    return a, e
+    return as, es
 end
 
 """
@@ -145,44 +154,55 @@ function nirs_glm(
     X = hcat(X_task, ones(n), _dct_drift(n, fs, drift))
     k = size(X, 2)
 
-    df_out = DataFrame(;
-        channel = String[], condition = String[], beta = Float64[], se = Float64[],
-        t = Float64[], df = Int64[], p = Float64[],
-    )
-    for c in ch
-        y = obj.data[c, :, 1]
-        b = X \ y
+    # ordinary least squares of all channels at once (the design is the same for all channels)
+    B_ols = X \ Matrix(obj.data[ch, :, 1]')
+
+    # one row per channel and condition: (beta, se, t, df, p)
+    rows = Vector{Vector{Tuple{Float64, Float64, Float64, Int64, Float64}}}(undef, length(ch))
+    Threads.@threads :static for ch_idx in eachindex(ch)
+        y = obj.data[ch[ch_idx], :, 1]
+        b = B_ols[:, ch_idx]
         res = y .- X * b
         Xw, yw = X, y
         p_ar = 0
         if ar > 0
-            # AR order by BIC
-            best = (Inf, 0, Float64[])
-            for p = 1:min(ar, n ÷ 4)
-                a, e = _ar_yw(res .- mean(res), p)
-                e > 0 || break
-                bic = n * log(e) + p * log(n)
-                bic < best[1] && (best = (bic, p, a))
+            # AR order by BIC (models of all orders from one Levinson-Durbin recursion)
+            pmax = min(ar, n ÷ 4)
+            as, es = _ar_yw(res .- mean(res), pmax)
+            best = (Inf, 0)
+            for p = 1:pmax
+                es[p] > 0 || break
+                bic = n * log(es[p]) + p * log(n)
+                bic < best[1] && (best = (bic, p))
             end
-            p_ar, a = best[2], best[3]
+            p_ar = best[2]
             if p_ar > 0
-                # whitening filter: x[t] - Σ a[j] x[t - j]
-                wf(z) = [z[i] - sum(a[j] * z[i - j] for j = 1:p_ar) for i = (p_ar + 1):n]
-                yw = wf(y)
-                Xw = reduce(hcat, [wf(X[:, j]) for j = 1:k])
-                b = Xw \ yw
+                # whitening filter: x[t] - Σ a[j] x[t - j], for t > p_ar
+                wf = vcat(1.0, -as[p_ar])
+                yw = DSP.filt(wf, y)[(p_ar + 1):n]
+                Xw = DSP.filt(wf, X)[(p_ar + 1):n, :]
             end
         end
+        # normal equations: XᵀX is needed for the covariance of the estimates anyway
+        XtX = Symmetric(Xw' * Xw)
+        p_ar > 0 && (b = XtX \ (Xw' * yw))
         res_w = yw .- Xw * b
         dfr = length(yw) - k
         sigma2 = sum(abs2, res_w) / dfr
-        cov_b = sigma2 .* inv(Xw' * Xw)
-        for (j, cn) in enumerate(conds)
+        cov_b = sigma2 .* inv(XtX)
+        rows[ch_idx] = map(eachindex(conds)) do j
             se = sqrt(cov_b[j, j])
             tv = b[j] / se
-            pv = 2 * ccdf(TDist(dfr), abs(tv))
-            push!(df_out, (labels(obj)[c], cn, b[j], se, tv, dfr, pv))
+            (b[j], se, tv, dfr, 2 * ccdf(TDist(dfr), abs(tv)))
         end
+    end
+
+    df_out = DataFrame(;
+        channel = String[], condition = String[], beta = Float64[], se = Float64[],
+        t = Float64[], df = Int64[], p = Float64[],
+    )
+    for (ch_idx, c) in enumerate(ch), (j, cn) in enumerate(conds)
+        push!(df_out, (labels(obj)[c], cn, rows[ch_idx][j]...))
     end
 
     return df_out
